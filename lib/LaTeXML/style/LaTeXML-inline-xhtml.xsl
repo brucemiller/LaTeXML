@@ -84,20 +84,17 @@
     </acronym>
   </xsl:template>
 
-
-  <!-- This should either get some sort of style w/width,height & background,
-       or, at most, only be an hr if it's wide & short
-       However, we try to recognize a mere "strut".-->
   <xsl:template match="ltx:rule">
     <span>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_style">
+	  <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
 	  <xsl:choose>
 	    <xsl:when test="@color">
-	      <xsl:value-of select="concat('background:',@color)"/>
+	      <xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
 	    </xsl:when>
-	    <xsl:otherwise>background:black</xsl:otherwise>
+	    <xsl:otherwise>background:black;display:inline-block;</xsl:otherwise>
 	  </xsl:choose>
 	</xsl:with-param>
       </xsl:call-template>
