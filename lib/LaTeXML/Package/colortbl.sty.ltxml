@@ -1,0 +1,90 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  colortbl                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+RequirePackage('color');
+RequirePackage('array');
+#======================================================================
+# Note that we use \pagecolor, unchanged as much as possible,
+# so this should work with both color.sty and xcolor.sty!
+# NOTE: if colors get used within a table,
+#  perhaps we should turn OFF the header heuristics?
+#  Or, at least the styling implied by the header heuristics!!!
+# NOTE: LaTeX.pool should handle more of table column spacing;
+#  This package could benefit.
+# NOTE: We also need a means to color rules!
+#======================================================================
+# You can color columns (in the template), rows (individually) or cells (individually);
+# cell color overrides row color overrides column color.
+# cell & column seem to work out by themselves, but getting row to override
+# needs a bit of help:
+DefConditional('\if@@rowcolored',sub { LookupValue('tabular_row_color'); });
+DefPrimitive('\@clearrowcolor',sub{ AssignValue(tabular_row_color=>undef,'global'); });
+AddToMacro('\@tabular@row@after','\@clearrowcolor');
+
+AddToMacro('\@tabular@column@before','\@userowcolor');
+
+DefPrimitive('\@userowcolor',sub {
+  if(my $rc=LookupValue('tabular_row_color')){
+    MergeFont(background=>$rc); }});
+#======================================================================
+# \columncolor[<model>]{<color>}[<left_overhang>][<right_overhang>]
+# This is used in column spec of tabular, within a >{\columncolor...}
+# so it will already get itself inserted into the tabular column's preload,
+# We'll basically do the same as \cellcolor, for now, and ignore the spacing
+DefMacro('\columncolor[]{}[][]',
+	 '\if@@rowcolored\else\pagecolor[#1]{#2}\@setcellcolor\fi');
+
+# \rowcolor[<model>]{<color>}
+# Set the background color, and arrange for it to attach to the ltx:td
+DefMacro('\rowcolor[]{}','\pagecolor[#1]{#2}\@setrowcolor');
+
+# \cellcolor[<model>]{<color>}
+# Set the background color (we should already be in a cell),
+# but also copy it to the ltx:td!
+DefMacro('\cellcolor[]{}','\pagecolor[#1]{#2}\@setcellcolor');
+
+# Set the row's backgroundcolor from the current background color
+DefConstructor('\@setrowcolor',sub {
+  my($document,%props)=@_;
+  if(my $bg = $props{background}){ # only set if explicitly set a color
+    if(my $node = $document->findnode('ancestor-or-self::ltx:tr',$document->getNode)){
+      $document->setAttribute($node,backgroundcolor=>$bg); }}},
+  afterDigest=>sub { my $bg = $_[1]->getProperty('font')->getBackground;
+		     $_[1]->setProperty(background=>$bg);
+		     AssignValue(tabular_row_color=>$bg,'global'); },
+  properties=>{alignmentSkippable=>1});
+
+# Set the cell's backgroundcolor from the current background color
+DefConstructor('\@setcellcolor',sub {
+  my($document,%props)=@_;
+  if(my $node = $document->findnode('ancestor-or-self::ltx:td',$document->getNode)){
+    if(my $bg = $props{font} && $props{font}->getBackground){
+      $document->setAttribute($node,backgroundcolor=>$bg); }}},
+  properties=>{alignmentSkippable=>1});
+
+# \arrayrulecolor
+DefMacro('\arrayrulecolor[]{}','');
+
+# \doublerulesepcolor
+DefMacro('\doublerulesepcolor[]{}','');
+
+# \hhline, \cline
+
+# \minrowclearance
+DefRegister('\minrowclearance'=>Dimension(0));
+#======================================================================
+1;

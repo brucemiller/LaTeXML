@@ -1,0 +1,160 @@
+\documentclass{article}
+\usepackage{colortbl}
+\usepackage{dcolumn,longtable,hhline}
+\begin{document}
+\section{Basics}
+\par\noindent
+\begin{tabular}{|l|c|}
+one&two\\
+three&four\\
+\end{tabular}
+
+\par\noindent
+\begin{tabular}{%
+  |>{\columncolor[gray]{0.8}[0pt]}l%
+  |>{\color{white}\columncolor[gray]{0.2}[0pt]}c|}
+one&two\\
+three&four\\
+\end{tabular}
+
+\section{Complex}
+
+\par\noindent
+\begin{tabular}{%
+  |>{\columncolor[gray]{0.8}[.5\tabcolsep]}l%
+  |>{\color{white}\columncolor[gray]{0.2}[.5\tabcolsep]}c|}
+one&two\\
+three&four\\
+\end{tabular}
+
+\par\noindent
+\setlength\minrowclearance{2pt}
+\newcolumntype{A}{%
+  >{\color{white}\columncolor{red}[.5\tabcolsep]%
+     \raggedright}%
+  p{2cm}}
+\newcolumntype{B}{%
+  >{\columncolor{blue}[.5\tabcolsep]%
+    \color{yellow}\raggedright}
+  p{3cm}}
+\newcolumntype{C}{%
+  >{\columncolor{yellow}[.5\tabcolsep]}%
+    D{.}{\cdot}{3.3}}
+\newcolumntype{E}{%
+  >{\large\bfseries
+    \columncolor{cyan}[.5\tabcolsep]}c}
+\newcolumntype{F}{%
+  >{\color{white}
+    \columncolor{magenta}[.5\tabcolsep]}c}
+\newcolumntype{G}{%
+  >{\columncolor[gray]{0.8}[.5\tabcolsep][\tabcolsep]}l}
+\newcolumntype{H}{>{\columncolor[gray]{0.8}}l}
+\newcolumntype{I}{%
+  >{\columncolor[gray]{0.8}[\tabcolsep][.5\tabcolsep]}%
+    D{.}{\cdot}{3.3}}
+
+\begin{longtable}{ABC}
+\multicolumn{3}{E}{A long table example}\\
+\multicolumn{2}{F}{First two columns}&
+\multicolumn{1}{F}{Third column}\\
+\multicolumn{2}{F}{p-type}&
+\multicolumn{1}{F}{D-type (\textsf{dcolumn})}\endfirsthead
+\multicolumn{3}{E}{A long table example (continued)}\\
+\multicolumn{2}{F}{First two columns}&
+\multicolumn{1}{F}{Third column}\\
+\multicolumn{2}{F}{p-type}&
+\multicolumn{1}{F}{D-type (\textsf{dcolumn})}\endhead
+\multicolumn{3}{E}{Continued\ldots}\endfoot
+\multicolumn{3}{E}{The End}\endlastfoot
+ P-column&and another one&12.34\\
+\multicolumn{1}{G}{Total}&
+\multicolumn{1}{H}{(wrong)}&
+\multicolumn{1}{I}{100.6}\\
+ Some long text in the first column&bbb&1.2\\
+ aaa&and some long text in the second column&1.345\\
+\multicolumn{1}{G}{Total}&
+\multicolumn{1}{H}{(wrong)}&
+\multicolumn{1}{I}{100.6}\\
+ aaa&bbb&1.345\\
+ Note that the coloured rules in all columns stretch to accomodate
+large entries in one column. &bbb&1.345\\
+ aaa&bbb&100\\
+ aaa&Depending on your driver you may get unsightly gaps or lines
+  where the  `screens' used to produce different shapes interact
+  badly. You may want to cause adjacent panels of the same colour by
+ specifying a larger overhang 
+or by adding some negative space (in a "\string\noalign" between rows.&12.4\\
+ aaa&bbb&45.3\\
+\end{longtable}
+
+
+\section{Row \& Cell Colors}
+\par\noindent
+\begin{tabular}{|l|c|}
+one&two\\
+\rowcolor{red}
+three&four\\
+\end{tabular}
+
+\par\noindent
+\begin{tabular}{%
+  |l%
+  |>{\columncolor{blue}}c|}
+one&two\\
+three&four\\
+\end{tabular}
+
+\par\noindent
+\begin{tabular}{%
+  |l%
+  |>{\columncolor{blue}}c|}
+one&two\\
+\rowcolor{red}
+three&four\\
+\end{tabular}
+
+\par\noindent
+\begin{tabular}{%
+  |l%
+  |>{\columncolor{blue}}c|}
+one&two\\
+\rowcolor{red}
+three&\cellcolor{green}four\\
+\end{tabular}
+
+\section{Gaudy}
+\definecolor{orange}{cmyk}{0,0.61,0.87,0}
+\definecolor{indigo}{cmyk}{0.8,0.9,0,0}
+\definecolor{violet}{cmyk}{0.6,0.9,0,0}
+\newcommand\rainbowline[1]{%
+\hhline{%
+>{\arrayrulecolor
+{red}\doublerulesepcolor[rgb]{.3,.3,1}}%
+|#1:=%
+>{\arrayrulecolor{orange}\doublerulesepcolor[rgb]{.4,.4,1}}%
+=%
+>{\arrayrulecolor{yellow}\doublerulesepcolor[rgb]{.5,.5,1}}%
+=%
+>{\arrayrulecolor {green}\doublerulesepcolor[rgb]{.6,.6,1}}%
+=%
+>{\arrayrulecolor {blue}\doublerulesepcolor[rgb]{.7,.7,1}}%
+=%
+>{\arrayrulecolor{indigo}\doublerulesepcolor[rgb]{.8,.8,1}}%
+=%
+>{\arrayrulecolor{violet}\doublerulesepcolor[rgb]{.9,.9,1}}%
+=:#1|%
+}}
+\arrayrulecolor{red}
+\doublerulesepcolor[rgb]{.3,.3,1}%
+\begin{tabular}{||*7{>{\columncolor[gray]{.9}}c}||}
+\rainbowline{t}%
+\arrayrulecolor{violet}\doublerulesepcolor[rgb]{.9,.9,1}
+Richard&of&York&gave&battle&in&
+\multicolumn{1}{>{\columncolor[gray]{.9}}c||}{vain}\\
+\rainbowline{}%
+1&2&3&4&5&6&
+\multicolumn{1}{>{\columncolor[gray]{.9}}c||}{7}\\
+\rainbowline{b}%
+\end{tabular}
+
+\end{document}
