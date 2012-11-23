@@ -199,7 +199,16 @@
 	  <xsl:value-of select="concat('opacity:',$node/@opacity,';')"/>
 	</xsl:if>
 	<xsl:if test="$node/@framed='rectangle'">
-	  <xsl:value-of select="'border:1px solid black;'"/>
+	  <xsl:value-of select="'border:1px solid '"/>
+	  <xsl:choose>
+	    <xsl:when test="$node/@framecolor">
+	      <xsl:value-of select="$node/@framecolor"/>
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <xsl:value-of select="'black'"/>
+	    </xsl:otherwise>
+	  </xsl:choose>
+	  <xsl:value-of select="';'"/>
 	</xsl:if>
 	<xsl:if test="$node/@framed='underline'">
 	  <xsl:value-of select="'text-decoration:underline;'"/>
