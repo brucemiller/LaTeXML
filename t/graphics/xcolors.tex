@@ -1,0 +1,196 @@
+\documentclass{article}
+\usepackage[table,dvipsnames]{xcolor}
+
+\newcommand{\testbox}[2][]{%
+\leavevmode\hbox to 2em{{\ifx.#1.\color{#2}\else\color[#1]{#2}\fi\vrule width 2em height 1.5ex}}}
+\def\testRGB{%
+   \testbox{red}\testbox{green}\testbox{blue}}
+
+\begin{document}
+
+\newcommand{\CB}[2][]{\ifx.#1.\colorbox{#2}{#2}\else\colorbox[#1]{#2}{#2}\fi}
+\section{Introduction}
+
+\begin{itemize}
+\item
+\definecolor{CorporateColor}{rgb}{0,0,1}
+\testbox{CorporateColor}; A 75\% tint \testbox{CorporateColor!75}.
+
+\item ``use hsb definitions''
+
+\item 40\% \testbox{green} + 60\% \testbox{yellow} = \testbox{green!40!yellow}
+
+\item Complement: \testbox{-green!40!yellow}
+
+\item 3$\times$\testbox{-green!40!yellow}
+   + 2$\times$\testbox{green}
+   + 1$\times$\testbox{red}
+ = \testbox{rgb:-green!40!yellow,3;green!40!yellow,2;red,1}
+
+\item \testbox[wave]{485}
+
+\item \testbox{red}\testbox{red>wheel,60}\testbox{red>wheel,120}\testbox{red>wheel,180}%
+\testbox{red>wheel,240}\testbox{red>wheel,300}\testbox{red>wheel,360}.
+\item \testbox{red}\testbox{red>wheel,1,6}\testbox{red>wheel,2,6}\testbox{red>wheel,3,6}%
+\testbox{red>wheel,4,6}\testbox{red>wheel,5,6}\testbox{red>wheel,6,6}
+\item \testbox{red}\testbox{red>twheel,1,6}\testbox{red>twheel,2,6}\testbox{red>twheel,3,6}%
+\testbox{red>twheel,4,6}\testbox{red>twheel,5,6}\testbox{red>twheel,6,6}
+\end{itemize}
+
+\section{Global}
+%\definecolorstrue
+\colorlet{funny}{red}
+
+\testbox{funny} {\colorlet{funny}{blue}\testbox{funny}} \testbox{funny}
+
+\globalcolorstrue
+\testbox{funny} {\colorlet{funny}{blue}\testbox{funny}} \testbox{funny}
+\globalcolorsfalse
+
+\section{Color Sets}
+\begingroup
+\definecolorset{rgb}{light}{}{red,1,.9,.9;green,.9,1,.9;blue,.9,.9,1}
+\testbox{lightred}
+\testbox{lightblue}
+\testbox{lightgreen}
+\endgroup
+
+\section{Color Series}
+\begingroup
+\color{blue}
+\definecolorseries{foo}{rgb}{last}{.}{-.}
+\resetcolorseries[5]{foo}
+\def\test{\hbox to 1em{{\color{foo!!+}\vrule width 1em height 1.5ex}}}
+Test\test\test\test\test\test\test Test
+
+\resetcolorseries[5]{foo}
+\def\test{\hbox to 1em{{\color{foo!!++}\vrule width 1em height 1.5ex}}}
+Test\test\test\test\test\test\test Test
+
+\resetcolorseries[5]{foo}
+\def\test{\hbox to 1em{{\color{foo!![2]}\vrule width 1em height 1.5ex}}}
+Test\test\test\test\test\test\test Test
+
+\endgroup
+
+\section{Blending}
+
+No blend: \testRGB
+
+\blendcolors{!50!yellow}
+With blend: \testRGB
+
+Again \blendcolors{!50!yellow}
+With blend: \testRGB
+
+
+Again Starred \blendcolors*{!50!yellow}
+With blend: \testRGB
+
+Reset \blendcolors{}
+No blend: \testRGB
+
+% \section{Masking}
+
+% No Mask: \testRGB
+
+% \maskcolors{yellow}
+% Yellow: \testRGB
+
+% \maskcolors{magenta}
+% Magenta: \testRGB
+
+% Disable:\maskcolorsfalse\testRGB\maskcolorstrue
+
+% Magenta: \testRGB
+
+% \maskcolors{}
+
+
+\section{Arithmetic}
+\makeatletter
+\newdimen\dima
+\newdimen\dimb
+\newcount\numa
+\newcount\numb
+
+\dima=5pt\relax
+\dimb=10pt\relax
+\numa=5\relax
+\numb=10\relax
+
+A=\the\dima;B=\the\numb;
+\rmultiply\dima\numb
+A=\the\dima;B=\the\numb;
+
+
+\section{Colored Tables}
+\rowcolors[\hline]{1}{green!25}{yellow!50}
+\begin{tabular}{ll}
+test & row \number\rownum\\
+test & row \number\rownum\\
+\rowcolor{blue!25}
+test & row \number\rownum\\
+test & row \number\rownum\\
+\hiderowcolors
+test & row \number\rownum\\
+test & row \number\rownum\\
+\showrowcolors
+test & row \number\rownum\\
+test & row \number\rownum\\
+\multicolumn{1}%
+ {>{\columncolor{red!12}}l}{test} & row \number\rownum\\
+\end{tabular}
+
+\section{Color Compararisons}
+\definecolors{JungleGreen,DarkOrchid}
+
+\begingroup
+\small\sffamily
+\rowcolors1{}{}
+\begin{testcolors}[rgb,cmyk,hsb,HTML,gray]
+\testcolor{red}
+\testcolor{green}
+\testcolor{blue}
+\testcolor{cyan}
+\testcolor{magenta}
+\testcolor{yellow}
+\testcolor{orange}
+\testcolor{violet}
+\testcolor{purple}
+\testcolor{brown}
+\testcolor{pink}
+\testcolor{olive}
+\testcolor{black}
+\testcolor{darkgray}
+\testcolor{gray}
+\testcolor{lightgray}
+\testcolor{white}
+\noalign{\medskip}\hline\noalign{\medskip}
+\testcolor{-red}
+\testcolor{-green}
+\testcolor{-blue}
+\testcolor{-cyan}
+\testcolor{-magenta}
+\testcolor{-yellow}
+\testcolor{-orange}
+\testcolor{-violet}
+\testcolor{-purple}
+\testcolor{-brown}
+\testcolor{-pink}
+\testcolor{-olive}
+\testcolor{-black}
+\testcolor{-darkgray}
+\testcolor{-gray}
+\testcolor{-lightgray}
+\testcolor{-white}
+\noalign{\medskip}\hline\noalign{\medskip}
+\testcolor{JungleGreen}
+\testcolor{DarkOrchid}
+\noalign{\medskip}\hline\noalign{\medskip}
+\testcolor{-JungleGreen}
+\testcolor{-DarkOrchid}
+\end{testcolors}
+\endgroup
+
+\end{document}
