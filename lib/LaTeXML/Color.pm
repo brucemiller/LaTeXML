@@ -98,6 +98,13 @@ sub mix {
   my @b = $color->components;
   $self->new(map( $fraction*$a[$_]+(1-$fraction)*$b[$_], 0..$#a)); }
 
+sub add {
+  my($self,$color)=@_;
+  $color = $color->convert($self->model) unless $self->model eq $color->model;
+  my @a = $self->components;
+  my @b = $color->components;
+  $self->new(map( $a[$_]+$b[$_], 0..$#a)); }
+
 # The next 2 methods multiply the components of a color by some value(s)
 # This assumes that such a thing makes sense in the given model, for some purpose.
 # It may be that the components should be truncated to 1 (or some other max?)
