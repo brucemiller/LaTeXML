@@ -57,6 +57,7 @@ DefConditional('\ifconvertcolorsD',undef);
 DefConditional('\ifconvertcolorsU',undef);
 DefConditional('\ifblendcolors',undef);
 DefConditional('\ifmaskcolors',undef);
+DefConditional('\ifxglobal@',undef);
 RawTeX('\globalcolorsfalse\definecolorstrue');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -178,6 +179,7 @@ DefColorModel('wave','hsb',
 #======================================================================
 
 DefMacro('\adjustUCRBG', '1,1,1,1'); # ??
+DefMacro('\paperquality','1');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Specifying colors
@@ -342,6 +344,19 @@ DefMacro('\substitutecolormodel{}{}','');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Defining colors
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefMacroI('\xglobal@list',undef,
+	  '\definecolor\definecolors\definecolorset\colorlet\providecolor'
+	  .'\providecolors\providecolorset\blendcolors\maskcolors');#  \substitutecolormodel}
+
+DefMacro('\xglobal Token',sub {
+  my($gullet,$token)=@_;
+  if(grep( $token->equals($_), LookupDefinition(T_CS('\xglobal@list'))->getExpansion->unlist)){
+    AssignValue('Boolean:xglobal@'=>1);
+    $token; }
+  else {
+    (T_CS('\global'),$token); }});
+
 # Internal storage of color definition 5 elements:
 #  \\color@<name> => { \xcolor@ {<type>} {<driver_rep>} {<model>} {<spec>}
 # [if <type> is 'named', <driver_rep> might be the name?
@@ -361,6 +376,8 @@ sub checkNoPostscript {
 DefMacro('\definecolor[]{}{}{}','\XC@definecolor[#1]{#2}[\colornameprefix]{#3}{#4}');
 # prepare, same but defered.... but we don't bother defering!
 Let(T_CS('\preparecolor'),T_CS('\definecolor'));
+Let(T_CS('\xdefinecolor'),T_CS('\definecolor'));
+
 # \providecolor[<type>]{<name>}{<model_list>}{<spec_list>}
 DefMacro('\providecolor[]{}{}{}','\XC@providecolor[#1]{#2}[\colornameprefix]{#3}{#4}');
 
@@ -368,10 +385,14 @@ DefMacro('\providecolor[]{}{}{}','\XC@providecolor[#1]{#2}[\colornameprefix]{#3}
 DefMacro('\DefineNamedColor{}{}{}{}','\definecolor[#1]{#2}{#3}{#4}');
 
 # What is $prefix (\colornameprefix, defaults to XC@  ??? ) used for?
+DefMacroI('\colornameprefix',undef,'XC@');
+
 DefPrimitive('\XC@definecolor[]{}[]{}{}',sub {
   my($stomach,$type,$name,$prefix,$models,$specs)=@_;
   return unless checkNoPostscript($type,'\XC@definecolor');
-  DefColor(ToString(Expand($name)),ParseXColor($models,$specs)); });
+  DefColor(ToString(Expand($name)),ParseXColor($models,$specs),
+	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
+  AssignValue('Boolean:xglobal@'=>0); });
   # and return a box, so it can be recorded?
 
 DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
@@ -379,13 +400,17 @@ DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
   return unless checkNoPostscript($type,'\XC@providecolor');
   $name = ToString(Expand($name));
   return if LookupValue('color_'.$name);
-  DefColor($name,ParseXColor($models,$specs)); });
+  DefColor($name,ParseXColor($models,$specs),
+	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
+  AssignValue('Boolean:xglobal@'=>0); });
 
 # \colorlet[<type>]{<name>}[<num_model>]{<color>}
 DefPrimitive('\colorlet[]{}[]{}', sub {
   my($stomach,$type,$name,$tomodel,$colordesc) = @_;
   return unless checkNoPostscript($type,'\colorlet');
-  DefColor(ToString($name),ParseXColor(undef,$colordesc,$tomodel)); });
+  DefColor(ToString($name),ParseXColor(undef,$colordesc,$tomodel),
+	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
+  AssignValue('Boolean:xglobal@'=>0); });
 
 # \definecolorset[<type>]{<model_list>}{<head>}{<tail>}{<set_spec>}
 DefPrimitive('\definecolorset[]{}{}{}{}',sub {
@@ -393,11 +418,14 @@ DefPrimitive('\definecolorset[]{}{}{}{}',sub {
   return unless checkNoPostscript($type,'\definecolorset');
   $head = ToString(Expand($head));
   $tail = ToString(Expand($tail));
+  my $scope = (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef);
   foreach my $spec (split(/;/,ToString(Expand($specset)))){
     if($spec =~ /^([^,]*),(.*)$/){
       my($name,$specs)=($1,$2);
-      DefColor($head.$name.$tail,ParseXColor($models,$specs)); }}
+      DefColor($head.$name.$tail,ParseXColor($models,$specs),$scope); }}
+  AssignValue('Boolean:xglobal@'=>0);
   return; });
+
 Let(T_CS('\preparecolorset'),T_CS('\definecolorset'));
 
 # \providecolorset[<type>]{<model_list>}{<head>}{<tail>}{<set_spec>}
@@ -406,12 +434,14 @@ DefPrimitive('\providecolorset[]{}{}{}{}',sub {
   return unless checkNoPostscript($type,'\providecolorset');
   $head = ToString(Expand($head));
   $tail = ToString(Expand($tail));
+  my $scope = (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef);
   foreach my $spec (split(/;/,ToString(Expand($specset)))){
     if($spec =~ /^([^,]*),(.*)$/){
       my($name,$specs)=($1,$2);
       my $defname = $head.$name.$tail;
       next if LookupValue('color_'.$defname);
-      DefColor($defname,ParseXColor($models,$specs)); }}
+      DefColor($defname,ParseXColor($models,$specs),$scope); }}
+  AssignValue('Boolean:xglobal@'=>0);
   return; });
 
 sub defineColors {
@@ -490,7 +520,20 @@ DefPrimitive('\pagecolor[]{}', sub {
 # \fcolorbox[<model_list>]{<spec_list/frame>}{<spec_list/background>}{<text>}
 # \fcolorbox[<model_list/frame>]{<spec_list/frame>}[<model_list/background>{<spec_list/background>}{<text>}
 # \fcolorbox{<color/frame>}[<model_list/background>{<spec_list/background>}{<text>}
+
 # \boxframe{<width>}{<height>}{<depth}>
+#  this should probably derive from the code for \hrule,
+#  but arrange for the color to determine the border's color, not the background!
+
+DefConstructor('\boxframe{Dimension}{Dimension}{Dimension}',
+	       "<ltx:rule width='#1'  height='#2' depth='#3'"
+	       .       " color='#color' framed='rectangle' framecolor='#framecolor'/>",
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $font = LookupValue('font');
+		 $whatsit->setProperties(color=>$font->getBackground || White,
+					 framecolor=>$font->getColor || Black);
+		 return; });
 
 #======================================================================
 # Blending Colors
@@ -500,7 +543,11 @@ DefPrimitive('\pagecolor[]{}', sub {
 DefPrimitive('\blendcolors OptionalMatch:* {}',sub{
   my($stomach,$star,$mix)=@_;
   # global if \global
-  AssignValue(color_blend =>(($star && LookupValue('color_blend'))||'').ToString(Expand($mix))); });
+  AssignValue(color_blend =>(($star && LookupValue('color_blend'))||'').ToString(Expand($mix)),
+	      (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
+  AssignValue('Boolean:xglobal@'=>0); });
+
+DefMacro('\colorblend',sub { Explode(LookupValue('color_blend')); });
 
 # \maskcolors[<num_model>]{<color>}
 # Interestingly, this COULD work, but something like this
@@ -686,6 +733,51 @@ DefPrimitive('\convertcolorspec{}{}{}{}', sub {
 
 Let(T_CS('\rmultiply'),T_CS('\multiply'));
 Let(T_CS('\rdivide'),T_CS('\divide'));
+
+DefPrimitive('\lshift Variable',sub {
+  my($stomach,$var)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply(10),@args); });
+
+DefPrimitive('\llshift Variable',sub {
+  my($stomach,$var)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply(100),@args); });
+
+DefMacro('\lshiftnum {}', sub {
+  my($gullet,$num)=@_;
+  Explode(10*ToString(Expand($num))); });
+
+DefMacro('\llshiftnum {}', sub {
+  my($gullet,$num)=@_;
+  Explode(100*ToString(Expand($num))); });
+
+DefPrimitive('\lshiftset Variable {}',sub {
+  my($stomach,$var,$num)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue((10*ToString(Expand($num)).'pt'),@args); });
+
+DefPrimitive('\llshiftset Variable {}',sub {
+  my($stomach,$var,$num)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue((100*ToString(Expand($num)).'pt'),@args); });
+
+DefPrimitive('\rshift Variable',sub {
+  my($stomach,$var)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply(0.1),@args); });
+
+DefPrimitive('\rrshift Variable',sub {
+  my($stomach,$var)=@_;
+  return () unless $var;
+  my($defn,@args)=@$var;
+  $defn->setValue($defn->valueOf(@args)->multiply(0.01),@args); });
+
 #======================================================================
 # General TeX internals
 #======================================================================
@@ -764,6 +856,8 @@ EOTeX
 #======================================================================
 # Random TeX coding needed by xcolor
 
+DefMacro('\testcolor','\@testopt{\@testcolor}{}'); # define here, so texscan sees it!
+
 RawTeX(<<'EOTeX');
 \newenvironment*{testcolors}[1][rgb,cmyk,hsb,HTML]%
  {\let\@@nam\@empty\count@\z@
@@ -777,7 +871,6 @@ RawTeX(<<'EOTeX');
     \ifin@\def\XC@@gt{>}\fi
   \fi
   \def\XC@@xcp@{-1}\ifnum\XC@tracing>1 \def\XC@tracing{1}\fi
-  \def\testcolor{\@testopt{\@testcolor}{}}%
   \def\@testcolor[##1]##2%
    {\XC@mdef\@@mod{##1}\XC@edef\@@clr{##2}%
     \ifx\@@mod\@empty

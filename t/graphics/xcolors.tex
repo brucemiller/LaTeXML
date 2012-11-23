@@ -47,6 +47,28 @@
 \testbox{funny} {\colorlet{funny}{blue}\testbox{funny}} \testbox{funny}
 \globalcolorsfalse
 
+\section{XGlobal}
+\colorlet{fuu}{red}
+\colorlet{baz}{green}
+fuu is red: \testbox{fuu}
+baz is green: \testbox{baz}
+\begingroup
+\colorlet{fuu}{purple}
+\colorlet{baz}{orange}
+Now, fuu is purple: \testbox{fuu}
+and baz is orange: \testbox{baz}
+\begingroup
+\xglobal\colorlet{fuu}{pink}
+\colorlet{baz}{yellow}
+Now, fuu is pink: \testbox{fuu}
+and baz is yellow: \testbox{baz}
+\endgroup
+Now, baz is orange again: \testbox{baz}
+but, fuu is still pink: \testbox{fuu}
+\endgroup
+Now, baz is green again: \testbox{baz}
+and, fuu is \emph{still} pink: \testbox{fuu}
+
 \section{Color Sets}
 \begingroup
 \definecolorset{rgb}{light}{}{red,1,.9,.9;green,.9,1,.9;blue,.9,.9,1}
@@ -106,6 +128,18 @@ No blend: \testRGB
 
 % \maskcolors{}
 
+\section{Boxes}
+\definecolor{light}{gray}{0.9}
+
+\colorbox{gray}{\textcolor{light}{Light within Gray}}
+
+vs. \colorbox[gray]{0.5}{\textcolor{light}{Light within Gray}}
+
+\fcolorbox{blue}{red}{\textcolor{green}{Green in Red surrounded by Blue}}
+
+\fcolorbox[cmyk]{0,1,0,0}{1,0,0,0}{\textcolor[cmyk]{0,0,1,0}{Yellow in Cyan surrounded by Magenta}}
+
+\bgroup\color{orange}\boxframe{10em}{2ex}{1ex}\egroup
 
 \section{Arithmetic}
 \makeatletter
@@ -121,8 +155,27 @@ No blend: \testRGB
 
 A=\the\dima;B=\the\numb;
 \rmultiply\dima\numb
-A=\the\dima;B=\the\numb;
+A=A*B = \the\dima;
 
+\dima=5pt\relax
+A=\the\dima;
+\lshift\dima
+A=10*A=\the\dima;
+\rshift\dima
+A=A/10=\the\dima.
+
+\dima=5pt\relax
+A=\the\dima;
+\llshift\dima
+A=100*A=\the\dima;
+\rrshift\dima
+A=A/100=\the\dima.
+
+10*13 = \lshiftnum{13};
+100*13 = \llshiftnum{13}.
+
+A=10*13 = \lshiftset\dima{13}\relax \the\dima;
+A=100*13 = \llshiftset\dima{13}\relax \the\dima;
 
 \section{Colored Tables}
 \rowcolors[\hline]{1}{green!25}{yellow!50}
