@@ -28,6 +28,7 @@ use LaTeXML::Package;
 RequirePackage('amsmath');
 RequirePackage('amssymb');
 RequirePackage('cancel');
+RequirePackage('xcolor',options=>['dvipsnames']);
 
 DefMathI('\sgn',    undef,"sgn", role=>'OPFUNCTION',  meaning=>'sign');
 
