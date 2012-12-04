@@ -206,9 +206,9 @@ our $TARGET_COLOR_MODEL = '';
 #   convert the final result to that model
 sub ParseXColor {
   my($models,$specs,$tomodel)=@_;
-  $models  = ToString(($models->isaBox ? $models : Expand($models)))  if ref $models;
-  $specs   = ToString(($specs->isaBox  ? $specs  : Expand($specs)))   if ref $specs;
-  $tomodel = ToString(($tomodel->isaBox? $tomodel: Expand($tomodel))) if ref $tomodel;
+  $models  = ToString($models)  if ref $models;
+  $specs   = ToString($specs)   if ref $specs;
+  $tomodel = ToString($tomodel) if ref $tomodel;
 
   my $color;
   if($models){		  # If models given, it's in form: (tomodel:)? model (,model)*
@@ -390,41 +390,54 @@ DefMacroI('\colornameprefix',undef,'XC@');
 DefPrimitive('\XC@definecolor[]{}[]{}{}',sub {
   my($stomach,$type,$name,$prefix,$models,$specs)=@_;
   return unless checkNoPostscript($type,'\XC@definecolor');
-  DefColor(ToString(Expand($name)),ParseXColor($models,$specs),
+  ($type,$name,$prefix,$models,$specs)=map($_ && Expand($_),$type,$name,$prefix,$models,$specs);
+  DefColor(ToString($name),ParseXColor($models,$specs),
 	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
-  AssignValue('Boolean:xglobal@'=>0); });
+  AssignValue('Boolean:xglobal@'=>0);
   # and return a box, so it can be recorded?
+  # but we don't want the \XC@ version, and we're not handling the prefix anyway...
+  Box(undef,undef,undef,
+      Invocation(T_CS('\definecolor'),$type,$name,$models,$specs)); });
 
 DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
   my($stomach,$type,$name,$prefix,$models,$specs)=@_;
   return unless checkNoPostscript($type,'\XC@providecolor');
-  $name = ToString(Expand($name));
-  return if LookupValue('color_'.$name);
-  DefColor($name,ParseXColor($models,$specs),
+  ($type,$name,$prefix,$models,$specs)=map($_ && Expand($_),$type,$name,$prefix,$models,$specs);
+  my $sname = ToString($name);
+  return if LookupValue('color_'.$sname);
+  DefColor($sname,ParseXColor($models,$specs),
 	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
-  AssignValue('Boolean:xglobal@'=>0); });
+  AssignValue('Boolean:xglobal@'=>0);
+  Box(undef,undef,undef,
+#      Invocation(T_CS('\XC@providecolor'),$type,$name,$prefix,$models,$specs)); });
+      Invocation(T_CS('\providecolor'),$type,$name,$models,$specs)); });
 
 # \colorlet[<type>]{<name>}[<num_model>]{<color>}
 DefPrimitive('\colorlet[]{}[]{}', sub {
   my($stomach,$type,$name,$tomodel,$colordesc) = @_;
   return unless checkNoPostscript($type,'\colorlet');
+  ($type,$name,$tomodel,$colordesc)=map($_ && Expand($_),$type,$name,$tomodel,$colordesc);
   DefColor(ToString($name),ParseXColor(undef,$colordesc,$tomodel),
 	   (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef));
-  AssignValue('Boolean:xglobal@'=>0); });
+  AssignValue('Boolean:xglobal@'=>0);
+  Box(undef,undef,undef,
+      Invocation(T_CS('\colorlet'),$type,$name,$tomodel,$colordesc)); });
 
 # \definecolorset[<type>]{<model_list>}{<head>}{<tail>}{<set_spec>}
 DefPrimitive('\definecolorset[]{}{}{}{}',sub {
   my($stomach,$type,$models,$head,$tail,$specset)=@_;
   return unless checkNoPostscript($type,'\definecolorset');
-  $head = ToString(Expand($head));
-  $tail = ToString(Expand($tail));
+  ($type,$models,$head,$tail,$specset)=map($_ && Expand($_),$type,$models,$head,$tail,$specset);
+  my $shead = ToString($head);
+  my $stail = ToString($tail);
   my $scope = (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef);
-  foreach my $spec (split(/;/,ToString(Expand($specset)))){
+  foreach my $spec (split(/;/,ToString($specset))){
     if($spec =~ /^([^,]*),(.*)$/){
       my($name,$specs)=($1,$2);
-      DefColor($head.$name.$tail,ParseXColor($models,$specs),$scope); }}
+      DefColor($shead.$name.$stail,ParseXColor($models,$specs),$scope); }}
   AssignValue('Boolean:xglobal@'=>0);
-  return; });
+  Box(undef,undef,undef,
+      Invocation(T_CS('\definecolorset'),$type,$models,$head,$tail,$specset)); });
 
 Let(T_CS('\preparecolorset'),T_CS('\definecolorset'));
 
@@ -432,21 +445,23 @@ Let(T_CS('\preparecolorset'),T_CS('\definecolorset'));
 DefPrimitive('\providecolorset[]{}{}{}{}',sub {
   my($stomach,$type,$models,$head,$tail,$specset)=@_;
   return unless checkNoPostscript($type,'\providecolorset');
-  $head = ToString(Expand($head));
-  $tail = ToString(Expand($tail));
+  ($type,$models,$head,$tail,$specset)=map($_ && Expand($_),$type,$models,$head,$tail,$specset);
+  my $shead = ToString($head);
+  my $stail = ToString($tail);
   my $scope = (LookupValue('Boolean:xglobal@'=>0) ? 'global':undef);
   foreach my $spec (split(/;/,ToString(Expand($specset)))){
     if($spec =~ /^([^,]*),(.*)$/){
       my($name,$specs)=($1,$2);
-      my $defname = $head.$name.$tail;
+      my $defname = $shead.$name.$stail;
       next if LookupValue('color_'.$defname);
       DefColor($defname,ParseXColor($models,$specs),$scope); }}
   AssignValue('Boolean:xglobal@'=>0);
-  return; });
+  Box(undef,undef,undef,
+      Invocation(T_CS('\providecolorset'),$type,$models,$head,$tail,$specset)); });
 
 sub defineColors {
   my($stomach,$idpairs,$ifundef)=@_;
-  foreach my $pair (split(/,/,ToString(Expand($idpairs)))){
+  foreach my $pair (split(/,/,ToString($idpairs))){
     $pair =~ s/^\s*//;    $pair =~ s/\s*$//;
     my($name,$from) = ($pair =~ /^([^=]*?)\s*=\s*(.*)$/ ? ($1,$2) : ($pair,$pair));
     next if $ifundef && LookupValue('color_'.$name);
@@ -454,8 +469,15 @@ sub defineColors {
       AssignValue('color_'.$name=>$c);
       DefMacroI('\\\\color@'.$name,undef,Expand(T_CS('\\\\color@'.$from))); }}}
 
-DefPrimitive('\definecolors{}',sub { defineColors($_[0],$_[1],0); return; });
-DefPrimitive('\providecolors{}',sub { defineColors($_[0],$_[1],1); return; });
+DefPrimitive('\definecolors{}',sub {
+  my $idpairs = Expand($_[1]);
+  defineColors($_[0],$idpairs,0);
+  Box(undef,undef,undef,Invocation(T_CS('\definecolors'),$idpairs)); });
+
+DefPrimitive('\providecolors{}',sub {
+  my $idpairs = Expand($_[1]);
+  defineColors($_[0],$idpairs,1);
+  Box(undef,undef,undef,Invocation(T_CS('\providecolors'),$idpairs)); });
 
 # Now, define the default colors.
 RawTeX(<<'EOTeX');
@@ -489,6 +511,7 @@ EOTeX
 
 DefPrimitive('\color[]{}', sub {
   my($stomach,$models,$colororspecs)=@_;
+  ($models,$colororspecs)=map($_ && Expand($_),$models,$colororspecs);
   my $color = ParseXColor($models,$colororspecs);
   DefColor('.',$color);
   AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
@@ -504,6 +527,7 @@ DefPrimitive('\set@color', sub {
 
 DefPrimitive('\pagecolor[]{}', sub {
   my($stomach,$models,$colororspecs)=@_;
+  ($models,$colororspecs)=map($_ && Expand($_),$models,$colororspecs);
   my $color = ParseXColor($models,$colororspecs);
   AssignValue('preambleBackgroundcolor', $color) if LookupValue('inPreamble');
   MergeFont(background=>$color);
@@ -577,12 +601,14 @@ DefMacroI('\colormask',undef,'');
 # <name> becomes a named color, but with provisions to step it through a sequence
 DefPrimitive('\definecolorseries{}{}{}[]{}[]{}',sub {
   my($stomach,$name,$model,$method,$bmodel,$bspec,$smodel,$sspec)=@_;
-  $name  = ToString(Expand($name));
-  $model = ToString(Expand($model));
+  ($name,$model,$method,$bmodel,$bspec,$smodel,$sspec)=
+    map($_ && Expand($_), $name,$model,$method,$bmodel,$bspec,$smodel,$sspec);
+  $name  = ToString($name);
+  $model = ToString($model);
   my $base = ParseXColor($bmodel,$bspec,$model);
-  $method = ToString(Expand($method));
+  $method = ToString($method);
   my $grad =(($method eq 'step') || ($method eq 'grad')
-	     ? Color($model,split(/,/,ToString(Expand($sspec))))
+	     ? Color($model,split(/,/,ToString($sspec)))
 	     : ParseXColor($smodel,$sspec,$model));
   AssignValue('color_series_'.$name.'_base'=>$base,'global');
   AssignValue('color_series_'.$name.'_method'=>$method,'global');
@@ -646,6 +672,7 @@ AddToMacro('\@tabular@row@after','\@xcolor@row@after');
 DefMacroI('\@xcolor@row@after',undef,'');
 DefPrimitive('\rowcolors OptionalMatch:* []{Number}{}{}',sub {
   my($stomach,$star,$commands,$first,$oddcolor,$evencolor)=@_;
+  ($oddcolor,$evencolor) = map($_ && Expand($_), $oddcolor,$evencolor);
   ## Wishful thinking...?
   DefMacroI('\@xcolor@row@after',undef,$commands);
   AssignValue(tabular_row_color_first=>$first->valueOf);
@@ -696,7 +723,7 @@ sub fixedpt { int($_[0]*10000+0.5)/10000; }
 #    \cmd => {{<model>}{<spec>}}
 DefPrimitive('\extractcolorspec{}{}', sub {
   my($stomach,$colordesc,$cmd)=@_;
-  my $color = ParseXColor(undef,$colordesc);
+  my $color = ParseXColor(undef,Expand($colordesc));
   my $model = $color->model;
   my @spec = ($model eq 'HTML' ? $color->components
 	      : map(fixedpt($_),$color->components));
@@ -705,7 +732,7 @@ DefPrimitive('\extractcolorspec{}{}', sub {
 # \extractcolorspecs{<color>}{<modelcmd>}{<speccmd>}
 DefPrimitive('\extractcolorspecs{}{}{}', sub {
   my($stomach,$colordesc,$modelcmd,$speccmd)=@_;
-  my $color = ParseXColor(undef,$colordesc);
+  my $color = ParseXColor(undef,Expand($colordesc));
   my $model = $color->model;
   my @spec = ($model eq 'HTML' ? $color->components
 	      : map(fixedpt($_),$color->components));
@@ -715,6 +742,7 @@ DefPrimitive('\extractcolorspecs{}{}{}', sub {
 # \convertcolorspec{<model>}{<spec>}{<model/target>}{<cmd>}
 DefPrimitive('\convertcolorspec{}{}{}{}', sub {
   my($stomach,$fmodel,$spec,$tomodel,$cmd) = @_;
+  ($fmodel,$spec,$tomodel) = map($_ && Expand($_), $fmodel,$spec,$tomodel);
   # We expect only one model/spec here, but simplify API
   my $color = ParseXColor($fmodel,$spec,$tomodel);
   my $model = $color->model;
