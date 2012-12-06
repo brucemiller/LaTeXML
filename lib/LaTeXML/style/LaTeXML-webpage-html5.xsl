@@ -150,38 +150,45 @@
     </xsl:if>
   </xsl:template>
 
+  <!-- done in pieces so it's more easily customized -->
   <xsl:template name="header">
-    <xsl:if test="//ltx:navigation/ltx:ref">
-      <xsl:text>&#x0A;</xsl:text>
-      <header class='header'>
-	<xsl:text>&#x0A;</xsl:text>
-	<div>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='up']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
-	  <xsl:text>&#x0A;</xsl:text>
-	</div>
-	<xsl:text>&#x0A;</xsl:text>
-      </header>
-    </xsl:if>
+    <xsl:text>&#x0A;</xsl:text>
+    <header class='header'>
+      <xsl:call-template name="header-navigation"/>
+    </header>
   </xsl:template>
 
   <xsl:template name="footer">
-    <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1] | //ltx:navigation/ltx:ref">
+    <xsl:text>&#x0A;</xsl:text>
+    <footer class='footer'>
+      <xsl:call-template name="footer-navigation"/>	
+      <xsl:call-template name="LaTeXML-logo"/>
+    </footer>
+  </xsl:template>
+
+  <xsl:template name="header-navigation">
+    <xsl:if test="//ltx:navigation/ltx:ref">
       <xsl:text>&#x0A;</xsl:text>
-      <footer class='footer'>
+      <div>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='up']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
 	<xsl:text>&#x0A;</xsl:text>
-	<div>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='bibliography']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='index']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='glossary']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
-	  <xsl:text>&#x0A;</xsl:text>
-	</div>
-	<xsl:call-template name="LaTeXML-logo"/>
+      </div>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="footer-navigation">
+    <xsl:if test="//ltx:navigation/ltx:ref">
+      <xsl:text>&#x0A;</xsl:text>
+      <div>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='bibliography']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='index']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='glossary']"/>
+	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
 	<xsl:text>&#x0A;</xsl:text>
-      </footer>
+      </div>
     </xsl:if>
   </xsl:template>
 
