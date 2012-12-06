@@ -21,7 +21,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
-my($stylesheet,$defaultcss,$icon,@css,@javascript,@xsltparameters)=(undef,1);
+my($stylesheet,$defaultcss,$icon,@css,@javascript,@xsltparameters);
 my($mathimages,$mathimagemag)=(undef,1.75);
 my($linelength,$plane1,$hackplane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -194,9 +194,9 @@ elsif($format eq 'html'){
   $dographics = 1 unless defined $dographics;
   $picimages  = 1 unless defined $picimages;
   $is_html = 1;
-  if(!defined $stylesheet){
-    $stylesheet = "LaTeXML-html.xsl";
-    unshift(@css,"core.css") if $defaultcss; }}
+  # Use core css if explicitly requested, or std stylesheet and not explicitly forbidden.
+  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
+  $stylesheet = "LaTeXML-html.xsl" if !defined $stylesheet; }
 elsif($format eq 'html5'){
   # In principle, should only have pMML and possibly MathImages (for altimg);
   # but I guess we can allow people to try...
@@ -205,9 +205,8 @@ elsif($format eq 'html5'){
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html = 1;
-  if(!defined $stylesheet){
-    $stylesheet = "LaTeXML-html5.xsl";
-    unshift(@css,"core.css") if $defaultcss; }}
+  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
+  $stylesheet = "LaTeXML-html5.xsl" if !defined $stylesheet; }
 elsif($format eq 'xhtml'){
   # Add pMML FIRST, unless already there, or was disabled.
   # note that MathImages can supply altimg attributes
@@ -216,9 +215,8 @@ elsif($format eq 'xhtml'){
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html = 0;
-  if(!defined $stylesheet){
-    $stylesheet = "LaTeXML-xhtml.xsl";
-    unshift(@css,"core.css") if $defaultcss; }}
+  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
+    $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
 elsif($format eq 'xml'){}
 else {
   Error("Unrecognized target format: $format"); }
