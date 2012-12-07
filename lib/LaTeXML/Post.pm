@@ -260,7 +260,7 @@ sub rawIDSuffix { ''; }
 # so that cross-referencing in parallel markup can be effected.
 sub associateID {
   my($self,$node,$sourceid)=@_;
-  return $node unless $sourceid;
+  return $node unless $sourceid && ref $node;
   my $id = $sourceid.$self->IDSuffix;
   if(my $previous_ids = $$self{convertedIDs}{$sourceid}){
      $id = LaTeXML::Post::uniquifyID($sourceid,scalar(@$previous_ids),$self->IDSuffix); }
