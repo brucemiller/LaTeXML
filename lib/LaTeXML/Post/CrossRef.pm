@@ -71,13 +71,13 @@ sub fill_in_relations {
     if(my $entry = $db->lookup("ID:".$id)){
       # First, add the basic relations
       my $x;
-      # Should we have many up's or up, upup, upupup..?
+      # Apparently, "up", "up up", "up up up" is the desired form for html5
       my $xentry= $entry;
       my $rel = 'up';
       while(($x = $xentry->getValue('parent')) && ($xentry = $db->lookup("ID:".$x))){
 	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
 	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
-	  $rel .= 'up'; }}
+	  $rel .= ' up'; }}
       if($xentry && ($id ne $xentry->getValue('pageid'))){
 	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
       if(my $prev = $self->findPreviousPage($entry)){ # previous page
@@ -86,8 +86,11 @@ sub fill_in_relations {
 	$doc->addNavigation(next=>$next->getValue('pageid')); }
 
       # Now, dig around for other interesting related documents
-      # Use the types themselves as relations for any parents, uncles, etc !?!?!
+      # Use the entry types themselves for the relations
       $xentry=$entry;
+      # Firstly, look at siblings of this page, then at siblings of parent,
+      # then those of grandparent, etc.
+      # In a large/complex site, this gets way too much. But how to prune?
       while($xentry = $self->getParentPage($xentry)){
 	# any siblings of (grand)parent are "interesting" structural elements
 	# OR, even more interesting: the index, bibliography related to current page!
@@ -100,7 +103,7 @@ sub fill_in_relations {
 	    $doc->addNavigation($rel=>$sib_id); }
 	  else {		# Else, consider it as some sort of sidebar.
 	    $doc->addNavigation('sidebar'=>$sib_id); }}}
-      # Look at (only?) 1st level of pages below this one.
+      # Then Look at (only?) 1st level of pages below this one.
       foreach my $child ($self->getChildPages($entry)){
 	my $child_id = $child->getValue('pageid');
 	if($child->getValue('primary')){	     # If a primary page
