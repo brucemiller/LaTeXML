@@ -171,6 +171,8 @@ sub scanExternal {
   my $mod = $name; $mod =~ s/\.rn(g|c)$//;
   my $paths = [@LaTeXML::Model::RelaxNG::PATHS,@{$STATE->lookupValue('SEARCHPATHS')}];
   if(my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name,searchpaths=>$paths)){
+    my $uri = $schemadoc->URI;
+    NoteBegin("Loading RelaxNG schema from $uri");
     local @LaTeXML::Model::RelaxNG::PATHS
       = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
     my $node = $schemadoc->documentElement;
@@ -179,8 +181,11 @@ sub scanExternal {
 	my($prefix,$uri)=($ns->getLocalName,$ns->getData);
 	next if $uri =~ m|^http://relaxng.org|; # Ignore RelaxNG namespaces(!!)
 	$$self{model}->registerDocumentNamespace($prefix,$uri); }
-    (['module',$mod,$self->scanPattern($node,$inherit_ns)]); }
+    my $mod = (['module',$mod,$self->scanPattern($node,$inherit_ns)]);
+    NoteEnd("Loading RelaxNG schema from $uri");
+    $mod; }
   else {
+    Warn('expected',$name,undef,"Failed to find RelaxNG schema for name '$name'");
     (); }}
 
 sub getRelaxOp {

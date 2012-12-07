@@ -70,13 +70,9 @@ sub loadSchema {
   if(my $compiled = !$$self{no_compiled}
      && pathname_find($name, paths=>$STATE->lookupValue('SEARCHPATHS'),
 		      types=>['model'], installation_subdir=>'schema')){
-    NoteBegin("Loading compiled schema $compiled");
-    $self->loadCompiledSchema($compiled);
-    NoteEnd("Loading compiled schema $compiled"); }
+    $self->loadCompiledSchema($compiled); }
   else {
-    NoteBegin("Loading schema $name");
-    $$self{schema}->loadSchema; 
-    NoteEnd("Loading schema $name"); }
+    $$self{schema}->loadSchema; }
   $self->computeIndirect;
   $self->describeModel if $LaTeXML::Model::DEBUG;
   $$self{schema_loaded}=1;
@@ -101,6 +97,7 @@ sub compileSchema {
 
 sub loadCompiledSchema {
   my($self,$file)=@_;
+  NoteBegin("Loading compiled schema $file");
   open(MODEL,$file) or Fatal('I/O',$file,undef,"Cannot open Compiled Model $file for reading",$!);
   my $line;
   while($line = <MODEL>){
@@ -113,7 +110,8 @@ sub loadCompiledSchema {
       $self->registerDocumentNamespace($prefix,$namespace); }
     else {
       Fatal('internal',$file,undef,"Compiled model '$file' is malformatted at \"$line\""); }
-  }}
+  }
+  NoteEnd("Loading compiled schema $file"); }
 
 
 #**********************************************************************
