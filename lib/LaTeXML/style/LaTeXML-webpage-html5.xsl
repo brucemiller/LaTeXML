@@ -150,15 +150,20 @@
     </xsl:if>
   </xsl:template>
 
-  <!-- done in pieces so it's more easily customized -->
+  <!-- header/footer done in pieces so they're more easily customized:
+       Define your own, and you can still call header-navigation/footer-navigation if you want.
+       The test avoids an empty header/footer in default cases. -->
   <xsl:template name="header">
-    <xsl:text>&#x0A;</xsl:text>
-    <header class='header'>
-      <xsl:call-template name="header-navigation"/>
-    </header>
+    <xsl:if test="//ltx:navigation/ltx:ref">
+      <xsl:text>&#x0A;</xsl:text>
+      <header class='header'>
+	<xsl:call-template name="header-navigation"/>
+      </header>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="footer">
+    <!-- no test, since we'll default at least with logo -->
     <xsl:text>&#x0A;</xsl:text>
     <footer class='footer'>
       <xsl:call-template name="footer-navigation"/>	
