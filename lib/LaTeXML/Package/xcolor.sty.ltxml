@@ -397,7 +397,8 @@ DefPrimitive('\XC@definecolor[]{}[]{}{}',sub {
   # and return a box, so it can be recorded?
   # but we don't want the \XC@ version, and we're not handling the prefix anyway...
   Box(undef,undef,undef,
-      Invocation(T_CS('\definecolor'),$type,$name,$models,$specs)); });
+      Invocation(T_CS('\definecolor'),($type && $type->unlist ? $type : undef),
+		 $name,$models,$specs)); });
 
 DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
   my($stomach,$type,$name,$prefix,$models,$specs)=@_;
@@ -410,7 +411,8 @@ DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
   AssignValue('Boolean:xglobal@'=>0);
   Box(undef,undef,undef,
 #      Invocation(T_CS('\XC@providecolor'),$type,$name,$prefix,$models,$specs)); });
-      Invocation(T_CS('\providecolor'),$type,$name,$models,$specs)); });
+      Invocation(T_CS('\providecolor'),($type && $type->unlist ? $type : undef),
+		 $name,$models,$specs)); });
 
 # \colorlet[<type>]{<name>}[<num_model>]{<color>}
 DefPrimitive('\colorlet[]{}[]{}', sub {
