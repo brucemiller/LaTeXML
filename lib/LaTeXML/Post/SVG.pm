@@ -12,7 +12,6 @@
 package LaTeXML::Post::SVG;
 use strict;
 use Exporter;
-use LaTeXML::Global;
 use LaTeXML::Post;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Transform;
