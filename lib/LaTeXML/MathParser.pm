@@ -201,7 +201,7 @@ sub parse_rec {
      $document->appendTree($node,$result);
      $result = [element_nodes($node)]->[0]; }
     else {			# Replace the whole node for XMArg, XMWrap; preserve some attributes
-      NoteProgress($TAG_FEEDBACK{$tag}||'.') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
+      NoteProgressDetailed($TAG_FEEDBACK{$tag}||'.');
       # Copy all attributes (Annotate will sort out)
       $result = Annotate($result,
 			 map( (getQName($_)=>$_->getValue),
@@ -213,7 +213,7 @@ sub parse_rec {
     if($tag eq 'ltx:XMath'){
       NoteProgress('[F'.++$$self{n_parsed}.']'); }
     elsif($tag eq 'ltx:XMArg'){
-      NoteProgress('-a') if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1; }
+      NoteProgressDetailed('-a'); }
     $$self{failed}{$tag}++;
     undef; }}
 
