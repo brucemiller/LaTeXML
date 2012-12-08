@@ -47,7 +47,8 @@ our  @EXPORT = (# Global STATE; This gets bound by LaTeXML.pm
 		# Fonts
 		qw( &Color &Black &White),
 		# Error & Progress reporting
-		qw( &NoteProgress &NoteBegin &NoteEnd &Fatal &Error &Warn &Info),
+		qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd
+		    &Fatal &Error &Warn &Info),
 		# And some generics
 		qw(&Stringify &ToString &Revert &Equals),
 		# And some really simple useful stuff.
@@ -243,6 +244,9 @@ sub White () { $CONSTANT_WHITE; }
 sub NoteProgress { 
   print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
   return; }
+sub NoteProgressDetailed { 
+  print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
+  return; }
 
 our %note_timers=();
 sub NoteBegin {
@@ -285,7 +289,6 @@ our $MAXERRORS=100;
 # Should be fatal if strict is set, else warn.
 sub Error {
   my($category,$object,$where,$message,@details)=@_;
-  my($msg)=@_;
   my $state = $LaTeXML::Global::STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if($LaTeXML::Global::STATE->lookupValue('STRICT')){
@@ -302,7 +305,6 @@ sub Error {
 # Warning message; results may be OK, but somewhat unlikely
 sub Warn {
   my($category,$object,$where,$message,@details)=@_;
-  my($msg)=@_;
   my $state = $LaTeXML::Global::STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
@@ -315,7 +317,6 @@ sub Warn {
 # but the message may give clues about subsequent warnings or errors
 sub Info {
   my($category,$object,$where,$message,@details)=@_;
-  my($msg)=@_;
   my $state = $LaTeXML::Global::STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
@@ -592,6 +593,12 @@ the input context, unless verbosity is quiet.
 =item C<< NoteProgress($message); >>
 
 Prints C<$message> unless the verbosity level below 0.
+Typically just a short mark to indicate motion, but can be longer;
+provide your own newlines, if needed.
+
+=item C<< NoteProgressDetailed($message); >>
+
+Like C<NoteProgress>, but for noiser progress, only prints when verbosity >= 1.
 
 =back
 
