@@ -230,7 +230,7 @@ sub pmml_top {
   my($self,$node,$style)=@_;
   # These bindings reflect the style, font, size & color that we are displaying in.
   # Ie. if you want to draw in that size & color, you'll get it automatically.
-  local $LaTeXML::MathML::STYLE = $style;
+  local $LaTeXML::MathML::STYLE = $style || 'text';
   local $LaTeXML::MathML::FONT    = find_inherited_attribute($node,'font');
   $LaTeXML::MathML::FONT = undef
     if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT}; # verify sane font
