@@ -12,18 +12,19 @@
 
 package LaTeXML::Post::MathImages;
 use strict;
+use LaTeXML::Post;
 use base qw(LaTeXML::Post::LaTeXImages);
 
 sub new {
   my($class,%options)=@_;
-  $options{resourceDirectory}='mi' unless defined $options{resourceDirectory};
-  $options{resourcePrefix}='mi'    unless defined $options{resourcePrefix};
+  $options{resource_directory}='mi' unless defined $options{resource_directory};
+  $options{resource_prefix}='mi'    unless defined $options{resource_prefix};
   $class->SUPER::new(%options); }
 
 #======================================================================
 
 # Return the list of Math nodes.
-sub findTeXNodes { $_[1]->findnodes('//ltx:Math'); }
+sub toProcess { $_[1]->findnodes('//ltx:Math'); }
 
 # Return the TeX string to format the image for this node.
 sub extractTeX {
