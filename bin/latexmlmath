@@ -142,16 +142,20 @@ my $doc = $digested && LaTeXML::Post::Document->new($converted,nocache=>1);
 # Since we can't easily find & extract all the various formats at once,
 # let's just process each one separately.
 
+our $mmlURI = "http://www.w3.org/1998/Math/MathML";
+our $omURI  = "http://www.openmath.org/OpenMath";
+
 # Default to pmml to stdout, if nothing else specified.
 $pmml = '-' unless (defined $mathimage || defined $pmml || defined $cmml || defined $om || defined $xmath);
 
-our %OPTIONS = (verbosity=>$verbosity||0);
+our %OPTIONS = ();
 
 
 # I wonder if this stuff even will be needed,
 # once fragid is sorted out?
 my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
-($doc) = LaTeXML::Post::ProcessChain($doc,
+my $post = LaTeXML::Post->new(verbosity=>$verbosity||0);
+($doc) = $post->ProcessChain($doc,
      LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS),
      LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS));
 
@@ -161,7 +165,7 @@ if($mathimage){
   $mathimage =~ s/\.(png|gif|jpg|jpeg)$//;
   my $imagetype = $1 || 'png';
 #  require 'LaTeXML/Post/MathImages.pm';
-  my($post) = LaTeXML::Post::ProcessChain($doc,
+  my($result) = $post->ProcessChain($doc,
       DirectMathImages->new(magnification=>$mag,
 			    imagename=>$mathimage, imagetype=>$imagetype,
 			    %OPTIONS));
@@ -170,32 +174,30 @@ if($mathimage){
 
 if($pmml){
   require 'LaTeXML/Post/MathML.pm';
-  my($post) = LaTeXML::Post::ProcessChain($doc,
+  my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::MathML::Presentation->new(
                     (defined $linelength ? (linelength=>$linelength):()),
                     ($plane1 ? (plane1=>1):()),
                     ($hackplane1 ? (hackplane1=>1):()),
 		    %OPTIONS));
-
-# outputXML($post->findnode('//ltx:document'),'-');
-  outputXML($post->findnode('//m:math'), $pmml); }
+  outputXML($result->findnode('//m:math'), $pmml, $mmlURI); }
 
 if($cmml){
   require 'LaTeXML/Post/MathML.pm';
-  my($post) = LaTeXML::Post::ProcessChain($doc,
+  my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::MathML::Content->new(%OPTIONS));
-  outputXML($post->findnode('//m:math'), $cmml); }
+  outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
 
 if($om){
   require 'LaTeXML/Post/OpenMath.pm';
-  my($post) = LaTeXML::Post::ProcessChain($doc,
+  my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::OpenMath->new(%OPTIONS));
-  outputXML($post->findnode('//om:OMOBJ'), $om); }
+  outputXML($result->findnode('//om:OMOBJ'), $om, $omURI); }
 
 if($xmath){
   # extract the xmath
-  my($post) = LaTeXML::Post::ProcessChain($doc);
-  outputXML($post->findnode('//ltx:XMath'), $xmath); }
+  my($result) = $post->ProcessChain($doc);
+  outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
 print STDERR "\nConversion complete\n" unless $verbosity < 0;
 
@@ -204,10 +206,12 @@ print STDERR "\nConversion complete\n" unless $verbosity < 0;
 #======================================================================
 
 sub outputXML {
-  my($xml,$destination)=@_;
+  my($xml,$destination,$defaulturi)=@_;
   # Need to move the node to a new document to set up namespaces
   my $newdoc = XML::LibXML::Document->new("1.0","UTF-8");
   $newdoc->setDocumentElement($xml);
+  if(my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)){
+     $xml->setNamespaceDeclPrefix($oldprefix,undef); }
   my $serialized = $newdoc->toString(1);
   if($destination eq '-'){
     print $serialized; }
