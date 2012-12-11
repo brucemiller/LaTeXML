@@ -12,11 +12,11 @@
 package LaTeXML::Post::SVG;
 use strict;
 use Exporter;
-use LaTeXML::Post;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $svgURI  = 'http://www.w3.org/2000/svg';
@@ -26,25 +26,21 @@ my $NR = '[\-\+\d\.e]+';
 ####################################
 ## main function
 ####################################
-sub process {
-  my ($self, $doc) = @_;
-  local $LaTeXML::Post::SVG::DOCUMENT = $doc;
-  if(my @svg = $self->find_svg_nodes($doc)){
-    $self->Progress($doc,"Converting ".scalar(@svg)." pictures");
-    $doc->addNamespace($svgURI,'svg');
-    map(ProcessSVG($_), @svg);
-    $doc->adjust_latexml_doctype('SVG'); } # Add SVG if LaTeXML dtd.
-  $doc; }
-
 # We need to find potential nodes to convert,
-# but don't want those already containing SVG.
-# sub find_svg_nodes { $_[1]->findnodes('//ltx:picture[not(svg:svg)]'); }
+# but don't want those already containing proper SVG.
 # However, we may not have svg as a registered namespace, so...
-sub find_svg_nodes {
+sub toProcess {
     $_[1]->findnodes("//ltx:picture[child::*[not(local-name()='svg' and namespace-uri()='$svgURI')]]"); }
 
+sub process {
+  my ($self, $doc, @svg) = @_;
+  $doc->addNamespace($svgURI,'svg');
+  map(ProcessSVG($_), @svg);
+  $doc->adjust_latexml_doctype('SVG');  # Add SVG if LaTeXML dtd.
+  $doc; }
+
 sub getQName {
-  $LaTeXML::Post::SVG::DOCUMENT->getQName(@_); }
+  $LaTeXML::Post::DOCUMENT->getQName(@_); }
 
 ####################################
 ## fixes an svg node
