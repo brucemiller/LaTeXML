@@ -12,18 +12,20 @@
 
 package LaTeXML::Post::PictureImages;
 use strict;
+use LaTeXML::Post;
 use base qw(LaTeXML::Post::LaTeXImages);
 
 sub new {
   my($class,%options)=@_;
-  $options{resourceDirectory}='pic' unless defined $options{resourceDirectory};
-  $options{resourcePrefix}='pic'    unless defined $options{resourcePrefix};
+  $options{resource_directory}='pic' unless defined $options{resource_directory};
+  $options{resource_prefix}='pic'    unless defined $options{resource_prefix};
+  $options{use_dvipng} = 0 unless defined $options{use_dvipng};
   $class->SUPER::new(%options); }
 
 #======================================================================
 
 # Return the list of Picture nodes.
-sub findTeXNodes { $_[1]->findnodes('//ltx:picture'); }
+sub toProcess { $_[1]->findnodes('//ltx:picture'); }
 
 # Return the TeX string to format the image for this node.
 sub extractTeX {
