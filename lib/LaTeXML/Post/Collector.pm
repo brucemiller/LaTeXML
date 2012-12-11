@@ -14,7 +14,8 @@ use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 # Options:
 #   scanner: pass in a scanner to scan what we've just built
@@ -90,7 +91,7 @@ sub makeSubCollectionDocuments {
 
 sub rescan {
   my($self,$doc)=@_;
-  ($$self{scanner} ? $$self{scanner}->process($doc) : $doc); }
+  ($$self{scanner} ? $$self{scanner}->process($doc,$$self{scanner}->toProcess($doc)) : $doc); }
 
 # If the main document is named "index", (like index.html) presumably this collection
 # will be contained in its own directory, so the sub document names can be short.
