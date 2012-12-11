@@ -11,10 +11,12 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  perl(ExtUtils::MakeMaker)
 BuildRequires:  perl(Parse::RecDescent)
+BuildRequires:  perl(File::Which)
 BuildRequires:  perl(Test::Simple)
 BuildRequires:  perl(XML::LibXML) >= 1.61
 BuildRequires:  perl(XML::LibXSLT) >= 1.58
 Requires:       perl(Parse::RecDescent)
+Requires:       perl(File::Which)
 Requires:       perl(Test::Simple)
 Requires:       perl(XML::LibXML) >= 1.61
 Requires:       perl(XML::LibXSLT) >= 1.58
