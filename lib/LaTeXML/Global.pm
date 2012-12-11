@@ -251,15 +251,17 @@ sub NoteProgressDetailed {
 our %note_timers=();
 sub NoteBegin {
   my($state)=@_;
-  $note_timers{$state}=[Time::HiRes::gettimeofday];
-  print STDERR "\n($state..." if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0; }
+  if($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0){
+    $note_timers{$state}=[Time::HiRes::gettimeofday];
+    print STDERR "\n($state..."; }}
 
 sub NoteEnd {
   my($state)=@_;
   if(my $start = $note_timers{$state}){
-    my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
     undef $note_timers{$state};
-    print STDERR sprintf(" %.2f sec)",$elapsed) if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0; }}
+    if($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0){
+      my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
+      print STDERR sprintf(" %.2f sec)",$elapsed); }}}
 
 sub Fatal { 
   my($category,$object,$where,$message,@details)=@_;
