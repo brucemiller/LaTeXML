@@ -14,86 +14,163 @@ package LaTeXML::Post;
 use strict;
 use Time::HiRes;
 use Encode;
-use LaTeXML::Util::Pathname;
+use base qw(Exporter);
+our @EXPORT = ( qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd
+		    &Fatal &Error &Warn &Info));
 
 sub new {
   my($class,%options)=@_;
-  my $self = bless {%options}, $class; 
+  my $self = bless {status=>{}, %options}, $class; 
   $$self{verbosity} = 0 unless defined $$self{verbosity};
-  $$self{resourceDirectory} = $options{resourceDirectory};
-  $$self{resourcePrefix}    = $options{resourcePrefix};
   $self; }
-
-sub getNamespace            { $_[0]->{namespace} || "http://dlmf.nist.gov/LaTeXML"; }
-
-#======================================================================
-# abstract:
-sub process {
-  my($self,$doc)=@_;
-  $self->Error("This post-processor does not implement ->process(\$doc);!");
-  $doc; }
 
 #======================================================================
 sub ProcessChain {
-  my($doc,@postprocessors)=@_;
+  my($self,$doc,@postprocessors)=@_;
+  local $LaTeXML::POST = $self;
+  local $SIG{__DIE__}  = sub { Fatal('perl','die',undef,"Perl died",@_); };
+  local $SIG{INT}      = sub { Fatal('perl','interrupt',undef,"LaTeXML was interrupted",@_); };
+  local $SIG{__WARN__} = sub { Warn('perl','warn',undef,"Perl warning",@_); };
+  local $LaTeXML::Post::NOTEINFO = undef;
+  local $LaTeXML::Post::DOCUMENT = $doc;
   my @docs = ($doc);
+  NoteBegin("post-processing");
   foreach my $processor (@postprocessors){
     local $LaTeXML::Post::PROCESSOR = $processor;
-    $processor->ProgressDetailed($doc,"starting...");
-    my $t0 = [Time::HiRes::gettimeofday];
     my @newdocs = ();
     foreach my $doc (@docs){
       local $LaTeXML::Post::DOCUMENT = $doc;
-      push(@newdocs, $processor->process($doc)); }
-    @docs = @newdocs;
-    my $elapsed = Time::HiRes::tv_interval($t0,[Time::HiRes::gettimeofday]);
-## not portable enough...
-##    my $mem =  `ps -p $$ -o size=`; chomp($mem);
-##    $processor->Progress($doc,sprintf(" %.2f sec; $mem KB",$elapsed));
-    $processor->Progress($doc,"done ".sprintf(" %.2f sec",$elapsed));
-  }
+      if(my @nodes = grep($_,$processor->toProcess($doc))){ # If there are nodes to process
+	my $n = scalar(@nodes);
+	my $msg = ($n > 1 ? "$n to process" : 'processing');
+	NoteBegin($msg);
+	push(@newdocs, $processor->process($doc,@nodes));
+	NoteEnd($msg); }
+      else {
+	push(@newdocs,$doc); }}
+    @docs = @newdocs; }
+  NoteEnd("post-processing");
   @docs; }
 
+sub getStatusMessage {
+  my($self)=@_;
+  my $status = $$self{status};
+  my @report=();
+  push(@report, "$$status{warning} warning".($$status{warning}>1?'s':'')) if $$status{warning};
+  push(@report, "$$status{error} error".($$status{error}>1?'s':''))       if $$status{error};
+  push(@report, "$$status{fatal} fatal error".($$status{fatal}>1?'s':'')) if $$status{fatal};
+  join('; ', @report) || 'No obvious problems'; }
+
 #======================================================================
+# Error & Progress reporting.
+# Designed to mimic Behaviour & API in Conversion phase.
+# [maybe will someday be (re)unified!]
+
+sub NoteProgress {         print STDERR @_ if getVerbosity() >= 0; }
+sub NoteProgressDetailed { print STDERR @_ if getVerbosity() >= 1; }
+
+our %note_timers=();
+sub NoteBegin {
+  my($op)=@_;
+  if(getVerbosity() >= 0){
+    my $proc = ($LaTeXML::Post::PROCESSOR && (ref $LaTeXML::Post::PROCESSOR)) || '';
+    $proc =~ s/^LaTeXML::Post:://;
+    my $doc = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination)|| '';
+    # Note when this processor started on this document doing this operation.
+    my $key = $proc.' '.$doc.' '.$op;
+    $note_timers{$key}=[Time::HiRes::gettimeofday];
+    my($prevproc,$prevdoc,$prevop)=@{ $LaTeXML::NOTEINFO || ['','',''] };
+    my $msg = join(' ', ($proc && ($proc ne $prevproc) ? ($proc):()),
+		   ($doc && ($doc ne $prevdoc) ? ($doc):()),
+		   ($op && ($op ne $prevop) ? ($op):()));
+    $LaTeXML::Post::NOTEINFO = [$proc,$doc,$op];
+    print STDERR "\n($msg..."; }}
+
+sub NoteEnd {
+  my($op)=@_;
+  if(getVerbosity() >= 0){
+    my $p = ($LaTeXML::Post::PROCESSOR && (ref $LaTeXML::Post::PROCESSOR)) || '';
+    my $d = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination)|| '';
+    my $key = $p.' '.$d.' '.$op;
+    if(my $start = $note_timers{$key}){
+      undef $note_timers{$key};
+      my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
+      print STDERR sprintf(" %.2f sec)",$elapsed); }}}
+
+sub Fatal { 
+  my($category,$object,$where,$message,@details)=@_;
+  my $verbosity = getVerbosity();
+  if(!$LaTeXML::Error::InHandler && defined($^S)){ # Careful about recursive call!
+    $LaTeXML::POST && $$LaTeXML::POST{status}{fatal}++;
+    $message
+      = generateMessage("Fatal:".$category.":".ToString($object),$where,$message,1,
+			# ?!?!?!?!?!
+			# or just verbosity code >>>1 ???
+##			($verbosity > 0 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()),
+			@details);
+    print STDERR "\nATTEMPTED FATAL $message\n";
+  }
+  else {			# If we ARE in a recursive call, the actual message is $details[0]
+    $message = $details[0] if $details[0]; }
+  local $LaTeXML::Error::InHandler=1;
+  die $message; }
+
+# Note that "100" is hardwired into TeX, The Program!!!
+our $MAXERRORS=100;
+
+# Should be fatal if strict is set, else warn.
 sub Error {
-  my($self,$doc,$msg)=@_;
-  my $dest= $doc && $doc->getDestination;
-  die "".(ref $self).($dest ? "[".$dest."]" : '')." Error: $msg"; }
+  my($category,$object,$where,$message,@details)=@_;
+  $LaTeXML::POST && $$LaTeXML::POST{status}{error}++;
+  print STDERR generateMessage("Error:".$category.":".ToString($object),$where,$message,1,@details)
+    unless getVerbosity() < -2;
+  Fatal('too_many_errors',$MAXERRORS,$where,"Too many errors (> $MAXERRORS)!")
+    if $LaTeXML::POST && ($$LaTeXML::POST{status}{error} > $MAXERRORS); }
 
+# Warning message; results may be OK, but somewhat unlikely
 sub Warn {
-  my($self,$doc,$msg)=@_;
-  my $dest= $doc && $doc->getDestination;
-  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": Warning: $msg\n" if $$self{verbosity}>-1; }
+  my($category,$object,$where,$message,@details)=@_;
+  $LaTeXML::POST && $$LaTeXML::POST{status}{warning}++;
+  print STDERR generateMessage("Warning:".$category.":".ToString($object),
+			       $where,$message,0, @details)
+    unless getVerbosity() < -1; }
 
-sub Progress {
-  my($self,$doc,$msg)=@_;
-  my $dest= $doc && $doc->getDestination;
-  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": $msg\n" if $$self{verbosity}>0; }
+# Informational message; results likely unaffected
+# but the message may give clues about subsequent warnings or errors
+sub Info {
+  my($category,$object,$where,$message,@details)=@_;
+  $LaTeXML::POST && $$LaTeXML::POST{status}{info}++;
+  print STDERR generateMessage("Info:".$category.":".ToString($object),$where,$message,0, @details)
+    unless getVerbosity() < 0; }
 
-sub ProgressDetailed {
-  my($self,$doc,$msg)=@_;
-  my $dest= $doc && $doc->getDestination;
-  print STDERR "".(ref $self).($dest ? "[".$dest."]" : '').": $msg\n" if $$self{verbosity}>1; }
+#----------------------------------------------------------------------
+# Support for above.
+our %NOBLESS= map(($_=>1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
 
-#======================================================================
-# Some postprocessors will want to create a bunch of "resource"s,
-# such as generated or transformed image files, or other data files.
-# These should return a pathname, relative to the document's destination,
-# for storing a resource associated with $node.
-# Will use the Post option resourceDirectory
-sub desiredResourcePathname {
-  my($self,$doc,$node,$source,$type)=@_;
-  undef; }
+sub ToString {
+  my($object)=@_;
+  my $r = ref $object;
+  ($r && !$NOBLESS{$r} && $object->can('toString') ? $object->toString : "$object"); }
 
-sub generateResourcePathname {
-  my($self,$doc,$node,$source,$type)=@_;
-  my $subdir = $$self{resourceDirectory} || '';
-  my $prefix = $$self{resourcePrefix} || "x";
-  my $counter = join('_', "_max",$subdir,$prefix,"counter_");
-  my $n = $doc->cacheLookup($counter) || 0;
-  my $name = $prefix . ++$n;
-  $doc->cacheStore($counter,$n); 
-  pathname_make(dir=>$subdir, name=>$name, type=>$type); }
+sub getVerbosity {
+  ($LaTeXML::POST && $$LaTeXML::POST{verbosity})|| 0; }
+
+# mockup similar to the one in Error.pm
+# We'll want to make that one do both, or maybe let this one do stack trace or...
+sub generateMessage {
+  my($errorcode,$where,$message,$long,@extra)=@_;
+  my $docloc = ($LaTeXML::Post::PROCESSOR
+		? "Postprocessing ".(ref $LaTeXML::Post::PROCESSOR)
+		: "")
+    .($LaTeXML::Post::DOCUMENT
+      ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination
+      : "")
+      .(defined $where ? ToString($where) : '');
+  ($message,@extra) = grep($_ ne '',map(split("\n",$_),$message,@extra));
+  my @lines=($errorcode.' '.$message,
+	     ($docloc ? ($docloc):()),
+	     @extra);
+  "\n".join("\n\t",@lines)."\n"; }
 
 #======================================================================
 # Given a base id, a counter (eg number of duplications of id) and a suffix,
@@ -107,9 +184,59 @@ sub uniquifyID {
   $baseid . $uniq . ($suffix||''); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package LaTeXML::Post::Processor;
+use strict;
+use LaTeXML::Post;
+use LaTeXML::Common::XML;
+use LaTeXML::Util::Pathname;
+
+# An Abstract Post Processor
+sub new {
+  my($class,%options)=@_;
+  my $self = bless {%options}, $class; 
+  $$self{verbosity} = 0 unless defined $$self{verbosity};
+  $$self{resource_directory} = $options{resource_directory};
+  $$self{resource_prefix}    = $options{resource_prefix};
+  $self; }
+
+# Return the nodes to be processed; by default the document element.
+# This allows processors to focus on specific kinds of nodes,
+# or to skip processing if there are none to process.
+sub toProcess {
+  my($self,$doc)=@_;
+  $doc->getDocumentElement; }
+
+# This must be defined to do whatever processing is needed to @toprocess nodes.
+sub process {
+  my($self,$doc,@toprocess)=@_;
+  Fatal("misdefined",$self,$doc,"This post-processor is abstract; does not implement ->process");
+  $doc; }
+
+#======================================================================
+# Some postprocessors will want to create a bunch of "resource"s,
+# such as generated or transformed image files, or other data files.
+# These should return a pathname, relative to the document's destination,
+# for storing a resource associated with $node.
+# Will use the Post option resource_directory
+sub desiredResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  undef; }
+
+sub generateResourcePathname {
+  my($self,$doc,$node,$source,$type)=@_;
+  my $subdir = $$self{resource_directory} || '';
+  my $prefix = $$self{resource_prefix} || "x";
+  my $counter = join('_', "_max",$subdir,$prefix,"counter_");
+  my $n = $doc->cacheLookup($counter) || 0;
+  my $name = $prefix . ++$n;
+  $doc->cacheStore($counter,$n); 
+  pathname_make(dir=>$subdir, name=>$name, type=>$type); }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::MathProcessor;
 use strict;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 use LaTeXML::Common::XML;
 
 # This is an abstract class; A complete MathProcessor will need to define:
@@ -126,29 +253,34 @@ use LaTeXML::Common::XML;
 # Top level processing finds and converts all math nodes.
 # Invokes preprocess on each before doing the conversion in case
 # analysis is needed.
-sub process {
+sub toProcess {
   my($self,$doc)=@_;
-  if(my @maths = $self->find_math_nodes($doc)){
-    $self->Progress($doc,"Converting ".scalar(@maths)." formulae");
-    local $LaTeXML::Post::MATHPROCESSOR = $self;
-    $self->preprocess($doc,@maths);
-    if($$self{parallel}){
-      foreach my $proc (@{$$self{secondary_processors}}){
-	local $LaTeXML::Post::MATHPROCESSOR = $proc;
-	$proc->preprocess($doc,@maths); }}
-    # Re-Fetch the math nodes, in case preprocessing has messed them up.
-    @maths = $self->find_math_nodes($doc);
+  $doc->findnodes('//ltx:Math'); }
 
-##    foreach my $math (@maths){
-    ## Do in reverse, since (in LaTeXML) we allow math nested within text within math.
-    ## So, we want to converted any nested expressions first, so they get carried along
-    ## with the outer ones.
-    foreach my $math (reverse(@maths)){
-      # If parent is MathBranch, which branch number is it?
-      # (note: the MathBranch will be in a ltx:MathFork, with a ltx:Math being 1st child)
-      my @preceding = $doc->findnodes("parent::ltx:MathBranch/preceding-sibling::*",$math);
-      local $LaTeXML::Post::MathProcessor::FORK = scalar(@preceding);
-      $self->processNode($doc,$math); }}
+sub process {
+  my($self,$doc,@maths)=@_;
+  local $LaTeXML::Post::MATHPROCESSOR = $self;
+  $self->preprocess($doc,@maths);
+  if($$self{parallel}){
+    my @secondaries = @{$$self{secondary_processors}};
+    LaTeXML::Post::NoteProgressDetailed(" [parallel ".
+					join(',',map(s/^LaTeXML::Post:://&&$_||$_,
+						     map(ref $_,@secondaries)))."]");
+    foreach my $proc (@secondaries){
+      local $LaTeXML::Post::MATHPROCESSOR = $proc;
+      $proc->preprocess($doc,@maths); }}
+  # Re-Fetch the math nodes, in case preprocessing has messed them up!!!
+  @maths = $self->toProcess($doc);
+
+  ## Do in reverse, since (in LaTeXML) we allow math nested within text within math.
+  ## So, we want to converted any nested expressions first, so they get carried along
+  ## with the outer ones.
+  foreach my $math (reverse(@maths)){
+    # If parent is MathBranch, which branch number is it?
+    # (note: the MathBranch will be in a ltx:MathFork, with a ltx:Math being 1st child)
+    my @preceding = $doc->findnodes("parent::ltx:MathBranch/preceding-sibling::*",$math);
+    local $LaTeXML::Post::MathProcessor::FORK = scalar(@preceding);
+    $self->processNode($doc,$math); }
 
   # Experimentally, cross reference ??? (or clearer name?)
   if($$self{parallel}){
@@ -161,7 +293,6 @@ sub process {
     if($proc1 && $proc2){
       $proc1->addCrossrefs($doc,$proc2);
       $proc2->addCrossrefs($doc,$proc1); }}
-
   $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -171,8 +302,6 @@ sub setParallel {
   $$self{parallel}=1;
   map($$_{is_secondary}=1, @moreprocessors); # Mark the others as secondary
   $$self{secondary_processors} = [@moreprocessors]; }
-
-sub find_math_nodes {  $_[1]->findnodes('//ltx:Math'); }
 
 # Optional; if you want to do anything before translation
 sub preprocess {
@@ -230,13 +359,18 @@ sub outerWrapper {
 # $style is either display or inline
 sub convertNode {
   my($self,$doc,$node,$style)=@_;
-  $self->Error("Conversion has not been defined for this MathProcessor"); }
+  Fatal('misdefined',(ref $self),undef,
+	"Abstract package: math conversion has not been defined for this MathProcessor"); }
 
 # This should be implemented by potential Primaries
 # Maybe the caller of this should check the namespaces, and call wrapper if needed?
 sub combineParallel {
   my($self,$doc,$math,$xmath, $primary, @secondaries)=@_;
-  $self->Error("Combining Parallel markup has not been defined for this MathProcessor"); }
+  LaTeXML::Post::Error('misdefined',(ref $self),undef,
+	"Abstract package: combining parallel markup has not been defined for this MathProcessor",
+	"dropping the extra markup"); 
+  $primary; }
+
 
 # When converting an XMath node (with an id) to some other format,
 # we will generate an id for the new node.
@@ -305,7 +439,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
 use DB_File;
 use Unicode::Normalize;
-
+use LaTeXML::Post;		# to import error handling...
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>$NSURI);
 
@@ -331,8 +465,9 @@ sub new {
   # Check consistency of siteDirectory (providing there's a destinationDirectory)
   if($data{destinationDirectory}){
     if($data{siteDirectory}){
-      (bless {},$class)->Error("The destination directory ($data{destinationDirectory})"
-		   ." must be within the siteDirectory ($data{siteDirectory})")
+      Fatal('unexpected',$data{destinationDirectory},undef,
+	    "The destination directory ($data{destinationDirectory})"
+	    ." must be within the siteDirectory ($data{siteDirectory})")
 	unless pathname_is_contained($data{destinationDirectory},$data{siteDirectory}); }
     else {
       $data{siteDirectory} = $data{destinationDirectory}; }}
@@ -371,10 +506,6 @@ sub new {
   # Possibly disable permanent cache?
   $$self{cache} = {} if $data{nocache};
   $self; }
-
-sub Error {
-  my($self,$msg)=@_;
-  die "".(ref $self)." Error: $msg"; }
 
 sub newFromFile {
   my($class,$source,%options)=@_;
@@ -444,7 +575,8 @@ sub checkDestination {
   my $dest = pathname_concat($self->getDestinationDirectory,$reldest);
   if(my $destdir = pathname_directory($dest)){
     pathname_mkdir($destdir)
-      or return $self->Error("Could not create directory $destdir for $reldest: $!"); }
+      or return Fatal("I/O",$destdir,undef,
+		      "Could not create directory $destdir for $reldest: $!"); }
   $dest; }
 
 #======================================================================
@@ -457,22 +589,26 @@ sub validate {
       $schema = $2; }}
   if($schema){			# Validate using rng
     my $rng = LaTeXML::Common::XML::RelaxNG->new($schema,searchpaths=>[$self->getSearchPaths]);
-    die "Failed to load RelaxNG schema $schema:\n$@" unless $rng;
+    LaTeXML::Post::Error('I/O',$schema,undef, "Failed to load RelaxNG schema $schema"."Response was: $@")
+      unless $rng;
     eval { $rng->validate($$self{document}); };
-    if($@){
-#      die "Error during RelaxNG validation  (".$schema."):\n".substr($@,0,200); }}
-      die "Error during RelaxNG validation  (".$schema."):\n".$@
-	."\nEither fix the source document, or use the --novalidate option\n"; }}
+    LaTeXML::Post::Error("malformed",'document',undef,
+	  "Document fails RelaxNG validation (".$schema.")",
+	  "Validation reports: ".$@) if $@; }
   elsif(my $decldtd = $$self{document}->internalSubset){ # Else look for DTD Declaration
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId,$decldtd->systemId);
     if(!$dtd){
-      die "Failed to load DTD ".$decldtd->publicId." at ".$decldtd->systemId; }
-    eval { $$self{document}->validate($dtd); };
-    if($@){
-      die "Error during DTD validation  (".$decldtd->systemId."):\n$@"
-	."\nEither fix the source document, or use the --novalidate option\n"; }}
+      LaTeXML::Post::Error("I/O",$decldtd->publicId,undef,
+	    "Failed to load DTD ".$decldtd->publicId." at ".$decldtd->systemId,
+	    "skipping validation"); }
+    else {
+      eval { $$self{document}->validate($dtd); };
+      LaTeXML::Post::Error("malformed",'document',undef,
+	    "Document failed DTD validation (".$decldtd->systemId.")",
+	    "Validation reports: ".$@) if $@; }}
   else {			# Nothing found to validate with
-    warn "No Schema or DTD found for this document";  }
+    LaTeXML::Post::Warn("expected",'schema',undef,
+	 "No Schema or DTD found for this document");  }
 }
 
 sub idcheck {
@@ -486,12 +622,14 @@ sub idcheck {
     $idcache{$id}=1; }
   foreach my $id (keys %{$$self{idcache}}){
     $missing{$id}=1 unless $idcache{$id}; }
-  if((keys %dups)||(keys %missing)){
-    print STDERR "IDCHECK ($$self{destination})"
-      ." duplicated: ".join(',',keys %dups)
-      ." missing: ".join(',',keys %missing)."\n";}
-  else {
-    print STDERR "IDCHECK ($$self{destination}) OK\n"; }}
+  LaTeXML::Post::Warn("unexpected",'ids',undef,
+		      "IDs were duplicated in cache for ".$self->siteRelativeDestination,
+		      join(',',keys %dups))
+      if keys %dups;
+  LaTeXML::Post::Warn("expected",'ids',undef,"IDs were cached for ".$self->siteRelativeDestination
+		      ." but not in document",
+		      join(',',keys %missing))
+      if keys %missing; }
 
 #======================================================================
 sub findnodes {
@@ -536,7 +674,8 @@ sub getQName {
       # Register it, but Don't add it to the document!!! (or xpath, for that matter)
       $$self{namespaces}{$prefix}=$nsuri;
       $$self{namespaceURIs}{$nsuri}=$prefix;
-      warn "Missing namespace prefix for $nsuri; using $prefix internally";
+      LaTeXML::Post::Warn('expected','prefix',undef,
+	   "Missing namespace prefix for '$nsuri'; using '$prefix' internally");
       $prefix.":".$node->localname; }}}
 
 #======================================================================
@@ -562,7 +701,7 @@ sub addNodes {
       my($tag,$attributes,@children)=@$child;
       my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
       my $nsuri = $prefix && $$self{namespaces}{$prefix};
-      warn "No namespace on $tag" unless $nsuri;
+      LaTeXML::Post::Warn('expected','namespace',undef,"No namespace on '$tag'") unless $nsuri;
       my $new = $node->addNewChild($nsuri,$localname);
       if($attributes){
 	foreach my $key (keys %$attributes){
@@ -612,7 +751,7 @@ sub addNodes {
 	$node->appendTextNode($child->textContent); }
     }
     elsif(ref $child){
-      warn "Dont know how to add $child to $node; ignoring"; }
+      LaTeXML::Post::Warn('misdefined',$child,undef,"Dont know how to add $child to $node; ignoring"); }
     elsif(defined $child){
       $node->appendTextNode($child); }}}
 
@@ -685,54 +824,6 @@ sub cloneNodes {
 
 #======================================================================
 
-sub XXXXnewDocument {
-  my($self,$root,%options)=@_;
-  my $xmldoc = XML::LibXML::Document->new("1.0","UTF-8");
-  my($public_id,$system_id);
-  if(my $dtd = $$self{document}->internalSubset){
-    if($dtd->toString
-       =~ /^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\2]*)\2\s+(\"|\')([^\4]*)\4>$/){
-      ($public_id,$system_id)=($3,$5); }}
-  my $parent_id;
-  if(ref $root eq 'ARRAY'){
-    my($tag,$attributes,@children)=@$root;
-    my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
-    $xmldoc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
-    my $nsuri = $$self{namespaces}{$prefix};
-    my $node = $xmldoc->createElementNS($nsuri,$localname);
-    $xmldoc->setDocumentElement($node);
-    map( $node->setAttribute($_=>$$attributes{$_}),keys %$attributes) if $attributes;
-    $self->addNodes($node,@children); }
-  elsif(ref $root eq 'XML::LibXML::Element'){
-    $parent_id = $self->findnode('ancestor::*[@id]',$root);
-    $parent_id = $parent_id->getAttribute('id') if $parent_id;
-    my $localname = $root->localname;
-    $xmldoc->createInternalSubset($localname,$public_id,$system_id) if $public_id;
-    # Make a copy of $root be the new element node, carefully w.r.t. namespaces.
-    # Seems that only importNode (not adopt) works correctly,
-    # PROVIDED we also set the namespace.
-    my $node = $xmldoc->importNode($root);
-    $xmldoc->setDocumentElement($node); 
-    $xmldoc->documentElement->setNamespace($root->namespaceURI,$root->prefix,1); }
-  else {
-    die "Dont know how to use $root as document element"; }
-
-  my $root_id = $self->getDocumentElement->getAttribute('xml:id');
-  my $doc = $self->new($xmldoc,
-		       ($parent_id ? (parent_id=>$parent_id) : ()),
-		       ($root_id   ? (split_from_id=>$root_id) : ()),
-		       %options); 
-
-  # Copy any processing instructions.
-  foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")){
-    $doc->getDocument->appendChild($pi->cloneNode); }
-  # If new document has no date, try to add one
-  $doc->addDate($self);
-
-  # Finally, return the new document.
-  $doc; }
-
-
 sub newDocument {
   my($self,$root,%options)=@_;
   my $xmldoc = XML::LibXML::Document->new("1.0","UTF-8");
@@ -768,7 +859,7 @@ sub newDocument {
     $xmldoc->setDocumentElement($node); 
     $xmldoc->documentElement->setNamespace($root->namespaceURI,$root->prefix,1); }
   else {
-    die "Dont know how to use $root as document element"; }
+    Fatal('unexpected',$root,undef,"Dont know how to use '$root' as document element"); }
   # Restore the cache; $self->new will initialize cache for new document
 ###  $$self{idcache} = $savecache;
 
@@ -871,10 +962,11 @@ sub findNodeByID {
 sub realizeXMNode {
   my($self,$node)=@_;
   if($self->getQName($node) eq 'ltx:XMRef'){
-    if(my $realnode = $self->findNodeByID($node->getAttribute('idref'))){
+    my $id = $node->getAttribute('idref');
+    if(my $realnode = $self->findNodeByID($id)){
       $realnode; }
     else {
-      $self->Error("Cannot find a node with xml:id=".$node->getAttribute('idref')); }}
+      Fatal("expected",$id,undef,"Cannot find a node with xml:id='$id'"); }}
   else {
     $node; }}
 
@@ -944,8 +1036,10 @@ sub openCache {
     $$self{cache}={};
     my $dbfile = $self->checkDestination("LaTeXML.cache");
     tie %{$$self{cache}}, 'DB_File', $dbfile,  O_RDWR|O_CREAT
-      or return $self->Error("Couldn't create DB cache for ".$self->getDestination.": $!"
-      .(-f $dbfile ? "\n(possibly incompatible db format?)":''));
+      or return Fatal('internal','db',undef,
+		      "Couldn't create DB cache for ".$self->getDestination,
+		      "Message was: ".$!,
+		      (-f $dbfile ? "\n(possibly incompatible db format?)":''));
   }}
 
 sub closeCache {
