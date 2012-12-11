@@ -19,8 +19,10 @@ use POSIX;
 use LaTeXML::Util::Pathname;
 use File::Temp qw(tempdir);
 use File::Path;
+use File::Which;
 use FindBin;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 #======================================================================
 
@@ -28,14 +30,22 @@ use base qw(LaTeXML::Post);
 ##our $TMP = '/tmp';
 our $LATEXCMD='latex'; #(or elatex)
 
-# Usefull DVIPS options:
+# The purpose of this module is to convert TeX fragments into png (or similar),
+# typically via dvi and other intermediate formats.
+# LaTeX converts the TeX stuff to dvi;
+# dvips converts the dvi to eps, and ImageMagick can convert the eps to png;
+# OR dvipng can convert the dvi to png MUCH quicker... if it's available.
+
+# Useful DVIPS options:
 #  -q  : run quietly
 #  -x#  : magnification * 1000
 #  -S1 -i  : make a separate file for each `section' consisting of a single page.
 #       QUESTION: dvips' naming scheme allows for 999 pages... what happens at 1000?
 #  -E   :  crop each page close to the `ink'.
 #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
-our $DVIPSCMD='dvips -q -S1 -i -E -j0';
+
+our $DVIPSCMD ='dvips -q -S1 -i -E -j0 -o imgx';
+our $DVIPNGCMD='dvipng -bg Transparent -T tight -q -o imgx%03d';
 
 # Options:
 #   source         : (dir)
@@ -53,7 +63,6 @@ sub new {
   $$self{dpi}           = $options{dpi} || 96;
   $$self{background}    = $options{background} || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype} || 'png';
-#    $$self{imagetype}     = 'gif';
 
   # Parameters for separating the clipping box from the 
   # desired padding between image edge and "ink"
@@ -61,6 +70,13 @@ sub new {
   # amount of extra space (+padding) to put between object & rules for clipping
   $$self{clippingfudge}    = 3; # px
   $$self{clippingrule}     = 0.90; # pixels (< 1 to avoid antialiasing..?)
+
+  # We'll use dvipng (MUCH faster) if requested or not forbidden & available.
+  # But be careful: it can't handle much postscript, so better NOT for graphics!
+  $$self{use_dvipng} = 1
+    if ($options{use_dvipng} || (! defined $options{use_dvipng})) && which('dvipng');
+  $$self{dvicmd} = ($$self{use_dvipng} ? $DVIPNGCMD : $DVIPSCMD);
+  $$self{dvicmd_output_type} = ($$self{use_dvipng} ? 'png32' : 'eps');
   $self; }
 
 #**********************************************************************
@@ -68,28 +84,51 @@ sub new {
 # NOTE that Image::Magick version 6.6.5.10 is erratic about making png's transparent!
 # version 5.6.1.2 seems to work....
 # Graphics::Magick seems to be working;
-our @MagickClasses = (qw(Foo::Bar  Image::Magick Graphics::Magick));
-# We could _prefer_ Graphics::Magick over Image::Magick, if available...
-#our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
+# #our @MagickClasses = (qw(Foo::Bar  Image::Magick Graphics::Magick));
+# # We could _prefer_ Graphics::Magick over Image::Magick, if available...
+# #our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
 
+# # Is this a big slowdown? Maybe should do only once??
+# #our @MagickClasses = (qw(Image::Magick));
+
+# sub createMagickImage {
+#   my($sel,%props)=@_;
+#   foreach my $class (@MagickClasses){
+#     my $object = createMagickObject($class,%props);
+# #    print STDERR "Magick class $class ".($object ? "succeeded" : "failed")."\n";
+#     return $object if $object; }}
+
+# sub createMagickObject {
+#   my($class,%props)=@_;
+#   my $module = $class.".pm";
+#   $module =~ s/::/\//g;
+#   eval { local $$SIG{__DIE__}; require $module; $class->new(%props); }; }
+
+
+our $IMAGECLASS;		# cached class if we found one that works.
+our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
 sub createMagickImage {
   my($sel,%props)=@_;
-  foreach my $class (@MagickClasses){
-    my $object = createMagickObject($class,%props);
-#    print STDERR "Magick class $class ".($object ? "succeeded" : "failed")."\n";
-    return $object if $object; }}
-
-sub createMagickObject {
-  my($class,%props)=@_;
-  my $module = $class.".pm";
-  $module =~ s/::/\//g;
-  eval {require $module; $class->new(%props); }; }
+  if(! $IMAGECLASS){
+    foreach my $class (@MagickClasses){
+      my $module = $class.".pm";
+      $module =~ s/::/\//g;
+      my $object = eval { local $SIG{__DIE__}=undef; require $module; $class->new(%props); };
+      if($object){
+	$IMAGECLASS=$class;
+	last; }}}
+  Fatal('imageprocessing','imageclass',undef,
+	"No available image processing module found",
+	"Candidates: ".join(',',@MagickClasses)) unless $IMAGECLASS;
+  $IMAGECLASS->new(%props); }
 
 #**********************************************************************
 # Methods that must be defined;
 
-# $self->findTeXNodes($doc) => @nodes;
-sub findTeXNodes { (); }
+# This is an abstract class; concrete classes must select the nodes to process.
+# We'll still need to use $proc->extractTeX($doc,$node)
+#  to extract the actual TeX string!
+sub toProcess { (); }
 
 # $self->extractTeX($doc,$node)=>$texstring;
 sub extractTeX { ""; }
@@ -124,8 +163,6 @@ sub cleanTeX {
 
 #**********************************************************************
 
-
-
 #**********************************************************************
 # Generating & Processing the LaTeX source.
 #**********************************************************************
@@ -135,8 +172,10 @@ sub cleanTeX {
 # What we really need to know is:
 #   (1) where to write the images.
 #   (2) relative path from doc to images.
+
+
 sub process {
-  my($self,$doc)=@_;
+  my($self,$doc,@nodes)=@_;
 
   my $jobname = "ltxmlimg";
 
@@ -147,7 +186,7 @@ sub process {
   # Note that if desiredResourcePathname is implemented, we might get
   # several desired names for the same chunk of tex!!!
   my($ntotal,$nuniq)=(0,0);
-  foreach my $node ($self->findTeXNodes($doc)){
+  foreach my $node (@nodes){
     my $tex = $self->extractTeX($doc,$node);
     next if !(defined $tex) or ($tex =~/^\s*$/);
     $ntotal++;
@@ -171,17 +210,16 @@ sub process {
       next if -f pathname_concat($destdir,$1); }
     push(@pending,$table{$key}); }
 
-  $self->Progress($doc,"Found $nuniq unique tex strings (of $ntotal); "
-		  .scalar(@pending)." to generate");
+  NoteProgress(" [$nuniq unique; ".scalar(@pending)." new]");
   if(@pending){			# if any images need processing
     # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
     my $workdir=tempdir("LaTeXMLXXXXXX", CLEANUP=>0, TMPDIR=>1);
     my $preserve_tmpdir = 0;
-
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
-    open(TEX,">$texfile") or return $self->Error($doc,"Cant write to $texfile: $!");
+    open(TEX,">$texfile")
+      or return Error('I/O',$texfile,undef,"Cant write to '$texfile'","Response was: $!");
     print TEX $self->pre_preamble($doc);
     print TEX "\\makeatletter\n";
     print TEX $self->preamble($doc)."\n";
@@ -202,12 +240,15 @@ sub process {
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     if($err != 0){
       $preserve_tmpdir = 1;
-      $self->Warn($doc,"latex ($command) returned code $err (!= 0) for image generation: $@\n See $workdir/$jobname.log"); }
+      Warn('shell',$command,undef,
+	   "Shell command ($command) returned code $err (!= 0) for image generation",
+	   "Response was: $@","See $workdir/$jobname.log"); }
     if(! -f "$workdir/$jobname.dvi"){
       $preserve_tmpdir = 1;
-      return $self->Error($doc,"LaTeX ($command) somehow failed: See $workdir/$jobname.log"); }
+      return Error('shell',$command,undef,
+		   "Shell command '$command' (for latex) failed: See $workdir/$jobname.log"); }
 
-    $preserve_tmpdir=1 if $$self{verbosity} > 2;
+    $preserve_tmpdir=1 if $$LaTeXML::POST{verbosity} > 2;
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions=();
@@ -217,14 +258,19 @@ sub process {
 		$dimensions[$1]=[$2,$3,$4]; }}
 	close(LOG); }
     else {
-	$self->Warn($doc,"Couldn't read log file $workdir/$jobname.log to extract image dimensions: $!"); }
+	Warn('expected','dimensions',undef,
+	     "Couldn't read log file $workdir/$jobname.log to extract image dimensions",
+	     "Response was: $!"); }
 
-    # === Run dvips to extract individual postscript files.
+    # === Run dvicmd to extract individual png|postscript files.
     my $mag = int($$self{magnification}*1000);
-    system("cd $workdir ; TEXINPUTS=$texinputs $DVIPSCMD -x$mag -o imgx $jobname.dvi") == 0 
-      or return $self->Error($doc,"Couldn't execute dvips (see $workdir for clues): $!");
-
     my $pixels_per_pt = $$self{magnification}*$$self{dpi}/72.27;
+    my $dpi = int($$self{dpi}*$$self{magnification});
+    my $resoption = ($$self{use_dvipng} ? "-D$dpi" : "-x$mag");
+    system("cd $workdir ; TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") == 0
+      or return Error('shell',$$self{dvicmd},undef,
+		      "Shell command $$self{dvicmd} (for dvi conversion) failed (see $workdir for clues)",
+		      "Response was: $!");
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
@@ -235,17 +281,17 @@ sub process {
 	  ||  $self->generateResourcePathname($doc,$$entry{nodes}[0],undef,$$self{imagetype});
 	my $dest = $doc->checkDestination($reldest);
 	my($w,$h) = $self->convert_image($doc,$src,$dest);
+	next unless defined $w && defined $h;
 	my($ww,$hh,$dd)= map($_*$pixels_per_pt, @{$dimensions[$index]});
 	my $d = int(0.5+$dd + $$self{padding});
 	if( (($w==1) && ($ww > 1)) || (($h==1) && ($hh > 1)) ){
-	  $self->Warn($doc,"Image for $$entry{tex} was cropped to nothing!"); }
+	  Warn('expected','image',undef,"Image for '$$entry{tex}' was cropped to nothing!"); }
 	# print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
 	$doc->cacheStore($$entry{key},"$reldest;$w;$h;$d"); }
       else {
-	$self->Warn($doc,"Missing image $src; See $workdir/$jobname.log"); }}
+	Warn('expected','image',undef,"Missing image '$src'; See $workdir/$jobname.log"); }}
     # Cleanup
-    rmtree($workdir) unless $preserve_tmpdir;
-  }
+    rmtree($workdir) unless $preserve_tmpdir; }
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table){
@@ -273,7 +319,7 @@ sub find_documentclass_and_packages {
       push(@packages,[$$entry{package},$$entry{options}||'']); }
   }
   if(!$class){
-    $self->Warn($doc,"No document class found; using article");
+    Warn('expected','class',undef,"No document class found; using article");
     $class = 'article'; }
 
   ([$class,$classoptions,$oldstyle],@packages); }
@@ -359,6 +405,10 @@ EOPreamble
 # Converting the postscript images to gif/png/whatever
 # Note that properly trimming the clipping box (and keeping the right
 # padding and dimensions) is harder than it seems!
+#
+# Note that this conversion is, indeed, quite slow.
+# Profiling indicates that virtually ALL the time is taken in ->Read !!
+# (not the various trimming/shaving).
 #======================================================================
 
 sub convert_image {
@@ -367,9 +417,11 @@ sub convert_image {
 
   my $image = $self->createMagickImage(antialias=>'True',background=>$bg,density=>$$self{dpi});
 #				       verbose=>'True');
-  my $err = $image->Read("eps:$src");
+  my $err = $image->Read($$self{dvicmd_output_type}.':'.$src);
   if($err){
-    warn "Image conversion failed to read $src: $err"; return; }
+    Warn('imageprocessing','read',undef,
+	 "Image conversion failed to read '$src'",
+	 "Response was: $err"); return; }
 
   my ($ww,$hh) = $image->Get('width','height'); # Get final image size
 
@@ -396,7 +448,7 @@ sub convert_image {
 #  $image = $image->Fx(expression=>'(3.0-r+g+b)/3.0', channel=>'alpha');
   $image->Transparent(color=>$bg);
 
-  $self->ProgressDetailed($doc,"Converting $src => $dest ($w x $h)");
+  NoteProgressDetailed(" [Converting $src => $dest ($w x $h)]");
 
   # Workaround bad png detection(?) in ImageMagick 6.6.5 (???)
   if($$self{imagetype} eq 'png'){
