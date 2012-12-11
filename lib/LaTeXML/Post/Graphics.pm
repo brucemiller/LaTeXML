@@ -17,7 +17,8 @@ use strict;
 use LaTeXML::Util::Pathname;
 use POSIX;
 use Image::Magick;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 #======================================================================
 # Options:
@@ -27,7 +28,7 @@ use base qw(LaTeXML::Post);
 #   trivial_scaling : If true, web images that only need scaling will be used as-is
 #                     assuming the user agent scale the image.
 #   background      : background color when filling or transparency.
-#   typeProperties  : hash of types=>hash.
+#   type_properties : hash of types=>hash.
 #        The hash for each type can have the following 
 #           destination_type : the type to convert the file to if different.
 #           transparent : if true, the background color will be made transparent.
@@ -48,12 +49,12 @@ sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
   $$self{dppt}               = (($options{dpi} || 90)/72.0); # Dots per point.
-  $$self{ignoreOptions}      = $options{ignoreOptions}   || [];
+  $$self{ignore_options}     = $options{ignore_options}   || [];
   $$self{trivial_scaling}    = $options{trivial_scaling}  || 1;
-  $$self{graphicsSourceTypes}= $options{graphicsSourceTypes}
+  $$self{graphics_types}     = $options{graphics_types}
     || [qw(png gif jpg jpeg 
 	   eps ps ai pdf)];
-  $$self{typeProperties}           = $options{typeProperties}
+  $$self{type_properties}    = $options{type_properties}
     || {
 	ai  =>{destination_type=>'png',
 	       transparent=>1, 
@@ -76,18 +77,20 @@ sub new {
   $$self{background}        = $options{background}       || "#FFFFFF";
   $self; }
 
-sub process {
+# Return a list of XML nodes which have graphics that need processing.
+sub toProcess {
   my($self,$doc)=@_;
+  $doc->findnodes('//ltx:graphics[not(@imagesrc)]'); }
+
+sub process {
+  my($self,$doc,@nodes)=@_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
     = [map(pathname_canonical($_),$self->findGraphicsPaths($doc), $doc->getSearchPaths)];
-  $self->ProgressDetailed($doc,"Using graphicspaths: "
-			  .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS));
-
-  if(my @nodes = $self->selectGraphicsNodes($doc)){
-     $self->Progress($doc,scalar(@nodes)." graphics nodes to process");
-    foreach my $node (@nodes){
-      $self->processGraphic($doc,$node);  }
-    $doc->closeCache; }		# If opened.
+  NoteProgressDetailed(" [Using graphicspaths: "
+		       .join(', ',@$LaTeXML::Post::Graphics::SEARCHPATHS)."]");
+  foreach my $node (@nodes){
+    $self->processGraphic($doc,$node);  }
+  $doc->closeCache;		# If opened.
   $doc; }
 
 #======================================================================
@@ -105,14 +108,9 @@ sub findGraphicsPaths {
       push(@paths,$2); }}
   @paths; }
 
-# Return a list of ZML nodes which have graphics that need processing.
-sub selectGraphicsNodes {
-  my($self,$doc)=@_;
-  $doc->findnodes('//ltx:graphics[not(@imagesrc)]'); }
-
 sub getGraphicsSourceTypes {
   my($self)=@_;
-  @{$$self{graphicsSourceTypes}}; }
+  @{$$self{graphics_types}}; }
 
 # Return the pathname to an appropriate image.
 sub findGraphicFile {
@@ -127,7 +125,7 @@ sub findGraphicFile {
     # or has the most desirable type mapping
     foreach my $path (@paths){
       my $type = pathname_type($path);
-      my $props = $$self{typeProperties}{$type};
+      my $props = $$self{type_properties}{$type};
       my $desirability = $$props{desirability} || ($type eq $$props{destination_type} ? 10 : 0);
       if($desirability > $best){
 	$best = $desirability;
@@ -148,13 +146,13 @@ sub getTransform {
 sub getTypeProperties {
   my($self,$source,$options)=@_;
   my($dir,$name,$ext)=pathname_split($source);
-  my $props = $$self{typeProperties}{$ext};
+  my $props = $$self{type_properties}{$ext};
   if(!$props){
     # If we don't have a known file type, load the image and see if we can extract it there.
     # This is probably grossly inefficient, maybe there's a better way to get image types...
     my($image,$type);
     if(($image = $self->ImageRead(undef,$source)) && (($type) = $image->Get('magick'))){
-      $props = $$self{typeProperties}{lc($type)}; }}
+      $props = $$self{type_properties}{lc($type)}; }}
   ($props ? %$props : ()); }
 
 # Set the attributes of the graphics node to record the image file name,
@@ -170,7 +168,7 @@ sub processGraphic {
   my($self,$doc,$node)=@_;
   my $source = $self->findGraphicFile($doc,$node);
   if(!$source){
-    $self->Warn($doc,"Missing graphic for ".$node->toString."; skipping"); return; }
+    Warn('expected','source',$node,"No graphic source specified; skipping"); return; }
   my $transform = $self->getTransform($node);
   my($image,$width,$height)=$self->transformGraphic($doc,$node,$source,$transform); 
   $self->setGraphicSrc($node,$image,$width,$height) if $image;
@@ -185,10 +183,11 @@ sub transformGraphic {
   my ($reldir,$name,$srctype)
     = pathname_split(pathname_relative($source,$sourcedir));
   my $key = (ref $self).':'.join('|',"$reldir$name.$srctype", map(join(' ',@$_),@$transform));
-  $self->ProgressDetailed($doc,"Processing $source as key=$key");
+  NoteProgressDetailed("\n[Processing $source as key=$key]");
 
   my %properties       = $self->getTypeProperties($source,$transform);
-  return warn "Don't know what to do with graphics file format $source" unless %properties;
+  return Warn('unexpected',$source,undef,
+	      "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
   my $reldest = $self->desiredResourcePathname($doc,$node,$source,$type);
   if(my $prev = $doc->cacheLookup($key)){	# Image was processed on previous run?
@@ -197,7 +196,7 @@ sub transformGraphic {
     if((!defined $reldest) || ($cached eq $reldest)){
       my $dest =  pathname_make(dir=>$doc->getDestinationDirectory,name=>$cached);
       if(pathname_timestamp($source) <= pathname_timestamp($dest)){
-	$self->ProgressDetailed($doc,">> Reuse $cached @ $width x $height");
+	NoteProgressDetailed(" [Reuse $cached @ $width x $height]");
 	return ($cached,$width,$height); }}}
   # Trivial scaling case: Use original image with (at most) different width & height.
   my ($image,$width,$height);
@@ -215,23 +214,24 @@ sub transformGraphic {
       $reldest = $self->generateResourcePathname($doc,$node,$source,$type);
       $dest = $doc->checkDestination($reldest); }
 
-    $self->ProgressDetailed($doc,"Destination $dest");
+    NoteProgressDetailed(" [Destination $dest]");
     ($width,$height)=$self->trivial_scaling($doc,$source,$transform);
     return unless $width && $height;
-    pathname_copy($source, $dest) or warn("Couldn't copy $source to $dest: $!");
-    $self->ProgressDetailed($doc,">> Copied to $reldest for $width x $height"); }
+    pathname_copy($source, $dest)
+      or Warn('I/O',$dest,undef,"Couldn't copy $source to $dest","Response was: $!");
+    NoteProgressDetailed(" [Copied to $reldest for $width x $height]"); }
   else {
     # With a complex transformation, we really needs a new name (well, don't we?)
     $reldest = $self->generateResourcePathname($doc,$node,$source,$type) unless $reldest;
     my $dest = $doc->checkDestination($reldest);
-    $self->ProgressDetailed($doc,"Destination $dest");
+    NoteProgressDetailed(" [Destination $dest]");
     ($image,$width,$height) =$self->complex_transform($doc,$source,$transform, %properties);
     return unless $image && $width && $height;
-    $self->ProgressDetailed($doc,">> Writing to $dest ");
+    NoteProgressDetailed(" [Writing to $dest]");
     $self->ImageWrite($doc,$image,$dest) or return; }
 
   $doc->cacheStore($key,"$reldest|$width|$height");
-  $self->ProgressDetailed($doc,">> done with $key");
+  NoteProgressDetailed(" [done with $key]");
   ($reldest,$width,$height); }
 
 #======================================================================
@@ -284,7 +284,7 @@ sub complex_transform {
 	($w,$h)=(ceil($a1*$$self{dppt}),ceil($a2*$$self{dppt})); }}
     my $X = 4;			# Expansion factor
     my($dx,$dy)=(int($X * 72 * $w/$w0),int($X * 72 * $h/$h0)); 
-    $self->ProgressDetailed($doc,">> reloading to desired size $w x $h (density = $dx x $dy)");
+    NoteProgressDetailed(" [reloading to desired size $w x $h (density = $dx x $dy)]");
     $image = $self->ImageRead($doc,$source, antialias=>1, density=>$dx.'x'.$dy) or return;
     $self->ImageOp($doc,$image,'Trim')  or return if $properties{autocrop};
     $self->ImageSet($doc,$image, colorspace=>'RGB') or return;
@@ -357,7 +357,7 @@ sub complex_transform {
     $notes .= " quality=$quality";
     $self->ImageSet($doc,$image, quality=>$properties{quality}) or return; }
 
-  $self->ProgressDetailed($doc,">> Transformed : $notes") if $notes;
+  NoteProgressDetailed(" [Transformed : $notes]") if $notes;
   ($image,$w,$h); }
 
 sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }
@@ -399,10 +399,12 @@ sub ImageOp {
   $retval =~ /(\d+)/;
   my $retcode = $1;
   if($retcode < 400){		# Warning
-    $self->Warn($doc,"Image Warning: operation $operation (".join(', ',@args).") returned $retval"); 
+    Warn('imageprocessing',$operation,undef,
+	 "Image processing operation $operation (".join(', ',@args).") returned $retval"); 
     1; }
   else {			# Error
-    $self->Warn($doc,"Image Error: $operation (".join(', ',@args).") returned $retval");
+    Error('imageprocessing',$operation,undef,
+	  "Image processing operation $operation (".join(', ',@args).") returned $retval");
     0; }}
 
 #**********************************************************************
@@ -429,7 +431,7 @@ sub parseOptions {
   foreach (split(',',$options||'')){
     /^\s*(\w+)(=\s*(.*))?\s*$/;  $_=$1; $v=$3||'';
     my $op = $_;
-    if(grep($op eq $_, @{$$self{ignoreOptions}})){  } # Ignore this option
+    if(grep($op eq $_, @{$$self{ignore_options}})){  } # Ignore this option
     elsif(/^bb$/)               { @bb = map(to_bp($_),split(' ',$v)); }
     elsif(/^bb(ll|ur)(x|y)$/)   { $bb[2*/ur/ + /y/] = to_bp($v); }
     elsif(/^nat(width|height)$/){ $bb[2 + /width/] = to_bp($v); }
