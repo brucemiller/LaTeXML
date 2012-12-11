@@ -108,7 +108,6 @@ sub Fatal {
 			# or just verbosity code >>>1 ???
 ##			($verbosity > 0 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()),
 			@details);
-    print STDERR "\nATTEMPTED FATAL $message\n";
   }
   else {			# If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
