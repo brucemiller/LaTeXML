@@ -15,7 +15,8 @@ use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 sub new {
   my($class,%options)=@_;
@@ -31,9 +32,7 @@ sub new {
   $self; }
 
 sub process {
-  my($self,$doc)=@_;
-  $self->ProgressDetailed($doc,"Beginning cross-references");
-  my $root = $doc->getDocumentElement;
+  my($self,$doc,$root)=@_;
   local %LaTeXML::Post::CrossRef::MISSING=();
   if(my $navtoc = $$self{navigation_toc}){ # If a navigation toc requested, put a toc in nav; will get filled in
     my $toc = ['ltx:TOC',{format=>$navtoc}];
@@ -47,17 +46,16 @@ sub process {
   $self->fill_in_refs($doc);
   $self->fill_in_RDFa_refs($doc);
   $self->fill_in_bibrefs($doc);
-  if(($$self{verbosity} >= 0) && (keys %LaTeXML::Post::CrossRef::MISSING)){
-    my $mentioned_tempid = 0;
+  if(keys %LaTeXML::Post::CrossRef::MISSING){
+    my $tempid = 0;
     my @msgs=();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING){
       my @items = keys %{$LaTeXML::Post::CrossRef::MISSING{$type}};
-      $mentioned_tempid ||= grep($_ eq 'TEMPORARY_DOCUMENT_ID',@items);
+      $tempid ||= grep($_ eq 'TEMPORARY_DOCUMENT_ID',@items);
       push(@msgs,$type.": ".join(', ',@items));}
-    $self->Warn($doc,"Missing items:\n  ".join(";\n  ",@msgs)
-		.($mentioned_tempid ? "\n [Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]":"")
-	       ); }
-  $self->ProgressDetailed($doc,"done cross-references");
+    Warn('expected','ids',undef,
+	 "Missing items:\n  ".join(";\n  ",@msgs),
+	 ($tempid ? "[Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]":())); }
   $doc; }
 
 sub note_missing {
@@ -175,7 +173,6 @@ our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:se
 
 sub fill_in_tocs {
   my($self,$doc)=@_;
-  $self->ProgressDetailed($doc,"Filling in TOCs");
   my $n=0;
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')){
     $n++;
@@ -193,7 +190,8 @@ sub fill_in_tocs {
     elsif($format eq 'context'){
       @list = $self->gentoc_context($id,$types); }
     $doc->addNodes($toc,['ltx:toclist',{},@list]) if @list; }
-  $self->ProgressDetailed($doc,"Filled in $n TOCs"); }
+  NoteProgressDetailed(" [Filled in $n TOCs]"); }
+
 
 # generate TOC for $id & its children,
 # providing that those objects are of appropriate type.
@@ -248,7 +246,6 @@ sub gentoc_context {
 
 sub fill_in_frags {
   my($self,$doc)=@_;
-  $self->ProgressDetailed($doc,"Filling in fragment ids");
   my $n=0;
   my $db = $$self{db};
   # Any nodes with an ID will get a fragid;
@@ -258,13 +255,12 @@ sub fill_in_frags {
       if(my $fragid = $entry->getValue('fragid')){
 	$n++;
 	$node->parentNode->setAttribute(fragid=>$fragid); }}}
-  $self->ProgressDetailed($doc,"Filled in fragment $n ids"); }
+  NoteProgressDetailed(" [Filled in fragment $n ids]"); }
 
 # Fill in content text for any <... @idref..>'s or @labelref
 sub fill_in_refs {
   my($self,$doc)=@_;
   my $db = $$self{db};
-  $self->ProgressDetailed($doc,"Filling in refs");
   my $n=0;
   foreach my $ref ($doc->findnodes('descendant::*[@idref or @labelref]')){
     my $tag = $doc->getQName($ref);
@@ -298,13 +294,12 @@ sub fill_in_refs {
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
     }}
-  $self->ProgressDetailed($doc,"Filled in $n refs"); }
+  NoteProgressDetailed(" [Filled in $n refs]"); }
 
 # similar sorta thing for RDF about & resource labels & ids
 sub fill_in_RDFa_refs {
   my($self,$doc)=@_;
   my $db = $$self{db};
-  $self->ProgressDetailed($doc,"Filling in RDFa refs");
   my $n=0;
   foreach my $key (qw(about resource)){
     foreach my $ref ($doc->findnodes('descendant::*[@'.$key.'idref or @'.$key.'labelref]')){
@@ -327,18 +322,17 @@ sub fill_in_RDFa_refs {
 	    $ref->setAttribute($key=>'#'.$id); }}
       }}}
   set_RDFa_prefixes($doc->getDocument, {}); # what prefixes??
-  $self->ProgressDetailed($doc,"Filled in $n RDFa refs"); }
+  NoteProgressDetailed(" [Filled in $n RDFa refs]"); }
 
 # Needs to evolve into the combined stuff that we had in DLMF.
 # (eg. concise author/year combinations for multiple bibrefs)
 sub fill_in_bibrefs {
   my($self,$doc)=@_;
-  $self->ProgressDetailed($doc,"Filling in bibrefs");
   my $n=0;
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')){
     $n++;
     $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }
-  $self->ProgressDetailed($doc,"Filled in $n bibrefs"); }
+  NoteProgressDetailed(" [Filled in $n bibrefs]"); }
 
 # Given a list of bibkeys, construct links to them.
 # Mostly tuned to author-year style.
