@@ -26,13 +26,14 @@ dotest('t/post/simplemath');
 sub dotest{
   my($name)=@_;
 
-  my $xmath = LaTeXML::Post::XMath->new(verbosity=>-1);
-  $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new(verbosity=>-1));
+  my $xmath = LaTeXML::Post::XMath->new();
+  $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new());
   my @procs = (	$xmath );
 
   return ok(0,1,"Couldn't instanciate LaTeXML::Post") unless @procs;
 
-  my($doc) = LaTeXML::Post::ProcessChain(
+  my $latexmlpost = LaTeXML::Post->new(verbosity=>-1);
+  my($doc) = $latexmlpost->ProcessChain(
                LaTeXML::Post::Document->newFromFile("$name.xml",validate=>1),
 	       @procs);
   my $output = $doc->toString;
