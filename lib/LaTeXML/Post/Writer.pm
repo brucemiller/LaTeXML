@@ -14,7 +14,8 @@ package LaTeXML::Post::Writer;
 use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 use Encode;
 
 sub new {
@@ -26,23 +27,23 @@ sub new {
   $self; }
 
 sub process {
-  my($self,$doc)=@_;
+  my($self,$doc,$root)=@_;
 
   my $xmldoc = $doc->getDocument;
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
 
-  my $root = $xmldoc->documentElement;
   $root->removeAttribute('xml:id')
     if ($root->getAttribute('xml:id')||'') eq  'TEMPORARY_DOCUMENT_ID';
 
   my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
 
   if(my $destination = $doc->getDestination){
-    $self->Progress($doc,"Writing $destination");
-    pathname_mkdir($doc->getDestinationDirectory)
-      or return die("Couldn't create directory ".$doc->getDestinationDirectory.": $!");
+    my $destdir = $doc->getDestinationDirectory;
+    pathname_mkdir($destdir)
+      or return Fatal('I/O',$destdir,undef,"Couldn't create directory '$destdir'",
+		      "Response was: $!");
     open(OUT,">",$destination)
-      or return die("Couldn't write $destination: $!");
+      or return Fatal('I/O',$destdir,undef,"Couldn't write '$destination'","Response was: $!");
     print OUT $string;
     close(OUT); }
   else {

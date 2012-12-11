@@ -14,7 +14,8 @@ package LaTeXML::Post::Split;
 use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 sub new {
   my($class,%options)=@_;
@@ -24,9 +25,11 @@ sub new {
   $$self{no_navigation} = $options{no_navigation};
   $self; }
 
+# Could this actually just return the nodes that are to become pages?
+# sub toProcess { ??? }
+
 sub process {
-  my($self,$doc)=@_;
-  my $root = $doc->getDocumentElement;
+  my($self,$doc,$root)=@_;
   # RISKY and annoying; to split, we really need an id on the root.
   # Writer will remove it.
   $root->setAttribute('xml:id'=>'TEMPORARY_DOCUMENT_ID') unless $root->hasAttribute('xml:id');
@@ -36,7 +39,6 @@ sub process {
   # Weird test: exclude the "whole document" from the list (?)
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
-    $self->Progress($doc,"Splitting into ".scalar(@pages)." pages");
     my $tree = {node=>$root,document=>$doc,
 		id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,
 		children=>[]};
@@ -169,11 +171,13 @@ sub getPageName {
   $name =~ s/^LABEL:// if $name;
   if(!$name){
     if(($attr eq 'labels') && ($name=$page->getAttribute('xml:id'))){
-      $self->Warn($doc,$doc->getQName($page)." has no $attr attribute for pathname; using id=$name"); 
+      Warn('expected',$attr,$doc->getQName($page),
+	   "Expected attribute '$attr' to create page pathname","using id=$name");
       $attr='xml:id'; }
     else {
-      $self->Warn($doc,$doc->getQName($page)." has no $attr attribute for pathname");
-      $name="FOO".++$COUNTER; }}
+      $name="FOO".++$COUNTER;
+      Warn('expected',$attr,$doc->getQName($page),
+	   "Expected attribute '$attr' to create page pathname","using id=$name"); }}
   if($naming =~ /relative$/){
     my $pname = $parent->getAttribute($attr);
     if($pname && $name =~ /^\Q$pname\E(\.|_|:)+(.*)$/){

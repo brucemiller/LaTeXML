@@ -33,6 +33,7 @@
 package LaTeXML::Post::XMath;
 use strict;
 use LaTeXML::Common::XML;
+use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

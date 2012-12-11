@@ -14,6 +14,7 @@ use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
+use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
 
 # Options:
@@ -28,25 +29,23 @@ sub new {
   $$self{split}    = $options{split};
   $self; }
 
+sub toProcess { $_[1]->findnode('//ltx:index'); }
+
 sub process {
-  my($self,$doc)=@_;
-  my($index,$tree);
-  if($index = $doc->findnode('//ltx:index')){
-    $doc->addDate();
-    my($allkeys,$allphrases,$tree)= $self->build_tree($doc,$index);
-    if($tree){
-      if($$self{split}){
-	map($self->rescan($_),
-	    $self->makeSubCollectionDocuments($doc,$index,
-					      map( ($_=>$self->makeIndexList($doc,$allkeys,$allphrases,$$tree{subtrees}{$_})),
-						   keys %{$$tree{subtrees}}))); }
-      else {
-	$doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$allphrases,$tree));
-	$self->rescan($doc); }}
-
-    else { $doc; }}
-  else { $doc; }}
-
+  my($self,$doc,$index)=@_;
+  my @indices=($doc);
+  $doc->addDate();
+  my($allkeys,$allphrases,$tree)= $self->build_tree($doc,$index);
+  if($tree){
+    if($$self{split}){
+      @indices=map($self->rescan($_),
+		   $self->makeSubCollectionDocuments($doc,$index,
+			  map( ($_=>$self->makeIndexList($doc,$allkeys,$allphrases,$$tree{subtrees}{$_})),
+			       keys %{$$tree{subtrees}}))); }
+    else {
+      $doc->addNodes($index,$self->makeIndexList($doc,$allkeys,$allphrases,$tree));
+      @indices=($self->rescan($doc)); }}
+  @indices; }
 
 # ================================================================================
 # Data generated:
@@ -58,7 +57,8 @@ sub process {
 sub build_tree {
   my($self,$doc,$index)=@_;
   if(my @keys = grep(/^INDEX:/,$$self{db}->getKeys)){
-    $self->Progress($doc,"processing ".scalar(@keys)." index entries");
+    NoteProgress(" [".scalar(@keys)." entries]");
+
 #    my $id = $doc->getDocumentElement->getAttribute('xml:id');
     my $id = $index->getAttribute('xml:id');
     # The next 2 support finding see-also cross-references, and otherwise checking for defined-ness of terms.
@@ -70,7 +70,7 @@ sub build_tree {
       my $phrases = $entry->getValue('phrases');
       my @phrases = @$phrases;
       if(!scalar(@phrases)){
-	$self->Warn($doc,"Missing phrases in indexmark: $key");
+	Warn('expected',$key,undef,"Missing phrases in indexmark: '$key'");
 	next; }
 
       if($$self{permuted}){
@@ -193,8 +193,9 @@ sub makeIndexEntry {
 	$saw{$$entry{id}} = 1; }
       else {
 	my @alt = sort keys %{$$allphrases{$phrase}};
-	$self->Warn($doc,"Missing index see-also term $phrase (key=$key; seen under $$tree{key})"
-		    .(@alt ? " Possible aliases: ".join(', ',@alt) : ""))
+	Warn('expected',$phrase,undef,
+	     "Missing index see-also term $phrase","(key=$key; seen under $$tree{key})",
+	     (@alt ? " Possible aliases: ".join(', ',@alt) : ""))
 	  unless $doc->findnodes("descendant-or-self::ltx:ref",$see);
 	push(@links,['ltx:text',{}, $see->childNodes]); }}}
 

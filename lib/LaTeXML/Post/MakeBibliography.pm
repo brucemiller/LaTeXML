@@ -14,6 +14,7 @@ use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
+use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
 
 our %FMT_SPEC;
@@ -34,35 +35,36 @@ sub new {
   $$self{bibliographies} = $options{bibliographies};
   $self; }
 
+sub toProcess { $_[1]->findnode('//ltx:bibliography'); }
+
 sub process {
-  my($self,$doc)=@_;
+  my($self,$doc,$bib)=@_;
 
-  if(my $bib = $doc->findnode('//ltx:bibliography')){
-    return $doc if $doc->findnodes('//ltx:bibitem',$bib); # Already populated?
-    local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
-    my $entries = $self->getBibEntries($doc);
+  my @bib = ($doc);
+  return $doc if $doc->findnodes('//ltx:bibitem',$bib); # Already populated?
 
-    # Remove any bibentry's (these should have been converted to bibitems)
-    $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
-    foreach my $biblist ($doc->findnodes('//ltx:biblist')){
-      $doc->removeNodes($biblist)
-	unless grep($_->nodeType == XML_ELEMENT_NODE, $biblist->childNodes); }
+  local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
+  my $entries = $self->getBibEntries($doc);
+  # Remove any bibentry's (these should have been converted to bibitems)
+  $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
+  foreach my $biblist ($doc->findnodes('//ltx:biblist')){
+    $doc->removeNodes($biblist)
+      unless grep($_->nodeType == XML_ELEMENT_NODE, $biblist->childNodes); }
 
-    if($$self{split}){
-      # Separate by initial.
-      my $split = {};
-      foreach my $sortkey (keys %$entries){
-	my $entry = $$entries{$sortkey};
-	$$split{$$entry{initial}}{$sortkey} = $entry; }
-      map($self->rescan($_),
-	  $self->makeSubCollectionDocuments($doc,$bib,
-					    map( ($_=>$self->makeBibliographyList($doc,$_,$$split{$_})),
-						 keys %$split))); }
-    else {
-      $doc->addNodes($bib,$self->makeBibliographyList($doc,undef,$entries));
-      $self->rescan($doc); }}
+  if($$self{split}){
+    # Separate by initial.
+    my $split = {};
+    foreach my $sortkey (keys %$entries){
+      my $entry = $$entries{$sortkey};
+      $$split{$$entry{initial}}{$sortkey} = $entry; }
+    @bib = map($self->rescan($_),
+	       $self->makeSubCollectionDocuments($doc,$bib,
+			 map( ($_=>$self->makeBibliographyList($doc,$_,$$split{$_})),
+			      keys %$split))); }
   else {
-    $doc; }}
+    $doc->addNodes($bib,$self->makeBibliographyList($doc,undef,$entries));
+    @bib = ($self->rescan($doc)); }
+  @bib; }
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
@@ -156,8 +158,9 @@ sub getBibEntries {
     my $bibkey = $$entry{bibkey};
     map( $entries{$_}{bibreferrers}{$bibkey}=1, @{$$entry{citations}}); }
 
-  $self->Progress($doc,(scalar keys %entries)." bibentries, ".(scalar keys %$included)." cited");
-  $self->Progress($doc,"Missing bibkeys ".join(', ',sort keys %missing_keys)) if keys %missing_keys;
+  NoteProgress(" [".(scalar keys %entries)." bibentries, ".(scalar keys %$included)." cited]");
+  Warn('expected','bibkeys',undef,
+       "Missing bibkeys ".join(', ',sort keys %missing_keys)) if keys %missing_keys;
 
   # Finally, sort the bibentries according to author+year+title+bibkey
   # If any neighboring entries have same author+year, set a suffix: a,b,...
@@ -214,7 +217,8 @@ sub formatBibEntry {
   local $LaTeXML::Post::MakeBibliography::SUFFIX = $$entry{suffix};
   my $number = ++$LaTeXML::Post::MakeBibliography::NUMBER;
 
-  warn "\nNo formatting specification for bibentry of type $type" unless @blockspecs;
+  Warn('unexpected',$type,undef,
+       "No formatting specification for bibentry of type '$type'") unless @blockspecs;
 
   #------------------------------
   # Format the bibtag's

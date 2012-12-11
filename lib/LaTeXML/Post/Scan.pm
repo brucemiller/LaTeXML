@@ -13,7 +13,8 @@ package LaTeXML::Post::Scan;
 use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
-use base qw(LaTeXML::Post);
+use LaTeXML::Post;
+use base qw(LaTeXML::Post::Processor);
 
 # NOTE: This module is one that probably needs a lot of customizability.
 sub new {
@@ -55,9 +56,7 @@ sub registerHandler {
   $$self{handlers}{$tag} = $handler; }
 
 sub process {
-  my($self,$doc)=@_;
-  my $root = $doc->getDocumentElement;
-
+  my($self,$doc,$root)=@_;
   # I think we really need an ID here to establish the root node in the DB,
   # even if the document didn't have one originally.
   # And for the common case of a single docucment, we'd like to be silent about it,
@@ -69,12 +68,13 @@ sub process {
       if(my $loc = $doc->siteRelativeDestination){
 	my $prevloc = $preventry->getValue('location');
 	if((defined $prevloc) && ($loc ne $prevloc)){
-	  $self->Warn($doc,"Using default ID=\"$id\", "
-		      ."but there's an apparent conflict with location $loc and previous $prevloc");}}}
+	  Warn('unexpected',$id,undef,
+	       "Using default ID='$id', "
+	       ."but there's an apparent conflict with location '$loc' and previous '$prevloc'");}}}
     $root->setAttribute('xml:id'=>$id); }
 
   $self->scan($doc,$root, $$doc{parent_id});
-  $self->Progress($doc,"Scanned; DBStatus: ".$$self{db}->status);
+  NoteProgressDetailed(" [DBStatus: ".$$self{db}->status."]");
   $doc; }
 
 sub scan {
