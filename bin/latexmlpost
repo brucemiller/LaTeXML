@@ -128,11 +128,11 @@ pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -outp
 if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
 
 # Get the requested XML file
-Error("Missing input xmlfile") unless @ARGV;
+xError("Missing input xmlfile") unless @ARGV;
 my $xmlfile = shift(@ARGV);
 if($xmlfile ne '-'){
     $xmlfile .= '.xml' unless -f $xmlfile;
-    Error("The input file \"$xmlfile\" was not found") unless -f $xmlfile; }
+    xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile; }
 
 #======================================================================
 # Sanity check and Completion of options.
@@ -153,7 +153,7 @@ if(defined $parallelmath){
 
 # Check for appropriate combination of split, scan, prescan, dbfile, crossref
 if($split && !defined $destination){
-  Error("Must supply --destination when using --split"); }
+  xError("Must supply --destination when using --split"); }
 if($split){
   $splitnaming = checkOptionValue('--splitnaming',$splitnaming,
 				  qw(id idrelative label labelrelative)); 
@@ -161,34 +161,34 @@ if($split){
   $splitpath = $splitpaths{$splitat} unless defined $splitpath;
 }
 if($prescan && !$scan){
-  Error("Makes no sense to --prescan with scanning disabled (--noscan)"); }
+  xError("Makes no sense to --prescan with scanning disabled (--noscan)"); }
 if($prescan && (!defined $dbfile)){
-  Error("Cannot prescan documents (--prescan) without specifying --dbfile"); }
+  xError("Cannot prescan documents (--prescan) without specifying --dbfile"); }
 if(!$prescan && $crossref && ! ($scan || (defined $dbfile))){
-  Error("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
+  xError("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
 if($crossref){
   $urlstyle = checkOptionValue('--urlstyle',$urlstyle,qw(server negotiated file)); }
 if(($permutedindex || $splitindex) && (! defined $index)){
   $index=1; }
 if(!$prescan && $index && ! ($scan || defined $crossref)){
-  Error("Cannot generate index (--index) without --scan or --dbfile"); }
+  xError("Cannot generate index (--index) without --scan or --dbfile"); }
 if(!$prescan && @bibliographies && ! ($scan || defined $crossref)){
-  Error("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
+  xError("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
 
 $navtoc = lc($navtoc) if defined $navtoc;
 $navtoc=undef if $navtoc && $navtoc eq 'none';
 if($navtoc){
   if(!$navtocstyles{$navtoc}){
-    Error("$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
+    xError("$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
   if(!$crossref){
-    Error("Cannot use --navigationtoc=$navtoc without --crossref"); }}
+    xError("Cannot use --navigationtoc=$navtoc without --crossref"); }}
 
 # Check format and complete math and image options
 if(!defined $format){}
 elsif($format eq 'html'){
-  Error("Default html stylesheet only supports math images, not ".join(', ',@math_formats))
+  xError("Default html stylesheet only supports math images, not ".join(', ',@math_formats))
     if (!defined $stylesheet) && scalar(@math_formats);
-  Error("Default html stylesheet does not support --svg") if $svg;
+  xError("Default html stylesheet does not support --svg") if $svg;
 
   $mathimages = 1 unless defined $mathimages;
   $dographics = 1 unless defined $dographics;
@@ -219,10 +219,10 @@ elsif($format eq 'xhtml'){
     $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
 elsif($format eq 'xml'){}
 else {
-  Error("Unrecognized target format: $format"); }
+  xError("Unrecognized target format: $format"); }
 
 if((!defined $destination) && ($mathimages || $dographics || $picimages)){
-  Error("Must supply --destination unless all auxilliary file writing is disabled"
+  xError("Must supply --destination unless all auxilliary file writing is disabled"
 	."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
 
 #======================================================================
@@ -232,10 +232,10 @@ if((!defined $destination) && ($mathimages || $dographics || $picimages)){
 binmode(STDERR,":utf8");
 #binmode(STDOUT,":utf8");
 print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
-print STDERR "processing started ".localtime()."\n" unless $verbosity < 0;
+print STDERR "processing started ".localtime() unless $verbosity < 0;
 
 # Default options/parameters for each post processor
-our %OPTIONS = (verbosity=>$verbosity||0);
+our %OPTIONS = ();
 # Default options/parameters for document
 our %DOC_OPTIONS = (validate=>$validate,
 		    sourceDirectory=>$sourcedir,
@@ -294,8 +294,8 @@ if(!$prescan){
     my @g_options=();
     if(@graphicsmaps){
       my @maps = map([split(/\./,$_)], @graphicsmaps);
-      push(@g_options, (graphicsSourceTypes=>[map($$_[0],@maps)],
-			typeProperties=>{map( ($$_[0]=>{destination_type=>($$_[1] || $$_[0])}), @maps)})); }
+      push(@g_options, (graphics_types=>[map($$_[0],@maps)],
+			type_properties=>{map( ($$_[0]=>{destination_type=>($$_[1] || $$_[0])}), @maps)})); }
     push(@procs,LaTeXML::Post::Graphics->new(@g_options,%OPTIONS)); }
   if($svg){
     require 'LaTeXML/Post/SVG.pm';
@@ -403,14 +403,16 @@ if(!$prescan){
 
 # Figure how to define a Reader processor (?)
 # that initialize the thing by reading several files (the rest of the command line).
-LaTeXML::Post::ProcessChain($DOCUMENT,@procs);
+my $latexmlpost = LaTeXML::Post->new(verbosity=>$verbosity||0);
+$latexmlpost->ProcessChain($DOCUMENT,@procs);
 $DB->finish;
+print STDERR "\nPostprocessing complete: ".$latexmlpost->getStatusMessage."\n";
 print STDERR "processing finished ".localtime()."\n" unless $verbosity < 0;
 
 #======================================================================
 # helpers
 #======================================================================
-sub Error {
+sub xError {
   my($message)=@_;
 #  pod2usage(-message=>"$LaTeXML::Version::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR); 
   die "ERROR: $message\nUse the --help option for complete details\n";
@@ -430,7 +432,7 @@ sub checkOptionValue {
   if($value){
     foreach my $choice (@choices){
       return $choice if substr($choice,0,length($value)) eq $value; }}
-  Error("Value for $option, $value, doesn't match ".join(', ',@choices)); }
+  xError("Value for $option, $value, doesn't match ".join(', ',@choices)); }
 
 #**********************************************************************
 __END__
