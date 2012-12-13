@@ -1,0 +1,23 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  german                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+#**********************************************************************
+use strict;
+use LaTeXML::Package;
+
+# This should be essentially the same, right?
+# (considering we don't do hyphenation, etc)
+RequirePackage('babel',options=>['german']);
+1;
+
+
