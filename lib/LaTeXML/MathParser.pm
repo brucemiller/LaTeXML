@@ -554,7 +554,7 @@ sub failureReport {
     if(! $LaTeXML::MathParser::WARNED){
       $LaTeXML::MathParser::WARNED=1;
       my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-      $loc = "In \"".ToString($box)."\""; }
+      $loc = "In \"".UnTeX($box)."\""; }
     $unparsed =~ s/^\s*//;
     my @rest=split(/ /,$unparsed);
     my $pos = scalar(@nodes) - scalar(@rest);
