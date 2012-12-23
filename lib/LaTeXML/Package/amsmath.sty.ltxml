@@ -669,24 +669,38 @@ DefMath('\underleftrightarrow{}',"\x{2194}", operator_role=>'UNDERACCENT');
 # Section 4.9 Extensible arrows
 #  \xleftarrow, \xrightarrow
 # Note that these are treated primarily as arrows with stuff as accents over & maybe under.
-DefConstructor('\@@overarrow{}{}',
-	       "<ltx:XMApp role='ARROW'>"
-	       .  "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-	       .  "#1"
-	       .  "</ltx:XMApp>");
-DefConstructor('\@@underarrow{}{}',
-	       "<ltx:XMApp role='ARROW'>"
-	       .  "<ltx:XMWrap role='UNDERACCENT'>#2</ltx:XMWrap>"
-	       .  "#1"
-	       .  "</ltx:XMApp>");
-
-DefMacro('\xrightarrow[]{}',
-	 '\ifx.#1.\@@overarrow{\rightarrow}{#2}'
-	 .'\else\@@underarrow{\@@overarrow{\rightarrow}{#2}}{#1}\fi');
-
-DefMacro('\xleftarrow[]{}',
-	 '\ifx.#1.\@@overarrow{\leftarrow}{#2}'
-	 .'\else\@@underarrow{\@@overarrow{\leftarrow}{#2}}{#1}\fi');
+DefConstructor('\xrightarrow[]{}',
+	       "?#1("
+	       .  "<ltx:XMApp role='ARROW'>"
+	       .    "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+	       .      "<ltx:XMApp role='ARROW'>"
+	       .         "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+	       .         "<ltx:XMTok name='rightarrow' role='ARROW'>\x{2192}</ltx:XMTok>"
+	       .      "</ltx:XMApp>"
+	       .    "</ltx:XMApp>"
+	       . ")("
+	       .   "<ltx:XMApp role='ARROW'>"
+	       .     "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+	       .     "<ltx:XMTok name='rightarrow' role='ARROW'>\x{2192}</ltx:XMTok>"
+	       .   "</ltx:XMApp>"
+	       .")",
+	       properties=>{font=>sub{ LookupValue('font')->specialize("\x{2026}");}});
+DefConstructor('\xleftarrow[]{}',
+	       "?#1("
+	       .  "<ltx:XMApp role='ARROW'>"
+	       .    "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+	       .      "<ltx:XMApp role='ARROW'>"
+	       .         "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+	       .         "<ltx:XMTok name='leftarrow' role='ARROW'>\x{2190}</ltx:XMTok>"
+	       .      "</ltx:XMApp>"
+	       .    "</ltx:XMApp>"
+	       . ")("
+	       .   "<ltx:XMApp role='ARROW'>"
+	       .     "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+	       .     "<ltx:XMTok name='leftarrow' role='ARROW'>\x{2190}</ltx:XMTok>"
+	       .   "</ltx:XMApp>"
+	       .")",
+	       properties=>{font=>sub{ LookupValue('font')->specialize("\x{2026}");}});
 
 #======================================================================
 # Section 4.10 Affixing symbols to other symbols
