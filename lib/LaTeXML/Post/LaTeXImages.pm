@@ -218,8 +218,9 @@ sub process {
     my $preserve_tmpdir = 0;
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
-    open(TEX,">$texfile")
-      or return Error('I/O',$texfile,undef,"Cant write to '$texfile'","Response was: $!");
+    if(!open(TEX,">$texfile")){
+      Error('I/O',$texfile,undef,"Cant write to '$texfile'","Response was: $!");
+      return $doc; }
     print TEX $self->pre_preamble($doc);
     print TEX "\\makeatletter\n";
     print TEX $self->preamble($doc)."\n";
@@ -240,13 +241,14 @@ sub process {
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     if($err != 0){
       $preserve_tmpdir = 1;
-      Warn('shell',$command,undef,
+      Error('shell',$command,undef,
 	   "Shell command ($command) returned code $err (!= 0) for image generation",
 	   "Response was: $@","See $workdir/$jobname.log"); }
     if(! -f "$workdir/$jobname.dvi"){
       $preserve_tmpdir = 1;
-      return Error('shell',$command,undef,
-		   "Shell command '$command' (for latex) failed: See $workdir/$jobname.log"); }
+      Error('shell',$command,undef,
+	    "Shell command '$command' (for latex) failed: See $workdir/$jobname.log");
+      return $doc; }
 
     $preserve_tmpdir=1 if $$LaTeXML::POST{verbosity} > 2;
 
@@ -267,10 +269,11 @@ sub process {
     my $pixels_per_pt = $$self{magnification}*$$self{dpi}/72.27;
     my $dpi = int($$self{dpi}*$$self{magnification});
     my $resoption = ($$self{use_dvipng} ? "-D$dpi" : "-x$mag");
-    system("cd $workdir ; TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") == 0
-      or return Error('shell',$$self{dvicmd},undef,
-		      "Shell command $$self{dvicmd} (for dvi conversion) failed (see $workdir for clues)",
-		      "Response was: $!");
+    if(system("cd $workdir ; TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") != 0){
+      Error('shell',$$self{dvicmd},undef,
+	    "Shell command $$self{dvicmd} (for dvi conversion) failed (see $workdir for clues)",
+	    "Response was: $!");
+      return $doc; }
 
     # === Convert each image to appropriate type and put in place.
     my ($index,$ndigits)= (0,1+int(log( $doc->cacheLookup((ref $self).':_max_image_')||1)/log(10)));
@@ -295,7 +298,7 @@ sub process {
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table){
-    next unless $doc->cacheLookup($$entry{key}) =~ /^(.*);(\d+);(\d+);(\d+)$/;
+    next unless ($doc->cacheLookup($$entry{key})||'') =~ /^(.*);(\d+);(\d+);(\d+)$/;
     my($image,$width,$height,$depth)=($1,$2,$3,$4);
     foreach my $node (@{$$entry{nodes}}){
       $self->setTeXImage($doc,$node,$image,$width,$height,$depth); }}
