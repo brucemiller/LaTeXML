@@ -175,18 +175,51 @@ sub Revert {
   my($thing)=@_;
   (defined $thing ? (ref $thing ? $thing->revert : Explode($thing)) : ()); }
 
+our $UNTEX_LINELENGTH = 78;
 sub UnTeX {
   my($thing)=@_;
   return undef unless defined $thing;
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
-  my $prevmac=0;
-  foreach my $token (@tokens){
-    next if $token->getCatcode == CC_COMMENT;
+  my $length = 0;
+#  my $level = 0;
+  my($prevs,$prevcc)=('',CC_COMMENT);
+  while(@tokens){
+    my $token = shift(@tokens);
+    my $cc = $token->getCatcode;
+    next if $cc == CC_COMMENT;
     my $s = $token->getString();
-    $string .= ' ' if $prevmac && ($s =~ /^\w/);
-    $string .= $s;
-    $prevmac = ($s  =~ /^\\/) if $s; }
+    if($cc == CC_LETTER){	# keep "words" together, just for aesthetics
+      while(@tokens && ($tokens[0]->getCatcode == CC_LETTER)){
+	$s .= shift(@tokens)->getString; }}
+    my $l = length($s);
+#    if($cc == CC_BEGIN){ $level++; }
+    # Seems a reasonable & safe time to line break, for readability, etc.
+    if(($cc==CC_SPACE) && ($s eq "\n")){ # preserve newlines already present
+      if($length > 0){
+	$string .= $s; $length=0; }}
+##    elsif((($cc==CC_CS) && ($s =~ /^(\\\\|\\cr$|\\crcr$)/))){
+##      # Insert a (virtual) newline token after a \\, \cr, etc (after a & is too much?)
+##      $string .= $s."\n"; $length=0;
+##      $s="\n"; $cc=CC_SPACE; }				       # pretend newline
+    elsif((($cc==CC_LETTER) || (($cc==CC_OTHER) && ($s =~/^\d+$/))) # Letter(s) or digit(s)
+	  && ($prevcc == CC_CS) && ($prevs =~ /(.)$/)
+	  && (($LaTeXML::Global::STATE->lookupCatcode($1)||CC_COMMENT) == CC_LETTER)){
+      # Insert a (virtual) space before a letter if previous token was a CS w/letters
+      # This is required for letters, but just aesthetic for digits (to me?)
+      # Of course, use a newline if we're already at end
+      my $space = (($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n":' ');
+      $string .= $space.$s; $length += 1+$l; }
+    elsif(($length > 0) && ($length + $l > $UNTEX_LINELENGTH) # linebreak before this token?
+##	  && (! (($cc==CC_LETTER)&&($prevcc==CC_LETTER))) # but not between letters!
+	  && (scalar(@tokens) > 1)                        # and not at end!
+##	  && ($level < 1)
+){	                          # Or even within an arg!
+      $string .= "%\n".$s; $length=$l; }		  # with %, so that it "disappears"
+    else {
+      $string .= $s; $length += $l; }
+#    if($cc == CC_END  ){ $level--; }
+    $prevs = $s; $prevcc = $cc; }
   $string; }
 
 #======================================================================
