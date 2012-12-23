@@ -159,7 +159,7 @@ sub getVerbosity {
 sub generateMessage {
   my($errorcode,$where,$message,$long,@extra)=@_;
   my $docloc = ($LaTeXML::Post::PROCESSOR
-		? "Postprocessing ".(ref $LaTeXML::Post::PROCESSOR)
+		? "Postprocessing ".(ref $LaTeXML::Post::PROCESSOR).' '
 		: "")
     .($LaTeXML::Post::DOCUMENT
       ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination
