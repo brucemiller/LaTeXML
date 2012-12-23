@@ -3251,7 +3251,6 @@ Tag('ltx:picture',
       my($document,$node,$thing)=@_;
       if($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')){
 	my $tex = UnTeX($thing);
-	$tex =~ s/\n//sg;		# no cr's in pictures?
 	$document->setAttribute($node,tex=>$tex);
 	$thing->setProperty('_added_tex',1); }});
 
