@@ -177,8 +177,8 @@ if($pmml){
   my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::MathML::Presentation->new(
                     (defined $linelength ? (linelength=>$linelength):()),
-                    ($plane1 ? (plane1=>1):()),
-                    ($hackplane1 ? (hackplane1=>1):()),
+                    (defined $plane1 ? (plane1=>$plane1):()),
+                    (defined $hackplane1 ? (hackplane1=>$hackplane1):()),
 		    %OPTIONS));
   outputXML($result->findnode('//m:math'), $pmml, $mmlURI); }
 
