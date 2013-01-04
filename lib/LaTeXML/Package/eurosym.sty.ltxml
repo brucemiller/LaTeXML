@@ -15,7 +15,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-RawTeX('\newif\if@EURleft');
+RawTeX('\newif\if@EURleft\@EURlefttrue');
 DeclareOption('left',  '\@EURlefttrue');
 DeclareOption('right', '\@EURleftfalse');
 DeclareOption('official', undef);
@@ -27,15 +27,19 @@ ProcessOptions();
 
 DefMacro('\EUR{}','{\if@EURleft\euro\,\fi#1\if@EURleft\else\,\euro\fi}');
 
-# People shouldn't be using these, but let's at least avoid errors.
-DefMacro('\eurobars','');
-DefMacro('\eurobarsnarrow','');
-DefMacro('\eurobarswide','');
-DefMacro('\geneuro','');
-DefMacro('\geneuronarrow','');
-DefMacro('\geneurowide','');
-
 DefMacro('\officialeuro', "\x{20AC}");
 Let('\euro', '\officialeuro');
+
+# People shouldn't be using these, but let's at least avoid errors.
+DefMacro('\eurobars','=');
+DefMacro('\eurobarsnarrow','=');
+DefMacro('\eurobarswide','=');
+Let('\geneuro',       '\officialeuro');
+Let('\geneuronarrow', '\officialeuro');
+Let('\geneurowide',   '\officialeuro');
+
+
+
+
 
 1;
