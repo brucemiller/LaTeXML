@@ -28,6 +28,7 @@ use LaTeXML::Package;
 RequirePackage('amsmath');
 RequirePackage('amssymb');
 RequirePackage('cancel');
+RequirePackage('eurosym');
 RequirePackage('xcolor',options=>['dvipsnames']);
 
 DefMathI('\sgn',    undef,"sgn", role=>'OPFUNCTION',  meaning=>'sign');
@@ -73,6 +74,28 @@ DefMathI('\Tau',       undef,"\x{03A4}");
 DefMathI('\Chi',       undef,"\x{03A7}");
 #DefMathI('\Psi',       undef,"\x{03A8}");
 #DefMathI('\Omega',     undef,"\x{03A9}");
+#======================================================================
+# Archaic(?) greek
+DefMathI('\Digamma',  undef,  "\x{03DC}"); # GREEK LETTER DIGAMMA
+DefMathI('\digamma',  undef,  "\x{03DD}"); # GREEK SMALL LETTER DIGAMMA
+
+# Is this the intent, here???
+DefMathI('\Coppa',    undef,  "\x{03D8}");	 # GREEK LETTER ARCHAIC KOPPA
+DefMathI('\coppa',    undef,  "\x{03D9}");	 # GREEK SMALL LETTER ARCHAIC KOPPA
+DefMathI('\varcoppa', undef,  "\x{03D9}");	 # GREEK SMALL LETTER ARCHAIC KOPPA
+DefMathI('\Koppa',    undef,  "\x{03DE}");	 # GREEK LETTER KOPPA
+DefMathI('\koppa',    undef,  "\x{03DF}");	 # GREEK SMALL LETTER KOPPA
+
+DefMathI('\Stigma',   undef,  "\x{03DA}");	 # GREEK LETTER STIGAM
+DefMathI('\stigma',   undef,  "\x{03DB}");	 # GREEK SMALL LETTER STIGMA
+DefMathI('\varstigma',undef,  "\x{03DB}");	 # GREEK SMALL LETTER STIGMA
+
+DefMathI('\Sampi',    undef,  "\x{03E0}");	 # GREEK LETTER SAMPI
+DefMathI('\sampi',    undef,  "\x{03E1}");	 # GREEK SMALL LETTER SAMPI
+
+#======================================================================
+# Spanish sine
+DefMathI('\sen',    undef,"sen", role=>'TRIGFUNCTION',  meaning=>'sine');
 
 #======================================================================
 1;
