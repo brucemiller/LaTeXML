@@ -3181,7 +3181,7 @@ to the derived model.  Core models are rgb, cmy, cmyk, hsb and gray.
 
 =over
 
-=item C<< CleanID($id); }
+=item C<< CleanID($id); >>
 
 X<CleanID>
 Cleans an C<$id> of disallowed characters, trimming space.
