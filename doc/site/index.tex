@@ -116,12 +116,12 @@ The following sections outline the general procedures for installing
 \item If \texttt{libxml2} and \texttt{libxslt} are are not already installed:\\
   Follow the instructions at \href{http://www.xmlsoft.org}{XMLSoft} to
   download and install the most recent versions of \texttt{libxml2} and \texttt{libxslt}.
-\item If the Perl modules \texttt{Parse::RecDesent}, \texttt{XML::LibXML}
- and \texttt{XML::LibXSLT} are not already installed:\\
+\item If the Perl modules \texttt{Parse::RecDesent}, \texttt{File::Which},
+  \texttt{XML::LibXML} and  \texttt{XML::LibXSLT} are not already installed:\\
  Use CPAN to install the required perl modules (typically as root):
 \begin{lstlisting}[style=shell]
    perl -MCPAN -e shell
-   cpan> install DB_File, Parse::RecDescent
+   cpan> install DB_File, Parse::RecDescent, File::Which
    cpan> install XML::LibXML, XML::LibXSLT
    cpan> quit
 \end{lstlisting}
@@ -159,14 +159,14 @@ where \emph{perldir} is where you want the perl related files to go and
 
 \subsubsection{Installing from SVN}\label{install.svn}
 The most current code can be obtained from the svn repository.
-It is browsable at \url{https://svn.mathweb.org/repos/LaTeXML}.
+It is browsable at \url{https://svn.mathweb.org/repos/LaTeXML/}.
 Anonymous checkout is available using the command:
 \begin{lstlisting}[style=shell]
-  svn co https://svn.mathweb.org/repos/LaTeXML
+  svn co https://svn.mathweb.org/repos/LaTeXML/trunk/ LaTeXML
 \end{lstlisting}
 After checkout, the installation is similar to \ref{install.source}:
 \begin{lstlisting}[style=shell]
-   cd LaTeXML/trunk
+   cd LaTeXML
    perl Makefile.PL
    make
    make test
@@ -211,7 +211,7 @@ of \LaTeXML\ you wish to install:
 \paragraph{Installing from Source or SVN}
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
-yum install perl-Parse-RecDescent \
+yum install perl-Parse-RecDescent perl-File-Which \
     perl-XML-LibXML perl-XML-LibXSLT \
     ImageMagick ImageMagick-perl
 \end{lstlisting}
@@ -269,7 +269,7 @@ This will automatically include any needed dependencies.
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
    sudo apt-get install   \
-      libparse-recdescent-perl \
+      libparse-recdescent-perl libfile-which-perl \
       libxml2 libxml-libxml-perl \
       libxslt1.1 libxml-libxslt-perl  \
       imagemagick perlmagick
@@ -309,7 +309,7 @@ The prerequisites can be installed by running this command as root:
 \begin{lstlisting}[style=shell]
   sudo port install    \
       p5-xml-libxml p5-xml-libxslt  \
-      p5-parse-recdescent p5-perlmagick
+      p5-parse-recdescent p5-file-which p5-perlmagick
 \end{lstlisting}
 Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
@@ -341,9 +341,10 @@ or \ref{install.windows.svn} after \ref{install.windows.prerequisites}.
    Follow the instructions at
    \href{http://www.imagemagick.org/script/binary-releases.php#windows}{Image Magick}
    to download and install the latest ImageMagick binary.
-\item Install the \texttt{Parse::RecDescent} Perl module by typing the following in the command prompt
+\item Install other prerequisite modules by typing the following in the command prompt
 \begin{lstlisting}[style=shell]
   cpan -i Parse::RecDescent
+  cpan -i File::Which
 \end{lstlisting}
 \item Install the \texttt{Image::Magick} Perl module using the command
 \begin{lstlisting}[style=shell]
@@ -417,6 +418,8 @@ the last several years.
 \begin{description}
 \item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
     a useful grammar based parser module.
+\item[\href{http://search.cpan.org/search?query=File::Which&mode=module}{File::Which}]
+    a handy, portable \texttt{which} command for finding executables.
 \item[\href{http://search.cpan.org/search?query=Image::Magick&mode=module}{Image::Magick}]
     provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
 \item[\href{http://search.cpan.org/search?query=XML::LibXML&mode=module}{XML::LibXML}]
@@ -431,6 +434,8 @@ the last several years.
 \item[\href{http://search.cpan.org/search?query=DB_File&mode=module}{DB\_File}]
     usually part of a standard Perl installation, provided
     \href{http://www.sleepycat.com}{BerkeleyDB} is installed.
+% The abovec now redirects to Oracle !!!! with no mention of BerkeleyDB !!
+%    \href{http://www.oracle.com/us/products/database/overview/index.html}{BerkeleyDB}
 \item[\href{http://search.cpan.org/search?query=Test::Simple&mode=module}{Test::Simple}]
     usually part of a standard Perl installation.
 \end{description}
@@ -490,13 +495,13 @@ See \href{http://lists.jacobs-university.de/mailman/listinfo/project-latexml}{\t
 the \href{http://kwarc.info}{KWARC Research Group}
 for hosting the mailing list, Trac system and svn repository,
 as well as general moral support.
-Thanks also to \href{http://nist.gov/sima}{Systems Integration for Manufacturing Applications}
+Thanks also to \href{http://www.nist.gov/el/msid/sima/}{Systems Integration for Manufacturing Applications}
 for funding portions of the research and development.
 
 \paragraph{Author} \href{mailto:bruce.miller@nist.gov}{Bruce Miller}.
 %============================================================
 \section{Privacy Notice}\label{privacy}
-We adhere to \href{http://www.nist.gov/public_affairs/privacy.htm}{NIST's Privacy, Security and Accessibility Policy}.
+We adhere to \href{http://www.nist.gov/public_affairs/privacy.cfm}{NIST's Privacy, Security and Accessibility Policy}.
 %============================================================
 
 \end{document}
