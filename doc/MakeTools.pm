@@ -4,10 +4,13 @@ package MakeTools;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 use strict;
 use LaTeXML::Util::Pathname;
+use FindBin;
 use base qw(Exporter);
 our @EXPORT = (qw(&setVerbosity &heading &subheading &message
 		  &copy &pdflatex &latexml
 		  &slurpfile &saveData));
+
+our $DOCDIR = $FindBin::RealBin;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Noise.
@@ -63,6 +66,7 @@ sub latexml {
       subheading("Running latexml on $source");
       System("latexml",
 	     "--dest=$xmlfile",
+	     "--path=$DOCDIR/sty",
 	     ($options{options} ? @{$options{options}} : ()),
 	     map("--verbose",1..$VERBOSITY),
 	     $source) == 0
