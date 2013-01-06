@@ -30,7 +30,7 @@ sub new {
   Error('expected','stylesheet',undef,"No stylesheet specified!") unless $stylesheet;
   if(!ref $stylesheet){
     my $pathname = pathname_find($stylesheet,
-				 types=>['xsl'],installation_subdir=>'style');
+				 types=>['xsl'],installation_subdir=>'resources/XSLT');
     Error('missing-file',$stylesheet,undef,"No stylesheet '$stylesheet' found!")
       unless $pathname && -f $pathname;
     $stylesheet = $pathname; }
