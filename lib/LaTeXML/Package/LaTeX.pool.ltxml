@@ -3435,7 +3435,7 @@ DefPrimitiveI('\textvisiblespace', undef, "\x{2423}"); # SYMBOL FOR SPACE;  Not 
 DefPrimitiveI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
-DefConstructor('\textsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>");
 # This is something coming from xetex/xelatex ?
 DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
