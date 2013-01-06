@@ -513,7 +513,8 @@ sub documentModules {
   $$self{defined_patterns}={};
   foreach my $module (@{$$self{modules}}){
     my($op,$name,@content)=@$module;
-    next if $SKIP_SVG && $name =~ /^svg/;	# !!!!
+    next if $SKIP_SVG && $name =~ /:svg:/;	# !!!!
+    $name =~ s/^urn:x-LaTeXML:RelaxNG://; # Remove the urn part.
     $docs = join("\n",$docs,
 		 "\\begin{schemamodule}{$name}",
 		 map($self->toTeX($_),@content),
