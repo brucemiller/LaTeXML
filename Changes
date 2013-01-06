@@ -1,4 +1,16 @@
 0.8.0 !!!!!
+     - new Color objects allowing better & more accurate, and extensible
+       color models.
+     - RDFa support; Thanks Christoph Lange
+     - consistent error reporting, in both conversion & post-processing
+       that supports automated build systems; Thanks Deyan Ginev, Heinrich Stammerjohanns
+     - uses dvipng (if available) for converting tex code to images;
+       much faster than going via eps
+     - Reorganize various non-perl data files into a (hopefully) more manageable arrangement:
+       lib/LaTeXML/resources contains various resources for running the program
+       including
+       * DTD, RelaxNG for holding various schema
+       * XSLT, CSS, javascript for holding various styling & script resources
 
 0.7.9xx 2012-08-01
      - some slight efficiency improvements
