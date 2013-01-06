@@ -18,18 +18,19 @@
        LaTeXML's schema modules by using the urn form, such as
        urn:x-LaTeXML:schemas:LaTeXML-common.rng -->
   <rewriteURI uriStartString="urn:x-LaTeXML:RelaxNG:svg:" rewritePrefix="resources/RelaxNG/svg/"/>
-  <rewriteURI uriStartString="urn:x-LaTeXML:RelaxNG:" rewritePrefix="resources/RelaxNG/"/>
+  <rewriteURI uriStartString="urn:x-LaTeXML:RelaxNG:"     rewritePrefix="resources/RelaxNG/"/>
 
   <!-- ======================================================================
        XSLT related entries -->
 
-  <!-- OBSOLETE -->
-
-  <rewriteURI uriStartString="urn:x-LaTeXML:stylesheets:" rewritePrefix="style/"/>
+  <!-- A plain request for one of the top-level XSLT gets found -->
+  <uri name="LaTeXML-xhtml.xslt"         uri="resources/XSLT/LaTeXML-xhtml.xslt"/>
+  <uri name="LaTeXML-html.xslt"          uri="resources/XSLT/LaTeXML-html.xslt"/>
+  <uri name="LaTeXML-html5.xslt"         uri="resources/XSLT/LaTeXML-html5.xslt"/>
 
   <!-- This allows XSLT Stylesheets (both the built-in one and user extensions) to include
        LaTeXML's stylesheet modules by using the urn form, such as
-       urn:x-LaTeXML:stylesheets:LaTeXML-common.rng -->
+       urn:x-LaTeXML:XSLT:LaTeXML-common.rng -->
   <rewriteURI uriStartString="urn:x-LaTeXML:XSLT:" rewritePrefix="resources/XSLT/"/>
 
 </catalog>
