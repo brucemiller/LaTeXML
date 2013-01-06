@@ -139,7 +139,7 @@ MakeGrammar
 # the namespace declaration since HTML must be in null namespace,
 # whereas XHTML must be in a specific namespace.
 sub compile_XSLTs {
-  my $styledir = 'LaTeXML/style';
+  my $styledir = 'LaTeXML/resources/XSLT';
   # The (.) is supposed to match an open single or double quote;
   # unfortunately, quoting the quote and having it work in all shells, windows,.....
   # Let's just hope that whatever's matched is a quote!
@@ -154,7 +154,7 @@ sub compile_XSLTs {
     $MORE_MAKERULES .= <<"MakeXSLT";
 
 # Convert the generic $xhtml stylesheet for use with plain html.
-pure_all :: \$(INST_LIBDIR)/LaTeXML/style/$html
+pure_all :: \$(INST_LIBDIR)/$styledir/$html
 
 \$(INST_LIBDIR)/$styledir/$html: lib/$styledir/$xhtml
 	\$(NOECHO) \$(MKPATH) \$(INST_LIBDIR)/$styledir
