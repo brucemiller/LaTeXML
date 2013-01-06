@@ -8,7 +8,7 @@ use Pod::Usage;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $WORKDIR   = $FindBin::RealBin;
 my $SRCDIR    = $WORKDIR."/../..";
-my $SCHEMADIR = "$SRCDIR/lib/LaTeXML/schema/RelaxNG";
+my $SCHEMADIR = "$SRCDIR/lib/LaTeXML/resources/RelaxNG";
 
 my $identity = "genschema (part of LaTeXML)";
 my($force,$help)=(0,0);
