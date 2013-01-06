@@ -433,7 +433,7 @@ sub new {
   if(!$schemadoc){
     if(my $path = pathname_find($name, paths=>$options{searchpaths}||['.'],
 				types=>['rng'],	# Eventually, rnc?
-				installation_subdir=>'schema/RelaxNG')){
+				installation_subdir=>'resources/RelaxNG')){
       #  Hopefully, just a file, not a URL?
       $schemadoc = $xmlparser->parseFile($path); }
     else {
