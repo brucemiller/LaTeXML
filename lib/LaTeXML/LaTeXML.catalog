@@ -5,17 +5,31 @@
   <public publicId="-//NIST LaTeXML//LaTeXML article"
           uri="dtd/LaTeXML.dtd"/>
 
-  <!-- This is so a plain request for the schema "LaTeXML.rng" gets found -->
-  <uri name="LaTeXML.rng"           uri="schema/RelaxNG/LaTeXML.rng"/>
+  <!-- ======================================================================
+       Schema related entries -->
+  <!-- A plain request for the schema "LaTeXML.rng" gets found -->
+  <uri name="LaTeXML.rnc"         uri="resources/RelaxNG/LaTeXML.rnc"/>
+  <uri name="LaTeXML.rng"         uri="resources/RelaxNG/LaTeXML.rng"/>
+
+  <uri name="svg11.rnc"           uri="resources/RelaxNG/svg/svg11.rnc"/>
+  <uri name="svg11.rng"           uri="resources/RelaxNG/svg/svg11.rng"/>
 
   <!-- This allows schema (both the built-in one and user extensions) to include
        LaTeXML's schema modules by using the urn form, such as
        urn:x-LaTeXML:schemas:LaTeXML-common.rng -->
-  <rewriteURI uriStartString="urn:x-LaTeXML:schemas:" rewritePrefix="schema/RelaxNG/"/>
+  <rewriteURI uriStartString="urn:x-LaTeXML:RelaxNG:svg:" rewritePrefix="resources/RelaxNG/svg/"/>
+  <rewriteURI uriStartString="urn:x-LaTeXML:RelaxNG:" rewritePrefix="resources/RelaxNG/"/>
+
+  <!-- ======================================================================
+       XSLT related entries -->
+
+  <!-- OBSOLETE -->
+
+  <rewriteURI uriStartString="urn:x-LaTeXML:stylesheets:" rewritePrefix="style/"/>
 
   <!-- This allows XSLT Stylesheets (both the built-in one and user extensions) to include
        LaTeXML's stylesheet modules by using the urn form, such as
        urn:x-LaTeXML:stylesheets:LaTeXML-common.rng -->
-  <rewriteURI uriStartString="urn:x-LaTeXML:stylesheets:" rewritePrefix="style/"/>
+  <rewriteURI uriStartString="urn:x-LaTeXML:XSLT:" rewritePrefix="resources/XSLT/"/>
 
 </catalog>
