@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-misc.rnc                                                   |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="Misc.class" combine="choice">
+    <a:documentation> Miscellaneous (Misc) elements are (typically) visible
+elements which don't have clear inline or block character;
+they can appear in both inline and block contexts.</a:documentation>
+    <choice>
+      <ref name="inline-block"/>
+      <ref name="verbatim"/>
+      <ref name="break"/>
+      <ref name="graphics"/>
+      <ref name="svg"/>
+      <ref name="rawhtml"/>
+    </choice>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-block">
+    <element name="inline-block">
+      <a:documentation>An inline block. Actually, can appear in inline or block mode, but
+typesets its contents as a block.</a:documentation>
+      <ref name="inline-block_attributes"/>
+      <ref name="inline-block_model"/>
+    </element>
+  </define>
+  <define name="inline-block_attributes">
+    <a:documentation>Attributes for \elementref{inline-block}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Positionable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-block_model">
+    <a:documentation>Content model for \elementref{inline-block}.</a:documentation>
+    <ref name="Block.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="verbatim">
+    <element name="verbatim">
+      <a:documentation>Verbatim content</a:documentation>
+      <ref name="verbatim_attributes"/>
+      <ref name="verbatim_model"/>
+    </element>
+  </define>
+  <define name="verbatim_attributes">
+    <a:documentation>Attributes for \elementref{verbatim}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Fontable.attributes"/>
+    <ref name="Colorable.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="verbatim_model">
+    <a:documentation>Content model for \elementref{verbatim}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="break">
+    <element name="break">
+      <a:documentation>A forced line break.</a:documentation>
+      <ref name="break_attributes"/>
+      <ref name="break_model"/>
+    </element>
+  </define>
+  <define name="break_attributes">
+    <a:documentation>Attributes for \elementref{break}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="break_model">
+    <a:documentation>Content model for \elementref{break}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="graphics">
+    <element name="graphics">
+      <a:documentation>A graphical insertion of an external file. </a:documentation>
+      <ref name="graphics_attributes"/>
+      <ref name="graphics_model"/>
+    </element>
+  </define>
+  <define name="graphics_attributes">
+    <a:documentation>Attributes for \elementref{graphics}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Imageable.attributes"/>
+    <optional>
+      <attribute name="graphic">
+        <a:documentation>the path to the graphics file. This is the (often minimally specified) path
+to a graphics file omitting the type extension.  Once resolved to a specific
+image file, the \attr{imagesrc} (from Imageable.attributes) is used.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="candidates">
+        <a:documentation>a comma separated list of candidate graphics files that could be used to
+for \attr{graphic}.  A post-processor or application may choose from these,
+or may make its own selection or synthesis to implement the graphic for a given target.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="options">
+        <a:documentation>an encoding of the scaling and positioning options
+to be used in processing the graphic.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="graphics_model">
+    <a:documentation>Content model for \elementref{graphics}.</a:documentation>
+    <empty/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="svg">
+    <grammar>
+      <a:documentation>An SVG (Scalable Vector Graphics) object
+[eventually must adapt to put LaTeXML objects in foreignObject]</a:documentation>
+      <include href="urn:x-LaTeXML:RelaxNG:svg:svg11.rng">
+        <define name="SVG.foreignObject.content">
+          <parentRef name="Flow.model"/>
+        </define>
+      </include>
+    </grammar>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="htmlElement">
+    <element>
+      <nsName ns="http://www.w3.org/1999/xhtml"/>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <text/>
+          <ref name="htmlElement"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+  <define name="rawhtml">
+    <element name="rawhtml">
+      <a:documentation>A container for arbitrary markup in the xhtml namespace
+(not currently validated against any particular html schema)</a:documentation>
+      <zeroOrMore>
+        <ref name="htmlElement"/>
+      </zeroOrMore>
+    </element>
+  </define>
+</grammar>
+<!-- ====================================================================== -->

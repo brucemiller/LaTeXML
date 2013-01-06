@@ -1,0 +1,287 @@
+# /=====================================================================\ 
+# |  LaTeXML-classes.rnc                                                |
+# | Document Type for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+# Basic element classes:
+
+## All strictly inline elements.
+Inline.class = notAllowed
+
+## All `physical' block elements. 
+## A physical block is typically displayed as a block, but
+## may not constitute a complete logical unit.
+Block.class = notAllowed
+
+## Additional miscellaneous elements that can appear in
+## both inline and block contexts.
+Misc.class = notAllowed
+
+## All logical block level elements.
+## A logical block typically contains one or more physical block elements.
+## For example, a common situation might be \elementref{p},\elementref{equation},\elementref{p},
+## where the entire sequence comprises a single sentence.
+Para.class = notAllowed
+
+## All metadata elements, typically representing hidden data.
+Meta.class = notAllowed
+
+# ======================================================================
+# Attribute types
+
+## The type for attributes specifying a length.
+## Should be a number followed by a length, typically px.
+## NOTE: To be narrowed later.
+Length.type = text
+
+## The type for attributes specifying a color.
+## NOTE: To be narrowed later.
+Color.type = text
+
+# ======================================================================
+## Attributes shared by ALL elements.
+Common.attributes =
+
+#  ## provides for namespace declaration.
+#  attribute xmlns { text }?,
+
+  ## a space separated list of tokens, as in CSS.
+  ## The \attr{class} can be used to add differentiate different instances of elements
+  ## without introducing new element declarations.
+  ## However, this generally shouldn't be used for deep semantic distinctions.
+  ## This attribute is carried over to HTML and can be used for CSS selection.
+  ## [Note that the default XSLT stylesheets for html and xhtml
+  ## add the latexml element names to the class of html elements
+  ## for more convenience in using CSS.]
+  attribute class { xsd:NMTOKENS }?,
+
+  ## CSS styling rules.
+  ## These will only be effective when the target system supports CSS.
+  attribute cssstyle { text }?,
+
+  RDF.attributes
+
+## Attributes for elements that can be cross-referenced
+## from inside or outside the document.
+ID.attributes = 
+
+  ## the unique identifier of the element, 
+  ## usually generated automatically by the latexml.
+  attribute xml:id { xsd:ID }?
+
+## Attributes for elements that can cross-reference other elements.
+IDREF.attributes =
+
+  ## the identifier of the referred-to element.
+  attribute idref { xsd:IDREF }?
+
+## Attributes for elements that can be labelled from within LaTeX.
+## These attributes deal with assigning a label and generating cross references.
+Labelled.attributes =
+  ID.attributes,
+
+  ## Records the various labels that LaTeX uses for crossreferencing.
+  ## (note that \cs{label} can associate more than one label with an object!)
+  ## It consists of space separated labels for the element.
+  ## The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
+  ## Spaces in a label are replaced by underscore.
+  ## Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)
+  attribute labels { text }?,
+
+  ## the reference number (ie. section number, equation number, etc) of the object.
+  attribute refnum { text }?,
+
+  ## the formatted reference number of the object, typically this is the refnum with
+  ## the object type prepended, such as "Chapter 2"
+  attribute frefnum { text }?
+
+## Attributes for elements that contain (indirectly) text whose font can be specified.
+Fontable.attributes =
+
+  ## Indicates the font to use. It consists of a space separated sequence
+  ## of values representing the
+  ## family (\texttt{serif}, \texttt{sansserif}, \texttt{math}, \texttt{typewriter},
+  ##     \texttt{caligraphic}, \texttt{fraktur}, \texttt{script}, \ldots),
+  ## series (\texttt{medium}, \texttt{bold}, \ldots),
+  ## and shape (\texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps}, \ldots).
+  ## Only the values differing from the current context are given.
+  ## Each component is open-ended, for extensibility; it is thus unclear
+  ## whether unknown values specify family, series or shape.
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
+  attribute font { text }?,
+
+  ## Indicates the text size to use. The values are modeled after the
+  ## more abstract \LaTeX\ font size switches, rather than point-sizes.
+  ## The values are open-ended for extensibility;
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
+  attribute fontsize { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
+                      | "small" | "footnote" | "tiny" | text }?
+
+## Attributes for elements that draw something, text or otherwise, that can be colored.
+Colorable.attributes =
+  ## the color to use (for foreground material); any CSS compatible color specification.
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS.
+  attribute color { text }?,
+
+  ## the opacity of foreground material; a number between 0 and 1.
+  attribute opacity { xsd:float }?
+
+## Attributes for elements that take up space and make sense to have a background color.
+## This is independent of the colors of any things that it may draw.
+Backgroundable.attributes =
+  ## the color to use for the background of the element; any CSS compatible color specification.
+  ## In postprocessing, these values are carried to the \attr{class} attribute,
+  ## and can thus be effected by CSS; the background will presumably
+  ## correspond to a bounding rectangle, but is determined by the CSS rendering engine.
+  attribute backgroundcolor { text }?
+
+## Attributes shared by low-level, generic inline and block elements
+## that can be sized or shifted.
+Positionable.attributes =
+
+  ## the desired width of the box
+  attribute width { Length.type }?,
+
+  ## the desired height of the box
+  attribute height { Length.type }?,
+
+  ## the desired depth of the box
+  attribute depth { Length.type }?,
+
+  ## extra width beyond the boxes natural size.
+  attribute pad-width { Length.type }?,
+
+  ## extra height beyond the boxes natural size.
+  attribute pad-height { Length.type }?,
+
+  ## horizontal shift the position of the box.
+  attribute xoffset { Length.type }?,
+
+  ## vertical shift the position of the box.
+  attribute yoffset { Length.type }?,
+
+  ## alignment of material within the box.
+  attribute align { "left" | "center" | "right" | "justified" }?,
+
+  ## specifies which line of the box is aligned to the baseline of the containing object.
+  attribute vattach { "top" | "middle" | "bottom" }?,
+
+  ## the horizontal floating placement parameter that determines where the object is displayed.
+  attribute float { ( "right" | "left" | text) }?,
+
+  ## the kind of frame or outline for the box.
+  attribute framed { "rectangle" | "underline" | text }?,
+
+  ## the color of the frame or outlie for the box.
+  attribute framecolor { text }?
+
+## Attributes for elements that may be converted to image form
+## during postprocessing, such as math, graphics, pictures, etc.
+## Note that these attributes are generally not filled in until postprocessing,
+## but that they could be init
+Imageable.attributes =
+
+  ## the file, possibly generated from other data.
+  attribute imagesrc { xsd:anyURI }?,
+
+  ## the width in pixels of \attr{imagesrc}.
+  attribute imagewidth { xsd:nonNegativeInteger}?,
+
+  ## the height in pixels of \attr{imagesrc}.
+  ## Note that, unlike \TeX, this is the total height, including the depth (if any).
+  attribute imageheight { xsd:nonNegativeInteger }?,
+
+  ## the depth in pixels of \attr{imagesrc}, being the location of the
+  ## baseline of the content shown in the image.
+  ## When displayed inilne, an image with a positive \attr{depth}
+  ## should be shifted down relative to the baseline of neighboring material.
+  attribute imagedepth { xsd:integer }?,
+
+  ## a description of the image
+  attribute description { text }?
+
+## Attributes for RDFa (Resource Description Framework),
+## following RDFa Core 1.1 \url{http://www.w3.org/TR/rdfa-syntax/}.
+## The following descriptions give a short overview of the usage of the attributes,
+## but see the specification for the complete details, which are sometimes complex.
+RDF.attributes = 
+  ## indicates the default vocabulary
+  ## (generally should be managed by LaTeXML and only appear on root node)
+  attribute vocab { text }?,
+
+  ## specifies a mapping between CURIE prefixes and IRI (URI).
+  ## (generally should be managed by LaTeXML and only appear on root node)
+  attribute prefix { text }?,
+
+
+  ## indicates the subject for predicates appearing on the same or descendant nodes.
+  attribute about { text }?,
+
+  ## gives the label for the document element that serves as the subject;
+  ## it will be converted to \attr{aboutidref} and \attr{about} during post-processing.
+  attribute aboutlabelref { text }?,
+
+  ## gives the id for the document element that serves as the subject;
+  ## it will be converted to \attr{about} during post-processing.
+  attribute aboutidref { text }?,
+
+  ## indicates the subject for predicates appearing on descendant nodes,
+  ## and also indicates the object for predicates
+  ## when \attr{property} appears on the same node,
+  ## or when \attr{rel} or \attr{rev} appears on an ancestor.
+  attribute resource { text }?,
+
+  ## gives the label for the document element that serves as the resource object;
+  ## it will be converted to \attr{resourceidref} and \attr{resource} during post-processing.
+  attribute resourcelabelref { text }?,
+
+  ## gives the id for the document element that serves as the resource object;
+  ## it will be converted to \attr{resource} during post-processing.
+  attribute resourceidref { text }?,
+
+  ## indicates the predicate and
+  ## asserts that the subject is related by that predicate to the object.
+  ## The subject is determined by one of \attr{about} on same node,
+  ## \attr{resource} or \attr{typeof} on an ancestor node, or by the document root.
+  ## The object is determined by one of \attr{resource}, \attr{href}, \attr{content}
+  ## or \attr{typeof} on the same node, or by the text content of the node.
+  attribute property { text }?,
+
+  ## indicates the predicate exactly as \attr{property} except that it can
+  ## assert multiple RDF triples where the objects are the nearest descendent \attr{resource}s.
+  attribute rel { text }?,
+
+  ## indicates the predicate exactly as \attr{rel} except that it indicates
+  ## the reverse relationship (with subject and object swapped).
+  attribute rev { text }?,
+
+  ## indicates the type of the \attr{resource} and thus implicitly asserts a relation
+  ## that the object has the given type.
+  ## Additionally, if no \attr{resource} was given on the same node,
+  ## indicates an anonymous subject and or object exactly as \attr{resource}
+  attribute typeof { text }?,
+
+
+  ## indicates the datatype of the target resource;
+  attribute datatype { text }?,
+
+  ## indicates the content of the property to be used as the object,
+  ## to be used instead of the content of the element itself;
+  attribute content { text }?
+
+
+
+
+

@@ -1,0 +1,237 @@
+# /=====================================================================\ 
+# |  LaTeXML-inline.rnc                                                 |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## The inline module defines basic inline elements used throughout.
+Inline.class |= 
+    \text | emph | del | sub | sup | acronym | rule
+  | anchor | ref | cite | bibref
+
+#======================================================================
+
+\text =
+## General container for styled text.
+## Attributes cover a variety of styling and position shifting properties.
+element text { text_attributes, text_model }
+
+## Attributes for \elementref{text}.
+text_attributes = 
+  Common.attributes,
+  Positionable.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{text}.
+text_model = Inline.model
+
+#======================================================================
+
+emph =
+## Emphasized text.
+element emph { emph_attributes, emph_model }
+
+## Attributes for \elementref{emph}.
+emph_attributes =
+  Common.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{emph}.
+emph_model = Inline.model
+
+#======================================================================
+
+del =
+## Deleted text.
+element del { del_attributes, del_model }
+
+## Attributes for \elementref{del}.
+del_attributes =
+  Common.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{del}.
+del_model = Inline.model
+
+#======================================================================
+
+sub =
+## Textual subscript text.
+element sub { sub_attributes, sub_model }
+
+## Attributes for \elementref{sub}.
+sub_attributes =  Common.attributes
+
+## Content model for \elementref{sub}.
+sub_model = Inline.model
+
+#======================================================================
+
+sup =
+## Textual superscript text.
+element sup { sup_attributes, sup_model }
+
+## Attributes for \elementref{sup}.
+sup_attributes =  Common.attributes
+
+## Content model for \elementref{sup}.
+sup_model = Inline.model
+
+#======================================================================
+
+acronym =
+## Represents an acronym.
+element acronym { acronym_attributes, acronym_model }
+
+## Attributes for \elementref{acronym}.
+acronym_attributes =
+  Common.attributes,
+  ## should be used to indicate the expansion of the acronym.
+  attribute name { text }?
+
+## Content model for \elementref{acronym}.
+acronym_model = Inline.model
+
+#======================================================================
+
+rule =
+## A Rule.
+element rule { rule_attributes, rule_model }
+
+## Attributes for \elementref{rule}.
+rule_attributes =
+  Common.attributes,
+  Positionable.attributes,
+  Colorable.attributes
+
+## Content model for \elementref{rule}.
+rule_model = empty
+
+#======================================================================
+
+ref =
+## A hyperlink reference to some other object. 
+## When converted to HTML, the content would be the content of the anchor.
+## The destination can be specified by one of the 
+## attributes \attr{labelref}, \attr{idref} or \attr{href};
+## Missing fields will usually be filled in during postprocessing,
+## based on data extracted from the document(s).
+element ref { ref_attributes, ref_model }
+
+## Attributes for \elementref{ref}.
+ref_attributes =
+  Common.attributes,
+
+  ## reference to an internal identifier.
+  IDREF.attributes,
+
+  ## reference to a LaTeX labelled object;
+  ## See the \attr{labels} attribute of \patternref{Labelled.attributes}.
+  attribute labelref { text }?,
+
+  ## reference to an arbitrary url.
+  attribute href { text }?,
+
+  ## a pattern encoding how the text content should be filled in during
+  ## postprocessing, if it is empty.
+  ## It consists of the words
+  ##   \texttt{type} (standing for the object type, eg. Ch.),
+  ##   \texttt{refnum} and \texttt{title}
+  ## mixed with arbitrary characters. The 
+  ## It can also be \texttt{fulltitle}, which indicates the title 
+  ## with prefix and type if section numbering is enabled.
+  attribute show { text }?,
+
+  ## gives a longer form description of the target,
+  ## this would typically appear as a tooltip in HTML.
+  ## Typically filled in by postprocessor.
+  attribute title { text }?
+
+## Content model for \elementref{ref}.
+ref_model = Inline.model
+
+#======================================================================
+
+anchor =
+## Inline anchor.
+element anchor { anchor_attributes, anchor_model }
+
+## Attributes for \elementref{anchor}.
+anchor_attributes = Common.attributes, ID.attributes
+
+## Content model for \elementref{anchor}.
+anchor_model = Inline.model
+
+#======================================================================
+
+cite =
+## A container for a bibliographic citation. The model is inline to
+## allow arbitrary comments before and after the expected \elementref{bibref}(s)
+## which are the specific citation.
+element cite { cite_attributes, cite_model }
+
+## Attributes for \elementref{cite}.
+cite_attributes = Common.attributes
+
+## Content model for \elementref{cite}.
+cite_model = Inline.model
+
+#======================================================================
+
+bibref =
+## A bibliographic citation refering to a specific bibliographic item.
+element bibref { bibref_attributes, bibref_model }
+
+## Attributes for \elementref{bibref}.
+bibref_attributes =
+  Common.attributes,
+  IDREF.attributes,
+
+  ## a comma separated list of bibliographic keys.
+  ## (See the \attr{key} attribute of \elementref{bibitem} and \elementref{bibentry})
+  attribute bibrefs { text }?,
+
+  ## a pattern encoding how the text content (of an empty bibref) will be filled in.
+  ## Consists of strings \texttt{author}, \texttt{fullauthor}, \texttt{year},
+  ## \texttt{number} and \texttt{title}
+  ## (to be replaced by data from the bibliographic item)
+  ## mixed with arbitrary characters.
+  attribute show { text }?,
+
+  ## separator between formatted references
+  attribute separator { text }?,
+
+  ## separator between formatted years when duplicate authors are combined.
+  attribute yyseparator { text }?
+
+## Content model for \elementref{bibref}.
+bibref_model = bibrefphrase*
+
+#======================================================================
+
+bibrefphrase =
+## A preceding or following phrase used in composing a bibliographic reference,
+## such as listing pages or chapter.
+element bibrefphrase { bibrefphrase_attributes, bibrefphrase_model }
+
+## Attributes for \elementref{bibrefphrase}
+bibrefphrase_attributes = Common.attributes
+
+## Content model for \elementref{bibrefphrase}
+bibrefphrase_model = Inline.model
+
+#======================================================================

@@ -1,0 +1,115 @@
+# /=====================================================================\ 
+# |  LaTeXML-misc.rnc                                                   |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+namespace xhtml = "http://www.w3.org/1999/xhtml"
+
+##  Miscellaneous (Misc) elements are (typically) visible
+## elements which don't have clear inline or block character;
+## they can appear in both inline and block contexts.
+Misc.class  |= inline-block | verbatim | break | graphics | svg | rawhtml
+
+#======================================================================
+
+inline-block =
+## An inline block. Actually, can appear in inline or block mode, but
+## typesets its contents as a block.
+element inline-block { inline-block_attributes, inline-block_model }
+
+## Attributes for \elementref{inline-block}.
+inline-block_attributes =
+  Common.attributes,
+  ID.attributes,
+  Positionable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-block}.
+inline-block_model = Block.model
+
+#======================================================================
+
+verbatim =
+## Verbatim content
+element verbatim { verbatim_attributes, verbatim_model }
+
+## Attributes for \elementref{verbatim}.
+verbatim_attributes =
+  Common.attributes,
+  ID.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{verbatim}.
+verbatim_model = Inline.model
+
+#======================================================================
+
+break =
+## A forced line break.
+element break {  break_attributes, break_model }
+
+## Attributes for \elementref{break}.
+break_attributes = Common.attributes
+
+## Content model for \elementref{break}.
+break_model = empty
+
+#======================================================================
+
+graphics =
+## A graphical insertion of an external file. 
+element graphics { graphics_attributes, graphics_model }
+
+## Attributes for \elementref{graphics}.
+graphics_attributes =
+  Common.attributes,
+  ID.attributes,
+  Imageable.attributes,
+
+  ## the path to the graphics file. This is the (often minimally specified) path
+  ## to a graphics file omitting the type extension.  Once resolved to a specific
+  ## image file, the \attr{imagesrc} (from Imageable.attributes) is used.
+  attribute graphic { text }?,
+
+  ## a comma separated list of candidate graphics files that could be used to
+  ## for \attr{graphic}.  A post-processor or application may choose from these,
+  ## or may make its own selection or synthesis to implement the graphic for a given target.
+  attribute candidates { text }?,
+
+  ## an encoding of the scaling and positioning options
+  ## to be used in processing the graphic.
+  attribute options { text }?
+
+
+## Content model for \elementref{graphics}.
+graphics_model = empty
+
+#======================================================================
+
+svg =
+## An SVG (Scalable Vector Graphics) object
+## [eventually must adapt to put LaTeXML objects in foreignObject]
+grammar {
+  include "svg11.rnc"
+  { SVG.foreignObject.content = parent Flow.model }
+}
+#======================================================================
+
+htmlElement = element xhtml:* { (attribute * { text } | text | htmlElement) * }
+
+rawhtml = 
+## A container for arbitrary markup in the xhtml namespace
+## (not currently validated against any particular html schema)
+element rawhtml {  htmlElement * }
+
+#======================================================================

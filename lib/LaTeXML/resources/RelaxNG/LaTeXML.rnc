@@ -1,0 +1,46 @@
+# /=====================================================================\ 
+# |  LaTeXML.rnc                                                        |
+# | Document Type for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+namespace m     = "http://www.w3.org/1998/Math/MathML"
+namespace svg   = "http://www.w3.org/2000/svg"
+namespace xlink = "http://www.w3.org/1999/xlink"
+
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-common.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-inline.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-block.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-misc.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-meta.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-para.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-math.rnc"
+
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-tabular.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-picture.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-structure.rnc"
+include "urn:x-LaTeXML:RelaxNG:LaTeXML-bib.rnc"
+
+## Combined model for inline content.
+Inline.model = (text | Inline.class | Misc.class | Meta.class)*
+
+## Combined model for physical block-level content.
+Block.model =
+  (Block.class | Misc.class | Meta.class)*
+
+## Combined model for general flow containing both inline and block level content.
+Flow.model = 
+  (text | Inline.class | Block.class | Misc.class | Meta.class)*
+
+## Combined model for logical block-level context.
+Para.model = (Para.class | Meta.class)*
+
+start = document

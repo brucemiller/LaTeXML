@@ -1,0 +1,123 @@
+# /=====================================================================\ 
+# |  LaTeXML-meta.rnc                                                   |
+# | RelaxNG model for LaTeXML generated documents                       |
+# |=====================================================================|
+# | Part of LaTeXML:                                                    |
+# |  Public domain software, produced as part of work done by the       |
+# |  United States Government & not subject to copyright in the US.     |
+# |=====================================================================|
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+# \=========================================================ooo==U==ooo=/
+
+default namespace = "http://dlmf.nist.gov/LaTeXML"
+
+## Meta elements are generally hidden;
+## they can appear in both inline and block contexts.
+Meta.class   |= note |  indexmark | rdf | ERROR
+
+#======================================================================
+
+note =
+## Metadata that covers several `out of band' annotations.
+## It's content allows both inline and block-level content.
+element note { note_attributes, note_model }
+
+## Attributes for \elementref{note}.
+note_attributes =
+  Common.attributes,
+
+  ## indicates the desired visible marker to be linked to the note.
+  attribute mark { text }?,
+
+  ## indicates the kind of note
+  attribute role { "footnote" | text }?
+
+## Content model for \elementref{note}.
+note_model = Flow.model
+
+# should mark be more like label/refnum ?
+
+#======================================================================
+
+indexmark =
+## Metadata to record an indexing position. The content is 
+## a sequence of \elementref{indexphrase}, each representing a level in
+## a multilevel indexing entry.
+element indexmark { indexmark_attributes, indexmark_model }
+
+## Attributes for \elementref{indexmark}.
+indexmark_attributes =
+  Common.attributes,
+  ## a flattened form (like \attr{key}) of another \elementref{indexmark},
+  ## used to crossreference.
+  attribute see_also { text }?,
+
+  ## NOTE: describe this.
+  attribute style { text }?
+
+## Content model for \elementref{indexmark}.
+indexmark_model = indexphrase*, indexsee*
+
+#======================================================================
+
+indexphrase =
+## A phrase within an \elementref{indexmark}
+element indexphrase { indexphrase_attributes, indexphrase_model }
+
+## Attributes for \elementref{indexphrase}.
+indexphrase_attributes =
+  Common.attributes,
+
+  ## a flattened form of the phrase for generating an \attr{ID}.
+  attribute key { text }?
+
+## Content model for \elementref{indexphrase}.
+indexphrase_model = Inline.model
+
+indexsee =
+## A see-also phrase within an \elementref{indexmark}
+element indexsee { indexsee_attributes, indexsee_model }
+
+## Attributes for \elementref{indexsee}.
+indexsee_attributes =
+  Common.attributes,
+
+  ## a flattened form of the phrase for generating an \attr{ID}.
+  attribute key { text }?,
+
+  ## a name for the see phrase, such as "see also".
+  attribute name { text }?
+
+## Content model for \elementref{indexsee}.
+indexsee_model = Inline.model
+
+#======================================================================
+
+rdf =
+## A container for RDF annotations.
+## (See document structure for rdf-prefixes attribute)
+element rdf { rdf_attributes, rdf_model }
+
+## Attributes for \elementref{rdf}
+rdf_attributes =
+  Common.attributes
+
+## Content model for \elementref{rdf}
+rdf_model = Flow.model
+
+#======================================================================
+
+ERROR =
+## error object for undefined control sequences, or whatever
+element ERROR { ERROR_attributes, ERROR_model }
+
+## Attributes for \elementref{ERROR}.
+ERROR_attributes = Common.attributes
+
+## Content model for \elementref{ERROR}.
+ERROR_model = text*
+
+#======================================================================
+
+

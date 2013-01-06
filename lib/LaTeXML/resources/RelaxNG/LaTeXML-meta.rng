@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  /=====================================================================\ 
+  |  LaTeXML-meta.rnc                                                   |
+  | RelaxNG model for LaTeXML generated documents                       |
+  |=====================================================================|
+  | Part of LaTeXML:                                                    |
+  |  Public domain software, produced as part of work done by the       |
+  |  United States Government & not subject to copyright in the US.     |
+  |=====================================================================|
+  | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
+  | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
+  \=========================================================ooo==U==ooo=/
+-->
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+  <define name="Meta.class" combine="choice">
+    <a:documentation>Meta elements are generally hidden;
+they can appear in both inline and block contexts.</a:documentation>
+    <choice>
+      <ref name="note"/>
+      <ref name="indexmark"/>
+      <ref name="rdf"/>
+      <ref name="ERROR"/>
+    </choice>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="note">
+    <element name="note">
+      <a:documentation>Metadata that covers several `out of band' annotations.
+It's content allows both inline and block-level content.</a:documentation>
+      <ref name="note_attributes"/>
+      <ref name="note_model"/>
+    </element>
+  </define>
+  <define name="note_attributes">
+    <a:documentation>Attributes for \elementref{note}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="mark">
+        <a:documentation>indicates the desired visible marker to be linked to the note.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="role">
+        <a:documentation>indicates the kind of note</a:documentation>
+        <choice>
+          <value>footnote</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+  </define>
+  <define name="note_model">
+    <a:documentation>Content model for \elementref{note}.</a:documentation>
+    <ref name="Flow.model"/>
+  </define>
+  <!-- should mark be more like label/refnum ? -->
+  <!-- ====================================================================== -->
+  <define name="indexmark">
+    <element name="indexmark">
+      <a:documentation>Metadata to record an indexing position. The content is 
+a sequence of \elementref{indexphrase}, each representing a level in
+a multilevel indexing entry.</a:documentation>
+      <ref name="indexmark_attributes"/>
+      <ref name="indexmark_model"/>
+    </element>
+  </define>
+  <define name="indexmark_attributes">
+    <a:documentation>Attributes for \elementref{indexmark}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="see_also">
+        <a:documentation>a flattened form (like \attr{key}) of another \elementref{indexmark},
+used to crossreference.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="style">
+        <a:documentation>NOTE: describe this.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="indexmark_model">
+    <a:documentation>Content model for \elementref{indexmark}.</a:documentation>
+    <zeroOrMore>
+      <ref name="indexphrase"/>
+    </zeroOrMore>
+    <zeroOrMore>
+      <ref name="indexsee"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="indexphrase">
+    <element name="indexphrase">
+      <a:documentation>A phrase within an \elementref{indexmark}</a:documentation>
+      <ref name="indexphrase_attributes"/>
+      <ref name="indexphrase_model"/>
+    </element>
+  </define>
+  <define name="indexphrase_attributes">
+    <a:documentation>Attributes for \elementref{indexphrase}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="indexphrase_model">
+    <a:documentation>Content model for \elementref{indexphrase}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <define name="indexsee">
+    <element name="indexsee">
+      <a:documentation>A see-also phrase within an \elementref{indexmark}</a:documentation>
+      <ref name="indexsee_attributes"/>
+      <ref name="indexsee_model"/>
+    </element>
+  </define>
+  <define name="indexsee_attributes">
+    <a:documentation>Attributes for \elementref{indexsee}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="name">
+        <a:documentation>a name for the see phrase, such as "see also".</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="indexsee_model">
+    <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="rdf">
+    <element name="rdf">
+      <a:documentation>A container for RDF annotations.
+(See document structure for rdf-prefixes attribute)</a:documentation>
+      <ref name="rdf_attributes"/>
+      <ref name="rdf_model"/>
+    </element>
+  </define>
+  <define name="rdf_attributes">
+    <a:documentation>Attributes for \elementref{rdf}</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="rdf_model">
+    <a:documentation>Content model for \elementref{rdf}</a:documentation>
+    <ref name="Flow.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="ERROR">
+    <element name="ERROR">
+      <a:documentation>error object for undefined control sequences, or whatever</a:documentation>
+      <ref name="ERROR_attributes"/>
+      <ref name="ERROR_model"/>
+    </element>
+  </define>
+  <define name="ERROR_attributes">
+    <a:documentation>Attributes for \elementref{ERROR}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="ERROR_model">
+    <a:documentation>Content model for \elementref{ERROR}.</a:documentation>
+    <zeroOrMore>
+      <text/>
+    </zeroOrMore>
+  </define>
+</grammar>
+<!-- ====================================================================== -->
