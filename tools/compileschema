@@ -1,0 +1,96 @@
+#!/bin/bash
+#======================================================================
+# Convert & Compile LaTeXML's schema from the RelaxNG Compact Form
+# generating the rng forms;
+# the compiled model list
+# & dtd.
+#======================================================================
+
+# bash analog of FindBin::RealBin
+TOOLSDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+# We're assuming this script is in latexml/tools
+LATEXMLDIR=$TOOLSDIR/..
+RESOURCEDIR=$LATEXMLDIR/lib/LaTeXML/resources
+
+TRANG="trang -C $LATEXMLDIR/lib/LaTeXML/LaTeXML.catalog"
+
+TMP=/tmp/LaTeXML$$
+mkdir $TMP
+
+SCHEMA=LaTeXML
+
+#======================================================================
+# Conversion of rnc (easy to write) to rng (easy to use)
+# This is the important part.
+#======================================================================
+echo "Converting $SCHEMA.rnc to $SCHEMA.rng"
+# Assuming trang executes trang-20091111
+$TRANG $RESOURCEDIR/RelaxNG/$SCHEMA.rnc $TMP/$SCHEMA.rng
+
+# Silly trang puts all converted rng for all the modules in the same directory.
+# Also mungs up the urn's naming them.  Fix it up.
+
+for RNG in $TMP/LaTeXML*.rng; do
+  sed \
+      -e "s/include href=\"LaTeXML-/include href=\"urn:x-LaTeXML:RelaxNG:LaTeXML-/" \
+      -e "s/include href=\"svg/include href=\"urn:x-LaTeXML:RelaxNG:svg:svg/" \
+      $RNG > $RESOURCEDIR/RelaxNG/$(basename $RNG)
+done
+
+for RNG in $TMP/svg*.rng; do
+  sed \
+      -e "s/include href=\"LaTeXML-/include href=\"urn:x-LaTeXML:RelaxNG:LaTeXML-/" \
+      -e "s/include href=\"svg/include href=\"urn:x-LaTeXML:RelaxNG:svg:svg/" \
+      $RNG > $RESOURCEDIR/RelaxNG/svg/$(basename $RNG)
+done
+
+#======================================================================
+# Compiling schema to quick loading form.
+#======================================================================
+echo "Precompiling $SCHEMA.rng schema to $SCHEMA.model"
+#  perl -I ~/latexml/lib/ -MLaTeXML \
+perl -I $LATEXMLDIR/blib/lib -MLaTeXML \
+       -e 'LaTeXML->new()->withState(sub{ $_[0]->getModel->compileSchema; print STDERR $_[0]->getStatusMessage;});' \
+       > $RESOURCEDIR/RelaxNG/$SCHEMA.model
+
+#======================================================================
+# Conversion to DTD
+# Really ought to just drop this....
+#======================================================================
+# Trang can't convert the schema to dtd mainly because we're gradually
+# combining the defines for models.
+# However, if we first simplify and flatten to a single rng, it can convert.
+#
+# The stylesheet simplification.xsl does the simplification.
+# It is by Eric van der Vlist, from
+#    http://downloads.xmlschemata.org/relax-ng/utilities/simplification.xsl
+# [linked from http://www.relaxng.org]
+#
+# However, this stylesheet looses the namespace declaration!!!!!
+#
+# Simplify the rng
+
+export XML_CATALOG_FILES=$LATEXMLDIR/lib/LaTeXML/LaTeXML.catalog
+
+echo "Simplifying $SCHEMA.rng for dtd"
+xsltproc --stringparam out-name $TMP/$SCHEMA-simplified- \
+    $TOOLSDIR/dtd-simplification.xsl $RESOURCEDIR/RelaxNG/$SCHEMA.rng > $TMP/dummy.log
+# The resulting simplified schema is now in /tmp/$SCHEMA-simplified-7-22.rng
+
+echo "Dumbing down the schema for DTD conversion"
+xsltproc $TOOLSDIR/dtd-dumbdown.xsl $TMP/$SCHEMA-simplified-7-22.rng > $TMP/$SCHEMA-dumbed.rng
+
+echo "Converting simplified $SCHEMA.rng to $SCHEMA.dtd"
+# Now, we can convert to dtd
+##trang /tmp/$SCHEMA-dumbed.rng /tmp/$SCHEMA.dtd
+$TRANG $TMP/$SCHEMA-dumbed.rng $TMP/$SCHEMA.dtd
+
+echo "Patching $SCHEMA.dtd"
+# However, as said, the namespace declaration got lost
+# so we'll fix it up...
+sed \
+   -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
+   -e 's/\bns1\b/ltx/g' \
+   $TMP/$SCHEMA.dtd  > $RESOURCEDIR/DTD/$SCHEMA.dtd
+
+#======================================================================
