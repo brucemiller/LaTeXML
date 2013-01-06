@@ -149,67 +149,6 @@
   </xsl:template>
 
   <!-- ltx:bibref not handled, since it is translated to ref in crossref module -->
-
-  <!-- ======================================================================
-       Typically invisible meta elements
-       ====================================================================== -->
-
-  <!-- normally hidden -->
-  <xsl:template match="ltx:note">
-    <span>
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-	<xsl:with-param name="extra_classes" select="@role"/>
-      </xsl:call-template>
-      <xsl:call-template name="note-mark"/>
-      <span class="{concat(local-name(.),'_content_outer')}">
-	<span class="{concat(local-name(.),'_content')}">
-	  <xsl:call-template name="note-mark"/>
-	  <xsl:if test="not(@role = 'footnote')">
-	    <span class="note-type"><xsl:value-of select="@role"/>: </span>
-	  </xsl:if>
-	  <xsl:apply-templates/>
-	</span>
-      </span>
-    </span>
-  </xsl:template>
-
-  <xsl:template name="note-mark">
-    <sup class="mark">
-      <xsl:choose>
-	<xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
-	<xsl:otherwise>&#x2020;</xsl:otherwise>
-      </xsl:choose>
-    </sup>
-  </xsl:template>
-
-  <xsl:template match="ltx:ERROR">
-    <span>
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates/>
-    </span>
-  </xsl:template>
-
-  <!-- invisible -->
-  <xsl:template match="ltx:indexmark"/>
-
-  <xsl:template match="ltx:indexphrase">
-    <span>
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates/>
-    </span>
-  </xsl:template>
-
-  <xsl:template match="ltx:rdf">
-    <div>
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates/>
-    </div>
-    <xsl:text>&#x0A;</xsl:text>
-  </xsl:template>
     
 </xsl:stylesheet>
 

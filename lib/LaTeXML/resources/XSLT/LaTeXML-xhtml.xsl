@@ -47,15 +47,17 @@
     </html>
   </xsl:template>
 
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-common.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-inline-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-block-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-para-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-math-mathml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-tabular-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-picture-svg.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-structure-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-bib-xhtml.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-webpage-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-inline-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-block-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-misc-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-meta-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-para-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-math-mathml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-tabular-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-picture-svg.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-structure-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-bib-xhtml.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-webpage-xhtml.xsl"/>
 
 </xsl:stylesheet>

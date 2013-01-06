@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
 /=====================================================================\ 
-|  LaTeXML-html5.xsl                                                  |
-|  Stylesheet for converting LaTeXML documents to html5               |
+|  LaTeXML-html.xsl                                                   |
+|  Stylesheet for converting LaTeXML documents to html                |
 |=====================================================================|
 | Part of LaTeXML:                                                    |
 |  Public domain software, produced as part of work done by the       |
@@ -20,17 +20,18 @@
 
   <xsl:output
       method = "html"
-      omit-xml-declaration="yes"
+      omit-xml-declaration = 'yes'
+      doctype-public = "-//W3C//DTD HTML 4.01//EN"
+      doctype-system = "http://www.w3.org/TR/html4/strict.dtd"
+      media-type     = 'text/html'
       encoding       = 'utf-8'
-      indent         = 'yes'
-      media-type     = 'text/html'/>
+      indent         = 'yes'/>
 
   <xsl:template name="metatype">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
   </xsl:template>
 
   <xsl:template match="/">
-    <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
     <html>
       <xsl:call-template name="add_RDFa_prefix"/>
       <xsl:call-template name="head"/>
@@ -39,15 +40,17 @@
     </html>
   </xsl:template>
 
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-common.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-inline-html.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-block-html.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-para-html5.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-math-mathml-html5.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-tabular-html.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-picture-svg-html5.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-structure-html5.xsl"/><!-- *** -->
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-bib-html.xsl"/>
-<xsl:include href="urn:x-LaTeXML:stylesheets:LaTeXML-webpage-html5.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-inline-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-block-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-misc-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-meta-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-para-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-math-image.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-tabular-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-picture-image.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-structure-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-bib-html.xsl"/>
+  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-webpage-html.xsl"/>
 
 </xsl:stylesheet>
