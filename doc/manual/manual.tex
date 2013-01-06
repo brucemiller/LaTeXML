@@ -1808,6 +1808,40 @@ is transformed into and treated equivalently to a top-level \code{align}.
 %% I'll just mention \code{equationmix},\code{equationgroup}.
 
 %%%======================================================================
+\chapter{Metadata}\label{metadata}
+\section{RDFa}\label{RDFa}
+\LaTeXML\ has support for representing and generating RDFa metadata in \LaTeXML\ documents.
+The core attributes \attr{property}, \attr{rel}, \attr{rev}, \attr{about}
+\attr{resource}, \attr{typeof} and \attr{content} are included.
+Provision is also made for \attr{about} and \attr{resource} to be specified
+using \LaTeX-style labels, or plain \XML\ id's.
+
+
+The default set of vocabularies is specified in
+\URL[HTML Role Vocabulary]{http://www.w3.org/1999/xhtml/vocab/#XHTMLRoleVocabulary},
+and the associated set of prefixes are predefined.
+
+It is intended that the support will be extended to automatically
+generate RDFa data from the implied semantics of \LaTeX\ markup;
+the idea would be not to inadvertently override any explicitly
+provided metadata supplied by one of the following packages.
+
+\paragraph{The hyperref package}
+The  hyperref and hyperxmp packages provide a means to specify metadata
+which will be embedded in the generated pdf file; \LaTeXML\ converts that
+data to RDFa in its generated XML.
+
+\paragraph{The lxRDFa package}
+There is also a \LaTeXML-specific package, lxRDFa, which provides
+several commands for annotating the generated XML.
+The most powerful of which is \verb|\lxRDFa| which allows you to specify
+any set or subset of RDFa attributes on the current XML element and thus
+take advantage of the arbitrary shorthands, chaining and partial triples
+that RDFa allows.  Correspondingly, you are must beware of
+clashes or unintended changes to the set of triples generated
+by explicit and hidden RDFa data.
+
+%%%======================================================================
 \chapter{ToDo}\label{todo}
 Lots\ldots!
 \begin{itemize}
