@@ -310,12 +310,12 @@ sub scanNameClass {
   if($relaxop eq 'rng:name'){
     ($$self{model}->encodeQName($ns,$node->textContent)); }
   elsif($relaxop eq 'rng:anyName'){
-    Warn('misdefined',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+    Info('unexpected',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
 	 "Treating ".ToString($node)." as ANY")
       if $node->hasChildNodes;
     ('ANY'); }
   elsif($relaxop eq 'rng:nsName'){
-    Warn('misdefined',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+    Info('unexpected',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
 	 "Treating ".ToString($node)." as ANY");
     # NOTE: We _could_ conceivably use a namespace predicate,
     # but Model has to be extended to support it!
