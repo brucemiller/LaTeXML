@@ -69,7 +69,7 @@ sub loadSchema {
 
   if(my $compiled = !$$self{no_compiled}
      && pathname_find($name, paths=>$STATE->lookupValue('SEARCHPATHS'),
-		      types=>['model'], installation_subdir=>'schema')){
+		      types=>['model'], installation_subdir=>"resources/$type")){
     $self->loadCompiledSchema($compiled); }
   else {
     $$self{schema}->loadSchema; }
