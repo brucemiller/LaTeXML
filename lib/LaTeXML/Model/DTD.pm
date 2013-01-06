@@ -105,13 +105,7 @@ sub loadSchema {
 
 sub readDTD {
   my($self)=@_;
-  NoteBegin("Loading XML catalogs");
-  foreach my $catalog (	pathname_findall('catalog',
-					 paths=>$STATE->lookupValue('SEARCHPATHS'),
-					 installation_subdir=>'schema')){
-    NoteProgress("Loading catalog $catalog. ");
-    XML::LibXML->load_catalog($catalog); }
-  NoteEnd("Loading XML catalogs");
+  LaTeXML::Common::XML::initialize_catalogs();
 
   NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
   # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
@@ -121,7 +115,7 @@ sub readDTD {
   else { # Couldn't find dtd in catalog, try finding the file. (search path?)
     my $dtdfile = pathname_find($$self{system_id},
 				paths=>$STATE->lookupValue('SEARCHPATHS'),
-				installation_subdir=>'dtd');
+				installation_subdir=>'resources/DTD');
     if($dtdfile){
       NoteProgress(" from $dtdfile ");
       $dtd = XML::LibXML::Dtd->new($$self{public_id},$dtdfile);
