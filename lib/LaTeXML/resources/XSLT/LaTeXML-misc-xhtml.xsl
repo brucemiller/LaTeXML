@@ -104,14 +104,7 @@
     <xsl:element name="{local-name()}">
       <xsl:for-each select="@*">
 	<xsl:attribute name="{name()}">
-	  <xsl:choose>
-	    <xsl:when test="name()='href' or name()='src' or name()='action'">
-	      <xsl:value-of select="f:fixref(.)"/>            
-	    </xsl:when>
-	    <xsl:otherwise>
-	      <xsl:value-of select="."/>
-	    </xsl:otherwise>
-	  </xsl:choose>
+	  <xsl:value-of select="."/>
 	</xsl:attribute>
       </xsl:for-each>
       <xsl:apply-templates mode="raw"/>
