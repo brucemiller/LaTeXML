@@ -82,8 +82,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 		     after=>Tokens(T_CS('\compat@loadpackages'))); }
     # Otherwise, try to load the class file (falling back to article, if necessary)
     else {
-      LoadClass($class, options=>$options, options=>$options,
-		after=>Tokens(T_CS('\compat@loadpackages'))); }
+      LoadClass($class, options=>$options, after=>Tokens(T_CS('\compat@loadpackages'))); }
     return;});
 
 DefPrimitiveI('\compat@loadpackages',undef,sub {
