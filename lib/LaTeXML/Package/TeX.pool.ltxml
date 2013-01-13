@@ -3232,58 +3232,58 @@ DefMathI(';',undef,';', role=>'PUNCT');
 DefMathI('(',undef,'(', role=>'OPEN'); DefMathI(')',undef,')', role=>'CLOSE');
 DefMathI('[',undef,'[', role=>'OPEN'); DefMathI(']',undef,']', role=>'CLOSE');
 DefMathI('|',undef,'|', role=>'VERTBAR');
+DefMathI(':',undef,':', role=>'METARELOP', name=>'colon'); # Seems like good default role
+DefMathI('<',undef,'<', role=>'RELOP', meaning=>'less-than');
+DefMathI('>',undef,'>', role=>'RELOP', meaning=>'greater-than');
 
-#DefMath(':',';', role=>'METARELOP', name=>'colon'); # Seems like good default role
+# NOTE: Need to evolve Ligatures to be easier to write.
+# rough draft of tool to make ligatures more sane to write...
+# It is tempting to handle these with macros, 
+# But that tends to run afoul of tricky packages like babel that make : active as well!
+# Even using mathactive doesn't help.
+sub TestNode {
+  my($node,$qname,$content,%attrib)=@_;
+  $node
+    && ($LaTeXML::DOCUMENT->getModel->getNodeQName($node) eq $qname)
+      && ((!defined $content) || (($node->textContent||'') eq $content))
+	&& ! grep($node->getAttribute($_) ne $attrib{$_}, keys %attrib); }
 
-# It seems that "MathLigature" should be adapted to make this sort of thing easy!
-DefMacroI(':',undef,sub{
-  my($gullet)=@_;
-  if($gullet->ifNext(T_OTHER('='))){
-    $gullet->readToken;
-    T_CS('\@colonequal'); }
-  else {
-    T_CS('\@colon'); }},
-	 mathactive=>1);	# Only in math!
-DefMathI('\@colon',     undef,':', role=>'METARELOP', name=>'colon',reversion=>':'); # Seems like good default role
-DefMathI('\@colonequal',undef,':=', role=>'RELOP', meaning=>'assign',reversion=>':=');
 
-DefMacroI('<',undef,sub{
-  my($gullet)=@_;
-  if($gullet->ifNext(T_OTHER('<'))){
-    $gullet->readToken;
-    if($gullet->ifNext(T_OTHER('<'))){
-      $gullet->readToken;
-      T_CS('\@lll'); }
-    else {
-      T_CS('\ll'); }}
-  elsif($gullet->ifNext(T_OTHER('='))){
-    $gullet->readToken;
-    T_CS('\leq'); }
-  else {
-    T_CS('\@@<'); }},
-	 mathactive=>1);	# Only in math!
+# Recognize :=
+DefMathLigature(sub { my($document,@nodes)=@_;
+		      if((scalar(@nodes) > 2)
+			 && TestNode($nodes[$#nodes-1],'ltx:XMTok',':')
+			 && TestNode($nodes[$#nodes],'ltx:XMTok','=')){
+			(2, ":=", meaning=>'assign', role=>'RELOP'); }});
 
-DefMacroI('>',undef,sub{
-  my($gullet)=@_;
-  if($gullet->ifNext(T_OTHER('>'))){
-    $gullet->readToken;
-    if($gullet->ifNext(T_OTHER('>'))){
-      $gullet->readToken;
-      T_CS('\@@ggg'); }
-    else {
-      T_CS('\gg'); }}
-  elsif($gullet->ifNext(T_OTHER('='))){
-    $gullet->readToken;
-    T_CS('\geq'); }
-  else {
-    T_CS('\@@>'); }},
-	 mathactive=>1);	# Only in math!
+# Recognize: <=, << and <<<
+DefMathLigature(sub { my($document,@nodes)=@_;
+		      if((scalar(@nodes) > 2)
+			 && TestNode($nodes[$#nodes-1],'ltx:XMTok','<')){
+			if(TestNode($nodes[$#nodes],'ltx:XMTok','=')){
+			  (2,"\x{2264}",role=>'RELOP', meaning=>'less-than-or-equals'); }
+			elsif(TestNode($nodes[$#nodes],'ltx:XMTok','<')){
+			  (2,"\x{226A}", role=>'RELOP', meaning=>'much-less-than'); }}});
+# Note that << will already have been converted to \ll !!!
+DefMathLigature(sub { my($document,@nodes)=@_;
+		      if((scalar(@nodes) > 2)
+			 && TestNode($nodes[$#nodes-1],'ltx:XMTok',"\x{226A}")
+			 && TestNode($nodes[$#nodes],'ltx:XMTok','<')){
+			(2,"\x{22D8}", role=>'RELOP',meaning=>'very-much-less-than'); }});
 
-DefMathI('\@@>',undef, '>', role=>'RELOP', meaning=>'greater-than', name=>'', reversion=>'>');
-DefMathI('\@@<',undef, '<', role=>'RELOP', meaning=>'less-than',    name=>'', reversion=>'<');
-# Normally defined in amssymb, but we need them here.
-DefMath('\@@lll',"\x{22D8}", role=>'RELOP',meaning=>'very-much-less-than');
-DefMath('\@@ggg',"\x{22D9}", role=>'RELOP',meaning=>'very-much-greater-than');
+# Recognize: >=, >> and >>>
+DefMathLigature(sub { my($document,@nodes)=@_;
+		      if((scalar(@nodes) > 2)
+			 && TestNode($nodes[$#nodes-1],'ltx:XMTok','>')){
+			if(TestNode($nodes[$#nodes],'ltx:XMTok','=')){
+			  (2,"\x{2265}",role=>'RELOP', meaning=>'greater-than-or-equals'); }
+			elsif(TestNode($nodes[$#nodes],'ltx:XMTok','>')){
+			  (2,"\x{226B}", role=>'RELOP', meaning=>'much-greater-than'); }}});
+DefMathLigature(sub { my($document,@nodes)=@_;
+		      if((scalar(@nodes) > 2)
+			 && TestNode($nodes[$#nodes-1],'ltx:XMTok',"\x{226B}")
+			 && TestNode($nodes[$#nodes],'ltx:XMTok','>')){
+			(2,"\x{22D9}", role=>'RELOP',meaning=>'very-much-greater-than'); }});
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
