@@ -80,7 +80,8 @@ sub toCore {
     my $convertto = $$data[1];
     &{ $convertto }($self); }
   else {
-    Error('unexpected',$self->model,undef,"Color is not in valid model '$model'"); }}
+    Error('unexpected',$self->model,undef,"Color is not in valid model '$model'"); 
+    Black; }}
 
 sub toHex {
   $_[0]->rgb->toHex; }
