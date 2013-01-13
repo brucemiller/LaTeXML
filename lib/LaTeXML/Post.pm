@@ -162,7 +162,7 @@ sub generateMessage {
 		? "Postprocessing ".(ref $LaTeXML::Post::PROCESSOR).' '
 		: "")
     .($LaTeXML::Post::DOCUMENT
-      ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination
+      ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination||''
       : "")
       .(defined $where ? ToString($where) : '');
   ($message,@extra) = grep($_ ne '',map(split("\n",$_),$message,@extra));
