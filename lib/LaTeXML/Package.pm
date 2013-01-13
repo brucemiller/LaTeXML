@@ -51,7 +51,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &RawTeX &Let),
 
 	       # Font encoding
-	       qw(&DeclareFontMap &FontDecode &LoadFontMap),
+	       qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
 
 	       # Color
 	       qw(&DefColor &DefColorModel &LookupColor),
@@ -1583,8 +1583,8 @@ sub DeclareFontMap {
 # with TeX's rearrangement of ASCII...
 sub FontDecode {
   my($code,$encoding,$implicit)=@_;
-  my($map,$font);
   return undef if !defined $code || ($code < 0);
+  my($map,$font);
   if(! $encoding){
     $font = LookupValue('font');
     $encoding = $font->getEncoding; }
@@ -1600,6 +1600,23 @@ sub FontDecode {
   else {
     if($map){ $$map[$code]; }
     else { undef; }}}
+
+sub FontDecodeString {
+  my($string,$encoding,$implicit)=@_;
+  return undef if !defined $string;
+  my($map,$font);
+  if(! $encoding){
+    $font = LookupValue('font');
+    $encoding = $font->getEncoding; }
+  if($encoding && ($map = LoadFontMap($encoding))){ # OK got some map.
+    my($family,$fmap);
+    if($font && ($family=$font->getFamily) && ($fmap=LookupValue($encoding.'_'.$family.'_fontmap'))){
+      $map = $fmap; }}		# Use the family specific map, if any.
+
+  join('',grep(defined $_,
+	       map( ($implicit ? (($map && ($_ < 128)) ? $$map[$_] : pack('U',$_))
+		     : ($map ? $$map[$_] : undef)),
+		    map(ord($_), split(//,$string))))); }
 
 sub LoadFontMap {
   my($encoding)=@_;
@@ -3145,6 +3162,11 @@ when a Token's content is being digested and converted to a Box; in that case
 only the lower 128 codepoints are converted; all codepoints above 128 are assumed to already be Unicode.
 
 The font map for C<$encoding> is automatically loaded if it has not already been loaded.
+
+=item C<< FontDecodeString($string,$encoding,$implicit); >>
+
+Returns the unicode string resulting from decoding the individual
+characters in C<$string> according to L<FontDecode>, above.
 
 =item C<< LoadFontMap($encoding); >>
 
