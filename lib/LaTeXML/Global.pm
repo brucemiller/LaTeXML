@@ -21,6 +21,7 @@
 #======================================================================
 package LaTeXML::Global;
 use strict;
+use LaTeXML::Error;
 use LaTeXML::Common::XML;
 use Time::HiRes;
 
@@ -46,13 +47,14 @@ our  @EXPORT = (# Global STATE; This gets bound by LaTeXML.pm
 		qw( &Box ),
 		# Fonts
 		qw( &Color &Black &White),
-		# Error & Progress reporting
-		qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd
-		    &Fatal &Error &Warn &Info),
+		# Progress reporting
+		qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
 		# And some generics
 		qw(&Stringify &ToString &Revert &Equals),
 		# And some really simple useful stuff.
 		qw(&min &max),
+		# And, anything exported from LaTeXML::Error
+		@LaTeXML::Error::EXPORT,
 		# And, anything exported from LaTeXML::Common::XML
 		@LaTeXML::Common::XML::EXPORT
 );
@@ -271,8 +273,7 @@ sub Black () { $CONSTANT_BLACK; }
 sub White () { $CONSTANT_WHITE; }
 
 #**********************************************************************
-# Error & Progress reporting.
-
+# Progress reporting.
 
 sub NoteProgress { 
   print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
@@ -295,70 +296,6 @@ sub NoteEnd {
     if($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0){
       my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
       print STDERR sprintf(" %.2f sec)",$elapsed); }}}
-
-sub Fatal { 
-  my($category,$object,$where,$message,@details)=@_;
-  my $state = $LaTeXML::Global::STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if(!$LaTeXML::Error::InHandler && defined($^S)){
-    $state && $state->noteStatus('fatal');
-    $message
-      = LaTeXML::Error::generateMessage("Fatal:".$category.":".ToString($object),$where,$message,1,
-					# ?!?!?!?!?!
-					# or just verbosity code >>>1 ???
-					($state && $state->lookupValue('VERBOSITY') > 0
-					 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()),
-					@details);
-  }
-  else {			# If we ARE in a recursive call, the actual message is $details[0]
-    $message = $details[0] if $details[0]; }
-  local $LaTeXML::Error::InHandler=1;
-  die $message; 
-###  print STDERR "\n".$message;
-###  exit(1);
-  return; }
-
-# Note that "100" is hardwired into TeX, The Program!!!
-our $MAXERRORS=100;
-
-# Should be fatal if strict is set, else warn.
-sub Error {
-  my($category,$object,$where,$message,@details)=@_;
-  my $state = $LaTeXML::Global::STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if($LaTeXML::Global::STATE->lookupValue('STRICT')){
-    Fatal($category,$object,$where,$message,@details); }
-  else {
-    $LaTeXML::Global::STATE->noteStatus('error');
-    print STDERR LaTeXML::Error::generateMessage("Error:".$category.":".ToString($object),
-						 $where,$message,1,@details)
-      unless $verbosity < -2; }
-  if(!$state || ($state->getStatus('error')||0) > $MAXERRORS){
-    Fatal('too_many_errors',$MAXERRORS,$where,"Too many errors (> $MAXERRORS)!"); }
-  return; }
-
-# Warning message; results may be OK, but somewhat unlikely
-sub Warn {
-  my($category,$object,$where,$message,@details)=@_;
-  my $state = $LaTeXML::Global::STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  $state && $state->noteStatus('warning');
-  print STDERR LaTeXML::Error::generateMessage("Warning:".$category.":".ToString($object),
-					       $where,$message,0, @details)
-    unless $verbosity < -1; 
-  return; }
-
-# Informational message; results likely unaffected
-# but the message may give clues about subsequent warnings or errors
-sub Info {
-  my($category,$object,$where,$message,@details)=@_;
-  my $state = $LaTeXML::Global::STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  $state && $state->noteStatus('info');
-  print STDERR LaTeXML::Error::generateMessage("Info:".$category.":".ToString($object),
-					       $where,$message,0, @details)
-    unless $verbosity < 0;
-  return; }
 
 #**********************************************************************
 # Generic functions
