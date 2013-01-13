@@ -1022,7 +1022,7 @@ DefMathML('Apply:POSTFIX:?', sub {
 DefMathML('Apply:?:square-root',
 	  sub { ['m:msqrt',{},pmml($_[1])]; },
 	  sub { ['m:apply',{},['m:root', {}],cmml($_[1])];});
-DefMathML('Apply:?:root', 
+DefMathML('Apply:?:nth-root',
 	  sub { ['m:mroot',{},pmml($_[2]),pmml_smaller($_[1])]; },
 	  sub { ['m:apply',{},['m:root', {}],['m:degree',{},cmml($_[1])], cmml($_[2]) ]; } );
 
