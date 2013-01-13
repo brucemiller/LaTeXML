@@ -12,12 +12,106 @@
 
 package LaTeXML::Error;
 use strict;
-use LaTeXML::Global;
+use base qw(Exporter);
+our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 
-#**********************************************************************
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Note: The exported symbols should ultimately be exported as part
+# of LaTeXML::Common, or something like that, to be used BOTH in
+# Digestion & Post-Processing.
+# ======================================================================
+# We want LaTeXML::Global to import this package,
+# but we also want to use some of it's low-level functions.
+sub ToString  { LaTeXML::Global::ToString(@_); }
+sub Stringify { LaTeXML::Global::Stringify(@_); }
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
-#**********************************************************************
+# Public API
 
+sub Fatal { 
+  my($category,$object,$where,$message,@details)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  if(!$LaTeXML::Error::InHandler && defined($^S)){
+    $state && $state->noteStatus('fatal');
+    $message
+      = generateMessage("Fatal:".$category.":".ToString($object),$where,$message,1,
+			# ?!?!?!?!?!
+			# or just verbosity code >>>1 ???
+			@details,
+			($state && $state->lookupValue('VERBOSITY') > 0
+			 ? ("Stack Trace:",LaTeXML::Error::stacktrace()):()));
+    # We're about to DIE, which will bypass the usual status message, so add it here.
+    $message .=$state->getStatusMessage if $state;
+  }
+  else {			# If we ARE in a recursive call, the actual message is $details[0]
+    $message = $details[0] if $details[0]; }
+  local $LaTeXML::Error::InHandler=1;
+  die $message; 
+###  print STDERR "\n".$message;
+###  exit(1);
+  return; }
+
+# Note that "100" is hardwired into TeX, The Program!!!
+our $MAXERRORS=100;
+
+# Should be fatal if strict is set, else warn.
+sub Error {
+  my($category,$object,$where,$message,@details)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  if($LaTeXML::Global::STATE->lookupValue('STRICT')){
+    Fatal($category,$object,$where,$message,@details); }
+  else {
+    $LaTeXML::Global::STATE->noteStatus('error');
+    print STDERR generateMessage("Error:".$category.":".ToString($object),
+				 $where,$message,1,@details)
+      unless $verbosity < -2; }
+  if(!$state || ($state->getStatus('error')||0) > $MAXERRORS){
+    Fatal('too_many_errors',$MAXERRORS,$where,"Too many errors (> $MAXERRORS)!"); }
+  return; }
+
+# Warning message; results may be OK, but somewhat unlikely
+sub Warn {
+  my($category,$object,$where,$message,@details)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  $state && $state->noteStatus('warning');
+  print STDERR generateMessage("Warning:".$category.":".ToString($object),
+			       $where,$message,0, @details)
+    unless $verbosity < -1; 
+  return; }
+
+# Informational message; results likely unaffected
+# but the message may give clues about subsequent warnings or errors
+sub Info {
+  my($category,$object,$where,$message,@details)=@_;
+  my $state = $LaTeXML::Global::STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  $state && $state->noteStatus('info');
+  print STDERR generateMessage("Info:".$category.":".LaTeXML::Global::ToString($object),
+			       $where,$message,0, @details)
+    unless $verbosity < 0;
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Handlers for perl's die & warn
+# We'll try to decode some common errors to make them more usable
+# for build systems.
+
+sub perl_die_handler {
+  my(@line)=@_;
+  if($line[0] =~ /^Can't call method \"([^\"]*)\" (on an undefined value|without a package or object reference) at (.*)$/){
+    my($method,$kind,$where)=($1,$2,$3);
+    Fatal('misdefined',$method,$where, @line); }
+  else {
+    Fatal('perl','die',undef,"Perl died",@_); }}
+
+sub perl_warn_handler {
+  Warn('perl','warn',undef,"Perl warning",@_); }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Internals
 # Synthesize an error message describing what happened, and where.
 # NOTE: Possibly $long should be descrete levels
 # including a level requesting full stack trace?
@@ -26,6 +120,7 @@ sub generateMessage {
   my($errorcode,$where,$message,$long,@extra)=@_;
   my $docloc;
 
+  my $state = $LaTeXML::Global::STATE; # Maybe bound?
   # Generate location information; basic and for stack trace.
   # If we've been given an object $where, where the error occurred, use it.
   my $wheretype = ref $where;
@@ -43,8 +138,8 @@ sub generateMessage {
     $docloc = Locator($box) if $box; }
   if(!$docloc && $LaTeXML::BOX){ # In constructor?
     $docloc = Locator($LaTeXML::BOX); }
-  if(!$docloc && $STATE && $STATE->getStomach){
-    my $gullet = $STATE->getStomach->getGullet;
+  if(!$docloc && $state && $state->getStomach){
+    my $gullet = $state->getStomach->getGullet;
     # NOTE: Problems here.
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
     # (2) If gullet is the source, we probably want to include next token, etc or 
@@ -57,8 +152,8 @@ sub generateMessage {
 	     @extra);
 
   # Now add a certain amount of stack trace and/or context info.
-  $long = 0 if $STATE && $STATE->lookupValue('VERBOSITY') < -1;
-  $long ++  if $STATE && $STATE->lookupValue('VERBOSITY') > +1;
+  $long = 0 if $state && $state->lookupValue('VERBOSITY') < -1;
+  $long ++  if $state && $state->lookupValue('VERBOSITY') > +1;
 
   # FIRST line of stack trace information ought to look at the $where
   if(!$long){}
