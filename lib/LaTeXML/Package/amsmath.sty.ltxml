@@ -645,7 +645,7 @@ DefConstructor('\boxed@text{}',sub {
   my($document,$body,%props)=@_;
   my @new = insertBlock($document,$body);
   foreach my $node (@new){
-    $node->addAttribute(framed=>'rectangle'); }}, # if allowed??
+    $document->setAttribute($node,framed=>'rectangle'); }}, # if allowed??
 	       bounded=>1,
 	       beforeDigest=>sub {
 		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
