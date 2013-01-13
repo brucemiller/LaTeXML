@@ -161,9 +161,9 @@ sub invokeToken_internal {
     # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
     if($meaning->isExpandable){
       my $gullet = $$self{gullet};
-      my($replacement, @more) = $meaning->invoke($$self{gullet});
-      $gullet->unread(@more) if @more;
-      $self->invokeToken($replacement); } # recurse!!
+      $gullet->unread($meaning->invoke($$self{gullet}));
+      if(my $replacement = $gullet->readXToken()){
+	$self->invokeToken($replacement); }} # recurse!!
     else {			# Otherwise, a normal primitive or constructor
       if($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble') )){
 	return (); }
@@ -186,16 +186,13 @@ sub invokeToken_internal {
 	(); }
       else {
 	Box($meaning->getString, $font,$$self{gullet}->getLocator,$meaning); }}
-    elsif($cc == CC_COMMENT){
-      LaTeXML::Comment->new($meaning->getString); }
+    elsif($cc == CC_COMMENT){	# Note: Comments need char decoding as well!
+      LaTeXML::Comment->new(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1)); }
     elsif($forbidden_cc[$cc]){
       Fatal('misdefined',$token,$self,
 	    "The token ".Stringify($token)." should never reach Stomach!"); }
     else {
-      my $string = $meaning->getString;
-      if(defined $string){
-	$string = join('',grep(defined $_,map(LaTeXML::Package::FontDecode(ord($_),undef,1), split(//,$string)))); }
-      Box($string,undef,undef,$meaning); }}
+      Box(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1),undef,undef,$meaning); }}
   else {
     Fatal('misdefined',$meaning,$self,
 	  "The object ".Stringify($meaning)." should never reach Stomach!"); }}
