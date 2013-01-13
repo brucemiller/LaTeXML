@@ -34,16 +34,19 @@ sub ParseColor {
   $spec  = ToString($spec)  if ref $spec;
   $spec =~ s/^\s+//;  $spec =~ s/\s+$//; $spec = $1 if $spec =~ /^\{\s*(.*?)\s*\}$/; # Trim
   my $color;
-  if(!$model){
-    LookupColor($spec); }
-  elsif($model eq 'named'){
-    LookupColor('named_'.$spec); }
-  elsif($model){
-    Color($model,($spec =~ /,/ ? split(/\s*,\s*/,$spec) : split(/\s+/,$spec)))->toCore;}
-  else {
+  if($model && $model eq 'named'){
+    $spec = 'named_'.$spec; $model=undef; }
+  if($model){
+    $color = Color($model,($spec =~ /,/ ? split(/\s*,\s*/,$spec) : split(/\s+/,$spec)))->toCore;
     Error('unexpected',$spec,$STATE->getStomach,
-	  "Don't understand '$spec' as a color");
-    Black; }}
+	  "Don't understand '$spec' as a color") unless $color;  }
+  else {
+    $color = LookupColor($spec);
+    if(!$color){
+      AssignValue('color_'.$spec=>Black);
+      Error('unexpected',$spec,$STATE->getStomach,
+	    "Can't find color named '$spec'; assuming Black"); }}
+  $color || Black; }
 
 #======================================================================
 # are there default named colors that we should be loading?
