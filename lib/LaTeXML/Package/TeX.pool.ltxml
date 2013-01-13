@@ -4624,14 +4624,14 @@ DefConstructor('\smash{}',"#1"); # well, what?
 
 # This is actually LaTeX's definition, but let's just do it this way.
 DefConstructor('\sqrt[] Digested',
-	       "?#1(<ltx:XMApp><ltx:XMTok meaning='root'/>"
+	       "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       .   "</ltx:XMApp>)"
 	       .  "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
 	       .    "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
 
 DefConstructor('\root Until:\of {}',
-	       "<ltx:XMApp><ltx:XMTok meaning='root'/>"
+	       "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
 	       .     "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
 	       ."</ltx:XMApp>");
 
