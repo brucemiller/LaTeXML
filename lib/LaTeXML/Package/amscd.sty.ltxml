@@ -41,18 +41,18 @@ DefMacro('\cd@ Token',sub {
   my($gullet,$token)=@_;
   (T_CS('@'.ToString($token))); });
 
-DefMacroI(T_CS('@>'),LaTeXML::Parameters::parseParameters('Until:> Until:>','@>..>..>'),
+DefMacroI(T_CS('@>'),'Until:> Until:>',
 	       '&\cd@stack{\rightarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@)'),LaTeXML::Parameters::parseParameters('Until:) Until:)','@)..)..)'),
+DefMacroI(T_CS('@)'),'Until:) Until:)',
 	       '&\cd@stack{\rightarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@<'),LaTeXML::Parameters::parseParameters('Until:< Until:<','@<..<..<'),
+DefMacroI(T_CS('@<'),'Until:< Until:<',
 	       '&\cd@stack{\leftarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@('),LaTeXML::Parameters::parseParameters('Until:( Until:(','@(..(..('),
+DefMacroI(T_CS('@('),'Until:( Until:(',
 	       '&\cd@stack{\leftarrowfill@}{#1}{#2}&');
 
-DefMacroI(T_CS('@A'),LaTeXML::Parameters::parseParameters('Until:A Until:A','@A..A..A'),
+DefMacroI(T_CS('@A'),'Until:A Until:A',
 	       '\cd@adjacent{\Big\uparrow}{#1}{#2}&&');
-DefMacroI(T_CS('@V'),LaTeXML::Parameters::parseParameters('Until:V Until:V','@V..V..V'),
+DefMacroI(T_CS('@V'),'Until:V Until:V',
 	       '\cd@adjacent{\Big\downarrow}{#1}{#2}&&');
 
 DefMacroI(T_CS('@='),undef,
