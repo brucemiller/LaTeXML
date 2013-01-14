@@ -259,16 +259,19 @@ sub revert {
     @tokens; }}
 
 sub toString { ToString(Tokens($_[0]->revert)); } # What else??
+sub getString { $_[0]->toString; }		  # Ditto?
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
+  my $hasbody = defined $$self{properties}{body};
   my $string = "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
-			       map(Stringify($_),$self->getArgs));
-  if(defined $$self{properties}{body}){
-    $string .= Stringify($$self{properties}{body});
-    $string .= Stringify($$self{properties}{trailer}); }
-  $string."]"; }
+			       map(Stringify($_),
+				   $self->getArgs,
+				   (defined $$self{properties}{body}
+				    ? ($$self{properties}{body},$$self{properties}{trailer})
+				    : ())))
+    ."]"; }
 
 sub equals {
   my($a,$b)=@_;
