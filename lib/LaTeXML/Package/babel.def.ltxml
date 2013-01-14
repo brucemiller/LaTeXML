@@ -264,7 +264,7 @@ DefPrimitive('\initiate@active@char DefToken',sub {
 	    .'\else'
 	    . '\bbl@afterfi\csname \user@group @sh@\string'.$char.'@\endcsname'
 	    .'\fi');
-  DefMacroI('\user@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+  DefMacroI('\user@active@arg'.$char,'Token',
 	    '\expandafter\ifx\csname \user@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
 	    .  '\bbl@afterelse\csname language@active\string'.$char.'\endcsname#1'
 	    .'\else'
@@ -278,7 +278,7 @@ DefPrimitive('\initiate@active@char DefToken',sub {
 	    .'\else'
 	    .  '\bbl@afterfi\csname \language@group @sh@\string'.$char.'@\endcsname'
 	    .'\fi');
-  DefMacroI('\language@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+  DefMacroI('\language@active@arg'.$char,'Token',
 	    '\expandafter\ifx\csname \language@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
 	    .  '\bbl@afterelse\csname system@active\string'.$char.'\endcsname#1'
 	    .'\else'
@@ -291,7 +291,7 @@ DefPrimitive('\initiate@active@char DefToken',sub {
 	    .'\else'
 	    .  '\bbl@afterfi\csname \system@group @sh@\string'.$char.'@\endcsname'
 	    .'\fi');
-  DefMacroI('\system@active@arg'.$char,LaTeXML::Parameters::parseParameters('Token',$char),
+  DefMacroI('\system@active@arg'.$char,'Token',
 	    '\expandafter\ifx\csname \system@group @sh@\string'.$char.'@\string#1@\endcsname\relax'
 	    .  '\bbl@afterelse\csname normal@char\string'.$char.'\endcsname'
 	    .'\else'
