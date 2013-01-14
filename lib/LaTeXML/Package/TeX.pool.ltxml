@@ -186,7 +186,7 @@ DefParameterType('DefToken', sub {
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
   my($gullet)=@_;
-  my $token = $gullet->readXToken(1);
+  my $token = $gullet->readXToken;
   my $defn = $token && LookupDefinition($token);
   if((defined $defn) && $defn->isRegister && !$defn->isReadonly){
     [$defn,$defn->readArguments($gullet)]; }
@@ -198,7 +198,7 @@ DefParameterType('Variable', sub {
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
   my($gullet)=@_;
-  my $token = $gullet->readXToken(1);
+  my $token = $gullet->readXToken;
   my $defn = $token && LookupDefinition($token);
   if((defined $defn) && $defn->isRegister){
     [$defn,$defn->readArguments($gullet)]; }
@@ -241,7 +241,7 @@ DefParameterType('DirectoryList', sub {
 DefParameterType('MoveableBox', sub{
   my($gullet)=@_;
   $gullet->skipSpaces;
-  my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken(1));
+  my ($box,@stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
   Error('expected','<box>',$gullet,
 	"A <box> was supposed to be here","Got ".Stringify($box))
     unless $box && $box->isa('LaTeXML::Whatsit')
@@ -252,7 +252,7 @@ DefParameterType('MoveableBox', sub{
 # Note that this does NOT balance () within the argument.
 DefParameterType('BalancedParen', sub {
   my ($gullet) = @_;
-  my $tok = $gullet->readXToken(1);
+  my $tok = $gullet->readXToken;
   if (ref $tok && ToString($tok) eq '(') {
     $gullet->readUntil(T_OTHER(')'));
   } else {
@@ -778,6 +778,12 @@ sub parseDefParameters {
 
 sub do_def {
   my($globally, $expanded, $gullet,$cs,$params,$body)=@_;
+  if(!$cs){
+    Error('expected','Token',$gullet,"Expected definition token");
+    return; }
+  elsif(!$params){
+    Error('misdefined',$cs,$gullet,"Expected definition parameter list"); 
+    return; }
   $params = parseDefParameters($cs,$params);
   if($expanded){
     local $LaTeXML::NOEXPAND_THE = 1;
@@ -1424,7 +1430,7 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
   # Should afterDigest be responsible for resetting flags?
   my $scope = $STATE->getPrefix('global') && 'global';
   $STATE->clearPrefixes;	# before invoke, below; we've saved the only relevant one (global)
-  my ($stuff,@rest) = $stomach->invokeToken($stomach->getGullet->readXToken(1));
+  my ($stuff,@rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
   AssignValue('box'.$_[1]->valueOf => $stuff, $scope);
   @rest; });
 
@@ -1724,13 +1730,15 @@ DefConstructor('\moveright Dimension MoveableBox',
 		 $_[1]->setProperty(x=>$_[1]->getArg(1)); });
 
 # \unvbox<8bit>, \unvcopy<8bit>
-DefMacro('\unvbox Number',sub {
+DefPrimitive('\unvbox Number',sub {
   my $box = 'box'.$_[1]->valueOf;
   my $stuff = LookupValue($box); 
   AssignValue($box,undef);
-  $stuff; });
-DefMacro('\unvcopy Number',sub {
-  LookupValue('box'.$_[1]->valueOf); });
+  (defined $stuff ? $stuff->unlist : ()); });
+DefPrimitive('\unvcopy Number',sub {
+  my $box = 'box'.$_[1]->valueOf;
+  my $stuff = LookupValue($box); 
+  (defined $stuff ? $stuff->unlist : ()); });
 
 #======================================================================
 # If this is the right solution...
@@ -1814,7 +1822,7 @@ DefConstructorI('\omit',undef,'',properties=>{alignmentSkippable=>1});
 
 DefMacroI('\@alignment@cr',undef,sub {
   my($gullet)=@_;
-  my $t = $gullet->readXToken(1);
+  my $t = $gullet->readXToken;
   $gullet->unread($t);
   # SPECIAL CASE for endings of \halign (& friends).
   # We need the appropriate ending, to close the row/col/etc, but only see a }!!
@@ -1867,7 +1875,9 @@ DefMacro('\@alignment@newline OptionalMatch:* [Dimension]', sub {
 DefConstructorI('\@alignment@newline@marker',undef,'',reversion=>Tokens(T_CS("\\\\"),T_CR));
 
 DefConstructorI('\@alignment@hline',undef,'',
-	       afterDigest=>sub { LookupValue('Alignment')->addLine('t'); },
+	       afterDigest=>sub {
+		 if(my $alignment = LookupValue('Alignment')){
+		   $alignment->addLine('t'); }},
 	       properties=>{isHorizontalRule=>1},
 	       alias=>'\hline');
 
@@ -1931,9 +1941,15 @@ DefMacro('\multispan{Number}', sub {
   (T_CS('\omit'),map((T_CS('\span'),T_CS('\omit')), 1..$span-1)); });
 
 DefRegisterI('\@alignment@ncolumns',undef,Dimension(0),
-	       getter=>sub { Number(scalar(LookupValue('Alignment')->getTemplate->columns)); });
+	       getter=>sub {
+		 if(my $alignment=LookupValue('Alignment')){
+		   Number(scalar($alignment->getTemplate->columns)); }
+		 else { 0; }});
 DefRegisterI('\@alignment@column',undef,Dimension(0),
-	       getter=>sub { Number(LookupValue('Alignment')->currentColumnNumber); });
+	       getter=>sub {
+		 if(my $alignment=LookupValue('Alignment')){
+		   Number($alignment->currentColumnNumber); }
+		 else { 0; }});
 
 DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
   my($gullet,$span,$template,$tokens)=@_;
@@ -2009,16 +2025,17 @@ DefMacroI('\@row@before',undef,'');
 DefMacroI('\@row@after',undef,'');
 
 DefPrimitive('\@@default@close@row',sub {
-	       LookupValue('Alignment')->addAfterRow(Digest(T_CS('\@row@after')));
+	       if(my $alignment=LookupValue('Alignment')){
+		 $alignment->addAfterRow(Digest(T_CS('\@row@after'))); }
 	       $_[0]->egroup;} );
 DefConstructor('\@@default@open@row SkipSpaces DigestedBody',
 	       "",
 	       reversion=>'#1',
 	       beforeDigest=>sub {
 		 $_[0]->bgroup; 
-		 my $alignment = LookupValue('Alignment');
-		 $alignment->newRow;
-		 $alignment->addBeforeRow(Digest(T_CS('\@row@before')));
+		 if(my $alignment = LookupValue('Alignment')){
+		   $alignment->newRow;
+		   $alignment->addBeforeRow(Digest(T_CS('\@row@before'))); }
 		 return;});
 
 #----------------------------------------------------------------------
@@ -2040,6 +2057,7 @@ DefPrimitiveI('\@@close@column',  undef,sub { $_[0]->egroup;} );
 DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
   my($stomach,$boxes)=@_;
   my $alignment = LookupValue('Alignment');
+  return () unless $alignment; 	# ??
   my $n0 = LookupValue('alignmentStartColumn')+1;
   my $n1 = $alignment->currentColumnNumber;
   my $colspec = $alignment->getColumn($n0);
@@ -2106,7 +2124,8 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
 #  $stomach->egroup;
   $boxes; },
 	     beforeDigest=>sub {
-	       AssignValue(alignmentStartColumn=>LookupValue('Alignment')->currentColumnNumber); 
+	       if(my $alignment = LookupValue('Alignment')){
+		 AssignValue(alignmentStartColumn=>$alignment->currentColumnNumber); }
 	       $_[0]->bgroup; });
 
 AssignValue(ALIGNMENT_LINE_COMMANDS=>[]);
@@ -2125,8 +2144,10 @@ DefMacroI('\@inner@column@after',undef,sub {
 DefPrimitiveI('\@@close@inner@column', undef,sub { $_[0]->egroup; });
 DefPrimitiveI('\@@open@inner@column',   undef,sub {
   my($stomach)=@_;
-  my $colspec =  LookupValue('Alignment')->nextColumn;
+  my $alignment = LookupValue('Alignment');
   $stomach->bgroup;
+  return () unless $alignment;	# Presumably will already be reporting (many) errors...
+  my $colspec =  $alignment->nextColumn;
   my $gullet = $stomach->getGullet;
   my @lines=();
   my @line_tokens = @{LookupValue('ALIGNMENT_LINE_COMMANDS')};
@@ -3790,7 +3811,7 @@ DefConstructorI('\proclaim', parseDefParameters('\proclaim',Tokenize('#1. #2\par
 #======================================================================
 # Another block of support for stuff that is LaTeX, rather than TeX,
 # but higher level packages based on plain tex may need.
-# This deals with constructing formated counter numbers.
+# This deals with constructing formatted counter numbers.
 # This is typically a name prefix and number,
 # but actually providing hooks for localization
 
@@ -4020,7 +4041,7 @@ DefMathI('\Re',       undef,"\x{211C}", role=>'OPFUNCTION', meaning=>'real-part'
 DefMathI('\Im',       undef,"\x{2111}", role=>'OPFUNCTION', meaning=>'imaginary-part');
 DefMathI('\mho',      undef,"\x{2127}");
 
-DefMathI('\prime',    undef,"\x{2032}", role=>'SUPOP');
+DefMathI('\prime',    undef,"\x{2032}", role=>'SUPOP', locked=>1);
 DefMathI('\emptyset', undef,"\x{2205}", role=>'ID', meaning=>'empty-set');
 DefMathI('\nabla',    undef,"\x{2207}", role=>'OPERATOR');
 DefMathI('\surd',     undef,"\x{221A}", role=>'OPERATOR', meaning=>'square-root');
