@@ -1084,14 +1084,20 @@ DefMacroI('\verb', undef, sub {
     return (); }
   $body = $mouth->readTokens($init);
   EndSemiverbatim();
-  Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
+  Invocation( (LookupValue('IN_MATH') ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+	      Tokens($init),$body)->unlist; });
 
-DefConstructor('\@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
+DefConstructor('\@text@verb{}{}',"<ltx:verbatim font='#font'>#2</ltx:verbatim>",
 	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
 	       afterDigest=>sub { $_[0]->egroup; },
 	       # Since ltx:verbatim is both inline & block, we have to fudge inline mode
-	       beforeConstruct=>sub { $_[0]->getModel->canContain($_[0]->getElement,'#PCDATA')
-					|| $_[0]->openElement('ltx:p'); },
+	       beforeConstruct=>sub { 
+		 $_[0]->getModel->canContain($_[0]->getElement,'#PCDATA')
+		   || $_[0]->openElement('ltx:p'); },
+	       reversion=>'\verb#1#2#1');
+DefConstructor('\@math@verb{}{}',"#2", # Will already end up wrapped as XMTok!
+	       beforeDigest=>[sub { $_[0]->bgroup; MergeFont(family=>'typewriter'); }],
+	       afterDigest=>sub { $_[0]->egroup; },
 	       reversion=>'\verb#1#2#1');
 
 # This is defined by the alltt package.
