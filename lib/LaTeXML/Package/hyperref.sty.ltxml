@@ -16,24 +16,33 @@ use LaTeXML::Package;
 
 RequirePackage('url');
 
-foreach my $option (# General Options
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Follow hyperref's manual.pdf
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 3. Package Options
+# Most (all?) options currently ignored; seen handling at end. But:
+#  * the various color ones should be used for styling
+#  * The metadata could be used to augment the RDFa
+foreach my $option (# 3.1 General Options
 		    qw(draft final debug verbose implicit hypertexnames naturalnames
 		       a4paper a5paper b5paper letterpaper legalpaper executivepaper setpagesizes),
-		    # Configuration Options
+		    # 3.2 Configuration Options
 		    qw(raiselinks breaklinks pageanchor plainpages nesting),
-		    # Backend Drivers
+		    # 3.3 Backend Drivers
 		    qw(dvipdfm dvipdfmx dvips dvipsone dviwindo hypertex latex2html
 		       nativepdf pdfmark pdftex ps2pdf tex4ht textures vtex vtexpdfmark xetex),
-		    # Extension Options
+		    # 3.4 Extension Options
 		    qw(extension hyperfigures backref pagebackref hyperindex
 		       pageanchors plainpages hyperfootnotes encap linktocpage
 		       breaklinks colorlinks linkcolor anchorcolor citecolor filecolor
 		       menucolor pagecolor urlcolor frenchlinks),
-		    # PDF-specific display options
+		    # 3.5 PDF-specific display options
 		    qw(bookmarks bookmarksopen bookmarksopenlevel bookmarksnumbered bookmarstype
 		       CJKbookmarks pdfhighlight citebordercolor filebordercolor linkbordercolor
 		       menubordercolor pagebordercolor urlbordercolor runbordercolor pdfborder),
-		    # PDF display and information options
+		    # 3.6 PDF display and information options
 		    qw(baseurl pdfpagemode pdfview pdfstartpage pdfstartview pdfpagescrop
 		       pdfcenterwindow pdfdirection pdfdisplaydoctitle pdfduplex pdffitwindow
 		       pdfmenubar pdfnewwindow pdfnonfullscreenpagemode pdfnumcopies
@@ -107,10 +116,15 @@ DefRegister('\pdfcompresslevel',Number(0));
 
 RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Additional User Macros
+
 # \href{url}{text}
-DefConstructor('\href Semiverbatim  Semiverbatim',
+DefConstructor('\href Semiverbatim  {}',
 	       "<ltx:ref href='#href'>#2</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+
+# \url{url} from url.sty
 
 # \nolinkurl{url}
 DefConstructor('\nolinkurl Semiverbatim','#1');
@@ -118,13 +132,14 @@ DefConstructor('\nolinkurl Semiverbatim','#1');
 # \hyperbaseurl{url}
 DefPrimitive('\hyperbaseurl Semiverbatim',sub { AssignValue(BASE_URL=>ToString($_[1])); });
 
-# \hyperimage{url}
-# ?
+# \hyperimage{imageurl}{text}
+DefConstructor('\hyperimage Semiverbatim {}',"<ltx:graphic graphic='#1' description='#2'/>");
 
 # \hyperdef{category}{name}{text}
 DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
 	       properties=>sub { (id=>CleanID(ToString($_[1]).'.'.ToString($_[2]))); } );
+
 DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
 	       "<ltx:ref href='#href'>#4</ltx:ref>",
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1])
@@ -143,15 +158,82 @@ DefConstructor('\hypertarget Semiverbatim {}',
 	       "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
 	       properties=>sub { (id=>CleanID(ToString($_[1]))); });
 
-# Hmm...
+# Should create an anchor with automatically chosen name;
+# But it's to be used where LaTeXML already would have created an anchor & link...
+# Should leverage 
+DefMacroI('\phantomsection',undef,'');
+
+# This only approximates the "contextual label" that should precede the number,
+# and ignores the user-definable macros.
+# But, we normally defer such bookkeeping until postprocessing....sigh
 DefMacro('\autoref Semiverbatim','\ref{#1}');
+DefConstructor('\autoref Semiverbatim',
+	       "<ltx:ref show='type refnum' labelref='#label'/>",
+	      properties=>sub { (label=>CleanLabel($_[2])); });
 
 # Covered in LaTeX.pool, but non-ref character is ignored.
 # \ref*{label} 
 # \pageref*{label}
 
+# I wonder if this is good enough for our context?
 # \pdfstringdef{macroname}{texstring}
-# ???
+DefMacro('\pdfstring{Token}{}','\def#1{#2}');
+
+#======================================================================
+# 4.1 Replacement macros
+
+# \texorpdfstring{TeXString}{PDFstring}
+DefMacro('\texorpdfstring{}{}','#1');
+
+#======================================================================
+# 4.2 Utility macros
+# \hypercalcbp{dimen}
+DefMacro('\hypercalcbp{Dimension}',sub {
+  my($gullet,$dimen)=@_;
+  Explode($dimen->valueOf/$STATE->convertUnit('bp')); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 5 Acrobat-specific behaviour
+
+# \Acrobatmenu{menuoption}{text}
+# These create buttons that activate Acrobat Reader or Exchange actions.
+# It's doubtful that they have meaningful analogs in our context?
+DefMacro('\Acrobatmenu{}{}','[#1 Button: #2]');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# 6 PDF and HTML forms
+# hmm... we might actually want to do this?
+# But, we need schema support!
+
+#----------------------------------------------------------------------
+# Fields:
+# \TextField[parameters]{label}
+# \CheckBox[parameters]{label}
+# \ChoiceMenu[parameters]{label}{choices}
+# \PushButton[parameters]{label}
+# \Submit[parameters]{label}
+# \Reset[parameters]{label}
+#----------------------------------------------------------------------
+# Layout:
+#  typically:  "#1 #2"
+# \LayoutTextField{label}{field}
+# \LayoutChoiceField{label}{field}
+# \LayoutCheckField{label}{field}
+#----------------------------------------------------------------------
+# What to show
+# \MakeRadioField{width}{height}
+# \MakeCheckField{width}{height}
+# \MakeChoiceField{width}{height}
+# \MakeButtonField{text}
+
+#======================================================================
+# 6.1 Forms environment parameters
+#   action   URL
+#   encoding name
+#   method   name (post|get)
+#======================================================================
+# 6.2 Forms optional parameters
+#  [a bunch] colors, events, etc; See the doc when we actually support.
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # hyperref uses KeyVals for options!
