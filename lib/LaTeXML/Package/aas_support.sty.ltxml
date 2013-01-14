@@ -342,7 +342,14 @@ DefMacro('\dummytable','\refstepcounter{table}');
 #    \tablenotetext,\tablecomments,\tablerefs
 # \end{deluxetable}
 
-DefMacro('\deluxetable{}','\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\begin{deluxetable}'),"{}",
+	  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable}'),undef,'\end{table}');
+
+DefMacroI(T_CS('\begin{deluxetable*}'),"{}",
+	  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable*}'),undef,'\end{table}');
+
 DefMacro('\set@deluxetable@template AlignmentTemplate',sub {
    AssignValue('@deluxetable@template',$_[1]); });
 
@@ -358,8 +365,6 @@ DefConstructor('\@@deluxetabular DigestedBody',
 	       beforeDigest=>sub { $_[0]->bgroup; },
 	       mode=>'text');
 DefPrimitive('\@end@deluxetabular',sub{ $_[0]->egroup; });
-
-DefMacro('\enddeluxetable','\end{table}');
 
 #======================================================================
 # 2.15.2 Preamble to the deluxetable
