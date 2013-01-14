@@ -101,9 +101,18 @@ sub Info {
 
 sub perl_die_handler {
   my(@line)=@_;
+  # We try to find a meaningful name for where the error occurred;
+  # That's the thing that is "misdefined", after all.
+  # Not completely sure we're looking in the right place up the stack, though.
   if($line[0] =~ /^Can't call method \"([^\"]*)\" (on an undefined value|without a package or object reference) at (.*)$/){
     my($method,$kind,$where)=($1,$2,$3);
-    Fatal('misdefined',$method,$where, @line); }
+    Fatal('misdefined',callerName(2),$where, @line); }
+  elsif($line[0] =~ /^Can't locate object method \"([^\"]*)\" via package \"([^\"]*)\" at (.*)$/){
+    my($method,$class,$where)=($1,$2,$3);
+    Fatal('misdefined',callerName(2),$where, @line); }
+  elsif($line[0] =~ /^Not an? (\w*) reference at (.*)$/){
+    my($type,$where)=($1,$2);
+    Fatal('misdefined',callerName(2),$where, @line); }
   else {
     Fatal('perl','die',undef,"Perl died",@_); }}
 
@@ -176,6 +185,11 @@ sub generateMessage {
 sub Locator {
   my($object)=@_;
   ($object && $object->can('getLocator') ? $object->getLocator :  "???"); }
+
+sub callerName {
+  my($frame)=@_;
+  my %info = caller_info( ($frame || 0) + 2);
+  $info{sub}; }
 
 sub callerInfo {
   my($frame)=@_;
