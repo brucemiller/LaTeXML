@@ -115,6 +115,21 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
 		 $whatsit->setProperty(text=>Digest($text)); });
 
 #********************************************************************************
+# Low-level stuff; redefined from LaTeX stubs
+
+# Not sure what \current@color should return... the string form?
+# \current@color
+# Similarly, I'm not sure what set@color needs to do that isn't redundant
+DefMacroI('\set@color',undef,'');
+
+DefMacroI('\color@begingroup',undef,'\begingroup');
+DefMacroI('\color@endgroup',  undef,'\endgroup');
+DefMacroI('\color@setgroup',  undef,'\begingroup\set@color');
+DefMacroI('\color@hbox',      undef,'\hbox\bgroup\color@begingroup');
+DefMacroI('\color@vbox',      undef,'\vbox\bgroup\color@begingroup');
+DefMacroI('\color@endbox',    undef,'\color@endgroup\egroup');
+
+#********************************************************************************
 # Default defined colors
 RawTeX(<<'EOTeX');
 \definecolor{black}{rgb}{0,0,0}
