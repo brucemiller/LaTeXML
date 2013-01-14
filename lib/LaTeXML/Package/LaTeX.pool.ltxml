@@ -26,7 +26,6 @@ use strict;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Array;
-no warnings 'redefine';
 
 LoadPool('TeX');
 
@@ -40,6 +39,8 @@ Let(T_CS('\magnification'),T_CS('\@undefined'));
 DefConditionalI('\if@compatibility',undef,sub { LookupValue('2.09_COMPATIBILITY'); });
 DefMacroI('\@compatibilitytrue','');
 DefMacroI('\@compatibilityfalse','');
+
+Let(T_CS('\@currentlabel'),T_CS('\@empty'));
 
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble=>1);	# \begin{document} will clear this.
@@ -127,6 +128,8 @@ sub onlyPreamble {
 
 AssignValue(current_environment=>'','global');
 DefMacro('\@currenvir',sub { Explode(LookupValue('current_environment')); });
+Let(T_CS('\@currenvline'),T_CS('\@empty'));
+
 DefMacro('\begin{}',sub { 
   my($gullet,$env)=@_;
   my $name = $env && ToString($env);
@@ -474,8 +477,10 @@ DefRegister('\mathindent'   => Dimension(0));
 # Ignorable packages ??
 # pre-defined packages??
 
-DefMacro('\@clsextension','cls');
-DefMacro('\@pkgextension','sty');
+DefMacroI('\@clsextension', undef, 'cls');
+DefMacroI('\@pkgextension', undef, 'sty');
+Let(T_CS('\@currext'),T_CS('\@empty'));
+Let(T_CS('\@currname'),T_CS('\@empty'));
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
 	       "<?latexml package='#2' ?#1(options='#1')?>",
@@ -611,6 +616,7 @@ DefMacro('\@if@ptions{}{}{}',sub {
     T_CS('\@secondoftwo'); }});
 
 DefMacro('\g@addto@macro DefToken {}',sub { AddToMacro($_[1],$_[2]); });
+DefMacro('\addto@hook DefToken {}','#1\expandafter{\the#1#2}');
 
 Let(T_CS('\AtEndOfClass'),T_CS('\AtEndOfPackage'));
 
@@ -3018,6 +3024,16 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
 #**********************************************************************
 # C.14 Pictures and Color
 #**********************************************************************
+
+# These are stubs for color or xcolor packages
+Let(T_CS('\set@color'),       T_CS('\relax'));
+Let(T_CS('\color@begingroup'),T_CS('\relax'));
+Let(T_CS('\color@endgroup'),  T_CS('\relax'));
+Let(T_CS('\color@setgroup'),  T_CS('\relax'));
+Let(T_CS('\color@hbox'),      T_CS('\relax'));
+Let(T_CS('\color@vbox'),      T_CS('\relax'));
+Let(T_CS('\color@endbox'),    T_CS('\relax'));
+
 #======================================================================
 # C.14.1 The picture environment
 #======================================================================
@@ -3070,6 +3086,7 @@ DefRegister('\unitlength', Dimension('1pt'));
 DefPrimitiveI('\thinlines',  undef, sub { AssignValue('\@wholewidth',Dimension('0.4pt')); });
 DefPrimitiveI('\thicklines', undef, sub { AssignValue('\@wholewidth',Dimension('0.8pt')); });
 DefRegister('\@wholewidth'=>Dimension('0.4pt'));
+DefRegister('\@halfwidth'=>Dimension('0.2pt'));
 DefMacro('\linethickness{}', '\@wholewidth #1\relax');
 
 DefPrimitive('\arrowlength{Dimension}', sub { AssignValue('\arrowlength',$_[1]); });
@@ -3505,6 +3522,17 @@ DefMathI('\owns',        undef,"\x{220B}", role=>'RELOP', meaning=>'contains');
 DefMacro('\@namedef{}','\expandafter\def\csname #1\endcsname');
 DefMacro('\@nameuse{}','\csname #1\endcsname');
 
+DefMacro('\@ifdefinable Token {}',sub {
+  my($gullet,$token,$if)=@_;
+  my $meaning = LookupMeaning($token);
+  my $name = $token->getString ; $name =~ s/^\\//;
+  my $endmeaning = LookupMeaning(T_CS('\end'.$name));
+  if ( ((! defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
+       && ((! defined $endmeaning) || ($endmeaning eq LookupMeaning(T_CS('\relax'))))
+       && ( ($name ne 'relax') && ($name !~ /^end/) ) ){
+    $if->unlist; }
+  else { (); }});
+
 DefMacroI('\@spaces',undef, '\space\space\space\space');
 Let(T_CS('\@sptoken'),T_SPACE);
 
@@ -3532,6 +3560,8 @@ DefMacroI('\@ehc', undef, "I can't help");
 DefMacro('\@gobble{}',Tokens());
 DefMacro('\@gobbletwo{}{}',Tokens());
 DefMacro('\@gobblefour{}{}{}{}',Tokens());
+DefMacro('\@firstofone{}',sub { $_[1]; });
+Let(T_CS('\@iden'),T_CS('\@firstofone'));
 DefMacro('\@firstoftwo{}{}',sub { $_[1]; });
 DefMacro('\@secondoftwo{}{}',sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}',sub { $_[3]; });
@@ -3570,7 +3600,6 @@ sub make_message {
   ('latex',$cmd,$stomach,$message); }
 
 DefPrimitive('\@onlypreamble{}',sub { onlyPreamble('\@onlypreamble');}); # Don't bother enforcing this.
-
 DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message('\GenericError',$_[2],$_[3],$_[4])); });
 DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message('\GenericWarning',$_[2],$_[3])); });
 DefMacro('\GenericInfo{}{}',      sub{ Info(make_message('\GenericInfo',$_[1],$_[2])); });
@@ -3653,6 +3682,31 @@ DefMacro('\G@refundefinedtrue','');
 #======================================================================
 
 RawTeX(<<'EOTeX');
+  \chardef\@xxxii=32
+  \mathchardef\@Mi=10001
+  \mathchardef\@Mii=10002
+  \mathchardef\@Miii=10003
+  \mathchardef\@Miv=10004
+EOTeX
+DefMacroI('\@vpt',    undef,    '5');
+DefMacroI('\@vipt',   undef,    '6');
+DefMacroI('\@viipt',  undef,    '7');
+DefMacroI('\@viiipt', undef,    '8');
+DefMacroI('\@ixpt',   undef,    '9');
+DefMacroI('\@xpt',    undef,   '10');
+DefMacroI('\@xipt',   undef,   '10.95');
+DefMacroI('\@xiipt',  undef,   '12');
+DefMacroI('\@xivpt',  undef,   '14.4');
+DefMacroI('\@xviipt', undef,   '17.28');
+DefMacroI('\@xxpt',   undef,   '20.74');
+DefMacroI('\@xxvpt',  undef,   '24.88');
+
+DefMacroI('\@tempa',  undef,   '');
+DefMacroI('\@tempb',  undef,   '');
+DefMacroI('\@tempc',  undef,   '');
+DefMacroI('\@gtempa', undef,   '');
+
+RawTeX(<<'EOTeX');
 \newif\if@insert
 \newif\if@colmade
 \newif\if@specialpage   \@specialpagefalse
@@ -3721,10 +3775,17 @@ RawTeX(<<'EOTeX');
 EOTeX
 
 DefMacroI('\@height',undef,'height');
-DefMacroI('\@width',undef,'width');
-DefMacroI('\@depth',undef,'depth');
+DefMacroI('\@width', undef,'width');
+DefMacroI('\@depth', undef,'depth');
+DefMacroI('\@minus', undef,'minus');
+DefMacroI('\@plus',  undef,'plus');
+
 DefMacroI('\hmode@bgroup',undef,'\leavevmode\bgroup');
 
+DefMacroI('\@backslashchar',undef,T_OTHER('\\'));
+DefMacroI('\@percentchar',undef,T_OTHER('%'));
+DefMacroI('\@charlb',undef,T_LETTER('{'));
+DefMacroI('\@charrb',undef,T_LETTER('}'));
 #======================================================================
 
 DefMacroI('\check@mathfonts',undef, Tokens());
@@ -3754,7 +3815,7 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
   my $next = $gullet->readNonSpace;
   # NOTE: Not actually substituting, but collapsing ## pairs!!!!
   ( LaTeXML::Expandable::substituteTokens(xEquals($token,$next) ? $if : $else),$next); });
-
+Let(T_CS('\kernel@ifnextchar'), T_CS('\@ifnextchar'));
 Let(T_CS('\@ifnext'), T_CS('\@ifnextchar')); # ????
 
 DefMacro('\@ifstar {}{}', sub {
@@ -3766,10 +3827,17 @@ DefMacro('\@ifstar {}{}', sub {
   else {
     (LaTeXML::Expandable::substituteTokens($else),$next); }});
 
+DefMacro('\@dblarg {}','\kernel@ifnextchar[{#1}{\@xdblarg{#1}}');
+DefMacro('\@xdblarg {}{}','#1[{#2}]{#2}');
+
 DefMacro('\@testopt{}{}',sub {
   my($gullet,$cmd,$option)=@_;
   ($gullet->ifNext(T_OTHER('[')) ? $cmd->unlist
    : ($cmd->unlist,T_OTHER('['),$option->unlist,T_OTHER(']'))); });
+Let(T_CS('\@protected@testopt'),T_CS('\@testopt')); # ?
+
+Let(T_CS('\l@ngrel@x'),T_CS('\relax')); # Never actually used anywhere, but...
+DefMacro('\@star@or@long{}','\@ifstar{\let\l@ngrel@x\relax#1}{\let\l@ngrel@x\long#1}');
 
 # maybe this is easiest just to punt.
 RawTeX('\def\in@#1#2{%
