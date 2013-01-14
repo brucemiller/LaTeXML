@@ -67,7 +67,7 @@ sub digestNextBody {
   my $initdepth  = scalar(@{$$self{boxing}});
   my $token;
   local @LaTeXML::LIST=();
-  while(defined($token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
+  while(defined($token=$$self{gullet}->readXToken(1,1))){ # Done if we run out of tokens
     push(@LaTeXML::LIST, $self->invokeToken($token));
     last if $terminal and Equals($token,$terminal);
     last if $initdepth > scalar(@{$$self{boxing}}); } # if we've closed the initial mode.
@@ -91,7 +91,7 @@ sub digest {
     my $initdepth  = scalar(@{$$self{boxing}});
     my $depth=$initdepth;
     local @LaTeXML::LIST=();
-    while(defined(my $token=$$self{gullet}->readXToken(1))){ # Done if we run out of tokens
+    while(defined(my $token=$$self{gullet}->readXToken(1,1))){ # Done if we run out of tokens
       push(@LaTeXML::LIST, $self->invokeToken($token));
       my $depth  = scalar(@{$$self{boxing}});
       last if $initdepth > $depth; } # if we've closed the initial mode.
@@ -276,7 +276,7 @@ sub endgroup {
   my($self)=@_;
   if($STATE->isValueBound('MODE',0)  # Last stack frame was a mode switch!?!?!
      || ! $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \bgroup
-    Error('unexpected',$LaTeXML::CURRENT_TOKEN,$self,"Attenpt to close non-boxing group",
+    Error('unexpected',$LaTeXML::CURRENT_TOKEN,$self,"Attempt to close non-boxing group",
 	  $self->currentFrameMessage); }
   popStackFrame($self,1);
   return; }
