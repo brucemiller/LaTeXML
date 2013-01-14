@@ -87,8 +87,7 @@ DefConstructor('\@listings@inline Semiverbatim {}',
 	       reversion=>'\lstinline#1#2#3#2'); # ??????
 
 # Not a regular environment, since we're going to read the body verbatim!
-DefMacroI(T_CS('\begin{lstlisting}'),
-	  LaTeXML::Package::parseParameters('OptionalKeyVals:LST','\begin{lstlisting}'),
+DefMacroI(T_CS('\begin{lstlisting}'),'OptionalKeyVals:LST',
 	  sub {
 	    my($gullet,$keyvals)=@_;
 	    $STATE->getStomach->bgroup; 
