@@ -149,6 +149,7 @@ DefPrimitive('\comment', sub {
 
 Let(T_CS('\plainproclaim'),T_CS('\proclaim'));
 Let(T_CS('\plainfootnote'),T_CS('\footnote'));
+RawTeX('\newbox\tocbox@');
 #======================================================================
 # Text level stuff
 
