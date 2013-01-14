@@ -1077,6 +1077,11 @@ DefMacroI('\verb', undef, sub {
   AssignCatcode('}',CC_OTHER);
   $init = $mouth->readToken;
   $init = $mouth->readToken if ToString($init) eq '*'; # Should I bother handling \verb* ?
+  if(!$init){ # typically something read too far got \verb and the content is somewhere else..?
+    Error('expected','delimiter',$gullet,
+	  "Verbatim argument lost","Bindings for preceding code is probably broken");
+    EndSemiverbatim();
+    return (); }
   $body = $mouth->readTokens($init);
   EndSemiverbatim();
   Invocation(T_CS('\@verb'),Tokens($init),$body)->unlist; });
