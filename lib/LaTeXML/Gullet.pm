@@ -207,12 +207,12 @@ sub unread {
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
 # Note that most tokens pass through here, so be Fast & Clean! readToken is folded in.
 # `Toplevel' processing, (if $toplevel is true), used at the toplevel processing by Stomach,
-#  will step to the next input stream (Mouth)
-# if one is available, and will also pass comments.
+#  will step to the next input stream (Mouth) if one is available,
+# If $commentsok is true, will also pass comments.
 sub readXToken {
-  my($self,$toplevel)=@_;
+  my($self,$toplevel,$commentsok)=@_;
   $toplevel = 1 unless defined $toplevel;
-  return shift(@{$$self{pending_comments}}) if $toplevel && @{$$self{pending_comments}};
+  return shift(@{$$self{pending_comments}}) if $commentsok && @{$$self{pending_comments}};
   my($token,$cc,$defn);
   while(1){
     if(!defined($token = (@{$$self{pushback}} ? shift(@{$$self{pushback}}) : $$self{mouth}->readToken() ))){
@@ -223,7 +223,7 @@ sub readXToken {
       # so this token should never leak out through an EXTERNAL call to readToken.
       return $self->readToken; } # Just return the next token.
     elsif($cc == CC_COMMENT){
-      return $token if $toplevel;
+      return $token if $commentsok;
       push(@{$$self{pending_comments}},$token); } # What to do with comments???
     elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable
 	  && ($toplevel || !$defn->isProtected)){ # is this the right logic here? don't expand unless digesting?
@@ -731,10 +731,11 @@ inhibit further expansion of control sequences and proper spawning of register t
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $gullet->readXToken($toplevel); >>
+=item C<< $token = $gullet->readXToken($toplevel,$commentsok); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
 If the next token is expandable, it is expanded, and its expansion is reinserted into the input.
+If C<$commentsok>, a comment read or pending will be returned.
 
 =item C<< $gullet->unread(@tokens); >>
 
