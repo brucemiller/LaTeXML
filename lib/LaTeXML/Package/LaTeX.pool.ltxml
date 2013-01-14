@@ -2550,8 +2550,8 @@ DefPrimitive('\includeonly{}',sub {
 
 # NOTE: In the long run, we want to SAVE the contents and associate them with the given file name
 #  AND, arrange so that when a file is read, we'll use the contents!
-DefConstructorI(T_CS("\\begin{filecontents}"),
-		LaTeXML::Package::parseParameters("Semiverbatim","\\begin{filecontents}"),'',
+DefConstructorI(T_CS("\\begin{filecontents}"),"Semiverbatim",
+		'',
 		reversion=>'',
 		afterDigest=>[sub {
 				my($stomach,$whatsit)=@_;
@@ -2559,8 +2559,8 @@ DefConstructorI(T_CS("\\begin{filecontents}"),
 				my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{filecontents}\n",1);
 				AssignValue($filename.'_contents'=>join("\n",@lines), 'global');
 				NoteProgress("[Cached filecontents for $filename (".scalar(@lines)." lines)]"); }]);
-DefConstructorI(T_CS("\\begin{filecontents*}"),
-		LaTeXML::Package::parseParameters("Semiverbatim","\\begin{filecontents}"),'',
+DefConstructorI(T_CS("\\begin{filecontents*}"),"Semiverbatim",
+		'',
 		reversion=>'',
 		afterDigest=>[sub {
 				my($stomach,$whatsit)=@_;
@@ -2945,7 +2945,7 @@ DefMacro('\savebox{}','\@ifnextchar({\pic@savebox#1}{\@savebox#1}');
 DefPrimitive('\@savebox DefToken[][]{}',sub {
    AssignValue('box'.ToString($_[1]), Digest($_[4])); return;});
 
-DefMacroI('\begin{lrbox}',LaTeXML::Parameters::parseParameters('{Token}','\begin{lrbox}'),
+DefMacroI('\begin{lrbox}','{Token}',
 	  '\@begin@lrbox #1');
 DefPrimitiveI('\end{lrbox}',undef,sub { $_[0]->egroup; });
 DefPrimitive('\@begin@lrbox Token', sub {
