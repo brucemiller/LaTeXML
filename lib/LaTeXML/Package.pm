@@ -562,6 +562,7 @@ sub DefMacroI {
   if((length($cs) == 1) && $options{mathactive}){
     $STATE->assignMathcode($cs=>0x8000, $options{scope}); }
   $cs = coerceCS($cs);
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
   AssignValue(ToString($cs).":locked"=>1) if $options{locked};
@@ -599,7 +600,7 @@ sub DefConditionalI {
     else {
       Error('misdefined',$cs,$STATE->getStomach,
 	    "The conditional ".Stringify($cs)." is being defined but doesn't start with \\if"); }}
-
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   $STATE->installDefinition(LaTeXML::Conditional->new($cs,$paramlist,$test,%options),
 			    $options{scope});
   AssignValue(ToString($cs).":locked"=>1) if $options{locked};
@@ -630,6 +631,7 @@ sub DefPrimitiveI {
   $replacement = sub { Box($string,undef,undef,Invocation($options{alias}||$cs,@_[1..$#_])); }
     unless ref $replacement;
   $cs = coerceCS($cs);
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   my $mode = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Primitive
@@ -664,6 +666,7 @@ sub DefRegister {
 sub DefRegisterI {
   my($cs,$paramlist,$value,%options)=@_;
   $cs = coerceCS($cs);
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   my $type = $register_types{ref $value};
   my $name = ToString($cs);
   my $getter = $options{getter} 
@@ -717,6 +720,7 @@ sub DefConstructor {
 sub DefConstructorI {
   my($cs,$paramlist,$replacement,%options)=@_;
   $cs = coerceCS($cs);
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   my $mode = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Constructor
@@ -800,6 +804,7 @@ sub DefMath {
 sub DefMathI {
   my($cs,$paramlist,$presentation,%options)=@_;
   $cs = coerceCS($cs);
+  $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   my $nargs = ($paramlist ? scalar($paramlist->getParameters): 0);
   my $csname = $cs->getString;
   my $meaning = $options{meaning};
@@ -971,6 +976,7 @@ sub DefEnvironmentI {
   my($name,$paramlist,$replacement,%options)=@_;
   my $mode = $options{mode};
   $name = ToString($name) if ref $name;
+  $paramlist = parseParameters($paramlist,$name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Constructor
 			     ->new(T_CS("\\begin{$name}"), $paramlist,$replacement,
@@ -1941,9 +1947,10 @@ Examples:
 
 X<DefMacroI>
 Internal form of C<DefMacro> where the control sequence and parameter list
-have already been parsed; useful for definitions from within code.
+have already been separated; useful for definitions from within code.
 Also, slightly more efficient for macros with no arguments (use C<undef> for
-C<$paramlist>).
+C<$paramlist>), and useful for obscure cases like defining C<\begin{something*}>
+as a Macro.
 
 =back
 
@@ -2074,7 +2081,7 @@ Example:
 
 X<DefPrimitiveI>
 Internal form of C<DefPrimitive> where the control sequence and parameter list
-have already been parsed; useful for definitions from within code.
+have already been separated; useful for definitions from within code.
 
 =item C<< DefRegister($prototype,$value,%options); >>
 
@@ -2260,7 +2267,7 @@ See L</"Control of Scoping">.
 
 X<DefConstructorI>
 Internal form of C<DefConstructor> where the control sequence and parameter list
-have already been parsed; useful for definitions from within code.
+have already been separated; useful for definitions from within code.
 
 =item C<< DefMath($prototype,$tex,%options); >>
 
@@ -2339,7 +2346,7 @@ Example:
 
 X<DefMathI>
 Internal form of C<DefMath> where the control sequence and parameter list
-have already been parsed; useful for definitions from within code.
+have already been separated; useful for definitions from within code.
 
 =item C<< DefEnvironment($prototype,$replacement,%options); >>
 
@@ -2374,7 +2381,7 @@ Example:
 
 X<DefEnvironmentI>
 Internal form of C<DefEnvironment> where the control sequence and parameter list
-have already been parsed; useful for definitions from within code.
+have already been separated; useful for definitions from within code.
 
 =back
 
