@@ -98,15 +98,16 @@ sub RDFAttributes {
   my $hash = KeyVals($keyvals);
   my $x;
   foreach my $key (qw(about resource)){
-    if(($x = $$hash{$key}) && (ref $x eq 'LaTeXML::Whatsit')
-       && ($x->getDefinition->getCSName eq '\ref')){
-      $$hash{$key.'labelref'}=CleanLabel($x->getArg(2));
-      delete $$hash{$key}; }
-    elsif(($x=ToString($$hash{$key})) && ($x =~ /^#(.+)$/)){
-      $$hash{$key.'idref'}=CleanID($1);
-      delete $$hash{$key}; }
-    else {
-      $$hash{$key}=CleanURL($$hash{$key}); }} # at least clean it.
+    if(my $value = $$hash{$key}){
+      if((ref $value eq 'LaTeXML::Whatsit')
+	 && ($value->getDefinition->getCSName eq '\ref')){
+	$$hash{$key.'labelref'}=CleanLabel($value->getArg(2));
+	delete $$hash{$key}; }
+      elsif(($x=ToString($value)) && ($x =~ /^#(.+)$/)){
+	$$hash{$key.'idref'}=CleanID($1);
+	delete $$hash{$key}; }
+      else {
+	$$hash{$key}=CleanURL($value); }}} # at least clean it.
   $hash; }
 
 # It ought to be wrong to put resource (or resourceXXref) attributes on an ltx:ref...
@@ -117,7 +118,7 @@ sub RDFTriple {
   my($keyvals,$content)=@_;
   my $attr = RDFAttributes($keyvals);
   if(! ($$attr{about} || $$attr{aboutlabelref} || $$attr{aboutidref}) ){
-    $$attr{about} = '.'; }	# Silently make the triple about the entire document
+    $$attr{about} = ''; }	# Silently make the triple about the entire document
   if(! ($$attr{property} || $$attr{rel} || $$attr{rev}) ){
     Warn('expected','property',$keyvals,
 	 "Expected 'property' or 'rel' or 'rev' in RDF attributes"); }
@@ -169,9 +170,19 @@ DefPrimitive('\lxRDF@preamble[]RequiredKeyVals:RDFa', sub {
 		T_BEGIN,($content ? $content->unlist : ()),T_END)); });
 
 # This version of \lxRDF is for use in the document body.
-DefConstructor('\lxRDF@body[] RequiredKeyVals:RDFa',
-	       "^<ltx:rdf %&RDFTriple(#2,#1)>#1</ltx:rdf>",
-	       alias=>'\lxRDF');
+DefConstructor('\lxRDF@body[] RequiredKeyVals:RDFa', sub {
+  # "^<ltx:rdf %&RDFTriple(#2,#1)>#1</ltx:rdf>",
+  my($document,$content,$kv)=@_;
+  if(my $savenode = $document->floatToElement('ltx:rdf')){
+    my $rdf = $document->openElement('ltx:rdf');
+    # a bit of trouble to add empty elements!
+    my $attr = RDFTriple($kv,$content);
+    foreach my $k (keys %$attr){
+      $rdf->setAttribute($k=>ToString($$attr{$k})); }
+    $document->absorb($content) if $content;
+    $document->closeElement('ltx:rdf');
+    $document->setNode($savenode); }},
+  alias=>'\lxRDF');
 
 # Start with \lxRDF bound to the preamble form, which saves the rdf as frontmatter
 Let(T_CS('\lxRDF'),T_CS('\lxRDF@preamble'));
