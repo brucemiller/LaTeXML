@@ -28,13 +28,14 @@ use base qw(LaTeXML::Object);
 sub new {
   my($class, %options)=@_;
   bless { gullet=> LaTeXML::Gullet->new(),
-	  boxing=>[]}, $class; }
+	  boxing=>[], token_stack=>[]}, $class; }
 
 #**********************************************************************
 # Initialize various parameters, preload, etc.
 sub initialize {
   my($self)=@_;
   $$self{boxing} = [];
+  $$self{token_stack} = [];
   $STATE->assignValue(MODE=>'text','global');
   $STATE->assignValue(IN_MATH=>0,'global');
   $STATE->assignValue(PRESERVE_NEWLINES=>1,'global');
@@ -111,21 +112,20 @@ sub digest {
 # possibly arguments will be parsed from the Gullet.
 # Otherwise, the token is simply digested: turned into an appropriate box.
 # Returns a list of boxes/whatsits.
-our @token_stack=();
 our $MAXSTACK=200;		# ?
 sub invokeToken {
   my($self,$token)=@_;
-  push(@token_stack,$token);
-  if(scalar(@token_stack) > $MAXSTACK){
+  push(@{$$self{token_stack}},$token);
+  if(scalar(@{$$self{token_stack}}) > $MAXSTACK){
     Fatal('internal','<recursion>',$self,
 	  "Excessive recursion(?): ",
-	  "Tokens on stack: ".join(', ',map(ToString($_),@token_stack))); }
+	  "Tokens on stack: ".join(', ',map(ToString($_),@{$$self{token_stack}}))); }
   my @result = $self->invokeToken_internal($token);
   if((scalar(@result)==1) && (! defined $result[0])){
     @result=(); }		# Just paper over the obvious thing.
   if(my($x)=grep(!$_->isaBox,@result)){
     Fatal('misdefined',$x,$self,"Expected a Box|List|Whatsit, but got '".Stringify($x)."'"); }
-  pop(@token_stack);
+  pop(@{$$self{token_stack}});
   @result; }
 
 sub makeError {
