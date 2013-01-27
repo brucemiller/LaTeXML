@@ -55,9 +55,9 @@ sub makeSubCollectionDocuments {
   my($self,$doc,$root,%collections)=@_;
   my @docs = ();
 
-  my $roottag = $doc->getQName($root);
-  my $rootid = $root->getAttribute('xml:id');
-
+  my $roottag  = $doc->getQName($root);
+  my $rootid   = $root->getAttribute('xml:id');
+  my $rootrole = $root->getAttribute('role');
   my @initials = sort keys %collections;
   my $init0  = $initials[0];
   my @ids = ([$rootid,$init0],map(["$rootid.$_",$_],@initials[1..$#initials]));
@@ -67,11 +67,15 @@ sub makeSubCollectionDocuments {
   $doc->removeNodes(@titles);
   for(my $i=0; $i<=$#ids; $i++){
     my $subdoc = ($i == 0 ? $doc
-		  : $doc->newDocument([$roottag,{'xml:id'=>$ids[$i][0]}],
+		  : $doc->newDocument([$roottag, {'xml:id'=>$ids[$i][0], role=>$rootrole}],
 				      parentDocument=>$doc,
 				      parent_id=>$rootid,
 				      destination=>$self->getPageName($doc,$ids[$i][1])));
     push(@docs,$subdoc);
+    # Quite possibly the new data is made from pieces from the original;
+    # This hopefully will fix up the book-keeping.
+    $doc->removeNodes($collections{$ids[$i][1]});
+    # Now, finally, fill in the new sub-document!
     $subdoc->addNodes($subdoc->findnode('//'.$roottag),
 		      ['ltx:title',{},@titlestuff,($i == 0 ? () : (' ',$ids[$i][1]))],
 		      ['ltx:TOC',{format=>'veryshort'},
