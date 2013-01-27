@@ -116,14 +116,15 @@ sub add_rec {
       my $fullphrasetext = ($$tree{fullphrasetext} ? $$tree{fullphrasetext}.' ' : '').$phrasetext;
       $$allphrases{$fullphrasetext}{$fullkey} = 1;
       $$allphrases{lc($fullphrasetext)}{$fullkey} = 1;
+      my $phrasecopy = $doc->cloneNode($phrase);
       $subtree = $$tree{subtrees}{$key} = {key=>$fullkey, id=>$id,
-					   phrase=>$doc->cloneNode($phrase),
+					   phrase=>$phrasecopy,
 					   phrasetext=>$phrasetext,
 					   fullphrasetext=>$fullphrasetext,
 					   subtrees=>{},referrers=>{}, parent=>$tree}; 
       $$allkeys{$fullkey}={id=>$id,
 			   phrases=>[($$tree{key} ? @{$$allkeys{$$tree{key}}{phrases}}:())," ",
-				     $doc->cloneNodes($doc->trimChildNodes($phrase)) ]};
+				     $doc->trimChildNodes($phrasecopy) ]};
       }
     add_rec($doc,$allkeys,$allphrases,$subtree,$entry,@phrases); }
   else {
