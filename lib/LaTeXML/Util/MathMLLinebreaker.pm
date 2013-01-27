@@ -203,7 +203,9 @@ sub Warn {
     $p=$p->parentNode; }
   my $id = $p && $p->getAttribute('xml:id')||'?';
   my $nm = $p && $p->getAttribute('refnum')||'';
-  print STDERR "Warning in MathMLLinebreaker for math in $nm (id=$id):\n  $message\n"; }
+##  print STDERR "Warning in MathMLLinebreaker for math in $nm (id=$id):\n  $message\n"; }
+  LaTeXML::Post::Info('unexpected','toowide',"id=$id",$message); }
+
 
 
 #######################################################################
