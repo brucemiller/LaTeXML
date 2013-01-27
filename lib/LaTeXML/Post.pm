@@ -755,14 +755,24 @@ sub addNodes {
       $node->appendTextNode($child); }}}
 
 # Remove @nodes from the document
+# Allow the nodes to be array form with possibly nested XML that needs to be removed.
 sub removeNodes {
   my($self,@nodes)=@_;
   foreach my $node (@nodes){
-    foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]",$node)){
-      my $id = $idd->getAttribute('xml:id');
-      if($$self{idcache}{$id}){
-	delete $$self{idcache}{$id}; }}
-    $node->unlinkNode; }}
+    my $ref = ref $node;
+    if(!$ref){}
+    elsif($ref eq 'ARRAY'){
+      my($t,$a,@n)=@$node;
+      if(my $id = $$a{'xml:id'}){
+	if($$self{idcache}{$id}){
+	  delete $$self{idcache}{$id}; }}
+      $self->removeNodes(@n); }
+    elsif(($ref =~ /^XML::LibXML::/) && ($node->nodeType == XML_ELEMENT_NODE)){
+      foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]",$node)){
+	my $id = $idd->getAttribute('xml:id');
+	if($$self{idcache}{$id}){
+	  delete $$self{idcache}{$id}; }}
+      $node->unlinkNode; }}}
 
 # Replace $node by @replacements in the document
 sub replaceNode {
@@ -844,7 +854,8 @@ sub newDocument {
     my $nsuri = $$self{namespaces}{$prefix};
     my $node = $xmldoc->createElementNS($nsuri,$localname);
     $xmldoc->setDocumentElement($node);
-    map( $node->setAttribute($_=>$$attributes{$_}),keys %$attributes) if $attributes;
+    map( $$attributes{$_} && $node->setAttribute($_=>$$attributes{$_}),keys %$attributes)
+      if $attributes;
     $self->addNodes($node,@children); }
   elsif(ref $root eq 'XML::LibXML::Element'){
     $parent_id = $self->findnode('ancestor::*[@id]',$root);
