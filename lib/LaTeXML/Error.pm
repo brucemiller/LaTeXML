@@ -113,6 +113,9 @@ sub perl_die_handler {
   elsif($line[0] =~ /^Not an? (\w*) reference at (.*)$/){
     my($type,$where)=($1,$2);
     Fatal('misdefined',callerName(2),$where, @line); }
+  elsif($line[0] =~ /^File (.*?) had an error:/){
+    my($file)=($1);
+    Fatal('misdefined',$file,undef, @line); }
   else {
     Fatal('perl','die',undef,"Perl died",@_); }}
 
