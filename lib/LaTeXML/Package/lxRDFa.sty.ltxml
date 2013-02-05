@@ -94,7 +94,11 @@ DefKeyVal('RDFa',datatype    =>'Semiverbatim'); # Term, CURIE or Abs. IRI
 # accounting for \ref{label} or #id in the about and resource keywords
 sub RDFAttributes {
   my($keyvals)=@_;
+  # This may get digested in the preamble...
+  my $inpreamble = LookupValue('inPreamble');
+  AssignValue(inPreamble=>0);
   $keyvals = $keyvals->beDigested($STATE->getStomach);
+  AssignValue(inPreamble=>$inpreamble);
   my $hash = KeyVals($keyvals);
   my $x;
   foreach my $key (qw(about resource)){
