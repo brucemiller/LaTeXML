@@ -25,14 +25,20 @@ foreach my $option (qw(10pt 11pt 12pt
 		       openright openany
 		       onecolumn twocolumn 
 		       notitlepage titlepage
-		       openbib
 		       leqno fleqn)){
   DeclareOption($option,undef); }
+
+DeclareOption('openbib',sub {
+  RequireResource(undef,type=>'text/css',content=>'.ltx_bibblock{display:block;}'); });
+# Actually, leqno and fleqn ought to be handled.
+# They probably need to be handled in XSLT, rather than css;
+# and they somewhat are....
 ProcessOptions();
 
 #**********************************************************************
 # Document structure.
 RelaxNGSchema("LaTeXML");
+RequireResource('ltx-article.css');
 
 
 DefMacro('\@ptsize','0');	# should depend on options...
