@@ -74,6 +74,8 @@ our @EXPORT = (qw(&DefExpandable
 	       qw(&MergeFont),
 
 	       qw(&CheckOptions),
+	       # Resources
+	       qw(&RequireResource &ProcessPendingResources),
 
 	       @LaTeXML::Global::EXPORT);
 
@@ -397,7 +399,9 @@ sub RefStepCounter {
   my $id      = $has_id && ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
 
   my $refnum  = ToString(Digest(T_CS("\\the$ctr")));
-  my $frefnum = ToString(Digest(Invocation(T_CS('\fnum@@'),$ctr)));
+  my $frefnum = ToString(Digest(Invocation(T_CS('\lx@fnum@@'),$ctr)));
+  my $rrefnum  = ToString(Digest(Invocation(T_CS('\lx@refnum@@'),$ctr)));
+
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
@@ -405,7 +409,11 @@ sub RefStepCounter {
   AssignValue(current_counter=>$ctr,'local');
   AssignValue('scopes_for_counter:'.$ctr => [$ctr.':'.$refnum],'local');
   $STATE->activateScope($ctr.':'.$refnum);
-  (refnum=>$refnum, frefnum=>$frefnum, ($has_id ? (id=>$id):())); }
+  (refnum=>$refnum,
+   ($frefnum && (!$refnum || ($frefnum ne $refnum)) ? (frefnum=>$frefnum):()),
+   ($rrefnum && ($frefnum ? ($rrefnum ne $frefnum) : (!$refnum || ($rrefnum ne $refnum)))
+    ? (rrefnum=>$rrefnum):()),
+   ($has_id ? (id=>$id):())); }
 
 sub deactivateCounterScope {
   my($ctr)=@_;
@@ -1697,6 +1705,47 @@ sub DefMathLigature {
   CheckOptions("DefMathLigature",$math_ligature_options,%options);
   $STATE->getModel->addMathLigature($matcher,%options);
   return; }
+
+#======================================================================
+# Support for requiring "Resources", ie CSS, Javascript, whatever
+
+our $resource_options = {type=>1,media=>1,content=>1};
+our $resource_types = { css=>'text/css', js=>'text/javascript' };
+
+sub RequireResource {
+  my($resource,%options)=@_;
+  CheckOptions("RequireResource",$resource_options,%options);
+  if(! $options{content} && !$resource){
+    Warn('expected','resource',undef,"Resource must have a resource pathname or content; skipping");
+    return; }
+  if(! $options{type}){
+    my $ext = $resource && pathname_type($resource);
+    $options{type} = $ext && $$resource_types{$ext}; }
+  if(! $options{type}){
+    my $ext = $resource && pathname_type($resource);
+    my $t = $ext && $$resource_types{$ext};
+    Warn('expected','type',undef,"Resource must have a mime-type; skipping"); return; }
+
+  if($LaTeXML::DOCUMENT){	# If we've got a document, go ahead & put the resource in.
+    addResource($LaTeXML::DOCUMENT, $resource,%options); }
+  else {
+    AssignValue(PENDING_RESOURCES=>[],'global') unless LookupValue('PENDING_RESOURCES');
+    PushValue(PENDING_RESOURCES=>[$resource,%options]); }}
+
+# No checking...
+sub addResource {
+  my($document,$resource,%options)=@_;
+  my $savenode=$document->floatToElement('ltx:resource');
+  $document->insertElement('ltx:resource',$options{content},
+			   src=>$resource,type=>$options{type},media=>$options{media});
+  $document->setNode($savenode) if $savenode; }
+
+sub ProcessPendingResources {
+  my($document)=@_;
+  if(my $req = LookupValue('PENDING_RESOURCES')){
+    map( addResource($document, @$_), @$req);
+    AssignValue(PENDING_RESOURCES=>[],'global'); }}
+
 #**********************************************************************
 1;
 
@@ -3064,7 +3113,7 @@ therefor also be scoped).  The recognized configuration parameters are:
  SEARCHPATHS       : a list of directories to search for
                      sources, implementations, etc.
 
-=item C<< PushValue($type,$name,@values); >>
+=item C<< PushValue($name,@values); >>
 
 X<PushValue>
 This function, along with the next three are like C<AssignValue>,
@@ -3072,27 +3121,27 @@ but maintain a global list of values.
 C<PushValue> pushes the provided values onto the end of a list.
 The data stored for C<$name> is global and must be a LIST reference; it is created if needed.
 
-=item C<< UnshiftValue($type,$name,@values); >>
+=item C<< UnshiftValue($name,@values); >>
 
 X<UnshiftValue>
 Similar to  C<PushValue>, but pushes a value onto the front of the list.
 The data stored for C<$name> is global and must be a LIST reference; it is created if needed.
 
-=item C<< PopValue($type,$name); >>
+=item C<< PopValue($name); >>
 
 X<PopValue>
 Removes and returns the value on the end of the list named by C<$name>.
 The data stored for C<$name> is global and must be a LIST reference.
 Returns C<undef> if there is no data in the list.
 
-=item C<< ShiftValue($type,$name); >>
+=item C<< ShiftValue($name); >>
 
 X<ShiftValue>
 Removes and returns the first value in the list named by C<$name>.
 The data stored for C<$name> is global and must be a LIST reference.
 Returns C<undef> if there is no data in the list.
 
-=item C<< LookupMapping($type,$name,$key); >>
+=item C<< LookupMapping($name,$key); >>
 
 X<LookupMapping>
 This function maintains a hash association named by C<$name>.
@@ -3101,7 +3150,7 @@ The data stored for C<$name> is global and must be a HASH reference.
 Returns C<undef> if there is no data associated with C<$key> in the mapping,
 or the mapping is not (yet) defined.
 
-=item C<< AssignMapping($type,$name,$key,$value); >>
+=item C<< AssignMapping($name,$key,$value); >>
 
 X<AssignMapping>
 This function associates C<$value> with C<$key> within the mapping named by C<$name>.
