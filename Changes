@@ -1,23 +1,42 @@
 0.8.0 !!!!!
      - new Color objects allowing better & more accurate, and extensible
-       color models.
+       color models; binding for the xcolor package.
      - RDFa support; Thanks Christoph Lange
      - consistent error reporting, in both conversion & post-processing
        that supports automated build systems; Thanks Deyan Ginev, Heinrich Stammerjohanns
-     - uses dvipng (if available) for converting tex code to images;
-       much faster than going via eps
-     - Reorganize various non-perl data files into a (hopefully) more manageable arrangement:
+     - uses dvipng (IF available) for converting tex code to images;
+       MUCH faster than going via eps.
+       HOWEVER, it wont handle embedded postscript,
+       so we only use it for converting math to images.
+     - Reorganize various non-perl data files into a (hopefully) more manageable arrangement,
+       and with more consistent naming:
        lib/LaTeXML/resources contains various resources for running the program
        including
        * DTD, RelaxNG for holding various schema
        * XSLT, CSS, javascript for holding various styling & script resources
+     - Mechanism for bindings to request resources (css, javascript) that will
+       be included in generated output if appropriate (eg. if html)
+     - more consistent naming schemes
+       * for classes typically start ltx_<element>, ltx_font_<font>, ltx_role_<role> etc
+       * LaTeXML.css for core.css
+       * package specific css files: ltx-<package>.css
+       * special purpose css files: LaTeXML-<feature>.css
+     - XSLT uses <xsl:element> exclusively so same modules cope with both xhtml & html5;
+       More easily extended and overridden by author customizations.
 
 0.7.9xx 2012-08-01
      - some slight efficiency improvements
        (reports Deyan Ginev, Joe Corneli)
      - fixed bug in Post reading from STDIN (thanks Josh Bialkowski)
      - various robustness
-     
+     - I/O reorganization, which includes
+       * an extensible pseudo-protocol for sources of TeX and data,
+       	 including file:<filename>, string:<explicit-string-data>
+       * Migration of control of I/O to functions defined in Package.pm
+       	 InputFile, InputDefinitions, etc
+       * Obsolete $GULLET->input, $GULLET->expandTokens
+       * Tokens lists are now immutable (do NOT implement Mouth API)
+
 0.7.9xx 2012-07-01
      - more consistent handling of math spacing;
        treat \quad and wider as punctuation
