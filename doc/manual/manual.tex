@@ -40,7 +40,14 @@
 \title{\LaTeXML\ \emph{The Manual}}
 \subtitle{A \LaTeX\ to \XML\ Converter;\\ \emph{\CurrentVersion}}
 \author{Bruce R.~Miller}
-\begin{document}
+%============================================================
+\begin{lxNavbar}
+\lxRef{top}{\includegraphics{../graphics/latexml}}\\
+\includegraphics{../graphics/mascot}\\
+\lxContextTOC
+\end{lxNavbar}
+%============================================================
+\begin{document}\label{top}
 \frontmatter
 \maketitle
 \tableofcontents
@@ -1290,17 +1297,21 @@ the XSLT transforms used and extending the \CSS\ stylesheets.
 to \XHTML\ and \HTML. These stylesheets are modular with components
 corresponding to the schema modules.  Probably the best strategy
 for customizing the transform involves making a copy of the standard
-base stylesheets, \texttt{LaTeXML-xhtml.xsl} and
-\texttt{LaTeXML-html.xsl},  found at
+base stylesheets, \texttt{LaTeXML-xhtml.xsl},
+\texttt{LaTeXML-html.xsl} and
+\texttt{LaTeXML-html5.xsl},  found at
 \textit{installationdir}\texttt{/LaTeXML/style/}
---- they're short, consisting mainly of sequence of  \texttt{xsl:include} ---
-and adding your own rules, or including your own modules.
-The two stylesheets differ primarily in their use of namespaces
-and handling of math.
+--- they're short, consisting mainly of an \texttt{xsl:include}
+and setting appropriate parameters and output method;
+thus modifying the parameters and and adding your own rules,
+or including your own modules should be relatively easy.
 
 Naturally, this requires a familiarity with \LaTeXML's schema (see \ref{schema}),
 as well as \XSLT\ and \XHTML.  See the other stylesheet modules in the same directory
 as the base stylesheet for guidance.
+Generally the strategy is to use various parameters to switch
+between common behaviors and to use templates with \texttt{mode}s
+that can be overridden in the less common cases.
 
 Conversion to formats other than \XHTML\ are, of course, possible, as well,
 but are neither supplied nor covered here.
@@ -1309,6 +1320,20 @@ that the \LaTeXML\ schema can be mapped to the desired one,
 and to what extent \LaTeXML\ has lost or hidden information
 represented in the original document.  Again, familiarity with the schema is needed,
 and the provided \XHTML\ stylesheets may suggest an approach.
+
+NOTE: I'm trying to make stylesheets \emph{easily} customizable.
+However, this is getting tricky.
+\begin{itemize}
+\item You can import stylesheets which allows the templates to be overridden.
+\item You can call the overridden stylesheet using \texttt{apply-imports}
+\item You can \emph{not} call \texttt{apply-imports} to call an overridden
+\emph{named} template! (although you seemingly can override them?)
+\item You can refer to xslt modules using URN's, provided you have loaded
+the \texttt{LaTeXML.catalog}:
+\begin{lstlisting}[style=xml]
+<xsl:import href="urn:x-LaTeXML:XSLT:LaTeXML-all-xhtml.xsl"/>
+\end{lstlisting}
+\end{itemize}
 
 \subsection{CSS}\label{customization.latexmlpost.css}
 \CSS\ stylesheets can be supplied to \ltxcmd{latexmlpost} to
@@ -1343,6 +1368,16 @@ To best take advantage of this capability so as to design
   while the latter becomes \verb|<h2 class='section-title'>|
  (for example, the h-level may vary with the document structure),
 \end{itemize}
+
+\paragraph{Mode \texttt{begin} and \texttt{end}}
+For most elements, once the main html element has been opened and the
+primary attributes have been added but before any content has been added,
+a template with mode \texttt{begin} is called;
+thus it can add either attributes or content.  Just before closing the main
+html element, a template with mode \texttt{end} is called.
+
+\paragraph{Computing class and style}
+Templates with mode \texttt{classes} and \texttt{styling}.
 
 %%%======================================================================
 \chapter{Mathematics}\label{math}
@@ -2038,6 +2073,122 @@ The following errors are more likely to be due to programming errors in the
   internal coding error within \LaTeXML.
 \end{description}
 
+%%%======================================================================
+\chapter{CSS Classes}\label{cssclasses}
+When the target format is in the HTML family (XHTML, HTML or HTML5),
+\LaTeXML\ adds various classes to the generated html elements.
+This provides a trail back to the originating markup,
+and leverage to apply CSS styling to the results.
+Recall that the class attribute is a space-seperated list of class names.
+This appendix describes the class names used.
+
+The basic strategy is the following:
+\begin{description}
+\item[\texttt{ltx\_}\textit{element}]
+  Every \LaTeXML\ element that is trasformed into html supplies a corresponding
+  class name.  These elements reflect the original \TeX/\LaTeX\ markup, but are
+  not identical. See Appendix \ref{schema} for details.
+\item[\texttt{ltx\_font\_}\textit{font}]
+  Font styling is noted by class ma,es where \textit{font} can indicate:
+  \begin{description}
+    \item[family]:  \texttt{serif}, \texttt{sansserif}, \texttt{typewriter},
+      \texttt{caligraphic}, \texttt{fraktur}, \texttt{script};
+    \item[series]:  \texttt{bold}, \texttt{medium};
+    \item[shape]:   \texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps};
+    \item[size]: \texttt{TINY}, \texttt{Tiny}, \texttt{tiny}, \texttt{script},
+                 \texttt{footnote}, \texttt{small}, \texttt{normal}, \texttt{large},
+                 \texttt{Large}, \texttt{LARGE}, \texttt{huge}, \texttt{Huge}, \texttt{HUGE}.
+  \end{description}
+  These sets are open-ended.
+\item[\texttt{ltx\_align\_}\textit{alignment}]
+  indicates alignment of the contents within the element.
+  \begin{description}
+    \item[horizontal]: \texttt{left}, \texttt{right}, \texttt{center}, \texttt{justify};
+    \item[vertical]:   \texttt{top}, \texttt{bottom}, \texttt{baseline}, \texttt{middle}.
+  \end{description}
+\item[\texttt{ltx\_border\_}\textit{edges}]
+   indicates single or double borders on the various edges:
+   \texttt{t}, \texttt{r}, \texttt{b}, \texttt{l},
+   \texttt{tt}, \texttt{rr}, \texttt{bb}, \texttt{ll};
+   typically used for table cells.
+\item[\texttt{ltx\_role\_}\textit{role}]
+  reflects the distinct uses a particular \LaTeXML\ elements serve
+  which is indicated by the \attr{role} attribute.  Examples include \elementref{creator},
+  for `document creators', where the \attr{role} may be \texttt{author}, \texttt{editor},
+  \texttt{translator} or others.
+  Thus, depending on your purposes and the expected markup, you might choose to write
+  CSS rules for \texttt{ltx\_creator} or \texttt{ltx\_role\_author}.
+  Similarly, \elementref{quote} is stretched to accomodate \texttt{translation} or \texttt{verse}.
+\item[\texttt{ltx\_title\_}\textit{section}]
+  marks the titles of various sectional units.
+  For example, a chapter's title will have two classes: \texttt{ltx\_title}
+  and \texttt{ltx\_title\_chapter}.
+\item[\texttt{ltx\_theorem\_}\textit{type}]
+   marks various types of `theorem-like' objects, where the \textit{type} is
+   whatever was used in \verb|\newtheorem|.
+\item[\texttt{ltx\_float\_}\textit{type}]
+   marks various types of floating objects, such as might be defined using
+   the \texttt{float} package using \verb|\newfloat|.
+\item[\texttt{ltx\_lst\_}\textit{role}]
+  reflects the various roles of items within listings,
+  such as those created using the \texttt{listings} package
+  (whose containing element would have class \texttt{ltx\_lstlisting}).
+  Such classes include:
+ \texttt{ltx\_lst\_language\_}\textit{lang}, \texttt{ltx\_lst\_}\textit{keywordclass},
+ \texttt{ltx\_lxt\_line}, \texttt{ltx\_lst\_linenum}.
+\item[\texttt{ltx\_bib\_}\textit{item}]
+  indicates various items in bibliographys, typically generated via \BibTeX;
+  the items include
+  \texttt{key}, \texttt{number}, \texttt{type}, \texttt{author}, \texttt{editor},
+   \texttt{year}, \texttt{title}, \texttt{author-year}, \texttt{edition},
+   \texttt{series}, \texttt{part}, \texttt{journal}, \texttt{volume}, \texttt{number},
+   \texttt{status}, \texttt{pages}, \texttt{language}, \texttt{publisher},
+   \texttt{place}, \texttt{status}, \texttt{crossref}, \texttt{external}, \texttt{cited}
+   and \emph{others}.
+\item[\texttt{ltx\_toc\_}\textit{item}]
+  reflects the levels of Table of Contents lists:
+  they carry the  \texttt{ltx\_toclist} class, from the element used to represent them,
+  and also \texttt{ltx\_toc\_}\textit{section} naming the sectional unit for 
+  which this list applies to assist in styling.  A nested TOC for a chapter might
+  thus have \texttt{ul}'s carrying \texttt{ltx\_toc\_chapter} and \texttt{ltx\_toc\_section}.
+  Additionally, \texttt{ltx\_toc\_compact} and \texttt{ltx\_toc\_verycompact} can
+  be added to style compact and very compact styles (eg single line).
+  Note that the generated \texttt{li} items will have class \texttt{ltx\_tocentry}.
+\item[\texttt{ltx\_ref\_}\textit{item}]
+  hypertext links, whether within or across documents, whether created from
+  \verb|\ref| or \verb|\href|, will get \texttt{ltx\_ref} and, sometimes, extra classes applied.
+  For example, a reference that ends up pointing to the current page is
+  marked with \texttt{ltx\_ref\_self}.
+  Cross-referencing material used to fill-in the contents of the reference is marked:
+  a reference number gets \texttt{ltx\_ref\_tag}; a title \texttt{ltx\_ref\_title}.
+\item[\texttt{ltx\_note\_}\textit{part}]
+  reflects the separate parts of notes;
+  Note that the kind of note is generally reflected in the \attr{role} attribute,
+  such as \texttt{footnote}, \texttt{endnote}, etc.
+  The parts are separated to facilitate formatting, hover effects, etc:
+  \texttt{outer} contains the whole; \texttt{mark} for the mark, if any;
+  \texttt{content} the actual contents of the note.
+  \texttt{type} is for an extra span indicating the type of note if it is unusual.
+\item[\texttt{ltx\_page\_}\textit{item}]
+  reflects page layout components created during the XSLT;
+  \textit{item}s include:
+   \texttt{main}, \texttt{content}, \texttt{header}, \texttt{footer}, \texttt{navbar}
+   \texttt{logo}, \texttt{columns}, \texttt{column1}, \texttt{column2}.
+\item[\texttt{ltx\_eqn\_}\textit{item}]
+  reflects different parts related to equation formatting:
+  \texttt{pad} reflects padding to align equations on the page;
+  \texttt{eqnarray} and \texttt{lefteqn} arise from \LaTeX's \texttt{eqnarray} environment;
+  \texttt{gather} and \texttt{align} arise from AMS environments;
+  \texttt{intertext} arises from text injected between aligned equations.
+\end{description}
+
+Any other explicit use of the \verb|addClass(class)| function or
+of the \verb|\lxAddClass{class}| macro from the \texttt{latexml} package
+will add the given class as is, without any additional \texttt{ltx\_} prefix.
+
+Two oddball items that may get refactored away are:
+\texttt{ltx\_phantom} and \texttt{ltx\_centering}.
+The latter seems slightly distinct from \texttt{ltx\_align\_center}.
 %%%======================================================================
 \backmatter
 \printindex
