@@ -17,13 +17,5 @@ DefMacro('\thesection','');
 DefMacro('\thesubsection','');
 DefMacro('\thesubsubsection','');
 
-RawTeX('\AtEndDocument{\@add@context@toc}');
-DefConstructor('\@add@context@toc',
-	       "<ltx:navigation>"
-	       .  "<ltx:TOC format='context'/>"
-	       ."</ltx:navigation>",
-	      beforeConstruct=>sub{ $_[0]->maybeCloseElement('ltx:section'); });
-
-
 #======================================================================
 1;
