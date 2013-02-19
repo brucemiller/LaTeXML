@@ -31,6 +31,7 @@ The model is basically a copy of HTML4's table.</a:documentation>
     <a:documentation>Attributes for \elementref{tabular}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="ID.attributes"/>
     <optional>
       <attribute name="vattach">
         <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
@@ -128,6 +129,7 @@ The model is basically a copy of HTML4's table.</a:documentation>
     <a:documentation>Attributes for \elementref{tr}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="ID.attributes"/>
   </define>
   <define name="tr_model">
     <a:documentation>Content model for \elementref{tr}.</a:documentation>
@@ -147,6 +149,7 @@ The model is basically a copy of HTML4's table.</a:documentation>
     <a:documentation>Attributes for \elementref{td}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="ID.attributes"/>
     <optional>
       <attribute name="colspan">
         <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
