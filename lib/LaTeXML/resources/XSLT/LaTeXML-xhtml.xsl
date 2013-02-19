@@ -16,48 +16,19 @@
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns       = "http://www.w3.org/1999/xhtml"
     exclude-result-prefixes = "ltx">
-<!--
-    xmlns:m     = "http://www.w3.org/1998/Math/MathML"
-    xmlns:svg   = "http://www.w3.org/2000/svg"
--->
+
+  <!-- Include all LaTeXML to xhtml modules -->
+  <xsl:import href="LaTeXML-all-xhtml.xsl"/>
+
   <xsl:output method="xml"
 	      doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
 	      doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
 	      media-type     = 'application/xhtml+xml'
-	      encoding       = 'utf-8'
-	      indent         = "yes"/>
+	      encoding       = 'utf-8'/>
 
-  <xsl:template name="metatype">
-    <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8"/>
-  </xsl:template>
-
-  <xsl:template match="/">
-  <!-- This version generates MathML & SVG with an xmlns namespace declaration on EACH node;
-       If you want to declare and use namespace prefixes (m & svg, resp), add this here
-	  xmlns:m   = "http://www.w3.org/1998/Math/MathML"
-	  xmlns:svg = "http://www.w3.org/2000/svg"
-       and change local-name() to name() in LaTeXML-math-mathml & LaTeXML-picture-svg. -->
-    <html xmlns     = "http://www.w3.org/1999/xhtml">
-      <xsl:call-template name="add_RDFa_prefix"/>
-      <xsl:call-template name="head"/>
-      <xsl:call-template name="body"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </html>
-  </xsl:template>
-
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-inline-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-block-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-misc-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-meta-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-para-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-math-mathml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-tabular-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-picture-svg.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-structure-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-bib-xhtml.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-webpage-xhtml.xsl"/>
-
+  <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
+       Redefine the root template ("/") and add prefixed namespace declarations
+       (eg.xmlns:m="http://www.w3.org/1998/Math/MathML") -->
+  
 </xsl:stylesheet>
