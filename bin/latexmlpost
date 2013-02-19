@@ -21,7 +21,7 @@ my($help,$showversion,$verbosity,$validate,$omit_doctype)=(0,0,0,1,0);
 my($sourcedir,$destination)=(undef,undef);
 my($format,$is_html,$urlstyle) = (undef,undef,'server');
 my($numbersections)=(1);
-my($stylesheet,$defaultcss,$icon,@css,@javascript,@xsltparameters);
+my($stylesheet,$defaultcss,$defaultresources,$icon,@css,@javascript,@xsltparameters);
 my($mathimages,$mathimagemag)=(undef,1.75);
 my($linelength,$plane1,$hackplane1)=(undef,undef,undef);
 my($dographics,$svg,$picimages)=(undef,undef,undef);
@@ -67,6 +67,7 @@ GetOptions("quiet"     => sub { $verbosity--; },
 	   "stylesheet=s"          =>\$stylesheet,
 	   "timestamp=s"           =>\$timestamp,
 	   "defaultcss!"           =>\$defaultcss,
+	   "defaultresources!"     =>\$defaultresources,
 	   "css=s"                 =>\@css,
 	   "javascript=s"          =>\@javascript,
 	   "icon=s"                =>\$icon,
@@ -134,6 +135,11 @@ if($xmlfile ne '-'){
     $xmlfile .= '.xml' unless -f $xmlfile;
     xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile; }
 
+if(defined $defaultcss){		# must have been unset
+  warn "--defaultcss & --nodefaultcss are obsolete;"
+    .  " use --defaultresources or --nodefaultresources intead";
+  $defaultresources=$defaultcss unless defined $defaultresources; }
+
 #======================================================================
 # Sanity check and Completion of options.
 #======================================================================
@@ -194,8 +200,6 @@ elsif($format eq 'html'){
   $dographics = 1 unless defined $dographics;
   $picimages  = 1 unless defined $picimages;
   $is_html = 1;
-  # Use core css if explicitly requested, or std stylesheet and not explicitly forbidden.
-  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
   $stylesheet = "LaTeXML-html.xsl" if !defined $stylesheet; }
 elsif($format eq 'html5'){
   # In principle, should only have pMML and possibly MathImages (for altimg);
@@ -205,7 +209,6 @@ elsif($format eq 'html5'){
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html = 1;
-  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
   $stylesheet = "LaTeXML-html5.xsl" if !defined $stylesheet; }
 elsif($format eq 'xhtml'){
   # Add pMML FIRST, unless already there, or was disabled.
@@ -215,15 +218,16 @@ elsif($format eq 'xhtml'){
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html = 0;
-  unshift(@css,"core.css") if $defaultcss || ((!defined $defaultcss) && (!defined $stylesheet));
-    $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
+  $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
 elsif($format eq 'xml'){}
 else {
   xError("Unrecognized target format: $format"); }
 
 if((!defined $destination) && ($mathimages || $dographics || $picimages)){
-  xError("Must supply --destination unless all auxilliary file writing is disabled"
-	."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
+  print STDERR "WARNING: must supply destination to support auxilliary files;\n"
+    ."  disabling: --nomathimages --nographicimages --nopictureimages\n";
+  # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
+  $mathimages = $dographics = $picimages = 0; }
 
 #======================================================================
 # Do the processing.
@@ -396,7 +400,9 @@ if(!$prescan){
 	$$parameters{$1}="'".$2."'"; }
       else {
 	warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; }}
-    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters, %OPTIONS)); }
+    push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters,
+					 noresources=>(defined $defaultresources) && !$defaultresources,
+					 %OPTIONS)); }
 
   push(@procs,LaTeXML::Post::Writer->new(format=>$format,omit_doctype=>$omit_doctype,is_html=>$is_html,%OPTIONS));
 }
@@ -466,7 +472,7 @@ latexmlpost [options] I<xmlfile>
                          given xslfile as stylesheet.
  --css=cssfile           adds a css stylesheet to html/html5/xhtml
                          (can be repeated)
- --nodefaultcss          disables the default css stylesheet
+ --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
  --xsltparameter=name:value passes parameters to the XSLT stylesheet.
@@ -612,7 +618,7 @@ format (html, html5 or xhtml) will be used.
 
 Adds I<cssfile> as a css stylesheet to be used in the transformed html/html5/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
-order given, following the default C<core.css> (unless C<--nodefaultcss>).
+order given, following the default C<ltx-LaTeXML.css> (unless C<--nodefaultcss>).
 The stylesheet is copied to the destination directory, unless it is an absolute url.
 
 Some stylesheets included in the distribution are
@@ -621,10 +627,6 @@ Some stylesheets included in the distribution are
   --css=navbar-right  Puts a navigation bar on the left.
   --css=theme-blue    A blue coloring theme for headings.
   --css=amsart        A style suitable for journal articles.
-
-=item C<--nodefaultcss>
-
-Disables the inclusion of the default C<core.css> stylesheet.
 
 =item C<--javascript>=I<jsfile>
 
@@ -636,6 +638,13 @@ The javascript file is copied to the destination directory, unless it is an abso
 
 Copies I<iconfile> to the destination directory and sets up the linkage in
 the transformed html/html5/xhtml to use that as the "favicon".
+
+=item C<--nodefaultresources>
+
+Disables the copying and inclusion of resources added by the binding files;
+This includes CSS, javascript or other files.  This does not affect
+resources explicitly requested by the C<--css> or C<--javascript> options.
+
 
 =item C<--timestamp>=I<timestamp>
 
