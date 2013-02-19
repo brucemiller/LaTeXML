@@ -16,7 +16,6 @@
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns       = "http://www.w3.org/1999/xhtml"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
     extension-element-prefixes="f"
     exclude-result-prefixes = "ltx f">
@@ -27,60 +26,72 @@
 
   <xsl:template match="ltx:tabular">
     <xsl:text>&#x0A;</xsl:text>
-    <table>
+    <xsl:element name="table" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
       <xsl:text>&#x0A;</xsl:text>
-    </table>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:thead">
     <xsl:text>&#x0A;</xsl:text>
-    <thead>
+    <xsl:element name="thead" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
       <xsl:text>&#x0A;</xsl:text>
-    </thead>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tbody">
     <xsl:text>&#x0A;</xsl:text>
-    <tbody>
+    <xsl:element name="tbody" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
       <xsl:text>&#x0A;</xsl:text>
-    </tbody>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tfoot">
     <xsl:text>&#x0A;</xsl:text>
-    <tfoot>
+    <xsl:element name="tfoot" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
       <xsl:text>&#x0A;</xsl:text>
-    </tfoot>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tr">
     <xsl:text>&#x0A;</xsl:text>
-    <tr>
+    <xsl:element name="tr" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </tr>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:td">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:if(@thead,'th','td')}">
+    <xsl:element name="{f:if(@thead,'th','td')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
 	<xsl:with-param name="extra_classes">
-	  <xsl:if test="@border"><xsl:value-of select="@border"/></xsl:if>
+	  <xsl:if test="@border">
+	    <xsl:value-of select="f:class-pref('ltx_border_',@border)"/>
+	  </xsl:if>
 	</xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@colspan">
@@ -105,7 +116,9 @@
 	  <xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
 	</xsl:when>
       </xsl:choose>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
     </xsl:element>
   </xsl:template>
 

@@ -15,52 +15,63 @@
 <xsl:stylesheet
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns       = "http://www.w3.org/1999/xhtml"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    exclude-result-prefixes = "ltx">
+    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    extension-element-prefixes="f"
+    exclude-result-prefixes = "ltx f">
 
   <!-- ======================================================================
        Typically invisible meta elements
+       ltx:note, ltx:indexmark, ltx:rdf, ltx:ERROR
        ====================================================================== -->
 
   <!-- normally hidden, but should be exposable various ways.
        The role will likely distinguish various modes of footnote, endnote,
        and other annotation -->
   <xsl:template match="ltx:note">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-	<xsl:with-param name="extra_classes" select="@role"/>
-      </xsl:call-template>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:call-template name="note-mark"/>
-      <span class="{concat(local-name(.),'_content_outer')}">
-	<span class="{concat(local-name(.),'_content')}">
+      <xsl:element name="span" namespace="{$html_ns}">
+	<xsl:attribute name="class">ltx_note_outer</xsl:attribute>
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:attribute name="class">ltx_note_content</xsl:attribute>
 	  <xsl:call-template name="note-mark"/>
 	  <xsl:if test="not(@role = 'footnote')">
-	    <span class="note-type"><xsl:value-of select="@role"/>: </span>
+	    <xsl:element name="span" namespace="{$html_ns}">
+	      <xsl:attribute name="class">ltx_note_type</xsl:attribute>
+	      <xsl:value-of select="@role"/>
+	      <xsl:text>: </xsl:text>
+	    </xsl:element>
 	  </xsl:if>
 	  <xsl:apply-templates/>
-	</span>
-      </span>
-    </span>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
+      </xsl:element>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template name="note-mark">
-    <sup class="mark">
+    <xsl:element name="sup" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_note_mark</xsl:attribute>
       <xsl:choose>
 	<xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
 	<xsl:otherwise>&#x2020;</xsl:otherwise>
       </xsl:choose>
-    </sup>
+    </xsl:element>
   </xsl:template>
 
   <!-- Actually, this ought to be annoyingly visible -->
   <xsl:template match="ltx:ERROR">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </span>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <!-- The indexmark disappears -->
@@ -68,20 +79,24 @@
 
   <!-- but the phrases it contains may be used in back-ref situations -->
   <xsl:template match="ltx:indexphrase">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </span>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <!-- Typically will end up with css display:none -->
   <xsl:template match="ltx:rdf">
-    <div>
+    <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </div>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
   </xsl:template>
 

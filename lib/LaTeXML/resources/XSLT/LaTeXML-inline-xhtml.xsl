@@ -15,137 +15,171 @@
 <xsl:stylesheet
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns       = "http://www.w3.org/1999/xhtml"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    exclude-result-prefixes = "ltx">
+    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    extension-element-prefixes="f"
+    exclude-result-prefixes = "ltx f">
 
   <!-- ======================================================================
-       Visible inline elements
+       Various inline-level elements:
+       ltx:text, ltx:emph, ltx:del, ltx:sub, ltx:sup, ltx:acronym, ltx:rule,
+       ltx:anchor, ltx:ref, ltx:cite, ltx:bibref
        ====================================================================== -->
 
   <xsl:template match="ltx:text">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </span>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <!-- Special case: all OTHER attributes have to be outside the "hidden"
        in order to take effect (eg. background color, etc).
        Note that "contains" is NOT the right test for @class....-->
   <xsl:template match="ltx:text[contains(@class,'ltx_phantom')]">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
-      <span style="visibility:hidden">
+      <xsl:element name="span" namespace="{$html_ns}">
+	<xsl:attribute name="style">visibility:hidden</xsl:attribute>
+	<xsl:apply-templates select="." mode="begin"/>
 	<xsl:apply-templates/>
-      </span>
-    </span>
+	<xsl:apply-templates select="." mode="end"/>
+      </xsl:element>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:emph">
-    <em>
+    <xsl:element name="em" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </em>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:del">
-    <del>
+    <xsl:element name="del" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </del>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:sub">
-    <sub>
+    <xsl:element name="sub" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </sub>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:sup">
-    <sup>
+    <xsl:element name="sup" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </sup>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:acronym">
-    <acronym title="{@name}">
+    <xsl:element name="acronym" namespace="{$html_ns}">
+      <xsl:attribute name="title"><xsl:value-of select="@name"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </acronym>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:rule" mode="styling">
+    <xsl:apply-imports/>
+    <xsl:choose>
+      <xsl:when test="@color">
+	<xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
+      </xsl:when>
+      <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
+      <xsl:otherwise>background:black;display:inline-block;</xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:rule">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-	<xsl:with-param name="extra_style">
-	  <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
-	  <xsl:choose>
-	    <xsl:when test="@color">
-	      <xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
-	    </xsl:when>
-	    <xsl:otherwise>background:black;display:inline-block;</xsl:otherwise>
-	  </xsl:choose>
-	</xsl:with-param>
-      </xsl:call-template>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates select="." mode="end"/>
       <xsl:if test="string(@width)!='0.0pt'">&#xA0;</xsl:if>
-    </span>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:ref">
     <xsl:choose>
       <xsl:when test="not(@href) or @href=''">
-	<span>
+	<xsl:element name="span" namespace="{$html_ns}">
 	  <xsl:call-template name="add_id"/>
 	  <xsl:call-template name="add_attributes">
-	    <xsl:with-param name="extra_classes" select="'here'"/>
+	    <xsl:with-param name="extra_classes" select="'ltx_ref_self'"/>
 	  </xsl:call-template>
+	  <xsl:apply-templates select="." mode="begin"/>
 	  <xsl:apply-templates/>
-	</span>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
       </xsl:when>
       <xsl:otherwise>
-	<a href="{@href}" title="{@title}">
+	<xsl:element name="a" namespace="{$html_ns}">
+	  <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+	  <xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
 	  <xsl:call-template name="add_id"/>
 	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
 	  <xsl:apply-templates/>
-	</a>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
       </xsl:otherwise>
     </xsl:choose>    
   </xsl:template>
 
-  <!-- can't nest-->
   <xsl:template match="ltx:ref//ltx:ref">
-    <span>
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </span>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:anchor">
-    <a name="{@xml:id}">
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="name"><xsl:value-of select="@xml:id"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </a>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:cite">
-    <cite>
+    <xsl:element name="cite" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
-    </cite>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
   </xsl:template>
 
   <!-- ltx:bibref not handled, since it is translated to ref in crossref module -->
