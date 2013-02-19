@@ -57,15 +57,28 @@
   -->
   <xsl:template name="LaTeXML_identifier">
     <xsl:if test="$LATEXML_VERSION or $TIMESTAMP">
-      <xsl:comment>Generated<!--
-      --><xsl:if test="$TIMESTAMP"> on <xsl:value-of select="$TIMESTAMP"/></xsl:if><!--
-      --> by LaTeXML<!--
-      --><xsl:if test="$LATEXML_VERSION"> (version <xsl:value-of select="$LATEXML_VERSION"/>)</xsl:if><!--
-      --> http://dlmf.nist.gov/LaTeXML/.</xsl:comment>
+      <xsl:comment>
+	<xsl:text>Generated</xsl:text>
+	<xsl:if test="$TIMESTAMP">
+	  <xsl:text> on </xsl:text>
+	  <xsl:value-of select="$TIMESTAMP"/>
+	</xsl:if>
+	<xsl:text> by LaTeXML</xsl:text>
+	<xsl:if test="$LATEXML_VERSION">
+	  <xsl:text> (version </xsl:text>
+	  <xsl:value-of select="$LATEXML_VERSION"/>
+	  <xsl:text>)</xsl:text>
+	</xsl:if>
+	<xsl:text> http://dlmf.nist.gov/LaTeXML/.</xsl:text>
+      </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
-      <xsl:comment>Document created on <xsl:value-of select='//ltx:date/node()'/>.</xsl:comment>
+      <xsl:comment>
+	<xsl:text>Document created on </xsl:text>
+	<xsl:value-of select='//ltx:date/node()'/>
+	<xsl:text>.</xsl:text>
+      </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
   </xsl:template>
