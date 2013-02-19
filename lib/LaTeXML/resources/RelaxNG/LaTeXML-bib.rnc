@@ -349,12 +349,11 @@ element bib-identifier { bib-identifier_attributes, bib-identifier_model }
 ## Attributes for \elementref{bib-identifier}.
 bib-identifier_attributes = 
   Common.attributes,
+  Refable.attributes,
   ## indicates what sort of identifier it is; it is open-ended for extensibility.
   attribute scheme { "doi" | "issn" | "isbn" | "mr" | text }?,
   ## the identifier.
-  attribute id { text}?,
-  ## a url to the document, if available
-  attribute href { text}?
+  attribute id { text}?
 
 ## Content model for \elementref{bib-identifier}.
 bib-identifier_model = Inline.model
@@ -368,12 +367,11 @@ element bib-review { bib-review_attributes, bib-review_model }
 ## Attributes for \elementref{bib-review}.
 bib-review_attributes = 
   Common.attributes,
+  Refable.attributes,
   ## indicates what sort of identifier it is; it is open-ended for extensibility.
   attribute scheme { "doi" | "issn" | "isbn" | "mr" | text }?,
   ## the identifier.
-  attribute id { text}?,
-  ## a url to the review, if available
-  attribute href { text}?
+  attribute id { text}?
 
 ## Content model for \elementref{bib-review}.
 bib-review_model = Inline.model
@@ -411,7 +409,7 @@ element bib-url { bib-url_attributes, bib-url_model }
 ## Attributes for \elementref{bib-url}.
 bib-url_attributes = 
   Common.attributes,
-  attribute href { text }?
+  Refable.attributes
 
 ## Content model for \elementref{bib-url}.
 bib-url_model = Inline.model
