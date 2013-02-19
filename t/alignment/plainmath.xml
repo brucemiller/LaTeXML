@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
   <para>
     <equation>
       <Math mode="display" tex="\matrix{a&amp;b\cr c&amp;d}" text="Matrix[[a, b], [c, d]]">
@@ -83,8 +84,8 @@
             <XMTok meaning="equals" role="RELOP">=</XMTok>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMTok role="UNKNOWN" possibleFunction="yes" font="italic">s</XMTok>
-              <XMTok role="UNKNOWN" open="(" close=")" font="italic">x</XMTok>
+              <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">s</XMTok>
+              <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
             </XMApp>
             <XMArray meaning="cases">
               <XMRow>
@@ -243,7 +244,7 @@
                 </XMApp>
               </XMCell>
               <XMCell align="left">
-                <XMTok role="UNKNOWN" open="(" close=")" font="italic">x</XMTok>
+                <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>
@@ -287,7 +288,7 @@
                 </XMApp>
               </XMCell>
               <XMCell align="left">
-                <XMTok role="UNKNOWN" open="(" close=")" font="italic">x</XMTok>
+                <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>

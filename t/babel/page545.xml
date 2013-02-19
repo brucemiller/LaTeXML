@@ -3,20 +3,22 @@
 <?latexml options="german,french,english" package="babel"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <para xml:id="p1" class="ltx_raggedright">
+  <resource src="LaTeXML.css" type="text/css" class="ltx_align_left"/>
+  <resource src="ltx-article.css" type="text/css" class="ltx_align_left"/>
+  <para xml:id="p1" class="ltx_align_left">
     <p>The expansion of fixed document element names
 depends on the language, e.g., in English
 we have “References” or “Chapter”.</p>
   </para>
-  <para xml:id="p2" class="ltx_raggedright">
+  <para xml:id="p2" class="ltx_align_left">
     <p>Auf Deutsch ergibt sich
 “Literatur” oder “Kapitel”.</p>
   </para>
-  <para xml:id="p3" class="ltx_raggedright">
+  <para xml:id="p3" class="ltx_align_left">
     <p>Voice en
 français: “Références” ou “Chapitre”.</p>
   </para>
-  <para xml:id="p4" class="ltx_raggedright">
+  <para xml:id="p4" class="ltx_align_left">
     <p>But in short
 phrases  “Références” does not change!</p>
   </para>

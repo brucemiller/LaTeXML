@@ -4,6 +4,8 @@
 <?latexml package="amsmath"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>Grouping in multi-relations</title>
     <para xml:id="S1.p1">
@@ -254,7 +256,7 @@
             <XMApp>
               <XMTok meaning="annotated"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp open="(" close=")">
+              <XMApp close=")" open="(">
                 <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
                 <XMTok meaning="absent"/>
                 <XMTok role="ID" font="italic">e</XMTok>
@@ -269,7 +271,7 @@
             <XMApp>
               <XMTok meaning="annotated"/>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp open="(" close=")">
+              <XMApp close=")" open="(">
                 <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
                 <XMTok meaning="absent"/>
                 <XMTok role="ID" font="italic">e</XMTok>
@@ -292,7 +294,7 @@
                   <XMTok role="ID" font="italic">c</XMTok>
                   <XMTok role="ID" font="italic">d</XMTok>
                 </XMApp>
-                <XMApp open="(" close=")">
+                <XMApp close=")" open="(">
                   <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
                   <XMTok meaning="absent"/>
                   <XMTok role="ID" font="italic">e</XMTok>

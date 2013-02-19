@@ -3,6 +3,8 @@
 <?latexml package="amsthm"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <title>Newtheorem and theoremstyle test</title>
   <creator role="author">
     <personname>Michael Downes<break/>updated by Barbara Beeton</personname>
@@ -14,7 +16,7 @@
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx1">
+    <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx1">
       <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx1.p1">
         <p>
@@ -26,7 +28,7 @@ then <Math mode="inline" xml:id="ThmAhlforsx1.p1.m8" tex="\omega\leq\omega_{r}" 
         </p>
       </para>
     </theorem>
-    <theorem class="ltx_lem" frefnum="Lemma 1.1" refnum="1.1" xml:id="S1.Thmthm1">
+    <theorem class="ltx_theorem_lem" frefnum="Lemma 1.1" refnum="1.1" xml:id="S1.Thmthm1">
       <title font="bold"><tag>Lemma 1.1</tag> (negatively curved families).</title>
       <para xml:id="S1.Thmthm1.p1">
         <p>
@@ -39,7 +41,7 @@ Then <Math mode="inline" xml:id="S1.Thmthm1.p1.m5" tex="\omega^{i}\leq\omega_{r}
     <para xml:id="S1.p2">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_thm" frefnum="Theorem 1.2" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
+    <theorem class="ltx_theorem_thm" frefnum="Theorem 1.2" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
       <title font="bold"><tag>Theorem 1.2</tag>.</title>
       <para xml:id="S1.Thmthm2.p1">
         <p>
@@ -84,7 +86,7 @@ Then <Math mode="inline" xml:id="S1.Thmthm2.p1.m6" tex="P" text="P"><XMath><XMTo
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_cor" frefnum="Corollary 1.3" refnum="1.3" xml:id="S1.Thmthm3">
+    <theorem class="ltx_theorem_cor" frefnum="Corollary 1.3" refnum="1.3" xml:id="S1.Thmthm3">
       <title font="bold"><tag>Corollary 1.3</tag>.</title>
       <para xml:id="S1.Thmthm3.p1">
         <p>
@@ -93,7 +95,7 @@ standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.
         </p>
       </para>
     </theorem>
-    <theorem class="ltx_rmk" frefnum="Remark" xml:id="Thmrmkx1">
+    <theorem class="ltx_theorem_rmk" frefnum="Remark" xml:id="Thmrmkx1">
       <title font="italic"><tag>Remark</tag>.</title>
       <para xml:id="Thmrmkx1.p1">
         <p>As two-legged pigs generally fall over, the case of a polygon of order
@@ -103,7 +105,7 @@ standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag>2 </tag>Custom theorem styles</title>
-    <theorem class="ltx_exer" frefnum="Exercise 1" refnum="1" xml:id="Thmexer1">
+    <theorem class="ltx_theorem_exer" frefnum="Exercise 1" refnum="1" xml:id="Thmexer1">
       <title font="bold"><tag>Exercise 1</tag>.</title>
       <para xml:id="Thmexer1.p1">
         <p>
@@ -111,14 +113,14 @@ standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.
         </p>
       </para>
     </theorem>
-    <theorem class="ltx_note" frefnum="Note 1" refnum="1" xml:id="Thmnote1">
+    <theorem class="ltx_theorem_note" frefnum="Note 1" refnum="1" xml:id="Thmnote1">
       <title font="italic"><tag>Note 1</tag>:</title>
       <para xml:id="Thmnote1.p1">
         <p>This is a test of the custom theorem style ‘note’. It is supposed to have
 variant fonts and other differences.</p>
       </para>
     </theorem>
-    <theorem class="ltx_bthm" frefnum="B-Theorem 1" refnum="1" xml:id="Thmbthm1">
+    <theorem class="ltx_theorem_bthm" frefnum="B-Theorem 1" refnum="1" xml:id="Thmbthm1">
       <title font="bold"><tag>B-Theorem 1</tag>.</title>
       <para xml:id="Thmbthm1.p1">
         <p>
@@ -129,7 +131,7 @@ variant fonts and other differences.</p>
     <para xml:id="S2.p1">
       <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
-    <theorem class="ltx_varthm" xml:id="Thmvarthmx1">
+    <theorem class="ltx_theorem_varthm" xml:id="Thmvarthmx1">
       <title font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Number" yyseparator=","/>]</cite>.</title>
       <para xml:id="Thmvarthmx1.p1">
         <p>
@@ -194,7 +196,7 @@ swapped to the left.</p>
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx2">
+    <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx2">
       <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx2.p1">
         <p>
@@ -206,7 +208,7 @@ then <Math mode="inline" xml:id="ThmAhlforsx2.p1.m8" tex="\omega\leq\omega_{r}" 
         </p>
       </para>
     </theorem>
-    <theorem class="ltx_lemsw" frefnum="4.1 Lemma" refnum="4.1" xml:id="S4.Thmthmsw1">
+    <theorem class="ltx_theorem_lemsw" frefnum="4.1 Lemma" refnum="4.1" xml:id="S4.Thmthmsw1">
       <title font="bold"><tag>4.1 Lemma</tag> (negatively curved families).</title>
       <para xml:id="S4.Thmthmsw1.p1">
         <p>
@@ -219,7 +221,7 @@ Then <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m5" tex="\omega^{i}\leq\omega_{
     <para xml:id="S4.p3">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_thmsw" frefnum="4.2 Theorem" refnum="4.2" xml:id="S4.Thmthmsw2">
+    <theorem class="ltx_theorem_thmsw" frefnum="4.2 Theorem" refnum="4.2" xml:id="S4.Thmthmsw2">
       <title font="bold"><tag>4.2 Theorem</tag>.</title>
       <para xml:id="S4.Thmthmsw2.p1">
         <p>
@@ -264,7 +266,7 @@ Then <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m6" tex="P" text="P"><XMath><XM
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_corsw" frefnum="4.3 Corollary" refnum="4.3" xml:id="S4.Thmthmsw3">
+    <theorem class="ltx_theorem_corsw" frefnum="4.3 Corollary" refnum="4.3" xml:id="S4.Thmthmsw3">
       <title font="bold"><tag>4.3 Corollary</tag>.</title>
       <para xml:id="S4.Thmthmsw3.p1">
         <p>

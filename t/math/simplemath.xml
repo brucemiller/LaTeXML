@@ -2,6 +2,8 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <title>Testing Simple Math Parsing</title>
   <para xml:id="p1">
     <p>Inline math <Math mode="inline" xml:id="p1.m1" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
@@ -27,7 +29,7 @@
             <XMTok role="ID" font="italic">a</XMTok>
             <XMTok role="ID" font="italic">b</XMTok>
             <XMApp>
-              <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+              <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">f</XMTok>
               <XMTok meaning="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMApp>
@@ -47,7 +49,7 @@
               <XMTok role="ID" font="italic">D</XMTok>
             </XMApp>
             <XMApp>
-              <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">f</XMTok>
+              <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">f</XMTok>
               <XMApp>
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="ID" font="italic">a</XMTok>
@@ -68,7 +70,7 @@
               <XMTok role="ID" font="italic">f</XMTok>
               <XMTok meaning="1" role="NUMBER">1</XMTok>
             </XMApp>
-            <XMApp open="(" close=")">
+            <XMApp close=")" open="(">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
               <XMTok role="ID" font="italic">b</XMTok>
@@ -101,11 +103,11 @@
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMApp>
-                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">a</XMTok>
+                <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">a</XMTok>
                 <XMTok role="ID" font="italic">x</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok role="FUNCTION" argclose=")" argopen="(" font="italic">b</XMTok>
+                <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">b</XMTok>
                 <XMTok role="ID" font="italic">x</XMTok>
               </XMApp>
               <XMTok meaning="123" role="NUMBER">123</XMTok>

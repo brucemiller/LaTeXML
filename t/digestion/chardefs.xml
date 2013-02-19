@@ -2,6 +2,8 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>chardef</title>
     <para xml:id="S1.p1">
@@ -20,7 +22,7 @@
   <section refnum="2" xml:id="S2">
     <title><tag>2 </tag>mathchardef</title>
     <para xml:id="S2.p1">
-      <p>Sum = <Math mode="inline" tex="\mchara" xml:id="S2.p1.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math></p>
+      <p>Sum = <Math mode="inline" xml:id="S2.p1.m1" tex="\mchara" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math></p>
     </para>
     <para xml:id="S2.p2">
       <p>4944=4944</p>
@@ -47,13 +49,13 @@
       <p>OMX: ].</p>
     </para>
     <para xml:id="S3.p4">
-      <p>OML: <Math mode="inline" tex="\mchara" xml:id="S3.p4.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+      <p>OML: <Math mode="inline" xml:id="S3.p4.m1" tex="\mchara" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
     </para>
     <para xml:id="S3.p5">
-      <p>OMS: <Math mode="inline" tex="\mchara" xml:id="S3.p5.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+      <p>OMS: <Math mode="inline" xml:id="S3.p5.m1" tex="\mchara" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
     </para>
     <para xml:id="S3.p6">
-      <p>OMX: <Math mode="inline" tex="\mchara" xml:id="S3.p6.m1" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
+      <p>OMX: <Math mode="inline" xml:id="S3.p6.m1" tex="\mchara" text="∑"><XMath><XMTok role="BIGOP">∑</XMTok></XMath></Math>.</p>
     </para>
   </section>
 </document>

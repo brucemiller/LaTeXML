@@ -2,10 +2,12 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <paragraph xml:id="S0.SS0.SSS0.P1">
     <title>Normal Usage</title>
     <para xml:id="S0.SS0.SSS0.P1.p1">
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx1">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx1">
         <equation xml:id="S0.Ex1">
           <MathFork>
             <Math xml:id="S0.Ex1.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -106,7 +108,7 @@
   <paragraph xml:id="S0.SS0.SSS0.P2">
     <title>gather alternative (single column misuse)</title>
     <para xml:id="S0.SS0.SSS0.P2.p1">
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx2">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx2">
         <equation xml:id="S0.Ex4">
           <MathFork>
             <Math xml:id="S0.Ex4.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -178,7 +180,7 @@
           </MathFork>
         </equation>
       </equationgroup>
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx3">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx3">
         <equation xml:id="S0.Ex7">
           <MathFork>
             <Math xml:id="S0.Ex7.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -250,7 +252,7 @@
           </MathFork>
         </equation>
       </equationgroup>
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx4">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx4">
         <equation xml:id="S0.Ex10">
           <MathFork>
             <Math xml:id="S0.Ex10.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -327,7 +329,7 @@
   <paragraph xml:id="S0.SS0.SSS0.P3">
     <title>Awkward continuations</title>
     <para xml:id="S0.SS0.SSS0.P3.p1">
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx5">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx5">
         <equation xml:id="S0.Ex13">
           <MathFork>
             <Math xml:id="S0.Ex13.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -399,7 +401,7 @@
           </MathFork>
         </equation>
       </equationgroup>
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx6">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx6">
         <equation xml:id="S0.Ex16">
           <MathFork>
             <Math xml:id="S0.Ex16.m4" tex="\displaystyle a=b+c" text="a = b + c">
@@ -471,7 +473,7 @@
           </MathFork>
         </equation>
       </equationgroup>
-      <equationgroup class="ltx_eqnarray" xml:id="S0.EGx7">
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx7">
         <equation xml:id="S0.Ex19">
           <MathFork>
             <Math xml:id="S0.Ex19.m4" tex="\displaystyle a=b+c" text="a = b + c">

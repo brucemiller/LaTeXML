@@ -2,6 +2,8 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>One</title>
     <para xml:id="S1.p1">
@@ -13,7 +15,7 @@
     <para xml:id="S2.p1">
       <p>Expect Unknown: Unknown.</p>
       <equation frefnum="(1)" refnum="1" xml:id="S2.E1">
-        <Math mode="display" tex="\mbox{Equation 1}=\mbox{Equation 1}" xml:id="S2.E1.m1" text="[Equation 1] = [Equation 1]">
+        <Math mode="display" xml:id="S2.E1.m1" tex="\mbox{Equation 1}=\mbox{Equation 1}" text="[Equation 1] = [Equation 1]">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>

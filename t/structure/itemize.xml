@@ -2,6 +2,8 @@
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag>1 </tag>Itemize</title>
     <para xml:id="S1.p1">
@@ -28,17 +30,17 @@
     <title><tag>2 </tag>Enumerate</title>
     <para xml:id="S2.p1">
       <enumerate xml:id="I2">
-        <item refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
+        <item frefnum="1." refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
           <para xml:id="I2.i1.p1">
             <p>One , but not <ref labelref="LABEL:de:one"/></p>
           </para>
         </item>
-        <item refnum="2" xml:id="I2.i2" labels="LABEL:en:two">
+        <item frefnum="2." refnum="2" xml:id="I2.i2" labels="LABEL:en:two">
           <para xml:id="I2.i2.p1">
             <p>Two , but not <ref labelref="LABEL:de:two"/></p>
           </para>
         </item>
-        <item refnum="3" xml:id="I2.i3" labels="LABEL:en:three">
+        <item frefnum="3." refnum="3" xml:id="I2.i3" labels="LABEL:en:three">
           <para xml:id="I2.i3.p1">
             <p>Three , but not <ref labelref="LABEL:de:three"/></p>
           </para>
@@ -50,21 +52,21 @@
     <title><tag>3 </tag>Description</title>
     <para xml:id="S3.p1">
       <description xml:id="I3">
-        <item xml:id="I3.i1" labels="LABEL:de:one">
+        <item xml:id="I3.ix1" labels="LABEL:de:one">
           <tag>One</tag>
-          <para xml:id="I3.i1.p1">
+          <para xml:id="I3.ix1.p1">
             <p>, but not <ref labelref="LABEL:it:one"/></p>
           </para>
         </item>
-        <item xml:id="I3.i2" labels="LABEL:de:two">
+        <item xml:id="I3.ix2" labels="LABEL:de:two">
           <tag>Two</tag>
-          <para xml:id="I3.i2.p1">
+          <para xml:id="I3.ix2.p1">
             <p>, but not <ref labelref="LABEL:it:two"/></p>
           </para>
         </item>
-        <item xml:id="I3.i3" labels="LABEL:de:three">
+        <item xml:id="I3.ix3" labels="LABEL:de:three">
           <tag>Three</tag>
-          <para xml:id="I3.i3.p1">
+          <para xml:id="I3.ix3.p1">
             <p>, but not <ref labelref="LABEL:it:three"/></p>
           </para>
         </item>
@@ -75,21 +77,21 @@
     <title><tag>4 </tag>Nested Enumerate</title>
     <para xml:id="S4.p1">
       <enumerate xml:id="I4">
-        <item refnum="1" xml:id="I4.i1">
+        <item frefnum="1." refnum="1" xml:id="I4.i1">
           <para xml:id="I4.i1.p1">
             <p>One</p>
             <enumerate xml:id="I4.I1">
-              <item refnum="a" xml:id="I4.I1.i1">
+              <item frefnum="(a)" refnum="a" xml:id="I4.I1.i1">
                 <para xml:id="I4.I1.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item refnum="b" xml:id="I4.I1.i2">
+              <item frefnum="(b)" refnum="b" xml:id="I4.I1.i2">
                 <para xml:id="I4.I1.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item refnum="c" xml:id="I4.I1.i3">
+              <item frefnum="(c)" refnum="c" xml:id="I4.I1.i3">
                 <para xml:id="I4.I1.i3.p1">
                   <p>Three</p>
                 </para>
@@ -97,21 +99,21 @@
             </enumerate>
           </para>
         </item>
-        <item refnum="2" xml:id="I4.i2">
+        <item frefnum="2." refnum="2" xml:id="I4.i2">
           <para xml:id="I4.i2.p1">
             <p>Two</p>
             <enumerate xml:id="I4.I2">
-              <item refnum="a" xml:id="I4.I2.i1">
+              <item frefnum="(a)" refnum="a" xml:id="I4.I2.i1">
                 <para xml:id="I4.I2.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item refnum="b" xml:id="I4.I2.i2">
+              <item frefnum="(b)" refnum="b" xml:id="I4.I2.i2">
                 <para xml:id="I4.I2.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item refnum="c" xml:id="I4.I2.i3">
+              <item frefnum="(c)" refnum="c" xml:id="I4.I2.i3">
                 <para xml:id="I4.I2.i3.p1">
                   <p>Three</p>
                 </para>
@@ -119,21 +121,21 @@
             </enumerate>
           </para>
         </item>
-        <item refnum="3" xml:id="I4.i3">
+        <item frefnum="3." refnum="3" xml:id="I4.i3">
           <para xml:id="I4.i3.p1">
             <p>Three</p>
             <enumerate xml:id="I4.I3">
-              <item refnum="a" xml:id="I4.I3.i1">
+              <item frefnum="(a)" refnum="a" xml:id="I4.I3.i1">
                 <para xml:id="I4.I3.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item refnum="b" xml:id="I4.I3.i2">
+              <item frefnum="(b)" refnum="b" xml:id="I4.I3.i2">
                 <para xml:id="I4.I3.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item refnum="c" xml:id="I4.I3.i3">
+              <item frefnum="(c)" refnum="c" xml:id="I4.I3.i3">
                 <para xml:id="I4.I3.i3.p1">
                   <p>Three</p>
                 </para>
