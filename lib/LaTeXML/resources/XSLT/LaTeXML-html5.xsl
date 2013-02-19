@@ -18,38 +18,22 @@
     xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
     exclude-result-prefixes="ltx">
 
+  <!-- Include all LaTeXML to xhtml modules -->
+  <xsl:import href="LaTeXML-all-xhtml.xsl"/>
+
+  <!-- Override the output method & parameters -->
   <xsl:output
       method = "html"
       omit-xml-declaration="yes"
       encoding       = 'utf-8'
-      indent         = 'yes'
       media-type     = 'text/html'/>
 
-  <xsl:template name="metatype">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  </xsl:template>
+  <!-- No namespaces; DO use HTML5 elements (include MathML & SVG) -->
+  <xsl:param name="USE_NAMESPACES"  ></xsl:param>
+  <xsl:param name="USE_HTML5"       >true</xsl:param>
 
-  <xsl:template match="/">
+  <xsl:template match="/" mode="doctype">
     <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
-    <html>
-      <xsl:call-template name="add_RDFa_prefix"/>
-      <xsl:call-template name="head"/>
-      <xsl:call-template name="body"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </html>
   </xsl:template>
-
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-inline-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-block-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-misc-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-meta-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-para-html5.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-math-mathml-html5.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-tabular-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-picture-svg-html5.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-structure-html5.xsl"/><!-- *** -->
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-bib-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-webpage-html5.xsl"/>
 
 </xsl:stylesheet>
