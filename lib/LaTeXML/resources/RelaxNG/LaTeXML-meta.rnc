@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## Meta elements are generally hidden;
 ## they can appear in both inline and block contexts.
-Meta.class   |= note |  indexmark | rdf | ERROR
+Meta.class   |= note | indexmark | glossarymark | rdf | ERROR | resource | navigation
 
 #======================================================================
 
@@ -59,7 +59,7 @@ indexmark_attributes =
 ## Content model for \elementref{indexmark}.
 indexmark_model = indexphrase*, indexsee*
 
-#======================================================================
+#----------------------------------------------------------------------
 
 indexphrase =
 ## A phrase within an \elementref{indexmark}
@@ -74,6 +74,8 @@ indexphrase_attributes =
 
 ## Content model for \elementref{indexphrase}.
 indexphrase_model = Inline.model
+
+#----------------------------------------------------------------------
 
 indexsee =
 ## A see-also phrase within an \elementref{indexmark}
@@ -91,6 +93,57 @@ indexsee_attributes =
 
 ## Content model for \elementref{indexsee}.
 indexsee_model = Inline.model
+
+#======================================================================
+glossarymark =
+## Metadata to record an glossary position. The content is 
+## a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.
+element glossarymark { glossarymark_attributes, glossarymark_model }
+
+## Attributes for \elementref{glossarymark}.
+glossarymark_attributes =
+  Common.attributes,
+
+  ## The kind of \elementref{glossary} this mark belongs to.
+  attribute role { text }?,
+
+  ## NOTE: describe this.
+  attribute style { text }?
+
+## Content model for \elementref{glossarymark}.
+glossarymark_model = glossaryphrase, glossarydefinition?
+
+#----------------------------------------------------------------------
+
+glossaryphrase =
+## A phrase within an \elementref{glossarymark}
+element glossaryphrase { glossaryphrase_attributes, glossaryphrase_model }
+
+## Attributes for \elementref{glossaryphrase}.
+glossaryphrase_attributes =
+  Common.attributes,
+
+  ## a flattened form of the phrase for generating an \attr{ID}.
+  attribute key { text }?
+
+## Content model for \elementref{glossaryphrase}.
+glossaryphrase_model = Inline.model
+
+#----------------------------------------------------------------------
+
+glossarydefinition =
+## A definition within an \elementref{glossarymark}
+element glossarydefinition { glossarydefinition_attributes, glossarydefinition_model }
+
+## Attributes for \elementref{glossarydefinition}.
+glossarydefinition_attributes =
+  Common.attributes,
+
+  ## a flattened form of the definition for generating an \attr{ID}.
+  attribute key { text }?
+
+## Content model for \elementref{glossarydefinition}.
+glossarydefinition_model = Inline.model
 
 #======================================================================
 
@@ -119,5 +172,52 @@ ERROR_attributes = Common.attributes
 ERROR_model = text*
 
 #======================================================================
+# Document-level (or sub-document level) Meta objects
 
+resource =
+## a resource for use in further processing such as javascript or CSS
+element resource { resource_attributes, resource_model }
 
+## Attributes for \elementref{resource}.
+resource_attributes = 
+  Common.attributes,
+
+  ## the source url to the resource
+  attribute src { text }?,
+
+  ## the mime type of the resource
+  attribute type { text }?,
+
+  ## the media for which this resource is applicable
+  ## (in the sense of CSS).
+  attribute media { text }?
+
+#anyElement = element * { (attribute * { text } | text | anyElement) * }
+
+#resource_model = (text | anyElement)*
+
+resource_model = text*
+
+#----------------------------------------------------------------------
+
+navigation =
+## Records navigation cross-referencing information,
+## or serves as a container for page navigational blocks.
+element navigation { navigation_attributes, navigation_model }
+
+## Attributes for \elementref{navigation}.
+navigation_attributes = Common.attributes
+
+## Content model for \elementref{navigation}.
+## A \elementref{inline-para} child should have attribute \attr{class}
+## being one of \texttt{ltx_page_navbar}, \texttt{ltx_page_header}
+## or \texttt{ltx_page_footer} and its contents will be used to create those components of webpages.
+## Lacking those, a \elementref{TOC} requests a table of contents
+## in the navigation bar. Page headers and footers will be synthesized from
+## Links from the current page or document to related ones;
+## these are represented by \elementref{ref} elements with \attr{rel}
+## being up, down, previous, next, and so forth.
+##  top-level elements, presumably block-level,
+navigation_model = ( ref | TOC | inline-para )*
+
+#======================================================================

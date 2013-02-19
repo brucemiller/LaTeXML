@@ -19,8 +19,11 @@ they can appear in both inline and block contexts.</a:documentation>
     <choice>
       <ref name="note"/>
       <ref name="indexmark"/>
+      <ref name="glossarymark"/>
       <ref name="rdf"/>
       <ref name="ERROR"/>
+      <ref name="resource"/>
+      <ref name="navigation"/>
     </choice>
   </define>
   <!-- ====================================================================== -->
@@ -89,7 +92,7 @@ used to crossreference.</a:documentation>
       <ref name="indexsee"/>
     </zeroOrMore>
   </define>
-  <!-- ====================================================================== -->
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="indexphrase">
     <element name="indexphrase">
       <a:documentation>A phrase within an \elementref{indexmark}</a:documentation>
@@ -110,6 +113,7 @@ used to crossreference.</a:documentation>
     <a:documentation>Content model for \elementref{indexphrase}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="indexsee">
     <element name="indexsee">
       <a:documentation>A see-also phrase within an \elementref{indexmark}</a:documentation>
@@ -133,6 +137,78 @@ used to crossreference.</a:documentation>
   </define>
   <define name="indexsee_model">
     <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="glossarymark">
+    <element name="glossarymark">
+      <a:documentation>Metadata to record an glossary position. The content is 
+a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.</a:documentation>
+      <ref name="glossarymark_attributes"/>
+      <ref name="glossarymark_model"/>
+    </element>
+  </define>
+  <define name="glossarymark_attributes">
+    <a:documentation>Attributes for \elementref{glossarymark}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The kind of \elementref{glossary} this mark belongs to.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="style">
+        <a:documentation>NOTE: describe this.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="glossarymark_model">
+    <a:documentation>Content model for \elementref{glossarymark}.</a:documentation>
+    <ref name="glossaryphrase"/>
+    <optional>
+      <ref name="glossarydefinition"/>
+    </optional>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="glossaryphrase">
+    <element name="glossaryphrase">
+      <a:documentation>A phrase within an \elementref{glossarymark}</a:documentation>
+      <ref name="glossaryphrase_attributes"/>
+      <ref name="glossaryphrase_model"/>
+    </element>
+  </define>
+  <define name="glossaryphrase_attributes">
+    <a:documentation>Attributes for \elementref{glossaryphrase}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="glossaryphrase_model">
+    <a:documentation>Content model for \elementref{glossaryphrase}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="glossarydefinition">
+    <element name="glossarydefinition">
+      <a:documentation>A definition within an \elementref{glossarymark}</a:documentation>
+      <ref name="glossarydefinition_attributes"/>
+      <ref name="glossarydefinition_model"/>
+    </element>
+  </define>
+  <define name="glossarydefinition_attributes">
+    <a:documentation>Attributes for \elementref{glossarydefinition}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the definition for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="glossarydefinition_model">
+    <a:documentation>Content model for \elementref{glossarydefinition}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
@@ -168,6 +244,76 @@ used to crossreference.</a:documentation>
     <a:documentation>Content model for \elementref{ERROR}.</a:documentation>
     <zeroOrMore>
       <text/>
+    </zeroOrMore>
+  </define>
+  <!--
+    ======================================================================
+    Document-level (or sub-document level) Meta objects
+  -->
+  <define name="resource">
+    <element name="resource">
+      <a:documentation>a resource for use in further processing such as javascript or CSS</a:documentation>
+      <ref name="resource_attributes"/>
+      <ref name="resource_model"/>
+    </element>
+  </define>
+  <define name="resource_attributes">
+    <a:documentation>Attributes for \elementref{resource}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="src">
+        <a:documentation>the source url to the resource</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="type">
+        <a:documentation>the mime type of the resource</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="media">
+        <a:documentation>the media for which this resource is applicable
+(in the sense of CSS).</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <!-- anyElement = element * { (attribute * { text } | text | anyElement) * } -->
+  <!-- resource_model = (text | anyElement)* -->
+  <define name="resource_model">
+    <zeroOrMore>
+      <text/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="navigation">
+    <element name="navigation">
+      <a:documentation>Records navigation cross-referencing information,
+or serves as a container for page navigational blocks.</a:documentation>
+      <ref name="navigation_attributes"/>
+      <ref name="navigation_model"/>
+    </element>
+  </define>
+  <define name="navigation_attributes">
+    <a:documentation>Attributes for \elementref{navigation}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="navigation_model">
+    <a:documentation>Content model for \elementref{navigation}.
+A \elementref{inline-para} child should have attribute \attr{class}
+being one of \texttt{ltx_page_navbar}, \texttt{ltx_page_header}
+or \texttt{ltx_page_footer} and its contents will be used to create those components of webpages.
+Lacking those, a \elementref{TOC} requests a table of contents
+in the navigation bar. Page headers and footers will be synthesized from
+Links from the current page or document to related ones;
+these are represented by \elementref{ref} elements with \attr{rel}
+being up, down, previous, next, and so forth.
+ top-level elements, presumably block-level,</a:documentation>
+    <zeroOrMore>
+      <choice>
+        <ref name="ref"/>
+        <ref name="TOC"/>
+        <ref name="inline-para"/>
+      </choice>
     </zeroOrMore>
   </define>
 </grammar>
