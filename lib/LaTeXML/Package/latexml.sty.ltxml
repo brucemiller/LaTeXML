@@ -12,7 +12,11 @@
 # \=========================================================ooo==U==ooo=/ #
 
 #======================================================================
-# LaTeXML Implementation of latexml semantic enhancement macros
+# LaTeXML Implementation of latexml customization bindings
+#  * controlling various conversion options
+#  * presentation customization
+#  * semantic enhancement macros
+#  * exposing internal functionality
 #======================================================================
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
@@ -21,9 +25,18 @@ no warnings 'redefine';
 
 DefConditional('\iflatexml', sub { 1; });
 
-DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
+#======================================================================
+# Package Options
+DeclareOption('ids',   sub { AssignValue('GENERATE_IDS'=>1,'global'); });
+DeclareOption('noids', sub { AssignValue('GENERATE_IDS'=>0,'global'); });
 
+DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS'=>1,'global'); });
+DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS'=>0,'global'); });
+
+ProcessOptions();
+#======================================================================
 # From latexml.sty
+# [does this really belong here? or should this be disableable?]
 DefConstructor('\URL[] Semiverbatim',"<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
 	      properties=>sub { (href=>CleanURL($_[2])); });
 DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
@@ -35,14 +48,17 @@ DefMacro('\CSS',     '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
 DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
 DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
 DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
+#DefMacro('\BibTeX','BibTeX');
 
 #======================================================================
-# Exposing internal functionality of LaTeXML to the LaTeX document.
-#======================================================================
+# id related features
 
-Let(T_CS('\lxAddClass'),T_CS('\@ADDCLASS'));
+# Optionally, add ID's to ALL nodes.
+Tag('ltx:*',afterOpen=>sub { if(LookupValue('GENERATE_IDS')){ GenerateID(@_); }});
 
-#======================================================================
+# Set the id to used for the top-level document
+DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
+
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
 DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
 
@@ -50,6 +66,76 @@ DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
 # In presentation, this is similar to using a shorthand macro.
 # In content situations, an XMRef is generated.
 DefMacro('\LXMRef{}','\@XMRef{#1}');
+
+#======================================================================
+# class related features
+Let(T_CS('\lxAddClass'),T_CS('\@ADDCLASS'));
+
+#======================================================================
+# links
+# Similar to stuff from hyperref, but more straightforward
+DefConstructor('\lxRef Semiverbatim {}',
+	       "<ltx:ref labelref='#label'>#2</ltx:ref>",
+	       properties=>sub { (label=>CleanLabel($_[1])); });
+
+#======================================================================
+# Resources
+# \lxResource[options]{name}
+#  RequireResource($name,%options);
+
+#======================================================================
+# Page customization
+#  options to create or customize
+#    navbar: full content, context TOC, ...
+#    headers, footers
+
+DefConstructor('\lxContextTOC',
+	       "<ltx:TOC format='context'/>");
+
+AssignValue('navigation'=>[],'global');
+sub insertNavigation {
+  my($document)=@_;
+  if(my @items =  @{LookupValue('navigation') }){
+    $document->appendTree($document->getDocument->documentElement,
+			  ['ltx:navigation',{}, @items]); }}
+
+Tag('ltx:document', 'afterClose'=>\&insertNavigation);
+
+DefEnvironment('{lxNavbar}',sub {},
+		beforeDigest=> sub { AssignValue(inPreamble=>1); },
+		beforeConstruct=>sub {
+		  my($document,$whatsit)=@_;
+		  PushValue('navigation',
+			    ['ltx:inline-para',{class=>'ltx_page_navbar'},$whatsit->getBody]);
+		  return; });
+
+# Of course, it would be more interesting to supply a "template"
+# for header & footer that would show where the next link goes,
+# rather than predict what the next link will be! (after splitting!)
+# Repeated header/footers should give multiple header/footer lines ?
+# or do they just arrange the lines within it?
+DefEnvironment('{lxHeader}',sub {},
+		beforeDigest=> sub { AssignValue(inPreamble=>1); },
+		beforeConstruct=>sub {
+		  my($document,$whatsit)=@_;
+		  PushValue('navigation',
+			    ['ltx:inline-para',{class=>'ltx_page_header'},$whatsit->getBody]);
+		  return; });
+DefEnvironment('{lxFooter}',sub {},
+		beforeDigest=> sub { AssignValue(inPreamble=>1); },
+		beforeConstruct=>sub {
+		  my($document,$whatsit)=@_;
+		  PushValue('navigation',
+			    ['ltx:inline-para',{class=>'ltx_page_footer'},$whatsit->getBody]);
+		  return; });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Declarative information for Mathematics
+# particularly those that assist parsing.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# Marking the type of particular instances of a symbol.
 
 # \LxFcn{f} treat f as a function here (only).
 DefConstructor('\lxFcn{}',"<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", 

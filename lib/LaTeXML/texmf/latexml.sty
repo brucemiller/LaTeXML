@@ -13,8 +13,22 @@
 
 % You can conditionalize code for latexml or normal latex using this.
 \newif\iflatexml\latexmlfalse
-
-\providecommand{\lxDocumentID}[1]{}%
+%======================================================================
+% NOTE: Figure out where this should go.
+%  At least should define various `semantic enhancement' macros that
+% authors using latexml might want.
+% But, be careful not to step on the toes of other packages (naming scheme),
+% Nor, to assume to much about what semantics authors might want.
+% NOTE: Am I stepping on toes by including these here?
+% Common markup junk for LaTeXML docs.
+\providecommand{\XML}{\textsc{xml}}%
+\providecommand{\SGML}{\textsc{sgml}}%
+\providecommand{\HTML}{\textsc{html}}%
+\providecommand{\XHTML}{\textsc{xhtml}}%
+\providecommand{\XSLT}{\textsc{xslt}}%
+\providecommand{\CSS}{\textsc{css}}%
+\providecommand{\MathML}{MathML}%
+\providecommand{\OpenMath}{OpenMath}%
 
 \RequirePackage{url}
 % Shorthand to present a URL the actual text (also linked in HTML)
@@ -40,9 +54,42 @@
         T\kern-.1667em\lower.4ex\hbox{E}\kern-0.05em\relax
         {\scshape xml}}%
 
+%======================================================================
+% id related features
+\providecommand{\lxDocumentID}[1]{}%
+\def\LXMID#1#2{\expandafter\gdef\csname xmarg#1\endcsname{#2}\csname xmarg#1\endcsname}
+\def\LXMRef#1{\csname xmarg#1\endcsname}
+
+%======================================================================
+% class related features
 % Add a class to the constructed xml (ignored in latex)
 \providecommand{\lxAddClass}[1]{}%
 
+%======================================================================
+% links
+\def\lxRef#1#2{#2}
+%======================================================================
+% Resources
+
+%======================================================================
+% Page customization
+\RequirePackage{comment}
+\def\lxContextTOC{}%
+\excludecomment{lxNavbar}
+\excludecomment{lxHeader}
+\excludecomment{lxFooter}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Declarative information for Mathematics
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%======================================================================
+% Marking the type of particular instances of a symbol
+% Expose other declarative macros
+\providecommand{\lxFcn}[1]{#1}
+\providecommand{\lxID}[1]{#1}
+\providecommand{\lxPunct}[1]{#1}
+
+%======================================================================
 % Math definining macro.
 % Define a math function such that the TeX output is what you might
 % expect, while providing the semantic hooks for generating useful xml.
@@ -96,26 +143,4 @@
 % But, perhaps it is only the declarative aspects that are important to
 % latexml...
 
-% Expose other declarative macros
-\def\LXMID#1#2{\expandafter\gdef\csname xmarg#1\endcsname{#2}\csname xmarg#1\endcsname}
-\def\LXMRef#1{\csname xmarg#1\endcsname}
-\providecommand{\lxFcn}[1]{#1}
-\providecommand{\lxID}[1]{#1}
-\providecommand{\lxPunct}[1]{#1}
 
-%======================================================================
-% NOTE: Figure out where this should go.
-%  At least should define various `semantic enhancement' macros that
-% authors using latexml might want.
-% But, be careful not to step on the toes of other packages (naming scheme),
-% Nor, to assume to much about what semantics authors might want.
-% NOTE: Am I stepping on toes by including these here?
-% Common markup junk for LaTeXML docs.
-\providecommand{\XML}{\textsc{xml}}%
-\providecommand{\SGML}{\textsc{sgml}}%
-\providecommand{\HTML}{\textsc{html}}%
-\providecommand{\XHTML}{\textsc{xhtml}}%
-\providecommand{\XSLT}{\textsc{xslt}}%
-\providecommand{\CSS}{\textsc{css}}%
-\providecommand{\MathML}{MathML}%
-\providecommand{\OpenMath}{OpenMath}%
