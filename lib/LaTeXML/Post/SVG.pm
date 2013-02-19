@@ -34,6 +34,7 @@ sub toProcess {
 
 sub process {
   my ($self, $doc, @svg) = @_;
+  local $::IDCOUNTER=0;
   $doc->addNamespace($svgURI,'svg');
   map(ProcessSVG($_), @svg);
   $doc->adjust_latexml_doctype('SVG');  # Add SVG if LaTeXML dtd.
@@ -361,6 +362,7 @@ sub convertArc {
 sub getFillFrame {
   my ($fill) = @_;
   my $bgName = 'bg'.$fill; $bgName =~ s/\#//g;
+  $bgName .= ($::IDCOUNTER++);
   $::DEFS{$bgName} = 
     new_node($svgURI, 'filter', [new_node($svgURI, 'feFlood', undef, 'flood-color'=>$fill, 'flood-opacity'=>1, result=>'bg'),
 				 new_node($svgURI, 'feMerge', [new_node($svgURI, 'feMergeNode', undef, in=>'bg'),
@@ -376,6 +378,7 @@ sub getArrow {
   } elsif ($type eq '<') {
     $ar .= '_L';
   }
+  $ar .= ($::IDCOUNTER++);
   $::DEFS{$ar} = new_node($svgURI, 'marker', new_node($svgURI, 'path', undef, fill=>$fill, stroke=>'none',
 						      d=>($type eq '>') ? 'M 0 0 L 10 5 L 0 10 L 4 5 z' : 'M 0 5 L 10 0 L 6 5 L 10 10 z'),
 			  id=>$ar, viewBox=>'0 0 10 10', markerUnits=>'strokeWidth', markerWidth=>10, markerHeight=>6, orient=>'auto', refX=>4, refY=>5)
