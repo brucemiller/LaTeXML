@@ -23,8 +23,6 @@ sub new {
   $$self{db}=$options{db};
   $$self{handlers}={};
   $self->registerHandler('ltx:document'      => \&section_handler);
-  $self->registerHandler('ltx:bibliography'  => \&section_handler);
-  $self->registerHandler('ltx:index'         => \&section_handler);
   $self->registerHandler('ltx:part'          => \&section_handler);
   $self->registerHandler('ltx:chapter'       => \&section_handler);
   $self->registerHandler('ltx:section'       => \&section_handler);
@@ -33,6 +31,9 @@ sub new {
   $self->registerHandler('ltx:subsubsection' => \&section_handler);
   $self->registerHandler('ltx:paragraph'     => \&section_handler);
   $self->registerHandler('ltx:subparagraph'  => \&section_handler);
+  $self->registerHandler('ltx:bibliography'  => \&section_handler);
+  $self->registerHandler('ltx:index'         => \&section_handler);
+  $self->registerHandler('ltx:glossary'      => \&section_handler);
 
   $self->registerHandler('ltx:table'         => \&captioned_handler);
   $self->registerHandler('ltx:figure'        => \&captioned_handler);
@@ -41,6 +42,7 @@ sub new {
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
   $self->registerHandler('ltx:theorem'       => \&labelled_handler);
+  $self->registerHandler('ltx:item'          => \&labelled_handler);
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
 
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
@@ -158,6 +160,7 @@ sub section_handler {
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
+			 rrefnum=>$node->getAttribute('rrefnum'),
 			 title=>$self->cleanNode($doc,$doc->findnode('ltx:title',$node)),
 			 toctitle=>$self->cleanNode($doc,$doc->findnode('ltx:toctitle',$node)),
 			 children=>[],
@@ -175,6 +178,7 @@ sub captioned_handler {
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
 			 frefnum=>$node->getAttribute('frefnum'),
+			 rrefnum=>$node->getAttribute('rrefnum'),
 			 caption=>$self->cleanNode($doc,
 					   $doc->findnode('descendant::ltx:caption',$node)),
 			 toccaption=>$self->cleanNode($doc,
@@ -191,7 +195,9 @@ sub labelled_handler {
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 refnum=>$node->getAttribute('refnum'),
-			 frefnum=>$node->getAttribute('frefnum')); 
+			 frefnum=>$node->getAttribute('frefnum'),
+			 rrefnum=>$node->getAttribute('rrefnum'),
+			 title=>$self->cleanNode($doc,$doc->findnode('ltx:tag',$node)));
     $self->addAsChild($id,$parent_id); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -205,7 +211,8 @@ sub anchor_handler {
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
 			 title=>$node->cloneNode(1)->childNodes, # document fragment?
 			 refnum=>$node->getAttribute('refnum'),
-			 frefnum=>$node->getAttribute('frefnum')); 
+			 frefnum=>$node->getAttribute('frefnum'),
+			 rrefnum=>$node->getAttribute('rrefnum'));
     $self->addAsChild($id,$parent_id); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
@@ -213,8 +220,11 @@ sub ref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if(my $label = $node->getAttribute('labelref')){ # Only record refs of labels
-    if( !$doc->findnodes('ancestor::ltx:tocentry',$node) # Dont count refs from TOC
-	&&(($node->getAttribute('class')||'') !~ /\bcitedby\b/)){ # or citedby referencees
+    # Don't scan refs from TOC or 'cited' bibblock
+    if( !$doc->findnodes('ancestor::ltx:tocentry'
+			 .'| ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]',
+			 $node)){
+#####	&&(($node->getAttribute('class')||'') !~ /\bcitedby\b/)){ # or citedby referencees
       my $entry = $$self{db}->register($label);
       $entry->noteAssociation(referrers=>$parent_id); }}
   # Usually, a ref won't YET have content; but if it does, we should scan it.
@@ -222,7 +232,9 @@ sub ref_handler {
 
 sub bibref_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
-  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
+  # Don't scan refs from 'cited' bibblock
+  if( !$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]',$node)){
+#####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
     my $keys = $node->getAttribute('bibrefs');
     foreach my $bibkey (split(',',$keys)){
       if($bibkey){
@@ -258,9 +270,9 @@ sub bibitem_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
-    if(my $key = $node->getAttribute('key')){
-      $$self{db}->register("BIBLABEL:$key",id=>$id); }
-    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+    my $key = $node->getAttribute('key');
+    $$self{db}->register("BIBLABEL:$key",id=>$id) if $key;
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id, bibkey=>$key,
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid      =>$self->inPageID($doc,$id),
 			 authors     =>$doc->findnode('ltx:bibtag[@role="authors"]',$node),
