@@ -23,10 +23,38 @@
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx f func string">
 
+  <!-- ALL CAPS parameters are intended to be passed in;
+       lower case ones are (mostly) intended for internal use-->
+
+  <!-- ======================================================================
+       Parameters -->
+  <!-- The version of LaTeXML being used; for generator messages. -->
   <xsl:param name="LATEXML_VERSION"></xsl:param>
+
+  <!-- A string indicating the date and time of document generation or processing. -->
   <xsl:param name="TIMESTAMP"></xsl:param>
+
+  <!-- What version of RDFa to generate. [Set to "1.0" for broken behaviour] -->
   <xsl:param name="RDFA_VERSION"></xsl:param>
 
+  <!-- Whether to use Namespaces in the generated xml/xhtml/...-->  
+  <xsl:param name="USE_NAMESPACES">true</xsl:param>
+  
+  <!-- Whether to use HTML5 constructs in the generated html. -->
+  <xsl:param name="USE_HTML5"></xsl:param>
+ 
+  <!-- The XHTML namespace -->
+  <xsl:param name="XHTML_NAMESPACE">http://www.w3.org/1999/xhtml</xsl:param>
+
+  <!-- The namespace to use on html elements (typically XHTML_NAMESPACE or none) -->
+  <xsl:param name="html_ns">
+    <xsl:value-of select="f:if($USE_NAMESPACES,$XHTML_NAMESPACE,'')"/>
+  </xsl:param>
+
+  <!-- ======================================================================
+       LaTeXML Identification
+       (Maybe bring the Logo back?)
+  -->
   <xsl:template name="LaTeXML_identifier">
     <xsl:if test="$LATEXML_VERSION or $TIMESTAMP">
       <xsl:comment>Generated<!--
@@ -42,7 +70,150 @@
     </xsl:if>
   </xsl:template>
 
-  <!-- Copy ID info from latexml elements to generated element.-->
+  <!-- ======================================================================
+       Customization Hooks (for redefinition)
+       These are called in each (non-trivial) template within the main result element,
+       before and after the content is processed.
+       They are sorta "inner" begin & end.
+       "Outer" begin & end is easy to do using <xsl:apply-imports/>
+  -->
+  <xsl:template match="*|/" mode="begin"/>
+  <xsl:template match="*|/" mode="end"/>
+
+  <!-- ======================================================================
+       Utility functions
+  -->
+  <!-- Three-way if as function: f:if(test,iftrue,iffalse)
+       Returns either the iftrue or iffalse branch, depending on test. -->
+  <func:function name="f:if">
+    <xsl:param name="test"/>
+    <xsl:param name="iftrue"/>
+    <xsl:param name="iffalse"/>
+    <xsl:choose>
+      <xsl:when test="$test"><func:result><xsl:value-of select="$iftrue"/></func:result></xsl:when>
+      <xsl:otherwise><func:result><xsl:value-of select="$iffalse"/></func:result></xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
+  <func:function name="f:min">
+    <xsl:param name="a"/>
+    <xsl:param name="b"/>
+    <xsl:choose>
+      <xsl:when test="$a &lt; $b"><func:result><xsl:value-of select="$a"/></func:result></xsl:when>
+      <xsl:otherwise><func:result><xsl:value-of select="$b"/></func:result></xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
+  <func:function name="f:max">
+    <xsl:param name="a"/>
+    <xsl:param name="b"/>
+    <xsl:choose>
+      <xsl:when test="$a > $b"><func:result><xsl:value-of select="$a"/></func:result></xsl:when>
+      <xsl:otherwise><func:result><xsl:value-of select="$b"/></func:result></xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
+  <func:function name="f:ends-with">
+    <xsl:param name="string"/>
+    <xsl:param name="ending"/>
+    <func:result>
+      <xsl:value-of select="substring($string,string-length($string) - string-length($ending))
+			    = $ending"/>
+    </func:result>
+  </func:function>
+
+  <!-- Process a url
+       HOOK: This is provided as a hook for any rewriting (eg. relativizing)
+       you may want to do with href values.
+  -->
+  <func:function name="f:url">
+    <xsl:param name="url"/>
+    <func:result><xsl:value-of select="$url"/></func:result>
+  </func:function>
+
+  <func:function name="f:class-pref">
+    <xsl:param name="prefix"/>
+    <xsl:param name="string"/>
+    <func:result>
+      <xsl:value-of select="f:class-pref-aux($prefix,normalize-space($string))"/>
+    </func:result>
+  </func:function>
+
+  <func:function name="f:class-pref-aux">
+    <xsl:param name="prefix"/>
+    <xsl:param name="string"/>
+    <func:result>
+      <xsl:choose>
+	<xsl:when test="$string = ''"></xsl:when>
+	<xsl:when test="contains($string,' ')">
+	  <xsl:value-of select="concat($prefix,substring-before($string,' '),
+				' ',f:class-pref-aux($prefix,substring-after($string,' ')))"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="concat($prefix,$string)"/>
+	</xsl:otherwise>
+      </xsl:choose>
+    </func:result>
+  </func:function>
+
+  <!-- ======================================================================
+       Utility Templates
+  -->
+
+  <!-- Add an attribute to the current node, but only if the value is non-empty -->
+  <xsl:template name="add_attribute">
+    <xsl:param name="name"/>
+    <xsl:param name="value"/>
+    <xsl:if test="not($value = '')">
+      <xsl:attribute name="{$name}"><xsl:value-of select="$value"/></xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <!-- This copies WHATEVER, in WHATEVER namespace.
+       It's useful for MathML's annotation-xml, or SVG's foreignObject.
+       We use local-name() & namespace to try avoid namespace prefixes.
+       But note that namespaced attributes WILL still be preserved.
+       INCLUDING xml:id; not sure if html5 really accepts that,
+       but it doesn't really accept arbitrary annotations, anyway.
+
+       Perhaps this should be smart about svg in mathml or vice-versa?
+  -->
+  <xsl:template match="*" mode='copy-foreign'>
+    <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
+      <xsl:for-each select="@*">
+	<xsl:apply-templates select="." mode="copy-attribute"/>
+      </xsl:for-each>
+      <xsl:apply-templates mode='copy-foreign'/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="@*" mode='copy-attribute'>
+    <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
+  </xsl:template>
+
+  <xsl:template match="@xml:id" mode='copy-attribute'>
+    <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
+  </xsl:template>
+
+  <!-- this is risky, assuming we know which are urls...-->
+  <xsl:template match="@href | @src | @action" mode='copy-attribute'>
+    <xsl:attribute name="{local-name()}">
+      <xsl:value-of select="f:url(.)"/>
+    </xsl:attribute>
+  </xsl:template>
+
+  <!-- ======================================================================
+       Common Attribute procedures
+  -->
+
+  <!-- Copy ID info from latexml elements to generated element.
+       Note that it would be tempting to include this in add_attributes (below),
+       since they appear almost always together. But there are cases (eg. column splits)
+       where the id should appear only once, and other attributes might be copied onto several.-->
   <xsl:template name="add_id">
     <xsl:if test="@fragid">
       <xsl:attribute name="id"><xsl:value-of select="@fragid"/></xsl:attribute>
@@ -64,84 +235,51 @@
     <xsl:call-template name="add_style">
       <xsl:with-param name="extra_style" select="string($extra_style)"/>
     </xsl:call-template>
-    <xsl:call-template name="add_RDFa"/>
+    <xsl:apply-templates select="." mode="add_RDFa"/>
   </xsl:template>
-
-
-  <!-- Three-way if as function: f:if(test,iftrue,iffalse)
-       Returns either the iftrue or iffalse branch, depending on test. -->
-  <func:function name="f:if">
-    <xsl:param name="test"/>
-    <xsl:param name="iftrue"/>
-    <xsl:param name="iffalse"/>
-    <xsl:choose>
-      <xsl:when test="$test"><func:result><xsl:value-of select="$iftrue"/></func:result></xsl:when>
-      <xsl:otherwise><func:result><xsl:value-of select="$iffalse"/></func:result></xsl:otherwise>
-    </xsl:choose>
-  </func:function>
-
-  <!-- Add an attribute to the current node, but only if the value is non-empty -->
-  <xsl:template name="add_attribute">
-    <xsl:param name="name"/>
-    <xsl:param name="value"/>
-    <xsl:if test="not($value = '')">
-      <xsl:attribute name="{$name}"><xsl:value-of select="$value"/></xsl:attribute>
-    </xsl:if>
-  </xsl:template>
-
+      
   <!-- Add a class attribute value to the current html element
        according to the attributes of the context element:
        * the element name (this should be prefixed somehow!!!)
        * the class attribute
        * attributes in the Fontable.attribute set
        * content passed in via the parameter $extra_classes.
+
+       HOOKS: 
+       (1) define template with mode="classes", possibly calling <xsl:apply-imports/>
+       (2) pass in parameter $extra_classes
   -->
-
-
   <xsl:template name="add_classes">
     <xsl:param name="extra_classes" select="''"/>
     <xsl:call-template name="add_attribute">
       <xsl:with-param name="name" select="'class'"/>
-      <xsl:with-param name="value" select="normalize-space(f:compute_classes(.,$extra_classes))"/>
+      <xsl:with-param name="value">
+	<xsl:apply-templates select="." mode="classes"/>
+	<xsl:if test="$extra_classes">
+	  <xsl:text> </xsl:text>
+	  <xsl:value-of select="$extra_classes"/>
+	</xsl:if>
+      </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
 
-<!--
-  <func:function name="f:compute_classes">
-    <xsl:param name="node"/>
-    <xsl:param name="extra_classes"/>
-    <func:result>
-      <xsl:value-of select="concat(local-name($node),
-			    f:if($node/@class,concat(' ',$node/@class),''),
-			    f:if($node/@font,concat(' ',$node/@font),''),
-			    f:if($node/@fontsize,concat(' ',$node/@fontsize),''),
-			    f:if($extra_classes,concat(' ',$extra_classes),'')
-			    )"/>
-      </func:result>
-  </func:function>
--->
-  <func:function name="f:compute_classes">
-    <xsl:param name="node"/>
-    <xsl:param name="extra_classes"/>
-    <func:result>
-      <xsl:value-of select="local-name($node)"/>
-      <xsl:if test="$node/@class">
-	<xsl:value-of select="concat(' ',$node/@class)"/>
-      </xsl:if>
-      <xsl:if test="$node/@font">
-	<xsl:value-of select="concat(' ',$node/@font)"/>
-      </xsl:if>
-      <xsl:if test="$node/@fontsize">
-	<xsl:value-of select="concat(' ',$node/@fontsize)"/>
-      </xsl:if>
-      <xsl:if test="$extra_classes">
-	<xsl:value-of select="concat(' ',$extra_classes)"/>
-      </xsl:if>
-    </func:result>
-  </func:function>
+  <xsl:template match="*" mode="classes">
+    <xsl:value-of select="concat('ltx_',local-name(.))"/>
+    <xsl:if test="@class">
+      <xsl:value-of select="concat(' ',@class)"/> <!--Whatever strings that were given! -->
+    </xsl:if>
+    <xsl:if test="@font">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_font_',@font))"/>
+    </xsl:if>
+    <xsl:if test="@fontsize">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_font_',@fontsize))"/>
+    </xsl:if>
+    <xsl:if test="@role">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_role_',@role))"/>
+    </xsl:if>
+  </xsl:template>
 
-
-  <!-- template add_style adds a css style attribute to the current html element
+  <!-- Add a CSS style attribute to the current html element
        according to attributes of the context node.
        * Positionable.attributes
        * Colorable.attributes
@@ -150,85 +288,64 @@
        will be ignored in most cases... silly CSS.
        Note that some attributes clash because they're setting
        the same CSS property; there's no combining here (yet?).   
+
+       HOOKS: 
+       (1) define template with mode="styling", possibly calling <xsl:apply-imports/>
+       (2) pass in parameter $extra_style
   -->
-
-
   <xsl:template name="add_style">
     <xsl:param name="extra_style" select="''"/>
     <xsl:call-template name="add_attribute">
       <xsl:with-param name="name" select="'style'"/>
-      <xsl:with-param name="value" select="normalize-space(f:compute_styling(.,$extra_style))"/>
-    </xsl:call-template>
-  </xsl:template>
-
-  <func:function name="f:compute_styling">
-    <xsl:param name="node"/>
-    <xsl:param name="extra_style"/>
-    <func:result>
-	<xsl:if test="$node/@float">
-	  <xsl:value-of select="concat('float:',$node/@float,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@width">
-	  <xsl:value-of select="concat('width:',$node/@width,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@height">
-	  <xsl:value-of select="concat('height:',$node/@height,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@depth">
-	  <xsl:value-of select="concat('vertical-align:',$node/@depth,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@pad-width">
-	  <xsl:value-of select="concat('height:',$node/@pad-width,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@pad-height">
-	  <xsl:value-of select="concat('height:',$node/@pad-height,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@xoffset">
-	  <xsl:value-of select="concat('position:relative; left:',$node/@xoffset,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@yoffset">
-	  <xsl:value-of select="concat('position:relative; bottom:',$node/@yoffset,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@color">
-	  <xsl:value-of select="concat('color:',$node/@color,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@backgroundcolor">
-	  <xsl:value-of select="concat('background-color:',$node/@backgroundcolor,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@opacity">
-	  <xsl:value-of select="concat('opacity:',$node/@opacity,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@framed='rectangle'">
-	  <xsl:value-of select="'border:1px solid '"/>
-	  <xsl:choose>
-	    <xsl:when test="$node/@framecolor">
-	      <xsl:value-of select="$node/@framecolor"/>
-	    </xsl:when>
-	    <xsl:otherwise>
-	      <xsl:value-of select="'black'"/>
-	    </xsl:otherwise>
-	  </xsl:choose>
-	  <xsl:value-of select="';'"/>
-	</xsl:if>
-	<xsl:if test="$node/@framed='underline'">
-	  <xsl:value-of select="'text-decoration:underline;'"/>
-	</xsl:if>
-	<xsl:if test="$node/@align">
-	  <xsl:value-of select="concat('text-align:',$node/@align,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@vattach">
-	  <xsl:value-of select="concat('vertical-align:',$node/@vattach,';')"/>
-	</xsl:if>
-	<xsl:if test="$node/@cssstyle">
-	  <xsl:value-of select="concat($node/@cssstyle,';')"/>
-	</xsl:if>
+      <xsl:with-param name="value">
+	<xsl:apply-templates select="." mode="styling"/>
 	<xsl:if test="$extra_style">
 	  <xsl:value-of select="$extra_style"/>
 	</xsl:if>
-    </func:result>
-  </func:function>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
 
-  <xsl:template name="add_RDFa">
+  <xsl:template match="*" mode="styling">
+    <xsl:if test="@float"  ><xsl:value-of select="concat('float:',@float,';')"/></xsl:if>
+    <xsl:if test="@width"  ><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
+    <xsl:if test="@height" ><xsl:value-of select="concat('height:',@height,';')"/></xsl:if>
+    <xsl:if test="@depth"  ><xsl:value-of select="concat('vertical-align:',@depth,';')"/></xsl:if>
+    <xsl:if test="@pad-width" ><xsl:value-of select="concat('height:',@pad-width,';')"/></xsl:if>
+    <xsl:if test="@pad-height"><xsl:value-of select="concat('height:',@pad-height,';')"/></xsl:if>
+    <xsl:if test="@xoffset">
+      <xsl:value-of select="concat('position:relative; left:',@xoffset,';')"/>
+    </xsl:if>
+    <xsl:if test="@yoffset">
+      <xsl:value-of select="concat('position:relative; bottom:',@yoffset,';')"/>
+    </xsl:if>
+    <xsl:if test="@color"><xsl:value-of select="concat('color:',@color,';')"/></xsl:if>
+    <xsl:if test="@backgroundcolor">
+      <xsl:value-of select="concat('background-color:',@backgroundcolor,';')"/>
+    </xsl:if>
+    <xsl:if test="@opacity"><xsl:value-of select="concat('opacity:',@opacity,';')"/></xsl:if>
+    <xsl:if test="@framed='rectangle'">
+      <xsl:value-of select="'border:1px solid '"/>
+      <xsl:choose>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:value-of select="';'"/>
+    </xsl:if>
+    <xsl:if test="@framed='underline'"><xsl:value-of select="'text-decoration:underline;'"/></xsl:if>	<xsl:if test="@align"><xsl:value-of select="concat('text-align:',@align,';')"/></xsl:if>
+    <xsl:if test="@vattach"><xsl:value-of select="concat('vertical-align:',@vattach,';')"/></xsl:if>
+    <xsl:if test="@cssstyle"><xsl:value-of select="concat(@cssstyle,';')"/></xsl:if>
+  </xsl:template>
+
+  <!-- Add an RDFa attributes from the context element to the current one.
+       All of these attributes (except content) could be IRI (ie. URL),
+       as well as term(s), CURIE, etc.  So, should f:url(.) be applied? 
+       It either needs to be written safely enough, or a safer version applied-->
+  <xsl:template match="*" mode="add_RDFa">
     <!-- perhaps we want to disallow these being spread around?
     <xsl:if test="@vocab">
       <xsl:attribute name="vocab"><xsl:value-of select="@vocab"/></xsl:attribute>
@@ -315,8 +432,6 @@
     <xsl:copy-of select="exsl:node-set($dummy)/*/namespace::*"/>
   </xsl:template>
 
-  <func:function name="f:LaTeXML-icon">
-    <func:result>data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==</func:result></func:function>
-
 </xsl:stylesheet>
+
 
