@@ -32,7 +32,6 @@ our $MORE_MAKERULES='';
 
 record_revision();
 compile_MathGrammar();
-compile_XSLTs();
 install_TeXStyles();
 
 WriteMakefile(NAME => 'LaTeXML',
@@ -131,37 +130,6 @@ $(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 
 MakeGrammar
 }
-
-#======================================================================
-# Add rules to generate XSLT files for html & xhtml.
-# Generally, we've only written XHTML versions (clean xml) of XSLT,
-# but these need to be converted to HTML by (at least) removing 
-# the namespace declaration since HTML must be in null namespace,
-# whereas XHTML must be in a specific namespace.
-sub compile_XSLTs {
-  my $styledir = 'LaTeXML/resources/XSLT';
-  # The (.) is supposed to match an open single or double quote;
-  # unfortunately, quoting the quote and having it work in all shells, windows,.....
-  # Let's just hope that whatever's matched is a quote!
-  $$MORE_MACROS{XSLTTOHTML}
-    = '$(PERLRUN) -p -e \'s@\s*xmlns\s*=\s*(.)http://www.w3.org/1999/xhtml\1@@\' ';
-  opendir(DIR,"lib/$styledir");
-  my @xhtmls = grep(/^LaTeXML-(.*)-xhtml.xsl$/,readdir(DIR));
-  closedir(DIR);
-  my @conversions=();
-  foreach my $xhtml (@xhtmls){
-    my $html = $xhtml; $html =~ s/-xhtml.xsl$/-html.xsl/;
-    $MORE_MAKERULES .= <<"MakeXSLT";
-
-# Convert the generic $xhtml stylesheet for use with plain html.
-pure_all :: \$(INST_LIBDIR)/$styledir/$html
-
-\$(INST_LIBDIR)/$styledir/$html: lib/$styledir/$xhtml
-	\$(NOECHO) \$(MKPATH) \$(INST_LIBDIR)/$styledir
-	\$(XSLTTOHTML) lib/$styledir/$xhtml > \$(INST_LIBDIR)/$styledir/$html
-
-MakeXSLT
-  }}
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
