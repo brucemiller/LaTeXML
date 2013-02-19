@@ -18,7 +18,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 
 ## This module defines a picture environment, roughly a subset of SVG.
-## NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.
+## NOTE: Eventually we will drop these subset elements and incorporate SVG itself.
 Misc.class |= picture
 
 #======================================================================
@@ -27,6 +27,7 @@ Picture.class =
   g | rect | line | circle | path
  | arc | wedge | ellipse | polygon | bezier
  | parabola | curve | dots | grid | clip
+ | svg
 
 ## These attributes correspond roughly to SVG, but need documentation.
 Picture.attributes =

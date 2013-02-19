@@ -20,7 +20,7 @@
 <grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <define name="Misc.class" combine="choice">
     <a:documentation>This module defines a picture environment, roughly a subset of SVG.
-NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</a:documentation>
+NOTE: Eventually we will drop these subset elements and incorporate SVG itself.</a:documentation>
     <ref name="picture"/>
   </define>
   <!-- ====================================================================== -->
@@ -41,6 +41,7 @@ NOTE: Consider whether it is sensible to drop this and incorporate SVG itself.</
       <ref name="dots"/>
       <ref name="grid"/>
       <ref name="clip"/>
+      <ref name="svg"/>
     </choice>
   </define>
   <define name="Picture.attributes">
