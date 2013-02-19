@@ -11,11 +11,15 @@ use strict;
 use LaTeXML::Package;
 
 foreach my $option (qw(envcountreset citeauthoryear oribibl orivec
-	envcountsame envcountsect runningheads openbib)){
+		       envcountsame envcountsect runningheads)){
   DeclareOption($option,undef); }
 
+# Anything else gets passed to article.
+DeclareOption(undef,sub {
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+
 ProcessOptions();
-LoadClass('article',withoptions=>1);
+LoadClass('article');
 
 RequirePackage('multicol');
 
@@ -165,7 +169,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 		   (  %ctr,
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>'ltx_'.CleanIndexKey($thmset)  ); },
+		      class=>'ltx_theorem_'.CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 

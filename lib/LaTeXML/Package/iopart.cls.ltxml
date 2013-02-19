@@ -9,11 +9,14 @@
 use strict;
 use LaTeXML::Package;
 
-foreach my $option (qw(a4paper letterpaper landscape 12pt 11pt 10pt draft final
-		       titlepage notitlepage)){
+foreach my $option (qw()){
   DeclareOption($option, undef); }
 
-LoadClass('article',withoptions=>1);
+# Anything else gets passed to article.
+DeclareOption(undef,sub {
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+
+LoadClass('article');
 RequirePackage('iopart_support');
 
 1;

@@ -12,8 +12,8 @@ use strict;
 use LaTeXML::Package;
 
 #======================================================================
-foreach my $option (qw(nospthms vecphys vecarrow norunningheads referee openbib oribibl chaprefs
-		       footinfo openany 10pt 11pt 12pt twoside fleqn sechang
+foreach my $option (qw(nospthms vecphys vecarrow norunningheads referee oribibl chaprefs
+		       footinfo openany sechang
 		       deutsch francais),
 		    # These could affect numbering...
 		    qw(numart book envcountresetchap envcountresetsect envcountsame envcountchap
@@ -22,9 +22,12 @@ foreach my $option (qw(nospthms vecphys vecarrow norunningheads referee openbib 
   DeclareOption($option, undef); }
 
 # Other options could load sv<option>.clo !
+# Anything else gets passed to book.
+DeclareOption(undef,sub {
+  PassOptions('book','cls',ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
-LoadClass('book');
+LoadClass('book',withoptions=>1);
 RequirePackage('sv_support');
 
 # Oddly, they allow * on \title to affect numbering (* => numart, none => book)
