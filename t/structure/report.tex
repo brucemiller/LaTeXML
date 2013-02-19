@@ -1,8 +1,15 @@
 \documentclass{report}
+\title{A Test Report}
+\author{John Q.~Author}
 \begin{document}
+\maketitle
 \chapter{First Chapter}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
 \section{First Section}
-Begin first paragraph,
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 \begin{equation}
  a + b,
 \end{equation}
@@ -12,13 +19,21 @@ Begin first paragraph,
 \end{equation}
 
 \begin{figure}
-A Figure
+\begin{centering}
+A Figure\\
+\end{centering}
 \caption{A Figure}
 \end{figure}
 
 \begin{table}
-A Figure
-\caption{A Figure}
+\begin{centering}
+\begin{tabular}{r|cc}
+Heading & Foo & Bar\\\hline
+a & $x$ & $x^2$\\
+b & $y^2$ & $y$\\
+\end{tabular}\\
+\end{centering}
+\caption{A Table}
 \end{table}
 
 \begin{enumerate}
@@ -30,8 +45,37 @@ A Figure
    \end{enumerate}
 \end{enumerate}
 
+\begin{description}
+\item[A thing] with some descriptive text.
+\item[Another] Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+\item[And yet] blah, blah. Moreover
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+\end{description}
+
+\subsection{A Subsection}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\subsubsection{A Subsubsection}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\paragraph{A Paragraph}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\subparagraph{A Subparagraph}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
 \section{Second Section}
-Begin first paragraph,
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 \begin{equation}
  a + b,
 \end{equation}
@@ -41,13 +85,21 @@ Begin first paragraph,
 \end{equation}
 
 \begin{figure}
-A Figure
-\caption{A Figure}
+\begin{centering}
+A Figure\\
+\end{centering}
+\caption{Another Figure}
 \end{figure}
 
 \begin{table}
-A Figure
-\caption{A Figure}
+\begin{centering}
+\begin{tabular}{r|cc}
+Heading & Foo & Bar\\\hline
+a & $x$ & $x^2$\\
+b & $y^2$ & $y$\\
+\end{tabular}\\
+\end{centering}
+\caption{Another Figure}
 \end{table}
 
 \begin{enumerate}
@@ -62,7 +114,9 @@ A Figure
 
 \chapter{Second Chapter}
 \section{First Section}
-Begin first paragraph,
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 \begin{equation}
  a + b,
 \end{equation}
@@ -92,7 +146,9 @@ A Figure
 
 
 \section{Second Section}
-Begin first paragraph,
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
 \begin{equation}
  a + b,
 \end{equation}
