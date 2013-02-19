@@ -673,8 +673,9 @@ sub getQName {
       # Register it, but Don't add it to the document!!! (or xpath, for that matter)
       $$self{namespaces}{$prefix}=$nsuri;
       $$self{namespaceURIs}{$nsuri}=$prefix;
-      LaTeXML::Post::Warn('expected','prefix',undef,
-	   "Missing namespace prefix for '$nsuri'; using '$prefix' internally");
+## I'm not so sure that it is necessary to warn about this?
+##      LaTeXML::Post::Warn('expected','prefix',undef,
+##	   "Missing namespace prefix for '$nsuri'; using '$prefix' internally");
       $prefix.":".$node->localname; }}}
 
 #======================================================================
@@ -882,6 +883,10 @@ sub newDocument {
   # Copy any processing instructions.
   foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")){
     $doc->getDocument->appendChild($pi->cloneNode); }
+
+  # And any resource elements
+  if(my @resources=$self->findnodes("descendant::ltx:resource")){
+    $doc->addNodes($doc->getDocumentElement,@resources); } # cloning, as needed...
 
   # If new document has no date, try to add one
   $doc->addDate($self);
