@@ -581,7 +581,8 @@ sub floatToElement {
 	if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
    $savenode; }
   else { 
-    Warn('malformed',$qname,$self,"No open node can contain element '$qname'")
+    Warn('malformed',$qname,$self,"No open node can contain element '$qname'",
+	 $self->getInsertionContext())
       unless $$self{model}->canContainSomehow($$self{node},$qname);
     undef; }}
 
@@ -596,7 +597,8 @@ sub floatToAttribute {
     $$self{node}=$n;
     $savenode; }
   else {
-    Warn('malformed',$key,$self,"No open node can get attribute '$key'");
+    Warn('malformed',$key,$self,"No open node can get attribute '$key'",
+	 $self->getInsertionContext());
     undef; }}
 
 sub openText_internal {
@@ -1188,6 +1190,11 @@ sub appendTree {
       elsif($type == XML_TEXT_NODE){
 	$node->appendTextNode($child->textContent); }
     }
+    elsif((ref $child) && $child->isaBox){
+      my $savenode = $self->getNode;
+      $self->setNode($node);
+      $self->absorb($child);
+      $self->setNode($savenode); }
     elsif(ref $child){
       Warn('malformed',$child,$node,"Dont know how to add '$child' to document; ignoring"); }
     elsif(defined $child){
