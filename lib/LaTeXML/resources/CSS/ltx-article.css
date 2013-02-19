@@ -1,0 +1,38 @@
+
+.ltx_title_document      { font-size:170%; text-align:center; }
+.ltx_role_author         { text-align:center; }
+.ltx_role_author .ltx_personname  { font-size: 120%; }
+.ltx_date        { text-align:center; font-size: 120%; }
+.ltx_subtitle    { text-align:center; font-size: 120%; padding-left:0.2em; margin-left:-0.5em; }
+
+.ltx_title_section       { font-size:140%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+.ltx_title_subsection    { font-size:120%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+.ltx_title_subsubsection { font-size:100%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+
+/* should be runin! */
+.ltx_title_paragraph   { font-size:100%; font-weight:bold; display:inline; 
+			 margin-right:1em; margin-top:1.5em; }
+.ltx_paragraph .ltx_title,
+.ltx_paragraph .ltx_title + .ltx_para,
+.ltx_paragraph .ltx_title + .ltx_para > .ltx_p,
+.ltx_paragraph hgroup,
+.ltx_paragraph hgroup + .ltx_para,
+.ltx_paragraph hgroup + .ltx_para > .ltx_p   { display:inline; }
+
+.ltx_title_subparagraph  { font-size:100%; font-weight:bold; display:inline; 
+			   margin-left:2em; margin-right:1em; margin-top:1.5em; }
+.ltx_subparagraph .ltx_title,
+.ltx_subparagraph .ltx_title + .ltx_para,
+.ltx_subparagraph .ltx_title + .ltx_para > .ltx_p,
+.ltx_subparagraph hgroup,
+.ltx_subparagraph hgroup + .ltx_para,
+.ltx_subparagraph hgroup + .ltx_para .ltx_p   { display:inline; }
+
+.ltx_figure  { text-align:center; margin:auto; margin:0.5em; }
+.ltx_table   { text-align:center; margin:auto; margin:0.5em; }
+
+/* First para indentation */
+div > .ltx_para > .ltx_p,
+section > .ltx_para > .ltx_p { text-indent:2em; }
+hgroup + .ltx_para > .ltx_p,
+.ltx_title +.ltx_para > .ltx_p {text-indent:0em; }

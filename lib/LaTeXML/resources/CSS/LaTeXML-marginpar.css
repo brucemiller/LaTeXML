@@ -1,0 +1,11 @@
+/* A simple example of CSS for placing marginpar in margin.
+  (more sophisticated layout probably requires xslt) */
+.ltx_note.ltx_role_margin .ltx_note_mark { display:none; }
+.ltx_note.ltx_role_margin .ltx_note_type { display:none; }
+.ltx_note.ltx_role_margin .ltx_note_content {
+    display:block;
+    position:fixed; left:83%; width:15%;
+    background-color: transparent; border:0pt; }
+
+/* Narrower, to make room for marginpar */
+.ltx_page_main { width:80%; }

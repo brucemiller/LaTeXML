@@ -1,0 +1,199 @@
+/*======================================================================
+ Core CSS for LaTeXML documents converted to (X)HTML */
+/* Generic Page layout */
+.ltx_page_header,
+.ltx_page_footer { font-size:0.8em; }
+.ltx_page_header *[rel~="prev"],
+.ltx_page_footer *[rel~="prev"] { float:left; }
+.ltx_page_header *[rel~="up"],
+.ltx_page_footer *[rel~="up"]   { display:block; text-align:center; }
+.ltx_page_header *[rel~="next"],
+.ltx_page_footer *[rel~="next"] {  float:right; }
+.ltx_page_header .ltx_ref,
+.ltx_page_footer .ltx_ref {
+    margin:0 1em; }
+.ltx_page_header li {
+    padding:0.1em 0.2em 0.1em 1em;}
+
+/* Main content */
+.ltx_page_content { clear:both; }
+.ltx_page_header  { border-bottom:1px solid; margin-bottom:5px; }
+.ltx_page_footer  { border-top:1px solid; margin-top:5px;  }
+
+.ltx_page_header:after,
+.ltx_page_footer:after,
+.ltx_page_content:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
+
+.ltx_page_logo     { font-size:80%; margin-top: 5px; float:right; }
+.ltx_page_logo a   { font-variant: small-caps; }
+.ltx_page_logo img { vertical-align:-3px; }
+
+/* if shown */
+.ltx_page_navbar li { white-space:nowrap; display:block; overflow:hidden; }
+/* If ref got turned into span, it's "this section"*/
+.ltx_page_navbar li span.ltx_ref { white-space:normal; overflow:visible; }
+
+/*======================================================================
+  Document Structure; Titles & Frontmatter */
+
+/* Hack to simulate run-in! */
+h6 { display:inline; font-size:100%; font-family:sans-serif; }
+h6:after { content:" "; }
+h6 + div.ltx_para,
+h6 + p { display:inline; }
+
+/* .ltx_chapter_title, etc should be in ltx-article.css etc.
+ */
+.ltx_page_main { margin:0px; padding:1em 3em 1em 2em; }
+
+/*======================================================================
+  Para level */
+/*.ltx_figure .ltx_subfigure,*/
+/*.ltx_table  .ltx_subtable,*/
+/*.ltx_float  .ltx_subfloat  { width:50%; } */
+.ltx_figure .ltx_figure,
+.ltx_table  .ltx_table,
+.ltx_float  .ltx_float  { width:50%; }
+/* theorems, figure, tables, floats captions.. */
+/*======================================================================
+ Blocks, Lists, Floats */
+.ltx_align_left     {text-align:left; }
+.ltx_align_right    {text-align:right; }
+.ltx_align_center   {text-align:center; }
+.ltx_align_justify  { }
+.ltx_align_top      {vertical-align:top; }
+.ltx_align_bottom   {vertical-align:bottom; }
+.ltx_align_middle   {vertical-align:middle; }
+.ltx_align_baseline {vertical-align:baseline; }
+
+td.ltx_align_left,   th.ltx_align_left,
+td.ltx_align_right,  th.ltx_align_right,
+td.ltx_align_center, th.ltx_align_center { white-space:nowrap; }
+
+.ltx_inline-block { display:inline-block; }
+div.ltx_equation { display:block; width:95%; text-align:center; }
+/*.ltx_equation span.ltx_refnum.ltx_left { position:absolute; left:2em; }
+.ltx_equation span.ltx_refnum.ltx_right { position:absolute; right:2em; }
+*/
+.ltx_tag_equation.ltx_align_left { position:absolute; left:2em; }
+.ltx_tag_equation.ltx_align_right { position:absolute; right:2em; }
+
+.ltx_equation td { width:auto; }
+table.ltx_equation,
+table.ltx_equationgroup { width:100%; }
+table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
+table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
+
+/* Hide this from IE */
+tr > td.ltx_eqn_pad { width:50%; }
+
+/* Position the tag to look like a normal item bullet. */
+li.ltx_item .ltx_tag { display:inline; margin-left:-1.5em; }
+.ltx_item .ltx_tag + .ltx_para,
+.ltx_item .ltx_tag + .ltx_para .ltx_p  { display:inline; }
+
+/* NOTE: Need to try harder to get runin appearance? */
+dl.ltx_description dt { margin-right:0.5em; float:left;
+	            font-weight:bold; font-size:95%; }
+dl.ltx_description dd { margin-left:5em; }
+dl.ltx_description dl.ltx_description dd { margin-left:3em; }
+
+.ltx_theorem  {margin:1em 0em 1em 0em; }
+
+.ltx_bibliography dt { margin-right:0.5em; float:left; }
+.ltx_bibliography dd { margin-left:3em; }
+/*.ltx_biblist { list-style-type:none; }*/
+.ltx_bibitem { list-style-type:none; }
+.ltx_bibtag { font-weight:bold; margin-left:-2em; width:3em; }
+/*.bibitem-tag + div { display:inline; }*/
+.ltx_bib_title { font-style:italic; }
+.ltx_bib_article .bib-title { font-style:normal !important; }
+.ltx_bib_journal  { font-style:italic; }
+.ltx_bib_volume { font-weight:bold; }
+
+.ltx_indexlist li { list-style-type:none;  }
+.ltx_indexlist { margin-left:1em; padding-left:1em;}
+.ltx_listing td.ltx_linenumber,
+.ltx_listingblock td.ltx_linenumber
+   { width:3em; text-align:right;}
+/*======================================================================
+  Columns */
+.ltx_page_column1 {
+    width:44%; float:left; } /* IE uses % of wrong container*/
+.ltx_page_column2 {
+    width:44%; float:right; }
+.ltx_page_columns > .ltx_page_column1 {
+    width:48%; float:left; }
+.ltx_page_columns > .ltx_page_column2 {
+    width:48%; float:right; }
+.ltx_page_columns:after {
+    content:"."; display:block; height:0; clear:both; visibility:hidden; }
+
+/*======================================================================
+ Borders and such */
+table { border-collapse:collapse; }
+
+.ltx_framed  { border:1px solid black;}
+.ltx_tabular td, .ltx_tabular th { padding:0.1em 0.5em; }
+.ltx_border_t  { border-top:1px solid black; }
+.ltx_border_r  { border-right:1px solid black; }
+.ltx_border_b  { border-bottom:1px solid black; }
+.ltx_border_l  { border-left:1px solid black; }
+.ltx_border_tt { border-top:3px double black; }
+.ltx_border_rr { border-right:3px double black; }
+.ltx_border_bb { border-bottom:3px double black; }
+.ltx_border_ll { border-left:3px double black; }
+
+/*======================================================================
+ Misc */
+/* .ltx_verbatim*/
+
+/*======================================================================
+ Meta stuff, footnotes */
+.ltx_note_content { display:none; }
+.ltx_note_content {
+     width: 70%; right:5%;  font-size:80%;
+     background:#E0E0E0; border:3px outset gray; }
+.ltx_note_mark    { color:blue; }
+.ltx_note_type    { font-weight: bold; }
+.ltx_note:hover .ltx_note_content 
+   { display:block; position:absolute; z-index:10; }
+
+.ltx_ERROR        { color:red; }
+.ltx_rdf          { display:none; }
+
+/*======================================================================
+ Low-level Basics */
+/* NOTE: These should be using rems; [ie.: what happens when you nest .tiny in .tiny?????] */
+.ltx_font_TINY       { font-size:50%; }
+.ltx_font_Tiny       { font-size:60%; }
+.ltx_font_tiny       { font-size:65%; }
+.ltx_font_script     { font-size:70%; }
+.ltx_font_footnote   { font-size:80%; }
+.ltx_font_small      { font-size:90%; }
+.ltx_font_normal     { font-size:100%; }
+.ltx_font_large      { font-size:120%; }
+.ltx_font_Large      { font-size:140%; }
+.ltx_font_LARGE      { font-size:170%; }
+.ltx_font_huge       { font-size:200%; }
+.ltx_font_Huge       { font-size:250%; }
+.ltx_font_HUGE       { font-size:300%; }
+.ltx_font_serif      { font-family: serif; }
+.ltx_font_sansserif  { font-family: sans-serif; }
+.ltx_font_typewriter { font-family: monospace; }
+.ltx_font_bold       { font-weight: bold; }
+.ltx_font_medium     { font-weight: normal; }
+.ltx_font_italic     { font-style: italic; }
+.ltx_font_upright    { font-style: normal; }
+.ltx_font_slanted    { font-style: oblique; }
+.ltx_font_smallcaps  { font-variant: small-caps; }
+
+cite                 { font-style: normal; }
+
+.ltx_red        { color:red; }
+.ltx_centering  { text-align:center; margin:auto; }
+.ltx_inline-block.ltx_centering,
+img.ltx_centering  { display:block; margin:auto; }
+
+/* .ltx_phantom handled in xslt */
+
