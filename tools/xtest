@@ -28,33 +28,24 @@ GetOptions("force"     => \$force,
 	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
 pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
 
+our $makeindex=0;
+our ($HEADER,$FOOTER);
+our @testsets=();
 
-opendir(DIR,$testdir) or die "Couldn't read test directory $testdir: $!";
-my @testsets = grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
-closedir(DIR);
+if(@ARGV){
+  $makeindex=0;
+  @testsets = @ARGV; }
+else {
+  $makeindex=1;
+  opendir(DIR,$testdir) or die "Couldn't read test directory $testdir: $!";
+  @testsets = grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
+  closedir(DIR); }
 
+#**********************************************************************
 if(! -d $htmldest){
   mkdir($htmldest) or die "Couldn't create destination directory $htmldest: $!"; }
 
-our $html = <<EOHead;
-<html>
-<head><title>LaTeXML Tests</title>
-<style>
-th { font-weight:bold; }
-.testgroup { text-align:left; font-size:120%; font-style:italic; }
-.testcase { padding-left:2em; font-weight:bold; }
-.pdf { text-align:center; }
-.xml { text-align:center; }
-
-</style>
-</head>
-<body>\n<h1>LaTeXML Tests</h1>
-<table>
-<tr><th class='testcase'>Testcase</th>
-    <th class='pdf'>PDF</th>
-    <th class='xml'>LaTeXML</th>
-    <th colspan='3'>Generated</th></tr>
-EOHead
+our $htmldata = '';
 
 foreach my $dir (@testsets){
   print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
@@ -68,7 +59,7 @@ foreach my $dir (@testsets){
     print STDERR "Creating $htmldest/$dir\n" if $verbosity >= 0;
     mkdir("$htmldest/$dir") or die "Couldn't create destination directory $htmldest: $!"; }
 
-  $html .= "<tr><th colspan='5' class='testgroup'>$dir</th></tr>\n";
+  $htmldata .= "<tr><th colspan='5' class='testgroup'>$dir</th></tr>\n";
 
   foreach my $test (@tests){
     my $srcxml = "$testdir/$dir/$test.xml";
@@ -93,17 +84,45 @@ foreach my $dir (@testsets){
 		   : ())),
 	       $srcxml)
 	  == 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }}
-    $html .= "<tr><td class='testcase'>$test</td> ".join('',@links).".</tr>\n";  }
+    $htmldata .= "<tr><td class='testcase'>$test</td> ".join('',@links).".</tr>\n";  }
 }
-$html .= "</table>\n";
-$html .= "</body>\n";
 
-open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
-print DIR $html;
-close(DIR);
+if($makeindex){
+  open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
+  print DIR $HEADER.$htmldata.$FOOTER;
+  close(DIR); }
 
 sub copy {
   my($src,$dst)=@_;
   if($force || (! -f $dst) || ((-M $src) < (-M $dst))){
       print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
       system('cp',$src,$dst) == 0 or die "Couldn't copy $src to $dst: $!"; }}
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+BEGIN {
+$HEADER = <<EOHead;
+<html>
+<head><title>LaTeXML Tests</title>
+<style>
+th { font-weight:bold; }
+.testgroup { text-align:left; font-size:120%; font-style:italic; }
+.testcase { padding-left:2em; font-weight:bold; }
+.pdf { text-align:center; }
+.xml { text-align:center; }
+
+</style>
+</head>
+<body>\n<h1>LaTeXML Tests</h1>
+<table>
+<tr><th class='testcase'>Testcase</th>
+    <th class='pdf'>PDF</th>
+    <th class='xml'>LaTeXML</th>
+    <th colspan='3'>Generated</th></tr>
+EOHead
+
+$FOOTER = <<EOFoot;
+</table>;
+</body>
+EOFoot
+}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
