@@ -5,7 +5,8 @@
                     |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                     |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                     |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                    |ltx:rdf|ltx:ERROR)*>
+                    |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                    |ltx:navigation)*>
 <!ATTLIST ltx:text
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -47,7 +48,8 @@
                     |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                     |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                     |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                    |ltx:rdf|ltx:ERROR)*>
+                    |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                    |ltx:navigation)*>
 <!ATTLIST ltx:emph
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -77,7 +79,8 @@
                    |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:del
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -107,7 +110,8 @@
                    |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:sub
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -132,7 +136,8 @@
                    |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:sup
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -157,7 +162,8 @@
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:acronym
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -217,7 +223,8 @@
                    |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:ref
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -247,7 +254,8 @@
                       |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                       |ltx:break|ltx:graphics|ltx:rawhtml
                       |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                      |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                      |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                      |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:anchor
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -273,7 +281,8 @@
                     |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                     |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                     |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                    |ltx:rdf|ltx:ERROR)*>
+                    |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                    |ltx:navigation)*>
 <!ATTLIST ltx:cite
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -324,7 +333,8 @@
                             |ltx:inline-block|ltx:verbatim|ltx:break
                             |ltx:graphics|ltx:rawhtml|ltx:inline-para
                             |ltx:tabular|ltx:picture|ltx:note
-                            |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                            |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                            |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bibrefphrase
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -348,8 +358,9 @@
                  |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
                  |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                  |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
-                 |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark|ltx:rdf
-                 |ltx:ERROR)*>
+                 |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
+                 |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                 |ltx:navigation)*>
 <!ATTLIST ltx:p
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -389,14 +400,16 @@
                           |ltx:inline-block|ltx:verbatim|ltx:break
                           |ltx:graphics|ltx:rawhtml|ltx:inline-para
                           |ltx:tabular|ltx:picture|ltx:note
-                          |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                          |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                          |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:constraint
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   hidden CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:equation (ltx:Math|ltx:MathFork|ltx:text|ltx:tabular
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation
                         |ltx:constraint)*>
 <!ATTLIST ltx:equation
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -420,11 +433,13 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:equationgroup (ltx:equationgroup|ltx:equation|ltx:p
-                             |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR
-                             |ltx:constraint)*>
+                             |ltx:note|ltx:indexmark|ltx:glossarymark
+                             |ltx:rdf|ltx:ERROR|ltx:resource
+                             |ltx:navigation|ltx:constraint)*>
 <!ATTLIST ltx:equationgroup
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -447,6 +462,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:MathFork ((ltx:Math|ltx:text),ltx:MathBranch*)>
@@ -495,7 +511,8 @@
                      |ltx:enumerate|ltx:description|ltx:inline-block
                      |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                      |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                     |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                     |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                     |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:quote
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -515,14 +532,16 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
   xml:id ID #IMPLIED
-  backgroundcolor CDATA #IMPLIED>
+  backgroundcolor CDATA #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT ltx:block (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                      |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
                      |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                      |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                      |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                     |ltx:rdf|ltx:ERROR)*>
+                     |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                     |ltx:navigation)*>
 <!ATTLIST ltx:block
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -556,7 +575,7 @@
   framecolor CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
-<!ELEMENT ltx:listingblock ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote|ltx:block|ltx:listingblock|ltx:itemize|ltx:enumerate|ltx:description|ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para|ltx:tabular|ltx:picture|ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*)*>
+<!ELEMENT ltx:listingblock ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote|ltx:block|ltx:listingblock|ltx:itemize|ltx:enumerate|ltx:description|ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para|ltx:tabular|ltx:picture|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*>
 <!ATTLIST ltx:listingblock
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -579,6 +598,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:itemize (ltx:item)*>
@@ -649,8 +669,9 @@
 
 <!ELEMENT ltx:item (ltx:tag?,
                     (ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table
-                     |ltx:float|ltx:listing|ltx:TOC|ltx:navigation
-                     |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*)>
+                     |ltx:float|ltx:listing|ltx:TOC|ltx:note
+                     |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                     |ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:item
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -673,6 +694,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:tag (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
@@ -680,7 +702,8 @@
                    |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:tag
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -709,7 +732,8 @@
                             |ltx:inline-block|ltx:verbatim|ltx:break
                             |ltx:graphics|ltx:rawhtml|ltx:inline-para
                             |ltx:tabular|ltx:picture|ltx:note
-                            |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                            |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                            |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:inline-block
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -748,7 +772,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:verbatim
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -835,7 +860,8 @@
                     |ltx:description|ltx:inline-block|ltx:verbatim
                     |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                     |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                    |ltx:rdf|ltx:ERROR)*>
+                    |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                    |ltx:navigation)*>
 <!ATTLIST ltx:note
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -885,7 +911,8 @@
                            |ltx:inline-block|ltx:verbatim|ltx:break
                            |ltx:graphics|ltx:rawhtml|ltx:inline-para
                            |ltx:tabular|ltx:picture|ltx:note
-                           |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                           |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                           |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:indexphrase
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -911,7 +938,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:indexsee
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -933,6 +961,86 @@
   key CDATA #IMPLIED
   name CDATA #IMPLIED>
 
+<!ELEMENT ltx:glossarymark (ltx:glossaryphrase,ltx:glossarydefinition?)>
+<!ATTLIST ltx:glossarymark
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  role CDATA #IMPLIED
+  style CDATA #IMPLIED>
+
+<!ELEMENT ltx:glossaryphrase (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
+                              |ltx:sup|ltx:acronym|ltx:rule|ltx:anchor
+                              |ltx:ref|ltx:cite|ltx:bibref|ltx:Math
+                              |ltx:inline-block|ltx:verbatim|ltx:break
+                              |ltx:graphics|ltx:rawhtml|ltx:inline-para
+                              |ltx:tabular|ltx:picture|ltx:note
+                              |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                              |ltx:ERROR|ltx:resource|ltx:navigation)*>
+<!ATTLIST ltx:glossaryphrase
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  key CDATA #IMPLIED>
+
+<!ELEMENT ltx:glossarydefinition (#PCDATA|ltx:text|ltx:emph|ltx:del
+                                  |ltx:sub|ltx:sup|ltx:acronym|ltx:rule
+                                  |ltx:anchor|ltx:ref|ltx:cite
+                                  |ltx:bibref|ltx:Math|ltx:inline-block
+                                  |ltx:verbatim|ltx:break|ltx:graphics
+                                  |ltx:rawhtml|ltx:inline-para
+                                  |ltx:tabular|ltx:picture|ltx:note
+                                  |ltx:indexmark|ltx:glossarymark
+                                  |ltx:rdf|ltx:ERROR|ltx:resource
+                                  |ltx:navigation)*>
+<!ATTLIST ltx:glossarydefinition
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  key CDATA #IMPLIED>
+
 <!ELEMENT ltx:rdf (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                    |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
                    |ltx:bibref|ltx:Math|ltx:p|ltx:equation
@@ -941,7 +1049,8 @@
                    |ltx:description|ltx:inline-block|ltx:verbatim
                    |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                    |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                   |ltx:rdf|ltx:ERROR)*>
+                   |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                   |ltx:navigation)*>
 <!ATTLIST ltx:rdf
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -981,12 +1090,56 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED>
 
+<!ELEMENT ltx:resource (#PCDATA)*>
+<!ATTLIST ltx:resource
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  src CDATA #IMPLIED
+  type CDATA #IMPLIED
+  media CDATA #IMPLIED>
+
+<!ELEMENT ltx:navigation (ltx:ref|ltx:TOC|ltx:inline-para)*>
+<!ATTLIST ltx:navigation
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED>
+
 <!ELEMENT ltx:para (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                     |ltx:block|ltx:listingblock|ltx:itemize
                     |ltx:enumerate|ltx:description|ltx:inline-block
                     |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                     |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                    |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                    |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                    |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:para
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1010,8 +1163,9 @@
 
 <!ELEMENT ltx:inline-para (ltx:para|ltx:theorem|ltx:proof|ltx:figure
                            |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                           |ltx:navigation|ltx:note|ltx:indexmark
-                           |ltx:rdf|ltx:ERROR)*>
+                           |ltx:note|ltx:indexmark|ltx:glossarymark
+                           |ltx:rdf|ltx:ERROR|ltx:resource
+                           |ltx:navigation)*>
 <!ATTLIST ltx:inline-para
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1047,8 +1201,8 @@
 <!ELEMENT ltx:theorem (ltx:title?,
                        (ltx:para|ltx:theorem|ltx:proof|ltx:figure
                         |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                        |ltx:navigation|ltx:note|ltx:indexmark|ltx:rdf
-                        |ltx:ERROR)*)>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:theorem
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1071,13 +1225,14 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:proof (ltx:title?,
                      (ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                      |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                      |ltx:navigation|ltx:note|ltx:indexmark|ltx:rdf
-                      |ltx:ERROR)*)>
+                      |ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note
+                      |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                      |ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:proof
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1100,6 +1255,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:figure ((ltx:figure
@@ -1108,8 +1264,9 @@
                          |ltx:enumerate|ltx:description|ltx:inline-block
                          |ltx:verbatim|ltx:break|ltx:graphics
                          |ltx:rawhtml|ltx:inline-para|ltx:tabular
-                         |ltx:picture|ltx:note|ltx:indexmark|ltx:rdf
-                         |ltx:ERROR)*)
+                         |ltx:picture|ltx:note|ltx:indexmark
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*)
                       |ltx:caption|ltx:toccaption)*>
 <!ATTLIST ltx:figure
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -1133,6 +1290,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -1154,7 +1312,8 @@
                         |ltx:enumerate|ltx:description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*)
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*)
                      |ltx:caption|ltx:toccaption)*>
 <!ATTLIST ltx:table
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -1178,6 +1337,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -1199,7 +1359,8 @@
                         |ltx:enumerate|ltx:description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*)
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*)
                      |ltx:caption|ltx:toccaption)*>
 <!ATTLIST ltx:float
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -1223,6 +1384,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -1243,7 +1405,8 @@
                         |ltx:enumerate|ltx:description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*
                        |ltx:caption|ltx:toccaption)*>
 <!ATTLIST ltx:listing
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -1267,6 +1430,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -1287,7 +1451,8 @@
                        |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:caption
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1318,7 +1483,9 @@
                           |ltx:inline-block|ltx:verbatim|ltx:break
                           |ltx:graphics|ltx:rawhtml|ltx:inline-para
                           |ltx:tabular|ltx:picture|ltx:note
-                          |ltx:indexmark|ltx:rdf|ltx:ERROR|ltx:tag)*>
+                          |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                          |ltx:ERROR|ltx:resource|ltx:navigation
+                          |ltx:tag)*>
 <!ATTLIST ltx:toccaption
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1789,6 +1956,7 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
+  xml:id ID #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
   width CDATA #IMPLIED>
 
@@ -1874,7 +2042,8 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
-  backgroundcolor CDATA #IMPLIED>
+  backgroundcolor CDATA #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT ltx:td (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                   |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
@@ -1884,7 +2053,8 @@
                   |ltx:description|ltx:inline-block|ltx:verbatim
                   |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                   |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                  |ltx:rdf|ltx:ERROR)*>
+                  |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                  |ltx:navigation)*>
 <!ATTLIST ltx:td
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1904,6 +2074,7 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
+  xml:id ID #IMPLIED
   colspan CDATA #IMPLIED
   rowspan CDATA #IMPLIED
   align CDATA #IMPLIED
@@ -1920,7 +2091,8 @@
                        |ltx:inline-block|ltx:verbatim|ltx:break
                        |ltx:graphics|ltx:rawhtml|ltx:inline-para
                        |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                       |ltx:rdf|ltx:ERROR)*>
+                       |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                       |ltx:navigation)*>
 <!ATTLIST ltx:picture
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1983,8 +2155,8 @@
                  |ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref
                  |ltx:Math|ltx:inline-block|ltx:verbatim|ltx:break
                  |ltx:graphics|ltx:rawhtml|ltx:inline-para|ltx:tabular
-                 |ltx:picture|ltx:note|ltx:indexmark|ltx:rdf
-                 |ltx:ERROR)*>
+                 |ltx:picture|ltx:note|ltx:indexmark|ltx:glossarymark
+                 |ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:g
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2645,7 +2817,8 @@
                         |ltx:inline-block|ltx:verbatim|ltx:break
                         |ltx:graphics|ltx:rawhtml|ltx:inline-para
                         |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                        |ltx:rdf|ltx:ERROR)*>
+                        |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                        |ltx:navigation)*>
 <!ATTLIST ltx:clippath
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2691,25 +2864,29 @@
 <!ELEMENT ltx:document ((ltx:subtitle|ltx:date|ltx:abstract
                          |ltx:acknowledgements|ltx:keywords
                          |ltx:classification|ltx:title|ltx:toctitle
-                         |ltx:creator|ltx:note|ltx:indexmark|ltx:rdf
-                         |ltx:ERROR|ltx:titlepage)*,
-                        ((((((((ltx:para|ltx:theorem|ltx:proof
-                                |ltx:figure|ltx:table|ltx:float
-                                |ltx:listing|ltx:TOC|ltx:navigation
-                                |ltx:note|ltx:indexmark|ltx:rdf
-                                |ltx:ERROR)*
-                               |ltx:paragraph)
-                              |ltx:subsubsection)
-                             |ltx:subsection)
-                            |ltx:section)
-                           |ltx:chapter)
-                          |ltx:part)
-                         |ltx:slide)*,
+                         |ltx:creator|ltx:note|ltx:indexmark
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation|ltx:titlepage)*,
+                        (((((((((ltx:para|ltx:theorem|ltx:proof
+                                 |ltx:figure|ltx:table|ltx:float
+                                 |ltx:listing|ltx:TOC|ltx:note
+                                 |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                                 |ltx:ERROR|ltx:resource
+                                 |ltx:navigation)*
+                                |ltx:paragraph)
+                               |ltx:subsubsection)
+                              |ltx:subsection)
+                             |ltx:section)
+                            |ltx:chapter)
+                           |ltx:part)
+                          |ltx:slide)
+                         |ltx:sidebar)*,
                         (ltx:bibliography|ltx:appendix|ltx:index
-                         |ltx:acknowledgements|ltx:para|ltx:theorem
-                         |ltx:proof|ltx:figure|ltx:table|ltx:float
-                         |ltx:listing|ltx:TOC|ltx:navigation|ltx:note
-                         |ltx:indexmark|ltx:rdf|ltx:ERROR)*)>
+                         |ltx:glossary|ltx:acknowledgements|ltx:para
+                         |ltx:theorem|ltx:proof|ltx:figure|ltx:table
+                         |ltx:float|ltx:listing|ltx:TOC|ltx:note
+                         |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                         |ltx:ERROR|ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:document
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2732,16 +2909,18 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:part ((ltx:title|ltx:toctitle|ltx:creator)*,
-                    (((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                       |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                       |ltx:navigation|ltx:note|ltx:indexmark|ltx:rdf
-                       |ltx:ERROR)*
-                      |ltx:chapter)
-                     |ltx:slide)*)>
+                    ((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                        |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*
+                       |ltx:chapter)
+                      |ltx:slide)
+                     |ltx:sidebar)*)>
 <!ATTLIST ltx:part
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2764,20 +2943,23 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:chapter ((ltx:title|ltx:toctitle|ltx:creator)*,
-                       (((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                              |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                              |ltx:navigation|ltx:note|ltx:indexmark
-                              |ltx:rdf|ltx:ERROR)*
-                             |ltx:subparagraph)
-                            |ltx:paragraph)
-                           |ltx:subsubsection)
-                          |ltx:subsection)
-                         |ltx:section)
-                        |ltx:slide)*)>
+                       ((((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                               |ltx:note|ltx:indexmark|ltx:glossarymark
+                               |ltx:rdf|ltx:ERROR|ltx:resource
+                               |ltx:navigation)*
+                              |ltx:subparagraph)
+                             |ltx:paragraph)
+                            |ltx:subsubsection)
+                           |ltx:subsection)
+                          |ltx:section)
+                         |ltx:slide)
+                        |ltx:sidebar)*)>
 <!ATTLIST ltx:chapter
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2800,19 +2982,22 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:section ((ltx:title|ltx:toctitle|ltx:creator)*,
-                       ((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                             |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                             |ltx:navigation|ltx:note|ltx:indexmark
-                             |ltx:rdf|ltx:ERROR)*
-                            |ltx:subparagraph)
-                           |ltx:paragraph)
-                          |ltx:subsubsection)
-                         |ltx:subsection)
-                        |ltx:slide)*)>
+                       (((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                              |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                              |ltx:note|ltx:indexmark|ltx:glossarymark
+                              |ltx:rdf|ltx:ERROR|ltx:resource
+                              |ltx:navigation)*
+                             |ltx:subparagraph)
+                            |ltx:paragraph)
+                           |ltx:subsubsection)
+                          |ltx:subsection)
+                         |ltx:slide)
+                        |ltx:sidebar)*)>
 <!ATTLIST ltx:section
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2835,18 +3020,21 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:subsection ((ltx:title|ltx:toctitle|ltx:creator)*,
-                          (((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                               |ltx:navigation|ltx:note|ltx:indexmark
-                               |ltx:rdf|ltx:ERROR)*
-                              |ltx:subparagraph)
-                             |ltx:paragraph)
-                            |ltx:subsubsection)
-                           |ltx:slide)*)>
+                          ((((((ltx:para|ltx:theorem|ltx:proof
+                                |ltx:figure|ltx:table|ltx:float
+                                |ltx:listing|ltx:TOC|ltx:note
+                                |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                                |ltx:ERROR|ltx:resource|ltx:navigation)*
+                               |ltx:subparagraph)
+                              |ltx:paragraph)
+                             |ltx:subsubsection)
+                            |ltx:slide)
+                           |ltx:sidebar)*)>
 <!ATTLIST ltx:subsection
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2869,18 +3057,21 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:subsubsection ((ltx:title|ltx:toctitle|ltx:creator)*,
-                             ((((ltx:para|ltx:theorem|ltx:proof
-                                 |ltx:figure|ltx:table|ltx:float
-                                 |ltx:listing|ltx:TOC|ltx:navigation
-                                 |ltx:note|ltx:indexmark|ltx:rdf
-                                 |ltx:ERROR)*
-                                |ltx:subparagraph)
-                               |ltx:paragraph)
-                              |ltx:slide)*)>
+                             (((((ltx:para|ltx:theorem|ltx:proof
+                                  |ltx:figure|ltx:table|ltx:float
+                                  |ltx:listing|ltx:TOC|ltx:note
+                                  |ltx:indexmark|ltx:glossarymark
+                                  |ltx:rdf|ltx:ERROR|ltx:resource
+                                  |ltx:navigation)*
+                                 |ltx:subparagraph)
+                                |ltx:paragraph)
+                               |ltx:slide)
+                              |ltx:sidebar)*)>
 <!ATTLIST ltx:subsubsection
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2903,16 +3094,19 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:paragraph ((ltx:title|ltx:toctitle|ltx:creator)*,
-                         (((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                            |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                            |ltx:navigation|ltx:note|ltx:indexmark
-                            |ltx:rdf|ltx:ERROR)*
-                           |ltx:subparagraph)
-                          |ltx:slide)*)>
+                         ((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                             |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                             |ltx:note|ltx:indexmark|ltx:glossarymark
+                             |ltx:rdf|ltx:ERROR|ltx:resource
+                             |ltx:navigation)*
+                            |ltx:subparagraph)
+                           |ltx:slide)
+                          |ltx:sidebar)*)>
 <!ATTLIST ltx:paragraph
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2935,15 +3129,18 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:subparagraph ((ltx:title|ltx:toctitle|ltx:creator)*,
-                            ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                              |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                              |ltx:navigation|ltx:note|ltx:indexmark
-                              |ltx:rdf|ltx:ERROR)*
-                             |ltx:slide)*)>
+                            (((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                               |ltx:note|ltx:indexmark|ltx:glossarymark
+                               |ltx:rdf|ltx:ERROR|ltx:resource
+                               |ltx:navigation)*
+                              |ltx:slide)
+                             |ltx:sidebar)*)>
 <!ATTLIST ltx:subparagraph
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2966,11 +3163,12 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:slide ((ltx:title|ltx:toctitle|ltx:creator)*,
-                     ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:navigation|ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*)*)>
+                     ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
 <!ATTLIST ltx:slide
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2993,20 +3191,54 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
+  rdf-prefixes CDATA #IMPLIED>
+
+<!ELEMENT ltx:sidebar ((ltx:subtitle|ltx:date|ltx:abstract
+                        |ltx:acknowledgements|ltx:keywords
+                        |ltx:classification|ltx:title|ltx:toctitle
+                        |ltx:creator)*,
+                       ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
+<!ATTLIST ltx:sidebar
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED
+  labels CDATA #IMPLIED
+  refnum CDATA #IMPLIED
+  frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:appendix ((ltx:title|ltx:toctitle|ltx:creator)*,
-                        (((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                               |ltx:navigation|ltx:note|ltx:indexmark
-                               |ltx:rdf|ltx:ERROR)*
-                              |ltx:subparagraph)
-                             |ltx:paragraph)
-                            |ltx:subsubsection)
-                           |ltx:subsection)
-                          |ltx:section)
-                         |ltx:slide)*)>
+                        ((((((((ltx:para|ltx:theorem|ltx:proof
+                                |ltx:figure|ltx:table|ltx:float
+                                |ltx:listing|ltx:TOC|ltx:note
+                                |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                                |ltx:ERROR|ltx:resource|ltx:navigation)*
+                               |ltx:subparagraph)
+                              |ltx:paragraph)
+                             |ltx:subsubsection)
+                            |ltx:subsection)
+                           |ltx:section)
+                          |ltx:slide)
+                         |ltx:sidebar)*)>
 <!ATTLIST ltx:appendix
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3029,6 +3261,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
@@ -3038,8 +3271,9 @@
                             (ltx:title|ltx:toctitle|ltx:creator)*,
                             ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                              |ltx:navigation|ltx:note|ltx:indexmark
-                              |ltx:rdf|ltx:ERROR)*
+                              |ltx:note|ltx:indexmark|ltx:glossarymark
+                              |ltx:rdf|ltx:ERROR|ltx:resource
+                              |ltx:navigation)*
                              |ltx:biblist)*)>
 <!ATTLIST ltx:bibliography
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3063,15 +3297,16 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED
   files CDATA #IMPLIED>
 
 <!ELEMENT ltx:index ((ltx:title|ltx:toctitle|ltx:creator)*,
                      ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                       |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                       |ltx:navigation|ltx:note|ltx:indexmark|ltx:rdf
-                       |ltx:ERROR)*
+                       |ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*
                       |ltx:indexlist)*)>
 <!ATTLIST ltx:index
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3095,8 +3330,10 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
-  rdf-prefixes CDATA #IMPLIED>
+  rdf-prefixes CDATA #IMPLIED
+  role CDATA #IMPLIED>
 
 <!ELEMENT ltx:indexlist (ltx:indexentry)*>
 <!ATTLIST ltx:indexlist
@@ -3147,7 +3384,8 @@
                          |ltx:inline-block|ltx:verbatim|ltx:break
                          |ltx:graphics|ltx:rawhtml|ltx:inline-para
                          |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                         |ltx:rdf|ltx:ERROR)*>
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:indexrefs
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3167,12 +3405,90 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED>
 
+<!ELEMENT ltx:glossary ((ltx:title|ltx:toctitle|ltx:creator)*,
+                        ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
+                          |ltx:table|ltx:float|ltx:listing|ltx:TOC
+                          |ltx:note|ltx:indexmark|ltx:glossarymark
+                          |ltx:rdf|ltx:ERROR|ltx:resource
+                          |ltx:navigation)*
+                         |ltx:glossarylist)*)>
+<!ATTLIST ltx:glossary
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED
+  labels CDATA #IMPLIED
+  refnum CDATA #IMPLIED
+  frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
+  rdf-prefixes CDATA #IMPLIED
+  role CDATA #IMPLIED>
+
+<!ELEMENT ltx:glossarylist (ltx:glossaryentry)*>
+<!ATTLIST ltx:glossarylist
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED>
+
+<!ELEMENT ltx:glossaryentry (ltx:glossaryphrase,ltx:glossarydefinition?,
+                             ltx:indexrefs?)>
+<!ATTLIST ltx:glossaryentry
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED>
+
 <!ELEMENT ltx:title (#PCDATA|ltx:tag|ltx:text|ltx:emph|ltx:del|ltx:sub
                      |ltx:sup|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref
                      |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                      |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                      |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                     |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                     |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                     |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:title
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3202,7 +3518,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation
                         |ltx:tag)*>
 <!ATTLIST ltx:toctitle
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3228,7 +3545,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:subtitle
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3278,7 +3596,8 @@
                           |ltx:inline-block|ltx:verbatim|ltx:break
                           |ltx:graphics|ltx:rawhtml|ltx:inline-para
                           |ltx:tabular|ltx:picture|ltx:note
-                          |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                          |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                          |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:personname
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3296,14 +3615,18 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  idref IDREF #IMPLIED
+  labelref CDATA #IMPLIED
+  href CDATA #IMPLIED>
 
 <!ELEMENT ltx:contact (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                        |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:contact
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3323,6 +3646,9 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
   name CDATA #IMPLIED
+  idref IDREF #IMPLIED
+  labelref CDATA #IMPLIED
+  href CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:date (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
@@ -3330,7 +3656,8 @@
                     |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                     |ltx:break|ltx:graphics|ltx:rawhtml|ltx:inline-para
                     |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                    |ltx:rdf|ltx:ERROR)*>
+                    |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                    |ltx:navigation)*>
 <!ATTLIST ltx:date
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3357,7 +3684,8 @@
                         |ltx:enumerate|ltx:description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:abstract
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3384,8 +3712,9 @@
                                 |ltx:Math|ltx:inline-block|ltx:verbatim
                                 |ltx:break|ltx:graphics|ltx:rawhtml
                                 |ltx:inline-para|ltx:tabular|ltx:picture
-                                |ltx:note|ltx:indexmark|ltx:rdf
-                                |ltx:ERROR)*>
+                                |ltx:note|ltx:indexmark|ltx:glossarymark
+                                |ltx:rdf|ltx:ERROR|ltx:resource
+                                |ltx:navigation)*>
 <!ATTLIST ltx:acknowledgements
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3411,7 +3740,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:keywords
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3438,7 +3768,8 @@
                               |ltx:inline-block|ltx:verbatim|ltx:break
                               |ltx:graphics|ltx:rawhtml|ltx:inline-para
                               |ltx:tabular|ltx:picture|ltx:note
-                              |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                              |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                              |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:classification
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3489,6 +3820,7 @@
   labels CDATA #IMPLIED
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED>
 
@@ -3556,26 +3888,6 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED>
 
-<!ELEMENT ltx:navigation (ltx:ref|ltx:TOC)*>
-<!ATTLIST ltx:navigation
-  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
-  class NMTOKENS #IMPLIED
-  cssstyle CDATA #IMPLIED
-  vocab CDATA #IMPLIED
-  prefix CDATA #IMPLIED
-  about CDATA #IMPLIED
-  aboutlabelref CDATA #IMPLIED
-  aboutidref CDATA #IMPLIED
-  resource CDATA #IMPLIED
-  resourcelabelref CDATA #IMPLIED
-  resourceidref CDATA #IMPLIED
-  property CDATA #IMPLIED
-  rel CDATA #IMPLIED
-  rev CDATA #IMPLIED
-  typeof CDATA #IMPLIED
-  datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
-
 <!ELEMENT ltx:biblist (ltx:bibentry|ltx:bibitem)*>
 <!ATTLIST ltx:biblist
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3623,7 +3935,8 @@
                       |ltx:bibref|ltx:Math|ltx:inline-block|ltx:verbatim
                       |ltx:break|ltx:graphics|ltx:rawhtml
                       |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                      |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                      |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                      |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bibtag
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   role CDATA #IMPLIED
@@ -3638,7 +3951,8 @@
                         |ltx:description|ltx:inline-block|ltx:verbatim
                         |ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bibblock
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
@@ -3698,7 +4012,8 @@
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:surname
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
@@ -3708,7 +4023,8 @@
                          |ltx:inline-block|ltx:verbatim|ltx:break
                          |ltx:graphics|ltx:rawhtml|ltx:inline-para
                          |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                         |ltx:rdf|ltx:ERROR)*>
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:givenname
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
@@ -3717,7 +4033,8 @@
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:lineage
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'>
 
@@ -3727,7 +4044,8 @@
                          |ltx:inline-block|ltx:verbatim|ltx:break
                          |ltx:graphics|ltx:rawhtml|ltx:inline-para
                          |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                         |ltx:rdf|ltx:ERROR)*>
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-title
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3753,7 +4071,8 @@
                             |ltx:inline-block|ltx:verbatim|ltx:break
                             |ltx:graphics|ltx:rawhtml|ltx:inline-para
                             |ltx:tabular|ltx:picture|ltx:note
-                            |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                            |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                            |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-subtitle
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3778,7 +4097,8 @@
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-key
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3803,7 +4123,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-type
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3828,7 +4149,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-date
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3855,7 +4177,8 @@
                              |ltx:inline-block|ltx:verbatim|ltx:break
                              |ltx:graphics|ltx:rawhtml|ltx:inline-para
                              |ltx:tabular|ltx:picture|ltx:note
-                             |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                             |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                             |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-publisher
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3881,8 +4204,9 @@
                                 |ltx:Math|ltx:inline-block|ltx:verbatim
                                 |ltx:break|ltx:graphics|ltx:rawhtml
                                 |ltx:inline-para|ltx:tabular|ltx:picture
-                                |ltx:note|ltx:indexmark|ltx:rdf
-                                |ltx:ERROR)*>
+                                |ltx:note|ltx:indexmark|ltx:glossarymark
+                                |ltx:rdf|ltx:ERROR|ltx:resource
+                                |ltx:navigation)*>
 <!ATTLIST ltx:bib-organization
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3908,7 +4232,8 @@
                          |ltx:inline-block|ltx:verbatim|ltx:break
                          |ltx:graphics|ltx:rawhtml|ltx:inline-para
                          |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                         |ltx:rdf|ltx:ERROR)*>
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-place
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3963,7 +4288,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-part
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3990,7 +4316,8 @@
                            |ltx:inline-block|ltx:verbatim|ltx:break
                            |ltx:graphics|ltx:rawhtml|ltx:inline-para
                            |ltx:tabular|ltx:picture|ltx:note
-                           |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                           |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                           |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-edition
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4016,7 +4343,8 @@
                           |ltx:inline-block|ltx:verbatim|ltx:break
                           |ltx:graphics|ltx:rawhtml|ltx:inline-para
                           |ltx:tabular|ltx:picture|ltx:note
-                          |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                          |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                          |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-status
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4042,7 +4370,8 @@
                               |ltx:inline-block|ltx:verbatim|ltx:break
                               |ltx:graphics|ltx:rawhtml|ltx:inline-para
                               |ltx:tabular|ltx:picture|ltx:note
-                              |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                              |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                              |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-identifier
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4061,9 +4390,11 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  idref IDREF #IMPLIED
+  labelref CDATA #IMPLIED
+  href CDATA #IMPLIED
   scheme CDATA #IMPLIED
-  id CDATA #IMPLIED
-  href CDATA #IMPLIED>
+  id CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-review (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                           |ltx:sup|ltx:acronym|ltx:rule|ltx:anchor
@@ -4071,7 +4402,8 @@
                           |ltx:inline-block|ltx:verbatim|ltx:break
                           |ltx:graphics|ltx:rawhtml|ltx:inline-para
                           |ltx:tabular|ltx:picture|ltx:note
-                          |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                          |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                          |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-review
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4090,9 +4422,11 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  idref IDREF #IMPLIED
+  labelref CDATA #IMPLIED
+  href CDATA #IMPLIED
   scheme CDATA #IMPLIED
-  id CDATA #IMPLIED
-  href CDATA #IMPLIED>
+  id CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-links (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                          |ltx:sup|ltx:acronym|ltx:rule|ltx:anchor
@@ -4100,7 +4434,8 @@
                          |ltx:inline-block|ltx:verbatim|ltx:break
                          |ltx:graphics|ltx:rawhtml|ltx:inline-para
                          |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
-                         |ltx:rdf|ltx:ERROR)*>
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-links
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4126,7 +4461,8 @@
                             |ltx:inline-block|ltx:verbatim|ltx:break
                             |ltx:graphics|ltx:rawhtml|ltx:inline-para
                             |ltx:tabular|ltx:picture|ltx:note
-                            |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                            |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                            |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-language
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4151,7 +4487,8 @@
                        |ltx:bibref|ltx:Math|ltx:inline-block
                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                        |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                       |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
+                       |ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-url
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4170,6 +4507,8 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  idref IDREF #IMPLIED
+  labelref CDATA #IMPLIED
   href CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-extract (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -4178,7 +4517,8 @@
                            |ltx:inline-block|ltx:verbatim|ltx:break
                            |ltx:graphics|ltx:rawhtml|ltx:inline-para
                            |ltx:tabular|ltx:picture|ltx:note
-                           |ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                           |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                           |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-extract
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4204,7 +4544,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-note
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4230,7 +4571,8 @@
                         |ltx:cite|ltx:bibref|ltx:Math|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
                         |ltx:inline-para|ltx:tabular|ltx:picture
-                        |ltx:note|ltx:indexmark|ltx:rdf|ltx:ERROR)*>
+                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                        |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:bib-data
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
