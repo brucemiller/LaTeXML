@@ -124,7 +124,7 @@ sub processPages {
       $doc->removeNodes(shift(@removed));
       my $id = $page->getAttribute('xml:id');
       my $tocentry =['ltx:tocentry',{},
-		     ['ltx:ref',{class=>'toc', idref=>$id, show=>'fulltitle'}]];
+		     ['ltx:ref',{idref=>$id, show=>'fulltitle'}]];
       push(@toc,$tocentry); 
       # Due to the way document building works, we remove & process children pages
       # BEFORE processing this page.
@@ -134,7 +134,8 @@ sub processPages {
       $$entry{document}=$subdoc;
       push(@docs,$subdoc,@childdocs); }
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
-    $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{},@toc]])
+    my $type = $parent->localname;
+    $doc->addNodes($parent,['ltx:TOC',{},['ltx:toclist',{class=>'ltx_toc_'.$type},@toc]])
       if @toc && !$doc->findnodes("descendant::ltx:TOC[\@role='contents']",$parent);
     map($parent->addChild($_),@removed); }
   @docs; }
@@ -155,8 +156,6 @@ sub copyNavigation {
     if(! $childdoc->findnode("descendant::ltx:navigation")){
       $childdoc->addNodes($childdoc->getDocumentElement,$nav); } # cloning, as needed...
     $self->copyNavigation($child,$rootid); # now, recurse
-####    $childdoc->addNavigation(start=>$rootid) if $rootid;
-####    $childdoc->addNavigation(up=>$$entry{id});
  }}
 
 our $COUNTER=0;
