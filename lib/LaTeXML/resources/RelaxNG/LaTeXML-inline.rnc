@@ -135,16 +135,7 @@ element ref { ref_attributes, ref_model }
 ## Attributes for \elementref{ref}.
 ref_attributes =
   Common.attributes,
-
-  ## reference to an internal identifier.
-  IDREF.attributes,
-
-  ## reference to a LaTeX labelled object;
-  ## See the \attr{labels} attribute of \patternref{Labelled.attributes}.
-  attribute labelref { text }?,
-
-  ## reference to an arbitrary url.
-  attribute href { text }?,
+  Refable.attributes,
 
   ## a pattern encoding how the text content should be filled in during
   ## postprocessing, if it is empty.
@@ -194,6 +185,7 @@ cite_model = Inline.model
 
 bibref =
 ## A bibliographic citation refering to a specific bibliographic item.
+## Postprocessing will turn this into an \elementref{ref} for the actual link.
 element bibref { bibref_attributes, bibref_model }
 
 ## Attributes for \elementref{bibref}.

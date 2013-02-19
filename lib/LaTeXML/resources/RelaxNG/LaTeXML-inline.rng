@@ -175,20 +175,7 @@ based on data extracted from the document(s).</a:documentation>
   <define name="ref_attributes">
     <a:documentation>Attributes for \elementref{ref}.</a:documentation>
     <ref name="Common.attributes"/>
-    <ref name="IDREF.attributes">
-      <a:documentation>reference to an internal identifier.</a:documentation>
-    </ref>
-    <optional>
-      <attribute name="labelref">
-        <a:documentation>reference to a LaTeX labelled object;
-See the \attr{labels} attribute of \patternref{Labelled.attributes}.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="href">
-        <a:documentation>reference to an arbitrary url.</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Refable.attributes"/>
     <optional>
       <attribute name="show">
         <a:documentation>a pattern encoding how the text content should be filled in during
@@ -251,7 +238,8 @@ which are the specific citation.</a:documentation>
   <!-- ====================================================================== -->
   <define name="bibref">
     <element name="bibref">
-      <a:documentation>A bibliographic citation refering to a specific bibliographic item.</a:documentation>
+      <a:documentation>A bibliographic citation refering to a specific bibliographic item.
+Postprocessing will turn this into an \elementref{ref} for the actual link.</a:documentation>
       <ref name="bibref_attributes"/>
       <ref name="bibref_model"/>
     </element>
