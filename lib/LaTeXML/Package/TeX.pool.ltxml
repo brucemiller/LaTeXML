@@ -38,6 +38,10 @@ NewCounter('@XMARG','document',idprefix=>'XM');
 DefRegister('\pdfoutput',Number(0));
 
 #======================================================================
+
+Tag('ltx:document',afterOpen=>\&ProcessPendingResources);
+RequireResource('LaTeXML.css');
+#======================================================================
 # The default "initial context" for XML+RDFa specifies some default
 # terms and prefixes, but no default vocabulary.
 # Ought to have a default for @vocab, but settable?
@@ -2725,19 +2729,21 @@ sub equationgroupJoinRows {
   my $equation = $document->openElementAt($equationgroup,'ltx:equation');
   $equationgroup->insertBefore($equation,$equations[0]); # Move to correct position.
   # move labels, id, refnum to new equation
-  my($labels,$id,$refnum,$frefnum,$idctr);
+  my($labels,$id,$refnum,$frefnum,$rrefnum,$idctr);
   foreach my $eq (@equations){
     if(my $l = $eq->getAttribute('labels')){
       $labels = ($labels ? "$labels $l" : $l); }
     $id     = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $refnum = $eq->getAttribute('refnum') if $eq->hasAttribute('refnum');
     $frefnum = $eq->getAttribute('frefnum') if $eq->hasAttribute('frefnum');
+    $rrefnum = $eq->getAttribute('rrefnum') if $eq->hasAttribute('rrefnum');
     $idctr  = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
 
   $equation->setAttribute(labels=>$labels) if $labels;
   $equation->setAttribute('xml:id'=>$id) if $id;
   $equation->setAttribute(refnum=>$refnum) if $refnum;
   $equation->setAttribute(frefnum=>$frefnum) if $frefnum;
+  $equation->setAttribute(rrefnum=>$rrefnum) if $rrefnum;
   $equation->setAttribute('_ID_counter_m_'=>$idctr) if $idctr;
 
   # Scan equations to see which ones likely are continuations of previous
@@ -2746,7 +2752,7 @@ sub equationgroupJoinRows {
     $eq->unbindNode;
     my $tr = $document->openElementAt($branch,'ltx:tr');
     my @cells = $document->findnodes('ltx:_Capture_',$eq);
-    $tr->setAttribute(class=>'ltx_lefteqn')
+    $tr->setAttribute(class=>'ltx_eqn_lefteqn')
       if ($cells[0]->getAttribute('class')||'') =~ /\blefteqn\b/;
     foreach my $cell (@cells){
       addColumnToMathFork($document,$main,$tr,$cell); }
@@ -3656,20 +3662,20 @@ DefMacroI('\bigbreak',  undef,'\par');
 
 DefMacroI('\line',undef,'\hbox to \hsize');
 DefConstructor('\leftline{}',sub { 
-		 alignLine($_[0],$_[1],'flushleft'); },
+		 alignLine($_[0],$_[1],'left'); },
 	       bounded=>1);
 DefConstructor('\rightline{}',sub { 
-		 alignLine($_[0],$_[1],'flushright'); },
+		 alignLine($_[0],$_[1],'right'); },
 	       bounded=>1);
 DefConstructor('\centerline{}',sub { 
-		 alignLine($_[0],$_[1],'centering'); },
+		 alignLine($_[0],$_[1],'center'); },
 	       bounded=>1);
 sub alignLine {
   my($document,$line,$alignment)=@_;
   if($document->isOpenable('ltx:p')){
-    $document->insertElement('ltx:p',$line,class=>'ltx_'.$alignment); }
+    $document->insertElement('ltx:p',$line,class=>'ltx_align_'.$alignment); }
   elsif($document->isOpenable('ltx:text')){
-    $document->insertElement('ltx:text',$line,class=>'ltx_'.$alignment);
+    $document->insertElement('ltx:text',$line,class=>'ltx_align_'.$alignment);
     $document->insertElement('ltx:break');  }
   else {
     $document->absorb($line); }}
@@ -3810,22 +3816,32 @@ DefConstructorI('\proclaim', parseDefParameters('\proclaim',Tokenize('#1. #2\par
 		  (title=>$title, titlefont=>$title->getFont); });
 
 #======================================================================
-# Another block of support for stuff that is LaTeX, rather than TeX,
-# but higher level packages based on plain tex may need.
-# This deals with constructing formatted counter numbers.
-# This is typically a name prefix and number,
-# but actually providing hooks for localization
+# Support for reference numbers, references to reference numbers, etc.
+# The design reflects LaTeX needs, more than TeX, but support starts here!
 
-# This generalizes standard LaTeX's \fnum@figure & \fnum@table
-# both for the counter type, and abbreviated forms.
-# \fnum@@{type} calls \fnum@<type>, if defined, else composes using \@@fnum@@{type}
-DefMacro('\fnum@@{}','\@ifundefined{fnum@#1}{\@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
-# \fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \@@fnum@@{type}
-DefMacro('\fnum@toc@@{}','\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
+# The lowest level reference number for an object is typically \the<counter>
+# for whatever counter is keeping track of the object.
+# This will typically go into the refnum attribute.
+# However, the way that number is displayed as part of the object,
+# as well as the way that number is shown when the object is referenced,
+# can be different from that plain refnum.
 
-# An abbreviated form seems potentially useful... (ie. \chapter@abbr
+# \lx@fnum@@{type}  Gets the formatted form of the refnum
+# LaTeX defines \fnum@table, \fnum@figure for some types
+# but \labelenumi, etc for others; we'll bind the latter to \fnum@enumi for simplicity.
+# Otherwise, we'll construct a formatted number using a name prefix and the number.
+# This allows for localization by defining eg. \tablename
 
-DefPrimitive('\@@fnum@@ {}', sub {
+DefMacro('\lx@fnum@@{}',
+	 '\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
+
+# \lx@fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \lx@@fnum@@{type}
+DefMacro('\lx@fnum@toc@@{}',
+	 '\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
+
+#[An abbreviated form seems potentially useful... (ie. \chapter@abbr)]
+
+DefPrimitive('\lx@@fnum@@ {}', sub {
   my($gullet,$type)=@_;
   my $cs = T_CS('\\'.ToString($type).'name');
   my @name = (LookupDefinition($cs) ? Digest($cs)->unlist : ());
@@ -3835,6 +3851,11 @@ DefPrimitive('\@@fnum@@ {}', sub {
      (scalar(@name) && scalar(@num) && ($letter=~/\w/)
       ? (Digest(T_CS('\text@nobreakspace'))) : ()),
      @num ); });
+
+# \lx@refnum@@{type} Gets the referencing form of the refnum.
+# Look for a \refnum@type and use it, else just \thetype
+DefMacro('\lx@refnum@@{}',
+ 	 '\@ifundefined{refnum@#1}{\lx@fnum@@{#1}}{\csname refnum@#1\endcsname}');
 
 #======================================================================
 # TeX Book, Appendix B. p. 356
