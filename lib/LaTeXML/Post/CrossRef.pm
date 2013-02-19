@@ -91,7 +91,7 @@ sub fill_in_relations {
       # In a large/complex site, this gets way too much. But how to prune?
       while($xentry = $self->getParentPage($xentry)){
 	# any siblings of (grand)parent are "interesting" structural elements
-	# OR, even more interesting: the index, bibliography related to current page!
+	# OR, even more interesting: the index, bibliography, glossary related to current page!
 	foreach my $sib ($self->getChildPages($xentry)){
 	  my $sib_id = $sib->getValue('pageid');
 	  next if $sib_id eq $id;
@@ -168,8 +168,11 @@ sub getChildPages {
 # this is probably the same as "Interesting" for the above relations.
 # To make it more extensible, it really should be integrated into the database?
 # Eg. "sectional" things might mark their entries specially?
-our $normaltoctypes = {map( ($_=>1), qw(ltx:document ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
-				      ltx:paragraph ltx:subparagraph ltx:index ltx:bibliography ltx:appendix))};
+our $normaltoctypes = {map( ($_=>1),
+			    qw (ltx:document ltx:part ltx:chapter
+			      ltx:section ltx:subsection ltx:subsubsection
+			    ltx:paragraph ltx:subparagraph
+			  ltx:index ltx:bibliography ltx:glossary ltx:appendix))};
 
 sub fill_in_tocs {
   my($self,$doc)=@_;
@@ -210,9 +213,11 @@ sub gentoc {
 		  @{ $entry->getValue('children')||[]}); }
     my $type = $entry->getValue('type');
     if($$types{$type}){
-      (['ltx:tocentry',(defined $selfid && ($selfid eq $id) ? {class=>'self'} : {}),
-	['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$id}],
-	(@kids ? (['ltx:toclist',{},@kids]) : ())]); }
+      my $typename = $type; $typename =~ s/^ltx://;
+      (['ltx:tocentry',(defined $selfid && ($selfid eq $id) ? {class=>'ltx_ref_self'} : {}),
+####	['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$id}],
+	['ltx:ref',{show=>'toctitle',idref=>$id}],
+	(@kids ? (['ltx:toclist',{class=>"ltx_toc_$typename"},@kids]) : ())]); }
     else {
       @kids; }}
   else {
@@ -232,13 +237,17 @@ sub gentoc_context {
       @navtoc = map(($_ eq $id
 		     ? @navtoc
 		     : ['ltx:tocentry',{},
-			['ltx:ref',{class=>'toc',idref=>$_,show=>'toctitle'}]]),
+####			['ltx:ref',{class=>'toc',idref=>$_,show=>'toctitle'}]]),
+			['ltx:ref',{idref=>$_,show=>'toctitle'}]]),
 		    grep($$normaltoctypes{$$self{db}->lookup("ID:$_")->getValue('type')},
 			 @{ $entry->getValue('children')||[] }) );
-      if($$types{$entry->getValue('type')}){
+      my $type = $entry->getValue('type');
+      if($$types{$type}){
+	my $typename = $type; $typename =~ s/^ltx://;
 	@navtoc = (['ltx:tocentry',{},
-		    ['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$p_id}],
-		    (@navtoc ? (['ltx:toclist',{},@navtoc]) : ())]); }
+####		    ['ltx:ref',{class=>'toc',show=>'toctitle',idref=>$p_id}],
+		    ['ltx:ref',{show=>'toctitle',idref=>$p_id}],
+		    (@navtoc ? (['ltx:toclist',{class=>"ltx_toc_$typename"},@navtoc]) : ())]); }
       $id = $p_id; }
     @navtoc; }
   else {
@@ -289,7 +298,8 @@ sub fill_in_refs {
       if(!$ref->getAttribute('title')){
 	if(my $titlestring = $self->generateTitle($doc,$id)){
 	  $ref->setAttribute(title=>$titlestring); }}
-      if(!$ref->textContent && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))){
+      if(!$ref->textContent && !element_nodes($ref)
+	 && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))){
 	$doc->addNodes($ref,$self->generateRef($doc,$id,$show)); }
       if(my $entry = $$self{db}->lookup("ID:$id")){
 	$ref->setAttribute(stub=>1) if $entry->getValue('stub'); }
@@ -524,24 +534,28 @@ sub generateRef_aux {
       my @frefnum  = $doc->trimChildNodes($entry->getValue('frefnum') || $entry->getValue('refnum'));
       if(@frefnum){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},$doc->cloneNodes(@frefnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@frefnum)]); }}
+    elsif($show =~ s/^rrefnum(\.?\s*)//){
+      if(my @refnum = $doc->trimChildNodes($entry->getValue('rrefnum')||$entry->getValue('refnum'))){
+	$OK = 1;
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@refnum)]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
       if(my @refnum = $doc->trimChildNodes($entry->getValue('refnum'))){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftag'},$doc->cloneNodes(@refnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@refnum)]); }}
     elsif($show =~ s/^toctitle//){
       my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
 				     || $entry->getValue('toccaption'));
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftitle'},
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'},
 		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
 
     elsif($show =~ s/^title//){
       my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
       if($title){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'reftitle'},
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'},
 		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
@@ -554,7 +568,7 @@ sub generateTitle {
   my $string = "";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
     my $title  = $self->fillInTitle($doc,$entry->getValue('title')) #|| $entry->getValue('toccaption'))
-      || $entry->getValue('frefnum') || $entry->getValue('refnum');
+      || $entry->getValue('rrefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum');
     $title = $title->textContent if $title && ref $title;
     $title =~ s/^\s+// if $title;
     $title =~ s/\s+$// if $title;
