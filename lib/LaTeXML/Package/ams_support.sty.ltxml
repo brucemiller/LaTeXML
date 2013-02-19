@@ -230,6 +230,11 @@ DefMacro('\tocsubparagraph{}{}{}',Tokens());
 DefMacro('\tocappendix{}{}{}',Tokens());
 DefMacroI('\contentsnamefont',undef,'\scshape');
 
+DefMacroI('\labelenumi',undef,'(\theenumi)');
+DefMacroI('\labelenumii',undef,'(\theenumii)');
+DefMacroI('\labelenumiii',undef,'(\theenumiii)');
+DefMacroI('\labelenumiv',undef,'(\theenumiv)');
+
 DefRegister('\normaltopskip'=>Glue('10pt'));
 DefRegister('\linespacing'=>Dimension('1pt'));
 DefRegister('\normalparindent'=>Dimension('12pt'));

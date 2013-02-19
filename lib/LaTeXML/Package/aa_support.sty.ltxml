@@ -24,14 +24,16 @@ use LaTeXML::Package;
 # Class Options
 # Ignorable options
 foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
-		       draft final referee		       
-		       leqno fleqn openbib longauth rnote
+		       draft final referee
+		       leqno fleqn longauth rnote
 		       oldversion
 		       runningheads
 		       envcountreset envcountsect
 		       structabstract traditabstract
 		       letter)){
   DeclareOption($option,undef); }
+DeclareOption('openbib',sub {
+  RequireResource(undef,type=>'text/css',content=>'.ltx_bibblock{display:block;}'); });
 
 #DeclareOption(undef,sub {
 #  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });

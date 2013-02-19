@@ -138,14 +138,14 @@ NewCounter('plate');
 DefMacroI('\platename',undef,'Plate');
 
 DefEnvironment('{plate}[]',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='ltx_plate'>"
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
 	       . "#body"
 	       ."</ltx:float>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },
 	       afterDigest=>sub { RescueCaptionCounters('plate',$_[1]); });
 
 DefEnvironment('{plate*}[]',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1') class='ltx_plate'>"
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
 	       . "#body"
 	       ."</ltx:float>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },

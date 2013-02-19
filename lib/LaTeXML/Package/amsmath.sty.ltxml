@@ -79,7 +79,7 @@ DefMacro('\@ams@intertext{}',
 #	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
+	       "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
 
 DefMacroI('\@ams@newline', undef, sub {
   my($gullet)=@_;
@@ -137,14 +137,14 @@ sub amsalignBindings {
 # There is at most a single equation number, so MathFork isn't strictly required
 # here, but could be useful...
 DefEnvironment('{multline}',
-	       "<ltx:equation refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
+	       "<ltx:equation refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>#body</ltx:XMath>"
 	       . "</ltx:Math>"
 	       ."</ltx:equation>",
 	       mode=>'display_math',
 	       beforeDigest=>sub {   Let(T_MATH,T_CS('\@dollar@in@mathmode')); },
-	       properties=> sub { (RefStepCounter('equation'), frefnum=>Digest(T_CS('\@eqnnum'))) });
+	       properties=> sub { RefStepCounter('equation') });
 DefEnvironment('{multline*}',
 	       "<ltx:equation>"
 	       . "<ltx:Math mode='display'>"
@@ -173,7 +173,7 @@ DefEnvironment('{split}',
 		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
 				reversion=>Tokens(T_CS("\\\\"),T_CR)); 
 		 DefConstructor('\intertext{}',
-				"<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text'); });
+				"<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text'); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -187,7 +187,7 @@ DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeAMSGather($document,
 				     constructAlignment($document,$body,
-							attributes=>{class=>'ltx_gather'})); },
+							attributes=>{class=>'ltx_eqn_gather'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsgather',sub{ $_[0]->egroup; });
 
@@ -245,7 +245,7 @@ DefConstructor('\@@amsalign SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeAMSAlign($document,
 				    constructAlignment($document,$body,
-						       attributes=>{class=>'ltx_align'})); },
+						       attributes=>{class=>'ltx_eqn_align'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitive('\end@amsalign',sub{ $_[0]->egroup; });
 
@@ -452,7 +452,7 @@ DefMacro('\displaybreak[]','');	# Ignorable
 # Section 3.10 Interrupting a display
 
 # default when not used inside an appropriate alignment.
-DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text');
+DefConstructor('\intertext{}', "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering
@@ -474,14 +474,14 @@ DefMacro('\thetag{}','{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',
-	       "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' xml:id='#id'>"
+	       "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
 	       ."#body"
 	       ."</ltx:equationgroup>",
 	       afterDigestBegin=>sub {
 		 my($stomach,$whatsit)=@_;
 		 my %eqn = RefStepCounter('equation');
 		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
-		 $whatsit->setProperties(%eqn, frefnum=>Digest(T_CS('\@eqnnum')));
+		 $whatsit->setProperties(%eqn);
 		 ResetCounter('equation');
 		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
 		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
@@ -884,7 +884,7 @@ DefConstructor('\substack{}',
 					      Let(T_CS('\cr'),T_CS("\\\\")); });
 DefEnvironment('{subarray}{}',
 	       "<ltx:XMApp>"
-	       . "<ltx:XMTok name='list' role='STACKED' class='align#1'/>"
+	       . "<ltx:XMTok name='list' role='STACKED' class='ltx_align_#1'/>"
 	       . "<ltx:XMArg>#body</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       beforeDigest=>sub{ DefConstructor("\\\\ OptionalMatch:* [Dimension]",

@@ -226,9 +226,9 @@ DefMacro('\thealgorithm','\arabic{algorithm}');
 DefMacro('\algorithmname','Algorithm');
 
 DefEnvironment('{algorithm}',
-	       "<ltx:float refnum='#refnum' frefnum='#frefnum' xml:id='#id' class='ltx_algorithm'>"
+	       "<ltx:theorem refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' class='ltx_theorem_algorithm'>"
 	       . "#body"
-	       ."</ltx:float>",
+	       ."</ltx:theorem>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'algorithm'); },
 	       afterDigest=>sub { RescueCaptionCounters('algorithm',$_[1]); });
 

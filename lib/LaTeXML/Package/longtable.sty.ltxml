@@ -36,7 +36,8 @@ DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
   $document->openElement('ltx:table',
 			 'xml:id'=>$$props{id},
 			 refnum=>$$props{refnum},
-			 frefnum=>$$props{frefnum});
+			 frefnum=>$$props{frefnum},
+			 rrefnum=>$$props{rrefnum});
   my $alignment = $body->getProperty('alignment');
   # Insert caption and toccaption, if any were encountered.
   if(my $caption = LookupValue('LONGTABLE_CAPTION')){

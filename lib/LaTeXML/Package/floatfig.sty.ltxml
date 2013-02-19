@@ -26,7 +26,7 @@ DeclareOption('pflt',sub { AssignValue(floatfltpos=>'p'); });
 DeclareOption('vflt',sub { AssignValue(floatfltpos=>'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' float='#float' width='#width'>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
