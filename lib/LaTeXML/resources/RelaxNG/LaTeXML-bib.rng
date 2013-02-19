@@ -548,6 +548,7 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
   <define name="bib-identifier_attributes">
     <a:documentation>Attributes for \elementref{bib-identifier}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Refable.attributes"/>
     <optional>
       <attribute name="scheme">
         <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
@@ -563,11 +564,6 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
     <optional>
       <attribute name="id">
         <a:documentation>the identifier.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="href">
-        <a:documentation>a url to the document, if available</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -586,6 +582,7 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
   <define name="bib-review_attributes">
     <a:documentation>Attributes for \elementref{bib-review}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Refable.attributes"/>
     <optional>
       <attribute name="scheme">
         <a:documentation>indicates what sort of identifier it is; it is open-ended for extensibility.</a:documentation>
@@ -601,11 +598,6 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
     <optional>
       <attribute name="id">
         <a:documentation>the identifier.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="href">
-        <a:documentation>a url to the review, if available</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -656,9 +648,7 @@ object, in particular page, part, volume numbers and similar.</a:documentation>
   <define name="bib-url_attributes">
     <a:documentation>Attributes for \elementref{bib-url}.</a:documentation>
     <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="href"/>
-    </optional>
+    <ref name="Refable.attributes"/>
   </define>
   <define name="bib-url_model">
     <a:documentation>Content model for \elementref{bib-url}.</a:documentation>
