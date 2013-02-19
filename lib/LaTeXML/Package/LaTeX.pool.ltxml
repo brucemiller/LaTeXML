@@ -364,7 +364,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
 # \@@numbered@section{type}[toctitle]{title}
 DefMacro('\@@numbered@section{}[]{}',
 	 '\@@section{#1}{\@currentID}{\@currentlabel}'
-	 .          '{\fnum@@{#1}}'
+	 .          '{\lx@fnum@@{#1}}'
 	 .          '{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
 	 .          '{\format@title@{#1}{#3}}');
 # NOTE: Unclear here, whether the "formatted refnum" should be empty, or just the type abbreviation?
@@ -378,18 +378,18 @@ DefMacro('\@@unnumbered@section{}[]{}',
 # \format@title@{type}{title}
 # Format a title (or caption) appropriately for type.
 # This is usually somewhat verbose, but establishes the context that this is a Chapter, or Figure, or whatever
-# invokes \format@title@type{title} if that macro is defined, else composes \fnum@@{type} title.
+# invokes \format@title@type{title} if that macro is defined, else composes \lx@fnum@@{type} title.
 # Define \format@title@type{title} if the default is not appropriate.
 DefMacro('\format@title@{}{}',
-	 '{\@ifundefined{format@title@#1}{\@@compose@title{\fnum@@{#1}}{#2}}{\csname format@title@#1\endcsname{#2}}}');
+	 '{\@ifundefined{format@title@#1}{\@@compose@title{\lx@fnum@@{#1}}{#2}}{\csname format@title@#1\endcsname{#2}}}');
 
 # \format@toctitle@{type}{toctitle}
 # Format a toctitle (or toccaption) appropriately for type.
 # This is usually somewhat concise, and the context implies that this is a Chapter, Figure or whatever
-# invokes \format@toctitle@type{title} if that macro is defined, else composes \fnum@toc@@{type} title
+# invokes \format@toctitle@type{title} if that macro is defined, else composes \lx@fnum@toc@@{type} title
 # Define \format@toctitle@type{title} if the default is not appropriate.
 DefMacro('\format@toctitle@{}{}',
-	 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
+	 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\lx@fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
 
 DefMacro('\@@compose@title{}{}', '\@@tag{#1}#2');
 DefConstructor('\@tag{}',"?#1(<ltx:tag>#1</ltx:tag>)()");
@@ -820,9 +820,9 @@ DefEnvironment('{center}',sub { aligningEnvironment('center','centering',@_); },
 DefMacroI('\center',undef,'\centering');
 DefMacroI('\endcenter',undef,'');
 
-DefEnvironment('{flushleft}',sub { aligningEnvironment('left','flushleft',@_); },
+DefEnvironment('{flushleft}',sub { aligningEnvironment('left','ltx_align_left',@_); },
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
-DefEnvironment('{flushright}',sub { aligningEnvironment('right','flushright',@_); },
+DefEnvironment('{flushright}',sub { aligningEnvironment('right','ltx_align_right',@_); },
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
 
 # These add an operation to be carried out on the current node & following siblings, when the current group ends.
@@ -844,20 +844,20 @@ DefConstructorI('\raggedleft',  undef,
 DefConstructorI('\@add@centering',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
 		  map(setAlignOrClass($_[0],$_,'center','ltx_centering'),$_[0]->getChildElements($node)); }});
-# Note that \raggedright is different from flushright!
+# Note that \raggedright is essentially align left
 DefConstructorI('\@add@raggedright', undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,undef,'ltx_raggedright'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,undef,'ltx_align_left'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@raggedleft',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,undef,'ltx_raggedleft'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,undef,'ltx_align_right'),$_[0]->getChildElements($node)); }});
 
 DefConstructorI('\@add@flushright', undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,'right','ltx_flushright'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,'right','ltx_align_right'),$_[0]->getChildElements($node)); }});
 DefConstructorI('\@add@flushleft',  undef,
 		sub { if(my $node = LookupValue('ALIGNING_NODE')){
-		  map(setAlignOrClass($_[0],$_,'left','ltx_flushleft'),$_[0]->getChildElements($node)); }});
+		  map(setAlignOrClass($_[0],$_,'left','ltx_align_left'),$_[0]->getChildElements($node)); }});
 
 #======================================================================-
 # C.6.1 Quotations and Verse
@@ -874,7 +874,7 @@ DefEnvironment('{quotation}',
 	       mode=>'text');
 # NOTE: Handling of \\ within these environments?
 DefEnvironment('{verse}',
-	       '<ltx:quote class="ltx_verse">#body</ltx:quote>',
+	       '<ltx:quote role="verse">#body</ltx:quote>',
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))},
 	       mode=>'text');
 
@@ -901,7 +901,11 @@ sub beginItemize {
   RefStepCounter('@itemize'.$postfix); }
 
 sub RefStepItemCounter {
-  RefStepCounter('enum'.ToString(Tokens(roman(LookupValue('itemlevel'))))); }
+  my($tag)=@_;
+  my $counter = 'enum'.ToString(Tokens(roman(LookupValue('itemlevel'))));
+#  (defined $tag ? (RefStepID($counter),refnum=>$tag) : RefStepCounter($counter) ); }
+  # If tag given, don't create refnum (etal); tag will be used as title in Scan
+  (defined $tag ? RefStepID($counter) : RefStepCounter($counter) ); }
 
 # The following two aren't used here; they're defined here so they
 # can be used in paralist.sty, enumerate.sty (perhaps others?)
@@ -949,15 +953,26 @@ sub setEnumerationStyle {
     DefMacroI('\theenum'.$level,undef,Tokens(@out)); }
   return; }
 
+
+# id, but no refnum (et.al) on itemize \item ... 
 DefConstructor('\itemize@item[]',
-	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:item xml:id='#id'>"
+	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
 DefConstructor('\enumerate@item[]',
-	       "<ltx:item xml:id='#id' refnum='#refnum'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ RefStepItemCounter(); });
+##	       "<ltx:item xml:id='#id' refnum='#refnum'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+###	       "<ltx:item xml:id='#id' refnum='#refnum'>"
+###	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)(?#lrefnum(<ltx:tag>#lrefnum</ltx:tag>))",
+###	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+###	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)(?#frefnum(<ltx:tag>#frefnum</ltx:tag>))",
+	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
+# id, but no refnum (et.al) on description \item  ... i think?
 DefConstructor('\description@item[]',
-	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:item xml:id='#id'>"
+	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
   
 DefEnvironment('{itemize}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
@@ -973,10 +988,23 @@ DefEnvironment('{description}',
 	       locked=>1, mode=>'text');
 DefMacro('\descriptionlabel{}','#1');
 
-# NOTE: Do I need to do anything with
-# \labelitemi, labelitemii, labelitemiii or labelitemiv ?
-# Probably would be useful (once I've got counters properly implemented)
-# to add a number to the items.
+DefMacroI('\labelenumi',undef,'\theenumi.');
+DefMacroI('\labelenumii',undef,'(\theenumii)');
+DefMacroI('\labelenumiii',undef,'\theenumiii.');
+DefMacroI('\labelenumiv',undef,'\theenumiv.');
+DefMacroI('\fnum@enumi',undef,'\labelenumi');
+DefMacroI('\fnum@enumii',undef,'\labelenumii');
+DefMacroI('\fnum@enumiii',undef,'\labelenumiii');
+DefMacroI('\fnum@enumiv',undef,'\labelenumiv');
+
+DefMacroI('\labelitemi',undef,'\textbullet');
+DefMacroI('\labelitemii',undef,'\normalfont\bfseries \textendash');
+DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
+DefMacroI('\labelitemiv',undef,'\textperiodcentered');
+DefMacroI('\fnum@itemi',undef,'\labelitemi');
+DefMacroI('\fnum@itemii',undef,'\labelitemii');
+DefMacroI('\fnum@itemiii',undef,'\labelitemiii');
+DefMacroI('\fnum@itemiv',undef,'\labelitemiv');
 
 #======================================================================
 # C.6.3 The list and trivlist environments.
@@ -1127,6 +1155,7 @@ DefMacroI('\normalsfcodes',undef,Tokens());
 #======================================================================
 DefMacroI('\@eqnnum',undef,'(\theequation)');
 DefMacro('\fnum@equation','\@eqnnum');
+DefMacro('\refnum@equation','\@eqnnum');
 
 # Redefined from TeX.pool, since with LaTeX we presumably have a more complete numbering system
 DefConstructorI('\@@BEGINDISPLAYMATH',undef,
@@ -1164,7 +1193,7 @@ DefEnvironment('{math}',
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
 #	       locked=>1);
 DefEnvironment('{equation}',
-	       "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
+	       "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
 	       . "<ltx:Math mode='display'>"
 	       .  "<ltx:XMath>"
 	       .   "#body"
@@ -1300,7 +1329,8 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
 		   my $row = LookupValue('Alignment')->currentRow;
 		   $$row{id} = $props{id};
 		   $$row{refnum} = $props{refnum};
-		   $$row{frefnum}= $props{frefnum}; }
+		   $$row{frefnum}= $props{frefnum};
+		   $$row{rrefnum}= $props{rrefnum}; }
 		 return; });
 
 # ========================================
@@ -1312,7 +1342,7 @@ DefConditionalI('\if@in@firstcolumn',undef, sub {
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
-	 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
+	 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
 	 .'\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
@@ -1346,7 +1376,7 @@ sub eqnarrayBindings {
   my $alignment = LaTeXML::Util::Alignment
     ->new(openContainer =>sub{ my %attr = RefStepID('@equationgroup');
 			       $attr{'xml:id'}=$attr{id}; delete $attr{id};
-			       $attr{class}='ltx_eqnarray';
+			       $attr{class}='ltx_eqn_eqnarray';
 			       $_[0]->openElement('ltx:equationgroup',%attr,@_[1..$#_]); },
 	  closeContainer=>sub{ $_[0]->closeElement('ltx:equationgroup'); },
 	  openRow       =>sub{ $_[0]->openElement('ltx:equation',@_[1..$#_]); },
@@ -1368,7 +1398,7 @@ DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
 		 my($document,$body,%props)=@_;
 		 rearrangeEqnarray($document,
 				    constructAlignment($document,$body,
-						       attributes=>{class=>'ltx_eqnarray'})); },
+						       attributes=>{class=>'ltx_eqn_eqnarray'})); },
 	       beforeDigest=>sub { $_[0]->bgroup; });
 DefPrimitiveI('\end@eqnarray',undef, sub{ $_[0]->egroup; });
 
@@ -1808,7 +1838,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
   DefMacroI('\fnum@'.$counter,undef,''); # dummy up the defn
   # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' frefnum='#frefnum' class='#class'>"
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' class='#class'>"
 		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
@@ -1839,7 +1869,7 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		      frefnum=>Digest($frefnum),
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>'ltx_'.CleanIndexKey($thmset)  ); },
+		      class=>'ltx_theorem_'.CleanIndexKey($thmset)  ); },
 		 scope => 'global');
 });
 
@@ -1935,6 +1965,7 @@ DefPrimitive('\@@add@caption@counters',sub {
   my %props= RefStepCounter($captype); 
   AssignValue($captype."_refnum"=>$props{refnum}, 'global'); # global??
   AssignValue($captype."_frefnum"=>$props{frefnum}, 'global');
+  AssignValue($captype."_rrefnum"=>$props{rrefnum}, 'global');
   AssignValue($captype."_id"=>$props{id}, 'global'); });
 
 sub RescueCaptionCounters {
@@ -1945,6 +1976,9 @@ sub RescueCaptionCounters {
   if(my $frefnum = LookupValue($captype."_frefnum")){
     AssignValue($captype."_frefnum"=>undef,'global');
     $whatsit->setProperty(frefnum=>$frefnum); }
+  if(my $rrefnum = LookupValue($captype."_rrefnum")){
+    AssignValue($captype."_rrefnum"=>undef,'global');
+    $whatsit->setProperty(rrefnum=>$rrefnum); }
   if(my $id = LookupValue($captype."_id")){
     AssignValue($captype."_id"=>undef,'global');
     $whatsit->setProperty(id=>$id); }
@@ -1964,25 +1998,25 @@ DefConstructor('\@@caption{}',"<ltx:caption>#1</ltx:caption>");
 DefConstructor('\@@toccaption{}',"<ltx:toccaption>#1</ltx:toccaption>");
 
 DefEnvironment('{figure}[]',
-	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
 	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 DefEnvironment('{figure*}[]',
-	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
+	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:figure>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
 	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
 DefEnvironment('{table}[]',
-	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
 	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
 DefEnvironment('{table*}[]',
-	       "<ltx:table refnum='#refnum' frefnum='#frefnum' xml:id='#id' ?#1(placement='#1')>"
+	       "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
 	       . "#body"
 	       ."</ltx:table>",
 	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
@@ -2646,8 +2680,6 @@ sub process_index_phrases {
   @expansion; }
 
 DefMacro('\index{}', \&process_index_phrases);
-# NOTE: ignore \glossary for now (the arg is like index entry)
-DefMacro('\glossary{}', Tokens());
 
 DefConstructor('\@index[]{}',"^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
 	       mode=>'text', reversion=>'');
@@ -2663,6 +2695,12 @@ DefConstructor('\@indexseealso{}',
 	       "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
 	       properties=>{name=>sub { DigestIf('\alsoname') },
 			    key=>sub { CleanIndexKey($_[1]); }});
+
+DefConstructor('\glossary{}',
+	       "<ltx:glossarymark>"
+	       .  "<ltx:glossaryphrase key='#key'>#1</ltx:glossaryphrase>"
+	       ."</ltx:glossarymark>",
+	       properties=>{key=>sub { CleanIndexKey($_[1]); }});
 
 #======================================================================
 # This converts an indexphrase node into a sortable string.
@@ -3874,16 +3912,6 @@ Let(T_CS('\endline'),T_CS('\cr'));
 # get set correctly or maintained, so...
 DefMacroI('\fileversion',undef, Tokens());
 DefMacroI('\filedate',   undef, Tokens());
-
-# Following isn't used anywhere, but should be defined.
-DefMacroI('\labelenumi',undef,'\theenumi.');
-DefMacroI('\labelenumii',undef,'(\theenumii)');
-DefMacroI('\labelenumiii',undef,'\theenumiii.');
-DefMacroI('\labelenumiv',undef,'\theenumiv.');
-DefMacroI('\labelitemi',undef,'\textbullet');
-DefMacroI('\labelitemii',undef,'\normalfont\bfseries \textendash');
-DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
-DefMacroI('\labelitemiv',undef,'\textperiodcentered');
 
 # Ultimately these may be overridden by babel,
 # various of these are defined in various places by different classes.
