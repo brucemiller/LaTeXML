@@ -85,7 +85,9 @@ IDREF.attributes =
   attribute idref { xsd:IDREF }?
 
 ## Attributes for elements that can be labelled from within LaTeX.
-## These attributes deal with assigning a label and generating cross references.
+## These attributes deal with assigning a label  and generating cross references.
+## The label migrates to an \attr{xml:id} and \attr{href} and the element
+## can serve as a hypertext target.
 Labelled.attributes =
   ID.attributes,
 
@@ -100,9 +102,33 @@ Labelled.attributes =
   ## the reference number (ie. section number, equation number, etc) of the object.
   attribute refnum { text }?,
 
-  ## the formatted reference number of the object, typically this is the refnum with
-  ## the object type prepended, such as "Chapter 2"
-  attribute frefnum { text }?
+  ## the formatted reference number of the object as it would appear when labelling the object,
+  ## typically this is the refnum with the object type prepended, such as "Chapter 2".
+  ## This is what eg, \cs{labelenumi} or \cs{fnum@table} would produce.  
+  ## This attribute is only needed when different from \attr{refnum}.
+  attribute frefnum { text }?,
+
+  ## the referencing reference number of the object as it might appear
+  ## when referencing the object, such as an equation number with parentheses.
+  ## This is useful for generated references to clarify the type of object,
+  ##  but is not used with LaTeX's usual \cs{ref}.
+  ## And, note that \cs{eqnref} puts its own parentheses.
+  ## This attribute is only needed when different from both \attr{frefnum} and  \attr{refnum}.
+  attribute rrefnum { text }?
+
+## Attributes for elements that can be referred to from within LaTeX.
+## Such elements may serve as the starting point of a hypertext link.
+## The reference can be made using \attr{label}, \attr{xml:id} or \attr{href};
+## these attributes will be converted, as needed, from the former to the latter.
+Refable.attributes =
+  IDREF.attributes,
+
+  ## reference to a LaTeX labelled object;
+  ## See the \attr{labels} attribute of \patternref{Labelled.attributes}.
+  attribute labelref { text }?,
+
+  ## reference to an arbitrary url.
+  attribute href { text }?
 
 ## Attributes for elements that contain (indirectly) text whose font can be specified.
 Fontable.attributes =
