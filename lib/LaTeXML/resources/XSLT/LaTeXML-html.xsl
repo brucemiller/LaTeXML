@@ -18,39 +18,23 @@
     xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
     exclude-result-prefixes="ltx">
 
+  <!-- Include all LaTeXML to xhtml modules -->
+  <xsl:import href="LaTeXML-all-xhtml.xsl"/>
+
+  <!-- Override the output method & parameters -->
   <xsl:output
       method = "html"
       omit-xml-declaration = 'yes'
       doctype-public = "-//W3C//DTD HTML 4.01//EN"
       doctype-system = "http://www.w3.org/TR/html4/strict.dtd"
       media-type     = 'text/html'
-      encoding       = 'utf-8'
-      indent         = 'yes'/>
+      encoding       = 'utf-8'/>
 
-  <xsl:template name="metatype">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  </xsl:template>
-
-  <xsl:template match="/">
-    <html>
-      <xsl:call-template name="add_RDFa_prefix"/>
-      <xsl:call-template name="head"/>
-      <xsl:call-template name="body"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </html>
-  </xsl:template>
-
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-inline-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-block-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-misc-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-meta-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-para-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-math-image.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-tabular-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-picture-image.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-structure-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-bib-html.xsl"/>
-  <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-webpage-html.xsl"/>
+  <!-- No namespaces -->
+  <xsl:param name="USE_NAMESPACES"></xsl:param>
+  <!-- do not use html5 elements, MathML nor SVG -->
+  <xsl:param name="USE_HTML5"     ></xsl:param>
+  <xsl:param name="USE_MathML"    ></xsl:param>
+  <xsl:param name="USE_SVG"       ></xsl:param>
 
 </xsl:stylesheet>
