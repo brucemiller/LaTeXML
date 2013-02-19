@@ -193,6 +193,11 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The kind of quotation; could be something like verse, or translation</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="quote_model">
     <a:documentation>Content model for \elementref{quote}.</a:documentation>

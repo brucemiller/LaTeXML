@@ -125,7 +125,10 @@ element quote { quote_attributes, quote_model }
 quote_attributes =
   Common.attributes,
   ID.attributes,
-  Backgroundable.attributes
+  Backgroundable.attributes,
+
+  ## The kind of quotation; could be something like verse, or translation
+  attribute role { text }?
 
 ## Content model for \elementref{quote}.
 quote_model = Block.model
