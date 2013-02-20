@@ -191,9 +191,11 @@ table { border-collapse:collapse; }
 cite                 { font-style: normal; }
 
 .ltx_red        { color:red; }
-.ltx_centering  { text-align:center; margin:auto; }
-.ltx_inline-block.ltx_centering,
-img.ltx_centering  { display:block; margin:auto; }
+/*.ltx_centering  { text-align:center; margin:auto; }*/
+/*.ltx_inline-block.ltx_centering,*/
+/* Hmm.... is this right in general? */
+.ltx_centering  { display:block; margin:auto; }*/
+
 
 /* .ltx_phantom handled in xslt */
 
