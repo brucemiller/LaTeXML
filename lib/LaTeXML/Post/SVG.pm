@@ -75,8 +75,14 @@ sub makeViewBox {
   $w = $1 if ($w =~ /^($NR)([a-z]{2})$/);
   $h = $1 if ($h =~ /^($NR)([a-z]{2})$/);
   my ($minx, $maxx, $miny, $maxy) = map($_ || 0, @{getSVGBounds($node)});
-  $w = $maxx-$minx if $maxx-$minx>$w; $h = $maxy-$miny if $maxy-$miny>$h;
-  $node->setAttribute(viewBox=>"$minx $miny $w $h");
+  my $ww = $maxx-$minx;
+  my $hh = $maxy-$miny;
+###  $node->setAttribute(viewBox=>"$minx $miny $w $h");
+
+  $node->setAttribute(width=>$ww) if $ww > $w;
+  $node->setAttribute(height=>$hh) if $hh > $h;
+  $node->setAttribute(viewBox=>"$minx $miny $maxx $maxy");
+
   $node->setAttribute(overflow=>'visible') if (($node->getAttribute('clip') || '') ne 'true');
   $node->removeAttribute('clip');
 }
@@ -112,7 +118,7 @@ our %converters = ('ltx:picture'=>\&convertPicture, 'ltx:path'  =>\&convertPath,
 		   'ltx:rect'   =>\&convertRect,    'ltx:bezier'=>\&convertBezier,
 		   'ltx:inline-block'=>\&convertVbox,'ltx:circle'=>\&convertCircle,
 		   'ltx:ellipse'=>\&convertEllipse, 'ltx:wedge' =>\&convertWedge,
-		   'ltx:arc'    =>\&convertArc);
+		   'ltx:arc'    =>\&convertArc,     'ltx:dots'  =>\&convertDots);
 sub convertNode {
   my ($parent,$node) = @_;
   my $tag = getQName($node);
@@ -121,7 +127,14 @@ sub convertNode {
   elsif(my $converter = $converters{$tag}){
     &$converter($parent,$node); }
   else {
-    my $new = $parent->addNewChild($svgURI,'foreignObject');
+    # my $new = $parent->addNewChild($svgURI,'foreignObject');
+    # $new->appendChild($node); }}
+    my $g = $parent->addNewChild($svgURI,'g');
+    $g->setAttribute(transform=>"scale(1 -1) translate(-5,-10)"); # AD HOC
+    my $new = $g->addNewChild($svgURI,'foreignObject');
+    # Totally wrong, but until we properly size things, we HAVE to give it SOME size!
+    $new->setAttribute(width=>50);
+    $new->setAttribute(height=>20);
     $new->appendChild($node); }}
 
 sub convertPath {
@@ -312,6 +325,23 @@ sub convertCircle {
   map(convertNode($newNode,$_), element_nodes($node));
   $newNode; }
 
+#?
+sub convertDots {
+  my($parent,$node) = @_;
+  my $newNode = $parent->addNewChild($svgURI, 'g');
+  my @p = explodeCoord($node->getAttribute('points') || '');
+  while(@p){
+    my($x,$y)=(shift(@p),shift(@p));
+    my $dot = $newNode->addNewChild($svgURI, 'circle');
+    ### copy_attributes($dot, $node);
+    copy_attributes($dot, $node, CA_OVERWRITE, qw(fill r stroke stroke-width transform)); # ???
+    $dot->setAttribute(r=>$node->getAttribute('dotsize'));
+    $dot->setAttribute(cx=>$x);
+    $dot->setAttribute(cy=>$y);
+    #map(convertNode($dot,$_), element_nodes($node));
+  }
+  $newNode; }
+
 sub convertEllipse {
   my($parent,$node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'ellipse');
@@ -495,7 +525,8 @@ sub arcPoints {
 ################# Determine SVG boundary #######################
 
 sub getSVGBounds {
-  my ($node) = @_; my @boundary = ();
+  my ($node) = @_;
+  my @boundary = ();
   map(combBoundary(\@boundary, getSVGBounds($_)), element_nodes($node));
   [SVGObjectBoundary($node, @boundary)];
 }
@@ -504,19 +535,18 @@ sub SVGObjectBoundary {
   my ($node, @boundary) = @_;
   my $tag = getQName($node);
   return undef unless $tag;
-  my @xs=($boundary[0], $boundary[1]), my @ys = ($boundary[2], $boundary[3]);
+  my @xs = ($boundary[0], $boundary[1]);
+  my @ys = ($boundary[2], $boundary[3]);
 
-  if ($tag eq 'ltx:circle') {
-###    my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
-    my ($cx, $cy, $r) = get_attr($node, qw (x y r));
-    $r = $r*sqrt(2); push(@xs, $cx-$r,$cx+$r); push(@ys, $cy-$r,$cy+$r);
-  } elsif (($tag eq 'ltx:polygon') || ($tag eq 'ltx:line')) {
+  if ($tag eq 'svg:circle') {
+    my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
+    $r = $r*sqrt(2); push(@xs, $cx-$r,$cx+$r); push(@ys, $cy-$r,$cy+$r); }
+  elsif (($tag eq 'svg:polygon') || ($tag eq 'ltx:line')) {
     my $points = $node->getAttribute('points');
     $points =~ s/,/ /g;
     while ($points =~ s/^\s*($NR)\s+($NR)//) {
-      push(@xs, $1); push(@ys,$2);
-    }
-  } elsif ($tag eq 'ltx:path') {
+      push(@xs, $1); push(@ys,$2); }}
+  elsif ($tag eq 'svg:path') {
     my ($data, $mode) = ($node->getAttribute('d'), '');
     $data =~ s/,/ /g;
     while ($data) {
@@ -538,19 +568,19 @@ sub SVGObjectBoundary {
 	       ($mode eq 'i5xy' && $data =~ s/^\s*$NR\s+$NR\s+$NR
 		    \s+$NR\s+$NR\s+($NR)\s+($NR)\s*//x)) {
 	push(@xs,$1); push(@ys,$2);
-      }
-    }
-  } elsif ($tag eq 'ltx:rect') {
+      }}}
+  elsif ($tag eq 'svg:rect') {
     my ($x, $y, $w, $h) = get_attr($node, qw(x y width height));
     if (defined $x && defined $y && defined $w && defined $h) {
-      push(@xs,$x, $x+$w); push(@ys,$y, $y+$h);
-    }
-  } elsif ($tag eq 'ltx:ellipse') {
+      push(@xs,$x, $x+$w); push(@ys,$y, $y+$h); }}
+  elsif ($tag eq 'svg:ellipse') {
     my ($ex, $ey, $rx, $ry) = get_attr($node, qw (cx cy rx ry));
     ($rx, $ry) = map($_*sqrt(2), ($rx, $ry)); 
-    push(@xs,$ex-$rx,$ex+$rx); push(@ys,$ey-$ry,$ey+$ry);
-  }
-    
+    push(@xs,$ex-$rx,$ex+$rx); push(@ys,$ey-$ry,$ey+$ry);  }
+  elsif ($tag eq 'svg:foreignObject') {
+    my ($w,$h) = get_attr($node, qw (width height));
+    push(@xs,0,$w); push(@ys,0,$h);  }
+
   @xs = grep(defined $_, @xs); @ys = grep(defined $_, @ys);
   if (my $tr = $node->getAttribute('transform')) {
     $tr = Transform($tr);
