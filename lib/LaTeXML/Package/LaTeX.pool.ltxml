@@ -814,7 +814,7 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 # C.6 Displayed Paragraphs
 #**********************************************************************
 
-DefEnvironment('{center}',sub { aligningEnvironment('center','centering',@_); },
+DefEnvironment('{center}',sub { aligningEnvironment('center','ltx_centering',@_); },
 	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
 # HOWEVER, define a plain \center to act like \centering (?)
 DefMacroI('\center',undef,'\centering');
