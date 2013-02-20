@@ -428,6 +428,15 @@ positioning and other properties.</a:documentation>
     <a:documentation>Attributes for \elementref{dots}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Picture.attributes"/>
+    <optional>
+      <attribute name="dotstyle"/>
+    </optional>
+    <optional>
+      <attribute name="dotsize"/>
+    </optional>
+    <optional>
+      <attribute name="dotscale"/>
+    </optional>
   </define>
   <define name="dots_model">
     <a:documentation>Content model for \elementref{dots}.</a:documentation>

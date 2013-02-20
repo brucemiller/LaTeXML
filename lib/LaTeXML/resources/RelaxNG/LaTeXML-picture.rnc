@@ -241,7 +241,10 @@ dots =
 element dots { dots_attributes, dots_model }
 
 ## Attributes for \elementref{dots}.
-dots_attributes = Common.attributes, Picture.attributes
+dots_attributes = Common.attributes, Picture.attributes,
+  attribute dotstyle { text }?,
+  attribute dotsize { text }?,
+  attribute dotscale { text }?
 
 ## Content model for \elementref{dots}.
 dots_model = empty
