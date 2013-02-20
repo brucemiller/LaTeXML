@@ -395,11 +395,9 @@ sub psTerminators {
 ## setting graphis parameters by changing it into a properly nested \psset
 ####################################################################################
 
-#sub afterPSObject  { psDefaultParameters($_[1]); LookupDefinition(T_END)->invoke; }
-#sub afterPSObject  { psDefaultParameters($_[1]); $_[0]->egroup; }
-#sub afterPSObject  { psDefaultParameters($_[1]); Digest(T_END); }
-sub afterPSObject  { psDefaultParameters($_[1]); $_[0]->egroup; }
-#sub afterPSObject  {  $_[0]->egroup; }
+# Note: this odd thing MUST digest the "}" and return the box,
+# so that it appears in the UnTeX, so that image generation works!
+sub afterPSObject  { psDefaultParameters($_[1]); Digest(T_END); }
 
 # NOTE: This defines a macro with 2 additional leading args: OptionalMatch:* []
 # AND it defines a constructor with 1 addtional leading arg: OptionalMatch:*
