@@ -170,7 +170,9 @@ sub convertDocument {
        next if $preload=~/\.pool$/;
        my $options = ($preload =~ s/^\[([^\]]*)\]//) && $1;
        $preload =~ s/\.sty$//;
-       $document->insertPI('latexml',package=>$preload,($options ? (options=>$options):())); }
+       $document->insertPI('latexml',
+			   ($preload=~/\.cls$/ ? (class=>$preload):(package=>$preload)),
+			   ($options ? (options=>$options):())); }
      $document->absorb($digested);
      NoteEnd("Building");
 
