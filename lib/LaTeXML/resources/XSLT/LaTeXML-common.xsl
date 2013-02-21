@@ -290,6 +290,15 @@
     <xsl:if test="@role">
       <xsl:value-of select="concat(' ',f:class-pref('ltx_role_',@role))"/>
     </xsl:if>
+    <xsl:if test="@align">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_align_',@align))"/>
+    </xsl:if>
+    <xsl:if test="@vattach">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_align_',@vattach))"/>
+    </xsl:if>
+    <xsl:if test="@float">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_align_float',@float))"/>
+    </xsl:if>
   </xsl:template>
 
   <!-- Add a CSS style attribute to the current html element
@@ -320,7 +329,6 @@
   </xsl:template>
 
   <xsl:template match="*" mode="styling">
-    <xsl:if test="@float"  ><xsl:value-of select="concat('float:',@float,';')"/></xsl:if>
     <xsl:if test="@width"  ><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
     <xsl:if test="@height" ><xsl:value-of select="concat('height:',@height,';')"/></xsl:if>
     <xsl:if test="@depth"  ><xsl:value-of select="concat('vertical-align:',@depth,';')"/></xsl:if>
@@ -349,8 +357,9 @@
       </xsl:choose>
       <xsl:value-of select="';'"/>
     </xsl:if>
-    <xsl:if test="@framed='underline'"><xsl:value-of select="'text-decoration:underline;'"/></xsl:if>	<xsl:if test="@align"><xsl:value-of select="concat('text-align:',@align,';')"/></xsl:if>
-    <xsl:if test="@vattach"><xsl:value-of select="concat('vertical-align:',@vattach,';')"/></xsl:if>
+    <xsl:if test="@framed='underline'">
+      <xsl:value-of select="'text-decoration:underline;'"/>
+    </xsl:if>
     <xsl:if test="@cssstyle"><xsl:value-of select="concat(@cssstyle,';')"/></xsl:if>
   </xsl:template>
 
