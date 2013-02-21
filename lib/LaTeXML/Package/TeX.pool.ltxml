@@ -5116,6 +5116,8 @@ sub insertBlock {
     while( ${$nodes[0]} != $$prev){ shift(@nodes); } # then strip away $prev, and preceding, from list
     shift(@nodes); }
 
+  my @savenodes = @nodes;	# These are the ones that got recently added.
+
   # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
   my @new = ();
   if ($model->canContain($parent,'ltx:p')) {
@@ -5162,7 +5164,8 @@ sub insertBlock {
     }
   }
 
-  @new = ($parent) unless @new;	#  ???
+  # If we didn't get any sifted nodes at all, just provide the original additions?
+  @new = @savenodes unless @new;
 
   # NOW, what we probably REALLY should do is return the parent of these
   # IFF there are no further insertions into that node... ????
