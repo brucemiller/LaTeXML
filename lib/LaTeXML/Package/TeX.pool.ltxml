@@ -4541,7 +4541,17 @@ sub lookup_delimiter {
 # This is a little messier than you'd think.
 # These effectively create a group between the \left,\right.
 DefMacro('\left XToken','\@left #1\@hidden@bgroup');
-DefMacro('\right XToken','\@hidden@egroup\@right #1');
+# DefMacro('\right XToken','\@hidden@egroup\@right #1');
+# However, note that it is a relatively common error to have an unbalanced \right)
+# If we let this fail within Stomach, we'll get an incomprehensible message.
+DefMacro('\right XToken',sub {
+  if($STATE->isValueBound('MODE',0) # Last stack frame was a mode switch!?!?!
+      || $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \begingroup
+    Error('unexpected','\right',undef,"Unbalanced \\right, no balancing \\left."); }
+  else {
+    (T_CS('\@hidden@egroup'),T_CS('\@right'),$_[1]); }});
+
+
 DefConstructor('\@left Token',
 	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
 	       afterDigest=>sub { my($stomach,$whatsit)=@_;
