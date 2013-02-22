@@ -1507,7 +1507,8 @@ sub RequirePackage {
 	 "RequirePackage option raw is obsolete; it is not needed"); }
   CheckOptions("RequirePackage ($package)",$require_options,%options);
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set. 
-  $options{notex} = 1 if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES');
+  $options{notex} = 1
+    if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
   InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,
 		   # Pass classes options if we have NONE!
 		   withoptions=>!($options{options} && @{$options{options}}),
