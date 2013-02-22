@@ -74,7 +74,7 @@ sub fill_in_relations {
       my $rel = 'up';
       while(($x = $xentry->getValue('parent')) && ($xentry = $db->lookup("ID:".$x))){
 	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
-	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
+	  $doc->addNavigation($rel=>$xentry->getValue('pageid')); 
 	  $rel .= ' up'; }}
       if($xentry && ($id ne $xentry->getValue('pageid'))){
 	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
