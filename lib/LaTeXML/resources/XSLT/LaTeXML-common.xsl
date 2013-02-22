@@ -20,6 +20,7 @@
     xmlns:date  = "http://exslt.org/dates-and-times"
     xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xhtml = "http://www.w3.org/1999/xhtml"
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx f func string">
 
@@ -200,8 +201,19 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- Assume we'll want to keep comments (may be important for script, eg)-->
   <xsl:template match="comment()" mode="copy-foreign">
     <xsl:comment><xsl:value-of select="."/></xsl:comment>
+  </xsl:template>
+
+  <!-- Assume that xhtml will be copied using same scheme as the generated html -->
+  <xsl:template match="xhtml:*" mode='copy-foreign'>
+    <xsl:element name="{local-name()}" namespace="{$html_ns}">
+      <xsl:for-each select="@*">
+	<xsl:apply-templates select="." mode="copy-attribute"/>
+      </xsl:for-each>
+      <xsl:apply-templates mode='copy-foreign'/>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="@*" mode='copy-attribute'>
