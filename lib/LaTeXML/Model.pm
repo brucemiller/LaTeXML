@@ -54,6 +54,7 @@ sub loadSchema {
     $self->registerNamespace(svg=>"http://www.w3.org/2000/svg");
     $self->registerNamespace(xlink=>"http://www.w3.org/1999/xlink"); # Needed for SVG
     $self->registerNamespace(m=>"http://www.w3.org/1998/Math/MathML");
+    $self->registerNamespace(xhtml=>"http://www.w3.org/1999/xhtml");
     $$self{permissive}=1; }	# Actually, they could have declared all sorts of Tags....
 
   my($type,@data)=@{$$self{schemadata}};

@@ -24,6 +24,7 @@ RegisterNamespace(svg=>"http://www.w3.org/2000/svg");
 RegisterNamespace(xlink=>"http://www.w3.org/1999/xlink"); # Needed for SVG
 # Not directly used, but let's stake out the ground
 RegisterNamespace(m=>"http://www.w3.org/1998/Math/MathML");
+RegisterNamespace(xhtml=>"http://www.w3.org/1999/xhtml");
 
 DefMacroI("\\\@empty",undef,Tokens());
 
