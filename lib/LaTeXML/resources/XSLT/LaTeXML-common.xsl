@@ -200,6 +200,10 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:template match="comment()" mode="copy-foreign">
+    <xsl:comment><xsl:value-of select="."/></xsl:comment>
+  </xsl:template>
+
   <xsl:template match="@*" mode='copy-attribute'>
     <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:value-of select="."/>
