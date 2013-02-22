@@ -39,6 +39,8 @@ sub process {
   # Weird test: exclude the "whole document" from the list (?)
   @pages = grep($_->parentNode->parentNode,@pages); # Strip out the root node.
   if(@pages){
+    my @nav = $doc->findnodes("descendant::ltx:navigation");
+    $doc->removeNodes(@nav) if @nav;
     my $tree = {node=>$root,document=>$doc,
 		id=>$root->getAttribute('xml:id'),name=>$doc->getDestination,
 		children=>[]};
@@ -51,17 +53,7 @@ sub process {
     # Now, create remove and create documents for each page.
     push(@docs,$self->processPages($doc,@{$$tree{children}}));
 
-    $self->copyNavigation($tree);
-    ### Disable this for now; We can deduce these relations in CrossRef.
-    ## Add navigation to the sequence.
-    # if(!$$self{no_navigation}){
-    #   my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
-    #   $doc->addNavigation(start=>$rootid) if $rootid;
-    #   for(my $i=0; $i<$#docs; $i++){
-    # 	my $nextid = $docs[$i+1]->getDocumentElement->getAttribute('xml:id');
-    # 	my $previd = $docs[$i]->getDocumentElement->getAttribute('xml:id');
-    # 	$docs[$i]->addNavigation(next=>$nextid);
-    # 	$docs[$i+1]->addNavigation(previous=>$previd); }}
+    $self->addNavigation($tree,@nav) if @nav;
   }
   @docs; }
 
@@ -140,23 +132,13 @@ sub processPages {
     map($parent->addChild($_),@removed); }
   @docs; }
 
-# Assuming there is one or more ltx:navigation nodes in the document,
-# we'll want to copy them to the appropriate pages after spliting
-sub copyNavigation {
-  my($self,$entry,$rootid)=@_;
+sub addNavigation {
+  my($self,$entry,@nav)=@_;
   my $doc = $$entry{document};
-  $rootid = $$entry{id} unless $rootid;
-  my $nav = $doc->findnode("descendant::ltx:navigation");
-  if(!$nav){
-    $doc->addNodes($doc->getDocumentElement,['ltx:navigation',{}]); # Create new node, if none
-    $nav = $doc->findnode("descendant::ltx:navigation"); }
+  $doc->addNodes($doc->getDocumentElement,@nav); # cloning, as needed...
   foreach my $child (@{$$entry{children}}){
     my $childdoc = $$child{document};
-    # Copy the navigation node from parent, if this child doesn't yet have one.
-    if(! $childdoc->findnode("descendant::ltx:navigation")){
-      $childdoc->addNodes($childdoc->getDocumentElement,$nav); } # cloning, as needed...
-    $self->copyNavigation($child,$rootid); # now, recurse
- }}
+    $self->addNavigation($child,@nav); }}# now, recurse
 
 our $COUNTER=0;
 sub getPageName {
