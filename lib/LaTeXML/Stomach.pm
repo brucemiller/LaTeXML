@@ -264,7 +264,8 @@ sub egroup {
      || $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \begingroup
     Error('unexpected',$LaTeXML::CURRENT_TOKEN,$self,"Attempt to close boxing group",
 	  $self->currentFrameMessage); }
-  popStackFrame($self,0);
+  else {			# Don't pop if there's an error; maybe we'll recover?
+    popStackFrame($self,0); }
   return; }
 
 sub begingroup {
@@ -278,7 +279,8 @@ sub endgroup {
      || ! $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \bgroup
     Error('unexpected',$LaTeXML::CURRENT_TOKEN,$self,"Attempt to close non-boxing group",
 	  $self->currentFrameMessage); }
-  popStackFrame($self,1);
+  else {			# Don't pop if there's an error; maybe we'll recover?
+    popStackFrame($self,1); }
   return; }
 
 #======================================================================
@@ -311,7 +313,8 @@ sub endMode {
      || ($STATE->lookupValue('MODE') ne $mode)){ # Or was a mode switch to a different mode
     Error('unexpected',$LaTeXML::CURRENT_TOKEN,$self,"Attempt to end mode $mode",
 	  $self->currentFrameMessage); }
-  $self->popStackFrame;		# Effectively egroup.
+  else {			# Don't pop if there's an error; maybe we'll recover?
+    $self->popStackFrame; }		# Effectively egroup.
  return; }
 
 #**********************************************************************
