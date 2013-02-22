@@ -955,6 +955,7 @@ sub trimChildNodes {
 
 sub addNavigation {
   my($self,$relation,$id)=@_;
+  return if $self->findnode('//ltx:navigation/ltx:ref[@rel="'.$relation.'"][@idref="'.$id.'"]');
   my $ref = ['ltx:ref',{idref=>$id,rel=>$relation,show=>'fulltitle'}];
   if(my $nav = $self->findnode('//ltx:navigation')){
     $self->addNodes($nav,$ref); }
