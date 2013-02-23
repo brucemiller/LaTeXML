@@ -25,7 +25,7 @@ use base qw(LaTeXML::Post::Processor);
 #         Among which:
 #         CSS   is a '|' separated list of paths
 #         ICON  a favicon
-#         resource-directory a directory under top-level to put resources (css, js, etc)
+#         resource_directory a directory under top-level to put resources (css, js, etc)
 sub new {
   my($class,%options)=@_;
   my $self = $class->SUPER::new(%options);
