@@ -1123,9 +1123,6 @@ sub pathname_is_specialprotocol {
   my($pathname)=@_;
   ($pathname =~ /^(literal|https|http|ftp):/) && $1; }
 
-# Perhaps this should evolve to cover stored filecontents
-# But to do that, maybe we need string (& url) resources, as well.
-# but actually, we'd still want to know what filename the data is pretending to be!
 our $findfile_options = {type=>1, notex=>1, noltxml=>1};
 sub FindFile {
   my ($file,%options)=@_;
@@ -1139,45 +1136,51 @@ sub FindFile {
     return ($options{notex} ? undef : $file); }
   elsif(pathname_is_specialprotocol($file)){ # If a known special protocol return immediately
     return $file; }
-  $file .= ".$options{type}" if $options{type};
+  elsif(pathname_is_nasty($file)){ # If it is a nasty filename, we won't touch it.
+    return undef; }
 
-  # If we REALLY want to rely on k-path-search, we could just push $PATHS onto TEXINPUTS
-  # and ONLY use kpsewhich...? would that be faster or better in any way?
+  if($options{type}){		# Specific type requested? Search for it.
+    FindFile_aux($file.".".$options{type},%options); }
+  else {			# If no type given, we MAY expect .tex, or maybe NOT!!
+    FindFile_aux("$file.tex",%options) || FindFile_aux($file,%options); }}
+
+sub FindFile_aux {
+  my($file,%options)=@_;
+  my $path;
+  # If cached, return simple path (it's a key into the cache)
+  if(LookupValue($file.'_contents')){
+    return $file; }
+  # Note that the strategy is complicated by the fact that
+  # (1) we prefer .ltxml bindings, if present
+  # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)
+  # (3) BUT we want to avoid kpsewhich if we can, since it's slower
+  # (4) depending on switches we may EXCLUDE .ltxml OR raw tex OR allow both.
   my $paths    = LookupValue('SEARCHPATHS');
-  (        !$options{noltxml} && !$options{type}
-	   && ( pathname_find_x("$file.tex.ltxml",paths=>$paths,installation_subdir=>'Package')
-		|| pathname_kpathsearch("$file.tex.ltxml") ))
-    || (   !$options{notex}   && !$options{type}
-	   && ( pathname_find_x("$file.tex",paths=>$paths) || pathname_kpathsearch("$file.tex") ))
-      || ( !$options{noltxml}
-	   && ( pathname_find_x("$file.ltxml",paths=>$paths,installation_subdir=>'Package')
-		|| pathname_kpathsearch("$file.ltxml") ))
-	||(!$options{notex}
-	   && ( pathname_find_x("$file",paths=>$paths) || pathname_kpathsearch($file) ));
+  # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
+  if(!$options{noltxml}
+     && ($path=pathname_find("$file.ltxml",paths=>$paths,installation_subdir=>'Package'))){
+    return $path; }
+  # If we're EXCLUDING ltxml, then FIRST use pathname_find to search for file (faster, blahblah)
+  if($options{noltxml} && ($path=pathname_find($file,paths=>$paths))){
+    return $path; }
+  # Otherwise, pass on to kpsewhich
+  # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
+  # The main point, though, is to we make only ONE (more) call.
+  return undef if grep(pathname_is_nasty($_), @$paths); # SECURITY! No nasty paths in cmdline
+  # Do we need to sanitize these environment variables?
+  my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
+  my $texinputs = join(':',@$paths, $ENV{TEXINPUTS}||':');
+  my $candidates = join(' ',
+			(!$options{noltxml} ? ("$file.ltxml"):()),
+			(!$options{notex}   ? ($file):()));
+  if(my $result = `TEXINPUTS=$texinputs $kpsewhich $candidates`){
+    if($result =~ /^\s*(\S+)\n/s){
+      return $1; }}
  }
 
 sub pathname_is_nasty {
   my($pathname)=@_;
   $pathname =~ /[^\w\-_\+\=\/\\\.~]/; }
-
-sub pathname_kpathsearch {
-  my($path)=@_;
-  # Note; unless we want to write a "Safe" version of backtick,
-  # we need to sanitize the pathname!
-  # Of course, we're searching /texmf/ which has a somewhat portable|clean set of names...
-  return undef if pathname_is_nasty($path);
-  my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
-  my $found = `$kpsewhich $path`; 
-
-  chomp($found); 
-  $found; }
-
-# Note that this looks for cached filecontents, too!
-sub pathname_find_x {
-  my($path,%options)=@_;
-  if(LookupValue($path.'_contents')){
-    return $path; }
-  pathname_find($path,%options); }
 
 sub maybeReportSearchPaths {
   if(LookupValue('SEARCHPATHS_REPORTED')){ 
