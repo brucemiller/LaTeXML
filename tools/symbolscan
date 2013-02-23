@@ -52,7 +52,7 @@ my $symbols = sortSymbols(extractSymbols($state,$pkgs));
 # and format the result.
 if($UNICODETHESAURUS){
   my $thesaurus = completeUnicodeThesaurus($symbols);
-  binmode(STDOUT,":utf8");
+  binmode(STDOUT,":encoding(UTF-8)");
   printThesaurus($thesaurus); }
 elsif($THESAURUS){
   my $thesaurus = completeThesaurus($symbols);
