@@ -42,10 +42,11 @@ sub process {
     pathname_mkdir($destdir)
       or return Fatal('I/O',$destdir,undef,"Couldn't create directory '$destdir'",
 		      "Response was: $!");
-    open(OUT,">",$destination)
+    my $OUT;
+    open($OUT,'>',$destination)
       or return Fatal('I/O',$destdir,undef,"Couldn't write '$destination'","Response was: $!");
-    print OUT $string;
-    close(OUT); }
+    print $OUT $string;
+    close($OUT); }
   else {
     print $string; }
   $doc; }
