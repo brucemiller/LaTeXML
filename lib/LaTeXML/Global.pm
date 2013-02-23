@@ -84,27 +84,19 @@ use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
 use constant CC_CS      => 16;
 use constant CC_NOTEXPANDED => 17;
-# Can use constants here; they should never be modified.
-our $CONSTANT_T_BEGIN = bless ['{',   1], 'LaTeXML::Token';
-our $CONSTANT_T_END   = bless ['}',   2], 'LaTeXML::Token';
-our $CONSTANT_T_MATH  = bless ['$',   3], 'LaTeXML::Token';
-our $CONSTANT_T_ALIGN = bless ['&',   4], 'LaTeXML::Token';
-our $CONSTANT_T_PARAM = bless ['#',   6], 'LaTeXML::Token';
-our $CONSTANT_T_SUPER = bless ['^',   7], 'LaTeXML::Token';
-our $CONSTANT_T_SUB   = bless ['_',   8], 'LaTeXML::Token';
-our $CONSTANT_T_SPACE = bless [' ',  10], 'LaTeXML::Token';
-our $CONSTANT_T_CR    = bless ["\n", 10], 'LaTeXML::Token';
 
-# Too bad we can't REALLY get inlining here...
-sub T_BEGIN() { $CONSTANT_T_BEGIN; }
-sub T_END()   { $CONSTANT_T_END; }
-sub T_MATH()  { $CONSTANT_T_MATH; }
-sub T_ALIGN() { $CONSTANT_T_ALIGN; }
-sub T_PARAM() { $CONSTANT_T_PARAM; }
-sub T_SUPER() { $CONSTANT_T_SUPER; }
-sub T_SUB()   { $CONSTANT_T_SUB; }
-sub T_SPACE() { $CONSTANT_T_SPACE; }
-sub T_CR()    { $CONSTANT_T_CR; }
+# [The documentation for constant is a bit confusing about subs,
+# but these apparently DO generate constants; you always get the same one]
+# These are immutable
+use constant T_BEGIN => bless ['{',   1], 'LaTeXML::Token';
+use constant T_END   => bless ['}',   2], 'LaTeXML::Token';
+use constant T_MATH  => bless ['$',   3], 'LaTeXML::Token';
+use constant T_ALIGN => bless ['&',   4], 'LaTeXML::Token';
+use constant T_PARAM => bless ['#',   6], 'LaTeXML::Token';
+use constant T_SUPER => bless ['^',   7], 'LaTeXML::Token';
+use constant T_SUB   => bless ['_',   8], 'LaTeXML::Token';
+use constant T_SPACE => bless [' ',  10], 'LaTeXML::Token';
+use constant T_CR    => bless ["\n", 10], 'LaTeXML::Token';
 sub T_LETTER  { bless [$_[0],11], 'LaTeXML::Token'; }
 sub T_OTHER   { bless [$_[0],12], 'LaTeXML::Token'; }
 sub T_ACTIVE  { bless [$_[0],13], 'LaTeXML::Token'; }
@@ -140,7 +132,7 @@ sub TokenizeInternal {
   local $LaTeXML::STATE = $STY_CATTABLE;
   LaTeXML::Mouth->new($string)->readTokens; }
 
-sub StartSemiverbatim() {
+sub StartSemiverbatim {
   $LaTeXML::STATE->pushFrame;
   $LaTeXML::STATE->assignValue(MODE=>'text'); # only text mode makes sense here... BUT is this shorthand safe???
   $LaTeXML::STATE->assignValue(IN_MATH=>0);
@@ -149,7 +141,7 @@ sub StartSemiverbatim() {
   $LaTeXML::STATE->assignValue(font=>$LaTeXML::STATE->lookupValue('font')->merge(encoding=>'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
-sub EndSemiverbatim() {  $LaTeXML::STATE->popFrame; }
+sub EndSemiverbatim {  $LaTeXML::STATE->popFrame; }
 
 #======================================================================
 # Token List constructors.
@@ -180,7 +172,7 @@ sub Revert {
 our $UNTEX_LINELENGTH = 78;
 sub UnTeX {
   my($thing)=@_;
-  return undef unless defined $thing;
+  return unless defined $thing;
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
   my $length = 0;
@@ -267,10 +259,8 @@ sub Color {
   $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
   bless [$model,@components],$class; }
 
-our $CONSTANT_BLACK = bless ['rgb',0,0,0],'LaTeXML::Color::rgb';
-our $CONSTANT_WHITE = bless ['rgb',1,1,1],'LaTeXML::Color::rgb';
-sub Black () { $CONSTANT_BLACK; }
-sub White () { $CONSTANT_WHITE; }
+use constant Black => bless ['rgb',0,0,0],'LaTeXML::Color::rgb';
+use constant White => bless ['rgb',1,1,1],'LaTeXML::Color::rgb';
 
 #**********************************************************************
 # Progress reporting.
