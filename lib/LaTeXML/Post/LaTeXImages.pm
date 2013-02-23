@@ -218,19 +218,20 @@ sub process {
     my $preserve_tmpdir = 0;
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir=>$workdir,name=>$jobname,type=>'tex');
-    if(!open(TEX,">$texfile")){
+    my $TEX;
+    if(!open($TEX,'>',$texfile)){
       Error('I/O',$texfile,undef,"Cant write to '$texfile'","Response was: $!");
       return $doc; }
-    print TEX $self->pre_preamble($doc);
-    print TEX "\\makeatletter\n";
-    print TEX $self->preamble($doc)."\n";
-    print TEX "\\makeatother\n";
-    print TEX "\\begin{document}\n";
+    print $TEX $self->pre_preamble($doc);
+    print $TEX "\\makeatletter\n";
+    print $TEX $self->preamble($doc)."\n";
+    print $TEX "\\makeatother\n";
+    print $TEX "\\begin{document}\n";
     foreach my $entry (@pending){
 ##      print TEX "\\fbox{$$entry{tex}}\\clearpage\n"; }
-      print TEX "$$entry{tex}\\clearpage\n"; }
-    print TEX "\\end{document}\n";
-    close(TEX);
+      print $TEX "$$entry{tex}\\clearpage\n"; }
+    print $TEX "\\end{document}\n";
+    close($TEX);
 
     # === Run LaTeX on the file.
     my $texinputs = ".:".join(':',$doc->getSearchPaths,"$FindBin::RealBin/../lib/LaTeXML/texmf/")
@@ -254,11 +255,11 @@ sub process {
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions=();
-    if(open(LOG,"$workdir/$jobname.log")){
-	while(<LOG>){
+    if(open($LOG,'<',"$workdir/$jobname.log")){
+	while(<$LOG>){
 	    if(/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/){
 		$dimensions[$1]=[$2,$3,$4]; }}
-	close(LOG); }
+	close($LOG); }
     else {
 	Warn('expected','dimensions',undef,
 	     "Couldn't read log file $workdir/$jobname.log to extract image dimensions",
