@@ -69,7 +69,7 @@ if($destination){
   if(my $dir =pathname_directory($destination)){
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }}
 
-binmode(STDERR,":utf8");
+binmode(STDERR,":encoding(UTF-8)");
 
 $mode = 'BibTeX' if !defined $mode && ($source =~ /\.bib$/);
 $mode = 'TeX' unless defined $mode;
@@ -102,15 +102,14 @@ if($digested){
 print STDERR "\nConversion complete: ".$latexml->getStatusMessage.".\n";
 print STDERR "processing finished ".localtime()."\n" unless $verbosity < 0;
 
-if($destination){
-#  open(OUT,">:utf8",$destination) or die "Couldn't open output file $destination: $!"; }
-  open(OUT,">",$destination) or die "Couldn't open output file $destination: $!"; }
+if(!$serialized){}
+elsif($destination){
+  my $OUTPUT;
+  open($OUTPUT,">",$destination) or die "Couldn't open output file $destination: $!";
+  print $OUTPUT $serialized;
+  close($OUTPUT); }
 else {
-#  binmode(STDOUT,":utf8");
-  *OUT = *STDOUT; }
-print OUT $serialized if $serialized;
-if($destination){ 
-  close(OUT); }
+  print $serialized; }
 
 # ========================================
 # Now, unbind stuff, so we can clear memory

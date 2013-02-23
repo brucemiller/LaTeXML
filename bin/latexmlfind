@@ -35,7 +35,7 @@ my $source = $ARGV[0];
 #**********************************************************************
 # Do the processing.
 print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
-binmode(STDOUT,":utf8");	# Make sure output can handle UTF8
+binmode(STDOUT,":encoding(UTF-8)");	# Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
 my $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>"http://dlmf.nist.gov/LaTeXML");

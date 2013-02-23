@@ -62,7 +62,7 @@ if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
 pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
 	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 
-binmode(STDERR,":utf8");
+binmode(STDERR,":encoding(UTF-8)");
 print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 
 #======================================================================
@@ -164,7 +164,6 @@ if($mathimage){
     die "I dont really want to write the image to STDOUT, sorry!"; }
   $mathimage =~ s/\.(png|gif|jpg|jpeg)$//;
   my $imagetype = $1 || 'png';
-#  require 'LaTeXML/Post/MathImages.pm';
   my($result) = $post->ProcessChain($doc,
       DirectMathImages->new(magnification=>$mag,
 			    imagename=>$mathimage, imagetype=>$imagetype,
@@ -173,7 +172,7 @@ if($mathimage){
 
 
 if($pmml){
-  require 'LaTeXML/Post/MathML.pm';
+  require LaTeXML::Post::MathML;
   my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::MathML::Presentation->new(
                     (defined $linelength ? (linelength=>$linelength):()),
@@ -183,13 +182,13 @@ if($pmml){
   outputXML($result->findnode('//m:math'), $pmml, $mmlURI); }
 
 if($cmml){
-  require 'LaTeXML/Post/MathML.pm';
+  require LaTeXML::Post::MathML;
   my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::MathML::Content->new(%OPTIONS));
   outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
 
 if($om){
-  require 'LaTeXML/Post/OpenMath.pm';
+  require LaTeXML::Post::OpenMath;
   my($result) = $post->ProcessChain($doc,
       LaTeXML::Post::OpenMath->new(%OPTIONS));
   outputXML($result->findnode('//om:OMOBJ'), $om, $omURI); }
@@ -219,9 +218,10 @@ sub outputXML {
     $destination = pathname_canonical($destination);
     if(my $dir =pathname_directory($destination)){
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
-    open(OUT,">",$destination) or die "Couldn't open output file $destination: $!";
-    print OUT $serialized;
-    close(OUT); }}
+    my $OUT;
+    open($OUT,'>',$destination) or die "Couldn't open output file $destination: $!";
+    print $OUT $serialized;
+    close($OUT); }}
 
 #======================================================================
 # Variant of MathImages to write directly to destination
