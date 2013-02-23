@@ -216,7 +216,7 @@ sub readXToken {
   my($token,$cc,$defn);
   while(1){
     if(!defined($token = (@{$$self{pushback}} ? shift(@{$$self{pushback}}) : $$self{mouth}->readToken() ))){
-      return undef unless $$self{autoclose} && $toplevel && @{$$self{mouthstack}};
+      return unless $$self{autoclose} && $toplevel && @{$$self{mouthstack}};
       $self->closeMouth; }		# Next input stream.
     elsif(($cc = $$token[1]) == CC_NOTEXPANDED){ # NOTE: Inlined ->getCatcode
       # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
@@ -303,7 +303,7 @@ sub readMatch {
     return $choice unless @tomatch;	# All matched!!!
     $self->unread(@matched);	# Put 'em back and try next!
   }
-  return undef; }
+  return; }
 
 # Match the input against a set of keywords; Similar to readMatch, but the keywords are strings,
 # and Case and catcodes are ignored; additionally, leading spaces are skipped.
@@ -322,7 +322,7 @@ sub readKeyword {
     return $keyword unless @tomatch;	# All matched!!!
     $self->unread(@matched);	# Put 'em back and try next!
   }
-  return undef; }
+  return; }
 
 # Return a (balanced) sequence tokens until a match against one of the Tokens in @delims.
 # In list context, also returns the found delimiter.
@@ -331,7 +331,7 @@ sub readUntil {
   my ($n,$found,@tokens)=(0);
   while(!defined ($found=$self->readMatch(@delims))){
     my $token=$self->readToken(); # Copy next token to args
-    return undef unless defined $token;
+    return unless defined $token;
     push(@tokens,$token);
     $n++;
     if($$token[1] == CC_BEGIN){ # And if it's a BEGIN, copy till balanced END

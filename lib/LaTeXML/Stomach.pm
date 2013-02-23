@@ -83,7 +83,7 @@ sub digestNextBody {
 # Returns a List or MathList containing the digested material.
 sub digest {
   my($self,$tokens)=@_;
-  return undef unless defined $tokens;
+  return unless defined $tokens;
   $$self{gullet}->readingFromMouth(LaTeXML::Mouth->new(), sub {
     my($gullet)=@_;
     $gullet->unread($tokens);

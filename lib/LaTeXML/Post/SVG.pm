@@ -534,7 +534,7 @@ sub getSVGBounds {
 sub SVGObjectBoundary {
   my ($node, @boundary) = @_;
   my $tag = getQName($node);
-  return undef unless $tag;
+  return unless $tag;
   my @xs = ($boundary[0], $boundary[1]);
   my @ys = ($boundary[2], $boundary[3]);
 

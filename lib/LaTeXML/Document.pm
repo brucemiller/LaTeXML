@@ -867,7 +867,7 @@ sub setNodeBox {
 sub getNodeBox {
   my($self,$node)=@_;
   my $t =  $node->nodeType;
-  return undef if $t != XML_ELEMENT_NODE;
+  return if $t != XML_ELEMENT_NODE;
   if(my $boxid = $node->getAttribute('_box')){
     $$self{node_boxes}{$boxid}; }}
 

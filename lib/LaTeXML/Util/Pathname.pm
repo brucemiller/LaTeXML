@@ -174,14 +174,14 @@ sub pathname_cwd { pathname_canonical(cwd()); }
 
 sub pathname_mkdir {
   my($directory)=@_;
-  return undef unless $directory;
+  return unless $directory;
   $directory = pathname_canonical($directory);
   my($volume,$dirs,$last)=File::Spec->splitpath($directory);
   my(@dirs)=(File::Spec->splitdir($dirs),$last);
   for(my $i=0; $i <= $#dirs; $i++){
     my $dir = File::Spec->catpath($volume,File::Spec->catdir(@dirs[0..$i]),'');
     if(! -d $dir){
-      mkdir($dir) or return undef; }}
+      mkdir($dir) or return; }}
   return $directory; }
 
 # copy a file, preserving attributes, if possible.
@@ -193,14 +193,14 @@ sub pathname_copy {
   $destination = pathname_canonical($destination);
   if((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))){
     if(my $destdir = pathname_directory($destination)){
-      pathname_mkdir($destdir) or return undef; }
+      pathname_mkdir($destdir) or return; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
 ###      # According to Ioan, this should work:
-###      system("xcopy /P $source $destination")==0 or return undef; }
+###      system("xcopy /P $source $destination")==0 or return; }
 ###    else {			# Unix
-###      system("cp --preserve=timestamps $source $destination")==0 or return undef; }
+###      system("cp --preserve=timestamps $source $destination")==0 or return; }
     # Hopefully this portably copies, preserving timestamp.
-    copy($source,$destination) or return undef; 
+    copy($source,$destination) or return; 
     my($atime,$mtime)= (stat($source))[8,9];
     utime $atime,$mtime,$destination; # And set the modification time
   }
@@ -227,14 +227,14 @@ our @INSTALLDIRS = grep(-d $_, map(pathname_canonical("$_/LaTeXML"), @INC));
 
 sub pathname_find {
   my($pathname,%options)=@_;
-  return undef unless $pathname;
+  return unless $pathname;
   my @paths = candidate_pathnames($pathname,%options);
   foreach my $path (@paths){
     return $path if -f $path; }}
 
 sub pathname_findall {
   my($pathname,%options)=@_;
-  return undef unless $pathname;
+  return unless $pathname;
   my @paths = candidate_pathnames($pathname,%options);
   grep(-f $_, @paths); }
 

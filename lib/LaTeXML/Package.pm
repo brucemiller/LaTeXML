@@ -1137,7 +1137,7 @@ sub FindFile {
   elsif(pathname_is_specialprotocol($file)){ # If a known special protocol return immediately
     return $file; }
   elsif(pathname_is_nasty($file)){ # If it is a nasty filename, we won't touch it.
-    return undef; }
+    return; }
 
   if($options{type}){		# Specific type requested? Search for it.
     FindFile_aux($file.".".$options{type},%options); }
@@ -1166,7 +1166,7 @@ sub FindFile_aux {
   # Otherwise, pass on to kpsewhich
   # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
   # The main point, though, is to we make only ONE (more) call.
-  return undef if grep(pathname_is_nasty($_), @$paths); # SECURITY! No nasty paths in cmdline
+  return if grep(pathname_is_nasty($_), @$paths); # SECURITY! No nasty paths in cmdline
   # Do we need to sanitize these environment variables?
   my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
   my $texinputs = join(':',@$paths, $ENV{TEXINPUTS}||':');
@@ -1601,7 +1601,7 @@ sub DeclareFontMap {
 # with TeX's rearrangement of ASCII...
 sub FontDecode {
   my($code,$encoding,$implicit)=@_;
-  return undef if !defined $code || ($code < 0);
+  return if !defined $code || ($code < 0);
   my($map,$font);
   if(! $encoding){
     $font = LookupValue('font');
@@ -1621,7 +1621,7 @@ sub FontDecode {
 
 sub FontDecodeString {
   my($string,$encoding,$implicit)=@_;
-  return undef if !defined $string;
+  return if !defined $string;
   my($map,$font);
   if(! $encoding){
     $font = LookupValue('font');

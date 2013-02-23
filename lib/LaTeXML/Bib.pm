@@ -63,12 +63,13 @@ sub newFromFile {
   my $file = pathname_find($bibname,types=>['bib'],paths=>$paths);
   Fatal('missing_file',$bibname,undef,"Can't find BibTeX file $bibname",
 	"SEACHPATHS is ".join(', ',@$paths)) unless $file;
-  open(BIB,$file) or Fatal('I/O',$file,undef,"Can't open BibTeX $file for reading",$!);
+  my $BIB;
+  open($BIB,'<',$file) or Fatal('I/O',$file,undef,"Can't open BibTeX $file for reading",$!);
   $$self{file} = $bibname;
-  $$self{lines} = [<BIB>];
+  $$self{lines} = [<$BIB>];
   $$self{line} = shift(@{$$self{lines}}) || '';
   $$self{lineno} = 1;
-  close(BIB);
+  close($BIB);
   $self; }
 
 sub newFromString {

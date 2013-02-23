@@ -438,7 +438,7 @@ sub new {
       $schemadoc = $xmlparser->parseFile($path); }
     else {
 ###      Error('missing_file',$name,"Can't find RelaxNG schema module $name");
-      return undef;		# ???
+      return;		# ???
     }}
   bless {schemadoc=>$schemadoc},$class; }
 

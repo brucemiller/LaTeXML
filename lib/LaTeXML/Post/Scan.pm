@@ -134,7 +134,7 @@ sub noteLabels {
 # Clean up a node before insertion into database.
 sub cleanNode {
   my($self,$doc,$node)=@_;
-  return undef unless $node;
+  return $node unless $node;
   my $cleaned = $node->cloneNode(1);
   # Remove indexmark (anything else ?)
   map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark',$cleaned));

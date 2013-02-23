@@ -88,7 +88,7 @@ sub splitString {
 
 sub getNextLine {
   my($self)=@_;
-  return undef unless scalar(@{$$self{buffer}});
+  return unless scalar(@{$$self{buffer}});
   my $line = shift(@{$$self{buffer}});
   (scalar(@{$$self{buffer}}) ? $line . "\r" : $line); }	# No CR on last line!
 
@@ -233,7 +233,7 @@ sub readToken {
       if (!defined $line) {	# Exhausted the input.
 	$$self{chars}=[];
 	$$self{nchars}=0;
-	return undef;  }
+	return;  }
       # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
       $line =~ s/((\\ )*)\s*$/$1\r/s;
       $$self{chars}=[split('',$line)];
@@ -333,11 +333,11 @@ sub new {
 
 sub openFile {
   my($self,$pathname)=@_;
-  local *IN;
+  my $IN;
   if(! -r $pathname){ Fatal('I/O',$pathname,$self,"File $pathname is not readable."); }
   elsif((!-z $pathname) && (-B $pathname)){Fatal('I/O',$pathname,$self,"Input file $pathname appears to be binary."); }
-  open(IN,$pathname) || Fatal('I/O',$pathname,$self,"Can't open $pathname for reading",$!);
-  $$self{IN} = *IN;
+  open($IN,'<',$pathname) || Fatal('I/O',$pathname,$self,"Can't open $pathname for reading",$!);
+  $$self{IN} = $IN;
   $$self{buffer}=[];
 }
 
@@ -358,7 +358,7 @@ our $WARNED_8BIT=0;
 sub getNextLine {
   my($self)=@_;
   if(! scalar(@{$$self{buffer}})){
-    return undef unless $$self{IN};
+    return unless $$self{IN};
     my $fh = \*{$$self{IN}};
     my $line = <$fh>;
     if(! defined $line){

@@ -11,6 +11,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Array;
+use strict;
 use LaTeXML::Global;
 use LaTeXML::Package;
 use base qw(LaTeXML::Object);
@@ -45,9 +46,9 @@ sub beDigested {
     my $typedef = $$self{type} && $LaTeXML::Parameters::PARAMETER_TABLE{$$self{type}};
     my $dodigest = (ref $item) && (!$typedef || !$$typedef{undigested});
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    StartSemiverbatim if $semiverb;
+    StartSemiverbatim() if $semiverb;
     push(@v, ($dodigest ? $item->beDigested($stomach) : $item));
-    EndSemiverbatim if $semiverb; 
+    EndSemiverbatim() if $semiverb; 
   }
   (ref $self)->new(open=>$$self{open},close=>$$self{close}, separator=>$$self{separator},
 		   itemopen=>$$self{itemopen},itemclose=>$$self{itemclose},

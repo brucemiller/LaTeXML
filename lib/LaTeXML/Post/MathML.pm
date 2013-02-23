@@ -247,7 +247,7 @@ sub find_inherited_attribute {
     if(my $value = $node->getAttribute($attribute)){
       return $value; }
     $node = $node->parentNode; }
-  return undef; }
+  return; }
 
 # Convert a node that will automatically be made smaller, due to its context,
 # such as in the numerator or denominator of a fraction.

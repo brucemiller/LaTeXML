@@ -60,12 +60,12 @@ sub loadSchema {
   my($type,@data)=@{$$self{schemadata}};
   if($type eq 'DTD'){
     my($roottag,$publicid,$systemid)=@data;
-    require 'LaTeXML/Model/DTD.pm';
+    require LaTeXML::Model::DTD;
     $name = $systemid;
     $$self{schema} = LaTeXML::Model::DTD->new($self,$roottag,$publicid,$systemid); }
   elsif($type eq 'RelaxNG'){
     ($name)=@data;
-    require 'LaTeXML/Model/RelaxNG.pm';
+    require LaTeXML::Model::RelaxNG;
     $$self{schema} = LaTeXML::Model::RelaxNG->new($self,$name); }
 
   if(my $compiled = !$$self{no_compiled}
@@ -99,9 +99,10 @@ sub compileSchema {
 sub loadCompiledSchema {
   my($self,$file)=@_;
   NoteBegin("Loading compiled schema $file");
-  open(MODEL,$file) or Fatal('I/O',$file,undef,"Cannot open Compiled Model $file for reading",$!);
+  my $MODEL;
+  open($MODEL,'<',$file) or Fatal('I/O',$file,undef,"Cannot open Compiled Model $file for reading",$!);
   my $line;
-  while($line = <MODEL>){
+  while($line = <$MODEL>){
     if($line =~ /^([^\{]+)\{(.*?)\}\((.*?)\)$/){
       my($tag,$attr,$children)=($1,$2,$3);
       $self->setTagProperty($tag,'attributes',{map(($_=>1),split(/,/,$attr))});
@@ -112,6 +113,7 @@ sub loadCompiledSchema {
     else {
       Fatal('internal',$file,undef,"Compiled model '$file' is malformatted at \"$line\""); }
   }
+  close($MODEL);
   NoteEnd("Loading compiled schema $file"); }
 
 

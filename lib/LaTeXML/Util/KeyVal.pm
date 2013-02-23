@@ -91,7 +91,7 @@ sub readKeyVals {
 	# WHOA!!! Secret knowledge!!!
 	my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
 	my $typedef = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
-	StartSemiverbatim if $typedef && $$typedef{semiverbatim};
+	StartSemiverbatim() if $typedef && $$typedef{semiverbatim};
 
 	## ($value,$delim)=$gullet->readUntil($T_COMMA,$close);
 	# This is the core of $gullet->readUntil, but preserves braces needed by rare key types
@@ -106,7 +106,7 @@ sub readKeyVals {
 	  $value = $value->neutralize; }
 	else {
 	  ($value) = $keydef->reparseArgument($gullet,$value) }
-	EndSemiverbatim if $typedef && $$typedef{semiverbatim};
+	EndSemiverbatim() if $typedef && $$typedef{semiverbatim};
       }
       else {			# Else, get default value.
 	$value = LookupValue('KEYVAL@'.$keyset.'@'.$key.'@default'); }
@@ -191,9 +191,9 @@ sub beDigested {
     my $type = ($keydef && (scalar(@$keydef)==1) && $keydef->[0]->{type}) || 'Plain';
     my $typedef = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    StartSemiverbatim if $semiverb;
+    StartSemiverbatim() if $semiverb;
     push(@dkv,$key, ($dodigest ? $value->beDigested($stomach) : $value)); 
-    EndSemiverbatim if $semiverb; 
+    EndSemiverbatim() if $semiverb; 
   }
   (ref $self)->new($$self{keyset},$$self{open},$$self{close},@dkv); }
 

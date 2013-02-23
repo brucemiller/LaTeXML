@@ -86,7 +86,7 @@ our %FENCEOPS = map(($_=>1),
 our %SEPARATOROPS = map(($_=>1), ",",";",".","\x{2063}");
 
 
-binmode(STDOUT,":utf8") if $DEBUG;
+binmode(STDOUT,":encoding(UTF-8)") if $DEBUG;
 
 #######################################################################
 # Top-level interface

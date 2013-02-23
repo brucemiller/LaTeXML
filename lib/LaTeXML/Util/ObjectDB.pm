@@ -146,7 +146,7 @@ sub getKeys {
 
 sub lookup {
   my($self,$key)=@_;
-  return undef unless defined $key;
+  return unless defined $key;
   my $entry = $$self{objects}{$key}; # Get the local copy.
   return $entry if $entry;
   $entry = $$self{externaldb}{Encode::encode('utf8',$key)}; # Get the external object

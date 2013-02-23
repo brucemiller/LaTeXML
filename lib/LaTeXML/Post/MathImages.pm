@@ -31,7 +31,7 @@ sub extractTeX {
   my($self,$doc,$node)=@_;
   my $mode = uc($node->getAttribute('mode')||'INLINE');
   my $tex = $self->cleanTeX($node->getAttribute('tex'));
-  return undef unless defined $tex;
+  return unless defined $tex;
   $mode = 'DISPLAY' if $tex=~ s/^\s*\\displaystyle\s+//; # Strip leading displaystyle
   ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
