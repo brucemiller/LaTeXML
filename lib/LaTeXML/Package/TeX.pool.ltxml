@@ -4913,10 +4913,30 @@ DefConstructor('\mathord{}',"<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", bounded=>1)
 DefConstructor('\mathop{}', "<ltx:XMWrap role='BIGOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathbin{}', "<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathrel{}',"<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded=>1);
+DefConstructor('\mathrel{}',"<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathopen{}', "<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", bounded=>1);
 
+# If we only have XMTok children and none of them has a role "script", concatenate:
+DefMathRewrite(xpath=>'descendant-or-self::ltx:XMWrap['
+	       # Only XMWrap's from the above class of operators
+	       .'(@role="OP" or @role="BIGOP" or @role="ADDOP" or @role="MULOP" '
+	       . 'or @role="OPEN" or @role="CLOSE" or @role="RELOP")'
+	       # with only XMTok as children with the roles in (roughly) the same set
+	       .' and not(child::*[local-name() != "XMTok"])'
+	       .' and not(ltx:XMTok['
+	       .   '@role !="OP" and @role!="BIGOP" and @role!="ADDOP" and @role!="MULOP" '
+	       .   'and @role!="OPEN" and @role!="CLOSE" and @role!="RELOP" and @role!="METARELOP"'
+	       .   '])]',
+ replace=>sub {
+   my ($document,$node) = @_;
+   my $replacement = $node->cloneNode(0);
+   my $content = $node->textContent;
+   $replacement->appendText($content);
+   $replacement->setName('ltx:XMTok');
+   $document->getNode->appendChild($replacement);
+ });
 
 DefMacro('\hiderel{}', "#1"); # Just ignore, for now...
 
@@ -5109,78 +5129,75 @@ DefRewrite(xpath=>'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
 our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:graphics";
 sub insertBlock {
   my($document,$body)=@_;
-  # Make sure we're starting the current insertion at block level, bu closing any open p (is ltx:p enough?)
+  # Make sure we're at some kind of block level, by closing any open p (is ltx:p enough?)
   $document->maybeCloseElement('ltx:p');
-
   my $prev = $document->getNode->lastChild; # and remember the last node before insertion.
-  $document->absorb($body);	    # Now insert.
-  $document->maybeCloseElement('ltx:p');
 
+  $document->absorb($body);	    # Now insert.
+  $document->maybeCloseElement('ltx:p'); # and close any ltx:p, to be safe
+
+  # This is the current node AFTER the insertion (may have moved up/down, whatever)
   my $current = $document->getNode; # Watch that Current node makes sense after surgery.
   my $model   = $document->getModel;
-  my $parent  = $document->getElement;
+  my $parent  = $document->getElement; # parent of the insertions
   return () unless $parent;
-  # These nodes were inserted
+  # Find $previous position within the CURRENT parent
+  my $x;
+  while($prev && ($x=$prev->parentNode) && !$x->isSameNode($parent)){
+    $prev = $x; }
+  # Now look at all nodes at current level of insertion
   my @nodes = $parent->childNodes;
-  # but remove any that precede $prev
-  if($prev && grep($$prev == $$_, @nodes)){ # IF $prev is sibling of added nodes
-    while( ${$nodes[0]} != $$prev){ shift(@nodes); } # then strip away $prev, and preceding, from list
+  if($prev && grep($prev->isSameNode($_), @nodes)){ # Remove the "old" nodes from @nodes
+    while( !$nodes[0]->isSameNode($prev)){ shift(@nodes); }
     shift(@nodes); }
+  # So, what remains in @nodes is the current set of inserted nodes (whew)
 
-  my @savenodes = @nodes;	# These are the ones that got recently added.
-
-  # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
-  my @new = ();
+  # If we're at a level that can contain ltx:p, we want to watch for lines of text
+  # that should be wrapped in a ltx:p so they can be centered, aligned, whatever.
   if ($model->canContain($parent,'ltx:p')) {
+    my @new = ();
+    my @savenodes = @nodes;	# These are the ones that got recently added.
+
+    # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
     while (@nodes) {
       my @x=();		 # Collect up the next group of "inline" nodes
       my $moved_current = 0; # whether we have affected the document's current node.
       while (@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
-			|| (($nodes[0]->nodeType == XML_ELEMENT_NODE) && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))) {
+			|| (($nodes[0]->nodeType == XML_ELEMENT_NODE)
+			    && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))) {
 	$moved_current = 1 if ${$nodes[0]} == $$current;
-	push(@x,shift(@nodes));
-      }
-
-      if (@x && !grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /\S/), @x)) { # Only whitespace text nodes?
+	push(@x,shift(@nodes)); }
+      if (@x && !grep(($_->nodeType != XML_TEXT_NODE)
+		      || ($_->textContent =~ /\S/), @x)) { # Only whitespace text nodes?
 	map($parent->removeChild($_),@x); # just remove them
-	$document->setNode( (@new ? $new[-1] : $parent) ) if $moved_current;
-      }		   # Watch out if we've deleted the current node!
+	# Watch out if we've deleted the current node!
+	$document->setNode( (@new ? $new[-1] : $parent) ) if $moved_current; }
       elsif (@x) { # Some worthwhile inline nodes to wrap in a <ltx:p>
 	my $para = $document->openElementAt($parent,'ltx:p');
 	$parent->removeChild($para);
 	$parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
-	$document->setNode($para) if $moved_current; # This new <ltx:p> will be current if we've wrapped current.
+	$document->setNode($para) if $moved_current; # new <ltx:p> will become current
 	foreach my $c (@x) {
 	  if ($c->nodeType == XML_TEXT_NODE) {
 	    my $t = $c->textContent;
-	    $para->appendTextNode($t) if $t =~ /\S/;
-	  }			# append if more than just whitespace.
+	    $para->appendTextNode($t) if $t =~ /\S/; } # append if more than just whitespace.
 	  else {
-	    $para->appendChild($c);
-	  }
-	  $parent->removeChild($c);
-	}
-	push(@new,$para);
-      } elsif ($nodes[0]->nodeType == XML_ELEMENT_NODE) { # other element (block or similar), just move to new list
+	    $para->appendChild($c); }
+	  $parent->removeChild($c); }
+	push(@new,$para); }
+      # other element (block or similar), just move to new list
+      elsif ($nodes[0]->nodeType == XML_ELEMENT_NODE) {
 	if ($model->getNodeQName($nodes[0]) eq 'ltx:break') { # except for <break>!
 	  $parent->removeChild(shift(@nodes));
-	  $document->setNode($new[-1]) if $moved_current;
-	}		# Watch out if we've deleted the current node!
+	  # Watch out if we've deleted the current node!
+	  $document->setNode($new[-1]) if $moved_current; }
 	else {
-	  push(@new,shift(@nodes));
-	}
-      } else {
-	shift(@nodes);
-      }
-    }
-  }
+	  push(@new,shift(@nodes)); }}
+      else {
+	shift(@nodes); }}
+    @nodes = (@new ? @new : @savenodes); }
 
-  # If we didn't get any sifted nodes at all, just provide the original additions?
-  @new = @savenodes unless @new;
-
-  # NOW, what we probably REALLY should do is return the parent of these
-  # IFF there are no further insertions into that node... ????
-  @new; }
+  @nodes; }
 
 sub aligningEnvironment {
   my($align,$class,$document,%props)=@_;
