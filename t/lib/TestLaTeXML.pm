@@ -49,8 +49,8 @@ sub skip_all {
 sub latexml_ok {
   my($texpath,$xmlpath,$name)=@_;
   my($latexml,$dom,$domstring);
-
-  eval{ $latexml = LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,
+  my @paths = ($texpath =~ m|^(.+)/\w+\.tex$| ? ($1):());
+  eval{ $latexml = LaTeXML->new(preload=>[], searchpaths=>[], includeComments=>0,
 				verbosity=>-2); };
 #				verbosity=>-1); };
   return do_fail($name,"Couldn't instanciate LaTeXML: ".@!) unless $latexml;
