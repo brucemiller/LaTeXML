@@ -233,7 +233,7 @@ sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
 # Otherwise, the token itself is returned.
 sub lookupMeaning {
   my($self,$token)=@_;
-  if(my $cs = $token->getExecutableName){
+  if(my $cs = $token && $token->getExecutableName){
     my $e=$$self{table}{meaning}{$cs}; $e && $$e[0]; }
   else { $token; }}
 
