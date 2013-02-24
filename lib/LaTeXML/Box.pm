@@ -25,14 +25,14 @@ sub isaBox {
 
 sub getString {
   my($self)=@_;
-  return $$self[0]; }	# Return the string contents of the box
+  return $$self[0]; }          # Return the string contents of the box
 
 sub getFont {
   my($self)=@_;
-  $$self[1]; }	# Return the font this box uses.
+  return $$self[1]; }   # Return the font this box uses.
 
 sub isMath {
-  return 0; }		# Box is text mode.
+  return 0; }           # Box is text mode.
 
 sub getLocator {
   my($self)=@_;
@@ -45,7 +45,7 @@ sub getSource {
 # So a Box can stand in for a List
 sub unlist {
   my($self)=@_;
-  return ($self); }	# Return list of the boxes
+  return ($self); }     # Return list of the boxes
 
 sub revert {
   my($self)=@_;
@@ -71,7 +71,7 @@ sub beAbsorbed {
   my($self,$document)=@_;
   my $string = $$self[0];
   return ((defined $string) && ($string ne '')
-	  ? $document->openText($$self[0],$$self[1]) : undef); }
+          ? $document->openText($$self[0],$$self[1]) : undef); }
 
 sub getProperty { 
   my($self,$property)=@_;
@@ -98,14 +98,14 @@ sub new {
   return bless [$string,$font,$locator,$tokens,$attributes],$class; }
 
 sub isMath {
-  return 1; }		# MathBoxes are math mode.
+  return 1; }           # MathBoxes are math mode.
 
 sub beAbsorbed {
   my($self,$document)=@_;
   my $string = $$self[0];
   return ((defined $string) && ($string ne '')
-	  ? $document->insertMathToken($$self[0],font=>$$self[1], ($$self[4]? %{$$self[4]} : ()))
-	  : undef); }
+          ? $document->insertMathToken($$self[0],font=>$$self[1], ($$self[4]? %{$$self[4]} : ()))
+          : undef); }
 
 #**********************************************************************
 # LaTeXML::Comment
@@ -134,18 +134,18 @@ use base qw(LaTeXML::Box);
 
 sub new {
   my($class,@boxes)=@_;
-  my($b,$font,$locator);
-  my @b=@boxes;
-  while(defined ($b=shift(@b)) && (!defined $locator)){
-    $locator = $b->getLocator unless defined $locator; }
-  @b=@boxes;
+  my($bx,$font,$locator);
+  my @bxs=@boxes;
+  while(defined ($bx=shift(@bxs)) && (!defined $locator)){
+    $locator = $bx->getLocator unless defined $locator; }
+  @bxs=@boxes;
   # Maybe the most representative font for a List is the font of the LAST box (that _has_ a font!) ???
-  while(defined ($b=pop(@b)) && (!defined $font)){
-    $font = $b->getFont unless defined $font; }
+  while(defined ($bx=pop(@bxs)) && (!defined $font)){
+    $font = $bx->getFont unless defined $font; }
   return bless [[@boxes],$font,$locator||''],$class; }
 
 sub isMath     {
-  return 0; }			# List's are text mode
+  return 0; }                   # List's are text mode
 
 sub unlist {
   my($self)=@_;
@@ -153,18 +153,18 @@ sub unlist {
 
 sub revert {
   my($self)=@_;
-  return map(Revert($_),$self->unlist); }
+  return map {Revert($_)} $self->unlist; }
 
 sub toString {
   my($self)=@_;
-  return join('',grep(defined $_,map($_->toString,$self->unlist))); }
+  return join('',grep {defined $_} map {$_->toString} $self->unlist); }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  return $type.'['.join(',',map(Stringify($_),$self->unlist)).']'; } # Not ideal, but....
+  return $type.'['.join(',',map {Stringify($_)} $self->unlist).']'; } # Not ideal, but....
 
 sub equals {
   my($a,$b)=@_;
@@ -177,7 +177,7 @@ sub equals {
 
 sub beAbsorbed {
   my($self,$document)=@_;
-  return map($document->absorb($_), $self->unlist); }
+  return map {$document->absorb($_)} $self->unlist; }
 
 #**********************************************************************
 # LaTeXML::MathList
@@ -189,7 +189,7 @@ use LaTeXML::Global;
 use base qw(LaTeXML::List);
 
 sub isMath {
-  return 1; }		# MathList's are math mode.
+  return 1; }           # MathList's are math mode.
 
 #**********************************************************************
 # What about Kern, Glue, Penalty ...
@@ -302,9 +302,9 @@ sub revert {
   # WARNING: Forbidden knowledge?
   # But how else to cache this stuff (which is a big performance boost)
   if(my $saved = ($LaTeXML::DUAL_BRANCH
-		  ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
-		  : $$self{reversion})) {
-    $saved->unlist; }
+                  ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
+                  : $$self{reversion})) {
+    return $saved->unlist; }
   else {
     my $defn = $self->getDefinition;
     my $spec = $defn->getReversionSpec;
@@ -313,26 +313,26 @@ sub revert {
       @tokens = &$spec($self,$self->getArgs); }
     else {
       if(defined $spec){
-	@tokens=LaTeXML::Expandable::substituteTokens($spec,map(Tokens(Revert($_)),$self->getArgs))
-	  if $spec ne ''; }
+        @tokens=LaTeXML::Expandable::substituteTokens($spec,map {Tokens(Revert($_))} $self->getArgs)
+          if $spec ne ''; }
       else {
-	my $alias = $defn->getAlias;
+        my $alias = $defn->getAlias;
       if(defined $alias){
-	push(@tokens, T_CS($alias)) if $alias ne ''; }
+        push(@tokens, T_CS($alias)) if $alias ne ''; }
       else {
-	push(@tokens,$defn->getCS); }
+        push(@tokens,$defn->getCS); }
       if(my $parameters = $defn->getParameters){
-	push(@tokens,$parameters->revertArguments($self->getArgs)); }}
+        push(@tokens,$parameters->revertArguments($self->getArgs)); }}
     if(defined (my $body = $self->getBody)){
       push(@tokens, Revert($body));
       if(defined (my $trailer = $self->getTrailer)){
-	push(@tokens, Revert($trailer)); }}}
+        push(@tokens, Revert($trailer)); }}}
     # Now cache it, in case it's needed again
     if($LaTeXML::DUAL_BRANCH){
       $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}=Tokens(@tokens); }
     else {
       $$self{reversion}=Tokens(@tokens); }
-    @tokens; }}
+    return @tokens; }}
 
 sub toString {
   my($self)=@_;
@@ -340,18 +340,18 @@ sub toString {
 
 sub getString {
   my($self)=@_;
-  return $self->toString; }		  # Ditto?
+  return $self->toString; }     # Ditto?
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $hasbody = defined $$self{properties}{body};
   return "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
-			 map(Stringify($_),
+			 map {Stringify($_)}
 			     $self->getArgs,
 			     (defined $$self{properties}{body}
 			      ? ($$self{properties}{body},$$self{properties}{trailer})
-			      : ())))
+			      : ()))
     ."]"; }
 
 sub equals {
