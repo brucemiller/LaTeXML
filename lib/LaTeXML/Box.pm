@@ -11,41 +11,67 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Box;
 use strict;
+use warnings;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
 sub new {
   my($class,$string,$font,$locator,$tokens)=@_;
-  bless [$string,$font,$locator,$tokens],$class; }
+  return bless [$string,$font,$locator,$tokens],$class; }
 
 # Accessors
-sub isaBox     { 1; }
-sub getString  { $_[0][0]; }	# Return the string contents of the box
-sub getFont    { $_[0][1]; }	# Return the font this box uses.
-sub isMath     { 0; }		# Box is text mode.
-sub getLocator { $_[0][2]; }
-sub getSource  { $_[0][2]; }
+sub isaBox {
+  return 1; }
+
+sub getString {
+  my($self)=@_;
+  return $$self[0]; }	# Return the string contents of the box
+
+sub getFont {
+  my($self)=@_;
+  $$self[1]; }	# Return the font this box uses.
+
+sub isMath {
+  return 0; }		# Box is text mode.
+
+sub getLocator {
+  my($self)=@_;
+  return $$self[2]; }
+
+sub getSource {
+  my($self)=@_;
+  return $$self[2]; }
 
 # So a Box can stand in for a List
-sub unlist     { ($_[0]); }	# Return list of the boxes
-sub revert     { ($_[0][3] ? $_[0][3]->unlist : ()); }
-sub toString   { $_[0][0]; }
+sub unlist {
+  my($self)=@_;
+  return ($self); }	# Return list of the boxes
+
+sub revert {
+  my($self)=@_;
+  return ($$self[3] ? $$self[3]->unlist : ()); }
+
+sub toString {
+  my($self)=@_;
+  return $$self[0]; }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.(defined $$self[0] ? $$self[0] : '').']'; }
+  return $type.'['.(defined $$self[0] ? $$self[0] : '').']'; }
 
 # Should this compare fonts too?
 sub equals {
   my($a,$b)=@_;
-  (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]) && ($$a[1]->equals($$b[1])); }
+  return (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]) && ($$a[1]->equals($$b[1])); }
 
 sub beAbsorbed {
-  my $string = $_[0][0];
-  ((defined $string) && ($string ne '') ? $_[1]->openText($_[0][0],$_[0][1]) : undef); }
+  my($self,$document)=@_;
+  my $string = $$self[0];
+  return ((defined $string) && ($string ne '')
+	  ? $document->openText($$self[0],$$self[1]) : undef); }
 
 sub getProperty { 
   my($self,$property)=@_;
@@ -53,9 +79,9 @@ sub getProperty {
     my $tex = UnTeX($$self[3]);
     return (defined $tex) && ($tex =~ /^\s*$/); } # Check the TeX code, not (just) the string!
   else {
-    undef; }}
+    return; }}
 
-sub getProperties { (); }
+sub getProperties { return (); }
 sub setProperty   { }
 sub setProperties { }
 
@@ -69,15 +95,17 @@ use base qw(LaTeXML::Box);
 
 sub new {
   my($class,$string,$font,$locator,$tokens,$attributes)=@_;
-  bless [$string,$font,$locator,$tokens,$attributes],$class; }
+  return bless [$string,$font,$locator,$tokens,$attributes],$class; }
 
-sub isMath { 1; }		# MathBoxes are math mode.
+sub isMath {
+  return 1; }		# MathBoxes are math mode.
 
 sub beAbsorbed {
-  my $string = $_[0][0];
-  ((defined $string) && ($string ne '')
-   ? $_[1]->insertMathToken($_[0][0],font=>$_[0][1], ($_[0][4]? %{$_[0][4]} : ()))
-   : undef); }
+  my($self,$document)=@_;
+  my $string = $$self[0];
+  return ((defined $string) && ($string ne '')
+	  ? $document->insertMathToken($$self[0],font=>$$self[1], ($$self[4]? %{$$self[4]} : ()))
+	  : undef); }
 
 #**********************************************************************
 # LaTeXML::Comment
@@ -87,10 +115,12 @@ use strict;
 use LaTeXML::Global;
 use base qw(LaTeXML::Box);
 
-sub revert   { (); }
-sub toString { ''; }
+sub revert   { return (); }
+sub toString { return ''; }
 
-sub beAbsorbed { $_[1]->insertComment($_[0][0]); }
+sub beAbsorbed {
+  my($self,$document)=@_;
+  return $document->insertComment($$self[0]); }
 
 #**********************************************************************
 # LaTeXML::List
@@ -112,26 +142,30 @@ sub new {
   # Maybe the most representative font for a List is the font of the LAST box (that _has_ a font!) ???
   while(defined ($b=pop(@b)) && (!defined $font)){
     $font = $b->getFont unless defined $font; }
-  bless [[@boxes],$font,$locator||''],$class; }
+  return bless [[@boxes],$font,$locator||''],$class; }
 
-sub isMath     { 0; }			# List's are text mode
+sub isMath     {
+  return 0; }			# List's are text mode
 
-sub unlist { @{$_[0][0]}; }
+sub unlist {
+  my($self)=@_;
+  return @{$$self[0]}; }
 
 sub revert {
   my($self)=@_;
-   map(Revert($_),$self->unlist); }
+  return map(Revert($_),$self->unlist); }
 
 sub toString {
   my($self)=@_;
-  join('',grep(defined $_,map($_->toString,$self->unlist))); }
+  return join('',grep(defined $_,map($_->toString,$self->unlist))); }
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  $type.'['.join(',',map(Stringify($_),$self->unlist)).']'; } # Not ideal, but....
+  return $type.'['.join(',',map(Stringify($_),$self->unlist)).']'; } # Not ideal, but....
+
 sub equals {
   my($a,$b)=@_;
   return 0 unless (defined $b) && ((ref $a) eq (ref $b));
@@ -141,7 +175,9 @@ sub equals {
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
-sub beAbsorbed { map($_[1]->absorb($_), $_[0]->unlist); }
+sub beAbsorbed {
+  my($self,$document)=@_;
+  return map($document->absorb($_), $self->unlist); }
 
 #**********************************************************************
 # LaTeXML::MathList
@@ -152,7 +188,8 @@ package LaTeXML::MathList;
 use LaTeXML::Global;
 use base qw(LaTeXML::List);
 
-sub isMath { 1; }		# MathList's are math mode.
+sub isMath {
+  return 1; }		# MathList's are math mode.
 
 #**********************************************************************
 # What about Kern, Glue, Penalty ...
@@ -180,30 +217,65 @@ use base qw(LaTeXML::Box);
 #  trailer
 sub new {
   my($class,$defn,$args,%properties)=@_;
-  bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
+  return bless {definition=>$defn, args=>$args||[], properties=>{%properties}},$class; }
 
-sub getDefinition { $_[0]{definition}; }
-sub isMath        { $_[0]{properties}{isMath}; }
-sub getFont       { $_[0]{properties}{font}; } # and if undef ????
-sub setFont       { $_[0]{properties}{font} = $_[1]; }
-sub getLocator    { $_[0]{properties}{locator}; }
-sub getProperty   { $_[0]{properties}{$_[1]}; }
-sub getProperties { %{$_[0]{properties}}; }
-sub setProperty   { $_[0]{properties}{$_[1]}=$_[2]; return; }
-sub setProperties {
-    my ($self, %props) = @_;
-    while (my ($key, $value) = each %props) { 
-	$$self{properties}{$key} = $value if defined $value; }
-    return; }
+sub getDefinition {
+  my($self)=@_;
+  return $$self{definition}; }
 
-sub getArg        { $_[0]{args}->[$_[1]-1]; }
-sub getArgs       { @{$_[0]{args}}; }
-sub setArgs       { 
-  my($self,@args)=@_;
-  $$self{args} = [@args]; 
+sub isMath {
+  my($self)=@_;
+  return $$self{properties}{isMath}; }
+
+sub getFont {
+  my($self)=@_;
+  return $$self{properties}{font}; } # and if undef ????
+
+sub setFont {
+  my($self,$font)=@_;
+  $$self{properties}{font} = $font;
   return; }
 
-sub getBody     { $_[0]{properties}{body}; }
+sub getLocator {
+  my($self)=@_;
+  return $$self{properties}{locator}; }
+
+sub getProperty {
+  my($self,$key)=@_;
+  return $$self{properties}{$key}; }
+
+sub getProperties {
+  my($self)=@_;
+  return %{$$self{properties}}; }
+
+sub setProperty {
+  my($self,$key,$value)=@_;
+  $$self{properties}{$key}=$value;
+  return; }
+
+sub setProperties {
+  my($self,%props) = @_;
+  while (my ($key, $value) = each %props) { 
+    $$self{properties}{$key} = $value if defined $value; }
+  return; }
+
+sub getArg {
+  my($self,$n)=@_;
+  return $$self{args}[$n-1]; }
+
+sub getArgs {
+  my($self)=@_;
+  return @{$$self{args}}; }
+
+sub setArgs { 
+  my($self,@args)=@_;
+  $$self{args} = [@args];
+  return; }
+
+sub getBody {
+  my($self)=@_;
+  return $$self{properties}{body}; }
+
 sub setBody {
   my($self,@body)=@_;
   my $trailer = pop(@body);
@@ -216,10 +288,14 @@ sub setBody {
       $$self{properties}{$prop} = $trailer->getProperty($prop) unless defined $$self{properties}{$prop}; }}
   return; }
 
-sub getTrailer  { $_[0]{properties}{trailer}; }
+sub getTrailer {
+  my($self)=@_;
+  return $$self{properties}{trailer}; }
 
 # So a Whatsit can stand in for a List
-sub unlist  { ($_[0]); }
+sub unlist {
+  my($self)=@_;
+  return ($self); }
 
 sub revert {
   my($self)=@_;
@@ -258,19 +334,24 @@ sub revert {
       $$self{reversion}=Tokens(@tokens); }
     @tokens; }}
 
-sub toString { ToString(Tokens($_[0]->revert)); } # What else??
-sub getString { $_[0]->toString; }		  # Ditto?
+sub toString {
+  my($self)=@_;
+  return ToString(Tokens($self->revert)); } # What else??
+
+sub getString {
+  my($self)=@_;
+  return $self->toString; }		  # Ditto?
 
 # Methods for overloaded operators
 sub stringify {
   my($self)=@_;
   my $hasbody = defined $$self{properties}{body};
-  my $string = "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
-			       map(Stringify($_),
-				   $self->getArgs,
-				   (defined $$self{properties}{body}
-				    ? ($$self{properties}{body},$$self{properties}{trailer})
-				    : ())))
+  return "Whatsit[".join(',',$self->getDefinition->getCS->getCSName,
+			 map(Stringify($_),
+			     $self->getArgs,
+			     (defined $$self{properties}{body}
+			      ? ($$self{properties}{body},$$self{properties}{trailer})
+			      : ())))
     ."]"; }
 
 sub equals {
@@ -285,7 +366,7 @@ sub equals {
 
 sub beAbsorbed {
   my($self,$document)=@_;
-  $self->getDefinition->doAbsorbtion($document,$self); }
+  return $self->getDefinition->doAbsorbtion($document,$self); }
 ####  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
 
 #**********************************************************************
