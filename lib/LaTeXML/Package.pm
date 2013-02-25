@@ -1140,8 +1140,13 @@ sub FindFile {
     return; }
 
   if($options{type}){		# Specific type requested? Search for it.
-    FindFile_aux($file.".".$options{type},%options); }
-  else {			# If no type given, we MAY expect .tex, or maybe NOT!!
+    # Add the extension, if it isn't already there.
+    $file = $file.".".$options{type} unless $file =~ /\.\Q$options{type}\E$/;
+    FindFile_aux($file,%options); }
+  # If no type given, we MAY expect .tex, or maybe NOT!!
+  elsif($file =~ /\.tex$/){     # No requested type, then .tex; Of course, it may already have it!
+    FindFile_aux($file,%options); }
+  else {
     FindFile_aux("$file.tex",%options) || FindFile_aux($file,%options); }}
 
 sub FindFile_aux {
@@ -1150,6 +1155,9 @@ sub FindFile_aux {
   # If cached, return simple path (it's a key into the cache)
   if(LookupValue($file.'_contents')){
     return $file; }
+  if(pathname_is_absolute($file)){ # And if we've got an absolute path,
+    return $file if -f $file;      # No need to search, just check if it exists.
+    return; }
   # Note that the strategy is complicated by the fact that
   # (1) we prefer .ltxml bindings, if present
   # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)
@@ -1306,7 +1314,6 @@ sub loadTeXDefinitions {
 sub loadTeXContent {
   my($pathname)=@_;
   my $gullet = $STATE->getStomach->getGullet;
-
   # If there is a file-specific declaration file (name.latexml), load it first!
   my $file = $pathname;
   $file =~ s/\.tex//;
@@ -1445,7 +1452,10 @@ sub InputDefinitions {
   $options{raw} = 1 if $options{noltxml}; # so it will be read as raw by Gullet.!L!
   my $astype = ($options{as_class} ? 'cls' : $options{type});
 
-  if(my $file = FindFile($name, type=>$options{type}, notex=>$options{notex}, noltxml=>$options{noltxml})){
+  my $filename = $name;
+  $filename .= '.'.$options{type} if $options{type};
+  if(my $file = FindFile($filename, type=>$options{type},
+                         notex=>$options{notex}, noltxml=>$options{noltxml})){
     if($options{handleoptions}){
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if(my $passoptions= $options{withoptions} && $prevname
@@ -1512,7 +1522,7 @@ sub RequirePackage {
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set. 
   $options{notex} = 1
     if !defined $options{notex}  && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
-  InputDefinitions($package,type=>$options{type} || 'sty', handleoptions=>1,
+  InputDefinitions($package,type=>$options{type}||'sty', handleoptions=>1,
 		   # Pass classes options if we have NONE!
 		   withoptions=>!($options{options} && @{$options{options}}),
 		   %options); }
