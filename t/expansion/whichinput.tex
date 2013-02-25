@@ -1,0 +1,65 @@
+\documentclass{article}
+\usepackage{textcomp}
+% RUN THIS WITH --includestyles
+\message{Run LaTeXML with --includestyles} 
+
+\usepackage{whichpkga}
+
+\usepackage{whichpkgb.sty}
+
+% NOTE: Given only whichpkgc.sty
+% THIS FAILS!!!
+%\usepackage{whichpkgc.sty}
+
+\begin{document}
+\section{\TeX\ style input}
+
+\paragraph{Given} whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:
+
+\verb|\input whichfrag1| \textrightarrow \input whichfrag1
+
+\verb|\input whichfrag1.tex| \textrightarrow \input whichfrag1.tex
+
+\paragraph{Given} whichfrag2 and whichfrag2.tex:
+
+\verb|\input whichfrag2| \textrightarrow \input whichfrag2
+
+\verb|\input whichfrag2.tex| \textrightarrow \input whichfrag2.tex
+
+\paragraph{Given} whichfrag3:
+
+\verb|\input whichfrag3| \textrightarrow \input whichfrag3
+
+\section{\LaTeX\ style input}
+
+
+\paragraph{Given} whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:
+
+\verb|\input{whichfrag1}| \textrightarrow \input{whichfrag1}
+
+\verb|\input{whichfrag1.tex}| \input{whichfrag1.tex}
+
+\paragraph{Given} whichfrag2 and whichfrag2.tex:
+
+\verb|\input{whichfrag2}| \textrightarrow \input{whichfrag2}
+
+\verb|\input{whichfrag2.tex}| \textrightarrow \input{whichfrag2.tex}
+
+\paragraph{Given} whichfrag3:
+
+\verb|\input{whichfrag3}| \textrightarrow \input whichfrag3
+
+\section{usepackage}
+\paragraph{Given} whichpkga and whichpkga.sty:
+
+\verb|\usepackage{whichpkga}| \textrightarrow \whichpkga
+
+\paragraph{Given} whichpkgb, whichpkgb.sty and whichpkgb.sty.sty:
+
+\verb|\usepackage{whichpkgb.sty}| \textrightarrow \whichpkgb
+
+% \paragraph{Given} whichpkgc.sty
+
+% \verb|\usepackage{whichpkgc.sty}| \textrightarrow \whichpkgc
+
+\end{document}
