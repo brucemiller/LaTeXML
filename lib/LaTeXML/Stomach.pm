@@ -143,9 +143,9 @@ our @forbidden_cc = (1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1, 0,1);
 sub invokeToken_internal {
   my($self,$token)=@_;
   local $LaTeXML::CURRENT_TOKEN = $token;
-  my $meaning = ( ($STATE->lookupValue('IN_MATH')
-		   && (($STATE->lookupMathcode($token->getString)||0) == 0x8000))
-		  || $token->isExecutable
+  my $meaning = ( $token->isExecutable
+                  || ($STATE->lookupValue('IN_MATH')
+                      && (($STATE->lookupMathcode($token->getString)||0) == 0x8000))
 		  ? $STATE->lookupMeaning_internal($token)
 		  : $token );
   if(! defined $meaning){		# Supposedly executable token, but no definition!
@@ -156,6 +156,22 @@ sub invokeToken_internal {
 					sub { makeError($_[0],'undefined',$cs);}),
 			      'global');
     $self->invokeToken($token); }
+  elsif($meaning->isaToken) {   # Common case
+    my $cc = $meaning->getCatcode;
+    my $font = $STATE->lookupValue('font');
+    $STATE->clearPrefixes; # prefixes shouldn't apply here.
+    if($cc == CC_SPACE){
+      if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
+	(); }
+      else {
+	Box($meaning->getString, $font,$$self{gullet}->getLocator,$meaning); }}
+    elsif($cc == CC_COMMENT){	# Note: Comments need char decoding as well!
+      LaTeXML::Comment->new(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1)); }
+    elsif($forbidden_cc[$cc]){
+      Fatal('misdefined',$token,$self,
+	    "The token ".Stringify($token)." should never reach Stomach!"); }
+    else {
+      Box(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1),undef,undef,$meaning); }}
   elsif($meaning->isaDefinition){
     # A math-active character will (typically) be a macro,
     # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
@@ -177,22 +193,6 @@ sub invokeToken_internal {
 	if grep( (! ref $_) || (! $_->isaBox), @boxes);
       $STATE->clearPrefixes unless $meaning->isPrefix; # Clear prefixes unless we just set one.
       @boxes; }}
-  elsif($meaning->isaToken) {
-    my $cc = $meaning->getCatcode;
-    my $font = $STATE->lookupValue('font');
-    $STATE->clearPrefixes; # prefixes shouldn't apply here.
-    if($cc == CC_SPACE){
-      if(($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble') )){ 
-	(); }
-      else {
-	Box($meaning->getString, $font,$$self{gullet}->getLocator,$meaning); }}
-    elsif($cc == CC_COMMENT){	# Note: Comments need char decoding as well!
-      LaTeXML::Comment->new(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1)); }
-    elsif($forbidden_cc[$cc]){
-      Fatal('misdefined',$token,$self,
-	    "The token ".Stringify($token)." should never reach Stomach!"); }
-    else {
-      Box(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1),undef,undef,$meaning); }}
   else {
     Fatal('misdefined',$meaning,$self,
 	  "The object ".Stringify($meaning)." should never reach Stomach!"); }}
