@@ -255,6 +255,7 @@ sub process {
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions=();
+    my $LOG;
     if(open($LOG,'<',"$workdir/$jobname.log")){
 	while(<$LOG>){
 	    if(/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/){
