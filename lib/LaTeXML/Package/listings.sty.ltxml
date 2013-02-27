@@ -165,7 +165,7 @@ DefMacro('\lstlisting@makecaption[]{}',
 	 .'\@@toccaption{\format@toctitle@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
 	 .'\@@caption{\format@title@{lstlisting}{#2}}');
 DefMacroI('\fnum@lstlisting',undef,'\lstlistingname\nobreakspace\thelstlisting');
-DefMacro('\format@title@lstlisting{}','\@tag{\fnum@lstlisting: }#1');
+DefMacro('\format@title@lstlisting{}','\@tag[][: ]{\fnum@lstlisting}#1');
 
 DefMacro('\lstlisting@maketitle{}',
 	 '\@@toccaption{#1}'
