@@ -19,7 +19,7 @@ use LaTeXML::Package;
 #**********************************************************************
 # Seems to be equivalent.
 LoadClass('aastex', withoptions=>1);
-
+RequireResource('ltx-apj.css');
 # ... Well, almost...
 DefMacroI('\LongTables',undef,'');
 Let(T_CS('\begin{deluxetable*}'),T_CS('\begin{deluxetable}'));
@@ -52,11 +52,18 @@ DefMacro('\subtitle', '');
 DefMacro('\submitted{}',   '\@add@frontmatter{ltx:date}[role=submitted]{#1}');
 DefMacro('\journalinfo{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 
+DefMacro('\keywordsname','Subject headings');
+
 # Vertical analogs of llap, rlap
 DefMacro('\ulap{}', '\hbox{#1}');
 DefMacro('\dlap{}', '\hbox{#1}');
 
 Let(T_CS('\tabcaption'),T_CS('\caption'));
+
+DefMacro('\format@title@section{}',    '\@tag[][.\space]{\thesection}#1');
+DefMacro('\format@title@subsection{}', '\@tag[][.\space]{\thesubsection}#1');
+DefMacro('\format@title@figure{}',     '\@tag[][.\@@emdash\space]{\fnum@figure}#1');
+DefMacro('\format@title@table{}', '    \@tag{\fnum@table}#1');
 
 # #======================================================================
 1;

@@ -1,0 +1,33 @@
+/* A somewhat amsart-like style */
+
+.ltx_title_document {
+    text-transform:uppercase; font-family:serif; font-weight:normal; font-size: 120%; 
+    text-align:center; }
+.ltx_role_author .ltx_personname {
+    font-family:serif; font-weight:normal; font-variant:small-caps; font-size: 100%; }
+.ltx_abstract { margin-left:4em; margin-right:4em; }
+.ltx_abstract h6 {
+    text-transform:uppercase; font-family:serif; font-weight:normal; font-size: 100%; 
+    display:block; text-align:center; margin-bottom:0.1ex; }
+.ltx_keywords    {
+    margin-top:0.5em; margin-left:4em; margin-right:4em; }
+.ltx_keywords h6 {
+    font-weight:normal; font-style:italic; }
+
+.ltx_title_section {
+    text-transform:uppercase; font-family:serif; font-weight:normal; font-size: 100%; 
+    text-align:center; }
+.ltx_title_subsection {
+    font-family:serif; font-weight:normal; font-style:italic; font-size: 100%; 
+    text-align:center; }
+.ltx_tag_subsection { font-style:normal; }
+
+/*.ltx_title .ltx_tag:after { content:"."; }*/
+.ltx_tag_figure {
+    font-family:serif; font-variant:small-caps;}
+/*.ltx_tag_figure:after { content:". \002014"; }*/
+.ltx_tag_table  {
+    font-family:serif; font-variant:small-caps;
+    display:block; text-align:center; }
+.ltx_table .ltx_caption { font-variant:small-caps; } /* ! */
+
