@@ -296,9 +296,9 @@ sub relocateFootnote {
   if(($node->getAttribute('role')||'') =~ /^(\w+?)text$/){
     my $notetype=$1;					   # Eg "footnote", "endnote",...
     if(my $mark = $node->getAttribute('mark')){
-      if(my $note = $document->findnode(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")){
+      foreach my $note ($document->findnodes(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")){
 	$node->parentNode->removeChild($node); 
-	append_nodes($note,$node->childNodes);
+	$document->appendClone($note,$node->childNodes);
 	$note->setAttribute(role=>$notetype); }}}}
 
 # Style parameters
@@ -391,9 +391,8 @@ DefMacro('\format@title@{}{}',
 DefMacro('\format@toctitle@{}{}',
 	 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\lx@fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
 
-DefMacro('\@@compose@title{}{}', '\@@tag{#1}#2');
-DefConstructor('\@tag{}',"?#1(<ltx:tag>#1</ltx:tag>)()");
-DefConstructor('\@@tag{}',"?#1(<ltx:tag>#1 </ltx:tag>)()");
+DefMacro('\@@compose@title{}{}', '\@tag[][ ]{#1}#2');
+DefConstructor('\@tag[][]{}',"?#3(<ltx:tag open='#1' close='#2'>#3</ltx:tag>)()");
 
 ## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
 ## This would be useful for the titles in links; thus can be plain (unicode) text.
@@ -741,7 +740,9 @@ DefEnvironment('{abstract}','',
 	       afterDigest=> sub {
 		 my $frontmatter = LookupValue('frontmatter');
 		 push(@{$$frontmatter{'ltx:abstract'}},
-		      ['ltx:abstract',{name=>Digest(T_CS('\abstractname'))},
+		      ['ltx:abstract',
+                       {name=>Digest(Tokens(T_CS('\format@title@abstract'),
+                                            T_BEGIN,T_CS('\abstractname'),T_END))},
 		       @LaTeXML::LIST]);
 		 DefMacroI('\maybe@end@abstract',undef,Tokens());
 		 return; },
@@ -755,6 +756,7 @@ DefMacro('\abstract@onearg{}','\begin{abstract}#1\end{abstract}');
 DefMacroI('\maybe@end@abstract',undef, '\endabstract');
 
 DefMacroI('\abstractname',undef, 'Abstract');
+DefMacro('\format@title@abstract{}','#1');
 
 # Hmm, titlepage is likely to be hairy, low-level markup,
 # without even title, author, etc, specified as such!
@@ -900,10 +902,10 @@ sub beginItemize {
   ResetCounter('enum'.$postfix);
   RefStepCounter('@itemize'.$postfix); }
 
+sub itemCounter { 'enum'.ToString(Tokens(roman(LookupValue('itemlevel')))); }
 sub RefStepItemCounter {
   my($tag)=@_;
-  my $counter = 'enum'.ToString(Tokens(roman(LookupValue('itemlevel'))));
-#  (defined $tag ? (RefStepID($counter),refnum=>$tag) : RefStepCounter($counter) ); }
+  my $counter = itemCounter();
   # If tag given, don't create refnum (etal); tag will be used as title in Scan
   (defined $tag ? RefStepID($counter) : RefStepCounter($counter) ); }
 
@@ -960,20 +962,17 @@ DefConstructor('\itemize@item[]',
 	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter($_[1]); });
 DefConstructor('\enumerate@item[]',
-##	       "<ltx:item xml:id='#id' refnum='#refnum'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-###	       "<ltx:item xml:id='#id' refnum='#refnum'>"
-###	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)(?#lrefnum(<ltx:tag>#lrefnum</ltx:tag>))",
-###	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum'>"
-###	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)(?#frefnum(<ltx:tag>#frefnum</ltx:tag>))",
 	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
 	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter($_[1]); });
-# id, but no refnum (et.al) on description \item  ... i think?
-DefConstructor('\description@item[]',
-	       "<ltx:item xml:id='#id'>"
-	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ RefStepItemCounter($_[1]); });
-  
+# Should itemize & enumerate get this more-customizable formulation?
+DefMacro('\description@item','\@ifnextchar[\@description@@item\@description@item');
+DefConstructor('\@description@item',
+	       "<ltx:item xml:id='#id'>",
+	       properties=>sub{ RefStepID(itemCounter()); });
+DefMacro('\@description@@item[]','\@description@item\format@title@description{#1}');
+DefMacro('\format@title@description{}','\@tag{#1}'); # what \descriptionlabel does
+
 DefEnvironment('{itemize}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
 	       properties=>sub { beginItemize('itemize'); },
@@ -986,7 +985,7 @@ DefEnvironment('{description}',
 	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
 	       properties=>sub { beginItemize('description'); },
 	       locked=>1, mode=>'text');
-DefMacro('\descriptionlabel{}','#1');
+
 
 DefMacroI('\labelenumi',undef,'\theenumi.');
 DefMacroI('\labelenumii',undef,'(\theenumii)');
@@ -1949,8 +1948,8 @@ DefMacro('\fnsymbol{}',       sub { T_OTHER($fnsymbols[CounterValue($_[1])->valu
 ## I'd rather not define these, since the \fnum@@ defn is better....
 DefMacroI('\fnum@figure',undef,'\figurename\nobreakspace\thefigure');
 DefMacroI('\fnum@table', undef,'\tablename\nobreakspace\thetable');
-DefMacro('\format@title@figure{}','\@@tag{\fnum@figure:}#1');
-DefMacro('\format@title@table{}','\@@tag{\fnum@table:}#1');
+DefMacro('\format@title@figure{}','\@tag[][: ]{\fnum@figure}#1');
+DefMacro('\format@title@table{}','\@tag[][: ]{\fnum@table}#1');
 
 DefMacro('\caption',
 	 '\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
