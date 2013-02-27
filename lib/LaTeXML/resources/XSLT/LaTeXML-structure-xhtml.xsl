@@ -146,7 +146,6 @@
       <xsl:if test="@name">
 	<xsl:element name="h6" namespace="{$html_ns}">	
 	  <xsl:apply-templates select="@name"/>
-	  <xsl:text>.</xsl:text>
 	</xsl:element>
       </xsl:if>
       <xsl:apply-templates/>
