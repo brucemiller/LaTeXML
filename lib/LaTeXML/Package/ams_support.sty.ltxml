@@ -178,6 +178,12 @@ DefMacroI('\abstractname',undef,'\textsc{Abstract}');
 # \index{name of index}{index term}   ...
 # \Printindex{name of index}{title of index} ...
 
+DefMacro('\format@title@abstract{}','#1. ');
+DefMacro('\format@title@section{}',    '\@tag[][.\space]{\thesection}#1');
+DefMacro('\format@title@subsection{}', '\@tag[][.\space]{\thesubsection}#1');
+DefMacro('\format@title@subsubsection{}', '\@tag[][.\space]{\thesubsubsection}#1');
+
+DefMacro('\format@title@description{}','\@tag[][:\space]{#1}');
 #======================================================================
 # Sec 6. Floating objects: Figures and tables
 # Normal LaTeX 
@@ -190,6 +196,9 @@ if(LookupValue('2.09_COMPATIBILITY')){
   RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}');
   RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}'); 
 }
+
+DefMacro('\format@title@figure{}','\@tag[][. ]{\fnum@figure}#1');
+DefMacro('\format@title@table{}','\@tag[][. ]{\fnum@table}#1');
 
 # Excersise environments ??:
 # xca "must be defined with \theoremstyle{definition} and \newtheorem ???
