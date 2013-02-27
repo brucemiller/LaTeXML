@@ -5,7 +5,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
-    <title><tag>1 </tag>Itemize</title>
+    <title><tag close=" ">1</tag>Itemize</title>
     <para xml:id="S1.p1">
       <itemize xml:id="I1">
         <item xml:id="I1.i1" labels="LABEL:it:one">
@@ -27,7 +27,7 @@
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title><tag>2 </tag>Enumerate</title>
+    <title><tag close=" ">2</tag>Enumerate</title>
     <para xml:id="S2.p1">
       <enumerate xml:id="I2">
         <item frefnum="1." refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
@@ -49,7 +49,7 @@
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title><tag>3 </tag>Description</title>
+    <title><tag close=" ">3</tag>Description</title>
     <para xml:id="S3.p1">
       <description xml:id="I3">
         <item xml:id="I3.ix1" labels="LABEL:de:one">
@@ -74,7 +74,7 @@
     </para>
   </section>
   <section refnum="4" xml:id="S4">
-    <title><tag>4 </tag>Nested Enumerate</title>
+    <title><tag close=" ">4</tag>Nested Enumerate</title>
     <para xml:id="S4.p1">
       <enumerate xml:id="I4">
         <item frefnum="1." refnum="1" xml:id="I4.i1">

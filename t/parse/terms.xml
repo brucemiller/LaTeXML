@@ -6,7 +6,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
-    <title><tag>1 </tag>Basic math</title>
+    <title><tag close=" ">1</tag>Basic math</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a+b+c-d+e" text="((a + b + c) - d) + e">
@@ -211,7 +211,7 @@
     </paragraph>
   </section>
   <section refnum="2" xml:id="S2">
-    <title><tag>2 </tag>Evaluate At</title>
+    <title><tag close=" ">2</tag>Evaluate At</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex12">
         <Math mode="display" xml:id="S2.Ex12.m1" tex="a|_{\infty}" text="evaluated-at@(a, infinity)">
@@ -263,7 +263,7 @@
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title><tag>3 </tag>Absolute values</title>
+    <title><tag close=" ">3</tag>Absolute values</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex14">
         <Math mode="display" xml:id="S3.Ex14.m1" tex="|a|" text="absolute-value@(a)">
@@ -333,7 +333,7 @@
     </para>
   </section>
   <section refnum="4" xml:id="S4">
-    <title><tag>4 </tag>Failures w/o Backtracking</title>
+    <title><tag close=" ">4</tag>Failures w/o Backtracking</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex19">
         <Math mode="display" xml:id="S4.Ex19.m1" tex="||a|-|b||" text="absolute-value@(absolute-value@(a) - absolute-value@(b))">

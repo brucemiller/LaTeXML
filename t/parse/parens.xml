@@ -6,7 +6,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
-    <title><tag>1 </tag>Basic math</title>
+    <title><tag close=" ">1</tag>Basic math</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="((a+b)-c)" text="(a + b) - c">
@@ -41,7 +41,7 @@
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title><tag>2 </tag>Intervals</title>
+    <title><tag close=" ">2</tag>Intervals</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="(a,b)" text="open-interval@(a, b)">
@@ -90,7 +90,7 @@
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title><tag>3 </tag>Cases</title>
+    <title><tag close=" ">3</tag>Cases</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
         <Math mode="display" xml:id="S3.Ex7.m1" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="cases[[a], [b]] = cases[[c], [d]]">
@@ -171,7 +171,7 @@
     </para>
   </section>
   <section refnum="4" xml:id="S4">
-    <title><tag>4 </tag>Atop</title>
+    <title><tag close=" ">4</tag>Atop</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex10">
         <Math mode="display" xml:id="S4.Ex10.m1" tex="a+{b\atop c}+d" text="a + STACKED@(b, c) + d">
@@ -208,7 +208,7 @@
     </para>
   </section>
   <section refnum="5" xml:id="S5">
-    <title><tag>5 </tag>Delimiters</title>
+    <title><tag close=" ">5</tag>Delimiters</title>
     <para xml:id="S5.p1">
       <equation xml:id="S5.Ex12">
         <Math mode="display" xml:id="S5.Ex12.m1" tex="\left({a\over b}\right)" text="a / b">

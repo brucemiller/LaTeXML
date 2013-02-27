@@ -12,13 +12,13 @@
     </para>
     <figure frefnum="Figure 1" placement="ht" refnum="1" xml:id="S0.F1" labels="LABEL:fig:A-one">
       <p align="center">[Graphic One]<break/></p>
-      <toccaption class="ltx_centering"><tag>1 </tag>This is a figure</toccaption>
-      <caption class="ltx_centering"><tag>Figure 1: </tag>This is a figure</caption>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>This is a figure</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is a figure</caption>
     </figure>
     <figure frefnum="Figure 2" placement="ht" refnum="2" xml:id="S0.F2" labels="LABEL:fig:A-two">
       <p align="center">[Graphic Two]<break/></p>
-      <toccaption class="ltx_centering"><tag>2 </tag>This is another figure</toccaption>
-      <caption class="ltx_centering"><tag>Figure 2: </tag>This is another figure</caption>
+      <toccaption class="ltx_centering"><tag close=" ">2</tag>This is another figure</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 2</tag>This is another figure</caption>
     </figure>
   </paragraph>
   <paragraph xml:id="S0.SS0.SSS0.P2">
@@ -29,13 +29,13 @@
     <figure placement="ht" xml:id="S0.SS0.SSS0.P2.fig1">
       <figure frefnum="(a)" refnum="a" xml:id="S0.F2.sf1" labels="LABEL:fig:B-one" align="center">
         <p>[Graphic One]</p>
-        <toccaption><tag>a </tag>This is a figure</toccaption>
-        <caption><tag>(a) </tag>This is a figure</caption>
+        <toccaption><tag close=" ">a</tag>This is a figure</toccaption>
+        <caption><tag close=" ">(a)</tag>This is a figure</caption>
       </figure>
       <figure frefnum="(b)" refnum="b" xml:id="S0.F2.sf2" labels="LABEL:fig:B-two" align="center">
         <p>[Graphic Two]</p>
-        <toccaption><tag>b </tag>This is another figure</toccaption>
-        <caption><tag>(b) </tag>This is another figure</caption>
+        <toccaption><tag close=" ">b</tag>This is another figure</toccaption>
+        <caption><tag close=" ">(b)</tag>This is another figure</caption>
       </figure>
     </figure>
   </paragraph>
@@ -51,8 +51,8 @@
       <figure xml:id="S0.F3.fig2" align="center" labels="LABEL:fig:C">
         <p>[Graphic Two]</p>
       </figure>
-      <toccaption><tag>3 </tag>Collectively two figures</toccaption>
-      <caption><tag>Figure 3: </tag>Collectively two figures</caption>
+      <toccaption><tag close=" ">3</tag>Collectively two figures</toccaption>
+      <caption><tag close=": ">Figure 3</tag>Collectively two figures</caption>
     </figure>
   </paragraph>
   <paragraph xml:id="S0.SS0.SSS0.P4">
@@ -64,16 +64,16 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
     <figure frefnum="Figure 4" placement="ht" refnum="4" xml:id="S0.F4">
       <figure frefnum="(a)" refnum="a" xml:id="S0.F3.sf1" labels="LABEL:fig:D-one" align="center">
         <p>[Graphic One]</p>
-        <toccaption><tag>a </tag>This is a figure</toccaption>
-        <caption><tag>(a) </tag>This is a figure</caption>
+        <toccaption><tag close=" ">a</tag>This is a figure</toccaption>
+        <caption><tag close=" ">(a)</tag>This is a figure</caption>
       </figure>
       <figure frefnum="(b)" refnum="b" xml:id="S0.F3.sf2" labels="LABEL:fig:D LABEL:fig:D-two" align="center">
         <p>[Graphic Two]</p>
-        <toccaption><tag>b </tag>This is another figure</toccaption>
-        <caption><tag>(b) </tag>This is another figure</caption>
+        <toccaption><tag close=" ">b</tag>This is another figure</toccaption>
+        <caption><tag close=" ">(b)</tag>This is another figure</caption>
       </figure>
-      <toccaption class="ltx_centering"><tag>4 </tag>Collectively two figures</toccaption>
-      <caption class="ltx_centering"><tag>Figure 4: </tag>Collectively two figures</caption>
+      <toccaption class="ltx_centering"><tag close=" ">4</tag>Collectively two figures</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 4</tag>Collectively two figures</caption>
     </figure>
   </paragraph>
 </document>

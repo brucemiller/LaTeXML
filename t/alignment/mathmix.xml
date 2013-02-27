@@ -5,7 +5,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
-    <title><tag>1 </tag>Normal Use</title>
+    <title><tag close=" ">1</tag>Normal Use</title>
     <para xml:id="S1.p1">
       <tabular>
         <tbody>
@@ -42,7 +42,7 @@
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title><tag>2 </tag>Perverse Use</title>
+    <title><tag close=" ">2</tag>Perverse Use</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex2">
         <Math mode="display" xml:id="S2.Ex2.m1" tex="\begin{array}[]{cc}m&amp;$t$\end{array}" text="Array[[m, [t]]]">
@@ -105,7 +105,7 @@
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title><tag>3 </tag>Very Perverse</title>
+    <title><tag close=" ">3</tag>Very Perverse</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex5">
         <Math mode="display" xml:id="S3.Ex5.m1" tex="\begin{array}[]{cc}m&amp;$\hbox{$m$}$\end{array}" text="Array[[m, [m]]]">

@@ -5,7 +5,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
-    <title><tag>1 </tag>No fraction</title>
+    <title><tag close=" ">1</tag>No fraction</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a+2b" text="a + 2 * b">
@@ -40,7 +40,7 @@
     </para>
   </section>
   <section refnum="2" xml:id="S2">
-    <title><tag>2 </tag>Mixed</title>
+    <title><tag close=" ">2</tag>Mixed</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="1\frac{1}{2}" text="1 + 1 / 2">
@@ -83,7 +83,7 @@
     </para>
   </section>
   <section refnum="3" xml:id="S3">
-    <title><tag>3 </tag>Not Mixed</title>
+    <title><tag close=" ">3</tag>Not Mixed</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex5">
         <Math mode="display" xml:id="S3.Ex5.m1" tex="a+123\frac{12.0}{34}b" text="a + 123 * (12.0 / 34) * b">
