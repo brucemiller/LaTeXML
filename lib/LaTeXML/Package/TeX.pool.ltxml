@@ -4945,6 +4945,10 @@ DefMathI('\to',undef,"\x{2192}", role=>'ARROW'); # RIGHTWARDS ARROW??? a bit mor
 
 # TeX's ligatures handled by rewrite regexps.
 # Note: applied in reverse order of definition (latest defined applied first!)
+# Note also, these area only applied in text content, not in attributes!
+DefPrimitive('\@@endash',sub { Box("\x{2013}",undef,undef,T_CS('\@@endash')); });
+DefPrimitive('\@@emdash',sub { Box("\x{2014}",undef,undef,T_CS('\@@emdash')); });
+
 DefLigature("/--/\x{2013}/",   fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
 DefLigature("/---/\x{2014}/",  fontTest=>sub { $_[0]->getFamily ne 'typewriter'; }); # EM DASH
 
