@@ -89,14 +89,19 @@ DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 # Redefine to straight email address after document begin.
 AddToMacro(T_CS('\@startsection@hook'),TokenizeInternal('\let\email\@@email'));
 
-# Ideally, this would add a contact to whatever author was identified with the mark!
-# \altaffilmark{keynumber}
-# \altaffiltext{keynumber}{text}
-DefMacro('\altaffilmark{}','');
-DefMacro('\altaffiltext{}{}','');
-
 DefPrimitive('\and',undef);
 DefMacro('\authoremail','\email');  # Obsolete form
+
+# NOTE: the the footnote machinery in LaTeX.pool will connect these.
+# Ideally, we'd like these comma separated!
+DefMacro('\altaffilmark{}',sub {
+  my($gullet,$marks)=@_;
+  SplitTokens(T_CS('\@altaffilmark'),$marks,T_OTHER(',')); });
+DefConstructor('\@altaffilmark{}',
+               "<ltx:note role='affiliationmark' mark='#1'/> ");
+DefConstructor('\altaffiltext{}{}',
+	       "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+
 #======================================================================
 # 2.4 Abstract
 # normal LaTeX
