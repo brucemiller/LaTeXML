@@ -38,11 +38,9 @@ else {
     my $inputenc = $test.'.def';
     my $hasenc = `$kpsewhich $fontenc $inputenc`;
     chomp($hasenc);
-#print STDERR "Test $test found encodings: $hasenc\n";
     if(! -f "$directory/$test.xml"){
       $Test->skip("No file $directory/$test.xml"); }
     elsif(! $hasenc){
-#print STDERR "Skipping test for $test\n";
       $Test->skip("No encoding definition for $test"); }
     else {
       latexml_ok("$directory/$test.tex","$directory/$test.xml","$directory/$test"); }
