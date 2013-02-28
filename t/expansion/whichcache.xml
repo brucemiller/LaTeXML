@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="whichpkga"?>
+<?latexml package="whichpkga"?>
+<?latexml package="subdir/whichpkga"?>
+<?latexml package="subdir/whichpkga"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Were packages loaded initially?
+whichpkga: not loaded;
+subdir/whichpkga: not loaded.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Was package loaded the first time?
+Expect whichpkga.sty: [loaded whichpkga.sty].</p>
+  </para>
+  <para xml:id="p3">
+    <p>Did it load a 2nd time?
+Expect cleared: cleared.</p>
+  </para>
+  <para xml:id="p4">
+    <p>Did it load from subdir?
+Expect subdir/whichpkga.sty: [loaded subdir/whichpkga.sty].</p>
+  </para>
+  <para xml:id="p5">
+    <p>Did it load a 2nd time?
+Expect cleared: cleared.</p>
+  </para>
+  <para xml:id="p6">
+    <p>And of course the flag has been: cleared.</p>
+  </para>
+  <para xml:id="p7">
+    <p>Were packages loaded finally?
+whichpkga: loaded;
+subdir/whichpkga: loaded.</p>
+  </para>
+</document>

@@ -1,0 +1,47 @@
+\documentclass{article}
+\makeatletter
+% Load it once
+\edef\precheckone{\@ifpackageloaded{whichpkga}{loaded}{not loaded}}
+\edef\prechecktwo{\@ifpackageloaded{subdir/whichpkga}{loaded}{not loaded}}
+\usepackage{whichpkga}
+\edef\checkone{\whichpkga}
+\def\whichpkga{cleared}
+% Shouldn't load twice
+\usepackage{whichpkga}
+\edef\checktwo{\whichpkga}
+\def\whichpkga{cleared}
+% This package is different
+\usepackage{subdir/whichpkga}
+\edef\checkthree{\whichpkga}
+\def\whichpkga{cleared}
+% But now it's been loaded too
+\usepackage{subdir/whichpkga}
+\edef\checkfour{\whichpkga}
+\def\whichpkga{cleared}
+\edef\endcheckone{\@ifpackageloaded{whichpkga}{loaded}{not loaded}}
+\edef\endchecktwo{\@ifpackageloaded{subdir/whichpkga}{loaded}{not loaded}}
+
+\begin{document}
+Were packages loaded initially?
+whichpkga: \precheckone;
+subdir/whichpkga: \prechecktwo.
+
+Was package loaded the first time?
+Expect whichpkga.sty: \checkone.
+
+Did it load a 2nd time?
+Expect cleared: \checktwo.
+
+Did it load from subdir?
+Expect subdir/whichpkga.sty: \checkthree.
+
+Did it load a 2nd time?
+Expect cleared: \checkfour.
+
+And of course the flag has been: \whichpkga.
+
+Were packages loaded finally?
+whichpkga: \endcheckone;
+subdir/whichpkga: \endchecktwo.
+
+\end{document}
