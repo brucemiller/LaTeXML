@@ -1249,10 +1249,10 @@ sub Input {
 
     # Should we be doing anything about options in the next 2 cases?..... I kinda think not, but?
     if($type eq 'ltxml'){		      # it's a LaTeXML binding.
-      loadLTXML($path); }
+      loadLTXML($request,$path); }
     # Else some sort of "known" definitions type file, but not simply 'tex'
     elsif(($type ne 'tex') && (pathname_is_raw($path))){
-      loadTeXDefinitions($path); }
+      loadTeXDefinitions($request,$path); }
     else {
       loadTeXContent($path); }}
   else {			# Couldn't find anything?
@@ -1262,8 +1262,10 @@ sub Input {
 	  maybeReportSearchPaths()); }
   return; }
 
+# Pass in the "requested path" to the next two, since that's what gets
+# recorded as having been loaded (by \@ifpackageloade, eg).
 sub loadLTXML {
-  my($pathname)=@_;
+  my($request,$pathname)=@_;
   # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
   # Note: we're NOT expecting (allowing?) either literal nor remote data objects here.
   if(my $p=pathname_is_specialprotocol($pathname)){
@@ -1271,10 +1273,14 @@ sub loadLTXML {
 	  "You can't load LaTeXML binding using protocol $p");
     return; }
   my($dir,$name,$type)=pathname_split($pathname);
-  # Don't load if either the file already was loaded, OR the raw TeX file has been loaded.
-  return if LookupValue($name.'.'.$type.'_loaded') || LookupValue($name.'_loaded');
-  # Note that the ltxml version (only!) of this was loaded.
-  AssignValue($name.'.'.$type.'_loaded'=>1,'global');
+  # Don't load if the requested path was loaded (with or without the .ltxml)
+  # We want to check against the original request, but WITH the type
+  $request.= '.'.$type unless $request =~ /\Q.$type\E$/; # make sure the .ltxml is added here
+  my $trequest = $request; $trequest =~ s/\.ltxml$//;     # and NOT added here!
+  return if LookupValue($request.'_loaded') || LookupValue($trequest.'_loaded');
+  # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
+  AssignValue($request.'_loaded'=>1,'global');
+
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::PerlMouth->new($pathname), sub {
     do $pathname; 
     Fatal('die',$pathname,$STATE->getStomach->getGullet,
@@ -1284,7 +1290,7 @@ sub loadLTXML {
     }); }
 
 sub loadTeXDefinitions {
-  my($pathname)=@_;
+  my($request,$pathname)=@_;
   if(!pathname_is_literaldata($pathname)){ # We can't analyze literal data's pathnames!
     my($dir,$name,$type)=pathname_split($pathname);
     # Don't load if we've already loaded it before.
@@ -1292,8 +1298,8 @@ sub loadTeXDefinitions {
     # since someone's presumably asking _explicitly_ for the raw TeX version.
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
-    return if LookupValue($name.'.'.$type.'_loaded');
-    AssignValue($name.'.'.$type.'_loaded'=>1,'global'); }
+    return if LookupValue($request.'_loaded');
+    AssignValue($request.'_loaded'=>1,'global'); }
 
   my $stomach = $STATE->getStomach;
   my $interpreting = LookupValue('INTERPRETING_DEFINITIONS');
@@ -1319,7 +1325,7 @@ sub loadTeXContent {
   $file =~ s/\.tex//;
   if(my $conf = !pathname_is_literaldata($pathname)
      && pathname_find("$file.latexml", paths=>LookupValue('SEARCHPATHS'))){
-    loadLTXML($conf); }
+    loadLTXML($conf,$conf); }
   $gullet->openMouth(LaTeXML::Mouth->create($pathname,notes=>1,
 					    content=>LookupValue($pathname.'_contents')) ,0); }
 
@@ -1480,9 +1486,9 @@ sub InputDefinitions {
 
     my($fdir,$fname,$ftype)=pathname_split($file);
     if($ftype eq 'ltxml'){
-      loadLTXML($file); }		# Perl module.
+      loadLTXML($filename,$file); }		# Perl module.
     else {
-      loadTeXDefinitions($file); }
+      loadTeXDefinitions($filename,$file); }
     if($options{handleoptions}){
       Digest(T_CS("\\$name.$astype-hook"));
       DefMacroI('\@currname',undef,Tokens(Explode($prevname))) if $prevname;
