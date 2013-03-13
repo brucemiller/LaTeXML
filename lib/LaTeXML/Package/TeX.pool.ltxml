@@ -4391,8 +4391,14 @@ DefMathI('\rhook',             undef,"\x{2E27}"); # TeX 312D
 DefConstructorI('\ldots',undef,
 	       "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
 	       properties=>{font=>sub{ LookupValue('font')->specialize("\x{2026}");}}); # Since not DefMath!
+# And so can \vdots
+# DefMathI('\vdots',undef,"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
+DefConstructorI('\vdots',undef,
+	       "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
+	       properties=>{font=>sub{ LookupValue('font')->specialize("\x{22EE}");}}); # Since not 
+# But not these!
 DefMathI('\cdots',undef,"\x{22EF}", role=>'ID'); # MIDLINE HORIZONTAL ELLIPSIS
-DefMathI('\vdots',undef,"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
+
 DefMathI('\ddots',undef,"\x{22F1}", role=>'ID'); # DOWN RIGHT DIAGONAL ELLIPSIS
 DefMathI('\colon',undef,':',        role=>'METARELOP'); # Seems like good default role
 # Note that amsmath redefines \dots to be `smart'.
