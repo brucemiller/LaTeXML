@@ -69,7 +69,7 @@ our @EXPORT = (
 	       qw(&element_nodes &text_in_node &new_node
 		  &append_nodes &clear_node &maybe_clone
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
-		  &get_attr &isTextNode &isElementNode
+		  &get_attr &isTextNode &isElementNode &isDescendant &isDescendantOrSelf
                   &set_RDFa_prefixes
 		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT
 		  &initialize_catalogs)
@@ -102,6 +102,22 @@ sub text_in_node {
 
 sub isTextNode { $_[0]->nodeType == XML_TEXT_NODE; }
 sub isElementNode { $_[0]->nodeType == XML_ELEMENT_NODE; }
+
+sub isDescendant {
+  my($node, $child)=@_;
+  my $p = $child && $child->parentNode;
+  while($p){
+    return 1 if $p->isSameNode($node);
+    $p = $p->parentNode; }
+  return 0; }
+
+sub isDescendantOrSelf {
+  my($node, $child)=@_;
+  my $p = $child;
+  while($p){
+    return 1 if $p->isSameNode($node);
+    $p = $p->parentNode; }
+  return 0; }
 
 sub new_node {
   my($nsURI,$tag,$children,%attributes)=@_;
