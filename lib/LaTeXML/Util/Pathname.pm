@@ -1,3 +1,4 @@
+# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Util::Pathname                                            | #
 # | Pathname Utilities for LaTeXML                                      | #
@@ -38,7 +39,8 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_timestamp
 		  &pathname_concat
 		  &pathname_relative &pathname_absolute
-		  &pathname_is_absolute &pathname_is_url &pathname_is_contained
+		  &pathname_is_absolute &pathname_is_contained
+                  &pathname_is_url &pathname_is_literaldata
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -47,7 +49,8 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 # Ioan Sucan suggests switching this to '\\' for windows, but notes
 # that it works as it is, so we'll leave it (for now).
 our $SEP = '/';
-our $PROTOCOL_RE = '(https|http|ftp):';
+our $LITERAL_RE = '(?:literal)(?=:)';
+our $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -85,6 +88,8 @@ sub pathname_split {
 use Carp;
 sub pathname_canonical {
   my($pathname)=@_;
+  if($pathname =~ /^($LITERAL_RE)/){
+      return $pathname; }
   # Don't call pathname_is_absolute, etc, here, cause THEY call US!
 confess "Undefined pathname!" unless defined $pathname;
 #  File::Spec->canonpath($pathname); }
@@ -132,7 +137,11 @@ sub pathname_is_absolute {
 
 sub pathname_is_url {
   my($pathname)=@_;
-  $pathname && $pathname =~ /^$PROTOCOL_RE/; } # Other protocols?
+  $pathname && $pathname =~ /^($PROTOCOL_RE)/ && $1; } # Other protocols?
+
+sub pathname_is_literaldata {
+  my($pathname)=@_;
+  ($pathname =~ /^($LITERAL_RE)/) && $1; }
 
 # Check whether $pathname is contained in (ie. underneath) $base
 # Returns the relative pathname if it is underneath; undef otherwise.

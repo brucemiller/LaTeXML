@@ -1,3 +1,4 @@
+# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Package                                                   | #
 # | Exports of Defining forms for Package writers                       | #
@@ -1115,14 +1116,6 @@ sub pathname_is_raw {
   my($pathname)=@_;
   ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
-sub pathname_is_literaldata {
-  my($pathname)=@_;
-  ($pathname =~ /^(literal):/) && $1; }
-
-sub pathname_is_specialprotocol {
-  my($pathname)=@_;
-  ($pathname =~ /^(literal|https|http|ftp):/) && $1; }
-
 our $findfile_options = {type=>1, notex=>1, noltxml=>1};
 sub FindFile {
   my ($file,%options)=@_;
@@ -1134,7 +1127,8 @@ sub FindFile {
   CheckOptions("FindFile ($file)",$findfile_options,%options);
   if(pathname_is_literaldata($file)){	# If literal protocol return immediately (unless notex!)
     return ($options{notex} ? undef : $file); }
-  elsif(pathname_is_specialprotocol($file)){ # If a known special protocol return immediately
+  # If a known special protocol return immediately
+  elsif(pathname_is_literaldata($file) || pathname_is_url($file)){
     return $file; }
   elsif(pathname_is_nasty($file)){ # If it is a nasty filename, we won't touch it.
     return; }
@@ -1268,7 +1262,7 @@ sub loadLTXML {
   my($request,$pathname)=@_;
   # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
   # Note: we're NOT expecting (allowing?) either literal nor remote data objects here.
-  if(my $p=pathname_is_specialprotocol($pathname)){
+  if(my $p=pathname_is_literaldata($pathname)||pathname_is_url($pathname)){
     Error('misdefined','loadLTXML',$STATE->getStomach->getGullet,
 	  "You can't load LaTeXML binding using protocol $p");
     return; }
