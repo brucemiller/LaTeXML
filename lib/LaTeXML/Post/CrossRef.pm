@@ -74,7 +74,9 @@ sub fill_in_relations {
       my $rel = 'up';
       while(($x = $xentry->getValue('parent')) && ($xentry = $db->lookup("ID:".$x))){
 	if($xentry->getValue('title')){ # it's interesting if it has a title (INCONSISTENT!!!)
-	  $doc->addNavigation($rel=>$xentry->getValue('pageid')); 
+          ### NOT pageid, like the others, because of the sleasy link to \part in dlmf!!!
+####	  $doc->addNavigation($rel=>$xentry->getValue('pageid')); 
+	  $doc->addNavigation($rel=>$xentry->getValue('id')); 
 	  $rel .= ' up'; }}
       if($xentry && ($id ne $xentry->getValue('pageid'))){
 	$doc->addNavigation(start=>$xentry->getValue('pageid')); }
@@ -569,7 +571,8 @@ sub generateTitle {
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
     my $title  = $self->fillInTitle($doc,$entry->getValue('title')) #|| $entry->getValue('toccaption'))
       || $entry->getValue('rrefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum');
-    $title = $title->textContent if $title && ref $title;
+#    $title = $title->textContent if $title && ref $title;
+    $title = getTextContent($doc,$title) if $title && ref $title;
     $title =~ s/^\s+// if $title;
     $title =~ s/\s+$// if $title;
     if($title){
@@ -578,6 +581,24 @@ sub generateTitle {
     $id = $entry->getValue('parent'); }
   $string; }
 
+sub getTextContent {
+  my($doc,$node)=@_;
+  my $type = $node->nodeType;
+  if($type == XML_TEXT_NODE){
+    $node->textContent; }
+  elsif($type == XML_ELEMENT_NODE){
+    my $tag = $doc->getQName($node);
+    if($tag eq 'ltx:tag'){
+      ($node->getAttribute('open')||'')
+        .$node->textContent     # assuming no nested ltx:tag
+          .($node->getAttribute('close')||''); }
+    else {
+      join('',map {getTextContent($doc,$_); } $node->childNodes); }}
+  elsif($type == XML_DOCUMENT_FRAG_NODE){
+    join('',map {getTextContent($doc,$_); } $node->childNodes); }
+  else {
+    ''; }}
+                             
 # Fill in any embedded ltx:ref's & ltx:cite's within a title
 sub fillInTitle {
   my($self,$doc,$title)=@_;
