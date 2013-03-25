@@ -91,6 +91,9 @@ sub compileSchema {
   $self->loadSchema;
   foreach my $prefix (keys %{$$self{document_namespaces}}){
     print $prefix.'='.$$self{document_namespaces}{$prefix}."\n"; }
+  if(my $defs = $$self{schemaclass}){
+    foreach my $classname (keys %$defs){
+      print $classname.':=('.join(',', sort keys %{$$self{schemaclass}{$classname}}).')'."\n"; }}
   foreach my $tag (keys %{$$self{tagprop}}){
     print $tag
       .'{'.join(',',sort keys %{$$self{tagprop}{$tag}{attributes}}).'}'
@@ -107,6 +110,9 @@ sub loadCompiledSchema {
       my($tag,$attr,$children)=($1,$2,$3);
       $self->setTagProperty($tag,'attributes',{map(($_=>1),split(/,/,$attr))});
       $self->setTagProperty($tag,'model',{map(($_=>1),split(/,/,$children))}); }
+    elsif($line =~ /^([^:=]+):=(.*?)$/){
+      my($classname,$elements)=($1,$2);
+      $self->setSchemaClass($classname,{map(($_=>1),split(/,/,$elements))}); }
     elsif($line =~ /^([^=]+)=(.*?)$/){
       my($prefix,$namespace)=($1,$2);
       $self->registerDocumentNamespace($prefix,$namespace); }
@@ -314,6 +320,10 @@ sub getTagPropertyList {
    ($allhash && defined ($v=$$allhash{$prop1}) ? @$v : ()),
   ); }
 
+sub setSchemaClass {
+  my($self,$classname,$content)=@_;
+  $$self{schemaclass}{$classname}=$content; }
+
 #**********************************************************************
 # Document Structure Queries
 #**********************************************************************
@@ -380,6 +390,11 @@ sub canHaveAttribute {
   return 1 if $$self{permissive};
   $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
+sub isInSchemaClass {
+  my($self,$classname,$tag)=@_;
+  $tag = $self->getNodeQName($tag) if ref $tag; # In case tag is a node.
+  my $class = $$self{schemaclass}{$classname};
+  $class && $$class{$tag}; }
 
 #**********************************************************************
 # Support for filling in the model from a Schema.

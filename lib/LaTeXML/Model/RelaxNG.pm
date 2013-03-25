@@ -84,6 +84,12 @@ sub loadSchema {
     my($content,$attributes) = $self->extractContent($tag,@body);
     $$self{model}->setTagProperty($tag,'model',$content);
     $$self{model}->setTagProperty($tag,'attributes',$attributes); }
+  # Extract definitions of symbols that define Schema Classes, too
+  foreach my $symbol (sort keys %{$$self{defs}}){
+    if($symbol =~ /^grammar\d+:(.+?)\.class$/){
+      my $name = $1;
+      my($content,$attributes) = $self->extractContent($symbol,$$self{defs}{$symbol});
+      $$self{model}->setSchemaClass($name,$content); }}
   NoteEnd("Loading RelaxNG $$self{name}"); }
 
 # Return two hashrefs for content & attributes
