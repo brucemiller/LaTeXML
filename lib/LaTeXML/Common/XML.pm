@@ -69,7 +69,7 @@ our @EXPORT = (
 	       qw(&element_nodes &text_in_node &new_node
 		  &append_nodes &clear_node &maybe_clone
 		  &valid_attributes &copy_attributes &rename_attribute &remove_attr
-		  &get_attr &isTextNode &isElementNode &isDescendant &isDescendantOrSelf
+		  &get_attr &isTextNode &isElementNode &isChild &isDescendant &isDescendantOrSelf
                   &set_RDFa_prefixes
 		  &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT
 		  &initialize_catalogs)
@@ -103,19 +103,28 @@ sub text_in_node {
 sub isTextNode { $_[0]->nodeType == XML_TEXT_NODE; }
 sub isElementNode { $_[0]->nodeType == XML_ELEMENT_NODE; }
 
+# Is $child a child of $parent?
+sub isChild {
+  my($child, $parent)=@_;
+  my $p = $child && $child->parentNode;
+  return 1 if $p && $p->isSameNode($parent);
+  return 0; }
+
+# Is $child a descendant of $parent?
 sub isDescendant {
-  my($node, $child)=@_;
+  my($child, $parent)=@_;
   my $p = $child && $child->parentNode;
   while($p){
-    return 1 if $p->isSameNode($node);
+    return 1 if $p->isSameNode($parent);
     $p = $p->parentNode; }
   return 0; }
 
+# Is $child the same as $parent, or a descendent of $parent?
 sub isDescendantOrSelf {
-  my($node, $child)=@_;
+  my($child, $parent)=@_;
   my $p = $child;
   while($p){
-    return 1 if $p->isSameNode($node);
+    return 1 if $p->isSameNode($parent);
     $p = $p->parentNode; }
   return 0; }
 
