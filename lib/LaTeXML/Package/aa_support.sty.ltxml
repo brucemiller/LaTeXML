@@ -40,40 +40,13 @@ DeclareOption('openbib',sub {
 
 ProcessOptions();
 
+RequirePackage('inst_support');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The Manuscript Header
 
 # Title
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
-
-# Authors and addresses
-# They seem to allow commas?
-DefMacro('\author{}', sub { SplitTokens(T_CS('\@author'),$_[1],T_CS('\and'),T_OTHER(',')); });
-
-DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
-# \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\@inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
-DefMacro('\inst{}',sub { SplitTokens(T_CS('\@inst'),$_[1],T_OTHER(',')); });
-NewCounter('inst','document');
-DefMacro('\institute{}','\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
-DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
-DefMacro('\@new@institute XUntil:\@end@institute','\if.#1.\else\@add@institute{#1}\fi');
-DefConstructor('\@add@institute {}',
-	       "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
-	       properties=>sub { (mark=>ToString(Expand(T_CS('\theinst')))); });
-
-# Handling similar to reconnecting footnotemark & text.
-Tag('ltx:note',afterClose=>\&relocateInstitute);
-sub relocateInstitute {
-  my($document,$instnode)=@_;
-  if(($instnode->getAttribute('role')||'') eq 'institutetext'){
-    if(my $mark = $instnode->getAttribute('mark')){
-      if(my @authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
-	foreach my $author (@authors){
-	  $document->appendClone($author,$instnode->childNodes);
-	  $author->setAttribute(role=>'institute');
-	  $author->removeAttribute('mark'); }
-	$instnode->parentNode->removeChild($instnode); }}}}
 
 # "Structured" abstract
 # Note that they suggest either a 5 or 1 argument version!

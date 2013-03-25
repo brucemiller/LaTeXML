@@ -1,0 +1,84 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  inst_support                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | # 
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+# This bit of code supports the \inst style institution markup
+# used by several document classes and styles
+# [aa, llncs, sv]
+
+# This supports single or multiple authors along with single or multiple affiliations.
+# You put ALL authors in a SINGLE \author, POSSIBLY separated by \and.
+# You put ALL institutions in a SINGLE \institute, POSSIBLY separated by \and.
+# If there are multiple separated institutes, then you can use \inst{number} after an
+# author (whether or not the authors separated by \and), to indicate the number-th institute.
+# BUT you can leave off all \and and \inst to just have an amorphous line of authors
+# and affiliations!
+
+# In LaTeX, \inst generates a footnote mark, and \institution puts counters within the
+# institution line.
+
+# Our implementation strategy is similar, but we split the \institution into several
+# ltx:note's. We check to see if there is an ltx:creator with a footnote mark
+# with the same mark number, and copy the institute information into that creator element
+# as an ltx:contact(with @role='institute').
+
+DefMacro('\author{}', sub { SplitTokens(T_CS('\@author'),$_[1],T_CS('\and'),T_OTHER(',')); });
+
+DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
+
+# \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
+####DefConstructor('\inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+DefConstructor('\@inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+DefMacro('\inst{}',sub { SplitTokens(T_CS('\@inst'),$_[1],T_OTHER(',')); });
+
+NewCounter('inst','document');
+DefMacro('\institute{}',
+         '\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
+DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
+DefMacro('\@new@institute XUntil:\@end@institute','\if.#1.\else\@add@institute{#1}\fi');
+
+# This creates the note for each institute.
+DefConstructor('\@add@institute {}',
+	       "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
+               bounded=>1, beforeDigest=>sub{ AssignValue(inPreamble=>0); },
+	       properties=>sub { (mark=>ToString(Expand(T_CS('\theinst')))); });
+
+# Reconnecting the institute to the appropriate author:
+# [Handling is similar to reconnecting footnotemark & footnotetext]
+Tag('ltx:note',afterClose=>\&relocateInstitute);
+sub relocateInstitute {
+  my($document,$instnode)=@_;
+  if(($instnode->getAttribute('role')||'') eq 'institutetext'){
+    if(my $mark = $instnode->getAttribute('mark')){
+      # Find authors with same mark.
+      my @authors;
+      if(@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
+	foreach my $author (@authors){
+	  $document->appendClone($author,$instnode->childNodes);
+	  $author->setAttribute(role=>'institute');
+	  $author->removeAttribute('mark'); }
+	$instnode->parentNode->removeChild($instnode); }
+      # Not sure if this is right; find authors WITHOUT a contact mark.
+      elsif(@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")){
+	foreach my $author (@authors){
+          $document->appendTree($author,['ltx:contact',{role=>'institute'},$instnode->childNodes]);
+          $instnode->parentNode->removeChild($instnode); }}
+}}}
+
+1;
+

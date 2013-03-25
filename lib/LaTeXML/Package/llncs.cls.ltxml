@@ -22,36 +22,12 @@ ProcessOptions();
 LoadClass('article');
 
 RequirePackage('multicol');
+RequirePackage('inst_support');
 
 #======================================================================
 DefMacro('\frontmatter',Tokens());
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
-
-# Authors and addresses (assume same setup as aa)
-DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
-# \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
-NewCounter('inst','document');
-DefMacro('\institute{}','\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
-DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
-DefMacro('\@new@institute XUntil:\@end@institute','\if.#1.\else\@add@institute{#1}\fi');
-DefConstructor('\@add@institute {}',
-	       "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
-	       properties=>sub { (mark=>ToString(Expand(T_CS('\theinst')))); });
-
-# Handling similar to reconnecting footnotemark & text.
-Tag('ltx:note',afterClose=>\&relocateInstitute);
-sub relocateInstitute {
-  my($document,$instnode)=@_;
-  if(($instnode->getAttribute('role')||'') eq 'institutetext'){
-    if(my $mark = $instnode->getAttribute('mark')){
-      if(my @authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
-	foreach my $author (@authors){
-	  $document->appendClone($author,$instnode->childNodes);
-	  $author->setAttribute(role=>'institute');
-	  $author->removeAttribute('mark'); }
-	$instnode->parentNode->removeChild($instnode); }}}}
 
 DefMacro('\emailname','E-mail');
 DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
