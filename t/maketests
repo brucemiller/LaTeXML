@@ -39,6 +39,7 @@ if($showversion){ print STDERR "$identity\n"; exit(1); }
 pod2usage(-message=>"$identity\nMissing test TeX file", 
 	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
 
+binmode(STDERR,":encoding(UTF-8)");
 #======================================================================
 # hmm... could be even more helpful
 #  copy xml to a backup and compare ?
