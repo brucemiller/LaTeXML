@@ -69,21 +69,14 @@ sub getPages {
 # we could just merge that page as a level in it's containing TOC instead of a document.???
 sub presortPages {
   my($tree,$haschildren,$page)=@_;
-  my $nextlevel;
-  if(($nextlevel = $$tree{children}[-1]) && (isDescendant($page, $$nextlevel{node}))){
+  my $nextlevel;                # if $page is a descendant of some othe page
+####  if(($nextlevel = $$tree{children}[-1]) && (isDescendant($page, $$nextlevel{node}))){
+  if(($nextlevel = $$tree{children}[-1]) && (isChild($page, $$nextlevel{node}))){
     presortPages($nextlevel,$haschildren,$page); }
   else {
     $$haschildren{$$tree{node}->localname}=1; # Wrong key for this!?!
     push(@{$$tree{children}},
 	 {node=>$page,upid=>$$tree{id}, id=>$page->getAttribute('xml:id'),parent=>$tree,children=>[]}); }}
-
-# Is $node an descendant of $possibleparent?
-# Probably even belongs somewhere else??
-sub isDescendant {
-  my($node,$possibleparent)=@_;
-  do {
-    $node = $node->parentNode;
-    return 1 if $node && ($$node == $$possibleparent); }}
 
 # Get destination pathnames for each page.
 sub prenamePages {
