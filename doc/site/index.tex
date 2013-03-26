@@ -95,11 +95,14 @@ by following the instructions at \ref{install.general}.
 %takes care of installing dependencies and updates,
 %and allows cleaner uninstall.  
 
+%%%
 \emph{Normally}, it would be preferable to install a platform-specific, prebuilt release.
 But frankly, the released version is rather old;
 so out-of-date, in fact, that we are inclined to wait until we
 have a really dramatic replacement before we make a new formal release.
 Until then, you will probably be best served by \ref{install.svn}.
+A new release is intended by late Spring or Summer!
+%%%
 
 In any case, it is usually preferable to use a platform-specific procedure
 for installing the prerequisites, and there may be platform-specific
@@ -158,13 +161,17 @@ The following sections outline the general procedures for installing
 \end{itemize}
 (See \texttt{perl perlmodinstall} for more details, if needed.)
 
-You can specify nonstandard place to install files (and avoid the need to install as root)
+\paragraph{Installation Options}\label{install.options}
+You can specify nonstandard place to install files (and avoid the need to install as root!)
 by modifying the Makefile creating command above to
 \begin{lstlisting}[style=shell]
    perl Makefile.PL PREFIX=%perldir% TEXMF=%texdir%
 \end{lstlisting}
 where \emph{perldir} is where you want the perl related files to go and
 \emph{texdir} is where you want the \TeX\ style files to go.
+Similarly, you can specify a special place to install only the
+executable scripts by specifying both \texttt{INSTALLSITEBIN} and \texttt{INSTALLSITESCRIPT}
+to refer to the same directory.
 
 \subsubsection{Installing from SVN}\label{install.svn}
 The most current code can be obtained from the svn repository.
@@ -323,11 +330,29 @@ The prerequisites can be installed by running this command as root:
 Afterwards, you may use the general procedure for
 \ref{install.source} or \ref{install.svn}.
 
-\emph{Note} there have been issues reported regarding \verb|DB_File|
+\emph{Note:} There have been issues reported regarding \verb|DB_File|
 not being installed;  Apparently you must install the 
 the db `variant' of perl, rather than the gdbm variant;
 that is, you must run \verb|sudo port install perl +db|
 (possibly after uninstalling perl first?).
+
+\emph{Note:} There have also been issues reported with recent
+installations of Perl with MacPorts:  it will install LaTeXML's
+executables in a directory specific to the current version of Perl
+(eg. \texttt{/opt/local/libexec/perl5.12/sitebin},
+instead of \texttt{/opt/local/bin} which would be in your \texttt{PATH} environment variable).
+Apparently this is a feature, not a bug; it only happens when installing from source or svn;
+not when installing the MacPorts port.  There are three workarounds, each with disadvantages:
+\begin{itemize}
+\item Watch for where the scripts get installed and that directory to your \texttt{PATH}
+  environment variable;
+\item Set up symbolic links from a directory in your path, such as \texttt{/opt/local/bin},
+  to the actual installed locations;
+\item Use the makefile options to choose an installation directory (see \ref{install.options}):
+\begin{lstlisting}[style=shell]
+  perl Makefile.PL INSTALLSITEBIN=/opt/local/bin INSTALLSITESCRIPT=/opt/local/bin
+\end{lstlisting}
+\end{itemize}
 
 \subsubsection{Windows}\label{install.windows}
 There is currently no prebuilt \LaTeXML\ for Windows,
@@ -377,7 +402,7 @@ by following the general procedure but using Strawberry Perl's \texttt{dmake} co
 \item Download \CurrentTarball\\
 \item Unpack and build \LaTeXML:
 \begin{lstlisting}[style=shell]
- tar zxvf LaTeXML-@\CurrentVersion@.tar.gz\
+ tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
  cd LaTeXML-@\CurrentVersion@
  perl Makefile.PL
  dmake
