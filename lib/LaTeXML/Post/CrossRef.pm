@@ -435,6 +435,14 @@ sub make_bibcite {
 	while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
 	  my $next = shift(@data);
 	  push(@stuff,$yysep,' ',['ltx:ref',$$next{attr},@{$$next{number}}]);  }}
+      elsif($show =~ s/^super//i){
+        my @r = ();
+	push(@r,['ltx:ref',$$datum{attr},@{$$datum{number}}]);
+	$didref=1;
+	while($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})){
+	  my $next = shift(@data);
+	  push(@r,$yysep,' ',['ltx:ref',$$next{attr},@{$$next{number}}]);  }
+        push(@stuff,['ltx:sup',{},@r]); }
       elsif($show =~ s/^(.)//){
 	push(@stuff, $1); }}
     push(@refs,
