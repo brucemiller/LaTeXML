@@ -3303,7 +3303,10 @@
   rrefnum CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   rdf-prefixes CDATA #IMPLIED
-  files CDATA #IMPLIED>
+  files CDATA #IMPLIED
+  bibstyle CDATA #IMPLIED
+  citestyle CDATA #IMPLIED
+  sort CDATA #IMPLIED>
 
 <!ELEMENT ltx:index ((ltx:title|ltx:toctitle|ltx:creator)*,
                      ((ltx:para|ltx:theorem|ltx:proof|ltx:figure

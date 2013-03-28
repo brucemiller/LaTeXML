@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <!-- ====================================================================== -->
   <define name="document">
     <element name="document">
@@ -386,7 +386,24 @@ real content should be confined to slides.</a:documentation>
     <ref name="Sectional.attributes"/>
     <optional>
       <attribute name="files">
-        <a:documentation>the list of bib files used to create the bibliograph.</a:documentation>
+        <a:documentation>the list of bib files used to create the bibliography.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="bibstyle">
+        <a:documentation>the bibliographic style to be used to format the bibliography
+(presumably a BibTeX bst file name)</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="citestyle">
+        <a:documentation>the citation style to be used when citing items from the bibliography</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="sort">
+        <a:documentation>whether the bibliographic items should be sorted or in order of citation.</a:documentation>
+        <data type="boolean"/>
       </attribute>
     </optional>
   </define>

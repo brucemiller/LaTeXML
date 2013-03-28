@@ -204,8 +204,18 @@ bibliography.body.class = Para.model | biblist
 bibliography_attributes = 
   Sectional.attributes,
 
-  ## the list of bib files used to create the bibliograph.
-  attribute files { text }?
+  ## the list of bib files used to create the bibliography.
+  attribute files { text }?,
+
+  ## the bibliographic style to be used to format the bibliography
+  ## (presumably a BibTeX bst file name)
+  attribute bibstyle { text }?,
+
+  ## the citation style to be used when citing items from the bibliography
+  attribute citestyle { text }?,
+
+  ## whether the bibliographic items should be sorted or in order of citation.
+  attribute sort { xsd:boolean }?
 
 ## Content model for \elementref{bibliography}.
 bibliography_model = FrontMatter.class*, SectionalFrontMatter.class*, bibliography.body.class*
