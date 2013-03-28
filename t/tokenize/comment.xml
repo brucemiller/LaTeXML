@@ -6,25 +6,25 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>Before Comment.
+    <p xml:id="p1.1">Before Comment.
 After Comment.</p>
   </para>
   <para xml:id="p2">
-    <p>Before Included.
+    <p xml:id="p2.1">Before Included.
 Inside Included.
 After Included.</p>
   </para>
   <para xml:id="p3">
-    <p>Before Excluded.
+    <p xml:id="p3.1">Before Excluded.
 After Excluded.</p>
   </para>
   <para xml:id="p4">
-    <p>Before BoldSpecial.
+    <p xml:id="p4.1">Before BoldSpecial.
 [<text font="bold">Inside BoldSpecial.
 </text>]After BoldSpecial.</p>
   </para>
   <para xml:id="p5">
-    <p>Before Included.
+    <p xml:id="p5.1">Before Included.
 <text font="bold">Bold Inside Included.
 After Included, but still Bold.</text></p>
   </para>

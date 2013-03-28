@@ -6,339 +6,339 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>This is a test of typesetting ancient Greek with LaTeX:</p>
+    <p xml:id="p1.1">This is a test of typesetting ancient Greek with LaTeX:</p>
   </para>
   <para xml:id="p2">
-    <p>’Εν ἀρχῇ ἦν ‛ο λ´ογος…</p>
+    <p xml:id="p2.1">’Εν ἀρχῇ ἦν ‛ο λ´ογος…</p>
   </para>
   <para xml:id="p3">
-    <p>Here’s the correspondance between ”greek” and ”latin” encoding for TeX:<break/><text font="typewriter">a b g d e z h j i k l m n x o p r s t u f q y w c</text> <break/>α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ ο π ρ ς τ υ φ χ ψ ω ς</p>
+    <p xml:id="p3.1">Here’s the correspondance between ”greek” and ”latin” encoding for TeX:<break/><text font="typewriter">a b g d e z h j i k l m n x o p r s t u f q y w c</text> <break/>α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ ο π ρ ς τ υ φ χ ψ ω ς</p>
   </para>
   <para xml:id="p4">
-    <p>A simple example how to get accents and spirits: <break/><text font="typewriter">'a `a  a &gt;a &lt;a a| &gt; a| "i "'i</text> <break/>ά ὰ ᾶ ἀ ἁ ᾳ ᾆ ϊ ΐ</p>
+    <p xml:id="p4.1">A simple example how to get accents and spirits: <break/><text font="typewriter">'a `a  a &gt;a &lt;a a| &gt; a| "i "'i</text> <break/>ά ὰ ᾶ ἀ ἁ ᾳ ᾆ ϊ ΐ</p>
   </para>
   <para xml:id="p5">
-    <tabular>
+    <tabular xml:id="p5.1">
       <tbody>
-        <tr>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
+        <tr xml:id="p5.1.1">
+          <td xml:id="p5.1.1.1"/>
+          <td xml:id="p5.1.1.2"/>
+          <td xml:id="p5.1.1.3"/>
+          <td xml:id="p5.1.1.4"/>
+          <td xml:id="p5.1.1.5"/>
+          <td xml:id="p5.1.1.6"/>
+          <td xml:id="p5.1.1.7"/>
+          <td xml:id="p5.1.1.8"/>
         </tr>
-        <tr>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td align="center">ϔ</td>
-          <td/>
-          <td align="center">ϋ</td>
+        <tr xml:id="p5.1.2">
+          <td xml:id="p5.1.2.1"/>
+          <td xml:id="p5.1.2.2"/>
+          <td xml:id="p5.1.2.3"/>
+          <td xml:id="p5.1.2.4"/>
+          <td xml:id="p5.1.2.5"/>
+          <td align="center" xml:id="p5.1.2.6">ϔ</td>
+          <td xml:id="p5.1.2.7"/>
+          <td align="center" xml:id="p5.1.2.8">ϋ</td>
         </tr>
-        <tr>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
+        <tr xml:id="p5.1.3">
+          <td xml:id="p5.1.3.1"/>
+          <td xml:id="p5.1.3.2"/>
+          <td xml:id="p5.1.3.3"/>
+          <td xml:id="p5.1.3.4"/>
+          <td xml:id="p5.1.3.5"/>
+          <td xml:id="p5.1.3.6"/>
+          <td xml:id="p5.1.3.7"/>
+          <td xml:id="p5.1.3.8"/>
         </tr>
-        <tr>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
-          <td/>
+        <tr xml:id="p5.1.4">
+          <td xml:id="p5.1.4.1"/>
+          <td xml:id="p5.1.4.2"/>
+          <td xml:id="p5.1.4.3"/>
+          <td xml:id="p5.1.4.4"/>
+          <td xml:id="p5.1.4.5"/>
+          <td xml:id="p5.1.4.6"/>
+          <td xml:id="p5.1.4.7"/>
+          <td xml:id="p5.1.4.8"/>
         </tr>
-        <tr>
-          <td align="center">῁</td>
-          <td/>
-          <td/>
-          <td align="center">΅</td>
-          <td align="center">῭</td>
-          <td/>
-          <td/>
-          <td/>
+        <tr xml:id="p5.1.5">
+          <td align="center" xml:id="p5.1.5.1">῁</td>
+          <td xml:id="p5.1.5.2"/>
+          <td xml:id="p5.1.5.3"/>
+          <td align="center" xml:id="p5.1.5.4">΅</td>
+          <td align="center" xml:id="p5.1.5.5">῭</td>
+          <td xml:id="p5.1.5.6"/>
+          <td xml:id="p5.1.5.7"/>
+          <td xml:id="p5.1.5.8"/>
         </tr>
-        <tr>
-          <td align="center">(</td>
-          <td align="center">)</td>
-          <td align="center">*</td>
-          <td align="center">+</td>
-          <td align="center">,</td>
-          <td align="center">-</td>
-          <td align="center">.</td>
-          <td align="center">/</td>
+        <tr xml:id="p5.1.6">
+          <td align="center" xml:id="p5.1.6.1">(</td>
+          <td align="center" xml:id="p5.1.6.2">)</td>
+          <td align="center" xml:id="p5.1.6.3">*</td>
+          <td align="center" xml:id="p5.1.6.4">+</td>
+          <td align="center" xml:id="p5.1.6.5">,</td>
+          <td align="center" xml:id="p5.1.6.6">-</td>
+          <td align="center" xml:id="p5.1.6.7">.</td>
+          <td align="center" xml:id="p5.1.6.8">/</td>
         </tr>
-        <tr>
-          <td align="center">0</td>
-          <td align="center">1</td>
-          <td align="center">2</td>
-          <td align="center">3</td>
-          <td align="center">4</td>
-          <td align="center">5</td>
-          <td align="center">6</td>
-          <td align="center">7</td>
+        <tr xml:id="p5.1.7">
+          <td align="center" xml:id="p5.1.7.1">0</td>
+          <td align="center" xml:id="p5.1.7.2">1</td>
+          <td align="center" xml:id="p5.1.7.3">2</td>
+          <td align="center" xml:id="p5.1.7.4">3</td>
+          <td align="center" xml:id="p5.1.7.5">4</td>
+          <td align="center" xml:id="p5.1.7.6">5</td>
+          <td align="center" xml:id="p5.1.7.7">6</td>
+          <td align="center" xml:id="p5.1.7.8">7</td>
         </tr>
-        <tr>
-          <td align="center">8</td>
-          <td align="center">9</td>
-          <td align="center">:</td>
-          <td align="center">.</td>
-          <td align="center">‛</td>
-          <td align="center">=</td>
-          <td align="center">’</td>
-          <td align="center">·</td>
+        <tr xml:id="p5.1.8">
+          <td align="center" xml:id="p5.1.8.1">8</td>
+          <td align="center" xml:id="p5.1.8.2">9</td>
+          <td align="center" xml:id="p5.1.8.3">:</td>
+          <td align="center" xml:id="p5.1.8.4">.</td>
+          <td align="center" xml:id="p5.1.8.5">‛</td>
+          <td align="center" xml:id="p5.1.8.6">=</td>
+          <td align="center" xml:id="p5.1.8.7">’</td>
+          <td align="center" xml:id="p5.1.8.8">·</td>
         </tr>
-        <tr>
-          <td align="center">῟</td>
-          <td align="center">Α</td>
-          <td align="center">Β</td>
-          <td align="center">῝</td>
-          <td align="center">Δ</td>
-          <td align="center">Ε</td>
-          <td align="center">Φ</td>
-          <td align="center">Γ</td>
+        <tr xml:id="p5.1.9">
+          <td align="center" xml:id="p5.1.9.1">῟</td>
+          <td align="center" xml:id="p5.1.9.2">Α</td>
+          <td align="center" xml:id="p5.1.9.3">Β</td>
+          <td align="center" xml:id="p5.1.9.4">῝</td>
+          <td align="center" xml:id="p5.1.9.5">Δ</td>
+          <td align="center" xml:id="p5.1.9.6">Ε</td>
+          <td align="center" xml:id="p5.1.9.7">Φ</td>
+          <td align="center" xml:id="p5.1.9.8">Γ</td>
         </tr>
-        <tr>
-          <td align="center">Η</td>
-          <td align="center">Ι</td>
-          <td align="center">Θ</td>
-          <td align="center">Κ</td>
-          <td align="center">Λ</td>
-          <td align="center">Μ</td>
-          <td align="center">Ν</td>
-          <td align="center">Ο</td>
+        <tr xml:id="p5.1.10">
+          <td align="center" xml:id="p5.1.10.1">Η</td>
+          <td align="center" xml:id="p5.1.10.2">Ι</td>
+          <td align="center" xml:id="p5.1.10.3">Θ</td>
+          <td align="center" xml:id="p5.1.10.4">Κ</td>
+          <td align="center" xml:id="p5.1.10.5">Λ</td>
+          <td align="center" xml:id="p5.1.10.6">Μ</td>
+          <td align="center" xml:id="p5.1.10.7">Ν</td>
+          <td align="center" xml:id="p5.1.10.8">Ο</td>
         </tr>
-        <tr>
-          <td align="center">Π</td>
-          <td align="center">Χ</td>
-          <td align="center">Ρ</td>
-          <td align="center">Σ</td>
-          <td align="center">Τ</td>
-          <td align="center">ϒ</td>
-          <td align="center">῞</td>
-          <td align="center">Ω</td>
+        <tr xml:id="p5.1.11">
+          <td align="center" xml:id="p5.1.11.1">Π</td>
+          <td align="center" xml:id="p5.1.11.2">Χ</td>
+          <td align="center" xml:id="p5.1.11.3">Ρ</td>
+          <td align="center" xml:id="p5.1.11.4">Σ</td>
+          <td align="center" xml:id="p5.1.11.5">Τ</td>
+          <td align="center" xml:id="p5.1.11.6">ϒ</td>
+          <td align="center" xml:id="p5.1.11.7">῞</td>
+          <td align="center" xml:id="p5.1.11.8">Ω</td>
         </tr>
-        <tr>
-          <td align="center">Ξ</td>
-          <td align="center">Ψ</td>
-          <td align="center">Ζ</td>
-          <td align="center">[</td>
-          <td align="center">῏</td>
-          <td align="center">]</td>
-          <td align="center">῎</td>
-          <td align="center">῍</td>
+        <tr xml:id="p5.1.12">
+          <td align="center" xml:id="p5.1.12.1">Ξ</td>
+          <td align="center" xml:id="p5.1.12.2">Ψ</td>
+          <td align="center" xml:id="p5.1.12.3">Ζ</td>
+          <td align="center" xml:id="p5.1.12.4">[</td>
+          <td align="center" xml:id="p5.1.12.5">῏</td>
+          <td align="center" xml:id="p5.1.12.6">]</td>
+          <td align="center" xml:id="p5.1.12.7">῎</td>
+          <td align="center" xml:id="p5.1.12.8">῍</td>
         </tr>
-        <tr>
-          <td align="center">`</td>
-          <td align="center">α</td>
-          <td align="center">β</td>
-          <td align="center">ς</td>
-          <td align="center">δ</td>
-          <td align="center">ε</td>
-          <td align="center">φ</td>
-          <td align="center">γ</td>
+        <tr xml:id="p5.1.13">
+          <td align="center" xml:id="p5.1.13.1">`</td>
+          <td align="center" xml:id="p5.1.13.2">α</td>
+          <td align="center" xml:id="p5.1.13.3">β</td>
+          <td align="center" xml:id="p5.1.13.4">ς</td>
+          <td align="center" xml:id="p5.1.13.5">δ</td>
+          <td align="center" xml:id="p5.1.13.6">ε</td>
+          <td align="center" xml:id="p5.1.13.7">φ</td>
+          <td align="center" xml:id="p5.1.13.8">γ</td>
         </tr>
-        <tr>
-          <td align="center">η</td>
-          <td align="center">ι</td>
-          <td align="center">ϑ</td>
-          <td align="center">ϰ</td>
-          <td align="center">λ</td>
-          <td align="center">μ</td>
-          <td align="center">ν</td>
-          <td align="center">ο</td>
+        <tr xml:id="p5.1.14">
+          <td align="center" xml:id="p5.1.14.1">η</td>
+          <td align="center" xml:id="p5.1.14.2">ι</td>
+          <td align="center" xml:id="p5.1.14.3">ϑ</td>
+          <td align="center" xml:id="p5.1.14.4">ϰ</td>
+          <td align="center" xml:id="p5.1.14.5">λ</td>
+          <td align="center" xml:id="p5.1.14.6">μ</td>
+          <td align="center" xml:id="p5.1.14.7">ν</td>
+          <td align="center" xml:id="p5.1.14.8">ο</td>
         </tr>
-        <tr>
-          <td align="center">π</td>
-          <td align="center">χ</td>
-          <td align="center">ρ</td>
-          <td align="center">ς</td>
-          <td align="center">τ</td>
-          <td align="center">υ</td>
-          <td/>
-          <td align="center">ω</td>
+        <tr xml:id="p5.1.15">
+          <td align="center" xml:id="p5.1.15.1">π</td>
+          <td align="center" xml:id="p5.1.15.2">χ</td>
+          <td align="center" xml:id="p5.1.15.3">ρ</td>
+          <td align="center" xml:id="p5.1.15.4">ς</td>
+          <td align="center" xml:id="p5.1.15.5">τ</td>
+          <td align="center" xml:id="p5.1.15.6">υ</td>
+          <td xml:id="p5.1.15.7"/>
+          <td align="center" xml:id="p5.1.15.8">ω</td>
         </tr>
-        <tr>
-          <td align="center">ξ</td>
-          <td align="center">ψ</td>
-          <td align="center">ζ</td>
-          <td/>
-          <td align="center">ι</td>
-          <td/>
-          <td align="center">῀</td>
-          <td/>
+        <tr xml:id="p5.1.16">
+          <td align="center" xml:id="p5.1.16.1">ξ</td>
+          <td align="center" xml:id="p5.1.16.2">ψ</td>
+          <td align="center" xml:id="p5.1.16.3">ζ</td>
+          <td xml:id="p5.1.16.4"/>
+          <td align="center" xml:id="p5.1.16.5">ι</td>
+          <td xml:id="p5.1.16.6"/>
+          <td align="center" xml:id="p5.1.16.7">῀</td>
+          <td xml:id="p5.1.16.8"/>
         </tr>
-        <tr>
-          <td align="center">ὰ</td>
-          <td align="center">ἁ</td>
-          <td align="center">ἀ</td>
-          <td align="center">ἃ</td>
-          <td align="center">ᾲ</td>
-          <td align="center">ᾁ</td>
-          <td align="center">ᾀ</td>
-          <td align="center">ᾃ</td>
+        <tr xml:id="p5.1.17">
+          <td align="center" xml:id="p5.1.17.1">ὰ</td>
+          <td align="center" xml:id="p5.1.17.2">ἁ</td>
+          <td align="center" xml:id="p5.1.17.3">ἀ</td>
+          <td align="center" xml:id="p5.1.17.4">ἃ</td>
+          <td align="center" xml:id="p5.1.17.5">ᾲ</td>
+          <td align="center" xml:id="p5.1.17.6">ᾁ</td>
+          <td align="center" xml:id="p5.1.17.7">ᾀ</td>
+          <td align="center" xml:id="p5.1.17.8">ᾃ</td>
         </tr>
-        <tr>
-          <td align="center">ά</td>
-          <td align="center">ἅ</td>
-          <td align="center">ἄ</td>
-          <td align="center">ἂ</td>
-          <td align="center">ᾴ</td>
-          <td align="center">ᾅ</td>
-          <td align="center">ᾄ</td>
-          <td align="center">ᾂ</td>
+        <tr xml:id="p5.1.18">
+          <td align="center" xml:id="p5.1.18.1">ά</td>
+          <td align="center" xml:id="p5.1.18.2">ἅ</td>
+          <td align="center" xml:id="p5.1.18.3">ἄ</td>
+          <td align="center" xml:id="p5.1.18.4">ἂ</td>
+          <td align="center" xml:id="p5.1.18.5">ᾴ</td>
+          <td align="center" xml:id="p5.1.18.6">ᾅ</td>
+          <td align="center" xml:id="p5.1.18.7">ᾄ</td>
+          <td align="center" xml:id="p5.1.18.8">ᾂ</td>
         </tr>
-        <tr>
-          <td align="center">ᾶ</td>
-          <td align="center">ἇ</td>
-          <td align="center">ἆ</td>
-          <td/>
-          <td align="center">ᾷ</td>
-          <td align="center">ᾇ</td>
-          <td align="center">ᾆ</td>
-          <td/>
+        <tr xml:id="p5.1.19">
+          <td align="center" xml:id="p5.1.19.1">ᾶ</td>
+          <td align="center" xml:id="p5.1.19.2">ἇ</td>
+          <td align="center" xml:id="p5.1.19.3">ἆ</td>
+          <td xml:id="p5.1.19.4"/>
+          <td align="center" xml:id="p5.1.19.5">ᾷ</td>
+          <td align="center" xml:id="p5.1.19.6">ᾇ</td>
+          <td align="center" xml:id="p5.1.19.7">ᾆ</td>
+          <td xml:id="p5.1.19.8"/>
         </tr>
-        <tr>
-          <td align="center">ὴ</td>
-          <td align="center">ἡ</td>
-          <td align="center">ἠ</td>
-          <td align="center">ἣ</td>
-          <td align="center">ῂ</td>
-          <td align="center">ᾑ</td>
-          <td align="center">ᾐ</td>
-          <td align="center">ᾓ</td>
+        <tr xml:id="p5.1.20">
+          <td align="center" xml:id="p5.1.20.1">ὴ</td>
+          <td align="center" xml:id="p5.1.20.2">ἡ</td>
+          <td align="center" xml:id="p5.1.20.3">ἠ</td>
+          <td align="center" xml:id="p5.1.20.4">ἣ</td>
+          <td align="center" xml:id="p5.1.20.5">ῂ</td>
+          <td align="center" xml:id="p5.1.20.6">ᾑ</td>
+          <td align="center" xml:id="p5.1.20.7">ᾐ</td>
+          <td align="center" xml:id="p5.1.20.8">ᾓ</td>
         </tr>
-        <tr>
-          <td align="center">ή</td>
-          <td align="center">ἥ</td>
-          <td align="center">ἤ</td>
-          <td align="center">ἢ</td>
-          <td align="center">ῄ</td>
-          <td align="center">ᾕ</td>
-          <td align="center">ᾔ</td>
-          <td align="center">ᾒ</td>
+        <tr xml:id="p5.1.21">
+          <td align="center" xml:id="p5.1.21.1">ή</td>
+          <td align="center" xml:id="p5.1.21.2">ἥ</td>
+          <td align="center" xml:id="p5.1.21.3">ἤ</td>
+          <td align="center" xml:id="p5.1.21.4">ἢ</td>
+          <td align="center" xml:id="p5.1.21.5">ῄ</td>
+          <td align="center" xml:id="p5.1.21.6">ᾕ</td>
+          <td align="center" xml:id="p5.1.21.7">ᾔ</td>
+          <td align="center" xml:id="p5.1.21.8">ᾒ</td>
         </tr>
-        <tr>
-          <td align="center">ῆ</td>
-          <td align="center">ἧ</td>
-          <td align="center">ἦ</td>
-          <td/>
-          <td align="center">ῇ</td>
-          <td align="center">ᾗ</td>
-          <td align="center">ᾖ</td>
-          <td/>
+        <tr xml:id="p5.1.22">
+          <td align="center" xml:id="p5.1.22.1">ῆ</td>
+          <td align="center" xml:id="p5.1.22.2">ἧ</td>
+          <td align="center" xml:id="p5.1.22.3">ἦ</td>
+          <td xml:id="p5.1.22.4"/>
+          <td align="center" xml:id="p5.1.22.5">ῇ</td>
+          <td align="center" xml:id="p5.1.22.6">ᾗ</td>
+          <td align="center" xml:id="p5.1.22.7">ᾖ</td>
+          <td xml:id="p5.1.22.8"/>
         </tr>
-        <tr>
-          <td align="center">ὼ</td>
-          <td align="center">ὡ</td>
-          <td align="center">ὠ</td>
-          <td align="center">ὣ</td>
-          <td align="center">ῲ</td>
-          <td align="center">ᾡ</td>
-          <td align="center">ᾠ</td>
-          <td align="center">ᾣ</td>
+        <tr xml:id="p5.1.23">
+          <td align="center" xml:id="p5.1.23.1">ὼ</td>
+          <td align="center" xml:id="p5.1.23.2">ὡ</td>
+          <td align="center" xml:id="p5.1.23.3">ὠ</td>
+          <td align="center" xml:id="p5.1.23.4">ὣ</td>
+          <td align="center" xml:id="p5.1.23.5">ῲ</td>
+          <td align="center" xml:id="p5.1.23.6">ᾡ</td>
+          <td align="center" xml:id="p5.1.23.7">ᾠ</td>
+          <td align="center" xml:id="p5.1.23.8">ᾣ</td>
         </tr>
-        <tr>
-          <td align="center">ὼ</td>
-          <td align="center">ὥ</td>
-          <td align="center">ὤ</td>
-          <td align="center">ὢ</td>
-          <td align="center">ῴ</td>
-          <td align="center">ᾥ</td>
-          <td align="center">ᾤ</td>
-          <td align="center">ᾢ</td>
+        <tr xml:id="p5.1.24">
+          <td align="center" xml:id="p5.1.24.1">ὼ</td>
+          <td align="center" xml:id="p5.1.24.2">ὥ</td>
+          <td align="center" xml:id="p5.1.24.3">ὤ</td>
+          <td align="center" xml:id="p5.1.24.4">ὢ</td>
+          <td align="center" xml:id="p5.1.24.5">ῴ</td>
+          <td align="center" xml:id="p5.1.24.6">ᾥ</td>
+          <td align="center" xml:id="p5.1.24.7">ᾤ</td>
+          <td align="center" xml:id="p5.1.24.8">ᾢ</td>
         </tr>
-        <tr>
-          <td align="center">ῶ</td>
-          <td align="center">ὧ</td>
-          <td align="center">ὦ</td>
-          <td/>
-          <td align="center">ῷ</td>
-          <td align="center">ᾧ</td>
-          <td align="center">ᾦ</td>
-          <td/>
+        <tr xml:id="p5.1.25">
+          <td align="center" xml:id="p5.1.25.1">ῶ</td>
+          <td align="center" xml:id="p5.1.25.2">ὧ</td>
+          <td align="center" xml:id="p5.1.25.3">ὦ</td>
+          <td xml:id="p5.1.25.4"/>
+          <td align="center" xml:id="p5.1.25.5">ῷ</td>
+          <td align="center" xml:id="p5.1.25.6">ᾧ</td>
+          <td align="center" xml:id="p5.1.25.7">ᾦ</td>
+          <td xml:id="p5.1.25.8"/>
         </tr>
-        <tr>
-          <td align="center">ὶ</td>
-          <td align="center">ἱ</td>
-          <td align="center">ἰ</td>
-          <td align="center">ἳ</td>
-          <td align="center">ὺ</td>
-          <td align="center">ὑ</td>
-          <td align="center">ὐ</td>
-          <td align="center">ὓ</td>
+        <tr xml:id="p5.1.26">
+          <td align="center" xml:id="p5.1.26.1">ὶ</td>
+          <td align="center" xml:id="p5.1.26.2">ἱ</td>
+          <td align="center" xml:id="p5.1.26.3">ἰ</td>
+          <td align="center" xml:id="p5.1.26.4">ἳ</td>
+          <td align="center" xml:id="p5.1.26.5">ὺ</td>
+          <td align="center" xml:id="p5.1.26.6">ὑ</td>
+          <td align="center" xml:id="p5.1.26.7">ὐ</td>
+          <td align="center" xml:id="p5.1.26.8">ὓ</td>
         </tr>
-        <tr>
-          <td align="center">ί</td>
-          <td align="center">ἵ</td>
-          <td align="center">ἴ</td>
-          <td align="center">ἲ</td>
-          <td align="center">ύ</td>
-          <td align="center">ὕ</td>
-          <td align="center">ὔ</td>
-          <td align="center">ὒ</td>
+        <tr xml:id="p5.1.27">
+          <td align="center" xml:id="p5.1.27.1">ί</td>
+          <td align="center" xml:id="p5.1.27.2">ἵ</td>
+          <td align="center" xml:id="p5.1.27.3">ἴ</td>
+          <td align="center" xml:id="p5.1.27.4">ἲ</td>
+          <td align="center" xml:id="p5.1.27.5">ύ</td>
+          <td align="center" xml:id="p5.1.27.6">ὕ</td>
+          <td align="center" xml:id="p5.1.27.7">ὔ</td>
+          <td align="center" xml:id="p5.1.27.8">ὒ</td>
         </tr>
-        <tr>
-          <td align="center">ῖ</td>
-          <td align="center">ἷ</td>
-          <td align="center">ἶ</td>
-          <td align="center">Ϊ</td>
-          <td align="center">ῦ</td>
-          <td align="center">ὗ</td>
-          <td align="center">ὖ</td>
-          <td align="center">ϔ</td>
+        <tr xml:id="p5.1.28">
+          <td align="center" xml:id="p5.1.28.1">ῖ</td>
+          <td align="center" xml:id="p5.1.28.2">ἷ</td>
+          <td align="center" xml:id="p5.1.28.3">ἶ</td>
+          <td align="center" xml:id="p5.1.28.4">Ϊ</td>
+          <td align="center" xml:id="p5.1.28.5">ῦ</td>
+          <td align="center" xml:id="p5.1.28.6">ὗ</td>
+          <td align="center" xml:id="p5.1.28.7">ὖ</td>
+          <td align="center" xml:id="p5.1.28.8">ϔ</td>
         </tr>
-        <tr>
-          <td align="center">ὲ</td>
-          <td align="center">ἑ</td>
-          <td align="center">ἐ</td>
-          <td align="center">ἓ</td>
-          <td align="center">ὸ</td>
-          <td align="center">ὁ</td>
-          <td align="center">ὀ</td>
-          <td align="center">ὃ</td>
+        <tr xml:id="p5.1.29">
+          <td align="center" xml:id="p5.1.29.1">ὲ</td>
+          <td align="center" xml:id="p5.1.29.2">ἑ</td>
+          <td align="center" xml:id="p5.1.29.3">ἐ</td>
+          <td align="center" xml:id="p5.1.29.4">ἓ</td>
+          <td align="center" xml:id="p5.1.29.5">ὸ</td>
+          <td align="center" xml:id="p5.1.29.6">ὁ</td>
+          <td align="center" xml:id="p5.1.29.7">ὀ</td>
+          <td align="center" xml:id="p5.1.29.8">ὃ</td>
         </tr>
-        <tr>
-          <td align="center">έ</td>
-          <td align="center">ἕ</td>
-          <td align="center">ἔ</td>
-          <td align="center">ἒ</td>
-          <td align="center">ό</td>
-          <td align="center">ὅ</td>
-          <td align="center">ὄ</td>
-          <td align="center">ὂ</td>
+        <tr xml:id="p5.1.30">
+          <td align="center" xml:id="p5.1.30.1">έ</td>
+          <td align="center" xml:id="p5.1.30.2">ἕ</td>
+          <td align="center" xml:id="p5.1.30.3">ἔ</td>
+          <td align="center" xml:id="p5.1.30.4">ἒ</td>
+          <td align="center" xml:id="p5.1.30.5">ό</td>
+          <td align="center" xml:id="p5.1.30.6">ὅ</td>
+          <td align="center" xml:id="p5.1.30.7">ὄ</td>
+          <td align="center" xml:id="p5.1.30.8">ὂ</td>
         </tr>
-        <tr>
-          <td align="center">ϊ</td>
-          <td align="center">ῒ</td>
-          <td align="center">ΐ</td>
-          <td align="center">ῗ</td>
-          <td align="center">ϋ</td>
-          <td align="center">ῢ</td>
-          <td align="center">ΰ</td>
-          <td align="center">ῧ</td>
+        <tr xml:id="p5.1.31">
+          <td align="center" xml:id="p5.1.31.1">ϊ</td>
+          <td align="center" xml:id="p5.1.31.2">ῒ</td>
+          <td align="center" xml:id="p5.1.31.3">ΐ</td>
+          <td align="center" xml:id="p5.1.31.4">ῗ</td>
+          <td align="center" xml:id="p5.1.31.5">ϋ</td>
+          <td align="center" xml:id="p5.1.31.6">ῢ</td>
+          <td align="center" xml:id="p5.1.31.7">ΰ</td>
+          <td align="center" xml:id="p5.1.31.8">ῧ</td>
         </tr>
-        <tr>
-          <td align="center">ᾳ</td>
-          <td align="center">ῃ</td>
-          <td align="center">ῳ</td>
-          <td align="center">ῥ</td>
-          <td align="center">ῤ</td>
-          <td/>
-          <td/>
-          <td/>
+        <tr xml:id="p5.1.32">
+          <td align="center" xml:id="p5.1.32.1">ᾳ</td>
+          <td align="center" xml:id="p5.1.32.2">ῃ</td>
+          <td align="center" xml:id="p5.1.32.3">ῳ</td>
+          <td align="center" xml:id="p5.1.32.4">ῥ</td>
+          <td align="center" xml:id="p5.1.32.5">ῤ</td>
+          <td xml:id="p5.1.32.6"/>
+          <td xml:id="p5.1.32.7"/>
+          <td xml:id="p5.1.32.8"/>
         </tr>
       </tbody>
     </tabular>

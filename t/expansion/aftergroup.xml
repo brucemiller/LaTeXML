@@ -7,66 +7,66 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>AfterAssignment</title>
     <para xml:id="S1.p1">
-      <p>FOO 12</p>
+      <p xml:id="S1.p1.1">FOO 12</p>
     </para>
     <para xml:id="S1.p2">
-      <p>FOO 34</p>
+      <p xml:id="S1.p2.1">FOO 34</p>
     </para>
     <para xml:id="S1.p3">
-      <p>BAR 56</p>
+      <p xml:id="S1.p3.1">BAR 56</p>
     </para>
     <para xml:id="S1.p4">
-      <p>setbox Before  FOO insideAfter</p>
+      <p xml:id="S1.p4.1">setbox Before  FOO insideAfter</p>
     </para>
     <para xml:id="S1.p5">
-      <p>Again setbox Before insideAfter</p>
+      <p xml:id="S1.p5.1">Again setbox Before insideAfter</p>
     </para>
     <para xml:id="S1.p6">
-      <p>Before inside After BAR</p>
+      <p xml:id="S1.p6.1">Before inside After BAR</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>AfterGroup</title>
     <para xml:id="S2.p1">
-      <p>before  middle  after</p>
+      <p xml:id="S2.p1.1">before  middle  after</p>
     </para>
     <para xml:id="S2.p2">
-      <p>before  middle  FOO  after</p>
+      <p xml:id="S2.p2.1">before  middle  FOO  after</p>
     </para>
     <para xml:id="S2.p3">
-      <p>not <text font="italic">emphasized</text> not</p>
+      <p xml:id="S2.p3.1">not <text font="italic">emphasized</text> not</p>
     </para>
     <subsection refnum="2.1" xml:id="S2.SS1">
       <title><tag close=" ">2.1</tag>AfterGroup in Environments</title>
       <para xml:id="S2.SS1.p1">
-        <quote>
-          <p>before <text font="italic">after</text></p>
+        <quote xml:id="S2.SS1.p1.1">
+          <p xml:id="S2.SS1.p1.1.1">before <text font="italic">after</text></p>
         </quote>
       </para>
       <para xml:id="S2.SS1.p2">
-        <quote>
-          <p>before after</p>
+        <quote xml:id="S2.SS1.p2.1">
+          <p xml:id="S2.SS1.p2.1.1">before after</p>
         </quote>
-        <p>FOO</p>
+        <p xml:id="S2.SS1.p2.2">FOO</p>
       </para>
     </subsection>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Every Box</title>
     <para xml:id="S3.p1">
-      <inline-block vattach="bottom">
-        <p>An Hbox</p>
-        <p>Another Hbox</p>
+      <inline-block vattach="bottom" xml:id="S3.p1.1">
+        <p xml:id="S3.p1.1.1">An Hbox</p>
+        <p xml:id="S3.p1.1.2">Another Hbox</p>
       </inline-block>
     </para>
     <para xml:id="S3.p2">
-      <inline-block vattach="bottom">
-        <p>V</p>
-        <p>B</p>
-        <p>O</p>
-        <p>X</p>
-        <p>HBOX An Hbox</p>
-        <p>HBOX Another Hbox</p>
+      <inline-block vattach="bottom" xml:id="S3.p2.1">
+        <p xml:id="S3.p2.1.1">V</p>
+        <p xml:id="S3.p2.1.2">B</p>
+        <p xml:id="S3.p2.1.3">O</p>
+        <p xml:id="S3.p2.1.4">X</p>
+        <p xml:id="S3.p2.1.5">HBOX An Hbox</p>
+        <p xml:id="S3.p2.1.6">HBOX Another Hbox</p>
       </inline-block>
     </para>
   </section>

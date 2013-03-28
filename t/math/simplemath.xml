@@ -6,31 +6,32 @@
   <resource src="ltx-article.css" type="text/css"/>
   <title>Testing Simple Math Parsing</title>
   <para xml:id="p1">
-    <p>Inline math <Math mode="inline" xml:id="p1.m1" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="ID" font="italic">a</XMTok><XMTok role="ID" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
+    <p xml:id="p1.1">Inline math <Math mode="inline" xml:id="p1.1.m1" tex="a+b" text="a + b"><XMath xml:id="p1.1.m1.1"><XMApp xml:id="p1.1.m1.1.4"><XMTok meaning="plus" role="ADDOP" xml:id="p1.1.m1.1.2">+</XMTok><XMTok role="UNKNOWN" xml:id="p1.1.m1.1.1" font="italic">a</XMTok><XMTok role="UNKNOWN" xml:id="p1.1.m1.1.3" font="italic">b</XMTok></XMApp></XMath></Math>.</p>
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex1">
       <Math mode="display" xml:id="S0.Ex1.m1" tex="a+b+123" text="a + b + 123">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="plus" role="ADDOP">+</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMTok meaning="123" role="NUMBER">123</XMTok>
+        <XMath xml:id="S0.Ex1.m1.1">
+          <XMApp xml:id="S0.Ex1.m1.1.8">
+            <XMTok meaning="plus" role="ADDOP" xml:id="S0.Ex1.m1.1.2">+</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.1" font="italic">a</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.3" font="italic">b</XMTok>
+            <XMTok meaning="123" role="NUMBER" xml:id="S0.Ex1.m1.1.7">123</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+b+f(123)" text="a + b + f@(123)">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="plus" role="ADDOP">+</XMTok>
-            <XMTok role="ID" font="italic">a</XMTok>
-            <XMTok role="ID" font="italic">b</XMTok>
-            <XMApp>
-              <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">f</XMTok>
-              <XMTok meaning="123" role="NUMBER">123</XMTok>
+      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+b+f(123)" text="a + b + f * 123">
+        <XMath xml:id="S0.Ex2.m1.1">
+          <XMApp xml:id="S0.Ex2.m1.1.11">
+            <XMTok meaning="plus" role="ADDOP" xml:id="S0.Ex2.m1.1.2">+</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.1.1" font="italic">a</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.1.3" font="italic">b</XMTok>
+            <XMApp xml:id="S0.Ex2.m1.1.11.1">
+              <XMTok meaning="times" role="MULOP" xml:id="S0.Ex2.m1.1.11.1.1">⁢</XMTok>
+              <XMTok possibleFunction="yes" role="UNKNOWN" xml:id="S0.Ex2.m1.1.5" font="italic">f</XMTok>
+              <XMTok close=")" meaning="123" open="(" role="NUMBER" xml:id="S0.Ex2.m1.1.9">123</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -39,22 +40,20 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" xml:id="S0.Ex3.m1" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMTok role="ID" font="italic">f</XMTok>
-              <XMTok role="ID" font="italic">D</XMTok>
+      <Math mode="display" xml:id="S0.Ex3.m1" tex="f_{D}f(a+b)" text="f _ D * f * (a + b)">
+        <XMath xml:id="S0.Ex3.m1.1">
+          <XMApp xml:id="S0.Ex3.m1.1.9">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex3.m1.1.9.1">⁢</XMTok>
+            <XMApp xml:id="S0.Ex3.m1.1.9.2">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex3.m1.1.9.2.1"/>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.1" font="italic">f</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.2.1" font="italic">D</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">f</XMTok>
-              <XMApp>
-                <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
-              </XMApp>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.3" font="italic">f</XMTok>
+            <XMApp close=")" open="(" xml:id="S0.Ex3.m1.1.9.3">
+              <XMTok meaning="plus" role="ADDOP" xml:id="S0.Ex3.m1.1.6">+</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.5" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.7" font="italic">b</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -62,18 +61,18 @@
     </equation>
     <equation xml:id="S0.Ex4">
       <Math mode="display" xml:id="S0.Ex4.m1" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMTok role="ID" font="italic">f</XMTok>
-              <XMTok meaning="1" role="NUMBER">1</XMTok>
+        <XMath xml:id="S0.Ex4.m1.1">
+          <XMApp xml:id="S0.Ex4.m1.1.8">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex4.m1.1.8.1">⁢</XMTok>
+            <XMApp xml:id="S0.Ex4.m1.1.8.2">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex4.m1.1.8.2.1"/>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.1" font="italic">f</XMTok>
+              <XMTok meaning="1" role="NUMBER" xml:id="S0.Ex4.m1.1.2.1">1</XMTok>
             </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
+            <XMApp close=")" open="(" xml:id="S0.Ex4.m1.1.8.3">
+              <XMTok meaning="plus" role="ADDOP" xml:id="S0.Ex4.m1.1.5">+</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.4" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.6" font="italic">b</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -81,14 +80,14 @@
     </equation>
     <equation xml:id="S0.Ex5">
       <Math mode="display" xml:id="S0.Ex5.m1" tex="\hat{f}a" text="hat@(f) * a">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp role="ID">
-              <XMTok name="hat" role="OVERACCENT">^</XMTok>
-              <XMTok role="FUNCTION" font="italic">f</XMTok>
+        <XMath xml:id="S0.Ex5.m1.1">
+          <XMApp xml:id="S0.Ex5.m1.1.3">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex5.m1.1.3.1">⁢</XMTok>
+            <XMApp xml:id="S0.Ex5.m1.1.1">
+              <XMTok name="hat" role="OVERACCENT" xml:id="S0.Ex5.m1.1.1.1">^</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.1.2" font="italic">f</XMTok>
             </XMApp>
-            <XMTok role="ID" font="italic">a</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.2" font="italic">a</XMTok>
           </XMApp>
         </XMath>
       </Math>
@@ -98,19 +97,21 @@
     <title><tag close=" ">1</tag>Restricted</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex6">
-        <Math mode="display" xml:id="S1.Ex6.m1" tex="a(x)+b(x)+123" text="a@(x) + b@(x) + 123">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMApp>
-                <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">x</XMTok>
+        <Math mode="display" xml:id="S1.Ex6.m1" tex="a(x)+b(x)+123" text="a * x + b * x + 123">
+          <XMath xml:id="S1.Ex6.m1.1">
+            <XMApp xml:id="S1.Ex6.m1.1.14">
+              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex6.m1.1.5">+</XMTok>
+              <XMApp xml:id="S1.Ex6.m1.1.14.1">
+                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex6.m1.1.14.1.1">⁢</XMTok>
+                <XMTok possibleFunction="yes" role="UNKNOWN" xml:id="S1.Ex6.m1.1.1" font="italic">a</XMTok>
+                <XMTok close=")" open="(" role="UNKNOWN" xml:id="S1.Ex6.m1.1.3" font="italic">x</XMTok>
               </XMApp>
-              <XMApp>
-                <XMTok argclose=")" argopen="(" role="FUNCTION" font="italic">b</XMTok>
-                <XMTok role="ID" font="italic">x</XMTok>
+              <XMApp xml:id="S1.Ex6.m1.1.14.2">
+                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex6.m1.1.14.2.1">⁢</XMTok>
+                <XMTok possibleFunction="yes" role="UNKNOWN" xml:id="S1.Ex6.m1.1.6" font="italic">b</XMTok>
+                <XMTok close=")" open="(" role="UNKNOWN" xml:id="S1.Ex6.m1.1.8" font="italic">x</XMTok>
               </XMApp>
-              <XMTok meaning="123" role="NUMBER">123</XMTok>
+              <XMTok meaning="123" role="NUMBER" xml:id="S1.Ex6.m1.1.13">123</XMTok>
             </XMApp>
           </XMath>
         </Math>

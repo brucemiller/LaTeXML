@@ -7,36 +7,36 @@
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
       <Math mode="display" xml:id="S0.Ex1.m1" tex="f_{a},f^{a},f_{a}^{a},f^{a}_{a}" text="list@(f _ a, f ^ a, (f _ a) ^ a, (f ^ a) _ a)">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="list" role="FENCED" separators=", , ,"/>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMTok role="UNKNOWN" font="italic">f</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+        <XMath xml:id="S0.Ex1.m1.1">
+          <XMApp xml:id="S0.Ex1.m1.1.14">
+            <XMTok meaning="list" role="FENCED" separators=", , ," xml:id="S0.Ex1.m1.1.14.1"/>
+            <XMApp xml:id="S0.Ex1.m1.1.14.2">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.2.1"/>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.1" font="italic">f</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.2.1" font="italic">a</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-              <XMTok role="UNKNOWN" font="italic">f</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMApp xml:id="S0.Ex1.m1.1.14.3">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.3.1"/>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.4" font="italic">f</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.5.1" font="italic">a</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-              <XMApp>
-                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-                <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMApp xml:id="S0.Ex1.m1.1.14.4">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.4.1"/>
+              <XMApp xml:id="S0.Ex1.m1.1.14.4.2">
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.4.2.1"/>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.7" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.8.1" font="italic">a</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.9.1" font="italic">a</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMApp xml:id="S0.Ex1.m1.1.14.5">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.5.1"/>
+              <XMApp xml:id="S0.Ex1.m1.1.14.5.2">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.14.5.2.1"/>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.11" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.12.1" font="italic">a</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.13.1" font="italic">a</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -44,6 +44,6 @@
     </equation>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" xml:id="p2.m1" tex="{}_{a}" text="_a"><XMath><XMApp role="FLOATSUBSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math>,  <Math mode="inline" xml:id="p2.m2" tex="{}^{a}" text="^a"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+    <p xml:id="p2.1"><Math mode="inline" xml:id="p2.1.m1" tex="{}_{a}" text="_a"><XMath xml:id="p2.1.m1.1"><XMApp role="FLOATSUBSCRIPT" scriptpos="2" xml:id="p2.1.m1.1.1"><XMTok role="UNKNOWN" xml:id="p2.1.m1.1.1.1" font="italic">a</XMTok></XMApp></XMath></Math>,  <Math mode="inline" xml:id="p2.1.m2" tex="{}^{a}" text="^a"><XMath xml:id="p2.1.m2.1"><XMApp role="FLOATSUPERSCRIPT" scriptpos="2" xml:id="p2.1.m2.1.1"><XMTok role="UNKNOWN" xml:id="p2.1.m2.1.1.1" font="italic">a</XMTok></XMApp></XMath></Math></p>
   </para>
 </document>

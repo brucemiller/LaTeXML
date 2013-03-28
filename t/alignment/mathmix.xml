@@ -7,14 +7,14 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Normal Use</title>
     <para xml:id="S1.p1">
-      <tabular>
+      <tabular xml:id="S1.p1.1">
         <tbody>
-          <tr>
-            <td align="center">t</td>
-            <td align="center">
-              <Math mode="inline" xml:id="S1.p1.m1" tex="m" text="m">
-                <XMath>
-                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+          <tr xml:id="S1.p1.1.1">
+            <td align="center" xml:id="S1.p1.1.1.1">t</td>
+            <td align="center" xml:id="S1.p1.1.1.2">
+              <Math mode="inline" xml:id="S1.p1.1.1.2.m1" tex="m" text="m">
+                <XMath xml:id="S1.p1.1.1.2.m1.1">
+                  <XMTok role="UNKNOWN" xml:id="S1.p1.1.1.2.m1.1.1" font="italic">m</XMTok>
                 </XMath>
               </Math>
             </td>
@@ -24,14 +24,14 @@
     </para>
     <para xml:id="S1.p2">
       <equation xml:id="S1.Ex1">
-        <tabular>
+        <tabular xml:id="S1.Ex1.m1.1.1.1">
           <tbody>
-            <tr>
-              <td align="center">t</td>
-              <td align="center">
-                <Math mode="inline" xml:id="S1.Ex1.m1.m1" tex="m" text="m">
-                  <XMath>
-                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
+            <tr xml:id="S1.Ex1.m1.1.1.1.1">
+              <td align="center" xml:id="S1.Ex1.m1.1.1.1.1.1">t</td>
+              <td align="center" xml:id="S1.Ex1.m1.1.1.1.1.2">
+                <Math mode="inline" xml:id="S1.Ex1.m1.1.1.1.1.2.m1" tex="m" text="m">
+                  <XMath xml:id="S1.Ex1.m1.1.1.1.1.2.m1.1">
+                    <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.1.1.1.2.m1.1.1" font="italic">m</XMTok>
                   </XMath>
                 </Math>
               </td>
@@ -46,14 +46,14 @@
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex2">
         <Math mode="display" xml:id="S2.Ex2.m1" tex="\begin{array}[]{cc}m&amp;$t$\end{array}" text="Array[[m, [t]]]">
-          <XMath>
-            <XMArray role="ARRAY">
+          <XMath xml:id="S2.Ex2.m1.1">
+            <XMArray role="ARRAY" xml:id="S2.Ex2.m1.1.1">
               <XMRow>
                 <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S2.Ex2.m1.1.1.1" font="italic">m</XMTok>
                 </XMCell>
                 <XMCell align="center">
-                  <XMText>t</XMText>
+                  <XMText xml:id="S2.Ex2.m1.1.1.2">t</XMText>
                 </XMCell>
               </XMRow>
             </XMArray>
@@ -64,17 +64,17 @@
     <para xml:id="S2.p2">
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="\begin{array}[]{cc}\mbox{t}&amp;\mbox{$m$}\end{array}" text="Array[[[t], [m]]]">
-          <XMath>
-            <XMArray role="ARRAY">
+          <XMath xml:id="S2.Ex3.m1.1">
+            <XMArray role="ARRAY" xml:id="S2.Ex3.m1.1.1">
               <XMRow>
                 <XMCell align="center">
-                  <XMText>t</XMText>
+                  <XMText xml:id="S2.Ex3.m1.1.1.1">t</XMText>
                 </XMCell>
                 <XMCell align="center">
-                  <XMText>
-                    <Math mode="inline" tex="m" text="m" xml:id="S2.Ex3.m1.m1">
-                      <XMath>
-                        <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMText xml:id="S2.Ex3.m1.1.1.2">
+                    <Math mode="inline" tex="m" text="m" xml:id="S2.Ex3.m1.1.1.2.1.m1">
+                      <XMath xml:id="S2.Ex3.m1.1.1.2.1.m1.1">
+                        <XMTok role="UNKNOWN" xml:id="S2.Ex3.m1.1.1.2.1.m1.1.1" font="italic">m</XMTok>
                       </XMath>
                     </Math>
                   </XMText>
@@ -88,14 +88,14 @@
     <para xml:id="S2.p3">
       <equation xml:id="S2.Ex4">
         <Math mode="display" xml:id="S2.Ex4.m1" tex="\begin{array}[]{cc}\mbox{t}&amp;\mbox{$m$, $n$}\end{array}" text="Array[[[t], [m, n]]]">
-          <XMath>
-            <XMArray role="ARRAY">
+          <XMath xml:id="S2.Ex4.m1.1">
+            <XMArray role="ARRAY" xml:id="S2.Ex4.m1.1.1">
               <XMRow>
                 <XMCell align="center">
-                  <XMText>t</XMText>
+                  <XMText xml:id="S2.Ex4.m1.1.1.1">t</XMText>
                 </XMCell>
                 <XMCell align="center">
-                  <XMText><Math mode="inline" tex="m" text="m" xml:id="S2.Ex4.m1.m1"><XMath><XMTok role="UNKNOWN" font="italic">m</XMTok></XMath></Math>, <Math mode="inline" tex="n" text="n" xml:id="S2.Ex4.m1.m2"><XMath><XMTok role="UNKNOWN" font="italic">n</XMTok></XMath></Math></XMText>
+                  <XMText xml:id="S2.Ex4.m1.1.1.2"><Math mode="inline" tex="m" text="m" xml:id="S2.Ex4.m1.1.1.2.1.m1"><XMath xml:id="S2.Ex4.m1.1.1.2.1.m1.1"><XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.1.2.1.m1.1.1" font="italic">m</XMTok></XMath></Math>, <Math mode="inline" tex="n" text="n" xml:id="S2.Ex4.m1.1.1.2.1.m2"><XMath xml:id="S2.Ex4.m1.1.1.2.1.m2.1"><XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.1.2.1.m2.1.1" font="italic">n</XMTok></XMath></Math></XMText>
                 </XMCell>
               </XMRow>
             </XMArray>
@@ -109,17 +109,17 @@
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex5">
         <Math mode="display" xml:id="S3.Ex5.m1" tex="\begin{array}[]{cc}m&amp;$\hbox{$m$}$\end{array}" text="Array[[m, [m]]]">
-          <XMath>
-            <XMArray role="ARRAY">
+          <XMath xml:id="S3.Ex5.m1.1">
+            <XMArray role="ARRAY" xml:id="S3.Ex5.m1.1.1">
               <XMRow>
                 <XMCell align="center">
-                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex5.m1.1.1.1" font="italic">m</XMTok>
                 </XMCell>
                 <XMCell align="center">
-                  <XMText>
-                    <Math mode="inline" tex="m" text="m" xml:id="S3.Ex5.m1.m1">
-                      <XMath>
-                        <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                  <XMText xml:id="S3.Ex5.m1.1.1.2">
+                    <Math mode="inline" tex="m" text="m" xml:id="S3.Ex5.m1.1.1.2.1.m1">
+                      <XMath xml:id="S3.Ex5.m1.1.1.2.1.m1.1">
+                        <XMTok role="UNKNOWN" xml:id="S3.Ex5.m1.1.1.2.1.m1.1.1" font="italic">m</XMTok>
                       </XMath>
                     </Math>
                   </XMText>

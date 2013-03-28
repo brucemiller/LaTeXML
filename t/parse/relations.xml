@@ -11,36 +11,36 @@
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a=b=c=d=e" text="a = b = c = d = e">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="multirelation"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S1.Ex1.m1.1">
+            <XMApp xml:id="S1.Ex1.m1.1.10">
+              <XMTok meaning="multirelation" xml:id="S1.Ex1.m1.1.10.1"/>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.1" font="italic">a</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex1.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.3" font="italic">b</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex1.m1.1.4">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.5" font="italic">c</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex1.m1.1.6">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.7" font="italic">d</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex1.m1.1.8">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.9" font="italic">e</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
         <Math mode="display" xml:id="S1.Ex2.m1" tex="a=b,c=d" text="formulae@(a = b, c = d)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="formulae" separators=","/>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+          <XMath xml:id="S1.Ex2.m1.1">
+            <XMApp xml:id="S1.Ex2.m1.1.8">
+              <XMTok meaning="formulae" separators="," xml:id="S1.Ex2.m1.1.8.1"/>
+              <XMApp xml:id="S1.Ex2.m1.1.8.2">
+                <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex2.m1.1.2">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.1" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.3" font="italic">b</XMTok>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
+              <XMApp xml:id="S1.Ex2.m1.1.8.3">
+                <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex2.m1.1.6">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.5" font="italic">c</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.7" font="italic">d</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -48,16 +48,16 @@
       </equation>
       <equation xml:id="S1.Ex3">
         <Math mode="display" xml:id="S1.Ex3.m1" tex="a=b,c,d,e" text="a = list@(b, c, d, e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp>
-                <XMTok meaning="list" role="FENCED" separators=", , ,"/>
-                <XMTok role="ID" font="italic">b</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S1.Ex3.m1.1">
+            <XMApp xml:id="S1.Ex3.m1.1.10">
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex3.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex3.m1.1.1" font="italic">a</XMTok>
+              <XMApp xml:id="S1.Ex3.m1.1.10.1">
+                <XMTok meaning="list" role="FENCED" separators=", , ," xml:id="S1.Ex3.m1.1.10.1.1"/>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex3.m1.1.3" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex3.m1.1.5" font="italic">c</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex3.m1.1.7" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex3.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -65,22 +65,22 @@
       </equation>
       <equation xml:id="S1.Ex4">
         <Math mode="display" xml:id="S1.Ex4.m1" tex="a=b,c,d=e" text="formulae@(a = list@(b, c), d = e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="formulae" separators=","/>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMApp>
-                  <XMTok meaning="list" role="FENCED" separators=","/>
-                  <XMTok role="ID" font="italic">b</XMTok>
-                  <XMTok role="ID" font="italic">c</XMTok>
+          <XMath xml:id="S1.Ex4.m1.1">
+            <XMApp xml:id="S1.Ex4.m1.1.10">
+              <XMTok meaning="formulae" separators="," xml:id="S1.Ex4.m1.1.10.1"/>
+              <XMApp xml:id="S1.Ex4.m1.1.10.2">
+                <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex4.m1.1.2">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex4.m1.1.1" font="italic">a</XMTok>
+                <XMApp xml:id="S1.Ex4.m1.1.10.2.1">
+                  <XMTok meaning="list" role="FENCED" separators="," xml:id="S1.Ex4.m1.1.10.2.1.1"/>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex4.m1.1.3" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex4.m1.1.5" font="italic">c</XMTok>
                 </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok role="ID" font="italic">e</XMTok>
+              <XMApp xml:id="S1.Ex4.m1.1.10.3">
+                <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex4.m1.1.8">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex4.m1.1.7" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S1.Ex4.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -88,18 +88,18 @@
       </equation>
       <equation xml:id="S1.Ex5">
         <Math mode="display" xml:id="S1.Ex5.m1" tex="a=b&gt;c\leq d=e" text="a = b &gt; c less= d = e">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="multirelation"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-              <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
-              <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
-              <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S1.Ex5.m1.1">
+            <XMApp xml:id="S1.Ex5.m1.1.10">
+              <XMTok meaning="multirelation" xml:id="S1.Ex5.m1.1.10.1"/>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex5.m1.1.1" font="italic">a</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex5.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex5.m1.1.3" font="italic">b</XMTok>
+              <XMTok meaning="greater-than" role="RELOP" xml:id="S1.Ex5.m1.1.4">&gt;</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex5.m1.1.5" font="italic">c</XMTok>
+              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="S1.Ex5.m1.1.6">≤</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex5.m1.1.7" font="italic">d</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex5.m1.1.8">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex5.m1.1.9" font="italic">e</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -110,22 +110,22 @@
       <para xml:id="S1.SS0.SSS0.P1.p1">
         <equation xml:id="S1.Ex6">
           <Math mode="display" xml:id="S1.Ex6.m1" tex="a=b,c.d=e" text="formulae@(a = list@(b, c), d = e)">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="formulae" separators="."/>
-                <XMApp>
-                  <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMTok role="ID" font="italic">a</XMTok>
-                  <XMApp>
-                    <XMTok meaning="list" role="FENCED" separators=","/>
-                    <XMTok role="ID" font="italic">b</XMTok>
-                    <XMTok role="ID" font="italic">c</XMTok>
+            <XMath xml:id="S1.Ex6.m1.1">
+              <XMApp xml:id="S1.Ex6.m1.1.10">
+                <XMTok meaning="formulae" separators="." xml:id="S1.Ex6.m1.1.10.1"/>
+                <XMApp xml:id="S1.Ex6.m1.1.10.2">
+                  <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex6.m1.1.2">=</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex6.m1.1.1" font="italic">a</XMTok>
+                  <XMApp xml:id="S1.Ex6.m1.1.10.2.1">
+                    <XMTok meaning="list" role="FENCED" separators="," xml:id="S1.Ex6.m1.1.10.2.1.1"/>
+                    <XMTok role="UNKNOWN" xml:id="S1.Ex6.m1.1.3" font="italic">b</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S1.Ex6.m1.1.5" font="italic">c</XMTok>
                   </XMApp>
                 </XMApp>
-                <XMApp>
-                  <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMTok role="ID" font="italic">d</XMTok>
-                  <XMTok role="ID" font="italic">e</XMTok>
+                <XMApp xml:id="S1.Ex6.m1.1.10.3">
+                  <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex6.m1.1.8">=</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex6.m1.1.7" font="italic">d</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex6.m1.1.9" font="italic">e</XMTok>
                 </XMApp>
               </XMApp>
             </XMath>
@@ -133,22 +133,22 @@
         </equation>
         <equation xml:id="S1.Ex7">
           <Math mode="display" xml:id="S1.Ex7.m1" tex="a=b.c,d=e" text="formulae@(a = b, list@(c, d) = e)">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="formulae" separators="."/>
-                <XMApp>
-                  <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMTok role="ID" font="italic">a</XMTok>
-                  <XMTok role="ID" font="italic">b</XMTok>
+            <XMath xml:id="S1.Ex7.m1.1">
+              <XMApp xml:id="S1.Ex7.m1.1.10">
+                <XMTok meaning="formulae" separators="." xml:id="S1.Ex7.m1.1.10.1"/>
+                <XMApp xml:id="S1.Ex7.m1.1.10.2">
+                  <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex7.m1.1.2">=</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex7.m1.1.1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex7.m1.1.3" font="italic">b</XMTok>
                 </XMApp>
-                <XMApp>
-                  <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMApp>
-                    <XMTok meaning="list" role="FENCED" separators=","/>
-                    <XMTok role="ID" font="italic">c</XMTok>
-                    <XMTok role="ID" font="italic">d</XMTok>
+                <XMApp xml:id="S1.Ex7.m1.1.10.3">
+                  <XMTok meaning="equals" role="RELOP" xml:id="S1.Ex7.m1.1.8">=</XMTok>
+                  <XMApp xml:id="S1.Ex7.m1.1.10.3.1">
+                    <XMTok meaning="list" role="FENCED" separators="," xml:id="S1.Ex7.m1.1.10.3.1.1"/>
+                    <XMTok role="UNKNOWN" xml:id="S1.Ex7.m1.1.5" font="italic">c</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S1.Ex7.m1.1.7" font="italic">d</XMTok>
                   </XMApp>
-                  <XMTok role="ID" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S1.Ex7.m1.1.9" font="italic">e</XMTok>
                 </XMApp>
               </XMApp>
             </XMath>
@@ -162,39 +162,39 @@
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex8">
         <Math mode="display" xml:id="S2.Ex8.m1" tex="a=b\rightarrow c\leq d=e" text="a = b rightarrow c less= d = e">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="multirelation"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-              <XMTok name="rightarrow" role="ARROW">→</XMTok>
-              <XMTok role="ID" font="italic">c</XMTok>
-              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
-              <XMTok role="ID" font="italic">d</XMTok>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S2.Ex8.m1.1">
+            <XMApp xml:id="S2.Ex8.m1.1.10">
+              <XMTok meaning="multirelation" xml:id="S2.Ex8.m1.1.10.1"/>
+              <XMTok role="UNKNOWN" xml:id="S2.Ex8.m1.1.1" font="italic">a</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex8.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S2.Ex8.m1.1.3" font="italic">b</XMTok>
+              <XMTok name="rightarrow" role="ARROW" xml:id="S2.Ex8.m1.1.4">→</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S2.Ex8.m1.1.5" font="italic">c</XMTok>
+              <XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="S2.Ex8.m1.1.6">≤</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S2.Ex8.m1.1.7" font="italic">d</XMTok>
+              <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex8.m1.1.8">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S2.Ex8.m1.1.9" font="italic">e</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex9">
         <Math mode="display" xml:id="S2.Ex9.m1" tex="a=b,c\rightarrow d=e" text="formulae@(a = b, c rightarrow d = e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="formulae" separators=","/>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+          <XMath xml:id="S2.Ex9.m1.1">
+            <XMApp xml:id="S2.Ex9.m1.1.10">
+              <XMTok meaning="formulae" separators="," xml:id="S2.Ex9.m1.1.10.1"/>
+              <XMApp xml:id="S2.Ex9.m1.1.10.2">
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex9.m1.1.2">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex9.m1.1.1" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex9.m1.1.3" font="italic">b</XMTok>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="multirelation"/>
-                <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok name="rightarrow" role="ARROW">→</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">e</XMTok>
+              <XMApp xml:id="S2.Ex9.m1.1.10.3">
+                <XMTok meaning="multirelation" xml:id="S2.Ex9.m1.1.10.3.1"/>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex9.m1.1.5" font="italic">c</XMTok>
+                <XMTok name="rightarrow" role="ARROW" xml:id="S2.Ex9.m1.1.6">→</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex9.m1.1.7" font="italic">d</XMTok>
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex9.m1.1.8">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex9.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -202,21 +202,21 @@
       </equation>
       <equation xml:id="S2.Ex10">
         <Math mode="display" xml:id="S2.Ex10.m1" tex="a=b\leftrightarrow c\leq d=e" text="a = b leftrightarrow c less= d = e">
-          <XMath>
-            <XMApp>
-              <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+          <XMath xml:id="S2.Ex10.m1.1">
+            <XMApp xml:id="S2.Ex10.m1.1.10">
+              <XMTok name="leftrightarrow" role="METARELOP" xml:id="S2.Ex10.m1.1.4">↔</XMTok>
+              <XMApp xml:id="S2.Ex10.m1.1.10.1">
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex10.m1.1.2">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex10.m1.1.1" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex10.m1.1.3" font="italic">b</XMTok>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="multirelation"/>
-                <XMTok role="ID" font="italic">c</XMTok>
-                <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">e</XMTok>
+              <XMApp xml:id="S2.Ex10.m1.1.10.2">
+                <XMTok meaning="multirelation" xml:id="S2.Ex10.m1.1.10.2.1"/>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex10.m1.1.5" font="italic">c</XMTok>
+                <XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="S2.Ex10.m1.1.6">≤</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex10.m1.1.7" font="italic">d</XMTok>
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex10.m1.1.8">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex10.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -224,22 +224,22 @@
       </equation>
       <equation xml:id="S2.Ex11">
         <Math mode="display" xml:id="S2.Ex11.m1" tex="a=b,c\leftrightarrow d=e" text="a = list@(b, c) leftrightarrow d = e">
-          <XMath>
-            <XMApp>
-              <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMApp>
-                  <XMTok meaning="list" role="FENCED" separators=","/>
-                  <XMTok role="ID" font="italic">b</XMTok>
-                  <XMTok role="ID" font="italic">c</XMTok>
+          <XMath xml:id="S2.Ex11.m1.1">
+            <XMApp xml:id="S2.Ex11.m1.1.10">
+              <XMTok name="leftrightarrow" role="METARELOP" xml:id="S2.Ex11.m1.1.6">↔</XMTok>
+              <XMApp xml:id="S2.Ex11.m1.1.10.1">
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex11.m1.1.2">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex11.m1.1.1" font="italic">a</XMTok>
+                <XMApp xml:id="S2.Ex11.m1.1.10.1.1">
+                  <XMTok meaning="list" role="FENCED" separators="," xml:id="S2.Ex11.m1.1.10.1.1.1"/>
+                  <XMTok role="UNKNOWN" xml:id="S2.Ex11.m1.1.3" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S2.Ex11.m1.1.5" font="italic">c</XMTok>
                 </XMApp>
               </XMApp>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok role="ID" font="italic">d</XMTok>
-                <XMTok role="ID" font="italic">e</XMTok>
+              <XMApp xml:id="S2.Ex11.m1.1.10.2">
+                <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex11.m1.1.8">=</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex11.m1.1.7" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S2.Ex11.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -252,14 +252,14 @@
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex12">
         <Math mode="display" xml:id="S3.Ex12.m1" tex="a(&lt;e)" text="annotated@(a, absent less e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="annotated"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
-                <XMTok meaning="absent"/>
-                <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S3.Ex12.m1.1">
+            <XMApp xml:id="S3.Ex12.m1.1.6">
+              <XMTok meaning="annotated" xml:id="S3.Ex12.m1.1.6.1"/>
+              <XMTok role="UNKNOWN" xml:id="S3.Ex12.m1.1.1" font="italic">a</XMTok>
+              <XMApp close=")" open="(" xml:id="S3.Ex12.m1.1.6.2">
+                <XMTok meaning="less-than" role="RELOP" xml:id="S3.Ex12.m1.1.3">&lt;</XMTok>
+                <XMTok meaning="absent" xml:id="S3.Ex12.m1.1.6.2.1"/>
+                <XMTok role="UNKNOWN" xml:id="S3.Ex12.m1.1.4" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -267,14 +267,14 @@
       </equation>
       <equation xml:id="S3.Ex13">
         <Math mode="display" xml:id="S3.Ex13.m1" tex="a;(&lt;e)" text="annotated@(a, absent less e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="annotated"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
-                <XMTok meaning="absent"/>
-                <XMTok role="ID" font="italic">e</XMTok>
+          <XMath xml:id="S3.Ex13.m1.1">
+            <XMApp xml:id="S3.Ex13.m1.1.7">
+              <XMTok meaning="annotated" xml:id="S3.Ex13.m1.1.7.1"/>
+              <XMTok role="UNKNOWN" xml:id="S3.Ex13.m1.1.1" font="italic">a</XMTok>
+              <XMApp close=")" open="(" xml:id="S3.Ex13.m1.1.7.2">
+                <XMTok meaning="less-than" role="RELOP" xml:id="S3.Ex13.m1.1.4">&lt;</XMTok>
+                <XMTok meaning="absent" xml:id="S3.Ex13.m1.1.7.2.1"/>
+                <XMTok role="UNKNOWN" xml:id="S3.Ex13.m1.1.5" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -282,22 +282,22 @@
       </equation>
       <equation xml:id="S3.Ex14">
         <Math mode="display" xml:id="S3.Ex14.m1" tex="a=b+c+d(&lt;e)" text="a = annotated@(b + c + d, absent less e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp>
-                <XMTok meaning="annotated"/>
-                <XMApp>
-                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                  <XMTok role="ID" font="italic">b</XMTok>
-                  <XMTok role="ID" font="italic">c</XMTok>
-                  <XMTok role="ID" font="italic">d</XMTok>
+          <XMath xml:id="S3.Ex14.m1.1">
+            <XMApp xml:id="S3.Ex14.m1.1.12">
+              <XMTok meaning="equals" role="RELOP" xml:id="S3.Ex14.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S3.Ex14.m1.1.1" font="italic">a</XMTok>
+              <XMApp xml:id="S3.Ex14.m1.1.12.1">
+                <XMTok meaning="annotated" xml:id="S3.Ex14.m1.1.12.1.1"/>
+                <XMApp xml:id="S3.Ex14.m1.1.12.1.2">
+                  <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex14.m1.1.4">+</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex14.m1.1.3" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex14.m1.1.5" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex14.m1.1.7" font="italic">d</XMTok>
                 </XMApp>
-                <XMApp close=")" open="(">
-                  <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
-                  <XMTok meaning="absent"/>
-                  <XMTok role="ID" font="italic">e</XMTok>
+                <XMApp close=")" open="(" xml:id="S3.Ex14.m1.1.12.1.3">
+                  <XMTok meaning="less-than" role="RELOP" xml:id="S3.Ex14.m1.1.9">&lt;</XMTok>
+                  <XMTok meaning="absent" xml:id="S3.Ex14.m1.1.12.1.3.1"/>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex14.m1.1.10" font="italic">e</XMTok>
                 </XMApp>
               </XMApp>
             </XMApp>
@@ -306,19 +306,19 @@
       </equation>
       <equation xml:id="S3.Ex15">
         <Math mode="display" xml:id="S3.Ex15.m1" tex="a=b+c+d\mod e" text="a = modulo@(b + c + d, e)">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp>
-                <XMTok meaning="modulo" role="MODIFIEROP">mod</XMTok>
-                <XMApp>
-                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                  <XMTok role="ID" font="italic">b</XMTok>
-                  <XMTok role="ID" font="italic">c</XMTok>
-                  <XMTok role="ID" font="italic">d</XMTok>
+          <XMath xml:id="S3.Ex15.m1.1">
+            <XMApp xml:id="S3.Ex15.m1.1.10">
+              <XMTok meaning="equals" role="RELOP" xml:id="S3.Ex15.m1.1.2">=</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S3.Ex15.m1.1.1" font="italic">a</XMTok>
+              <XMApp xml:id="S3.Ex15.m1.1.10.1">
+                <XMTok meaning="modulo" role="MODIFIEROP" xml:id="S3.Ex15.m1.1.8">mod</XMTok>
+                <XMApp xml:id="S3.Ex15.m1.1.10.1.1">
+                  <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex15.m1.1.4">+</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex15.m1.1.3" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex15.m1.1.5" font="italic">c</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S3.Ex15.m1.1.7" font="italic">d</XMTok>
                 </XMApp>
-                <XMTok role="ID" font="italic">e</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S3.Ex15.m1.1.9" font="italic">e</XMTok>
               </XMApp>
             </XMApp>
           </XMath>

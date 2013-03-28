@@ -8,30 +8,30 @@
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
       <Math mode="display" xml:id="S0.Ex1.m1" tex="\sideset{}{{}^{{\prime}}}{\sum}_{{i=1}}^{\infty}S_{i}" text="((sum ^ prime) _ (i = 1)) ^ infinity * S _ i">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp scriptpos="mid">
-              <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
-              <XMApp scriptpos="mid">
-                <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                <XMApp scriptpos="mid">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                  <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok name="prime" role="SUPOP">′</XMTok>
+        <XMath xml:id="S0.Ex1.m1.1">
+          <XMApp xml:id="S0.Ex1.m1.1.7">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex1.m1.1.7.1">⁢</XMTok>
+            <XMApp scriptpos="mid" xml:id="S0.Ex1.m1.1.7.2">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="mid2" xml:id="S0.Ex1.m1.1.7.2.1"/>
+              <XMApp scriptpos="mid" xml:id="S0.Ex1.m1.1.7.2.2">
+                <XMTok role="SUBSCRIPTOP" scriptpos="mid2" xml:id="S0.Ex1.m1.1.7.2.2.1"/>
+                <XMApp scriptpos="mid" xml:id="S0.Ex1.m1.1.2">
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.2.1"/>
+                  <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid" xml:id="S0.Ex1.m1.1.1">∑</XMTok>
+                  <XMTok name="prime" role="SUPOP" xml:id="S0.Ex1.m1.1.2.2">′</XMTok>
                 </XMApp>
-                <XMApp>
-                  <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMApp xml:id="S0.Ex1.m1.1.3.1">
+                  <XMTok meaning="equals" role="RELOP" xml:id="S0.Ex1.m1.1.3.1.2">=</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.3.1.1" font="italic">i</XMTok>
+                  <XMTok meaning="1" role="NUMBER" xml:id="S0.Ex1.m1.1.3.1.3">1</XMTok>
                 </XMApp>
               </XMApp>
-              <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
+              <XMTok meaning="infinity" name="infty" role="ID" xml:id="S0.Ex1.m1.1.4.1">∞</XMTok>
             </XMApp>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMTok role="UNKNOWN" font="italic">S</XMTok>
-              <XMTok role="UNKNOWN" font="italic">i</XMTok>
+            <XMApp xml:id="S0.Ex1.m1.1.7.3">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex1.m1.1.7.3.1"/>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.5" font="italic">S</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.6.1" font="italic">i</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -39,81 +39,81 @@
     </equation>
     <equation xml:id="S0.Ex2">
       <Math mode="display" xml:id="S0.Ex2.m1" tex="\sideset{}{}{\sum}x" text="sum@(x)">
-        <XMath>
-          <XMApp>
-            <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-            <XMTok role="UNKNOWN" font="italic">x</XMTok>
+        <XMath xml:id="S0.Ex2.m1.1">
+          <XMApp xml:id="S0.Ex2.m1.1.3">
+            <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid" xml:id="S0.Ex2.m1.1.1">∑</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.1.2" font="italic">x</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
       <Math mode="display" xml:id="S0.Ex3.m1" tex="\sideset{{}_{a}^{b}}{{}_{c}^{d}}{\sum}x" text="(^ b _ a sum _ c) ^ d * x">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp scriptpos="mid">
-              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-              <XMApp>
-                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-                <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
-                  <XMApp>
-                    <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
-                    <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+        <XMath xml:id="S0.Ex3.m1.1">
+          <XMApp xml:id="S0.Ex3.m1.1.7">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex3.m1.1.7.1">⁢</XMTok>
+            <XMApp scriptpos="mid" xml:id="S0.Ex3.m1.1.5">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex3.m1.1.5.1"/>
+              <XMApp xml:id="S0.Ex3.m1.1.4">
+                <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex3.m1.1.4.1"/>
+                <XMApp xml:id="S0.Ex3.m1.1.3">
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="pre2" xml:id="S0.Ex3.m1.1.3.1"/>
+                  <XMApp xml:id="S0.Ex3.m1.1.2">
+                    <XMTok role="SUBSCRIPTOP" scriptpos="pre2" xml:id="S0.Ex3.m1.1.2.1"/>
+                    <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid" xml:id="S0.Ex3.m1.1.1">∑</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.2.2" font="italic">a</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.3.2" font="italic">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.4.2" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.5.2" font="italic">d</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">x</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.6" font="italic">x</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex4">
       <Math mode="display" xml:id="S0.Ex4.m1" tex="\sideset{{}^{a}_{b}}{{}^{c}_{d}}{\sum}x" text="(_ b ^ a sum ^ c) _ d * x">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp scriptpos="mid">
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                <XMApp>
-                  <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
-                  <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
-                    <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+        <XMath xml:id="S0.Ex4.m1.1">
+          <XMApp xml:id="S0.Ex4.m1.1.7">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex4.m1.1.7.1">⁢</XMTok>
+            <XMApp scriptpos="mid" xml:id="S0.Ex4.m1.1.5">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex4.m1.1.5.1"/>
+              <XMApp xml:id="S0.Ex4.m1.1.4">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex4.m1.1.4.1"/>
+                <XMApp xml:id="S0.Ex4.m1.1.3">
+                  <XMTok role="SUBSCRIPTOP" scriptpos="pre2" xml:id="S0.Ex4.m1.1.3.1"/>
+                  <XMApp xml:id="S0.Ex4.m1.1.2">
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="pre2" xml:id="S0.Ex4.m1.1.2.1"/>
+                    <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid" xml:id="S0.Ex4.m1.1.1">∑</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.2.2" font="italic">a</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.3.2" font="italic">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.4.2" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.5.2" font="italic">d</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">x</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.6" font="italic">x</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex5">
       <Math mode="display" xml:id="S0.Ex5.m1" tex="\sideset{u}{{}_{e}v}{\sum}x" text="u * sum _ e * v * x">
-        <XMath>
-          <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMTok role="UNKNOWN" font="italic">u</XMTok>
-            <XMApp scriptpos="mid">
-              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-              <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-              <XMTok role="UNKNOWN" font="italic">e</XMTok>
+        <XMath xml:id="S0.Ex5.m1.1">
+          <XMApp xml:id="S0.Ex5.m1.1.6">
+            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex5.m1.1.6.1">⁢</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.1" font="italic">u</XMTok>
+            <XMApp scriptpos="mid" xml:id="S0.Ex5.m1.1.3">
+              <XMTok role="SUBSCRIPTOP" scriptpos="post2" xml:id="S0.Ex5.m1.1.3.1"/>
+              <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid" xml:id="S0.Ex5.m1.1.2">∑</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.3.2" font="italic">e</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" font="italic">v</XMTok>
-            <XMTok role="UNKNOWN" font="italic">x</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.4" font="italic">v</XMTok>
+            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.5" font="italic">x</XMTok>
           </XMApp>
         </XMath>
       </Math>

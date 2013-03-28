@@ -5,15 +5,15 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular vattach="top" width="144.54pt">
+    <tabular vattach="top" width="144.54pt" xml:id="p1.1">
       <tbody>
-        <tr>
-          <td align="left" thead="true">a</td>
-          <td align="right">b</td>
+        <tr xml:id="p1.1.1">
+          <td align="left" xml:id="p1.1.1.1" thead="true">a</td>
+          <td align="right" xml:id="p1.1.1.2">b</td>
         </tr>
-        <tr>
-          <td align="left" thead="true">c</td>
-          <td align="right">d</td>
+        <tr xml:id="p1.1.2">
+          <td align="left" xml:id="p1.1.2.1" thead="true">c</td>
+          <td align="right" xml:id="p1.1.2.2">d</td>
         </tr>
       </tbody>
     </tabular>

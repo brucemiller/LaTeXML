@@ -7,116 +7,116 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Testing various objects with ifx</title>
     <para xml:id="S1.p1">
-      <p>Test Letters A and A (True) :  True .</p>
+      <p xml:id="S1.p1.1">Test Letters A and A (True) :  True .</p>
     </para>
     <para xml:id="S1.p2">
-      <p>Test Letters A and B (False) : False.</p>
+      <p xml:id="S1.p2.1">Test Letters A and B (False) : False.</p>
     </para>
     <para xml:id="S1.p3">
-      <p>Test Macros testA and testB (True) : True .</p>
+      <p xml:id="S1.p3.1">Test Macros testA and testB (True) : True .</p>
     </para>
     <para xml:id="S1.p4">
-      <p>Test Macros testA and testC (False) : False.</p>
+      <p xml:id="S1.p4.1">Test Macros testA and testC (False) : False.</p>
     </para>
     <para xml:id="S1.p5">
-      <p>Nested (True False)
+      <p xml:id="S1.p5.1">Nested (True False)
 True False.
 Nested (False True)
 False True .</p>
     </para>
     <para xml:id="S1.p6">
-      <p>Test let fi (True False);
+      <p xml:id="S1.p6.1">Test let fi (True False);
 True False.</p>
     </para>
     <para xml:id="S1.p7">
-      <p>Test let else (True False);
+      <p xml:id="S1.p7.1">Test let else (True False);
 True False.</p>
     </para>
     <para xml:id="S1.p8">
-      <p>ifx does NOT expand conditional tokens (fooFalse): fooFalse.</p>
+      <p xml:id="S1.p8.1">ifx does NOT expand conditional tokens (fooFalse): fooFalse.</p>
     </para>
     <para xml:id="S1.p9">
-      <p>else is NOT expandable while expanding the test clause</p>
+      <p xml:id="S1.p9.1">else is NOT expandable while expanding the test clause</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Testing numerics</title>
     <para xml:id="S2.p1">
-      <p>OK OK :
+      <p xml:id="S2.p1.1">OK OK :
 OK OK.</p>
     </para>
     <para xml:id="S2.p2">
-      <p>OK :
+      <p xml:id="S2.p2.1">OK :
 OK</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Testing if</title>
     <para xml:id="S3.p1">
-      <p>Test plain if, as well;</p>
+      <p xml:id="S3.p1.1">Test plain if, as well;</p>
     </para>
     <para xml:id="S3.p2">
-      <p>Test a and a  True</p>
+      <p xml:id="S3.p2.1">Test a and a  True</p>
     </para>
     <para xml:id="S3.p3">
-      <p>Test A and a False</p>
+      <p xml:id="S3.p3.1">Test A and a False</p>
     </para>
     <para xml:id="S3.p4">
-      <p>Test f and testA ooTrue</p>
+      <p xml:id="S3.p4.1">Test f and testA ooTrue</p>
     </para>
     <para xml:id="S3.p5">
-      <p>Test f and testC False</p>
+      <p xml:id="S3.p5.1">Test f and testC False</p>
     </para>
     <para xml:id="S3.p6">
-      <p>Test b and testC False</p>
+      <p xml:id="S3.p6.1">Test b and testC False</p>
     </para>
     <para xml:id="S3.p7">
-      <p>Test testc and b  False</p>
+      <p xml:id="S3.p7.1">Test testc and b  False</p>
     </para>
     <para xml:id="S3.p8">
-      <p>Test 1 and oneorten [c=1]  True</p>
+      <p xml:id="S3.p8.1">Test 1 and oneorten [c=1]  True</p>
     </para>
     <para xml:id="S3.p9">
-      <p>Test 1 and oneorten [c=2]  0True</p>
+      <p xml:id="S3.p9.1">Test 1 and oneorten [c=2]  0True</p>
     </para>
   </section>
   <section refnum="4" xml:id="S4">
     <title><tag close=" ">4</tag>Testing if in test clause</title>
     <para xml:id="S4.p1">
-      <p>Test ifx testA testB TT</p>
+      <p xml:id="S4.p1.1">Test ifx testA testB TT</p>
     </para>
     <para xml:id="S4.p2">
-      <p>Test if on testifx True</p>
+      <p xml:id="S4.p2.1">Test if on testifx True</p>
     </para>
     <para xml:id="S4.p3">
-      <p>Test ifx on testifx True</p>
+      <p xml:id="S4.p3.1">Test ifx on testifx True</p>
     </para>
     <para xml:id="S4.p4">
-      <p>Test not ifx testA testB TF</p>
+      <p xml:id="S4.p4.1">Test not ifx testA testB TF</p>
     </para>
     <para xml:id="S4.p5">
-      <p>Test if on nottestifx False</p>
+      <p xml:id="S4.p5.1">Test if on nottestifx False</p>
     </para>
     <para xml:id="S4.p6">
-      <p>Test ifx on nottestifx False</p>
+      <p xml:id="S4.p6.1">Test ifx on nottestifx False</p>
     </para>
     <para xml:id="S4.p7">
-      <p>TF<break/></p>
+      <p xml:id="S4.p7.1">TF<break/></p>
     </para>
     <para xml:id="S4.p8">
-      <p>if-check is: false</p>
+      <p xml:id="S4.p8.1">if-check is: false</p>
     </para>
     <para xml:id="S4.p9">
-      <p>True: True</p>
+      <p xml:id="S4.p9.1">True: True</p>
     </para>
     <para xml:id="S4.p10">
-      <p>False: False</p>
+      <p xml:id="S4.p10.1">False: False</p>
     </para>
     <para xml:id="S4.p11">
-      <p>False: False</p>
+      <p xml:id="S4.p11.1">False: False</p>
     </para>
     <para xml:id="S4.p12">
-      <p>True: True</p>
+      <p xml:id="S4.p12.1">True: True</p>
     </para>
   </section>
 </document>

@@ -7,52 +7,52 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Testing</title>
     <para xml:id="S1.p1">
-      <p>Testing raw tex macros:
-Expect inline math: xx<Math mode="inline" xml:id="S1.p1.m1" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>xx</p>
+      <p xml:id="S1.p1.1">Testing raw tex macros:
+Expect inline math: xx<Math mode="inline" xml:id="S1.p1.1.m1" tex="a+b" text="a + b"><XMath xml:id="S1.p1.1.m1.1"><XMApp xml:id="S1.p1.1.m1.1.4"><XMTok meaning="plus" role="ADDOP" xml:id="S1.p1.1.m1.1.2">+</XMTok><XMTok role="UNKNOWN" xml:id="S1.p1.1.m1.1.1" font="italic">a</XMTok><XMTok role="UNKNOWN" xml:id="S1.p1.1.m1.1.3" font="italic">b</XMTok></XMApp></XMath></Math>xx</p>
     </para>
     <para xml:id="S1.p2">
-      <p>Expect display math: xx</p>
+      <p xml:id="S1.p2.1">Expect display math: xx</p>
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a+b" text="a + b">
-          <XMath>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+          <XMath xml:id="S1.Ex1.m1.1">
+            <XMApp xml:id="S1.Ex1.m1.1.4">
+              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex1.m1.1.2">+</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.1" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
-      <p>xx</p>
+      <p xml:id="S1.p2.2">xx</p>
     </para>
     <para xml:id="S1.p3">
-      <p>Expect 2 empty maths: xxa+bxx</p>
+      <p xml:id="S1.p3.1">Expect 2 empty maths: xxa+bxx</p>
     </para>
     <para xml:id="S1.p4">
-      <p>Testing latex macros
+      <p xml:id="S1.p4.1">Testing latex macros
 Expect (onearg: one) (onearg: one)
 Expect (twoarg: one two) (twoarg: one ; two)
 Expect (twoargopt: one ; two) (twoargopt: one ; two)
 Expect (twoargopt: missing ; two)(twoargopt: missing ; two)</p>
     </para>
     <para xml:id="S1.p5">
-      <p>Testing whitespace:
+      <p xml:id="S1.p5.1">Testing whitespace:
 Expect (twoarg: a ; b) (twoarg: a ; b)
 Expect (textwoarg: a ; b) (textwoarg: a ; b)
 Expect (twoargopt: a ; b) (twoargopt: a ; b)</p>
     </para>
     <para xml:id="S1.p6">
-      <p>Expecting (beep) : (beep)</p>
+      <p xml:id="S1.p6.1">Expecting (beep) : (beep)</p>
     </para>
     <para xml:id="S1.p7">
-      <p>Expecting (foo) : (foo)</p>
+      <p xml:id="S1.p7.1">Expecting (foo) : (foo)</p>
     </para>
     <para xml:id="S1.p8">
-      <p>Expect [[x]] : [[x]]Expect (y(x)y) : (y(x)y)
+      <p xml:id="S1.p8.1">Expect [[x]] : [[x]]Expect (y(x)y) : (y(x)y)
 Expect [[x]] : [[x]]</p>
     </para>
     <para xml:id="S1.p9">
-      <p>Expect NOW a LATER b MUCHLATER c: NOW a LATER b MUCHLATER c</p>
+      <p xml:id="S1.p9.1">Expect NOW a LATER b MUCHLATER c: NOW a LATER b MUCHLATER c</p>
     </para>
   </section>
 </document>
