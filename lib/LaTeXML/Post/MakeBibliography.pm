@@ -44,6 +44,9 @@ sub process {
   return $doc if $doc->findnodes('//ltx:bibitem',$bib); # Already populated?
 
   local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
+  local %LaTeXML::Post::MakeBibliography::STYLE =
+    ( map( ($_=>$bib->getAttribute($_)), qw(bibstyle citestyle sort)) );
+
   my $entries = $self->getBibEntries($doc);
   # Remove any bibentry's (these should have been converted to bibitems)
   $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
@@ -230,7 +233,8 @@ sub formatBibEntry {
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname',$bibentry) unless @names;
   if(@names > 2){
     push(@tags,['ltx:bibtag',{role=>'authors', class=>'ltx_bib_author'},
-		$doc->cloneNodes($names[0]->childNodes),['ltx:emph',{},' et al.']]);
+		$doc->cloneNodes($names[0]->childNodes),
+                ['ltx:text',{class=>'ltx_bib_etal'},' et al.']]);
     my @fnames=();
     foreach my $n (@names[0..$#names-1]){
       push(@fnames,$n->childNodes,', '); }
@@ -273,10 +277,29 @@ sub formatBibEntry {
 
   # And finally, the refnum; we need to know the desired citation style!
   # This is screwy!!!
-  my $style = 'authoryear';	# else 'number'
-  $style = 'number' unless (@names || $keytag) && (@year || $typetag);
-  if($style eq 'number'){
-    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'ltx_bib_key'},$number]); }
+##  my $style = 'authoryear';	# else 'number'
+  # AND OF COURSE, we need to know the key before we know the suffix!!!
+  my $style = $LaTeXML::Post::MakeBibliography::STYLE{citestyle} || 'numbers';
+  $style = 'numbers' unless (@names || $keytag) && (@year || $typetag);
+  if($style eq 'numbers'){
+    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'ltx_bib_key',open=>'[',close=>']'},$number]); }
+  elsif($style eq 'AY'){
+    my @rfnames;
+    if(my @authors = $doc->findnodes('ltx:bib-name[@role="author"]',$bibentry)){
+      @rfnames = @authors; }
+    elsif(my @editors = $doc->findnodes('ltx:bib-name[@role="editor"]',$bibentry)){
+      @rfnames = @editors; }
+    else {
+      @rfnames = $keytag->childNodes; }
+    my $aa;
+    if(scalar(@rfnames) > 1){
+      $aa = join('',map {  substr($_->textContent,0,1); } @rfnames); }
+    else {
+      $aa = uc(substr($rfnames[0]->textContent,0,3)); }
+    my $yy = (@year ? substr(join('',map { (ref $_ ? $_->textContent : $_); } @year),2,2) :'');
+    push(@tags,['ltx:bibtag',{role=>'refnum',class=>'ltx_bib_abbrv',open=>'[',close=>']'},
+                $aa.$yy.($$entry{suffix}||'')]); }
+
   else {
     shift(@blockspecs);		# Skip redundant 1st block!!
     my @rfnames;
@@ -289,7 +312,7 @@ sub formatBibEntry {
     my @rfyear  = (@year  ? (@year,($$entry{suffix} ||''))
 		   : ($typetag ? $typetag->childNodes : ()));
     push(@tags,['ltx:bibtag',{role=>'refnum',class=>'ltx_bib_author-year'},
-		$doc->cloneNodes(@rfnames),' (',$doc->cloneNodes(@rfyear),')']); }
+                $doc->cloneNodes(@rfnames),' (',$doc->cloneNodes(@rfyear),')']); }
 
   #------------------------------
   # Format the data in blocks, with the first being bib-label, rest bibblock.
@@ -352,7 +375,7 @@ sub do_names {
 sub do_names_short {
   my(@names)=@_;
   if(@names > 2){
-    ($names[0]->childNodes,' ',['ltx:emph',{},'et al.']); }
+    ($names[0]->childNodes,' ',['ltx:text',{class=>'ltx_bib_etal'},'et al.']); }
   elsif(@names > 1){
   ($names[0]->childNodes,' and ',$names[1]->childNodes); }
   elsif(@names){
