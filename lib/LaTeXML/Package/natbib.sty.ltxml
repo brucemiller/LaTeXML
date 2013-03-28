@@ -25,19 +25,70 @@ use LaTeXML::Util::KeyVal;
 #======================================================================
 # 5. Package Options
 
-# The kind of braces around citations
-DeclareOption('round',     sub { setCitationStyle(round=>1); });
-DeclareOption('curly',     sub { setCitationStyle(curly=>1); });
-DeclareOption('square',    sub { setCitationStyle(square=>1); });
-DeclareOption('angle',     sub { setCitationStyle(angle=>1); });
-# The kind of separator between multiple citations
-DeclareOption('semicolon', sub { setCitationStyle(semicolon=>1); });
-DeclareOption('colon',     sub { setCitationStyle(semicolon=>1); }); # SIC!
-DeclareOption('comma',     sub { setCitationStyle(comma=>1); });
+# # The kind of braces around citations
+# DeclareOption('round',     sub { setCitationStyle(round=>1); });
+# DeclareOption('curly',     sub { setCitationStyle(curly=>1); });
+# DeclareOption('square',    sub { setCitationStyle(square=>1); });
+# DeclareOption('angle',     sub { setCitationStyle(angle=>1); });
+# # The kind of separator between multiple citations
+# DeclareOption('semicolon', sub { setCitationStyle(semicolon=>1); });
+# DeclareOption('colon',     sub { setCitationStyle(semicolon=>1); }); # SIC!
+# DeclareOption('comma',     sub { setCitationStyle(comma=>1); });
+# # The kind of citation
+# DeclareOption('authoryear',sub { setCitationStyle(authoryear=>1); });
+# DeclareOption('numbers',   sub { setCitationStyle(numbers=>1); });
+# DeclareOption('super',     sub { setCitationStyle(super=>1); });
+# # sorting options
+# DeclareOption('sort',         sub {});
+# DeclareOption('sort&compress',sub {});
+# DeclareOption('compress',     sub {});
+
+# DeclareOption('longnamesfirst',sub {});
+
+# DeclareOption('sectionbib', sub {});
+# DeclareOption('nonamebreak',sub {});
+
+# # They _say_ round & semicolon but ...
+# ExecuteOptions('round','semicolon','authoryear');
+# ExecuteOptions('square','comma','authoryear');
+
 # The kind of citation
-DeclareOption('authoryear',sub { setCitationStyle(authoryear=>1); });
-DeclareOption('numbers',   sub { setCitationStyle(numbers=>1); });
-DeclareOption('super',     sub { setCitationStyle(super=>1); });
+DeclareOption('numbers',   sub {
+  setCitationStyle(numbers=>1);
+  ExecuteOptions('square','comma','nobibstyle'); });
+DeclareOption('super',     sub {
+  setCitationStyle(super=>1, open=>Tokens(), close=>Tokens());
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('authoryear',sub {
+  setCitationStyle(authoryear=>1);
+  ExecuteOptions('round','semicolon','bibstyle');});
+# # The kind of braces around citations
+DeclareOption('round',     sub {
+  setCitationStyle(round=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('curly',     sub {
+  setCitationStyle(curly=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('square',    sub {
+  setCitationStyle(square=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('angle',     sub {
+  setCitationStyle(angle=>1);
+  ExecuteOptions('nobibstyle'); });
+
+# The kind of separator between multiple citations
+DeclareOption('comma',     sub {
+  setCitationStyle(comma=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('semicolon', sub {
+  setCitationStyle(semicolon=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('colon',     sub {
+  ExecuteOptions('semicolon'); }); # SIC!
+
+DeclareOption('nobibstyle',   sub { Let(T_CS('\bibstyle'),T_CS('\@gobble')); });
+DeclareOption('bibstyle',     sub { Let(T_CS('\bibstyle'),T_CS('\@citestyle')); });
+
 # sorting options
 DeclareOption('sort',         sub {});
 DeclareOption('sort&compress',sub {});
@@ -45,12 +96,24 @@ DeclareOption('compress',     sub {});
 
 DeclareOption('longnamesfirst',sub {});
 
+DeclareOption('openbib', sub {});
 DeclareOption('sectionbib', sub {});
 DeclareOption('nonamebreak',sub {});
 
 # They _say_ round & semicolon but ...
+#ExecuteOptions('round','semicolon','authoryear');
 #ExecuteOptions('square','comma','authoryear');
-ExecuteOptions('round','semicolon','authoryear');
+setCitationStyle(round=>1,semicolon=>1);
+
+# NOTE \bibliographystyle puts \bibstyle in the *.aux, read at the beginning!
+# Normally, \bibliography appears at the end next to the bibliography.... it's TOO LATE!
+# In any case, \bibstyle may get redefined by options, so define it now!
+DefMacro('\bibstyle{}', sub {
+  my $style = T_CS('\bibstyle@'.ToString($_[1]));
+  (LookupDefinition($style) ? ($style) : (T_CS('\relax'))); });
+#AtBeginDocument{\global\let\bibstyle=\@gobble}
+Let(T_CS('\@citestyle'),T_CS('\bibstyle'));
+
 ProcessOptions();
 #======================================================================
 # 2.3 Basic Citation Commands
@@ -61,14 +124,21 @@ ProcessOptions();
 # but like \citep in numbers mode.
 DefMacro('\cite[] Semiverbatim', sub {
   my($gullet,$post,$keys)=@_;
-  my($open,$close,$ns)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  my($style,$open,$close,$ns)
+    =map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
   $post = undef unless $post && $post->unlist;
-  if(LookupValue('CITE_STYLE') eq 'numbers'){
+  if($style eq 'numbers'){
      Invocation(T_CS('\@@cite'),
 		Tokens($open,
 		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,undef,undef),
 		       ($post ? ($ns,T_SPACE,$post):()),
 		       $close)); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+                Tokens(Invocation(T_CS('\textsuperscript'),
+                                  Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,
+                                             undef,undef)),
+                       ($post ? (T_SPACE,$post):()))); }
   else {
      Invocation(T_CS('\@@cite'),
 		Invocation(T_CS('\@@bibref'),
@@ -81,12 +151,13 @@ DefMacro('\cite[] Semiverbatim', sub {
 
 DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
   my($gullet,$star,$pre,$post,$keys)=@_;
-  my($open,$close,$ns)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  my($style,$open,$close,$ns)
+    =map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
   if(!$post){ ($pre,$post)=(undef,$pre); }
   $pre  = undef unless $pre  && $pre->unlist;
   $post = undef unless $post && $post->unlist;
   my $author = ($star ? "FullAuthors" : "Authors");
-  if(LookupValue('CITE_STYLE') eq 'numbers'){
+  if($style eq 'numbers'){
      Invocation(T_CS('\@@cite'),
 		Tokens(($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),
@@ -95,6 +166,13 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
 				  Invocation(T_CS('\@@citephrase'),$open),
 				  Invocation(T_CS('\@@citephrase'),$close))->unlist,
 		       ($post ? ($ns->unlist,T_SPACE,$post->unlist):()))); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),
+				  Tokens(Explode("$author Phrase1SuperPhrase2")),
+				  $keys,undef,undef)->unlist,
+		       ($post ? ($ns,T_SPACE,$post->unlist):()))); }
   else {
      Invocation(T_CS('\@@cite'),
 		Invocation(T_CS('\@@bibref'),
@@ -108,17 +186,22 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
 
 DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
   my($gullet,$star,$pre,$post,$keys)=@_;
-  my($open,$close,$ns,$ay)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE
-						  CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR));
+  my($style,$open,$close,$ns,$ay)=map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE
+                                                         CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR));
   if(!$post){ ($pre,$post)=(undef,$pre); }
   $pre  = undef unless $pre  && $pre->unlist;
   $post = undef unless $post && $post->unlist;
   my $author = ($star ? "FullAuthors" : "Authors");
-  if(LookupValue('CITE_STYLE') eq 'numbers'){
+  if($style eq 'numbers'){
      Invocation(T_CS('\@@cite'),
 		Tokens($open,($pre  ? ($pre,T_SPACE):()),
 		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
 		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Super")),$keys, undef,undef),
+		       ($post ? (T_SPACE,$post):()))); }
   else {
      Invocation(T_CS('\@@cite'),
 		Tokens($open->unlist,($pre  ? ($pre,T_SPACE):()),
@@ -286,15 +369,6 @@ DefPrimitive('\bibpunct[]{}{}{}{}{}{}', sub {
   AssignValue(CITE_NOTE_SEPARATOR=>$notesep) if $notesep;
   return; });
 
-# NOTE that if this appears at the end next to the bibliography.... it's TOO LATE!
-# The doc says it loads newbib.cfg, but I don't see that...
-# \citestyle{newbib}
-DefMacro('\bibstyle{}', sub {
-  my $style = T_CS('\bibstyle@'.ToString($_[1]));
-  (LookupDefinition($style) ? ($style) : (T_CS('\relax'))); });
-
-# \AtBeginDocument{\global\let\bibstyle=\@gobble}
-Let(T_CS('\@citestyle'),T_CS('\bibstyle'));
 DefMacro('\citestyle{}','\@citestyle{#1}\let\bibstyle\@gobble');
 
 DefMacro('\bibstyle@chicago',    '\bibpunct{(}{)}{;}{a}{,}{,}');
