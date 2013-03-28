@@ -53,9 +53,6 @@ DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 #======================================================================
 # id related features
 
-# Optionally, add ID's to ALL nodes.
-Tag('ltx:*',afterOpen=>sub { if(LookupValue('GENERATE_IDS')){ GenerateID(@_); }});
-
 # Set the id to used for the top-level document
 DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
 

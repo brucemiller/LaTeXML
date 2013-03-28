@@ -28,13 +28,30 @@ RegisterNamespace(xhtml=>"http://www.w3.org/1999/xhtml");
 
 DefMacroI("\\\@empty",undef,Tokens());
 
-# Base ID prefixes everything.
+#======================================================================
+# Core ID functionality.
+#======================================================================
+# DOCUMENTID is the ID of the document
+# AND prefixes IDs on all other elements.
 if(my $docid = LookupValue('DOCUMENTID')){
   # Wrap in T_OTHER so funny chars don't screw up (no space!)
   DefMacroI('\thedocument@ID',undef,T_OTHER($docid)); }
 else {
   Let(T_CS('\thedocument@ID'),T_CS('\@empty')); }
 NewCounter('@XMARG','document',idprefix=>'XM');
+
+# Optionally, add ID's to ALL nodes.
+# By default, this is ON;
+# Set to 0 (or \usepackage[noids]{latexml}) to turn disable.
+AssignValue(GENERATE_IDS=>1,'global');
+Tag('ltx:*',afterOpen=>sub {
+      # If GENERATE_IDS is true, we'll assign an ID to EVERY element,
+      # EXCEPT ltx:document which only gets an id from an EXPLICIT \thedocument@id.
+      my $tag = $_[0]->getNodeQName($_[1]);
+      if(($tag ne 'ltx:document')
+	 && ($tag ne 'ltx:XMWrap') # No auto-generated id on wrap???
+	 && LookupValue('GENERATE_IDS')){
+	GenerateID(@_); }});
 
 DefRegister('\pdfoutput',Number(0));
 
