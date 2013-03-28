@@ -2397,6 +2397,9 @@ sub beginBibliography {
   my $title = DigestIf('\refname')||DigestIf('\bibname');
   $whatsit->setProperty(title=>$title) if $title;
   $whatsit->setProperty(titlefont=>$title->getFont) if $title;
+  $whatsit->setProperty(bibstyle=>LookupValue('BIBSTYLE'));
+  $whatsit->setProperty(citestyle=>LookupValue('CITE_STYLE'));
+#  $whatsit->setProperty(sort=> ???
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
   # Fix for missing \bibitems!
@@ -2404,14 +2407,41 @@ sub beginBibliography {
 
 DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
-	       "<ltx:bibliography files='#1' xml:id='#id'>"
+	       "<ltx:bibliography files='#1' xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       ."</ltx:bibliography>",
 	       afterDigest=>sub { $_[0]->begingroup; # wrapped so redefns don't take effect!
 				  beginBibliography($_[1]); 
 				  $_[0]->endgroup; });
 
-DefPrimitive('\bibstyle{}', undef);
+# NOTE: This totally needs to be made extensible (parsing *.bst!?!? OMG!)
+our $BIBSTYLES={
+                plain=>{citestyle=>'numbers',sort=>'true'},
+                unsrt=>{citestyle=>'numbers',sort=>'false'},
+                alpha=>{citestyle=>'AY',    sort=>'true'},
+                abbrv=>{citestyle=>'numbers',sort=>'true'},
+                plainnat=>{citestyle=>'numbers',sort=>'true'},
+                unsrtnat=>{citestyle=>'numbers',sort=>'false'},
+                alphanat=>{citestyle=>'AY',    sort=>'true'},
+                abbrvnat=>{citestyle=>'numbers',sort=>'true'}};
+
+DefConstructor('\bibstyle{}',sub {
+   my($document,$style)=@_;
+   $style = ToString($style);
+   if(my $bib = $document->findnode('//ltx:bibliography')){
+     $document->setAttribute($bib,bibstyle=>$style);
+     if(my $parms = $$BIBSTYLES{$style}){
+       $document->setAttribute($bib,citestyle=>$$parms{citestyle});
+       $document->setAttribute($bib,sort=>$$parms{sort});
+   }}},
+  afterDigest=>sub{
+    my $style = ToString($_[1]->getArg(1));
+    AssignValue(BIBSTYLE=>$style,'global');
+     if(my $parms = $$BIBSTYLES{$style}){
+       AssignValue(CITE_STYLE=>$$parms{citestyle}); }
+  });
+
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
 
 # Should be an environment, but people seem to want to misuse it.
@@ -2526,6 +2556,7 @@ Tag('ltx:bibblock', autoClose=>1);
 #
 # The design is intended to support natbib, as well as plain LaTeX.
 
+AssignValue(CITE_STYLE=>'numbers');
 AssignValue(CITE_OPEN=>T_OTHER('['));
 AssignValue(CITE_CLOSE=>T_OTHER(']'));
 AssignValue(CITE_SEPARATOR=>T_OTHER(','));
@@ -2549,11 +2580,13 @@ DefConstructor('\@@citephrase{}',"<ltx:bibrefphrase>#1</ltx:bibrefphrase>",
 
 DefMacro('\cite[] Semiverbatim', sub {
   my($gullet,$post,$keys)=@_;
-  my($open,$close,$ns)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  my($style,$open,$close,$ns)
+    =map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
   $post = undef unless $post && $post->unlist;
   Invocation(T_CS('\@@cite'),
 	     Tokens($open,
-		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
+###		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
+		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Refnum")),$keys, undef,undef),
 		    ($post ? ($ns,T_SPACE,$post):()),$close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
