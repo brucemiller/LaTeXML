@@ -926,10 +926,15 @@ sub isMatchingClose {
 sub Fence {
   my(@stuff)=@_;
   # Peak at delimiters to guess what kind of construct this is.
+  my $nargs = scalar(@stuff);
+  Error("expected","arguments",undef,
+        "Even number of arguments to Fence(); should be of form open,expr,(punct,expr)*,close",
+        "got ".join(' ',map(ToString($_),@stuff)) )
+    unless $nargs % 2;
   my ($open,$close) = ($stuff[0],$stuff[$#stuff]);
   my $o  = p_getValue($open);
   my $c = p_getValue($close);
-  my $n = int((scalar(@stuff)-2+1)/2);
+  my $n = int(($nargs-2+1)/2);
   my @p= map(p_getValue(@stuff[2*$_]), 1..$n-1);
   my $op = ($n==0
 	    ? undef
