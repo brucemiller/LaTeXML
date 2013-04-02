@@ -234,7 +234,8 @@ RequirePackage('natbib');
 # Is this the right treatment?
 # Is the same true for RevTeX?
 DefConstructor('\references',
-	       "<ltx:bibliography xml:id='#id'>"
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
 	       . "<ltx:title>#title</ltx:title>"
 	       . "<ltx:biblist>",
 	       afterDigest=>sub { beginBibliography($_[1]); });
