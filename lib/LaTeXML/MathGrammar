@@ -444,7 +444,7 @@ factorOpenExpr :
 		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
 	# only 2 things and 2nd one is an op?; some kind of group???
         | PUNCT AnyOp balancedClose[$arg[0]]
-	           addScripts[Annotate(Apply(New('group'),$arg[1],$item[2]),
+	           addScripts[Annotate(Apply(New('group',undef,role=>'FENCED'),$arg[1],$item[2]),
                                       open=>$arg[0],separators=>$item[1],close=>$item[3])]
  	# parenthesized expression.
 	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
