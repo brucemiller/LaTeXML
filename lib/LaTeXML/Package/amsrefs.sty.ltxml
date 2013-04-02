@@ -57,7 +57,8 @@ DefMacro('\BibSpec{}{}',Tokens());
 Let(T_CS('\cites'),T_CS('\cite'));
 #======================================================================
 DefEnvironment('{bibdiv}',
-	       "<ltx:bibliography xml:id='#id'>"
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "#body"
 	       ."</ltx:bibliography>",
