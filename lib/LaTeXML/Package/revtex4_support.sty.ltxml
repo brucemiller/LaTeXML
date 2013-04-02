@@ -168,7 +168,8 @@ Let('\textcite','\citet');
 # RevTeX3; Obsolete for RevTeX4 (but semi-implemented there)
 # Should be a simple environment, but tends to be misused, so define separately
 DefConstructor('\references',
-	       "<ltx:bibliography xml:id='#id'>"
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
 	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 	       . "<ltx:biblist>",
 	       afterDigest=>sub { beginBibliography($_[1]); });
