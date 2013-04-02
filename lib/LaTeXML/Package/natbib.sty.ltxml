@@ -86,8 +86,11 @@ DeclareOption('semicolon', sub {
 DeclareOption('colon',     sub {
   ExecuteOptions('semicolon'); }); # SIC!
 
-DeclareOption('nobibstyle',   sub { Let(T_CS('\bibstyle'),T_CS('\@gobble')); });
-DeclareOption('bibstyle',     sub { Let(T_CS('\bibstyle'),T_CS('\@citestyle')); });
+# This disables any future \bibstyle found in the aux file (or from \bibliographystyle)
+DeclareOption('nobibstyle',   sub { 
+  Let(T_CS('\bibstyle'),T_CS('\@gobble')); });
+DeclareOption('bibstyle',     sub {
+  Let(T_CS('\bibstyle'),T_CS('\@citestyle')); });
 
 # sorting options
 DeclareOption('sort',         sub {});
@@ -107,6 +110,8 @@ setCitationStyle(round=>1,semicolon=>1);
 
 # NOTE \bibliographystyle puts \bibstyle in the *.aux, read at the beginning!
 # Normally, \bibliography appears at the end next to the bibliography.... it's TOO LATE!
+# [FUTURE: Maybe this can be encoded as attributes on ltx:bibliography ???
+#  But then we need to put in stub elements to be filled in by CrossRef! Ugh]
 # In any case, \bibstyle may get redefined by options, so define it now!
 DefMacro('\bibstyle{}', sub {
   my $style = T_CS('\bibstyle@'.ToString($_[1]));
