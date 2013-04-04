@@ -4157,7 +4157,15 @@ DefConstructorI('\nolimits',undef,sub {
    my $node = $_[0]->getElement;
    $node = $_[0]->getLastChildElement($node)||$node;
    $node->removeAttribute('scriptpos'); }); # default is 'post', so we can just remove the attrib.
-
+DefConstructorI('\displaylimits',undef,sub {
+   my($document,%props)=@_;
+   my $node = $_[0]->getElement;
+   $node = $_[0]->getLastChildElement($node)||$node;
+   if(($props{mathstyle}||'text') eq 'display'){
+     $node->setAttribute(scriptpos=>'mid'); }
+   else {
+     $node->removeAttribute('scriptpos'); }},
+		properties=>sub { (mathstyle=>LookupValue('mathstyle')); });
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
 #----------------------------------------------------------------------
