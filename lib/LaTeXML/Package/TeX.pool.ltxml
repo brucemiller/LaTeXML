@@ -4813,7 +4813,8 @@ DefMacro('\cases{}',
 	 '\@@cases{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@cases{}',
 	       sub { my($document,$body,%props)=@_;
-		     constructAlignment($document,$body,attributes=>{meaning=>'cases'}); },
+		     constructAlignment($document,$body,
+					attributes=>{meaning=>'cases', open=>'{'}); },
 	       reversion=>'\cases{#1}', bounded=>1,
 	       beforeDigest=>sub { 
  		 my $col1 = {before=>Tokens(), after=>Tokens(T_CS('\hfil'))};
