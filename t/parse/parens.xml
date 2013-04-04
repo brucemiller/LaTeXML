@@ -15,10 +15,10 @@
               <XMTok meaning="minus" role="ADDOP" xml:id="S1.Ex1.m1.1.7">-</XMTok>
               <XMApp close=")" open="(" xml:id="S1.Ex1.m1.1.10.1">
                 <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex1.m1.1.4">+</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.3" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.5" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S1.Ex1.m1.1.3" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S1.Ex1.m1.1.5" font="italic">b</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.8" font="italic">c</XMTok>
+              <XMTok role="ID" xml:id="S1.Ex1.m1.1.8" font="italic">c</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -28,11 +28,11 @@
           <XMath xml:id="S1.Ex2.m1.1">
             <XMApp close=")" open="(" xml:id="S1.Ex2.m1.1.10">
               <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex2.m1.1.3">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S1.Ex2.m1.1.2" font="italic">a</XMTok>
               <XMApp close=")" open="(" xml:id="S1.Ex2.m1.1.10.1">
                 <XMTok meaning="minus" role="ADDOP" xml:id="S1.Ex2.m1.1.6">-</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.5" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.7" font="italic">c</XMTok>
+                <XMTok role="ID" xml:id="S1.Ex2.m1.1.5" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S1.Ex2.m1.1.7" font="italic">c</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -48,8 +48,8 @@
           <XMath xml:id="S2.Ex3.m1.1">
             <XMApp xml:id="S2.Ex3.m1.1.6">
               <XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators="," xml:id="S2.Ex3.m1.1.6.1"/>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex3.m1.1.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex3.m1.1.4" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex3.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex3.m1.1.4" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -59,8 +59,8 @@
           <XMath xml:id="S2.Ex4.m1.1">
             <XMApp xml:id="S2.Ex4.m1.1.6">
               <XMTok argclose=")" argopen="[" meaning="closed-open-interval" role="FENCED" separators="," xml:id="S2.Ex4.m1.1.6.1"/>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.4" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex4.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex4.m1.1.4" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -70,8 +70,8 @@
           <XMath xml:id="S2.Ex5.m1.1">
             <XMApp xml:id="S2.Ex5.m1.1.6">
               <XMTok argclose="]" argopen="(" meaning="open-closed-interval" role="FENCED" separators="," xml:id="S2.Ex5.m1.1.6.1"/>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex5.m1.1.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex5.m1.1.4" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex5.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex5.m1.1.4" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -81,8 +81,8 @@
           <XMath xml:id="S2.Ex6.m1.1">
             <XMApp xml:id="S2.Ex6.m1.1.6">
               <XMTok argclose="]" argopen="[" meaning="closed-interval" role="FENCED" separators="," xml:id="S2.Ex6.m1.1.6.1"/>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex6.m1.1.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex6.m1.1.4" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex6.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S2.Ex6.m1.1.4" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -100,24 +100,24 @@
               <XMArray close="}" meaning="cases" role="ARRAY" xml:id="S3.Ex7.m1.1.2">
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.2.1" font="italic">a</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex7.m1.1.2.1" font="italic">a</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.2.2" font="italic">b</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex7.m1.1.2.2" font="italic">b</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
               <XMArray meaning="cases" open="{" role="ARRAY" xml:id="S3.Ex7.m1.1.6">
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.6.1" font="italic">c</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex7.m1.1.6.1" font="italic">c</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.6.2" font="italic">d</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex7.m1.1.6.2" font="italic">d</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
@@ -133,12 +133,12 @@
             <XMArray close=")" open="(" role="ARRAY" xml:id="S3.Ex8.m1.1.2">
               <XMRow>
                 <XMCell align="left">
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.2.1" font="italic">c</XMTok>
+                  <XMTok role="ID" xml:id="S3.Ex8.m1.1.2.1" font="italic">c</XMTok>
                 </XMCell>
               </XMRow>
               <XMRow>
                 <XMCell align="left">
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.2.2" font="italic">d</XMTok>
+                  <XMTok role="ID" xml:id="S3.Ex8.m1.1.2.2" font="italic">d</XMTok>
                 </XMCell>
               </XMRow>
             </XMArray>
@@ -150,20 +150,20 @@
           <XMath xml:id="S3.Ex9.m1.1">
             <XMApp close=")" open="(" xml:id="S3.Ex9.m1.1.10">
               <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex9.m1.1.3">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S3.Ex9.m1.1.2" font="italic">a</XMTok>
               <XMArray close=")" open="(" role="ARRAY" xml:id="S3.Ex9.m1.1.5">
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.5.1" font="italic">c</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex9.m1.1.5.1" font="italic">c</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="left">
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.5.2" font="italic">d</XMTok>
+                    <XMTok role="ID" xml:id="S3.Ex9.m1.1.5.2" font="italic">d</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.8" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S3.Ex9.m1.1.8" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -178,13 +178,13 @@
           <XMath xml:id="S4.Ex10.m1.1">
             <XMApp xml:id="S4.Ex10.m1.1.6">
               <XMTok meaning="plus" role="ADDOP" xml:id="S4.Ex10.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S4.Ex10.m1.1.1" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S4.Ex10.m1.1.1" font="italic">a</XMTok>
               <XMApp xml:id="S4.Ex10.m1.1.3">
                 <XMTok mathstyle="display" role="STACKED" xml:id="S4.Ex10.m1.1.3.1"/>
-                <XMTok role="UNKNOWN" xml:id="S4.Ex10.m1.1.3.2" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S4.Ex10.m1.1.3.3" font="italic">c</XMTok>
+                <XMTok role="ID" xml:id="S4.Ex10.m1.1.3.2" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S4.Ex10.m1.1.3.3" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" xml:id="S4.Ex10.m1.1.5" font="italic">d</XMTok>
+              <XMTok role="ID" xml:id="S4.Ex10.m1.1.5" font="italic">d</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -194,13 +194,13 @@
           <XMath xml:id="S4.Ex11.m1.1">
             <XMApp xml:id="S4.Ex11.m1.1.8">
               <XMTok meaning="plus" role="ADDOP" xml:id="S4.Ex11.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S4.Ex11.m1.1.1" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S4.Ex11.m1.1.1" font="italic">a</XMTok>
               <XMApp close="]" open="[" xml:id="S4.Ex11.m1.1.4">
                 <XMTok mathstyle="display" role="STACKED" xml:id="S4.Ex11.m1.1.4.1"/>
-                <XMTok role="UNKNOWN" xml:id="S4.Ex11.m1.1.4.2" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S4.Ex11.m1.1.4.3" font="italic">c</XMTok>
+                <XMTok role="ID" xml:id="S4.Ex11.m1.1.4.2" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S4.Ex11.m1.1.4.3" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" xml:id="S4.Ex11.m1.1.7" font="italic">d</XMTok>
+              <XMTok role="ID" xml:id="S4.Ex11.m1.1.7" font="italic">d</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -215,8 +215,8 @@
           <XMath xml:id="S5.Ex12.m1.1">
             <XMApp close=")" open="(" xml:id="S5.Ex12.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex12.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex12.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex12.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex12.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex12.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -226,8 +226,8 @@
           <XMath xml:id="S5.Ex13.m1.1">
             <XMApp close="]" open="[" xml:id="S5.Ex13.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex13.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex13.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex13.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex13.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex13.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -237,8 +237,8 @@
           <XMath xml:id="S5.Ex14.m1.1">
             <XMApp close="]" open="[" xml:id="S5.Ex14.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex14.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex14.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex14.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex14.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex14.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -250,8 +250,8 @@
               <XMTok argclose="}" argopen="{" meaning="set" role="FENCED" xml:id="S5.Ex15.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex15.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex15.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex15.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex15.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex15.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex15.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -264,8 +264,8 @@
               <XMTok argclose="}" argopen="{" meaning="set" role="FENCED" xml:id="S5.Ex16.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex16.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex16.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex16.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex16.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex16.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex16.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -278,8 +278,8 @@
               <XMTok argclose="⌋" argopen="⌊" meaning="floor" role="FENCED" xml:id="S5.Ex17.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex17.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex17.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex17.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex17.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex17.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex17.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -292,8 +292,8 @@
               <XMTok argclose="⌉" argopen="⌈" meaning="ceiling" role="FENCED" xml:id="S5.Ex18.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex18.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex18.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex18.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex18.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex18.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex18.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -304,8 +304,8 @@
           <XMath xml:id="S5.Ex19.m1.1">
             <XMApp close="⟩" open="⟨" xml:id="S5.Ex19.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex19.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex19.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex19.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex19.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex19.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -315,8 +315,8 @@
           <XMath xml:id="S5.Ex20.m1.1">
             <XMApp close="⟩" open="⟨" xml:id="S5.Ex20.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex20.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex20.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex20.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex20.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex20.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -328,8 +328,8 @@
               <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED" xml:id="S5.Ex21.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex21.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex21.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex21.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex21.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex21.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex21.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -342,8 +342,8 @@
               <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED" xml:id="S5.Ex22.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex22.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex22.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex22.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex22.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex22.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex22.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -356,8 +356,8 @@
               <XMTok argclose="∥" argopen="∥" meaning="norm" role="FENCED" xml:id="S5.Ex23.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex23.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex23.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex23.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex23.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex23.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex23.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -370,8 +370,8 @@
               <XMTok argclose="∥" argopen="∥" meaning="norm" role="FENCED" xml:id="S5.Ex24.m1.1.4.1"/>
               <XMApp xml:id="S5.Ex24.m1.1.2">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex24.m1.1.2.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex24.m1.1.2.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex24.m1.1.2.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex24.m1.1.2.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex24.m1.1.2.3" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -382,8 +382,8 @@
           <XMath xml:id="S5.Ex25.m1.1">
             <XMApp close="↓" open="↑" xml:id="S5.Ex25.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex25.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex25.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex25.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex25.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex25.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -393,8 +393,8 @@
           <XMath xml:id="S5.Ex26.m1.1">
             <XMApp close="⇓" open="⇑" xml:id="S5.Ex26.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex26.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex26.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex26.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex26.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex26.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -404,8 +404,8 @@
           <XMath xml:id="S5.Ex27.m1.1">
             <XMApp close="⇕" open="↕" xml:id="S5.Ex27.m1.1.2">
               <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex27.m1.1.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex27.m1.1.2.2" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex27.m1.1.2.3" font="italic">b</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex27.m1.1.2.2" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex27.m1.1.2.3" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -417,13 +417,13 @@
           <XMath xml:id="S5.Ex28.m1.1">
             <XMApp xml:id="S5.Ex28.m1.1.8">
               <XMTok meaning="plus" role="ADDOP" xml:id="S5.Ex28.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex28.m1.1.1" font="italic">a</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex28.m1.1.1" font="italic">a</XMTok>
               <XMApp close="⟩" open="⟨" xml:id="S5.Ex28.m1.1.4">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex28.m1.1.4.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex28.m1.1.4.2" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex28.m1.1.4.3" font="italic">c</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex28.m1.1.4.2" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex28.m1.1.4.3" font="italic">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" xml:id="S5.Ex28.m1.1.7" font="italic">d</XMTok>
+              <XMTok role="ID" xml:id="S5.Ex28.m1.1.7" font="italic">d</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -437,13 +437,13 @@
               <XMTok role="MULOP" xml:id="S5.Ex29.m1.1.2">/</XMTok>
               <XMApp xml:id="S5.Ex29.m1.1.1">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex29.m1.1.1.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex29.m1.1.1.2" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex29.m1.1.1.3" font="italic">b</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex29.m1.1.1.2" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex29.m1.1.1.3" font="italic">b</XMTok>
               </XMApp>
               <XMApp xml:id="S5.Ex29.m1.1.3">
                 <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S5.Ex29.m1.1.3.1"/>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex29.m1.1.3.2" font="italic">c</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S5.Ex29.m1.1.3.3" font="italic">d</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex29.m1.1.3.2" font="italic">c</XMTok>
+                <XMTok role="ID" xml:id="S5.Ex29.m1.1.3.3" font="italic">d</XMTok>
               </XMApp>
             </XMApp>
           </XMath>

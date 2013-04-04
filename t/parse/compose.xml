@@ -9,32 +9,35 @@
     <title><tag close=" ">1</tag>Compositions</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" xml:id="S1.Ex1.m1" tex="(f*g)(x)" text="f * g * x">
+        <Math mode="display" xml:id="S1.Ex1.m1" tex="(f*g)(x)" text="compose@(f, g) * x">
           <XMath xml:id="S1.Ex1.m1.1">
             <XMApp xml:id="S1.Ex1.m1.1.9">
               <XMTok meaning="times" role="MULOP" xml:id="S1.Ex1.m1.1.9.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S1.Ex1.m1.1.9.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex1.m1.1.3">*</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.2" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.4" font="italic">g</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S1.Ex1.m1.1.3">*</XMTok>
+                <XMTok role="FUNCTION" xml:id="S1.Ex1.m1.1.2" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S1.Ex1.m1.1.4" font="italic">g</XMTok>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S1.Ex1.m1.1.7" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S1.Ex1.m1.1.7" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" xml:id="S1.Ex2.m1" tex="(f*g*h)(x)" text="f * g * h * x">
+        <Math mode="display" xml:id="S1.Ex2.m1" tex="(f*g*h)(x)" text="compose@(compose@(f, g), h) * x">
           <XMath xml:id="S1.Ex2.m1.1">
             <XMApp xml:id="S1.Ex2.m1.1.11">
               <XMTok meaning="times" role="MULOP" xml:id="S1.Ex2.m1.1.11.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S1.Ex2.m1.1.11.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex2.m1.1.5">*</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.2" font="italic">f</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.4" font="italic">g</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.6" font="italic">h</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S1.Ex2.m1.1.5">*</XMTok>
+                <XMApp xml:id="S1.Ex2.m1.1.11.2.1">
+                  <XMTok meaning="compose" role="COMPOSEOP" xml:id="S1.Ex2.m1.1.3">*</XMTok>
+                  <XMTok role="FUNCTION" xml:id="S1.Ex2.m1.1.2" font="italic">f</XMTok>
+                  <XMTok role="FUNCTION" xml:id="S1.Ex2.m1.1.4" font="italic">g</XMTok>
+                </XMApp>
+                <XMTok role="FUNCTION" xml:id="S1.Ex2.m1.1.6" font="italic">h</XMTok>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S1.Ex2.m1.1.9" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S1.Ex2.m1.1.9" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -45,81 +48,81 @@
     <title><tag close=" ">2</tag>Implicit lambdas?</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
-        <Math mode="display" xml:id="S2.Ex3.m1" tex="(y^{2}*f)(x)" text="y ^ 2 * f * x">
+        <Math mode="display" xml:id="S2.Ex3.m1" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
           <XMath xml:id="S2.Ex3.m1.1">
             <XMApp xml:id="S2.Ex3.m1.1.10">
               <XMTok meaning="times" role="MULOP" xml:id="S2.Ex3.m1.1.10.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S2.Ex3.m1.1.10.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S2.Ex3.m1.1.4">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S2.Ex3.m1.1.4">*</XMTok>
                 <XMApp xml:id="S2.Ex3.m1.1.10.2.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S2.Ex3.m1.1.10.2.1.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S2.Ex3.m1.1.2" font="italic">y</XMTok>
+                  <XMTok role="ID" xml:id="S2.Ex3.m1.1.2" font="italic">y</XMTok>
                   <XMTok meaning="2" role="NUMBER" xml:id="S2.Ex3.m1.1.3.1">2</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S2.Ex3.m1.1.5" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S2.Ex3.m1.1.5" font="italic">f</XMTok>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S2.Ex3.m1.1.8" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S2.Ex3.m1.1.8" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex4">
-        <Math mode="display" xml:id="S2.Ex4.m1" tex="(yy^{2}*f)(x)" text="y * y ^ 2 * f * x">
+        <Math mode="display" xml:id="S2.Ex4.m1" tex="(yy^{2}*f)(x)" text="compose@(y * y ^ 2, f) * x">
           <XMath xml:id="S2.Ex4.m1.1">
             <XMApp xml:id="S2.Ex4.m1.1.11">
               <XMTok meaning="times" role="MULOP" xml:id="S2.Ex4.m1.1.11.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S2.Ex4.m1.1.11.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S2.Ex4.m1.1.5">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S2.Ex4.m1.1.5">*</XMTok>
                 <XMApp xml:id="S2.Ex4.m1.1.11.2.1">
                   <XMTok meaning="times" role="MULOP" xml:id="S2.Ex4.m1.1.11.2.1.1">⁢</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.2" font="italic">y</XMTok>
+                  <XMTok role="ID" xml:id="S2.Ex4.m1.1.2" font="italic">y</XMTok>
                   <XMApp xml:id="S2.Ex4.m1.1.11.2.1.2">
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S2.Ex4.m1.1.11.2.1.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.3" font="italic">y</XMTok>
+                    <XMTok role="ID" xml:id="S2.Ex4.m1.1.3" font="italic">y</XMTok>
                     <XMTok meaning="2" role="NUMBER" xml:id="S2.Ex4.m1.1.4.1">2</XMTok>
                   </XMApp>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.6" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S2.Ex4.m1.1.6" font="italic">f</XMTok>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S2.Ex4.m1.1.9" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S2.Ex4.m1.1.9" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex5">
-        <Math mode="display" xml:id="S2.Ex5.m1" tex="(y^{2}*f)(x)" text="y ^ 2 * f * x">
+        <Math mode="display" xml:id="S2.Ex5.m1" tex="(y^{2}*f)(x)" text="compose@(y ^ 2, f) * x">
           <XMath xml:id="S2.Ex5.m1.1">
             <XMApp xml:id="S2.Ex5.m1.1.10">
               <XMTok meaning="times" role="MULOP" xml:id="S2.Ex5.m1.1.10.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S2.Ex5.m1.1.10.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S2.Ex5.m1.1.4">*</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S2.Ex5.m1.1.4">*</XMTok>
                 <XMApp xml:id="S2.Ex5.m1.1.10.2.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S2.Ex5.m1.1.10.2.1.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S2.Ex5.m1.1.2" font="italic">y</XMTok>
+                  <XMTok role="ID" xml:id="S2.Ex5.m1.1.2" font="italic">y</XMTok>
                   <XMTok meaning="2" role="NUMBER" xml:id="S2.Ex5.m1.1.3.1">2</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S2.Ex5.m1.1.5" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S2.Ex5.m1.1.5" font="italic">f</XMTok>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S2.Ex5.m1.1.8" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S2.Ex5.m1.1.8" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
-        <Math mode="display" xml:id="S2.Ex6.m1" tex="(f*y^{2})(x)" text="f * y ^ 2 * x">
+        <Math mode="display" xml:id="S2.Ex6.m1" tex="(f*y^{2})(x)" text="compose@(f, y ^ 2) * x">
           <XMath xml:id="S2.Ex6.m1.1">
             <XMApp xml:id="S2.Ex6.m1.1.10">
               <XMTok meaning="times" role="MULOP" xml:id="S2.Ex6.m1.1.10.1">⁢</XMTok>
               <XMApp close=")" open="(" xml:id="S2.Ex6.m1.1.10.2">
-                <XMTok meaning="times" role="MULOP" xml:id="S2.Ex6.m1.1.3">*</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S2.Ex6.m1.1.2" font="italic">f</XMTok>
+                <XMTok meaning="compose" role="COMPOSEOP" xml:id="S2.Ex6.m1.1.3">*</XMTok>
+                <XMTok role="FUNCTION" xml:id="S2.Ex6.m1.1.2" font="italic">f</XMTok>
                 <XMApp xml:id="S2.Ex6.m1.1.10.2.1">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S2.Ex6.m1.1.10.2.1.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S2.Ex6.m1.1.4" font="italic">y</XMTok>
+                  <XMTok role="ID" xml:id="S2.Ex6.m1.1.4" font="italic">y</XMTok>
                   <XMTok meaning="2" role="NUMBER" xml:id="S2.Ex6.m1.1.5.1">2</XMTok>
                 </XMApp>
               </XMApp>
-              <XMTok close=")" open="(" role="UNKNOWN" xml:id="S2.Ex6.m1.1.8" font="italic">x</XMTok>
+              <XMTok close=")" open="(" role="ID" xml:id="S2.Ex6.m1.1.8" font="italic">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
