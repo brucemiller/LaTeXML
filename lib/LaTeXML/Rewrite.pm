@@ -309,7 +309,7 @@ sub domToXPath {
   "descendant-or-self::". domToXPath_rec($document,$node); }
 
 # May need some work here;
-our %EXCLUDED_MATCH_ATTRIBUTES=(scriptpos=>1);
+our %EXCLUDED_MATCH_ATTRIBUTES=(scriptpos=>1, 'xml:id'=>1);
 
 sub domToXPath_rec {
   my($document,$node,@extra_predicates)=@_;
