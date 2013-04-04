@@ -100,6 +100,10 @@ sub newFromGullet {
   $$self{lineno} = 1;
   $self; }
 
+sub toString {
+  my($self)=@_;
+  "Bibliography[$$self{source}]"; }
+
 sub toTeX {
   my($self)=@_;
   $self->parseTopLevel unless $$self{parsed};
