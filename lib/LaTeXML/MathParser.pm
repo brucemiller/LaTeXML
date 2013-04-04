@@ -343,7 +343,6 @@ sub parse_kludge {
 #### SEGFAULT TEST (Uncomment next line)
 ##  $self->translate_hints($document,$mathnode);
   my @nodes = $self->filter_hints($document,element_nodes($mathnode));
-
   # the 1st array in stack accumlates the nodes within the current fenced row.
   # When there's only a single array, it's single entry will be the complete row.
   my @stack=([],[]);
@@ -368,10 +367,15 @@ sub parse_kludge {
 ####  map($document->removeNode($_),@nodes);
   map($document->unRecordNodeIDs($_),element_nodes($mathnode));
   $mathnode->removeChildNodes;
-  my $kludge = $stack[0][0][0];
-  $document->appendTree($mathnode,
-	       (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
-	       ? @$kludge[2..$#$kludge] : ($kludge)); }
+  # We're hoping for a single list on the stack,
+  # But extra CLOSEs will leave extra junk behind, so process all the stacked lists.
+  my @replacements=();
+  foreach my $pair (@{ $stack[0] }){
+    my $kludge = $$pair[0];
+    push(@replacements,(ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
+         ? @$kludge[2..$#$kludge] : ($kludge)); }
+  $document->appendTree($mathnode,@replacements); }
+
 
 sub parse_kludgeScripts_rec {
   my($self,$a,$b,@more)=@_;
