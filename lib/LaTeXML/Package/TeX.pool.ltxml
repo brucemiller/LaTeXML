@@ -4995,8 +4995,8 @@ DefPrimitiveI('\j',   undef,"\x{0237}");
 
 DefConstructor('\buildrel Until:\over {}',
 	       "<ltx:XMApp role='RELOP'>"
-	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
-	       .  "<ltx:XMArg scriptpos='#scriptpos'>#2</ltx:XMArg>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+	       .  "<ltx:XMArg>#2</ltx:XMArg>"
 	       .  "<ltx:XMArg>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
 	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }});
