@@ -4571,17 +4571,25 @@ sub lookup_delimiter {
 
 # This is a little messier than you'd think.
 # These effectively create a group between the \left,\right.
+# And this also gives us a single list of things to parse separately.
+# Since \left,\right are TeX, primitives and must be paired up,
+# we use a bit of macro trickery to simulate.
+# [The \@hidden@bgroup/egroup keep from putting a {} into the UnTeX] 
+# HOWEVER, an additional complication is that it is a common mistake to omit the balancing \right!
+# Using an \egroup (or hidden) makes it hard to recover, so use a special egroup
 DefMacro('\left XToken','\@left #1\@hidden@bgroup');
-# DefMacro('\right XToken','\@hidden@egroup\@right #1');
-# However, note that it is a relatively common error to have an unbalanced \right)
-# If we let this fail within Stomach, we'll get an incomprehensible message.
-DefMacro('\right XToken',sub {
-  if($STATE->isValueBound('MODE',0) # Last stack frame was a mode switch!?!?!
-      || $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \begingroup
-    Error('unexpected','\right',undef,"Unbalanced \\right, no balancing \\left."); }
-  else {
-    (T_CS('\@hidden@egroup'),T_CS('\@right'),$_[1]); }});
+# Like \@hidden@egroup, but softer about missing \left
+DefConstructor('\right@hidden@egroup','',
+               afterDigest=>sub {
+                 my($stomach)=@_;
+                 if($STATE->isValueBound('MODE',0) # Last stack frame was a mode switch!?!?!
+                    || $STATE->lookupValue('groupNonBoxing')){ # or group was opened with \begingroup
+                   Error('unexpected','\right',undef,"Unbalanced \\right, no balancing \\left."); }
+                 else {
+                   $stomach->egroup; }},
+	      reversion=>'');
 
+DefMacro('\right XToken','\right@hidden@egroup\@right #1');
 
 DefConstructor('\@left Token',
 	       "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
@@ -4950,16 +4958,21 @@ DefConstructor('\mathopen{}', "<ltx:XMWrap role='OPEN'>#1</ltx:XMWrap>", bounded
 DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>", bounded=>1);
 DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", bounded=>1);
 
-# If we only have XMTok children and none of them has a role "script", concatenate:
+# If an XMWrap (presumably from \mathop, \mathbin, etc)
+# has multiple children, ALL are XMTok, within a restricted set of roles,
+# we want to concatenate the text content into a single XMTok.
 DefMathRewrite(xpath=>'descendant-or-self::ltx:XMWrap['
 	       # Only XMWrap's from the above class of operators
-	       .'(@role="OP" or @role="BIGOP" or @role="ADDOP" or @role="MULOP" '
-	       . 'or @role="OPEN" or @role="CLOSE" or @role="RELOP")'
+	       .'(@role="OP" or @role="BIGOP" or @role="RELOP" '
+               . 'or @role="ADDOP" or @role="MULOP" or @role="BINOP" '
+	       . 'or @role="OPEN" or @role="CLOSE")'
+               .' and count(child::*) > 1 '
 	       # with only XMTok as children with the roles in (roughly) the same set
 	       .' and not(child::*[local-name() != "XMTok"])'
 	       .' and not(ltx:XMTok['
-	       .   '@role !="OP" and @role!="BIGOP" and @role!="ADDOP" and @role!="MULOP" '
-	       .   'and @role!="OPEN" and @role!="CLOSE" and @role!="RELOP" and @role!="METARELOP"'
+	       .   '@role !="OP" and @role!="BIGOP" and @role!="RELOP" and @role!="METARELOP" '
+               .   'and @role!="ADDOP" and @role!="MULOP" and @role!="BINOP" '
+	       .   'and @role!="OPEN" and @role!="CLOSE"'
 	       .   '])]',
  replace=>sub {
    my ($document,$node) = @_;
