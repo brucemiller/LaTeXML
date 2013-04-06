@@ -3621,25 +3621,48 @@ RawTeX(' \def\loop#1\repeat{\def\body{#1}\iterate}
          \def\iterate{\body \let\next=\iterate \else\let\next=\relax\fi \next}
          \let\repeat=\fi ');
 
-DefConstructorI('\enskip',  undef,
-		"?#isMath(<ltx:XMHint name='enskip' width='#width'/>)(\x{2000})",
-		properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
-DefConstructorI('\enspace', undef,
-		"?#isMath(<ltx:XMHint name='enskip' width='#width'/>)(\x{2000})",
-		properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
-DefConstructorI('\quad',   undef,
-		"?#isMath(<ltx:XMHint name='quad' width='#width'/>)(\x{2001})",
-		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
+DefMacroI('\enskip',undef,'\ifmmode\@math@enskip\else\@text@enskip\fi');
+DefConstructorI('\@math@enskip',  undef,
+                "<ltx:XMHint name='enskip' width='#width'/>",
+                alias=>'\enskip',
+                properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
+DefPrimitiveI('\@text@enskip',  undef,"\x{2000}",alias=>'\enskip');
+
+DefMacroI('\enspace',undef,'\ifmmode\@math@espace\else\@text@enspace\fi');
+DefConstructorI('\@math@enspace', undef,
+                "<ltx:XMHint name='enskip' width='#width'/>",
+                alias=>'\enspace',
+                properties=>{isSpace=>1, width=>sub{ Dimension('0.5em'); }});
+DefPrimitiveI('\@text@enspace',  undef,"\x{2000}",alias=>'\enspace');
+
+DefMacroI('\quad',undef,'\ifmmode\@math@quad\else\@text@quad\fi');
+DefConstructorI('\@math@quad',   undef,
+                "<ltx:XMHint name='quad' width='#width'/>",
+                alias=>'\quad',
+                properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
+DefPrimitiveI('\@text@quad',  undef,"\x{2001}",alias=>'\quad');
+
 # Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
-DefConstructorI('\qquad',  undef,
-		"?#isMath(<ltx:XMHint name='qquad' width='#width'/>)(\x{2001}\x{2001})",
-		properties=>{isSpace=>1, width=>sub{ Dimension('2em'); }});
-DefConstructorI('\thinspace',   undef,
-		"?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)( )",
-		properties=>{isSpace=>1, width=>sub{ Dimension('0.16667em'); }});
-DefConstructorI('\negthinspace',undef,
-		"?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
-		properties=>{isSpace=>1, width=>sub{ Dimension('-0.16667em'); }});
+DefMacroI('\qquad',undef,'\ifmmode\@math@qquad\else\@text@qquad\fi');
+DefConstructorI('\@math@qquad',  undef,
+                "<ltx:XMHint name='qquad' width='#width'/>",
+                alias=>'\qquad',
+                properties=>{isSpace=>1, width=>sub{ Dimension('2em'); }});
+DefPrimitiveI('\@text@qquad',  undef,"\x{2001}\x{2001}",alias=>'\qquad');
+
+DefMacroI('\thinspace',undef,'\ifmmode\@math@thinspace\else\@text@thinspace\fi');
+DefConstructorI('\@math@thinspace',   undef,
+                "<ltx:XMHint name='thinspace' width='#width'/>",
+                alias=>'\thinspace', 
+                properties=>{isSpace=>1, width=>sub{ Dimension('0.16667em'); }});
+DefPrimitiveI('\@text@thinspace',  undef,"\x{2009}",alias=>'\thinspace');
+
+DefMacroI('\negthinspace',undef,'\ifmmode\@math@negthinspace\else\@text@negthinspace\fi');
+DefConstructorI('\@math@negthinspace',undef,
+                "<ltx:XMHint name='negthinspace' width='#width'/>",
+                alias=>'\negthinspace',
+                properties=>{isSpace=>1, width=>sub{ Dimension('-0.16667em'); }});
+DefPrimitiveI('\@text@negthinspace',  undef,"", alias=>'\negthinspace');
 
 DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#1'/>)(\x{2001})",
 	      properties=>{isSpace=>1});
@@ -3934,8 +3957,9 @@ our %accents
      '\r' => ["\x{030A}","o"], # COMBINING RING ABOVE & non-combining
      '\H' => ["\x{030B}","\x{02DD}"], # COMBINING DOUBLE ACUTE ACCENT & non-combining
      '\c' => ["\x{0327}",UTF(0xB8)], # COMBINING CEDILLA & CEDILLA
-     '\d' => ["\x{0323}",'.'], # COMBINING DOT BELOW & DOT (?)
-     '\b' => ["\x{0331}",UTF(0xAF)], # COMBINING MACRON BELOW  & MACRON
+# NOTE: The next two get define for math, as well; See below
+     '\@text@daccent' => ["\x{0323}",'.'], # COMBINING DOT BELOW & DOT (?)
+     '\@text@baccent' => ["\x{0331}",UTF(0xAF)], # COMBINING MACRON BELOW  & MACRON
      '\t' => ["\x{0361}","-"],	# COMBINING DOUBLE INVERTED BREVE & ???? What????
      # this one's actually defined in mathscinet.sty, but just stick it here!
      '\lfhook'=>["\x{0326}",","], # COMBINING COMMA BELOW
@@ -3944,15 +3968,21 @@ our %accents
 		);
 
 # Create a box applying an accent to a letter
+# Hopefully, we'll get a Box from digestion with a plain string.
+# Then we can apply combining accents to it.
 sub applyAccent {
   my($stomach,$letter,$combiningchar,$standalonechar,$reversion)=@_;
-  $letter = Expand($letter);
-  my @letters = map(($_ eq '\i' ? 'i': ($_ eq '\j' ? 'j' : $_)),
-		    map(ToString($_), ($letter ? $letter->unlist : ())));
-  if(!scalar(@letters) || ((scalar(@letters)==1) && ($letters[0] eq '\ '))){
-    Box($standalonechar,undef,undef,$reversion); }
-  else { # Put the accent AFTER the first char(?)
-    Box(NFC($letters[0].$combiningchar.join('',@letters[1..$#letters])),undef,undef,$reversion); }}
+  my $box = Digest($letter);
+  my $locator = $box->getLocator;
+  my $font    = $box->getFont;
+  my $string  = $box->toString;
+  $string =~ tr/\x{0131}\x{0237}/ij/;
+  $string =~ s/\s/ /g;
+  my @letters = split(//,$string);
+  Box( ($string =~ /^\s*$/
+        ? $standalonechar
+        : NFC($letters[0].$combiningchar.join('',@letters[1..$#letters]))),
+       $font,$locator,$reversion); }
 
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
@@ -3960,7 +3990,8 @@ sub DefAccent {
   my ($accent, $combiningchar, $standalonechar) = @_;
   DefPrimitive($accent."{}", sub {
     my($stomach,$letter)=@_;
-    applyAccent($stomach,$letter,$combiningchar, $standalonechar, Invocation($accent,$letter)); });
+    applyAccent($stomach,$letter,$combiningchar, $standalonechar, Invocation($accent,$letter)); },
+               mode=>'text');
 }
 
 foreach my $accent (keys %accents) {
@@ -3974,13 +4005,45 @@ DefPrimitive('\accent Number {}',sub {
   my $fontinfo = LookupValue('fontinfo_'.$fam.'_text');
   my $acc = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n,$$fontinfo{encoding}) : chr($n));
   my $reversion = Invocation(T_CS('\accent'),$num,$letter);
-  # Reverse lookup of the non-spacing accent char
+  # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
   my($entry) = $acc && grep($acc eq $$_[1], values %accents);
   if($entry){
     applyAccent($stomach,$letter,@$entry,$reversion); }
   else {
     Warn('unexpected',"accent$n",$stomach,"Accent '$n' not recognized");
     Box(ToString($letter),undef,undef,$reversion); }});
+
+# Note that these two apparently work in Math? BUT the argument is treated as text!!!
+DefMacro('\d{}','\ifmmode\@math@daccent{#1}\else\@text@daccent{#1}\fi');
+DefMacro('\b{}','\ifmmode\@math@baccent{#1}\else\@text@baccent{#1}\fi');
+
+DefConstructor('\@math@daccent {}',
+	       "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
+               .  "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
+               ."</ltx:XMApp>",
+               mode=>'text', alias=>'\d',
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $arg = $whatsit->getArg(1);
+                 if($arg->isMath){
+                   $whatsit->setProperty(matharg=>$arg->getBody); }
+                 else {
+                   $whatsit->setProperty(textarg=>$arg); };
+		 return; });
+
+DefConstructor('\@math@baccent {}',
+	       "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>".UTF(0xAF)."</ltx:XMTok>"
+               .  "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
+               ."</ltx:XMApp>",
+               mode=>'text', alias=>'\b',
+	       afterDigest=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my $arg = $whatsit->getArg(1);
+                 if($arg->isMath){
+                   $whatsit->setProperty(matharg=>$arg->getBody); }
+                 else {
+                   $whatsit->setProperty(textarg=>$arg); };
+		 return; });
 
 #======================================================================
 # TeX Book, Appendix B. p. 357
@@ -3993,27 +4056,56 @@ Let(T_CS('\bye'),T_CS('\end'));
 
 Let(T_CS('\sp'),T_SUPER);
 Let(T_CS('\sb'),T_SUB);
-DefConstructorI('\,',undef,
-		"?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
-		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip'); }});
-DefConstructorI('\!',undef,
-		"?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
-		properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip')->negate; }});
-DefConstructorI('\>',undef,
-		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
-		properties=>{isSpace=>1, width=>sub{ LookupValue('\medmuskip'); }});
-DefConstructorI('\;',undef,
-		"?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
-		properties=>{isSpace=>1, width=>sub{ LookupValue('\thickmuskip'); }});
+
+DefMacroI('\,',undef, '\ifmmode\@math@thinmuskip\else\@text@thinmuskip\fi');
+DefConstructorI('\@math@thinmuskip',undef,
+                "<ltx:XMHint name='thinspace' width='#width'/>",
+                alias=>'\,',
+                properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip'); }});
+DefPrimitiveI('\@text@thinmuskip',undef,"\x{2009}",alias=>'\,');
+
+DefMacroI('\!',undef, '\ifmmode\@math@negthinmuskip\else\@text@negthinmuskip\fi');
+DefConstructorI('\@math@negthinmuskip',undef,
+                "<ltx:XMHint name='negthinspace' width='#width'/>",
+		alias=>'\!',
+                properties=>{isSpace=>1, width=>sub{ LookupValue('\thinmuskip')->negate; }});
+DefPrimitiveI('\@text@negthinmuskip',undef,"",alias=>'\!');
+
+DefMacroI('\>',undef, '\ifmmode\@math@medmuskip\else\@text@medmuskip\fi');
+DefConstructorI('\@math@medmuskip',undef,
+		"<ltx:XMHint name='medspace' width='#width'/>",
+		alias=>'\>',
+                properties=>{isSpace=>1, width=>sub{ LookupValue('\medmuskip'); }});
+DefPrimitiveI('\@text@medmuskip',undef,"",alias=>'\>');
+
+DefMacroI('\;',undef, '\ifmmode\@math@thickmuskip\else\@text@thickmuskip\fi');
+DefConstructorI('\@math@thickmuskip',undef,
+		"<ltx:XMHint name='thickspace' width='#width'/>",
+		alias=>'\;',
+                properties=>{isSpace=>1, width=>sub{ LookupValue('\thickmuskip'); }});
+DefPrimitiveI('\@text@thickmuskip',undef,"\x{2004}",alias=>'\;');
+
 Let(T_CS('\:'),T_CS('\>'));
-DefConstructorI('\ ',undef,
-		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)(".UTF(0xA0).")",
+DefMacroI('\ ',undef, '\ifmmode\@math@nbspace\else\@text@nbspace\fi');
+DefConstructorI('\@math@nbspace',undef,
+		"<ltx:XMHint name='medspace' width='#width'/>",
+		alias=>'\ ',
+                properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
+DefPrimitiveI('\@text@nbspace',undef,UTF(0xA0),alias=>'\ ');
+
+DefMacroI('\	',undef, '\ifmmode\@math@tab\else\@text@tab\fi');
+DefConstructorI('\@math@tab',undef, # Tab!!
+		"<ltx:XMHint name='medspace' width='#width'/>",
+                alias=>'\	', # TAB
 		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
-DefConstructorI('\	',undef, # Tab!!
-		"?#isMath(<ltx:XMHint name='medspace' width='#width'/>)(".UTF(0xA0).")",
-		properties=>{isSpace=>1, width=>sub{ Dimension('1em'); }});
-DefConstructorI('\/',undef,"?#isMath(<ltx:XMHint name='italiccorr'/>)()",
-	      properties=>{isSpace=>1});
+DefPrimitiveI('\@text@tab',undef,UTF(0xA0),alias=>'\	'); # TAB!!! What else?
+
+DefMacroI('\/',undef, '\ifmmode\@math@italiccorr\else\@text@italiccorr\fi');
+DefConstructorI('\@math@italiccorr',undef,
+                "<ltx:XMHint name='italiccorr'/>",
+                alias=>'\/',
+                properties=>{isSpace=>1});
+DefPrimitiveI('\@text@italiccorr',undef,"",alias=>'\/');
 
 # What kind of magic might allow \mskip to translate these back into the above?
 DefMacroI('\thinmuskip',undef, "3 mu");
