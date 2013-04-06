@@ -276,7 +276,7 @@ sub filter_hints {
 # Given a width attribute on an XMHint, return the pts, if any
 sub getXMHintSpacing {
   my($width)=@_;
-  if($width=~/^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/){
+  if($width && ($width=~/^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)){
     ($2 eq 'mu' ? $1/1.8 : $1); }
   else { 0; }}
 
