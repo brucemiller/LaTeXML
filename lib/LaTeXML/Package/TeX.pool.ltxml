@@ -2825,6 +2825,8 @@ Let(T_CS('\leqno'),T_CS('\eqno'));
 DefConstructor('\@@eqno{}',"^ refnum='#eqnum'",
 	       reversion=>'',
 	      afterDigest=>sub { my $num = ToString($_[1]->getArg(1));
+                                 # special purpose cleanup!?!?!
+				 $num=~ s/^\\hbox\{(.*)\}$/$1/;
 				 $num=~ s/^\{(.*)\}$/$1/;
 				 $num=~ s/^\((.*)\)$/$1/;
 				 $_[1]->setProperties(eqnum=>$num); });
