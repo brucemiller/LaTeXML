@@ -355,7 +355,8 @@ sub pmml_internal {
   elsif($tag eq 'ltx:XMHint'){
     &{ lookupPresenter('Hint',$role,$node->getAttribute('meaning')) }($node); }
   elsif($tag eq 'ltx:XMArray'){
-    my $style = $node->getAttribute('mathstyle');
+    my $style   = $node->getAttribute('mathstyle');
+    my $vattach = $node->getAttribute('vattach');
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
     local $LaTeXML::MathML::STYLE 
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
@@ -375,7 +376,7 @@ sub pmml_internal {
 			     ($rs ? (rowspan=>$rs):())},
 		    map(pmml($_),element_nodes($col))]); }
       push(@rows,['m:mtr',{},@cols]); }
-    my $result = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em"},@rows];
+    my $result = ['m:mtable',{rowspacing=>"0.2ex", columnspacing=>"0.4em",align=>$vattach},@rows];
     $result = ['m:mstyle',{@$styleattr},$result] if $styleattr;
     $result; }
   elsif($tag eq 'ltx:XMText'){
@@ -750,11 +751,24 @@ sub pmml_text_aux {
     if(my $opacity = $node->getAttribute('opacity'))        { $attr{opacity} = $opacity; }
     my $tag = getQName($node);
     if($tag eq 'ltx:Math'){
-      my $xmath = $LaTeXML::Post::DOCUMENT->findnode('ltx:XMath',$node);
-      # NOTE BUG!!! we're not passing through the context... (but maybe pick it up anyway)
-      ($xmath ? pmml($xmath) : ()); }
-    else {			# Just recurse on raw content????
-      map(pmml_text_aux($_,%attr), $node->childNodes); }}
+      # [NOTE BUG!!! we're not passing through the context... (but maybe pick it up anyway)]
+      # If XMath still there, convert it now.
+      if(my $xmath = $LaTeXML::Post::DOCUMENT->findnode('ltx:XMath',$node)){
+        pmml($xmath); }
+      # Otherwise, may already have gotten converted ? return that
+      elsif(my $mml = $LaTeXML::Post::DOCUMENT->findnode('m:math',$node)){
+        $mml->childNodes; }
+      else {                    # ???
+        (); }}
+    elsif($tag eq 'ltx:text'){  # ltx:text element is fine, if we can manage the attributes!
+      map(pmml_text_aux($_,%attr), $node->childNodes); }
+    else {
+      # We could just recurse on raw content like this, but it loses a lot...
+      ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
+      # So, let's just include the raw latexml markup, let the xslt convert it
+      # And hope that the ultimate agent can deal with it!
+      my($ignore,%mmlattr)=stylizeContent($node,0,%attr);
+      ['m:mtext', {%mmlattr}, $node]; }}
   else {
     (); }}
 
