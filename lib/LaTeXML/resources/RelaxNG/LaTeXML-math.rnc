@@ -253,6 +253,7 @@ element XMText { XMText_attributes, XMText_model }
 XMText_attributes = 
   Common.attributes,
   XMath.attributes,
+  Backgroundable.attributes,
   ID.attributes,
   
   ## An encoding of the position of this token as a sub/superscript, used
@@ -275,6 +276,7 @@ element XMWrap { XMWrap_attributes, XMWrap_model }
 XMWrap_attributes = 
   Common.attributes,
   XMath.attributes,
+  Backgroundable.attributes,
   ID.attributes,
 
   attribute name { text }?,
@@ -373,7 +375,10 @@ XMRow =
 element XMRow { XMRow_attributes, XMRow_model }
 
 ## Attributes for \elementref{XMRow}.
-XMRow_attributes =  Common.attributes
+XMRow_attributes =
+  Common.attributes,
+  Backgroundable.attributes,
+  ID.attributes
 
 ## Content model for \elementref{XMRow}.
 XMRow_model = XMCell*
@@ -387,6 +392,8 @@ element XMCell { XMCell_attributes, XMCell_model }
 ## Attributes for \elementref{XMCell}.
 XMCell_attributes = 
   Common.attributes,
+  Backgroundable.attributes,
+  ID.attributes,
 
   ## indicates how many columns this cell spans or covers.
   attribute colspan { xsd:nonNegativeInteger }?,

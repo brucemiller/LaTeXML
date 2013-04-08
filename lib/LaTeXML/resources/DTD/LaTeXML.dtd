@@ -407,7 +407,9 @@
   hidden CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
-<!ELEMENT ltx:equation (ltx:Math|ltx:MathFork|ltx:text|ltx:tabular
+<!ELEMENT ltx:equation (ltx:Math|ltx:MathFork|ltx:text|ltx:inline-block
+                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
+                        |ltx:inline-para|ltx:tabular|ltx:picture
                         |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
                         |ltx:ERROR|ltx:resource|ltx:navigation
                         |ltx:constraint)*>
@@ -1744,6 +1746,7 @@
   lspace CDATA #IMPLIED
   rspace CDATA #IMPLIED
   possibleFunction CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   scriptpos CDATA #IMPLIED>
 
@@ -1778,6 +1781,7 @@
   lspace CDATA #IMPLIED
   rspace CDATA #IMPLIED
   possibleFunction CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   name CDATA #IMPLIED
   meaning CDATA #IMPLIED
@@ -1907,7 +1911,9 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT ltx:XMCell (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
                       |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
@@ -1929,6 +1935,8 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  backgroundcolor CDATA #IMPLIED
+  xml:id ID #IMPLIED
   colspan CDATA #IMPLIED
   rowspan CDATA #IMPLIED
   align CDATA #IMPLIED
