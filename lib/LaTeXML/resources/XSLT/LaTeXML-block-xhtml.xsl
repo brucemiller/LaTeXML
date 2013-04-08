@@ -196,7 +196,12 @@
 	<xsl:apply-templates select="@refnum"/>
       </xsl:if>
       <xsl:element name="span" namespace="{$html_ns}">
-	<xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text" />
+        <!-- This should cover: ltx:Math, ltx:MathFork, ltx:text & Misc
+             (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
+	<xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text
+                                     | ltx:inline-block | ltx:verbatim | ltx:break 
+                                     | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
+                                     | ltx:tabular | ltx:picture" />
       </xsl:element>
       <xsl:if test="@refnum and $eqnopos='right'">
 	<xsl:apply-templates select="@refnum"/>
@@ -586,7 +591,13 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	    <xsl:if test="$ncolumns > 1">
 	      <xsl:attribute name="colspan"><xsl:value-of select="$ncolumns"/></xsl:attribute>
 	    </xsl:if>
-	    <xsl:apply-templates select="ltx:Math | ltx:text"/>
+            <!-- Hopefully, ltx:MathFork has been handled by the above cases;
+                 This should cover: ltx:Math, ltx:text & Misc
+                 (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
+            <xsl:apply-templates select="ltx:Math | ltx:text
+                                         | ltx:inline-block | ltx:verbatim | ltx:break 
+                                         | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
+                                         | ltx:tabular | ltx:picture" />
 	  </xsl:element>
 	  <xsl:call-template name="eq-right"/>
 	</xsl:element>
