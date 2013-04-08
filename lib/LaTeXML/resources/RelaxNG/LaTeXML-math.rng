@@ -360,6 +360,7 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <a:documentation>Attributes for \elementref{XMText}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
       <attribute name="scriptpos">
@@ -393,6 +394,7 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <a:documentation>Attributes for \elementref{XMWrap}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
+    <ref name="Backgroundable.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
       <attribute name="name"/>
@@ -536,6 +538,8 @@ such as the OpenMath name.</a:documentation>
   <define name="XMRow_attributes">
     <a:documentation>Attributes for \elementref{XMRow}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+    <ref name="ID.attributes"/>
   </define>
   <define name="XMRow_model">
     <a:documentation>Content model for \elementref{XMRow}.</a:documentation>
@@ -554,6 +558,8 @@ such as the OpenMath name.</a:documentation>
   <define name="XMCell_attributes">
     <a:documentation>Attributes for \elementref{XMCell}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+    <ref name="ID.attributes"/>
     <optional>
       <attribute name="colspan">
         <a:documentation>indicates how many columns this cell spans or covers.</a:documentation>
