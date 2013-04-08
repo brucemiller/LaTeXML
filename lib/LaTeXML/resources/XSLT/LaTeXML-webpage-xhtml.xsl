@@ -130,6 +130,12 @@
   <xsl:template match="*" mode="visible-text"><xsl:apply-templates mode="visible-text"/></xsl:template>
   <xsl:template match="ltx:indexphrase" mode="visible-text"/>
 
+  <xsl:template match="ltx:tag" mode="visible-text">
+    <xsl:if test="@open"><xsl:value-of select="@open"/></xsl:if>
+    <xsl:apply-templates mode="visible-text"/>
+    <xsl:if test="@close"><xsl:value-of select="@close"/></xsl:if>
+  </xsl:template>
+
   <!-- Generate an identifier for the "generator", ie. program that created these files-->
   <xsl:template match="/" mode="head-generator-identifier">
     <xsl:text>&#x0A;</xsl:text>
