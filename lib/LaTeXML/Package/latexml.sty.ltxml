@@ -68,6 +68,20 @@ DefMacro('\LXMRef{}','\@XMRef{#1}');
 # class related features
 Let(T_CS('\lxAddClass'),T_CS('\@ADDCLASS'));
 
+DefConstructor('\lxAddClass Semiverbatim',sub {
+  addClass($_[0]->getElement,ToString($_[1])); });
+
+DefConstructor('\lxWithClass Semiverbatim {}',sub {
+  my($document,$class,$box)=@_;
+  my $context = $document->getElement; # Where we originally start inserting.
+  my @nodes=();
+  if(isTextNode($document->getNode)){
+    push(@nodes,$document->openElement('ltx:text')); }
+  push(@nodes,$document->absorb($box));
+  @nodes = $document->filterChildren($document->filterDeletions(@nodes));
+  $document->closeToNode($context);
+  addClass($nodes[0],ToString($class)) if @nodes; });
+
 #======================================================================
 # links
 # Similar to stuff from hyperref, but more straightforward
