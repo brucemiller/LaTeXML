@@ -1,0 +1,85 @@
+\documentclass{article}
+\usepackage{graphics}
+% Various wierdnesses about vertical mode, centering and such.
+\begin{document}
+
+\section{Nesting hbox \& vbox}
+\hbox{a b c d}
+
+\hbox{\hbox{a}\hbox{b}\hbox{c}\hbox{d}}
+
+\hbox{\vbox{a}\vbox{b}\vbox{c}\vbox{d}}
+
+\vbox{a b c d}
+
+\vbox{\hbox{a}\hbox{b}\hbox{c}\hbox{d}}
+
+\vbox{\vbox{a}\vbox{b}\vbox{c}\vbox{d}}
+
+\section{parbox and minipage}
+
+\parbox{2in}{%
+  \hbox{hbox1}\vbox{vbox1}\hbox{hbox2}\hbox{hbox3}\vbox{vbox2}}
+
+\begin{minipage}{2in}
+This is random text. This is random text.
+This is random text. This is random text. This is random text.
+\begin{itemize}
+\item One
+\item Two
+\item Three
+\end{itemize}
+This is random text. This is random text.
+This is random text. This is random text. This is random text.
+\end{minipage}
+
+
+\section{Centering}
+
+\begin{center}
+This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.
+\end{center}
+
+\begin{center}
+This is random text. This is random text. This is random text.
+
+This is random text. This is random text. This is random text.
+
+This is random text. This is random text. This is random text.
+\end{center}
+
+
+\begin{center}
+\includegraphics{foo.png}
+\bigskip
+
+c) Parabolic cylinder, \,$x^2 = 2pz$;\, it is a developable surface. \\
+Signatures: blah $x$, $y$)
+\end{center}
+
+\begin{figure}
+\begin{center}
+\includegraphics{foo}
+\caption{This is random text. This is random text. This is random text.}
+\end{center}
+\end{figure}
+
+\begin{figure}
+\begin{center}
+A Figure line\\
+Another Figure line\\
+Yet another Figure line\\
+\caption{Figure: This is a figure.} 
+\end{center}
+\end{figure}
+
+
+\section{Graphics rescaling}
+\includegraphics{foo}
+
+\scalebox{3}[2]{\includegraphics{foo}}
+
+\end{document}

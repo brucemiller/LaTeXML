@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="graphics"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Nesting hbox &amp; vbox</title>
+    <para xml:id="S1.p1">
+      <p xml:id="S1.p1.1">a b c d</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p xml:id="S1.p2.1">abcd</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p xml:id="S1.p3.1"><inline-block vattach="bottom" xml:id="S1.p3.1.1"><p xml:id="S1.p3.1.1.1">a</p></inline-block><inline-block vattach="bottom" xml:id="S1.p3.1.2"><p xml:id="S1.p3.1.2.1">b</p></inline-block><inline-block vattach="bottom" xml:id="S1.p3.1.3"><p xml:id="S1.p3.1.3.1">c</p></inline-block><inline-block vattach="bottom" xml:id="S1.p3.1.4"><p xml:id="S1.p3.1.4.1">d</p></inline-block></p>
+    </para>
+    <para xml:id="S1.p4">
+      <p xml:id="S1.p4.1.1" vattach="bottom">a b c d</p>
+    </para>
+    <para xml:id="S1.p5">
+      <inline-block vattach="bottom" xml:id="S1.p5.1">
+        <p xml:id="S1.p5.1.1">a</p>
+        <p xml:id="S1.p5.1.2">b</p>
+        <p xml:id="S1.p5.1.3">c</p>
+        <p xml:id="S1.p5.1.4">d</p>
+      </inline-block>
+    </para>
+    <para xml:id="S1.p6">
+      <inline-block vattach="bottom" xml:id="S1.p6.1">
+        <p xml:id="S1.p6.1.1.1" vattach="bottom">a</p>
+        <p xml:id="S1.p6.1.2.1" vattach="bottom">b</p>
+        <p xml:id="S1.p6.1.3.1" vattach="bottom">c</p>
+        <p xml:id="S1.p6.1.4.1" vattach="bottom">d</p>
+      </inline-block>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>parbox and minipage</title>
+    <para xml:id="S2.p1">
+      <inline-block xml:id="S2.p1.1">
+        <p xml:id="S2.p1.1.1" width="144.54pt">hbox1</p>
+        <p xml:id="S2.p1.1.2.1" vattach="bottom" width="144.54pt">vbox1</p>
+        <p xml:id="S2.p1.1.3" width="144.54pt">hbox2</p>
+        <p xml:id="S2.p1.1.4" width="144.54pt">hbox3</p>
+        <p xml:id="S2.p1.1.5.1" vattach="bottom" width="144.54pt">vbox2</p>
+      </inline-block>
+    </para>
+    <para xml:id="S2.p2">
+      <inline-block xml:id="S2.p2.1">
+        <p xml:id="S2.p2.1.1" width="144.54pt">This is random text. This is random text.
+This is random text. This is random text. This is random text.</p>
+        <itemize xml:id="I1">
+          <item xml:id="I1.i1">
+            <para xml:id="I1.i1.p1">
+              <p xml:id="I1.i1.p1.1">One</p>
+            </para>
+          </item>
+          <item xml:id="I1.i2">
+            <para xml:id="I1.i2.p1">
+              <p xml:id="I1.i2.p1.1">Two</p>
+            </para>
+          </item>
+          <item xml:id="I1.i3">
+            <para xml:id="I1.i3.p1">
+              <p xml:id="I1.i3.p1.1">Three</p>
+            </para>
+          </item>
+        </itemize>
+        <p xml:id="S2.p2.1.2" width="144.54pt">This is random text. This is random text.
+This is random text. This is random text. This is random text.</p>
+      </inline-block>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag close=" ">3</tag>Centering</title>
+    <para xml:id="S3.p1">
+      <p xml:id="S3.p1.1.1" align="center">This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.
+This is random text. This is random text. This is random text.</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p xml:id="S3.p2.1.1" align="center">This is random text. This is random text. This is random text.
+<break/>
+This is random text. This is random text. This is random text.
+<break/>
+This is random text. This is random text. This is random text.</p>
+    </para>
+    <para xml:id="S3.p3">
+      <inline-block xml:id="S3.p3.1">
+        <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p3.1.g1" class="ltx_centering"/>
+        <p xml:id="S3.p3.1.1" align="center">c) Parabolic cylinder,  <Math mode="inline" xml:id="S3.p3.1.1.m1" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z"><XMath xml:id="S3.p3.1.1.m1.1"><XMApp xml:id="S3.p3.1.1.m1.1.7"><XMTok meaning="equals" role="RELOP" xml:id="S3.p3.1.1.m1.1.3">=</XMTok><XMApp xml:id="S3.p3.1.1.m1.1.7.1"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S3.p3.1.1.m1.1.7.1.1"/><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.1" font="italic">x</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.2.1">2</XMTok></XMApp><XMApp xml:id="S3.p3.1.1.m1.1.7.2"><XMTok meaning="times" role="MULOP" xml:id="S3.p3.1.1.m1.1.7.2.1">⁢</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.4">2</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.5" font="italic">p</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.6" font="italic">z</XMTok></XMApp></XMApp></XMath></Math>;  it is a developable surface. <break/>
+Signatures: blah <Math mode="inline" xml:id="S3.p3.1.1.m2" tex="x" text="x"><XMath xml:id="S3.p3.1.1.m2.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m2.1.1" font="italic">x</XMTok></XMath></Math>, <Math mode="inline" xml:id="S3.p3.1.1.m3" tex="y" text="y"><XMath xml:id="S3.p3.1.1.m3.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m3.1.1" font="italic">y</XMTok></XMath></Math>)</p>
+      </inline-block>
+    </para>
+    <figure frefnum="Figure 1" refnum="1" xml:id="S3.F1">
+      <graphics candidates="foo.png" graphic="foo" xml:id="S3.F1.g1" class="ltx_centering"/>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>This is random text. This is random text. This is random text.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is random text. This is random text. This is random text.</caption>
+    </figure>
+    <figure frefnum="Figure 2" refnum="2" xml:id="S3.F2">
+      <p xml:id="S3.F2.1" align="center">A Figure line<break/>
+Another Figure line<break/>
+Yet another Figure line<break/></p>
+      <toccaption class="ltx_centering"><tag close=" ">2</tag>Figure: This is a figure.</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Figure 2</tag>Figure: This is a figure.</caption>
+    </figure>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag close=" ">4</tag>Graphics rescaling</title>
+    <para xml:id="S4.p1">
+      <graphics candidates="foo.png" graphic="foo" xml:id="S4.p1.g1"/>
+    </para>
+    <para xml:id="S4.p2">
+      <graphics candidates="foo.png" graphic="foo" xml:id="S4.p2.1.g1" options="xscale=3,yscale=2"/>
+    </para>
+  </section>
+</document>

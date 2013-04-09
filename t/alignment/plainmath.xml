@@ -78,7 +78,7 @@
   </para>
   <para xml:id="id2">
     <equation xml:id="id2.1">
-      <Math mode="display" xml:id="id2.1.1" tex="s(x)=\cases{+1&amp;\hbox{whatever}\cr-1&amp;\hbox{$x&lt;0$}\cr 0}" text="s * x = cases[[+ 1, [whatever]], [- 1, [lessx0]], [0, ]]">
+      <Math mode="display" xml:id="id2.1.1" tex="s(x)=\cases{+1&amp;\hbox{whatever}\cr-1&amp;\hbox{$x&lt;0$}\cr 0}" text="s * x = cases[[+ 1, [whatever]], [- 1, x less 0], [0, ]]">
         <XMath xml:id="id2.1.1.1">
           <XMApp xml:id="id2.1.1.1.7">
             <XMTok meaning="equals" role="RELOP" xml:id="id2.1.1.1.5">=</XMTok>
@@ -107,17 +107,11 @@
                   </XMApp>
                 </XMCell>
                 <XMCell align="left">
-                  <XMText xml:id="id2.1.1.1.6.4">
-                    <Math mode="inline" tex="x&lt;0" text="x less 0" xml:id="id2.1.1.1.6.4.1.1">
-                      <XMath xml:id="id2.1.1.1.6.4.1.1.1">
-                        <XMApp xml:id="id2.1.1.1.6.4.1.1.1.4">
-                          <XMTok meaning="less-than" role="RELOP" xml:id="id2.1.1.1.6.4.1.1.1.2">&lt;</XMTok>
-                          <XMTok role="UNKNOWN" xml:id="id2.1.1.1.6.4.1.1.1.1" font="italic">x</XMTok>
-                          <XMTok meaning="0" role="NUMBER" xml:id="id2.1.1.1.6.4.1.1.1.3">0</XMTok>
-                        </XMApp>
-                      </XMath>
-                    </Math>
-                  </XMText>
+                  <XMApp xml:id="id2.1.1.1.6.4">
+                    <XMTok meaning="less-than" role="RELOP" xml:id="id2.1.1.1.6.4.1.1.1.2">&lt;</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="id2.1.1.1.6.4.1.1.1.1" font="italic">x</XMTok>
+                    <XMTok meaning="0" role="NUMBER" xml:id="id2.1.1.1.6.4.1.1.1.3">0</XMTok>
+                  </XMApp>
                 </XMCell>
               </XMRow>
               <XMRow>
