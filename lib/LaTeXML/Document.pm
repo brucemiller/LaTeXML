@@ -56,7 +56,16 @@ sub getModel    { $_[0]->{model}; }
 #   XML_TEXT_NODE     if the last insertion was text
 # The other node types will not appear here.
 sub getNode     { $_[0]->{node}; }
-sub setNode     { $_[0]->{node} = $_[1]; }
+sub setNode     {
+  my($self,$node)=@_;
+  my $type = $node->nodeType;
+  if($type == XML_DOCUMENT_FRAG_NODE){ # Whoops
+    my @n = $node->childNodes;
+    if(@n != 1){
+      Error('unexpected','multiple-nodes',$self,
+            "Cannot set insertion point to a DOCUMENT_FRAG_NODE",$node); }
+    $node=$n[0]; }
+  $$self{node} = $node; }
 
 sub getLocator {
   my($self,@args)=@_;
@@ -248,47 +257,87 @@ sub finalize_rec {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #**********************************************************************
-# absorb a given object into the DOM.
+# absorb the given $box into the DOM (called from constructors).
+# This will return a list of whatever nodes were created.
+# Note that this may include nodes that are children of other nodes in the list
+# or nodes that are no longer in the document.
+# Also, note that when a text nodes is appended to, the complete text node is in the list,
+# not just the portion that was added.
+# [Note that recording the nodes being constructed isn't all that costly,
+# but filtering them for parent/child relations IS, particularly since it usually isn't needed]
+#
+# A $box that is a Box, or List, or Whatsit, is responsible for carrying out
+# its own insertion, but it should ultimately call methods of Document
+# that will record the nodes that were created.
+# $box can also be a plain string which will be inserted according to whatever
+# font, mode, etc, are in %props.
 sub absorb {
-  my($self,$box)=@_;
+  my($self,$box,%props)=@_;
+  # Nothing? Skip it
   if(!defined $box){}
+  # A Proper Box or List or Whatsit? It will handle it.
   elsif(ref $box){
-    local $LaTeXML::BOX = $box;
-    $box->beAbsorbed($self); }
-  # The following handle inserting raw strings, presumably within the context of some constructor?
-  elsif(!$LaTeXML::BOX->isMath){
-    $self->openText_internal($box); }
-  # Note that in math mode text nodes appear ONLY in <XMTok> or <text>!!!
-  elsif($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
-    print STDERR "Appending text \"$box\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
-      if $LaTeXML::Document::DEBUG;
-#    $$self{node}->appendText($box); 
+    { local $LaTeXML::BOX = $box;
+      # [ATTEMPT to] only record if we're running in NON-VOID context.
+      # [but wantarray seems defined MUCH more than I would have expected!?]
+      if($LaTeXML::RECORDING_CONSTRUCTION || defined wantarray){
+        my @n = ();
+        { local $LaTeXML::RECORDING_CONSTRUCTION = 1;
+          local @LaTeXML::CONSTRUCTED_NODES = ();
+          $box->beAbsorbed($self);
+          @n=@LaTeXML::CONSTRUCTED_NODES; } # These were created just now
+        map($self->recordConstructedNode($_), @n); # record these for OUTER caller!
+        return @n; }                               # but return only the most recent set.
+      else {
+        $box->beAbsorbed($self); }}}
+  # Else, plain string in text mode.
+  elsif(!$props{isMath}){
+    $self->openText($box,$props{font}); }
+  # Or plain string in math mode.
+  # Note text nodes can ONLY appear in <XMTok> or <text>!!!
+  # Have we already opened an XMTok? Then insert into it.
+  elsif($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){
     $self->openMathText_internal($box); }
-  else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
+  # Else create the XMTok now.
+  else {
     # Odd case: constructors that work in math & text can insert raw strings in Math mode.
-    $self->insertMathToken($box,font=>$LaTeXML::BOX->getFont); }}
+    $self->insertMathToken($box,font=>$props{font}); }}
 
-sub absorbText {
-  my($self,$string,$font)=@_;
-  if(!$LaTeXML::BOX->isMath){
-    $self->openText($string,$font); }
-  # Note that in math mode text nodes appear ONLY in <XMTok> or <text>!!!
-  # DO we have to worry about matching the font???
-  elsif($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME){ # Already in a XMTok, just insert the text
-    print STDERR "Appending text \"$string\" to $MATH_TOKEN_NAME ".Stringify($$self{node})."\n"
-      if $LaTeXML::Document::DEBUG;
-    $self->openMathText_internal($string); }
-  else {			# Shouldn't happen?  Should I distinguish space from `real' stuff?
-    # Odd case: constructors that work in math & text can insert raw strings in Math mode.
-    $self->insertMathToken($string,font=>$font); }}
+# Note that a box has been absorbed creating $node;
+# This does book keeping so that we can return the sequence of nodes
+# that were added by absorbing material.
+sub recordConstructedNode {
+  my($self,$node)=@_;
+  if((defined $LaTeXML::RECORDING_CONSTRUCTION) # If we're recording!
+     && (!@LaTeXML::CONSTRUCTED_NODES           # and this node isn't already recorded
+         || !$node->isSameNode($LaTeXML::CONSTRUCTED_NODES[$#LaTeXML::CONSTRUCTED_NODES]))){
+    push(@LaTeXML::CONSTRUCTED_NODES,$node); }}
 
+sub filterDeletions {
+  my($self,@nodes)=@_;
+  my $doc = $$self{document};
+  # This test seems to successfully determine inclusion,
+  # without requiring the (dangerous? & dubious?) unbindNode to be used.
+  grep( isDescendantOrSelf($_,$doc), @nodes); }
+
+ # Given a list of nodes such as from ->absorb,
+ # filter out all the nodes that are children of other nodes in the list.
+sub filterChildren {
+  my($self,@node)=@_;
+  #  return @node;
+  #  return ();
+  return () unless @node;
+  my @n= (shift(@node));
+  foreach my $n (@node){
+    push(@n,$n) unless grep { isDescendantOrSelf($n,$_); } @n; }
+  @n; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Shorthand for open,absorb,close, but returns the new node.
 sub insertElement {
   my($self,$qname,$content,%attrib)=@_;
- my $node = $self->openElement($qname,%attrib);
+  my $node = $self->openElement($qname,%attrib);
   if(ref $content eq 'ARRAY'){
     map($self->absorb($_), @$content); }
   elsif(defined $content){
@@ -343,7 +392,7 @@ sub insertPI {
   if($$self{node}->nodeType == XML_DOCUMENT_NODE){
     push(@{$$self{pending}}, $pi); }
   else {
-    $$self{node}->appendChild($pi); }
+    $$self{document}->insertBefore($pi,$$self{document}->documentElement); }
   $pi; }
 
 #**********************************************************************
@@ -351,7 +400,6 @@ sub insertPI {
 # Handlers for various construction operations.
 # General naming: 'open' opens a node at current pos and sets it to current,
 # 'close' closes current node(s), inserts opens & closes, ie. w/o moving current
-
 
 # Tricky: Insert some text in a particular font.
 # We need to find the current effective -- being the closest  _declared_ font,
@@ -375,26 +423,28 @@ sub openText {
 
   if(($t != XML_DOCUMENT_NODE) # If not at document begin
      && !(($t == XML_TEXT_NODE) && # And not appending text in same font.
-	  ($font->distance($self->getNodeFont($node->parentNode))==0))){
+          ($font->distance($self->getNodeFont($node->parentNode))==0))){
     # then we'll need to do some open/close to get fonts matched.
     $node = $self->closeText_internal; # Close text node, if any.
     my ($bestdiff,$closeto)=(99999,$node);
     my $n = $node;
     while($n->nodeType != XML_DOCUMENT_NODE){
       my $d = $font->distance($self->getNodeFont($n));
-#print STDERR "Font Compare: ".Stringify($n)." w/font=".Stringify($self->getNodeFont($n))." ==>$d\n";
+      #print STDERR "Font Compare: ".Stringify($n)." w/font=".Stringify($self->getNodeFont($n))." ==>$d\n";
 
       if($d < $bestdiff){
-	$bestdiff = $d;
-	$closeto = $n;
-	last if ($d == 0); }
+        $bestdiff = $d;
+        $closeto = $n;
+        last if ($d == 0); }
       last unless ($$self{model}->getNodeQName($n) eq $FONT_ELEMENT_NAME) && !$n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
     $$self{node} = $closeto if $closeto ne $node;	# Move to best starting point for this text.
     $self->openElement($FONT_ELEMENT_NAME,font=>$font,_fontswitch=>1) if $bestdiff > 0; # Open if needed.
   }
   # Finally, insert the darned text.
-  $self->openText_internal($text); }
+  my $tnode = $self->openText_internal($text); 
+  $self->recordConstructedNode($tnode);
+  $tnode; }
 
 # Mystery:
 #  How to deal with font declarations?
@@ -407,8 +457,8 @@ sub openElement {
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point,$qname,
-				     _font=>$attributes{font}||$attributes{_box}->getFont,
-				     %attributes);
+                                     _font=>$attributes{font}||$attributes{_box}->getFont,
+                                     %attributes);
   $$self{node} = $newnode; }
 
 sub closeElement {
@@ -424,14 +474,14 @@ sub closeElement {
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
     Error('malformed',$qname,$self,
-	  "Attempt to close ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>').", which isn't open",
-	  "Currently in ".$self->getInsertionContext); }
+          "Attempt to close ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>').", which isn't open",
+          "Currently in ".$self->getInsertionContext); }
   else {			# Found node.
     # Intervening non-auto-closeable nodes!!
     Error('malformed',$qname,$self,
-	  "Closing ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>')
-	  ." whose open descendents do not auto-close",
-	  "Descendents are ".join(', ',map(Stringify($_),@cant_close)))
+          "Closing ".($qname eq '#PCDATA' ? $qname : '</'.$qname.'>')
+          ." whose open descendents do not auto-close",
+          "Descendents are ".join(', ',map(Stringify($_),@cant_close)))
       if @cant_close;
     # So, now close up to the desired node.
     $self->closeNode_internal($node);
@@ -485,10 +535,9 @@ sub addAttribute {
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){
     Error('malformed',$key,$self,
-	  "Attribute $key not allowed in this node or ancestors"); }
+          "Attribute $key not allowed in this node or ancestors"); }
   else {
     $self->setAttribute($node,$key,$value); }}
-
 
 #**********************************************************************
 # Low level internal interface
@@ -517,24 +566,24 @@ sub find_insertion_point {
     $$self{node}; }
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
   elsif(($inter = $$self{model}->canContainIndirect($cur_qname,$qname))
-	&& ($inter ne $qname) && ($inter ne $cur_qname)){
+        && ($inter ne $qname) && ($inter ne $cur_qname)){
     $self->openElement($inter, font=>$self->getNodeFont($$self{node}));
     $self->find_insertion_point($qname); } # And retry insertion (should work now).
   else {			# Now we're getting more desparate...
     # Check if we can auto close some nodes, and _then_ insert the $qname.
     my ($node,$closeto) = ($$self{node});
     while(($node->nodeType != XML_DOCUMENT_NODE)
-	  && $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose')){
+          && $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose')){
       my $parent = $node->parentNode;
       if($$self{model}->canContainSomehow($parent,$qname)){
-	$closeto=$node; last; }
+        $closeto=$node; last; }
       $node = $parent; }
     if($closeto){
       $self->closeNode_internal($closeto); # Close the auto closeable nodes.
       $self->find_insertion_point($qname); }	    # Then retry, possibly w/auto open's
     else {					    # Didn't find a legit place.
       Error('malformed',$qname,$self,
-	    ($qname eq '#PCDATA' ? $qname : '<'.$qname.'>')." isn't allowed here");
+            ($qname eq '#PCDATA' ? $qname : '<'.$qname.'>')." isn't allowed here");
       $$self{node}; }}}	# But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
@@ -550,9 +599,9 @@ sub getInsertionCandidates {
     my $n = $node;
     while($n){
       if(($n->localname || '') eq '_Capture_'){
-	push(@nodes,element_nodes($n)); }
+        push(@nodes,element_nodes($n)); }
       else {
-	push(@nodes,$n); }
+        push(@nodes,$n); }
       $n = $n->previousSibling; }
     $node = $node->parentNode; }
   push(@nodes,$first) if $isCapture;
@@ -578,11 +627,11 @@ sub floatToElement {
     my $savenode = $$self{node};
     $$self{node}=$n;
     print STDERR "Floating from ".Stringify($savenode)." to ".Stringify($n)." for $qname\n" 
-	if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
+        if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
    $savenode; }
   else { 
     Warn('malformed',$qname,$self,"No open node can contain element '$qname'",
-	 $self->getInsertionContext())
+         $self->getInsertionContext())
       unless $$self{model}->canContainSomehow($$self{node},$qname);
     undef; }}
 
@@ -598,7 +647,7 @@ sub floatToAttribute {
     $savenode; }
   else {
     Warn('malformed',$key,$self,"No open node can get attribute '$key'",
-	 $self->getInsertionContext());
+         $self->getInsertionContext());
     undef; }}
 
 sub openText_internal {
@@ -608,13 +657,14 @@ sub openText_internal {
     print STDERR "Appending text \"$text\" to ".Stringify($$self{node})."\n"  if $LaTeXML::Document::DEBUG;
     $$self{node}->appendData($text); }
   elsif(($text =~/\S/)					# If non space
-	|| $$self{model}->canContain($$self{node},'#PCDATA')){ # or text allowed here
+        || $$self{model}->canContain($$self{node},'#PCDATA')){ # or text allowed here
     my $point = $self->find_insertion_point('#PCDATA');
     my $node = $$self{document}->createTextNode($text);
     print STDERR "Inserting text node for \"$text\" into ".Stringify($point)."\n"
        if $LaTeXML::Document::DEBUG;
     $point->appendChild($node);
-    $$self{node} = $node; }}
+    $$self{node} = $node; }
+  $$self{node}; }               # return the text node (current)
 
 # Question: Why do I have math ligatures handled within openMathText_internal,
 # but text ligatures handled within closeText_internal ???
@@ -625,7 +675,7 @@ sub openMathText_internal {
   my $node = $$self{node};
   my $font = $self->getNodeFont($node);
   $node->appendText($string);
-##print STDERR "Trying Math Ligatures at \"$string\"\n";
+  ##print STDERR "Trying Math Ligatures at \"$string\"\n";
   $self->applyMathLigatures($node);
   $node;}
 
@@ -636,7 +686,7 @@ sub XXXapplyMathLigatures {
   my @ligatures = $STATE->getModel->getMathLigatures;
   foreach my $ligature (@ligatures){
     last if $self->applyMathLigature($node,$ligature); } # Hmm.. last? Or restart matches?
-  }
+}
 
 # New stategy (but inefficient): apply ligatures until one succeeds,
 # then remove it, and repeat until ALL (remaining) fail.
@@ -647,9 +697,9 @@ sub applyMathLigatures {
     my $matched=0;
     foreach my $ligature (@ligatures){
       if($self->applyMathLigature($node,$ligature)){
-	@ligatures = grep($_ ne $ligature,@ligatures);
-	$matched=1;
-	last; }}
+        @ligatures = grep($_ ne $ligature,@ligatures);
+        $matched=1;
+        last; }}
     return unless $matched; }}
 
 # Apply ligature operation to $node, presumed the last insertion into it's parent(?)
@@ -672,9 +722,9 @@ sub applyMathLigature {
     foreach my $key (keys %attr){
       my $value = $attr{$key};
       if(defined $value){
-	$node->setAttribute($key=>$value); }
+        $node->setAttribute($key=>$value); }
       else {
-	$node->removeAttribute($key); }}
+        $node->removeAttribute($key); }}
     return 1; }
   else {
     undef; }}
@@ -697,7 +747,7 @@ sub closeText_internal {
     $parent; }
   else {
     $node; }}
-  
+
 # Close $node, and any current nodes below it.
 # No checking! Use this when you've already verified that $node can be closed.
 # and, of course, $node must be current or some ancestor of it!!!
@@ -710,7 +760,6 @@ sub closeNode_internal {
     last if $node->isSameNode($n);
     $n = $n->parentNode; }
   print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
-
   $$self{node} = $closeto;
 
   my @c;
@@ -724,7 +773,7 @@ sub closeNode_internal {
      && ($model->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
      # AND, $node can have all the attributes that the child has (but at least 'font')
      && !grep( !$model->canHaveAttribute($node,$_),
-	       'font',grep(/^[^_]/,map($_->nodeName,$c[0]->attributes)))
+               'font',grep(/^[^_]/,map($_->nodeName,$c[0]->attributes)))
      # BUT, it isn't being forced somehow
      && !$c[0]->hasAttribute('_force_font')){
     my $c = $c[0];
@@ -735,33 +784,33 @@ sub closeNode_internal {
     # Merge the attributes from the child onto $node
     foreach my $attr ($c->attributes()){
       if($attr->nodeType == XML_ATTRIBUTE_NODE){
-	my $key = $attr->nodeName;
-	my $val = $attr->getValue;
-	# Special case attributes
-	if($key eq 'xml:id'){	# Use the replacement id
-	  if(!$node->hasAttribute($key)){
-	    $self->recordID($val,$node);
-	    $node->setAttribute($key, $val); }}
-	elsif($key eq 'class'){	# combine $class
-	  if(my $class = $node->getAttribute($key)){
-	    $node->setAttribute($key,$class.' '.$val); }
-	  else {
-	    $node->setAttribute($key,$val); }}
-	# xoffset, yoffset, pad-width, pad-height should sum up, if present on both.
-	elsif($key =~ /^(xoffset|yoffset|pad-height|pad-width)$/){
-	    if(my $val2 = $node->getAttribute($key)){
-		my $v1 = $val =~/^([\+\-\d\.]*)pt$/ && $1;
-		my $v2 = $val2=~/^([\+\-\d\.]*)pt$/ && $1;
-		$node->setAttribute($key=>($v1+$v2).'pt'); }
-	    else {
-		$node->setAttribute($key=>$val); }}
-	# Remaining attributes should prefer the inner (child's) values, if any
-	# (font, size, color, framed)
-	# (width,height, depth, align, vattach, float)
-	elsif(my $ns = $attr->namespaceURI){
-	  $node->setAttributeNS($ns,$attr->name,$val); }
-	else {
-	  $node->setAttribute( $attr->localname,$val); }}}
+        my $key = $attr->nodeName;
+        my $val = $attr->getValue;
+        # Special case attributes
+        if($key eq 'xml:id'){	# Use the replacement id
+          if(!$node->hasAttribute($key)){
+            $self->recordID($val,$node);
+            $node->setAttribute($key, $val); }}
+        elsif($key eq 'class'){	# combine $class
+          if(my $class = $node->getAttribute($key)){
+            $node->setAttribute($key,$class.' '.$val); }
+          else {
+            $node->setAttribute($key,$val); }}
+        # xoffset, yoffset, pad-width, pad-height should sum up, if present on both.
+        elsif($key =~ /^(xoffset|yoffset|pad-height|pad-width)$/){
+            if(my $val2 = $node->getAttribute($key)){
+                my $v1 = $val =~/^([\+\-\d\.]*)pt$/ && $1;
+                my $v2 = $val2=~/^([\+\-\d\.]*)pt$/ && $1;
+                $node->setAttribute($key=>($v1+$v2).'pt'); }
+            else {
+                $node->setAttribute($key=>$val); }}
+        # Remaining attributes should prefer the inner (child's) values, if any
+        # (font, size, color, framed)
+        # (width,height, depth, align, vattach, float)
+        elsif(my $ns = $attr->namespaceURI){
+          $node->setAttributeNS($ns,$attr->name,$val); }
+        else {
+          $node->setAttribute( $attr->localname,$val); }}}
     }
   $$self{node}; }
 
@@ -786,17 +835,17 @@ sub setAttribute {
       $node->setAttribute($key=>$value); }
     else {
       my($ns,$name)=$$self{model}->decodeQName($key);
-      if($ns){					       # If namespaced attribute (must have prefix!)
-	my $prefix = $node->lookupNamespacePrefix($ns);	# namespace already declared?
-	if(!$prefix){					# if namespace not already declared
-	  $prefix = $$self{model}->getDocumentNamespacePrefix($ns,1); # get the prefix to use
-	  $self->getDocument->documentElement->setNamespace($ns,$prefix,0); } # and declare it
-	if($prefix eq '#default'){		 # Probably shouldn't happen...?
-	  $node->setAttribute($name=>$value); }
-	else {
-	  $node->setAttributeNS($ns,"$prefix:$name"=>$value); }}
+      if($ns){					       # If namespaced attribute (must have prefix!
+        my $prefix = $node->lookupNamespacePrefix($ns);	# namespace already declared?
+        if(!$prefix){					# if namespace not already declared
+          $prefix = $$self{model}->getDocumentNamespacePrefix($ns,1); # get the prefix to use
+          $self->getDocument->documentElement->setNamespace($ns,$prefix,0); } # and declare it
+        if($prefix eq '#default'){		 # Probably shouldn't happen...?
+          $node->setAttribute($name=>$value); }
+        else {
+          $node->setAttributeNS($ns,"$prefix:$name"=>$value); }}
       else {
-	$node->setAttribute($name=>$value); }}}} # redundant case...
+        $node->setAttribute($name=>$value); }}}} # redundant case...
 
 #**********************************************************************
 # Association of nodes and ids (xml:id)
@@ -808,7 +857,7 @@ sub recordID {
     my $badid = $id;
     $id = $self->modifyID($id);
     Info('malformed','id',$node,"Duplicated attribute xml:id",
-	 "Using id='$id'; id='$badid' already set on ".Stringify($prev)); }
+         "Using id='$id' on ".Stringify($node),"id='$badid' already set on ".Stringify($prev)); }
   $$self{idstore}{$id}=$node;
   $id; }
 
@@ -839,16 +888,16 @@ sub modifyID {
     if(! $LaTeXML::Document::ID_SUFFIX
        || $$self{idstore}{$id = $badid.$LaTeXML::Document::ID_SUFFIX}){
       foreach my $s1 (ord('a')..ord('z')){
-	return $id unless $$self{idstore}{$id = $badid.chr($s1)}; }
+        return $id unless $$self{idstore}{$id = $badid.chr($s1)}; }
       foreach my $s1 (ord('a')..ord('z')){
-	foreach my $s2 (ord('a')..ord('z')){
-	  return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2)}; }}
+        foreach my $s2 (ord('a')..ord('z')){
+          return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2)}; }}
       foreach my $s1 (ord('a')..ord('z')){
-	foreach my $s2 (ord('a')..ord('z')){
-	  foreach my $s3 (ord('a')..ord('z')){
-	    return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2).chr($s3)}; }}}
+        foreach my $s2 (ord('a')..ord('z')){
+          foreach my $s3 (ord('a')..ord('z')){
+            return $id unless $$self{idstore}{$id = $badid.chr($s1).chr($s2).chr($s3)}; }}}
       Fatal('malformed','id',$self,"Automatic incrementing of ID counters failed",
-	    "Last alternative for '$id' is '$badid'"); }}
+            "Last alternative for '$id' is '$badid'"); }}
   $id; }
 
 sub lookupID {
@@ -897,10 +946,16 @@ sub removeNode {
   if($node){
     if($node->nodeType == XML_ELEMENT_NODE){ # If an element, do ID bookkeeping.
       if(my $id = $node->getAttribute('xml:id')){
-	$self->unRecordID($id); }
+        $self->unRecordID($id); }
       map($self->removeNode_aux($_), $node->childNodes); }
-    $node->parentNode->removeChild($node); }
-###  $node->unbindNode;		# for cleanup, and also to assure removed if there's no children!
+    my $parent = $node->parentNode;
+    $parent->removeChild($node);
+    if($$self{node}->isSameNode($node)){ # Don't remove insertion point!
+      $$self{node} = $parent; }
+  }
+  # This was commented out; Is it safe????
+  # It's needed if we want to know if a node has been deleted!
+  ## $node->unbindNode;	# for cleanup, and also to assure removed if there's no children!
   $node; }
 
 sub removeNode_aux {
@@ -946,6 +1001,7 @@ sub openElementAt {
     $$self{model}->addSchemaDeclaration($self,$tag);
     map( $$self{document}->appendChild($_), @{$$self{pending}}); # Add saved comments, PI's
     $newnode = $$self{document}->createElement($tag);
+    $self->recordConstructedNode($newnode);
     $$self{document}->setDocumentElement($newnode); 
     if($ns){
       # Here, we're creating the initial, document element, which will hold ALL of the namespace declarations.
@@ -960,13 +1016,7 @@ sub openElementAt {
   else {
     $font = $self->getNodeFont($point) unless $font;
     $box  = $self->getNodeBox($point)  unless $box;
-    if($ns){
-      if(! defined $point->lookupNamespacePrefix($ns)){	# namespace not already declared?
-	$self->getDocument->documentElement
-	  ->setNamespace($ns,$$self{model}->getDocumentNamespacePrefix($ns),0); }
-      $newnode = $point->addNewChild($ns,$tag); }
-    else {
-      $newnode = $point->appendChild($$self{document}->createElement($tag)); }}
+    $newnode = $self->openElement_internal($point,$ns,$tag); }
 
   foreach my $key (sort keys %attributes){
     next if $key eq 'font';	# !!!
@@ -979,6 +1029,19 @@ sub openElementAt {
   # Run afterOpen operations
   $self->afterOpen($newnode);
 
+  $newnode; }
+
+sub openElement_internal {
+  my($self,$point,$ns,$tag)=@_;
+  my $newnode;
+  if($ns){
+    if(! defined $point->lookupNamespacePrefix($ns)){	# namespace not already declared?
+      $self->getDocument->documentElement
+        ->setNamespace($ns,$$self{model}->getDocumentNamespacePrefix($ns),0); }
+    $newnode = $point->addNewChild($ns,$tag); }
+  else {
+    $newnode = $point->appendChild($$self{document}->createElement($tag)); }
+    $self->recordConstructedNode($newnode);
   $newnode; }
 
 # Whenever a node has been created using openElementAt,
@@ -1041,7 +1104,7 @@ sub appendClone_aux {
   foreach my $child (@newchildren){
     my $type = $child->nodeType;
     if($type == XML_ELEMENT_NODE){
-      my $new = $node->addNewChild($child->namespaceURI,$child->localname);
+      my $new = $self->openElement_internal($node,$child->namespaceURI,$child->localname);
       foreach my $attr ($child->attributes){
 	if($attr->nodeType == XML_ATTRIBUTE_NODE){
 	  my $key = $attr->nodeName;
@@ -1080,14 +1143,7 @@ sub wrapNodes {
 ##  return unless $model->canContain($model->getNodeQName($parent),$qname)
 ##    && ! grep( ! $model->canContain($qname,$model->getNodeQName($_)), @nodes);
   my($ns,$tag) = $model->decodeQName($qname);
-  my $new;
-  if($ns){
-    if(! defined $parent->lookupNamespacePrefix($ns)){	# namespace not already declared?
-      $self->getDocument->documentElement
-	->setNamespace($ns,$model->getDocumentNamespacePrefix($ns),0); }
-    $new= $parent->addNewChild($ns,$tag); }
-  else {
-    $new = $parent->appendChild($$self{document}->createElement($tag)); }
+  my $new = $self->openElement_internal($parent,$ns,$tag);
   $self->afterOpen($new);
   $parent->replaceChild($new,$nodes[0]);
   if(my $font = $self->getNodeFont($parent)){
@@ -1122,21 +1178,17 @@ sub renameNode {
   my($self,$node,$newname)=@_;
   my $model = $$self{model};
   my($ns,$tag) = $model->decodeQName($newname);
-  my $new;
   my $parent = $node->parentNode;
-  if($ns){
-    if(! defined $node->lookupNamespacePrefix($ns)){ # namespace not already declared?
-      $self->getDocument->documentElement
-	->setNamespace($ns,$model->getDocumentNamespacePrefix($ns),0); }
-    $new= $parent->addNewChild($ns,$tag); }
-  else {
-    $new = $parent->appendChild($$self{document}->createElement($tag)); }
+  my $new = $self->openElement_internal($parent,$ns,$tag);
+  my $id;
   # Move to the position AFTER $node
   $parent->insertAfter($new,$node);
   # Copy ALL attributes from $node to $newnode
   foreach my $attr ($node->attributes){
-    my $attname = $attr->getName;
-    $new->setAttribute($attname, $node->getAttribute($attname)); }
+    my $key   = $attr->getName;
+    my $value = $node->getAttribute($key);
+    $id = $value if $key eq 'xml:id'; # Save to register after removal of old node.
+    $new->setAttribute($key, $value); }
   # AND move all content from $node to $newnode
   foreach my $child ($node->childNodes){
     $new->appendChild($child); }
@@ -1147,6 +1199,8 @@ sub renameNode {
   $self->afterClose($new);
   # Finally, remove the old node
   $self->removeNode($node);
+  # and FINALLY, we can register the new node under the id.
+  $self->recordID($id,$new) if $id;
   $new; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1315,17 +1369,19 @@ This method finalizes the document by cleaning up various temporary
 attributes, and returns the L<XML::LibXML::Document> that was constructed.
 
 
-=item C<< $document->absorb($digested); >>
+=item C<< @nodes = $document->absorb($digested); >>
 
 Absorb the C<$digested> object into the document at the current insertion point
 according to its type.  Various of the the other methods are invoked as needed,
 and document nodes may be automatically opened or closed according to the document
 model.
 
-=item C<< $document->absorbText($string,$font); >>
-
-Absorb the given C<$string>, in the specified C<$font>, as plain
-text, or a math token, depending on the current mode.
+This method returns the nodes that were constructed.
+Note that the nodes may include children of other nodes,
+and nodes that may already have been removed from the document
+(See filterChildren and filterDeleted).
+Also, text insertions are often merged with existing text nodes;
+in such cases, the whole text node is included in the result.
 
 =item C<< $document->insertElement($qname,$content,%attributes); >>
 
@@ -1588,6 +1644,17 @@ Replace C<$node> by C<@nodes>; presumably they are some sort of descendant nodes
 Rename C<$node> to the tagname C<$newname>; equivalently replace C<$node> by
 a new node with name C<$newname> and copy the attributes and contents.
 It is assumed that C<$newname> can contain those attributes and contents.
+
+=item C<< @nodes = $document->filterDeletions(@nodes); >>
+
+This function is useful with C<$doc->absorb($box)>,
+when you want to filter out any nodes that have been deleted and
+no longer appear in the document.
+
+=item C<< @nodes = $document->filterChildren(@nodes); >>
+
+This function is useful with C<$doc->absorb($box)>,
+when you want to filter out any nodes that are children of other nodes in C<@nodes>.
 
 =back
 
