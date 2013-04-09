@@ -1518,47 +1518,97 @@ sub reenterTextMode {
 
 sub REF { $_[0] && $_[0]->{$_[1]}; }
 
-DefConstructor('\hbox BoxSpecification HBoxContents',
-	       "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
+DefConstructor('\hbox BoxSpecification HBoxContents', sub {
+  # "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
+  my($document,$spec,$contents)=@_;
+  my $model=$document->getModel;
+  my $context = $document->getElement;
+  my $current = $context;
+  my $tag = $document->getNodeQName($current);
+
+  # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
+#  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
+  my $vmode = $current->getAttribute('_vertical_mode_');
+  my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
+  $document->openElement($newtag,_noautoclose=>1,
+                         width=>$spec && $$spec{to},'pad-width'=>$spec && $$spec{spread});
+  $document->absorb($contents);
+  $document->closeElement($newtag); },
+
  	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
  	       # And also things like \centerline that will end up bumping up to block level!
  	       beforeDigest=>sub { reenterTextMode(); });
 
+# This attempts to be a generalize vbox construction;
+# It tries to figure out whether an inline-block is needed,
+# and attempts to figure out whether sequences of the inserted content
+# need to be explicitly wrapped in some kind of block element (presumably ltx:p).
+sub insertBlock {
+  my($document,$contents,%blockattr)=@_;
+  # Create something like:
+  # "<ltx:inline-block vattach='$vattach' height='..' pad-height='..'>#2</ltx:inline-block>"
+  my $model=$document->getModel;
+  my $context = $document->getElement; # Where we originally start inserting.
 
-# SHOULD Be a little smarter: if we're already in a block level context, don't open inline-block
-# but that doesn't really quite capture the logic....
-# Also, the whole business of laying out SOME of the children as rows is completely fuzzy..
-DefConstructor('\vbox BoxSpecification VBoxContents', 
-#	       "<ltx:inline-block vattach='bottom' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
-	       sub {
-		 my($document,$spec,$contents,%props)=@_;
-		 my $model=$document->getModel;
-		 my $block = $document->openElement('ltx:inline-block',vattach=>'bottom', 
-						    height=>$spec && $$spec{to}, 'pad-height'=>$spec && $$spec{spread});
-		 # Ignore the leading and trailing { & } from the BoxContents.
-		 my @contents=$contents->unlist;
-		 foreach my $row (@contents[1..$#contents-1]){
-		   $document->absorb($row);
-		   if(my $prev = $document->getLastChildElement($block)){
-		     $document->maybeCloseElement($model->getNodeQName($prev)); }}
-		 $document->closeElement('ltx:inline-block'); },
+  # If we're "explicitly" asking for a vbox, or can't currently put an ltx:p in
+  # (which would be a typical block mode item), then we'd better open an inline-blokc
+  # [A thought is to close any open ltx:p, or create & delete one, just to "prime" it.
+  # but those seem a bad idea, because we may want a vbox inside a p, or....]
+  my $newblock = undef;
+  map( ($blockattr{$_} || delete $blockattr{$_}), keys %blockattr);
+  my $hasattr = scalar(keys %blockattr);
+  if($hasattr || ! $model->canContain($context,'ltx:p')){
+    # [If we DONT open, we lose the vattach!]
+    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
+
+  # Insert the content for the block, and reduce
+  $document->getElement->setAttribute('_vertical_mode_'=>1); # HACK!!!! (see \hbox)
+  my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($contents)));
+
+  # Scan the inserted nodes, wrapping sequences of Inline items with a ltx:p
+  my @newnodes=();
+  while(@nodes){
+    if($model->getNodeQName($nodes[0]) eq 'ltx:break'){ # ltx:break are superflous, now.
+      $document->removeNode(shift(@nodes));
+      next; }
+    my @n;                      # Collect up sequences of Inline
+    while(@nodes && ($model->isInSchemaClass('Inline',$nodes[0]))){
+      push(@n,shift(@nodes)); }
+    if(@n){
+      push(@newnodes,$document->wrapNodes('ltx:p',@n)); }
+    else {
+      push(@newnodes,shift(@nodes)); }}
+
+  # Close everything back up to the originally open element.
+  my $x;
+  while(isDescendant($x=$document->getElement,$context)){
+    $document->closeElement($model->getNodeQName($x)); }
+
+  # Check if the ltx:inline-block container is really needed.
+  if($newblock){
+      my @rows = $newblock->childNodes;
+      if(scalar(@rows) < 1){    # Insertion came up empty?
+        $document->removeNode($newblock); } # then remove the new block entirely
+      elsif((scalar(@rows) ==1)             # Else only 1 item inside, then flatten
+            && $model->canContain($newblock->parentNode,$rows[0]) # if allowed.
+            && (!$hasattr || grep($model->canHaveAttribute($rows[0],$_), keys %blockattr))){
+        map($rows[0]->setAttribute($_=>$blockattr{$_}), keys %blockattr);
+        $document->unwrapNodes($newblock); }}
+
+  # And return the list of "rows" in the box (in case they need attributes....)
+  @newnodes; }
+
+DefConstructor('\vbox BoxSpecification VBoxContents', sub {
+  my($document,$spec,$contents,%props)=@_;
+  insertBlock($document,$contents, vattach=>'bottom',
+              height=>$spec && $$spec{to},'pad-height'=>$spec && $$spec{spread}); },
  	       mode=>'text');
 
-
-DefConstructor('\vtop BoxSpecification VBoxContents', 
-# "<ltx:inline-block vattach='top' height='&REF(#1,to)' pad-height='&REF(#1,spread)'>#2</ltx:inline-block>",
-	       sub {
-		 my($document,$spec,$contents,%props)=@_;
-		 my $model=$document->getModel;
-		 my $block = $document->openElement('ltx:inline-block',vattach=>'top', 
-						    height=>$spec && $$spec{to}, 'pad-height'=>$spec && $$spec{spread});
-		 my @contents=$contents->unlist;
-		 foreach my $row (@contents[1..$#contents-1]){
-		   $document->absorb($row);
-		   if(my $prev = $document->getLastChildElement($block)){
-		     $document->maybeCloseElement($model->getNodeQName($prev)); }}
-		 $document->closeElement('ltx:inline-block'); },
+DefConstructor('\vtop BoxSpecification VBoxContents', sub {
+  my($document,$spec,$contents,%props)=@_;
+  insertBlock($document,$contents, vattach=>'top',
+              height=>$spec && $$spec{to},'pad-height'=>$spec && $$spec{spread}); },
 	       mode=>'text');
 
 DefParameterType('RuleSpecification',sub {
@@ -1628,7 +1678,7 @@ DefPrimitive('{',sub {
     LaTeXML::MathList->new($open,@body); }
   else {
     LaTeXML::List->new($open,@body); }});
-  
+
 #DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
 DefPrimitive('}',sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef,$f,undef,T_END); });
 
@@ -2555,6 +2605,8 @@ sub add_body_TeX {
 Tag('ltx:Math',  afterClose=>\&add_body_TeX);
 Tag('ltx:Math',  afterClose=>\&cleanup_Math);
 
+# AHHH, but,what about inline-block... is that allowed?
+# So, better would be pull up context of XMText IFFFF it is allowed in the parent of the Math!!!!
 sub cleanup_Math {
   my($document,$mathnode)=@_;
   # If the Math contains ONLY XMath that ONLY contain XMText,
@@ -2567,6 +2619,46 @@ sub cleanup_Math {
   # Replace Math/XMath/XMText/* by *
   $document->replaceNode($mathnode,
 			 map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
+
+# Here's for an inverse case: when an XMText isn't "really" a text
+# if it only contains an Math  ORR, a tabular with only Math in the cells?
+# First case: pull it back into the math, but in an XMWrap to isolate it for parsing.
+# Should we just pull any mixed text math up or only a single Math?
+# For the tabular case, convert it to an XMArray.
+Tag('ltx:XMText',  afterClose=>\&cleanup_XMText);
+sub cleanup_XMText {
+  my($document,$textnode)=@_;
+  my @children = $textnode->childNodes;
+  return unless (scalar(@children)==1);
+  my $model = $document->getModel;
+  my $childtag = $model->getNodeQName($children[0]);
+  # Careful of both elements and text nodes!
+  if($document->findnode('ltx:text[count(* | text()) = 1][ltx:Math]',$textnode)){
+    # Replace XMText/text/Math/XMath/* by XMWrap/*  (this should preserve the parse?)
+    $textnode=$document->renameNode($textnode,'ltx:XMWrap');
+    map( $document->replaceNode($_,map($_->childNodes,map($_->childNodes,$_->childNodes))),
+         $textnode->childNodes); }
+
+  elsif($childtag eq 'ltx:Math'){
+    # Replace XMText/Math/XMath/* by XMWrap/*  (this should preserve the parse?)
+    $textnode=$document->renameNode($textnode,'ltx:XMWrap');
+    map( $document->replaceNode($_,map($_->childNodes,$_->childNodes)),
+         $textnode->childNodes); }
+  elsif($childtag eq 'ltx:tabular'){
+    my $table = $children[0];
+    # Should we ONLY do this if all cells are math?
+    return if $document->findnodes('*[local-name() != "tr"] | ltx:tr[not(ltx:td)] | ltx:tr/ltx:td[not(ltx:Math)]',$table);
+    $table = $document->renameNode($table,'ltx:XMArray');
+    foreach my $row ($table->childNodes){
+      $row = $document->renameNode($row,'ltx:XMRow');
+      foreach my $cell ($row->childNodes){
+        # Replace td/Math/XMath/* by XMCell/*
+        $cell = $document->renameNode($cell,'ltx:XMCell');
+        foreach my $m ($cell->childNodes){
+          $document->replaceNode($m,map($_->childNodes,$m->childNodes)); }}}
+    # And now we don't need the XMText any more.
+    $document->unwrapNodes($textnode); }
+}
 
 #**********************************************************************
 # Support for MathFork.
@@ -5254,90 +5346,16 @@ DefConstructor('\@hidden{}','',reversion=>'');
 DefRewrite(xpath=>'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
 	  replace=>sub { my($document,$wrap)=@_;
 			 if(my $node = $document->getFirstChildElement($wrap)){
+                           # Copy attributes but NOT internal ones,
+                           # NOR xml:id, else we get clashes
 			   foreach my $attribute ($wrap->attributes){
 			     if($attribute->nodeType == XML_ATTRIBUTE_NODE){
 			       my $attr = $attribute->nodeName;
 			       $document->setAttribute($node,$attr=>$attribute->getValue)
-				 unless $attr =~ /^_/; }}
+				 unless ($attr eq 'xml:id') || $attr =~ /^_/; }}
 			   ## WHY THIS????
 			   $document->getNode->appendChild($node); }});
 #======================================================================
-# HACKERY!!!  This seems to require too much knowledge about inline vs block and such.
-# Perhaps this really should be done as a daemon that runs when the current node is closed?
-# Or perhaps even better, it should temporarily modify the Model such that the current node
-# only accepts block level markup; that would automagically elevate stuff to <p> when needed!(?)
-our $INLINE_TAGS = "ltx:text|ltx:emph|ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:graphics";
-sub insertBlock {
-  my($document,$body)=@_;
-  # Make sure we're at some kind of block level, by closing any open p (is ltx:p enough?)
-  $document->maybeCloseElement('ltx:p');
-  my $prev = $document->getNode->lastChild; # and remember the last node before insertion.
-
-  $document->absorb($body);	    # Now insert.
-  $document->maybeCloseElement('ltx:p'); # and close any ltx:p, to be safe
-
-  # This is the current node AFTER the insertion (may have moved up/down, whatever)
-  my $current = $document->getNode; # Watch that Current node makes sense after surgery.
-  my $model   = $document->getModel;
-  my $parent  = $document->getElement; # parent of the insertions
-  return () unless $parent;
-  # Find $previous position within the CURRENT parent
-  my $x;
-  while($prev && ($x=$prev->parentNode) && !$x->isSameNode($parent)){
-    $prev = $x; }
-  # Now look at all nodes at current level of insertion
-  my @nodes = $parent->childNodes;
-  if($prev && grep($prev->isSameNode($_), @nodes)){ # Remove the "old" nodes from @nodes
-    while( !$nodes[0]->isSameNode($prev)){ shift(@nodes); }
-    shift(@nodes); }
-  # So, what remains in @nodes is the current set of inserted nodes (whew)
-
-  # If we're at a level that can contain ltx:p, we want to watch for lines of text
-  # that should be wrapped in a ltx:p so they can be centered, aligned, whatever.
-  if ($model->canContain($parent,'ltx:p')) {
-    my @new = ();
-    my @savenodes = @nodes;	# These are the ones that got recently added.
-
-    # Wrap any "inline" nodes in a ltx:p, but delete any pure whitespace text nodes
-    while (@nodes) {
-      my @x=();		 # Collect up the next group of "inline" nodes
-      my $moved_current = 0; # whether we have affected the document's current node.
-      while (@nodes && (($nodes[0]->nodeType == XML_TEXT_NODE)
-			|| (($nodes[0]->nodeType == XML_ELEMENT_NODE)
-			    && ($model->getNodeQName($nodes[0]) =~ /^($INLINE_TAGS)$/)))) {
-	$moved_current = 1 if ${$nodes[0]} == $$current;
-	push(@x,shift(@nodes)); }
-      if (@x && !grep(($_->nodeType != XML_TEXT_NODE)
-		      || ($_->textContent =~ /\S/), @x)) { # Only whitespace text nodes?
-	map($parent->removeChild($_),@x); # just remove them
-	# Watch out if we've deleted the current node!
-	$document->setNode( (@new ? $new[-1] : $parent) ) if $moved_current; }
-      elsif (@x) { # Some worthwhile inline nodes to wrap in a <ltx:p>
-	my $para = $document->openElementAt($parent,'ltx:p');
-	$parent->removeChild($para);
-	$parent->replaceChild($para,$x[0]); # replace 1st child by the <ltx:p>
-	$document->setNode($para) if $moved_current; # new <ltx:p> will become current
-	foreach my $c (@x) {
-	  if ($c->nodeType == XML_TEXT_NODE) {
-	    my $t = $c->textContent;
-	    $para->appendTextNode($t) if $t =~ /\S/; } # append if more than just whitespace.
-	  else {
-	    $para->appendChild($c); }
-	  $parent->removeChild($c); }
-	push(@new,$para); }
-      # other element (block or similar), just move to new list
-      elsif ($nodes[0]->nodeType == XML_ELEMENT_NODE) {
-	if ($model->getNodeQName($nodes[0]) eq 'ltx:break') { # except for <break>!
-	  $parent->removeChild(shift(@nodes));
-	  # Watch out if we've deleted the current node!
-	  $document->setNode($new[-1]) if $moved_current; }
-	else {
-	  push(@new,shift(@nodes)); }}
-      else {
-	shift(@nodes); }}
-    @nodes = (@new ? @new : @savenodes); }
-
-  @nodes; }
 
 sub aligningEnvironment {
   my($align,$class,$document,%props)=@_;
