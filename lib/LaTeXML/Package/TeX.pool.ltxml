@@ -1581,9 +1581,7 @@ sub insertBlock {
       push(@newnodes,shift(@nodes)); }}
 
   # Close everything back up to the originally open element.
-  my $x;
-  while(isDescendant($x=$document->getElement,$context)){
-    $document->closeElement($model->getNodeQName($x)); }
+  $document->closeToNode($context);
 
   # Check if the ltx:inline-block container is really needed.
   if($newblock){
