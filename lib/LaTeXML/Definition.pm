@@ -545,7 +545,7 @@ sub translate_constructor {
       $code .= "\$document->closeElement('$1');\n"; }
     # Substitutable value: argument, property...
     elsif(/^$VALUE_RE/o){ 
-      $code .= "\$document->absorb(".translate_value().");\n"; }
+      $code .= "\$document->absorb(".translate_value().",\%prop);\n"; }
     # Attribute: a=v; assigns in current node? [May conflict with random text!?!]
     elsif(s|^$QNAME_RE\s*=\s*||so){
       my $key = $1;
@@ -555,13 +555,11 @@ sub translate_constructor {
 	  $code .= "\$savenode=\$document->floatToAttribute('$key');\n";
 	  $float = undef; }
 	$code .= "\$document->setAttribute(\$document->getElement,'$key',ToString(".$value."));\n"; }
-      else {			# Whoops, must have been random text, after all.
-#print STDERR "Whoops! Wasn't an attribute assignment: \"$key\"\n";
-	$code .= "\$document->absorb('".slashify($key)."=');\n"; }}
+      else { # attr value didn't match value pattern? treat whole thing as random text!
+	$code .= "\$document->absorb('".slashify($key)."=',\%prop);\n"; }}
     # Else random text
     elsif(s/^$TEXT_RE//so){	# Else, just some text.
-      # Careful; need to respect the Whatsit's font, too!
-      $code .= "\$document->absorbText('".slashify($1)."',\$prop{'font'});\n"; }
+      $code .= "\$document->absorb('".slashify($1)."',\%prop);\n"; }
   }
   $code; }
 
