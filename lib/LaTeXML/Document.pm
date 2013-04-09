@@ -525,6 +525,17 @@ sub maybeCloseElement {
     $self->closeNode_internal($node);
     $node; }}
 
+# This closes all nodes until $node becomes the current point.
+sub closeToNode {
+  my($self,$node)=@_;
+  my $model = $$self{model};
+  while(1){
+    my $current = $$self{node};
+    $current = $current->parentNode if $current->getType == XML_TEXT_NODE;
+    return if $current->getType == XML_DOCUMENT_NODE; # whoops?
+    return unless isDescendant($current,$node);
+    $self->closeElement($model->getNodeQName($current)); }}
+
 # Add the given attribute to the nearest node that is allowed to have it.
 sub addAttribute {
   my($self,$key,$value)=@_;
@@ -1448,6 +1459,12 @@ returns the closed node if it was found, else undef.
 
 Add the given attribute to the node nearest to the current insertion point
 that is allowed to have it. This does not change the current insertion point.
+
+=item C<< $document->closeToNode($node); >>
+
+This method closes all children of C<$node> until C<$node>
+becomes the insertion point. Note that it closes any
+open nodes, not only autoCloseable ones.
 
 =back
 
