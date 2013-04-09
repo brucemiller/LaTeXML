@@ -254,7 +254,7 @@ sub getNodeQName {
   # Need others?
   elsif(($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)){
     Fatal('misdefined','<caller>',undef,
-	  "Should not ask for Qualified Name for node ".Stringify($node)); }
+	  "Should not ask for Qualified Name for node of type $type: ".Stringify($node)); }
   elsif(my $ns = $node->namespaceURI){
     $self->getNamespacePrefix($ns) .":". $node->localname; }
   else {
