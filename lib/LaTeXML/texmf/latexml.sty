@@ -14,6 +14,12 @@
 % You can conditionalize code for latexml or normal latex using this.
 \newif\iflatexml\latexmlfalse
 %======================================================================
+\DeclareOption{ids}{}
+\DeclareOption{noids}{}
+\DeclareOption{comments}{}
+\DeclareOption{nocomments}{}
+\ProcessOptions
+%======================================================================
 % NOTE: Figure out where this should go.
 %  At least should define various `semantic enhancement' macros that
 % authors using latexml might want.
@@ -64,6 +70,7 @@
 % class related features
 % Add a class to the constructed xml (ignored in latex)
 \providecommand{\lxAddClass}[1]{}%
+\providecommand{\lxWithClass}[2]{#2}%
 
 %======================================================================
 % links
