@@ -816,16 +816,22 @@ DefMacroI('\@evenfoot',undef,   Tokens());
 # C.6 Displayed Paragraphs
 #**********************************************************************
 
-DefEnvironment('{center}',sub { aligningEnvironment('center','ltx_centering',@_); },
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+DefEnvironment('{center}',sub {
+  $_[0]->maybeCloseElement('ltx:p'); # this starts a new vertical block
+  aligningEnvironment('center','ltx_centering',@_); }, # aligning will take care of \\\\ "rows"
+	       beforeDigest=>sub{Let(T_CS('\\\\'),T_CS('\par')); });
 # HOWEVER, define a plain \center to act like \centering (?)
 DefMacroI('\center',undef,'\centering');
 DefMacroI('\endcenter',undef,'');
 
-DefEnvironment('{flushleft}',sub { aligningEnvironment('left','ltx_align_left',@_); },
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
-DefEnvironment('{flushright}',sub { aligningEnvironment('right','ltx_align_right',@_); },
-	       beforeDigest=>sub{ Let(T_CS('\\\\'),T_CS('\@block@cr')); Let(T_CS('\par'),T_CS('\@block@cr'))});
+DefEnvironment('{flushleft}',sub {
+  $_[0]->maybeCloseElement('ltx:p'); # this starts a new vertical block
+  aligningEnvironment('left','ltx_align_left',@_); },
+	       beforeDigest=>sub{Let(T_CS('\\\\'),T_CS('\par')); });
+DefEnvironment('{flushright}',sub {
+  $_[0]->maybeCloseElement('ltx:p'); # this starts a new vertical block
+  aligningEnvironment('right','ltx_align_right',@_); },
+	       beforeDigest=>sub{Let(T_CS('\\\\'),T_CS('\par')); });
 
 # These add an operation to be carried out on the current node & following siblings, when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.
@@ -3059,7 +3065,7 @@ DefConstructor('\parbox[][][]{Dimension}{}', sub {
 	       mode=>'text', bounded=>1,
 	       beforeDigest=>sub {
 		 AssignValue('\hsize'=>$_[4]);
-		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+                 Let(T_CS('\\\\'),T_CS('\par')); });
 
 # DefEnvironment('{minipage}[][][]{Dimension}',
 # 	       "<ltx:inline-para ?#4(width='#4') vattach='#vattach' align='justified'>#body</ltx:inline-para>",
@@ -3082,7 +3088,8 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
 	       mode=>'text',
 	       beforeDigest=>sub {
 		 AssignValue('\hsize'=>$_[4]);
-		 Let(T_CS("\\\\"),T_CS('\@block@cr')); });
+                 # this conflicts (& not needed?) with insertBlock
+                 Let(T_CS('\\\\'),T_CS('\par')); });
   
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}', 
 	       "<ltx:rule ?#1(yoffset='#1') width='#2' height='#3'/>");
