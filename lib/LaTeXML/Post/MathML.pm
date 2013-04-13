@@ -768,7 +768,10 @@ sub pmml_text_aux {
       # So, let's just include the raw latexml markup, let the xslt convert it
       # And hope that the ultimate agent can deal with it!
       my($ignore,%mmlattr)=stylizeContent($node,0,%attr);
-      ['m:mtext', {%mmlattr}, $node]; }}
+      Warn('unexpected','nested-math',$node,
+           "We're getting m:math nested within an m:mtext")
+        if $LaTeXML::Post::DOCUMENT->findnodes('.//ltx:Math',$node);
+      ['m:mtext', {%mmlattr}, $LaTeXML::Post::DOCUMENT->cloneNode($node,'nest')]; }}
   else {
     (); }}
 
