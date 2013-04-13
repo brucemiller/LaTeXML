@@ -112,7 +112,11 @@ sub Fatal {
   else {			# If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
   local $LaTeXML::Error::InHandler=1;
-  die $message; }
+  if($verbosity > 1){
+    require Carp;
+    Carp::croak $message; }
+  else {
+    die $message; }}
 
 # Note that "100" is hardwired into TeX, The Program!!!
 our $MAXERRORS=100;
@@ -186,6 +190,7 @@ sub uniquifyID {
 package LaTeXML::Post::Processor;
 use strict;
 use LaTeXML::Post;
+LaTeXML::Post->import();        # but that doesn't work, so do this, until we REORGANIZE
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
 
@@ -235,6 +240,7 @@ sub generateResourcePathname {
 package LaTeXML::Post::MathProcessor;
 use strict;
 use LaTeXML::Post;
+LaTeXML::Post->import();        # but that doesn't work, so do this, until we REORGANIZE
 use base qw(LaTeXML::Post::Processor);
 use LaTeXML::Common::XML;
 
@@ -439,6 +445,7 @@ use LaTeXML::Util::Pathname;
 use DB_File;
 use Unicode::Normalize;
 use LaTeXML::Post;		# to import error handling...
+LaTeXML::Post->import();        # but that doesn't work, so do this, until we REORGANIZE
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>$NSURI);
 
@@ -844,9 +851,6 @@ sub newDocument {
       ($public_id,$system_id)=($3,$5); }}
   my $parent_id;
   # Build the document's XML
-  # BUT note that $self is the "parent" document, not the document that we're about to make!
-###  my $savecache = $$self{idcache};
-###  $$self{idcache}={};
   if(ref $root eq 'ARRAY'){
     my($tag,$attributes,@children)=@$root;
     my($prefix,$localname)= $tag =~ /^(.*):(.*)$/;
@@ -857,7 +861,12 @@ sub newDocument {
     $xmldoc->setDocumentElement($node);
     map( $$attributes{$_} && $node->setAttribute($_=>$$attributes{$_}),keys %$attributes)
       if $attributes;
-    $self->addNodes($node,@children); }
+    # Note that $self is the "parent" document, not the document that we're about to make!
+    # We don't yet want to deal with ID caches (it will be built later with ->new)
+    my $savecache = $$self{idcache};
+    $$self{idcache}={};
+    $self->addNodes($node,@children); 
+    $$self{idcache} = $savecache; }   # Restore the cache;
   elsif(ref $root eq 'XML::LibXML::Element'){
     $parent_id = $self->findnode('ancestor::*[@id]',$root);
     $parent_id = $parent_id->getAttribute('id') if $parent_id;
@@ -871,8 +880,6 @@ sub newDocument {
     $xmldoc->documentElement->setNamespace($root->namespaceURI,$root->prefix,1); }
   else {
     Fatal('unexpected',$root,undef,"Dont know how to use '$root' as document element"); }
-  # Restore the cache; $self->new will initialize cache for new document
-###  $$self{idcache} = $savecache;
 
   my $root_id = $self->getDocumentElement->getAttribute('xml:id');
   my $doc = $self->new($xmldoc,
