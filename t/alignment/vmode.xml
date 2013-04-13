@@ -82,17 +82,17 @@ This is random text. This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
     </para>
     <para xml:id="S3.p2">
-      <p xml:id="S3.p2.1.1" align="center">This is random text. This is random text. This is random text.
-<break/>
-This is random text. This is random text. This is random text.
-<break/>
-This is random text. This is random text. This is random text.</p>
+      <inline-block xml:id="S3.p2.1">
+        <p xml:id="S3.p2.1.1" align="center">This is random text. This is random text. This is random text.</p>
+        <p xml:id="S3.p2.1.2" align="center">This is random text. This is random text. This is random text.</p>
+        <p xml:id="S3.p2.1.3" align="center">This is random text. This is random text. This is random text.</p>
+      </inline-block>
     </para>
     <para xml:id="S3.p3">
       <inline-block xml:id="S3.p3.1">
         <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p3.1.g1" class="ltx_centering"/>
-        <p xml:id="S3.p3.1.1" align="center">c) Parabolic cylinder,  <Math mode="inline" xml:id="S3.p3.1.1.m1" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z"><XMath xml:id="S3.p3.1.1.m1.1"><XMApp xml:id="S3.p3.1.1.m1.1.7"><XMTok meaning="equals" role="RELOP" xml:id="S3.p3.1.1.m1.1.3">=</XMTok><XMApp xml:id="S3.p3.1.1.m1.1.7.1"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S3.p3.1.1.m1.1.7.1.1"/><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.1" font="italic">x</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.2.1">2</XMTok></XMApp><XMApp xml:id="S3.p3.1.1.m1.1.7.2"><XMTok meaning="times" role="MULOP" xml:id="S3.p3.1.1.m1.1.7.2.1">⁢</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.4">2</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.5" font="italic">p</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.6" font="italic">z</XMTok></XMApp></XMApp></XMath></Math>;  it is a developable surface. <break/>
-Signatures: blah <Math mode="inline" xml:id="S3.p3.1.1.m2" tex="x" text="x"><XMath xml:id="S3.p3.1.1.m2.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m2.1.1" font="italic">x</XMTok></XMath></Math>, <Math mode="inline" xml:id="S3.p3.1.1.m3" tex="y" text="y"><XMath xml:id="S3.p3.1.1.m3.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m3.1.1" font="italic">y</XMTok></XMath></Math>)</p>
+        <p xml:id="S3.p3.1.1" align="center">c) Parabolic cylinder,  <Math mode="inline" xml:id="S3.p3.1.1.m1" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z"><XMath xml:id="S3.p3.1.1.m1.1"><XMApp xml:id="S3.p3.1.1.m1.1.7"><XMTok meaning="equals" role="RELOP" xml:id="S3.p3.1.1.m1.1.3">=</XMTok><XMApp xml:id="S3.p3.1.1.m1.1.7.1"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S3.p3.1.1.m1.1.7.1.1"/><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.1" font="italic">x</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.2.1">2</XMTok></XMApp><XMApp xml:id="S3.p3.1.1.m1.1.7.2"><XMTok meaning="times" role="MULOP" xml:id="S3.p3.1.1.m1.1.7.2.1">⁢</XMTok><XMTok meaning="2" role="NUMBER" xml:id="S3.p3.1.1.m1.1.4">2</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.5" font="italic">p</XMTok><XMTok role="UNKNOWN" xml:id="S3.p3.1.1.m1.1.6" font="italic">z</XMTok></XMApp></XMApp></XMath></Math>;  it is a developable surface.</p>
+        <p xml:id="S3.p3.1.2" align="center">Signatures: blah <Math mode="inline" xml:id="S3.p3.1.2.m1" tex="x" text="x"><XMath xml:id="S3.p3.1.2.m1.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.2.m1.1.1" font="italic">x</XMTok></XMath></Math>, <Math mode="inline" xml:id="S3.p3.1.2.m2" tex="y" text="y"><XMath xml:id="S3.p3.1.2.m2.1"><XMTok role="UNKNOWN" xml:id="S3.p3.1.2.m2.1.1" font="italic">y</XMTok></XMath></Math>)</p>
       </inline-block>
     </para>
     <figure frefnum="Figure 1" refnum="1" xml:id="S3.F1">
@@ -101,9 +101,9 @@ Signatures: blah <Math mode="inline" xml:id="S3.p3.1.1.m2" tex="x" text="x"><XMa
       <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is random text. This is random text. This is random text.</caption>
     </figure>
     <figure frefnum="Figure 2" refnum="2" xml:id="S3.F2">
-      <p xml:id="S3.F2.1" align="center">A Figure line<break/>
-Another Figure line<break/>
-Yet another Figure line<break/></p>
+      <p xml:id="S3.F2.1" align="center">A Figure line</p>
+      <p xml:id="S3.F2.2" align="center">Another Figure line</p>
+      <p xml:id="S3.F2.3" align="center">Yet another Figure line</p>
       <toccaption class="ltx_centering"><tag close=" ">2</tag>Figure: This is a figure.</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 2</tag>Figure: This is a figure.</caption>
     </figure>
