@@ -9,35 +9,35 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basics</title>
     <para xml:id="S1.p1">
-      <tabular xml:id="S1.p1.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S1.p1.1.1">
-            <td align="left" border="l r" xml:id="S1.p1.1.1.1" thead="true">one</td>
-            <td align="center" border="r" xml:id="S1.p1.1.1.2">two</td>
+          <tr>
+            <td align="left" border="l r" thead="true">one</td>
+            <td align="center" border="r">two</td>
           </tr>
-          <tr xml:id="S1.p1.1.2">
-            <td align="left" border="l r" xml:id="S1.p1.1.2.1" thead="true">three</td>
-            <td align="center" border="r" xml:id="S1.p1.1.2.2">four</td>
+          <tr>
+            <td align="left" border="l r" thead="true">three</td>
+            <td align="center" border="r">four</td>
           </tr>
         </tbody>
       </tabular>
     </para>
     <para xml:id="S1.p2">
-      <tabular xml:id="S1.p2.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S1.p2.1.1">
-            <td align="left" border="l r" xml:id="S1.p2.1.1.1" backgroundcolor="#CCCCCC" thead="true">
+          <tr>
+            <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
               <text backgroundcolor="#CCCCCC">one</text>
             </td>
-            <td align="center" border="r" xml:id="S1.p2.1.1.2" backgroundcolor="#333333">
+            <td align="center" border="r" backgroundcolor="#333333">
               <text color="#FFFFFF" backgroundcolor="#333333">two</text>
             </td>
           </tr>
-          <tr xml:id="S1.p2.1.2">
-            <td align="left" border="l r" xml:id="S1.p2.1.2.1" backgroundcolor="#CCCCCC" thead="true">
+          <tr>
+            <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
-            <td align="center" border="r" xml:id="S1.p2.1.2.2" backgroundcolor="#333333">
+            <td align="center" border="r" backgroundcolor="#333333">
               <text color="#FFFFFF" backgroundcolor="#333333">four</text>
             </td>
           </tr>
@@ -48,21 +48,21 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Complex</title>
     <para xml:id="S2.p1">
-      <tabular xml:id="S2.p1.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S2.p1.1.1">
-            <td align="left" border="l r" xml:id="S2.p1.1.1.1" backgroundcolor="#CCCCCC" thead="true">
+          <tr>
+            <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
               <text backgroundcolor="#CCCCCC">one</text>
             </td>
-            <td align="center" border="r" xml:id="S2.p1.1.1.2" backgroundcolor="#333333">
+            <td align="center" border="r" backgroundcolor="#333333">
               <text color="#FFFFFF" backgroundcolor="#333333">two</text>
             </td>
           </tr>
-          <tr xml:id="S2.p1.1.2">
-            <td align="left" border="l r" xml:id="S2.p1.1.2.1" backgroundcolor="#CCCCCC" thead="true">
+          <tr>
+            <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
-            <td align="center" border="r" xml:id="S2.p1.1.2.2" backgroundcolor="#333333">
+            <td align="center" border="r" backgroundcolor="#333333">
               <text color="#FFFFFF" backgroundcolor="#333333">four</text>
             </td>
           </tr>
@@ -70,190 +70,190 @@
       </tabular>
     </para>
     <table frefnum="Table 1" refnum="1" xml:id="S2.T1">
-      <tabular xml:id="S2.T1.1">
-        <tr xml:id="S2.T1.1.1">
-          <td align="center" colspan="3" thead="true" xml:id="S2.T1.1.1.1" backgroundcolor="#00FFFF">
+      <tabular>
+        <tr>
+          <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
             <text fontsize="large" backgroundcolor="#00FFFF" font="bold">A long table example</text>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.2">
-          <td align="center" colspan="2" thead="true" xml:id="S2.T1.1.2.1" backgroundcolor="#FF00FF">
+        <tr>
+          <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">First two columns</text>
           </td>
-          <td align="center" thead="true" xml:id="S2.T1.1.2.2" backgroundcolor="#FF00FF">
+          <td align="center" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">Third column</text>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.3">
-          <td align="center" colspan="2" thead="true" xml:id="S2.T1.1.3.1" backgroundcolor="#FF00FF">
+        <tr>
+          <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">p-type</text>
           </td>
-          <td align="center" thead="true" xml:id="S2.T1.1.3.2" backgroundcolor="#FF00FF">
+          <td align="center" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">D-type (<text font="sansserif">dcolumn</text>)</text>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.4">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.4.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">P-column</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.4.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and another one</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.4.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.4.3.m1" tex="12\cdot 34" text="12.34">
-              <XMath xml:id="S2.T1.1.4.3.m1.1">
-                <XMTok meaning="12.34" role="NUMBER" xml:id="S2.T1.1.4.3.m1.1.5">12⋅34</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m1" tex="12\cdot 34" text="12.34">
+              <XMath>
+                <XMTok meaning="12.34" role="NUMBER">12⋅34</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.5">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.5.1" backgroundcolor="#CCCCCC">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">Total</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.5.2" backgroundcolor="#CCCCCC">
+          <td align="justify" width="85.358268pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">(wrong)</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.5.3" backgroundcolor="#CCCCCC">
-            <Math mode="inline" xml:id="S2.T1.1.5.3.m1" tex="100\cdot 6" text="100.6">
-              <XMath xml:id="S2.T1.1.5.3.m1.1">
-                <XMTok meaning="100.6" role="NUMBER" xml:id="S2.T1.1.5.3.m1.1.5">100⋅6</XMTok>
+          <td align="char:⋅" backgroundcolor="#CCCCCC">
+            <Math mode="inline" xml:id="S2.T1.m2" tex="100\cdot 6" text="100.6">
+              <XMath>
+                <XMTok meaning="100.6" role="NUMBER">100⋅6</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.6">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.6.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Some long text in the first column</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.6.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.6.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.6.3.m1" tex="1\cdot 2" text="1.2">
-              <XMath xml:id="S2.T1.1.6.3.m1.1">
-                <XMTok meaning="1.2" role="NUMBER" xml:id="S2.T1.1.6.3.m1.1.3">1⋅2</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m3" tex="1\cdot 2" text="1.2">
+              <XMath>
+                <XMTok meaning="1.2" role="NUMBER">1⋅2</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.7">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.7.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.7.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and some long text in the second column</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.7.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.7.3.m1" tex="1\cdot 345" text="1.345">
-              <XMath xml:id="S2.T1.1.7.3.m1.1">
-                <XMTok meaning="1.345" role="NUMBER" xml:id="S2.T1.1.7.3.m1.1.5">1⋅345</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m4" tex="1\cdot 345" text="1.345">
+              <XMath>
+                <XMTok meaning="1.345" role="NUMBER">1⋅345</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.8">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.8.1" backgroundcolor="#CCCCCC">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">Total</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.8.2" backgroundcolor="#CCCCCC">
+          <td align="justify" width="85.358268pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">(wrong)</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.8.3" backgroundcolor="#CCCCCC">
-            <Math mode="inline" xml:id="S2.T1.1.8.3.m1" tex="100\cdot 6" text="100.6">
-              <XMath xml:id="S2.T1.1.8.3.m1.1">
-                <XMTok meaning="100.6" role="NUMBER" xml:id="S2.T1.1.8.3.m1.1.5">100⋅6</XMTok>
+          <td align="char:⋅" backgroundcolor="#CCCCCC">
+            <Math mode="inline" xml:id="S2.T1.m5" tex="100\cdot 6" text="100.6">
+              <XMath>
+                <XMTok meaning="100.6" role="NUMBER">100⋅6</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.9">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.9.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.9.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.9.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.9.3.m1" tex="1\cdot 345" text="1.345">
-              <XMath xml:id="S2.T1.1.9.3.m1.1">
-                <XMTok meaning="1.345" role="NUMBER" xml:id="S2.T1.1.9.3.m1.1.5">1⋅345</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m6" tex="1\cdot 345" text="1.345">
+              <XMath>
+                <XMTok meaning="1.345" role="NUMBER">1⋅345</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.10">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.10.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Note that the coloured rules in all columns stretch to accomodate
 large entries in one column.</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.10.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.10.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.10.3.m1" tex="1\cdot 345" text="1.345">
-              <XMath xml:id="S2.T1.1.10.3.m1.1">
-                <XMTok meaning="1.345" role="NUMBER" xml:id="S2.T1.1.10.3.m1.1.5">1⋅345</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m7" tex="1\cdot 345" text="1.345">
+              <XMath>
+                <XMTok meaning="1.345" role="NUMBER">1⋅345</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.11">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.11.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.11.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.11.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.11.3.m1" tex="100" text="100">
-              <XMath xml:id="S2.T1.1.11.3.m1.1">
-                <XMTok meaning="100" role="NUMBER" xml:id="S2.T1.1.11.3.m1.1.3">100</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m8" tex="100" text="100">
+              <XMath>
+                <XMTok meaning="100" role="NUMBER">100</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.12">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.12.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.12.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">Depending on your driver you may get unsightly gaps or lines
 where the  ‘screens’ used to produce different shapes interact
 badly. You may want to cause adjacent panels of the same colour by
 specifying a larger overhang
 or by adding some negative space (in a ”“noalign” between rows.</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.12.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.12.3.m1" tex="12\cdot 4" text="12.4">
-              <XMath xml:id="S2.T1.1.12.3.m1.1">
-                <XMTok meaning="12.4" role="NUMBER" xml:id="S2.T1.1.12.3.m1.1.4">12⋅4</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m9" tex="12\cdot 4" text="12.4">
+              <XMath>
+                <XMTok meaning="12.4" role="NUMBER">12⋅4</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.13">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.13.1" backgroundcolor="#FF0000">
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.13.2" backgroundcolor="#0000FF">
+          <td align="justify" width="85.358268pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
-          <td align="char:⋅" xml:id="S2.T1.1.13.3" backgroundcolor="#FFFF00">
-            <Math mode="inline" xml:id="S2.T1.1.13.3.m1" tex="45\cdot 3" text="45.3">
-              <XMath xml:id="S2.T1.1.13.3.m1.1">
-                <XMTok meaning="45.3" role="NUMBER" xml:id="S2.T1.1.13.3.m1.1.4">45⋅3</XMTok>
+          <td align="char:⋅" backgroundcolor="#FFFF00">
+            <Math mode="inline" xml:id="S2.T1.m10" tex="45\cdot 3" text="45.3">
+              <XMath>
+                <XMTok meaning="45.3" role="NUMBER">45⋅3</XMTok>
               </XMath>
             </Math>
           </td>
         </tr>
-        <tr xml:id="S2.T1.1.14">
-          <td align="justify" width="56.905512pt" xml:id="S2.T1.1.14.1" backgroundcolor="#FF0000"/>
-          <td align="justify" width="85.358268pt" xml:id="S2.T1.1.14.2"/>
-          <td align="char:⋅" xml:id="S2.T1.1.14.3"/>
+        <tr>
+          <td align="justify" width="56.905512pt" backgroundcolor="#FF0000"/>
+          <td align="justify" width="85.358268pt"/>
+          <td align="char:⋅"/>
         </tr>
-        <tr xml:id="S2.T1.1.15">
-          <td align="center" colspan="3" thead="true" xml:id="S2.T1.1.15.1" backgroundcolor="#00FFFF">
+        <tr>
+          <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
             <text fontsize="large" backgroundcolor="#00FFFF" font="bold">The End</text>
           </td>
         </tr>
@@ -263,17 +263,17 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Row &amp; Cell Colors</title>
     <para xml:id="S3.p1">
-      <tabular xml:id="S3.p1.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S3.p1.1.1">
-            <td align="left" border="l r" xml:id="S3.p1.1.1.1" thead="true">one</td>
-            <td align="center" border="r" xml:id="S3.p1.1.1.2">two</td>
+          <tr>
+            <td align="left" border="l r" thead="true">one</td>
+            <td align="center" border="r">two</td>
           </tr>
-          <tr xml:id="S3.p1.1.2" backgroundcolor="#FF0000">
-            <td align="left" border="l r" xml:id="S3.p1.1.2.1" thead="true">
+          <tr backgroundcolor="#FF0000">
+            <td align="left" border="l r" thead="true">
               <text backgroundcolor="#FF0000">three</text>
             </td>
-            <td align="center" border="r" xml:id="S3.p1.1.2.2">
+            <td align="center" border="r">
               <text backgroundcolor="#FF0000">four</text>
             </td>
           </tr>
@@ -281,17 +281,17 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
       </tabular>
     </para>
     <para xml:id="S3.p2">
-      <tabular xml:id="S3.p2.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S3.p2.1.1">
-            <td align="left" border="l r" xml:id="S3.p2.1.1.1" thead="true">one</td>
-            <td align="center" border="r" xml:id="S3.p2.1.1.2" backgroundcolor="#0000FF">
+          <tr>
+            <td align="left" border="l r" thead="true">one</td>
+            <td align="center" border="r" backgroundcolor="#0000FF">
               <text backgroundcolor="#0000FF">two</text>
             </td>
           </tr>
-          <tr xml:id="S3.p2.1.2">
-            <td align="left" border="l r" xml:id="S3.p2.1.2.1" thead="true">three</td>
-            <td align="center" border="r" xml:id="S3.p2.1.2.2" backgroundcolor="#0000FF">
+          <tr>
+            <td align="left" border="l r" thead="true">three</td>
+            <td align="center" border="r" backgroundcolor="#0000FF">
               <text backgroundcolor="#0000FF">four</text>
             </td>
           </tr>
@@ -299,19 +299,19 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
       </tabular>
     </para>
     <para xml:id="S3.p3">
-      <tabular xml:id="S3.p3.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S3.p3.1.1">
-            <td align="left" border="l r" xml:id="S3.p3.1.1.1" thead="true">one</td>
-            <td align="center" border="r" xml:id="S3.p3.1.1.2" backgroundcolor="#0000FF">
+          <tr>
+            <td align="left" border="l r" thead="true">one</td>
+            <td align="center" border="r" backgroundcolor="#0000FF">
               <text backgroundcolor="#0000FF">two</text>
             </td>
           </tr>
-          <tr xml:id="S3.p3.1.2" backgroundcolor="#FF0000">
-            <td align="left" border="l r" xml:id="S3.p3.1.2.1" thead="true">
+          <tr backgroundcolor="#FF0000">
+            <td align="left" border="l r" thead="true">
               <text backgroundcolor="#FF0000">three</text>
             </td>
-            <td align="center" border="r" xml:id="S3.p3.1.2.2">
+            <td align="center" border="r">
               <text backgroundcolor="#FF0000">four</text>
             </td>
           </tr>
@@ -319,19 +319,19 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
       </tabular>
     </para>
     <para xml:id="S3.p4">
-      <tabular xml:id="S3.p4.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S3.p4.1.1">
-            <td align="left" border="l r" xml:id="S3.p4.1.1.1" thead="true">one</td>
-            <td align="center" border="r" xml:id="S3.p4.1.1.2" backgroundcolor="#0000FF">
+          <tr>
+            <td align="left" border="l r" thead="true">one</td>
+            <td align="center" border="r" backgroundcolor="#0000FF">
               <text backgroundcolor="#0000FF">two</text>
             </td>
           </tr>
-          <tr xml:id="S3.p4.1.2" backgroundcolor="#FF0000">
-            <td align="left" border="l r" xml:id="S3.p4.1.2.1" thead="true">
+          <tr backgroundcolor="#FF0000">
+            <td align="left" border="l r" thead="true">
               <text backgroundcolor="#FF0000">three</text>
             </td>
-            <td align="center" border="r" xml:id="S3.p4.1.2.2" backgroundcolor="#00FF00">
+            <td align="center" border="r" backgroundcolor="#00FF00">
               <text backgroundcolor="#00FF00">four</text>
             </td>
           </tr>
@@ -342,51 +342,51 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
   <section refnum="4" xml:id="S4">
     <title><tag close=" ">4</tag>Gaudy</title>
     <para xml:id="S4.p1">
-      <tabular xml:id="S4.p1.1">
+      <tabular>
         <tbody>
-          <tr xml:id="S4.p1.1.1">
-            <td align="center" border="ll t" xml:id="S4.p1.1.1.1" backgroundcolor="#E6E6E6">
+          <tr>
+            <td align="center" border="ll t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">Richard</text>
             </td>
-            <td align="center" border="t" xml:id="S4.p1.1.1.2" backgroundcolor="#E6E6E6">
+            <td align="center" border="t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">of</text>
             </td>
-            <td align="center" border="t" xml:id="S4.p1.1.1.3" backgroundcolor="#E6E6E6">
+            <td align="center" border="t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">York</text>
             </td>
-            <td align="center" border="t" xml:id="S4.p1.1.1.4" backgroundcolor="#E6E6E6">
+            <td align="center" border="t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">gave</text>
             </td>
-            <td align="center" border="t" xml:id="S4.p1.1.1.5" backgroundcolor="#E6E6E6">
+            <td align="center" border="t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">battle</text>
             </td>
-            <td align="center" border="t" xml:id="S4.p1.1.1.6" backgroundcolor="#E6E6E6">
+            <td align="center" border="t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">in</text>
             </td>
-            <td align="center" border="rr t" xml:id="S4.p1.1.1.7" backgroundcolor="#E6E6E6">
+            <td align="center" border="rr t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">vain</text>
             </td>
           </tr>
-          <tr xml:id="S4.p1.1.2">
-            <td align="center" border="b ll t" xml:id="S4.p1.1.2.1" backgroundcolor="#E6E6E6">
+          <tr>
+            <td align="center" border="b ll t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">1</text>
             </td>
-            <td align="center" border="b t" xml:id="S4.p1.1.2.2" backgroundcolor="#E6E6E6">
+            <td align="center" border="b t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">2</text>
             </td>
-            <td align="center" border="b t" xml:id="S4.p1.1.2.3" backgroundcolor="#E6E6E6">
+            <td align="center" border="b t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">3</text>
             </td>
-            <td align="center" border="b t" xml:id="S4.p1.1.2.4" backgroundcolor="#E6E6E6">
+            <td align="center" border="b t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">4</text>
             </td>
-            <td align="center" border="b t" xml:id="S4.p1.1.2.5" backgroundcolor="#E6E6E6">
+            <td align="center" border="b t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">5</text>
             </td>
-            <td align="center" border="b t" xml:id="S4.p1.1.2.6" backgroundcolor="#E6E6E6">
+            <td align="center" border="b t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">6</text>
             </td>
-            <td align="center" border="b rr t" xml:id="S4.p1.1.2.7" backgroundcolor="#E6E6E6">
+            <td align="center" border="b rr t" backgroundcolor="#E6E6E6">
               <text backgroundcolor="#E6E6E6">7</text>
             </td>
           </tr>

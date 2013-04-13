@@ -7,92 +7,92 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Display Math</title>
     <para xml:id="S1.p1">
-      <p xml:id="S1.p1.1">Begin first paragraph,</p>
+      <p>Begin first paragraph,</p>
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a+b," text="a + b">
-          <XMath xml:id="S1.Ex1.m1.1">
-            <XMApp punctuation="," xml:id="S1.Ex1.m1.1.5">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex1.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.3" font="italic">b</XMTok>
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
-      <p xml:id="S1.p1.2">continuing paragraph.</p>
+      <p>continuing paragraph.</p>
     </para>
     <para xml:id="S1.p2">
-      <p xml:id="S1.p2.1">Single line paragraph.</p>
+      <p>Single line paragraph.</p>
     </para>
     <para xml:id="S1.p3">
       <equation xml:id="S1.Ex2">
         <Math mode="display" xml:id="S1.Ex2.m1" tex="a+b." text="a + b">
-          <XMath xml:id="S1.Ex2.m1.1">
-            <XMApp punctuation="." xml:id="S1.Ex2.m1.1.5">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex2.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.3" font="italic">b</XMTok>
+          <XMath>
+            <XMApp punctuation=".">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S1.p4">
-      <p xml:id="S1.p4.1">Another single line paragraph.</p>
+      <p>Another single line paragraph.</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Itemizations</title>
     <para xml:id="S2.p1">
-      <p xml:id="S2.p1.1">Begin first paragraph,</p>
+      <p>Begin first paragraph,</p>
       <itemize xml:id="I1">
         <item xml:id="I1.i1">
           <para xml:id="I1.i1.p1">
-            <p xml:id="I1.i1.p1.1">A</p>
+            <p>A</p>
           </para>
         </item>
         <item xml:id="I1.i2">
           <para xml:id="I1.i2.p1">
-            <p xml:id="I1.i2.p1.1">B</p>
+            <p>B</p>
           </para>
         </item>
       </itemize>
-      <p xml:id="S2.p1.2">continuing paragraph.</p>
+      <p>continuing paragraph.</p>
     </para>
     <para xml:id="S2.p2">
-      <p xml:id="S2.p2.1">Single line paragraph.</p>
+      <p>Single line paragraph.</p>
     </para>
     <para xml:id="S2.p3">
       <itemize xml:id="I2">
         <item xml:id="I2.i1">
           <para xml:id="I2.i1.p1">
-            <p xml:id="I2.i1.p1.1">A</p>
+            <p>A</p>
           </para>
         </item>
         <item xml:id="I2.i2">
           <para xml:id="I2.i2.p1">
-            <p xml:id="I2.i2.p1.1">B</p>
+            <p>B</p>
           </para>
         </item>
       </itemize>
     </para>
     <para xml:id="S2.p4">
-      <p xml:id="S2.p4.1">Another single line paragraph.</p>
+      <p>Another single line paragraph.</p>
     </para>
     <para xml:id="S2.p5">
-      <p xml:id="S2.p5.1">Multiple Para within item</p>
+      <p>Multiple Para within item</p>
       <itemize xml:id="I3">
         <item xml:id="I3.i1">
           <para xml:id="I3.i1.p1">
-            <p xml:id="I3.i1.p1.1">A</p>
+            <p>A</p>
           </para>
           <para xml:id="I3.i1.p2">
-            <p xml:id="I3.i1.p2.1">B</p>
+            <p>B</p>
           </para>
         </item>
         <item xml:id="I3.i2">
           <para xml:id="I3.i2.p1">
-            <p xml:id="I3.i2.p1.1">C</p>
+            <p>C</p>
           </para>
         </item>
       </itemize>

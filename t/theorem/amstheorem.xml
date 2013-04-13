@@ -13,70 +13,70 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Test of standard theorem styles</title>
     <para xml:id="S1.p1">
-      <p xml:id="S1.p1.1">Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
+      <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
     <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx1">
       <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx1.p1">
-        <p xml:id="ThmAhlforsx1.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m1" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2"><XMath xml:id="ThmAhlforsx1.p1.1.m1.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14"><XMTok meaning="equals" role="RELOP" xml:id="ThmAhlforsx1.p1.1.m1.1.4" font="upright">=</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m1.1.14.1.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.1">d</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m1.1.14.1.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.2">s</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m1.1.3.1" font="upright">2</XMTok></XMApp></XMApp><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.1">⁢</XMTok><XMTok possibleFunction="yes" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.5">h</XMTok><XMTok close=")" open="(" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.7">z</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2.1"/><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2.2"><XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED" xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2.2.1"/><XMApp xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2.2.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m1.1.14.2.2.2.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.10">d</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m1.1.11">z</XMTok></XMApp></XMApp><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m1.1.13.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
-<Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx1.p1.1.m2.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m2.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m2.1.2.1">r</XMTok></XMApp></XMath></Math>, <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m3" tex="h\in C^{2}(\mathbf{D}_{r})" text="h element-of C ^ 2 * D _ r"><XMath xml:id="ThmAhlforsx1.p1.1.m3.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m3.1.9"><XMTok meaning="element-of" name="in" role="RELOP" xml:id="ThmAhlforsx1.p1.1.m3.1.2" font="upright">∈</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m3.1.1">h</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m3.1.9.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m3.1.9.1.1">⁢</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m3.1.9.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m3.1.9.1.2.1"/><XMTok possibleFunction="yes" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m3.1.3">C</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m3.1.4.1" font="upright">2</XMTok></XMApp><XMApp close=")" open="(" xml:id="ThmAhlforsx1.p1.1.m3.1.9.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m3.1.9.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m3.1.6" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m3.1.7.1">r</XMTok></XMApp></XMApp></XMApp></XMath></Math>, with <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m4" tex="\omega" text="omega"><XMath xml:id="ThmAhlforsx1.p1.1.m4.1"><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m4.1.1">ω</XMTok></XMath></Math> the associated
-<Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m5" tex="(1,1)" text="open-interval@(1, 1)"><XMath xml:id="ThmAhlforsx1.p1.1.m5.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m5.1.6"><XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators="," xml:id="ThmAhlforsx1.p1.1.m5.1.6.1"/><XMTok meaning="1" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m5.1.2" font="upright">1</XMTok><XMTok meaning="1" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m5.1.4" font="upright">1</XMTok></XMApp></XMath></Math>-form. If <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m6" tex="\mathop{\mathrm{Ric}}\nolimits\omega\geq\omega" text="Ric@(omega) &gt;= omega"><XMath xml:id="ThmAhlforsx1.p1.1.m6.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m6.1.7"><XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" xml:id="ThmAhlforsx1.p1.1.m6.1.5" font="upright">≥</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m6.1.7.1"><XMTok role="BIGOP" xml:id="ThmAhlforsx1.p1.1.m6.1.3" font="upright">Ric</XMTok><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m6.1.4">ω</XMTok></XMApp><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m6.1.6">ω</XMTok></XMApp></XMath></Math> on <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m7" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx1.p1.1.m7.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m7.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m7.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m7.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m7.1.2.1">r</XMTok></XMApp></XMath></Math>,
-then <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m8" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"><XMath xml:id="ThmAhlforsx1.p1.1.m8.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m8.1.5"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="ThmAhlforsx1.p1.1.m8.1.2" font="upright">≤</XMTok><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m8.1.1">ω</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m8.1.5.1"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m8.1.5.1.1"/><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m8.1.3">ω</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m8.1.4.1">r</XMTok></XMApp></XMApp></XMath></Math> on all of <Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m9" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx1.p1.1.m9.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m9.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m9.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m9.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m9.1.2.1">r</XMTok></XMApp></XMath></Math> (or equivalently,
-<Math mode="inline" xml:id="ThmAhlforsx1.p1.1.m10" tex="ds^{2}\leq ds_{r}^{2}" text="d * s ^ 2 less= d * (s _ r) ^ 2"><XMath xml:id="ThmAhlforsx1.p1.1.m10.1"><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="ThmAhlforsx1.p1.1.m10.1.4" font="upright">≤</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m10.1.9.1.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m10.1.1">d</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m10.1.9.1.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m10.1.2">s</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m10.1.3.1" font="upright">2</XMTok></XMApp></XMApp><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx1.p1.1.m10.1.9.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m10.1.5">d</XMTok><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m10.1.9.2.2.1"/><XMApp xml:id="ThmAhlforsx1.p1.1.m10.1.9.2.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx1.p1.1.m10.1.9.2.2.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m10.1.6">s</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx1.p1.1.m10.1.7.1">r</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx1.p1.1.m10.1.8.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math>).</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="ThmAhlforsx1.p1.m1" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2"><XMath><XMApp><XMTok meaning="equals" role="RELOP" font="upright">=</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok possibleFunction="yes" role="UNKNOWN">h</XMTok><XMTok close=")" open="(" role="UNKNOWN">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMTok role="UNKNOWN">z</XMTok></XMApp></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
+<Math mode="inline" xml:id="ThmAhlforsx1.p1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>, <Math mode="inline" xml:id="ThmAhlforsx1.p1.m3" tex="h\in C^{2}(\mathbf{D}_{r})" text="h element-of C ^ 2 * D _ r"><XMath><XMApp><XMTok meaning="element-of" name="in" role="RELOP" font="upright">∈</XMTok><XMTok role="UNKNOWN">h</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok possibleFunction="yes" role="UNKNOWN">C</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp><XMApp close=")" open="("><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMApp></XMath></Math>, with <Math mode="inline" xml:id="ThmAhlforsx1.p1.m4" tex="\omega" text="omega"><XMath><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMath></Math> the associated
+<Math mode="inline" xml:id="ThmAhlforsx1.p1.m5" tex="(1,1)" text="open-interval@(1, 1)"><XMath><XMApp><XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators=","/><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp></XMath></Math>-form. If <Math mode="inline" xml:id="ThmAhlforsx1.p1.m6" tex="\mathop{\mathrm{Ric}}\nolimits\omega\geq\omega" text="Ric@(omega) &gt;= omega"><XMath><XMApp><XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" font="upright">≥</XMTok><XMApp><XMTok role="BIGOP" font="upright">Ric</XMTok><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMApp><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMApp></XMath></Math> on <Math mode="inline" xml:id="ThmAhlforsx1.p1.m7" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>,
+then <Math mode="inline" xml:id="ThmAhlforsx1.p1.m8" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMath></Math> on all of <Math mode="inline" xml:id="ThmAhlforsx1.p1.m9" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math> (or equivalently,
+<Math mode="inline" xml:id="ThmAhlforsx1.p1.m10" tex="ds^{2}\leq ds_{r}^{2}" text="d * s ^ 2 less= d * (s _ r) ^ 2"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math>).</text>
         </p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_lem" frefnum="Lemma 1.1" refnum="1.1" xml:id="S1.Thmthm1">
       <title font="bold"><tag>Lemma 1.1</tag> (negatively curved families).</title>
       <para xml:id="S1.Thmthm1.p1">
-        <p xml:id="S1.Thmthm1.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m1" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath xml:id="S1.Thmthm1.p1.1.m1.1"><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14"><XMTok argclose="}" argopen="{" meaning="set" role="FENCED" separators=", ," xml:id="S1.Thmthm1.p1.1.m1.1.14.1"/><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.2"><XMTok meaning="times" role="MULOP" xml:id="S1.Thmthm1.p1.1.m1.1.14.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m1.1.2">d</XMTok><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m1.1.14.2.2.1"/><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.2.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m1.1.14.2.2.2.1"/><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m1.1.3">s</XMTok><XMTok meaning="1" role="NUMBER" xml:id="S1.Thmthm1.p1.1.m1.1.4.1" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="S1.Thmthm1.p1.1.m1.1.5.1" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" xml:id="S1.Thmthm1.p1.1.m1.1.7" font="upright">…</XMTok><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.3"><XMTok meaning="times" role="MULOP" xml:id="S1.Thmthm1.p1.1.m1.1.14.3.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m1.1.9">d</XMTok><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.3.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m1.1.14.3.2.1"/><XMApp xml:id="S1.Thmthm1.p1.1.m1.1.14.3.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m1.1.14.3.2.2.1"/><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m1.1.10">s</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m1.1.11.1">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="S1.Thmthm1.p1.1.m1.1.12.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
-on <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="S1.Thmthm1.p1.1.m2.1"><XMApp xml:id="S1.Thmthm1.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m2.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m2.1.2.1">r</XMTok></XMApp></XMath></Math>, with associated forms <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m3" tex="\omega^{1}" text="omega ^ 1"><XMath xml:id="S1.Thmthm1.p1.1.m3.1"><XMApp xml:id="S1.Thmthm1.p1.1.m3.1.3"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m3.1.3.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m3.1.1">ω</XMTok><XMTok meaning="1" role="NUMBER" xml:id="S1.Thmthm1.p1.1.m3.1.2.1" font="upright">1</XMTok></XMApp></XMath></Math>, …, <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m4" tex="\omega^{k}" text="omega ^ k"><XMath xml:id="S1.Thmthm1.p1.1.m4.1"><XMApp xml:id="S1.Thmthm1.p1.1.m4.1.3"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m4.1.3.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m4.1.1">ω</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m4.1.2.1">k</XMTok></XMApp></XMath></Math>.
-Then <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m5" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= omega _ r"><XMath xml:id="S1.Thmthm1.p1.1.m5.1"><XMApp xml:id="S1.Thmthm1.p1.1.m5.1.6"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="S1.Thmthm1.p1.1.m5.1.3" font="upright">≤</XMTok><XMApp xml:id="S1.Thmthm1.p1.1.m5.1.6.1"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m5.1.6.1.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m5.1.1">ω</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m5.1.2.1">i</XMTok></XMApp><XMApp xml:id="S1.Thmthm1.p1.1.m5.1.6.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm1.p1.1.m5.1.6.2.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m5.1.4">ω</XMTok><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m5.1.5.1">r</XMTok></XMApp></XMApp></XMath></Math> for all <Math mode="inline" xml:id="S1.Thmthm1.p1.1.m6" tex="i" text="i"><XMath xml:id="S1.Thmthm1.p1.1.m6.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm1.p1.1.m6.1.1">i</XMTok></XMath></Math>.</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="S1.Thmthm1.p1.m1" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath><XMApp><XMTok argclose="}" argopen="{" meaning="set" role="FENCED" separators=", ,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" font="upright">…</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
+on <Math mode="inline" xml:id="S1.Thmthm1.p1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>, with associated forms <Math mode="inline" xml:id="S1.Thmthm1.p1.m3" tex="\omega^{1}" text="omega ^ 1"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp></XMath></Math>, …, <Math mode="inline" xml:id="S1.Thmthm1.p1.m4" tex="\omega^{k}" text="omega ^ k"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp></XMath></Math>.
+Then <Math mode="inline" xml:id="S1.Thmthm1.p1.m5" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= omega _ r"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">i</XMTok></XMApp><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMath></Math> for all <Math mode="inline" xml:id="S1.Thmthm1.p1.m6" tex="i" text="i"><XMath><XMTok role="UNKNOWN">i</XMTok></XMath></Math>.</text>
         </p>
       </para>
     </theorem>
     <para xml:id="S1.p2">
-      <p xml:id="S1.p2.1">Then our main theorem:</p>
+      <p>Then our main theorem:</p>
     </para>
     <theorem class="ltx_theorem_thm" frefnum="Theorem 1.2" refnum="1.2" xml:id="S1.Thmthm2" labels="LABEL:pigspan">
       <title font="bold"><tag>Theorem 1.2</tag>.</title>
       <para xml:id="S1.Thmthm2.p1">
-        <p xml:id="S1.Thmthm2.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m1" tex="d_{{\max}}" text="d _ maximum"><XMath xml:id="S1.Thmthm2.p1.1.m1.1"><XMApp xml:id="S1.Thmthm2.p1.1.m1.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm2.p1.1.m1.1.3.1"/><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m1.1.1">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" xml:id="S1.Thmthm2.p1.1.m1.1.2.1" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m2" tex="d_{{\min}}" text="d _ minimum"><XMath xml:id="S1.Thmthm2.p1.1.m2.1"><XMApp xml:id="S1.Thmthm2.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S1.Thmthm2.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m2.1.1">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" xml:id="S1.Thmthm2.p1.1.m2.1.2.1" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
-between any two adjacent vertices of a quadrilateral <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m3" tex="Q" text="Q"><XMath xml:id="S1.Thmthm2.p1.1.m3.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m3.1.1">Q</XMTok></XMath></Math>. Let <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m4" tex="\sigma" text="sigma"><XMath xml:id="S1.Thmthm2.p1.1.m4.1"><XMTok name="sigma" role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m4.1.1">σ</XMTok></XMath></Math>
-be the diagonal pigspan of a pig <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m5" tex="P" text="P"><XMath xml:id="S1.Thmthm2.p1.1.m5.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m5.1.1">P</XMTok></XMath></Math> with four legs.
-Then <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m6" tex="P" text="P"><XMath xml:id="S1.Thmthm2.p1.1.m6.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m6.1.1">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m7" tex="Q" text="Q"><XMath xml:id="S1.Thmthm2.p1.1.m7.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm2.p1.1.m7.1.1">Q</XMTok></XMath></Math> iff</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="S1.Thmthm2.p1.m1" tex="d_{{\max}}" text="d _ maximum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" xml:id="S1.Thmthm2.p1.m2" tex="d_{{\min}}" text="d _ minimum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
+between any two adjacent vertices of a quadrilateral <Math mode="inline" xml:id="S1.Thmthm2.p1.m3" tex="Q" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math>. Let <Math mode="inline" xml:id="S1.Thmthm2.p1.m4" tex="\sigma" text="sigma"><XMath><XMTok name="sigma" role="UNKNOWN">σ</XMTok></XMath></Math>
+be the diagonal pigspan of a pig <Math mode="inline" xml:id="S1.Thmthm2.p1.m5" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> with four legs.
+Then <Math mode="inline" xml:id="S1.Thmthm2.p1.m6" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" xml:id="S1.Thmthm2.p1.m7" tex="Q" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math> iff</text>
         </p>
         <equation frefnum="(1)" refnum="1" xml:id="S1.E1" labels="LABEL:sdq">
           <Math mode="display" xml:id="S1.E1.m1" tex="\sigma\geq\sqrt{d_{{\max}}^{2}+d_{{\min}}^{2}}." text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)">
-            <XMath xml:id="S1.E1.m1.1">
-              <XMApp punctuation="." xml:id="S1.E1.m1.1.5">
-                <XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" xml:id="S1.E1.m1.1.2">≥</XMTok>
-                <XMTok name="sigma" role="UNKNOWN" xml:id="S1.E1.m1.1.1" font="italic">σ</XMTok>
-                <XMApp xml:id="S1.E1.m1.1.3">
-                  <XMTok meaning="square-root" xml:id="S1.E1.m1.1.3.1"/>
-                  <XMApp xml:id="S1.E1.m1.1.3.2">
-                    <XMTok meaning="plus" role="ADDOP" xml:id="S1.E1.m1.1.3.2.4">+</XMTok>
-                    <XMApp xml:id="S1.E1.m1.1.3.2.8">
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4" xml:id="S1.E1.m1.1.3.2.8.1"/>
-                      <XMApp xml:id="S1.E1.m1.1.3.2.8.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post4" xml:id="S1.E1.m1.1.3.2.8.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S1.E1.m1.1.3.2.1" font="italic">d</XMTok>
-                        <XMTok meaning="maximum" role="LIMITOP" scriptpos="post" xml:id="S1.E1.m1.1.3.2.2.1">max</XMTok>
+            <XMath>
+              <XMApp punctuation=".">
+                <XMTok meaning="greater-than-or-equals" name="geq" role="RELOP">≥</XMTok>
+                <XMTok name="sigma" role="UNKNOWN" font="italic">σ</XMTok>
+                <XMApp>
+                  <XMTok meaning="square-root"/>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post4"/>
+                        <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                        <XMTok meaning="maximum" role="LIMITOP" scriptpos="post">max</XMTok>
                       </XMApp>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S1.E1.m1.1.3.2.3.1">2</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
-                    <XMApp xml:id="S1.E1.m1.1.3.2.9">
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4" xml:id="S1.E1.m1.1.3.2.9.1"/>
-                      <XMApp xml:id="S1.E1.m1.1.3.2.9.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post4" xml:id="S1.E1.m1.1.3.2.9.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S1.E1.m1.1.3.2.5" font="italic">d</XMTok>
-                        <XMTok meaning="minimum" role="LIMITOP" scriptpos="post" xml:id="S1.E1.m1.1.3.2.6.1">min</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post4"/>
+                        <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                        <XMTok meaning="minimum" role="LIMITOP" scriptpos="post">min</XMTok>
                       </XMApp>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S1.E1.m1.1.3.2.7.1">2</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMApp>
@@ -89,17 +89,17 @@ Then <Math mode="inline" xml:id="S1.Thmthm2.p1.1.m6" tex="P" text="P"><XMath xml
     <theorem class="ltx_theorem_cor" frefnum="Corollary 1.3" refnum="1.3" xml:id="S1.Thmthm3">
       <title font="bold"><tag>Corollary 1.3</tag>.</title>
       <para xml:id="S1.Thmthm3.p1">
-        <p xml:id="S1.Thmthm3.p1.1">
-          <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" xml:id="S1.Thmthm3.p1.1.m1" tex="P" text="P"><XMath xml:id="S1.Thmthm3.p1.1.m1.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm3.p1.1.m1.1.1">P</XMTok></XMath></Math> is capable of
-standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.1.m2" tex="T" text="T"><XMath xml:id="S1.Thmthm3.p1.1.m2.1"><XMTok role="UNKNOWN" xml:id="S1.Thmthm3.p1.1.m2.1.1">T</XMTok></XMath></Math> iff (<ref labelref="LABEL:sdq"/>) holds.</text>
+        <p>
+          <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" xml:id="S1.Thmthm3.p1.m1" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of
+standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.m2" tex="T" text="T"><XMath><XMTok role="UNKNOWN">T</XMTok></XMath></Math> iff (<ref labelref="LABEL:sdq"/>) holds.</text>
         </p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_rmk" frefnum="Remark" xml:id="Thmrmkx1">
       <title font="italic"><tag>Remark</tag>.</title>
       <para xml:id="Thmrmkx1.p1">
-        <p xml:id="Thmrmkx1.p1.1">As two-legged pigs generally fall over, the case of a polygon of order
-<Math mode="inline" xml:id="Thmrmkx1.p1.1.m1" tex="2" text="2"><XMath xml:id="Thmrmkx1.p1.1.m1.1"><XMTok meaning="2" role="NUMBER" xml:id="Thmrmkx1.p1.1.m1.1.1">2</XMTok></XMath></Math> is uninteresting.</p>
+        <p>As two-legged pigs generally fall over, the case of a polygon of order
+<Math mode="inline" xml:id="Thmrmkx1.p1.m1" tex="2" text="2"><XMath><XMTok meaning="2" role="NUMBER">2</XMTok></XMath></Math> is uninteresting.</p>
       </para>
     </theorem>
   </section>
@@ -108,7 +108,7 @@ standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.
     <theorem class="ltx_theorem_exer" frefnum="Exercise 1" refnum="1" xml:id="Thmexer1">
       <title font="bold"><tag>Exercise 1</tag>.</title>
       <para xml:id="Thmexer1.p1">
-        <p xml:id="Thmexer1.p1.1">
+        <p>
           <text font="italic">Generalize Theorem <ref labelref="LABEL:pigspan"/> to three and four dimensions.</text>
         </p>
       </para>
@@ -116,25 +116,25 @@ standing on the corners of a triangle <Math mode="inline" xml:id="S1.Thmthm3.p1.
     <theorem class="ltx_theorem_note" frefnum="Note 1" refnum="1" xml:id="Thmnote1">
       <title font="italic"><tag>Note 1</tag>:</title>
       <para xml:id="Thmnote1.p1">
-        <p xml:id="Thmnote1.p1.1">This is a test of the custom theorem style ‘note’. It is supposed to have
+        <p>This is a test of the custom theorem style ‘note’. It is supposed to have
 variant fonts and other differences.</p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_bthm" frefnum="B-Theorem 1" refnum="1" xml:id="Thmbthm1">
       <title font="bold"><tag>B-Theorem 1</tag>.</title>
       <para xml:id="Thmbthm1.p1">
-        <p xml:id="Thmbthm1.p1.1">
+        <p>
           <text font="italic">Test of the ‘linebreak’ style of theorem heading.</text>
         </p>
       </para>
     </theorem>
     <para xml:id="S2.p1">
-      <p xml:id="S2.p1.1">This is a test of a citing theorem to cite a theorem from some other source.</p>
+      <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
     <theorem class="ltx_theorem_varthm" xml:id="Thmvarthmx1">
       <title font="bold">Theorem 3.6 in <cite>[<bibref bibrefs="thatone" separator="," show="Refnum" yyseparator=","/>]</cite>.</title>
       <para xml:id="Thmvarthmx1.p1">
-        <p xml:id="Thmvarthmx1.p1.1">
+        <p>
           <text font="italic">No hyperlinking available here yet … but that’s not a
 bad idea for the future.</text>
         </p>
@@ -143,42 +143,42 @@ bad idea for the future.</text>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>The proof environment</title>
-    <proof xml:id="S3.1">
+    <proof>
       <title font="italic">Proof.</title>
-      <para xml:id="S3.1.p1">
-        <p xml:id="S3.1.p1.1">Here is a test of the proof environment.
+      <para xml:id="S3.p1">
+        <p>Here is a test of the proof environment.
 ∎</p>
       </para>
     </proof>
-    <proof xml:id="S3.2">
+    <proof>
       <title font="italic">Proof of Theorem <ref labelref="LABEL:pigspan"/>.</title>
-      <para xml:id="S3.2.p1">
-        <p xml:id="S3.2.p1.1">And another test.
+      <para xml:id="S3.p2">
+        <p>And another test.
 ∎</p>
       </para>
     </proof>
-    <proof xml:id="S3.3">
+    <proof>
       <title font="italic">Proof <text font="upright">(</text>necessity<text font="upright">)</text>.</title>
-      <para xml:id="S3.3.p1">
-        <p xml:id="S3.3.p1.1">And another.
+      <para xml:id="S3.p3">
+        <p>And another.
 ∎</p>
       </para>
     </proof>
-    <proof xml:id="S3.4">
+    <proof>
       <title font="italic">Proof <text font="upright">(</text>sufficiency<text font="upright">)</text>.</title>
-      <para xml:id="S3.4.p1">
-        <p xml:id="S3.4.p1.1">And another, ending with a display:</p>
+      <para xml:id="S3.p4">
+        <p>And another, ending with a display:</p>
         <equation xml:id="S3.Ex1">
           <Math mode="display" xml:id="S3.Ex1.m1" tex="1+1=2\,.\qed" text="1 + 1 = 2.">
-            <XMath xml:id="S3.Ex1.m1.1">
-              <XMApp punctuation="∎" xml:id="S3.Ex1.m1.1.9">
-                <XMTok meaning="equals" role="RELOP" xml:id="S3.Ex1.m1.1.4">=</XMTok>
-                <XMApp xml:id="S3.Ex1.m1.1.9.1">
-                  <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex1.m1.1.2">+</XMTok>
-                  <XMTok meaning="1" role="NUMBER" xml:id="S3.Ex1.m1.1.1">1</XMTok>
-                  <XMTok meaning="1" role="NUMBER" xml:id="S3.Ex1.m1.1.3">1</XMTok>
+            <XMath>
+              <XMApp punctuation="∎">
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
                 </XMApp>
-                <XMTok meaning="2." role="NUMBER" xml:id="S3.Ex1.m1.1.7">2 .</XMTok>
+                <XMTok meaning="2." role="NUMBER">2 .</XMTok>
               </XMApp>
             </XMath>
           </Math>
@@ -189,74 +189,74 @@ bad idea for the future.</text>
   <section refnum="4" xml:id="S4">
     <title><tag close=" ">4</tag>Test of number-swapping</title>
     <para xml:id="S4.p1">
-      <p xml:id="S4.p1.1">This is a repeat of the first section but with numbers in theorem heads
+      <p>This is a repeat of the first section but with numbers in theorem heads
 swapped to the left.</p>
     </para>
     <para xml:id="S4.p2">
-      <p xml:id="S4.p2.1">Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
+      <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
     <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx2">
       <title font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
       <para xml:id="ThmAhlforsx2.p1">
-        <p xml:id="ThmAhlforsx2.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m1" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2"><XMath xml:id="ThmAhlforsx2.p1.1.m1.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14"><XMTok meaning="equals" role="RELOP" xml:id="ThmAhlforsx2.p1.1.m1.1.4" font="upright">=</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m1.1.14.1.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.1">d</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m1.1.14.1.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.2">s</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m1.1.3.1" font="upright">2</XMTok></XMApp></XMApp><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.1">⁢</XMTok><XMTok possibleFunction="yes" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.5">h</XMTok><XMTok close=")" open="(" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.7">z</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2.1"/><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2.2"><XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED" xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2.2.1"/><XMApp xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2.2.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m1.1.14.2.2.2.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.10">d</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m1.1.11">z</XMTok></XMApp></XMApp><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m1.1.13.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
-<Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx2.p1.1.m2.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m2.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m2.1.2.1">r</XMTok></XMApp></XMath></Math>, <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m3" tex="h\in C^{2}(\mathbf{D}_{r})" text="h element-of C ^ 2 * D _ r"><XMath xml:id="ThmAhlforsx2.p1.1.m3.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m3.1.9"><XMTok meaning="element-of" name="in" role="RELOP" xml:id="ThmAhlforsx2.p1.1.m3.1.2" font="upright">∈</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m3.1.1">h</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m3.1.9.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m3.1.9.1.1">⁢</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m3.1.9.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m3.1.9.1.2.1"/><XMTok possibleFunction="yes" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m3.1.3">C</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m3.1.4.1" font="upright">2</XMTok></XMApp><XMApp close=")" open="(" xml:id="ThmAhlforsx2.p1.1.m3.1.9.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m3.1.9.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m3.1.6" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m3.1.7.1">r</XMTok></XMApp></XMApp></XMApp></XMath></Math>, with <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m4" tex="\omega" text="omega"><XMath xml:id="ThmAhlforsx2.p1.1.m4.1"><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m4.1.1">ω</XMTok></XMath></Math> the associated
-<Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m5" tex="(1,1)" text="open-interval@(1, 1)"><XMath xml:id="ThmAhlforsx2.p1.1.m5.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m5.1.6"><XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators="," xml:id="ThmAhlforsx2.p1.1.m5.1.6.1"/><XMTok meaning="1" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m5.1.2" font="upright">1</XMTok><XMTok meaning="1" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m5.1.4" font="upright">1</XMTok></XMApp></XMath></Math>-form. If <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m6" tex="\mathop{\mathrm{Ric}}\nolimits\omega\geq\omega" text="Ric@(omega) &gt;= omega"><XMath xml:id="ThmAhlforsx2.p1.1.m6.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m6.1.7"><XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" xml:id="ThmAhlforsx2.p1.1.m6.1.5" font="upright">≥</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m6.1.7.1"><XMTok role="BIGOP" xml:id="ThmAhlforsx2.p1.1.m6.1.3" font="upright">Ric</XMTok><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m6.1.4">ω</XMTok></XMApp><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m6.1.6">ω</XMTok></XMApp></XMath></Math> on <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m7" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx2.p1.1.m7.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m7.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m7.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m7.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m7.1.2.1">r</XMTok></XMApp></XMath></Math>,
-then <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m8" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"><XMath xml:id="ThmAhlforsx2.p1.1.m8.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m8.1.5"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="ThmAhlforsx2.p1.1.m8.1.2" font="upright">≤</XMTok><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m8.1.1">ω</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m8.1.5.1"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m8.1.5.1.1"/><XMTok name="omega" role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m8.1.3">ω</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m8.1.4.1">r</XMTok></XMApp></XMApp></XMath></Math> on all of <Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m9" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="ThmAhlforsx2.p1.1.m9.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m9.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m9.1.3.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m9.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m9.1.2.1">r</XMTok></XMApp></XMath></Math> (or equivalently,
-<Math mode="inline" xml:id="ThmAhlforsx2.p1.1.m10" tex="ds^{2}\leq ds_{r}^{2}" text="d * s ^ 2 less= d * (s _ r) ^ 2"><XMath xml:id="ThmAhlforsx2.p1.1.m10.1"><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="ThmAhlforsx2.p1.1.m10.1.4" font="upright">≤</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9.1"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m10.1.9.1.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m10.1.1">d</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9.1.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m10.1.9.1.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m10.1.2">s</XMTok><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m10.1.3.1" font="upright">2</XMTok></XMApp></XMApp><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9.2"><XMTok meaning="times" role="MULOP" xml:id="ThmAhlforsx2.p1.1.m10.1.9.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m10.1.5">d</XMTok><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m10.1.9.2.2.1"/><XMApp xml:id="ThmAhlforsx2.p1.1.m10.1.9.2.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="ThmAhlforsx2.p1.1.m10.1.9.2.2.2.1"/><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m10.1.6">s</XMTok><XMTok role="UNKNOWN" xml:id="ThmAhlforsx2.p1.1.m10.1.7.1">r</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="ThmAhlforsx2.p1.1.m10.1.8.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math>).</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="ThmAhlforsx2.p1.m1" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2"><XMath><XMApp><XMTok meaning="equals" role="RELOP" font="upright">=</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok possibleFunction="yes" role="UNKNOWN">h</XMTok><XMTok close=")" open="(" role="UNKNOWN">z</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMTok role="UNKNOWN">z</XMTok></XMApp></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a Hermitian pseudo-metric on
+<Math mode="inline" xml:id="ThmAhlforsx2.p1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>, <Math mode="inline" xml:id="ThmAhlforsx2.p1.m3" tex="h\in C^{2}(\mathbf{D}_{r})" text="h element-of C ^ 2 * D _ r"><XMath><XMApp><XMTok meaning="element-of" name="in" role="RELOP" font="upright">∈</XMTok><XMTok role="UNKNOWN">h</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok possibleFunction="yes" role="UNKNOWN">C</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp><XMApp close=")" open="("><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMApp></XMath></Math>, with <Math mode="inline" xml:id="ThmAhlforsx2.p1.m4" tex="\omega" text="omega"><XMath><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMath></Math> the associated
+<Math mode="inline" xml:id="ThmAhlforsx2.p1.m5" tex="(1,1)" text="open-interval@(1, 1)"><XMath><XMApp><XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators=","/><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp></XMath></Math>-form. If <Math mode="inline" xml:id="ThmAhlforsx2.p1.m6" tex="\mathop{\mathrm{Ric}}\nolimits\omega\geq\omega" text="Ric@(omega) &gt;= omega"><XMath><XMApp><XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" font="upright">≥</XMTok><XMApp><XMTok role="BIGOP" font="upright">Ric</XMTok><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMApp><XMTok name="omega" role="UNKNOWN">ω</XMTok></XMApp></XMath></Math> on <Math mode="inline" xml:id="ThmAhlforsx2.p1.m7" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>,
+then <Math mode="inline" xml:id="ThmAhlforsx2.p1.m8" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMath></Math> on all of <Math mode="inline" xml:id="ThmAhlforsx2.p1.m9" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math> (or equivalently,
+<Math mode="inline" xml:id="ThmAhlforsx2.p1.m10" tex="ds^{2}\leq ds_{r}^{2}" text="d * s ^ 2 less= d * (s _ r) ^ 2"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math>).</text>
         </p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_lemsw" frefnum="4.1 Lemma" refnum="4.1" xml:id="S4.Thmthmsw1">
       <title font="bold"><tag>4.1 Lemma</tag> (negatively curved families).</title>
       <para xml:id="S4.Thmthmsw1.p1">
-        <p xml:id="S4.Thmthmsw1.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m1" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath xml:id="S4.Thmthmsw1.p1.1.m1.1"><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14"><XMTok argclose="}" argopen="{" meaning="set" role="FENCED" separators=", ," xml:id="S4.Thmthmsw1.p1.1.m1.1.14.1"/><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2"><XMTok meaning="times" role="MULOP" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m1.1.2">d</XMTok><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2.2.1"/><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.2.2.2.1"/><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m1.1.3">s</XMTok><XMTok meaning="1" role="NUMBER" xml:id="S4.Thmthmsw1.p1.1.m1.1.4.1" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="S4.Thmthmsw1.p1.1.m1.1.5.1" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" xml:id="S4.Thmthmsw1.p1.1.m1.1.7" font="upright">…</XMTok><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3"><XMTok meaning="times" role="MULOP" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m1.1.9">d</XMTok><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3.2"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3.2.1"/><XMApp xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3.2.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m1.1.14.3.2.2.1"/><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m1.1.10">s</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m1.1.11.1">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" xml:id="S4.Thmthmsw1.p1.1.m1.1.12.1" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
-on <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath xml:id="S4.Thmthmsw1.p1.1.m2.1"><XMApp xml:id="S4.Thmthmsw1.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m2.1.1" font="bold upright">D</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m2.1.2.1">r</XMTok></XMApp></XMath></Math>, with associated forms <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m3" tex="\omega^{1}" text="omega ^ 1"><XMath xml:id="S4.Thmthmsw1.p1.1.m3.1"><XMApp xml:id="S4.Thmthmsw1.p1.1.m3.1.3"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m3.1.3.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m3.1.1">ω</XMTok><XMTok meaning="1" role="NUMBER" xml:id="S4.Thmthmsw1.p1.1.m3.1.2.1" font="upright">1</XMTok></XMApp></XMath></Math>, …, <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m4" tex="\omega^{k}" text="omega ^ k"><XMath xml:id="S4.Thmthmsw1.p1.1.m4.1"><XMApp xml:id="S4.Thmthmsw1.p1.1.m4.1.3"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m4.1.3.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m4.1.1">ω</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m4.1.2.1">k</XMTok></XMApp></XMath></Math>.
-Then <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m5" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= omega _ r"><XMath xml:id="S4.Thmthmsw1.p1.1.m5.1"><XMApp xml:id="S4.Thmthmsw1.p1.1.m5.1.6"><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" xml:id="S4.Thmthmsw1.p1.1.m5.1.3" font="upright">≤</XMTok><XMApp xml:id="S4.Thmthmsw1.p1.1.m5.1.6.1"><XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m5.1.6.1.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m5.1.1">ω</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m5.1.2.1">i</XMTok></XMApp><XMApp xml:id="S4.Thmthmsw1.p1.1.m5.1.6.2"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw1.p1.1.m5.1.6.2.1"/><XMTok name="omega" role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m5.1.4">ω</XMTok><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m5.1.5.1">r</XMTok></XMApp></XMApp></XMath></Math> for all <Math mode="inline" xml:id="S4.Thmthmsw1.p1.1.m6" tex="i" text="i"><XMath xml:id="S4.Thmthmsw1.p1.1.m6.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw1.p1.1.m6.1.1">i</XMTok></XMath></Math>.</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m1" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)"><XMath><XMApp><XMTok argclose="}" argopen="{" meaning="set" role="FENCED" separators=", ,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp><XMTok name="dots" role="ID" font="upright">…</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">d</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">s</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp><XMTok meaning="2" role="NUMBER" font="upright">2</XMTok></XMApp></XMApp></XMApp></XMath></Math> be a negatively curved family of metrics
+on <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m2" tex="\mathbf{D}_{r}" text="D _ r"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="bold upright">D</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMath></Math>, with associated forms <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m3" tex="\omega^{1}" text="omega ^ 1"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok meaning="1" role="NUMBER" font="upright">1</XMTok></XMApp></XMath></Math>, …, <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m4" tex="\omega^{k}" text="omega ^ k"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">k</XMTok></XMApp></XMath></Math>.
+Then <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m5" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= omega _ r"><XMath><XMApp><XMTok meaning="less-than-or-equals" name="leq" role="RELOP" font="upright">≤</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">i</XMTok></XMApp><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok name="omega" role="UNKNOWN">ω</XMTok><XMTok role="UNKNOWN">r</XMTok></XMApp></XMApp></XMath></Math> for all <Math mode="inline" xml:id="S4.Thmthmsw1.p1.m6" tex="i" text="i"><XMath><XMTok role="UNKNOWN">i</XMTok></XMath></Math>.</text>
         </p>
       </para>
     </theorem>
     <para xml:id="S4.p3">
-      <p xml:id="S4.p3.1">Then our main theorem:</p>
+      <p>Then our main theorem:</p>
     </para>
     <theorem class="ltx_theorem_thmsw" frefnum="4.2 Theorem" refnum="4.2" xml:id="S4.Thmthmsw2">
       <title font="bold"><tag>4.2 Theorem</tag>.</title>
       <para xml:id="S4.Thmthmsw2.p1">
-        <p xml:id="S4.Thmthmsw2.p1.1">
-          <text font="italic">Let <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m1" tex="d_{{\max}}" text="d _ maximum"><XMath xml:id="S4.Thmthmsw2.p1.1.m1.1"><XMApp xml:id="S4.Thmthmsw2.p1.1.m1.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw2.p1.1.m1.1.3.1"/><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m1.1.1">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" xml:id="S4.Thmthmsw2.p1.1.m1.1.2.1" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m2" tex="d_{{\min}}" text="d _ minimum"><XMath xml:id="S4.Thmthmsw2.p1.1.m2.1"><XMApp xml:id="S4.Thmthmsw2.p1.1.m2.1.3"><XMTok role="SUBSCRIPTOP" scriptpos="post3" xml:id="S4.Thmthmsw2.p1.1.m2.1.3.1"/><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m2.1.1">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" xml:id="S4.Thmthmsw2.p1.1.m2.1.2.1" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
-between any two adjacent vertices of a quadrilateral <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m3" tex="Q" text="Q"><XMath xml:id="S4.Thmthmsw2.p1.1.m3.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m3.1.1">Q</XMTok></XMath></Math>. Let <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m4" tex="\sigma" text="sigma"><XMath xml:id="S4.Thmthmsw2.p1.1.m4.1"><XMTok name="sigma" role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m4.1.1">σ</XMTok></XMath></Math>
-be the diagonal pigspan of a pig <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m5" tex="P" text="P"><XMath xml:id="S4.Thmthmsw2.p1.1.m5.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m5.1.1">P</XMTok></XMath></Math> with four legs.
-Then <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m6" tex="P" text="P"><XMath xml:id="S4.Thmthmsw2.p1.1.m6.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m6.1.1">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m7" tex="Q" text="Q"><XMath xml:id="S4.Thmthmsw2.p1.1.m7.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw2.p1.1.m7.1.1">Q</XMTok></XMath></Math> iff</text>
+        <p>
+          <text font="italic">Let <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m1" tex="d_{{\max}}" text="d _ maximum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="maximum" role="LIMITOP" scriptpos="post" font="upright">max</XMTok></XMApp></XMath></Math> and <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m2" tex="d_{{\min}}" text="d _ minimum"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN">d</XMTok><XMTok meaning="minimum" role="LIMITOP" scriptpos="post" font="upright">min</XMTok></XMApp></XMath></Math> be the maximum, resp. minimum distance
+between any two adjacent vertices of a quadrilateral <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m3" tex="Q" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math>. Let <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m4" tex="\sigma" text="sigma"><XMath><XMTok name="sigma" role="UNKNOWN">σ</XMTok></XMath></Math>
+be the diagonal pigspan of a pig <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m5" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> with four legs.
+Then <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m6" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of standing on the corners of <Math mode="inline" xml:id="S4.Thmthmsw2.p1.m7" tex="Q" text="Q"><XMath><XMTok role="UNKNOWN">Q</XMTok></XMath></Math> iff</text>
         </p>
         <equation frefnum="(2)" refnum="2" xml:id="S4.E2" labels="LABEL:sdqsw">
           <Math mode="display" xml:id="S4.E2.m1" tex="\sigma\geq\sqrt{d_{{\max}}^{2}+d_{{\min}}^{2}}." text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)">
-            <XMath xml:id="S4.E2.m1.1">
-              <XMApp punctuation="." xml:id="S4.E2.m1.1.5">
-                <XMTok meaning="greater-than-or-equals" name="geq" role="RELOP" xml:id="S4.E2.m1.1.2">≥</XMTok>
-                <XMTok name="sigma" role="UNKNOWN" xml:id="S4.E2.m1.1.1" font="italic">σ</XMTok>
-                <XMApp xml:id="S4.E2.m1.1.3">
-                  <XMTok meaning="square-root" xml:id="S4.E2.m1.1.3.1"/>
-                  <XMApp xml:id="S4.E2.m1.1.3.2">
-                    <XMTok meaning="plus" role="ADDOP" xml:id="S4.E2.m1.1.3.2.4">+</XMTok>
-                    <XMApp xml:id="S4.E2.m1.1.3.2.8">
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4" xml:id="S4.E2.m1.1.3.2.8.1"/>
-                      <XMApp xml:id="S4.E2.m1.1.3.2.8.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post4" xml:id="S4.E2.m1.1.3.2.8.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S4.E2.m1.1.3.2.1" font="italic">d</XMTok>
-                        <XMTok meaning="maximum" role="LIMITOP" scriptpos="post" xml:id="S4.E2.m1.1.3.2.2.1">max</XMTok>
+            <XMath>
+              <XMApp punctuation=".">
+                <XMTok meaning="greater-than-or-equals" name="geq" role="RELOP">≥</XMTok>
+                <XMTok name="sigma" role="UNKNOWN" font="italic">σ</XMTok>
+                <XMApp>
+                  <XMTok meaning="square-root"/>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post4"/>
+                        <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                        <XMTok meaning="maximum" role="LIMITOP" scriptpos="post">max</XMTok>
                       </XMApp>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S4.E2.m1.1.3.2.3.1">2</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
-                    <XMApp xml:id="S4.E2.m1.1.3.2.9">
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4" xml:id="S4.E2.m1.1.3.2.9.1"/>
-                      <XMApp xml:id="S4.E2.m1.1.3.2.9.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post4" xml:id="S4.E2.m1.1.3.2.9.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S4.E2.m1.1.3.2.5" font="italic">d</XMTok>
-                        <XMTok meaning="minimum" role="LIMITOP" scriptpos="post" xml:id="S4.E2.m1.1.3.2.6.1">min</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post4"/>
+                        <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                        <XMTok meaning="minimum" role="LIMITOP" scriptpos="post">min</XMTok>
                       </XMApp>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S4.E2.m1.1.3.2.7.1">2</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMApp>
@@ -269,9 +269,9 @@ Then <Math mode="inline" xml:id="S4.Thmthmsw2.p1.1.m6" tex="P" text="P"><XMath x
     <theorem class="ltx_theorem_corsw" frefnum="4.3 Corollary" refnum="4.3" xml:id="S4.Thmthmsw3">
       <title font="bold"><tag>4.3 Corollary</tag>.</title>
       <para xml:id="S4.Thmthmsw3.p1">
-        <p xml:id="S4.Thmthmsw3.p1.1">
-          <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" xml:id="S4.Thmthmsw3.p1.1.m1" tex="P" text="P"><XMath xml:id="S4.Thmthmsw3.p1.1.m1.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw3.p1.1.m1.1.1">P</XMTok></XMath></Math> is capable of
-standing on the corners of a triangle <Math mode="inline" xml:id="S4.Thmthmsw3.p1.1.m2" tex="T" text="T"><XMath xml:id="S4.Thmthmsw3.p1.1.m2.1"><XMTok role="UNKNOWN" xml:id="S4.Thmthmsw3.p1.1.m2.1.1">T</XMTok></XMath></Math> iff (<ref labelref="LABEL:sdqsw"/>) holds.</text>
+        <p>
+          <text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" xml:id="S4.Thmthmsw3.p1.m1" tex="P" text="P"><XMath><XMTok role="UNKNOWN">P</XMTok></XMath></Math> is capable of
+standing on the corners of a triangle <Math mode="inline" xml:id="S4.Thmthmsw3.p1.m2" tex="T" text="T"><XMath><XMTok role="UNKNOWN">T</XMTok></XMath></Math> iff (<ref labelref="LABEL:sdqsw"/>) holds.</text>
         </p>
       </para>
     </theorem>

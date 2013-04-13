@@ -5,20 +5,20 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p xml:id="p1.1">foo is NOT defined,
+    <p>foo is NOT defined,
 it is NOT cs-defined,
 it is NOT relax,
 and it is NOT @defined.</p>
   </para>
   <para xml:id="p2">
-    <p xml:id="p2.1">After @ifundefined, however,
+    <p>After @ifundefined, however,
 foo IS defined,
 it IS cs-defined,
 it IS relax,
 but it is still NOT @defined.</p>
   </para>
   <para xml:id="p3">
-    <p xml:id="p3.1">baz is NOT defined,
+    <p>baz is NOT defined,
 it is NOT cs-defined,
 and it is NOT relax.
 Now,
@@ -27,7 +27,7 @@ it is still NOT cs-defined,
 and it is still NOT relax.</p>
   </para>
   <para xml:id="p4">
-    <p xml:id="p4.1">baz is NOT defined,
+    <p>baz is NOT defined,
 it is NOT cs-defined,
 and it is NOT relax.
 However, after ifx csname concoction
@@ -37,21 +37,21 @@ it IS cs-defined,
 and it IS relax.</p>
   </para>
   <para xml:id="p5">
-    <p xml:id="p5.1">Let zonk to relax.
+    <p>Let zonk to relax.
 zonk IS defined,
 it IS cs-defined,
 it IS relax,
 and it is NOT @defined.</p>
   </para>
   <para xml:id="p6">
-    <p xml:id="p6.1">Let zoob to a undefined token.
+    <p>Let zoob to a undefined token.
 zoob is NOT defined,
 it is NOT cs-defined,
 it is NOT relax,
 and it is NOT @defined.</p>
   </para>
   <para xml:id="p7">
-    <p xml:id="p7.1">Let zook to a plain letter.
+    <p>Let zook to a plain letter.
 
 zook IS defined,
 it IS cs-defined,

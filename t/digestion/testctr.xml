@@ -7,59 +7,59 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Testing Counters</title>
     <para xml:id="S1.p1">
-      <p xml:id="S1.p1.1">Counter Foo [0] = 0.</p>
+      <p>Counter Foo [0] = 0.</p>
     </para>
     <para xml:id="S1.p2">
-      <p xml:id="S1.p2.1">Increment Foo[1] =  1.</p>
+      <p>Increment Foo[1] =  1.</p>
     </para>
     <para xml:id="S1.p3">
-      <p xml:id="S1.p3.1">Set Foo to 2 = 2.</p>
+      <p>Set Foo to 2 = 2.</p>
     </para>
     <para xml:id="S1.p4">
-      <p xml:id="S1.p4.1">Add 10 to Foo [12] = 12.</p>
+      <p>Add 10 to Foo [12] = 12.</p>
     </para>
     <para xml:id="S1.p5">
-      <p xml:id="S1.p5.1">Double Foo [24] = 24.</p>
+      <p>Double Foo [24] = 24.</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Testing RefStep</title>
     <para xml:id="S2.p1">
-      <p xml:id="S2.p1.1">Define bar to be reset within foo.
+      <p>Define bar to be reset within foo.
 
 Now (Foo,Bar)[24,0] is (24,0)</p>
     </para>
     <para xml:id="S2.p2">
-      <p xml:id="S2.p2.1">Refstep bar: 
+      <p>Refstep bar: 
 Now (Foo,Bar)[24,1] is (24,1)</p>
     </para>
     <para xml:id="S2.p3">
-      <p xml:id="S2.p3.1">Refstep foo: 
+      <p>Refstep foo: 
 Now (Foo,Bar)[25,0] is (25,0)</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Number formatting</title>
     <para xml:id="S3.p1">
-      <p xml:id="S3.p1.1">arabic[6] = 6</p>
+      <p>arabic[6] = 6</p>
     </para>
     <para xml:id="S3.p2">
-      <p xml:id="S3.p2.1">roman [vi] = vi</p>
+      <p>roman [vi] = vi</p>
     </para>
     <para xml:id="S3.p3">
-      <p xml:id="S3.p3.1">Roman [VI] = VI</p>
+      <p>Roman [VI] = VI</p>
     </para>
     <para xml:id="S3.p4">
-      <p xml:id="S3.p4.1">alph [f] = f</p>
+      <p>alph [f] = f</p>
     </para>
     <para xml:id="S3.p5">
-      <p xml:id="S3.p5.1">Alph [F] = F</p>
+      <p>Alph [F] = F</p>
     </para>
     <para xml:id="S3.p6">
-      <p xml:id="S3.p6.1">fnsymbol [<Math mode="inline" xml:id="S3.p6.1.m1" tex="\|" text="parallel-to"><XMath xml:id="S3.p6.1.m1.1"><XMTok meaning="parallel-to" name="||" role="VERTBAR" xml:id="S3.p6.1.m1.1.1">∥</XMTok></XMath></Math>] = ∥</p>
+      <p>fnsymbol [<Math mode="inline" xml:id="S3.p6.m1" tex="\|" text="parallel-to"><XMath><XMTok meaning="parallel-to" name="||" role="VERTBAR">∥</XMTok></XMath></Math>] = ∥</p>
     </para>
     <para xml:id="S3.p7">
-      <p xml:id="S3.p7.1">How far will TeX go?
+      <p>How far will TeX go?
 
 
 Fubar is mmmmmmmmmcmxcix</p>
@@ -70,60 +70,60 @@ Fubar is mmmmmmmmmcmxcix</p>
     <subsection refnum="4.1" xml:id="S4.SS1">
       <title><tag close=" ">4.1</tag>Integers</title>
       <para xml:id="S4.SS1.p1">
-        <p xml:id="S4.SS1.p1.1">7 = 7.</p>
+        <p>7 = 7.</p>
       </para>
       <para xml:id="S4.SS1.p2">
-        <p xml:id="S4.SS1.p2.1">7 = 7.</p>
+        <p>7 = 7.</p>
       </para>
     </subsection>
     <subsection refnum="4.2" xml:id="S4.SS2">
       <title><tag close=" ">4.2</tag>Dimensions</title>
       <para xml:id="S4.SS2.p1">
-        <p xml:id="S4.SS2.p1.1">HFuzz is 0.1pt.
+        <p>HFuzz is 0.1pt.
 Now HFuzz is 2.0pt.</p>
       </para>
       <para xml:id="S4.SS2.p2">
-        <p xml:id="S4.SS2.p2.1">HFuzz is 2.0pt.
+        <p>HFuzz is 2.0pt.
 Now HFuzz is 2.0pt.</p>
       </para>
       <para xml:id="S4.SS2.p3">
-        <p xml:id="S4.SS2.p3.1">Dimen 1.23pt = 1.23pt.</p>
+        <p>Dimen 1.23pt = 1.23pt.</p>
       </para>
       <para xml:id="S4.SS2.p4">
-        <p xml:id="S4.SS2.p4.1">Dimen 1.23pt = 1.23pt.</p>
+        <p>Dimen 1.23pt = 1.23pt.</p>
       </para>
       <para xml:id="S4.SS2.p5">
-        <p xml:id="S4.SS2.p5.1">Dimen 1.23pt = 1.23pt.</p>
+        <p>Dimen 1.23pt = 1.23pt.</p>
       </para>
       <para xml:id="S4.SS2.p6">
-        <p xml:id="S4.SS2.p6.1">count 2: 3*65536 = 196608.</p>
+        <p>count 2: 3*65536 = 196608.</p>
       </para>
       <para xml:id="S4.SS2.p7">
-        <p xml:id="S4.SS2.p7.1">Now dimen: 3pt = 3.0pt</p>
+        <p>Now dimen: 3pt = 3.0pt</p>
       </para>
       <para xml:id="S4.SS2.p8">
-        <p xml:id="S4.SS2.p8.1">One em = 10.0pt</p>
+        <p>One em = 10.0pt</p>
       </para>
       <para xml:id="S4.SS2.p9">
-        <p xml:id="S4.SS2.p9.1">One ex = 4.3pt</p>
+        <p>One ex = 4.3pt</p>
       </para>
       <para xml:id="S4.SS2.p10">
-        <p xml:id="S4.SS2.p10.1">Dimen: one ex = 4.3pt</p>
+        <p>Dimen: one ex = 4.3pt</p>
       </para>
       <para xml:id="S4.SS2.p11">
-        <p xml:id="S4.SS2.p11.1">Dimen: 1pt = 1.0pt</p>
+        <p>Dimen: 1pt = 1.0pt</p>
       </para>
       <para xml:id="S4.SS2.p12">
-        <p xml:id="S4.SS2.p12.1">Dimen: 1pt = 1.0pt</p>
+        <p>Dimen: 1pt = 1.0pt</p>
       </para>
       <para xml:id="S4.SS2.p13">
-        <p xml:id="S4.SS2.p13.1">8 pt = 8.0pt</p>
+        <p>8 pt = 8.0pt</p>
       </para>
       <para xml:id="S4.SS2.p14">
-        <p xml:id="S4.SS2.p14.1">15 pt = 15.0pt</p>
+        <p>15 pt = 15.0pt</p>
       </para>
       <para xml:id="S4.SS2.p15">
-        <p xml:id="S4.SS2.p15.1">Catcodes?
+        <p>Catcodes?
 
 15.0 POINTS = 15.0 POINTS</p>
       </para>
@@ -131,22 +131,22 @@ Now HFuzz is 2.0pt.</p>
     <subsection refnum="4.3" xml:id="S4.SS3">
       <title><tag close=" ">4.3</tag>Glue</title>
       <para xml:id="S4.SS3.p1">
-        <p xml:id="S4.SS3.p1.1">1pt plus 3pt = 1.0pt plus 3.0pt</p>
+        <p>1pt plus 3pt = 1.0pt plus 3.0pt</p>
       </para>
       <para xml:id="S4.SS3.p2">
-        <p xml:id="S4.SS3.p2.1">1pt plus 3fil = 1.0pt plus 3fil</p>
+        <p>1pt plus 3fil = 1.0pt plus 3fil</p>
       </para>
       <para xml:id="S4.SS3.p3">
-        <p xml:id="S4.SS3.p3.1">1pt plus 3fill = 1.0pt plus 3fill</p>
+        <p>1pt plus 3fill = 1.0pt plus 3fill</p>
       </para>
       <para xml:id="S4.SS3.p4">
-        <p xml:id="S4.SS3.p4.1">Skip: 2pt plus 3fill = 2.0pt plus 3fill</p>
+        <p>Skip: 2pt plus 3fill = 2.0pt plus 3fill</p>
       </para>
       <para xml:id="S4.SS3.p5">
-        <p xml:id="S4.SS3.p5.1">0.1pt plus 3fill = 0.1pt plus 3fill</p>
+        <p>0.1pt plus 3fill = 0.1pt plus 3fill</p>
       </para>
       <para xml:id="S4.SS3.p6">
-        <p xml:id="S4.SS3.p6.1">Catcodes?
+        <p>Catcodes?
 
 1.0 POINTS  PLUS 3.0 POINTS = 1.0 POINTS   PLUS  3.0 POINTS</p>
       </para>
@@ -154,62 +154,62 @@ Now HFuzz is 2.0pt.</p>
     <subsection refnum="4.4" xml:id="S4.SS4">
       <title><tag close=" ">4.4</tag>Undefined?</title>
       <para xml:id="S4.SS4.p1">
-        <p xml:id="S4.SS4.p1.1">Unknown count: 0 = 0</p>
+        <p>Unknown count: 0 = 0</p>
       </para>
       <para xml:id="S4.SS4.p2">
-        <p xml:id="S4.SS4.p2.1">Unknown dimen: 0pt = 0.0pt</p>
+        <p>Unknown dimen: 0pt = 0.0pt</p>
       </para>
       <para xml:id="S4.SS4.p3">
-        <p xml:id="S4.SS4.p3.1">Unknown skip: 0pt = 0.0pt</p>
+        <p>Unknown skip: 0pt = 0.0pt</p>
       </para>
     </subsection>
     <subsection refnum="4.5" xml:id="S4.SS5">
       <title><tag close=" ">4.5</tag>The</title>
       <para xml:id="S4.SS5.p1">
-        <p xml:id="S4.SS5.p1.1">the count 0 : 0</p>
+        <p>the count 0 : 0</p>
       </para>
       <para xml:id="S4.SS5.p2">
-        <p xml:id="S4.SS5.p2.1">the two (countdef 2) : 196608</p>
+        <p>the two (countdef 2) : 196608</p>
       </para>
       <para xml:id="S4.SS5.p3">
-        <p xml:id="S4.SS5.p3.1">Tokens: abFOOcd = abFOOcd</p>
+        <p>Tokens: abFOOcd = abFOOcd</p>
       </para>
       <para xml:id="S4.SS5.p4">
-        <p xml:id="S4.SS5.p4.1">Catcode: 11 = 11</p>
+        <p>Catcode: 11 = 11</p>
       </para>
       <para xml:id="S4.SS5.p5">
-        <p xml:id="S4.SS5.p5.1">Catcode: 12 = 12</p>
+        <p>Catcode: 12 = 12</p>
       </para>
     </subsection>
     <subsection refnum="4.6" xml:id="S4.SS6">
       <title><tag close=" ">4.6</tag>New Count, etc</title>
       <para xml:id="S4.SS6.p1">
-        <p xml:id="S4.SS6.p1.1">3 = 3</p>
+        <p>3 = 3</p>
       </para>
     </subsection>
     <subsection refnum="4.7" xml:id="S4.SS7">
       <title><tag close=" ">4.7</tag>LaTeX style</title>
       <para xml:id="S4.SS7.p1">
-        <p xml:id="S4.SS7.p1.1">1em = 10.0pt
+        <p>1em = 10.0pt
 3em = 30.0pt</p>
       </para>
     </subsection>
     <subsection refnum="4.8" xml:id="S4.SS8">
       <title><tag close=" ">4.8</tag>Macrology</title>
       <para xml:id="S4.SS8.p1">
-        <p xml:id="S4.SS8.p1.1">1=1</p>
+        <p>1=1</p>
       </para>
       <para xml:id="S4.SS8.p2">
-        <p xml:id="S4.SS8.p2.1">[23=23]</p>
+        <p>[23=23]</p>
       </para>
       <para xml:id="S4.SS8.p3">
-        <p xml:id="S4.SS8.p3.1">[29=29]</p>
+        <p>[29=29]</p>
       </para>
       <para xml:id="S4.SS8.p4">
-        <p xml:id="S4.SS8.p4.1">[29=29]</p>
+        <p>[29=29]</p>
       </para>
       <para xml:id="S4.SS8.p5">
-        <p xml:id="S4.SS8.p5.1">[10000=10000]
+        <p>[10000=10000]
 [$a$ = $a$]</p>
       </para>
     </subsection>

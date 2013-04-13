@@ -7,30 +7,30 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p xml:id="p1.1"><Math mode="inline" xml:id="p1.1.m1" tex="b" text="b"><XMath xml:id="p1.1.m1.1"><XMTok role="UNKNOWN" xml:id="p1.1.m1.1.1" font="italic">b</XMTok></XMath></Math> B</p>
+    <p><Math mode="inline" xml:id="p1.m1" tex="b" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> B</p>
   </para>
   <para xml:id="p2">
-    <p xml:id="p2.1"><Math mode="inline" xml:id="p2.1.m1" tex="r{\color{green}g\color{yellow}y}" text="r * g * y"><XMath xml:id="p2.1.m1.1"><XMApp xml:id="p2.1.m1.1.4"><XMTok meaning="times" role="MULOP" xml:id="p2.1.m1.1.4.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="p2.1.m1.1.1" color="#FF0000" font="italic">r</XMTok><XMTok role="UNKNOWN" xml:id="p2.1.m1.1.2" color="#00FF00" font="italic">g</XMTok><XMTok role="UNKNOWN" xml:id="p2.1.m1.1.3" color="#FFFF00" font="italic">y</XMTok></XMApp></XMath></Math><text color="#FF0000"> R</text> B</p>
+    <p><Math mode="inline" xml:id="p2.m1" tex="r{\color{green}g\color{yellow}y}" text="r * g * y"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" color="#FF0000" font="italic">r</XMTok><XMTok role="UNKNOWN" color="#00FF00" font="italic">g</XMTok><XMTok role="UNKNOWN" color="#FFFF00" font="italic">y</XMTok></XMApp></XMath></Math><text color="#FF0000"> R</text> B</p>
   </para>
   <para xml:id="p3">
-    <p xml:id="p3.1"><text color="#FF0000">R <Math mode="inline" xml:id="p3.1.m1" tex="r\mbox{R}{\color{green}g\mbox{G}\color{yellow}y\mbox{Y}}r\mbox{R}" text="r * [R] * g * [G] * y * [Y] * r * [R]"><XMath xml:id="p3.1.m1.1"><XMApp xml:id="p3.1.m1.1.9"><XMTok meaning="times" role="MULOP" xml:id="p3.1.m1.1.9.1">⁢</XMTok><XMTok role="UNKNOWN" xml:id="p3.1.m1.1.1" font="italic">r</XMTok><XMText xml:id="p3.1.m1.1.2">R</XMText><XMTok role="UNKNOWN" xml:id="p3.1.m1.1.3" color="#00FF00" font="italic">g</XMTok><XMText xml:id="p3.1.m1.1.4"><text color="#00FF00">G</text></XMText><XMTok role="UNKNOWN" xml:id="p3.1.m1.1.5" color="#FFFF00" font="italic">y</XMTok><XMText xml:id="p3.1.m1.1.6"><text color="#FFFF00">Y</text></XMText><XMTok role="UNKNOWN" xml:id="p3.1.m1.1.7" font="italic">r</XMTok><XMText xml:id="p3.1.m1.1.8">R</XMText></XMApp></XMath></Math> R</text> B</p>
+    <p><text color="#FF0000">R <Math mode="inline" xml:id="p3.m1" tex="r\mbox{R}{\color{green}g\mbox{G}\color{yellow}y\mbox{Y}}r\mbox{R}" text="r * [R] * g * [G] * y * [Y] * r * [R]"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">r</XMTok><XMText>R</XMText><XMTok role="UNKNOWN" color="#00FF00" font="italic">g</XMTok><XMText><text color="#00FF00">G</text></XMText><XMTok role="UNKNOWN" color="#FFFF00" font="italic">y</XMTok><XMText><text color="#FFFF00">Y</text></XMText><XMTok role="UNKNOWN" font="italic">r</XMTok><XMText>R</XMText></XMApp></XMath></Math> R</text> B</p>
   </para>
   <para xml:id="p4">
-    <p xml:id="p4.1"><Math mode="inline" xml:id="p4.1.m1" tex="\color{red}r" text="r"><XMath xml:id="p4.1.m1.1"><XMTok role="UNKNOWN" xml:id="p4.1.m1.1.1" color="#FF0000" font="italic">r</XMTok></XMath></Math> B B</p>
+    <p><Math mode="inline" xml:id="p4.m1" tex="\color{red}r" text="r"><XMath><XMTok role="UNKNOWN" color="#FF0000" font="italic">r</XMTok></XMath></Math> B B</p>
   </para>
   <para xml:id="p5">
-    <p xml:id="p5.1"><text color="#FF0000">R</text><text color="#FF0000">R</text> B</p>
+    <p><text color="#FF0000">R</text><text color="#FF0000">R</text> B</p>
   </para>
   <para xml:id="p6">
     <equation xml:id="S0.Ex1">
       <Math mode="display" xml:id="S0.Ex1.m1" tex="r" text="r">
-        <XMath xml:id="S0.Ex1.m1.1">
-          <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.1" color="#FF0000" font="italic">r</XMTok>
+        <XMath>
+          <XMTok role="UNKNOWN" color="#FF0000" font="italic">r</XMTok>
         </XMath>
       </Math>
     </equation>
   </para>
   <para xml:id="p7">
-    <p xml:id="p7.1"><Math mode="inline" xml:id="p7.1.m1" tex="b" text="b"><XMath xml:id="p7.1.m1.1"><XMTok role="UNKNOWN" xml:id="p7.1.m1.1.1" font="italic">b</XMTok></XMath></Math> B</p>
+    <p><Math mode="inline" xml:id="p7.m1" tex="b" text="b"><XMath><XMTok role="UNKNOWN" font="italic">b</XMTok></XMath></Math> B</p>
   </para>
 </document>

@@ -9,14 +9,14 @@
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="a+2b" text="a + 2 * b">
-          <XMath xml:id="S1.Ex1.m1.1">
-            <XMApp xml:id="S1.Ex1.m1.1.5">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex1.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S1.Ex1.m1.1.5.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex1.m1.1.5.1.1">⁢</XMTok>
-                <XMTok meaning="2" role="NUMBER" xml:id="S1.Ex1.m1.1.3">2</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex1.m1.1.4" font="italic">b</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -24,14 +24,14 @@
       </equation>
       <equation xml:id="S1.Ex2">
         <Math mode="display" xml:id="S1.Ex2.m1" tex="a+123.456b" text="a + 123.456 * b">
-          <XMath xml:id="S1.Ex2.m1.1">
-            <XMApp xml:id="S1.Ex2.m1.1.11">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.Ex2.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S1.Ex2.m1.1.11.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S1.Ex2.m1.1.11.1.1">⁢</XMTok>
-                <XMTok meaning="123.456" role="NUMBER" xml:id="S1.Ex2.m1.1.9">123.456</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S1.Ex2.m1.1.10" font="italic">b</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123.456" role="NUMBER">123.456</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -44,14 +44,14 @@
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="1\frac{1}{2}" text="1 + 1 / 2">
-          <XMath xml:id="S2.Ex3.m1.1">
-            <XMApp xml:id="S2.Ex3.m1.1.3">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S2.Ex3.m1.1.3.1">⁤</XMTok>
-              <XMTok meaning="1" role="NUMBER" xml:id="S2.Ex3.m1.1.1">1</XMTok>
-              <XMApp xml:id="S2.Ex3.m1.1.2">
-                <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S2.Ex3.m1.1.2.1"/>
-                <XMTok meaning="1" role="NUMBER" xml:id="S2.Ex3.m1.1.2.2">1</XMTok>
-                <XMTok meaning="2" role="NUMBER" xml:id="S2.Ex3.m1.1.2.3">2</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+              <XMApp>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -59,22 +59,22 @@
       </equation>
       <equation xml:id="S2.Ex4">
         <Math mode="display" xml:id="S2.Ex4.m1" tex="a+123\frac{12}{34}b" text="a + (123 + 12 / 34) * b">
-          <XMath xml:id="S2.Ex4.m1.1">
-            <XMApp xml:id="S2.Ex4.m1.1.9">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S2.Ex4.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S2.Ex4.m1.1.9.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S2.Ex4.m1.1.9.1.1">⁢</XMTok>
-                <XMApp xml:id="S2.Ex4.m1.1.8">
-                  <XMTok meaning="plus" role="ADDOP" xml:id="S2.Ex4.m1.1.8.1">⁤</XMTok>
-                  <XMTok meaning="123" role="NUMBER" xml:id="S2.Ex4.m1.1.5">123</XMTok>
-                  <XMApp xml:id="S2.Ex4.m1.1.6">
-                    <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S2.Ex4.m1.1.6.1"/>
-                    <XMTok meaning="12" role="NUMBER" xml:id="S2.Ex4.m1.1.6.2">12</XMTok>
-                    <XMTok meaning="34" role="NUMBER" xml:id="S2.Ex4.m1.1.6.3">34</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+                  <XMTok meaning="123" role="NUMBER">123</XMTok>
+                  <XMApp>
+                    <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
+                    <XMTok meaning="34" role="NUMBER">34</XMTok>
                   </XMApp>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S2.Ex4.m1.1.7" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -87,19 +87,19 @@
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex5">
         <Math mode="display" xml:id="S3.Ex5.m1" tex="a+123\frac{12.0}{34}b" text="a + 123 * (12.0 / 34) * b">
-          <XMath xml:id="S3.Ex5.m1.1">
-            <XMApp xml:id="S3.Ex5.m1.1.8">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex5.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex5.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex5.m1.1.8.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex5.m1.1.8.1.1">⁢</XMTok>
-                <XMTok meaning="123" role="NUMBER" xml:id="S3.Ex5.m1.1.5">123</XMTok>
-                <XMApp xml:id="S3.Ex5.m1.1.6">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex5.m1.1.6.1"/>
-                  <XMTok meaning="12.0" role="NUMBER" xml:id="S3.Ex5.m1.1.6.2">12.0</XMTok>
-                  <XMTok meaning="34" role="NUMBER" xml:id="S3.Ex5.m1.1.6.3">34</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123" role="NUMBER">123</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok meaning="12.0" role="NUMBER">12.0</XMTok>
+                  <XMTok meaning="34" role="NUMBER">34</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex5.m1.1.7" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -107,19 +107,19 @@
       </equation>
       <equation xml:id="S3.Ex6">
         <Math mode="display" xml:id="S3.Ex6.m1" tex="a+123\frac{12}{y}b" text="a + 123 * (12 / y) * b">
-          <XMath xml:id="S3.Ex6.m1.1">
-            <XMApp xml:id="S3.Ex6.m1.1.8">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex6.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex6.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex6.m1.1.8.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex6.m1.1.8.1.1">⁢</XMTok>
-                <XMTok meaning="123" role="NUMBER" xml:id="S3.Ex6.m1.1.5">123</XMTok>
-                <XMApp xml:id="S3.Ex6.m1.1.6">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex6.m1.1.6.1"/>
-                  <XMTok meaning="12" role="NUMBER" xml:id="S3.Ex6.m1.1.6.2">12</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex6.m1.1.6.3" font="italic">y</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123" role="NUMBER">123</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok meaning="12" role="NUMBER">12</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex6.m1.1.7" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -127,23 +127,23 @@
       </equation>
       <equation xml:id="S3.Ex7">
         <Math mode="display" xml:id="S3.Ex7.m1" tex="a+123\frac{12x}{y}b" text="a + 123 * ((12 * x) / y) * b">
-          <XMath xml:id="S3.Ex7.m1.1">
-            <XMApp xml:id="S3.Ex7.m1.1.8">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex7.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex7.m1.1.8.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex7.m1.1.8.1.1">⁢</XMTok>
-                <XMTok meaning="123" role="NUMBER" xml:id="S3.Ex7.m1.1.5">123</XMTok>
-                <XMApp xml:id="S3.Ex7.m1.1.6">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex7.m1.1.6.1"/>
-                  <XMApp xml:id="S3.Ex7.m1.1.6.2">
-                    <XMTok meaning="times" role="MULOP" xml:id="S3.Ex7.m1.1.6.2.4">⁢</XMTok>
-                    <XMTok meaning="12" role="NUMBER" xml:id="S3.Ex7.m1.1.6.2.2">12</XMTok>
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.6.2.3" font="italic">x</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123" role="NUMBER">123</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.6.3" font="italic">y</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex7.m1.1.7" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -151,19 +151,19 @@
       </equation>
       <equation xml:id="S3.Ex8">
         <Math mode="display" xml:id="S3.Ex8.m1" tex="a+123\frac{x}{y}b" text="a + 123 * (x / y) * b">
-          <XMath xml:id="S3.Ex8.m1.1">
-            <XMApp xml:id="S3.Ex8.m1.1.8">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex8.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex8.m1.1.8.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex8.m1.1.8.1.1">⁢</XMTok>
-                <XMTok meaning="123" role="NUMBER" xml:id="S3.Ex8.m1.1.5">123</XMTok>
-                <XMApp xml:id="S3.Ex8.m1.1.6">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex8.m1.1.6.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.6.2" font="italic">x</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.6.3" font="italic">y</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123" role="NUMBER">123</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex8.m1.1.7" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -171,19 +171,19 @@
       </equation>
       <equation xml:id="S3.Ex9">
         <Math mode="display" xml:id="S3.Ex9.m1" tex="a+123.456\frac{12}{34}b" text="a + 123.456 * (12 / 34) * b">
-          <XMath xml:id="S3.Ex9.m1.1">
-            <XMApp xml:id="S3.Ex9.m1.1.12">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex9.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex9.m1.1.12.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex9.m1.1.12.1.1">⁢</XMTok>
-                <XMTok meaning="123.456" role="NUMBER" xml:id="S3.Ex9.m1.1.9">123.456</XMTok>
-                <XMApp xml:id="S3.Ex9.m1.1.10">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex9.m1.1.10.1"/>
-                  <XMTok meaning="12" role="NUMBER" xml:id="S3.Ex9.m1.1.10.2">12</XMTok>
-                  <XMTok meaning="34" role="NUMBER" xml:id="S3.Ex9.m1.1.10.3">34</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="123.456" role="NUMBER">123.456</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok meaning="12" role="NUMBER">12</XMTok>
+                  <XMTok meaning="34" role="NUMBER">34</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex9.m1.1.11" font="italic">b</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -191,18 +191,18 @@
       </equation>
       <equation xml:id="S3.Ex10">
         <Math mode="display" xml:id="S3.Ex10.m1" tex="a+2b\frac{1}{3}" text="a + 2 * b * (1 / 3)">
-          <XMath xml:id="S3.Ex10.m1.1">
-            <XMApp xml:id="S3.Ex10.m1.1.6">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S3.Ex10.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S3.Ex10.m1.1.1" font="italic">a</XMTok>
-              <XMApp xml:id="S3.Ex10.m1.1.6.1">
-                <XMTok meaning="times" role="MULOP" xml:id="S3.Ex10.m1.1.6.1.1">⁢</XMTok>
-                <XMTok meaning="2" role="NUMBER" xml:id="S3.Ex10.m1.1.3">2</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S3.Ex10.m1.1.4" font="italic">b</XMTok>
-                <XMApp xml:id="S3.Ex10.m1.1.5">
-                  <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex10.m1.1.5.1"/>
-                  <XMTok meaning="1" role="NUMBER" xml:id="S3.Ex10.m1.1.5.2">1</XMTok>
-                  <XMTok meaning="3" role="NUMBER" xml:id="S3.Ex10.m1.1.5.3">3</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
                 </XMApp>
               </XMApp>
             </XMApp>
@@ -211,26 +211,26 @@
       </equation>
       <equation xml:id="S3.Ex11">
         <Math mode="display" xml:id="S3.Ex11.m1" tex="2\frac{(-1)^{m}}{(2m)!}" text="2 * ((- 1) ^ m / (2 * m)factorial)">
-          <XMath xml:id="S3.Ex11.m1.1">
-            <XMApp xml:id="S3.Ex11.m1.1.3">
-              <XMTok meaning="times" role="MULOP" xml:id="S3.Ex11.m1.1.3.1">⁢</XMTok>
-              <XMTok meaning="2" role="NUMBER" xml:id="S3.Ex11.m1.1.1">2</XMTok>
-              <XMApp xml:id="S3.Ex11.m1.1.2">
-                <XMTok mathstyle="display" meaning="divide" role="MULOP" xml:id="S3.Ex11.m1.1.2.1"/>
-                <XMApp xml:id="S3.Ex11.m1.1.2.2">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3" xml:id="S3.Ex11.m1.1.2.2.6"/>
-                  <XMApp close=")" open="(" xml:id="S3.Ex11.m1.1.2.2.7">
-                    <XMTok meaning="minus" role="ADDOP" xml:id="S3.Ex11.m1.1.2.2.2">-</XMTok>
-                    <XMTok meaning="1" role="NUMBER" xml:id="S3.Ex11.m1.1.2.2.3">1</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok meaning="2" role="NUMBER">2</XMTok>
+              <XMApp>
+                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMApp close=")" open="(">
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" xml:id="S3.Ex11.m1.1.2.2.5.1" font="italic">m</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">m</XMTok>
                 </XMApp>
-                <XMApp xml:id="S3.Ex11.m1.1.2.3">
-                  <XMTok meaning="factorial" role="POSTFIX" xml:id="S3.Ex11.m1.1.2.3.5">!</XMTok>
-                  <XMApp close=")" open="(" xml:id="S3.Ex11.m1.1.2.3.6">
-                    <XMTok meaning="times" role="MULOP" xml:id="S3.Ex11.m1.1.2.3.6.1">⁢</XMTok>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S3.Ex11.m1.1.2.3.2">2</XMTok>
-                    <XMTok role="UNKNOWN" xml:id="S3.Ex11.m1.1.2.3.3" font="italic">m</XMTok>
+                <XMApp>
+                  <XMTok meaning="factorial" role="POSTFIX">!</XMTok>
+                  <XMApp close=")" open="(">
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
                   </XMApp>
                 </XMApp>
               </XMApp>

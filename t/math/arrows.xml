@@ -8,16 +8,16 @@
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
       <Math mode="display" xml:id="S0.Ex1.m1" tex="\underrightarrow{\mathrm{word}}\rightarrow\underleftarrow{\mathrm{word}}" text="underrightarrow@(word) rightarrow underleftarrow@(word)">
-        <XMath xml:id="S0.Ex1.m1.1">
-          <XMApp xml:id="S0.Ex1.m1.1.4">
-            <XMTok name="rightarrow" role="ARROW" xml:id="S0.Ex1.m1.1.2">→</XMTok>
-            <XMApp xml:id="S0.Ex1.m1.1.1">
-              <XMTok name="underrightarrow" role="UNDERACCENT" xml:id="S0.Ex1.m1.1.1.1">→</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.1.2">word</XMTok>
+        <XMath>
+          <XMApp>
+            <XMTok name="rightarrow" role="ARROW">→</XMTok>
+            <XMApp>
+              <XMTok name="underrightarrow" role="UNDERACCENT">→</XMTok>
+              <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
-            <XMApp xml:id="S0.Ex1.m1.1.3">
-              <XMTok name="underleftarrow" role="UNDERACCENT" xml:id="S0.Ex1.m1.1.3.1">←</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.1.3.2">word</XMTok>
+            <XMApp>
+              <XMTok name="underleftarrow" role="UNDERACCENT">←</XMTok>
+              <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -27,16 +27,16 @@
   <para xml:id="p2">
     <equation xml:id="S0.Ex2">
       <Math mode="display" xml:id="S0.Ex2.m1" tex="\overleftrightarrow{\mathrm{word}}\leftarrow\underleftrightarrow{\mathrm{word}}" text="overleftrightarrow@(word) leftarrow underleftrightarrow@(word)">
-        <XMath xml:id="S0.Ex2.m1.1">
-          <XMApp xml:id="S0.Ex2.m1.1.4">
-            <XMTok name="leftarrow" role="ARROW" xml:id="S0.Ex2.m1.1.2">←</XMTok>
-            <XMApp xml:id="S0.Ex2.m1.1.1">
-              <XMTok name="overleftrightarrow" role="OVERACCENT" xml:id="S0.Ex2.m1.1.1.1">↔</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.1.1.2">word</XMTok>
+        <XMath>
+          <XMApp>
+            <XMTok name="leftarrow" role="ARROW">←</XMTok>
+            <XMApp>
+              <XMTok name="overleftrightarrow" role="OVERACCENT">↔</XMTok>
+              <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
-            <XMApp xml:id="S0.Ex2.m1.1.3">
-              <XMTok name="underleftrightarrow" role="UNDERACCENT" xml:id="S0.Ex2.m1.1.3.1">↔</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.1.3.2">word</XMTok>
+            <XMApp>
+              <XMTok name="underleftrightarrow" role="UNDERACCENT">↔</XMTok>
+              <XMTok role="UNKNOWN">word</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
@@ -46,24 +46,24 @@
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
       <Math mode="display" xml:id="S0.Ex3.m1" tex="a^{2}\xrightarrow{\mathrm{over}}b\xleftarrow{\mathrm{over}}c" text="a ^ 2 over@(rightarrow) b over@(leftarrow) c">
-        <XMath xml:id="S0.Ex3.m1.1">
-          <XMApp xml:id="S0.Ex3.m1.1.7">
-            <XMTok meaning="multirelation" xml:id="S0.Ex3.m1.1.7.1"/>
-            <XMApp xml:id="S0.Ex3.m1.1.7.2">
-              <XMTok role="SUPERSCRIPTOP" scriptpos="post2" xml:id="S0.Ex3.m1.1.7.2.1"/>
-              <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.1" font="italic">a</XMTok>
-              <XMTok meaning="2" role="NUMBER" xml:id="S0.Ex3.m1.1.2.1">2</XMTok>
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
-            <XMApp role="ARROW" xml:id="S0.Ex3.m1.1.3">
-              <XMTok role="OVERACCENT" xml:id="S0.Ex3.m1.1.3.4">over</XMTok>
-              <XMTok name="rightarrow" role="ARROW" xml:id="S0.Ex3.m1.1.3.5">→</XMTok>
+            <XMApp role="ARROW">
+              <XMTok role="OVERACCENT">over</XMTok>
+              <XMTok name="rightarrow" role="ARROW">→</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.4" font="italic">b</XMTok>
-            <XMApp role="ARROW" xml:id="S0.Ex3.m1.1.5">
-              <XMTok role="OVERACCENT" xml:id="S0.Ex3.m1.1.5.4">over</XMTok>
-              <XMTok name="leftarrow" role="ARROW" xml:id="S0.Ex3.m1.1.5.5">←</XMTok>
+            <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            <XMApp role="ARROW">
+              <XMTok role="OVERACCENT">over</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.1.6" font="italic">c</XMTok>
+            <XMTok role="UNKNOWN" font="italic">c</XMTok>
           </XMApp>
         </XMath>
       </Math>
@@ -72,26 +72,26 @@
   <para xml:id="p4">
     <equation xml:id="S0.Ex4">
       <Math mode="display" xml:id="S0.Ex4.m1" tex="a\xrightarrow[\mathrm{under}]{\mathrm{over}}b\xleftarrow[\mathrm{under}]{%&#10;\mathrm{over}}c" text="a under@(over@(rightarrow)) b under@(over@(leftarrow)) c">
-        <XMath xml:id="S0.Ex4.m1.1">
-          <XMApp xml:id="S0.Ex4.m1.1.6">
-            <XMTok meaning="multirelation" xml:id="S0.Ex4.m1.1.6.1"/>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.1" font="italic">a</XMTok>
-            <XMApp role="ARROW" xml:id="S0.Ex4.m1.1.2">
-              <XMTok role="UNDERACCENT" xml:id="S0.Ex4.m1.1.2.5">under</XMTok>
-              <XMApp role="ARROW" xml:id="S0.Ex4.m1.1.2.6">
-                <XMTok role="OVERACCENT" xml:id="S0.Ex4.m1.1.2.6.4">over</XMTok>
-                <XMTok name="rightarrow" role="ARROW" xml:id="S0.Ex4.m1.1.2.6.5">→</XMTok>
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMApp role="ARROW">
+              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMApp role="ARROW">
+                <XMTok role="OVERACCENT">over</XMTok>
+                <XMTok name="rightarrow" role="ARROW">→</XMTok>
               </XMApp>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.3" font="italic">b</XMTok>
-            <XMApp role="ARROW" xml:id="S0.Ex4.m1.1.4">
-              <XMTok role="UNDERACCENT" xml:id="S0.Ex4.m1.1.4.5">under</XMTok>
-              <XMApp role="ARROW" xml:id="S0.Ex4.m1.1.4.6">
-                <XMTok role="OVERACCENT" xml:id="S0.Ex4.m1.1.4.6.4">over</XMTok>
-                <XMTok name="leftarrow" role="ARROW" xml:id="S0.Ex4.m1.1.4.6.5">←</XMTok>
+            <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            <XMApp role="ARROW">
+              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMApp role="ARROW">
+                <XMTok role="OVERACCENT">over</XMTok>
+                <XMTok name="leftarrow" role="ARROW">←</XMTok>
               </XMApp>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.1.5" font="italic">c</XMTok>
+            <XMTok role="UNKNOWN" font="italic">c</XMTok>
           </XMApp>
         </XMath>
       </Math>
@@ -100,20 +100,20 @@
   <para xml:id="p5">
     <equation xml:id="S0.Ex5">
       <Math mode="display" xml:id="S0.Ex5.m1" tex="a\overset{\mathrm{over}}{\rightarrow}b\underset{\mathrm{under}}{\leftarrow}c" text="a * over@(rightarrow) * b * under@(leftarrow) * c">
-        <XMath xml:id="S0.Ex5.m1.1">
-          <XMApp xml:id="S0.Ex5.m1.1.6">
-            <XMTok meaning="times" role="MULOP" xml:id="S0.Ex5.m1.1.6.1">⁢</XMTok>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.1" font="italic">a</XMTok>
-            <XMApp xml:id="S0.Ex5.m1.1.2">
-              <XMTok role="OVERACCENT" xml:id="S0.Ex5.m1.1.2.4">over</XMTok>
-              <XMTok name="rightarrow" role="ARROW" xml:id="S0.Ex5.m1.1.2.5">→</XMTok>
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok role="UNKNOWN" font="italic">a</XMTok>
+            <XMApp>
+              <XMTok role="OVERACCENT">over</XMTok>
+              <XMTok name="rightarrow" role="ARROW">→</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.3" font="italic">b</XMTok>
-            <XMApp xml:id="S0.Ex5.m1.1.4">
-              <XMTok role="UNDERACCENT" xml:id="S0.Ex5.m1.1.4.5">under</XMTok>
-              <XMTok name="leftarrow" role="ARROW" xml:id="S0.Ex5.m1.1.4.6">←</XMTok>
+            <XMTok role="UNKNOWN" font="italic">b</XMTok>
+            <XMApp>
+              <XMTok role="UNDERACCENT">under</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
             </XMApp>
-            <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1.5" font="italic">c</XMTok>
+            <XMTok role="UNKNOWN" font="italic">c</XMTok>
           </XMApp>
         </XMath>
       </Math>

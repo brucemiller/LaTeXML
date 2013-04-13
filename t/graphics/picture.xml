@@ -7,8 +7,8 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basic</title>
     <para xml:id="S1.p1">
-      <p xml:id="S1.p1.1">Math: <Math mode="inline" xml:id="S1.p1.1.m1" tex="a=b" text="a = b"><XMath xml:id="S1.p1.1.m1.1"><XMApp xml:id="S1.p1.1.m1.1.4"><XMTok meaning="equals" role="RELOP" xml:id="S1.p1.1.m1.1.2">=</XMTok><XMTok role="UNKNOWN" xml:id="S1.p1.1.m1.1.1" font="italic">a</XMTok><XMTok role="UNKNOWN" xml:id="S1.p1.1.m1.1.3" font="italic">b</XMTok></XMApp></XMath></Math>
-<picture fill="black" height="100.0pt" stroke="black" unitlength="1.0pt" width="100.0pt" xml:id="S1.p1.1.pic1" tex="\begin{picture}(100.0,100.0)\put(0.0,0.0){\line(1,0){100.0}}&#10;\end{picture}"><g transform="translate(0,0)"><line points="0,0 100,0" stroke-width="0.4"/></g></picture></p>
+      <p>Math: <Math mode="inline" xml:id="S1.p1.m1" tex="a=b" text="a = b"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math>
+<picture fill="black" height="100.0pt" stroke="black" unitlength="1.0pt" width="100.0pt" xml:id="S1.p1.pic1" tex="\begin{picture}(100.0,100.0)\put(0.0,0.0){\line(1,0){100.0}}&#10;\end{picture}"><g transform="translate(0,0)"><line points="0,0 100,0" stroke-width="0.4"/></g></picture></p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
@@ -16,7 +16,7 @@
     <paragraph xml:id="S2.SS0.SSS0.P1">
       <title>Lines:</title>
       <para xml:id="S2.SS0.SSS0.P1.p1">
-        <p xml:id="S2.SS0.SSS0.P1.p1.1">using integers, scaling with floats, LaTeXcounters, TeX counters.
+        <p>using integers, scaling with floats, LaTeXcounters, TeX counters.
 All should be the same.</p>
       </para>
       <para xml:id="S2.SS0.SSS0.P1.p2">
@@ -113,26 +113,26 @@ All should be the same.</p>
           </g>
           <g transform="translate(60,20)">
             <g framed="true" stroke-width="0.4">
-              <inline-block xml:id="S2.SS0.SSS0.P3.p1.pic1.1">
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.1.1">A</p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.1.2">B</p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.1.3">
+              <inline-block>
+                <p>A</p>
+                <p>B</p>
+                <p>
                   <text font="bold">C</text>
                 </p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.1.4">D</p>
+                <p>D</p>
               </inline-block>
             </g>
           </g>
           <g transform="translate(75,20)">
             <rect fill="none" height="80" stroke-width="0.4" width="15" x="0" y="0"/>
             <g height="80" width="15">
-              <inline-block xml:id="S2.SS0.SSS0.P3.p1.pic1.2">
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.2.1">A</p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.2.2">
+              <inline-block>
+                <p>A</p>
+                <p>
                   <text font="bold">B</text>
                 </p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.2.3">C</p>
-                <p xml:id="S2.SS0.SSS0.P3.p1.pic1.2.4">D</p>
+                <p>C</p>
+                <p>D</p>
               </inline-block>
             </g>
           </g>

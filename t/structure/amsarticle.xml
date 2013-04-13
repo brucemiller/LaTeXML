@@ -19,7 +19,7 @@
   </creator>
   <date name="Date:" role="creation">February 14, 2013</date>
   <abstract name="Abstract.">
-    <p xml:id="id1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
   </abstract>
   <keywords name="Key words and phrases">ams,article,markup</keywords>
   <classification name="2000 Mathematics Subject Classification" scheme="2000 Mathematics Subject Classification">Primary </classification>
@@ -29,16 +29,16 @@
     <title><tag close=". ">1</tag>Introduction</title>
     <toctitle><tag close=" ">1</tag>Introduction</toctitle>
     <para xml:id="S1.p1">
-      <p xml:id="S1.p1.1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </para>
     <para xml:id="S1.p2">
       <equation frefnum="(1.1)" refnum="1.1" xml:id="S1.E1">
         <Math mode="display" xml:id="S1.E1.m1" tex="a+b," text="a + b">
-          <XMath xml:id="S1.E1.m1.1">
-            <XMApp punctuation="," xml:id="S1.E1.m1.1.5">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.E1.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.E1.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.E1.m1.1.3" font="italic">b</XMTok>
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -47,69 +47,69 @@
     <para xml:id="S1.p3">
       <equation frefnum="(1.2)" refnum="1.2" xml:id="S1.E2">
         <Math mode="display" xml:id="S1.E2.m1" tex="c+d," text="c + d">
-          <XMath xml:id="S1.E2.m1.1">
-            <XMApp punctuation="," xml:id="S1.E2.m1.1.5">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S1.E2.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.E2.m1.1.1" font="italic">c</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S1.E2.m1.1.3" font="italic">d</XMTok>
+          <XMath>
+            <XMApp punctuation=",">
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok role="UNKNOWN" font="italic">d</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
     </para>
     <figure frefnum="Figure 1" refnum="1" xml:id="S1.F1">
-      <p xml:id="S1.F1.1" align="center">A Figure<break/></p>
+      <p align="center">A Figure<break/></p>
       <toccaption><tag close=" ">1</tag>A Figure</toccaption>
       <caption><tag close=". ">Figure 1</tag>A Figure</caption>
     </figure>
     <table frefnum="Table 1" refnum="1" xml:id="S1.T1">
-      <tabular xml:id="S1.T1.1" class="ltx_centering">
+      <tabular class="ltx_centering">
         <thead>
-          <tr xml:id="S1.T1.1.1">
-            <td align="right" border="r" xml:id="S1.T1.1.1.1" thead="true">Heading</td>
-            <td align="center" xml:id="S1.T1.1.1.2" thead="true">Foo</td>
-            <td align="center" xml:id="S1.T1.1.1.3" thead="true">Bar</td>
+          <tr>
+            <td align="right" border="r" thead="true">Heading</td>
+            <td align="center" thead="true">Foo</td>
+            <td align="center" thead="true">Bar</td>
           </tr>
         </thead>
         <tbody>
-          <tr xml:id="S1.T1.1.2">
-            <td align="right" border="r t" xml:id="S1.T1.1.2.1" thead="true">a</td>
-            <td align="center" border="t" xml:id="S1.T1.1.2.2">
-              <Math mode="inline" xml:id="S1.T1.1.2.2.m1" tex="x" text="x">
-                <XMath xml:id="S1.T1.1.2.2.m1.1">
-                  <XMTok role="UNKNOWN" xml:id="S1.T1.1.2.2.m1.1.1" font="italic">x</XMTok>
+          <tr>
+            <td align="right" border="r t" thead="true">a</td>
+            <td align="center" border="t">
+              <Math mode="inline" xml:id="S1.T1.m1" tex="x" text="x">
+                <XMath>
+                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
                 </XMath>
               </Math>
             </td>
-            <td align="center" border="t" xml:id="S1.T1.1.2.3">
-              <Math mode="inline" xml:id="S1.T1.1.2.3.m1" tex="x^{2}" text="x ^ 2">
-                <XMath xml:id="S1.T1.1.2.3.m1.1">
-                  <XMApp xml:id="S1.T1.1.2.3.m1.1.3">
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post9" xml:id="S1.T1.1.2.3.m1.1.3.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S1.T1.1.2.3.m1.1.1" font="italic">x</XMTok>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S1.T1.1.2.3.m1.1.2.1">2</XMTok>
+            <td align="center" border="t">
+              <Math mode="inline" xml:id="S1.T1.m2" tex="x^{2}" text="x ^ 2">
+                <XMath>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
+                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math>
             </td>
           </tr>
-          <tr xml:id="S1.T1.1.3">
-            <td align="right" border="r" xml:id="S1.T1.1.3.1" thead="true">b</td>
-            <td align="center" xml:id="S1.T1.1.3.2">
-              <Math mode="inline" xml:id="S1.T1.1.3.2.m1" tex="y^{2}" text="y ^ 2">
-                <XMath xml:id="S1.T1.1.3.2.m1.1">
-                  <XMApp xml:id="S1.T1.1.3.2.m1.1.3">
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post9" xml:id="S1.T1.1.3.2.m1.1.3.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S1.T1.1.3.2.m1.1.1" font="italic">y</XMTok>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S1.T1.1.3.2.m1.1.2.1">2</XMTok>
+          <tr>
+            <td align="right" border="r" thead="true">b</td>
+            <td align="center">
+              <Math mode="inline" xml:id="S1.T1.m3" tex="y^{2}" text="y ^ 2">
+                <XMath>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
+                    <XMTok role="UNKNOWN" font="italic">y</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math>
             </td>
-            <td align="center" xml:id="S1.T1.1.3.3">
-              <Math mode="inline" xml:id="S1.T1.1.3.3.m1" tex="y" text="y">
-                <XMath xml:id="S1.T1.1.3.3.m1.1">
-                  <XMTok role="UNKNOWN" xml:id="S1.T1.1.3.3.m1.1.1" font="italic">y</XMTok>
+            <td align="center">
+              <Math mode="inline" xml:id="S1.T1.m4" tex="y" text="y">
+                <XMath>
+                  <XMTok role="UNKNOWN" font="italic">y</XMTok>
                 </XMath>
               </Math>
             </td>
@@ -124,21 +124,21 @@
       <enumerate xml:id="I1">
         <item frefnum="(1)" refnum="1" xml:id="I1.i1">
           <para xml:id="I1.i1.p1">
-            <p xml:id="I1.i1.p1.1">one</p>
+            <p>one</p>
           </para>
         </item>
         <item frefnum="(2)" refnum="2" xml:id="I1.i2">
           <para xml:id="I1.i2.p1">
-            <p xml:id="I1.i2.p1.1">two</p>
+            <p>two</p>
             <enumerate xml:id="I1.I1">
               <item frefnum="(a)" refnum="a" xml:id="I1.I1.i1">
                 <para xml:id="I1.I1.i1.p1">
-                  <p xml:id="I1.I1.i1.p1.1">one</p>
+                  <p>one</p>
                 </para>
               </item>
               <item frefnum="(b)" refnum="b" xml:id="I1.I1.i2">
                 <para xml:id="I1.I1.i2.p1">
-                  <p xml:id="I1.I1.i2.p1.1">two</p>
+                  <p>two</p>
                 </para>
               </item>
             </enumerate>
@@ -151,19 +151,19 @@
         <item xml:id="I2.ix1">
           <tag close=": ">A thing</tag>
           <para xml:id="I2.ix1.p1">
-            <p xml:id="I2.ix1.p1.1">with some descriptive text.</p>
+            <p>with some descriptive text.</p>
           </para>
         </item>
         <item xml:id="I2.ix2">
           <tag close=": ">Another</tag>
           <para xml:id="I2.ix2.p1">
-            <p xml:id="I2.ix2.p1.1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
         </item>
         <item xml:id="I2.ix3">
           <tag close=": ">And yet</tag>
           <para xml:id="I2.ix3.p1">
-            <p xml:id="I2.ix3.p1.1">blah, blah. Moreover
+            <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
         </item>
@@ -174,19 +174,19 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     <title><tag close=". ">2</tag>A Math Section</title>
     <toctitle><tag close=" ">2</tag>A Math Section</toctitle>
     <para xml:id="S2.p1">
-      <p xml:id="S2.p1.1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
     </para>
     <para xml:id="S2.p2">
-      <p xml:id="S2.p2.1">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </para>
     <para xml:id="S2.p3">
       <equation xml:id="S2.Ex1">
         <Math mode="display" xml:id="S2.Ex1.m1" tex="a=b" text="a = b">
-          <XMath xml:id="S2.Ex1.m1.1">
-            <XMApp xml:id="S2.Ex1.m1.1.4">
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.Ex1.m1.1.2">=</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex1.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.Ex1.m1.1.3" font="italic">b</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -195,11 +195,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     <para xml:id="S2.p4">
       <equation frefnum="(2.1)" refnum="2.1" xml:id="S2.E1">
         <Math mode="display" xml:id="S2.E1.m1" tex="a=b" text="a = b">
-          <XMath xml:id="S2.E1.m1.1">
-            <XMApp xml:id="S2.E1.m1.1.4">
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.E1.m1.1.2">=</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E1.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E1.m1.1.3" font="italic">b</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -208,36 +208,36 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     <para xml:id="S2.p5">
       <equation frefnum="(2.2)" refnum="2.2" xml:id="S2.E2">
         <Math mode="display" xml:id="S2.E2.m1" tex="\begin{split}a&amp;=b+c-d\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" text="a = (((b + c) - d) + e) - f = g + h = i">
-          <XMath xml:id="S2.E2.m1.1">
-            <XMApp xml:id="S2.E2.m1.1.28">
-              <XMTok meaning="multirelation" xml:id="S2.E2.m1.1.28.1"/>
-              <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.2" font="italic">a</XMTok>
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.E2.m1.1.4">=</XMTok>
-              <XMApp xml:id="S2.E2.m1.1.28.2">
-                <XMTok meaning="minus" role="ADDOP" xml:id="S2.E2.m1.1.15">-</XMTok>
-                <XMApp xml:id="S2.E2.m1.1.28.2.1">
-                  <XMTok meaning="plus" role="ADDOP" xml:id="S2.E2.m1.1.13">+</XMTok>
-                  <XMApp xml:id="S2.E2.m1.1.28.2.1.1">
-                    <XMTok meaning="minus" role="ADDOP" xml:id="S2.E2.m1.1.8">-</XMTok>
-                    <XMApp xml:id="S2.E2.m1.1.28.2.1.1.1">
-                      <XMTok meaning="plus" role="ADDOP" xml:id="S2.E2.m1.1.6">+</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.5" font="italic">b</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.7" font="italic">c</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="multirelation"/>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.9" font="italic">d</XMTok>
+                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.14" font="italic">e</XMTok>
+                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.16" font="italic">f</XMTok>
+                <XMTok role="UNKNOWN" font="italic">f</XMTok>
               </XMApp>
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.E2.m1.1.19">=</XMTok>
-              <XMApp xml:id="S2.E2.m1.1.28.3">
-                <XMTok meaning="plus" role="ADDOP" xml:id="S2.E2.m1.1.21">+</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.20" font="italic">g</XMTok>
-                <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.22" font="italic">h</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                <XMTok role="UNKNOWN" font="italic">h</XMTok>
               </XMApp>
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.E2.m1.1.25">=</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E2.m1.1.26" font="italic">i</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok role="UNKNOWN" font="italic">i</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -246,21 +246,21 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     <para xml:id="S2.p6">
       <equation frefnum="(2.3)" refnum="2.3" xml:id="S2.E3">
         <Math mode="display" xml:id="S2.E3.m1" tex="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" text="a + b + c + d + e + f + i + j + k + l + m + n">
-          <XMath xml:id="S2.E3.m1.1">
-            <XMApp xml:id="S2.E3.m1.1.25">
-              <XMTok meaning="plus" role="ADDOP" xml:id="S2.E3.m1.1.2">+</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.1" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.3" font="italic">b</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.5" font="italic">c</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.7" font="italic">d</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.9" font="italic">e</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.11" font="italic">f</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.14" font="italic">i</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.16" font="italic">j</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.18" font="italic">k</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.20" font="italic">l</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.22" font="italic">m</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E3.m1.1.24" font="italic">n</XMTok>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              <XMTok role="UNKNOWN" font="italic">e</XMTok>
+              <XMTok role="UNKNOWN" font="italic">f</XMTok>
+              <XMTok role="UNKNOWN" font="italic">i</XMTok>
+              <XMTok role="UNKNOWN" font="italic">j</XMTok>
+              <XMTok role="UNKNOWN" font="italic">k</XMTok>
+              <XMTok role="UNKNOWN" font="italic">l</XMTok>
+              <XMTok role="UNKNOWN" font="italic">m</XMTok>
+              <XMTok role="UNKNOWN" font="italic">n</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -270,25 +270,25 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <equationgroup class="ltx_eqn_gather" xml:id="S2.EGx1">
         <equation frefnum="(2.4)" refnum="2.4" xml:id="S2.E4">
           <Math mode="inline" xml:id="S2.E4.m1" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
-            <XMath xml:id="S2.E4.m1.1">
-              <XMApp xml:id="S2.E4.m1.1.9">
-                <XMTok meaning="equals" role="RELOP" xml:id="S2.E4.m1.1.3">=</XMTok>
-                <XMApp xml:id="S2.E4.m1.1.9.1">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E4.m1.1.9.1.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S2.E4.m1.1.1" font="italic">a</XMTok>
-                  <XMTok meaning="1" role="NUMBER" xml:id="S2.E4.m1.1.2.1">1</XMTok>
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
                 </XMApp>
-                <XMApp xml:id="S2.E4.m1.1.9.2">
-                  <XMTok meaning="plus" role="ADDOP" xml:id="S2.E4.m1.1.6">+</XMTok>
-                  <XMApp xml:id="S2.E4.m1.1.9.2.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E4.m1.1.9.2.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E4.m1.1.4" font="italic">b</XMTok>
-                    <XMTok meaning="1" role="NUMBER" xml:id="S2.E4.m1.1.5.1">1</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E4.m1.1.9.2.2">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E4.m1.1.9.2.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E4.m1.1.7" font="italic">c</XMTok>
-                    <XMTok meaning="1" role="NUMBER" xml:id="S2.E4.m1.1.8.1">1</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
                   </XMApp>
                 </XMApp>
               </XMApp>
@@ -297,41 +297,41 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </equation>
         <equation frefnum="(2.5)" refnum="2.5" xml:id="S2.E5">
           <Math mode="inline" xml:id="S2.E5.m1" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
-            <XMath xml:id="S2.E5.m1.1">
-              <XMApp xml:id="S2.E5.m1.1.15">
-                <XMTok meaning="equals" role="RELOP" xml:id="S2.E5.m1.1.3">=</XMTok>
-                <XMApp xml:id="S2.E5.m1.1.15.1">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E5.m1.1.15.1.1"/>
-                  <XMTok role="UNKNOWN" xml:id="S2.E5.m1.1.1" font="italic">a</XMTok>
-                  <XMTok meaning="2" role="NUMBER" xml:id="S2.E5.m1.1.2.1">2</XMTok>
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
                 </XMApp>
-                <XMApp xml:id="S2.E5.m1.1.15.2">
-                  <XMTok meaning="plus" role="ADDOP" xml:id="S2.E5.m1.1.12">+</XMTok>
-                  <XMApp xml:id="S2.E5.m1.1.15.2.1">
-                    <XMTok meaning="minus" role="ADDOP" xml:id="S2.E5.m1.1.9">-</XMTok>
-                    <XMApp xml:id="S2.E5.m1.1.15.2.1.1">
-                      <XMTok meaning="plus" role="ADDOP" xml:id="S2.E5.m1.1.6">+</XMTok>
-                      <XMApp xml:id="S2.E5.m1.1.15.2.1.1.1">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E5.m1.1.15.2.1.1.1.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E5.m1.1.4" font="italic">b</XMTok>
-                        <XMTok meaning="2" role="NUMBER" xml:id="S2.E5.m1.1.5.1">2</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
-                      <XMApp xml:id="S2.E5.m1.1.15.2.1.1.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E5.m1.1.15.2.1.1.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E5.m1.1.7" font="italic">c</XMTok>
-                        <XMTok meaning="2" role="NUMBER" xml:id="S2.E5.m1.1.8.1">2</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                     </XMApp>
-                    <XMApp xml:id="S2.E5.m1.1.15.2.1.2">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E5.m1.1.15.2.1.2.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E5.m1.1.10" font="italic">d</XMTok>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S2.E5.m1.1.11.1">2</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
                   </XMApp>
-                  <XMApp xml:id="S2.E5.m1.1.15.2.2">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E5.m1.1.15.2.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E5.m1.1.13" font="italic">e</XMTok>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.E5.m1.1.14.1">2</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMApp>
               </XMApp>
@@ -345,59 +345,59 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <equation frefnum="(2.6)" refnum="2.6" xml:id="S2.E6">
           <MathFork>
             <Math xml:id="S2.E6.m3" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
-              <XMath xml:id="S2.E6.m3.1">
-                <XMApp xml:id="S2.E6.m3.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E6.m2.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E6.m3.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m3.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E6.m1.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m1.1.2.1.mf">1</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E6.m3.1.1.2">
-                    <XMTok meaning="plus" role="ADDOP" xml:id="S2.E6.m2.1.4.mf">+</XMTok>
-                    <XMApp xml:id="S2.E6.m3.1.1.2.1">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m3.1.1.2.1.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E6.m2.1.2.mf" font="italic">b</XMTok>
-                      <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m2.1.3.1.mf">1</XMTok>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
                     </XMApp>
-                    <XMApp xml:id="S2.E6.m3.1.1.2.2">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m3.1.1.2.2.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E6.m2.1.5.mf" font="italic">c</XMTok>
-                      <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m2.1.6.1.mf">1</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E6.1" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E6.m1" tex="\displaystyle a_{1}" text="a _ 1">
-                  <XMath xml:id="S2.E6.m1.1">
-                    <XMApp xml:id="S2.E6.m1.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m1.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E6.m1.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m1.1.2.1">1</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E6.2" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E6.m2" tex="\displaystyle=b_{1}+c_{1}" text="absent = b _ 1 + c _ 1">
-                  <XMath xml:id="S2.E6.m2.1">
-                    <XMApp xml:id="S2.E6.m2.1.7">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E6.m2.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E6.m2.1.7.1"/>
-                      <XMApp xml:id="S2.E6.m2.1.7.2">
-                        <XMTok meaning="plus" role="ADDOP" xml:id="S2.E6.m2.1.4">+</XMTok>
-                        <XMApp xml:id="S2.E6.m2.1.7.2.1">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m2.1.7.2.1.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E6.m2.1.2" font="italic">b</XMTok>
-                          <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m2.1.3.1">1</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                          <XMTok meaning="1" role="NUMBER">1</XMTok>
                         </XMApp>
-                        <XMApp xml:id="S2.E6.m2.1.7.2.2">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E6.m2.1.7.2.2.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E6.m2.1.5" font="italic">c</XMTok>
-                          <XMTok meaning="1" role="NUMBER" xml:id="S2.E6.m2.1.6.1">1</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                          <XMTok meaning="1" role="NUMBER">1</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
@@ -410,91 +410,91 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <equation frefnum="(2.7)" refnum="2.7" xml:id="S2.E7">
           <MathFork>
             <Math xml:id="S2.E7.m3" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
-              <XMath xml:id="S2.E7.m3.1">
-                <XMApp xml:id="S2.E7.m3.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E7.m2.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E7.m3.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m3.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E7.m1.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m1.1.2.1.mf">2</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E7.m3.1.1.2">
-                    <XMTok meaning="plus" role="ADDOP" xml:id="S2.E7.m2.1.10.mf">+</XMTok>
-                    <XMApp xml:id="S2.E7.m3.1.1.2.1">
-                      <XMTok meaning="minus" role="ADDOP" xml:id="S2.E7.m2.1.7.mf">-</XMTok>
-                      <XMApp xml:id="S2.E7.m3.1.1.2.1.1">
-                        <XMTok meaning="plus" role="ADDOP" xml:id="S2.E7.m2.1.4.mf">+</XMTok>
-                        <XMApp xml:id="S2.E7.m3.1.1.2.1.1.1">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m3.1.1.2.1.1.1.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.2.mf" font="italic">b</XMTok>
-                          <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.3.1.mf">2</XMTok>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                          <XMTok meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
-                        <XMApp xml:id="S2.E7.m3.1.1.2.1.1.2">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m3.1.1.2.1.1.2.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.5.mf" font="italic">c</XMTok>
-                          <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.6.1.mf">2</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                          <XMTok meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
                       </XMApp>
-                      <XMApp xml:id="S2.E7.m3.1.1.2.1.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m3.1.1.2.1.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.8.mf" font="italic">d</XMTok>
-                        <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.9.1.mf">2</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                     </XMApp>
-                    <XMApp xml:id="S2.E7.m3.1.1.2.2">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m3.1.1.2.2.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.11.mf" font="italic">e</XMTok>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.12.1.mf">2</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E7.1" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E7.m1" tex="\displaystyle a_{2}" text="a _ 2">
-                  <XMath xml:id="S2.E7.m1.1">
-                    <XMApp xml:id="S2.E7.m1.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m1.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E7.m1.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m1.1.2.1">2</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E7.2" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E7.m2" tex="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" text="absent = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
-                  <XMath xml:id="S2.E7.m2.1">
-                    <XMApp xml:id="S2.E7.m2.1.13">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E7.m2.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E7.m2.1.13.1"/>
-                      <XMApp xml:id="S2.E7.m2.1.13.2">
-                        <XMTok meaning="plus" role="ADDOP" xml:id="S2.E7.m2.1.10">+</XMTok>
-                        <XMApp xml:id="S2.E7.m2.1.13.2.1">
-                          <XMTok meaning="minus" role="ADDOP" xml:id="S2.E7.m2.1.7">-</XMTok>
-                          <XMApp xml:id="S2.E7.m2.1.13.2.1.1">
-                            <XMTok meaning="plus" role="ADDOP" xml:id="S2.E7.m2.1.4">+</XMTok>
-                            <XMApp xml:id="S2.E7.m2.1.13.2.1.1.1">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m2.1.13.2.1.1.1.1"/>
-                              <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.2" font="italic">b</XMTok>
-                              <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.3.1">2</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                              <XMTok meaning="2" role="NUMBER">2</XMTok>
                             </XMApp>
-                            <XMApp xml:id="S2.E7.m2.1.13.2.1.1.2">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m2.1.13.2.1.1.2.1"/>
-                              <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.5" font="italic">c</XMTok>
-                              <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.6.1">2</XMTok>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                              <XMTok meaning="2" role="NUMBER">2</XMTok>
                             </XMApp>
                           </XMApp>
-                          <XMApp xml:id="S2.E7.m2.1.13.2.1.2">
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m2.1.13.2.1.2.1"/>
-                            <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.8" font="italic">d</XMTok>
-                            <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.9.1">2</XMTok>
+                          <XMApp>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                            <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                            <XMTok meaning="2" role="NUMBER">2</XMTok>
                           </XMApp>
                         </XMApp>
-                        <XMApp xml:id="S2.E7.m2.1.13.2.2">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E7.m2.1.13.2.2.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E7.m2.1.11" font="italic">e</XMTok>
-                          <XMTok meaning="2" role="NUMBER" xml:id="S2.E7.m2.1.12.1">2</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                          <XMTok meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
@@ -511,44 +511,44 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <equation frefnum="(2.8)" refnum="2.8" xml:id="S2.E8">
           <MathFork>
             <Math xml:id="S2.E8.m5" tex="\displaystyle a_{{11}}=b_{{11}}" text="a _ 11 = b _ 11">
-              <XMath xml:id="S2.E8.m5.1">
-                <XMApp xml:id="S2.E8.m5.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E8.m2.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E8.m5.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m5.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E8.m1.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="11" role="NUMBER" xml:id="S2.E8.m1.1.2.1.mf">11</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="11" role="NUMBER">11</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E8.m5.1.1.2">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m5.1.1.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E8.m2.1.2.mf" font="italic">b</XMTok>
-                    <XMTok meaning="11" role="NUMBER" xml:id="S2.E8.m2.1.3.1.mf">11</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="11" role="NUMBER">11</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E8.1" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E8.m1" tex="\displaystyle a_{{11}}" text="a _ 11">
-                  <XMath xml:id="S2.E8.m1.1">
-                    <XMApp xml:id="S2.E8.m1.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m1.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E8.m1.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="11" role="NUMBER" xml:id="S2.E8.m1.1.2.1">11</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="11" role="NUMBER">11</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E8.2" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E8.m2" tex="\displaystyle=b_{{11}}" text="absent = b _ 11">
-                  <XMath xml:id="S2.E8.m2.1">
-                    <XMApp xml:id="S2.E8.m2.1.4">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E8.m2.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E8.m2.1.4.1"/>
-                      <XMApp xml:id="S2.E8.m2.1.4.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m2.1.4.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E8.m2.1.2" font="italic">b</XMTok>
-                        <XMTok meaning="11" role="NUMBER" xml:id="S2.E8.m2.1.3.1">11</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="11" role="NUMBER">11</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMath>
@@ -558,44 +558,44 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </MathFork>
           <MathFork>
             <Math xml:id="S2.E8.m6" tex="\displaystyle a_{{12}}=b_{{12}}" text="a _ 12 = b _ 12">
-              <XMath xml:id="S2.E8.m6.1">
-                <XMApp xml:id="S2.E8.m6.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E8.m4.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E8.m6.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m6.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E8.m3.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="12" role="NUMBER" xml:id="S2.E8.m3.1.2.1.mf">12</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E8.m6.1.1.2">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m6.1.1.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E8.m4.1.2.mf" font="italic">b</XMTok>
-                    <XMTok meaning="12" role="NUMBER" xml:id="S2.E8.m4.1.3.1.mf">12</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E8.3" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E8.m3" tex="\displaystyle a_{{12}}" text="a _ 12">
-                  <XMath xml:id="S2.E8.m3.1">
-                    <XMApp xml:id="S2.E8.m3.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m3.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E8.m3.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="12" role="NUMBER" xml:id="S2.E8.m3.1.2.1">12</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="12" role="NUMBER">12</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E8.4" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E8.m4" tex="\displaystyle=b_{{12}}" text="absent = b _ 12">
-                  <XMath xml:id="S2.E8.m4.1">
-                    <XMApp xml:id="S2.E8.m4.1.4">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E8.m4.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E8.m4.1.4.1"/>
-                      <XMApp xml:id="S2.E8.m4.1.4.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E8.m4.1.4.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E8.m4.1.2" font="italic">b</XMTok>
-                        <XMTok meaning="12" role="NUMBER" xml:id="S2.E8.m4.1.3.1">12</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMath>
@@ -607,44 +607,44 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <equation frefnum="(2.9)" refnum="2.9" xml:id="S2.E9">
           <MathFork>
             <Math xml:id="S2.E9.m5" tex="\displaystyle a_{{21}}=b_{{21}}" text="a _ 21 = b _ 21">
-              <XMath xml:id="S2.E9.m5.1">
-                <XMApp xml:id="S2.E9.m5.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E9.m2.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E9.m5.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m5.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E9.m1.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="21" role="NUMBER" xml:id="S2.E9.m1.1.2.1.mf">21</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="21" role="NUMBER">21</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E9.m5.1.1.2">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m5.1.1.2.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E9.m2.1.2.mf" font="italic">b</XMTok>
-                    <XMTok meaning="21" role="NUMBER" xml:id="S2.E9.m2.1.3.1.mf">21</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="21" role="NUMBER">21</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E9.1" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E9.m1" tex="\displaystyle a_{{21}}" text="a _ 21">
-                  <XMath xml:id="S2.E9.m1.1">
-                    <XMApp xml:id="S2.E9.m1.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m1.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E9.m1.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="21" role="NUMBER" xml:id="S2.E9.m1.1.2.1">21</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="21" role="NUMBER">21</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E9.2" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E9.m2" tex="\displaystyle=b_{{21}}" text="absent = b _ 21">
-                  <XMath xml:id="S2.E9.m2.1">
-                    <XMApp xml:id="S2.E9.m2.1.4">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E9.m2.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E9.m2.1.4.1"/>
-                      <XMApp xml:id="S2.E9.m2.1.4.2">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m2.1.4.2.1"/>
-                        <XMTok role="UNKNOWN" xml:id="S2.E9.m2.1.2" font="italic">b</XMTok>
-                        <XMTok meaning="21" role="NUMBER" xml:id="S2.E9.m2.1.3.1">21</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="21" role="NUMBER">21</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMath>
@@ -654,59 +654,59 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </MathFork>
           <MathFork>
             <Math xml:id="S2.E9.m6" tex="\displaystyle a_{{22}}=b_{{22}}+c_{{22}}" text="a _ 22 = b _ 22 + c _ 22">
-              <XMath xml:id="S2.E9.m6.1">
-                <XMApp xml:id="S2.E9.m6.1.1">
-                  <XMTok meaning="equals" role="RELOP" xml:id="S2.E9.m4.1.1.mf">=</XMTok>
-                  <XMApp xml:id="S2.E9.m6.1.1.1">
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m6.1.1.1.1"/>
-                    <XMTok role="UNKNOWN" xml:id="S2.E9.m3.1.1.mf" font="italic">a</XMTok>
-                    <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m3.1.2.1.mf">22</XMTok>
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="22" role="NUMBER">22</XMTok>
                   </XMApp>
-                  <XMApp xml:id="S2.E9.m6.1.1.2">
-                    <XMTok meaning="plus" role="ADDOP" xml:id="S2.E9.m4.1.4.mf">+</XMTok>
-                    <XMApp xml:id="S2.E9.m6.1.1.2.1">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m6.1.1.2.1.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E9.m4.1.2.mf" font="italic">b</XMTok>
-                      <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m4.1.3.1.mf">22</XMTok>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
                     </XMApp>
-                    <XMApp xml:id="S2.E9.m6.1.1.2.2">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m6.1.1.2.2.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E9.m4.1.5.mf" font="italic">c</XMTok>
-                      <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m4.1.6.1.mf">22</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td xml:id="S2.E9.3" align="right">
+              <td align="right">
                 <Math mode="inline" xml:id="S2.E9.m3" tex="\displaystyle a_{{22}}" text="a _ 22">
-                  <XMath xml:id="S2.E9.m3.1">
-                    <XMApp xml:id="S2.E9.m3.1.3">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m3.1.3.1"/>
-                      <XMTok role="UNKNOWN" xml:id="S2.E9.m3.1.1" font="italic">a</XMTok>
-                      <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m3.1.2.1">22</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
                     </XMApp>
                   </XMath>
                 </Math>
               </td>
-              <td xml:id="S2.E9.4" align="left">
+              <td align="left">
                 <Math mode="inline" xml:id="S2.E9.m4" tex="\displaystyle=b_{{22}}+c_{{22}}" text="absent = b _ 22 + c _ 22">
-                  <XMath xml:id="S2.E9.m4.1">
-                    <XMApp xml:id="S2.E9.m4.1.7">
-                      <XMTok meaning="equals" role="RELOP" xml:id="S2.E9.m4.1.1">=</XMTok>
-                      <XMTok meaning="absent" xml:id="S2.E9.m4.1.7.1"/>
-                      <XMApp xml:id="S2.E9.m4.1.7.2">
-                        <XMTok meaning="plus" role="ADDOP" xml:id="S2.E9.m4.1.4">+</XMTok>
-                        <XMApp xml:id="S2.E9.m4.1.7.2.1">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m4.1.7.2.1.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E9.m4.1.2" font="italic">b</XMTok>
-                          <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m4.1.3.1">22</XMTok>
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                          <XMTok meaning="22" role="NUMBER">22</XMTok>
                         </XMApp>
-                        <XMApp xml:id="S2.E9.m4.1.7.2.2">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post7" xml:id="S2.E9.m4.1.7.2.2.1"/>
-                          <XMTok role="UNKNOWN" xml:id="S2.E9.m4.1.5" font="italic">c</XMTok>
-                          <XMTok meaning="22" role="NUMBER" xml:id="S2.E9.m4.1.6.1">22</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                          <XMTok meaning="22" role="NUMBER">22</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
@@ -719,14 +719,14 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equationgroup>
     </para>
     <para xml:id="S2.p10">
-      <p xml:id="S2.p10.1">Some text</p>
+      <p>Some text</p>
       <equation frefnum="(2.10)" refnum="2.10" xml:id="S2.E10">
         <Math mode="display" xml:id="S2.E10.m1" tex="a=\text{something}" text="a = [something]">
-          <XMath xml:id="S2.E10.m1.1">
-            <XMApp xml:id="S2.E10.m1.1.4">
-              <XMTok meaning="equals" role="RELOP" xml:id="S2.E10.m1.1.2">=</XMTok>
-              <XMTok role="UNKNOWN" xml:id="S2.E10.m1.1.1" font="italic">a</XMTok>
-              <XMText xml:id="S2.E10.m1.1.3">something</XMText>
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMText>something</XMText>
             </XMApp>
           </XMath>
         </Math>
@@ -735,13 +735,13 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     <theorem class="ltx_theorem_corollary" frefnum="Corollary 1" refnum="1" xml:id="Thmcorollary1">
       <title font="italic"><tag>Corollary 1</tag>.</title>
       <para xml:id="Thmcorollary1.p1">
-        <p xml:id="Thmcorollary1.p1.1">Whatever!</p>
+        <p>Whatever!</p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_corollary" frefnum="Corollary" xml:id="Thmcorollary.x1">
       <title font="italic"><tag>Corollary</tag>.</title>
       <para xml:id="Thmcorollary.x1.p1">
-        <p xml:id="Thmcorollary.x1.p1.1">And whatever.</p>
+        <p>And whatever.</p>
       </para>
     </theorem>
   </section>
