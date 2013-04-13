@@ -53,6 +53,8 @@ sub new {
 
   $self->registerHandler('ltx:navigation'    => \&navigation_handler);
 
+  $self->registerHandler('ltx:rawhtml'       => \&rawhtml_handler);
+
   $self; }
 
 sub registerHandler {
@@ -304,6 +306,11 @@ sub bibentry_handler {
 
 # I'm thinking we shouldn't acknowledge navigation data at all?
 sub navigation_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+}
+
+# I'm thinking we shouldn't acknowledge rawhtml data at all?
+sub rawhtml_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
 }
 
