@@ -1558,7 +1558,7 @@ sub insertBlock {
   my $newblock = undef;
   map( ($blockattr{$_} || delete $blockattr{$_}), keys %blockattr);
   my $hasattr = scalar(keys %blockattr);
-  if($hasattr || ! $model->canContain($context,'ltx:p')){
+  if($hasattr || ! $model->canContain($context,'ltx:p') || $model->canContain($context,'#PCDATA')){
     # [If we DONT open, we lose the vattach!]
     $newblock = $document->openElement('ltx:inline-block',%blockattr); }
 
@@ -2603,22 +2603,16 @@ sub add_body_TeX {
 Tag('ltx:Math',  afterClose=>\&add_body_TeX);
 Tag('ltx:Math',  afterClose=>\&cleanup_Math);
 
-# AHHH, but,what about inline-block... is that allowed?
-# So, better would be pull up context of XMText IFFFF it is allowed in the parent of the Math!!!!
+# Cleanup ltx:Math elements; particularly if they aren't "really" math.
 sub cleanup_Math {
   my($document,$mathnode)=@_;
-  # If the Math contains ONLY XMath that ONLY contain XMText,
-  # it apparently isn't math at all!?!  So pull up the contents of the XMText's.
-  foreach my $xnode ($mathnode->childNodes){
-    return unless $document->getModel->getNodeQName($xnode) eq 'ltx:XMath';
-    foreach my $mnode ($xnode->childNodes){
-      return unless $document->getModel->getNodeQName($mnode) eq 'ltx:XMText';
-    }}
-  # Replace Math/XMath/XMText/* by *
-  $document->replaceNode($mathnode,
-			 map($_->childNodes,map($_->childNodes,$mathnode->childNodes))); }
+  # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
+  if(!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText"]',$mathnode)){
+    # So pull up the contents of the XMText's.
+    my @xmtexts = map($_->childNodes,$mathnode->childNodes);
+    $document->replaceNode($mathnode, map($_->childNodes,@xmtexts)); }}
 
-# Here's for an inverse case: when an XMText isn't "really" a text
+# Here's for an inverse case: when an XMText isn't "really" just text
 # if it only contains an Math  ORR, a tabular with only Math in the cells?
 # First case: pull it back into the math, but in an XMWrap to isolate it for parsing.
 # Should we just pull any mixed text math up or only a single Math?
@@ -2626,27 +2620,50 @@ sub cleanup_Math {
 Tag('ltx:XMText',  afterClose=>\&cleanup_XMText);
 sub cleanup_XMText {
   my($document,$textnode)=@_;
-  my @children = $textnode->childNodes;
-  return unless (scalar(@children)==1);
+  # We're really only interested in reducing nested math, right?
+  return unless $document->findnodes('descendant::ltx:Math',$textnode);
+  # Apply "outer" simplifications: remove ltx:text or ltx:p wrappings.
+  # probably should worry about preserving attributes??
   my $model = $document->getModel;
-  my $childtag = $model->getNodeQName($children[0]);
-  # Careful of both elements and text nodes!
-  if($document->findnode('ltx:text[count(* | text()) = 1][ltx:Math]',$textnode)){
-    # Replace XMText/text/Math/XMath/* by XMWrap/*  (this should preserve the parse?)
-    $textnode=$document->renameNode($textnode,'ltx:XMWrap');
-    map( $document->replaceNode($_,map($_->childNodes,map($_->childNodes,$_->childNodes))),
-         $textnode->childNodes); }
+  # A single "simple" element, with a single child
+  my %simple_element = ('ltx:text'=>1,'ltx:p'=>1,'ltx:inline-block'=>1);
+  my @preserved = (qw(yoffset xoffset));
+  my @children;
+  while((@children = $textnode->childNodes) && (scalar(@children)==1)
+        && $document->findnodes('ltx:text[not(@yoffset) and not(@xoffset)]'
+                                .' | ltx:inline-block[count(*)=1]'
+                                .' | ltx:p',
+                                $textnode)){
+    $document->setNodeFont($textnode,$document->getNodeFont($children[0]));
+    $document->unwrapNodes($children[0]); }
 
-  elsif($childtag eq 'ltx:Math'){
-    # Replace XMText/Math/XMath/* by XMWrap/*  (this should preserve the parse?)
+  # Now apply a simplifying rule for nested Math
+  # If the XMText contains a single Math, pull it's content up in 
+  if((scalar(@children)==1) && $document->findnodes('ltx:Math',$textnode)){
+    # Replace XMText by XMWrap/*  (this should preserve the parse?)
     $textnode=$document->renameNode($textnode,'ltx:XMWrap');
-    map( $document->replaceNode($_,map($_->childNodes,$_->childNodes)),
-         $textnode->childNodes); }
-  elsif($childtag eq 'ltx:tabular'){
-    my $table = $children[0];
-    # Should we ONLY do this if all cells are math?
-    return if $document->findnodes('*[local-name() != "tr"] | ltx:tr[not(ltx:td)] | ltx:tr/ltx:td[not(ltx:Math)]',$table);
-    $table = $document->renameNode($table,'ltx:XMArray');
+    $document->replaceNode($children[0],map($_->childNodes,$children[0]->childNodes)); }
+  # # # RISKY!!!! If SOME nodes are math...
+  # # # pull the whole sequence up, unwrap the math and putting the rest back in XMText.
+  # # # Even with the XMWrap, this seems to wreak havoc on parsing and structure?
+  # # if($document->findnodes('ltx:Math',$textnode)){
+  # #   # Replace XMText by XMWrap/*  (this should preserve the parse?)
+  # #   $textnode=$document->renameNode($textnode,'ltx:XMWrap');
+  # #   foreach my $child (@children){
+  # #     if($model->getNodeQName($child) eq 'ltx:Math'){
+  # #       $document->replaceNode($child,map($_->childNodes,$child->childNodes)); }
+  # #     else {
+  # #       $document->wrapNodes('ltx:XMText',$child); }}}
+  # If a single tabular that ONLY(?) contains Math, turn into an XMArray
+  # Should we ONLY do this if all cells are math?
+  # Probably some alignment attributes should be maintained!!!
+  elsif((scalar(@children)==1) && ($model->getNodeQName($children[0]) eq 'ltx:tabular')
+        && !$document->findnodes('ltx:tabular/ltx:tr/ltx:td/text()'
+                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td/text()'
+                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
+                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
+                                 $textnode)){
+    my $table = $document->renameNode($children[0],'ltx:XMArray');
     foreach my $row ($table->childNodes){
       $row = $document->renameNode($row,'ltx:XMRow');
       foreach my $cell ($row->childNodes){
