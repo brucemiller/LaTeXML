@@ -42,6 +42,7 @@ package LaTeXML::Util::MathMLLinebreaker;
 # converted to a proper DOM tree.
 
 use strict;
+use LaTeXML::Common::XML;
 
 #######################################################################
 # Parameters
@@ -329,8 +330,29 @@ sub nodeChildren {
 
 sub textContent {
   my($node)=@_;
-  my($tag,$attr,@children)=@$node;
-  join('',@children); }
+  my $ref = ref $node;
+  if(! $ref){
+    $node; }
+  elsif($ref eq 'ARRAY'){
+    my($tag,$attr,@children)=@$node;
+    if($tag eq 'ltx:XMath'){
+      ''; }
+    else {
+      join('',map(textContent($_), @children)); }}
+  elsif($ref =~ /^XML::LibXML/){
+    my $type = $node->nodeType;
+    if($type == XML_ELEMENT_NODE){
+      my $tag = $node->localname;
+      if($tag eq 'XMath'){
+        ''; }
+      else {
+        join('',map(textContent($_), $node->childNodes)); }}
+    elsif($type == XML_TEXT_NODE){
+      $node->textContent; }
+    else {
+      '';}}
+  else {
+    ''; }}
 
 sub min { (!defined $_[0] ? $_[1] : (!defined $_[1] ? $_[0] : ($_[0] < $_[1] ? $_[0] : $_[1]))); }
 sub max { (!defined $_[0] ? $_[1] : (!defined $_[1] ? $_[0] : ($_[0] > $_[1] ? $_[0] : $_[1]))); }
