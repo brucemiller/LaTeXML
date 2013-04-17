@@ -29,7 +29,7 @@ my @graphicsmaps=();
 my($split,$splitat,$splitpath,$splitnaming)=(undef,'section',undef,'id');
 my($navtoc)=(undef);
 my %navtocstyles=(context=>1,normal=>1,none=>1);
-my($prescan,$dbfile,$scan,$crossref,$sitedir)=(undef,undef,1,1,undef);
+my($prescan,$dbfile,$scan,$crossref,$sitedir,$resourcedir)=(undef,undef,1,1,undef,undef);
 my($index,$permutedindex,$splitindex)=(1,undef,undef);
 my($splitbibliography,@bibliographies)=(undef);
 my($timestamp)=(undef);
@@ -93,6 +93,7 @@ GetOptions("quiet"     => sub { $verbosity--; },
 	   "prescan"               =>\$prescan,
 	   "dbfile=s"              =>\$dbfile,
 	   "sitedirectory=s"       =>\$sitedir,
+	   "resourcedirectory=s"   =>\$resourcedir,
 	   # Various choices for math processing.
 	   # Note: Could want OM embedded in mml annotation, too.
 	   # In general, could(?) want multiple math reps within <Math>
@@ -399,6 +400,7 @@ if(!$prescan){
       else {
 	warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; }}
     push(@procs,LaTeXML::Post::XSLT->new(stylesheet=>$stylesheet,parameters=>$parameters,
+					 resource_directory=>$resourcedir,
 					 noresources=>(defined $defaultresources) && !$defaultresources,
 					 %OPTIONS)); }
 
