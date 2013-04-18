@@ -184,6 +184,8 @@ lib/LaTeXML/resources/RelaxNG/svg/svg-viewport-attrib.rnc
 lib/LaTeXML/resources/RelaxNG/svg/svg-viewport-attrib.rng
 lib/LaTeXML/resources/RelaxNG/svg/svg-xlink-attrib.rnc
 lib/LaTeXML/resources/RelaxNG/svg/svg-xlink-attrib.rng
+lib/LaTeXML/resources/RelaxNG/svg/svg11-basic.rnc
+lib/LaTeXML/resources/RelaxNG/svg/svg11-tiny.rnc
 lib/LaTeXML/resources/RelaxNG/svg/svg11.rnc
 lib/LaTeXML/resources/RelaxNG/svg/svg11.rng
 lib/LaTeXML/resources/DTD/LaTeXML.dtd
@@ -216,6 +218,7 @@ lib/LaTeXML/resources/CSS/ltx-report.css
 lib/LaTeXML/resources/CSS/ltx-book.css
 lib/LaTeXML/resources/CSS/ltx-amsart.css
 lib/LaTeXML/resources/CSS/ltx-apj.css
+lib/LaTeXML/resources/javascript/LaTeXML-maybeMathjax.js
 #==================================================
 # Supported Packages
 #==================================================
@@ -425,6 +428,7 @@ t/70_parse.t
 t/80_complex.t
 t/81_babel.t
 t/90_latexmlpost.t
+t/alignment/foo.png
 t/alignment/badeqnarray.pdf
 t/alignment/badeqnarray.tex
 t/alignment/badeqnarray.xml
@@ -699,6 +703,7 @@ t/fonts/mathcolor.xml
 t/fonts/textsymbols.pdf
 t/fonts/textsymbols.tex
 t/fonts/textsymbols.xml
+t/graphics/none.png
 t/graphics/colors.pdf
 t/graphics/colors.tex
 t/graphics/colors.xml
