@@ -33,6 +33,7 @@ our $MORE_MAKERULES='';
 record_revision();
 compile_MathGrammar();
 install_TeXStyles();
+extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
 	      VERSION_FROM => 'lib/LaTeXML/Version.in',
@@ -181,5 +182,19 @@ uninstall ::
 InstallTeXStyles
 }
 
+#======================================================================
+# Extra tests for Tikz; too slow for everyday tests.
+sub extra_Tests {
+    $MORE_MAKERULES .= <<'ExtraTests';
+
+EXTRA_TEST_FILES = t/*.tt
+
+fulltest : test extratest
+
+extratest ::
+	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-MExtUtils::Command::MM" "-e" "test_harness($(TEST_VERBOSE), '$(INST_LIB)', '$(INST_ARCHLIB)')" $(EXTRA_TEST_FILES)
+
+ExtraTests
+}
 #======================================================================
 
