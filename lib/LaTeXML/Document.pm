@@ -292,7 +292,7 @@ sub absorb {
         $box->beAbsorbed($self); }}}
   # Else, plain string in text mode.
   elsif(!$props{isMath}){
-    $self->openText($box,$props{font}); }
+    $self->openText($box,$props{font} || ($LaTeXML::BOX && $LaTeXML::BOX->getFont)); }
   # Or plain string in math mode.
   # Note text nodes can ONLY appear in <XMTok> or <text>!!!
   # Have we already opened an XMTok? Then insert into it.
