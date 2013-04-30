@@ -95,7 +95,7 @@ table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2e
 tr > td.ltx_eqn_pad { width:50%; }
 
 /* Position the tag to look like a normal item bullet. */
-li.ltx_item .ltx_tag { display:inline; margin-left:-1.5em; }
+li.ltx_item > .ltx_tag { display:inline; margin-left:-1.5em; }
 .ltx_item .ltx_tag + .ltx_para,
 .ltx_item .ltx_tag + .ltx_para .ltx_p  { display:inline; }
 
