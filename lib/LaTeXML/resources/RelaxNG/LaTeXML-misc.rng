@@ -24,6 +24,7 @@ they can appear in both inline and block contexts.</a:documentation>
       <ref name="graphics"/>
       <ref name="svg"/>
       <ref name="rawhtml"/>
+      <ref name="rawliteral"/>
     </choice>
   </define>
   <!-- ====================================================================== -->
@@ -154,6 +155,21 @@ to be used in processing the graphic.</a:documentation>
       <zeroOrMore>
         <ref name="htmlElement"/>
       </zeroOrMore>
+    </element>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="rawliteral">
+    <element name="rawliteral">
+      <a:documentation>A container for even more arbitrary directives like jsp, php, etc
+Doesn't create an element, but an open angle bracket followed by \attr{open}
+then the text content, followed by a close angle bracket followed by \attr{close}.</a:documentation>
+      <optional>
+        <attribute name="open"/>
+      </optional>
+      <optional>
+        <attribute name="close"/>
+      </optional>
+      <text/>
     </element>
   </define>
 </grammar>

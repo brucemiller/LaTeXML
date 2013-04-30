@@ -16,7 +16,7 @@ namespace xhtml = "http://www.w3.org/1999/xhtml"
 ##  Miscellaneous (Misc) elements are (typically) visible
 ## elements which don't have clear inline or block character;
 ## they can appear in both inline and block contexts.
-Misc.class  |= inline-block | verbatim | break | graphics | svg | rawhtml
+Misc.class  |= inline-block | verbatim | break | graphics | svg | rawhtml | rawliteral
 
 #======================================================================
 
@@ -111,5 +111,15 @@ rawhtml =
 ## A container for arbitrary markup in the xhtml namespace
 ## (not currently validated against any particular html schema)
 element rawhtml {  htmlElement * }
+
+#======================================================================
+rawliteral =
+## A container for even more arbitrary directives like jsp, php, etc
+## Doesn't create an element, but an open angle bracket followed by \attr{open}
+## then the text content, followed by a close angle bracket followed by \attr{close}.
+element rawliteral {
+  attribute open { text}?,
+  attribute close { text}?,
+  text }
 
 #======================================================================
