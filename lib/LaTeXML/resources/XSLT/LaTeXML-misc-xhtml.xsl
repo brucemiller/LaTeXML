@@ -29,7 +29,7 @@
   <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-block">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
@@ -122,6 +122,16 @@
 
   <xsl:template match="ltx:rawhtml">
     <xsl:apply-templates mode="copy-foreign"/>
+  </xsl:template>
+
+  <xsl:template match="ltx:rawliteral">
+    <xsl:text disable-output-escaping="yes">&lt;</xsl:text>
+    <xsl:value-of select="@open"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="text()"/>
+    <xsl:text> </xsl:text>
+    <xsl:value-of select="@close"/>
+    <xsl:text disable-output-escaping="yes">&gt;</xsl:text>
   </xsl:template>
 
   <!-- ======================================================================
