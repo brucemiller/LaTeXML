@@ -1557,11 +1557,18 @@ sub insertBlock {
   # [A thought is to close any open ltx:p, or create & delete one, just to "prime" it.
   # but those seem a bad idea, because we may want a vbox inside a p, or....]
   my $newblock = undef;
+  my $unwrap = 0;
   map( ($blockattr{$_} || delete $blockattr{$_}), keys %blockattr);
   my $hasattr = scalar(keys %blockattr);
-  if($hasattr || ! $model->canContain($context,'ltx:p') || $model->canContain($context,'#PCDATA')){
+  if($hasattr || ! $model->canContainSomehow($context,'ltx:p') || $model->canContain($context,'#PCDATA')){
     # [If we DONT open, we lose the vattach!]
     $newblock = $document->openElement('ltx:inline-block',%blockattr); }
+  elsif($model->canContainSomehow($context,'ltx:para')){
+    $newblock = $document->openElement('ltx:para',%blockattr); }
+#  else {
+#    $unwrap = 1;
+#    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
+
 
   # Insert the content for the block, and reduce
   $document->getElement->setAttribute('_vertical_mode_'=>1); # HACK!!!! (see \hbox)
@@ -1589,9 +1596,10 @@ sub insertBlock {
       my @rows = $newblock->childNodes;
       if(scalar(@rows) < 1){    # Insertion came up empty?
         $document->removeNode($newblock); } # then remove the new block entirely
-      elsif((scalar(@rows) ==1)             # Else only 1 item inside, then flatten
-            && $model->canContain($newblock->parentNode,$rows[0]) # if allowed.
-            && (!$hasattr || grep($model->canHaveAttribute($rows[0],$_), keys %blockattr))){
+      elsif($unwrap || 
+            ((scalar(@rows) ==1)             # Else only 1 item inside, then flatten
+             && $model->canContain($newblock->parentNode,$rows[0]) # if allowed.
+             && (!$hasattr || grep($model->canHaveAttribute($rows[0],$_), keys %blockattr)))){
         map($rows[0]->setAttribute($_=>$blockattr{$_}), keys %blockattr);
         $document->unwrapNodes($newblock); }}
 
@@ -2420,6 +2428,11 @@ DefConstructorI('\par', undef,
 	       sub { $_[0]->maybeCloseElement('ltx:p');
 		     $_[0]->maybeCloseElement('ltx:para'); },
 	       alias=>"\\par\n");
+# OTOH, sometimes \par is just a minimalistic "start a new line"
+# This should be closer for those cases.
+DefConstructorI('\inner@par', undef,
+	       sub { $_[0]->maybeCloseElement('ltx:p'); });
+
 Tag('ltx:para', autoClose=>1, autoOpen=>1);
 
 sub trimNodeWhitespace {
