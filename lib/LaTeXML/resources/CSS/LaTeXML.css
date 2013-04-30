@@ -18,11 +18,14 @@
 /* Main content */
 .ltx_page_content { clear:both; }
 .ltx_page_header  { border-bottom:1px solid; margin-bottom:5px; }
-.ltx_page_footer  { border-top:1px solid; margin-top:5px;  }
+.ltx_page_footer  { clear:both; border-top:1px solid; margin-top:5px;  }
 
 .ltx_page_header:after,
 .ltx_page_footer:after,
 .ltx_page_content:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
+
+.ltx_page_footer:before
+ { content:"."; display:block; height:0; clear:both; visibility:hidden; }
 
 .ltx_page_logo     { font-size:80%; margin-top: 5px; float:right; }
 .ltx_page_logo a   { font-variant: small-caps; }
@@ -155,11 +158,13 @@ table { border-collapse:collapse; }
 /*======================================================================
  Meta stuff, footnotes */
 .ltx_note_content { display:none; }
+/*right:5%;  */
 .ltx_note_content {
-     width: 70%; right:5%;  font-size:80%;
+     max-width: 70%; font-size:80%; left:15%;
      background:#E0E0E0; border:3px outset gray; }
 .ltx_note_mark    { color:blue; }
 .ltx_note_type    { font-weight: bold; }
+.ltx_note { display:inline-block; text-indent:0; } /* So we establish containing block */
 .ltx_note:hover .ltx_note_content 
    { display:block; position:absolute; z-index:10; }
 
@@ -199,7 +204,7 @@ cite                 { font-style: normal; }
 /*.ltx_inline-block.ltx_centering,*/
 /* Hmm.... is this right in general? */
 .ltx_centering  { display:block; margin:auto; text-align:center; }
-
+table.ltx_centering { display:table; } /*!!! */
 
 /* .ltx_phantom handled in xslt */
 
