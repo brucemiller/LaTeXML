@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<!--This OMDoc document is generated from an sTeX-encoded one via LaTeXML, you may want to reconsider editing it.-->
+<omdoc xmlns:omdoc="http://omdoc.org/ns" xmlns="http://omdoc.org/ns" xmlns:stex="http://kwarc.info/ns/sTeX" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:om="http://www.openmath.org/OpenMath" xmlns:m="http://www.w3.org/1998/Math/MathML" xml:base="http://example.com/./stex.tex" xml:id="Document">
+  <omdoc:omgroup layout="sectioning" xml:id="sec.reals" about="#sec.reals" stex:srcref="stex.tex#textrange(from=2;0,to=17;13)">
+    <omdoc:metadata xml:id="sec.reals.metadata1" about="#sec.reals.metadata1" stex:srcref="stex.tex#textrange(from=2;0,to=17;13)">
+      <dc:title xml:id="sec.reals.metadata1.title1" about="#sec.reals.metadata1.title1" stex:srcref="stex.tex#textrange(from=2;0,to=17;13)">Real Numbers</dc:title>
+    </omdoc:metadata>
+    <theory xml:id="reals" about="#reals" stex:srcref="stex.tex#textrange(from=3;0,to=16;12)">
+      <imports from="../../../slides/extcds/omstd/arith1.omdoc#arith1"/>
+      <omdoc:symbol name="RealNumbers" xml:id="RealNumbers.sym" about="#RealNumbers.sym" stex:srcref="stex.tex#textrange(from=4;0,to=4;32)"/>
+      <omdoc:notation cd="reals" name="RealNumbers">
+        <omdoc:prototype>
+          <om:OMS cd="reals" name="RealNumbers"/>
+        </omdoc:prototype>
+        <omdoc:rendering>
+          <m:mi>&#x211D;</m:mi>
+        </omdoc:rendering>
+      </omdoc:notation>
+      <omdoc:symbol name="absval" xml:id="absval.sym" about="#absval.sym" stex:srcref="stex.tex#textrange(from=5;0,to=5;42)"/>
+      <omdoc:notation cd="reals" name="absval">
+        <omdoc:prototype>
+          <om:OMA>
+            <om:OMS cd="reals" cr="fun" name="absval"/>
+            <omdoc:expr name="arg1"/>
+          </om:OMA>
+        </omdoc:prototype>
+        <omdoc:rendering precedence="2000">
+          <m:mrow>
+            <m:mo egroup="fence" fence="true">(</m:mo>
+            <m:mo cr="fun">|</m:mo>
+            <render name="arg1" precedence="2000"/>
+            <m:mo cr="fun">|</m:mo>
+            <m:mo egroup="fence" fence="true">)</m:mo>
+          </m:mrow>
+        </omdoc:rendering>
+      </omdoc:notation>
+      <omdoc:symbol name="rfrac" xml:id="rfrac.sym" about="#rfrac.sym" stex:srcref="stex.tex#textrange(from=6;0,to=6;32)"/>
+      <omdoc:notation cd="reals" name="rfrac">
+        <omdoc:prototype>
+          <om:OMA>
+            <om:OMS cd="reals" cr="fun" name="rfrac"/>
+            <omdoc:expr name="arg1"/>
+            <omdoc:expr name="arg2"/>
+          </om:OMA>
+        </omdoc:prototype>
+        <omdoc:rendering>
+          <m:mfrac>
+            <render name="arg1"/>
+            <render name="arg2"/>
+          </m:mfrac>
+        </omdoc:rendering>
+      </omdoc:notation>
+      <omdoc:symbol name="real-numbers" xml:id="real-numbers.def.sym" about="#real-numbers.def.sym" stex:srcref="stex.tex#textrange(from=8;0,to=11;16)"/>
+      <omdoc:definition for="real-numbers" xml:id="reals.def" about="#reals.def" stex:srcref="stex.tex#textrange(from=8;0,to=11;16)">
+        <omdoc:CMP xml:id="reals.def.CMP1" about="#reals.def.CMP1" stex:srcref="stex.tex#textrange(from=8;0,to=11;16)">
+<p xmlns="http://www.w3.org/1999/xhtml" id="reals.def.CMP1.p1" class="p" about="#reals.def.CMP1.p1">We denote the set of <omdoc:idx xml:id="reals.def.CMP1.p1.idx1" about="#reals.def.CMP1.p1.idx1" stex:srcref="stex.tex#textrange(from=8;27,to=9;44)"><omdoc:idt xml:id="reals.def.CMP1.p1.idx1.idt1" about="#reals.def.CMP1.p1.idx1.idt1" stex:srcref="stex.tex#textrange(from=8;27,to=9;44)"><omdoc:term cd="reals" name="real-numbers" role="definiendum" xml:id="reals.def.CMP1.p1.idx1.idt1.term1" about="#reals.def.CMP1.p1.idx1.idt1.term1" stex:srcref="stex.tex#textrange(from=8;27,to=9;44)">real numbers</omdoc:term></omdoc:idt><omdoc:ide index="default" xml:id="reals.def.CMP1.p1.idx1.ide2" about="#reals.def.CMP1.p1.idx1.ide2" stex:srcref="stex.tex#textrange(from=8;27,to=9;44)"><omdoc:idp>real</omdoc:idp><omdoc:idp>numbers</omdoc:idp></omdoc:ide></omdoc:idx> we all know and love with
+<om:OMOBJ><om:OMS cd="reals" name="RealNumbers"/></om:OMOBJ>.</p></omdoc:CMP>
+      </omdoc:definition>
+      <omdoc:definition xml:id="absval.def" about="#absval.def" stex:srcref="stex.tex#textrange(from=13;0,to=15;16)">
+        <omdoc:CMP xml:id="absval.def.CMP1" about="#absval.def.CMP1" stex:srcref="stex.tex#textrange(from=13;0,to=15;16)">
+<p xmlns="http://www.w3.org/1999/xhtml" id="absval.def.CMP1.p1" class="p" about="#absval.def.CMP1.p1">The absolute value <om:OMOBJ><om:OMA><om:OMS cd="reals" name="absval"/><om:OMV name="r"/></om:OMA></om:OMOBJ> of a real number <om:OMOBJ><om:OMV name="r"/></om:OMOBJ>.</p></omdoc:CMP>
+      </omdoc:definition>
+    </theory>
+  </omdoc:omgroup>
+</omdoc>

@@ -1,3 +1,4 @@
+# -*- CPERL -*-
 #======================================================================
 # Makefile Maker for LaTeXML
 # Bruce.Miller@NIST.gov
@@ -48,14 +49,22 @@ WriteMakefile(NAME => 'LaTeXML',
 			    # after we've already started resolving dependences!
 			    ($OLD_LIBXML
 			     ? ( 'XML::LibXML'  => 1.58,
-				 'XML::LibXML::XPathContext' => 0)
+				  'XML::LibXML::XPathContext' => 0)
 			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
 			    'XML::LibXSLT' => 1.58,
-			     'Parse::RecDescent' => 0,
+			    'Parse::RecDescent' => 0,
 			    'Image::Magick'=> 0,
 			    'File::Which'=>0,
+			    'URI'=>0,
+			    'LWP'=>0,
+			    'LWP::Simple'=>0,
+			    'IO::Socket'=>0,
+			    'IO::Socket::SSL'=>0,
+			    'IO::String'=>0,
+			    'JSON::XS'=>0,
+			    'Archive::Zip'=>0,
 			   },
-	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath'],
+	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath','bin/latexmlc','bin/latexmls'],
 	      macro => $MORE_MACROS,
 	      );
 

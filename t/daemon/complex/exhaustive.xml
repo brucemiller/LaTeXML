@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="color"?>
+<?latexml package="amsthm"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML" xml:id="Document">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1" fragid="p1">
+    <p>Preamble file loaded</p>
+  </para>
+  <para xml:id="p2" fragid="p2">
+    <p>Here is a sample fragment:</p>
+  </para>
+  <para xml:id="p3" fragid="p3">
+    <p><Math mode="inline" xml:id="p3.m1" tex="1+2=3" text="1 + 2 = 3" fragid="p3.m1"><m:math alttext="1+2=3" display="inline"><m:semantics><m:mrow><m:mrow><m:mn>1</m:mn><m:mo>+</m:mo><m:mn>2</m:mn></m:mrow><m:mo>=</m:mo><m:mn>3</m:mn></m:mrow><m:annotation-xml encoding="MathML-Content"><m:apply><m:eq/><m:apply><m:plus/><m:cn type="integer">1</m:cn><m:cn type="integer">2</m:cn></m:apply><m:cn type="integer">3</m:cn></m:apply></m:annotation-xml><m:annotation-xml encoding="application/x-latexml"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp><XMTok meaning="3" role="NUMBER">3</XMTok></XMApp></XMath></m:annotation-xml><m:annotation encoding="application/x-tex">1+2=3</m:annotation></m:semantics></m:math></Math></p>
+  </para>
+  <para xml:id="p4" fragid="p4">
+    <p>Postamble file loaded.</p>
+  </para>
+</document>

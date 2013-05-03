@@ -1,0 +1,200 @@
+#!/usr/bin/perl -w
+
+#######################
+# A Server for LaTeXML
+#######################
+
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+# General packages
+use strict;
+use warnings;
+use FindBin;
+use Data::Dumper;
+my $RealBin_safe;
+BEGIN {
+  $FindBin::RealBin =~ /^([^\0]+)\z/; # Valid Unix path TODO: Windows, revisit regexp
+  $RealBin_safe = $1;
+  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e $RealBin_safe.'/latexmls'));
+}
+# TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
+use lib $RealBin_safe."/../lib";
+# Server-specific
+use POSIX qw( setsid );
+use HTTP::Daemon;
+use URI::Escape qw(uri_unescape);
+use JSON::XS qw(encode_json decode_json);
+# LaTeXML packages
+use LaTeXML::Converter;
+use LaTeXML::Util::Config;
+use LaTeXML::Util::Pathname;
+#**********************************************************************
+
+# Bookkeeping
+my $ARGV_SAVED = [@ARGV], #Save, so that we reinvoke when flushed
+# Read default options
+my $g_opts = LaTeXML::Util::Config->new('input_limit'=>100,expire=>600);
+$g_opts->read(\@ARGV);
+
+# Set up the server
+my $server = setup_server($g_opts->get('port'));
+#**********************************************************************
+# Daemonize
+daemonize();  
+#**********************************************************************
+# Set up the processing.
+
+# Install signal-handlers
+local $SIG{'ALRM'} = 'timeout_handler';
+local $SIG{'TERM'} = 'term_handler';
+local $SIG{'INT'} = 'term_handler';
+
+alarm($g_opts->get('expire'));              #Timeout if inactive for too long...
+#**********************************************************************
+# Process files on demand:
+
+while ( my $client = $server->accept() ) {
+  while (my $request = $client->get_request) {
+    if (! $request->content) {
+      $client->send_response(HTTP::Response->new(400,'Empty request?!'));
+      next;
+    } elsif ($request->method ne 'POST') {
+      $client->send_response(HTTP::Response->new(405,'Only POST allowed'));
+      next;
+    }
+    # Bookkeeping...
+    alarm(0);		      # We are processing, ignore timeout here
+
+    # Thaw request into options:
+    my $opts = LaTeXML::Util::Config->new();
+    $opts->read_keyvals([map {uri_unescape($_)} map {split('=',$_)} split('&',$request->content)]);
+    # Local if peerhost is localhost:
+    $opts->set('local', $client->peerhost eq '127.0.0.1');
+    $opts->set('source',$opts->get('tex')) if (!($opts->get('source')) && $opts->get('tex'));
+    $opts->delete('tex');
+    # Prepare TeX source
+    my $source = $opts->get('source');
+    $opts->delete('source');
+
+    my $base = $opts->get('base');
+    if ($base && !pathname_is_url($base)) {
+      my $canonical_base = pathname_canonical($base);
+      if ($canonical_base ne pathname_cwd()) {
+        chdir $canonical_base
+         or croak("Fatal:server:chdir Can't chdir to $canonical_base: $!");
+        $LaTeXML::Util::Pathname::Pathname_CWD=$canonical_base;
+      }
+    }
+
+    # We now have a LaTeXML options object - $opts.
+    # Make sure the g_opts are included as defaults
+    foreach ($g_opts->keys) {
+      $opts->set($_, $g_opts->get($_)) unless $opts->exists($_); 
+    }
+    # Print to regular STDERR if debugging is requested
+    *STDERR = *STDERR_SAVED if ($LaTeXML::Converter::DEBUG);
+
+    # Boot/find a daemon:
+    my $converter = LaTeXML::Converter->get_converter($opts);
+    #Override/extend with session-specific options in $opt:
+    $converter->prepare_session($opts);
+
+    #Send a request:
+    $g_opts->set('input_counter',($g_opts->get('input_counter')||0)+1);
+    my $response = $converter->convert($source);
+    my ($result, $status, $log);
+    if (defined $response) {
+      ($result, $status, $log) = map { $response->{$_} } qw(result status log);
+    }
+
+    # Delete daemon if Fatal occurred
+    undef $converter unless defined $result;
+
+    # Send back the serialized XML, log and status:
+    $client->send_response(HTTP::Response->new(200,'OK',undef,encode_json($response)));
+
+    #Flush daemon, every $input_limit files:
+    if ($g_opts->get('input_limit') && 
+       (($g_opts->get('input_counter')||0) >= $g_opts->get('input_limit'))) {
+      exec("$RealBin_safe/latexmls",@$ARGV_SAVED)
+       or croak("Fatal:server:restart Daemon autoflush Failed!");
+    }
+    timeout_handler() if ($opts->get('expire') == -1); # Terminate immediately if desired
+    alarm($opts->get('expire')); #Timeout if inactive for too long...
+  }
+  $client->close;
+  undef($client);
+}
+
+sub timeout_handler {
+  print STDERR "Daemon timed out after inactivity.\n";
+  print STDERR "Self destructing...\n";
+  kill 'TERM', $$;
+  return;
+}
+
+sub term_handler {
+  print STDERR "Exiting...\n";
+  exit;
+}
+
+# TODO: Think about if the croaks can't be done better, so that the client
+#       receives the error/log message? or is that overkill?
+sub daemonize {
+  #This causes more problems than it solves (e.g. sTeX setup)
+  #chdir '/'                 or croak "Can't chdir to /: $!";
+  open STDIN, '<', '/dev/null' 
+    or croak("Fatal:server:daemonize  Can't read /dev/null: $!");
+  open STDOUT, '>', '/dev/null'
+    or croak("Fatal:server:daemonize  Can't write to /dev/null: $!");
+  defined(my $pid = fork)
+    or croak("Fatal:server:daemonize  Can't fork: $!");
+  exit if $pid;
+  setsid
+    or croak("Fatal:server:daemonize  Can't start a new session: $!");
+  *STDERR_SAVED = *STDERR;
+  *STDERR = *STDOUT
+    or croak("Fatal:server:daemonize Can't dup stdout: $!");
+  return;
+}
+
+sub setup_server {
+  my ($localport) = @_;
+  my $http_server = HTTP::Daemon->new(
+	 LocalAddr => '127.0.0.1',
+   LocalPort => $localport,
+   Listen    => SOMAXCONN,
+   Proto => 'tcp',
+   Reuse     => 1,
+  );
+  croak("Fatal:server:init can't setup server") unless $http_server;
+  return $http_server;
+}
+
+sub croak {
+ print STDERR $_[0],"\n";
+ exit 1;
+}
+
+#**********************************************************************
+__END__
+
+=pod
+
+=head1 NAME
+
+C<latexmls> - A server for latexml, latexmlpost and latexmlmath.
+Remains initialized in memory until an inactivity timeout occurs.
+
+=head1 SYNOPSYS
+
+See the OPTIONS section in L<LaTeXML::Util::Config> for usage information.
+Also consult latexmls --help
+
+=head1 SEE ALSO
+
+L<latexmlc>, L<ltxmojo>, L<LaTeXML::Util::Config>
+
+=cut
+#**********************************************************************

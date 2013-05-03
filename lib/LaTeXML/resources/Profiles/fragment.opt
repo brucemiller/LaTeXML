@@ -1,0 +1,22 @@
+# Identical to fragment-xhtml
+comments =
+post =
+timeout = 120
+format = xhtml
+whatsin = fragment
+whatsout = fragment
+pmml =
+cmml =
+nodefaultresources = 
+preload = LaTeX.pool
+preload = article.cls
+preload = amsmath.sty
+preload = amsthm.sty
+preload = amstext.sty
+preload = amssymb.sty
+preload = eucal.sty
+preload = [dvipsnames]xcolor.sty
+preload = url.sty
+preload = hyperref.sty
+preload = [ids]latexml.sty
+path = $LATEXMLINPUTS
