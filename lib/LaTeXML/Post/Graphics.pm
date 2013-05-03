@@ -52,7 +52,7 @@ sub new {
   $$self{ignore_options}     = $options{ignore_options}   || [];
   $$self{trivial_scaling}    = $options{trivial_scaling}  || 1;
   $$self{graphics_types}     = $options{graphics_types}
-    || [qw(png gif jpg jpeg 
+    || [qw(svg png gif jpg jpeg 
 	   eps ps ai pdf)];
   $$self{type_properties}    = $options{type_properties}
     || {
@@ -73,7 +73,9 @@ sub new {
 	gif =>{destination_type=>'gif',  transparent=>1,
 	       ncolors=>'400%', unit=>'pixel'},
 	png =>{destination_type=>'png',  transparent=>1,
-	       ncolors=>'400%', unit=>'pixel'}},
+	       ncolors=>'400%', unit=>'pixel'},
+	svg =>{destination_type=>'svg'}, # use these, as is
+    }, 
   $$self{background}        = $options{background}       || "#FFFFFF";
   $self; }
 
