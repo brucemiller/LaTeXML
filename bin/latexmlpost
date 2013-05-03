@@ -865,14 +865,18 @@ specify a graphics file that will be converted to a more appropriate file
 target format; for example, postscript files used for graphics with LaTeX
 will be converted to png format for use on the web.  As with LaTeX,
 when a graphics file is specified without a file type, the system will search
-for the most appropriate target type file. The default settings of the
-Graphics module search for pdf, gif, jpg or jpeg files, which it copies unchanged,
-or ps, eps and pdf files, which are converted to png.
+for the most appropriate target type file. 
 
-When this option is used, it overrides the defaults and provides
+When this option is used, it overrides I<and replaces> the defaults and provides
 a mapping of I<sourcetype> to I<desttype>.  The option can be
 repeated to provide several mappings, with the earlier formats preferred.
 If the I<desttype> is omitted, it specifies copying files of type I<sourcetype>, unchanged.
+
+The default settings is equivalent to having supplied the options:
+  svg png gif jpg jpeg eps.png ps.png ai.png pdf.png
+
+The first formats are preferred and used unchanged, while the latter
+ones are converted to png.
 
 =item C<--pictureimages>, C<--nopictureimages>
 
