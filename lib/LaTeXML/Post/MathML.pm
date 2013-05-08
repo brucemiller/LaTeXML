@@ -1009,15 +1009,19 @@ DefMathML('Apply:ADDOP:?',       \&pmml_infix, undef);
 DefMathML("Token:MULOP:?",       \&pmml_mo,    undef);
 DefMathML('Apply:MULOP:?',       \&pmml_infix, undef);
 DefMathML('Apply:?:divide', sub {
-  my($op,$num,$den)=@_;
+  my($op,$num,$den,@more)=@_;
   my $style = $op->getAttribute('mathstyle');
   my $thickness = $op->getAttribute('thickness');
 #  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
 #	    ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
 #   pmml_smaller($num),pmml_smaller($den)]; });
   # Bevelled looks crappy (operands too small) in Mozilla, so just open-code it.
-  if($style && ($style eq 'inline')){
-    ['m:mrow',{},pmml($num),pmml_mo('/'),pmml($den)]; }
+  if(($style && ($style eq 'inline')) || @more){
+    # Shouldn't end up with multiple denominators unless using an infix op w/visible content.
+    # but better check, rather than have it disappear...
+    Warn('expected','divide',$op,"Division operator is apparently invisible")
+      unless (ref $op  ?  $op->textContent : $op);
+    pmml_infix($op,$num,$den,@more); }
   else {
     ['m:mfrac',{($thickness ? (linethickness=>$thickness):())},
      pmml_smaller($num),pmml_smaller($den)]; }});
