@@ -375,7 +375,8 @@ sub _prepare_options {
   # II. Sanity check and Completion of Post options.
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
-  $opts->{post}=1 if ( (! defined $opts->{post}) && ($opts->{math_formats} && scalar(@{$opts->{math_formats}}) ) ||
+  $opts->{math_formats} = [] unless defined $opts->{math_formats};
+  $opts->{post}=1 if ( (! defined $opts->{post}) && (scalar(@{$opts->{math_formats}}) ) ||
     ($opts->{stylesheet}) || ($opts->{format} && ($opts->{format}=~/html/i)));
                        # || ... || ... || ...
   $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
