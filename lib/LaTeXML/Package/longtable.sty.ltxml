@@ -54,7 +54,6 @@ DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
   $document->closeElement('ltx:table'); },
 	       reversion=>'\begin{longtable}[#1]{#2}#3\end{longtable}',
 	       beforeDigest=>sub { $_[0]->bgroup; },
-###	       properties=> sub { RefStepCounter('table') },
 	       mode=>'text');
 
 DefPrimitive('\@longtable@bindings AlignmentTemplate',sub { longtableBindings($_[1]); });

@@ -125,7 +125,7 @@ DefConstructor('\endnotetext[]{}',
 	       "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
-		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Expand(T_CS("\\thefootnote")))); });
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Digest(T_CS("\\thefootnote")))); });
 
 #======================================================================
 # 6. Math and Equations
