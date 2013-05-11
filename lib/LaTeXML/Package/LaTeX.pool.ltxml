@@ -288,7 +288,7 @@ DefConstructor('\footnotetext[]{}',
 	       "<ltx:note role='footnotetext' mark='#refnum'>#2</ltx:note>",
 	       mode=>'text',
 	       properties=> sub { 
-		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Expand(T_CS("\\thefootnote")))); });
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Digest(T_CS("\\thefootnote")))); });
 
 Tag('ltx:note',afterClose=>\&relocateFootnote);
 sub relocateFootnote {
@@ -964,7 +964,7 @@ sub setEnumerationStyle {
 	push(@out,Invocation(T_CS('\arabic'),$ctr)); }
       else {
 	push(@out,$t); }}
-    DefMacroI('\theenum'.$level,undef,Tokens(@out)); }
+    DefMacroI('\theenum'.$level,undef,Tokens(T_BEGIN,@out,T_END)); }
   return; }
 
 
