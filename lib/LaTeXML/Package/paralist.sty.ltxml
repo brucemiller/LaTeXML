@@ -60,11 +60,23 @@ DefMacro('\setdefaultenum{}{}{}{}',sub {
   setEnumerationStyle($tag3,3);
   setEnumerationStyle($tag4,4); });
 
+# Since we're using ltx:text, instead of ltx:item, we'll need to do more to
+# close the ltx:text (that's standing in for an ltx:item)
+sub maybeCloseInparaItem {
+  my($document)=@_;
+  my $node = $document->getElement;
+  while($node && 
+        (($document->getNodeQName($node) ne 'ltx:text')
+         || (($node->getAttribute('class')||'') ne 'ltx_inparaitem')) ){
+    $node = $node->parentNode; }
+  $document->closeToNode($node) if $node; }
+
 DefConstructor('\inparaenum@item[]',
-	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:text class='ltx_inparaitem'><ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); },
+               beforeConstruct=>\&maybeCloseInparaItem);
 DefEnvironment('{inparaenum} OptionalUndigested',
-	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       "<ltx:text xml:id='#id' class='ltx_inparaenum'>#body</ltx:text>",
 	       properties=>sub { beginItemize('inparaenum'); },
 	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
 
@@ -92,10 +104,11 @@ DefMacro('\setdefaultitem{}{}{}{}',sub {
   setItemizationStyle($tag4,4); });
 
 DefConstructor('\inparaitem@item []',
-	       "<ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:text class='ltx_inparaitem'><ltx:anchor xml:id='#id'>#refnum</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); },
+               beforeConstruct=>\&maybeCloseInparaItem);
 DefEnvironment('{inparaitem} OptionalUndigested',
-	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       "<ltx:text xml:id='#id' class='ltx_inparaitem'>#body</ltx:text>",
 	       properties=>sub { beginItemize('inparaitem'); },
 	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
 
@@ -114,10 +127,12 @@ DefEnvironment('{asparaitem} OptionalUndigested',
 #======================================================================
 # Descriptions
 DefConstructor('\inparadesc@item[]',
-	       "<ltx:anchor xml:id='#id'>#1</ltx:anchor> ",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:text class='ltx_inparaitem'><ltx:anchor xml:id='#id'>#1</ltx:anchor> ",
+	       properties=>sub{ RefStepItemCounter(); },
+               beforeConstruct=>\&maybeCloseInparaItem);
+
 DefEnvironment('{inparadesc}',
-	       "<ltx:text xml:id='#id'>#body</ltx:text>",
+	       "<ltx:text xml:id='#id' class='ltx_inparadesc'>#body</ltx:text>",
 	       properties=>sub { beginItemize('inparadesc'); });
 
 DefEnvironment('{compactdesc}',
