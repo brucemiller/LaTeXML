@@ -41,6 +41,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="text_attributes">
     <a:documentation>Attributes for \elementref{text}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
     <ref name="Positionable.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
@@ -61,6 +62,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="emph_attributes">
     <a:documentation>Attributes for \elementref{emph}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
     <ref name="Backgroundable.attributes"/>
@@ -80,6 +82,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="del_attributes">
     <a:documentation>Attributes for \elementref{del}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
     <ref name="Fontable.attributes"/>
     <ref name="Colorable.attributes"/>
     <ref name="Backgroundable.attributes"/>
@@ -99,6 +102,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="sub_attributes">
     <a:documentation>Attributes for \elementref{sub}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
   </define>
   <define name="sub_model">
     <a:documentation>Content model for \elementref{sub}.</a:documentation>
@@ -115,6 +119,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="sup_attributes">
     <a:documentation>Attributes for \elementref{sup}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
   </define>
   <define name="sup_model">
     <a:documentation>Content model for \elementref{sup}.</a:documentation>
@@ -131,6 +136,7 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
   <define name="acronym_attributes">
     <a:documentation>Attributes for \elementref{acronym}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
     <optional>
       <attribute name="name">
         <a:documentation>should be used to indicate the expansion of the acronym.</a:documentation>

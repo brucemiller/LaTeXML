@@ -25,6 +25,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -68,6 +69,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -99,6 +101,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -129,7 +132,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT ltx:sup (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                    |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
@@ -155,7 +159,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:id ID #IMPLIED>
 
 <!ELEMENT ltx:acronym (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                        |ltx:acronym|ltx:rule|ltx:anchor|ltx:ref|ltx:cite
@@ -183,6 +188,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ltx:rule EMPTY>
@@ -894,6 +900,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   mark CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -1201,6 +1208,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:id ID #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
