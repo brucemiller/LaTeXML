@@ -1171,11 +1171,11 @@ sub FindFile_aux {
   return if grep(pathname_is_nasty($_), @$paths); # SECURITY! No nasty paths in cmdline
   # Do we need to sanitize these environment variables?
   my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
-  my $texinputs = join(':',@$paths, $ENV{TEXINPUTS}||':');
+  local $ENV{TEXINPUTS} = join(':',@$paths, $ENV{TEXINPUTS}||':');
   my $candidates = join(' ',
 			(!$options{noltxml} ? ("$file.ltxml"):()),
 			(!$options{notex}   ? ($file):()));
-  if(my $result = `TEXINPUTS=$texinputs $kpsewhich $candidates`){
+  if(my $result = `$kpsewhich $candidates`){
     if($result =~ /^\s*(\S+)\n/s){
       return $1; }}
  }
