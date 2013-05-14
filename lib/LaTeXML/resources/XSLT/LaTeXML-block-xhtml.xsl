@@ -722,7 +722,9 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	    <xsl:with-param name="extra_style" select="'list-style-type:none;'"/>
 	  </xsl:call-template>
 	  <xsl:apply-templates select="." mode="begin"/>
-	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="ltx:tag"/>
+          <xsl:text> </xsl:text>
+	  <xsl:apply-templates select="*[local-name() != 'tag']"/>
 	  <xsl:apply-templates select="." mode="end"/>
 	</xsl:element>
       </xsl:when>
@@ -733,10 +735,11 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 	    <xsl:with-param name="extra_style" select="'list-style-type:none;'"/>
 	  </xsl:call-template>
 	  <xsl:apply-templates select="." mode="begin"/>
-	  <xsl:element name="tag" namespace="{$html_ns}">
+	  <xsl:element name="span" namespace="{$html_ns}">
 	    <xsl:attribute name="class">ltx_tag</xsl:attribute>
 	    <xsl:value-of select="@frefnum"/>
 	  </xsl:element>
+          <xsl:text> </xsl:text>
 	  <xsl:apply-templates/>
 	  <xsl:apply-templates select="." mode="end"/>
 	</xsl:element>
@@ -786,6 +789,64 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:apply-imports/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="concat('ltx_tag_',local-name(../..))"/>
+  </xsl:template>
+
+  <!-- Inline forms of the above simply generate running text. -->
+  <xsl:template match="ltx:inline-itemize | ltx:inline-enumerate | ltx:inline-description">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:inline-item">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:choose>
+      <xsl:when test="child::ltx:tag">
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:apply-templates select="ltx:tag"/>
+          <xsl:text> </xsl:text>
+	  <xsl:apply-templates select="*[local-name() != 'tag']"/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
+      </xsl:when>
+      <xsl:when test="@frefnum">
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:element name="span" namespace="{$html_ns}">
+	    <xsl:attribute name="class">ltx_tag</xsl:attribute>
+	    <xsl:value-of select="@frefnum"/>
+	  </xsl:element>
+          <xsl:text> </xsl:text>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:element name="span" namespace="{$html_ns}">
+	    <xsl:attribute name="class">ltx_tag</xsl:attribute>
+            <xsl:text>&#x2022;</xsl:text>
+	  </xsl:element>
+          <xsl:text> </xsl:text>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- ======================================================================

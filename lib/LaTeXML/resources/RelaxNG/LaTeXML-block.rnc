@@ -17,6 +17,10 @@ Block.class |=
    p | equation | equationgroup | quote | block | listingblock
  | itemize | enumerate | description
 
+## These are inline forms of logical lists
+## (they are included in Misc since that has been the general strategy)
+Misc.class |=  inline-itemize | inline-enumerate | inline-description
+
 ## Additional Metadata that can be present in equations.
 EquationMeta.class = constraint
 
@@ -215,7 +219,7 @@ description_model = item*
 #======================================================================
 
 item =
-## An item within a list.
+## An item within a list (\elementref{itemize},\elementref{enumerate} or \elementref{description}).
 element item { item_attributes, item_model }
 
 ## Attributes for \elementref{item}.
@@ -226,6 +230,69 @@ item_attributes =
 
 ## Content model for \elementref{item}.
 item_model =   tag?, Para.model
+
+#======================================================================
+
+inline-itemize =
+## An inline form of itemized list.
+element inline-itemize { inline-itemize_attributes, inline-itemize_model }
+
+## Attributes for \elementref{inline-itemize}.
+inline-itemize_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-itemize}.
+inline-itemize_model = inline-item*
+
+#======================================================================
+
+inline-enumerate =
+## An inline form of enumerated list.
+element inline-enumerate { inline-enumerate_attributes, inline-enumerate_model }
+
+## Attributes for \elementref{inline-enumerate}.
+inline-enumerate_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-enumerate}.
+inline-enumerate_model = inline-item*
+
+#======================================================================
+
+inline-description =
+## An inline form of description list.
+## The \elementref{inline-item}s within are expected to have a \elementref{tag}
+## which represents the term being described in each \elementref{inline-item}.
+element inline-description { inline-description_attributes, inline-description_model }
+
+## Attributes for \elementref{inline-description}.
+inline-description_attributes =
+  Common.attributes,
+  ID.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-description}.
+inline-description_model = inline-item*
+
+#======================================================================
+
+inline-item =
+## An item within an inline list (\elementref{inline-itemize},\elementref{inline-enumerate}
+## or \elementref{inline-description}).
+element inline-item { inline-item_attributes, inline-item_model }
+
+## Attributes for \elementref{item}.
+inline-item_attributes =
+  Common.attributes,
+  Labelled.attributes,
+  Backgroundable.attributes
+
+## Content model for \elementref{inline-item}.
+inline-item_model =   tag?, (Inline.class | Misc.class | Meta.class)*
 
 #======================================================================
 

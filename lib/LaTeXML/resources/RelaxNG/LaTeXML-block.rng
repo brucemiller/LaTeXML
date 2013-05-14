@@ -27,6 +27,15 @@
       <ref name="description"/>
     </choice>
   </define>
+  <define name="Misc.class" combine="choice">
+    <a:documentation>These are inline forms of logical lists
+(they are included in Misc since that has been the general strategy)</a:documentation>
+    <choice>
+      <ref name="inline-itemize"/>
+      <ref name="inline-enumerate"/>
+      <ref name="inline-description"/>
+    </choice>
+  </define>
   <define name="EquationMeta.class">
     <a:documentation>Additional Metadata that can be present in equations.</a:documentation>
     <ref name="constraint"/>
@@ -310,7 +319,7 @@ which represents the term being described in each \elementref{item}.</a:document
   <!-- ====================================================================== -->
   <define name="item">
     <element name="item">
-      <a:documentation>An item within a list.</a:documentation>
+      <a:documentation>An item within a list (\elementref{itemize},\elementref{enumerate} or \elementref{description}).</a:documentation>
       <ref name="item_attributes"/>
       <ref name="item_model"/>
     </element>
@@ -327,6 +336,96 @@ which represents the term being described in each \elementref{item}.</a:document
       <ref name="tag"/>
     </optional>
     <ref name="Para.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-itemize">
+    <element name="inline-itemize">
+      <a:documentation>An inline form of itemized list.</a:documentation>
+      <ref name="inline-itemize_attributes"/>
+      <ref name="inline-itemize_model"/>
+    </element>
+  </define>
+  <define name="inline-itemize_attributes">
+    <a:documentation>Attributes for \elementref{inline-itemize}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-itemize_model">
+    <a:documentation>Content model for \elementref{inline-itemize}.</a:documentation>
+    <zeroOrMore>
+      <ref name="inline-item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-enumerate">
+    <element name="inline-enumerate">
+      <a:documentation>An inline form of enumerated list.</a:documentation>
+      <ref name="inline-enumerate_attributes"/>
+      <ref name="inline-enumerate_model"/>
+    </element>
+  </define>
+  <define name="inline-enumerate_attributes">
+    <a:documentation>Attributes for \elementref{inline-enumerate}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-enumerate_model">
+    <a:documentation>Content model for \elementref{inline-enumerate}.</a:documentation>
+    <zeroOrMore>
+      <ref name="inline-item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-description">
+    <element name="inline-description">
+      <a:documentation>An inline form of description list.
+The \elementref{inline-item}s within are expected to have a \elementref{tag}
+which represents the term being described in each \elementref{inline-item}.</a:documentation>
+      <ref name="inline-description_attributes"/>
+      <ref name="inline-description_model"/>
+    </element>
+  </define>
+  <define name="inline-description_attributes">
+    <a:documentation>Attributes for \elementref{inline-description}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-description_model">
+    <a:documentation>Content model for \elementref{inline-description}.</a:documentation>
+    <zeroOrMore>
+      <ref name="inline-item"/>
+    </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="inline-item">
+    <element name="inline-item">
+      <a:documentation>An item within an inline list (\elementref{inline-itemize},\elementref{inline-enumerate}
+or \elementref{inline-description}).</a:documentation>
+      <ref name="inline-item_attributes"/>
+      <ref name="inline-item_model"/>
+    </element>
+  </define>
+  <define name="inline-item_attributes">
+    <a:documentation>Attributes for \elementref{item}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Labelled.attributes"/>
+    <ref name="Backgroundable.attributes"/>
+  </define>
+  <define name="inline-item_model">
+    <a:documentation>Content model for \elementref{inline-item}.</a:documentation>
+    <optional>
+      <ref name="tag"/>
+    </optional>
+    <zeroOrMore>
+      <choice>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="tag">
