@@ -1,0 +1,76 @@
+\documentclass{article}
+\usepackage{paralist}
+\begin{document}
+\begin{inparaenum}[\em a)]
+\item first thing and
+\item second thing.
+\end{inparaenum}
+
+\pointedenum
+\begin{inparaenum}
+\item first thing and
+\item second thing.
+\end{inparaenum}
+
+\pointlessenum
+\begin{inparaenum}
+\item first thing and
+\item second thing.
+\end{inparaenum}
+
+\begin{itemize}
+\item one
+\item two
+\item three
+\end{itemize}
+
+\begin{enumerate}
+\item one
+\item two
+\item three
+\end{enumerate}
+
+\begin{itemize}[$\star$]
+\item one
+\item two
+\begin{itemize}
+\item one
+\item two
+\end{itemize}
+\item three
+\end{itemize}
+
+\begin{enumerate}[\bf -a-]
+\item one
+\item two
+\begin{enumerate}
+\item one
+\item two
+\end{enumerate}
+\item three
+\end{enumerate}
+
+\begin{description}
+\item[do] a deer, a female deer
+\item[re] a pocket full of sun
+\end{description}
+
+\def\descriptionlabel#1{\em$\lbrace$#1$\rbrace$\space}
+\begin{description}
+\item[do] a deer, a female deer
+\item[re] a pocket full of sun
+\end{description}
+
+
+\begin{description}
+\item a deer, a female deer
+\item a pocket full of sun
+\end{description}
+
+\begin{enumerate}[\bf -a-]
+\item one
+\item[whoop] two
+\item three
+\end{enumerate}
+
+\end{document}
