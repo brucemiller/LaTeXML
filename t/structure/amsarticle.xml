@@ -123,20 +123,24 @@
     <para xml:id="S1.p4">
       <enumerate xml:id="I1">
         <item frefnum="(1)" refnum="1" xml:id="I1.i1">
+          <tag>(1)</tag>
           <para xml:id="I1.i1.p1">
             <p>one</p>
           </para>
         </item>
         <item frefnum="(2)" refnum="2" xml:id="I1.i2">
+          <tag>(2)</tag>
           <para xml:id="I1.i2.p1">
             <p>two</p>
             <enumerate xml:id="I1.I1">
               <item frefnum="(a)" refnum="a" xml:id="I1.I1.i1">
+                <tag>(a)</tag>
                 <para xml:id="I1.I1.i1.p1">
                   <p>one</p>
                 </para>
               </item>
               <item frefnum="(b)" refnum="b" xml:id="I1.I1.i2">
+                <tag>(b)</tag>
                 <para xml:id="I1.I1.i2.p1">
                   <p>two</p>
                 </para>
@@ -149,19 +153,25 @@
     <para xml:id="S1.p5">
       <description xml:id="I2">
         <item xml:id="I2.ix1">
-          <tag close=": ">A thing</tag>
+          <tag>
+            <text font="bold">A thing: </text>
+          </tag>
           <para xml:id="I2.ix1.p1">
             <p>with some descriptive text.</p>
           </para>
         </item>
         <item xml:id="I2.ix2">
-          <tag close=": ">Another</tag>
+          <tag>
+            <text font="bold">Another: </text>
+          </tag>
           <para xml:id="I2.ix2.p1">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
         </item>
         <item xml:id="I2.ix3">
-          <tag close=": ">And yet</tag>
+          <tag>
+            <text font="bold">And yet: </text>
+          </tag>
           <para xml:id="I2.ix3.p1">
             <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
