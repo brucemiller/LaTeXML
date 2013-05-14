@@ -41,11 +41,11 @@ RequirePackage('natbib');
 # (not even sure what the intended effect is)
 DefEnvironment('{enumerate}[]',
 	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-	       properties=>sub { beginItemize('enumerate'); },
+	       properties=>sub { beginItemize('enumerate','enum'); },
 	       locked=>1, mode=>'text');
 DefEnvironment('{itemize}[]',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       properties=>sub { beginItemize('itemize'); },
+	       properties=>sub { beginItemize('itemize','enum'); },
 	       locked=>1, mode=>'text');
 
 1;

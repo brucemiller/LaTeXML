@@ -184,6 +184,8 @@ DefMacro('\format@title@subsection{}', '\@tag[][.\space]{\thesubsection}#1');
 DefMacro('\format@title@subsubsection{}', '\@tag[][.\space]{\thesubsubsection}#1');
 
 DefMacro('\format@title@description{}','\@tag[][:\space]{#1}');
+DefMacro('\descriptionlabel{}','\normalfont\bfseries #1:\space');
+
 #======================================================================
 # Sec 6. Floating objects: Figures and tables
 # Normal LaTeX 
