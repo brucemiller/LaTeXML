@@ -896,30 +896,40 @@ DefEnvironment('{verse}',
 # C.6.2 List-Making environments
 #======================================================================
 Tag('ltx:item', autoClose=>1);
+Tag('ltx:inline-item', autoClose=>1);
+
+# These are for the (not quite legit) case where \item appears outside
+# of an itemize, enumerate, etc, environment.
 DefConstructor('\item[]',
 	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 DefConstructor('\subitem[]',
 	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 DefConstructor('\subsubitem[]',
 	       "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
-
 AssignValue(itemlevel=>0,'global');
 
+# Prepare for an list (itemize/enumerate/description/etc)
+# by determining the right counter (level)
+# and binding the right \item ( \$type@item, if $type is defined)
 sub beginItemize {
-  my($type)=@_;
+  my($type,$counter)=@_;
+  $counter = '@@item' unless $counter;
   my $level = LookupValue('itemlevel')+1;
   AssignValue(itemlevel=>$level);
   my $postfix = ToString(Tokens(roman($level)));
-  Let(T_CS('\item')=>T_CS("\\".$type.'@item'));
-  ResetCounter('enum'.$postfix);
+  Let(T_CS('\item')=>T_CS("\\".$type.'@item')) if defined $type;
+  AssignValue(itemcounter=>$counter.$postfix);
+  ResetCounter($counter.$postfix);
   RefStepCounter('@itemize'.$postfix); }
 
-sub itemCounter { 'enum'.ToString(Tokens(roman(LookupValue('itemlevel')))); }
+# Create id, and refnum attributes for an itemize type \item
 sub RefStepItemCounter {
   my($tag)=@_;
-  my $counter = itemCounter();
-  # If tag given, don't create refnum (etal); tag will be used as title in Scan
-  (defined $tag ? RefStepID($counter) : RefStepCounter($counter) ); }
+  my $counter = LookupValue('itemcounter');
+  (defined $tag
+   ? (RefStepID($counter),
+      frefnum=>Digest(Tokens(T_BEGIN,Invocation(T_CS('\makelabel'),$tag),T_END)))
+   : RefStepCounter($counter) ); }
 
 # The following two aren't used here; they're defined here so they
 # can be used in paralist.sty, enumerate.sty (perhaps others?)
@@ -932,18 +942,19 @@ sub setItemizationStyle {
   my($stuff,$level)=@_;
   if(defined $stuff){
     $level = LookupValue('itemlevel') unless defined $level;
-    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
-    DefMacroI('\theenum'.$level,undef,$stuff); }
+    $level = ToString(Tokens(roman($level)));
+    DefMacroI('\labelitem'.$level,undef,$stuff); }
   return; }
 
 sub setEnumerationStyle {
   my($stuff,$level)=@_;
   if(defined $stuff){
     $level = LookupValue('itemlevel') unless defined $level;
-    $level = ToString(Tokens(roman(LookupValue('itemlevel'))));
+    $level = ToString(Tokens(roman($level)));
     my @in = $stuff->unlist;
     my @out = ();
     my $ctr = T_OTHER('enum'.$level);
+
     while(my $t = shift(@in)){
       if(Equals($t,T_BEGIN)){
 	push(@out,$t);
@@ -953,69 +964,115 @@ sub setEnumerationStyle {
 	  elsif(Equals($t,T_END)){ $level--; }
 	  push(@out,$t); }}
       elsif(Equals($t,T_LETTER('A'))){
-	push(@out,Invocation(T_CS('\Alph'),$ctr)); }
+        DefMacroI('\theenum'.$level,undef,Invocation(T_CS('\Alph'),$ctr));
+	push(@out,T_CS('\theenum'.$level)); }
       elsif(Equals($t,T_LETTER('a'))){
-	push(@out,Invocation(T_CS('\alph'),$ctr)); }
+        DefMacroI('\theenum'.$level,undef,Invocation(T_CS('\alph'),$ctr));
+	push(@out,T_CS('\theenum'.$level)); }
       elsif(Equals($t,T_LETTER('I'))){
-	push(@out,Invocation(T_CS('\Roman'),$ctr)); }
+        DefMacroI('\theenum'.$level,undef,Invocation(T_CS('\Roman'),$ctr));
+	push(@out,T_CS('\theenum'.$level)); }
       elsif(Equals($t,T_LETTER('i'))){
-	push(@out,Invocation(T_CS('\roman'),$ctr)); }
+        DefMacroI('\theenum'.$level,undef,Invocation(T_CS('\roman'),$ctr));
+	push(@out,T_CS('\theenum'.$level)); }
       elsif(Equals($t,T_LETTER('1'))){
-	push(@out,Invocation(T_CS('\arabic'),$ctr)); }
+        DefMacroI('\theenum'.$level,undef,Invocation(T_CS('\arabic'),$ctr));
+	push(@out,T_CS('\theenum'.$level)); }
       else {
 	push(@out,$t); }}
-    DefMacroI('\theenum'.$level,undef,Tokens(T_BEGIN,@out,T_END)); }
+    DefMacroI('\labelenum'.$level,undef,Tokens(T_BEGIN,@out,T_END)); }
   return; }
 
 
-# id, but no refnum (et.al) on itemize \item ... 
-DefConstructor('\itemize@item[]',
+# id, but NO refnum (et.al) attributes on itemize \item ... 
+# and, we'll get a tag ONLY if an explicit optional arg! (none from the counter)
+DefConstructor('\itemize@item OptionalUndigested',
 	       "<ltx:item xml:id='#id'>"
-	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)",
 	       properties=>sub{ RefStepItemCounter($_[1]); });
-DefConstructor('\enumerate@item[]',
+DefConstructor('\inline@itemize@item OptionalUndigested',
+	       "<ltx:inline-item xml:id='#id'>"
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
+
+DefConstructor('\enumerate@item OptionalUndigested',
 	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-	       . "?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
 	       properties=>sub{ RefStepItemCounter($_[1]); });
-# Should itemize & enumerate get this more-customizable formulation?
-DefMacro('\description@item','\@ifnextchar[\@description@@item\@description@item');
-DefConstructor('\@description@item',
-	       "<ltx:item xml:id='#id'>",
-	       properties=>sub{ RefStepID(itemCounter()); });
-DefMacro('\@description@@item[]','\@description@item\format@title@description{#1}');
-DefMacro('\format@title@description{}','\@tag{#1}'); # what \descriptionlabel does
+DefConstructor('\inline@enumerate@item OptionalUndigested',
+	       "<ltx:inline-item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
+
+DefConstructor('\description@item OptionalUndigested',
+	       "<ltx:item xml:id='#id'>"
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
+DefConstructor('\inline@description@item OptionalUndigested',
+	       "<ltx:inline-item xml:id='#id'>"
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
 
 DefEnvironment('{itemize}',
 	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       properties=>sub { beginItemize('itemize'); },
+	       properties=>sub { beginItemize('itemize','@@item'); },
 	       locked=>1, mode=>'text');
 DefEnvironment('{enumerate}',
 	       "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-	       properties=>sub { beginItemize('enumerate'); },
+	       properties=>sub { beginItemize('enumerate','enum'); },
 	       locked=>1, mode=>'text');
 DefEnvironment('{description}',
 	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); },
+               beforeDigest=>sub { Let(T_CS('\makelabel'),T_CS('\descriptionlabel')); },
+	       properties=>sub { beginItemize('description','@@desc'); },
 	       locked=>1, mode=>'text');
 
+DefMacro('\makelabel{}','#1');
 
+# Basic enumeration bits
 DefMacroI('\labelenumi',undef,'\theenumi.');
 DefMacroI('\labelenumii',undef,'(\theenumii)');
 DefMacroI('\labelenumiii',undef,'\theenumiii.');
 DefMacroI('\labelenumiv',undef,'\theenumiv.');
-DefMacroI('\fnum@enumi',undef,'\labelenumi');
-DefMacroI('\fnum@enumii',undef,'\labelenumii');
-DefMacroI('\fnum@enumiii',undef,'\labelenumiii');
-DefMacroI('\fnum@enumiv',undef,'\labelenumiv');
+# These hookup latexml's numbering to normal latex's
+DefMacroI('\fnum@enumi',  undef,'{\makelabel{\labelenumi}}');
+DefMacroI('\fnum@enumii', undef,'{\makelabel{\labelenumii}}');
+DefMacroI('\fnum@enumiii',undef,'{\makelabel{\labelenumiii}}');
+DefMacroI('\fnum@enumiv', undef,'{\makelabel{\labelenumiv}}');
+# You _could_ define \refnum@enumi, etc, to specify how to refer to the item!
 
-DefMacroI('\labelitemi',undef,'\textbullet');
-DefMacroI('\labelitemii',undef,'\normalfont\bfseries \textendash');
+# Basic itemize bits
+DefMacroI('\labelitemi',  undef,'\textbullet');
+DefMacroI('\labelitemii', undef,'\normalfont\bfseries \textendash');
 DefMacroI('\labelitemiii',undef,'\textasteriskcentered');
-DefMacroI('\labelitemiv',undef,'\textperiodcentered');
-DefMacroI('\fnum@itemi',undef,'\labelitemi');
-DefMacroI('\fnum@itemii',undef,'\labelitemii');
-DefMacroI('\fnum@itemiii',undef,'\labelitemiii');
-DefMacroI('\fnum@itemiv',undef,'\labelitemiv');
+DefMacroI('\labelitemiv', undef,'\textperiodcentered');
+# These really aren't normal latex counters, but we use them for ids
+NewCounter('@@itemi',  '@itemizei',   idprefix=>'i');
+NewCounter('@@itemii', '@itemizeii',  idprefix=>'i');
+NewCounter('@@itemiii','@itemizeiii', idprefix=>'i');
+NewCounter('@@itemiv', '@itemizeiv',  idprefix=>'i');
+NewCounter('@@itemv',  '@itemizev',   idprefix=>'i');
+NewCounter('@@itemvi', '@itemizevi',  idprefix=>'i');
+# These hookup latexml's numbering to normal latex's
+DefMacroI('\fnum@@@itemi',  undef,'{\makelabel{\labelitemi}}');
+DefMacroI('\fnum@@@itemii', undef,'{\makelabel{\labelitemii}}');
+DefMacroI('\fnum@@@itemiii',undef,'{\makelabel{\labelitemiii}}');
+DefMacroI('\fnum@@@itemiv', undef,'{\makelabel{\labelitemiv}}');
+
+# Basic description list bits
+DefMacro('\descriptionlabel{}','\normalfont\bfseries #1');
+# These really aren't normal latex counters, but we use them for ids
+NewCounter('@@desci',  '@itemizei',   idprefix=>'i');
+NewCounter('@@descii', '@itemizeii',  idprefix=>'i');
+NewCounter('@@desciii','@itemizeiii', idprefix=>'i');
+NewCounter('@@desciv', '@itemizeiv',  idprefix=>'i');
+NewCounter('@@descv',  '@itemizev',   idprefix=>'i');
+NewCounter('@@descvi', '@itemizevi',  idprefix=>'i');
+# These hookup latexml's numbering to normal latex's
+DefMacroI('\fnum@@@desci',  undef,'{\descriptionlabel{}}');
+DefMacroI('\fnum@@@descii', undef,'{\descriptionlabel{}}');
+DefMacroI('\fnum@@@desciii',undef,'{\descriptionlabel{}}');
+DefMacroI('\fnum@@@desciv', undef,'{\descriptionlabel{}}');
 
 #======================================================================
 # C.6.3 The list and trivlist environments.
@@ -1029,8 +1086,9 @@ DefEnvironment('{list}{}{}',
 	       properties=>sub { beginItemize('list'); });
 
 DefConstructor('\list@item[]',
-	       "<ltx:item xml:id='#id'>?&defined(#1)(<ltx:tag>#1</ltx:tag>)",
-	       properties=>sub{ RefStepItemCounter(); });
+	       "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+	       . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+	       properties=>sub{ RefStepItemCounter($_[1]); });
 
 DefEnvironment('{trivlist}',
 	       '<ltx:itemize><ltx:item>#body</ltx:itemize>');
