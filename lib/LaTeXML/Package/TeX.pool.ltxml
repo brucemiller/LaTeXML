@@ -2677,6 +2677,10 @@ sub cleanup_XMText {
                                  .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
                                  .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
                                  $textnode)){
+    # First step is remove any ltx:tbody from the tabular!
+    foreach my $tb ($document->findnodes('ltx:tabular/ltx:tbody',$textnode)){
+      $document->unwrapNodes($tb); }
+    # Now, we can start replacing tabular=>XMArray, tr=>XMRow, td=>XMCell
     my $table = $document->renameNode($children[0],'ltx:XMArray');
     foreach my $row ($table->childNodes){
       $row = $document->renameNode($row,'ltx:XMRow');
