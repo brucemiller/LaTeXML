@@ -2631,7 +2631,19 @@ sub cleanup_Math {
 # First case: pull it back into the math, but in an XMWrap to isolate it for parsing.
 # Should we just pull any mixed text math up or only a single Math?
 # For the tabular case, convert it to an XMArray.
-Tag('ltx:XMText',  afterClose=>\&cleanup_XMText);
+
+
+# Note that normally, we'd do afterClose on ltx:XMText,
+# but since the ltx:XMText closes before the outer ltx:Math,
+# we would keep cleanup_Math from recognizing the trivial case of 
+# a single ltx:tabular in an equation (perverse, but people do that).
+# So, we put this one on ltx:Math also, and scan for any contained XMText to fixup.
+Tag('ltx:Math',  afterClose=>\&cleanup_XMText_outer);
+sub cleanup_XMText_outer {
+  my($document,$mathnode)=@_;
+  foreach my $textnode ($document->findnodes('descendant::ltx:XMText',$mathnode)){
+    cleanup_XMText($document,$textnode);}}
+
 sub cleanup_XMText {
   my($document,$textnode)=@_;
   # We're really only interested in reducing nested math, right?
@@ -2669,14 +2681,17 @@ sub cleanup_XMText {
   # #     else {
   # #       $document->wrapNodes('ltx:XMText',$child); }}}
   # If a single tabular that ONLY(?) contains Math, turn into an XMArray
-  # Should we ONLY do this if all cells are math?
-  # Probably some alignment attributes should be maintained!!!
+  # Well, a tabular REALLY shouldn't be in math;
+  # How much math should determine the switch?
+  # [will alignment attributes be lost?]
   elsif((scalar(@children)==1) && ($model->getNodeQName($children[0]) eq 'ltx:tabular')
-        && !$document->findnodes('ltx:tabular/ltx:tr/ltx:td/text()'
-                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td/text()'
-                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
-                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
-                                 $textnode)){
+## Should we ALWAYS do this, or just for some minimal amount of math???
+##        && !$document->findnodes('ltx:tabular/ltx:tr/ltx:td/text()'
+##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td/text()'
+##                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
+##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
+##                                 $textnode)
+){
     # First step is remove any ltx:tbody from the tabular!
     foreach my $tb ($document->findnodes('ltx:tabular/ltx:tbody',$textnode)){
       $document->unwrapNodes($tb); }
@@ -2685,10 +2700,13 @@ sub cleanup_XMText {
     foreach my $row ($table->childNodes){
       $row = $document->renameNode($row,'ltx:XMRow');
       foreach my $cell ($row->childNodes){
-        # Replace td/Math/XMath/* by XMCell/*
         $cell = $document->renameNode($cell,'ltx:XMCell');
         foreach my $m ($cell->childNodes){
-          $document->replaceNode($m,map($_->childNodes,$m->childNodes)); }}}
+          if($model->getNodeQName($m) eq 'ltx:Math'){ # Math cell, unwrap the Math/XMath layer
+            $document->replaceNode($m,map($_->childNodes,$m->childNodes)); }
+          else {                # Otherwise, wrap whatever it is in an XMText
+            $document->wrapNodes('ltx:XMText',$m); }
+        }}}
     # And now we don't need the XMText any more.
     $document->unwrapNodes($textnode); }
 }
