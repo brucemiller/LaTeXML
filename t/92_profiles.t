@@ -4,14 +4,14 @@
 #**********************************************************************
 use FindBin;
 use lib "$FindBin::Bin/lib";
-use TestDaemon;
+use TestLaTeXML;
 
 # For each test $name there should be $name.xml and $name.log
 # (the latter from a previous `good' run of 
 #  latexmlc {$triggers} $name
 #).
 
-daemon_tests('t/daemon/profiles');
+latexml_tests('t/daemon/profiles');
 
 #**********************************************************************
 1;
