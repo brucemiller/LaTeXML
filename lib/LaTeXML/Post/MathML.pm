@@ -302,7 +302,7 @@ sub pmml_dowrap {
   my $l = $node->getAttribute('lspace');
   my $r = $node->getAttribute('rspace');
   # Handle generic things: open/close delimiters, punctuation
-  if( !((ref $result) && ($$result[0] eq 'm:mo')) # mo will already have gotten spacing!
+  if( !(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo')) # mo will already have gotten spacing!
       && ($r || $l)){
     $result = ['m:mpadded', { ($l ? (lspace=>$l):()),
 			      ($r ? (width=>($r=~/^-/ ? $r : '+'.$r)):())}, $result]; }
