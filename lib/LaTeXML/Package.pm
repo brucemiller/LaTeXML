@@ -134,7 +134,7 @@ sub convertLaTeXArgs {
 						  extra=>[$optional,undef]));
     $nargs--; }
   push(@params,map(LaTeXML::Parameters::newParameter('Plain','{}'), 1..$nargs));
-  LaTeXML::Parameters->new(@params); }
+  (@params ? LaTeXML::Parameters->new(@params) : undef); }
 
 #======================================================================
 # Convenience functions for writing definitions.
