@@ -35,7 +35,7 @@
       <p>Ket: <Math mode="inline" xml:id="S2.p5.m1" tex="|b&gt;" text="ket@(b)"><XMath><XMApp><XMTok argclose="&gt;" argopen="|" meaning="ket" role="FENCED"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p6">
-      <p>Braket <Math mode="inline" xml:id="S2.p6.m1" tex="&lt;a|b&gt;" text="inner-product@(bra@(a), ket@(b))"><XMath><XMApp><XMTok meaning="inner-product" role="MIDDLE">⁡</XMTok><XMApp><XMTok argclose="|" argopen="&lt;" meaning="bra" role="FENCED"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok argclose="&gt;" argopen="|" meaning="ket" role="FENCED"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMath></Math></p>
+      <p>Braket <Math mode="inline" xml:id="S2.p6.m1" tex="&lt;a|b&gt;" text="inner-product@(a, b)"><XMath><XMApp close="&gt;" open="&lt;"><XMTok meaning="inner-product" role="MIDDLE">|</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
     </para>
     <para xml:id="S2.p7">
       <p>Also <Math mode="inline" xml:id="S2.p7.m1" tex="&lt;a|f|b&gt;" text="inner-product@(bra@(a), f@(ket@(b)))"><XMath><XMApp><XMTok meaning="inner-product" role="MIDDLE">⁡</XMTok><XMApp><XMTok argclose="|" argopen="&lt;" meaning="bra" role="FENCED"/><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMApp><XMTok role="UNKNOWN" font="italic">f</XMTok><XMApp><XMTok argclose="&gt;" argopen="|" meaning="ket" role="FENCED"/><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMApp></XMApp></XMath></Math></p>
