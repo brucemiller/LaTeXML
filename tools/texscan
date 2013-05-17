@@ -508,6 +508,10 @@ sub scan {
     push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
   }
   push(@pkgs,$name) unless $name eq 'latex.ltx';
+  no warnings;
+  ## Since we're mucking with STATE, we'll reload, and get redefinitions;
+  ## but we'd really rather not get all the warnings!!
+  local $^W = 0;
   foreach my $pkg (@pkgs){
     my $loadpath = pathname_find("$pkg.ltxml",paths=>$paths,installation_subdir=>'Package');
     if(!$loadpath){
