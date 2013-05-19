@@ -3,6 +3,7 @@
 <?latexml options="T1" package="fontenc"?>
 <?latexml package="textcomp"?>
 <?latexml options="french" package="babel"?>
+<?latexml package="numprint"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -56,7 +57,7 @@
         <p>M. <text font="smallcaps">Durand</text></p>
       </para>
       <para xml:id="Ch1.S1.p7">
-        <p>1234,56789</p>
+        <p><text class="ltx_number">1 234,567 89</text></p>
       </para>
     </section>
   </chapter>
