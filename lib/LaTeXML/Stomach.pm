@@ -166,7 +166,11 @@ sub invokeToken_internal {
       else {
 	Box($meaning->getString, $font,$$self{gullet}->getLocator,$meaning); }}
     elsif($cc == CC_COMMENT){	# Note: Comments need char decoding as well!
-      LaTeXML::Comment->new(LaTeXML::Package::FontDecodeString($meaning->getString,undef,1)); }
+      my $comment = LaTeXML::Package::FontDecodeString($meaning->getString,undef,1);
+      # However, spaces normally would have be digested away as positioning...
+      my $badspace = pack('U',0xA0)."\x{0335}"; # This is at space's pos in OT1
+      $comment =~ s/\Q$badspace\E/ /g;
+      LaTeXML::Comment->new($comment); }
     elsif($forbidden_cc[$cc]){
       Fatal('misdefined',$token,$self,
 	    "The token ".Stringify($token)." should never reach Stomach!"); }
