@@ -321,10 +321,10 @@ sub NewCounter {
   AssignValue("\\cl\@UN$within" =>
 	      Tokens(T_CS($unctr),(($x=LookupValue("\\cl\@UN$within")) ? $x->unlist :())),
 	      'global') if $within;
-  AssignValue('nested_counters_'.$ctr =>$options{nested}) if $options{nested};
+  AssignValue('nested_counters_'.$ctr =>$options{nested},'global') if $options{nested};
   DefMacroI(T_CS("\\the$ctr"),undef,"\\arabic{$ctr}",scope=>'global');
   my $prefix = $options{idprefix};
-  AssignValue('@ID@prefix@'.$ctr=>$prefix) if $prefix;
+  AssignValue('@ID@prefix@'.$ctr=>$prefix,'global') if $prefix;
   $prefix = LookupValue('@ID@prefix@'.$ctr) unless $prefix;
   if(defined $prefix){
     if(my $idwithin = $options{idwithin} || $within){
@@ -580,7 +580,7 @@ sub DefMacroI {
   $paramlist = parseParameters($paramlist,$cs) if defined $paramlist && !ref $paramlist;
   $STATE->installDefinition(LaTeXML::Expandable->new($cs,$paramlist,$expansion,%options),
 			    $options{scope});
-  AssignValue(ToString($cs).":locked"=>1) if $options{locked};
+  AssignValue(ToString($cs).":locked"=>1,'global') if $options{locked};
   return; }
 
 #======================================================================
@@ -1431,7 +1431,9 @@ sub AddToMacro {
 	  ToString($cs)." is not an expandable control sequence"); }
   else {
     DefMacroI($cs,undef,Tokens($defn->getExpansion->unlist,
-			       map($_->unlist,map( (ref $_ ? $_ : TokenizeInternal($_)), @tokens)))); }}
+			       map($_->unlist,map( (ref $_ ? $_ : TokenizeInternal($_)),
+                                                   @tokens))),
+              scope=>'global'); }}
 
 #======================================================================
 our $inputdefinitions_options={options=>1, withoptions=>1, handleoptions=>1,
