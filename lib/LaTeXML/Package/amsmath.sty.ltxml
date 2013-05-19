@@ -461,7 +461,7 @@ DefConstructor('\intertext{}', "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mo
 DefPrimitive('\numberwithin[]{}{}',sub {
   my($ignore,$format,$counter,$within)=@_;
   $format = ($format ? ToString($format) : '\arabic');
-  $counter = ToString($counter); $within = ToString($within);
+  $counter = ToString(Expand($counter)); $within = ToString(Expand($within));
   NewCounter($counter,$within);
   DefMacroI("\\the$counter",undef,
 	    "\\csname the$within\\endcsname.$format\{$counter\}", scope=>'global');
