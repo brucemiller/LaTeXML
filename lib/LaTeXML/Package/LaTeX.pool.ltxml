@@ -744,7 +744,7 @@ DefEnvironment('{abstract}','',
                        {name=>Digest(Tokens(T_CS('\format@title@abstract'),
                                             T_BEGIN,T_CS('\abstractname'),T_END))},
 		       @LaTeXML::LIST]);
-		 DefMacroI('\maybe@end@abstract',undef,Tokens());
+		 DefMacroI('\maybe@end@abstract',undef,Tokens(),scope=>'global');
 		 return; },
 	       locked=>1, mode=>'text');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
@@ -1664,8 +1664,10 @@ DefMacro('\@tabacckludge {}','\csname\string#1\endcsname');
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
   my($stomach,$star,$cs,$nargs,$opt,$body)=@_;
   my $key = "defined:".Stringify($cs);
-  Error('ignore',$cs,$stomach,
-	"Ignoring redefinition (\\newcommand) of '".Stringify($cs)."'") if LookupValue($key);
+  if(LookupValue($key)){
+    Error('ignore',$cs,$stomach,
+          "Ignoring redefinition (\\newcommand) of '".Stringify($cs)."'");
+    return; }
   AssignValue($key=>1);		# only if defined by \newcommand, not \def!
   DefMacroI($cs,convertLaTeXArgs($nargs,$opt),$body); });
 
@@ -1950,16 +1952,18 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 # explicitly during digestion (via a whatsit), we can't use the usual LaTeX counter mechanism.
 Tag('ltx:para',afterOpen=>sub { GenerateID(@_,'p'); });
  
-DefPrimitive('\newcounter{}[]',        sub { shift; NewCounter(map($_ && ToString($_),@_)); return;});
-DefPrimitive('\setcounter{}{Number}',  sub { SetCounter(ToString($_[1]),$_[2]); });
-DefPrimitive('\addtocounter{}{Number}',sub { AddToCounter(ToString($_[1]),$_[2]); });
-DefPrimitive('\stepcounter{}',         sub { StepCounter(ToString($_[1])); return; });
-DefPrimitive('\refstepcounter{}',      sub { RefStepCounter(ToString($_[1])); return; });
+DefPrimitive('\newcounter{}[]',        sub { 
+  NewCounter(ToString(Expand($_[1])), $_[2] && ToString(Expand($_[2])));
+  return;});
+DefPrimitive('\setcounter{}{Number}',  sub { SetCounter(ToString(Expand($_[1])),$_[2]); });
+DefPrimitive('\addtocounter{}{Number}',sub { AddToCounter(ToString(Expand($_[1])),$_[2]); });
+DefPrimitive('\stepcounter{}',         sub { StepCounter(ToString(Expand($_[1]))); return; });
+DefPrimitive('\refstepcounter{}',      sub { RefStepCounter(ToString(Expand($_[1]))); return; });
 
 DefPrimitive('\@addtoreset{}{}',sub {
   my($stomach,$ctr,$within)=@_;
-  $ctr = ToString($ctr);
-  $within = ToString($within);
+  $ctr = ToString(Expand($ctr));
+  $within = ToString(Expand($within));
   my $unctr = "UN$ctr"; # UNctr is counter for generating ID's for UN-numbered items.
   AssignValue("\\cl\@$within" =>
 	      Tokens(T_CS($ctr),T_CS($unctr),
@@ -1976,21 +1980,34 @@ DefPrimitive('\@addtoreset{}{}',sub {
     DefMacroI(T_CS("\\\@$ctr\@ID"),undef,"0",scope=>'global'); }
   return; });
 
-DefMacro('\value{}',         sub { ExplodeText(CounterValue($_[1])->valueOf);});
-DefMacro('\@arabic{Number}', sub { ExplodeText(ToString($_[1]->valueOf)); });
-DefMacro('\arabic{}',        sub { ExplodeText(CounterValue($_[1])->valueOf); });
-DefMacro('\@roman{Number}',  sub { roman(ToString($_[1]->valueOf)); });
-DefMacro('\roman{}',         sub { roman(CounterValue($_[1])->valueOf); });
-DefMacro('\@Roman{Number}',  sub { Roman(ToString($_[1]->valueOf)); });
-DefMacro('\Roman{}',         sub { Roman(CounterValue($_[1])->valueOf); });
-DefMacro('\@alph{Number}',   sub { T_OTHER(chr($_[1]->valueOf+ord('a')-1));});
-DefMacro('\alph{}',          sub { T_OTHER(chr(CounterValue($_[1])->valueOf+ord('a')-1));});
-DefMacro('\@Alph{Number}',   sub { T_OTHER(chr($_[1]->valueOf+ord('A')-1));});
-DefMacro('\Alph{}',          sub { T_OTHER(chr(CounterValue($_[1])->valueOf+ord('A')-1));});
+DefMacro('\value{}',         sub {
+  ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf);});
+DefMacro('\@arabic{Number}', sub {
+  ExplodeText(ToString($_[1]->valueOf)); });
+DefMacro('\arabic{}',        sub {
+  ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf); });
+DefMacro('\@roman{Number}',  sub {
+  roman(ToString($_[1]->valueOf)); });
+DefMacro('\roman{}',         sub {
+  roman(CounterValue(ToString(Expand($_[1])))->valueOf); });
+DefMacro('\@Roman{Number}',  sub {
+  Roman(ToString($_[1]->valueOf)); });
+DefMacro('\Roman{}',         sub {
+  Roman(CounterValue(ToString(Expand($_[1])))->valueOf); });
+DefMacro('\@alph{Number}',   sub {
+  T_OTHER(chr($_[1]->valueOf+ord('a')-1));});
+DefMacro('\alph{}',          sub {
+  T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf+ord('a')-1));});
+DefMacro('\@Alph{Number}',   sub {
+  T_OTHER(chr($_[1]->valueOf+ord('A')-1));});
+DefMacro('\Alph{}',          sub {
+  T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf+ord('A')-1));});
 our @fnsymbols=("*", "\x{2020}", "\x{2021}", UTF(0xA7), UTF(0xB6),
 		"\x{2225}", "**", "\x{2020}\x{2020}","\x{2021}\x{2021}");
-DefMacro('\@fnsymbol{Number}',sub { T_OTHER($fnsymbols[$_[1]->valueOf-1]);});
-DefMacro('\fnsymbol{}',       sub { T_OTHER($fnsymbols[CounterValue($_[1])->valueOf-1]);});
+DefMacro('\@fnsymbol{Number}',sub {
+  T_OTHER($fnsymbols[$_[1]->valueOf-1]);});
+DefMacro('\fnsymbol{}',       sub {
+  T_OTHER($fnsymbols[CounterValue(ToString(Expand($_[1])))->valueOf-1]);});
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -2291,10 +2308,13 @@ DefPrimitiveI('\@tabbing@bindings',undef, sub {
 sub tabularBindings {
   my($template,$mode)=@_;
   alignmentBindings($template,$mode);
-  AddToMacro('\@row@before',   '\@tabular@row@before');
-  AddToMacro('\@row@after',    '\@tabular@row@after');
-  AddToMacro('\@column@before','\@tabular@column@before');
-  AddToMacro('\@column@after', '\@tabular@column@after'); }
+  # Do like AddToMacro, but NOT global!
+  foreach my $name ('@row@before','@row@after','@column@before','@column@after'){
+    my $cs = '\\'.$name;
+    DefMacroI($cs,undef,
+              Tokens(LookupDefinition(T_CS($cs))->getExpansion->unlist,
+                     T_CS('\@tabular'.$name))); }
+}
 
 DefPrimitive('\@tabular@bindings AlignmentTemplate []',sub {
   my($stomach,$template,$mode)=@_;
@@ -2971,9 +2991,12 @@ DefPrimitive('\newlength DefToken',sub {
   DefRegisterI($cs,undef,Dimension(0)); });
 DefMacro('\setlength{}{}','\@check@length{#1}#1#2\relax');
 DefMacro('\addtolength{}{}','\@check@length{#1}\advance#1 #2\relax');
-DefMacro('\settowidth{}{}','\@check@length{#1}#1 0pt\relax'); # Till we have an approximation of width
-DefMacro('\settoheight{}{}','\@check@length{#1}#1 0pt\relax'); # "
-DefMacro('\settodepth{}{}','\@check@length{#1}#1 0pt\relax'); # "
+
+DefMacro('\@settodim{}{}{}',
+         '\setbox\@tempboxa\hbox{{#3}}#2#1\@tempboxa\setbox\@tempboxa\box\voidb@x');
+DefMacroI('\settoheight',undef,'\@settodim\ht');
+DefMacroI('\settodepth', undef,'\@settodim\dp');
+DefMacroI('\settowidth', undef,'\@settodim\wd');
 
 # Assuming noone tries to get clever with figuring out the allocation of 
 # numbers, these become simple DefRegister's
@@ -3604,8 +3627,9 @@ DefPrimitiveI('\textellipsis',     undef, "\x{2026}"); # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered',   undef, UTF(0xAE)); # REGISTERED SIGN
 DefPrimitiveI('\texttrademark',    undef, "\x{2122}");  # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>");
-# This is something coming from xetex/xelatex ?
-DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
+# This is something coming from xetex/xelatex ? Why define this way?
+#DefConstructor('\realsuperscript{}', "<ltx:text yoffset='0.5em' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>");
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA)); # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA)); # MASCULINE ORDINAL INDICATOR
 #DefMacroI('\SS',undef, 'SS');			       # ?
@@ -3741,9 +3765,9 @@ sub make_message {
   ('latex',$cmd,$stomach,$message); }
 
 DefPrimitive('\@onlypreamble{}',sub { onlyPreamble('\@onlypreamble');}); # Don't bother enforcing this.
-DefMacro('\GenericError{}{}{}{}', sub{ Fatal(make_message('\GenericError',$_[2],$_[3],$_[4])); });
-DefMacro('\GenericWarning{}{}',   sub{ Warn(make_message('\GenericWarning',$_[2],$_[3])); });
-DefMacro('\GenericInfo{}{}',      sub{ Info(make_message('\GenericInfo',$_[1],$_[2])); });
+DefPrimitive('\GenericError{}{}{}{}', sub{ Fatal(make_message('\GenericError',$_[2],$_[3],$_[4])); });
+DefPrimitive('\GenericWarning{}{}',   sub{ Warn(make_message('\GenericWarning',$_[2],$_[3])); });
+DefPrimitive('\GenericInfo{}{}',      sub{ Info(make_message('\GenericInfo',$_[1],$_[2])); });
 
 Let(T_CS('\MessageBreak'),T_CS('\relax'));
 DefMacro('\PackageError{}{}{}',
@@ -3820,6 +3844,13 @@ Let(T_CS('\@warning'),  T_CS('\@latex@warning'));
 Let(T_CS('\@@warning'), T_CS('\@latex@warning@no@line'));
 
 DefMacro('\G@refundefinedtrue','');
+
+DefMacro('\@nomath{}',
+         '\relax\ifmmode\@font@warning{Command \noexpand#1invalid in math mode}\fi');
+DefMacro('\@font@warning{}',
+         '\GenericWarning{(Font)\@spaces\@spaces\@spaces\space\space}%
+                        {LaTeX Font Warning: #1}');
+
 #======================================================================
 
 RawTeX(<<'EOTeX');
