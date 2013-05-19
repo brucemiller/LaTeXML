@@ -1,0 +1,166 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  numprint                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+use strict;
+
+#======================================================================
+# What an interesting package! A bit complex to rewrite in Perl
+# So, we'd prefer to just process the TeX source for it.
+# Basically, we read in the TeX distribution's numprint
+InputDefinitions('numprint',type=>'sty', noltxml=>1);
+# That done, however, there are a few issues.
+#  * numprint uses a mix of text & math modes to get the desired appearance.
+#    Here, we'd like to try to be slightly semantic, so rewrap things.
+#  * numprint uses a bit too much knowledge of latex's tabular
+#    and latex's tabular doesn't quite match the internals of latexml's!
+#======================================================================
+
+#======================================================================
+# (Pseudo) Semantics
+#======================================================================
+# When printing in text mode, wrap the number in something that _says_ that it's a number!
+# And, avoid putting the various symbolic bits in Math mode (if we can)
+# In Math mode, wrap it in an XMDual, and try to avoid parsing too much 'nonsense'.
+Let(T_CS('\ltx@orig@@numprint'),T_CS('\numprint'));
+DefMacro('\ltx@orig@numprint{}{}',
+         '\ifx&#1&\ltx@orig@@numprint{#2}\else\ltx@orig@@numprint[#1]{#2}\fi');
+DefMacro('\numprint[]{}',
+         '\ifmmode\ltx@math@numprint[#1]{#2}\else\ltx@text@numprint[#1]{#2}\fi');
+
+# Math Mode
+DefMacro('\ltx@math@numprint[]{}',
+         '\DUAL[NUMBER]{\@NUMBER{#2#1}}{\ltx@orig@numprint{#1}{#2}}');
+DefConstructor('\@NUMBER{}', sub {
+  my($document,$number)=@_;
+  $number = ToString($number);
+  $document->insertMathToken($number,meaning=>$number,role=>'NUMBER'); } );
+# Text Mode
+DefMacro('\ltx@text@numprint[]{}',
+         '\ltx@text@number{\ltx@orig@numprint{#1}{#2}}');
+DefConstructor('\ltx@text@number{}',
+	       "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>");
+
+# When printing the numbers in text, use (unicode) text symbols where possible
+DefMacroI('\nprt@sign@+',undef,'\ifmmode+\else\ltx@text@plus\fi');
+DefMacroI('\nprt@sign@-',undef,'\ifmmode-\else\ltx@text@minus\fi');
+DefMacroI('\nprt@sign@+-',undef,'\ifmmode\pm\else\ltx@text@plusminus\fi');
+DefPrimitiveI('\ltx@text@plus',undef,'+');
+DefPrimitiveI('\ltx@text@minus',undef,'-');
+DefPrimitiveI('\ltx@text@plusminus',undef,UTF(0xB1));
+
+# When defining the product sign, use the text form, if possible...
+DefMacro('\npproductsign{}',
+         '\ifmmode #1'
+         .'\else\@ifundefined{ltx@text@prod\string #1}'
+         .  '{\def\nprt@prod{\ensuremath{{}#1{}}}}'
+         .  '{\def\nprt@prod{\csname ltx@text@prod\string #1\endcsname}}'
+         .'\fi');
+DefPrimitiveI('\ltx@text@prod\times',undef,UTF(0xD7));
+DefPrimitiveI('\ltx@text@prod\cdot',undef,"\x{22C5}");
+
+# Mark units, as well
+# But note that this effect is easily lost,
+# since \npunitcommand is an official "customization" point (and thus user defined)!
+DefMacro('\npunitcommand{}','\ensuremath{\mathrm{\ltx@mark@units #1}}');
+DefConstructor('\ltx@mark@units{}',sub {
+  my($document,$units)=@_;
+  my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($units)));
+  foreach my $node (@nodes){
+    # Only add this class to "identifiers" ?
+    my $role;
+    if(($node->nodeType == XML_ELEMENT_NODE)
+       && ( ! ($role=$node->getAttribute('role'))
+            || ($role eq 'ID')||($role eq 'UNKNOWN')
+            ||($role eq 'FLOATSUPERSCRIPT'))){ # This covers things like primes(?)
+      addClass($node,'ltx_unit'); }}},
+  reversion=>'#1');
+
+#======================================================================
+# Tabular issues
+#======================================================================
+# numprint is scanning for args late, the lazy TeX way,
+# but that doesn't fit the way LaTeXML want's to recognize the argument structure (too) early.
+# So, we need BOTH to define the templates n & N in a way that works with LaTeXML,
+# AND we need to tweak the scanner that looks for the end of the column
+# (since ours end differently than normal LaTeX's)
+#
+# NOTE also that current browsers do not (yet) support the char:. alignment
+# and that LaTeXML does not (yet) compute actual box dimensions.
+# Thus (at the moment) these tabulars will not be aligned on the . Sigh!
+# But maybe soon...?
+
+DefColumnType('N Optional:-1 Optional:-1 {}{}',sub {
+  my($gullet,$nd_exp_before,$nd_exp_after,$nd_man_before,$nd_man_after)=@_;
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\nprt@begin'),T_CS('\ignorespaces')),
+                                      after=>Invocation(T_CS('\nprt@end'),
+                                                        $nd_man_before,$nd_man_after,
+                                                        $nd_exp_before,$nd_exp_after,
+                                                        Tokens(),Tokens()),
+				      align=>'char:'.ToString(Digest(T_CS('\nprt@decimal'))));
+  return; });
+
+DefColumnType('n Optional:-1 Optional:-1 {}{}',sub {
+  my($gullet,$nd_exp_before,$nd_exp_after,$nd_man_before,$nd_man_after)=@_;
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\nprt@begin'),T_CS('\ignorespaces')),
+                                      after=>Invocation(T_CS('\nprt@end'),
+                                                        $nd_man_before,$nd_man_after,
+                                                        $nd_exp_before,$nd_exp_after,
+                                                        T_MATH,T_MATH),
+				      align=>'char:'.ToString(Digest(T_CS('\nprt@decimal'))));
+  return; });
+
+# numprint wants to scan the tokens in the column ITSELF
+# until it encouters &,\tabularnewline or \endtabular
+# and that completely screws up LaTeXML's approach.
+RawTeX(<<'EOTeX');
+\def\nprt@getnexttok#1{%
+  \ifx\tabularnewline#1%
+    \let\nprt@next\tabularnewline
+  \else
+    \ifx\end#1%
+      \let\nprt@next\end
+    \else
+%%%      \ifx\nprt@end#1%
+%%%        \let\nprt@next\nprt@end
+      \ifx&#1%
+        \let\nprt@next&
+      \else
+%%%        \ifx\endtabular#1%
+%%%          \let\nprt@next\endtabular
+         \ifx\@@eat@space#1%
+            \let\nprt@next\@@eat@space
+        \else
+          \ifx\csname#1%
+            \let\nprt@next\csname
+          \else
+            \ifx\relax#1%
+              \let\nprt@next\relax
+            \else
+              \let\nprt@next\nprt@getnexttok
+              \nprt@IfCharInString{#1}{\nprt@allowedchars}{%
+                \nprt@numfoundtrue
+                \nprt@digittoks=\expandafter{\the\nprt@digittoks#1}%
+              }{%
+                \nprt@saveothertok{#1}%
+              }%
+            \fi % \relax
+          \fi % \csname
+        \fi % \endtabular
+      \fi % \nprt@end
+    \fi % \end
+  \fi % \tabularnewline
+  \nprt@next
+}
+EOTeX
+1;

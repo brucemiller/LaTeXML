@@ -1,0 +1,186 @@
+\documentclass{article}
+\usepackage[autolanguage,boldmath]{numprint}
+\usepackage{textcomp}
+\usepackage{color}
+\let\toprule\hline
+\let\midrule\hline
+\let\bottomrule\hline
+
+\textwidth=6in\relax
+
+\begin{document}
+\section{Basics}
+\paragraph{Basics}
+\numprint{-123456}; \numprint{\pm 123456}; \numprint{+-3,1415927e-3.1}
+
+\paragraph{Text vs Math}
+\numprint{123456.134e123} and $\numprint{123456.134e123}$
+
+\paragraph{Exponents}
+Pure exponents: \numprint{e43242}; \numprint{-e43242}; \numprint{+-e43242}.
+
+\paragraph{Expansion}
+\def\numberbefore{1234}%
+\def\totalnumber{\numberbefore.5678}%
+\numprint{\totalnumber}
+
+\paragraph{Units}
+\numprint[N/mm^2]{-123456}
+\numprint[\textdegree]{360}
+
+\paragraph{Counters and Lengths}
+Page: \cntprint{page}
+
+Lengths: 
+$\lenprint{\textwidth}$,
+$\lenprint[pt]{\textwidth}$,
+$\lenprint[in]{\textwidth}$,
+$\lenprint[bp]{\textwidth}$,
+$\lenprint[mm]{\textwidth}$,
+$\lenprint[cm]{\textwidth}$.
+
+\section{Customization}
+\paragraph{Four-digit case}
+\numprint{1234} vs.~ {\npfourdigitnosep\numprint{1234}};
+But : \numprint{12345} vs.~ {\npfourdigitnosep\numprint{12345}}.
+
+\paragraph{Missing zero}
+{\npnoaddmissingzero\numprint{.1234}} vs.~ {\npaddmissingzero\numprint{.1234}};
+But : {\npnoaddmissingzero\numprint{1234}} vs.~ {\npaddmissingzero\numprint{1234}};
+
+\paragraph{Adding pluses}
+\numprint{1234} vs.~ {\npaddplus\numprint{1234}};
+And : \numprint{1234e4} vs.~ {\npaddplusexponent\numprint{1234e4}};
+
+\paragraph{Rounding numbers}
+{\npnoround
+ $\numprint{1.123}$; $\numprint{1.149}$;
+ $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$}
+
+{\nprounddigits{2}
+ $\numprint{1.123}$; $\numprint{1.149}$;
+ $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$ }
+
+\paragraph{Padding}
+{\nplpadding{6}%
+ $\numprint{1234}$; $\numprint{-1234}$;
+ $\numprint{12345678}$; $\numprint{1234.5678}$ --}
+
+vs.~{\nplpadding[x]{6}%
+ $\numprint{1234}$; $\numprint{-1234}$;
+ $\numprint{12345678}$; $\numprint{1234.5678}$}
+
+\paragraph{Replacing zeros}
+\numprint{123.00000}
+  vs.~{\npreplacenull{\mbox{---}} \numprint{123.00000}}
+
+\paragraph{Units format}
+\numprint[N/mm^2]{300}
+vs. {\renewcommand*\npunitcommand[1]{\ensuremath{\color{blue}\mathrm{#1}}}
+ \numprint[N/mm^2]{300}}
+
+\paragraph{New units}
+\npdefunit{myin}{\!''}{0.01383700013}
+
+$\lenprint[in]{\textwidth}$ vs.~ $\lenprint[myin]{\textwidth}$
+%
+
+\paragraph{Fancier}
+\numprint{-123456}; \numprint{3,1415927e-32}
+
+% pdflatex error: undefined control sequence \ndecimalsign
+%%%{\ndecimalsign
+{\ensuremath{\cdot}\npthousandsep{,}\npproductsign{*}%
+\numprint{-123456}; \numprint{3,1415927e-32}}
+
+\section{Tabulars}
+\begin{tabular}{n{5}{3}}
+123.45\\
+12345.678\\
+\end{tabular}
+
+\begin{tabular}{n{5}{3}|n{5}{3}}
+123.45 & 12345.678\\
+\end{tabular}
+
+{\tabcolsep0mm\small
+\begin{tabular}{|n{5}{3}|n[3]{5}{3}|n[3][1]{5}{3}|N{5}{3}|}
+\hline
+123.45e12& 123.45e12& 123.45e12 & 123.45e12 \\
+12345.678e123& 12345.678e123& 12345.678e123& 12345.678e123 \\
+\hline
+\end{tabular}}
+
+\begin{tabular}{n{2}{1}n{2}{1}n{2}{1}n[1]{2}{1}}
+\toprule
+{without braces}&
+{with braces}&
+{with braces and box}&
+\multicolumn{1}{l}{with braces, exp, and box}
+\\
+\midrule
+%   pdflatex error: char for exponent used more than once
+%%%abc def 12,3e3 rt&
+{error} &
+{abc def } 12,3e3 { rt}&
+{\npmakebox[abc def ][l]{abc def }} 12,3e3 { rt}&
+{\npmakebox[abc def ][l]{abc def }} 12,3e3 { rt}
+\\
+more 45,1 txt&
+{more } 45,1 { txt}&
+{\npmakebox[abc def ][l]{more }} 45,1 { txt}&
+{\npmakebox[abc def ][l]{more }} 45,1 { txt}
+\\
+\midrule
+not blue 45,1 txt&
+{\color{blue}blue } 45,1 { txt}&
+{\color{blue}\npmakebox[abc def ][l]{blue }} 45,1 { txt}&
+{\color{blue}\npmakebox[abc def ][l]{blue }} 45,1 { txt}
+\\
+\bottomrule
+\end{tabular}
+
+\begin{tabular}{lN{12}{3}n{12}{3}}
+\toprule
+normal:&
+123456123456.123e12&
+123456123456.123e12
+\\
+bold:&
+{\fontseries{b}\selectfont} 123456123456.123e12&
+%{\npboldmath} 123456123456.123e12
+\\
+bold extended:&
+{\bfseries} 123456123456.123e12&
+{\boldmath} 123456123456.123e12
+\\
+\bottomrule
+\end{tabular}
+
+
+\begin{tabular}{%
+>{{before \npafternum{ after}}}n[2]{12}{3}%
+>{{\nprounddigits{4}}}n{3}{4}%
+>{{\color{blue}}}n{12}{3}}
+\toprule
+123456123456.123e12&
+12.12345&
+123456.23e1
+\\
+12345.123e12&
+12.1&
+14561234.562e12
+\\
+\bottomrule
+\end{tabular}
+
+\begin{tabular}{>{{\npunit{N/mm^2}}}n{5}{3}}
+\toprule
+12345.123\\
+12.12\\
+{\npunit{psi}} 234.4\\
+4.3\\
+\bottomrule
+\end{tabular}
+
+\end{document}
