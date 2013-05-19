@@ -438,7 +438,7 @@ sub openText {
         last if ($d == 0); }
       last unless ($$self{model}->getNodeQName($n) eq $FONT_ELEMENT_NAME) && !$n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
-    $$self{node} = $closeto if $closeto ne $node;	# Move to best starting point for this text.
+    $self->closeNode_internal($node) if $closeto ne $node; # Move to best starting point for this text.
     $self->openElement($FONT_ELEMENT_NAME,font=>$font,_fontswitch=>1) if $bestdiff > 0; # Open if needed.
   }
   # Finally, insert the darned text.
@@ -768,22 +768,25 @@ sub closeNode_internal {
   my $n = $self->closeText_internal; # Close any open text node.
   while($n->nodeType == XML_ELEMENT_NODE){
     $self->closeElementAt($n);
+    $self->autoCollapseChildren($n);
     last if $node->isSameNode($n);
     $n = $n->parentNode; }
-  print STDERR "Closing ".Stringify($node)." => ".Stringify($closeto)."\n" if $LaTeXML::Document::DEBUG;
   $$self{node} = $closeto;
+#  $self->autoCollapseChildren($node);
+  $$self{node}; }
 
-  my @c;
-  # Avoid redundant nesting of font switching elements:
-  # If we're closing a node that can take font switches and it contains
-  # a single FONT_ELEMENT_NAME node; pull it up.
-  my $np = $node->parentNode;
+# Avoid redundant nesting of font switching elements:
+# If we're closing a node that can take font switches and it contains
+# a single FONT_ELEMENT_NAME node; pull it up.
+sub autoCollapseChildren {
+  my($self,$node)=@_;
   my $model = $$self{model};
-  if(($$closeto eq $$np)	# node is Still in tree!
-     && (scalar(@c=$node->childNodes) == 1) # with single child
+  my $qname = $model->getNodeQName($node);
+  my @c;
+  if((scalar(@c=$node->childNodes) == 1) # with single child
      && ($model->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
      # AND, $node can have all the attributes that the child has (but at least 'font')
-     && !grep( !$model->canHaveAttribute($node,$_),
+     && !grep( !$model->canHaveAttribute($qname,$_),
                'font',grep(/^[^_]/,map($_->nodeName,$c[0]->attributes)))
      # BUT, it isn't being forced somehow
      && !$c[0]->hasAttribute('_force_font')){
@@ -823,8 +826,7 @@ sub closeNode_internal {
         else {
           $node->setAttribute( $attr->localname,$val); }}}
     }
-  $$self{node}; }
-
+}
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Document surgery (?)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
