@@ -83,6 +83,7 @@
     </xsl:element>
   </xsl:template>
 
+<!--
   <xsl:template match="ltx:td">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if(@thead,'th','td')}" namespace="{$html_ns}">
@@ -107,6 +108,48 @@
 	    <xsl:value-of select="substring-after(@align,'char:')"/>
 	  </xsl:attribute>
 	</xsl:when>
+	<xsl:when test="@align">
+	  <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
+	</xsl:when>
+      </xsl:choose>
+      <xsl:choose>
+	<xsl:when test="@width">
+	  <xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
+	</xsl:when>
+      </xsl:choose>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
+  </xsl:template>
+-->
+
+  <xsl:template match="ltx:td">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="{f:if(@thead,'th','td')}" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+	<xsl:with-param name="extra_classes">
+	  <xsl:if test="@border">
+	    <xsl:value-of select="f:class-pref('ltx_border_',@border)"/>
+	  </xsl:if>
+	</xsl:with-param>
+	<xsl:with-param name="extra_style">
+	  <xsl:if test="starts-with(@align,'char:')">
+            <xsl:text>text-align:"</xsl:text>
+	    <xsl:value-of select="substring-after(@align,'char:')"/>
+            <xsl:text>";</xsl:text>
+	  </xsl:if>
+        </xsl:with-param>
+      </xsl:call-template>
+      <xsl:if test="@colspan">
+	<xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@rowspan">
+	<xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
+      </xsl:if>
+      <xsl:choose>
+	<xsl:when test="starts-with(@align,'char:')"/>
 	<xsl:when test="@align">
 	  <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
 	</xsl:when>
