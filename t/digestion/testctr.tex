@@ -1,6 +1,6 @@
 \documentclass{article}
 \begin{document}
-\section{Testing Counters}
+\section{Testing LaTeX Counters}
 \newcounter{foo}
 Counter Foo [0] = \thefoo.
 
@@ -18,7 +18,7 @@ Add 10 to Foo [12] = \thefoo.
 \addtocounter{foo}{\value{foo}}
 Double Foo [24] = \thefoo.
 
-\section{Testing RefStep}
+\subsection{Testing RefStep}
 Define bar to be reset within foo.
 \newcounter{bar}[foo]
 Now (Foo,Bar)[24,0] is (\thefoo,\thebar)
@@ -29,7 +29,7 @@ Now (Foo,Bar)[24,1] is (\thefoo,\thebar)
 Refstep foo: \refstepcounter{foo}
 Now (Foo,Bar)[25,0] is (\thefoo,\thebar)
 
-\section{Number formatting}
+\subsection{Number formatting}
 \newcounter{fubar}
 \setcounter{fubar}{6}
 arabic[6] = \thefubar
@@ -54,6 +54,60 @@ How far will \TeX\ go?
 \renewcommand{\thefubar}{\roman{fubar}}
 \setcounter{fubar}{9999}
 Fubar is \thefubar
+
+\section{Expanding LaTeX Counter Names}
+\newcommand{\eff}{F}
+\newcommand{\oh}{o}
+\newcommand{\eww}{oo}
+\newcounter{\eff\oh\oh}
+
+Counter Foo [0] = \theFoo.
+
+\stepcounter{\eff\oh\oh}
+Increment Foo[1] =  \theFoo.
+
+\setcounter{F\oh o}{2}
+Set Foo to 2 = \theFoo.
+
+\addtocounter{F\eww}{10}
+Add 10 to Foo [12] = \theFoo.
+
+\addtocounter{\eff oo}{\value{F\eww}}
+Double Foo [24] = \theFoo.
+
+\subsection{Testing RefStep}
+\newcommand{\manchu}{Fu}
+\newcommand{\pub}{Bar}
+
+Define bar to be reset within Foo.
+\newcounter{Bar}[Fo\oh]
+Now (Foo,Bar)[24,0] is (\theFoo,\theBar)
+
+Refstep Bar: \refstepcounter{\pub}
+Now (Foo,Bar)[24,1] is (\theFoo,\theBar)
+
+Refstep Foo: \refstepcounter{\eff\eww}
+Now (Foo,Bar)[25,0] is (\theFoo,\theBar)
+
+\subsection{Number formatting}
+\newcounter{Fu\pub}
+\setcounter{\eff uBar}{6}
+arabic[6] = \theFuBar
+
+\renewcommand{\theFuBar}{\roman{Fu\pub}}
+roman [vi] = \theFuBar
+
+\renewcommand{\theFuBar}{\Roman{\manchu Bar}}
+Roman [VI] = \theFuBar
+
+\renewcommand{\theFuBar}{\alph{\manchu\pub}}
+alph [f] = \theFuBar
+
+\renewcommand{\theFuBar}{\Alph{FuBar}}
+Alph [F] = \theFuBar
+
+\renewcommand{\theFuBar}{\fnsymbol{Fu\pub}}
+fnsymbol [$\Vert$] = \theFuBar
 
 \section{TeX Counters}
 \subsection{Integers}
@@ -146,9 +200,11 @@ Unknown dimen: 0pt = \the\dimen128\relax
 Unknown skip: 0pt = \the\skip128\relax
 
 \subsection{The}
-the count 0 : \the\count0
+% Let's hope 127 is safe?
+\count127=99\relax
+the count 127 [99] : \the\count127\relax
 
-the two (countdef 2) : \the\two
+the two (countdef 2)[196608] : \the\two
 
 
 \def\foo{FOO}
