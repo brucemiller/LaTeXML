@@ -316,6 +316,7 @@ sub new {
   $data{repeated} = [] unless $data{repeated};
   $data{non_repeating} = scalar(@{$data{columns}});
   $data{save_before} = [] unless $data{save_before};
+  $data{save_between} = [] unless $data{save_between}; # between comes before before!
 
   map( $$_{empty}=1, @{$data{columns}});
   map( $$_{empty}=1, @{$data{repeated}});
@@ -338,29 +339,33 @@ sub setRepeating {
 # These add material before & after the current column
 sub addBeforeColumn {
   my($self,@tokens)=@_;
-  push(@{$$self{save_before}},@tokens); }
+  unshift(@{$$self{save_before}},@tokens); } # NOTE: goes all the way to front!
 
 sub addAfterColumn {
   my($self,@tokens)=@_;
-  $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after}},@tokens); }
+ $$self{current_column}{after} = Tokens(@tokens,@{ $$self{current_column}{after}}); }
 
 # Or between this column & next...
 sub addBetweenColumn {
   my($self,@tokens)=@_;
   my @cols = @{$$self{columns}};
-  if($$self{current_column}){ $self->addAfterColumn(@tokens); }
-  else                      { $self->addBeforeColumn(@tokens); }}
+  if($$self{current_column}){
+    $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after}},@tokens); }
+  else                      { 
+    push(@{$$self{save_between}},@tokens); }}
 
 sub addColumn {
   my($self,%properties)=@_;
   my $col = {%properties};
   my @before=();
-  push(@before,@{$$self{save_before}}) if $$self{save_before};
+  push(@before,@{$$self{save_between}}) if $$self{save_between};
   push(@before,$properties{before}->unlist) if $properties{before};
+  push(@before,@{$$self{save_before}}) if $$self{save_before};
   $$col{before} = Tokens(@before);
   $$col{after}  = Tokens() unless $properties{after};
   $$col{head}   = $properties{head};
   $$col{empty}  = 1;
+  $$self{save_between}=[];
   $$self{save_before}=[];
   $$self{current_column} = $col;
   if($$self{repeating}){
