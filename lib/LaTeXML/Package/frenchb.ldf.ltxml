@@ -1,0 +1,22 @@
+# -*- CPERL -*-
+use LaTeXML::Package;
+# /=====================================================================\ #
+# |  frenchb.ldf                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+
+InputDefinitions('frenchb',type=>'ldf', noltxml=>1);
+
+DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>");
+DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
+
+1;
+
