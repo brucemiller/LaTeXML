@@ -5414,7 +5414,7 @@ sub aligningEnvironment {
 
 sub addClass {
   my($node,$class)=@_;
-  if($node && $class){
+  if($node && $class && ($node->nodeType == XML_ELEMENT_NODE)){
     if($node->hasAttribute('class')){
       $node->setAttribute(class=>$node->getAttribute('class').' '.$class); }
     else {
