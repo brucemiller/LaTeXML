@@ -49,6 +49,7 @@ sub outerWrapper {
   my($self,$doc,$math,$xmath,@conversion)=@_;
   my $mode = $math->getAttribute('mode')||'inline';
   my $wrapped = ['m:math',{display=>($mode eq 'display' ? 'block' : 'inline'),
+                           class=>$math->getAttribute('class'),
 			   alttext=>$math->getAttribute('tex') },
 		 @conversion];
   if(my $id = $xmath->getAttribute('fragid')){
@@ -301,6 +302,7 @@ sub pmml_dowrap {
   my $p = $node->getAttribute('punctuation');
   my $l = $node->getAttribute('lspace');
   my $r = $node->getAttribute('rspace');
+  my $cl= $node->getAttribute('class');
   # Handle generic things: open/close delimiters, punctuation
   if( !(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo')) # mo will already have gotten spacing!
       && ($r || $l)){
@@ -309,6 +311,9 @@ sub pmml_dowrap {
   $result = pmml_parenthesize($result,$o,$c) if $o || $c;
   $result = ['m:menclose',{notation=>$e},$result] if $e;
   $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
+  if($cl && ((ref $result) eq 'ARRAY')){ # Add classs, if any and different
+    my $ocl = $$result[1]{class};
+    $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
   $result; }
 
 our $NBSP = pack('U',0xA0);
@@ -367,11 +372,12 @@ sub pmml_internal {
 	my $a = $col->getAttribute('align');
 	my $b = $col->getAttribute('border');
 	my $h = (($col->getAttribute('thead')||'') eq 'true') && 'thead';
+        my $cl = $col->getAttribute('class');
 	my $c = ($b ? ($h ? "$b $h" : $b) : $h);
 	my $cs = $col->getAttribute('colspan');
 	my $rs = $col->getAttribute('rowspan');
 	push(@cols,['m:mtd',{($a ? (columnalign=>$a):()),
-			     ($c ? (class=>$c):()),
+			     ($c || $cl ? (class=>($c && $cl ? "$c $cl" : $c||$cl)):()),
 			     ($cs ? (columnspan=>$cs):()),
 			     ($rs ? (rowspan=>$rs):())},
 		    map(pmml($_),element_nodes($col))]); }
@@ -519,6 +525,7 @@ sub stylizeContent {
     || $LaTeXML::MathML::BGCOLOR;
   my $opacity = ($iselement ? $item->getAttribute('opacity') : $attr{opacity})
     || $LaTeXML::MathML::OPACITY;
+  my $class   = ($iselement ? $item->getAttribute('class') : $attr{class});
   my $text  = (ref $item  ?  $item->textContent : $item);
   my $variant = ($font ? $mathvariants{$font} : '');
   my $stretchy = $size && ($size eq 'stretchy'); # sort-of a size... (but only for operators?)
@@ -560,7 +567,9 @@ sub stylizeContent {
    ($color    ? (mathcolor=>$color):()),
    ($bgcolor  ? (mathbackground=>$bgcolor):()),
    ($opacity  ? (style=>"opacity:$opacity"):()), # ???
-   ($stretchy ? (stretchy=>'true'):())   ); }
+   ($stretchy ? (stretchy=>'true'):()),
+   ($class    ? (class=>$class):())
+  ); }
 
 
 # These are the strings that should be known as fences in a normal operator dictionary.
