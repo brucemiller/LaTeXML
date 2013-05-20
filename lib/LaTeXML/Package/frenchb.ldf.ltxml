@@ -18,5 +18,9 @@ InputDefinitions('frenchb',type=>'ldf', noltxml=>1);
 DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>");
 DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
 
+# Attempt to make it work with older & newer versions.
+Let(T_CS('\ltx@orig@nombre'),T_CS('\nombre'));
+DefMacro('\nombre{}','\@ifpackageloaded{numprint}{\numprint{#1}}{\ltx@orig@nombre{#1}}');
+
 1;
 
