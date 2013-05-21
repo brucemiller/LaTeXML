@@ -52,14 +52,15 @@ But : {\npnoaddmissingzero\numprint{1234}} vs.~ {\npaddmissingzero\numprint{1234
 \numprint{1234} vs.~ {\npaddplus\numprint{1234}};
 And : \numprint{1234e4} vs.~ {\npaddplusexponent\numprint{1234e4}};
 
-\paragraph{Rounding numbers}
-{\npnoround
- $\numprint{1.123}$; $\numprint{1.149}$;
- $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$}
+% % Test is not so portable across versions of numprint
+% \paragraph{Rounding numbers}
+% {\npnoround
+%  $\numprint{1.123}$; $\numprint{1.149}$;
+%  $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$}
 
-{\nprounddigits{2}
- $\numprint{1.123}$; $\numprint{1.149}$;
- $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$ }
+% {\nprounddigits{2}
+%  $\numprint{1.123}$; $\numprint{1.149}$;
+%  $\numprint{1}$; $\numprint{9.999}$; $\numprint{-9.999}$ }
 
 \paragraph{Padding}
 {\nplpadding{6}%
