@@ -2277,7 +2277,8 @@ as for a font switching command.
 Specifies the reversion of the invocation back into TeX tokens
 (if the default reversion is not appropriate).
 The $textstring string can include #1,#2...
-The CODE is called with the $whatsit and digested arguments.
+The CODE is called with the $whatsit and digested arguments
+and must return a list of Token's.
 
 =item  properties=>{prop=>value,...} or CODE($stomach,#1,#2...)
 
