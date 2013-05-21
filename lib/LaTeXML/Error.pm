@@ -22,8 +22,8 @@ our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 # ======================================================================
 # We want LaTeXML::Global to import this package,
 # but we also want to use some of it's low-level functions.
-sub ToString  { LaTeXML::Global::ToString(@_); }
-sub Stringify { LaTeXML::Global::Stringify(@_); }
+sub ToString  { ($LaTeXML::BAILOUT ? "$_[0]" : LaTeXML::Global::ToString(@_)); }
+sub Stringify { ($LaTeXML::BAILOUT ? "$_[0]" : LaTeXML::Global::Stringify(@_)); }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
 # Public API
@@ -33,6 +33,10 @@ sub Fatal {
   my $state = $LaTeXML::Global::STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if(!$LaTeXML::Error::InHandler && defined($^S)){
+    local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
+    if(checkRecursiveError()){
+      $LaTeXML::BAILOUT = 1;
+      push(@details,"Recursive Error!"); }
     $state && $state->noteStatus('fatal');
     $message
       = generateMessage("Fatal:".$category.":".ToString($object),$where,$message,1,
@@ -50,6 +54,14 @@ sub Fatal {
   die $message; 
 ###  print STDERR "\n".$message;
 ###  exit(1);
+  return; }
+
+sub checkRecursiveError {
+  my @caller;
+  for(my $frame = 2; @caller = caller($frame); $frame++){
+    if ($caller[3] =~ /^LaTeXML::(Global::ToString|Global::Stringify)$/){
+#      print STDERR "RECURSED ON $caller[3]\n";
+      return 1; }}
   return; }
 
 # Note that "100" is hardwired into TeX, The Program!!!
