@@ -46,16 +46,16 @@ DefPrimitive('\@userowcolor',sub {
 # so it will already get itself inserted into the tabular column's preload,
 # We'll basically do the same as \cellcolor, for now, and ignore the spacing
 DefMacro('\columncolor[]{}[][]',
-	 '\if@@rowcolored\else\pagecolor[#1]{#2}\@setcellcolor\fi');
+	 '\if@@rowcolored\else\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setcellcolor\fi');
 
 # \rowcolor[<model>]{<color>}
 # Set the background color, and arrange for it to attach to the ltx:td
-DefMacro('\rowcolor[]{}','\pagecolor[#1]{#2}\@setrowcolor');
+DefMacro('\rowcolor[]{}','\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setrowcolor');
 
 # \cellcolor[<model>]{<color>}
 # Set the background color (we should already be in a cell),
 # but also copy it to the ltx:td!
-DefMacro('\cellcolor[]{}','\pagecolor[#1]{#2}\@setcellcolor');
+DefMacro('\cellcolor[]{}','\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setcellcolor');
 
 # Set the row's backgroundcolor from the current background color
 DefConstructor('\@setrowcolor',sub {
