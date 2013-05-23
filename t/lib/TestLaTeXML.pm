@@ -1,57 +1,77 @@
 package TestLaTeXML;
 use strict;
-use base qw(Test::Builder Exporter);
+use warnings;
+
 use Test::More;
+use LaTeXML::Util::Pathname;
+use JSON::XS;
 use FindBin;
 use File::Copy;
+use Exporter;
+
+our @ISA = qw(Exporter);
 our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
 		 latexml_tests),
 	       @Test::More::EXPORT);
+our $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
 
 # Note that this is a singlet; the same Builder is shared.
-my $Test=Test::Builder->new();
 
 # Test the conversion of all *.tex files in the given directory (typically t/something)
 # Skip any that have no corresponding *.xml file.
 sub latexml_tests {
-  my($directory,$generate)=@_;
+  my($directory,%options)=@_;
 
   if(!opendir(DIR,$directory)){
     # Can't read directory? Fail (assumed single) test.
-    $Test->expected_tests(1+$Test->expected_tests);
     do_fail($directory,"Couldn't read directory $directory:$!"); }
   else {
-    local $Test::Builder::Level =  $Test::Builder::Level+1;
     my @dir_contents = sort readdir(DIR);
-    my @core_tests = map("$directory/$_", grep(s/\.tex$//, @dir_contents));
-    my @daemon_tests = map("$directory/$_", grep(s/\.spec$//, @dir_contents));
+##    my @core_tests = map("$directory/$_", grep(s/\.tex$//, @dir_contents));
+##    my @daemon_tests = map("$directory/$_", grep(s/\.spec$//, @dir_contents));
+    my @core_tests   = grep(s/\.tex$//, @dir_contents);
+    my @daemon_tests = grep(s/\.spec$//, @dir_contents);
     closedir(DIR);
-    $Test->expected_tests(1+scalar(@core_tests)+3*scalar(@daemon_tests)+$Test->expected_tests);
     eval { use_ok("LaTeXML"); }; # || skip_all("Couldn't load LaTeXML"); }
 
-    foreach my $test (@core_tests){
-      if(-f "$test.xml") {
-	latexml_ok("$test.tex","$test.xml",$test); }
-      else {
-	$Test->skip("No file $test.xml"); }
-    }
-    foreach my $test (@daemon_tests){
-      if((-f "$test.xml") && (-f "$test.status")) {
-	daemon_ok($test,$directory,$generate); }
-      else {
-	$Test->skip("No file $test.xml and/or $test.status"); }
-    }}}
+    my $requires = $options{requires} || {}; # normally a hash: test=>[files...]
+    if(!ref $requires){	# scalar== filename required by ALL
+      skip("Missing requirement for $directory/")
+	unless check_requirements("$directory/",$requires);
+      $requires={}; }		# but turn to normal, empty set
+    elsif($$requires{'*'}){
+      skip_all() unless check_requirements("$directory/",$$requires{'*'}); }
+
+    foreach my $name (@core_tests){
+      my $test = "$directory/$name";
+      SKIP: {
+        skip("No file $test.xml",1) unless (-f "$test.xml");
+	next unless check_requirements($test,$$requires{$name});
+        latexml_ok("$test.tex","$test.xml",$test); }}
+    foreach my $name (@daemon_tests){
+      my $test = "$directory/$name";
+      SKIP: {
+        skip("No file $test.xml and/or $$test.status",1)
+          unless ((-f "$test.xml") && (-f "$test.status"));
+	next unless check_requirements($test,$$requires{$name});
+        daemon_ok($test,$directory,$options{generate});
+      }}}
+  done_testing(); }
+
+sub check_requirements {
+  my($test,$reqmts)=@_;
+  foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)){
+    if(`$kpsewhich $reqmt`){}
+    else {
+      skip("Missing requirement $reqmt for $test",1);
+      return 0; }}
+  return 1; }
 
 sub do_fail {
   my($name,$diag)=@_;
-  { local $Test::Builder::Level =  $Test::Builder::Level+1;
-    my $ok = $Test->ok(0,$name);
-    $Test->diag($diag);
-    return $ok; }}
-
-sub skip_all {
-  my($reason)=@_;
-  $Test->skip_all($reason); }
+  my $ok = ok(0,$name);
+  diag($diag);
+  return $ok; }
 
 # Would like to evolve a sensible XML comparison.
 # This is a start...
@@ -68,9 +88,7 @@ sub latexml_ok {
 
   eval { $dom = $latexml->convertFile($texpath); };
   return do_fail($name,"Couldn't convert $texpath: ".@!) unless $dom;
-
-  { local $Test::Builder::Level =  $Test::Builder::Level+1;
-      is_xmlcontent($latexml,$dom,$xmlpath,$name); }}
+  is_xmlcontent($latexml,$dom,$xmlpath,$name); }
 
 sub is_xmlcontent {
   my($latexml,$xmldom,$path,$name)=@_;
@@ -88,8 +106,7 @@ sub is_xmlcontent {
 	   $parser->keep_blanks(1);
 	   $domstring = $parser->parse_string($string)->toStringC14N(0); };
     return do_fail($name,"Couldn't convert dom to string: ".@!) unless $domstring;
-    { local $Test::Builder::Level =  $Test::Builder::Level+1;
-      is_xmlfilecontent([split('\n',$domstring)],$path,$name); }}}
+    is_xmlfilecontent([split('\n',$domstring)],$path,$name); }}
 
 sub is_filecontent {
   my($strings,$path,$name)=@_;
@@ -101,8 +118,7 @@ sub is_filecontent {
     { local $\=undef; 
       @lines = <IN>; }
     close(IN);
-    { local $Test::Builder::Level =  $Test::Builder::Level+1;
-      is_strings($strings,[@lines],$name); }}}
+   is_strings($strings,[@lines],$name); }}
 
 sub is_xmlfilecontent {
   my($strings,$path,$name)=@_;
@@ -113,8 +129,7 @@ sub is_xmlfilecontent {
 	 $parser->keep_blanks(1);
 	 $domstring = $parser->parse_file($path)->toStringC14N(0); };
   return do_fail($name,"Could not open $path") unless $domstring;
-  { local $Test::Builder::Level =  $Test::Builder::Level+1;
-    is_strings($strings,[split('\n',$domstring)],$name); }}
+  is_strings($strings,[split('\n',$domstring)],$name); }
 
 sub is_strings {
   my($strings1,$strings2,$name)=@_;
@@ -136,7 +151,7 @@ sub is_strings {
 		     "Difference at line ".($i+1)." for $name\n"
 		     ."      got : '$string1'\n"
 		     ." expected : '$string2'\n"); }}
-  $Test->ok(1, $name); }
+  ok(1, $name); }
 
 sub daemon_ok {
   my($base,$dir,$generate)=@_;
@@ -163,14 +178,13 @@ sub daemon_ok {
   $invocation .= " 2>$localname.test.status; cd -";
   if (!$generate) {
     is(system($invocation),0,"Progress: processed $localname...\n");
-    { local $Test::Builder::Level =  $Test::Builder::Level+1;
-      is_filecontent(get_filecontent("$base.test.xml"),"$base.xml",$base);
-      is_filecontent(get_filecontent("$base.test.status"),"$base.status",$base);
-    }
+    is_filecontent(get_filecontent("$base.test.xml"),"$base.xml",$base);
+    is_filecontent(get_filecontent("$base.test.status"),"$base.status",$base);
     unlink "$base.test.xml" if -e "$base.test.xml";
     unlink "$base.test.status" if -e "$base.test.status";
   }
   else {
+    #TODO: Skip 3 tests
     print STDERR "$invocation\n";
     system($invocation);
     move("$base.test.xml","$base.xml") if -e "$base.test.xml";
@@ -201,11 +215,14 @@ sub get_filecontent {
       do_fail($name,"Could not open $path"); }
     else {
       { local $\=undef; 
-	@lines = <IN>; }
+        @lines = <IN>; }
       close(IN);
     }
+  }
+  if (scalar(@lines)) {
+    $lines[-1] =~ s/\s+$//;
   } else {
-    push @lines,'';
+    push @lines, '';
   }
   \@lines;
 }
