@@ -455,7 +455,7 @@ sub pmml_infix {
   else {
     ## push(@items, pmml(shift(@args)));
     # Experiment at flattening?
-    my $role = getOperatorRole($op);
+    my $role = (ref $op ? getOperatorRole($op) : 'none');
     my $arg1 = realize(shift(@args));
     if(($role eq 'ADDOP')
        && (getQName($arg1) eq 'ltx:XMApp')
@@ -1028,8 +1028,7 @@ DefMathML('Apply:?:divide', sub {
   if(($style && ($style eq 'inline')) || @more){
     # Shouldn't end up with multiple denominators unless using an infix op w/visible content.
     # but better check, rather than have it disappear...
-    Warn('expected','divide',$op,"Division operator is apparently invisible")
-      unless (ref $op  ?  $op->textContent : $op);
+    $op = '/' unless (ref $op  ?  $op->textContent : $op);
     pmml_infix($op,$num,$den,@more); }
   else {
     ['m:mfrac',{($thickness ? (linethickness=>$thickness):())},
