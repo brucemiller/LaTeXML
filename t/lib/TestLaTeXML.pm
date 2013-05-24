@@ -27,20 +27,18 @@ sub latexml_tests {
     do_fail($directory,"Couldn't read directory $directory:$!"); }
   else {
     my @dir_contents = sort readdir(DIR);
-##    my @core_tests = map("$directory/$_", grep(s/\.tex$//, @dir_contents));
-##    my @daemon_tests = map("$directory/$_", grep(s/\.spec$//, @dir_contents));
     my @core_tests   = grep(s/\.tex$//, @dir_contents);
     my @daemon_tests = grep(s/\.spec$//, @dir_contents);
     closedir(DIR);
     eval { use_ok("LaTeXML"); }; # || skip_all("Couldn't load LaTeXML"); }
 
+  SKIP:{
     my $requires = $options{requires} || {}; # normally a hash: test=>[files...]
     if(!ref $requires){	# scalar== filename required by ALL
-      skip("Missing requirement for $directory/")
-	unless check_requirements("$directory/",$requires);
+      check_requirements("$directory/",$requires); # may SKIP:
       $requires={}; }		# but turn to normal, empty set
     elsif($$requires{'*'}){
-      skip_all() unless check_requirements("$directory/",$$requires{'*'}); }
+      check_requirements("$directory/",$$requires{'*'}); }
 
     foreach my $name (@core_tests){
       my $test = "$directory/$name";
@@ -55,7 +53,7 @@ sub latexml_tests {
           unless ((-f "$test.xml") && (-f "$test.status"));
 	next unless check_requirements($test,$$requires{$name});
         daemon_ok($test,$directory,$options{generate});
-      }}}
+      }}}}
   done_testing(); }
 
 sub check_requirements {
