@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{color}
 \usepackage{cancel}
+\definecolor{purple}{rgb}{1.0,0.0,1.0}%
 \begin{document}
 
 \begin{tabular}{l|cc}
@@ -18,17 +19,17 @@ cancelto
  &
  & $ a + \cancelto{\phi}{b-c} +d$ \\
 purple plain
- & \def\CancelColor{purple} stuff \cancel{stuff} stuff
- & \def\CancelColor{purple} $ a + \cancel{b-c} +d$ \\
+ & \def\CancelColor{\color{purple}} stuff \cancel{stuff} stuff
+ & \def\CancelColor{\color{purple}} $ a + \cancel{b-c} +d$ \\
 red back
- & \def\CancelColor{red} stuff \bcancel{stuff} stuff
- & \def\CancelColor{red} $ a + \bcancel{b-c} +d$ \\
+ & \def\CancelColor{\color{red}} stuff \bcancel{stuff} stuff
+ & \def\CancelColor{\color{red}} $ a + \bcancel{b-c} +d$ \\
 blue cross
- & \def\CancelColor{blue} stuff \xcancel{stuff} stuff
- & \def\CancelColor{blue} $ a + \xcancel{b-c} +d$ \\
+ & \def\CancelColor{\color{blue}} stuff \xcancel{stuff} stuff
+ & \def\CancelColor{\color{blue}} $ a + \xcancel{b-c} +d$ \\
 green cancelto
  &
- & \def\CancelColor{green} $ a + \cancelto{\phi}{b-c} +d$ \\
+ & \def\CancelColor{\color{green}} $ a + \cancelto{\phi}{b-c} +d$ \\
 \end{tabular}
 
 

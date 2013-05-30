@@ -29,13 +29,13 @@ foreach my $option (qw(samesize smaller Smaller makeroom overlap thicklines)){
 DefMacro('\CancelColor','');
 
 sub cancelColorProperties {
-  if(my $color = ToString(Expand(T_CS('\CancelColor')))){
-    my $font = LookupValue('font');
-    (innerfont=>$font,
-     cancelfont=>$font->merge(color=>$color),
-     forcefont=>1); }
-  else {
-    (); }}
+  my %props = (innerfont=>LookupValue('font'));
+  $STATE->getStomach->bgroup;
+  if(Digest(T_CS('\CancelColor'))){
+    $props{cancelfont}=LookupValue('font');
+    $props{forcefont}=1; }
+  $STATE->getStomach->egroup;
+  %props; }
 
 #======================================================================
 # Basic macros
@@ -83,12 +83,14 @@ DefConstructor('\@@math@xcancel{}',
 
 # This only works in math mode
 # \cancelto{value}{expression}
-# Implementation not quite right; SHOULD be an arrow!!!
+# Note that the slashthrough SHOULD be an arrow!!!
+# Since enclose maps to MathML's menclose notation, which is open-ended,
+# we can add a not-(yet)-standard updiagnonalarrow (as suggested by Frederic Wang)
 DefConstructor('\cancelto{}{}',
 	       "<ltx:XMApp>"
-	       .  "<ltx:XMTok role='SUBSCRIPTOP'/>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
 	       .    "<ltx:XMApp>"
-	       .      "<ltx:XMTok role='ENCLOSE' enclose='downdiagonalstrike' meaning='cancel'"
+	       .      "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike updiagonalarrow' meaning='cancel'"
 	       .           " _force_font='#forcefont' _font='#cancelfont'/>"
 	       .      "<ltx:XMWrap>#2</ltx:XMWrap>"
 	       .    "</ltx:XMApp>"
