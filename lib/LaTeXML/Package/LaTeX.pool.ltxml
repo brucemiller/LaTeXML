@@ -3923,6 +3923,16 @@ RawTeX(<<'EOTeX');
 % Some control structure from latex.ltx
 % (amazing that it actually works!)
 % How much of this control struture will I need?
+ \long\def\@whilenum#1\do #2{\ifnum #1\relax #2\relax\@iwhilenum{#1\relax
+      #2\relax}\fi}
+ \long\def\@iwhilenum#1{\ifnum #1\expandafter\@iwhilenum
+          \else\expandafter\@gobble\fi{#1}}
+ \long\def\@whiledim#1\do #2{\ifdim #1\relax#2\@iwhiledim{#1\relax#2}\fi}
+ \long\def\@iwhiledim#1{\ifdim #1\expandafter\@iwhiledim
+         \else\expandafter\@gobble\fi{#1}}
+ \long\def\@whilesw#1\fi#2{#1#2\@iwhilesw{#1#2}\fi\fi}
+ \long\def\@iwhilesw#1\fi{#1\expandafter\@iwhilesw
+          \else\@gobbletwo\fi{#1}\fi}
 \def\@nnil{\@nil}
 \def\@fornoop#1\@@#2#3{}
 \long\def\@for#1:=#2\do#3{%
