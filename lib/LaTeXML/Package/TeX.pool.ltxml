@@ -5269,7 +5269,7 @@ foreach my $ltxtrigger (qw(documentclass
 			newcommand renewcommand newenvironment renewenvironment
 			NeedsTeXFormat ProvidesPackage RequirePackage ProvidesFile
 			makeatletter makeatother
-			typeout begin)){
+			typeout begin listfiles)){
   DefMacroI("\\".$ltxtrigger, undef, sub { LoadPool("LaTeX"); (T_CS("\\$ltxtrigger")); }); }
 
 # Seemingly good candidates to trigger AmSTeX ??
