@@ -1153,9 +1153,7 @@ sub FindFile {
   # If a known special protocol return immediately
   elsif(pathname_is_literaldata($file) || pathname_is_url($file)){
     return $file; }
-  elsif(pathname_is_nasty($file)){ # If it is a nasty filename, we won't touch it.
-    return; }
-
+  # Otherwise, it's some kind of "real" file, and we might have to search for it
   if($options{type}){		# Specific type requested? Search for it.
     # Add the extension, if it isn't already there.
     $file = $file.".".$options{type} unless $file =~ /\.\Q$options{type}\E$/;
@@ -1174,7 +1172,10 @@ sub FindFile_aux {
     return $file; }
   if(pathname_is_absolute($file)){ # And if we've got an absolute path,
     return $file if -f $file;      # No need to search, just check if it exists.
-    return; }
+    return; }                      # otherwise we're never going to find it.
+  elsif(pathname_is_nasty($file)){ # If it is a nasty filename, we won't touch it.
+    return; }                      # we DO NOT want to pass this to kpathse or such!
+
   # Note that the strategy is complicated by the fact that
   # (1) we prefer .ltxml bindings, if present
   # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)

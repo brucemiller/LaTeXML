@@ -41,6 +41,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 		  &pathname_relative &pathname_absolute
 		  &pathname_is_absolute &pathname_is_contained
                   &pathname_is_url &pathname_is_literaldata
+                  &pathname_protocol
 		  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -120,6 +121,11 @@ sub pathname_name {
 sub pathname_type {
   my($dir,$name,$type)=pathname_split(@_);
   $type; }
+
+# Note that this returns ONLY recognized protocols!
+sub pathname_protocol {
+  my($pathname)=@_;
+  return ($pathname =~ /^($PROTOCOL_RE|$LITERAL_RE)/ ? $1 : 'file'); }
 
 #======================================================================
 sub pathname_concat {

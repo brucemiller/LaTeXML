@@ -18,6 +18,7 @@ package LaTeXML::Mouth;
 use strict;
 use LaTeXML::Global;
 use LaTeXML::Token;
+use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
 
 # Factory method;
@@ -28,8 +29,7 @@ sub create {
   my $type;
   if($options{content})      { $type = 'cached'; }
   elsif(!defined $source)    { $type = 'empty'; }
-  elsif($source =~ /^(\w+):/){ $type = $1; }
-  else                       { $type = 'file'; }
+  else                       { $type = pathname_protocol($source); }
   my $newclass = "LaTeXML::Mouth::$type";
   if(! $newclass->can('new')){	# not already defined somewhere?
     require "LaTeXML/Mouth/$type.pm"; }
