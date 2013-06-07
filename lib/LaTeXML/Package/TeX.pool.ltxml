@@ -763,7 +763,7 @@ sub parseDefParameters {
       $n++; $t=shift(@tokens); 
 	Fatal('expected',"#$n",$STATE->getStomach,
 	      "Parameters for '".ToString($cs)."' not in order in ".ToString($params))
-	  unless $n == (ord($t->getString)-ord('0'));
+	  unless (defined $t) && ($n == (ord($t->getString)-ord('0')));
       # Check for delimiting text following the parameter #n
       my @delim=();
       my($pc,$cc)=(-1,0);
