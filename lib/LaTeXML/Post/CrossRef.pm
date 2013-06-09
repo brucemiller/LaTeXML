@@ -541,44 +541,44 @@ sub generateRef_aux {
   $show =~ s/typerefnum\s*title/title/; # Same thing NOW!!!
   while($show){
     if($show =~ s/^type(\.?\s*)refnum(\.?\s*)//){
-      my @frefnum  = $doc->trimChildNodes($entry->getValue('frefnum') || $entry->getValue('refnum'));
-      if(@frefnum){
+      if(my $frefnum  = $entry->getValue('frefnum') || $entry->getValue('refnum')){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@frefnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'}, $self->prepRefText($doc,$frefnum)]); }}
     elsif($show =~ s/^rrefnum(\.?\s*)//){
-      if(my @refnum = $doc->trimChildNodes($entry->getValue('rrefnum')||$entry->getValue('refnum'))){
+      if(my $refnum = $entry->getValue('rrefnum') || $entry->getValue('refnum')){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@refnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'}, $self->prepRefText($doc,$refnum)]); }}
     elsif($show =~ s/^refnum(\.?\s*)//){
-      if(my @refnum = $doc->trimChildNodes($entry->getValue('refnum'))){
+      if(my $refnum = $entry->getValue('refnum')){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$doc->cloneNodes(@refnum)]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_tag'},$self->prepRefText($doc,$refnum)]); }}
     elsif($show =~ s/^toctitle//){
-      my $title = $self->fillInTitle($doc,$entry->getValue('toctitle')||$entry->getValue('title')
-				     || $entry->getValue('toccaption'));
-      if($title){
+      if(my $title = $entry->getValue('toctitle') || $entry->getValue('title')
+         || $entry->getValue('toccaption')){
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'},
-		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
-
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'}, $self->prepRefText($doc,$title)]); }}
     elsif($show =~ s/^title//){
-      my $title= $self->fillInTitle($doc,$entry->getValue('title') || $entry->getValue('toccaption')); # !!!
-      if($title){
+      if(my $title= $entry->getValue('title') || $entry->getValue('toccaption')){ # !!!
 	$OK = 1;
-	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'},
-		      $doc->cloneNodes($doc->trimChildNodes($title))]); }}
+	push(@stuff, ['ltx:text',{class=>'ltx_ref_title'}, $self->prepRefText($doc,$title)]); }}
     elsif($show =~ s/^(.)//){
       push(@stuff, $1); }}
   ($OK ? @stuff : ()); }
+
+sub prepRefText {
+  my($self,$doc,$title)=@_;
+  $doc->cloneNodes($doc->trimChildNodes($self->fillInTitle($doc,$title))); }
 
 # Generate a title string for ltx:ref
 sub generateTitle {
   my($self,$doc,$id)=@_;
   # Add author, if any ???
   my $string = "";
+  my $altstring="";
   while(my $entry = $id && $$self{db}->lookup("ID:$id")){
-    my $title  = $self->fillInTitle($doc,$entry->getValue('title')) #|| $entry->getValue('toccaption'))
-      || $entry->getValue('rrefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum');
+    my $title  = $self->fillInTitle($doc,
+                                    $entry->getValue('title') || $entry->getValue('rrefnum')
+                                    || $entry->getValue('frefnum') || $entry->getValue('refnum'));
 #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc,$title) if $title && ref $title;
     $title =~ s/^\s+// if $title;
@@ -587,7 +587,7 @@ sub generateTitle {
       $string .= $$self{ref_join} if $string;
       $string .= $title; }
     $id = $entry->getValue('parent'); }
-  $string; }
+  $string || $altstring; }
 
 sub getTextContent {
   my($doc,$node)=@_;
@@ -610,7 +610,7 @@ sub getTextContent {
 # Fill in any embedded ltx:ref's & ltx:cite's within a title
 sub fillInTitle {
   my($self,$doc,$title)=@_;
-  return unless $title;
+  return $title unless $title && ref $title;
   # Fill in any nested ref's!
   foreach my $ref ($doc->findnodes('descendant::ltx:ref[@idref or @labelref]',$title)){
     next if $ref->textContent;
@@ -631,7 +631,7 @@ sub fillInTitle {
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref',$title)){
     $doc->replaceNode($bibref,$self->make_bibcite($doc,$bibref)); }
   foreach my $break ($doc->findnodes('descendant::ltx:break',$title)){
-    $doc->replaceNode($break->parentNode,['ltx:text',{}," "]); }
+    $doc->replaceNode($break,['ltx:text',{}," "]); }
   $title; }
 
 # ================================================================================

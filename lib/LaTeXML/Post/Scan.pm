@@ -194,14 +194,22 @@ sub labelled_handler {
   my($self,$doc,$node,$tag,$parent_id)=@_;
   my $id = $node->getAttribute('xml:id');
   if($id){
+    my $refnum  = $node->getAttribute('refnum');
+    my $frefnum = $node->getAttribute('frefnum');
+    my $rrefnum = $node->getAttribute('rrefnum');
+    my $reftag = $self->cleanNode($doc,$doc->findnode('ltx:tag',$node));
+    # Rather annoying interpretation:
+    # an <ltx:tag> might just be something like an itemization bullet that
+    # doesn't make sense to use when referring to the object.
+    # OTOH, it might be a more nicely formatted version of the frefnum
+    # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
 			 labels=>$self->noteLabels($node),
 			 location=>$doc->siteRelativeDestination,
 			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id),
-			 refnum=>$node->getAttribute('refnum'),
-			 frefnum=>$node->getAttribute('frefnum'),
-			 rrefnum=>$node->getAttribute('rrefnum'),
-			 title=>$self->cleanNode($doc,$doc->findnode('ltx:tag',$node)));
+			 refnum=>$refnum,
+			 frefnum=>($refnum && $reftag ? $reftag : $frefnum),
+			 rrefnum=>($refnum && $reftag ? $reftag : $rrefnum));
     $self->addAsChild($id,$parent_id); }
   $self->scanChildren($doc,$node,$id || $parent_id); }
 
