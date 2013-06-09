@@ -1200,13 +1200,13 @@ sub FindFile_aux {
 			(!$options{noltxml} ? ("$file.ltxml"):()),
 			(!$options{notex}   ? ($file):()));
   if(my $result = `$kpsewhich $candidates`){
-    if($result =~ /^\s*(\S+)\n/s){
+    if($result =~ /^\s*(.+?)\s*\n/s){
       return $1; }}
  }
 
 sub pathname_is_nasty {
   my($pathname)=@_;
-  $pathname =~ /[^\w\-_\+\=\/\\\.~]/; }
+  $pathname =~ /[^\w\-_\+\=\/\\\.~\:]/; }
 
 sub maybeReportSearchPaths {
   if(LookupValue('SEARCHPATHS_REPORTED')){ 
