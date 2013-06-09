@@ -299,16 +299,8 @@
     <!-- Skip title, if the parent has a titlepage! -->
     <xsl:if test="not(parent::*/child::ltx:titlepage)">    
       <xsl:text>&#x0A;</xsl:text>
-      <xsl:choose>
-	<xsl:when test="$USE_HTML5">
-	  <xsl:element name="hgroup" namespace="{$html_ns}">
-	    <xsl:call-template name="maketitle"/>
-	  </xsl:element>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:call-template name="maketitle"/>
-	</xsl:otherwise>
-      </xsl:choose>	  
+      <!-- In html5, could have wrapped in hgroup, but that was deprecated -->
+      <xsl:call-template name="maketitle"/>
     </xsl:if>
   </xsl:template>
 
@@ -332,8 +324,8 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- Convert a title to an <h1>..<h6>, with appropriate classes and content,
-       depending on the sectioning level & whether we're using html5 (only h1). -->
+  <!-- Convert a title to an <h1>..<h6>, with appropriate classes and content.
+       In html5, IFF section/article elements are used, we can (& should?) use only h1. -->
   <xsl:template name="maketitle">
     <xsl:element
 	name="{f:if($USE_HTML5,'h1',concat('h',f:section-head-level(parent::*)))}"
@@ -357,11 +349,10 @@
   <!-- only place the date & subtitle within the title treatment -->
   <xsl:template match="ltx:date"/>
 
-  <!-- Apparently html5's hgroup doesn't like div, but perhaps h2 is more appropriate!-->
   <xsl:template match="ltx:date" mode="intitle">
     <xsl:text>&#x0A;</xsl:text>
-<!--    <xsl:element name="div" namespace="{$html_ns}">-->
-    <xsl:element name="{f:if($USE_HTML5,'h2','div')}" namespace="{$html_ns}">
+    <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
+    <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
@@ -375,9 +366,8 @@
   <!-- NOTE: Probably should support font, punct, etc, right? -->
   <xsl:template match="ltx:subtitle" mode="intitle">
     <xsl:text>&#x0A;</xsl:text>
-    <!-- Since html5 uses h1 exclusively, h2 is safe and sensible here-->
-    <!-- ORR could use the title-level + 1 -->
-    <xsl:element name="{f:if($USE_HTML5,'h2','div')}" namespace="{$html_ns}">
+    <!-- Originally, html5 seemed to suggest using h2 here, but that is retracted-->
+    <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
