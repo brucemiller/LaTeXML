@@ -197,18 +197,14 @@
   </para>
   <para xml:id="p8">
     <description xml:id="I8">
-      <item xml:id="I8.ix1">
-        <tag>
-          <text font="bold">do</text>
-        </tag>
+      <item refnum="do" xml:id="I8.ix1">
+        <tag>do</tag>
         <para xml:id="I8.ix1.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item xml:id="I8.ix2">
-        <tag>
-          <text font="bold">re</text>
-        </tag>
+      <item refnum="re" xml:id="I8.ix2">
+        <tag>re</tag>
         <para xml:id="I8.ix2.p1">
           <p>a pocket full of sun</p>
         </para>
@@ -217,7 +213,7 @@
   </para>
   <para xml:id="p9">
     <description xml:id="I9">
-      <item xml:id="I9.ix1">
+      <item frefnum="$\{$do$\}$ " refnum="do" xml:id="I9.ix1">
         <tag>
           <Math mode="inline" xml:id="I9.ix1.m1" tex="\{" text="{">
             <XMath>
@@ -230,7 +226,7 @@
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item xml:id="I9.ix2">
+      <item frefnum="$\{$re$\}$ " refnum="re" xml:id="I9.ix2">
         <tag>
           <Math mode="inline" xml:id="I9.ix2.m1" tex="\{" text="{">
             <XMath>
@@ -247,7 +243,7 @@
   </para>
   <para xml:id="p10">
     <description xml:id="I10">
-      <item xml:id="I10.i1">
+      <item frefnum="$\{$$\}$ " refnum="1" xml:id="I10.i1">
         <tag>
           <Math mode="inline" xml:id="I10.i1.m1" tex="\{" text="{">
             <XMath>
@@ -265,7 +261,7 @@
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item xml:id="I10.i2">
+      <item frefnum="$\{$$\}$ " refnum="2" xml:id="I10.i2">
         <tag>
           <Math mode="inline" xml:id="I10.i2.m1" tex="\{" text="{">
             <XMath>
@@ -295,7 +291,7 @@
           <p>one</p>
         </para>
       </item>
-      <item frefnum="whoop" xml:id="I11.ix1">
+      <item refnum="whoop" xml:id="I11.ix1">
         <tag>whoop</tag>
         <para xml:id="I11.ix1.p1">
           <p>two</p>

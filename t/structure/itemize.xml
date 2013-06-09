@@ -58,26 +58,20 @@
     <title><tag close=" ">3</tag>Description</title>
     <para xml:id="S3.p1">
       <description xml:id="I3">
-        <item xml:id="I3.ix1" labels="LABEL:de:one">
-          <tag>
-            <text font="bold">One</text>
-          </tag>
+        <item refnum="One" xml:id="I3.ix1" labels="LABEL:de:one">
+          <tag>One</tag>
           <para xml:id="I3.ix1.p1">
             <p>, but not <ref labelref="LABEL:it:one"/></p>
           </para>
         </item>
-        <item xml:id="I3.ix2" labels="LABEL:de:two">
-          <tag>
-            <text font="bold">Two</text>
-          </tag>
+        <item refnum="Two" xml:id="I3.ix2" labels="LABEL:de:two">
+          <tag>Two</tag>
           <para xml:id="I3.ix2.p1">
             <p>, but not <ref labelref="LABEL:it:two"/></p>
           </para>
         </item>
-        <item xml:id="I3.ix3" labels="LABEL:de:three">
-          <tag>
-            <text font="bold">Three</text>
-          </tag>
+        <item refnum="Three" xml:id="I3.ix3" labels="LABEL:de:three">
+          <tag>Three</tag>
           <para xml:id="I3.ix3.p1">
             <p>, but not <ref labelref="LABEL:it:three"/></p>
           </para>
