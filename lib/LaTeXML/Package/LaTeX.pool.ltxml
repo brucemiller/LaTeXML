@@ -161,7 +161,39 @@ DefMacro('\end{}',  sub {
 # [Course that means we're not _really_ TeX!]
 
 # \protect is already in TeX for obscure reasons...
-Let(T_CS('\@typeset@protect'),T_CS('\relax'));
+#Let(T_CS('\@typeset@protect'),T_CS('\relax'));
+RawTeX(<<'EOTeX');
+\def\@unexpandable@protect{\noexpand\protect\noexpand}
+\def\x@protect#1{%
+   \ifx\protect\@typeset@protect\else
+      \@x@protect#1%
+   \fi
+}
+\def\@x@protect#1\fi#2#3{%
+   \fi\protect#1%
+}
+\let\@typeset@protect\relax
+\def\set@display@protect{\let\protect\string}
+\def\set@typeset@protect{\let\protect\@typeset@protect}
+\def\protected@edef{%
+   \let\@@protect\protect
+   \let\protect\@unexpandable@protect
+   \afterassignment\restore@protect
+   \edef
+}
+\def\protected@xdef{%
+   \let\@@protect\protect
+   \let\protect\@unexpandable@protect
+   \afterassignment\restore@protect
+   \xdef
+}
+\def\unrestored@protected@xdef{%
+   \let\protect\@unexpandable@protect
+   \xdef
+}
+\def\restore@protect{\let\protect\@@protect}
+%\set@typeset@protect
+EOTeX
 
 #======================================================================
 # C.1.4 Declarations
