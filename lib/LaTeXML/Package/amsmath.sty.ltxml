@@ -76,8 +76,9 @@ DefConstructor('\tag OptionalMatch:* Digested', '',
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
 # Of course, that means we're doing something quite wrong, but we've at least got to recover the effect!!!
 DefMacro('\@ams@intertext{}',
-#	 '\@alignment@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@alignment@newline');
 	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
+DefMacro('\@ams@noalign{}',     # No initial newline
+	 '\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
 	       "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
 
@@ -106,14 +107,12 @@ sub amsalignBindings {
   AssignValue(Alignment=>$alignment);
   $alignment->setTemplate($template);
   Let(T_ALIGN,        T_CS('\@alignment@align'));
-##  Let(T_CS("\\\\"),   T_CS('\@alignment@newline'));
-#  Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
   Let(T_CS("\\\\"),   T_CS('\@ams@newline'));
   Let(T_CS('\cr'),    T_CS('\@alignment@cr'));
-#  Let('\span',        T_CS('\@alignment@span'));
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
   Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
   Let(T_CS('\intertext'),T_CS('\@ams@intertext'));
+  Let(T_CS('\noalign'),  T_CS('\@ams@noalign'));
   return; }
 
 #======================================================================
