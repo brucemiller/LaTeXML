@@ -1829,7 +1829,8 @@ DefConstructor('\vskip Glue',sub {
       $document->closeElement('ltx:para'); }
     elsif($document->isOpenable('ltx:break')){
       $document->insertElement('ltx:break'); }}
-  return; });
+  return; },
+              properties=>{isSpace=>1, isVerticalSpace=>1});
 
 #======================================================================
 # Basic alignment support needed by most environments & commands.
@@ -2006,10 +2007,38 @@ DefConstructorI('\@@BEGININLINETEXT',undef,
 DefConstructorI('\@@ENDINLINETEXT',undef  ,"", alias=>'$',
 	       beforeDigest=> sub{ $_[0]->endMode('text');});
 
-# ???? This isn't really quite right.... (i think)
-# it's supposed to format it's arg w/o alignment,
-# which probably means that it should be restricted in modifying the alignment structure(?)
-DefPrimitiveI('\noalign', undef,undef);
+DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER=>0, 'global'); });
+
+# \noalign{} provides vertical material that doesn't get aligned.
+# This could be a bunch of text that would be treated like AMS' \intertext,
+# OR (more commonly) it might be  more or less empty, \vspace,\hline etc.
+# In the latter case, we DON'T want the tr/td even with colspan!!!
+# Unfortunately, the timing is wrong to remove them (until ALignment is processing)
+DefMacro('\noalign{}',
+         '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline');
+# This just processes the argument in text mode, but notices whether it is "empty" or not.
+# If so, tell the current row that it can safely be collapsed later on.
+DefConstructor('\@@LTX@noalign{}', '#1',
+               mode=>'text',
+               afterDigest=>sub {
+                 my($stomach,$whatsit)=@_;
+                 my $empty=1;
+                 # Check if this really deserves a paragraph
+                 foreach my $box ($whatsit->getArg(1)->unlist){
+                   if($box->getProperty('isFill')){}
+                   elsif($box->getProperty('isVerticalRule')){}
+                   elsif($box->getProperty('isHorizontalRule')){} # we need to put this somewhere?
+                   elsif($box->getProperty('alignmentSkippable')){}
+                   elsif(ref $box eq 'LaTeXML::Comment'){}
+                   elsif($box->getProperty('isSpace')){}
+                   elsif(IsEmpty($box)){}
+                   else {
+                     print STDERR "Got Box: ".Stringify($box)."\n";
+                     $empty=0; last; }}
+                 LookupValue('Alignment')->currentRow->{empty} = $empty;
+                 $whatsit->setProperty(alignmentSkippable=>$empty);
+                 $whatsit->setProperty(isIntertext=>1);
+                 return; });
 
 DefMacroI('\hidewidth',   undef, Tokens());
 
@@ -2239,10 +2268,9 @@ DefPrimitiveI('\@@open@inner@column',   undef,sub {
     elsif(Equals($tok,T_BEGIN)){ # Crazy... seems { doesn't "block" \omit!
       push(@savedtokens,$tok); }
     else {
-##      if($tok->equals(T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
       if(Equals($tok,T_CS('\omit'))){ # \omit removes the before/after tokens for this column.
 	$$colspec{before}=$$colspec{after}=Tokens(); }
-##      elsif($tok->equals(T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
+      ## If we find \@@eat@space, we're at end of the columns content, so consider it empty
       elsif(Equals($tok,T_CS('\@@eat@space'))){ # First non-empty token implies column is empty.
 	$$colspec{empty}=1; }
       $gullet->unread($tok); last; }}
