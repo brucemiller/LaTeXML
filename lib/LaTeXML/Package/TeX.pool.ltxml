@@ -2018,7 +2018,11 @@ DefMacro('\noalign{}',
          '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline');
 # This just processes the argument in text mode, but notices whether it is "empty" or not.
 # If so, tell the current row that it can safely be collapsed later on.
-DefConstructor('\@@LTX@noalign{}', '#1',
+DefConstructor('\@@LTX@noalign{}', sub {
+  my($document,$body)=@_;
+  # Open an ltx:p, if allowed, otherwise just ltx:text
+  $document->insertElement( ($document->isOpenable('ltx:p') ? 'ltx:p' : 'ltx:text'),
+                            $body, class=>'ltx_intertext'); },
                mode=>'text',
                afterDigest=>sub {
                  my($stomach,$whatsit)=@_;
@@ -2037,7 +2041,6 @@ DefConstructor('\@@LTX@noalign{}', '#1',
                      $empty=0; last; }}
                  LookupValue('Alignment')->currentRow->{empty} = $empty;
                  $whatsit->setProperty(alignmentSkippable=>$empty);
-                 $whatsit->setProperty(isIntertext=>1);
                  return; });
 
 DefMacroI('\hidewidth',   undef, Tokens());
