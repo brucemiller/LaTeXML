@@ -77,10 +77,8 @@ DefConstructor('\tag OptionalMatch:* Digested', '',
 # Of course, that means we're doing something quite wrong, but we've at least got to recover the effect!!!
 DefMacro('\@ams@intertext{}',
 	 '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
-DefMacro('\@ams@noalign{}',     # No initial newline
-	 '\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
 DefConstructor('\@@ams@intertext{}',
-	       "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text',properties=>{isIntertext=>1});
+	       "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text');
 
 DefMacroI('\@ams@newline', undef, sub {
   my($gullet)=@_;
@@ -112,7 +110,6 @@ sub amsalignBindings {
   Let(T_CS('\@open@row'),T_CS('\@equationgroup@open@row'));
   Let(T_CS('\@close@row'),T_CS('\@equationgroup@close@row'));
   Let(T_CS('\intertext'),T_CS('\@ams@intertext'));
-  Let(T_CS('\noalign'),  T_CS('\@ams@noalign'));
   return; }
 
 #======================================================================
@@ -172,7 +169,7 @@ DefEnvironment('{split}',
 		 DefConstructor("\\\\","<ltx:XMHint name='newline'/>",
 				reversion=>Tokens(T_CS("\\\\"),T_CR)); 
 		 DefConstructor('\intertext{}',
-				"<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text'); });
+				"<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text'); });
 
 #======================================================================
 # Section 3.5 Equation groups without alignment
@@ -208,7 +205,7 @@ sub rearrangeAMSGather {
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
-       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:p')){
+       && ( ($cell1cont[0]->getAttribute('class')||'') =~ /\b(ltx_intertext)\b/)){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
     elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
@@ -265,7 +262,7 @@ sub rearrangeAMSAlign {
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if((scalar(@cells)==1) && (scalar(@cell1cont)==1)
-       && ($document->getNodeQName($cell1cont[0]) eq 'ltx:p')){
+       && ( ($cell1cont[0]->getAttribute('class')||'') =~ /\b(ltx_intertext)\b/)){
       $equation->replaceNode($cell1cont[0]); } # Replace equation with the block.
     elsif((scalar(@cells)==1) && (scalar(@cell1cont)==0)){ # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
@@ -451,7 +448,7 @@ DefMacro('\displaybreak[]','');	# Ignorable
 # Section 3.10 Interrupting a display
 
 # default when not used inside an appropriate alignment.
-DefConstructor('\intertext{}', "<ltx:p class='ltx_eqn_intertext'>#1</ltx:p>", mode=>'text');
+DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode=>'text');
 
 #======================================================================
 # Section 3.11 Equation numbering
