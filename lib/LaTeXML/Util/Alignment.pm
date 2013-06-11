@@ -193,16 +193,35 @@ sub beAbsorbed {
   my($self,$document,%attributes)=@_;
   my $ismath = $$self{isMath};
 
-  my @rows = @{$$self{rows}};
-  # If last row is "empty", remove it, while copying it's top border to the bottom of prev.
-  if(!grep(! $$_{empty}, @{$rows[-1]->{columns}})){
-    my $nc = scalar(@{$rows[-1]->{columns}});
-    for(my $c = 0; $c < $nc; $c++){
-      my $border = $rows[$#rows]{columns}[$c]{border}||'';
-      $border =~ s/[^tT]//g;
-      $border =~ s/./b/g;
-      $rows[$#rows-1]{columns}[$c]{border} .= $border; }
-    pop(@rows); pop(@{$$self{rows}}); }
+  # Scan for empty rows and collapse them
+  my @filtering = @{$$self{rows}};
+  my @rows=();
+  while(my $row = shift(@filtering)){
+    foreach my $c (@{$$row{columns}}){ # Fill in empty on completely empty columns
+      $$c{empty}=1 unless $$c{boxes} && $$c{boxes}->unlist; }
+    if(grep(! $$_{empty}, @{$$row{columns}})){ # Not empty! so keep it
+      push(@rows,$row); }
+    elsif(my $next = $filtering[0]){ # Remove empty row, but copy top border to NEXT row
+      if($$row{empty}){              # Only remove middle rows if EXPLICITLY marked (\noalign)
+        my $nc = scalar(@{$$row{columns}});
+        for(my $c = 0; $c < $nc; $c++){
+          my $border = $$row{columns}[$c]{border}||'';
+          $border =~ s/[^tTbB]//g; # mask all but top & bottom border
+          $border =~ s/./t/g;      # but convert to top
+          $$next{columns}[$c]{border} .= $border;  }} # add to next row
+      else {
+        push(@rows,$row); }}
+    else {                      # Remove empty last row, but copy top border to bottom of prev.
+      my $prev = $rows[-1];
+      my $nc = scalar(@{$$row{columns}});
+      for(my $c = 0; $c < $nc; $c++){
+        my $border = $$row{columns}[$c]{border}||'';
+        $border =~ s/[^tT]//g;  # mask all but top border
+        $border =~ s/./b/g;     # convert to bottom
+        $$prev{columns}[$c]{border} .= $border; }} # add to previous row.
+  }
+  $$self{rows}=[@rows];
+
   # Mark any cells that are covered by rowspans
   for(my $i=0; $i<scalar(@rows); $i++){
     my @row = @{$rows[$i]->{columns}};
