@@ -54,8 +54,6 @@ Tag('ltx:*',afterOpen=>sub {
 	 && LookupValue('GENERATE_IDS')){
 	GenerateID(@_); }});
 
-DefRegister('\pdfoutput',Number(0));
-
 #======================================================================
 
 Tag('ltx:document',afterOpen=>\&ProcessPendingResources);
@@ -5494,5 +5492,6 @@ sub andSplit {
 
 #**********************************************************************
 LoadPool('eTeX'); # unless.... ?
+LoadPool('pdfTeX'); # unless.... ?
 #**********************************************************************
 1;

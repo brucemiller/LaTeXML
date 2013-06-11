@@ -64,6 +64,45 @@ DefRegister('\pdfpageresources'       =>Tokens());
 DefRegister('\pdfpkmode'              =>Tokens());
 
 # Expandable Commands
+DefMacro('\pdftexrevision','');
+DefMacro('\pdftexbanner','');
+DefMacro('\pdfcreationdate','');
+DefMacro('\pdfpageref Number','');
+DefMacro('\pdfxformname Number','');
+DefMacro('\pdffontname Token','');
+DefMacro('\pdffontobjnum Token','');
+DefMacro('\pdffontsize Token','');
+DefMacro('\pdfincludechars Token {}','');
+DefMacro('\leftmarginkern Number','');
+DefMacro('\rightmarginkern Number','');
+DefMacro('\pdfescapestring {}','');
+DefMacro('\pdfescapename {}','');
+DefMacro('\pdfescapehex {}','');
+DefMacro('\pdfunescapehex {}','');
+# DefMacro('\ifpdfprimitive {}','');
+# DefMacro('\ifpdfabsnum Number','');
+# DefMacro('\ifpdfabsdim Dimension','');
+DefMacro('\pdfuniformdeviate Number Token','');
+DefMacro('\pdfnormaldeviate Token','');
+DefMacro('\pdfmdfivesum Number {}','');
+DefMacro('\pdffilemoddate {}','');
+# DefMacro('\pdffiledump {}','');
+# DefMacro('\pdfcolorstackinit {}','');
+
+# Read-only registers
+DefRegister('\pdftexversion'          =>Number(0));
+DefRegister('\pdflastobj'             =>Number(0));
+DefRegister('\pdflastxform'           =>Number(0));
+DefRegister('\pdflastximage'          =>Number(0));
+DefRegister('\pdflastximagepages'     =>Number(0));
+DefRegister('\pdflastannot'           =>Number(0));
+DefRegister('\pdflastlink'            =>Number(0));
+DefRegister('\pdflastxpos'            =>Number(0));
+DefRegister('\pdflastypos'            =>Number(0));
+DefRegister('\pdflastdemerits'        =>Number(0));
+DefRegister('\pdfelapsedtime'         =>Number(0));
+DefRegister('\pdfrandomseed'          =>Number(0));
+DefRegister('\pdfshellescape'         =>Number(0));
 
 # \pdfximage [ image attr spec ] general text (h, v, m)
 # \pdfrefximage object number (h, v, m)
@@ -95,7 +134,6 @@ DefMacro('\pdftrailer{}',{});
 DefMacro('\pdfmapfile{}','');
 DefMacro('\pdfmapline{}','');
 # \pdffontattr font general text
-
 # \pdffontexpand font expand spec
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
 DefMacro('\quitvmode','');
@@ -106,7 +144,9 @@ DefMacro('\quitvmode','');
 # \pdfnoligatures font
 # \pdfprimitive control sequence
 # \pdfcolorstack stack number stack action general text
-# \pdfsetmatrix
+DefMacro('\pdfsetmatrix','');
+DefMacro('\pdfsave','');
+DefMacro('\pdfrestore','');
 
 # general text → { balanced text }
 # attr spec → attr general text
