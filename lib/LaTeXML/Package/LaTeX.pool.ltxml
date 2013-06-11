@@ -192,7 +192,7 @@ RawTeX(<<'EOTeX');
    \xdef
 }
 \def\restore@protect{\let\protect\@@protect}
-%\set@typeset@protect
+\set@typeset@protect
 EOTeX
 
 #======================================================================
