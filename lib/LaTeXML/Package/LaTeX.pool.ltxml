@@ -2569,7 +2569,9 @@ DefConstructor('\bibstyle{}',sub {
     AssignValue(BIBSTYLE=>$style,'global');
      if(my $parms = $$BIBSTYLES{$style}){
        AssignValue(CITE_STYLE=>$$parms{citestyle}); }
-  });
+    else {
+      Info('unexpected',$style,$_[0],"Unknown bibstyle '$style', it will be ignored"); }
+    return; });
 
 DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
 
