@@ -944,7 +944,7 @@ DefMathML('Apply:OVERACCENT:?', sub {
     my($xaccent,$xbase) = element_nodes($base);
     if((getQName($xaccent) eq 'ltx:XMTok')
        && ($xaccent->getAttribute('role') eq 'UNDERACCENT')){
-      return ['m:munderover',{accent=>'true'},
+      return ['m:munderover',{accent=>'true',accentunder=>'true'},
 	      pmml($xbase),pmml_scriptsize($xaccent),pmml_scriptsize($accent)]; }}
   ['m:mover',{accent=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
 
@@ -954,10 +954,9 @@ DefMathML('Apply:UNDERACCENT:?', sub {
     my($xaccent,$xbase) = element_nodes($base);
     if((getQName($xaccent) eq 'ltx:XMTok')
        && ($xaccent->getAttribute('role') eq 'OVERACCENT')){
-      return ['m:munderover',{accent=>'true'},
+      return ['m:munderover',{accent=>'true',accentunder=>'true'},
 	      pmml($xbase),pmml_scriptsize($accent),pmml_scriptsize($xaccent)]; }}
-
-  ['m:munder',{accent=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
+  ['m:munder',{accentunder=>'true'}, pmml($base),pmml_scriptsize($accent)]; });
 
 DefMathML('Apply:ENCLOSE:?', sub {
   my($op,$base)=@_;
