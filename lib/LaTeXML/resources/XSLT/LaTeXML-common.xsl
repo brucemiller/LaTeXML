@@ -216,6 +216,23 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- Embedded latexml, however, gets treated with the usual templates! -->
+  <xsl:template match="ltx:*" mode='copy-foreign'>
+    <xsl:apply-templates/>
+  </xsl:template>
+
+  <!-- However, XMath elements appearing in an annotation (eg) should also be copied literally-->
+  <xsl:template match="ltx:XMath | ltx:XMApp | ltx:XMTok | ltx:XMRef | ltx:XMHint
+                       | ltx:XMArg | ltx:XMWrap | ltx:XMDual | ltx:XMText
+                       | ltx:XMArray | ltx:XMRow | ltx:XMCell" mode='copy-foreign'>
+    <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
+      <xsl:for-each select="@*">
+	<xsl:apply-templates select="." mode="copy-attribute"/>
+      </xsl:for-each>
+      <xsl:apply-templates mode='copy-foreign'/>
+    </xsl:element>
+  </xsl:template>
+
   <xsl:template match="@*" mode='copy-attribute'>
     <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:value-of select="."/>
