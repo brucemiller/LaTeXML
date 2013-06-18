@@ -629,19 +629,10 @@ addOpDecoration :
 # Pseudo-Terminals. 
 #  Useful combinations or subsets of terminals.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-#anyop   : relop | METARELOP | ARROW | ADDOP | MULOP | MODIFIEROP
-#	| preScripted['bigop']
-#	| OPERATOR addScripts[$item[1]]
-
-#relop	: RELOP | ARROW
-
-
 # A generalized relational operator or arrow
 # Note we disallow < or > if we're parsing the contents of a bra or ket!
 relop	: 
 	  { ($forbidLRAngle ? 1 : undef); } /RELOP:(less|greater)-than:\d+/ <commit> <reject>
-#	| RELOP | ARROW
         | RELOP addOpDecoration[$item[1]]
 	| ARROW addOpDecoration[$item[1]]
 
@@ -713,7 +704,6 @@ ARROW		: /ARROW:\S*:\d+/		{ Lookup($item[1]); }
 ADDOP		: /ADDOP:\S*:\d+/		{ Lookup($item[1]); }
 MULOP		: /MULOP:\S*:\d+/		{ Lookup($item[1]); }
 BINOP		: /BINOP:\S*:\d+/		{ Lookup($item[1]); }
-PREFIX		: /PREFIX:\S*:\d+/		{ Lookup($item[1]); }
 POSTFIX		: /POSTFIX:\S*:\d+/		{ Lookup($item[1]); }
 FUNCTION        : /FUNCTION:\S*:\d+/		{ Lookup($item[1]); }
 OPFUNCTION      : /OPFUNCTION:\S*:\d+/		{ Lookup($item[1]); }
