@@ -4536,7 +4536,7 @@ Let(T_CS('\ne'),T_CS('\neq'));
 
 #----------------------------------------------------------------------
 # Not;  (Is fullwidth solidus appropriate for when \not appears in isolation?)
-DefMathI('\not',undef,"\x{FF0F}", role=>'PREFIX', meaning=>'not');
+DefMathI('\not',undef,"\x{FF0F}", role=>'OPFUNCTION', meaning=>'not');
 # Match negations of many operators
 our %NOTS = ('='=>"\x{2260}", '<'=> "\x{226E}", '>'=>"\x{226F}",
 	     "\x{2208}"=>"\x{2209}", #\in=>\notin
