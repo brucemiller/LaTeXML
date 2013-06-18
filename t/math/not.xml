@@ -136,25 +136,31 @@
     <title><tag close=" ">4</tag>Falling off the End</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex9">
-        <Math mode="display" xml:id="S4.Ex9.m1" tex="a/bc\not">
+        <Math mode="display" xml:id="S4.Ex9.m1" tex="a/bc\not" text="(a / b) * c * not">
           <XMath>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
-            <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            <XMTok role="UNKNOWN" font="italic">c</XMTok>
-            <XMTok meaning="not" role="PREFIX">／</XMTok>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              </XMApp>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok meaning="not" role="OPFUNCTION">／</XMTok>
+            </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S4.Ex10">
-        <Math mode="display" xml:id="S4.Ex10.m1" tex="\frac{a\not}{b}" text="[a／] / b">
+        <Math mode="display" xml:id="S4.Ex10.m1" tex="\frac{a\not}{b}" text="(a * not) / b">
           <XMath>
             <XMApp>
               <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMArg>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMTok meaning="not" role="PREFIX">／</XMTok>
-              </XMArg>
+                <XMTok meaning="not" role="OPFUNCTION">／</XMTok>
+              </XMApp>
               <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
           </XMath>
