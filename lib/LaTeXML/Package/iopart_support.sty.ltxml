@@ -110,10 +110,10 @@ DefPrimitiveI('\bi',   undef,'', font=>{family=>'italic',      series=>'bold', f
 
 DefMacro('\fl',Tokens());	# ?
 DefMacro('\case{}{}','{\textstyle\frac{#1}{#2}}');
-DefMath('\Tr','\mathrm{Tr}', role=>'PREFIX', meaning=>'trace');
-DefMath('\tr','\mathrm{tr}', role=>'PREFIX', meaning=>'trace');
+DefMath('\Tr','\mathrm{Tr}', role=>'OPFUNCTION', meaning=>'trace');
+DefMath('\tr','\mathrm{tr}', role=>'OPFUNCTION', meaning=>'trace');
 
-DefMath('\Or','\mathrm{O}', role=>"OPERATOR", meaning=>'Big-O');
+DefMath('\Or','\mathrm{O}', role=>"OPFUNCTION", meaning=>'Big-O');
 DefMath('\tdot Digested',       "\x{2026}", operator_role=>'OVERACCENT');
 DefMath('\lshad', "\x{27E6}", role=>'OPEN');
 DefMath('\rshad', "\x{27E7}", role=>'CLOSE');
