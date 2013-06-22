@@ -94,7 +94,7 @@
 
   <xsl:template match="ltx:acronym">
     <xsl:element name="acronym" namespace="{$html_ns}">
-      <xsl:attribute name="title"><xsl:value-of select="@name"/></xsl:attribute>
+      <xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>

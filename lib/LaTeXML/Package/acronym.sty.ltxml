@@ -40,7 +40,8 @@ DefPrimitive('\acrodef{}[]{}', sub {
 DefConstructor('\@AC@short{}',"&LookupValue('ACRONYM\@short\@#1')");
 DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
-DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1'>#2</ltx:acronym>");
+DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1' title='#title'>#2</ltx:acronym>",
+              properties=>{ title=>sub { LookupValue('ACRONYM@short@'.ToString($_[1])); }} );
 
 DefMacro('\@AC@if{}{}{}', sub { 
   my($gullet,$id,$short,$long)=@_;

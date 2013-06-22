@@ -108,8 +108,10 @@ element acronym { acronym_attributes, acronym_model }
 acronym_attributes =
   Common.attributes,
   ID.attributes,
-  ## should be used to indicate the expansion of the acronym.
-  attribute name { text }?
+  ## should be used to identifier used for the acronym.
+  attribute name { text }?,
+  ## gives a expanded form of the acronym,
+  attribute title { text }?
 
 ## Content model for \elementref{acronym}.
 acronym_model = Inline.model

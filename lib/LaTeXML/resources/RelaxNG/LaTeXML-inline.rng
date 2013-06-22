@@ -139,7 +139,12 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
     <ref name="ID.attributes"/>
     <optional>
       <attribute name="name">
-        <a:documentation>should be used to indicate the expansion of the acronym.</a:documentation>
+        <a:documentation>should be used to identifier used for the acronym.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="title">
+        <a:documentation>gives a expanded form of the acronym,</a:documentation>
       </attribute>
     </optional>
   </define>
