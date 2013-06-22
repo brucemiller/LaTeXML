@@ -1381,7 +1381,8 @@ DefPrimitive('\chardef Token SkipMatch:= Number', sub {
   my($stomach,$newcs,$value)=@_;
   my $csname = $newcs->getCSName;
   my $internalcs = T_CS('\@chardef@'.$csname);
-  DefPrimitiveI($internalcs,undef,sub { Box(FontDecode($value->valueOf)); },reversion=>$csname);
+  DefPrimitiveI($internalcs,undef,sub {
+     Box(FontDecode($value->valueOf),undef,undef,Invocation(T_CS('\char'),$value)); });
   $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $internalcs));
   return; });
 
@@ -1417,7 +1418,8 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
   DefConstructorI($internalcs,undef,"<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
 		  properties=>{role=>$role,glyph=>$glyph,
 			       font=>sub{ LookupValue('font')->specialize($glyph); }},
-		  reversion=>$csname) if $glyph;
+                  reversion=>'\mathchar'.$value->valueOf.'\relax',
+                 ) if $glyph;
   $STATE->installDefinition(LaTeXML::CharDef->new($newcs,$value, $internalcs));
   return; });
 
