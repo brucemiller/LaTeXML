@@ -26,7 +26,7 @@ DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
 DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
 
 
-DefEnvironment('{acronym}',"<ltx:definition class='ltx_acronyms'>#body</ltx:definition>",
+DefEnvironment('{acronym}',"<ltx:description class='ltx_acronyms'>#body</ltx:description>",
 	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
 					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
 
@@ -41,7 +41,7 @@ DefConstructor('\@AC@short{}',"&LookupValue('ACRONYM\@short\@#1')");
 DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
 # \@ACR@{id}{text}
 DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1' title='#title'>#2</ltx:acronym>",
-              properties=>{ title=>sub { LookupValue('ACRONYM@short@'.ToString($_[1])); }} );
+              properties=>{ title=>sub { LookupValue('ACRONYM@long@'.ToString($_[1])); }} );
 
 DefMacro('\@AC@if{}{}{}', sub { 
   my($gullet,$id,$short,$long)=@_;
