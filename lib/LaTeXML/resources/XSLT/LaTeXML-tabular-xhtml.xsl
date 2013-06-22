@@ -148,12 +148,14 @@
       <xsl:if test="@rowspan">
 	<xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
       </xsl:if>
+      <!-- @align attribute obsolete
       <xsl:choose>
 	<xsl:when test="starts-with(@align,'char:')"/>
 	<xsl:when test="@align">
 	  <xsl:attribute name='align'><xsl:value-of select='@align'/></xsl:attribute>
 	</xsl:when>
       </xsl:choose>
+      -->
       <xsl:choose>
 	<xsl:when test="@width">
 	  <xsl:attribute name='width'><xsl:value-of select="@width"/></xsl:attribute>
