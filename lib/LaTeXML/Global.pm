@@ -167,7 +167,7 @@ sub ExplodeText {
 # Note that this is not necessarily the original TeX.
 sub Revert {
   my($thing)=@_;
-  (defined $thing ? (ref $thing ? $thing->revert : Explode($thing)) : ()); }
+  (defined $thing ? (ref $thing ? map($_->unlist,$thing->revert) : Explode($thing)) : ()); }
 
 our $UNTEX_LINELENGTH = 78;
 sub UnTeX {
