@@ -933,7 +933,8 @@ DefMathML("Token:UNDERACCENT:?", \&pmml_mo, undef);
 DefMathML("Token:NUMBER:?",      \&pmml_mn, sub {
 	    my $n = $_[0]->textContent;
 	    ['m:cn',{type => ($n=~/^[+-]?\d+$/ ? 'integer' : 'float')},$n]; });
-DefMathML("Token:?:absent", sub { ['m:none']} );
+#DefMathML("Token:?:absent", sub { ['m:none']} );
+DefMathML("Token:?:absent", sub { ()} );
 DefMathML('Hint:?:?', sub { undef; }, sub { undef; }); # Should Disappear!
 
 # At presentation level, these are essentially adorned tokens.
