@@ -5199,7 +5199,7 @@ DefPrimitiveI('\scriptscriptstyle',undef,'',afterDigest=>sub { AssignValue(maths
 # Special Characters.
 DefPrimitiveI('\#',undef,   '#');
 DefPrimitiveI('\&', undef,  '&');
-DefMacroI('\%',undef,Tokens(T_OTHER('%')));
+DefPrimitiveI('\%', undef,'%'); #[Had still been DefMacro...Was there a hidden reason?]
 DefPrimitiveI("\\\$", undef,"\$");
 DefPrimitiveI('\_',   undef,'_');
 
