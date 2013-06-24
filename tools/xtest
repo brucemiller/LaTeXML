@@ -38,7 +38,7 @@ if(@ARGV){
 else {
   $makeindex=1;
   opendir(DIR,$testdir) or die "Couldn't read test directory $testdir: $!";
-  @testsets = grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
+  @testsets = sort grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
   closedir(DIR); }
 
 #**********************************************************************
@@ -70,20 +70,22 @@ foreach my $dir (@testsets){
     copy($srcxml,"$htmldest/$dir/$test.xml");
     copy($srcpdf,"$htmldest/$dir/$test.pdf");
     foreach my $type (@TYPES){
-      my $dstxml = "$htmldest/$dir/$test.$type";
-      push(@links,"<td class='$type'><a href='$dir/$test.$type'>$type</a></td>");
+      my $ext = ($type eq 'xhtml' ? 'xhtml' : 'html');
+      my $dstxml = "$htmldest/$dir/$type/$test.$ext";
+      push(@links,"<td class='$type'><a href='$dir/$type/$test.$ext'>$type</a></td>");
       if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
 	print STDERR "Converting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")."\n"
 	  if $verbosity >= 0;
 	system("$bindir/latexmlpost",
 	       ($usesdtd ? ("--novalidate"):()),
 	       "--dest=$dstxml",
+               "--format=$type",
 	       (defined $timestamp ? ("--timestamp=$timestamp") :()),
 	       ($verbosity > 0 ? map("--verbose",1..$verbosity)
 		: ($verbosity < 0 ? map("--quiet",1..-$verbosity)
 		   : ())),
 	       $srcxml)
-	  == 0 or die "Couldn't transform test case $testdir/$dir/$test: $!"; }}
+	  == 0 or die "Couldn't transform test case $testdir/$dir/$type/$test: $!"; }}
     $htmldata .= "<tr><td class='testcase'>$test</td> ".join('',@links).".</tr>\n";  }
 }
 
