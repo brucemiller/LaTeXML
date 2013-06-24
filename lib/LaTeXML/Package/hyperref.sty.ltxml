@@ -125,6 +125,27 @@ DefConstructor('\href Semiverbatim  {}',
 	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
 
 # \url{url} from url.sty
+# Redefine \@url to sanitize the argument less
+DefMacro('\@Url Token', sub {
+  my($gullet,$cmd)=@_;
+  my $mouth = $gullet->getMouth;
+  my($open,$close,$url);
+  $open = $gullet->readToken;
+  StartSemiverbatim();
+  if($open->equals(T_BEGIN)){
+    $open = T_OTHER('{'); $close = T_OTHER('}');
+    $url = $gullet->readBalanced; }
+  else {
+    $close = $open = T_OTHER($open->getString);
+    $url = $mouth->readTokens($close); }
+  EndSemiverbatim();
+  # Identical with url's \@Url except that it sanitizes the arg less
+  my @toks = map(($_->getCatcode == CC_CS ? $_ : T_OTHER(ToString($_))),$url->unlist);
+  (Invocation(T_CS('\@@Url'),
+	      T_OTHER(ToString($cmd)),Tokens($open),Tokens($close),
+	      Tokens(@toks),
+	      Tokens(T_CS('\UrlFont'),T_CS('\UrlLeft'),@toks,T_CS('\UrlRight')))->unlist,
+   T_CS('\endgroup')); });
 
 # \nolinkurl{url}
 DefConstructor('\nolinkurl Semiverbatim','#1');
