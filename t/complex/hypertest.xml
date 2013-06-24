@@ -16,6 +16,24 @@
       <p>Nothing left to say, really.</p>
     </para>
   </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>URL’s</title>
+    <para xml:id="S2.p1">
+      <p>Hyperref loads url, but redefines it</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Special characters still neutralized:
+<ref class="ltx_url" href="http://example.com/foo_bar"><text font="typewriter">http://example.com/foo_bar</text></ref>,
+<ref class="ltx_url" href="http://example.com/foo#bar"><text font="typewriter">http://example.com/foo#bar</text></ref>,
+<ref class="ltx_url" href="http://example.com/foo&amp;bar"><text font="typewriter">http://example.com/foo&amp;bar</text></ref>.</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>But macros expanded: <ref class="ltx_url" href="http://localhost/dir/index.html"><text font="typewriter">http://localhost/dir/index.html</text></ref>.</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>And, you get this: <ref class="ltx_url" href="http://example.com/{̃}user"><text font="typewriter">http://example.com/{̃}user</text></ref></p>
+    </para>
+  </section>
   <rdf content="Not subject to copyright" property="dcterms:rights" about=""/>
   <rdf content="An Author" property="dcterms:creator" about=""/>
   <rdf content="TestHyperrefMetadata" property="dcterms:title" about=""/>

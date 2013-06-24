@@ -26,4 +26,17 @@ Nothing left to say, really.
   pdflicenseurl={http://creativecommons.org/licenses/by/3.0/},
 }
 
+\section{URL's}
+Hyperref loads url, but redefines it
+
+Special characters still neutralized:
+ \url{http://example.com/foo_bar},
+ \url{http://example.com/foo#bar},
+ \url{http://example.com/foo&bar}.
+
+\def\baz{index.html}
+But macros expanded: \url{http://localhost/dir/\baz}.
+
+And, you get this: \url{http://example.com/\~{}user}
+
 \end{document}
