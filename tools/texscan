@@ -364,6 +364,7 @@ sub scan {
 
 sub noteInclusion {
   my($self,$file,$defaulttype)=@_;
+  $file =~ s/^\s+//;  $file =~ s/\s+$//;
   my($dir,$name,$type)=pathname_split($file);
   $type = $defaulttype unless $type;
   $name .= '.'.$type if $type;
