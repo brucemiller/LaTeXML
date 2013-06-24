@@ -4,11 +4,19 @@
 \section{Basic URLS}
 Basic url: \url{http://example.com/~user} or \url|http://example.com/~user|.
 
-And even: \url{http://example.com/\~{}user} or \url|http://example.com/\~{}user|.
-
 Path url: \path{/foo/bar/baz} or \path|/foo/bar/baz|
 
-Verbatimness \path{C:\foo\bar\baz} or \path|C:\foo\bar\baz|
+\section{Verbatimness}
+Special characters neutralized:
+ \url{http://example.com/foo_bar},
+ \url{http://example.com/foo#bar},
+ \url{http://example.com/foo&bar}.
+
+\def\baz{index.html}
+And even though \verb|\baz| gives \baz;
+\path{C:\foo\bar\baz}
+
+OTOH, you get this: \url{http://example.com/\~{}user}
 
 \section{Styles}
 \DeclareUrlCommand\email{\urlstyle{sf}}
