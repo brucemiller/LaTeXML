@@ -1320,9 +1320,16 @@ sub loadTeXDefinitions {
     AssignValue($request.'_loaded'=>1,'global'); }
 
   my $stomach = $STATE->getStomach;
-  my $interpreting = LookupValue('INTERPRETING_DEFINITIONS');
+  # Note that we are reading definitions (and recursive input is assumed also defintions)
+  my $was_interpreting     = LookupValue('INTERPRETING_DEFINITIONS');
+  # And that if we're interpreting this TeX file of definitions,
+  # we probably should interpret any TeX files IT loads.
+  my $was_including_styles = LookupValue('INCLUDE_STYLES');
   AssignValue('INTERPRETING_DEFINITIONS'=>1);
- $stomach->getGullet->readingFromMouth(
+  # If we're reading in these definitions, probaly will accept included ones?
+  # (but not forbid ltxml ?)
+  AssignValue('INCLUDE_STYLES'=>1);
+  $stomach->getGullet->readingFromMouth(
          LaTeXML::Mouth->create($pathname,
 				fordefinitions=>1,notes=>1,
 				content=>LookupValue($pathname.'_contents')),
@@ -1332,7 +1339,8 @@ sub loadTeXDefinitions {
     while($token = $gullet->readXToken(0)){
       next if $token->equals(T_SPACE);
       $stomach->invokeToken($token); }});
-  AssignValue('INTERPRETING_DEFINITIONS'=>$interpreting);
+  AssignValue('INTERPRETING_DEFINITIONS'=>$was_interpreting);
+  AssignValue('INCLUDE_STYLES'=>$was_including_styles);
 }
 
 sub loadTeXContent {
