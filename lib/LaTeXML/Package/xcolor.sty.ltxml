@@ -60,6 +60,9 @@ DefConditional('\ifmaskcolors',undef);
 DefConditional('\ifxglobal@',undef);
 RawTeX('\globalcolorsfalse\definecolorstrue');
 
+# Start with "current color" (using the shorthand ".") to black
+AssignValue('color_.'=>Black());
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Extra Color Models
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -209,7 +212,6 @@ sub ParseXColor {
   $models  = ToString($models)  if ref $models;
   $specs   = ToString($specs)   if ref $specs;
   $tomodel = ToString($tomodel) if ref $tomodel;
-
   my $color;
   if($models){		  # If models given, it's in form: (tomodel:)? model (,model)*
     if($models =~ s/^(.*?)://){
