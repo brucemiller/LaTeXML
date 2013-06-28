@@ -55,7 +55,8 @@ sub initialize {
   $$self{chars}=[];
   $$self{nchars}=0;
   if($$self{notes}){
-    $$self{note_message} = "Processing $$self{source}";
+    $$self{note_message} = "Processing ".($$self{fordefinitions} ? "definitions":"content")
+      ." ".$$self{source};
     NoteBegin($$self{note_message}); }
   if($$self{fordefinitions}){
     $$self{saved_at_cc} = $STATE->lookupCatcode('@');
@@ -328,7 +329,6 @@ sub new {
   $$self{notes}=1;
   $self->openFile($pathname);
   $self->initialize;
-#  NoteBegin("Processing $$self{source}");
   $self;  }
 
 sub openFile {
@@ -346,7 +346,6 @@ sub finish {
   $self->SUPER::finish;
   if($$self{IN}){
     close( \*{$$self{IN}}); $$self{IN}=undef; }
-#  NoteEnd("Processing $$self{source}");
 }
 
 sub hasMoreInput {
