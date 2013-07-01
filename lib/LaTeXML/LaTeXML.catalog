@@ -24,9 +24,14 @@
        XSLT related entries -->
 
   <!-- A plain request for one of the top-level XSLT gets found -->
-  <uri name="LaTeXML-xhtml.xslt"         uri="resources/XSLT/LaTeXML-xhtml.xslt"/>
-  <uri name="LaTeXML-html.xslt"          uri="resources/XSLT/LaTeXML-html.xslt"/>
-  <uri name="LaTeXML-html5.xslt"         uri="resources/XSLT/LaTeXML-html5.xslt"/>
+  <!-- BUT NOTE: these rules aren't likely to help you since something like
+      <xsl:include href="LaTeXML-xhtml.xsl"/>
+      will FIRST be interpreted as a relative pathname....sigh....-->
+  <uri name="LaTeXML-xhtml.xsl"         uri="resources/XSLT/LaTeXML-xhtml.xsl"/>
+  <uri name="LaTeXML-html.xsl"          uri="resources/XSLT/LaTeXML-html.xsl"/>
+  <uri name="LaTeXML-html5.xsl"         uri="resources/XSLT/LaTeXML-html5.xsl"/>
+  <!-- Or a plain request for all-xhtml (the base for all html family formats) gets found -->
+  <uri name="LaTeXML-all-xhtml.xsl"     uri="resources/XSLT/LaTeXML-all-xhtml.xsl"/>
 
   <!-- This allows XSLT Stylesheets (both the built-in one and user extensions) to include
        LaTeXML's stylesheet modules by using the urn form, such as
