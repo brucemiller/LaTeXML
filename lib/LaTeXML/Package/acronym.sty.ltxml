@@ -21,27 +21,39 @@ DefMacro('\acffont{}','#1');
 DefMacro('\acfsfont{}','#1');
 
 DefMacro('\ac{}', '\@AC@if{#1}{\acs{#1}}{\acf{#1}}');
-DefMacro('\acs{}','\@ACRO@{#1}{\acsfont{\@AC@short{#1}}}');
-DefMacro('\acl{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}}');
-DefMacro('\acf{}','\@ACRO@{#1}{\acffont{\@AC@long{#1}}\acfsfont{(\@AC@short{#1})}}');
+DefConstructor('\acs{}',
+               "<ltx:glossaryref role='acronym' key='#1' show='short'/>",
+               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
+DefConstructor('\acl{}',
+               "<ltx:glossaryref role='acronym' key='#1' show='long'/>",
+               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
+DefConstructor('\acf{}',
+               "<ltx:glossaryref role='acronym' key='#1' show='long (short)'/>",
+               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
 
+DefEnvironment('{acronym}',
+               "<ltx:glossary role='acronym' class='ltx_acronym'>"
+               . "<ltx:glossarylist>"
+               .   "#body"
+               . "</ltx:glossarylist>"
+               ."</ltx:glossary>",
+	      beforeDigest=>sub { Let(T_CS('\acro'),T_CS('\@acro@item'));
+                                  Let(T_CS('\acrodef'),T_CS('\@acro@item')); });
 
-DefEnvironment('{acronym}',"<ltx:description class='ltx_acronyms'>#body</ltx:description>",
-	      beforeDigest=>sub { DefMacro('\acro{}[]{}', 
-					   '\acrodef{#1}[#2]{#3}\item[\acs{#1}]\acl{#1} '); });
+DefConstructor('\@acro@item{}[]{}',
+               "<ltx:glossaryentry role='acronym'>"
+               .  "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
+               .  "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
+               .  "<ltx:glossarydefinition>");
 
-DefPrimitive('\acrodef{}[]{}', sub {
-  my($stomach,$id,$short,$long)=@_;
-  $short = $id unless $short && ToString($short);
-  $id = ToString($id);
-  AssignValue('ACRONYM@short@'.$id => Digest($short),'global');
-  AssignValue('ACRONYM@long@'.$id  => Digest($long),'global'); });
+Tag('ltx:glossarydefinition',autoClose=>1);
+Tag('ltx:glossaryentry',autoClose=>1);
 
-DefConstructor('\@AC@short{}',"&LookupValue('ACRONYM\@short\@#1')");
-DefConstructor('\@AC@long{}',"&LookupValue('ACRONYM\@long\@#1')");
-# \@ACR@{id}{text}
-DefConstructor('\@ACRO@{}{}',"<ltx:acronym name='#1' title='#title'>#2</ltx:acronym>",
-              properties=>{ title=>sub { LookupValue('ACRONYM@long@'.ToString($_[1])); }} );
+DefConstructor('\acrodef{}[]{}',
+               "<ltx:glossarymark role='acronym'>"
+               .  "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
+               .  "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
+               ."</ltx:glossarymark>");
 
 DefMacro('\@AC@if{}{}{}', sub { 
   my($gullet,$id,$short,$long)=@_;
