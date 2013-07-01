@@ -40,6 +40,7 @@ sub process {
       $doc->addNodes($nav,$toc); }
     else {
       $doc->addNodes($doc->getDocumentElement,['ltx:navigation',{},$toc]); }}
+  $self->fillInGlossaryRef($doc);
   $self->fill_in_relations($doc);
   $self->fill_in_tocs($doc);
   $self->fill_in_frags($doc);
@@ -633,6 +634,42 @@ sub fillInTitle {
   foreach my $break ($doc->findnodes('descendant::ltx:break',$title)){
     $doc->replaceNode($break,['ltx:text',{}," "]); }
   $title; }
+
+sub fillInGlossaryRef {
+  my($self,$doc)=@_;
+  my $n=0;
+  foreach my $ref ($doc->findnodes('descendant::ltx:glossaryref')){
+    $n++;
+    my $role = $ref->getAttribute('role')||'';
+    my $key  = $ref->getAttribute('key');
+    my $show  = $ref->getAttribute('show');
+    if(my $entry = $$self{db}->lookup(join(':','GLOSSARY',$role,$key))){
+      my $title = $entry->getValue('expansion');
+      if(!$ref->getAttribute('title') && $title){
+        $ref->setAttribute(title=>$title->textContent); }
+      if(!$ref->textContent && !element_nodes($ref)){
+        $doc->addNodes($ref,$self->generateGlossaryRefTitle($doc,$entry,$show)); }
+    }}
+  NoteProgressDetailed(" [Filled in $n glossaryrefs]"); }
+
+sub generateGlossaryRefTitle {
+  my($self,$doc,$entry,$show)=@_;
+  my @stuff=();
+  my $OK=0;
+  while($show){
+    if($show =~ s/^short//){
+      if(my $phrase  = $entry->getValue('phrase')){
+	$OK = 1;
+	push(@stuff, ['ltx:text',{class=>'ltx_glossary_short'},
+                      $self->prepRefText($doc,$phrase)]); }}
+    elsif($show =~ s/^long//){
+      if(my $phrase  = $entry->getValue('expansion')){
+	$OK = 1;
+        push(@stuff, ['ltx:text',{class=>'ltx_glossary_long'},
+                      $self->prepRefText($doc,$phrase)]); }}
+    elsif($show =~ s/^(.)//){
+      push(@stuff, $1); }}
+  ($OK ? @stuff : ()); }
 
 # ================================================================================
 1;

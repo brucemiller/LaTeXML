@@ -48,6 +48,8 @@ sub new {
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
   $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
   $self->registerHandler('ltx:indexmark'     => \&indexmark_handler);
+  $self->registerHandler('ltx:glossarymark'  => \&glossarymark_handler);
+  $self->registerHandler('ltx:glossaryentry' => \&glossarymark_handler);
   $self->registerHandler('ltx:ref'           => \&ref_handler);
   $self->registerHandler('ltx:bibref'        => \&bibref_handler);
 
@@ -270,6 +272,28 @@ sub indexmark_handler {
     $entry->pushNew('see_also', @seealso); }
   else {
     $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }}
+
+# This handles glossarymark and glossaryentry
+sub glossarymark_handler {
+  my($self,$doc,$node,$tag,$parent_id)=@_;
+  my $id = $node->getAttribute('xml:id');
+  my $role = $node->getAttribute('role')||'';
+  # Get the actual phrases, and any see_also phrases (if any)
+  my $phrase     = $doc->findnode('ltx:glossaryphrase',$node);
+  my $expansion  = $doc->findnode('ltx:glossaryexpansion',$node);
+  my $definition = $doc->findnode('ltx:glossarydefinition',$node);
+  if(my $glosskey = $phrase->getAttribute('key')){
+    my $key = join(':','GLOSSARY',$role,$glosskey);
+    my $entry = $$self{db}->lookup($key)
+      || $$self{db}->register($key,phrase=>$phrase,expansion=>$expansion,definition=>$definition);
+    $entry->noteAssociation(referrers=>$parent_id=>($node->getAttribute('style') || 'normal')); }
+  if($id){
+    $$self{db}->register("ID:$id", id=>$id, type=>$tag, parent=>$parent_id,
+			 labels=>$self->noteLabels($node),
+			 location=>$doc->siteRelativeDestination,
+			 pageid=>$self->pageID($doc), fragid=>$self->inPageID($doc,$id)); }
+  # Scan content, since could contain other interesting stuff...
+  $self->scanChildren($doc,$node,$id || $parent_id); }
 
 # Note this bit of perversity:
 #  <ltx:bibentry> is a semantic bibliographic entry,
