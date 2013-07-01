@@ -480,6 +480,10 @@
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="dd" namespace="{$html_ns}">
+      <xsl:apply-templates select="ltx:glossaryexpansion"/>
+      <xsl:if test="ltx:glossaryexpansion and ltx:glossarydefinition">
+        <xsl:text> </xsl:text>
+      </xsl:if>
       <xsl:apply-templates select="ltx:glossarydefinition"/>
       <xsl:apply-templates select="ltx:indexrefs"/>
       <xsl:apply-templates select="." mode="end"/>
