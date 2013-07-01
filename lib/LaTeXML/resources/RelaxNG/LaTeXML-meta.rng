@@ -173,7 +173,7 @@ a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.<
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossaryphrase">
     <element name="glossaryphrase">
-      <a:documentation>A phrase within an \elementref{glossarymark}</a:documentation>
+      <a:documentation>A phrase being clarified within an \elementref{glossarymark} or \elementref{glossaryentry}</a:documentation>
       <ref name="glossaryphrase_attributes"/>
       <ref name="glossaryphrase_model"/>
     </element>
@@ -192,9 +192,27 @@ a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.<
     <ref name="Inline.model"/>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="glossaryexpansion">
+    <element name="glossaryexpansion">
+      <a:documentation>The expansion of the \elementref{glossaryphrase} within an
+\elementref{glossarymark} or \elementref{glossaryentry},
+particularly when used for acronyms.</a:documentation>
+      <ref name="glossaryexpansion_attributes"/>
+      <ref name="glossaryexpansion_model"/>
+    </element>
+  </define>
+  <define name="glossaryexpansion_attributes">
+    <a:documentation>Attributes for \elementref{glossaryexpansion}.</a:documentation>
+    <ref name="Common.attributes"/>
+  </define>
+  <define name="glossaryexpansion_model">
+    <a:documentation>Content model for \elementref{glossaryexpansion}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossarydefinition">
     <element name="glossarydefinition">
-      <a:documentation>A definition within an \elementref{glossarymark}</a:documentation>
+      <a:documentation>A definition within an \elementref{glossarymark} or \elementref{glossaryentry}</a:documentation>
       <ref name="glossarydefinition_attributes"/>
       <ref name="glossarydefinition_model"/>
     </element>

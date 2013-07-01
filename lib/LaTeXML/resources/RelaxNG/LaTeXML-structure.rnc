@@ -318,15 +318,17 @@ glossarylist_model = glossaryentry*
 
 glossaryentry =
 ## An entry in an \elementref{glossarylist} consisting of a phrase,
-## possibly a definition, and references to points in the document
-## where the phrase was found.
+## possibly definitions (one or more, presumably in increasing detail?),
+## and references to points in the document where the phrase was found.
 element glossaryentry { glossaryentry_attributes, glossaryentry_model }
 
 ## Attributes for \elementref{glossaryentry}.
-glossaryentry_attributes = Common.attributes, ID.attributes
+glossaryentry_attributes = Common.attributes, ID.attributes,
+  ## The kind of glossary
+  attribute role { text }?
 
 ## Content model for \elementref{glossaryentry}.
-glossaryentry_model = glossaryphrase, glossarydefinition?, indexrefs?
+glossaryentry_model = glossaryphrase, glossaryexpansion?, glossarydefinition*, indexrefs?
 
 #======================================================================
 

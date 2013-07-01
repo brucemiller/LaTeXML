@@ -574,8 +574,8 @@ from the collection of \elementref{glossarymark} in the document
   <define name="glossaryentry">
     <element name="glossaryentry">
       <a:documentation>An entry in an \elementref{glossarylist} consisting of a phrase,
-possibly a definition, and references to points in the document
-where the phrase was found.</a:documentation>
+possibly definitions (one or more, presumably in increasing detail?),
+and references to points in the document where the phrase was found.</a:documentation>
       <ref name="glossaryentry_attributes"/>
       <ref name="glossaryentry_model"/>
     </element>
@@ -584,13 +584,21 @@ where the phrase was found.</a:documentation>
     <a:documentation>Attributes for \elementref{glossaryentry}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The kind of glossary</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="glossaryentry_model">
     <a:documentation>Content model for \elementref{glossaryentry}.</a:documentation>
     <ref name="glossaryphrase"/>
     <optional>
-      <ref name="glossarydefinition"/>
+      <ref name="glossaryexpansion"/>
     </optional>
+    <zeroOrMore>
+      <ref name="glossarydefinition"/>
+    </zeroOrMore>
     <optional>
       <ref name="indexrefs"/>
     </optional>

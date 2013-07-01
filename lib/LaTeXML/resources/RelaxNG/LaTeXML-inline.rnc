@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The inline module defines basic inline elements used throughout.
 Inline.class |= 
-    \text | emph | del | sub | sup | acronym | rule
+    \text | emph | del | sub | sup | glossaryref | acronym | rule
   | anchor | ref | cite | bibref
 
 #======================================================================
@@ -100,8 +100,41 @@ sup_model = Inline.model
 
 #======================================================================
 
+glossaryref =
+## Represents the usage of a term from a glossary.
+element glossaryref { glossaryref_attributes, glossaryref_model }
+
+## Attributes for \elementref{glossaryref}.
+glossaryref_attributes =
+  Common.attributes,
+  Refable.attributes,
+
+  ## should be used to identifier used for the glossaryref.
+  attribute key { text }?,
+
+  ## The kind of \elementref{glossary} this mark belongs to.
+  attribute role { text }?,
+
+  ## gives a expanded form of the glossaryref,
+  attribute title { text }?,
+
+  ## a pattern encoding how the text content should be filled in during
+  ## postprocessing, if it is empty.
+  ## It consists of the words
+  ##   \texttt{type} (standing for the object type, eg. Ch.),
+  ##   \texttt{refnum} and \texttt{title}
+  ## mixed with arbitrary characters. The 
+  ## It can also be \texttt{fulltitle}, which indicates the title 
+  ## with prefix and type if section numbering is enabled.
+  attribute show { text }?
+
+## Content model for \elementref{glossaryref}.
+glossaryref_model = Inline.model
+
+#======================================================================
+
 acronym =
-## Represents an acronym.
+## Represents an acronym (OBSOLETE; see \elementref{glossaryref}).
 element acronym { acronym_attributes, acronym_model }
 
 ## Attributes for \elementref{acronym}.

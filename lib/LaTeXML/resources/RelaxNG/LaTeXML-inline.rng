@@ -21,6 +21,7 @@
       <ref name="del"/>
       <ref name="sub"/>
       <ref name="sup"/>
+      <ref name="glossaryref"/>
       <ref name="acronym"/>
       <ref name="rule"/>
       <ref name="anchor"/>
@@ -126,9 +127,53 @@ Attributes cover a variety of styling and position shifting properties.</a:docum
     <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
+  <define name="glossaryref">
+    <element name="glossaryref">
+      <a:documentation>Represents the usage of a term from a glossary.</a:documentation>
+      <ref name="glossaryref_attributes"/>
+      <ref name="glossaryref_model"/>
+    </element>
+  </define>
+  <define name="glossaryref_attributes">
+    <a:documentation>Attributes for \elementref{glossaryref}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Refable.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>should be used to identifier used for the glossaryref.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The kind of \elementref{glossary} this mark belongs to.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="title">
+        <a:documentation>gives a expanded form of the glossaryref,</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="show">
+        <a:documentation>a pattern encoding how the text content should be filled in during
+postprocessing, if it is empty.
+It consists of the words
+  \texttt{type} (standing for the object type, eg. Ch.),
+  \texttt{refnum} and \texttt{title}
+mixed with arbitrary characters. The 
+It can also be \texttt{fulltitle}, which indicates the title 
+with prefix and type if section numbering is enabled.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="glossaryref_model">
+    <a:documentation>Content model for \elementref{glossaryref}.</a:documentation>
+    <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
   <define name="acronym">
     <element name="acronym">
-      <a:documentation>Represents an acronym.</a:documentation>
+      <a:documentation>Represents an acronym (OBSOLETE; see \elementref{glossaryref}).</a:documentation>
       <ref name="acronym_attributes"/>
       <ref name="acronym_model"/>
     </element>

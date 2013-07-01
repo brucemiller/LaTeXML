@@ -117,7 +117,7 @@ glossarymark_model = glossaryphrase, glossarydefinition?
 #----------------------------------------------------------------------
 
 glossaryphrase =
-## A phrase within an \elementref{glossarymark}
+## A phrase being clarified within an \elementref{glossarymark} or \elementref{glossaryentry}
 element glossaryphrase { glossaryphrase_attributes, glossaryphrase_model }
 
 ## Attributes for \elementref{glossaryphrase}.
@@ -132,8 +132,22 @@ glossaryphrase_model = Inline.model
 
 #----------------------------------------------------------------------
 
+glossaryexpansion =
+## The expansion of the \elementref{glossaryphrase} within an
+## \elementref{glossarymark} or \elementref{glossaryentry},
+## particularly when used for acronyms.
+element glossaryexpansion { glossaryexpansion_attributes, glossaryexpansion_model }
+
+## Attributes for \elementref{glossaryexpansion}.
+glossaryexpansion_attributes =  Common.attributes
+
+## Content model for \elementref{glossaryexpansion}.
+glossaryexpansion_model = Inline.model
+
+#----------------------------------------------------------------------
+
 glossarydefinition =
-## A definition within an \elementref{glossarymark}
+## A definition within an \elementref{glossarymark} or \elementref{glossaryentry}
 element glossarydefinition { glossarydefinition_attributes, glossarydefinition_model }
 
 ## Attributes for \elementref{glossarydefinition}.
