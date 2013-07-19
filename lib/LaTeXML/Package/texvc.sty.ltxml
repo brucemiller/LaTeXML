@@ -96,6 +96,8 @@ DefMathI('\sampi',    undef,  "\x{03E1}");	 # GREEK SMALL LETTER SAMPI
 #======================================================================
 # Spanish sine
 DefMathI('\sen',    undef,"sen", role=>'TRIGFUNCTION',  meaning=>'sine');
-
+#======================================================================
+# Random
+Let(T_CS('\exist'),T_CS('\exists'));
 #======================================================================
 1;
