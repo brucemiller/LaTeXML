@@ -163,18 +163,30 @@ The model is basically a copy of HTML4's table.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <!--
-        This would have been clearer, but messes up conversion to dtd
-         attribute align { "left" | "right" | "center" | "justify" | text }?,
-      -->
       <attribute name="align">
-        <a:documentation> specifies the alignment of the content.</a:documentation>
+        <a:documentation> specifies the horizontal alignment of the content.</a:documentation>
+        <choice>
+          <value>left</value>
+          <value>right</value>
+          <value>center</value>
+          <value>justify</value>
+        </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="width">
         <a:documentation>specifies the desired width for the column.</a:documentation>
         <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="vattach">
+        <a:documentation>how the cell contents aligns with the row's baseline.</a:documentation>
+        <choice>
+          <value>top</value>
+          <value>middle</value>
+          <value>bottom</value>
+        </choice>
       </attribute>
     </optional>
     <optional>

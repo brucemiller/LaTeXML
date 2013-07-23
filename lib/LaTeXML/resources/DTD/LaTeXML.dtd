@@ -2356,8 +2356,9 @@
   xml:id ID #IMPLIED
   colspan CDATA #IMPLIED
   rowspan CDATA #IMPLIED
-  align CDATA #IMPLIED
+  align (left|right|center|justify) #IMPLIED
   width CDATA #IMPLIED
+  vattach (top|middle|bottom) #IMPLIED
   border CDATA #IMPLIED
   thead CDATA #IMPLIED>
 

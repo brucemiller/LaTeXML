@@ -114,13 +114,14 @@ td_attributes =
   ## indicates how many rows this cell spans or covers.
   attribute rowspan { xsd:nonNegativeInteger }?,
 
-# This would have been clearer, but messes up conversion to dtd
-#  attribute align { "left" | "right" | "center" | "justify" | text }?,
-  ##  specifies the alignment of the content.
-  attribute align { text }?,
+  ##  specifies the horizontal alignment of the content.
+  attribute align { "left" | "right" | "center" | "justify" }?,
 
   ## specifies the desired width for the column.
   attribute width { Length.type }?,
+
+  ## how the cell contents aligns with the row's baseline.
+  attribute vattach { "top" | "middle" | "bottom" }?,
 
   ## records a sequence of t or tt, r or rr, b or bb and l or ll
   ## for borders or doubled borders on any side of the cell.
