@@ -1851,7 +1851,10 @@ DefColumnType('c',sub {
 DefColumnType('r',sub {
   $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hfil'))); return; });
 
-DefConstructor('\pseudo@hbox HBoxContents',
+# This collects paragraph text, like \hbox, but for use within alignment cells;
+# no ltx:text wrapper is needed, since it is within a cell.
+# and it handles $ and & appropriately
+DefConstructor('\tabularcell@hbox HBoxContents',
 	       "#1",
  	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
@@ -1863,7 +1866,7 @@ DefConstructor('\pseudo@hbox HBoxContents',
  });
 
 DefColumnType('p{Dimension}',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\pseudo@hbox'),T_BEGIN),#Tokens(T_BEGIN),
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\tabularcell@hbox'),T_BEGIN),
 				      after=>Tokens(T_END),
 				      align=>'justify', width=>$_[1]); return; });
 DefColumnType('*{Number}{}', sub {
