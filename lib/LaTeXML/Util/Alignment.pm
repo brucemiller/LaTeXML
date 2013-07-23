@@ -251,7 +251,8 @@ sub beAbsorbed {
       $border =~ s/(.) \1/$1$1/g;
       my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       $$cell{cell} = &{$$self{openColumn}}($document,
-					    align=>$$cell{align}, width=>$$cell{width},
+                                           align=>$$cell{align}, width=>$$cell{width},
+                                           vattach=>$$cell{vattach},
 					    (($$cell{span}||1) != 1 ? (colspan=>$$cell{span}) : ()),
 					    (($$cell{rowspan}||1) != 1 ? (rowspan=>$$cell{rowspan}) : ()),
 					    ($border ? (border=>$border):()),
