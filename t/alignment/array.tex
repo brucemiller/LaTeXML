@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{array}
+\newcolumntype{C}{>{$}c<{$}}
+\newcolumntype{L}{>{$}l<{$}}
+\newcolumntype{R}{>{$}r<{$}}
+
+\begin{document}
+
+\section{New Column types}
+\begin{tabular}{|p{1in}|m{1in}|b{1in}|}\hline
+Lorem ipsum dolor sit amet, consectetur adipisicing elit &
+Lorem ipsum dolor sit amet, consectetur adipisicing elit &
+Lorem ipsum dolor sit amet, consectetur adipisicing elit \\\hline
+Lorem ipsum dolor sit amet, consectetur adipisicing elit &
+Lorem ipsum dolor sit amet, consectetur adipisicing elit &
+Lorem ipsum dolor sit amet, consectetur adipisicing elit \\
+\hline
+\end{tabular}
+
+\begin{tabular}{|>{[}l<{]}|>{[}c<{]}|>{[}r<{]}|}
+left & center & right\\
+\end{tabular}
+
+
+\section{Math columns}
+\begin{tabular}{cC}
+word & a+b \\
+word & a+b \\
+\end{tabular}
+
+\begin{equation}
+z=
+\begin{array}{Cc}
+word & a+b \\
+word & a+b \\
+\end{array}
+\end{equation}
+\section{Special variations of hline}
+Tables
+\begin{tabular}[t]{l}
+with no\\ hline \\ commands \\ used
+\end{tabular} versus
+
+tables
+\begin{tabular}[t]{|l|}
+\hline
+with\\ hline \\ commands \\ 
+\hline
+\end{tabular} used.
+
+
+tables
+\begin{tabular}[t]{|l|}
+\firsthline
+with\\ hline \\ commands \\ 
+\lasthline
+\end{tabular} used.
+
+
+
+\end{document}
