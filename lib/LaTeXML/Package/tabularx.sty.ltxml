@@ -17,7 +17,7 @@ use LaTeXML::Util::Alignment;
 RequirePackage('array');
 
 DefMacro('\tabularx[]{Dimension}{}',
-	 '\@alignment@bindings{#3}[text]\@@tabularx[#1]{#2}{#3}\@start@alignment');
+	 '\@tabular@bindings{#3}[text]\@@tabularx[#1]{#2}{#3}\@start@alignment');
 DefMacro('\endtabularx',
 	 '\@finish@alignment\@end@tabularx');
 DefPrimitive('\@end@tabularx',sub{ $_[0]->egroup; });
@@ -33,7 +33,7 @@ DefConstructor('\@@tabularx[]{Dimension} Undigested DigestedBody',
 
 # Like p, but w/o explicit width...
 DefColumnType('X',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\hbox'),T_BEGIN),
+  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\tabularcell@hbox'),T_BEGIN),
 				      after=>Tokens(T_END),
 				      align=>'justify'); return; });
 
