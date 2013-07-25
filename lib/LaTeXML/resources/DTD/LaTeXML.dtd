@@ -584,13 +584,14 @@
 
 <!ELEMENT ltx:quote (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                      |ltx:block|ltx:listingblock|ltx:itemize
-                     |ltx:enumerate|ltx:description|ltx:inline-itemize
-                     |ltx:inline-enumerate|ltx:inline-description
-                     |ltx:inline-block|ltx:verbatim|ltx:break
-                     |ltx:graphics|ltx:rawhtml|ltx:rawliteral
-                     |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                     |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
-                     |ltx:resource|ltx:navigation)*>
+                     |ltx:enumerate|ltx:description|ltx:pagination
+                     |ltx:inline-itemize|ltx:inline-enumerate
+                     |ltx:inline-description|ltx:inline-block
+                     |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
+                     |ltx:rawliteral|ltx:inline-para|ltx:tabular
+                     |ltx:picture|ltx:note|ltx:indexmark
+                     |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
+                     |ltx:navigation)*>
 <!ATTLIST ltx:quote
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -656,7 +657,7 @@
   framecolor CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
-<!ELEMENT ltx:listingblock ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote|ltx:block|ltx:listingblock|ltx:itemize|ltx:enumerate|ltx:description|ltx:inline-itemize|ltx:inline-enumerate|ltx:inline-description|ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml|ltx:rawliteral|ltx:inline-para|ltx:tabular|ltx:picture|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*>
+<!ELEMENT ltx:listingblock ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote|ltx:block|ltx:listingblock|ltx:itemize|ltx:enumerate|ltx:description|ltx:pagination|ltx:inline-itemize|ltx:inline-enumerate|ltx:inline-description|ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml|ltx:rawliteral|ltx:inline-para|ltx:tabular|ltx:picture|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*>
 <!ATTLIST ltx:listingblock
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -912,16 +913,38 @@
   open CDATA #IMPLIED
   close CDATA #IMPLIED>
 
+<!ELEMENT ltx:pagination EMPTY>
+<!ATTLIST ltx:pagination
+  xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
+  class NMTOKENS #IMPLIED
+  cssstyle CDATA #IMPLIED
+  vocab CDATA #IMPLIED
+  prefix CDATA #IMPLIED
+  about CDATA #IMPLIED
+  aboutlabelref CDATA #IMPLIED
+  aboutidref CDATA #IMPLIED
+  resource CDATA #IMPLIED
+  resourcelabelref CDATA #IMPLIED
+  resourceidref CDATA #IMPLIED
+  property CDATA #IMPLIED
+  rel CDATA #IMPLIED
+  rev CDATA #IMPLIED
+  typeof CDATA #IMPLIED
+  datatype CDATA #IMPLIED
+  content CDATA #IMPLIED
+  role CDATA #IMPLIED>
+
 <!ELEMENT ltx:inline-block (ltx:p|ltx:equation|ltx:equationgroup
                             |ltx:quote|ltx:block|ltx:listingblock
                             |ltx:itemize|ltx:enumerate|ltx:description
-                            |ltx:inline-itemize|ltx:inline-enumerate
-                            |ltx:inline-description|ltx:inline-block
-                            |ltx:verbatim|ltx:break|ltx:graphics
-                            |ltx:rawhtml|ltx:rawliteral|ltx:inline-para
-                            |ltx:tabular|ltx:picture|ltx:note
-                            |ltx:indexmark|ltx:glossarymark|ltx:rdf
-                            |ltx:ERROR|ltx:resource|ltx:navigation)*>
+                            |ltx:pagination|ltx:inline-itemize
+                            |ltx:inline-enumerate|ltx:inline-description
+                            |ltx:inline-block|ltx:verbatim|ltx:break
+                            |ltx:graphics|ltx:rawhtml|ltx:rawliteral
+                            |ltx:inline-para|ltx:tabular|ltx:picture
+                            |ltx:note|ltx:indexmark|ltx:glossarymark
+                            |ltx:rdf|ltx:ERROR|ltx:resource
+                            |ltx:navigation)*>
 <!ATTLIST ltx:inline-block
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1054,7 +1077,7 @@
                     |ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:p
                     |ltx:equation|ltx:equationgroup|ltx:quote|ltx:block
                     |ltx:listingblock|ltx:itemize|ltx:enumerate
-                    |ltx:description|ltx:inline-itemize
+                    |ltx:description|ltx:pagination|ltx:inline-itemize
                     |ltx:inline-enumerate|ltx:inline-description
                     |ltx:inline-block|ltx:verbatim|ltx:break
                     |ltx:graphics|ltx:rawhtml|ltx:rawliteral
@@ -1293,7 +1316,7 @@
                    |ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:p
                    |ltx:equation|ltx:equationgroup|ltx:quote|ltx:block
                    |ltx:listingblock|ltx:itemize|ltx:enumerate
-                   |ltx:description|ltx:inline-itemize
+                   |ltx:description|ltx:pagination|ltx:inline-itemize
                    |ltx:inline-enumerate|ltx:inline-description
                    |ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics
                    |ltx:rawhtml|ltx:rawliteral|ltx:inline-para
@@ -1384,13 +1407,13 @@
 
 <!ELEMENT ltx:para (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                     |ltx:block|ltx:listingblock|ltx:itemize
-                    |ltx:enumerate|ltx:description|ltx:inline-itemize
-                    |ltx:inline-enumerate|ltx:inline-description
-                    |ltx:inline-block|ltx:verbatim|ltx:break
-                    |ltx:graphics|ltx:rawhtml|ltx:rawliteral
-                    |ltx:inline-para|ltx:tabular|ltx:picture|ltx:note
-                    |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
-                    |ltx:resource|ltx:navigation)*>
+                    |ltx:enumerate|ltx:description|ltx:pagination
+                    |ltx:inline-itemize|ltx:inline-enumerate
+                    |ltx:inline-description|ltx:inline-block
+                    |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
+                    |ltx:rawliteral|ltx:inline-para|ltx:tabular
+                    |ltx:picture|ltx:note|ltx:indexmark|ltx:glossarymark
+                    |ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:para
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1513,7 +1536,7 @@
 <!ELEMENT ltx:figure ((ltx:figure
                        |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                          |ltx:block|ltx:listingblock|ltx:itemize
-                         |ltx:enumerate|ltx:description
+                         |ltx:enumerate|ltx:description|ltx:pagination
                          |ltx:inline-itemize|ltx:inline-enumerate
                          |ltx:inline-description|ltx:inline-block
                          |ltx:verbatim|ltx:break|ltx:graphics
@@ -1563,7 +1586,7 @@
 <!ELEMENT ltx:table ((ltx:table
                       |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
-                        |ltx:enumerate|ltx:description
+                        |ltx:enumerate|ltx:description|ltx:pagination
                         |ltx:inline-itemize|ltx:inline-enumerate
                         |ltx:inline-description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
@@ -1613,7 +1636,7 @@
 <!ELEMENT ltx:float ((ltx:float
                       |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
-                        |ltx:enumerate|ltx:description
+                        |ltx:enumerate|ltx:description|ltx:pagination
                         |ltx:inline-itemize|ltx:inline-enumerate
                         |ltx:inline-description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
@@ -1662,7 +1685,7 @@
 
 <!ELEMENT ltx:listing ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
-                        |ltx:enumerate|ltx:description
+                        |ltx:enumerate|ltx:description|ltx:pagination
                         |ltx:inline-itemize|ltx:inline-enumerate
                         |ltx:inline-description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
@@ -2327,7 +2350,7 @@
                   |ltx:ref|ltx:cite|ltx:bibref|ltx:Math|ltx:p
                   |ltx:equation|ltx:equationgroup|ltx:quote|ltx:block
                   |ltx:listingblock|ltx:itemize|ltx:enumerate
-                  |ltx:description|ltx:inline-itemize
+                  |ltx:description|ltx:pagination|ltx:inline-itemize
                   |ltx:inline-enumerate|ltx:inline-description
                   |ltx:inline-block|ltx:verbatim|ltx:break|ltx:graphics
                   |ltx:rawhtml|ltx:rawliteral|ltx:inline-para
@@ -3996,7 +4019,7 @@
 
 <!ELEMENT ltx:abstract (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
-                        |ltx:enumerate|ltx:description
+                        |ltx:enumerate|ltx:description|ltx:pagination
                         |ltx:inline-itemize|ltx:inline-enumerate
                         |ltx:inline-description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
@@ -4125,7 +4148,7 @@
                          |ltx:creator|ltx:p|ltx:equation
                          |ltx:equationgroup|ltx:quote|ltx:block
                          |ltx:listingblock|ltx:itemize|ltx:enumerate
-                         |ltx:description)*>
+                         |ltx:description|ltx:pagination)*>
 <!ATTLIST ltx:titlepage
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -4279,7 +4302,7 @@
                         |ltx:anchor|ltx:ref|ltx:cite|ltx:bibref|ltx:Math
                         |ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
-                        |ltx:enumerate|ltx:description
+                        |ltx:enumerate|ltx:description|ltx:pagination
                         |ltx:inline-itemize|ltx:inline-enumerate
                         |ltx:inline-description|ltx:inline-block
                         |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml

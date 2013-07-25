@@ -15,7 +15,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 ## The block module defines the following `physical' block elements.
 Block.class |= 
    p | equation | equationgroup | quote | block | listingblock
- | itemize | enumerate | description
+ | itemize | enumerate | description | pagination
 
 ## These are inline forms of logical lists
 ## (they are included in Misc since that has been the general strategy)
@@ -313,5 +313,20 @@ tag_attributes =
 
 ## Content model for \elementref{tag}.
 tag_model = Inline.model
+
+#======================================================================
+
+pagination =
+## A page break or related pagination information.
+element pagination {  pagination_attributes, pagination_model }
+
+## Attributes for \elementref{pagination}.
+pagination_attributes =
+  Common.attributes,
+  ## what kind of pagination
+  attribute role { text }?
+
+## Content model for \elementref{pagination}.
+pagination_model = empty
 
 #======================================================================

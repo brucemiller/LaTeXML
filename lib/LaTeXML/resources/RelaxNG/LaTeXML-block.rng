@@ -25,6 +25,7 @@
       <ref name="itemize"/>
       <ref name="enumerate"/>
       <ref name="description"/>
+      <ref name="pagination"/>
     </choice>
   </define>
   <define name="Misc.class" combine="choice">
@@ -453,6 +454,27 @@ or \elementref{inline-description}).</a:documentation>
   <define name="tag_model">
     <a:documentation>Content model for \elementref{tag}.</a:documentation>
     <ref name="Inline.model"/>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="pagination">
+    <element name="pagination">
+      <a:documentation>A page break or related pagination information.</a:documentation>
+      <ref name="pagination_attributes"/>
+      <ref name="pagination_model"/>
+    </element>
+  </define>
+  <define name="pagination_attributes">
+    <a:documentation>Attributes for \elementref{pagination}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>what kind of pagination</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="pagination_model">
+    <a:documentation>Content model for \elementref{pagination}.</a:documentation>
+    <empty/>
   </define>
 </grammar>
 <!-- ====================================================================== -->
