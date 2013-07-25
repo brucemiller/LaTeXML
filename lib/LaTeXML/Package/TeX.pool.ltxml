@@ -1780,7 +1780,11 @@ DefPrimitive('\mark{}',undef);
 # \insert<8bit><filler>{<vertical mode material>}
 DefPrimitive('\insert Number',undef); # Just let the insertion get processed(?)
 # \vadjust<filler>{<vertical mode material>}
-DefPrimitive('\vadjust {}',undef); # Ignorable?
+DefMacroI('\LTX@vadjust@afterpar',undef,'');
+DefMacroI('\LTX@clear@vadjust@afterpar',undef,'\def\LTX@vadjust@afterpar{}');
+DefPrimitive('\vadjust {}', sub {
+  AddToMacro('\LTX@vadjust@afterpar',$_[1]->unlist);
+  return; });
 
 #======================================================================
 # Remaining Vertical Mode primitives in Ch.24, pp.281--283
@@ -2459,9 +2463,11 @@ DefPrimitiveI('\noindent', undef,undef);
 # Remember; \par closes, not opens, paragraphs!
 # Here, we want to close both an open p and para (if either are open).
 DefConstructorI('\par', undef,
-	       sub { $_[0]->maybeCloseElement('ltx:p');
-		     $_[0]->maybeCloseElement('ltx:para'); },
-	       alias=>"\\par\n");
+		sub { $_[0]->maybeCloseElement('ltx:p');
+		      $_[0]->maybeCloseElement('ltx:para'); },
+		afterDigest=>sub { Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
+						 T_CS('\LTX@clear@vadjust@afterpar'))); },
+		alias=>"\\par\n");
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
 DefConstructorI('\inner@par', undef,
@@ -3872,9 +3878,11 @@ DefMacro("~",'\nobreakspace{}');
 DefMacroI('\slash',undef,'/');
 DefPrimitiveI('\filbreak',undef,undef);
 DefMacroI('\goodbreak',undef,'\par');
-DefMacroI('\eject',undef,'\par');
+DefMacroI('\eject',undef,'\par\LTX@newpage');
 Let(T_CS('\newpage'),'\eject');
-DefMacroI('\supereject',undef,'\par');
+DefConstructorI('\LTX@newpage',undef,"<ltx:pagination role='newpage'/>");
+
+DefMacroI('\supereject',undef,'\par\LTX@newpage');
 DefPrimitiveI('\removelastskip',undef,undef);
 DefMacroI('\smallbreak',undef,'\par');
 DefMacroI('\medbreak',  undef,'\par');
