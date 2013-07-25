@@ -2993,13 +2993,13 @@ DefMacro('\showhyphens{}','#1'); # ?
 #======================================================================
 # C.12.2 Page Breaking
 #======================================================================
-DefPrimitive('\pagebreak[]',undef);
+DefMacro('\pagebreak[]','\vadjust{\clearpage}');
 DefPrimitive('\nopagebreak[]',undef);
 DefPrimitiveI('\columnbreak',undef, undef); # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}',undef);
 
-DefPrimitiveI('\clearpage',      undef, undef); # Could possibly mean something?
-DefPrimitiveI('\cleardoublepage',undef, undef);
+DefMacroI('\clearpage',      undef, '\LTX@newpage');
+DefMacroI('\cleardoublepage',undef, '\LTX@newpage');
 DefPrimitiveI('\samepage',       undef, undef);
 
 #**********************************************************************
