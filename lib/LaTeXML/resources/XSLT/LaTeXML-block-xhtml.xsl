@@ -911,4 +911,14 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     </xsl:choose>
   </xsl:template>
 
+  <xsl:template match="ltx:pagination">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
+  </xsl:template>
+
 </xsl:stylesheet>
