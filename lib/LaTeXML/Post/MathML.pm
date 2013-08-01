@@ -304,13 +304,15 @@ sub pmml_dowrap {
   my $r = $node->getAttribute('rspace');
   my $cl= $node->getAttribute('class');
   # Handle generic things: open/close delimiters, punctuation
+  $result = pmml_parenthesize($result,$o,$c) if $o || $c;
+  $result = ['m:menclose',{notation=>$e},$result] if $e;
+  $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
+  # Add spacing last; outside parens & enclosing (?)
   if( !(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo')) # mo will already have gotten spacing!
       && ($r || $l)){
     $result = ['m:mpadded', { ($l ? (lspace=>$l):()),
 			      ($r ? (width=>($r=~/^-/ ? $r : '+'.$r)):())}, $result]; }
-  $result = pmml_parenthesize($result,$o,$c) if $o || $c;
-  $result = ['m:menclose',{notation=>$e},$result] if $e;
-  $result = ['m:mrow',{},$result,pmml_mo($p)] if $p;
+
   if($cl && ((ref $result) eq 'ARRAY')){ # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
