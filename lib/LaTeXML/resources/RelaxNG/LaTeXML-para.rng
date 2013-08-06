@@ -23,8 +23,10 @@
       <ref name="table"/>
       <ref name="float"/>
       <ref name="listing"/>
+      <ref name="pagination"/>
     </choice>
   </define>
+  <!-- allow pagination here, to avoid unnecessary extra para! -->
   <define name="Misc.class" combine="choice">
     <a:documentation>Additionally, it defines these miscellaneous elements that can appear
 in both inline and block contexts.</a:documentation>

@@ -751,9 +751,9 @@
 
 <!ELEMENT ltx:item (ltx:tag?,
                     (ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table
-                     |ltx:float|ltx:listing|ltx:TOC|ltx:note
-                     |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
-                     |ltx:resource|ltx:navigation)*)>
+                     |ltx:float|ltx:listing|ltx:pagination|ltx:TOC
+                     |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
+                     |ltx:ERROR|ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:item
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1436,10 +1436,10 @@
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:inline-para (ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                           |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                           |ltx:note|ltx:indexmark|ltx:glossarymark
-                           |ltx:rdf|ltx:ERROR|ltx:resource
-                           |ltx:navigation)*>
+                           |ltx:table|ltx:float|ltx:listing
+                           |ltx:pagination|ltx:TOC|ltx:note
+                           |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                           |ltx:ERROR|ltx:resource|ltx:navigation)*>
 <!ATTLIST ltx:inline-para
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1475,9 +1475,10 @@
 
 <!ELEMENT ltx:theorem (ltx:title?,
                        (ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                        |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
-                        |ltx:ERROR|ltx:resource|ltx:navigation)*)>
+                        |ltx:table|ltx:float|ltx:listing|ltx:pagination
+                        |ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark
+                        |ltx:rdf|ltx:ERROR|ltx:resource
+                        |ltx:navigation)*)>
 <!ATTLIST ltx:theorem
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1505,9 +1506,9 @@
 
 <!ELEMENT ltx:proof (ltx:title?,
                      (ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                      |ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note
-                      |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
-                      |ltx:resource|ltx:navigation)*)>
+                      |ltx:table|ltx:float|ltx:listing|ltx:pagination
+                      |ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark
+                      |ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)>
 <!ATTLIST ltx:proof
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3182,10 +3183,10 @@
                          |ltx:resource|ltx:navigation|ltx:titlepage)*,
                         (((((((((ltx:para|ltx:theorem|ltx:proof
                                  |ltx:figure|ltx:table|ltx:float
-                                 |ltx:listing|ltx:TOC|ltx:note
-                                 |ltx:indexmark|ltx:glossarymark|ltx:rdf
-                                 |ltx:ERROR|ltx:resource
-                                 |ltx:navigation)*
+                                 |ltx:listing|ltx:pagination|ltx:TOC
+                                 |ltx:note|ltx:indexmark
+                                 |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                                 |ltx:resource|ltx:navigation)*
                                 |ltx:paragraph)
                                |ltx:subsubsection)
                               |ltx:subsection)
@@ -3197,9 +3198,10 @@
                         (ltx:bibliography|ltx:appendix|ltx:index
                          |ltx:glossary|ltx:acknowledgements|ltx:para
                          |ltx:theorem|ltx:proof|ltx:figure|ltx:table
-                         |ltx:float|ltx:listing|ltx:TOC|ltx:note
-                         |ltx:indexmark|ltx:glossarymark|ltx:rdf
-                         |ltx:ERROR|ltx:resource|ltx:navigation)*)>
+                         |ltx:float|ltx:listing|ltx:pagination|ltx:TOC
+                         |ltx:note|ltx:indexmark|ltx:glossarymark
+                         |ltx:rdf|ltx:ERROR|ltx:resource
+                         |ltx:navigation)*)>
 <!ATTLIST ltx:document
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3228,9 +3230,9 @@
 
 <!ELEMENT ltx:part ((ltx:title|ltx:toctitle|ltx:creator)*,
                     ((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                        |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                        |ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf
-                        |ltx:ERROR|ltx:resource|ltx:navigation)*
+                        |ltx:table|ltx:float|ltx:listing|ltx:pagination
+                        |ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark
+                        |ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*
                        |ltx:chapter)
                       |ltx:slide)
                      |ltx:sidebar)*)>
@@ -3262,10 +3264,10 @@
 
 <!ELEMENT ltx:chapter ((ltx:title|ltx:toctitle|ltx:creator)*,
                        ((((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                               |ltx:note|ltx:indexmark|ltx:glossarymark
-                               |ltx:rdf|ltx:ERROR|ltx:resource
-                               |ltx:navigation)*
+                               |ltx:table|ltx:float|ltx:listing
+                               |ltx:pagination|ltx:TOC|ltx:note
+                               |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                               |ltx:ERROR|ltx:resource|ltx:navigation)*
                               |ltx:subparagraph)
                              |ltx:paragraph)
                             |ltx:subsubsection)
@@ -3301,10 +3303,10 @@
 
 <!ELEMENT ltx:section ((ltx:title|ltx:toctitle|ltx:creator)*,
                        (((((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                              |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                              |ltx:note|ltx:indexmark|ltx:glossarymark
-                              |ltx:rdf|ltx:ERROR|ltx:resource
-                              |ltx:navigation)*
+                              |ltx:table|ltx:float|ltx:listing
+                              |ltx:pagination|ltx:TOC|ltx:note
+                              |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                              |ltx:ERROR|ltx:resource|ltx:navigation)*
                              |ltx:subparagraph)
                             |ltx:paragraph)
                            |ltx:subsubsection)
@@ -3340,9 +3342,10 @@
 <!ELEMENT ltx:subsection ((ltx:title|ltx:toctitle|ltx:creator)*,
                           ((((((ltx:para|ltx:theorem|ltx:proof
                                 |ltx:figure|ltx:table|ltx:float
-                                |ltx:listing|ltx:TOC|ltx:note
-                                |ltx:indexmark|ltx:glossarymark|ltx:rdf
-                                |ltx:ERROR|ltx:resource|ltx:navigation)*
+                                |ltx:listing|ltx:pagination|ltx:TOC
+                                |ltx:note|ltx:indexmark|ltx:glossarymark
+                                |ltx:rdf|ltx:ERROR|ltx:resource
+                                |ltx:navigation)*
                                |ltx:subparagraph)
                               |ltx:paragraph)
                              |ltx:subsubsection)
@@ -3377,10 +3380,10 @@
 <!ELEMENT ltx:subsubsection ((ltx:title|ltx:toctitle|ltx:creator)*,
                              (((((ltx:para|ltx:theorem|ltx:proof
                                   |ltx:figure|ltx:table|ltx:float
-                                  |ltx:listing|ltx:TOC|ltx:note
-                                  |ltx:indexmark|ltx:glossarymark
-                                  |ltx:rdf|ltx:ERROR|ltx:resource
-                                  |ltx:navigation)*
+                                  |ltx:listing|ltx:pagination|ltx:TOC
+                                  |ltx:note|ltx:indexmark
+                                  |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                                  |ltx:resource|ltx:navigation)*
                                  |ltx:subparagraph)
                                 |ltx:paragraph)
                                |ltx:slide)
@@ -3413,10 +3416,10 @@
 
 <!ELEMENT ltx:paragraph ((ltx:title|ltx:toctitle|ltx:creator)*,
                          ((((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                             |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                             |ltx:note|ltx:indexmark|ltx:glossarymark
-                             |ltx:rdf|ltx:ERROR|ltx:resource
-                             |ltx:navigation)*
+                             |ltx:table|ltx:float|ltx:listing
+                             |ltx:pagination|ltx:TOC|ltx:note
+                             |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                             |ltx:ERROR|ltx:resource|ltx:navigation)*
                             |ltx:subparagraph)
                            |ltx:slide)
                           |ltx:sidebar)*)>
@@ -3448,10 +3451,10 @@
 
 <!ELEMENT ltx:subparagraph ((ltx:title|ltx:toctitle|ltx:creator)*,
                             (((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                               |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                               |ltx:note|ltx:indexmark|ltx:glossarymark
-                               |ltx:rdf|ltx:ERROR|ltx:resource
-                               |ltx:navigation)*
+                               |ltx:table|ltx:float|ltx:listing
+                               |ltx:pagination|ltx:TOC|ltx:note
+                               |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                               |ltx:ERROR|ltx:resource|ltx:navigation)*
                               |ltx:slide)
                              |ltx:sidebar)*)>
 <!ATTLIST ltx:subparagraph
@@ -3481,7 +3484,7 @@
   rdf-prefixes CDATA #IMPLIED>
 
 <!ELEMENT ltx:slide ((ltx:title|ltx:toctitle|ltx:creator)*,
-                     ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
+                     ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:pagination|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
 <!ATTLIST ltx:slide
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3512,7 +3515,7 @@
                         |ltx:acknowledgements|ltx:keywords
                         |ltx:classification|ltx:title|ltx:toctitle
                         |ltx:creator)*,
-                       ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
+                       ((ltx:para|ltx:theorem|ltx:proof|ltx:figure|ltx:table|ltx:float|ltx:listing|ltx:pagination|ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*)*)>
 <!ATTLIST ltx:sidebar
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -3542,9 +3545,10 @@
 <!ELEMENT ltx:appendix ((ltx:title|ltx:toctitle|ltx:creator)*,
                         ((((((((ltx:para|ltx:theorem|ltx:proof
                                 |ltx:figure|ltx:table|ltx:float
-                                |ltx:listing|ltx:TOC|ltx:note
-                                |ltx:indexmark|ltx:glossarymark|ltx:rdf
-                                |ltx:ERROR|ltx:resource|ltx:navigation)*
+                                |ltx:listing|ltx:pagination|ltx:TOC
+                                |ltx:note|ltx:indexmark|ltx:glossarymark
+                                |ltx:rdf|ltx:ERROR|ltx:resource
+                                |ltx:navigation)*
                                |ltx:subparagraph)
                               |ltx:paragraph)
                              |ltx:subsubsection)
@@ -3583,10 +3587,10 @@
                              |ltx:classification)*,
                             (ltx:title|ltx:toctitle|ltx:creator)*,
                             ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                              |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                              |ltx:note|ltx:indexmark|ltx:glossarymark
-                              |ltx:rdf|ltx:ERROR|ltx:resource
-                              |ltx:navigation)*
+                              |ltx:table|ltx:float|ltx:listing
+                              |ltx:pagination|ltx:TOC|ltx:note
+                              |ltx:indexmark|ltx:glossarymark|ltx:rdf
+                              |ltx:ERROR|ltx:resource|ltx:navigation)*
                              |ltx:biblist)*)>
 <!ATTLIST ltx:bibliography
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3620,9 +3624,9 @@
 
 <!ELEMENT ltx:index ((ltx:title|ltx:toctitle|ltx:creator)*,
                      ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                       |ltx:table|ltx:float|ltx:listing|ltx:TOC|ltx:note
-                       |ltx:indexmark|ltx:glossarymark|ltx:rdf|ltx:ERROR
-                       |ltx:resource|ltx:navigation)*
+                       |ltx:table|ltx:float|ltx:listing|ltx:pagination
+                       |ltx:TOC|ltx:note|ltx:indexmark|ltx:glossarymark
+                       |ltx:rdf|ltx:ERROR|ltx:resource|ltx:navigation)*
                       |ltx:indexlist)*)>
 <!ATTLIST ltx:index
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
@@ -3726,10 +3730,10 @@
 
 <!ELEMENT ltx:glossary ((ltx:title|ltx:toctitle|ltx:creator)*,
                         ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
-                          |ltx:table|ltx:float|ltx:listing|ltx:TOC
-                          |ltx:note|ltx:indexmark|ltx:glossarymark
-                          |ltx:rdf|ltx:ERROR|ltx:resource
-                          |ltx:navigation)*
+                          |ltx:table|ltx:float|ltx:listing
+                          |ltx:pagination|ltx:TOC|ltx:note|ltx:indexmark
+                          |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                          |ltx:resource|ltx:navigation)*
                          |ltx:glossarylist)*)>
 <!ATTLIST ltx:glossary
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
