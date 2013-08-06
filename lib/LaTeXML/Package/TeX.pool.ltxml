@@ -3124,23 +3124,20 @@ sub scriptHandler {
     push(@LaTeXML::LIST,@putback);
 
     AssignValue(mathstyle=>$scriptstylemap{$style});
-    # Now, get following boxes
-#    my @stuff = $stomach->invokeToken($gullet->readXToken);
+    # Now, get following boxes (may have to process several tokens!)
     my @stuff=();
     while(my $tok = $gullet->readXToken(0)){
       @stuff = $stomach->invokeToken($tok);
-###      while(@stuff && isRelax($stuff[0])){ shift(@stuff); }
       last if @stuff; }
     Fatal('expected','{',$stomach,"Missing { in sub/super-script argument",$gullet->showUnexpected)
       unless @stuff;
-    my $script = shift(@stuff);	# ONLY this box is the script!
+    my $script = shift(@stuff);	# ONLY the first box is the script!
     my $level = $stomach->getBoxingLevel;
     unshift(@stuff,
 	    LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)),[$script],
 				  locator=>$gullet->getLocator,
 				  font=>$script->getFont,isMath=>1,
 				  level=>$level))
-#      if ToString($script) ne '{}';    # ONLY If Script is not empty!!!
       unless IsEmpty($script);
     AssignValue(mathstyle=>$style); # revert
     @stuff; }
@@ -3153,26 +3150,48 @@ sub scriptHandler {
 DefPrimitiveI(T_SUPER, undef,sub{ scriptHandler($_[0],'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB, undef,sub{ scriptHandler($_[0],'SUBSCRIPT'); });
 
+# The `argument' to a sub or superscript will typically be processed as a box,
+# and either has braces, or is something that results in a single box.
+# When we revert these, we DON'T want to wrap extra braces around, because they'll accumulate;
+# at the least they're ugly; in some applications they affect "round trip" processing.
+# OTOH, direct use of \@@POSTSUPERSCRIPT, etal, MAY need to have extra braces around them.
+# So, when reverting, we're going to a bit of extra trouble to make sure we have ONE set
+# of braces, but no extras!!  [Worry about lists of lists...]
+sub revertScript {
+  my($script)=@_;
+  my @tokens = $script->revert;
+  my @t = @tokens;
+  my $l;
+  if(Equals($t[0],T_BEGIN)){
+    $l++; shift(@t); }
+  while(@t && $l){
+    my $t = shift(@t);
+    if(Equals($t,T_BEGIN)){ $l++; }
+    elsif(Equals($t,T_END)){ $l--; }}
+  (@tokens && !@t ? @tokens : (T_BEGIN,@tokens,T_END)); }
+
+# NOTE: The When reverting these, the 
 DefConstructor('\@@POSTSUPERSCRIPT{}',
 	       "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       alias=>'^');
+               reversion=>sub{ (T_SUPER,revertScript($_[1])); });
+
 DefConstructor('\@@POSTSUBSCRIPT{}',
 	       "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       alias=>'_');
+               reversion=>sub{ (T_SUB,revertScript($_[1])); });
 DefConstructor('\@@FLOATINGSUPERSCRIPT{}',
 	       "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       alias=>'{}^');
+               reversion=>sub{ (T_BEGIN,T_END,T_SUPER,revertScript($_[1])); });
 DefConstructor('\@@FLOATINGSUBSCRIPT{}',
 	       "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#level'>"
 	       . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
 	       ."</ltx:XMApp>",
-	       alias=>'{}_');
+               reversion=>sub{ (T_BEGIN,T_END,T_SUB,revertScript($_[1])); });
 
 ## NOTE: Strictly speaking, these two should examine the scriptpos
 # attribute of the base (it may have \limits,\nolimits)
@@ -3187,7 +3206,7 @@ DefConstructor('\@SUPERSCRIPT{}{}',
 	       reversion=> sub {
 		 my($whatsit,$base,$sup)=@_;
 		 ($sup && $sup->unlist 
-		  ? (T_BEGIN,Revert($base),T_END,T_SUPER,T_BEGIN,Revert($sup),T_END)
+		  ? (T_BEGIN,Revert($base),T_END,T_SUPER,revertScript($sup))
 		  : Revert($base)); },
 	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 DefConstructor('\@SUBSCRIPT{}{}', 
@@ -3200,7 +3219,7 @@ DefConstructor('\@SUBSCRIPT{}{}',
 	       reversion=>sub {
 		 my($whatsit,$base,$sub)=@_;
 		 ($sub && $sub->unlist 
-		  ? (T_BEGIN,Revert($base),T_END,T_SUB,T_BEGIN,Revert($sub),T_END)
+		  ? (T_BEGIN,Revert($base),T_END,T_SUB,revertScript($sub))
 		  : Revert($base)); },
 	       properties=>{scriptpos=>sub{ "post".$_[0]->getBoxingLevel; }});
 
