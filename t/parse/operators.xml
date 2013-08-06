@@ -9,7 +9,7 @@
     <title><tag close=" ">1</tag>Integration and Summation</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" xml:id="S1.Ex1.m1" tex="\sum_{{a=0}}^{\infty}f_{a}(c^{a})" text="((sum _ (a = 0)) ^ infinity)@((f _ a)@(c ^ a))">
+        <Math mode="display" xml:id="S1.Ex1.m1" tex="\sum_{a=0}^{\infty}f_{a}(c^{a})" text="((sum _ (a = 0)) ^ infinity)@((f _ a)@(c ^ a))">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -42,7 +42,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" xml:id="S1.Ex2.m1" tex="\sum_{{a=0}}^{\infty}\sum_{{b=-a}}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
+        <Math mode="display" xml:id="S1.Ex2.m1" tex="\sum_{a=0}^{\infty}\sum_{b=-a}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -108,7 +108,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex3">
-        <Math mode="display" xml:id="S1.Ex3.m1" tex="\sum_{{a=0}}^{\infty}\sum_{{b=-a}}^{a}\lim_{{c\rightarrow 0}}f_{a}(c^{a})g_{b}%&#10;(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((limit _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
+        <Math mode="display" xml:id="S1.Ex3.m1" tex="\sum_{a=0}^{\infty}\sum_{b=-a}^{a}\lim_{c\rightarrow 0}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((limit _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
