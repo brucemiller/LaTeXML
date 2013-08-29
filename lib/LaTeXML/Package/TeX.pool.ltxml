@@ -990,6 +990,7 @@ DefPrimitive('\advance Variable SkipKeyword:by',sub {
   my($stomach,$var)=@_;
   return () unless $var;
   my($defn,@args)=@$var;
+  local $LaTeXML::CURRENT_TOKEN = $defn;
   $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)),@args); });
 
 DefPrimitive('\multiply Variable SkipKeyword:by Number',sub {
@@ -3632,7 +3633,8 @@ RawTeX('
   \mathchardef\@m=1000
   \mathchardef\@M=10000
   \mathchardef\@MM=20000
-  \countdef\m@ne=-1
+  \countdef\m@ne=21\relax
+  \m@ne=-1
 ');
 
 #======================================================================
