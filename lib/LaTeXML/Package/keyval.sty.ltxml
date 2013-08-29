@@ -19,7 +19,19 @@ use LaTeXML::Util::KeyVal;
 
 # This doesn't really do anything useful; what keyval wants is to evaluate $code!!!
 DefPrimitive('\define@key{}{}[]{}',sub {
-  my($keyset,$key,$default,$code)=@_;
-  DefKeyVal(ToString($keyset),ToString($key),'',ToString($default)); });
+  my($stomach,$keyset,$key,$default,$code)=@_;
+  $keyset = ToString($keyset);
+  $key    = ToString($key);
+  DefKeyVal($keyset,$key,'',ToString($default));
+  # And define macros, just incase..
+  DefMacroI('\KV@'.$keyset.'@'.$key,
+	    LaTeXML::Parameters->new(LaTeXML::Parameters::newParameter('Plain','{}')),
+	    $code,
+	    scope=>'global');
+  DefMacroI('\KV@'.$keyset.'@'.$key.'@default',undef,
+	    Tokens(T_CS('\KV@'.$keyset.'@'.$key),T_BEGIN,$default->unlist,T_END),
+	    scope=>'global')
+    if $default;
+  return; });
 #======================================================================
 1;
