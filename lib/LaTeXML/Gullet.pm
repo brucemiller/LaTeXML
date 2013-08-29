@@ -228,7 +228,14 @@ sub readXToken {
     elsif(defined($defn=$STATE->lookupDefinition($token)) && $defn->isExpandable
 	  && ($toplevel || !$defn->isProtected)){ # is this the right logic here? don't expand unless digesting?
       local $LaTeXML::CURRENT_TOKEN = $token;
-      $self->unread($defn->invoke($self)); } # Expand and push back the result (if any) and continue
+      my $t;
+      my @expansion = map {(($t=ref $_) eq 'LaTeXML::Token' ? $_
+			    : ($t eq 'LaTeXML::Tokens' ? @$_
+				: (Error('misdefined',$token,undef,
+					 "Expected a Token in expansion of ".ToString($token),
+					 "got ".Stringify($_)), ())))}
+		    $defn->invoke($self);
+      $self->unread(@expansion); } # Expand and push back the result (if any) and continue
     else {
       return $token; }		# just return it
   }}
@@ -466,7 +473,8 @@ sub readNumber {
   elsif(defined (   $n = $self->readInternalDimension)){ Number($s * $n->valueOf); }
   elsif(defined (   $n = $self->readInternalGlue     )){ Number($s * $n->valueOf); }
   else {
-    Warn('expected','<number>',$self,"Missing number, treated as zero");
+    Warn('expected','<number>',$self,"Missing number, treated as zero",
+	"while processing ".ToString($LaTeXML::CURRENT_TOKEN));
     Number(0); }}
 
 # <normal integer> = <internal integer> | <integer constant>
@@ -533,7 +541,8 @@ sub readDimension {
       $unit = 65536; }
     Dimension($s * $d * $unit); }
   else {
-    Warn('expected','<number>',$self,"Missing number, treated as zero.");
+    Warn('expected','<number>',$self,"Missing number, treated as zero.",
+	 "while processing ".ToString($LaTeXML::CURRENT_TOKEN));
     Dimension(0); }}
 
 # <unit of measure> = <optional spaces><internal unit>
@@ -601,7 +610,8 @@ sub readGlue {
   else{
     my $d = $self->readDimension;
     if(!$d){
-      Warn('expected','<number>',$self,"Missing number, treated as zero.");
+      Warn('expected','<number>',$self,"Missing number, treated as zero.",
+	"while processing ".ToString($LaTeXML::CURRENT_TOKEN));
       return Glue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
@@ -650,7 +660,8 @@ sub readMuGlue {
   else{
     my $d = $self->readMuDimension;
     if(!$d){
-      Warn('expected','<number>',$self,"Missing number, treated as zero.");
+      Warn('expected','<number>',$self,"Missing number, treated as zero.",
+	   "while processing ".ToString($LaTeXML::CURRENT_TOKEN));
       return MuGlue(0); }
     $d = $d->negate if $s < 0;
     my($r1,$f1,$r2,$f2);
