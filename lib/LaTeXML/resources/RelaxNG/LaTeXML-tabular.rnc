@@ -115,7 +115,8 @@ td_attributes =
   attribute rowspan { xsd:nonNegativeInteger }?,
 
   ##  specifies the horizontal alignment of the content.
-  attribute align { "left" | "right" | "center" | "justify" }?,
+  ## The allowed values are open-ended to accomodate \texttt{char:.} type alignments.
+  attribute align { "left" | "right" | "center" | "justify" | text }?,
 
   ## specifies the desired width for the column.
   attribute width { Length.type }?,

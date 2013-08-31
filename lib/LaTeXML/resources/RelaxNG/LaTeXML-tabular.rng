@@ -164,12 +164,14 @@ The model is basically a copy of HTML4's table.</a:documentation>
     </optional>
     <optional>
       <attribute name="align">
-        <a:documentation> specifies the horizontal alignment of the content.</a:documentation>
+        <a:documentation> specifies the horizontal alignment of the content.
+The allowed values are open-ended to accomodate \texttt{char:.} type alignments.</a:documentation>
         <choice>
           <value>left</value>
           <value>right</value>
           <value>center</value>
           <value>justify</value>
+          <text/>
         </choice>
       </attribute>
     </optional>
