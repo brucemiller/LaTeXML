@@ -1,4 +1,4 @@
-package TestLaTeXML;
+package LaTeXML::Util::Test;
 use strict;
 use warnings;
 

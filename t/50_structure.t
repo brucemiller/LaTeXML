@@ -2,9 +2,6 @@
 #**********************************************************************
 # Test cases for LaTeXML
 #**********************************************************************
-#use Test::More;
-use FindBin;
-use lib "$FindBin::Bin/lib";
-use TestLaTeXML;
+use LaTeXML::Util::Test;
 
 latexml_tests("t/structure");

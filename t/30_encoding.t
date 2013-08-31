@@ -2,10 +2,7 @@
 #**********************************************************************
 # Test cases for LaTeXML
 #**********************************************************************
-#use Test::More;
-use FindBin;
-use lib "$FindBin::Bin/lib";
-use TestLaTeXML;
+use LaTeXML::Util::Test;
 
 # These all depend on various input or font encoding files being present
 # (they're read in by the LaTeXML binding)
