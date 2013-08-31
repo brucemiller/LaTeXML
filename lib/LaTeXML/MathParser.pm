@@ -17,6 +17,7 @@ package LaTeXML::MathParser;
 use strict;
 use Parse::RecDescent;
 use LaTeXML::Global;
+use LaTeXML::Font;
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
