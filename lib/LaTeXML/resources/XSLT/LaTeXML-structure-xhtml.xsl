@@ -145,6 +145,7 @@
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:if test="@name">
 	<xsl:element name="h6" namespace="{$html_ns}">	
+	  <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
 	  <xsl:apply-templates select="@name"/>
 	</xsl:element>
       </xsl:if>
@@ -163,6 +164,7 @@
       <xsl:if test="@name">
 	<xsl:text>&#x0A;</xsl:text>
 	<xsl:element name="h6" namespace="{$html_ns}">	
+	  <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
 	  <xsl:apply-templates select="@name"/>
 	  <xsl:text>.</xsl:text>
 	</xsl:element>
@@ -182,6 +184,7 @@
       <xsl:if test="@name">
 	<xsl:text>&#x0A;</xsl:text>
 	<xsl:element name="h6" namespace="{$html_ns}">
+	  <xsl:attribute name="class">ltx_title ltx_title_keywords</xsl:attribute>
 	  <xsl:apply-templates select="@name"/>
 	  <xsl:text>:</xsl:text>
 	</xsl:element>
@@ -199,6 +202,7 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:element name="h6" namespace="{$html_ns}"> <!--should be italic ? -->
+	<xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
 	<xsl:choose>
 	  <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
 	  <xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
