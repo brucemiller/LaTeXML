@@ -74,8 +74,9 @@ foreach my $dir (@testsets){
       my $dstxml = "$htmldest/$dir/$type/$test.$ext";
       push(@links,"<td class='$type'><a href='$dir/$type/$test.$ext'>$type</a></td>");
       if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
-	print STDERR "Converting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")."\n"
-	  if $verbosity >= 0;
+	print STDERR "\nConverting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")
+	  #if $verbosity >= 0
+;
 	system("$bindir/latexmlpost",
 	       ($usesdtd ? ("--novalidate"):()),
 	       "--dest=$dstxml",
