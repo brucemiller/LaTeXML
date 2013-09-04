@@ -99,11 +99,13 @@
   </xsl:param>
   <!-- Equation numbers on left, or default right? -->
   <xsl:param name="eqnopos"
-	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'leqno')],'left','right')"/>
+	     select="f:if(//*[contains(@class,'ltx_leqno')],'left','right')"/>
+  <!-- select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'leqno')],'left','right')" -->
 
   <!-- Displayed equations centered, or indented on left? -->
   <xsl:param name="eqpos"
-	     select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'fleqn')],'left','center')"/>
+	     select="f:if(//*[contains(@class,'ltx_fleqn')],'left','center')"/>
+  <!--select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'fleqn')],'left','center')"/>-->
 
 
   <!--
