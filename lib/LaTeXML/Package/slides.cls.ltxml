@@ -19,9 +19,11 @@ LoadPool('LaTeX');
 # Option handling
 foreach my $option (qw(letterpaper legalpaper executivepaper a4paper a5paper b5paper
 		       landscape clock
-		       final draft titlepage notitlepage onecolumn twocolumn
-		       leqno fleqn)){
+		       final draft titlepage notitlepage onecolumn twocolumn)){
   DeclareOption($option,undef); }
+DeclareOption('leqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); });
+DeclareOption('fleqn',sub { AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1); });
+
 ProcessOptions();
 
 #**********************************************************************
