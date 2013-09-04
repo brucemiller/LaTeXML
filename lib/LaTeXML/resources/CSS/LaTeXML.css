@@ -41,11 +41,19 @@
 /*======================================================================
   Document Structure; Titles & Frontmatter */
 
-/* Hack to simulate run-in! */
-h6 { display:inline; font-size:100%; font-family:sans-serif; }
-h6:after { content:" "; }
-h6 + div.ltx_para,
-h6 + p { display:inline; }
+/* undo bold here to remove the browser's native h# styling,
+   at let all other styles override it (with more specific rules)*/
+.ltx_title { font-size:100%; font-weight:normal; }
+
+/* Hack to simulate run-in! put class="ltx_runin" on a title or tag
+   for it to run-into the following text. */
+.ltx_runin { display:inline; }
+.ltx_runin:after { content:" "; }
+.ltx_runin + .ltx_para,
+.ltx_runin + .ltx_para p,
+.ltx_runin + p { display:inline; }
+
+.ltx_outdent { margin-left: -2em; }
 
 /* .ltx_chapter_title, etc should be in ltx-article.css etc.
  */
@@ -108,7 +116,7 @@ dl.ltx_description dd { margin-left:5em; }
 dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 .ltx_theorem  {margin:1em 0em 1em 0em; }
-
+.ltx_title_theorem { font-size:100%; }
 .ltx_bibliography dt { margin-right:0.5em; float:left; }
 .ltx_bibliography dd { margin-left:3em; }
 /*.ltx_biblist { list-style-type:none; }*/

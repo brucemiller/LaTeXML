@@ -6,6 +6,9 @@
 .ltx_date        { text-align:center; font-size: 120%; }
 .ltx_subtitle    { text-align:center; font-size: 120%; padding-left:0.2em; margin-left:-0.5em; }
 
+.ltx_title_abstract      { text-align:center; font-size: 100%; font-weight:bold; }
+.ltx_abstract { margin-left:4em; margin-right:4em; }
+
 .ltx_title_part          { font-size:250%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
 .ltx_title_chapter       { font-size:250%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
 .ltx_title_chapter .ltx_tag { display:block; font-size:90%; margin-bottom:0.5em; }
@@ -32,3 +35,12 @@
 div > .ltx_para > .ltx_p,
 section > .ltx_para > .ltx_p { text-indent:2em; }
 .ltx_title +.ltx_para > .ltx_p {text-indent:0em; }
+.ltx_title_abstract + .ltx_p {text-indent:2em; }
+
+.ltx_itemize { margin-left:1em; }
+
+.ltx_theorem { margin-top:0.5em; margin-bottom:0.5em; }
+.ltx_theorem .ltx_title { margin-bottom:0.1em; font-weight:normal; }
+.ltx_theorem .ltx_title + .ltx_para,
+.ltx_theorem .ltx_title + .ltx_para .ltx_p,
+.ltx_theorem .ltx_title + .ltx_p  { margin-top:0em; }

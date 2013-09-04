@@ -7,17 +7,16 @@
     text-align:center; }
 .ltx_role_author .ltx_personname {
     text-transform:uppercase; }
-.ltx_abstract { margin-left:4em; margin-right:4em; }
-.ltx_abstract h6 { font-family:serif; font-weight:normal; font-variant:small-caps;}
-.ltx_keywords h6,
-.ltx_classification h6 { font-weight:normal; font-style:italic; }
-.ltx_role_dedicatory { font-style:italic; text-align:center; margin:1em;}
+.ltx_abstract { margin-bottom:1em; }
+.ltx_title_abstract { font-family:serif; font-weight:normal; font-variant:small-caps;}
+.ltx_title_keywords,
+.ltx_title_classification { display:inline; font-size:100%; font-weight:normal; font-style:italic; }
+.ltx_role_dedicatory { font-size:100%; font-style:italic; text-align:center; margin:1em;}
 
 .ltx_figure .ltx_tag,
 .ltx_table .ltx_tag  {
     font-family:serif; font-variant:small-caps;}
 
-/* subsection, subsubsection and paragraph titles are runin */
 .ltx_title_subsection,
 .ltx_title_subsubsection {
     font-family:serif; font-weight:bold;}
@@ -25,6 +24,9 @@
 .ltx_title_subsubsection:after,
 .ltx_title_paragraph:after  { content:"."; }
 
+/* abstract, subsection, subsubsection and paragraph titles are runin */
+.ltx_abstract .ltx_title,
+.ltx_abstract .ltx_title + .ltx_p { display:inline; }
 .ltx_subsection .ltx_title,
 .ltx_subsection .ltx_title + .ltx_para,
 .ltx_subsection .ltx_title + .ltx_para > .ltx_p { display:inline; }
@@ -35,3 +37,9 @@
 .ltx_paragraph .ltx_title + .ltx_para,
 .ltx_paragraph .ltx_title + .ltx_para > .ltx_p { display:inline; }
 
+.ltx_title +.ltx_para > .ltx_p {text-indent:2em; }
+
+.ltx_itemize,
+.ltx_enumerate,
+.ltx_description
+    { margin-left:2em; }
