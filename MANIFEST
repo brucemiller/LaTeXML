@@ -75,6 +75,7 @@ lib/LaTeXML/Common/XML.pm
 #==================================================
 # Utility Modules
 #==================================================
+lib/LaTeXML/Util/Test.pm
 lib/LaTeXML/Util/Alignment.pm
 lib/LaTeXML/Util/Config.pm
 lib/LaTeXML/Util/Geometry.pm
@@ -755,7 +756,6 @@ t/grouping/scopemacro.pdf
 t/grouping/scopemacro.latexml
 t/grouping/scopemacro.tex
 t/grouping/scopemacro.xml
-t/lib/TestLaTeXML.pm
 t/maketests
 t/math/array.pdf
 t/math/array.tex
@@ -887,6 +887,9 @@ t/theorem/amstheorem.xml
 t/theorem/latextheorem.pdf
 t/theorem/latextheorem.tex
 t/theorem/latextheorem.xml
+t/theorem/theorem.pdf
+t/theorem/theorem.tex
+t/theorem/theorem.xml
 t/tokenize/alltt.pdf
 t/tokenize/alltt.tex
 t/tokenize/alltt.xml
