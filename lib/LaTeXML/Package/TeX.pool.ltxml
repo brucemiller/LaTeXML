@@ -4049,6 +4049,13 @@ sub insertFrontMatter {
 
 Tag('ltx:document', 'afterOpen:late'=>\&insertFrontMatter);
 
+# Maintain a list of classes that apply to the document root.
+# This might involve global style options, like leqno.
+Tag('ltx:document', 'afterOpen:late'=>sub {
+  my($document,$root)=@_;
+  if(my $classes = join(' ',LookupMappingKeys('DOCUMENT_CLASSES'))){
+    addClass($root,$classes); }});
+
 DefConstructor('\beginsection Until:\par',
 	       "<ltx:section><ltx:title>#1</ltx:title>");
 
