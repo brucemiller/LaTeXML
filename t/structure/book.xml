@@ -110,27 +110,61 @@
         <caption><tag close=": ">Table 1.1</tag>A Table</caption>
       </table>
       <para xml:id="Ch1.S1.p3">
-        <enumerate xml:id="Ch1.I1">
-          <item frefnum="1." refnum="1" xml:id="Ch1.I1.i1">
-            <tag>1.</tag>
+        <itemize xml:id="Ch1.I1">
+          <item xml:id="Ch1.I1.i1">
+            <tag>•</tag>
             <para xml:id="Ch1.I1.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch1.I1.i2">
-            <tag>2.</tag>
+          <item xml:id="Ch1.I1.i2">
+            <tag>•</tag>
             <para xml:id="Ch1.I1.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch1.I1.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch1.I1.I1.i1">
-                  <tag>(a)</tag>
+              <itemize xml:id="Ch1.I1.I1">
+                <item xml:id="Ch1.I1.I1.i1">
+                  <tag>
+                    <text font="bold">–</text>
+                  </tag>
                   <para xml:id="Ch1.I1.I1.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch1.I1.I1.i2">
-                  <tag>(b)</tag>
+                <item xml:id="Ch1.I1.I1.i2">
+                  <tag>
+                    <text font="bold">–</text>
+                  </tag>
                   <para xml:id="Ch1.I1.I1.i2.p1">
+                    <p>two</p>
+                  </para>
+                </item>
+              </itemize>
+            </para>
+          </item>
+        </itemize>
+      </para>
+      <para xml:id="Ch1.S1.p4">
+        <enumerate xml:id="Ch1.I2">
+          <item frefnum="1." refnum="1" xml:id="Ch1.I2.i1">
+            <tag>1.</tag>
+            <para xml:id="Ch1.I2.i1.p1">
+              <p>one</p>
+            </para>
+          </item>
+          <item frefnum="2." refnum="2" xml:id="Ch1.I2.i2">
+            <tag>2.</tag>
+            <para xml:id="Ch1.I2.i2.p1">
+              <p>two</p>
+              <enumerate xml:id="Ch1.I2.I1">
+                <item frefnum="(a)" refnum="a" xml:id="Ch1.I2.I1.i1">
+                  <tag>(a)</tag>
+                  <para xml:id="Ch1.I2.I1.i1.p1">
+                    <p>one</p>
+                  </para>
+                </item>
+                <item frefnum="(b)" refnum="b" xml:id="Ch1.I2.I1.i2">
+                  <tag>(b)</tag>
+                  <para xml:id="Ch1.I2.I1.i2.p1">
                     <p>two</p>
                   </para>
                 </item>
@@ -139,23 +173,23 @@
           </item>
         </enumerate>
       </para>
-      <para xml:id="Ch1.S1.p4">
-        <description xml:id="Ch1.I2">
-          <item refnum="A thing" xml:id="Ch1.I2.ix1">
+      <para xml:id="Ch1.S1.p5">
+        <description xml:id="Ch1.I3">
+          <item refnum="A thing" xml:id="Ch1.I3.ix1">
             <tag>A thing</tag>
-            <para xml:id="Ch1.I2.ix1.p1">
+            <para xml:id="Ch1.I3.ix1.p1">
               <p>with some descriptive text.</p>
             </para>
           </item>
-          <item refnum="Another" xml:id="Ch1.I2.ix2">
+          <item refnum="Another" xml:id="Ch1.I3.ix2">
             <tag>Another</tag>
-            <para xml:id="Ch1.I2.ix2.p1">
+            <para xml:id="Ch1.I3.ix2.p1">
               <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             </para>
           </item>
-          <item refnum="And yet" xml:id="Ch1.I2.ix3">
+          <item refnum="And yet" xml:id="Ch1.I3.ix3">
             <tag>And yet</tag>
-            <para xml:id="Ch1.I2.ix3.p1">
+            <para xml:id="Ch1.I3.ix3.p1">
               <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             </para>
@@ -295,27 +329,27 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <caption><tag close=": ">Table 1.2</tag>Another Table</caption>
       </table>
       <para xml:id="Ch1.S2.p4">
-        <enumerate xml:id="Ch1.I3">
-          <item frefnum="1." refnum="1" xml:id="Ch1.I3.i1">
+        <enumerate xml:id="Ch1.I4">
+          <item frefnum="1." refnum="1" xml:id="Ch1.I4.i1">
             <tag>1.</tag>
-            <para xml:id="Ch1.I3.i1.p1">
+            <para xml:id="Ch1.I4.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch1.I3.i2">
+          <item frefnum="2." refnum="2" xml:id="Ch1.I4.i2">
             <tag>2.</tag>
-            <para xml:id="Ch1.I3.i2.p1">
+            <para xml:id="Ch1.I4.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch1.I3.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch1.I3.I1.i1">
+              <enumerate xml:id="Ch1.I4.I1">
+                <item frefnum="(a)" refnum="a" xml:id="Ch1.I4.I1.i1">
                   <tag>(a)</tag>
-                  <para xml:id="Ch1.I3.I1.i1.p1">
+                  <para xml:id="Ch1.I4.I1.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch1.I3.I1.i2">
+                <item frefnum="(b)" refnum="b" xml:id="Ch1.I4.I1.i2">
                   <tag>(b)</tag>
-                  <para xml:id="Ch1.I3.I1.i2.p1">
+                  <para xml:id="Ch1.I4.I1.i2.p1">
                     <p>two</p>
                   </para>
                 </item>

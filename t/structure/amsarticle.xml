@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="amsart"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
-<document xmlns="http://dlmf.nist.gov/LaTeXML">
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_leqno">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <resource src="ltx-amsart.css" type="text/css"/>
@@ -121,27 +121,61 @@
       <caption><tag close=". ">Table 1</tag>A Table</caption>
     </table>
     <para xml:id="S1.p4">
-      <enumerate xml:id="I1">
-        <item frefnum="(1)" refnum="1" xml:id="I1.i1">
-          <tag>(1)</tag>
+      <itemize xml:id="I1">
+        <item xml:id="I1.i1">
+          <tag>•</tag>
           <para xml:id="I1.i1.p1">
             <p>one</p>
           </para>
         </item>
-        <item frefnum="(2)" refnum="2" xml:id="I1.i2">
-          <tag>(2)</tag>
+        <item xml:id="I1.i2">
+          <tag>•</tag>
           <para xml:id="I1.i2.p1">
             <p>two</p>
-            <enumerate xml:id="I1.I1">
-              <item frefnum="(a)" refnum="a" xml:id="I1.I1.i1">
-                <tag>(a)</tag>
+            <itemize xml:id="I1.I1">
+              <item xml:id="I1.I1.i1">
+                <tag>
+                  <text font="bold">–</text>
+                </tag>
                 <para xml:id="I1.I1.i1.p1">
                   <p>one</p>
                 </para>
               </item>
-              <item frefnum="(b)" refnum="b" xml:id="I1.I1.i2">
-                <tag>(b)</tag>
+              <item xml:id="I1.I1.i2">
+                <tag>
+                  <text font="bold">–</text>
+                </tag>
                 <para xml:id="I1.I1.i2.p1">
+                  <p>two</p>
+                </para>
+              </item>
+            </itemize>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S1.p5">
+      <enumerate xml:id="I2">
+        <item frefnum="(1)" refnum="1" xml:id="I2.i1">
+          <tag>(1)</tag>
+          <para xml:id="I2.i1.p1">
+            <p>one</p>
+          </para>
+        </item>
+        <item frefnum="(2)" refnum="2" xml:id="I2.i2">
+          <tag>(2)</tag>
+          <para xml:id="I2.i2.p1">
+            <p>two</p>
+            <enumerate xml:id="I2.I1">
+              <item frefnum="(a)" refnum="a" xml:id="I2.I1.i1">
+                <tag>(a)</tag>
+                <para xml:id="I2.I1.i1.p1">
+                  <p>one</p>
+                </para>
+              </item>
+              <item frefnum="(b)" refnum="b" xml:id="I2.I1.i2">
+                <tag>(b)</tag>
+                <para xml:id="I2.I1.i2.p1">
                   <p>two</p>
                 </para>
               </item>
@@ -150,29 +184,29 @@
         </item>
       </enumerate>
     </para>
-    <para xml:id="S1.p5">
-      <description xml:id="I2">
-        <item frefnum="A thing: " refnum="A thing" xml:id="I2.ix1">
+    <para xml:id="S1.p6">
+      <description xml:id="I3">
+        <item frefnum="A thing: " refnum="A thing" xml:id="I3.ix1">
           <tag>
             <text font="bold">A thing: </text>
           </tag>
-          <para xml:id="I2.ix1.p1">
+          <para xml:id="I3.ix1.p1">
             <p>with some descriptive text.</p>
           </para>
         </item>
-        <item frefnum="Another: " refnum="Another" xml:id="I2.ix2">
+        <item frefnum="Another: " refnum="Another" xml:id="I3.ix2">
           <tag>
             <text font="bold">Another: </text>
           </tag>
-          <para xml:id="I2.ix2.p1">
+          <para xml:id="I3.ix2.p1">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
         </item>
-        <item frefnum="And yet: " refnum="And yet" xml:id="I2.ix3">
+        <item frefnum="And yet: " refnum="And yet" xml:id="I3.ix3">
           <tag>
             <text font="bold">And yet: </text>
           </tag>
-          <para xml:id="I2.ix3.p1">
+          <para xml:id="I3.ix3.p1">
             <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
@@ -277,7 +311,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equation>
     </para>
     <para xml:id="S2.p7">
-      <equationgroup class="ltx_eqn_gather" xml:id="S2.EGx1">
+      <equationgroup class="ltx_eqn_gather" xml:id="S3.EGx1">
         <equation frefnum="(2.4)" refnum="2.4" xml:id="S2.E4">
           <Math mode="inline" xml:id="S2.E4.m1" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
             <XMath>
@@ -351,7 +385,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equationgroup>
     </para>
     <para xml:id="S2.p8">
-      <equationgroup class="ltx_eqn_align" xml:id="S2.EGx2">
+      <equationgroup class="ltx_eqn_align" xml:id="S3.EGx2">
         <equation frefnum="(2.6)" refnum="2.6" xml:id="S2.E6">
           <MathFork>
             <Math xml:id="S2.E6.m3" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
@@ -517,7 +551,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equationgroup>
     </para>
     <para xml:id="S2.p9">
-      <equationgroup class="ltx_eqn_align" xml:id="S2.EGx3">
+      <equationgroup class="ltx_eqn_align" xml:id="S3.EGx3">
         <equation frefnum="(2.8)" refnum="2.8" xml:id="S2.E8">
           <MathFork>
             <Math xml:id="S2.E8.m5" tex="\displaystyle a_{11}=b_{11}" text="a _ 11 = b _ 11">
@@ -743,16 +777,261 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equation>
     </para>
     <theorem class="ltx_theorem_corollary" frefnum="Corollary 1" refnum="1" xml:id="Thmcorollary1">
-      <title font="italic"><tag>Corollary 1</tag>.</title>
+      <title class="ltx_runin" font="italic"><tag>Corollary 1</tag>.</title>
       <para xml:id="Thmcorollary1.p1">
         <p>Whatever!</p>
       </para>
     </theorem>
     <theorem class="ltx_theorem_corollary" frefnum="Corollary" xml:id="Thmcorollary.x1">
-      <title font="italic"><tag>Corollary</tag>.</title>
+      <title class="ltx_runin" font="italic"><tag>Corollary</tag>.</title>
       <para xml:id="Thmcorollary.x1.p1">
         <p>And whatever.</p>
       </para>
     </theorem>
+    <para xml:id="S2.p11">
+      <equationgroup class="ltx_eqn_align" xml:id="S3.EGx4">
+        <equation xml:id="S2.Ex2">
+          <MathFork>
+            <Math xml:id="S2.Ex2.m5" tex="\displaystyle a_{11}=b_{11}" text="a _ 11 = b _ 11">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="11" role="NUMBER">11</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="11" role="NUMBER">11</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right">
+                <Math mode="inline" xml:id="S2.Ex2.m1" tex="\displaystyle a_{11}" text="a _ 11">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="11" role="NUMBER">11</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+              <td align="left">
+                <Math mode="inline" xml:id="S2.Ex2.m2" tex="\displaystyle=b_{11}" text="absent = b _ 11">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="11" role="NUMBER">11</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+            </MathBranch>
+          </MathFork>
+          <MathFork>
+            <Math xml:id="S2.Ex2.m6" tex="\displaystyle a_{12}=b_{12}" text="a _ 12 = b _ 12">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="12" role="NUMBER">12</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right">
+                <Math mode="inline" xml:id="S2.Ex2.m3" tex="\displaystyle a_{12}" text="a _ 12">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="12" role="NUMBER">12</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+              <td align="left">
+                <Math mode="inline" xml:id="S2.Ex2.m4" tex="\displaystyle=b_{12}" text="absent = b _ 12">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="12" role="NUMBER">12</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.Ex3">
+          <MathFork>
+            <Math xml:id="S2.Ex3.m5" tex="\displaystyle a_{21}=b_{21}" text="a _ 21 = b _ 21">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="21" role="NUMBER">21</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="21" role="NUMBER">21</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right">
+                <Math mode="inline" xml:id="S2.Ex3.m1" tex="\displaystyle a_{21}" text="a _ 21">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="21" role="NUMBER">21</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+              <td align="left">
+                <Math mode="inline" xml:id="S2.Ex3.m2" tex="\displaystyle=b_{21}" text="absent = b _ 21">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                        <XMTok meaning="21" role="NUMBER">21</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+            </MathBranch>
+          </MathFork>
+          <MathFork>
+            <Math xml:id="S2.Ex3.m6" tex="\displaystyle a_{22}=b_{22}+c_{22}" text="a _ 22 = b _ 22 + c _ 22">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok meaning="22" role="NUMBER">22</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right">
+                <Math mode="inline" xml:id="S2.Ex3.m3" tex="\displaystyle a_{22}" text="a _ 22">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok meaning="22" role="NUMBER">22</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+              <td align="left">
+                <Math mode="inline" xml:id="S2.Ex3.m4" tex="\displaystyle=b_{22}+c_{22}" text="absent = b _ 22 + c _ 22">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                          <XMTok meaning="22" role="NUMBER">22</XMTok>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                          <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                          <XMTok meaning="22" role="NUMBER">22</XMTok>
+                        </XMApp>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math>
+              </td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <subsection refnum="2.1" xml:id="S2.SS1">
+      <title><tag close=". ">2.1</tag>A subsection</title>
+      <toctitle><tag close=" ">2.1</tag>A subsection</toctitle>
+      <para xml:id="S2.SS1.p1">
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.2" xml:id="S2.SS2">
+      <title><tag close=". ">2.2</tag>A subsubsection</title>
+      <toctitle><tag close=" ">2.2</tag>A subsubsection</toctitle>
+      <para xml:id="S2.SS2.p1">
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+      </para>
+      <paragraph xml:id="S2.SS2.SSS0.P1">
+        <title>A Paragraph</title>
+        <para xml:id="S2.SS2.SSS0.P1.p1">
+          <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        </para>
+      </paragraph>
+    </subsection>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title>
+      <tag close=". ">3</tag>
+      <text font="italic">Section with explicit font</text>
+    </title>
+    <toctitle>
+      <tag close=" ">3</tag>
+      <text font="italic">Section with explicit font</text>
+    </toctitle>
+    <para xml:id="S3.p1">
+      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    </para>
   </section>
 </document>
