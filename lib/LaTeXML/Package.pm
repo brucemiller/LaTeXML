@@ -48,7 +48,7 @@ our @EXPORT = (qw(&DefExpandable
 		  &DefLigature &DefMathLigature),
 
 	       # Mid-level support for writing definitions.
-	       qw(&Expand &Invocation &Digest &DigestIf
+	       qw(&Expand &Invocation &Digest &DigestIf &DigestLiteral
 		  &RawTeX &Let),
 
 	       # Font encoding
