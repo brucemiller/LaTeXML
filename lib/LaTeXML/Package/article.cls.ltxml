@@ -24,15 +24,14 @@ foreach my $option (qw(10pt 11pt 12pt
 		       oneside twoside
 		       openright openany
 		       onecolumn twocolumn 
-		       notitlepage titlepage
-		       leqno fleqn)){
+		       notitlepage titlepage)){
   DeclareOption($option,undef); }
 
 DeclareOption('openbib',sub {
   RequireResource(undef,type=>'text/css',content=>'.ltx_bibblock{display:block;}'); });
-# Actually, leqno and fleqn ought to be handled.
-# They probably need to be handled in XSLT, rather than css;
-# and they somewhat are....
+DeclareOption('leqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); });
+DeclareOption('fleqn',sub { AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1); });
+
 ProcessOptions();
 
 #**********************************************************************
