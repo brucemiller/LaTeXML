@@ -189,13 +189,16 @@ sub assignMapping {
   my($self,$map,$key,$value)=@_;
   my $vtable = $$self{table}{value};
   assign_internal($self,'value',$map,{},'global') unless $$vtable{$map}[0];
-  $$vtable{$map}[0]{$key}=$value; }
+  if(! defined $value){
+    delete $$vtable{$map}[0]{$key}; }
+  else {
+    $$vtable{$map}[0]{$key}=$value; }}
 
 sub lookupMappingKeys {
   my($self,$map)=@_;
   my $vtable = $$self{table}{value};
   my $mapping = $$vtable{$map}[0];
-  ($mapping ? %$mapping : ()); }
+  ($mapping ? sort keys %$mapping : ()); }
 
 sub lookupStackedValues { 
   my $stack = $_[0]->{table}{value}{$_[1]};
