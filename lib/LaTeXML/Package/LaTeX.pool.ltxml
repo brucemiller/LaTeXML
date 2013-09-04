@@ -1916,11 +1916,17 @@ AssignValue('thm@style'=>'plain');
 DefRegister('\thm@headfont'=>Tokens());
 DefRegister('\thm@bodyfont'=>Tokens());
 DefRegister('\thm@headpunct'=>Tokens());
+DefRegister('\thm@classes'=>Tokens());
+DefRegister('\thm@titleclasses'=>Tokens());
 
-DefPrimitive('\th@plain', sub {
   AssignValue('\thm@headfont' => T_CS('\bfseries'));
   AssignValue('\thm@bodyfont' => T_CS('\itshape'));
-  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+
+DefPrimitive('\th@plain', sub {
+#  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+#  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+#  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+  AssignValue('\thm@titleclasses' => T_OTHER('ltx_runin'));
   return; });
 
 DefMacroI('\@thmcountersep',undef,'.');
@@ -1933,7 +1939,6 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
   $reset  = $reset ? ToString($reset) : undef;
 
   my $counter = $otherthmset || $thmset;
-  my $swap = LookupValue('thm@swap') eq 'S';
   my $style   = LookupValue('thm@style');
 
   if(!$otherthmset){
@@ -1945,11 +1950,17 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 	      scope=>'global')
       if $reset; }
 
+  my $bodyfont=LookupValue('\thm@bodyfont'); # save current bodyfont
+  my $saveswap=LookupValue('thm@swap'); # save current bodyfont
+  DefPrimitiveI('\thm@'.$thmset.'@bodyfont',undef,sub {
+                  AssignValue('\thm@bodyfont'=>$bodyfont); } ,scope=>'global');
+  DefPrimitiveI('\thm@'.$thmset.'@swap',undef,sub {
+                  AssignValue('thm@swap'=>$saveswap); } ,scope=>'global');
   DefMacroI('\fnum@'.$counter,undef,''); # dummy up the defn
   # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
   DefEnvironment("{$thmset} OptionalUndigested",
 		 "<ltx:theorem xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' class='#class'>"
-		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+		 . "<ltx:title font='#titlefont' _force_font='1' class='#titleclass'>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
 		 beforeDigest=>sub {
@@ -1957,10 +1968,14 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		   if (!LookupDefinition($stylecmd)) {
 		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
 		     $stylecmd = T_CS('\th@plain'); }
-		   Digest(Tokens($stylecmd)); },
+		   Digest(Tokens(T_CS('\thm@'.$thmset.'@bodyfont'), # saved body font first
+                                 T_CS('\thm@'.$thmset.'@swap'), # saved body font first
+                                 $stylecmd,  # then whatever the style says
+)); },
 		 afterDigestBegin=>sub { Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
 		 properties => sub {
 		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
+                   my $swap = LookupValue('thm@swap') eq 'S';
 		   my $frefnum = Tokens(($swap
 					 ? ( ($flag ? ():(T_CS('\the'.$counter))),
 					     (!$flag && $type ? (T_SPACE):()),
@@ -1979,7 +1994,11 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
 		      frefnum=>Digest($frefnum),
 		      title=>$title,
 		      titlefont=>$title->getFont,
-		      class=>'ltx_theorem_'.CleanIndexKey($thmset)  ); },
+		      class=>join(' ',grep($_,
+                                           'ltx_theorem_'.CleanIndexKey($thmset),
+                                           ToString(DigestLiteral(Tokens(T_CS('\the'),T_CS('\thm@classes')))))),
+		      titleclass=>ToString(DigestLiteral(Tokens(T_CS('\the'),T_CS('\thm@titleclasses'))))
+                   );},
 		 scope => 'global');
 });
 
