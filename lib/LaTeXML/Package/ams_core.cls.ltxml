@@ -27,10 +27,15 @@ foreach my $option (qw(a4paper letterpaper landscape portrait
 		       titlepage notitlepage
 		       openright openany onecolumn twocolumn
 		       nomath noamsfonts psamsfonts
-		       leqno reqno centertags tbtags fleqn
+		       centertags tbtags
 		       8pt 9pt 10pt 11pt 12pt
 		       makeidx)){
   DeclareOption($option,undef); }
+AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); # Default is left!
+DeclareOption('leqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); });
+DeclareOption('reqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>undef); });
+DeclareOption('fleqn',sub { AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1); });
+
 ProcessOptions();
 
 # I think all options are (non)handled above, so don't need to pass any.
