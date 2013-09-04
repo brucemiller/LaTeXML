@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{theorem}
+\theoremstyle{break} \newtheorem{Cor}{Corollary}
+\theoremstyle{plain} \newtheorem{Exa}{Example}[section]
+{\theorembodyfont{\upshape} \newtheorem{Rem}{Remark}}
+
+\theoremstyle{marginbreak} \newtheorem{Lem}[Cor]{Lemma}
+\theoremstyle{change}
+\theorembodyfont{\itshape} \newtheorem{Def}[Cor]{Definition}
+\theoremheaderfont{\scshape}
+\begin{document}
+
+\begin{Cor}
+This is a sentence typeset in the theorem environment \texttt{Cor}.
+\end{Cor}
+
+\begin{Exa}
+This is a sentence typeset in the theorem environment \texttt{Exa}.
+\end{Exa}
+
+\begin{Rem}
+This is a sentence typeset in the theorem environment \texttt{Rem}.
+\end{Rem}
+
+\begin{Lem}[Ben User]
+This is a sentence typeset in the theorem environment \texttt{Lem}.
+\end{Lem}
+
+\begin{Def}[Very impressive Definition]
+This is a sentence typeset in the theorem environment \texttt{Def}.
+\end{Def}
+
+\end{document}
