@@ -389,6 +389,10 @@ sub pmml_internal {
     $result; }
   elsif($tag eq 'ltx:XMText'){
     pmml_row(map(pmml_text_aux($_), $node->childNodes)); }
+  elsif($tag eq 'ltx:ERROR'){
+    my $cl = $node->getAttribute('class');
+      ['m:merror',{class=>join(' ',grep($_,'ltx_ERROR',$cl))},
+       ['m:mtext',{},$node->textContent]]; }
   else {
     my $text = $node->textContent; #  Spaces are significant here
     $text =~ s/^\s+/$NBSP/;
@@ -848,7 +852,7 @@ sub cmml_internal {
 sub cmml_unparsed {
   my(@nodes)=@_;
   ['m:cerror',{},
-   ['m:csymbol',{cd=>'ambiguous',name=>'fragments'}],
+   ['m:csymbol',{cd=>'ambiguous'},'fragments'],
    map( ((getQName($_) eq 'ltx:XMTok')&&(($_->getAttribute('role')||'UNKNOWN') eq 'UNKNOWN')
 	 ? ['m:csymbol',{cd=>'unknown'},$_->textContent]
 	 : cmml($_)),
@@ -1115,7 +1119,7 @@ DefMathML('Apply:?:formulae',sub {
   pmml_punctuate($op->getAttribute('separators'),map(pmml($_),@elements)); },
   sub { 
 	my($op,@elements)=@_;
-	['m:apply',{},['m:csymbol', {cd=>'ambiguous', name=>'formulae-sequence'}],map(cmml($_),@elements)];
+	['m:apply',{},['m:csymbol', {cd=>'ambiguous'}, 'formulae-sequence'],map(cmml($_),@elements)];
   });
 
 # TRICKY: How should this get converted to cmml ???
