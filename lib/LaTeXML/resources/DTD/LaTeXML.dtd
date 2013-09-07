@@ -1829,7 +1829,8 @@
   text CDATA #IMPLIED>
 
 <!ELEMENT ltx:XMath (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
-                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
+                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray
+                     |ltx:ERROR)*>
 <!ATTLIST ltx:XMath
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1894,7 +1895,8 @@
   mathstyle (display|text|script|scriptscript|inline) #IMPLIED>
 
 <!ELEMENT ltx:XMApp (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
-                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
+                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray
+                     |ltx:ERROR)*>
 <!ATTLIST ltx:XMApp
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -1932,10 +1934,10 @@
 
 <!ELEMENT ltx:XMDual ((ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint
                        |ltx:XMArg|ltx:XMWrap|ltx:XMDual|ltx:XMText
-                       |ltx:XMArray),
+                       |ltx:XMArray|ltx:ERROR),
                       (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint
                        |ltx:XMArg|ltx:XMWrap|ltx:XMDual|ltx:XMText
-                       |ltx:XMArray))>
+                       |ltx:XMArray|ltx:ERROR))>
 <!ATTLIST ltx:XMDual
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2044,7 +2046,8 @@
   scriptpos CDATA #IMPLIED>
 
 <!ELEMENT ltx:XMWrap (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
-                      |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
+                      |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray
+                      |ltx:ERROR)*>
 <!ATTLIST ltx:XMWrap
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2082,7 +2085,8 @@
   scriptpos CDATA #IMPLIED>
 
 <!ELEMENT ltx:XMArg (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
-                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
+                     |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray
+                     |ltx:ERROR)*>
 <!ATTLIST ltx:XMArg
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
@@ -2209,7 +2213,8 @@
   xml:id ID #IMPLIED>
 
 <!ELEMENT ltx:XMCell (ltx:XMApp|ltx:XMTok|ltx:XMRef|ltx:XMHint|ltx:XMArg
-                      |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray)*>
+                      |ltx:XMWrap|ltx:XMDual|ltx:XMText|ltx:XMArray
+                      |ltx:ERROR)*>
 <!ATTLIST ltx:XMCell
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
