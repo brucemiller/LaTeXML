@@ -38,10 +38,10 @@ sub new {
   $self->registerHandler('ltx:table'         => \&captioned_handler);
   $self->registerHandler('ltx:figure'        => \&captioned_handler);
   $self->registerHandler('ltx:listing'       => \&captioned_handler);
+  $self->registerHandler('ltx:theorem'       => \&section_handler);
 
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
-  $self->registerHandler('ltx:theorem'       => \&labelled_handler);
   $self->registerHandler('ltx:item'          => \&labelled_handler);
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
 
