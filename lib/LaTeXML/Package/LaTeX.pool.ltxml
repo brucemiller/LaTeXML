@@ -1912,95 +1912,129 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
 AssignValue('thm@swap' => 'N');
-AssignValue('thm@style'=>'plain');
-DefRegister('\thm@headfont'=>Tokens());
-DefRegister('\thm@bodyfont'=>Tokens());
+DefRegister('\thm@style'=>Tokenize('plain'));
+DefRegister('\thm@headfont'=>Tokens(T_CS('\bfseries')));
+DefRegister('\thm@bodyfont'=>Tokens(T_CS('\itshape')));
 DefRegister('\thm@headpunct'=>Tokens());
-DefRegister('\thm@classes'=>Tokens());
-DefRegister('\thm@titleclasses'=>Tokens());
-
-  AssignValue('\thm@headfont' => T_CS('\bfseries'));
-  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+DefRegister('\thm@styling'=>Tokens());
+DefRegister('\thm@headstyling'=>Tokens());
+DefRegister('\thm@prework'=>Tokens());
+DefRegister('\thm@postwork'=>Tokens());
+DefRegister('\thm@symbol'=>Tokens());
+DefRegister('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+#  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+#  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
 
 DefPrimitive('\th@plain', sub {
 #  AssignValue('\thm@headfont' => T_CS('\bfseries'));
-#  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
 #  AssignValue('\thm@headpunct'=> T_OTHER('.'));
-  AssignValue('\thm@titleclasses' => T_OTHER('ltx_runin'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
   return; });
 
+DefMacroI('\lx@makerunin',undef,'\@ADDCLASS{ltx_runin}');
+DefMacroI('\lx@makeoutdent',undef,'\@ADDCLASS{ltx_outdent}');
+
 DefMacroI('\@thmcountersep',undef,'.');
+DefMacroI('\thm@doendmark',undef,'');
 
 DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $reset) = @_;
+  defineNewTheorem($stomach,$flag,$thmset,$otherthmset,$type,$reset);
+  # Reset these!
+  DefRegister('\thm@prework'=>Tokens());
+  DefRegister('\thm@postwork'=>Tokens());
+ });
+
+# Some packages may want to add '\thm@headfont'
+AssignValue(THEOREM_PARAMETERS=>['\thm@bodyfont','\thm@headpunct',
+                                 '\thm@styling','\thm@headstyling',
+                                 'thm@swap']);
+###RawTeX('\AtBeginDocument{\th@plain}');           # Activate the default style.
+RawTeX('\th@plain');           # Activate the default style.
+# [or just make it's values the defaults...]
+
+sub showTheoremParameters {
+  my($when)=@_;
+return;
+  my @parameters = @{ LookupValue('THEOREM_PARAMETERS') };
+  print STDERR "THEOREM[$when] "
+    .join(', ',map($_.'="'.ToString(LookupValue($_)).'"', @parameters))."\n"; }
+
+sub defineNewTheorem {
+  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset) = @_;
   $thmset = ToString($thmset);
+  showTheoremParameters("Defining $thmset");
   $otherthmset = $otherthmset && ToString($otherthmset);
   $type   = undef unless $type->unlist;
   $reset  = $reset ? ToString($reset) : undef;
 
   my $counter = $otherthmset || $thmset;
-  my $style   = LookupValue('thm@style');
-
+  $counter =~ s/\*$//;          # Strip trailing * off theoremclass for ntheorem.sty
+  my $style   = ToString(LookupValue('\thm@style')); # The name of the style
+  my $numbering = ToString(LookupValue('\thm@numbering')); # The number style macro
+  $flag = 1 unless $numbering;
   if(!$otherthmset){
     my $idprefix = "Thm$counter";
     $idprefix =~ s/\*/./g;
-    NewCounter($counter, $reset, idprefix => $idprefix);
-    DefMacroI(T_CS("\\the$counter"),undef,
-	      "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
-	      scope=>'global')
-      if $reset; }
 
-  my $bodyfont=LookupValue('\thm@bodyfont'); # save current bodyfont
-  my $saveswap=LookupValue('thm@swap'); # save current bodyfont
-  DefPrimitiveI('\thm@'.$thmset.'@bodyfont',undef,sub {
-                  AssignValue('\thm@bodyfont'=>$bodyfont); } ,scope=>'global');
-  DefPrimitiveI('\thm@'.$thmset.'@swap',undef,sub {
-                  AssignValue('thm@swap'=>$saveswap); } ,scope=>'global');
-  DefMacroI('\fnum@'.$counter,undef,''); # dummy up the defn
-  # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
+    if(! LookupValue('\c@'.$counter)){ # if isn't already defined...
+      NewCounter($counter, $reset, idprefix => $idprefix); }
+    DefMacroI(T_CS("\\the$counter"),undef,
+              ($reset
+               ? "\\csname the".$reset."\\endcsname\\\@thmcountersep\\".$numbering."{".$counter."}"
+               : "\\".$numbering."{".$counter."}"),
+	      scope=>'global') if $numbering; }
+
+  my @parameters = @{ LookupValue('THEOREM_PARAMETERS') };
+  AssignValue('THEOREM_'.$thmset.'_PARAMETERS'=>{map(($_=>LookupValue($_)),@parameters)}, 'global');
+
+  my $thmname = '\\'.$thmset.'name';
+  DefMacroI($thmname,undef,$type,scope=>'global');
+  my $swap = LookupValue('thm@swap') eq 'S';
+
+  DefMacroI('\fnum@'.$thmset,undef,
+            Tokens($flag || !$counter
+                   ? (T_CS($thmname))
+                   : ($swap
+                      ? (T_CS('\the'.$counter),($type ? (T_SPACE):()),T_CS($thmname))
+                      : (T_CS($thmname),($type ? (T_SPACE):()),T_CS('\the'.$counter)) )),
+           scope=>'global');
+  DefMacroI('\format@title@'.$thmset,convertLaTeXArgs(1,0),
+            '\@tag{\csname fnum@'.$thmset.'\endcsname}'
+            .($type ? '\ifx.#1.\else\space(#1)\fi' : '#1').'\the\thm@headpunct',
+            scope=>'global');
   DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' class='#class'>"
-		 . "<ltx:title font='#titlefont' _force_font='1' class='#titleclass'>#title</ltx:title>"
+		 "<ltx:theorem xml:id='#id' class='#class'"
+                 .    " refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
 		 .  "#body"
 		 ."</ltx:theorem>",
 		 beforeDigest=>sub {
-		   my $stylecmd = T_CS('\th@'.$style);
-		   if (!LookupDefinition($stylecmd)) {
-		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
-		     $stylecmd = T_CS('\th@plain'); }
-		   Digest(Tokens(T_CS('\thm@'.$thmset.'@bodyfont'), # saved body font first
-                                 T_CS('\thm@'.$thmset.'@swap'), # saved body font first
-                                 $stylecmd,  # then whatever the style says
-)); },
-		 afterDigestBegin=>sub { Digest(Tokens(T_CS('\the'),T_CS('\thm@bodyfont'))); },
+                   my $params = LookupValue('THEOREM_'.$thmset.'_PARAMETERS');
+                   foreach my $v (keys %$params){
+                     AssignValue($v=>$$params{$v}); }
+                   showTheoremParameters("Using $thmset");
+                   Digest('\normalfont\the\thm@prework'); },
+		 afterDigestBegin=>sub { Digest('\the\thm@bodyfont\the\thm@styling'); },
+                 beforeDigestEnd =>sub { Digest('\thm@doendmark'); },
+                 afterDigest     =>sub { Digest('\the\thm@postwork'); },
 		 properties => sub {
-		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
-                   my $swap = LookupValue('thm@swap') eq 'S';
-		   my $frefnum = Tokens(($swap
-					 ? ( ($flag ? ():(T_CS('\the'.$counter))),
-					     (!$flag && $type ? (T_SPACE):()),
-					     ($type ? ($type->unlist):()) )
-					 : ( ($type ? ($type->unlist):()),
-					     (!$flag && $type ? (T_SPACE):()),
-					     ($flag ? ():(T_CS('\the'.$counter))) )));
-		   my $title = Digest(Tokens(T_BEGIN,T_CS('\the'),T_CS('\thm@headfont'),
-					     T_CS('\@tag'),T_BEGIN,$frefnum->unlist,T_END,
-					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
-					     ($_[1] ? $_[1]->unlist : ()),
-					     ($type && $_[1] ? (T_OTHER(')')):()),
-					     T_CS('\the'),T_CS('\thm@headpunct'),
-					     T_END));
-		   (  %ctr,
-		      frefnum=>Digest($frefnum),
-		      title=>$title,
-		      titlefont=>$title->getFont,
-		      class=>join(' ',grep($_,
-                                           'ltx_theorem_'.CleanIndexKey($thmset),
-                                           ToString(DigestLiteral(Tokens(T_CS('\the'),T_CS('\thm@classes')))))),
-		      titleclass=>ToString(DigestLiteral(Tokens(T_CS('\the'),T_CS('\thm@titleclasses'))))
-                   );},
+                   my %ctr=($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :()),
+                   my $title = Digest(Tokens(T_BEGIN,
+                                             T_CS('\the'),T_CS('\thm@headfont'),
+                                             T_CS('\the'),T_CS('\thm@headstyling'),
+                                              T_CS('\format@title@'.$thmset),
+                                              T_BEGIN,($_[1] ? $_[1]->unlist:()),T_END,
+		         		     T_END));
+		   ( %ctr,
+                     frefnum=>Digest(Tokens(T_CS('\fnum@'.$thmset))),
+                     title=>$title,
+                     titlefont=>$title->getFont,
+                     class=>'ltx_theorem_'.CleanIndexKey($thmset),
+                   ); },
 		 scope => 'global');
-});
+}
 
 #======================================================================
 # C.8.4 Numbering
@@ -3105,8 +3139,8 @@ DefConstructor('\@makebox[Dimension][]{}',
 	       mode=>'text', bounded=>1, alias=>'\makebox',
  	       beforeDigest=>sub { reenterTextMode(); },
 	       properties=>sub{ ($_[2] ? (align=>$makebox_alignment{ToString($_[2])}) : ()); });
-DefRegister('\fboxrule', Dimension(0));
-DefRegister('\fboxsep',  Dimension(0));
+DefRegister('\fboxrule', Dimension('.4pt'));
+DefRegister('\fboxsep',  Dimension('3pt'));
 
 # Peculiar special case!
 #  These are nominally text mode macros. However, there is a somewhat common idiom:
