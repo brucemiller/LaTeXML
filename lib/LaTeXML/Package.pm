@@ -180,7 +180,7 @@ sub Let {
   return; }
 
 sub Digest {
-  $STATE->getStomach->digest(map((ref $_ ? $_ : Tokenize($_)),@_)); }
+  $STATE->getStomach->digest(map((ref $_ ? $_ : TokenizeInternal($_)),@_)); }
 
 # probably need to export this, as well?
 sub DigestLiteral {
