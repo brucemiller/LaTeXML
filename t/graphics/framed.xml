@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="xcolor"?>
+<?latexml package="framed"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Basics</title>
+    <para xml:id="S1.p1">
+      <p framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle">This is stuff that’s framed.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Note that the</p>
+      <p framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle">framed</p>
+      <p>stuff is a block!</p>
+    </para>
+    <para xml:id="S1.p3">
+      <inline-block cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">
+        <p>This is stuff that’s framed.</p>
+        <p>And it can hold multiple paragraphs.</p>
+      </inline-block>
+    </para>
+    <para xml:id="S1.p4">
+      <p framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle">And even stuff in multiple Paragraphs.</p>
+    </para>
+    <paragraph xml:id="S1.SS0.SSS0.P1">
+      <title>Does this work?</title>
+      <para xml:id="S1.SS0.SSS0.P1.p1">
+        <p>But not in LaTeXML!</p>
+      </para>
+    </paragraph>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>Variants</title>
+    <para xml:id="S2.p1">
+      <p framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle">This is stuff that’s framed, but would stay open at page breaks.
+This doesn’t make so much sense for LaTeXML, so it’s pretty much
+the same.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:12pt;padding-bottom:12pt">
+        <text backgroundcolor="#80BF80">This is stuff that’s shaded green;
+should fade into the margin, whatever that means.</text>
+      </p>
+    </para>
+    <para xml:id="S2.p3">
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:12pt;padding-bottom:12pt">
+        <text backgroundcolor="#80BF80">This is stuff that’s shaded green;
+it should end sharply at the margin.</text>
+      </p>
+    </para>
+    <para xml:id="S2.p4">
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:3pt;padding-bottom:3pt">
+        <text backgroundcolor="#80BF80">This is stuff that’s snugly shaded green;
+fading into the margin.</text>
+      </p>
+    </para>
+    <para xml:id="S2.p5">
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:3pt;padding-bottom:3pt">
+        <text backgroundcolor="#80BF80">This is stuff that’s snugly shaded green;
+ending sharply at the margin.</text>
+      </p>
+    </para>
+    <para xml:id="S2.p6">
+      <p framecolor="#000000" framed="left">This is with a left bar, like a changebar?</p>
+    </para>
+    <para xml:id="S2.p7">
+      <p framecolor="#8080BF" backgroundcolor="white" framed="rectangle"><text cssstyle="display:block;width:100%;" color="#FFFFFF" backgroundcolor="#8080BF">A Titled Frame</text>
+This is a titled frame.</p>
+    </para>
+  </section>
+</document>

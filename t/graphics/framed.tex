@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{framed}
+\begin{document}
+\section{Basics}
+
+\begin{framed}
+This is stuff that's framed.
+\end{framed}
+
+Note that the \begin{framed}framed\end{framed} stuff is a block!
+
+\begin{framed}
+This is stuff that's framed.
+
+And it can hold multiple paragraphs.
+\end{framed}
+
+\begin{framed}
+And even stuff in multiple Paragraphs.
+
+\paragraph{Does this work?} But not in LaTeXML!
+\end{framed}
+
+\section{Variants}
+\begin{oframed}
+This is stuff that's framed, but would stay open at page breaks.
+This doesn't make so much sense for LaTeXML, so it's pretty much
+the same.
+\end{oframed}
+
+\definecolor{shadecolor}{rgb}{0.5,0.75,0.5}
+\begin{shaded}
+This is stuff that's shaded green;
+should fade into the margin, whatever that means.
+\end{shaded}
+
+\begin{shaded*}
+This is stuff that's shaded green;
+it should end sharply at the margin.
+\end{shaded*}
+
+\begin{snugshade}
+This is stuff that's snugly shaded green;
+fading into the margin.
+\end{snugshade}
+
+\begin{snugshade*}
+This is stuff that's snugly shaded green;
+ending sharply at the margin.
+\end{snugshade*}
+
+\begin{leftbar}
+This is with a left bar, like a changebar?
+\end{leftbar}
+
+\definecolor{TFFrameColor}{rgb}{0.5,0.5,0.75}
+\definecolor{TFTitleColor}{rgb}{1,1,1}
+\begin{titled-frame}{A Titled Frame}
+This is a titled frame.
+\end{titled-frame}
+\end{document}
