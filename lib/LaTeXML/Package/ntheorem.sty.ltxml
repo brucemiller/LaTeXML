@@ -1,0 +1,328 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ntheorem                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Basically, this package is similar to amsthm.sty (or theorem.sty)
+# with two main enhancements:
+#   endmarks
+#   list of theorem (which should actually be covered in some postprocessor?)
+RequirePackage('amsthm');
+
+# options....
+
+DefConditional('\if@thref',undef);
+DefConditional('\ifthm@inframe',undef);
+DefConditional('\ifthm@tempif',undef);
+
+#  thmmarks, leqno, fleqn, thref
+# standard, noconfig, amsthm, 
+# framed (needs framed.sty)
+
+#======================================================================
+foreach my $option (qw(leqno fleqn 
+                       amsmath amsthm hyperref)){
+  DeclareOption($option,undef); }
+
+DeclareOption('standard',sub {}); # ?
+DeclareOption('noconfig',sub {}); # ?
+
+DeclareOption('framed',sub {}); # ?  [and needs framed.sty to be loaded]
+
+DeclareOption('thmmarks',sub {}); # ?
+
+DeclareOption('thref',sub {
+  # Redefine \label to take 2nd optional argument, being the type of thing.
+  # [seems out-of-place here, but...]
+  # [Nominally would require support from aux file, but we'll have to see...]
+  Let(T_CS('\orig@label'),T_CS('\label'));
+  # Perhaps this type could be attached somehow?
+  # [too bad there's no way to record the type of objects...(too verbose)]
+  DefMacro('\label Semiverbatim []','\orig@label{#1}');
+  # \thref{}  should also output the type from the above.
+  # We'll use latexml's show attribute to mimic the effect
+  DefConstructor('\thref OptionalMatch:* Semiverbatim',
+                 "<ltx:ref labelref='#label' show='type refnum'/>",
+                 properties=>sub { (label=>CleanLabel($_[2])); });
+});
+
+ProcessOptions();
+
+#, \InTheoType should be set within theorem environment to the theorem
+#  \<type>Keyword
+#  \<type>Symbol
+# , \Oldeqnnum, \OrganizeTheoremSymbol, \PotEndMark,
+# \RestoreTags,
+# \SetEndMark, \SetOnlyEndMark, \SetTagPlusEndMark, \TagsPlusEndmarks,
+
+
+# \endalign, \endalignat, \endflalign, \endgather, \endmathdisplay, \endxalignat, \endxxalignat,
+# \getKeywordOf, 
+# \mysavskip,
+
+# \newframedtheorem, \newshadedtheorem, 
+# \FrameCommand
+
+# \proofSymbol,
+#, \renewtheoremstyle,
+# \shadecolor,
+# \theoremframecommand, \theoremkeyword,
+
+# Note:
+# * the namespace of \theoremstyle{<theoremstyle>}, \newtheoremstyle{name}
+#   is distinct from the namespace of newtheorem{<theoremclass>} ,\begin{<theoremclass>}
+
+# theoremstyle{nmae}
+#    should set a recorded (sub?)set of params
+# newtheoremstyle{name}<params...>
+#    should associate ALL (?) params with the named style?
+
+# newtheorem{name}
+#    should record all(?) current params for that name
+
+# \begin{name} should merge current values with ones recorded for name
+
+DefRegister('\theoremindent'=>Dimension('0em'));
+DefRegister('\theoremrightindent'=>Dimension('0em'));
+DefRegister('\theorempreskipamount'=>Dimension('0em'));
+DefRegister('\theorempostskipamount'=>Dimension('0em'));
+DefRegister('\theoremframepreskipamount'=>Dimension('0em'));
+DefRegister('\theoremframepostskipamount'=>Dimension('0em'));
+DefRegister('\theoreminframepreskipamount'=>Dimension('0em'));
+DefRegister('\theoreminframepostskipamount'=>Dimension('0em'));
+DefMacro('\theorempreskip{}','');
+DefMacro('\theorempostskip{}','');
+DefMacro('\theoremframepreskip{}','');
+DefMacro('\theoremframepostskip{}','');
+DefMacro('\theoreminframepreskip{}','');
+DefMacro('\theoreminframepostskip{}','');
+DefMacro('\None','None');
+DefMacro('\NoneSymbol','None');
+DefMacro('\NoneKeyword','None');
+DefRegister('\shadecolor'=>Tokens());
+
+# amsthm includes headfont!
+# [and probably some others!]
+AssignValue(THEOREM_PARAMETERS=>['\thm@headfont','\thm@bodyfont','\thm@headpunct',
+                                 '\thm@styling','\thm@headstyling',
+                                 'thm@swap','\thm@numbering',
+                                 '\thm@prework','\thm@postwork',
+                                 '\thm@symbol',]);
+
+DefMacro('\theoremheaderfont{}',sub { 
+  AssignValue('\thm@headfont' => $_[1]); });
+
+DefMacro('\theoremseparator{}',sub { 
+  AssignValue('\thm@headpunct' => $_[1]); });
+DefMacro('\theoremsymbol{}',sub { 
+  AssignValue('\thm@symbol' => $_[1]); });
+
+# ???
+DefMacro('\theoremprework{}',sub { 
+  AssignValue('\thm@prework' => $_[1]); });
+DefMacro('\theorempostwork{}',sub { 
+  AssignValue('\thm@postwork' => $_[1]); });
+DefMacro('\theoremnumbering{}',sub { 
+  AssignValue('\thm@numbering' => $_[1]); });
+
+# This should turn on the same parameters as the env,
+# much like \theoremstyle{style} does, givcen a theoremstyle
+DefPrimitive('\theoremclass{}',sub {
+ return; });
+#======================================================================
+# ???
+###DefMacro('\TheoremSymbol','');
+# need some styling here to put at right...
+DefMacro('\TheoremSymbol','\@qedbox{\the\thm@symbol}');
+DefConstructor('\@qedbox{}',"<ltx:text class='ltx_align_floatright'>#1</ltx:text>");
+RawTeX('\newif\ifsetendmark\setendmarktrue');
+DefMacro('\NoEndMark','\global\setendmarkfalse');
+DefMacroI('\thm@doendmark',undef,'\ifsetendmark\TheoremSymbol\fi');
+DefRegister('\qedsymbol'=>Tokens());
+DefMacro('\qed','\@qedbox{\the\qedsymbol}');
+
+#======================================================================
+
+Let(T_CS('\orig@newtheorem'),T_CS('\newtheorem'));
+DefMacro('\newtheorem OptionalMatch:* {}[]{}[]',
+         '\orig@newtheorem#1{#2}[#3]{#4}[#5]'
+         .'\orig@newtheorem#1{#2*}[#3]{#4}[#5]'
+);
+
+DefMacro('\Theoremname','');
+Let(T_CS('\renewtheorem'),T_CS('\newtheorem'));
+
+
+#======================================================================
+# do something about recording & adding frame
+# This needs to tie into framed.sty!!!!
+# Really should execute \theoremframecommand in isolation,
+# then copy the relevant attributes (framing, spacing, color, ...) to the theorem!
+DefMacroI('\lx@addframing',undef,'\@ADDCLASS{ltx_framed}');
+
+# Since \theoremframecommand can be defined to be pretty much anything,
+# we don't have a good handle on what colors, etc, it may use.
+# Here we try something pretty bizarre:
+#  We execute the theoremframecommand on some dummy text, capture the result,
+# and copy the relevent attributes to the theorem.
+DefMacroI('\lx@snapshot@framing',undef,'\lx@@snapshot@framing{\theoremframecommand{foo}}');
+DefConstructor('\lx@@snapshot@framing{}',sub {
+  my($document,$framebox)=@_;
+  my $theorem = $document->getElement;
+  my $capture = $document->openElement('_Capture_');
+  my($frame,@rest) = $document->absorb($framebox);
+  $document->closeElement('_Capture_');
+  if(my $c = join(' ',grep($_,$theorem->getAttribute('class'),$frame->getAttribute('class')))){
+    $theorem->setAttribute(class=>$c); }
+  if(my $c = join(';',grep($_,$theorem->getAttribute('cssstyle'),
+                           $frame->getAttribute('cssstyle')))){
+    $theorem->setAttribute(cssstyle=>$c); }
+  if(my $b = $frame->getAttribute('backgroundcolor')
+     || $document->getNodeFont($frame)->getBackground){
+    $theorem->setAttribute(backgroundcolor=>$b); }
+  foreach my $attr (qw(framed framecolor)){
+    if(my $v = $frame->getAttribute($attr)){
+      $theorem->setAttribute($attr=>$v); }}
+  $document->removeNode($capture);
+},
+               reversion=>'');
+
+
+DefMacro('\newframedtheorem{}[]{}[]',
+         '\begingroup'
+         .'\ifx\theoremframecommand\relax'
+         .  '\def\theoremframecommand{\fbox}\fi'
+         .'\thm@styling{\lx@addframing}'
+         .'\newtheorem{#1}[#2]{#3}[#4]'
+         .'\endgroup');
+
+DefMacro('\newshadedtheorem{}[]{}[]',
+         '\begingroup'
+         .'\ifx\theoremframecommand\relax'
+         .  '\def\theoremframecommand{\colorbox{shadecolor}}\fi'
+         .'\thm@styling{\lx@snapshot@framing}'
+         .'\newtheorem{#1}[#2]{#3}[#4]'
+         .'\endgroup');
+
+#======================================================================
+
+DefPrimitive('\th@plain', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+  AssignValue('thm@swap' => 'N');
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@break', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => Tokens()); # NOT runin!
+  AssignValue('thm@swap' => 'N');
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@change', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+  AssignValue('thm@swap' => 'S');
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@margin', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => Tokens(T_CS('\lx@makerunin'),T_CS('\lx@makeoutdent')));
+  AssignValue('thm@swap' => 'S'); # The number is in margin, so we must also swap
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@marginbreak', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makeoutdent')); # NOT runin!
+  AssignValue('thm@swap' => 'S'); # The number is in margin, so we must also swap
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@changebreak', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => Tokens()); # NOT runin!
+  AssignValue('thm@swap' => 'S');
+  AssignValue('\thm@numbering'=>Tokens(T_OTHER('arabic')));
+  return; });
+
+DefPrimitive('\th@nonumberplain', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+  AssignValue('thm@swap' => 'N');
+  AssignValue('\thm@numbering' => undef);
+  return; });
+
+DefPrimitive('\th@nonumberbreak', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\slshape'));
+  AssignValue('\thm@headstyling' => Tokens()); # NOT runin!
+  AssignValue('thm@swap' => 'N');
+  AssignValue('\thm@numbering' => undef);
+  return; });
+
+DefPrimitive('\th@empty', sub {
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+  return; });
+
+DefPrimitive('\th@emptybreak', sub {
+  AssignValue('\thm@headstyling' => Tokens()); # NOT runin!
+  return; });
+
+InputDefinitions('ntheorem.std');
+#======================================================================
+# Lists of Theorems.
+
+DefMacro('\addtheoremline OptionalMatch:* {}{}','');
+DefMacro('\addtotheoremfile[]{}','');
+
+DefMacro('\theoremlisttype{}','');
+DefMacro('\newtheoremlisttype{}{}{}{}','');
+DefMacro('\renewtheoremlisttype{}{}{}{}','');
+
+# This is Wrong!
+# It should list only specific subsets
+# TOC needs to be generalized to allow more flexiblity, maybe XPath?
+DefConstructor('\listtheorems{}',
+		"<ltx:TOC role='theorems' select='ltx:theorem' name='#name'/>",
+##		properties=>sub {( name=>Digest(T_CS('\listtheoremname')));});
+		properties=>sub {( name=>"Theorems");});
+
+# \theoremlistdo,
+
+# Presumably a user never needs to call these?
+# [they implement the predefined theorem list types]
+DefMacro('\theoremlistall','');
+DefMacro('\theoremlistallname','');
+DefMacro('\theoremlistalloptional','');
+DefMacro('\theoremlistalloptname','');
+
+#======================================================================
+# Add capability for greek numbering
+DefMacro('\greek{}',sub {
+  T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf+0x03B1-1));});
+DefMacro('\Greek{}',sub {
+  T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf+0x0391-1));});
+#======================================================================
+
+1;
