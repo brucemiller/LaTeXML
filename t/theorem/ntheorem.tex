@@ -1,0 +1,315 @@
+\documentclass{article}
+%\usepackage{shortvrb}
+\usepackage{xcolor}
+\usepackage{framed}
+\usepackage[thmmarks,thref,framed]{ntheorem}
+% For Theorems:
+\theoremstyle{marginbreak}
+\theoremheaderfont{\normalfont\bfseries}\theorembodyfont{\slshape}
+\theoremsymbol{\ensuremath{\diamondsuit}}
+\theoremseparator{:}
+\newtheorem{Theorem}{Theorem}
+
+% For Lemmas:
+\theoremstyle{changebreak}
+\theoremsymbol{\ensuremath{\heartsuit}}
+\theoremindent0.5cm
+\theoremnumbering{greek}
+\newtheorem{Lemma}{Lemma}
+
+% For Corollaries:
+\theoremindent0cm
+\theoremsymbol{\ensuremath{\spadesuit}}
+\theoremnumbering{arabic}
+\newtheorem{Corollary}[Theorem]{Corollary}
+
+% For Examples:
+\theoremstyle{change}
+\theorembodyfont{\upshape}
+\theoremsymbol{\ensuremath{\ast}}
+\theoremseparator{}
+\newtheorem{Example}{Example}
+
+% For Definitions:
+\theoremstyle{plain}
+\theoremsymbol{\ensuremath{\clubsuit}}
+\theoremseparator{.}
+\theoremprework{\bigskip\hrule}
+\theorempostwork{\hrule\bigskip}
+\newtheorem{Definition}{Definition}
+
+% For Proofs (note that |\theoremprework| and 
+%   |\theorempostwork| are automatically reset with the next 
+%   |\newtheorem| -- proofs do not have lines above and below):
+\theoremheaderfont{\sc}\theorembodyfont{\upshape}
+\theoremstyle{nonumberplain}
+\theoremseparator{}
+\theoremsymbol{\rule{1ex}{1ex}}
+\newtheorem{Proof}{Proof}
+
+\begin{document}
+%\MakeShortVerb{\|}
+
+\section{Examples}
+Note, that parts of the setting are inherited. For instance, the
+fonts are not reset before defining ``Lemma'', so the font setting 
+of ``Theorem'' is used.
+
+\begin{Example}[Simple one]
+ The first example is just a text. 
+
+ In the next examples, it is shown how an endmark is put at a
+ displaymath, a single equation and both types of eqnarrays.
+\end{Example}
+
+\begin{Theorem}[Long Theorem]
+ The examples are put into this theorem environment. 
+
+The next example will not appear in the list of examples
+\begin{Example*}[Ending with a displayed formula]
+Look, the endmark is really at the bottom of the line:
+\[ f^{(n)}(z) =
+   \frac{n!}{2\pi i} \int \limits _{\partial D}
+            \frac{f(\zeta)}{(\zeta-z)^{n+1}} d\zeta \]
+\end{Example*}
+
+\addtheoremline*{Example}{Extra Entry}
+\begin{Lemma}[Display with array]
+Lemmata are indented and numbered with greek symbols.
+Also for displayed arrays of this form, it looks good:
+\[\begin{array}{l}
+     a = \begin{array}[t]{l}
+           first\ line \\
+           second\ line
+         \end{array} \mbox{try to put this text in the lowest line}
+  \end{array}\]
+\end{Lemma}
+\begin{Lemma}[Equation]
+For \verb|equation|s, we decided to put the endmark after the equation
+number, which is vertically centered.
+Currently, we do not know, how to get the equation number centered and
+the endmark at the bottom (one has to know the internal height of the
+math material) ... If anyone knows, please inform us.
+\begin{equation}
+ \int_{\gamma} f(z)\, dz := \int_a^b f(\gamma (t)) \gamma'(t) \, dt
+\end{equation}
+\end{Lemma}
+
+With the |break|-theoremstyles, if the environment is labeled and 
+written as
+\begin{Lemma}[Breakstyle]\label{breakstyle}%
+From the predefined styles, this is exactly the case for the break-styles.
+That's no bug, it's \LaTeX-immanent.
+
+The example goes on with an \verb|eqnarray|:
+\begin{eqnarray}
+f(z) &=&
+   \frac{1}{2\pi i}
+   \int \limits_{\partial D} \frac{f(\zeta)}{\zeta-z} d\zeta \\
+&= &
+   \frac{1}{2\pi}
+   \int \limits_0^{2\pi}
+      f(z_0 + re^{it}) dt
+\end{eqnarray}
+\end{Lemma}
+
+\begin{Proof}[of nothing]
+\begin{eqnarray*}
+f(z) &=&
+   \frac{1}{2\pi i}
+   \int \limits_{\partial D} \frac{f(\zeta)}{\zeta-z} d\zeta \\
+&= &
+   \frac{1}{2\pi}
+   \int \limits_0^{2\pi}
+      f(z_0 + re^{it}) dt
+\end{eqnarray*}
+\end{Proof}
+That's it (the end of the Theorem).
+\end{Theorem}
+
+
+If there are some environments in the same thm-environment,
+the last one gets the endmark:
+\begin{Definition}[With a list]
+\begin{equation}
+ \int_{\gamma} f(z)\, dz := \int_a^b f(\gamma (t)) \gamma'(t) \, dt
+\end{equation}
+\begin{itemize}
+\item you've seen, how it works for text and
+\item math environments,
+\item and it works for lists.
+\end{itemize}
+\end{Definition}
+
+\begin{Corollary}[Q.E.D.]
+And here is a trivial corollary, which is ended by
+\qedsymbol{q.e.d}\qed
+\end{Corollary}
+
+\begin{Example}
+\[ f^{(n)}(z) =
+   \frac{n!}{2\pi i} \int \limits _{\partial D}
+            \frac{f(\zeta)}{(\zeta-z)^{n+1}} d\zeta \]
+If there is some text after an environment, the endmark is put
+after the text.
+\end{Example}
+
+
+\begin{Example}[Using |verbatim|]
+\begin{verbatim}
+And, it also works for verbatim
+... when the end{verbatim} is in the
+same line as the text ends. \end{verbatim}
+\end{Example}
+
+There must be no empty line in the input before the end
+(since then, the end mark is ignored) \\
+\begin{Theorem}\label{ex-empty-line}
+some text ... but no end mark
+
+\end{Theorem}
+
+
+Now, there is a corollary which should appear with a different
+name in the list of corollaries:
+\begin{Corollary*}[title in text]\label{otherlabel}\ignorespaces
+let's do something weird:
+\begin{center}
+   It also works in the \\
+   center \\
+   environment.  
+\end{center}
+\end{Corollary*}
+\addtheoremline{Corollary}{title in list}
+
+\begin{Theorem}[Quote]
+\begin{quote}
+In quote environments, the text is normally indented from left 
+and right by the same space. The endmark is not indented from the 
+right margin, i.e., it is typeset to the right margin of the
+surrounding text.
+\end{quote}
+\end{Theorem}
+
+Here is an example for turning off the endmark automatics and
+manual handling:
+\begin{Theorem}[Manual End Mark]\label{somelabel}
+a line of text with a manually set endmark \hfill\TheoremSymbol \\
+some more text, but no automatic endmark set. \NoEndMark
+\end{Theorem}
+Also, one should note, that |\hfill| is inserted to set
+the endmark at the right margin.
+
+\begin{Example}[Quickie] It also works for short one's. 
+\end{Example}
+
+If you are tired of the greek numbers and the indentation for lemmata ... 
+you can redefine it:
+\theoremstyle{changebreak}
+\theoremheaderfont{\normalfont\bfseries}\theorembodyfont{\slshape}
+\theoremsymbol{\ensuremath{\heartsuit}}
+\theoremsymbol{\ensuremath{\diamondsuit}}
+\theoremseparator{:}
+\theoremindent0cm
+\theoremnumbering{arabic}
+\renewtheorem{Lemma}{Lemma}
+\begin{Lemma}
+  another lemma, with arabic numbering ... note that the numbering
+  continues.
+\end{Lemma}
+
+the optional argument (i.e.\ the `theorem'-name) can be accessed by
+eg. \verb|\Theoremname|
+\begin{Theorem}[somename]
+Obviously, we are in Theorem~\Theoremname.
+\end{Theorem}
+
+Now, we define an environment |KappaTheorem| which uses the same 
+style parameters as Theorems and is numbered together with
+Corollaries (Theorems are also numbered with Corollaries).
+Note that we define a complex header text and a complex end mark.
+\theoremclass{Theorem}
+\theoremsymbol{\ensuremath{a\atop b}}
+\newtheorem{KappaTheorem}[Theorem]{\(\kappa\)-Theorem}
+
+\begin{KappaTheorem}[1st \(\kappa\)-Theorem]\label{kappatheorem1}
+That's the first Kappa-Theorem. 
+\end{KappaTheorem}
+
+
+
+\subsection{Extended Referencing Features}\label{sec-ExtRef}[Section]
+This is \thref{sec-ExtRef}.
+A theorem end mark has been set manually in \thref{somelabel}.
+A center environment has been shown in \thref{otherlabel}.
+The first Kappa-Theorem has been given in \thref{kappatheorem1}.
+
+\subsection{Framed and Shaded Theorems}
+
+\theoremclass{Theorem}
+\theoremstyle{break}
+\newframedtheorem{importantTheorem}[Theorem]{Theorem}
+\begin{importantTheorem}[Important Theorem]
+This is an important theorem.
+\end{importantTheorem}
+
+% shading requires pstricks
+% unless you define \theoremframecommand, eg:
+\def\theoremframecommand{\colorbox[rgb]{1,.9,.9}}
+\theoremclass{Theorem}
+\theoremstyle{break}
+\newshadedtheorem{moreImportantTheorem}[Theorem]{Theorem}
+\begin{moreImportantTheorem}[More Important Theorem]
+This is a more important theorem.
+\end{moreImportantTheorem}
+
+\theoremclass{Theorem}
+\theoremstyle{break}
+\theoreminframepreskip{0.5cm}
+\theoreminframepostskip{1cm}
+\theoremframepreskip{0cm}
+\theoremframepostskip{0cm}
+% Note that this color doesn't have an effect, since \theoremframecommand doesn't use it!!!
+\shadecolor{red}
+\def\theoremframecommand{\colorbox[rgb]{1,.5,.5}}
+\newshadedtheorem{evenMoreImportantTheorem}[Theorem]{Theorem}
+\begin{evenMoreImportantTheorem}[Even More Important Theorem]
+This is an even more important theorem.
+\end{evenMoreImportantTheorem}
+
+
+% This seems to need some ps stuff? \psshadowbox
+% \theoremclass{Theorem}
+% \theoremstyle{break}
+% \theoreminframepreskip{0pt}
+% \theoreminframepostskip{0pt}
+% \theoremframepreskip{1cm}
+% \theoremframepostskip{1cm}
+% \shadecolor{red}
+% \def\theoremframecommand{%
+%  \psshadowbox[fillstyle=solid,fillcolor=blue,linecolor=black]}
+%  \newshadedtheorem{MostImportantTheorem}[Theorem]{Theorem}
+% begin{MostImportantTheorem}[Most Important Theorem]
+% This is a most important theorem.
+% \end{MostImportantTheorem}
+
+\subsection{Lists of Theorems and Friends}
+\addtotheoremfile{Added into all theorem lists}
+\addtotheoremfile[Example]{Only concerning Example lists}
+
+\theoremlisttype{all}
+\listtheorems{Lemma}
+
+\theoremlisttype{opt}
+\listtheorems{Example}
+
+\newtheoremlisttype{tab}%
+ {\begin{tabular*}{\linewidth}{@{}lrl@{\extracolsep{\fill}}r@{}}}%
+ {##1&##2&##3&##4\\}%
+ {\end{tabular*}}
+
+\theoremlisttype{tab}
+\listtheorems{Theorem,importantTheorem,moreImportantTheorem,
+  evenMoreImportantTheorem,MostImportantTheorem,Lemma}
+
+\end{document}
