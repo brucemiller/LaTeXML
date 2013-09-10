@@ -23,35 +23,46 @@ DefMacroI('\nopunct',undef,Tokens());
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Theorem Styles.
 
-DefMacro('\swapnumbers', sub {
-  AssignValue('thm@swap' =>(LookupValue('thm@swap') eq 'N' ? 'S' : 'N')); });
-
+# amsthm includes headfont!
+AssignValue(THEOREM_PARAMETERS=>['\thm@headfont','\thm@bodyfont','\thm@headpunct',
+                                 '\thm@styling','\thm@headstyling',
+                                 'thm@swap']);
 
 # activate a certain theorem style
 DefPrimitive('\theoremstyle{}', sub { 
-  AssignValue('thm@style'=>ToString($_[1]));});
+  my $style = ToString($_[1]);
+  AssignValue('\thm@style'=>$style); 
+  Digest(T_CS('\th@'.$style));
+  showTheoremParameters("Using style $style");
+  return; });
 
-# the default theorem styles
-# plain is defined in LaTeX.
-# but should get a .
+DefMacro('\swapnumbers', sub {
+  AssignValue('thm@swap' =>(LookupValue('thm@swap') eq 'N' ? 'S' : 'N')); });
+
+# The default theorem styles.
+# plain is defined in LaTeX, but we need to add headpunct (.)
 DefPrimitive('\th@plain', sub {
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
   AssignValue('\thm@headpunct'=> T_OTHER('.'));
-  AssignValue('\thm@titleclasses' => T_OTHER('ltx_runin'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
   return; });
 
 DefPrimitive('\th@definition', sub {
-#  AssignValue('\thm@headfont' => T_CS('\bfseries'));
+  AssignValue('\thm@headfont' => T_CS('\bfseries'));
   AssignValue('\thm@bodyfont' => T_CS('\normalfont'));
   AssignValue('\thm@headpunct'=> T_OTHER('.'));
-  AssignValue('\thm@titleclasses' => T_OTHER('ltx_runin'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
   return; });
 
 DefPrimitive('\th@remark', sub {
   AssignValue('\thm@headfont' => T_CS('\itshape'));
   AssignValue('\thm@bodyfont' => T_CS('\normalfont'));
   AssignValue('\thm@headpunct'=> T_OTHER('.'));
-  AssignValue('\thm@titleclasses' => T_OTHER('ltx_runin'));
+  AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
   return; });
+
+RawTeX('\theoremstyle{plain}');           # Activate the default style.
 
 #\newtheoremstyle{note}% name
 #  {3pt}%      Space above
@@ -71,8 +82,8 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
 	     AssignValue('\thm@bodyfont' => $bodyfont);
 	     AssignValue('\thm@headfont' => $headfont);
 	     AssignValue('\thm@headpunct'=> $headpunct);
-             AssignValue('\thm@titleclasses'=>(Equals($spaceafter,Tokens(T_CS('\newline')))
-                                               ? Tokens() : T_OTHER('ltx_runin') ));
+             AssignValue('\thm@headstyling'=>(Equals($spaceafter,Tokens(T_CS('\newline')))
+                                               ? Tokens() : T_CS('\lx@makerunin') ));
 	     return; });
 });
 
