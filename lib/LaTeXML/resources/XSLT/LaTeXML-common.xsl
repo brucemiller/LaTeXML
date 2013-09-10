@@ -390,6 +390,30 @@
       </xsl:choose>
       <xsl:value-of select="';'"/>
     </xsl:if>
+    <xsl:if test="@framed='left'">
+      <xsl:value-of select="'border-left:1px solid '"/>
+      <xsl:choose>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:value-of select="';'"/>
+    </xsl:if>
+    <xsl:if test="@framed='right'">
+      <xsl:value-of select="'border-right:1px solid '"/>
+      <xsl:choose>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:value-of select="';'"/>
+    </xsl:if>
     <xsl:if test="@framed='underline'">
       <xsl:value-of select="'text-decoration:underline;'"/>
     </xsl:if>
