@@ -1532,10 +1532,11 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
   my $vmode = $current->getAttribute('_vertical_mode_');
   my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
-  $document->openElement($newtag,_noautoclose=>1,
-                         width=>$spec && $$spec{to},'pad-width'=>$spec && $$spec{spread});
+  my $node = $document->openElement($newtag,_noautoclose=>1,
+                                    width=>$spec && $$spec{to},
+                                    'pad-width'=>$spec && $$spec{spread});
   $document->absorb($contents);
-  $document->closeElement($newtag); },
+  $document->closeNode($node); },
 
  	       mode=>'text', bounded=>1,
  	       # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
@@ -1563,9 +1564,9 @@ sub insertBlock {
   my $hasattr = scalar(keys %blockattr);
   if($hasattr || ! $model->canContainSomehow($context,'ltx:p') || $model->canContain($context,'#PCDATA')){
     # [If we DONT open, we lose the vattach!]
-    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
+    $newblock = $document->openElement('ltx:inline-block','_autoclose'=>1,%blockattr); }
   elsif($model->canContainSomehow($context,'ltx:para')){
-    $newblock = $document->openElement('ltx:para',%blockattr); }
+    $newblock = $document->openElement('ltx:para','_autoclose'=>1,%blockattr); }
 #  else {
 #    $unwrap = 1;
 #    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
@@ -1660,6 +1661,9 @@ DefConstructor('\hrule RuleSpecification',
 		     # This isXxxxRule property is to determine if it is used for separating rules within alignments
 		     $alignment->addLine('t');
 		     $whatsit->setProperty(isHorizontalRule=>1)}}
+                 else {
+                   $$dims{width}='100%' unless defined $w;
+                   $$dims{height}='1px' unless defined $h; }
 		 if(my $color = LookupValue('font')->getColor){
 		   if($color ne 'black'){
 		     $whatsit->setProperty(color=>$color); }}
