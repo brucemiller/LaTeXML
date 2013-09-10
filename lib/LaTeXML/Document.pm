@@ -125,6 +125,18 @@ sub getNodeQName {
   my($self,$node)=@_;
   $$self{model}->getNodeQName($node); }
 
+# Dirty little secrets:
+#  You can generically allow an element to autoClose using Tag.
+# OR you can indicate a specific node can autoClose, or forbid it, using
+# the _autoclose or _noautoclose attributes!
+sub canAutoClose {
+  my($self,$node)=@_;
+  my $t = $node->nodeType;
+  my $model = $$self{model};
+  (($t==XML_TEXT_NODE) || $model->canAutoClose($model->getNodeQName($node))
+   || (($t == XML_ELEMENT_NODE) && $node->getAttribute('_autoclose')))
+    && (($t != XML_ELEMENT_NODE) || !$node->getAttribute('_noautoclose')); }
+
 #**********************************************************************
 # This is a diagnostic tool that MIGHT help locate XML::LibXML bugs;
 # It simply walks through the document tree. Use it before and after
@@ -461,6 +473,11 @@ sub openElement {
                                      %attributes);
   $$self{node} = $newnode; }
 
+# Note: This closes the deepest open node of a given type.
+# This can cause problems with auto-opened nodes, esp. ones for fontswitches!
+# Since this is an "explicit request", we're currently skipping over those nodes,
+# ie. we're automatically closing them, even if they're the same type as we're asking to close!!!
+# This is kinda risky! Maybe we should try to request closing of specific nodes.
 sub closeElement {
   my($self,$qname)=@_;
   print STDERR "Close element $qname at ".Stringify($$self{node})."\n" if $LaTeXML::Document::DEBUG;
@@ -470,7 +487,7 @@ sub closeElement {
     my $t = $$self{model}->getNodeQName($node);
     # autoclose until node of same name BUT also close nodes opened' for font switches!
     last if ($t eq $qname) && !( ($t eq $FONT_ELEMENT_NAME) && $node->getAttribute('_fontswitch'));
-    push(@cant_close,$t) unless $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose');
+    push(@cant_close,$node) unless $self->canAutoClose($node);
     $node = $node->parentNode; }
   if($node->nodeType == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
     Error('malformed',$qname,$self,
@@ -495,8 +512,7 @@ sub isOpenable {
   my $node = $$self{node};
   while($node){
     return 1 if $model->canContainSomehow($node,$qname);
-    return 0 unless $model->canAutoClose($model->getNodeQName($node))
-      && (($node->nodeType != XML_ELEMENT_NODE) || !$node->getAttribute('_noautoclose'));
+    return 0 unless $self->canAutoClose($node); # could close, then check if parent can contain
     $node = $node->parentNode; }
   return 0; }
 
@@ -513,7 +529,7 @@ sub isCloseable {
       return if $node->nodeType == XML_DOCUMENT_NODE;
       my $this_qname = $$self{model}->getNodeQName($node);
       last if $this_qname eq $qname;
-      return unless $$self{model}->canAutoClose($this_qname) && !$node->getAttribute('_noautoclose');
+      return unless $self->canAutoClose($node);
       $node = $node->parentNode; }
     $node = $node->parentNode if @tags; }
   $node; }
@@ -529,12 +545,45 @@ sub maybeCloseElement {
 sub closeToNode {
   my($self,$node)=@_;
   my $model = $$self{model};
-  while(1){
-    my $current = $$self{node};
-    $current = $current->parentNode if $current->getType == XML_TEXT_NODE;
-    return if $current->getType == XML_DOCUMENT_NODE; # whoops?
-    return unless isDescendant($current,$node);
-    $self->closeElement($model->getNodeQName($current)); }}
+  my($t, @cant_close)=();
+  my $n = $$self{node};
+  my $last;
+  while( (($t=$n->getType) != XML_DOCUMENT_NODE) && ! $n->isSameNode($node)){
+    push(@cant_close,$n) unless $self->canAutoClose($n);
+    $last = $n;
+    $n = $n->parentNode; }
+  if($t == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
+    Error('malformed',$model->getNodeQName($node),$self,
+          "Attempt to close ".Stringify($node).", which isn't open",
+          "Currently in ".$self->getInsertionContext); }
+  else {			# Found node.
+    # Intervening non-auto-closeable nodes!!
+    Error('malformed',$model->getNodeQName($node),$self,
+          "Closing ".Stringify($node)." whose open descendents do not auto-close",
+          "Descendents are ".join(', ',map(Stringify($_),@cant_close)))
+      if @cant_close;
+    $self->closeNode_internal($last) if $last; }}
+
+# This closes all nodes until $node is closed.
+sub closeNode {
+  my($self,$node)=@_;
+  my $model = $$self{model};
+  my($t, @cant_close)=();
+  my $n = $$self{node};
+  while( (($t=$n->getType) != XML_DOCUMENT_NODE) && ! $n->isSameNode($node)){
+    push(@cant_close,$n) unless $self->canAutoClose($n);
+    $n = $n->parentNode; }
+  if($t == XML_DOCUMENT_NODE){ # Didn't find $qname at all!!
+    Error('malformed',$model->getNodeQName($node),$self,
+          "Attempt to close ".Stringify($node).", which isn't open",
+          "Currently in ".$self->getInsertionContext); }
+  else {			# Found node.
+    # Intervening non-auto-closeable nodes!!
+    Error('malformed',$model->getNodeQName($node),$self,
+          "Closing ".Stringify($node)." whose open descendents do not auto-close",
+          "Descendents are ".join(', ',map(Stringify($_),@cant_close)))
+      if @cant_close;
+    $self->closeNode_internal($node); }}
 
 # Add the given attribute to the nearest node that is allowed to have it.
 sub addAttribute {
@@ -583,8 +632,7 @@ sub find_insertion_point {
   else {			# Now we're getting more desparate...
     # Check if we can auto close some nodes, and _then_ insert the $qname.
     my ($node,$closeto) = ($$self{node});
-    while(($node->nodeType != XML_DOCUMENT_NODE)
-          && $$self{model}->canAutoClose($node) && !$node->getAttribute('_noautoclose')){
+    while(($node->nodeType != XML_DOCUMENT_NODE) && $self->canAutoClose($node)){
       my $parent = $node->parentNode;
       if($$self{model}->canContainSomehow($parent,$qname)){
         $closeto=$node; last; }
