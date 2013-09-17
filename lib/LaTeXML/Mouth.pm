@@ -45,7 +45,7 @@ sub new {
 sub openString {
   my($self,$string)=@_;
   $$self{string} = $string;
-  $$self{buffer} = [(defined $string ? $self->splitString($string) : ())];
+  $$self{buffer} = [(defined $string ? splitLines($string) : ())];
 }
 
 sub initialize {
@@ -82,10 +82,20 @@ sub finish {
 # This is (hopefully) a platform independent way of splitting a string
 # into "lines" ending with CRLF, CR or LF (DOS, Mac or Unix).
 # Note that TeX considers newlines to be \r, ie CR, ie ^^M
-sub splitString {
-  my($self,$string)=@_;
+sub splitLines {
+  my($string)=@_;
   $string =~ s/(?:\015\012|\015|\012)/\r/sg; #  Normalize remaining
   split("\r",$string); }		  # And split.
+
+# This is (hopefully) a correct way to split a line into "chars",
+# or what is probably more desired is "Grapheme clusters" (even "extended")
+# These are unicode characters that include any following combining chars, accents & such.
+# I am thinking that when we deal with unicode this may be the most correct way?
+# If it's not the way XeTeX does it, perhaps, it must be that ALL combining chars
+# have to be converted to the proper accent control sequences!
+sub splitChars {
+  my($line)=@_;
+  $line =~ m/\X/g; }
 
 sub getNextLine {
   my($self)=@_;
@@ -237,7 +247,7 @@ sub readToken {
 	return;  }
       # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
       $line =~ s/((\\ )*)\s*$/$1\r/s;
-      $$self{chars}=[split('',$line)];
+      $$self{chars}=[splitChars($line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       while(($$self{colno} < $$self{nchars})
 	    && (($$STATE{table}{catcode}{$$self{chars}->[$$self{colno}]}[0]||CC_OTHER)==CC_SPACE)){
@@ -301,7 +311,7 @@ sub readRawLines {
       push(@lines,$pre."\n") if $pre;
       # Replace the \n with a \r in the line rest, since it will be tokenized
       $line =~ s/\n$/\r/;
-      $$self{chars}=[split('',$line)];
+      $$self{chars}=[splitChars($line)];
       $$self{nchars} = scalar(@{$$self{chars}});
       $$self{colno} = length($pre)+length($endline);
       last; }
@@ -364,7 +374,7 @@ sub getNextLine {
       close($fh); $$self{IN}=undef;
       return; }
     else {
-      push(@{$$self{buffer}}, $self->splitString($line)); }}
+      push(@{$$self{buffer}}, LaTeXML::Mouth::splitLines($line)); }}
 
   my $line = (shift(@{$$self{buffer}})||'');
   if($line){
