@@ -1,0 +1,182 @@
+\documentclass{article}
+\usepackage{bbold}
+
+\newcount\linenum\linenum=0\relax
+\newcount\colnum\colnum=0\relax
+\newcount\n
+\newtoks\tabtoks
+\def\addtabtoks#1{\tabtoks\expandafter{\the\tabtoks#1}}
+%
+% GACK! nested loops!?!?!
+\def\colloop#1\colrepeat{\def\coliterate{#1\relax\expandafter\coliterate\fi}%
+  \coliterate \let\coliterate\relax}
+\let\colrepeat\fi
+
+\def\rowloop#1\rowrepeat{\def\rowiterate{#1\relax\expandafter\rowiterate\fi}%
+  \rowiterate \let\rowiterate\relax}
+\let\rowrepeat\fi
+%
+\def\oct#1{\'{}#1}
+\def\col{
+  \setbox0=\hbox{\fontencoding{U}\fontfamily{bbold}\selectfont\char\n}\global\advance\n1\relax\box0}
+\def\dorow{
+  & \col & \col  & \col & \col & \col & \col  & \col & \col }
+
+\begin{document}
+\section{Math}
+Note that some chars don't actually give the right glyph in math.
+
+\begin{tabular}{cccccccc}
+$\mathbb{\Gamma}$ & $\mathbb{\Delta}$   & $\mathbb{\Theta}$ & $\mathbb{\Lambda}$ &
+$\mathbb{\Xi}$    & $\mathbb{\Pi}$      & $\mathbb{\Sigma}$ & $\mathbb{\Upsilon}$ \\
+$\mathbb{\Phi}$   & $\mathbb{\Psi}$     & $\mathbb{\Omega}$ &                &
+                  &                     &                   &                \\
+                  &                     &                   &                &
+                  &                     &                   &                \\
+                  &                     &                   &                &
+                  &                     &                   &                \\
+                  &                     &                   &                &
+                  &                     &                   &                \\
+                  &                     &                   &                &
+                  &                     &                   &                \\
+$\mathbb{0}$      & $\mathbb{1}$        & $\mathbb{2}$      & $\mathbb{3}$ &
+$\mathbb{4}$      & $\mathbb{5}$        & $\mathbb{6}$      & $\mathbb{7}$ \\
+$\mathbb{8}$      & $\mathbb{9}$        &                   &              &
+                  &                     &                   &              \\
+$\mathbb{@}$      & $\mathbb{A}$        & $\mathbb{B}$      & $\mathbb{C}$ &
+$\mathbb{D}$      & $\mathbb{E}$        & $\mathbb{F}$      & $\mathbb{G}$ \\
+$\mathbb{H}$      & $\mathbb{I}$        & $\mathbb{J}$      & $\mathbb{K}$ &
+$\mathbb{L}$      & $\mathbb{M}$        & $\mathbb{N}$      & $\mathbb{O}$ \\
+$\mathbb{P}$      & $\mathbb{Q}$        & $\mathbb{R}$      & $\mathbb{S}$ &
+$\mathbb{T}$      & $\mathbb{U}$        & $\mathbb{V}$      & $\mathbb{W}$ \\
+$\mathbb{X}$      & $\mathbb{Y}$        & $\mathbb{Z}$      &              &
+                  &                     &                   &              \\
+                  & $\mathbb{a}$        & $\mathbb{b}$      & $\mathbb{c}$ &
+$\mathbb{d}$      & $\mathbb{e}$        & $\mathbb{f}$      & $\mathbb{g}$ \\
+$\mathbb{h}$      & $\mathbb{i}$        & $\mathbb{j}$      & $\mathbb{k}$ &
+$\mathbb{l}$      & $\mathbb{m}$        & $\mathbb{n}$      & $\mathbb{o}$ \\
+$\mathbb{p}$      & $\mathbb{q}$        & $\mathbb{r}$      & $\mathbb{s}$ &
+$\mathbb{t}$      & $\mathbb{u}$        & $\mathbb{v}$      & $\mathbb{w}$ \\
+$\mathbb{x}$      & $\mathbb{y}$        & $\mathbb{z}$      & $\mathbb{-}$ &
+                  &                     &                   &                \\
+\end{tabular}
+\section{Text}
+Note that some chars don't actually give the right glyph in text.
+
+\begin{tabular}{cccccccc}
+\textbb{(} &
+\textbb{)} &
+\textbb{*} &
+\textbb{+} &
+\textbb{,} &
+\textbb{-} &
+\textbb{.} &
+\textbb{/} \\
+\textbb{0} &
+\textbb{1} &
+\textbb{2} &
+\textbb{3} &
+\textbb{4} &
+\textbb{5} &
+\textbb{6} &
+\textbb{7} \\
+\textbb{8} &
+\textbb{9} &
+\textbb{:} &
+\textbb{;} &
+\textbb{<} &
+& %\cdot?
+\textbb{>} &
+\textbb{?} \\
+\textbb{@} &
+\textbb{A} &
+\textbb{B} &
+\textbb{C} &
+\textbb{D} &
+\textbb{E} &
+\textbb{F} &
+\textbb{G} \\
+\textbb{H} &
+\textbb{I} &
+\textbb{J} &
+\textbb{K} &
+\textbb{L} &
+\textbb{M} &
+\textbb{N} &
+\textbb{O} \\
+\textbb{P} &
+\textbb{Q} &
+\textbb{R} &
+\textbb{S} &
+\textbb{T} &
+\textbb{U} &
+\textbb{V} &
+\textbb{W} \\
+\textbb{X} &
+\textbb{Y} &
+\textbb{Z} &
+\textbb{[} &
+ & %\backslash
+\textbb{]} &
+& % \textbb{\{} &
+\\ % \textbb{\}} \\
+\textbb{`} &
+\textbb{a} &
+\textbb{b} &
+\textbb{c} &
+\textbb{d} &
+\textbb{e} &
+\textbb{f} &
+\textbb{g} \\
+\textbb{h} &
+\textbb{i} &
+\textbb{j} &
+\textbb{k} &
+\textbb{l} &
+\textbb{m} &
+\textbb{n} &
+\textbb{o} \\
+\textbb{p} &
+\textbb{q} &
+\textbb{r} &
+\textbb{s} &
+\textbb{t} &
+\textbb{u} &
+\textbb{v} &
+\textbb{w} \\
+\textbb{x} &
+\textbb{y} &
+\textbb{z} &
+\textbb{-} &
+\textbb{|} &
+\textbb{--} &
+\textbb{``}&
+\\
+\end{tabular}
+\section{Running}
+{\bbfamily And such a (silly) example of text.}
+\section{Font Table}
+And, note that some of these glyphs don't have corresponding codepoints
+in Unicode!
+
+\begin{tabular}{r|cccccccc}
+  & \oct{0} & \oct{1}  & \oct{2} & \oct{3}  & \oct{4} & \oct{5}  & \oct{6} & \oct{7} \\ \hline
+\oct{0}x \dorow \\
+\oct{1}x \dorow \\
+\oct{2}x \dorow \\
+\oct{3}x \dorow \\
+\oct{4}x \dorow \\
+\oct{5}x \dorow \\
+\oct{6}x \dorow \\
+\oct{7}x \dorow \\
+\oct{10}x \dorow \\
+\oct{11}x \dorow \\
+\oct{12}x \dorow \\
+\oct{13}x \dorow \\
+\oct{14}x \dorow \\
+\oct{15}x \dorow \\
+\oct{16}x \dorow \\
+\oct{17}x \dorow \\
+\end{tabular}
+
+\end{document}
