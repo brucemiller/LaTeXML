@@ -1,0 +1,9 @@
+\documentclass{article}
+\usepackage{keyval}
+\makeatletter
+\define@key{my}{foo}{Foo is #1\par}
+\define@key{my}{bar}[99]{Bar is #1\par}
+\makeatother
+\begin{document}
+Testing keyvals: \setkeys{my}{foo=3,bar}
+\end{document}

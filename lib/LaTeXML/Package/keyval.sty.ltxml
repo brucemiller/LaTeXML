@@ -33,5 +33,13 @@ DefPrimitive('\define@key{}{}[]{}',sub {
 	    scope=>'global')
     if $default;
   return; });
+
+# \setkeys{keyset}{keyvals}
+DefMacro('\setkeys{}',sub {
+  my($gullet,$keyset)=@_;
+  $keyset = ToString(Expand($keyset));
+  my $values = ReadRequiredKeyVals($gullet,$keyset);
+  $values->revert; });          # and it will be expanded/digested as needed(?)
+
 #======================================================================
 1;
