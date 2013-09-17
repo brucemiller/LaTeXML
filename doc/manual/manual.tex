@@ -1520,68 +1520,122 @@ The following attributes can appear on all \texttt{XM*} elements:
 \end{description}
 
 \subsection{Grammatical Roles}\label{math.details.roles}
-The \attr{role} attempts to capture the syntactic nature of each item.
-This is used primarily to drive the parsing; the grammar rules are keyed
-on the \attr{role}, rather than content, of the nodes.  The \attr{role}
-is also used to drive the conversion to presentation markup, especially
-Presentation \MathML, and in fact some values of \attr{role} are only used
-that way, never appearing explicitly in the grammar.
+As mentioned above, the grammar take advantage of the structure (however minimal) of the markup.
+Thus, the grammer is applied in layers, to sequences of tokens or \emph{atomic} 
+subexpressions (like a fractions or arrays). It is the \attr{role} attribute
+that indicates the syntactic and/or presentational nature of each item.
+On the one hand, this drives the parsing: the grammar rules are keyed
+on the \attr{role} (say, \code{ADDOP}), rather than content (say + or -), of the nodes
+[In some cases, the content is used to distinguish special synthesized roles].
+The \attr{role} is also used to drive the conversion to presentation markup, 
+(say, as an infix operator), especially Presentation \MathML.
+Some values of \attr{role} are used only in the grammar,
+some are only used in presentation; most are used both ways.
 
 The following grammatical roles are recognized by the math parser.
 These values can be specified in the \attr{role} attribute during the initial 
 document construction or by rewrite rules.  Although the precedence of operators
 is loosely described in the following, since the grammar contains various special
 case productions, no rigidly ordered precedence is given.
+Also note that in the current design, an expresssion has only a single role,
+although that role may be involved in grammatical rules with distinct syntax and semantics
+(some roles directly reflect this ambiguity).
 \begin{description}
-\item[\code{ATOM}] a general atomic subexpression.
-\item[\code{ID}] a variable-like token, whether scalar or otherwise.
-\item[\code{PUNCT}] punctuation.
-\item[\code{APPLYOP}] an explicit infix application operator (high precedence).
-\item[\code{RELOP}] a relational operator, loosely binding.
-\item[\code{ARROW}] an arrow operator (with little semantic significance).
-  treated equivalently to \code{RELOP}.
-\item[\code{METARELOP}] an operator used for relations between relations, with lower precedence.
-\item[\code{ADDOP}] an addition operator, precedence between relational and multiplicative operators.
-\item[\code{MULOP}] a multiplicative operator, high precedence.
-\item[\code{SUPOP}] An operator appearing in a superscript, such as a collection of primes.
-\item[\code{OPEN}] an open delimiter.
-\item[\code{CLOSE}] a close delimiter.
-\item[\code{MIDDLE}] a middle operator used to group items between an \code{OPEN}, \code{CLOSE} pair.
-\item[\code{OPERATOR}] a general operator; higher precedence than function application.
-  For example, for an operator $A$, and function $F$, $A F x$ would be interpretted as $(A(F))(x)$.
-\item[\code{SUMOP}] a summation/union operator.
-\item[\code{INTOP}] an integral operator.
-\item[\code{LIMITOP}] a limiting operator.
-\item[\code{DIFFOP}] a differential operator.
-\item[\code{BIGOP}] a general operator, but lower precedence, such as a $P$ preceding
-  an integral to denote the principal value.
- Note that \code{SUMOP}, \code{INTOP}, \code{LIMITOP}, \code{DIFFOP} and \code{BIGOP} are treated
- equivalently by the grammar, but are distinguished to facilitate (\emph{eventually!}) 
- analyzing the argument structure (eg bound variables and differentials within an integral).
- \textbf{Note} are \code{SUMOP} and \code{LIMITOP} significantly different in this sense?
-\item[\code{VERTBAR}]
+\item[\code{ATOM}] a general atomic subexpression
+  (atomic at the level of the expression; it may have internal structure);
+\item[\code{ID}] a variable-like token, whether scalar or otherwise,
+  but not a function;
+\item[\code{NUMBER}] a number;
+\item[\code{ARRAY}] a structure with internal components and alignments;
+  typically has a particular syntactic relationship to \code{OPEN} and \code{CLOSE} tokens.
+\item[\code{UNKNOWN}] an unknown expression. This is the default for token elements.
+  Such tokens are treated essential as \code{ID}, but generate a warning if it
+  seems to be used as a function.
+
+\item[\code{OPEN},\code{CLOSE}] opening and closing delimiters, group expressions
+  or enclose arguments among other structures;
+\item[\code{MIDDLE}] a middle operator used to group items between an \code{OPEN},
+  \code{CLOSE} pair;
+\item[\code{PUNCT},\code{PERIOD}] punctuation; a period `ends' formula
+  (note that numbers, including floating point, are recognized earlier in processing);
+\item[\code{VERTBAR}] a vertical bar (single or doubled) which serves a confusing variety
+  of notations: absolute values, ``at'', divides;
+
+\item[\code{RELOP}] a relational operator, loosely binding;
+\item[\code{ARROW}] an arrow operator (with little semantic significance),
+  but generally treated equivalently to \code{RELOP};
+\item[\code{METARELOP}] an operator used for relations between relations, with lower precedence;
+\item[\code{MODIFIER}] an atomic expression following an object that `modifies' it in some way,
+  such as a restriction $(<0)$ or modulus expression;
+\item[\code{MODIFIEROP}] an operator (such as mod) between two expressions such that
+  the latter modifies  the former;
+
+\item[\code{ADDOP}] an addition operator, between \code{RELOP} and \code{MULOP} operators in
+   precedence;
+\item[\code{MULOP}] a multiplicative operator, high precedence than \code{ADDOOP};
+\item[\code{BINOP}] a generic infix operator, can act as either an \code{ADDOP} or \code{MULOP},
+   typically used for cases wrapped in \verb|\mathbin|;
+\item[\code{SUPOP}] An operator appearing \emph{in} a superscript, such as a collection of primes,
+  or perhaps a T for transpose. This is distinct from an expression in a superscript with
+  an implied power or index operator;
+
+\item[\code{PREFIX}] for a prefix operator;
+\item[\code{POSTFIX}] for a postfix operator;
+
 \item[\code{FUNCTION}] a function which (may) apply to following arguments with higher
-   precedence than addition and multiplication, or parenthesized arguments.
-\item[\code{NUMBER}] a number.
-\item[\code{POSTSUPERSCRIPT}] the usual superscript, where the script is treated as
-  an argument, but the base will be determined by parsing. Note that this is not
-  necessarily assumed to be a power. Very high precedence.
-\item[\code{POSTSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
-\item[\code{FLOATINGSUPERSCRIPT}] A special case for a superscript on an empty base,
-  ie. \verb|{}^{x}|.  It is often used to place a pre-superscript or for
-  non-math uses (eg. \verb|10${}^{th}|).
-\item[\code{FLOATINGSUBSCRIPT}] Similar to \code{POSTSUPERSCRIPT} for subscripts.
-\item[\code{POSTFIX}] for a postfix operator
-\item[\code{UNKNOWN}] an unknown expression. This is the default for token elements,
-  and generates a warning if the unknown seems to be used as a function.
+   precedence than addition and multiplication, or to parenthesized arguments
+   (enclosed between \code{OPEN},\code{CLOSE});
+\item[\code{OPFUNCTION}] a variant of \code{FUNCTION} which doesn't require fenced arguments;
+\item[\code{TRIGFUNCTION}] a variant of \code{OPFUNCTION} with special rules for
+  recognizing which following tokens are arguments and which are not;
+\item[\code{APPLYOP}] an explicit infix application operator (high precedence);
+\item[\code{COMPOSEOP}] an infix operator that composes two \code{FUNCTION}'s
+  (resulting in another \code{FUNCTION});
+\item[\code{OPERATOR}] a general operator; higher precedence than function application.
+  For example, for an operator $A$, and function $F$, $A F x$ would be interpretted as $(A(F))(x)$;
+\item[\code{SUMOP},\code{INTOP}, \code{LIMITOP},\code{DIFFOP},\code{BIGOP}]
+  a summation/union, integral, limiting, differential or general purpose operator.
+  These are treated equivalently by the grammar, but are distinguished to
+ facilitate (\emph{eventually}) analyzing the argument structure (eg bound variables
+  and differentials within an integral).
+ \textbf{Note} are \code{SUMOP} and \code{LIMITOP} significantly different in this sense?
+
+\item[\code{POSTSUBSCRIPT},\code{POSTSUPERSCRIPT}] intermediate form of
+  sub- and superscript, roughly as \TeX\ processes them.  The script is (essentially)
+  treated as an argument but the base will be determined by parsing. 
+\item[\code{FLOATINGSUBSCRIPT},\code{FLOATINGSUPERSCRIPT}] A special case for a sub- and
+ superscript on an empty base, ie. \verb|{}^{x}|.  It is often used to place
+  a pre-superscript or for non-math uses (eg. \verb|10${}^{th}|);
 \end{description}
 
 The following roles are not used in the grammar, but are used to capture
-the presentation style:
+the presentation style; they are typically used directly in macros that construct
+structured objects, or used in representing the results of parsing an expression.
 \begin{description}
 \item[\code{STACKED}] corresponds to stacked structures, such as
   \verb|\atop|, and the presentation of binomial coefficients.
+\item[\code{SUPERSCRIPTOP},\code{SUBSCRIPTOP}] after parsing, the operator involved
+  in various sub/superscript constructs above will be comverted to these;
+\item[\code{OVERACCENT},\code{UNDERACCENT}]  these are special cases of the
+  above that indicate the 2nd operand acts as an accent (typically smaller),
+  expressions using these roles are usually directly constructed for accenting macros;
+\item[\code{FENCED}] this operator is used to represent containers enclosed by
+  \code{OPEN} and \code{CLOSE}, possibly with punctuation, particularly when
+  no semantic is known for the construct, such as an arbitrary list.
 \end{description}
+
+The content of a token is actually used in a few special cases to distinguish
+distinct syntactic constructs, but these roles are \emph{not} assigned to
+the \attr{role} attribute of expressions:
+\begin{description}
+\item[\code{LANGLE},\code{RANGLE}] recognizes use of $<$ and $>$ in the bra-ket notation
+  used in quantum mechanics;
+\item[\code{LBRACE},\code{RBRACE}] recognizes use of \{ and \} on
+  either side of stacked or array constructions representing various kinds
+  of cases or choices;
+\item[\code{SCRIPTOPEN}] recognizes the use of \{ in opening specialized set notations.
+\end{description}
+
 
 %%%======================================================================
 % \part{Advanced Topics}
