@@ -1,0 +1,22 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  fleqn                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+#======================================================================
+# Used in compatibility mode to set left aligned equations.
+AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1);
+
+#======================================================================
+1;

@@ -248,6 +248,7 @@ lib/LaTeXML/Package/aaspp.sty.ltxml
 lib/LaTeXML/Package/aas_support.sty.ltxml
 lib/LaTeXML/Package/acronym.sty.ltxml
 lib/LaTeXML/Package/ae.sty.ltxml
+lib/LaTeXML/Package/afterpage.sty.ltxml
 lib/LaTeXML/Package/alltt.sty.ltxml
 lib/LaTeXML/Package/amsart.cls.ltxml
 lib/LaTeXML/Package/amsbook.cls.ltxml
@@ -276,6 +277,7 @@ lib/LaTeXML/Package/babel.sty.ltxml
 lib/LaTeXML/Package/babel.def.ltxml
 lib/LaTeXML/Package/beton.sty.ltxml
 lib/LaTeXML/Package/BibTeX.pool.ltxml
+lib/LaTeXML/Package/bbold.sty.ltxml
 lib/LaTeXML/Package/bbm.sty.ltxml
 lib/LaTeXML/Package/bm.sty.ltxml
 lib/LaTeXML/Package/book.cls.ltxml
@@ -286,6 +288,7 @@ lib/LaTeXML/Package/ccfonts.sty.ltxml
 lib/LaTeXML/Package/chancery.sty.ltxml
 lib/LaTeXML/Package/charter.sty.ltxml
 lib/LaTeXML/Package/cite.sty.ltxml
+lib/LaTeXML/Package/citesort.sty.ltxml
 lib/LaTeXML/Package/cmbright.sty.ltxml
 lib/LaTeXML/Package/color.sty.ltxml
 lib/LaTeXML/Package/colortbl.sty.ltxml
@@ -293,7 +296,9 @@ lib/LaTeXML/Package/comment.sty.ltxml
 lib/LaTeXML/Package/concmath.sty.ltxml
 lib/LaTeXML/Package/courier.sty.ltxml
 lib/LaTeXML/Package/cp852.def.ltxml
+lib/LaTeXML/Package/cropmark.sty.ltxml
 lib/LaTeXML/Package/dcolumn.sty.ltxml
+lib/LaTeXML/Package/doublespace.sty.ltxml
 lib/LaTeXML/Package/elsart.cls.ltxml
 lib/LaTeXML/Package/elsarticle.cls.ltxml
 lib/LaTeXML/Package/elsart.sty.ltxml
@@ -314,11 +319,13 @@ lib/LaTeXML/Package/eurosym.sty.ltxml
 lib/LaTeXML/Package/euscript.sty.ltxml
 lib/LaTeXML/Package/exscale.sty.ltxml
 lib/LaTeXML/Package/fixltx2e.sty.ltxml
+lib/LaTeXML/Package/fleqn.sty.ltxml
 lib/LaTeXML/Package/float.sty.ltxml
 lib/LaTeXML/Package/floatfig.sty.ltxml
 lib/LaTeXML/Package/floatflt.sty.ltxml
 lib/LaTeXML/Package/fontenc.sty.ltxml
 lib/LaTeXML/Package/fontspec.sty.ltxml
+lib/LaTeXML/Package/footmisc.sty.ltxml
 lib/LaTeXML/Package/fourier.sty.ltxml
 lib/LaTeXML/Package/framed.sty.ltxml
 lib/LaTeXML/Package/frenchb.ldf.ltxml
@@ -336,6 +343,7 @@ lib/LaTeXML/Package/html.sty.ltxml
 lib/LaTeXML/Package/hyperref.sty.ltxml
 lib/LaTeXML/Package/hyperxmp.sty.ltxml
 lib/LaTeXML/Package/ifpdf.sty.ltxml
+lib/LaTeXML/Package/indentfirst.sty.ltxml
 lib/LaTeXML/Package/inputenc.sty.ltxml
 lib/LaTeXML/Package/inst_support.sty.ltxml
 lib/LaTeXML/Package/iopams.sty.ltxml
@@ -360,6 +368,7 @@ lib/LaTeXML/Package/mathpazo.sty.ltxml
 lib/LaTeXML/Package/mathpple.sty.ltxml
 lib/LaTeXML/Package/mathptm.sty.ltxml
 lib/LaTeXML/Package/mathptmx.sty.ltxml
+lib/LaTeXML/Package/mathrsfs.sty.ltxml
 lib/LaTeXML/Package/mn.cls.ltxml
 lib/LaTeXML/Package/mn2e.cls.ltxml
 lib/LaTeXML/Package/mn2e_support.sty.ltxml
@@ -375,6 +384,7 @@ lib/LaTeXML/Package/palatino.sty.ltxml
 lib/LaTeXML/Package/paralist.sty.ltxml
 lib/LaTeXML/Package/pdfTeX.pool.ltxml
 lib/LaTeXML/Package/pifont.sty.ltxml
+lib/LaTeXML/Package/placeins.sty.ltxml
 lib/LaTeXML/Package/psfig.sty.ltxml
 lib/LaTeXML/Package/pspicture.sty.ltxml
 lib/LaTeXML/Package/pst-grad.sty.ltxml
@@ -391,6 +401,7 @@ lib/LaTeXML/Package/revtex.cls.ltxml
 lib/LaTeXML/Package/revtex.sty.ltxml
 lib/LaTeXML/Package/rsfs.sty.ltxml
 lib/LaTeXML/Package/scalefnt.sty.ltxml
+lib/LaTeXML/Package/setspace.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
 lib/LaTeXML/Package/subfigure.sty.ltxml
 lib/LaTeXML/Package/supertabular.sty.ltxml
@@ -719,6 +730,9 @@ t/expansion/subdir/whichpkga.sty
 t/fonts/accents.pdf
 t/fonts/accents.xml
 t/fonts/accents.tex
+t/fonts/bbold.pdf
+t/fonts/bbold.xml
+t/fonts/bbold.tex
 t/fonts/cancels.tex
 t/fonts/cancels.xml
 t/fonts/cancels.pdf

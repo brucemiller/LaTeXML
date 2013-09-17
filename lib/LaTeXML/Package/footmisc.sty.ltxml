@@ -1,0 +1,33 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  footmisc                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use LaTeXML::Package;
+
+#**********************************************************************
+foreach my $option (qw(perpage para side ragged symbol symbol* bottom
+                       marginal flushmargin hang norule splitrule
+                       split multiple)){
+  DeclareOption($option,undef); }
+ProcessOptions();
+
+DefMacro('\footnotelayout','');
+# could define & use these, but...
+DefMacro('\DefineFNsymbols OptionalMatch:* {}{}','');
+DefMacro('\setfnsymbol{}','');
+
+DefMacro('\mpfootnoterule','\footnoterule');
+DefMacro('\pagefootnoterule','\footnoterule');
+DefMacro('\splitfootnoterule','\footnoterule');
+#**********************************************************************
+
+1;
