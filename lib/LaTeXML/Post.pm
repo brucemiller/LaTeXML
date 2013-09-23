@@ -169,7 +169,7 @@ sub generateMessage {
       ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination||''
       : "")
       .(defined $where ? ToString($where) : '');
-  ($message,@extra) = grep($_ ne '',map(split("\n",$_),$message,@extra));
+  ($message,@extra) = grep($_ ne '',map(split("\n",$_),grep(defined $_,$message,@extra)));
   my @lines=($errorcode.' '.$message,
 	     ($docloc ? ($docloc):()),
 	     @extra);
