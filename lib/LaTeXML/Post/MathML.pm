@@ -637,55 +637,99 @@ sub pmml_bigop {
 # operator for more scripts, and attempt to decipher (based on scriptpos attribute)
 # the various positionings (pre, mid, post) and determine whether
 # prescripts, multiscripts, munderover or msubsup should be used.
+#
+# Depending on which order the pre/post sub/super/over/under scripts appear,
+# we may end up with a multiscript, or scripts applied to embellished operators.
+# In particular, we may end up with postscripts applied to an object with over/under;
+# OR, the other way around.
+# In the latter case, we may have limits on a primed sum, in which case
+# we will want to adjust the spacing so the limits center on the sum WITHOUT the primes!!!!
+#
 # Moreoever, the inner operator may be a largeop and need to be displaystyle;
 # since mstyle doesn't nest well inside the scripts, we'll handle that too.
 # We also make sure the eventual inner operator (if any) has movablelimits disabled.
-# NOTE: Another issue is when the base is "embellished", in particular
-# has sub/superscripts of it's own.
-# Mozilla (at least?) centers the over/under wrong in that case.
-# The OVERUNDERHACK makes the sub & superscripts have 0 width in this situation.
-# Worried that this will end up biting me, though...
 sub pmml_script {
   my($op,$base,$script)=@_;
   # disentangle base & pre/post-scripts
-  my($innerbase,$pos,$prescripts,$postscripts)=pmml_script_decipher($op,$base,$script);
+  my($innerbase,$prescripts,$midscripts,$postscripts,$emb_left,$emb_right)
+    = pmml_script_decipher($op,$base,$script);
   # check if base needs displaystyle.
   if((($innerbase->getAttribute('mathstyle')||'inline') eq 'display')
      && ($LaTeXML::MathML::STYLE ne 'display')){
     local $LaTeXML::MathML::STYLE = 'display';
     ['m:mstyle',{displaystyle=>'true'},
-     pmml_script_layout($innerbase,$pos,$prescripts,$postscripts)]; }
+     pmml_script_multi_layout(pmml_script_mid_layout($innerbase,$midscripts,$emb_left,$emb_right),
+                              $prescripts,$postscripts)]; }
   else {
-     pmml_script_layout($innerbase,$pos,$prescripts,$postscripts); }}
+     pmml_script_multi_layout(pmml_script_mid_layout($innerbase,$midscripts,$emb_left,$emb_right),
+                              $prescripts,$postscripts); }}
 
-sub pmml_script_layout {
-  my($base,$pos,$prescripts,$postscripts)=@_;
+sub pmml_script_mid_layout {
+  my($base,$midscripts,$emb_left,$emb_right)=@_;
+  if(scalar(@$midscripts) == 0){
+    pmml($base); }
+  else {
+    if(scalar(@$midscripts) > 1){
+      Error("unexpected",$base,"Multiple mid-level (limit) scripts; extras are DROPPED!",
+            map(@$_,@$midscripts)); }
+    { local $LaTeXML::MathML::NOMOVABLELIMITS=1;
+      $base = pmml($base); }
+    # Get the (possibly padded) over & under scripts (if any)
+    my $under = (!defined $$midscripts[0][0] ? undef
+                 : pmml_scriptsize_padded($$midscripts[0][0],$emb_left,$emb_right));
+    my $over = (!defined $$midscripts[0][1] ? undef
+                : pmml_scriptsize_padded($$midscripts[0][1],$emb_left,$emb_right));
+
+    if   (!defined $over) { ['m:munder',{},$base, $under]; }
+    elsif(!defined $under){ ['m:mover',{},$base, $over]; }
+    else {                  ['m:munderover',{},$base, $under, $over]; }}}
+
+# Convert an over or under script to scriptsize,
+# but pad by phantoms of the base's embellishments, if any.
+# This is to handle primed sums, etc....
+sub pmml_scriptsize_padded {
+  my($script,$emb_left,$emb_right)=@_;
+  ($emb_left || $emb_right
+  ? ['m:mrow',{},
+     ($emb_left  ? (['m:mphantom',{},pmml_scriptsize($emb_left)]):()),
+     pmml_scriptsize($script),
+     ($emb_right ? (['m:mphantom',{},pmml_scriptsize($emb_right)]):())]
+   : pmml_scriptsize($script)); }
+
+# base is already converted
+sub pmml_script_multi_layout {
+  my($base,$prescripts,$postscripts)=@_;
   if(scalar(@$prescripts) > 0){
     ['m:mmultiscripts',{},
-     pmml($base),
+     $base,
      map( (pmml_scriptsize($_->[0]),pmml_scriptsize($_->[1])), @$postscripts),
      ['m:mprescripts'],
      map( (pmml_scriptsize($_->[0]),pmml_scriptsize($_->[1])), @$prescripts)]; }
   elsif(scalar(@$postscripts) > 1){
     ['m:mmultiscripts',{},
-     pmml($base),
+     $base,
      map( (pmml_scriptsize($_->[0]),pmml_scriptsize($_->[1])), @$postscripts)]; }
+  elsif(scalar(@$postscripts) == 0){
+    $base; }
   elsif(!defined $$postscripts[0][1]){
-    if($pos eq 'mid'){ pmml_script_overunder_aux('m:munder',$base,$$postscripts[0][0]); }
-    else             { pmml_script_subsup_aux('m:msub',$base,$$postscripts[0][0]); }}
+    ['m:msub',{},$base,pmml_scriptsize($$postscripts[0][0])]; }
   elsif(!defined $$postscripts[0][0]){
-    if($pos eq 'mid'){ pmml_script_overunder_aux('m:mover',$base,$$postscripts[0][1]); }
-    else             { pmml_script_subsup_aux('m:msup',$base,$$postscripts[0][1]); }}
+    ['m:msup',{},$base,pmml_scriptsize($$postscripts[0][1])]; }
   else {
-    if($pos eq 'mid'){ pmml_script_overunder_aux('m:munderover',$base,
-						 $$postscripts[0][0],$$postscripts[0][1]); }
-    else             { pmml_script_subsup_aux('m:msubsup',$base,
-					      $$postscripts[0][0],$$postscripts[0][1]); }}}
+    ['m:msubsup',{},$base,
+     pmml_scriptsize($$postscripts[0][0]),pmml_scriptsize($$postscripts[0][1])]; }}
 
+# Various pre, post and even mid scripts can be wrapped around a base element.
+# Try to decipher such a nesting (in the XMath element) to collect these separate groups
+# They propbably shouldn't be stirred up, but appear in pre, mid,post order,
+# otherwise it's not at all clear how this was expected to look; likely an upstream error?
+# Nor should there be more than a single sub & single sup mid positioned script!
 sub pmml_script_decipher {
   my($op,$base,$script)=@_;
-  my(@pres,@posts);
-  my($prelevel,$postlevel)=(0,0);
+  my(@pres,@mids,@posts);
+  my($prelevel,$midlevel,$postlevel)=(0,0,0);
+  my $sawmid=0;
+  my($emb_left, $emb_right)=(undef,undef); # embellishments of base on left & right
   my ($y) = ($op->getAttribute('role')||'') =~ /^(SUPER|SUB)SCRIPTOP$/;
   my ($pos,$level)= ($op->getAttribute('scriptpos')||'post0')
     =~ /^(pre|mid|post)?(\d+)?$/;
@@ -694,7 +738,13 @@ sub pmml_script_decipher {
       push(@pres,[$script,undef]); $prelevel=$level; }
     elsif($y eq 'SUPER'){
       push(@pres,[undef,$script]); $prelevel=$level; }}
-  else {
+  elsif($pos eq 'mid') {
+    $sawmid=1;
+    if($y eq 'SUB'){
+      push(@mids,[$script,undef]); $midlevel=$level; }
+    elsif($y eq 'SUPER'){
+      push(@mids,[undef,$script]); $midlevel=$level; }}
+  else  {             # else it's post
     if($y eq 'SUB'){
       push(@posts,[$script,undef]); $postlevel=$level; }
     elsif($y eq 'SUPER'){
@@ -712,36 +762,26 @@ sub pmml_script_decipher {
     last unless $ny;
     my ($nx,$nl)= ($xop->getAttribute('scriptpos')||'post0')
       =~ /^(pre|mid|post)?(\d+)?$/;
-    last if ($pos eq 'mid') || ($nx eq 'mid');
-
     my $spos = ($ny eq 'SUB' ? 0 : 1);
     if($nx eq 'pre'){
       push(@pres,[undef,undef]) # New empty pair (?)
 	if($prelevel ne $nl) || $pres[-1][$spos];
       $pres[-1][$spos] = $xscript; $prelevel = $nl; }
+    elsif($nx eq 'mid'){
+      $sawmid=1;
+      unshift(@mids,[undef,undef]) # New empty pair (?)
+	if($midlevel ne $nl) || $mids[0][$spos];
+      $mids[0][$spos] = $xscript; $midlevel = $nl; }
     else {
+      if($sawmid){              # If we already saw mid-scripts (over/under); check for embellishmnt
+        $emb_right = $xscript;
+        last; }
       unshift(@posts,[undef,undef]) # New empty pair (?)
 	if($postlevel ne $nl) || $posts[0][$spos];
       $posts[0][$spos] = $xscript; $postlevel = $nl; }
     $base = $xbase;
   }
-  ($base,$pos,[@pres],[@posts]); }
-
-sub pmml_script_overunder_aux {
-  my($tag,$base,@scripts)=@_;
-  { local $LaTeXML::MathML::NOMOVABLELIMITS=1;
-    local $LaTeXML::MathML::OVERUNDERHACKS=1;
-    $base = pmml($base); }
-  [$tag,{},$base, map(pmml_scriptsize($_),@scripts)]; }
-
-sub pmml_script_subsup_aux {
-  my($tag,$base,@scripts)=@_;
-  $base = pmml($base);
-  @scripts = map(pmml_scriptsize($_),@scripts);
-  if($LaTeXML::MathML::OVERUNDERHACKS){
-    @scripts = map(['m:mpadded',{width=>'0'},$_],@scripts); }
-  [$tag,{},$base,@scripts]; }
-
+  ($base,[@pres],[@mids],[@posts], $emb_left,$emb_right); }
 
 # Handle text contents.
 # Note that (currently) MathML doesn't allow math nested in m:mtext,
