@@ -15,6 +15,7 @@ use strict;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Global;
+use Scalar::Util qw(weaken);
 use base qw(LaTeXML::Model::Schema);
 
 our $XMLPARSER = LaTeXML::Common::XML::Parser->new();
@@ -36,6 +37,7 @@ sub new {
   my($class,$model,$name)=@_;
   my $self = {name=>$name, model=>$model,
 	      modules=>[],elementdefs=>{},defs=>{}, elements=>{}};
+  weaken($$self{model});        # circular back ref; weaked so can be garbage collected.
   bless $self,$class;
   $self; }
 
