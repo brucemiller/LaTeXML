@@ -37,11 +37,6 @@ our @ISA=qw(Storable);
 #
 #======================================================================
 
-our @DBS=();
-END {
-  map($_->finish, @DBS);
-}
-
 #======================================================================
 # Creating an ObjectDB object, hooking up initial database.
 sub new {
@@ -62,8 +57,11 @@ sub new {
     tie %{$$self{externaldb}}, 'DB_File', $dbfile,$flags
       or die "Couldn't attach DB $dbfile for object table"; 
   }
-  push(@DBS,$self);
   $self; }
+
+sub DESTROY {
+  my($self)=@_;
+  $self->finish; }
 
 sub status {
   my($self)=@_;
