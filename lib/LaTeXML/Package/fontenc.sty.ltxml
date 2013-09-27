@@ -96,7 +96,7 @@ ProcessOptions();
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub loadFontEncoding {
   my $encoding = ToString(Digest(T_CS('\CurrentOption')));
-  DefMacroI('\encodingdefault',undef,Explode($encoding),scope=>'global');
+  DefMacroI('\encodingdefault',undef,Tokens(Explode($encoding)),scope=>'global');
   my $encfile = lc($encoding)."enc";
   InputDefinitions($encfile,type=>'def');
   if(LoadFontMap($encoding)){
