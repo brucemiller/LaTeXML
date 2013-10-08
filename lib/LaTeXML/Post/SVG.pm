@@ -309,10 +309,7 @@ sub convertVbox {
   my $dummynode = new_node($NSURI,'text');
   $dummynode->appendText($text);
   my $newNode = $parent->addNewChild($svgURI, 'text');
-##  $newNode->appendText($text);
   copy_attributes($newNode, $node, CA_OVERWRITE, qw(x y));
-  #    $node->removeChildNodes;
-  #    map(convertNode($newNode,$_), element_nodes($node));
   convertText($newNode,$dummynode);
   $newNode; }
 
