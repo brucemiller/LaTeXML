@@ -387,7 +387,16 @@ creator_attributes =
 
   ## indicates the role of the person in creating the docment.
   ## Commonly useful values are specified, but is open-ended to support extension.
-  attribute role { "author" | "editor" | "translator" | "contributor" | "translator" | text }?
+  attribute role { "author" | "editor" | "translator" | "contributor" | "translator" | text }?,
+
+  ## specifies opening text to display before this creator in a formatted titlepage.
+  ## This would be typically appear outside the author information, like "and".
+  attribute before { text }?,
+
+  ## specifies closing text, punctuation or conjunction to display after
+  ## this creator in a formatted titlepage.
+  attribute after { text }?
+
 
 ## Content model for \elementref{creator}.
 creator_model = (Person.class | Misc.class)*

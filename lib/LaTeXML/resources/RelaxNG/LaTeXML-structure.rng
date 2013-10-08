@@ -704,6 +704,18 @@ Commonly useful values are specified, but is open-ended to support extension.</a
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="before">
+        <a:documentation>specifies opening text to display before this creator in a formatted titlepage.
+This would be typically appear outside the author information, like "and".</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="after">
+        <a:documentation>specifies closing text, punctuation or conjunction to display after
+this creator in a formatted titlepage.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="creator_model">
     <a:documentation>Content model for \elementref{creator}.</a:documentation>

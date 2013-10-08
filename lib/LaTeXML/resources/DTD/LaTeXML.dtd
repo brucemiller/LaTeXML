@@ -3927,7 +3927,9 @@
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
   name CDATA #IMPLIED
-  role CDATA #IMPLIED>
+  role CDATA #IMPLIED
+  before CDATA #IMPLIED
+  after CDATA #IMPLIED>
 
 <!ELEMENT ltx:personname (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                           |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
