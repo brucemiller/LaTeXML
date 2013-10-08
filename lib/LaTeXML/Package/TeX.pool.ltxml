@@ -4616,7 +4616,7 @@ DefRewrite(select=>["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@meani
 			$doc->closeElement('ltx:XMApp'); }
 		      else {
 			# For simple tokens, we'll modify the relevant content & attributes
-			$thing->removeChildNodes;
+                        map($_->unbindNode(), $thing->childNodes);
 			my $new = defined $NOTS{$text} ? $NOTS{$text} : $text."\x{0338}";
 			$thing->appendText($new);
 			if(my $meaning = $thing->getAttribute('meaning')){
@@ -5511,7 +5511,7 @@ sub setAlignOrClass {
 # A random collection of utility functions.
 # [maybe need to do some reorganization?]
 sub SplitTokens {
-  my($cs,$tokens,@delims)=@_;
+  my($tokens,@delims)=@_;
   my @items = ();
   my @toks=();
   if($tokens){
@@ -5530,11 +5530,11 @@ sub SplitTokens {
 	  push(@toks,$t); }}
       else {
 	push(@toks,$t); }}}
-  map( ($cs,T_BEGIN,@$_,T_END), @items,[@toks]); }
+  (@items,[@toks]); }
 
 sub andSplit {
   my($cs,$tokens)=@_;
-  SplitTokens($cs,$tokens,T_CS('\and')); }
+  map( ($cs,T_BEGIN,@$_,T_END), SplitTokens($tokens,T_CS('\and'))); }
 
 #**********************************************************************
 LoadPool('eTeX'); # unless.... ?
