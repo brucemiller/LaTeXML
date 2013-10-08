@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
-<document xmlns="http://dlmf.nist.gov/LaTeXML">
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <title>Testing Authors<note role="thanks">Whoppee!</note></title>
@@ -9,7 +9,7 @@
     <personname>Joe Blow</personname>
     <contact role="thanks">Somewhere</contact>
   </creator>
-  <creator role="author">
+  <creator role="author" before="  ">
     <personname>Fred Head</personname>
     <contact role="thanks">elsewhere</contact>
   </creator>
