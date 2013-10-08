@@ -47,95 +47,6 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:titlepage">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:creator[@role='author']">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:personname">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:choose>
-	<xsl:when test="@href">
-	  <xsl:element name="a" namespace="{$html_ns}">
-	    <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
-	    <xsl:apply-templates/>
-	  </xsl:element>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:apply-templates/>
-	</xsl:otherwise>
-      </xsl:choose>
-      <xsl:text>&#x0A;</xsl:text>
-      <xsl:apply-templates select="." mode="end"/>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:contact[@role='email']">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:element name="a" namespace="{$html_ns}">      
-	<xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
-	<xsl:apply-templates/>
-      </xsl:element>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:contact[@role='dedicatory']">
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-      </xsl:call-template>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
 
   <xsl:template match="ltx:abstract">
     <xsl:text>&#x0A;</xsl:text>
@@ -308,6 +219,19 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template match="ltx:titlepage">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+      </xsl:call-template>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
   <xsl:template match="ltx:title" mode="classes">
     <xsl:apply-imports/>
     <xsl:text> </xsl:text>
@@ -329,7 +253,8 @@
   </xsl:template>
 
   <!-- Convert a title to an <h1>..<h6>, with appropriate classes and content.
-       In html5, IFF section/article elements are used, we can (& should?) use only h1. -->
+       In html5, IFF section/article elements are used, we can (& should?) use only h1.
+       The title chunk also contains authors, subtitles, etc. -->
   <xsl:template name="maketitle">
     <xsl:element
 	name="{f:if($USE_HTML5,'h1',concat('h',f:section-head-level(parent::*)))}"
@@ -339,13 +264,125 @@
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:apply-templates/>
     </xsl:element>
-    <!-- include parent's subtitle & date (if any)-->
+    <!-- include parent's author, subtitle & date (if any)-->
+    <xsl:call-template name="authors"/>
     <xsl:apply-templates select="../ltx:subtitle" mode="intitle"/>
     <xsl:apply-templates select="../ltx:date" mode="intitle"/>
     <xsl:apply-templates select="." mode="end"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:apply-templates select="parent::*" mode="auto-toc"/>
   </xsl:template>
+
+  <!-- try to accomodate multiple authors in single block, vs each one as a block -->
+  <xsl:template name="authors">
+    <xsl:if test="../ltx:creator[@role='author']">
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_authors</xsl:attribute>
+        <xsl:apply-templates select="../ltx:creator[@role='author']" mode="intitle"/>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ltx:creator"/>
+
+  <!-- Format an author 'inline' as part of an author block -->
+  <xsl:template match="ltx:creator[@role='author']" mode="intitle">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:if test="@before">
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_author_before</xsl:attribute>
+        <xsl:value-of select="@before"/>
+      </xsl:element>
+    </xsl:if>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates select="ltx:personname"/>
+      <xsl:if test="ltx:contact">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:apply-templates select="ltx:contact"/>
+	  </xsl:element>
+        </xsl:element>
+      </xsl:if>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
+    <xsl:if test="@after">
+      <xsl:element name="span" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_author_after</xsl:attribute>
+        <xsl:value-of select="@after"/>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ltx:personname">
+    <xsl:text>&#x0A;</xsl:text>
+<!--    <xsl:element name="div" namespace="{$html_ns}">-->
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:choose>
+	<xsl:when test="@href">
+	  <xsl:element name="a" namespace="{$html_ns}">
+	    <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+	    <xsl:apply-templates/>
+	  </xsl:element>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:apply-templates/>
+	</xsl:otherwise>
+      </xsl:choose>
+      <xsl:text>&#x0A;</xsl:text>
+      <xsl:apply-templates select="." mode="end"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+      </xsl:call-template>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:contact[@role='email']">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+      </xsl:call-template>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:element name="a" namespace="{$html_ns}">      
+	<xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
+	<xsl:apply-templates/>
+      </xsl:element>
+      <xsl:apply-templates select="." mode="end"/>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:contact[@role='dedicatory']">
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+      </xsl:call-template>
+      <xsl:apply-templates select="." mode="begin"/>
+      <xsl:apply-templates/>
+      <xsl:apply-templates select="." mode="end"/>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
 
   <!-- If we want to deduce style & children, we could set this up as a parameter option -->
   <xsl:template match="*|/" mode="auto-toc"/>
