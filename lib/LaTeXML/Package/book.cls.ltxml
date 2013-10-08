@@ -38,6 +38,10 @@ ProcessOptions();
 RelaxNGSchema("LaTeXML");
 RequireResource('ltx-book.css');
 
+# This makes the authors appear on 1 line;
+# for derived classes with multiple lines, map this to undef and add ltx_authors_multiline
+AddToMacro(T_CS('\maketitle'),T_CS('\ltx@authors@oneline'));
+
 DefMacro('\@ptsize','0');	# should depend on options...
 RawTeX(<<'EOTeX');
 \newif\if@restonecol
@@ -60,7 +64,7 @@ DefMacro('\thepart',         '\Roman{part}');
 DefMacro('\thechapter',      '\arabic{chapter}');
 DefMacro('\thesection',      '\thechapter.\arabic{section}');
 DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
-DefMacro('\thesubsubsection','\thesubsection.\arabic{subsubsection}');
+DefMacro('\thesubsubsection','');
 DefMacro('\theparagraph',    '');
 DefMacro('\thesubparagraph', '');
 
