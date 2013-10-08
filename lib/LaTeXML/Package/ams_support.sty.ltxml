@@ -87,9 +87,12 @@ DefMacro('\title[]{}',
 	 '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
 	 .'\@add@frontmatter{ltx:title}{#2}');
 
+DefMacro('\lx@author@sep',',\ ');
+DefMacro('\lx@author@conj','\ and\ '); # \@@and
+
 DefMacro('\author[]{}',
 	 '\if.#1.\else\def\shortauthor{#1}\fi'
-	 .'\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
+	 .'\@author{#2}');
 
 DefMacroI('\datename',undef,'\textit{Date}:');
 

@@ -37,14 +37,15 @@ use LaTeXML::Package;
 # with the same mark number, and copy the institute information into that creator element
 # as an ltx:contact(with @role='institute').
 
-DefMacro('\author{}', sub { SplitTokens(T_CS('\@author'),$_[1],T_CS('\and'),T_OTHER(',')); });
+DefMacro('\author{}', sub { 
+  map( (T_CS('\@author'),T_BEGIN,@$_,T_END), SplitTokens($_[1],T_CS('\and'),T_OTHER(','))); });
 
 DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-####DefConstructor('\inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
 DefConstructor('\@inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
-DefMacro('\inst{}',sub { SplitTokens(T_CS('\@inst'),$_[1],T_OTHER(',')); });
+DefMacro('\inst{}',sub {
+ map( (T_CS('\@inst'),T_BEGIN,@$_,T_END), SplitTokens($_[1],T_OTHER(','))); });
 
 NewCounter('inst','document');
 DefMacro('\institute{}',
