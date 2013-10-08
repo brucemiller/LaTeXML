@@ -719,8 +719,34 @@ DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
 
 DefConstructorI('\and',undef,  " and ");
 
-DefMacro('\@author{}', '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+AssignValue(NUMBER_OF_AUTHORS=>0);
+DefPrimitive('\lx@count@author',sub {
+  AssignValue(NUMBER_OF_AUTHORS=>LookupValue('NUMBER_OF_AUTHORS')+1, 'global')});
+DefMacro('\@author{}',
+         '\lx@count@author'
+         .'\@add@frontmatter{ltx:creator}[role=author]{\lx@author@prefix\@personname{#1}}');
+DefMacro('\lx@author@sep','\qquad');
+DefMacro('\lx@author@conj','\qquad');
+DefConstructor('\lx@author@prefix',sub {
+  my($document)=@_;
+  my $node = $document->getElement;
+  my $nauthors = LookupValue('NUMBER_OF_AUTHORS');
+  my $i = scalar( @{$document->findnodes('//ltx:creator[@role="author"]')} );
+  if($i <= 1){}
+  elsif($i == $nauthors){
+    $node->setAttribute(before=>ToString(Digest(T_CS('\lx@author@conj')))); }
+  else {
+    $node->setAttribute(before=>ToString(Digest(T_CS('\lx@author@sep')))); }
+  });
+
 DefMacro('\author{}', sub { andSplit(T_CS('\@author'),$_[1]); });
+
+DefPrimitive('\ltx@authors@oneline',sub {
+               AssignMapping('DOCUMENT_CLASSES',ltx_authors_1line=>1);
+               return; });
+DefPrimitive('\ltx@authors@multiline',sub {
+               AssignMapping('DOCUMENT_CLASSES',ltx_authors_multiline=>1);
+               return; });
 
 DefMacro('\@add@conversion@date','\@add@frontmatter{ltx:date}[role=creation]{\today}');
 
