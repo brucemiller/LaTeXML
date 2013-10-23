@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  LaTeXML::State                                                     | #
-# | Maintains state: bindings, valuse, grouping                         | #
+# | Maintains state: bindings, values, grouping                         | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
