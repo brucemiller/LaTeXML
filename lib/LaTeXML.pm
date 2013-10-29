@@ -195,7 +195,7 @@ sub convertDocument {
 
      LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
      NoteBegin("Finalizing");
-     my $xmldoc = $document->finalize();
+     my $xmldoc = $document->finalize(); 
      NoteEnd("Finalizing");
      return $xmldoc; }); }
 
