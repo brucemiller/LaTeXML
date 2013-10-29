@@ -37,7 +37,6 @@ sub new {
   my($class,%options)=@_;
   my $state     = LaTeXML::State->new(catcodes=>'standard',
 				      stomach=>LaTeXML::Stomach->new(),
-              mathparser=>LaTeXML::MathParser->new(),
 				      model  => $options{model} || LaTeXML::Model->new());
   $state->assignValue(VERBOSITY=>(defined $options{verbosity} ? $options{verbosity} : 0),
 		      'global');
@@ -55,9 +54,9 @@ sub new {
   $state->assignValue(INCLUDE_STYLES=>$options{includeStyles}|| 0,'global');
   $state->assignValue(PERL_INPUT_ENCODING=>$options{inputencoding}) if $options{inputencoding};
   return bless {state   => $state, 
-	 nomathparse=>$options{nomathparse}||0,
-	 preload=>$options{preload},
-	}, $class; }
+    nomathparse=>$options{nomathparse}||0,
+    preload=>$options{preload},
+         }, $class; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # High-level API.
