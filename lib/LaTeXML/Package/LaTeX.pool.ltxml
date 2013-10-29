@@ -1374,6 +1374,33 @@ DefMacro('\@ensuremath{}', sub {
     if (LookupValue('IN_MATH')) { $stuff->unlist; }
     else { (T_MATH, $stuff->unlist, T_MATH); } });
 
+# Magic check that math-mode trigger follows
+our $MATHENVS = 'math|displaymath|equation*?|eqnarray*?'
+  .'|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
+DefMacro('\ensuremathfollows', sub {
+  my($gullet) = @_;
+  $gullet->closeMouth unless ($gullet->getMouth->hasMoreInput);
+  if(my $tok=$gullet->readToken()){
+    my $csname = $tok->getCSName;
+    if ($csname eq '\begin') {
+      my $arg = $gullet->readArg();
+      $csname = $arg->toString;
+      $gullet->unread(T_BEGIN, $arg->unlist, T_END);
+    }
+    $gullet->unread($tok);
+    # We need to determine whether the TeX we're given needs to be wrapped in \(...\)
+    # Does it have $'s around it? Does it have a display math environment?
+    if ($csname !~ /^Math|\\\(|\\\[|($MATHENVS)/o) {
+      AssignValue('automath_triggered'=>1,'global');
+      return T_CS('\\('); }}
+  return;
+});
+
+DefMacro('\ensuremathpreceeds', sub {
+  return LookupValue('automath_triggered') ? T_CS('\\)') : ();
+});
+
+
 # Since the arXMLiv folks keep wanting ids on all math, let's try this!
 Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 
@@ -2786,7 +2813,13 @@ DefMacro('\cite[] Semiverbatim', sub {
         ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
-DefConstructor('\nocite Semiverbatim', '');
+DefMacro('\nocite Semiverbatim', sub {
+  my ($gullet,$arg) = @_;
+  if (ToString($arg) eq '*') {
+    return (T_CS('\cite'), T_BEGIN,T_OTHER('*'),T_END); }
+  else {
+    Warn('TODO','\nocite',$gullet,"LaTeXML only recognizes \\nocite{*} for now, single citations are to be implemented.");
+    return; }});
 
 #======================================================================
 # C.11.4 Splitting the input
