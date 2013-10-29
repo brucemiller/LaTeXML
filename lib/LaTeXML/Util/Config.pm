@@ -23,6 +23,7 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use Data::Dumper;
 our $PROFILES_DB={}; # Class-wide, caches all profiles that get used while the server is alive
+our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
 
 sub new {
   my ($class,%opts) = @_;
@@ -196,7 +197,7 @@ sub read {
 
   $opts->{source} = $ARGV[0] unless $opts->{source};
   if (!$opts->{type} || ($opts->{type} eq 'auto')) {
-    $opts->{type} = 'BibTeX' if ($opts->{source} && ($opts->{source} =~ /\.bib$/));
+    $opts->{type} = 'BibTeX' if ($opts->{source} && ($opts->{source} =~ /$is_bibtex/));
   }
   return;
 }
@@ -206,9 +207,9 @@ sub read_keyvals {
   my $cmdopts = [];
   while (my ($key,$value) = splice(@$opts,0,2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
-    next if (!$value) && (grep {/^$key\=/} @GETOPT_KEYS);
+    next if (! length($value)) && (grep {/^$key\=/} @GETOPT_KEYS);
     $key = "--$key" unless $key=~/^\-\-/;
-    $value = $value ? "=$value" : '';
+    $value = length($value) ? "=$value" : '';
     push @$cmdopts, "$key$value";
   }
   # Read into a Config object:
@@ -293,7 +294,7 @@ sub _obey_profile {
       $profile_opts = $conf_tmp->options;
     } else {
       # Throw an error, fallback to custom
-      croak ("Error:unexpected:$profile Profile $profile was not recognized, reverting to 'custom'");
+      carp("Warning:unexpected:$profile Profile $profile was not recognized, reverting to 'custom'\n");
       $opts->{profile} = 'custom';
       $profile='custom';
     }
@@ -355,31 +356,32 @@ sub _prepare_options {
 
   # Destination extension might indicate the format:
   if ((!defined $opts->{format}) && (defined $opts->{destination})){
-    if ($opts->{destination}=~/\.xhtml$/) {
-      $opts->{format}='xhtml';
-    } elsif ($opts->{destination}=~/\.html$/) {
-      $opts->{format}='html';
-    } elsif ($opts->{destination}=~/\.html5$/) {
-      $opts->{format}='html5';
-    } elsif ($opts->{destination}=~/\.xml$/) {
-      $opts->{format}='xml';
-  }}
-
-  # Unset destinations unless local conversion has been requested:
-  if (!$opts->{local} && ($opts->{destination} || $opts->{log} || $opts->{postdest} || $opts->{postlog})) 
-    {carp "I/O from filesystem not allowed for non-local conversion jobs!\n".
-       " Will revert to sockets!\n";
-     undef $opts->{destination}; undef $opts->{log};
-     undef $opts->{postdest}; undef $opts->{postlog};}
+    if ($opts->{destination}=~/\.([^.]+)$/) {
+      $opts->{format}=$1; }}
+  if ($opts->{format}) {
+    # Lower-case for sanity's sake
+    $opts->{format} = lc($opts->{format});
+    if ($opts->{format} eq 'zip') {
+      # Not encouraged! But try to produce something sensible anyway...
+      $opts->{format} = 'html5';
+      $opts->{whatsout} = 'archive';
+    }
+    $opts->{is_html} = ($opts->{format}=~/^html5?$/);
+    $opts->{whatsout} = 'archive' if (($opts->{format} eq 'epub') || ($opts->{format} eq 'mobi'));
+  }
   #======================================================================
   # II. Sanity check and Completion of Post options.
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  $opts->{post}=1 if ( (! defined $opts->{post}) && (scalar(@{$opts->{math_formats}}) ) ||
-    ($opts->{stylesheet}) || ($opts->{format} && ($opts->{format}=~/html/i)));
+  $opts->{post}=1 if ( (! defined $opts->{post}) &&
+    (scalar(@{$opts->{math_formats}}) )
+    || ($opts->{stylesheet})
+    || $opts->{is_html}
+    || ($opts->{whatsout} && ($opts->{whatsout} ne 'document'))
+  );
                        # || ... || ... || ...
-  $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
+  # $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
   if ($opts->{post}) { # No need to bother if we're not post-processing
 
     # Default: scan and crossref on, other advanced off
@@ -400,9 +402,9 @@ sub _prepare_options {
     delete $opts->{navtoc} if ($opts->{navtoc} && ($opts->{navtoc} eq 'none'));
     if($opts->{navtoc}){
       if(!$opts->{navtocstyles}->{$opts->{navtoc}}){
-	croak($opts->{navtoc}." is not a recognized style of navigation TOC"); }
+        croak($opts->{navtoc}." is not a recognized style of navigation TOC"); }
       if(!$opts->{crossref}){
-	croak("Cannot use option \"navigationtoc\" (".$opts->{navtoc}.") without \"crossref\""); }}
+        croak("Cannot use option \"navigationtoc\" (".$opts->{navtoc}.") without \"crossref\""); }}
     $opts->{urlstyle}='server' unless defined $opts->{urlstyle};
     $opts->{bibliographies} = [] unless defined $opts->{bibliographies};
 
@@ -430,7 +432,7 @@ sub _prepare_options {
     $opts->{format}="xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
     $opts->{format}="xhtml" unless defined $opts->{format};
     if (!$opts->{stylesheet}) {
-      if ($opts->{format} eq "xhtml") {$opts->{stylesheet} = "LaTeXML-xhtml.xsl";}
+      if ($opts->{format} =~ /^xhtml|epub|mobi$/) {$opts->{stylesheet} = "LaTeXML-xhtml.xsl";}
       elsif ($opts->{format} eq "html") {$opts->{stylesheet} = "LaTeXML-html.xsl";}
       elsif ($opts->{format} eq "html5") {$opts->{stylesheet} = "LaTeXML-html5.xsl";}
       elsif ($opts->{format} eq "xml") {delete $opts->{stylesheet};}
@@ -440,7 +442,7 @@ sub _prepare_options {
     if ($opts->{format} eq 'html') {
       $opts->{svg}=0 unless defined $opts->{svg}; # No SVG by default.
       croak("Default html stylesheet only supports math images, not ".join(', ',@{$opts->{math_formats}}))
-	if scalar(@{$opts->{math_formats}});
+        if scalar(@{$opts->{math_formats}});
       croak("Default html stylesheet does not support svg") if $opts->{svg};
       $opts->{mathimages} = 1;
       $opts->{math_formats} = [];
@@ -448,15 +450,9 @@ sub _prepare_options {
     $opts->{dographics} = 1 unless defined $opts->{dographics};
     $opts->{picimages}  = 1 unless defined $opts->{picimages};
     $opts->{svg} = 1 unless defined $opts->{svg};
-    # Math Format fallbacks:
-    # TODO: Reintroduce defaults?
-    # $opts->{math_formats}=[@{$self->{defaults}->{math_formats}}] if (defined $self && (! 
-    #                                                                    ( (defined $opts->{math_formats}) &&
-    #                                                                      scalar(@{$opts->{math_formats}})
-    #                                                                    )));
-    # PMML default if all else fails and no mathimages:
+    # PMML default if we're HTMLy and all else fails and no mathimages:
     if  (((! defined $opts->{math_formats}) || (!scalar(@{$opts->{math_formats}}))) &&
-      (!$opts->{mathimages}))
+      (!$opts->{mathimages}) && $opts->{is_html})
     {
       push @{$opts->{math_formats}}, 'pmml';
     }

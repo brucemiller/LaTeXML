@@ -142,8 +142,8 @@ sub assign_internal {
   }}
 
 #======================================================================
-sub getStomach { $_[0]->{stomach}; }
-sub getModel   { $_[0]->{model}; }
+sub getStomach     { $_[0]->{stomach}; }
+sub getModel       { $_[0]->{model}; }
 
 #======================================================================
 
@@ -305,6 +305,11 @@ sub pushDaemonFrame {
 	  # Local assignment
 	  $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
 	  unshift(@{$$hash{$key}},daemon_copy($value)); }}}} # And push new binding.
+  # Record the contents of LaTeXML::Package::Pool as preloaded
+  my $pool_sub_hash = { map {$_ => 1} keys %LaTeXML::Package::Pool:: };
+  foreach my $constructor(grep {/^constructor_/} keys %LaTeXML::Definition::) {
+    $pool_sub_hash->{$constructor} = 1; }
+  $self->assignValue('_PRELOADED_POOL_',$pool_sub_hash,'global');
   # Now mark the top frame as LOCKED!!!
   $$self{undo}[0]{_FRAME_LOCK_} = 1; }
 
@@ -324,6 +329,20 @@ sub popDaemonFrame {
     $self->popFrame; }
   if(scalar( @{$$self{undo}} > 1)){
     delete $$self{undo}[0]{_FRAME_LOCK_};
+    # Any non-preloaded Pool routines should be wiped away, as we
+    # might want to reuse the Pool namespaces for the next run.
+    my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
+    $self->assignValue('_PRELOADED_POOL_',undef,'global');
+    foreach my $subname (keys %LaTeXML::Package::Pool::) {
+      unless (exists $pool_preloaded_hash->{$subname}) {
+        delete $LaTeXML::Package::Pool::{$subname};  
+      }
+    }
+    foreach my $constructor (grep {/^constructor_/} (keys %LaTeXML::Definition::)) {
+      unless (exists $pool_preloaded_hash->{$constructor}) {
+        delete $LaTeXML::Definition::{$constructor};
+    }}
+    # Finally, pop the frame
     $self->popFrame; }
   else {
     Fatal('unexpected','<endgroup>',$self->getStomach,
@@ -415,6 +434,11 @@ sub getStatus {
   my($self,$type)=@_;
   $$self{status}{$type}; }
 
+sub setStatus {
+  my($self,$type,$value)=@_;
+  if (($type ne "missing") && ($type ne "undefined")) {
+  $$self{status}{$type} = $value; }}
+
 sub getStatusMessage {
   my($self)=@_;
   my $status= $$self{status};
@@ -434,6 +458,22 @@ sub getStatusMessage {
        ."[".join(', ',@miss)."]")
     if @miss;
   join('; ', @report) || 'No obvious problems'; }
+
+sub getStatusCode {
+  my($self)=@_;
+  my $status= $$self{status};
+  my $code;
+  if ($$status{fatal} && $$status{fatal}>0) {
+      $code=3;
+  } elsif ($$status{error} && $$status{error}>0) {
+      $code=2;
+  } elsif ($$status{warning} && $$status{warning}>0) {
+      $code=1;
+  } else {
+      $code=0;
+  }
+  $code;
+}
 
 #======================================================================
 1;
