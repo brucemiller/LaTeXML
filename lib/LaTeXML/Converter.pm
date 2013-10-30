@@ -170,7 +170,7 @@ sub convert {
   });
 
   # First read and digest whatever we're given.
-  my ($digested,$dom,$serialized) = (undef,undef,undef);
+  my ($digested,$dom,$serialized);
   # Digest source:
   my $convert_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:timeout Conversion timed out after " . $opts->{timeout} . " seconds!\n"; };

@@ -143,8 +143,8 @@ sub assign_internal {
   return; }
 
 #======================================================================
-sub getStomach     { $_[0]->{stomach}; }
-sub getModel       { $_[0]->{model}; }
+sub getStomach { $_[0]->{stomach}; }
+sub getModel   { $_[0]->{model}; }
 
 #======================================================================
 
