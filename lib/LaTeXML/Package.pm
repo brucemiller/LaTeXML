@@ -1191,7 +1191,7 @@ sub FindFile_aux {
      && ($path=pathname_find("$file.ltxml",paths=>$ltxml_paths,installation_subdir=>'Package'))){
     return $path; }
   # If we're EXCLUDING ltxml, then FIRST use pathname_find to search for file (faster, blahblah)
-  if($options{noltxml} && ($path=pathname_find($file,paths=>$paths,urlbase=>$urlbase))){
+  if($options{noltxml} && ($path=pathname_find($file,paths=>$paths))){
     return $path; }
   # Otherwise, pass on to kpsewhich
   # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
