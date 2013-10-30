@@ -185,7 +185,8 @@ sub pathname_absolute {
 sub pathname_timestamp {
   -f $_[0] ? (stat($_[0]))[9] : 0; }
 
-sub pathname_cwd { pathname_canonical(cwd()); }
+our $Pathname_CWD = pathname_canonical(cwd());
+sub pathname_cwd { $Pathname_CWD; }
 
 sub pathname_mkdir {
   my($directory)=@_;
@@ -275,7 +276,7 @@ sub candidate_pathnames {
     push(@dirs,pathname_concat($cwd,$pathdir)) unless @dirs; # At least have the current directory!
     # And, if installation dir specified, append it.
     if(my $subdir = $options{installation_subdir}){
-      push(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
+      unshift(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
 
   # extract the desired extensions.
   my @exts = ();
