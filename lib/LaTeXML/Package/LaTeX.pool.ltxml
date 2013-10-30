@@ -37,8 +37,8 @@ Let(T_CS('\magnification'),T_CS('\@undefined'));
 
 #AssignValue('2.09_COMPATIBILITY'=>0);
 DefConditionalI('\if@compatibility',undef,sub { LookupValue('2.09_COMPATIBILITY'); });
-DefMacroI('\@compatibilitytrue','');
-DefMacroI('\@compatibilityfalse','');
+DefMacro('\@compatibilitytrue','');
+DefMacro('\@compatibilityfalse','');
 
 Let(T_CS('\@currentlabel'),T_CS('\@empty'));
 
