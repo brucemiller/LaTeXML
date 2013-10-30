@@ -32,7 +32,8 @@ our %DAEMON_DB = () unless keys %DAEMON_DB;
 
 sub new {
   my ($class,$config) = @_;
-  $config = $LaTeXML::Util::Config->new() unless (defined $config);
+  require LaTeXML::Util::Config;
+  $config = LaTeXML::Util::Config->new() unless (defined $config);
   # The daemon should be setting the identity:
   $config->check;
   bless {opts=>$config->options,ready=>0,log=>q{},runtime=>{},
