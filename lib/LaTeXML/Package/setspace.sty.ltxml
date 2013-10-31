@@ -15,14 +15,14 @@ use LaTeXML::Package;
 
 #**********************************************************************
 # Mostly no-op for LaTeXML, except for two ignorable environments
-DefMacroI('\singlespacing',undef,'');
-DefMacroI('\onehalfspacing',undef,'');
-DefMacroI('\doublespacing',undef,'');
+DefMacroI('\singlespacing',  undef, '');
+DefMacroI('\onehalfspacing', undef, '');
+DefMacroI('\doublespacing',  undef, '');
 
-DefEnvironment("{singlespace}","#body");
-DefEnvironment("{onehalfspace}","#body");
-DefEnvironment("{doublespace}","#body");
-DefEnvironment("{spacing}{}","#body");
+DefEnvironment("{singlespace}",  "#body");
+DefEnvironment("{onehalfspace}", "#body");
+DefEnvironment("{doublespace}",  "#body");
+DefEnvironment("{spacing}{}",    "#body");
 #**********************************************************************
 
 1;

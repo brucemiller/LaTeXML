@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | # 
+# | Thanks to the arXMLiv group for initial implementation              | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -19,7 +19,7 @@ use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Preliminary support for xelatex
-AssignValue(PERL_INPUT_ENCODING=>'utf8');
+AssignValue(PERL_INPUT_ENCODING => 'utf8');
 
 RequirePackage('textcomp');
 

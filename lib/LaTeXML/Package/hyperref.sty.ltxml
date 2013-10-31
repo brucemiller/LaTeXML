@@ -25,94 +25,93 @@ RequirePackage('url');
 # Most (all?) options currently ignored; seen handling at end. But:
 #  * the various color ones should be used for styling
 #  * The metadata could be used to augment the RDFa
-foreach my $option (# 3.1 General Options
-		    qw(draft final debug verbose implicit hypertexnames naturalnames
-		       a4paper a5paper b5paper letterpaper legalpaper executivepaper setpagesizes),
-		    # 3.2 Configuration Options
-		    qw(raiselinks breaklinks pageanchor plainpages nesting),
-		    # 3.3 Backend Drivers
-		    qw(dvipdfm dvipdfmx dvips dvipsone dviwindo hypertex latex2html
-		       nativepdf pdfmark pdftex ps2pdf tex4ht textures vtex vtexpdfmark xetex),
-		    # 3.4 Extension Options
-		    qw(extension hyperfigures backref pagebackref hyperindex
-		       pageanchors plainpages hyperfootnotes encap linktocpage
-		       breaklinks colorlinks linkcolor anchorcolor citecolor filecolor
-		       menucolor pagecolor urlcolor frenchlinks),
-		    # 3.5 PDF-specific display options
-		    qw(bookmarks bookmarksopen bookmarksopenlevel bookmarksnumbered bookmarstype
-		       CJKbookmarks pdfhighlight citebordercolor filebordercolor linkbordercolor
-		       menubordercolor pagebordercolor urlbordercolor runbordercolor pdfborder),
-		    # 3.6 PDF display and information options
-		    qw(baseurl pdfpagemode pdfview pdfstartpage pdfstartview pdfpagescrop
-		       pdfcenterwindow pdfdirection pdfdisplaydoctitle pdfduplex pdffitwindow
-		       pdfmenubar pdfnewwindow pdfnonfullscreenpagemode pdfnumcopies
-		       pdfpagelayout pdfpagelabels pdfpagetransition pdfpicktrackbypdfsize
-		       pdfprintarea pdfprintclip pdfprintpagerange pdfprintscaling pdftoolbar
-		       pdfviewarea pdfviewclip pdfprintpagerange pdfprintscaling
-		       pdftoolbar pdfviewarea pdfviewclip pdfwindowui unicode),
-		    # PDF display and information options that provide interesting Metadata
-		    qw(pdftitle pdfauthor pdfsubject pdfcreator pdfproducer pdfkeywords pdflang)
-		   ){
-  DeclareOption($option,undef); }
+foreach my $option (    # 3.1 General Options
+  qw(draft final debug verbose implicit hypertexnames naturalnames
+  a4paper a5paper b5paper letterpaper legalpaper executivepaper setpagesizes),
+  # 3.2 Configuration Options
+  qw(raiselinks breaklinks pageanchor plainpages nesting),
+  # 3.3 Backend Drivers
+  qw(dvipdfm dvipdfmx dvips dvipsone dviwindo hypertex latex2html
+  nativepdf pdfmark pdftex ps2pdf tex4ht textures vtex vtexpdfmark xetex),
+  # 3.4 Extension Options
+  qw(extension hyperfigures backref pagebackref hyperindex
+  pageanchors plainpages hyperfootnotes encap linktocpage
+  breaklinks colorlinks linkcolor anchorcolor citecolor filecolor
+  menucolor pagecolor urlcolor frenchlinks),
+  # 3.5 PDF-specific display options
+  qw(bookmarks bookmarksopen bookmarksopenlevel bookmarksnumbered bookmarstype
+  CJKbookmarks pdfhighlight citebordercolor filebordercolor linkbordercolor
+  menubordercolor pagebordercolor urlbordercolor runbordercolor pdfborder),
+  # 3.6 PDF display and information options
+  qw(baseurl pdfpagemode pdfview pdfstartpage pdfstartview pdfpagescrop
+  pdfcenterwindow pdfdirection pdfdisplaydoctitle pdfduplex pdffitwindow
+  pdfmenubar pdfnewwindow pdfnonfullscreenpagemode pdfnumcopies
+  pdfpagelayout pdfpagelabels pdfpagetransition pdfpicktrackbypdfsize
+  pdfprintarea pdfprintclip pdfprintpagerange pdfprintscaling pdftoolbar
+  pdfviewarea pdfviewclip pdfprintpagerange pdfprintscaling
+  pdftoolbar pdfviewarea pdfviewclip pdfwindowui unicode),
+  # PDF display and information options that provide interesting Metadata
+  qw(pdftitle pdfauthor pdfsubject pdfcreator pdfproducer pdfkeywords pdflang)
+  ) {
+  DeclareOption($option, undef); }
 
 # \hypersetup{keyvals} configures various parameters,
 # I think none matter much to latexml, but we do need to at least ignore it.
-DefMacro('\hypersetup{}','');
+DefMacro('\hypersetup{}', '');
 
 # for each pdf keyword, provide [property,(content|resource),datatype]
 our %pdfkey_property = (
-			baseurl          =>'', # xmp:BaseURL ??
-			pdfauthor        =>['dcterms:creator','content'],
-			pdfkeywords      =>['dcterms:subject','content'], # & pdf:Keywords
-			pdflang          =>['dcterms:language','content'],
-			pdfproducer      =>'', # pdf:Producer & xmp:CreatorTool
-			pdfsubject       =>['dcterms:subject','content'],
-			pdftitle         =>['dcterms:title','content'],
-			# Include hyperxmp's keywords, as well.
-			pdfauthortitle   =>'', # photoshop:AuthorsPosition
-			pdfcaptionwriter =>'', # photoshop:CaptionWriter !?!?!?
-			pdfcopyright     =>['dcterms:rights','content'], # & xmpRights:Marked
-			pdflicenseurl    =>['cc:licence','resource'], # xmpRights:WebStatement
-			pdfmetalang      =>'', # dcterms:language ??
-			);
+  baseurl     => '',                                # xmp:BaseURL ??
+  pdfauthor   => ['dcterms:creator', 'content'],
+  pdfkeywords => ['dcterms:subject', 'content'],    # & pdf:Keywords
+  pdflang     => ['dcterms:language', 'content'],
+  pdfproducer => '',                                # pdf:Producer & xmp:CreatorTool
+  pdfsubject  => ['dcterms:subject', 'content'],
+  pdftitle    => ['dcterms:title', 'content'],
+  # Include hyperxmp's keywords, as well.
+  pdfauthortitle   => '',                               # photoshop:AuthorsPosition
+  pdfcaptionwriter => '',                               # photoshop:CaptionWriter !?!?!?
+  pdfcopyright     => ['dcterms:rights', 'content'],    # & xmpRights:Marked
+  pdflicenseurl    => ['cc:licence', 'resource'],       # xmpRights:WebStatement
+  pdfmetalang      => '',                               # dcterms:language ??
+);
 # date=>dcterms:date xmp:CreateDate xmp:ModifyDate xmp:MetadataDate ?
 # document identifier => xmlMM:DocumentID
 # file format => dcterms:format
 # LaTeX file name => dcterms:source
 
-
 # Digest & store the properties for generating RDFa
 # This can appear anywhere in the doc, including preamble.
 # Note also that the last value for any given key replaces previous ones! (eg.ONE author entry)
-DefPrimitive('\hypersetup RequiredKeyVals',sub {
-  my($stomach,$kv)=@_;
-  my $inpreamble = LookupValue('inPreamble');
-  AssignValue(inPreamble=>0);
-  my @pairs = $kv->getPairs;
-  while(@pairs){
-    my($key,$value)=(shift(@pairs),shift(@pairs));
-    AssignMapping('PDF.RDFa_properties',$key,Digest($value)); }
-  AssignValue(inPreamble=>$inpreamble);
-  return; });
+DefPrimitive('\hypersetup RequiredKeyVals', sub {
+    my ($stomach, $kv) = @_;
+    my $inpreamble = LookupValue('inPreamble');
+    AssignValue(inPreamble => 0);
+    my @pairs = $kv->getPairs;
+    while (@pairs) {
+      my ($key, $value) = (shift(@pairs), shift(@pairs));
+      AssignMapping('PDF.RDFa_properties', $key, Digest($value)); }
+    AssignValue(inPreamble => $inpreamble);
+    return; });
 
-PushValue('@at@end@document',T_CS('\@add@PDF@RDFa@triples'));
+PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
 
-DefConstructor('\@add@PDF@RDFa@triples',sub{
-  my($document,$property,$content)=@_;
-  if(my $root = $document->getDocument->documentElement){
-    foreach my $key (LookupMappingKeys('PDF.RDFa_properties')){
-      if(my $entry = ($pdfkey_property{$key})){
-	my($property,$object,$datatype)=@$entry;
-	my $value = LookupMapping('PDF.RDFa_properties',$key);
-	my $node = $document->openElementAt($root,'ltx:rdf',
-					    property=>$property,$object=>$value,
-					    ($datatype ? (datatype=>$datatype):()));
-	$node->setAttribute(about=>''); # should we do this?, (it normally gets omitted!)
-	$document->closeElementAt($node); }}}});
+DefConstructor('\@add@PDF@RDFa@triples', sub {
+    my ($document, $property, $content) = @_;
+    if (my $root = $document->getDocument->documentElement) {
+      foreach my $key (LookupMappingKeys('PDF.RDFa_properties')) {
+        if (my $entry = ($pdfkey_property{$key})) {
+          my ($property, $object, $datatype) = @$entry;
+          my $value = LookupMapping('PDF.RDFa_properties', $key);
+          my $node = $document->openElementAt($root, 'ltx:rdf',
+            property => $property, $object => $value,
+            ($datatype ? (datatype => $datatype) : ()));
+          $node->setAttribute(about => '');    # should we do this?, (it normally gets omitted!)
+          $document->closeElementAt($node); } } } });
 
 # Need some work here!?!?
-DefMacro('\pdfcatalog{}','');
-DefRegister('\pdfcompresslevel',Number(0));
+DefMacro('\pdfcatalog{}', '');
+DefRegister('\pdfcompresslevel', Number(0));
 
 RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 
@@ -121,97 +120,97 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 
 # \href{url}{text}
 DefConstructor('\href Semiverbatim  {}',
-	       "<ltx:ref href='#href'>#2</ltx:ref>",
-	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+  "<ltx:ref href='#href'>#2</ltx:ref>",
+  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
 
 # \url{url} from url.sty
 # Redefine \@url to sanitize the argument less
 DefMacro('\@Url Token', sub {
-  my($gullet,$cmd)=@_;
-  my $mouth = $gullet->getMouth;
-  my($open,$close,$url);
-  $open = $gullet->readToken;
-  StartSemiverbatim();
-  if($open->equals(T_BEGIN)){
-    $open = T_OTHER('{'); $close = T_OTHER('}');
-    $url = $gullet->readBalanced; }
-  else {
-    $close = $open = T_OTHER($open->getString);
-    $url = $mouth->readTokens($close); }
-  EndSemiverbatim();
-  # Identical with url's \@Url except that it sanitizes the arg less
-  my @toks = map(($_->getCatcode == CC_CS ? $_ : T_OTHER(ToString($_))),$url->unlist);
-  (Invocation(T_CS('\@@Url'),
-	      T_OTHER(ToString($cmd)),Tokens($open),Tokens($close),
-	      Tokens(@toks),
-	      Tokens(T_CS('\UrlFont'),T_CS('\UrlLeft'),@toks,T_CS('\UrlRight')))->unlist,
-   T_CS('\endgroup')); });
+    my ($gullet, $cmd) = @_;
+    my $mouth = $gullet->getMouth;
+    my ($open, $close, $url);
+    $open = $gullet->readToken;
+    StartSemiverbatim();
+    if ($open->equals(T_BEGIN)) {
+      $open = T_OTHER('{'); $close = T_OTHER('}');
+      $url = $gullet->readBalanced; }
+    else {
+      $close = $open = T_OTHER($open->getString);
+      $url = $mouth->readTokens($close); }
+    EndSemiverbatim();
+    # Identical with url's \@Url except that it sanitizes the arg less
+    my @toks = map(($_->getCatcode == CC_CS ? $_ : T_OTHER(ToString($_))), $url->unlist);
+    (Invocation(T_CS('\@@Url'),
+        T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
+        Tokens(@toks),
+        Tokens(T_CS('\UrlFont'), T_CS('\UrlLeft'), @toks, T_CS('\UrlRight')))->unlist,
+      T_CS('\endgroup')); });
 
 # \nolinkurl{url}
-DefConstructor('\nolinkurl Semiverbatim','#1');
+DefConstructor('\nolinkurl Semiverbatim', '#1');
 
 # \hyperbaseurl{url}
-DefPrimitive('\hyperbaseurl Semiverbatim',sub { AssignValue(BASE_URL=>ToString($_[1])); });
+DefPrimitive('\hyperbaseurl Semiverbatim', sub { AssignValue(BASE_URL => ToString($_[1])); });
 
 # \hyperimage{imageurl}{text}
-DefConstructor('\hyperimage Semiverbatim {}',"<ltx:graphic graphic='#1' description='#2'/>");
+DefConstructor('\hyperimage Semiverbatim {}', "<ltx:graphic graphic='#1' description='#2'/>");
 
 # \hyperdef{category}{name}{text}
 DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
-	       "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
-	       properties=>sub { (id=>CleanID(ToString($_[1]).'.'.ToString($_[2]))); } );
+  "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
+  properties => sub { (id => CleanID(ToString($_[1]) . '.' . ToString($_[2]))); });
 
 DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
-	       "<ltx:ref href='#href'>#4</ltx:ref>",
-	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1])
-						 .'#'.CleanID(ToString($_[2]).'.'.ToString($_[3])))); } );
+  "<ltx:ref href='#href'>#4</ltx:ref>",
+  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1])
+          . '#' . CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
-	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
-	       properties=>sub { (label=>CleanLabel($_[2])); });
+  "<ltx:ref labelref='#label'>#1</ltx:ref>",
+  properties => sub { (label => CleanLabel($_[2])); });
 
 # \hyperlink{name}{text}
 # \hypertarget{name}{text}
 DefConstructor('\hyperlink Semiverbatim {}',
-	       "<ltx:ref idref='#1'>#2</ltx:ref>",
-	       properties=>sub { (id=>CleanID($_[1])); });
+  "<ltx:ref idref='#1'>#2</ltx:ref>",
+  properties => sub { (id => CleanID($_[1])); });
 DefConstructor('\hypertarget Semiverbatim {}',
-	       "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
-	       properties=>sub { (id=>CleanID(ToString($_[1]))); });
+  "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
+  properties => sub { (id => CleanID(ToString($_[1]))); });
 
 # Should create an anchor with automatically chosen name;
 # But it's to be used where LaTeXML already would have created an anchor & link...
-# Should leverage 
-DefMacroI('\phantomsection',undef,'');
+# Should leverage
+DefMacroI('\phantomsection', undef, '');
 
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
-DefMacro('\autoref Semiverbatim','\ref{#1}');
+DefMacro('\autoref Semiverbatim', '\ref{#1}');
 DefConstructor('\autoref Semiverbatim',
-	       "<ltx:ref show='type refnum' labelref='#label'/>",
-	      properties=>sub { (label=>CleanLabel($_[2])); });
+  "<ltx:ref show='type refnum' labelref='#label'/>",
+  properties => sub { (label => CleanLabel($_[2])); });
 
 # Covered in LaTeX.pool, but non-ref character is ignored.
-# \ref*{label} 
+# \ref*{label}
 # \pageref*{label}
 
 # I wonder if this is good enough for our context?
 # \pdfstringdef{macroname}{texstring}
-DefMacro('\pdfstring{Token}{}','\def#1{#2}');
+DefMacro('\pdfstring{Token}{}', '\def#1{#2}');
 
 #======================================================================
 # 4.1 Replacement macros
 
 # \texorpdfstring{TeXString}{PDFstring}
-DefMacro('\texorpdfstring{}{}','#1');
+DefMacro('\texorpdfstring{}{}', '#1');
 
 #======================================================================
 # 4.2 Utility macros
 # \hypercalcbp{dimen}
-DefMacro('\hypercalcbp{Dimension}',sub {
-  my($gullet,$dimen)=@_;
-  Explode($dimen->valueOf/$STATE->convertUnit('bp')); });
+DefMacro('\hypercalcbp{Dimension}', sub {
+    my ($gullet, $dimen) = @_;
+    Explode($dimen->valueOf / $STATE->convertUnit('bp')); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 5 Acrobat-specific behaviour
@@ -219,7 +218,7 @@ DefMacro('\hypercalcbp{Dimension}',sub {
 # \Acrobatmenu{menuoption}{text}
 # These create buttons that activate Acrobat Reader or Exchange actions.
 # It's doubtful that they have meaningful analogs in our context?
-DefMacro('\Acrobatmenu{}{}','[#1 Button: #2]');
+DefMacro('\Acrobatmenu{}{}', '[#1 Button: #2]');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # 6 PDF and HTML forms
@@ -262,10 +261,10 @@ DefMacro('\Acrobatmenu{}{}','[#1 Button: #2]');
 
 #### ProcessOptions();
 # This doesn't really quite work, since when \usepackage digests the options, spaces go away!
-if(my $options = LookupValue('opt@hyperref.sty')){
-  foreach my $option (@ $options){
-    if(my($key,$value)= $option =~ /^(.*?)\s*=\s*(.*?)$/){
-      AssignMapping('PDF.RDFa_properties',$key,$value); }}}
+if (my $options = LookupValue('opt@hyperref.sty')) {
+  foreach my $option (@$options) {
+    if (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
+      AssignMapping('PDF.RDFa_properties', $key, $value); } } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

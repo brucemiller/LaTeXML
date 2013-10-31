@@ -23,15 +23,15 @@ use LaTeXML::Util::KeyVal;
 # for use in RDFa Compact URI's.
 # These associations are global, not attached to the current node.
 # If prefix is empty, this defines the vocabulary(?)
-DefPrimitive('\lxRDFaPrefix{}{}',  sub {
-  my($stomach,$prefix,$url)=@_;
-  $prefix = ToString(Expand($prefix));
-  $url = CleanURL(ToString(Expand($url)));
-  if($prefix){
-    AssignMapping('RDFa_prefixes',$prefix=>$url); }
-  else {
-    AssignValue('RDFa_vocabulary'=>$url,'global'); }
-  return; });
+DefPrimitive('\lxRDFaPrefix{}{}', sub {
+    my ($stomach, $prefix, $url) = @_;
+    $prefix = ToString(Expand($prefix));
+    $url    = CleanURL(ToString(Expand($url)));
+    if ($prefix) {
+      AssignMapping('RDFa_prefixes', $prefix => $url); }
+    else {
+      AssignValue('RDFa_vocabulary' => $url, 'global'); }
+    return; });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Keywords for RDF Attributes
@@ -44,40 +44,40 @@ DefPrimitive('\lxRDFaPrefix{}{}',  sub {
 #   These will be resolved back to a IRI for about during postprocessing.
 #   Note, however, that otherwise, the about need not be an explicit reference
 #   to a part of the document; it can be 'vitual'.
-DefKeyVal('RDFa',about       =>'Semiverbatim');
+DefKeyVal('RDFa', about => 'Semiverbatim');
 #======================================================================
 # resource: Specifies the object of the a @property on the same element,
 #   AND specifies the subject for any predicates on descendant elements (chaining)
 #   resource can be SafeCURIE, CURIE or IRI;
 #   Or, if \ref{label} or #id, specifies resourcelabelref or resourceidref attribute.
-DefKeyVal('RDFa',resource    =>'Semiverbatim');
+DefKeyVal('RDFa', resource => 'Semiverbatim');
 #======================================================================
 # typeof : if @resource is on the same element, it forms a new triple indicating the type
 #   Otherwise, it creates an anonymous resource (blank node or bnode) with that type
 #   typeof can be a space separated list of: Term, CURIE or Abs. IRI
-DefKeyVal('RDFa',typeof      =>'Semiverbatim'); # space sep list of: Term, CURIE or Abs. IRI
+DefKeyVal('RDFa', typeof => 'Semiverbatim');    # space sep list of: Term, CURIE or Abs. IRI
 #======================================================================
 # property: specifies predicate(s) and asserts that the current subject is related to object
 #   * subject is @about on same element, or @resource/@typeof on ancestor, or document root;
 #   * object is @resource, @href, @content, @typeof on same element, or the text content
 #   resource can be a space separated list of: Term, CURIE or Abs. IRI.
-DefKeyVal('RDFa',property    =>'Semiverbatim');
+DefKeyVal('RDFa', property => 'Semiverbatim');
 #======================================================================
 # rel : Exactly the same as @property, except that
 #   * can form multiple triples,
 #   * the objects being nearest @resource,@href on same or descendent
 #   rel can be a space separated list of: Term, CURIE or Abs. IRI.
-DefKeyVal('RDFa',rel         =>'Semiverbatim');
+DefKeyVal('RDFa', rel => 'Semiverbatim');
 #======================================================================
 # rev : Exactly the same as @rel, except that subject & object are reversed.
 #   rev can be a space separated list of: Term, CURIE or Abs. IRI
-DefKeyVal('RDFa',rev         =>'Semiverbatim');
+DefKeyVal('RDFa', rev => 'Semiverbatim');
 #======================================================================
 # content: specifies the object as a plain string in place of the element's content().
-DefKeyVal('RDFa',content     =>'Semiverbatim'); # CDATA
+DefKeyVal('RDFa', content => 'Semiverbatim');    # CDATA
 #======================================================================
 # datatype: specifies the datatype of the content/content()
-DefKeyVal('RDFa',datatype    =>'Semiverbatim'); # Term, CURIE or Abs. IRI
+DefKeyVal('RDFa', datatype => 'Semiverbatim');    # Term, CURIE or Abs. IRI
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # href : specifies the object of a predicate.
 #   It is similar to @resource but does not chain to indicate subject
@@ -93,21 +93,21 @@ DefKeyVal('RDFa',datatype    =>'Semiverbatim'); # Term, CURIE or Abs. IRI
 # Decipher the RDF Keywords into a hash of RDF attributes,
 # accounting for \ref{label} or #id in the about and resource keywords
 sub RDFAttributes {
-  my($keyvals)=@_;
+  my ($keyvals) = @_;
   $keyvals = $keyvals->beDigested($STATE->getStomach);
   my $hash = KeyVals($keyvals);
   my $x;
-  foreach my $key (qw(about resource)){
-    if(my $value = $$hash{$key}){
-      if((ref $value eq 'LaTeXML::Whatsit')
-	 && ($value->getDefinition->getCSName eq '\ref')){
-	$$hash{$key.'labelref'}=CleanLabel($value->getArg(2));
-	delete $$hash{$key}; }
-      elsif(($x=ToString($value)) && ($x =~ /^#(.+)$/)){
-	$$hash{$key.'idref'}=CleanID($1);
-	delete $$hash{$key}; }
+  foreach my $key (qw(about resource)) {
+    if (my $value = $$hash{$key}) {
+      if ((ref $value eq 'LaTeXML::Whatsit')
+        && ($value->getDefinition->getCSName eq '\ref')) {
+        $$hash{ $key . 'labelref' } = CleanLabel($value->getArg(2));
+        delete $$hash{$key}; }
+      elsif (($x = ToString($value)) && ($x =~ /^#(.+)$/)) {
+        $$hash{ $key . 'idref' } = CleanID($1);
+        delete $$hash{$key}; }
       else {
-	$$hash{$key}=CleanURL($value); }}} # at least clean it.
+        $$hash{$key} = CleanURL($value); } } }    # at least clean it.
   $hash; }
 
 # It ought to be wrong to put resource (or resourceXXref) attributes on an ltx:ref...
@@ -115,17 +115,17 @@ sub RDFAttributes {
 # Given the RDF Keywords, and content (if any) check/complete the RDF triple
 # Presumably an anonymous subject or object isn't sufficient?
 sub RDFTriple {
-  my($keyvals,$content)=@_;
+  my ($keyvals, $content) = @_;
   my $attr = RDFAttributes($keyvals);
-  if(! ($$attr{about} || $$attr{aboutlabelref} || $$attr{aboutidref}) ){
-    $$attr{about} = ''; }	# Silently make the triple about the entire document
-  if(! ($$attr{property} || $$attr{rel} || $$attr{rev}) ){
-    Warn('expected','property',$keyvals,
-	 "Expected 'property' or 'rel' or 'rev' in RDF attributes"); }
-  if(! ($$attr{content} || $$attr{resource} || $$attr{resourcelabelref} || $$attr{resourceidref}
-	|| ($content && scalar($content->unlist))) ){
-    Warn('expected','resource',$keyvals,
-	 "Expected 'resource' or 'content' in RDF attributes"); }
+  if (!($$attr{about} || $$attr{aboutlabelref} || $$attr{aboutidref})) {
+    $$attr{about} = ''; }    # Silently make the triple about the entire document
+  if (!($$attr{property} || $$attr{rel} || $$attr{rev})) {
+    Warn('expected', 'property', $keyvals,
+      "Expected 'property' or 'rel' or 'rev' in RDF attributes"); }
+  if (!($$attr{content} || $$attr{resource} || $$attr{resourcelabelref} || $$attr{resourceidref}
+      || ($content && scalar($content->unlist)))) {
+    Warn('expected', 'resource', $keyvals,
+      "Expected 'resource' or 'content' in RDF attributes"); }
   $attr; }
 
 #======================================================================
@@ -136,19 +136,19 @@ sub RDFTriple {
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
-DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa',sub {
-  my($doc,$xpath,$kv)=@_;
-  my($save,$node);
-  if($xpath){
-    $save = $doc->getNode;
-    $node=$doc->findnode(ToString($xpath), $save); }
-  else {
-    $save = $doc->floatToAttribute('property'); # pic arbitrary rdf attribute
-    $node = $doc->getElement; }
-  my $attr = RDFAttributes($kv);
-  foreach my $k (keys %$attr){
-    $doc->setAttribute($node,$k=>ToString($$attr{$k})); }
-  $doc->setNode($save); });
+DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
+    my ($doc, $xpath, $kv) = @_;
+    my ($save, $node);
+    if ($xpath) {
+      $save = $doc->getNode;
+      $node = $doc->findnode(ToString($xpath), $save); }
+    else {
+      $save = $doc->floatToAttribute('property');    # pic arbitrary rdf attribute
+      $node = $doc->getElement; }
+    my $attr = RDFAttributes($kv);
+    foreach my $k (keys %$attr) {
+      $doc->setAttribute($node, $k => ToString($$attr{$k})); }
+    $doc->setNode($save); });
 
 #======================================================================
 # \lxRDF{keyvals}[content]  "Add RDF triple"
@@ -160,36 +160,36 @@ DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa',sub {
 # It is complicated because \@add@frontmatter provides us no way to
 # do the extra processing of the RDF Keywords.
 DefPrimitive('\lxRDF@preamble[]RequiredKeyVals:RDFa', sub {
-  my($stomach,$content,$kv)=@_;
-  # Since this gets digested in the preamble...
-  my $inpreamble = LookupValue('inPreamble');
-  AssignValue(inPreamble=>0);
-  my $attr=RDFTriple($kv);	# require complete triple, here.
-  push(@{ LookupValue('frontmatter')->{'ltx:rdf'}},
-       ['ltx:rdf',{map( ($_=>ToString($$attr{$_})), keys %$attr)}, 
-	($content ? (Digest(Tokens(T_BEGIN,$content,T_END))):()) ]);
-  AssignValue(inPreamble=>$inpreamble);
-  return; });
+    my ($stomach, $content, $kv) = @_;
+    # Since this gets digested in the preamble...
+    my $inpreamble = LookupValue('inPreamble');
+    AssignValue(inPreamble => 0);
+    my $attr = RDFTriple($kv);    # require complete triple, here.
+    push(@{ LookupValue('frontmatter')->{'ltx:rdf'} },
+      ['ltx:rdf', { map(($_ => ToString($$attr{$_})), keys %$attr) },
+        ($content ? (Digest(Tokens(T_BEGIN, $content, T_END))) : ())]);
+    AssignValue(inPreamble => $inpreamble);
+    return; });
 
 # This version of \lxRDF is for use in the document body.
 DefConstructor('\lxRDF@body[] RequiredKeyVals:RDFa', sub {
-  # "^<ltx:rdf %&RDFTriple(#2,#1)>#1</ltx:rdf>",
-  my($document,$content,$kv)=@_;
-  if(my $savenode = $document->floatToElement('ltx:rdf')){
-    my $rdf = $document->openElement('ltx:rdf');
-    # a bit of trouble to add empty elements!
-    my $attr = RDFTriple($kv,$content);
-    foreach my $k (keys %$attr){
-      $rdf->setAttribute($k=>ToString($$attr{$k})); }
-    $document->absorb($content) if $content;
-    $document->closeElement('ltx:rdf');
-    $document->setNode($savenode); }},
-  alias=>'\lxRDF');
+    # "^<ltx:rdf %&RDFTriple(#2,#1)>#1</ltx:rdf>",
+    my ($document, $content, $kv) = @_;
+    if (my $savenode = $document->floatToElement('ltx:rdf')) {
+      my $rdf = $document->openElement('ltx:rdf');
+      # a bit of trouble to add empty elements!
+      my $attr = RDFTriple($kv, $content);
+      foreach my $k (keys %$attr) {
+        $rdf->setAttribute($k => ToString($$attr{$k})); }
+      $document->absorb($content) if $content;
+      $document->closeElement('ltx:rdf');
+      $document->setNode($savenode); } },
+  alias => '\lxRDF');
 
 # Start with \lxRDF bound to the preamble form, which saves the rdf as frontmatter
-Let(T_CS('\lxRDF'),T_CS('\lxRDF@preamble'));
+Let('\lxRDF', '\lxRDF@preamble');
 # When the document's begun, switch to the inline version.
-PushValue('@at@begin@document', (T_CS('\let'),T_CS('\lxRDF'),T_CS('\lxRDF@body')));
+PushValue('@at@begin@document', (T_CS('\let'), T_CS('\lxRDF'), T_CS('\lxRDF@body')));
 
 #======================================================================
 # \lxRDFAnnotate{keyvals}{text}  "Add RDF Annotated text"
@@ -198,7 +198,7 @@ PushValue('@at@begin@document', (T_CS('\let'),T_CS('\lxRDF'),T_CS('\lxRDF@body')
 # such as the current subject, chaining or whatever.
 # Thus, you may want to give an explicit about.
 DefConstructor('\lxRDFAnnotate RequiredKeyVals:RDFa {}',
-	       "<ltx:text %&RDFAttributes(#1,#2)>#2</ltx:text>");
+  "<ltx:text %&RDFAttributes(#1,#2)>#2</ltx:text>");
 
 #======================================================================
 # Other shorthands might be useful, like

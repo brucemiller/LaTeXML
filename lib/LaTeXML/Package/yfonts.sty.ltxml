@@ -16,26 +16,25 @@ use LaTeXML::Package;
 #
 # Not much to do for LaTeXML.
 
-
-DefPrimitiveI('\frakfamily', undef,undef, font=>{family=>'fraktur'});
+DefPrimitiveI('\frakfamily', undef, undef, font => { family => 'fraktur' });
 # These font families are otherwise unrecognized...
-DefPrimitiveI('\swabfamily', undef,undef, font=>{family=>'schwabacher'});
-DefPrimitiveI('\gothfamily', undef,undef, font=>{family=>'gothic'});
+DefPrimitiveI('\swabfamily', undef, undef, font => { family => 'schwabacher' });
+DefPrimitiveI('\gothfamily', undef, undef, font => { family => 'gothic' });
 
 # SHOULD set up fancy initials...
-DefMacro('\initfamily','');
-DefPrimitiveI('\fraklines',undef,undef);
+DefMacro('\initfamily', '');
+DefPrimitiveI('\fraklines', undef, undef);
 
-DefMacro('\yinipar{}','\par\noindent\yinitpar{#1}');
+DefMacro('\yinipar{}', '\par\noindent\yinitpar{#1}');
 # SHOULD set the initial in fancy font.
-DefMacro('\yinitpar{}','#1');
+DefMacro('\yinitpar{}', '#1');
 
 # Nothing likely to every be used, but for completeness...
-DefMacro('\gothdefault','ygoth');
-DefMacro('\swabdefault','yswab');
-DefMacro('\frakdefault','yfrak');
-DefMacro('\initdefault','yinitas');
+DefMacro('\gothdefault', 'ygoth');
+DefMacro('\swabdefault', 'yswab');
+DefMacro('\frakdefault', 'yfrak');
+DefMacro('\initdefault', 'yinitas');
 
-Let('\grq','\textquoteleft');
-Let('\grqq','\textquotedblleft');
+Let('\grq',  '\textquoteleft');
+Let('\grqq', '\textquotedblleft');
 1;

@@ -11,17 +11,17 @@ use LaTeXML::Package;
 
 # Generally ignorable options
 foreach my $option (qw(draft twocolumn onecolumn letters landscape galley
-		       referee doublespacing)){
+  referee doublespacing)) {
   DeclareOption($option, undef); }
 
-DeclareOption("usenatbib",   sub { AssignValue('@usenatbib'=>1); });
-DeclareOption("usedcolum",   sub { AssignValue('@usedcolum'=>1); });
-DeclareOption("usegraphicx", sub { AssignValue('@usegraphicx'=>1); });
-DeclareOption("useAMS",      sub { AssignValue('@useAMS'=>1); });
+DeclareOption("usenatbib",   sub { AssignValue('@usenatbib'   => 1); });
+DeclareOption("usedcolum",   sub { AssignValue('@usedcolum'   => 1); });
+DeclareOption("usegraphicx", sub { AssignValue('@usegraphicx' => 1); });
+DeclareOption("useAMS",      sub { AssignValue('@useAMS'      => 1); });
 
 # Anything else is for article.
-DeclareOption(undef,sub {
-  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+DeclareOption(undef, sub {
+    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('article');

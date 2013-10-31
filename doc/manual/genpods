@@ -11,15 +11,15 @@ use Pod::LaTeX;
 # These go into appendices of the manual
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $WORKDIR = $FindBin::RealBin;
-my $SRCDIR  = $WORKDIR."/../..";
+my $SRCDIR  = $WORKDIR . "/../..";
 my $GENDIR  = "$WORKDIR/pods";
 
 my $identity = "genpods (part of LaTeXML)";
-my($force,$help)=(0,0);
-GetOptions("force!"    => \$force,
-	   "help"         => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+my ($force, $help) = (0, 0);
+GetOptions("force!" => \$force,
+  "help" => \$help,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
 #======================================================================
 my @exes = (qw(latexml latexmlpost latexmlmath));
@@ -27,75 +27,75 @@ my @exes = (qw(latexml latexmlpost latexmlmath));
 # Actually, we Can, by looking in ../blib/man1 and ../blib/man3
 # However, we'd still need to manually add them to the appropriate Appendx!
 my @modules = (
-	       # Core modules
-	       qw(LaTeXML
-		  LaTeXML::Object
-		  LaTeXML::Definition
-		  LaTeXML::Global
-		  LaTeXML::Error
-		  LaTeXML::Package
-		  LaTeXML::Parameters
-		  LaTeXML::State
+  # Core modules
+  qw(LaTeXML
+    LaTeXML::Object
+    LaTeXML::Definition
+    LaTeXML::Global
+    LaTeXML::Error
+    LaTeXML::Package
+    LaTeXML::Parameters
+    LaTeXML::State
 
-		  LaTeXML::Token
-		  LaTeXML::Box
-		  LaTeXML::Number
-		  LaTeXML::Font
-		  LaTeXML::Mouth
-		  LaTeXML::Gullet
-		  LaTeXML::Stomach
+    LaTeXML::Token
+    LaTeXML::Box
+    LaTeXML::Number
+    LaTeXML::Font
+    LaTeXML::Mouth
+    LaTeXML::Gullet
+    LaTeXML::Stomach
 
-		  LaTeXML::Document
-		  LaTeXML::Model
-		  LaTeXML::Rewrite
+    LaTeXML::Document
+    LaTeXML::Model
+    LaTeXML::Rewrite
 
-		  LaTeXML::MathParser
-		  LaTeXML::Bib
-		),
+    LaTeXML::MathParser
+    LaTeXML::Bib
+    ),
 
-	       # Utility
-	       qw(LaTeXML::Util::Pathname
-		  LaTeXML::Util::KeyVal
-		),
-		  # Postprocessing
-	       qw(LaTeXML::Post
-		  LaTeXML::Post::MathML
-		),
-	      );
+  # Utility
+  qw(LaTeXML::Util::Pathname
+    LaTeXML::Util::KeyVal
+    ),
+  # Postprocessing
+  qw(LaTeXML::Post
+    LaTeXML::Post::MathML
+    ),
+);
 
-if(! -d $GENDIR){
+if (!-d $GENDIR) {
   mkdir($GENDIR) or die "Couldn't create directory for pods: $!"; }
 
-foreach my $name (@exes){
+foreach my $name (@exes) {
   my $src  = "$SRCDIR/bin/$name";
   my $dest = "$GENDIR/$name.tex";
-  if($force || (!-f $dest) || (-M $src < -M $dest)){
+  if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for $name to LaTeX\n";
     my $podconverter = MyPodConverter->new();
-    $podconverter->parse_from_file($src,$dest); }}
+    $podconverter->parse_from_file($src, $dest); } }
 
-foreach my $name (@modules){
+foreach my $name (@modules) {
   my $src = $name;
   $src =~ s|::|/|g;
   $src = "$SRCDIR/lib/$src.pm";
   my $dest = $name;
   $dest =~ s|::|_|g;
   $dest = "$GENDIR/$dest.tex";
-  if($force || (!-f $dest) || (-M $src < -M $dest)){
+  if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for $name to LaTeX\n";
     my $podconverter = MyPodConverter->new();
-    $podconverter->parse_from_file($src,$dest); }}
+    $podconverter->parse_from_file($src, $dest); } }
 
 #======================================================================
 package MyPodConverter;
 use base qw(Pod::LaTeX);
 
 sub new {
-  my($class,@args)=@_;
+  my ($class, @args) = @_;
   my $self = $class->SUPER::new(@args);
   $self->Head1Level(1);
   $self->LevelNoNum(3);
-#  $self->LevelNoNum(1);
+  #  $self->LevelNoNum(1);
   $self->ReplaceNAMEwithSection(1);
   $self->AddPreamble(0);
   $self->AddPostamble(0);
@@ -104,51 +104,52 @@ sub new {
 
 our %titles;
 our %ignore;
-BEGIN{
-  %titles=("SYNOPSIS"=>"Synopsis",
-	   "OPTIONS AND ARGUMENTS"=>"Options \\& Arguments",
-	   "DESCRIPTION"=>"Description",
-	   "SEE ALSO"=>"See also",
-	   "METHODS"=>"Methods",
-	  ); 
+
+BEGIN {
+  %titles = ("SYNOPSIS" => "Synopsis",
+    "OPTIONS AND ARGUMENTS" => "Options \\& Arguments",
+    "DESCRIPTION"           => "Description",
+    "SEE ALSO"              => "See also",
+    "METHODS"               => "Methods",
+  );
 }
 
 # Redefined to beautify POD headings
 sub head {
-  my($self,$level,$title,$parobj)=@_;
+  my ($self, $level, $title, $parobj) = @_;
   my $newtitle = $titles{$title} || $title;
-  $self->SUPER::head($level,$newtitle,$parobj); }
+  $self->SUPER::head($level, $newtitle, $parobj); }
 
 # Redefined to translate links to our PODs
 sub interior_sequence {
-  my ($self,$seq_command, $seq_argument, $pod_seq) = @_;
-  if($seq_command eq 'L'){
+  my ($self, $seq_command, $seq_argument, $pod_seq) = @_;
+  if ($seq_command eq 'L') {
     "\\pod{$seq_argument}"; }
-  elsif($seq_command eq 'X'){
+  elsif ($seq_command eq 'X') {
     "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
   else {
-    $self->SUPER::interior_sequence($seq_command,$seq_argument,$pod_seq); }}
+    $self->SUPER::interior_sequence($seq_command, $seq_argument, $pod_seq); } }
 
 # Redefine to better sort indices.
 # ALL packages start with LaTeXML:: !!!
 sub _create_index {
-  my $string = $_[0]->SUPER::_create_index($_[1]);
+  my $string  = $_[0]->SUPER::_create_index($_[1]);
   my $reftype = "command";
-  my ($name,@rest) = split('!',$string);
-  if($name =~ /^LaTeXML/){
+  my ($name, @rest) = split('!', $string);
+  if ($name =~ /^LaTeXML/) {
     $reftype = "module";
-    my @comp = split('::',$name);
+    my @comp = split('::', $name);
     $name = $comp[$#comp]
-      .(@comp > 1 ? '('.join('::',@comp[0..$#comp-1]).'::)' :''); }
-  join('!',"$name\@{\\ttfamily $name}",$reftype,@rest); }
+      . (@comp > 1 ? '(' . join('::', @comp[0 .. $#comp - 1]) . '::)' : ''); }
+  join('!', "$name\@{\\ttfamily $name}", $reftype, @rest); }
 
 # Redefined to avoid unnecessary math.
 sub _replace_special_chars_late {
-  my($self,$paragraph)=@_;
+  my ($self, $paragraph) = @_;
   $paragraph =~ s/</\\textless /g;
   $paragraph =~ s/>/\\textgreater /g;
   $paragraph =~ s/\|/\\textbar /g;
-  $paragraph;}
+  $paragraph; }
 
 #======================================================================
 __END__

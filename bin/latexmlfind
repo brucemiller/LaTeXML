@@ -10,70 +10,70 @@ use LaTeXML::Version;
 
 #**********************************************************************
 # Parse command line
-my($verbosity)=(0);
-my ($help,$showversion,$SKELETON)=(0,0,0);
-my (@symbols,@unknowns,@posfuncs,@labels,@refnums);
-GetOptions("symbol=s"           => \@symbols,,
-	   "unknown=s"          => \@unknowns,
-	   "possiblefunction=s" => \@posfuncs,
-	   "label=s"            => \@labels,
-	   "refnum=s"           => \@refnums,
-	   "skeleton"  => \$SKELETON,
-	   "quiet"     => sub { $verbosity--; },
-	   "verbose"   => sub { $verbosity++; },
-	   "VERSION"   => \$showversion,
-	   "help"      => \$help,
-	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
-			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT)
+my ($verbosity) = (0);
+my ($help, $showversion, $SKELETON) = (0, 0, 0);
+my (@symbols, @unknowns, @posfuncs, @labels, @refnums);
+GetOptions("symbol=s" => \@symbols,,
+  "unknown=s"          => \@unknowns,
+  "possiblefunction=s" => \@posfuncs,
+  "label=s"            => \@labels,
+  "refnum=s"           => \@refnums,
+  "skeleton"           => \$SKELETON,
+  "quiet"              => sub { $verbosity--; },
+  "verbose"            => sub { $verbosity++; },
+  "VERSION"            => \$showversion,
+  "help"               => \$help,
+  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+  -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
-if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
-pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
-	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
+if ($showversion) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message => "$LaTeXML::Version::IDENTITY\nMissing input TeX file",
+  -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 my $source = $ARGV[0];
 
 #**********************************************************************
 # Do the processing.
 print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
-binmode(STDOUT,":encoding(UTF-8)");	# Make sure output can handle UTF8
+binmode(STDOUT, ":encoding(UTF-8)");    # Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
-my $XPATH = LaTeXML::Common::XML::XPath->new(ltx=>"http://dlmf.nist.gov/LaTeXML");
-$XPATH->registerFunction('match-font',\&LaTeXML::Font::match_font);
+my $XPATH = LaTeXML::Common::XML::XPath->new(ltx => "http://dlmf.nist.gov/LaTeXML");
+$XPATH->registerFunction('match-font', \&LaTeXML::Font::match_font);
 
 # Objects being labelled sections, equations, etc.
-our %OBJECTS=();
-our $ROOT_OBJECT = {type=>'Document',
-		    subobjects=>[], items=>[]};
+our %OBJECTS = ();
+our $ROOT_OBJECT = { type => 'Document',
+  subobjects => [], items => [] };
 
-foreach my $symbol (@symbols){
+foreach my $symbol (@symbols) {
   collect_matches("Symbols \"$symbol\"",
-	       "//ltx:Math[descendant::ltx:XMTok[\@name='$symbol' or text()='$symbol']"
-	       #                        BUT which isn't in presentation branch of an XMDual!!
-	       #                        ie. no ancestor w/preceding sibling has parent = XMDual
-	       .                       "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
+    "//ltx:Math[descendant::ltx:XMTok[\@name='$symbol' or text()='$symbol']"
+      #                        BUT which isn't in presentation branch of an XMDual!!
+      #                        ie. no ancestor w/preceding sibling has parent = XMDual
+      . "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
 
-		 ."]"); }
-foreach my $spec (@unknowns){
+      . "]"); }
+foreach my $spec (@unknowns) {
   my $symbol = $spec;
   my $font;
-  $font = $1 if $symbol=~ s/{([\w\s]*)}$//;
+  $font = $1 if $symbol =~ s/{([\w\s]*)}$//;
   collect_matches("Unknown \"$spec\"",
-	       # Find Math containing an XMTok, with role=UNKNOWN
-	       "//ltx:Math[descendant::ltx:XMTok[\@role='UNKNOWN']"
-	       #                         whose name or content is the requested symbol
-	       .                        "[\@name='$symbol' or text()='$symbol']"
-	       .                        ($font ? "[\@font='$font']" : '')
-	       #                         BUT which isn't in presentation branch of an XMDual!!
-	       #                        ie. no ancestor w/preceding sibling has parent = XMDual
-	       .                       "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
-	       .                                   "]"); }
+    # Find Math containing an XMTok, with role=UNKNOWN
+    "//ltx:Math[descendant::ltx:XMTok[\@role='UNKNOWN']"
+      #                         whose name or content is the requested symbol
+      . "[\@name='$symbol' or text()='$symbol']"
+      . ($font ? "[\@font='$font']" : '')
+      #                         BUT which isn't in presentation branch of an XMDual!!
+      #                        ie. no ancestor w/preceding sibling has parent = XMDual
+      . "[not(ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual])]"
+      . "]"); }
 
-foreach my $symbol (@posfuncs){
+foreach my $symbol (@posfuncs) {
   collect_matches("Possible function \"$symbol\"",
-	       "//ltx:Math[descendant::ltx:XMTok[\@possibleFunction='yes']"
-	       .                                   "[\@name='$symbol' or text()='$symbol']"
-	       .                                   "]"); }
+    "//ltx:Math[descendant::ltx:XMTok[\@possibleFunction='yes']"
+      . "[\@name='$symbol' or text()='$symbol']"
+      . "]"); }
 
 show_matches($ROOT_OBJECT);
 
@@ -81,14 +81,14 @@ show_matches($ROOT_OBJECT);
 # This matches fonts when both are converted to strings (toString),
 # such as when they are set as attributes.
 sub match_font {
-  my($font1,$font2)=@_;
-#print STDERR "Match font \"".($font1 || 'none')."\" to \"".($font2||'none')."\"\n";
+  my ($font1, $font2) = @_;
+  #print STDERR "Match font \"".($font1 || 'none')."\" to \"".($font2||'none')."\"\n";
   return 0 unless $font1 && $font2;
   $font1 =~ /^Font\[(.*)\]$/;
-  my @comp1  = split(',',$1);
+  my @comp1 = split(',', $1);
   $font2 =~ /^Font\[(.*)\]$/;
-  my @comp2  = split(',',$1);
-  while(@comp1){
+  my @comp2 = split(',', $1);
+  while (@comp1) {
     my $c1 = shift @comp1;
     my $c2 = shift @comp2;
     return 0 if ($c1 ne '*') && ($c2 ne '*') && ($c1 ne $c2); }
@@ -96,62 +96,62 @@ sub match_font {
 #**********************************************************************
 
 sub collect_matches {
-  my($description,$xpath)=@_;
-  my @nodes = $XPATH->findnodes($xpath,$DOC);
-  print "Query $description appears in ".scalar(@nodes)." places\n";
+  my ($description, $xpath) = @_;
+  my @nodes = $XPATH->findnodes($xpath, $DOC);
+  print "Query $description appears in " . scalar(@nodes) . " places\n";
   print "  [XPath = \"$xpath\"]\n" if $verbosity > 0;
-  foreach my $node (@nodes){
+  foreach my $node (@nodes) {
     my $object = id_object($node);
-    push( @{ $$object{items} }, $node); }}
+    push(@{ $$object{items} }, $node); } }
 
 sub id_object {
-  my($node)=@_;
+  my ($node) = @_;
   my $id;
-  while(1){
+  while (1) {
     $node = $node->parentNode;
     return $ROOT_OBJECT if $node->nodeType != XML_ELEMENT_NODE;
     last if $id = $node->getAttribute('xml:id'); }
-  if(my $object = $OBJECTS{$id}){
+  if (my $object = $OBJECTS{$id}) {
     return $object; }
   else {
     my $parent_object = id_object($node);
-    my $type = $node->localname;
-    my $labels  = $node->getAttribute('labels');
-    my $refnum = $node->getAttribute('refnum');
-    my($title) = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title",$node);
-    my $desc = ($refnum ? ($title ? "$refnum. ".$title->textContent : $refnum)
-		: ($title ? $title->textContent : ''));
+    my $type          = $node->localname;
+    my $labels        = $node->getAttribute('labels');
+    my $refnum        = $node->getAttribute('refnum');
+    my ($title) = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title", $node);
+    my $desc = ($refnum ? ($title ? "$refnum. " . $title->textContent : $refnum)
+      : ($title ? $title->textContent : ''));
     $desc =~ s/\s+/ /g;
-    $OBJECTS{$id}=$object
-      = {id=>$id, labels=>$labels, type=>$type, description=>$desc, children=>[], items=>[]};
-    push(@{$$parent_object{children}}, $object);
-    $object; }}
+    $OBJECTS{$id} = $object
+      = { id => $id, labels => $labels, type => $type, description => $desc, children => [], items => [] };
+    push(@{ $$parent_object{children} }, $object);
+    $object; } }
 
 sub show_matches {
-  my($object,$indent)=@_;
+  my ($object, $indent) = @_;
   $indent = '' unless defined $indent;
-  print $indent."$$object{type}:"
-    .($$object{id} ? " ID=$$object{id}":'')
-      .($$object{labels} ? " Labels=$$object{labels}":'')
-	.($$object{description}? " \"$$object{description}\"":"")."\n";
-  if(!$SKELETON){
-    foreach my $item (@{ $$object{items} }){
-      show_node($item,$indent.' | '); }}
-  foreach my $child (@{ $$object{children}}){
-    show_matches($child, $indent.' | '); }
+  print $indent. "$$object{type}:"
+    . ($$object{id}          ? " ID=$$object{id}"           : '')
+    . ($$object{labels}      ? " Labels=$$object{labels}"   : '')
+    . ($$object{description} ? " \"$$object{description}\"" : "") . "\n";
+  if (!$SKELETON) {
+    foreach my $item (@{ $$object{items} }) {
+      show_node($item, $indent . ' | '); } }
+  foreach my $child (@{ $$object{children} }) {
+    show_matches($child, $indent . ' | '); }
 }
 
 sub show_node {
-  my($node,$indent)=@_;
-  if($node->localname eq 'Math'){
+  my ($node, $indent) = @_;
+  if ($node->localname eq 'Math') {
     my $ptex = $node->getAttribute('tex');
     my $ctex = $node->getAttribute('content-tex');
-    if($verbosity > 1){
-      print $indent.$node->toString."\n"; }
+    if ($verbosity > 1) {
+      print $indent. $node->toString . "\n"; }
     else {
-      print wrap($indent,$indent,$ctex || $ptex)."\n";}}
+      print wrap($indent, $indent, $ctex || $ptex) . "\n"; } }
   else {
-    print $indent.$node->toString."\n"; }
+    print $indent. $node->toString . "\n"; }
 }
 
 #**********************************************************************

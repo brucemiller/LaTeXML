@@ -12,29 +12,29 @@ use LaTeXML::Util::Pathname;
 # texscan : TeX class/style file scanner for LaTeXML.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $identity = 'texscan';
-my($help)=(0);
+my ($help) = (0);
 local $::VERBOSITY = 0;
-local $::AMSTEX = 0;
-my ($show,$internal,$cumulative,$base) = ('diff',undef,undef,undef);
-my $do_all=0;
-my @paths = ();
-GetOptions("tex"         => sub { $show='tex'; },
-	   "latexml"     => sub { $show='latexml'; },
-	   "diff"        => sub { $show='diff'; },
-	   "signature"   => sub { $show='signature'; },
-	   "stub"        => sub { $show='stub'; },
-	   "internal!"   => \$internal,
-	   "cumulative!" => \$cumulative,
-	   "amstex!"     => \$::AMSTEX,
-	   "help"        => \$help,
-	   "verbose"     => sub { $::VERBOSITY++; },
-	   "quiet"       => sub { $::VERBOSITY--; },
-	   "path=s"      => \@paths,
-	   "base=s"      => \$base,
-	   "all"         => \$do_all,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>0, -output=>\*STDOUT) 
+local $::AMSTEX    = 0;
+my ($show, $internal, $cumulative, $base) = ('diff', undef, undef, undef);
+my $do_all = 0;
+my @paths  = ();
+GetOptions("tex" => sub { $show = 'tex'; },
+  "latexml"   => sub { $show = 'latexml'; },
+  "diff"      => sub { $show = 'diff'; },
+  "signature" => sub { $show = 'signature'; },
+  "stub"      => sub { $show = 'stub'; },
+  "internal!" => \$internal,
+  "cumulative!" => \$cumulative,
+  "amstex!"     => \$::AMSTEX,
+  "help"        => \$help,
+  "verbose"     => sub { $::VERBOSITY++; },
+  "quiet"       => sub { $::VERBOSITY--; },
+  "path=s"      => \@paths,
+  "base=s"      => \$base,
+  "all"         => \$do_all,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDOUT)
   unless $do_all or @ARGV;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -43,57 +43,57 @@ pod2usage(-message=>$identity, -exitval=>1, -verbose=>0, -output=>\*STDOUT)
 our $LTXPACKAGEDIR = "$FindBin::RealBin/../blib/lib/LaTeXML/Package/";
 
 my @files = ();
-if($do_all){
-  foreach my $dir ($LTXPACKAGEDIR,@paths){
-    opendir(DIR,$dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
-    foreach my $file (sort readdir(DIR)){
+if ($do_all) {
+  foreach my $dir ($LTXPACKAGEDIR, @paths) {
+    opendir(DIR, $dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
+    foreach my $file (sort readdir(DIR)) {
       push(@files, $1) if $file =~ /^(.*)\.ltxml$/; }
-    closedir(DIR); }}
+    closedir(DIR); } }
 else {
- @files = @ARGV; }
+  @files = @ARGV; }
 
-foreach my $file (@files){
-  if($show eq 'tex'){
-    print "".("="x50)."\n";
+foreach my $file (@files) {
+  if ($show eq 'tex') {
+    print "" . ("=" x 50) . "\n";
     print "Showing symbols in LaTeX package $file\n";
-    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
-      if($cumulative){ $pkg->removeBase; }
-      else           { $pkg->removeInclusions; }
-      $pkg->removeInternal unless $internal;	 # default NOT internal
+    if (my $pkg = StylePackage->new($file, searchpaths => [@paths])) {
+      if   ($cumulative) { $pkg->removeBase; }
+      else               { $pkg->removeInclusions; }
+      $pkg->removeInternal unless $internal;    # default NOT internal
       $pkg->convertEnvironments;
-      $pkg->show; }}
-  elsif($show eq 'latexml'){
-    print "".("="x50)."\n";
+      $pkg->show; } }
+  elsif ($show eq 'latexml') {
+    print "" . ("=" x 50) . "\n";
     print "Showing symbols in LaTeXML implementation $file\n";
-    if(my $pkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
-      if($cumulative){ $pkg->removeBase; }
-      else           { $pkg->removeInclusions; }
-      $pkg->removeInternal unless $internal;	 # default NOT internal
+    if (my $pkg = ImplementationPackage->new($file, searchpaths => [@paths])) {
+      if   ($cumulative) { $pkg->removeBase; }
+      else               { $pkg->removeInclusions; }
+      $pkg->removeInternal unless $internal;    # default NOT internal
       $pkg->convertEnvironments;
-      $pkg->show; }}
-  elsif($show eq 'diff'){
-    print "".("="x50)."\n";
+      $pkg->show; } }
+  elsif ($show eq 'diff') {
+    print "" . ("=" x 50) . "\n";
     print "Showing unimplemented symbols for package $file\n";
-    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
-      if(my $ipkg = ImplementationPackage->new($file,searchpaths=>[@paths])){
-	$pkg->subtract($ipkg);
-	if($cumulative){ $pkg->removeBase; }
-	else           { $pkg->removeInclusions; }
-	$pkg->removeInternal unless $internal;	    # default NOT internal
-	$pkg->convertEnvironments;
-	$pkg->show; }}}
-  elsif($show eq 'signature'){
-    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+    if (my $pkg = StylePackage->new($file, searchpaths => [@paths])) {
+      if (my $ipkg = ImplementationPackage->new($file, searchpaths => [@paths])) {
+        $pkg->subtract($ipkg);
+        if   ($cumulative) { $pkg->removeBase; }
+        else               { $pkg->removeInclusions; }
+        $pkg->removeInternal unless $internal;    # default NOT internal
+        $pkg->convertEnvironments;
+        $pkg->show; } } }
+  elsif ($show eq 'signature') {
+    if (my $pkg = StylePackage->new($file, searchpaths => [@paths])) {
       $pkg->removeBase;
-      $pkg->removeInclusions if (defined $cumulative) && ($cumulative==0); # default IS cumulative
-      $pkg->removeInternal unless $internal; # default NOT internal
+      $pkg->removeInclusions if (defined $cumulative) && ($cumulative == 0);    # default IS cumulative
+      $pkg->removeInternal unless $internal;                                    # default NOT internal
       $pkg->convertEnvironments;
-      $pkg->signature; }}
-  elsif($show eq 'stub'){
-    if(my $pkg = StylePackage->new($file,searchpaths=>[@paths])){
+      $pkg->signature; } }
+  elsif ($show eq 'stub') {
+    if (my $pkg = StylePackage->new($file, searchpaths => [@paths])) {
       $pkg->removeBase;
-      $pkg->removeInternal unless $internal; # default NOT internal
-      $pkg->generateStub($base); }}
+      $pkg->removeInternal unless $internal;                                    # default NOT internal
+      $pkg->generateStub($base); } }
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -122,32 +122,32 @@ our %CACHE;
 
 # Get a copy of the Package for $path; all subpackages & internal symbols are included.
 sub new {
-  my($classorself,$path,%options)=@_;
-  my $package = $classorself->newInternal($path, searchpaths=>$options{searchpaths})->clone;
-  foreach my $add ($package->getBase){
-    if(my $pkg = $package->newInternal($add)){
-      $package->add($pkg); }}
+  my ($classorself, $path, %options) = @_;
+  my $package = $classorself->newInternal($path, searchpaths => $options{searchpaths})->clone;
+  foreach my $add ($package->getBase) {
+    if (my $pkg = $package->newInternal($add)) {
+      $package->add($pkg); } }
   $package; }
 
 # Get the cached version of Package;
 # you must use ->clone() if you're going to modify it.
 sub newInternal {
-  my($classorself,$path,%options)=@_;
+  my ($classorself, $path, %options) = @_;
   my $class = ref $classorself || $classorself;
-  my($dir,$name,$type)=pathname_split($path);
-  $name .= '.'.$type if $type;
+  my ($dir, $name, $type) = pathname_split($path);
+  $name .= '.' . $type if $type;
   $name = "latex.ltx" if $name eq "LaTeX.pool";
   $dir = '.' unless $dir;
 
-  if(my $cached = $CACHE{$class}{$name}){
+  if (my $cached = $CACHE{$class}{$name}) {
     return $cached; }
 
   my @paths = ();
-  push(@paths,$dir);
-  push(@paths,@{$options{searchpaths}}) if $options{paths};
-  push(@paths,@{$$classorself{searchpaths}}) if ref $classorself;
+  push(@paths, $dir);
+  push(@paths, @{ $options{searchpaths} }) if $options{paths};
+  push(@paths, @{ $$classorself{searchpaths} }) if ref $classorself;
 
-  my $self = bless {name=>$name, %options, symbols=>{}, includes=>{}, searchpaths=>[@paths]}, $class;
+  my $self = bless { name => $name, %options, symbols => {}, includes => {}, searchpaths => [@paths] }, $class;
   $CACHE{$class}{$name} = $self;
 
   $self->scan;
@@ -155,85 +155,84 @@ sub newInternal {
   $self; }
 
 sub clone {
-  my($self)=@_;
-  bless {name=>$$self{name},
-	 declared_type=>$$self{declared_type},
-	 declared_as=>$$self{declared_as},
-	 symbols=>{ map(($_=>1), keys %{$$self{symbols}}) },
-	 includes=>{ map(($_=>1), keys %{$$self{includes}}) },
-	 searchpaths => [@{$$self{searchpaths}}]}, ref $self; }
+  my ($self) = @_;
+  bless { name => $$self{name},
+    declared_type => $$self{declared_type},
+    declared_as   => $$self{declared_as},
+    symbols       => { map(($_ => 1), keys %{ $$self{symbols} }) },
+    includes      => { map(($_ => 1), keys %{ $$self{includes} }) },
+    searchpaths => [@{ $$self{searchpaths} }] }, ref $self; }
 
 sub show {
-  my($self)=@_;
-  my @syms = sort keys %{$$self{symbols}};
-  print "   Macros : ".(@syms ? join(', ',@syms) : "None")."\n"; }
+  my ($self) = @_;
+  my @syms = sort keys %{ $$self{symbols} };
+  print "   Macros : " . (@syms ? join(', ', @syms) : "None") . "\n"; }
 
 # A variant of show that prints a compact signature (file:cs,...)
 sub signature {
-  my($self)=@_;
-  my @syms = keys %{$$self{symbols}};
-  print $$self{name}.":".($$self{declared_as}||'').":".join(',', sort @syms)."\n"; }
+  my ($self) = @_;
+  my @syms = keys %{ $$self{symbols} };
+  print $$self{name} . ":" . ($$self{declared_as} || '') . ":" . join(',', sort @syms) . "\n"; }
 
 # Convert any \foo, \endfoo combinations into {foo} an (assumed) environment.
 sub convertEnvironments {
-  my($self)=@_;
-  foreach my $cs (keys %{$$self{symbols}}){
-    if($cs =~ /^\\(.*)$/){
-      my $env = $1;
+  my ($self) = @_;
+  foreach my $cs (keys %{ $$self{symbols} }) {
+    if ($cs =~ /^\\(.*)$/) {
+      my $env   = $1;
       my $endcs = "\\end$env";
-      if($$self{symbols}{$endcs}){
-	$$self{symbols}{"{$env}"} = 1;
-	delete $$self{symbols}{$cs};
-	delete $$self{symbols}{$endcs}; }}
-  }}
+      if ($$self{symbols}{$endcs}) {
+        $$self{symbols}{"{$env}"} = 1;
+        delete $$self{symbols}{$cs};
+        delete $$self{symbols}{$endcs}; } }
+  } }
 
 # Add any symbols defined in $package into the $self. Modifies $self!
 sub add {
-  my($self,$package)=@_;
-  print "Adding $$package{name} symbols to $$self{name}\n"  if $::VERBOSITY >= 1;
-  foreach my $cs (%{$$package{symbols}}){
-    $$self{symbols}{$cs} =1; }
+  my ($self, $package) = @_;
+  print "Adding $$package{name} symbols to $$self{name}\n" if $::VERBOSITY >= 1;
+  foreach my $cs (%{ $$package{symbols} }) {
+    $$self{symbols}{$cs} = 1; }
   $self; }
 
 # Remove any symbols defined in $package from the $self.  Modifies $self!
 sub subtract {
-  my($self,$package)=@_;
-  print "Removing  $$package{name} symbols from $$self{name}\n"  if $::VERBOSITY >= 1;
-  foreach my $cs (%{$$package{symbols}}){
+  my ($self, $package) = @_;
+  print "Removing  $$package{name} symbols from $$self{name}\n" if $::VERBOSITY >= 1;
+  foreach my $cs (%{ $$package{symbols} }) {
     delete $$self{symbols}{$cs}; }
   $self; }
 
-
 # Remove the contributions of any included packages.  Modifies $self!
 sub removeInclusions {
-  my($self)=@_;
-  foreach my $remove ($self->getBase, keys %{$$self{includes}}){
-    if(my $pkg = $self->newInternal($remove)){
-      $self->subtract($pkg); }}}
+  my ($self) = @_;
+  foreach my $remove ($self->getBase, keys %{ $$self{includes} }) {
+    if (my $pkg = $self->newInternal($remove)) {
+      $self->subtract($pkg); } } }
 
 # Remove the contributions of any base packages.  Modifies $self!
 sub removeBase {
-  my($self)=@_;
-  foreach my $remove ($self->getBase){
-    if(my $pkg = $self->newInternal($remove)){
-      $self->subtract($pkg); }}}
+  my ($self) = @_;
+  foreach my $remove ($self->getBase) {
+    if (my $pkg = $self->newInternal($remove)) {
+      $self->subtract($pkg); } } }
 
 # Remove any "internal" symbols (those containing '@')
 sub removeInternal {
-  my($self)=@_;
-  foreach my $cs (keys %{$$self{symbols}}){
-    delete $$self{symbols}{$cs} if $cs =~ /\@/; }}
+  my ($self) = @_;
+  foreach my $cs (keys %{ $$self{symbols} }) {
+    delete $$self{symbols}{$cs} if $cs =~ /\@/; } }
 
 # Return a list of packages that should be implicitly included.
 sub getBase {
-  my($self)=@_;
+  my ($self) = @_;
   my @base = ();
-  if($::AMSTEX){
-    push(@base,"amstex.tex") if $$self{name} =~/\.sty$/;
+  if ($::AMSTEX) {
+    push(@base, "amstex.tex") if $$self{name} =~ /\.sty$/;
   }
   else {
-    push(@base,"article.cls") if $$self{name} =~/\.sty$/;
-    push(@base,"latex.ltx") if $$self{name} =~/\.(sty|cls)$/;
+    push(@base, "article.cls") if $$self{name} =~ /\.sty$/;
+    push(@base, "latex.ltx")   if $$self{name} =~ /\.(sty|cls)$/;
   }
   @base; }
 
@@ -267,207 +266,207 @@ BEGIN {
   $OPTREGEXP   = qr/(\[[^\]]*\])?/; }
 
 sub scan {
-  my($self)=@_;
+  my ($self) = @_;
 
   my $name = $$self{name};
   my $file = `kpsewhich $name`; chomp($file);
-  if(!$file){
-    $file = pathname_find($name,paths=>$$self{searchpaths}); }
-  if(!$file){
+  if (!$file) {
+    $file = pathname_find($name, paths => $$self{searchpaths}); }
+  if (!$file) {
     print STDERR "WARN: No stylefile found for $name\n";
     return $self; }
 
   # Scan the stylefile for apparently defined symbols
   print "Scanning style of $name from $file\n" if $::VERBOSITY >= 1;
-  open(STYLE,$file) or die "Couldn't open stylefile $file: $!";
-  while(<STYLE>){
+  open(STYLE, $file) or die "Couldn't open stylefile $file: $!";
+  while (<STYLE>) {
     s/%(.*)$//;
     # Note that more than 1 "defn" can appear per line! so no "elsif"
     # Various standard definitions
-    if(/\\(?:define|def|xdef|gdef|edef)\s*$CSREGEXP/o){
+    if (/\\(?:define|def|xdef|gdef|edef)\s*$CSREGEXP/o) {
       $$self{symbols}{$1} = 1; }
-    if(/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)\s*$CSREGEXP/o){
+    if (/\\new(?:count|dimen|skip|muskip|box|help|toks|read|write|fam|language|insert)\s*$CSREGEXP/o) {
       $$self{symbols}{$1} = 1; }
-    if(/\\newif\s*\\if([\w\@]+)/){
-      $$self{symbols}{"\\if$1"} = 1;
-      $$self{symbols}{"\\${1}true"} = 1;
+    if (/\\newif\s*\\if([\w\@]+)/) {
+      $$self{symbols}{"\\if$1"}      = 1;
+      $$self{symbols}{"\\${1}true"}  = 1;
       $$self{symbols}{"\\${1}false"} = 1; }
-    if(/\\(?:renew|new|provide)command\s*\*?\s*$ARGREGEXP/o){
-      $$self{symbols}{$1||$2} = 1; }
-    if(/\\(?:Declare|Provide)(?:TextFont|Text|Robust)Command(?:Default)?\s*\*?\s*$ARGREGEXP/o){
-      $$self{symbols}{$1||$2} = 1; }
-    if(/\\let$CSREGEXP\s*=?\s*$CSREGEXP/o){
+    if (/\\(?:renew|new|provide)command\s*\*?\s*$ARGREGEXP/o) {
+      $$self{symbols}{ $1 || $2 } = 1; }
+    if (/\\(?:Declare|Provide)(?:TextFont|Text|Robust)Command(?:Default)?\s*\*?\s*$ARGREGEXP/o) {
+      $$self{symbols}{ $1 || $2 } = 1; }
+    if (/\\let$CSREGEXP\s*=?\s*$CSREGEXP/o) {
       $$self{symbols}{$1} = 1; }
     # Defining math/text symbols
-    if(/\\DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o){
-      $$self{symbols}{ ( defined $1 ? $1 : $2) } = 1; }
-    if(/\\re\@DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o){ # txfonts
-      $$self{symbols}{ ( defined $1 ? $1 : $2) } = 1; }
+    if (/\\DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o) {
+      $$self{symbols}{ (defined $1 ? $1 : $2) } = 1; }
+    if (/\\re\@DeclareMath(?:Symbol|Accent|Delimiter)\s*$ARGREGEXP/o) {    # txfonts
+      $$self{symbols}{ (defined $1 ? $1 : $2) } = 1; }
     # Other packages used.
-    if(/\\(?:usepackage|RequirePackage)\s*$OPTREGEXP\s*$BRACEREGEXP/o){
-      map($self->noteInclusion($_,'sty'), split(/,/,$2)); }
-    if(/\\(?:LoadClassWithOptions|LoadClass)\s*$OPTREGEXP\s*$BRACEREGEXP/o){
-      $self->noteInclusion($2,'cls'); }
-    if(/\\(?:input|InputIfFileExists)\s*$BRACEREGEXP/o){
-      $self->noteInclusion($1||$2); }
-    elsif(/\\(?:input)\s+(.*?)(?:\s|\\relax|}|$)/o){
+    if (/\\(?:usepackage|RequirePackage)\s*$OPTREGEXP\s*$BRACEREGEXP/o) {
+      map($self->noteInclusion($_, 'sty'), split(/,/, $2)); }
+    if (/\\(?:LoadClassWithOptions|LoadClass)\s*$OPTREGEXP\s*$BRACEREGEXP/o) {
+      $self->noteInclusion($2, 'cls'); }
+    if (/\\(?:input|InputIfFileExists)\s*$BRACEREGEXP/o) {
+      $self->noteInclusion($1 || $2); }
+    elsif (/\\(?:input)\s+(.*?)(?:\s|\\relax|}|$)/o) {
       $self->noteInclusion($1); }
     # Environments
-    if(/\\(re)?newenvironment\s*\*?\s*$BRACEREGEXP/o){
-      $$self{symbols}{"\\".$2}=1;
-      $$self{symbols}{"\\end".$2}=1; }
+    if (/\\(re)?newenvironment\s*\*?\s*$BRACEREGEXP/o) {
+      $$self{symbols}{ "\\" . $2 }    = 1;
+      $$self{symbols}{ "\\end" . $2 } = 1; }
     # Other signifcant declarations
-    if(/\\Provides(Class|Package)\s*$BRACEREGEXP/o){
-      $$self{declared_type}=$1;
-      $$self{declared_as}=$2; }
+    if (/\\Provides(Class|Package)\s*$BRACEREGEXP/o) {
+      $$self{declared_type} = $1;
+      $$self{declared_as}   = $2; }
   }
   close(STYLE);
 
-  # Many important inclusions are invoked with macros for arguments (eg art1\@ptsize.sty !)
-  # We'll make a grudging attempt to rescan for possible assignments to these macros (within the same stylefile!)
-  # see ->noteInclusion for how rescanfor got set up.
-  # NOTE Also, that some latex209 `classes' REQUIRE that certain options (which will load files) are used
-  # and that these classes are incomplete without them!!!
-  if($$self{rescanfor}){
-    my $rescan = '('.join('|',map($_,keys %{$$self{rescanfor}})).')';
-    open(STYLE,$file) or die "Couldn't open stylefile $file: $!";
-    while(<STYLE>){
+# Many important inclusions are invoked with macros for arguments (eg art1\@ptsize.sty !)
+# We'll make a grudging attempt to rescan for possible assignments to these macros (within the same stylefile!)
+# see ->noteInclusion for how rescanfor got set up.
+# NOTE Also, that some latex209 `classes' REQUIRE that certain options (which will load files) are used
+# and that these classes are incomplete without them!!!
+  if ($$self{rescanfor}) {
+    my $rescan = '(' . join('|', map($_, keys %{ $$self{rescanfor} })) . ')';
+    open(STYLE, $file) or die "Couldn't open stylefile $file: $!";
+    while (<STYLE>) {
       s/%(.*)$//;
       # Line defines one of the indirection macros, so reconstruct the likely file to be input.
-      if(/\\(?:def|xdef|gdef|edef|newcommand|renewcommand)\s*\\$rescan\s*\{(\w+)\}/){
-	my ($pre,$post) = @{$$self{rescanfor}{$1}};
-	my $inclusion = $pre.$2.$post;
-	$self->noteInclusion($inclusion); }}
+      if (/\\(?:def|xdef|gdef|edef|newcommand|renewcommand)\s*\\$rescan\s*\{(\w+)\}/) {
+        my ($pre, $post) = @{ $$self{rescanfor}{$1} };
+        my $inclusion = $pre . $2 . $post;
+        $self->noteInclusion($inclusion); } }
     close(STYLE); }
 
   # Remove trivial things that probably are just font declarations
-  foreach my $sym (keys %{$$self{symbols}}){
+  foreach my $sym (keys %{ $$self{symbols} }) {
     delete $$self{symbols}{$sym} if length($sym) == 1; }
 
   # Need to explicitly add contributes from included packages.
-  foreach my $add (keys %{$$self{includes}}){
-    if(my $pkg = $self->newInternal($add)){
+  foreach my $add (keys %{ $$self{includes} }) {
+    if (my $pkg = $self->newInternal($add)) {
       $self->add($pkg);
-      if(($add =~ /\.cls$/) && ($name =~ /\.cls$/) && !$$self{declared_as}){
-	$$self{declared_as}   = $$pkg{declared_as};
-	$$self{declared_type} = $$pkg{declared_type}; }}}
+      if (($add =~ /\.cls$/) && ($name =~ /\.cls$/) && !$$self{declared_as}) {
+        $$self{declared_as}   = $$pkg{declared_as};
+        $$self{declared_type} = $$pkg{declared_type}; } } }
 
-  if($name =~ /\.cls$/){
+  if ($name =~ /\.cls$/) {
     my $c = $$self{declared_as};
     my $t = $$self{declared_type};
-    if(!$c) {
+    if (!$c) {
       print STDERR "WARN: $name not declared with \\ProvidesClass\n"; }
-    elsif(("$c.cls" ne $name) || ($t ne 'Class')){
-      print STDERR "NOTE: $name declared as $t $c\n"; }}
+    elsif (("$c.cls" ne $name) || ($t ne 'Class')) {
+      print STDERR "NOTE: $name declared as $t $c\n"; } }
 
   $self; }
 
 sub noteInclusion {
-  my($self,$file,$defaulttype)=@_;
-  $file =~ s/^\s+//;  $file =~ s/\s+$//;
-  my($dir,$name,$type)=pathname_split($file);
+  my ($self, $file, $defaulttype) = @_;
+  $file =~ s/^\s+//; $file =~ s/\s+$//;
+  my ($dir, $name, $type) = pathname_split($file);
   $type = $defaulttype unless $type;
-  $name .= '.'.$type if $type;
+  $name .= '.' . $type if $type;
   return if $name eq $$self{name};
   $name =~ s/1?\\\@ptsize/10/;
-  if($name =~ /^([^\\]*)\\([a-zA-Z\@]+)([^\\]*)$/){		# Ugh...
-    $$self{rescanfor}{$2} = [$1,$3]; }
-  elsif($name =~ /(?:\\|#)/){}	# just skip it if too hard or unknowable
+  if ($name =~ /^([^\\]*)\\([a-zA-Z\@]+)([^\\]*)$/) {    # Ugh...
+    $$self{rescanfor}{$2} = [$1, $3]; }
+  elsif ($name =~ /(?:\\|#)/) { }                        # just skip it if too hard or unknowable
   else {
-    $$self{includes}{$name}=1; }}
+    $$self{includes}{$name} = 1; } }
 
 # Generate a stub implementation for a given package.
 
 # NOTE: Rearrange this so that the base packages are ALWAYS loaded (?)
 # and inclusions only if they actually contribute something?
 sub generateStub {
-  my($self,$base)=@_;
-  my $dest = $$self{name}.".ltxml";
+  my ($self, $base) = @_;
+  my $dest = $$self{name} . ".ltxml";
   # Copy any existing file to *.bak --- but ONLY if there isn't already a bak!
-  if((-f $dest) && !(-f "$dest.bak")){
-    rename $dest,"$dest.bak" or die "Couldn't rename $dest to $dest.bak: $!";
+  if ((-f $dest) && !(-f "$dest.bak")) {
+    rename $dest, "$dest.bak" or die "Couldn't rename $dest to $dest.bak: $!";
     print "Saved previous $dest to $dest.bak\n"; }
-  open OUT,">$dest" or die "Couldn't open $dest for writing: $!";
+  open OUT, ">$dest" or die "Couldn't open $dest for writing: $!";
 
-  my %inc = %{$$self{includes}};
+  my %inc  = %{ $$self{includes} };
   my @base = split(/,/, $base);
-  my %base = ($base ? map(($_=>1),@base) : ());
+  my %base = ($base ? map(($_ => 1), @base) : ());
 
   $self->removeBase;
   $self->removeInternal unless $internal;
 
   printStubComments(*OUT,
-		    '=',
-		    $$self{name}." for LaTeXML",
-		    "Generated by texscan --stub".($base ? " --base=$base": '').' '.$$self{name},
-		    '=',
-		    "Released to public domain.",
-		    "Bruce Miller <bruce.miller\@nist.gov>",
-		    "http://dlmf.nist.gov/LaTeXML/",
-		    '=');
+    '=',
+    $$self{name} . " for LaTeXML",
+    "Generated by texscan --stub" . ($base ? " --base=$base" : '') . ' ' . $$self{name},
+    '=',
+    "Released to public domain.",
+    "Bruce Miller <bruce.miller\@nist.gov>",
+    "http://dlmf.nist.gov/LaTeXML/",
+    '=');
   print OUT "use strict;\nuse LaTeXML::Package;\n\n";
 
   # get unique classes, starting with those in $base
   my @classes = (grep(/\.cls$/, keys %base), grep(/\.cls$/ && !$base{$_}, keys %inc));
-  if(($$self{name}=~/\.sty$/) && @classes){
-    print STDERR "WARN: Ignoring class file used in style file $$self{name}: ".join(', ',@classes)."\n";
-    @classes=(); }
-  elsif(@classes > 1){
-    print STDERR "WARN: Ignoring excess classes for $$self{name}: ".join(', ',@classes[1..$#classes])."\n";
-    @classes=($classes[0]); }
-  if(@classes){
-    my $c = $classes[0]; $c=~ s/\.cls$//;
+  if (($$self{name} =~ /\.sty$/) && @classes) {
+    print STDERR "WARN: Ignoring class file used in style file $$self{name}: " . join(', ', @classes) . "\n";
+    @classes = (); }
+  elsif (@classes > 1) {
+    print STDERR "WARN: Ignoring excess classes for $$self{name}: " . join(', ', @classes[1 .. $#classes]) . "\n";
+    @classes = ($classes[0]); }
+  if (@classes) {
+    my $c = $classes[0]; $c =~ s/\.cls$//;
     print OUT "LoadClass('$c',withoptions=>1);\n";
     $self->subtract($self->new($classes[0])); }
 
   # The process inclusions starting with $base, then the actual package's inclusions
   # But only include the ones that have an "effect".
-  foreach my $pkg (@base, grep(/\.sty$/, keys %inc)){
-    my $nbefore = scalar(keys %{$$self{symbols}});
+  foreach my $pkg (@base, grep(/\.sty$/, keys %inc)) {
+    my $nbefore = scalar(keys %{ $$self{symbols} });
     my $package = $self->new($pkg);
-    $package->removeBase; #?
+    $package->removeBase;    #?
     $self->subtract($package);
-    my $p = $pkg; $p=~ s/\.sty$//;
-    my $nafter = scalar(keys %{$$self{symbols}});
-    if($nbefore > $nafter){
-      if($base{$pkg}){
-	print OUT "RequirePackage('$p',withoptions=>1);\n"; }
+    my $p = $pkg; $p =~ s/\.sty$//;
+    my $nafter = scalar(keys %{ $$self{symbols} });
+    if ($nbefore > $nafter) {
+      if ($base{$pkg}) {
+        print OUT "RequirePackage('$p',withoptions=>1);\n"; }
       else {
-	print OUT "RequirePackage('$p');\n"; }}
+        print OUT "RequirePackage('$p');\n"; } }
     else {
-      print OUT "# No effect from $pkg\n"; }}
+      print OUT "# No effect from $pkg\n"; } }
 
   $self->convertEnvironments;
-  my @syms = sort keys %{$$self{symbols}};
-  if(@syms){
-    printStubComments(*OUT,"-","INCOMPLETE IMPLEMENTATION","remove this comment, when done.","-");
-    foreach my $sym (@syms){
-      if($sym =~ /^\{.*\}$/){
-	print OUT "# DefEnvironment('$sym','#body');\n"; }
+  my @syms = sort keys %{ $$self{symbols} };
+  if (@syms) {
+    printStubComments(*OUT, "-", "INCOMPLETE IMPLEMENTATION", "remove this comment, when done.", "-");
+    foreach my $sym (@syms) {
+      if ($sym =~ /^\{.*\}$/) {
+        print OUT "# DefEnvironment('$sym','#body');\n"; }
       else {
-	print OUT "# DefMacro('$sym',Tokens());\n"; }}}
+        print OUT "# DefMacro('$sym',Tokens());\n"; } } }
 
   print OUT "\n1;\n";
   close OUT;
 
   print "Wrote binding of $$self{name} to $dest\n";
-  print "NOTE: Please edit to complete ".scalar(@syms)." definitions.\n" if @syms;
+  print "NOTE: Please edit to complete " . scalar(@syms) . " definitions.\n" if @syms;
 }
 
 sub printStubComments {
-  my($out,@lines)=@_;
+  my ($out, @lines) = @_;
   my $LENGTH = 70;
-  my $N = scalar(@lines);
-  for(my $i=0; $i<$N; $i++){
+  my $N      = scalar(@lines);
+  for (my $i = 0 ; $i < $N ; $i++) {
     my $line = $lines[$i];
-    if($line =~ /^[-_=%\*#]$/){
+    if ($line =~ /^[-_=%\*#]$/) {
       print $out "# "
-	.($i==0 ? " /":($i==$N-1 ? " \\":" >"))
-	  .($line x ($LENGTH-2))
-	    .($i==0 ? "\\":($i==$N-1 ? "/":"<"))."\n"; }
+        . ($i == 0 ? " /" : ($i == $N - 1 ? " \\" : " >"))
+        . ($line x ($LENGTH - 2))
+        . ($i == 0 ? "\\" : ($i == $N - 1 ? "/" : "<")) . "\n"; }
     else {
-      my $n = $LENGTH - length($line)-1;
-      print $out "# | ".$line.(' 'x$n)."|\n"; }}
+      my $n = $LENGTH - length($line) - 1;
+      print $out "# | " . $line . (' ' x $n) . "|\n"; } }
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -490,49 +489,49 @@ use LaTeXML;
 use LaTeXML::Util::Pathname;
 
 sub scan {
-  my($self)=@_;
+  my ($self) = @_;
   my $name = $$self{name};
-  print "Loading $name into LaTeXML\n"  if $::VERBOSITY >= 1;
-  my $latexml = LaTeXML->new(searchpaths=>($$self{searchpaths} || []), verbosity=>$::VERBOSITY-1);
-  local $LaTeXML::STATE    = $$latexml{state};
-  my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
-  my $gullet   = $stomach->getGullet;
+  print "Loading $name into LaTeXML\n" if $::VERBOSITY >= 1;
+  my $latexml = LaTeXML->new(searchpaths => ($$self{searchpaths} || []), verbosity => $::VERBOSITY - 1);
+  local $LaTeXML::STATE = $$latexml{state};
+  my $stomach = $LaTeXML::STATE->getStomach;    # The current Stomach;
+  my $gullet  = $stomach->getGullet;
   $stomach->initialize;
   my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
 
   my @pkgs = ("TeX.pool");
-  if($::AMSTEX){
-    push(@pkgs,"amstex.tex") if $$self{name} =~/\.sty$/;
+  if ($::AMSTEX) {
+    push(@pkgs, "amstex.tex") if $$self{name} =~ /\.sty$/;
   }
   else {
-    push(@pkgs,"LaTeX.pool");
+    push(@pkgs, "LaTeX.pool");
     push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
   }
-  push(@pkgs,$name) unless $name eq 'latex.ltx';
+  push(@pkgs, $name) unless $name eq 'latex.ltx';
   no warnings;
   ## Since we're mucking with STATE, we'll reload, and get redefinitions;
   ## but we'd really rather not get all the warnings!!
   local $^W = 0;
-  foreach my $pkg (@pkgs){
-    my $loadpath = pathname_find("$pkg.ltxml",paths=>$paths,installation_subdir=>'Package');
-    if(!$loadpath){
+  foreach my $pkg (@pkgs) {
+    my $loadpath = pathname_find("$pkg.ltxml", paths => $paths, installation_subdir => 'Package');
+    if (!$loadpath) {
       print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
-    if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
-    elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
-    else                       {  LaTeXML::Package::InputDefinitions($loadpath); }}
+    if    ($pkg =~ /(.*)\.sty$/) { LaTeXML::Package::RequirePackage($1); }
+    elsif ($pkg =~ /(.*)\.cls$/) { LaTeXML::Package::LoadClass($1); }
+    else { LaTeXML::Package::InputDefinitions($loadpath); } }
 
-  print "Scanning defined symbols\n"  if $::VERBOSITY >= 1;
+  print "Scanning defined symbols\n" if $::VERBOSITY >= 1;
   my $table = $LaTeXML::STATE->{table}{meaning};
-  foreach my $entry (keys %{$table}){
-    if($entry =~ /^\\begin\{(.*?)\}$/){
-      $$self{symbols}{"\\".$1} = 1; }
-    elsif($entry =~ /^\\end\{(.*?)\}$/){
-      $$self{symbols}{"\\end".$1} = 1; }
-    elsif($entry =~ /^(\\.*)$/){
+  foreach my $entry (keys %{$table}) {
+    if ($entry =~ /^\\begin\{(.*?)\}$/) {
+      $$self{symbols}{ "\\" . $1 } = 1; }
+    elsif ($entry =~ /^\\end\{(.*?)\}$/) {
+      $$self{symbols}{ "\\end" . $1 } = 1; }
+    elsif ($entry =~ /^(\\.*)$/) {
       $$self{symbols}{$1} = 1; }
-    elsif($entry =~ /^(.*)\.ltxml_loaded$/){
+    elsif ($entry =~ /^(.*)\.ltxml_loaded$/) {
       my $inc = $1;
-      $$self{includes}{$inc}=1 unless ($inc eq $name) || $inc=~/\\/; }}
+      $$self{includes}{$inc} = 1 unless ($inc eq $name) || $inc =~ /\\/; } }
   $self; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -29,75 +29,75 @@ RequirePackage('amsmath');
 RequirePackage('amssymb');
 RequirePackage('cancel');
 RequirePackage('eurosym');
-RequirePackage('xcolor',options=>['dvipsnames']);
+RequirePackage('xcolor', options => ['dvipsnames']);
 
-DefMathI('\sgn',    undef,"sgn", role=>'OPFUNCTION',  meaning=>'sign');
+DefMathI('\sgn', undef, "sgn", role => 'OPFUNCTION', meaning => 'sign');
 
 #======================================================================
 # texvc is primarily useful for translating INDIVIDUAL math expressions
 # So, apparently it isn't too bad to lose some normal latex markup.
-AssignCatcode('$'=>CC_OTHER);
-AssignCatcode('%'=>CC_OTHER);
+AssignCatcode('$' => CC_OTHER);
+AssignCatcode('%' => CC_OTHER);
 
-Let(T_CS('\part'),T_CS('\partial')); # Normally for sectioning
-DefMacroI('\and',undef,"and");	# Normally for frontmatter
+Let('\part', '\partial');    # Normally for sectioning
+DefMacroI('\and', undef, "and");    # Normally for frontmatter
 
 # Also, equation numbering appears to be turned off.
 #AssignValue(EQUATIONGROUP_NUMBER=>0);
 #AssignValue(EQUATIONROW_NUMBER=>0);
-Let(T_CS('\@equationgroup@number'),T_CS('\nonumber'));
+Let('\@equationgroup@number', '\nonumber');
 
 #======================================================================
 # Uppercase Greek (the ones not already defined in TeX)
-DefMathI('\Alpha',     undef,"\x{0391}");
-DefMathI('\Beta',      undef,"\x{0392}");
+DefMathI('\Alpha', undef, "\x{0391}");
+DefMathI('\Beta',  undef, "\x{0392}");
 #DefMathI('\Gamma',     undef,"\x{0393}");
 #DefMathI('\Delta',     undef,"\x{0394}");
-DefMathI('\Epsilon'  , undef,"\x{0395}");
-DefMathI('\Zeta',      undef,"\x{0396}");
-DefMathI('\Eta',       undef,"\x{0397}");
+DefMathI('\Epsilon', undef, "\x{0395}");
+DefMathI('\Zeta',    undef, "\x{0396}");
+DefMathI('\Eta',     undef, "\x{0397}");
 #DefMathI('\Theta',     undef,"\x{0398}");
-DefMathI('\Iota',      undef,"\x{0399}");
-DefMathI('\Kappa',     undef,"\x{039A}");
+DefMathI('\Iota',  undef, "\x{0399}");
+DefMathI('\Kappa', undef, "\x{039A}");
 #DefMathI('\Lambda',    undef,"\x{039B}");
-DefMathI('\Mu',        undef,"\x{039C}");
-DefMathI('\Nu',        undef,"\x{039D}");
+DefMathI('\Mu', undef, "\x{039C}");
+DefMathI('\Nu', undef, "\x{039D}");
 #DefMathI('\Xi',        undef,"\x{039E}");
-DefMathI('\Omicron',   undef,"\x{039F}");
+DefMathI('\Omicron', undef, "\x{039F}");
 
 #DefMathI('\Pi',        undef,"\x{03A0}");
-DefMathI('\Rho',       undef,"\x{03A1}");
+DefMathI('\Rho', undef, "\x{03A1}");
 #DefMathI('\Sigma',     undef,"\x{03A3}");
-DefMathI('\Tau',       undef,"\x{03A4}");
+DefMathI('\Tau', undef, "\x{03A4}");
 #DefMathI('\Upsilon',   undef,"\x{03A5}");
 #DefMathI('\Phi',       undef,"\x{03D5}");
-DefMathI('\Chi',       undef,"\x{03A7}");
+DefMathI('\Chi', undef, "\x{03A7}");
 #DefMathI('\Psi',       undef,"\x{03A8}");
 #DefMathI('\Omega',     undef,"\x{03A9}");
 #======================================================================
 # Archaic(?) greek
-DefMathI('\Digamma',  undef,  "\x{03DC}"); # GREEK LETTER DIGAMMA
-DefMathI('\digamma',  undef,  "\x{03DD}"); # GREEK SMALL LETTER DIGAMMA
+DefMathI('\Digamma', undef, "\x{03DC}");    # GREEK LETTER DIGAMMA
+DefMathI('\digamma', undef, "\x{03DD}");    # GREEK SMALL LETTER DIGAMMA
 
 # Is this the intent, here???
-DefMathI('\Coppa',    undef,  "\x{03D8}");	 # GREEK LETTER ARCHAIC KOPPA
-DefMathI('\coppa',    undef,  "\x{03D9}");	 # GREEK SMALL LETTER ARCHAIC KOPPA
-DefMathI('\varcoppa', undef,  "\x{03D9}");	 # GREEK SMALL LETTER ARCHAIC KOPPA
-DefMathI('\Koppa',    undef,  "\x{03DE}");	 # GREEK LETTER KOPPA
-DefMathI('\koppa',    undef,  "\x{03DF}");	 # GREEK SMALL LETTER KOPPA
+DefMathI('\Coppa',    undef, "\x{03D8}");    # GREEK LETTER ARCHAIC KOPPA
+DefMathI('\coppa',    undef, "\x{03D9}");    # GREEK SMALL LETTER ARCHAIC KOPPA
+DefMathI('\varcoppa', undef, "\x{03D9}");    # GREEK SMALL LETTER ARCHAIC KOPPA
+DefMathI('\Koppa',    undef, "\x{03DE}");    # GREEK LETTER KOPPA
+DefMathI('\koppa',    undef, "\x{03DF}");    # GREEK SMALL LETTER KOPPA
 
-DefMathI('\Stigma',   undef,  "\x{03DA}");	 # GREEK LETTER STIGAM
-DefMathI('\stigma',   undef,  "\x{03DB}");	 # GREEK SMALL LETTER STIGMA
-DefMathI('\varstigma',undef,  "\x{03DB}");	 # GREEK SMALL LETTER STIGMA
+DefMathI('\Stigma',    undef, "\x{03DA}");   # GREEK LETTER STIGAM
+DefMathI('\stigma',    undef, "\x{03DB}");   # GREEK SMALL LETTER STIGMA
+DefMathI('\varstigma', undef, "\x{03DB}");   # GREEK SMALL LETTER STIGMA
 
-DefMathI('\Sampi',    undef,  "\x{03E0}");	 # GREEK LETTER SAMPI
-DefMathI('\sampi',    undef,  "\x{03E1}");	 # GREEK SMALL LETTER SAMPI
+DefMathI('\Sampi', undef, "\x{03E0}");       # GREEK LETTER SAMPI
+DefMathI('\sampi', undef, "\x{03E1}");       # GREEK SMALL LETTER SAMPI
 
 #======================================================================
 # Spanish sine
-DefMathI('\sen',    undef,"sen", role=>'TRIGFUNCTION',  meaning=>'sine');
+DefMathI('\sen', undef, "sen", role => 'TRIGFUNCTION', meaning => 'sine');
 #======================================================================
 # Random
-Let(T_CS('\exist'),T_CS('\exists'));
+Let('\exist', '\exists');
 #======================================================================
 1;

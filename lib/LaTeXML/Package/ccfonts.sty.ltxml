@@ -15,7 +15,7 @@ use strict;
 use LaTeXML::Package;
 
 # Nothing much to do here.
-Let(T_CS('\upDelta'),T_CS('\Delta'));
-Let(T_CS('\upOmega'),T_CS('\Omega'));
+Let('\upDelta', '\Delta');
+Let('\upOmega', '\Omega');
 
 1;

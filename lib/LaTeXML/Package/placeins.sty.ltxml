@@ -14,12 +14,12 @@ use strict;
 use LaTeXML::Package;
 
 #**********************************************************************
-foreach my $option (qw(section above below verbose)){
-  DeclareOption($option,undef); }
+foreach my $option (qw(section above below verbose)) {
+  DeclareOption($option, undef); }
 ProcessOptions();
 
 # Basically no-op, since floats stay where they're found.
-DefMacroI('\FloatBarrier',undef,'');
+DefMacroI('\FloatBarrier', undef, '');
 
 #**********************************************************************
 

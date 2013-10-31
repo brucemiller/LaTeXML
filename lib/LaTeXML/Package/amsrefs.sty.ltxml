@@ -18,66 +18,66 @@ use LaTeXML::Util::KeyVal;
 #======================================================================
 # Leverage the BibTeX implementation
 #======================================================================
-RequirePackage('BibTeX',type=>'pool');
+RequirePackage('BibTeX', type => 'pool');
 
 # \bib{key}{type}{keyval pairs}
 
-DefParameterType('BibURL',sub {
-  my($gullet)=@_;
-  StartSemiverbatim();
-  my @tokens = $gullet->readArg->unlist;
-  EndSemiverbatim();
-  my @cleaned = ();
-  while(my $t = shift(@tokens)){
-    if($t->equals(T_OTHER('%')) && @tokens && $tokens[0]->equals(Token("\n",CC_SPACE))){
-      shift(@tokens); }
-    else {
-      push(@cleaned,$t); }}
-  Tokens(T_BEGIN,@cleaned,T_END); },
-  semiverbatim=>1);
+DefParameterType('BibURL', sub {
+    my ($gullet) = @_;
+    StartSemiverbatim();
+    my @tokens = $gullet->readArg->unlist;
+    EndSemiverbatim();
+    my @cleaned = ();
+    while (my $t = shift(@tokens)) {
+      if ($t->equals(T_OTHER('%')) && @tokens && $tokens[0]->equals(Token("\n", CC_SPACE))) {
+        shift(@tokens); }
+      else {
+        push(@cleaned, $t); } }
+    Tokens(T_BEGIN, @cleaned, T_END); },
+  semiverbatim => 1);
 
-DefKeyVal('amsrefs','url','BibURL');
+DefKeyVal('amsrefs', 'url', 'BibURL');
 
 # \bib{key}{type}{keyval-pairs}
-DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub{
-  my($gullet,$key,$type,$keyvals)=@_;
-  $key = CleanBibKey(ToString($key));
-  my @rawpairs = $keyvals->getPairs;
-  my @fields;
-  while(@rawpairs){
-    push(@fields, [lc(shift(@rawpairs)),ToString(shift(@rawpairs))]); }
-  AssignValue('BIBENTRY@'.$key=>LaTeXML::Bib::BibEntry->new(ToString($type),$key,[@fields],[@fields]));
-  Invocation(T_CS('\ProcessBibTeXEntry'),T_OTHER($key)); });
+DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub {
+    my ($gullet, $key, $type, $keyvals) = @_;
+    $key = CleanBibKey(ToString($key));
+    my @rawpairs = $keyvals->getPairs;
+    my @fields;
+    while (@rawpairs) {
+      push(@fields, [lc(shift(@rawpairs)), ToString(shift(@rawpairs))]); }
+    AssignValue('BIBENTRY@' . $key => LaTeXML::Bib::BibEntry->new(ToString($type), $key, [@fields], [@fields]));
+    Invocation(T_CS('\ProcessBibTeXEntry'), T_OTHER($key)); });
 
 #======================================================================
 # Someday may want to try to decipher, but ...
-DefMacro('\BibSpec{}{}',Tokens());
+DefMacro('\BibSpec{}{}', Tokens());
 
 # ?
-Let(T_CS('\cites'),T_CS('\cite'));
+Let('\cites', '\cite');
 #======================================================================
 DefEnvironment('{bibdiv}',
-	       "<ltx:bibliography xml:id='#id' "
-               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
-	       . "#body"
-	       ."</ltx:bibliography>",
-	       afterDigestBegin=>sub { beginBibliography($_[1]); });
+  "<ltx:bibliography xml:id='#id' "
+    . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
+    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "#body"
+    . "</ltx:bibliography>",
+  afterDigestBegin => sub { beginBibliography($_[1]); });
 
-DefEnvironment('{biblist}',"<ltx:biblist>#body</ltx:biblist>");
+DefEnvironment('{biblist}', "<ltx:biblist>#body</ltx:biblist>");
 
 #======================================================================
 # Other Defns (presumably from textcmds?)
 
 DefConstructor('\MR{}',
-	       "<ltx:ref href='#href' class='ltx_mathreviews'>MathReviews</ltx:ref>",
-	       properties=>sub{
-		 my $mr = ToString($_[1]);
-		 # Patch up old-style MathReviews numbers
-		 $mr =~ s/\s+\\\#\s*/:/;
-		 (mr=>$mr, href=>"http://www.ams.org/mathscinet-getitem?mr=".$mr); });
+  "<ltx:ref href='#href' class='ltx_mathreviews'>MathReviews</ltx:ref>",
+  properties => sub {
+    my $mr = ToString($_[1]);
+    # Patch up old-style MathReviews numbers
+    $mr =~ s/\s+\\\#\s*/:/;
+    (mr => $mr, href => "http://www.ams.org/mathscinet-getitem?mr=" . $mr); });
 
-DefConstructor('\ndash',"\x{2013}"); # EN DASH
-DefConstructor('\mdash',"\x{2014}"); # EM DASH
+DefConstructor('\ndash', "\x{2013}");    # EN DASH
+DefConstructor('\mdash', "\x{2014}");    # EM DASH
 #**********************************************************************
 1;

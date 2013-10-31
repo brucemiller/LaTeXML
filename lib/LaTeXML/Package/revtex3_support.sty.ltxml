@@ -5,17 +5,17 @@
 # |=======================================================| #
 # | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
 # | Copyright (c) 2008 arXMLiv group                      | #
-# | Catalin David <c.david@jacobs-university.de>	  | #
-# | Released to Public Domain 		                  | #
+# | Catalin David <c.david@jacobs-university.de>          | #
+# | Released to Public Domain                             | #
 # =======================================================/ #
 
 package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DeclareOption('amsfonts', sub{ RequirePackage('amsfonts'); });
-DeclareOption('amssymb',  sub{ RequirePackage('amssymb'); });
-DeclareOption('amsmath',  sub{ RequirePackage('amsmath'); });
+DeclareOption('amsfonts', sub { RequirePackage('amsfonts'); });
+DeclareOption('amssymb',  sub { RequirePackage('amssymb'); });
+DeclareOption('amsmath',  sub { RequirePackage('amsmath'); });
 ProcessOptions();
 
 RequirePackage('revtex4_support');
@@ -26,67 +26,67 @@ RequirePackage('revtex4_support');
 RawTeX('\newif\ifpreprintsty\newif\ifsecnumbers\newif\ifsegabssty');
 # \overlay seems to be yet another of these stacked things...
 # \vereq also
-DefMacro('\eqsecnum',''); 	# ?
-DefMacro('\tightenlines','');
-DefMacro('\wideabs','');	# wide abstract? takes an arg, but avoid reading it
+DefMacro('\eqsecnum',     '');    # ?
+DefMacro('\tightenlines', '');
+DefMacro('\wideabs',      '');    # wide abstract? takes an arg, but avoid reading it
 
 # Hmm, this seems to allow random chunks of text within;
 # it really only specifies the numbering, not alignment or ...
 DefEnvironment('{mathletters}',
-#	       "<ltx:equationgroup>#body</ltx:equationgroup>",
-	       "#body",
-	       afterDigestBegin=>sub {
-		 my($stomach,$whatsit)=@_;
-		 my %eqn = RefStepCounter('equation');
-		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
-		 ResetCounter('equation');
-		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
-		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
-	       },
-	       afterDigest =>sub{ 
-		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
+  #       "<ltx:equationgroup>#body</ltx:equationgroup>",
+  "#body",
+  afterDigestBegin => sub {
+    my ($stomach, $whatsit) = @_;
+    my %eqn = RefStepCounter('equation');
+    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
+    ResetCounter('equation');
+    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
+    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
+  },
+  afterDigest => sub {
+    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
 
 #======================================================================
 # Apparently, you can use single $ within equations to switch back to text
 
 DefMacro('\@dollar@in@oldrevtex', '\bgroup\hbox\bgroup\let$\@eegroup');
-DefMacro('\@eegroup','\egroup\egroup');
+DefMacro('\@eegroup',             '\egroup\egroup');
 DefEnvironment('{equation}',
-	       "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>"
-	       .   "#body"
-	       .  "</ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>",
-	       mode=>'display_math',
-	       beforeDigest=>sub { Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
-	       properties=> sub { RefStepCounter('equation'); },
-	       locked=>1);
+  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode => 'display_math',
+  beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
+  properties => sub { RefStepCounter('equation'); },
+  locked => 1);
 DefEnvironment('{equation*}',
-	       "<ltx:equation xml:id='#id'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>"
-	       .   "#body"
-	       .  "</ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>",
-	       mode=>'display_math',
-	       beforeDigest=>sub { Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
-	       properties=> sub { RefStepID('equation') },
-	       locked=>1);
-DefConstructorI('\[',undef, 
-	       "<ltx:equation xml:id='#id'>"
-	       . "<ltx:Math mode='display'>"
-	       .  "<ltx:XMath>"
-	       .   "#body"
-	       .  "</ltx:XMath>"
-	       . "</ltx:Math>"
-	       ."</ltx:equation>",
-		beforeDigest=> sub{ $_[0]->beginMode('display_math');
-				    Let(T_MATH,  T_CS('\@dollar@in@oldrevtex')); },
-		captureBody=>1,
-		properties=> sub { RefStepID('equation') });
+  "<ltx:equation xml:id='#id'>"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode => 'display_math',
+  beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
+  properties => sub { RefStepID('equation') },
+  locked => 1);
+DefConstructorI('\[', undef,
+  "<ltx:equation xml:id='#id'>"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  beforeDigest => sub { $_[0]->beginMode('display_math');
+    Let(T_MATH, '\@dollar@in@oldrevtex'); },
+  captureBody => 1,
+  properties => sub { RefStepID('equation') });
 
 #**********************************************************************
 

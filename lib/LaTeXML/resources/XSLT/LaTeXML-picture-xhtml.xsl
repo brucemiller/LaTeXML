@@ -33,13 +33,13 @@
   <xsl:template match="ltx:picture">
     <xsl:choose>
       <xsl:when test="svg:svg and $USE_SVG">
-	<xsl:apply-templates select="." mode="as-svg"/>
+        <xsl:apply-templates select="." mode="as-svg"/>
       </xsl:when>
       <xsl:when test="@imagesrc">
-	<xsl:apply-templates select="." mode="as-image"/>
+        <xsl:apply-templates select="." mode="as-image"/>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:apply-templates select="." mode="as-TeX"/>
+        <xsl:apply-templates select="." mode="as-TeX"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -48,29 +48,29 @@
     <xsl:element name="img" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
-	<xsl:with-param name="extra_style">
-	  <xsl:if test="@imagedepth">
-	    <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
-	  </xsl:if>
-	</xsl:with-param>
+        <xsl:with-param name="extra_style">
+          <xsl:if test="@imagedepth">
+            <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
+          </xsl:if>
+        </xsl:with-param>
       </xsl:call-template>
       <xsl:attribute name="src">
-	<xsl:value-of select="f:url(@imagesrc)"/>
+        <xsl:value-of select="f:url(@imagesrc)"/>
       </xsl:attribute>
       <xsl:if test="@imagewidth">
-	<xsl:attribute name="width">
-	  <xsl:value-of select="@imagewidth"/>
-	</xsl:attribute>
+        <xsl:attribute name="width">
+          <xsl:value-of select="@imagewidth"/>
+        </xsl:attribute>
       </xsl:if>
       <xsl:if test="@imageheight">
-	<xsl:attribute name="height">
-	  <xsl:value-of select="@imageheight"/>
-	</xsl:attribute>
+        <xsl:attribute name="height">
+          <xsl:value-of select="@imageheight"/>
+        </xsl:attribute>
       </xsl:if>
       <xsl:if test="@tex">
-	<xsl:attribute name="alt">
-	  <xsl:value-of select="@tex"/>
-	</xsl:attribute>
+        <xsl:attribute name="alt">
+          <xsl:value-of select="@tex"/>
+        </xsl:attribute>
       </xsl:if>
     </xsl:element>
   </xsl:template>
@@ -79,7 +79,7 @@
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
-      </xsl:call-template>	
+      </xsl:call-template>      
       <xsl:value-of select="@tex"/>
     </xsl:element>
   </xsl:template>
@@ -93,7 +93,7 @@
       <xsl:call-template name="add_attributes"/>
       <!-- but copy other svg:svg attributes -->
       <xsl:for-each select="svg:svg/@*">
-	<xsl:apply-templates select="." mode="copy-attribute"/>
+        <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates select="svg:svg/*"/>
     </xsl:element>
@@ -106,43 +106,43 @@
   <xsl:template match="svg:*">
     <xsl:element name="{local-name()}" namespace="{$svg_ns}">
       <xsl:for-each select="@*">
-	<xsl:choose>
-	  <xsl:when test="local-name() = 'id'">
-	    <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
-	      <xsl:value-of select="."/>
-	    </xsl:attribute>
-	  </xsl:when>
-	  <!-- are these the attributes to watch for in svg? (urls)-->
-	  <xsl:when test="name() = 'href' or name() = 'src'">
-	    <xsl:attribute name="{local-name()}">
-	      <xsl:value-of select="f:url(.)"/>
-	    </xsl:attribute>
-	  </xsl:when>
-	  <xsl:when test="name()='xlink:href' or name()='xlink:role' or name()='xlink:arcrole'">
-	    <xsl:attribute name="{local-name()}"
-			   namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
-	      <xsl:value-of select="f:url(.)"/>
-	    </xsl:attribute>
-	  </xsl:when>
-	  <xsl:when test="namespace-uri() = $SVG_NAMESPACE">
-	    <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
-	      <xsl:value-of select="."/>
-	    </xsl:attribute>
-	  </xsl:when>
-	  <xsl:otherwise>
-	    <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
-	  </xsl:otherwise>
-	</xsl:choose>
+        <xsl:choose>
+          <xsl:when test="local-name() = 'id'">
+            <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:when>
+          <!-- are these the attributes to watch for in svg? (urls)-->
+          <xsl:when test="name() = 'href' or name() = 'src'">
+            <xsl:attribute name="{local-name()}">
+              <xsl:value-of select="f:url(.)"/>
+            </xsl:attribute>
+          </xsl:when>
+          <xsl:when test="name()='xlink:href' or name()='xlink:role' or name()='xlink:arcrole'">
+            <xsl:attribute name="{local-name()}"
+                           namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
+              <xsl:value-of select="f:url(.)"/>
+            </xsl:attribute>
+          </xsl:when>
+          <xsl:when test="namespace-uri() = $SVG_NAMESPACE">
+            <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
+              <xsl:value-of select="."/>
+            </xsl:attribute>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:for-each>
       <xsl:choose>
-	<!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
+        <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
         <xsl:when test="local-name()='foreignObject-xml'
                         and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
-	  <xsl:apply-templates mode='copy-foreign'/>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:apply-templates/>
-	</xsl:otherwise>
+          <xsl:apply-templates mode='copy-foreign'/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates/>
+        </xsl:otherwise>
       </xsl:choose>
     </xsl:element>
   </xsl:template>

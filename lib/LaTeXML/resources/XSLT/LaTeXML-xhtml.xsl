@@ -22,10 +22,10 @@
   <xsl:import href="LaTeXML-all-xhtml.xsl"/>
 
   <xsl:output method="xml"
-	      doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
-	      doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
-	      media-type     = 'application/xhtml+xml'
-	      encoding       = 'utf-8'/>
+              doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
+              doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
+              media-type     = 'application/xhtml+xml'
+              encoding       = 'utf-8'/>
 
   <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
        Redefine the root template ("/") and add prefixed namespace declarations

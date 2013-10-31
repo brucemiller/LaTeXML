@@ -11,7 +11,7 @@
 # \=========================================================ooo==U==ooo=/ #
 
 # LaTeXML Object
-#  Base object for all LaTeXML Objects; 
+#  Base object for all LaTeXML Objects;
 # Defines basic default methods for comparison, printing
 # Tried to use overloading, but the Magic methods lead to hard-to-find
 # (and occasionally quite serious) performance issues -- at least, if you
@@ -21,7 +21,7 @@ package LaTeXML::Object;
 use strict;
 
 sub stringify {
-  my($object)=@_;
+  my ($object) = @_;
   my $string = "$object"; overload::StrVal($object);
   $string =~ s/^LaTeXML:://;
   $string =~ s/=(SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE|)\(/\[@/;
@@ -31,11 +31,11 @@ sub stringify {
 sub toString { $_[0]->stringify; }
 
 sub equals {
-  my($a,$b)=@_;
-  "$a" eq "$b"; } # overload::StrVal($a) eq overload::StrVal($b); }
+  my ($a, $b) = @_;
+  "$a" eq "$b"; }    # overload::StrVal($a) eq overload::StrVal($b); }
 
 sub notequals {
-  my($a,$b)=@_;
+  my ($a, $b) = @_;
   !($a->equals($b)); }
 
 sub isaToken      { 0; }
@@ -46,11 +46,12 @@ sub isaDefinition { 0; }
 # processing stream.
 # Defaults (probably poor)
 sub beDigested { $_[0]; }
-sub beAbsorbed {
-  my($self,$document)=@_;
-  $document->openText($self->toString,$document->getNodeFont($document->getElement)); }
 
-sub unlist { $_[0];}
+sub beAbsorbed {
+  my ($self, $document) = @_;
+  $document->openText($self->toString, $document->getNodeFont($document->getElement)); }
+
+sub unlist { $_[0]; }
 #**********************************************************************
 1;
 

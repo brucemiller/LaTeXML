@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use FindBin;
-use lib "$FindBin::RealBin/../blib/lib",$FindBin::RealBin;
+use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -11,7 +11,7 @@ use MakeTools;
 # Build the LaTeXML site
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Assume we're running from LaTeXML's doc directory.
-my $DOCDIR   = $FindBin::RealBin;
+my $DOCDIR = $FindBin::RealBin;
 # Use latexml from blib!
 my $LATEXMLDIR = "$DOCDIR/..";
 $ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
@@ -20,17 +20,17 @@ $ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 my $WEBDIR = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makesite (part of LaTeXML)";
-my($force,$help,$verbosity)=(0,0,0);
-my($dosite,$doexamples,$domanual)=(1,1,1);
-GetOptions("force!"  => \$force,
-	   "help"    => \$help,
-	   verbose   => sub { $verbosity++; },
-	   quiet     => sub { $verbosity--; },
-	   "site!"   => \$dosite,
-	   "examples!"=> \$doexamples,
-	   "manual!" => \$domanual,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+my ($force,  $help,       $verbosity) = (0, 0, 0);
+my ($dosite, $doexamples, $domanual)  = (1, 1, 1);
+GetOptions("force!" => \$force,
+  "help"      => \$help,
+  verbose     => sub { $verbosity++; },
+  quiet       => sub { $verbosity--; },
+  "site!"     => \$dosite,
+  "examples!" => \$doexamples,
+  "manual!"   => \$domanual,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 #======================================================================
@@ -40,45 +40,45 @@ setVerbosity($verbosity);
 my $RELEASEDOC = "$DOCDIR/site/releases.tex";
 heading("Generating site pages");
 # copy images referenced from the CSS.
-copy("$DOCDIR/graphics/latexml.png","$WEBDIR/images/latexml.png");
-copy("$DOCDIR/graphics/mascot.png","$WEBDIR/images/mascot.png");
+copy("$DOCDIR/graphics/latexml.png", "$WEBDIR/images/latexml.png");
+copy("$DOCDIR/graphics/mascot.png",  "$WEBDIR/images/mascot.png");
 ###copy("$DOCDIR/graphics/favicon.ico","$WEBDIR/images/favicon.ico");
-copy("$DOCDIR/latexmldoc.css","$WEBDIR/latexmldoc.css");
+copy("$DOCDIR/latexmldoc.css", "$WEBDIR/latexmldoc.css");
 
 getReleases();
-if($dosite){
-  latexml("$DOCDIR/site/index.tex","$WEBDIR/index.html",
-	  dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", $RELEASEDOC],
-	  postoptions=>["--split",
-			"--css=latexmldoc.css",
-			"--nonumbersections",
-			"--splitnaming=label",
-			"--icon=favicon.ico"],
-	  force=>$force);
+if ($dosite) {
+  latexml("$DOCDIR/site/index.tex", "$WEBDIR/index.html",
+    dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", $RELEASEDOC],
+    postoptions => ["--split",
+      "--css=latexmldoc.css",
+      "--nonumbersections",
+      "--splitnaming=label",
+      "--icon=favicon.ico"],
+    force => $force);
 }
 
 # Generate the examples.
-if($doexamples){
+if ($doexamples) {
   my @examples = (qw(tabular));
-  foreach my $example (@examples){
+  foreach my $example (@examples) {
     heading("Generating example $example");
     my $source   = "$DOCDIR/site/examples/$example/$example.tex";
     my $destname = "$WEBDIR/examples/$example/$example";
-    copy($source,"$destname.tex");
-    latexml($source,"$destname.html",force=>$force);
-    pdflatex($source,force=>$force);
+    copy($source, "$destname.tex");
+    latexml($source, "$destname.html", force => $force);
+    pdflatex($source, force => $force);
     copy("$DOCDIR/site/examples/$example/$example.pdf", "$destname.pdf"); }
 }
 
 # Make the manual (if not already done)
-if($domanual){
+if ($domanual) {
   system("$DOCDIR/makemanual",
-	 ($force ? ("--force"):()),
-	 ($verbosity == 0 ? ()
-	  : ($verbosity > 0
-	     ? map( ("--verbose"), 1..$verbosity)
-	     : (map( ("--quiet"), 1..(-$verbosity)))))
-	)==0 or die "Failed to make manual";
+    ($force ? ("--force") : ()),
+    ($verbosity == 0 ? ()
+      : ($verbosity > 0
+        ? map(("--verbose"), 1 .. $verbosity)
+        : (map(("--quiet"), 1 .. (-$verbosity)))))
+  ) == 0 or die "Failed to make manual";
 }
 # How much of "Making a new Release" should be incorporated? Where?
 # To make a new release:
@@ -95,59 +95,59 @@ copy("$LATEXMLDIR/Changes", "$WEBDIR/Changes");
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub getReleases {
   # Scan the releases directory for all released versions.
-  opendir(REL,"$WEBDIR/releases") or die "Couldn't read releases directory: $!";
+  opendir(REL, "$WEBDIR/releases") or die "Couldn't read releases directory: $!";
   my @files = readdir(REL);
   closedir(REL);
-  my %links=();
+  my %links = ();
   # $links{$version}{$os}{$osver}{$prop}=>$string
   #  $version is LaTeXML version
   #  $os is one of Tarball, Fedora, CentOS; eventually MacOS, Debian, Ubuntu, Windows...
   #  $osver is version number of the os (0 for tarball)
   #  $prop is file | link
   #  $string is either the filename or formatted \href
-  foreach my $file (@files){
-    if($file =~ /^LaTeXML-(.*?)\.tar\.gz$/){
-      my $v=$1;
+  foreach my $file (@files) {
+    if ($file =~ /^LaTeXML-(.*?)\.tar\.gz$/) {
+      my $v = $1;
       $links{$v}{Tarball}{0}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{Tarball}{0}{link} = "\\href{releases/$file}{$v\\nobreakspace(tar.gz)}"; }
     # New naming scheme!
     # BUT now we'll have fedora, centos!
     # Moreover, we soon will have f10, f11, ... which also needs managing!
-    elsif($file =~ /^LaTeXML-(.*?)-\d+\.f(\d+)\.ltxml\.noarch\.rpm$/){
-      my($v,$os,$osv)= ($1,"Fedora",$2);
+    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.f(\d+)\.ltxml\.noarch\.rpm$/) {
+      my ($v, $os, $osv) = ($1, "Fedora", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
-    elsif($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.ltxml\.noarch\.rpm$/){
-      my($v,$os,$osv)= ($1,"Centos",$2);
+    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.ltxml\.noarch\.rpm$/) {
+      my ($v, $os, $osv) = ($1, "Centos", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
     # OBSOLETE naming scheme for RPM's (there's only 1 anyway...)
-    elsif($file =~ /^perl-LaTeXML-(.*?)-\d+\.noarch\.rpm$/){
-      my ($v,$os,$osv)= ($1,"Fedora","9");
+    elsif ($file =~ /^perl-LaTeXML-(.*?)-\d+\.noarch\.rpm$/) {
+      my ($v, $os, $osv) = ($1, "Fedora", "9");
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
-    elsif($file =~ /^Portfile-(.*?)$/){
-      my($v,$os,$osv)= ($1,"MacOS","");
+    elsif ($file =~ /^Portfile-(.*?)$/) {
+      my ($v, $os, $osv) = ($1, "MacOS", "");
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
     # handle other formats here. (ppm, deb)
   }
   my @versions = reverse sort keys %links;
   my @releases = ();
-  my %osrel=();
-  foreach my $release (@versions){
-    foreach my $os (sort keys %{$links{$release}}){
-      foreach my $osver (reverse sort keys %{$links{$release}{$os}}){
-	$osrel{$os} = $release if !$osrel{$os} || (($release cmp $osrel{$os}) > 0);
-	push(@releases,$links{$release}{$os}{$osver}{link}); }}}
+  my %osrel    = ();
+  foreach my $release (@versions) {
+    foreach my $os (sort keys %{ $links{$release} }) {
+      foreach my $osver (reverse sort keys %{ $links{$release}{$os} }) {
+        $osrel{$os} = $release if !$osrel{$os} || (($release cmp $osrel{$os}) > 0);
+        push(@releases, $links{$release}{$os}{$osver}{link}); } } }
 
-  my $macros 
+  my $macros
     = "\\def\\CurrentVersion{$versions[0]}\n"
-      ."\\def\\AllReleases{".join(";\n", @releases)."}\n";
-  foreach my $os (keys %osrel){
-    my $osvers = $links{$osrel{$os}}{$os};
-    $macros .= "\\def\\Current".$os."{".join(",\n",map($$osvers{$_}{link}, reverse sort keys %$osvers))."}\n"; }
-  saveData($RELEASEDOC,$macros); }
+    . "\\def\\AllReleases{" . join(";\n", @releases) . "}\n";
+  foreach my $os (keys %osrel) {
+    my $osvers = $links{ $osrel{$os} }{$os};
+    $macros .= "\\def\\Current" . $os . "{" . join(",\n", map($$osvers{$_}{link}, reverse sort keys %$osvers)) . "}\n"; }
+  saveData($RELEASEDOC, $macros); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 __END__

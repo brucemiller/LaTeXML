@@ -27,67 +27,67 @@ DefConditional('\iflatexml', sub { 1; });
 
 #======================================================================
 # Package Options
-DeclareOption('ids',   sub { AssignValue('GENERATE_IDS'=>1,'global'); });
-DeclareOption('noids', sub { AssignValue('GENERATE_IDS'=>0,'global'); });
+DeclareOption('ids',   sub { AssignValue('GENERATE_IDS' => 1, 'global'); });
+DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
 
-DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS'=>1,'global'); });
-DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS'=>0,'global'); });
+DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
+DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });
 
 ProcessOptions();
 #======================================================================
 # From latexml.sty
 # [does this really belong here? or should this be disableable?]
-DefConstructor('\URL[] Semiverbatim',"<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
-	      properties=>sub { (href=>CleanURL($_[2])); });
-DefMacro('\XML',     '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
-DefMacro('\SGML',    '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
-DefMacro('\HTML',    '\URL[\texttt{HTML}]{http://www.w3.org/html/}');
-DefMacro('\XHTML',   '\URL[\texttt{XHTML}]{http://www.w3.org/TR/xhtml11/}');
-DefMacro('\XSLT',    '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
-DefMacro('\CSS',     '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
-DefMacro('\MathML',  '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
-DefMacro('\OpenMath','\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
-DefMacro('\LaTeXML', '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
+DefConstructor('\URL[] Semiverbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
+  properties => sub { (href => CleanURL($_[2])); });
+DefMacro('\XML',      '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
+DefMacro('\SGML',     '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
+DefMacro('\HTML',     '\URL[\texttt{HTML}]{http://www.w3.org/html/}');
+DefMacro('\XHTML',    '\URL[\texttt{XHTML}]{http://www.w3.org/TR/xhtml11/}');
+DefMacro('\XSLT',     '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
+DefMacro('\CSS',      '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
+DefMacro('\MathML',   '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
+DefMacro('\OpenMath', '\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
+DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 #DefMacro('\BibTeX','BibTeX');
 
 #======================================================================
 # id related features
 
 # Set the id to used for the top-level document
-DefMacro('\lxDocumentID{}','\def\thedocument@ID{#1}');
+DefMacro('\lxDocumentID{}', '\def\thedocument@ID{#1}');
 
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
-DefMacro('\LXMID{}{}','\@XMArg{#1}{#2}');
+DefMacro('\LXMID{}{}', '\@XMArg{#1}{#2}');
 
 # \LXRef{id} Refer to the math expression associated with id.
 # In presentation, this is similar to using a shorthand macro.
 # In content situations, an XMRef is generated.
-DefMacro('\LXMRef{}','\@XMRef{#1}');
+DefMacro('\LXMRef{}', '\@XMRef{#1}');
 
 #======================================================================
 # class related features
-Let(T_CS('\lxAddClass'),T_CS('\@ADDCLASS'));
+Let('\lxAddClass', '\@ADDCLASS');
 
-DefConstructor('\lxAddClass Semiverbatim',sub {
-  addClass($_[0]->getElement,ToString($_[1])); });
+DefConstructor('\lxAddClass Semiverbatim', sub {
+    addClass($_[0]->getElement, ToString($_[1])); });
 
-DefConstructor('\lxWithClass Semiverbatim {}',sub {
-  my($document,$class,$box)=@_;
-  my $context = $document->getElement; # Where we originally start inserting.
-  my @nodes=();
-  if(isTextNode($document->getNode)){
-    push(@nodes,$document->openElement('ltx:text')); }
-  push(@nodes,$document->absorb($box));
-  @nodes = $document->filterChildren($document->filterDeletions(@nodes));
-  $document->closeToNode($context);
-  addClass($nodes[0],ToString($class)) if @nodes; });
+DefConstructor('\lxWithClass Semiverbatim {}', sub {
+    my ($document, $class, $box) = @_;
+    my $context = $document->getElement;    # Where we originally start inserting.
+    my @nodes   = ();
+    if (isTextNode($document->getNode)) {
+      push(@nodes, $document->openElement('ltx:text')); }
+    push(@nodes, $document->absorb($box));
+    @nodes = $document->filterChildren($document->filterDeletions(@nodes));
+    $document->closeToNode($context);
+    addClass($nodes[0], ToString($class)) if @nodes; });
 
 #======================================================================
 # links
 # Similar to stuff from hyperref, but more straightforward
 DefConstructor('\lxRef Semiverbatim {}',
-	       "<ltx:ref labelref='#label'>#2</ltx:ref>",
-	       properties=>sub { (label=>CleanLabel($_[1])); });
+  "<ltx:ref labelref='#label'>#2</ltx:ref>",
+  properties => sub { (label => CleanLabel($_[1])); });
 
 #======================================================================
 # Resources
@@ -101,44 +101,45 @@ DefConstructor('\lxRef Semiverbatim {}',
 #    headers, footers
 
 DefConstructor('\lxContextTOC',
-	       "<ltx:TOC format='context'/>");
+  "<ltx:TOC format='context'/>");
 
-AssignValue('navigation'=>[],'global');
+AssignValue('navigation' => [], 'global');
+
 sub insertNavigation {
-  my($document)=@_;
-  if(my @items =  @{LookupValue('navigation') }){
+  my ($document) = @_;
+  if (my @items = @{ LookupValue('navigation') }) {
     $document->appendTree($document->getDocument->documentElement,
-			  ['ltx:navigation',{}, @items]); }}
+      ['ltx:navigation', {}, @items]); } }
 
-Tag('ltx:document', 'afterClose'=>\&insertNavigation);
+Tag('ltx:document', 'afterClose' => \&insertNavigation);
 
-DefEnvironment('{lxNavbar}',sub {},
-		beforeDigest=> sub { AssignValue(inPreamble=>1); },
-		beforeConstruct=>sub {
-		  my($document,$whatsit)=@_;
-		  PushValue('navigation',
-			    ['ltx:inline-para',{class=>'ltx_page_navbar'},$whatsit->getBody]);
-		  return; });
+DefEnvironment('{lxNavbar}', sub { },
+  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    PushValue('navigation',
+      ['ltx:inline-para', { class => 'ltx_page_navbar' }, $whatsit->getBody]);
+    return; });
 
 # Of course, it would be more interesting to supply a "template"
 # for header & footer that would show where the next link goes,
 # rather than predict what the next link will be! (after splitting!)
 # Repeated header/footers should give multiple header/footer lines ?
 # or do they just arrange the lines within it?
-DefEnvironment('{lxHeader}',sub {},
-		beforeDigest=> sub { AssignValue(inPreamble=>1); },
-		beforeConstruct=>sub {
-		  my($document,$whatsit)=@_;
-		  PushValue('navigation',
-			    ['ltx:inline-para',{class=>'ltx_page_header'},$whatsit->getBody]);
-		  return; });
-DefEnvironment('{lxFooter}',sub {},
-		beforeDigest=> sub { AssignValue(inPreamble=>1); },
-		beforeConstruct=>sub {
-		  my($document,$whatsit)=@_;
-		  PushValue('navigation',
-			    ['ltx:inline-para',{class=>'ltx_page_footer'},$whatsit->getBody]);
-		  return; });
+DefEnvironment('{lxHeader}', sub { },
+  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    PushValue('navigation',
+      ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
+    return; });
+DefEnvironment('{lxFooter}', sub { },
+  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    PushValue('navigation',
+      ['ltx:inline-para', { class => 'ltx_page_footer' }, $whatsit->getBody]);
+    return; });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Declarative information for Mathematics
@@ -149,12 +150,12 @@ DefEnvironment('{lxFooter}',sub {},
 # Marking the type of particular instances of a symbol.
 
 # \LxFcn{f} treat f as a function here (only).
-DefConstructor('\lxFcn{}',"<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", 
-	       requireMath=>1, reversion=>'#1', alias=>'');
-DefConstructor('\lxID{}',  "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", 
-	       requireMath=>1, reversion=>'#1', alias=>'');
-DefConstructor('\lxPunct{}',"<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", 
-	       requireMath=>1, reversion=>'#1', alias=>'');
+DefConstructor('\lxFcn{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>",
+  requireMath => 1, reversion => '#1', alias => '');
+DefConstructor('\lxID{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>",
+  requireMath => 1, reversion => '#1', alias => '');
+DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
+  requireMath => 1, reversion => '#1', alias => '');
 
 #======================================================================
 # Define a mathematical object with both presentation & content information
@@ -164,12 +165,12 @@ DefConstructor('\lxPunct{}',"<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 # The content keywords are used to define the semantics of the object.
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
-  my($stomach,$cs,$nargs,$opt,$presentation,$params)=@_;
-  my($name,$meaning,$cd,$role)= 
-    $params && map($_ && ToString($_),map($params->getValue($_),
-             qw(name meaning cd role)));
-  DefMathI($cs,convertLaTeXArgs($nargs,$opt),$presentation,
-	  name=>$name, meaning=>$meaning, omcd=>$cd, role=>$role);
+    my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
+    my ($name, $meaning, $cd, $role) =
+      $params && map($_ && ToString($_), map($params->getValue($_),
+        qw(name meaning cd role)));
+    DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
+      name => $name, meaning => $meaning, omcd => $cd, role => $role);
 });
 #DefKeyVal('XMath',name,string);
 
@@ -180,8 +181,8 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 # Keyword options:
 #    scope=<scope> : Specifies the scope of the declaration, ie. to what portion of
 #            the document the declarations apply
-#            You can specify one of the counters associated with sections, 
-#            equations, etc.  
+#            You can specify one of the counters associated with sections,
+#            equations, etc.
 #            If unspecified, the declaration is scoped to the current unit.
 #            Note that this applies to equations, as well.
 #    label=<label> : assigns a label to the declaration so that it can be reused
@@ -198,77 +199,79 @@ DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
 #   nodef : inhibits the marking of the current point as the `definition' of the expression.
 #          (a ref declaration would normally not be a def anyway)
 
-DefKeyVal('Declare','wrap','{}',1);
-DefKeyVal('Declare','trace','{}',1);
-DefKeyVal('Declare','replace','UndigestedKey');
+DefKeyVal('Declare', 'wrap',  '{}', 1);
+DefKeyVal('Declare', 'trace', '{}', 1);
+DefKeyVal('Declare', 'replace', 'UndigestedKey');
 
-our $declare_keys = {scope=>1,role=>1,tag=>1,name=>1,meaning=>1,
-		     trace=>1,wrap=>1,replace=>1,label=>1};
+our $declare_keys = { scope => 1, role => 1, tag => 1, name => 1, meaning => 1,
+  trace => 1, wrap => 1, replace => 1, label => 1 };
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
-##	       "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
-	       sub { my($document,$flag,$kv,$pattern,%props)=@_;
-		     if(my $id = $props{id}){
-		       my $save = $document->floatToElement('ltx:declare');
-		       $document->openElement('ltx:declare','xml:id'=>$id);
-		       if(my $tag = $kv->getValue('tag')){
-			 $document->insertElement('ltx:tag',$tag); }
-		       $document->closeElement('ltx:declare');
-		       $document->setNode($save); }},
-	       mode=>'text',
-	       # Screwy bit to `neutralize' the font in the matches.
-	       beforeDigest=>sub { AssignValue(font=>LaTeXML::Font->default(),'local');
-				   AssignValue(mathfont=>LaTeXML::MathFont->default(), 'local');
-				   return; },
-	       afterDigest=>sub { my($stomach,$whatsit)=@_;
-				  my($star,$keys,$pattern)=$whatsit->getArgs;
-				  return unless $keys;
-				  CheckOptions("\\lxDeclare keys",$declare_keys,%{$keys->getKeyVals});
-				  foreach my $key (qw(role tag name meaning replace)){
-				    if(my $value = $keys->getValue($key)){
-				      Warn('unexpected',$key,$stomach,
-					   "Repeated $key: ".join('; ',map(Stringify($_),@$value)))
-					if ref $value eq 'ARRAY'; }}
-				  my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
-				  if($id && LookupValue('InPreamble')){
-				    Warn('unexpected','tag',$stomach,
-					 "Declaration with tag cannot appear in preamble"
-					 .Stringify($whatsit)); }
-				  $whatsit->setProperties(scope   => getDeclarationScope($keys),
-							  role    => ToString($keys->getValue('role')),
-							  name    => ToString($keys->getValue('name')),
-							  meaning => ToString($keys->getValue('meaning')),
-							  trace   => defined $keys->getValue('trace'),
-							  wrap    => defined $keys->getValue('wrap'),
-							  id      => $id,
-							  match   => $pattern,
-							  replace => $keys->getValue('replace'));
-				  if(my $label = ToString($keys->getValue('label'))){
-				    PushValue("Declaration_$label",$whatsit); }
-				  return; },
-	       afterConstruct=>sub { my($document,$whatsit)=@_;
-				     my $scope = $whatsit->getProperty('scope');
-				     createDeclarationRewrite($document,$scope,$whatsit); },
-	       properties=>{alignmentSkippable=>1},
-	       reversion=>'');
+## "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
+  sub { my ($document, $flag, $kv, $pattern, %props) = @_;
+    if (my $id = $props{id}) {
+      my $save = $document->floatToElement('ltx:declare');
+      $document->openElement('ltx:declare', 'xml:id' => $id);
+      if (my $tag = $kv->getValue('tag')) {
+        $document->insertElement('ltx:tag', $tag); }
+      $document->closeElement('ltx:declare');
+      $document->setNode($save); } },
+  mode => 'text',
+  # Screwy bit to `neutralize' the font in the matches.
+  beforeDigest => sub { AssignValue(font => LaTeXML::Font->default(), 'local');
+    AssignValue(mathfont => LaTeXML::MathFont->default(), 'local');
+    return; },
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my ($star, $keys, $pattern) = $whatsit->getArgs;
+    return unless $keys;
+    CheckOptions("\\lxDeclare keys", $declare_keys, %{ $keys->getKeyVals });
+    foreach my $key (qw(role tag name meaning replace)) {
+      if (my $value = $keys->getValue($key)) {
+        Warn('unexpected', $key, $stomach,
+          "Repeated $key: " . join('; ', map(Stringify($_), @$value)))
+          if ref $value eq 'ARRAY'; } }
+    my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
+    if ($id && LookupValue('InPreamble')) {
+      Warn('unexpected', 'tag', $stomach,
+        "Declaration with tag cannot appear in preamble"
+          . Stringify($whatsit)); }
+    $whatsit->setProperties(scope => getDeclarationScope($keys),
+      role    => ToString($keys->getValue('role')),
+      name    => ToString($keys->getValue('name')),
+      meaning => ToString($keys->getValue('meaning')),
+      trace   => defined $keys->getValue('trace'),
+      wrap    => defined $keys->getValue('wrap'),
+      id      => $id,
+      match   => $pattern,
+      replace => $keys->getValue('replace'));
 
-DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}','',
-	       afterDigest=>sub { my($stomach,$whatsit)=@_;
-				  my($keys,$labels)=$whatsit->getArgs;
-				  $whatsit->setProperties(scope=>getDeclarationScope($keys),
-							  labels=>[split(',',ToString($labels))]); },
-	       afterConstruct=>sub { my($document,$whatsit)=@_;
-				     my $scope  = $whatsit->getProperty('scope');
-				     foreach my $label (@{$whatsit->getProperty('labels')}){
-				       if(my $declaration = LookupValue("Declaration_$label")){
-					 map(createDeclarationRewrite($document,$scope,$_),
-					     @$declaration); }
-				       else {
-					 Warn('unexpected',$label,$document,
-					      "No Declaration with label=$label was found"); }}},
-	       properties=>{alignmentSkippable=>1},
-	       reversion=>'');
+    if (my $label = ToString($keys->getValue('label'))) {
+      PushValue("Declaration_$label", $whatsit); }
+    return; },
+  afterConstruct => sub { my ($document, $whatsit) = @_;
+    my $scope = $whatsit->getProperty('scope');
+    createDeclarationRewrite($document, $scope, $whatsit); },
+  properties => { alignmentSkippable => 1 },
+  reversion => '');
 
-our $XMDeclID=0;
+DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my ($keys, $labels) = $whatsit->getArgs;
+    $whatsit->setProperties(scope => getDeclarationScope($keys),
+      labels => [split(',', ToString($labels))]); },
+  afterConstruct => sub { my ($document, $whatsit) = @_;
+    my $scope = $whatsit->getProperty('scope');
+    foreach my $label (@{ $whatsit->getProperty('labels') }) {
+      if (my $declaration = LookupValue("Declaration_$label")) {
+        map(createDeclarationRewrite($document, $scope, $_),
+          @$declaration); }
+      else {
+        Warn('unexpected', $label, $document,
+          "No Declaration with label=$label was found"); } } },
+  properties => { alignmentSkippable => 1 },
+  reversion => '');
+
+our $XMDeclID = 0;
+
 sub next_declaration_id {
 ##  ToString(LookupValue('Chapter')).":LXDeclID".$XMDeclID++; }
 
@@ -276,40 +279,39 @@ sub next_declaration_id {
 ##  ($docid ? "$docid.XMD" : 'XMD').++$XMDeclID; }
 
   StepCounter('@XMDECL');
-  DefMacroI(T_CS('\@@XMDECL@ID'),undef,
-	    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
-	    scope=>'global');
+  DefMacroI(T_CS('\@@XMDECL@ID'), undef,
+    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
+    scope => 'global');
   ToString(Expand(T_CS('\the@XMDECL@ID'))); }
 
 sub getDeclarationScope {
-  my($keys)=@_;
+  my ($keys) = @_;
   # Sort out the scope.
   my $scope = $keys && $keys->getValue('scope');
   $scope = ($scope ? ToString($scope) : LookupValue('current_counter'));
-  if($scope && LookupValue("\\c\@$scope")){ # Scope is some counter.
-    $scope =  "id:".ToString(Digest(Expand(T_CS("\\the$scope\@ID")))); }
+  if ($scope && LookupValue("\\c\@$scope")) {    # Scope is some counter.
+    $scope = "id:" . ToString(Digest(Expand(T_CS("\\the$scope\@ID")))); }
   $scope; }
 
-
 sub createDeclarationRewrite {
-  my($document,$scope,$whatsit)=@_;
+  my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
-  my($id,$match,$wrap,$role,$name,$meaning,$ref,$trace,$replace)
-    =map($props{$_}, qw(id match wrap role name meaning ref trace replace));
+  my ($id, $match, $wrap, $role, $name, $meaning, $ref, $trace, $replace)
+    = map($props{$_}, qw(id match wrap role name meaning ref trace replace));
 ###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
   $STATE->getModel->prependRewriteRule('math',
-				       ($trace ? (trace=>$trace):()),
-				       ($scope ? (scope=>$scope):()),
-				       ($match ? (match=>$match):()),
-				       ($wrap  ? (wrap =>$wrap) :()),
-				       ($replace
-					? (replace=>$replace)
-					: attributes=>{ ($role  ? (role=>$role) :()),
-							($name  ? (name=>$name) :()),
-							($meaning ? (meaning=>$meaning) :()),
-							($id    ? (dec_id=>$id) :()),
-						     }),
-				       );
+    ($trace ? (trace => $trace) : ()),
+    ($scope ? (scope => $scope) : ()),
+    ($match ? (match => $match) : ()),
+    ($wrap  ? (wrap  => $wrap)  : ()),
+    ($replace
+      ? (replace => $replace)
+      : attributes => { ($role ? (role => $role) : ()),
+        ($name    ? (name    => $name)    : ()),
+        ($meaning ? (meaning => $meaning) : ()),
+        ($id      ? (dec_id  => $id)      : ()),
+        }),
+  );
   return; }
 
 #======================================================================

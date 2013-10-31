@@ -29,53 +29,53 @@ use LaTeXML::Version;
 use Encode;
 use vars qw($VERSION);
 our @ISA = (qw(LaTeXML::Object));
-$VERSION = $LaTeXML::Version::VERSION; # for backward compatibility
+$VERSION = $LaTeXML::Version::VERSION;    # for backward compatibility
 
 #**********************************************************************
 
 sub new {
-  my($class,%options)=@_;
-  my $state     = LaTeXML::State->new(catcodes=>'standard',
-				      stomach=>LaTeXML::Stomach->new(),
-				      model  => $options{model} || LaTeXML::Model->new());
-  $state->assignValue(VERBOSITY=>(defined $options{verbosity} ? $options{verbosity} : 0),
-		      'global');
-  $state->assignValue(STRICT   =>(defined $options{strict}   ? $options{strict}     : 0),
-		      'global');
-  $state->assignValue(INCLUDE_COMMENTS=>(defined $options{includeComments} ? $options{includeComments} : 1),
-		      'global');
-  $state->assignValue(DOCUMENTID=>(defined $options{documentid} ? $options{documentid} : ''),
-		      'global');
-  $state->assignValue(SEARCHPATHS=> [ map {pathname_absolute(pathname_canonical($_))}
-				      @{$options{searchpaths} || []}],
-		      'global');
-  $state->assignValue(GRAPHICSPATHS=> [ map {pathname_absolute(pathname_canonical($_))}
-					@{$options{graphicspaths} || []} ],'global');
-  $state->assignValue(INCLUDE_STYLES=>$options{includeStyles}|| 0,'global');
-  $state->assignValue(PERL_INPUT_ENCODING=>$options{inputencoding}) if $options{inputencoding};
-  return bless {state   => $state, 
-               nomathparse=>$options{nomathparse}||0,
-               preload=>$options{preload},
-              }, $class; }
+  my ($class, %options) = @_;
+  my $state = LaTeXML::State->new(catcodes => 'standard',
+    stomach => LaTeXML::Stomach->new(),
+    model => $options{model} || LaTeXML::Model->new());
+  $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
+    'global');
+  $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
+    'global');
+  $state->assignValue(INCLUDE_COMMENTS => (defined $options{includeComments} ? $options{includeComments} : 1),
+    'global');
+  $state->assignValue(DOCUMENTID => (defined $options{documentid} ? $options{documentid} : ''),
+    'global');
+  $state->assignValue(SEARCHPATHS => [map { pathname_absolute(pathname_canonical($_)) }
+        @{ $options{searchpaths} || [] }],
+    'global');
+  $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
+        @{ $options{graphicspaths} || [] }], 'global');
+  $state->assignValue(INCLUDE_STYLES => $options{includeStyles} || 0, 'global');
+  $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding}) if $options{inputencoding};
+  return bless { state => $state,
+    nomathparse => $options{nomathparse} || 0,
+    preload => $options{preload},
+    }, $class; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # High-level API.
 
 sub convertAndWriteFile {
-  my($self,$file)=@_;
+  my ($self, $file) = @_;
   $file =~ s/\.tex$//;
   my $dom = $self->convertFile($file);
-  $dom->toFile("$file.xml",1) if $dom;
+  $dom->toFile("$file.xml", 1) if $dom;
   return $dom; }
 
 sub convertFile {
-  my($self,$file)=@_;
+  my ($self, $file) = @_;
   my $digested = $self->digestFile($file);
   return unless $digested;
   return $self->convertDocument($digested); }
 
 sub getStatusMessage {
-  my($self)=@_;
+  my ($self) = @_;
   return $$self{state}->getStatusMessage; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,157 +87,159 @@ sub getStatusMessage {
 #    preamble = names a tex file (or standard_preamble.tex)
 #    postamble = names a tex file (or standard_postamble.tex)
 
-our %MODE_EXTENSION = (TeX=>'tex', LaTeX=>'tex', AmSTeX=>'tex', BibTeX=>'bib');
+our %MODE_EXTENSION = (TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
+
 sub digestFile {
-  my($self,$request,%options)=@_;
-  my($dir,$name,$ext);
+  my ($self, $request, %options) = @_;
+  my ($dir, $name, $ext);
   my $mode = $options{mode} || 'TeX';
-  if(pathname_is_literaldata($request)){
+  if (pathname_is_literaldata($request)) {
     $dir = undef; $ext = $MODE_EXTENSION{$mode};
     $name = "Anonymous String"; }
   elsif (pathname_is_url($request)) {
-    $dir = undef;  $ext = $MODE_EXTENSION{$mode};
+    $dir = undef; $ext = $MODE_EXTENSION{$mode};
     $name = $request;
   }
   else {
     $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$//;
-    if(my $pathname = pathname_find($request,types=>[$MODE_EXTENSION{$mode},''])){
+    if (my $pathname = pathname_find($request, types => [$MODE_EXTENSION{$mode}, ''])) {
       $request = $pathname;
-      ($dir,$name,$ext)=pathname_split($request);  }
+      ($dir, $name, $ext) = pathname_split($request); }
     else {
       $self->withState(sub {
-        Fatal('missing_file',$request,undef,"Can't find $mode file $request"); }); }}
+          Fatal('missing_file', $request, undef, "Can't find $mode file $request"); }); } }
   return
-  $self->withState(sub {
-     my($state)=@_;
-     NoteBegin("Digesting $mode $name");
-     $self->initializeState($mode.".pool", @{$$self{preload} || []}) unless $options{noinitialize};
-     $state->assignValue(SOURCEFILE=>$request)  if (!pathname_is_literaldata($request));
-     $state->assignValue(SOURCEDIRECTORY=>$dir) if defined $dir;
-     $state->unshiftValue(SEARCHPATHS=>$dir)
-       if defined $dir && !grep {$_ eq $dir} @{$state->lookupValue('SEARCHPATHS')};
-     $state->unshiftValue(GRAPHICSPATHS=>$dir)
-       if defined $dir && !grep {$_ eq $dir} @{$state->lookupValue('GRAPHICSPATHS')};
+    $self->withState(sub {
+      my ($state) = @_;
+      NoteBegin("Digesting $mode $name");
+      $self->initializeState($mode . ".pool", @{ $$self{preload} || [] }) unless $options{noinitialize};
+      $state->assignValue(SOURCEFILE      => $request) if (!pathname_is_literaldata($request));
+      $state->assignValue(SOURCEDIRECTORY => $dir)     if defined $dir;
+      $state->unshiftValue(SEARCHPATHS => $dir)
+        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('SEARCHPATHS') };
+      $state->unshiftValue(GRAPHICSPATHS => $dir)
 
-     $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'),undef,
-							Tokens(Explode($name))));
-     # Reverse order, since last opened is first read!
-     $self->loadPostamble($options{postamble}) if $options{postamble};
-     LaTeXML::Package::InputContent($request);
-     $self->loadPreamble($options{preamble}) if $options{preamble};
+        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('GRAPHICSPATHS') };
 
-     # Now for the Hacky part for BibTeX!!!
-     if($mode eq 'BibTeX'){
-       my $bib = LaTeXML::Bib->newFromGullet($name,$state->getStomach->getGullet);
-       LaTeXML::Package::InputContent("literal:".$bib->toTeX); }
-     my $list = $self->finishDigestion;
-     NoteEnd("Digesting $mode $name");
-     return $list; });
+      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'), undef,
+          Tokens(Explode($name))));
+      # Reverse order, since last opened is first read!
+      $self->loadPostamble($options{postamble}) if $options{postamble};
+      LaTeXML::Package::InputContent($request);
+      $self->loadPreamble($options{preamble}) if $options{preamble};
+
+      # Now for the Hacky part for BibTeX!!!
+      if ($mode eq 'BibTeX') {
+        my $bib = LaTeXML::Bib->newFromGullet($name, $state->getStomach->getGullet);
+        LaTeXML::Package::InputContent("literal:" . $bib->toTeX); }
+      my $list = $self->finishDigestion;
+      NoteEnd("Digesting $mode $name");
+      return $list; });
 }
 
 sub finishDigestion {
-  my($self)=@_;
-  my $state = $$self{state};
+  my ($self)  = @_;
+  my $state   = $$self{state};
   my $stomach = $state->getStomach;
-  my @stuff=();
-  while($stomach->getGullet->getMouth->hasMoreInput){
-      push(@stuff,$stomach->digestNextBody); }
-  if(my $env = $state->lookupValue('current_environment')){
-    Error('expected',"\\end{$env}",$stomach,"Input ended while environment $env was open"); } 
+  my @stuff   = ();
+  while ($stomach->getGullet->getMouth->hasMoreInput) {
+    push(@stuff, $stomach->digestNextBody); }
+  if (my $env = $state->lookupValue('current_environment')) {
+    Error('expected', "\\end{$env}", $stomach, "Input ended while environment $env was open"); }
   $stomach->getGullet->flush;
   return LaTeXML::List->new(@stuff); }
 
 sub loadPreamble {
-  my($self,$preamble)=@_;
-  my $gullet  = $$self{state}->getStomach->getGullet;
-  if($preamble eq 'standard_preamble.tex'){
+  my ($self, $preamble) = @_;
+  my $gullet = $$self{state}->getStomach->getGullet;
+  if ($preamble eq 'standard_preamble.tex') {
     $preamble = 'literal:\documentclass{article}\begin{document}'; }
   return LaTeXML::Package::InputContent($preamble); }
 
 sub loadPostamble {
-  my($self,$postamble)=@_;
-  my $gullet  = $$self{state}->getStomach->getGullet;
-  if($postamble eq 'standard_postamble.tex'){
+  my ($self, $postamble) = @_;
+  my $gullet = $$self{state}->getStomach->getGullet;
+  if ($postamble eq 'standard_postamble.tex') {
     $postamble = 'literal:\end{document}'; }
   return LaTeXML::Package::InputContent($postamble); }
 
 sub convertDocument {
-  my($self,$digested)=@_;
+  my ($self, $digested) = @_;
   return
-  $self->withState(sub {
-     my($state)=@_;
-     my $model    = $state->getModel;   # The document model.
-     my $document  = LaTeXML::Document->new($model);
-     local $LaTeXML::DOCUMENT = $document;
-     NoteBegin("Building");
-     $model->loadSchema(); # If needed?
-     if(my $paths = $state->lookupValue('SEARCHPATHS')){
-       if($state->lookupValue('INCLUDE_COMMENTS')){
-	 $document->insertPI('latexml',searchpaths=>join(',',@$paths)); }}
-     foreach my $preload (@{$$self{preload}}){
-       next if $preload=~/\.pool$/;
-       my $options = ($preload =~ s/^\[([^\]]*)\]//) && $1;
-       if($preload =~ s/\.cls$//){
-         $document->insertPI('latexml',class=>$preload,($options ? (options=>$options):())); }
-       else {
-         $preload =~ s/\.sty$//;
-         $document->insertPI('latexml',package=>$preload,($options ? (options=>$options):())); }}
-     $document->absorb($digested);
-     NoteEnd("Building");
+    $self->withState(sub {
+      my ($state)  = @_;
+      my $model    = $state->getModel;                 # The document model.
+      my $document = LaTeXML::Document->new($model);
+      local $LaTeXML::DOCUMENT = $document;
+      NoteBegin("Building");
+      $model->loadSchema();                            # If needed?
+      if (my $paths = $state->lookupValue('SEARCHPATHS')) {
+        if ($state->lookupValue('INCLUDE_COMMENTS')) {
+          $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
+      foreach my $preload (@{ $$self{preload} }) {
+        next if $preload =~ /\.pool$/;
+        my $options = ($preload =~ s/^\[([^\]]*)\]//) && $1;
+        if ($preload =~ s/\.cls$//) {
+          $document->insertPI('latexml', class => $preload, ($options ? (options => $options) : ())); }
+        else {
+          $preload =~ s/\.sty$//;
+          $document->insertPI('latexml', package => $preload, ($options ? (options => $options) : ())); } }
+      $document->absorb($digested);
+      NoteEnd("Building");
 
-     NoteBegin("Rewriting");
-     $model->applyRewrites($document,$document->getDocument->documentElement);
-     NoteEnd("Rewriting");
+      NoteBegin("Rewriting");
+      $model->applyRewrites($document, $document->getDocument->documentElement);
+      NoteEnd("Rewriting");
 
-     LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
-     NoteBegin("Finalizing");
-     my $xmldoc = $document->finalize();
-     NoteEnd("Finalizing");
-     return $xmldoc; }); }
+      LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
+      NoteBegin("Finalizing");
+      my $xmldoc = $document->finalize();
+      NoteEnd("Finalizing");
+      return $xmldoc; }); }
 
 sub withState {
-  my($self,$closure)=@_;
-  local $STATE    = $$self{state};
+  my ($self, $closure) = @_;
+  local $STATE = $$self{state};
   # And, set fancy error handler for ANY die!
   # Could be useful to distill the more common messages so they provide useful build statistics?
-  local $SIG{__DIE__}  = sub { LaTeXML::Error::perl_die_handler(@_); };
-  local $SIG{INT}      = sub { LaTeXML::Error::Fatal('perl','interrupt',undef,"LaTeXML was interrupted",@_); };
+  local $SIG{__DIE__} = sub { LaTeXML::Error::perl_die_handler(@_); };
+  local $SIG{INT} = sub { LaTeXML::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
   local $SIG{__WARN__} = sub { LaTeXML::Error::perl_warn_handler(@_); };
-  local $LaTeXML::DUAL_BRANCH= '';
+  local $LaTeXML::DUAL_BRANCH = '';
 
   return &$closure($STATE); }
 
 sub initializeState {
-  my($self,@files)=@_;
-  my $state = $$self{state};
-  my $stomach  = $state->getStomach; # The current Stomach;
-  my $gullet = $stomach->getGullet;
+  my ($self, @files) = @_;
+  my $state   = $$self{state};
+  my $stomach = $state->getStomach;    # The current Stomach;
+  my $gullet  = $stomach->getGullet;
   $stomach->initialize;
   my $paths = $state->lookupValue('SEARCHPATHS');
-  foreach my $preload (@files){
-    my($options,$type);
+  foreach my $preload (@files) {
+    my ($options, $type);
     $options = $1 if $preload =~ s/^\[([^\]]*)\]//;
-    $type    = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
-    my $handleoptions = ($type eq 'sty')||($type eq 'cls');
-    if($options){
-      if($handleoptions){
-	$options = [split(/,/,$options)]; }
+    $type = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
+    my $handleoptions = ($type eq 'sty') || ($type eq 'cls');
+    if ($options) {
+      if ($handleoptions) {
+        $options = [split(/,/, $options)]; }
       else {
-	Warn('unexpected','options',
-	     "Attempting to pass options to $preload.$type (not style or class)",
-	     "The options were  [$options]"); }}
-  # Attach extension back if HTTP protocol:
-  if (pathname_is_url($preload)) {
-    $preload.='.'.$type;
-  }
-  LaTeXML::Package::InputDefinitions($preload,type=>$type,
-	        handleoptions=>$handleoptions, options=>$options); 
+        Warn('unexpected', 'options',
+          "Attempting to pass options to $preload.$type (not style or class)",
+          "The options were  [$options]"); } }
+    # Attach extension back if HTTP protocol:
+    if (pathname_is_url($preload)) {
+      $preload .= '.' . $type;
+    }
+    LaTeXML::Package::InputDefinitions($preload, type => $type,
+      handleoptions => $handleoptions, options => $options);
   }
   return; }
 
 sub writeDOM {
-  my($self,$dom,$name)=@_;
-  $dom->toFile("$name.xml",1);
+  my ($self, $dom, $name) = @_;
+  $dom->toFile("$name.xml", 1);
   return 1; }
 
 #**********************************************************************

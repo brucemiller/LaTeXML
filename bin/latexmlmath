@@ -20,59 +20,59 @@ use LaTeXML::Util::ObjectDB;
 #**********************************************************************
 # Parse command line
 
-my($verbosity,$strict,$noparse,$includestyles)=(-1,0,0,0);
-my ($destination,$help,$showversion)=('','');
+my ($verbosity, $strict, $noparse, $includestyles) = (-1, 0, 0, 0);
+my ($destination, $help, $showversion) = ('', '');
 my ($documentid);
-my($mathimage,$mag)=(undef,1.75);
-my($pmml,$linelength,$plane1,$hackplane1)=(undef,undef,undef,undef);
-my $xmath=undef;
-my $cmml=undef;
-my $om=undef;
+my ($mathimage, $mag) = (undef, 1.75);
+my ($pmml, $linelength, $plane1, $hackplane1) = (undef, undef, undef, undef);
+my $xmath = undef;
+my $cmml  = undef;
+my $om    = undef;
 my @paths = ('.');
-my (@preload,@debugs);
+my (@preload, @debugs);
 GetOptions(
-	   # No provision for parallel output (yet)
-	   "mathimage=s"               => \$mathimage,
-	   "magnification=f"           => \$mag,
-	   "presentationmathml|pmml=s" => \$pmml,
-	   "linelength=i"              => \$linelength,
-	   "plane1!"                   => \$plane1,
-	   "hackplane1!"               => \$hackplane1,
-	   "contentmathml|cmml=s"      => \$cmml,
-	   "openmath|om=s"             => \$om,
-	   "XMath=s"                   => \$xmath,
+  # No provision for parallel output (yet)
+  "mathimage=s"               => \$mathimage,
+  "magnification=f"           => \$mag,
+  "presentationmathml|pmml=s" => \$pmml,
+  "linelength=i"              => \$linelength,
+  "plane1!"                   => \$plane1,
+  "hackplane1!"               => \$hackplane1,
+  "contentmathml|cmml=s"      => \$cmml,
+  "openmath|om=s"             => \$om,
+  "XMath=s"                   => \$xmath,
 
-	   "noparse"   => \$noparse,
+  "noparse" => \$noparse,
 
-	   "preload=s" => \@preload,
-	   "includestyles"=> \$includestyles,
-	   "path=s"    => \@paths,
-	   "quiet"     => sub { $verbosity--; },
-	   "verbose"   => sub { $verbosity++; },
-	   "strict"    => \$strict,
-	   "VERSION"   => \$showversion,
-	   "debug=s"   => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
-	   "documentid=s" => \$documentid,
-	   "help"      => \$help,
-	  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
-			 -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>2, -output=>\*STDOUT)
+  "preload=s"     => \@preload,
+  "includestyles" => \$includestyles,
+  "path=s"        => \@paths,
+  "quiet"         => sub { $verbosity--; },
+  "verbose"       => sub { $verbosity++; },
+  "strict"        => \$strict,
+  "VERSION"       => \$showversion,
+  "debug=s"       => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
+  "documentid=s"  => \$documentid,
+  "help"          => \$help,
+  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+  -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
-if($showversion){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
-pod2usage(-message=>"$LaTeXML::Version::IDENTITY\nMissing input TeX file", 
-	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
+if ($showversion) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message => "$LaTeXML::Version::IDENTITY\nMissing input TeX file",
+  -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
-binmode(STDERR,":encoding(UTF-8)");
+binmode(STDERR, ":encoding(UTF-8)");
 print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
 
 #======================================================================
 # TeX Source
 #======================================================================
 # First read and digest whatever we're given.
-my $tex = join(' ',@ARGV);
-if($tex eq '-'){
+my $tex = join(' ', @ARGV);
+if ($tex eq '-') {
   my $content;
-  { local $/ = undef; $tex = <>; }}
+  { local $/ = undef; $tex = <>; } }
 
 # We need to determine whether the TeX we're given needs to be wrapped in \[...\]
 # Does it have $'s around it? Does it have a display math environment?
@@ -83,13 +83,13 @@ $tex =~ s/^\s+//;
 $tex =~ s/\s+$//;
 
 our $MATHENVS = 'math|displaymath|equation*?|eqnarray*?'
-  .'|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
-if(($tex =~ /^\$/) && ($tex =~ /\$$/)){} # Wrapped in $'s
-elsif(($tex =~ /^\\\(/) && ($tex =~ /\\\)$/)){} # Wrapped in \(...\)
-elsif(($tex =~ /^\\\[/) && ($tex =~ /\\\]$/)){} # Wrapped in \[...\]
-elsif(($tex =~ /^\\begin\{($MATHENVS)\}/) && ($tex =~ /\\end\{$1\}$/)){}
+  . '|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
+if    (($tex =~ /^\$/)                     && ($tex =~ /\$$/))          { }    # Wrapped in $'s
+elsif (($tex =~ /^\\\(/)                   && ($tex =~ /\\\)$/))        { }    # Wrapped in \(...\)
+elsif (($tex =~ /^\\\[/)                   && ($tex =~ /\\\]$/))        { }    # Wrapped in \[...\]
+elsif (($tex =~ /^\\begin\{($MATHENVS)\}/) && ($tex =~ /\\end\{$1\}$/)) { }
 else {
-  $tex = '\[ '.$tex.' \]'; }
+  $tex = '\[ ' . $tex . ' \]'; }
 
 my $texdoc = <<EODoc;
 literal:
@@ -105,22 +105,22 @@ EODoc
 #   Should I do something to verify that there is ONLY one Math node ?
 #   Eg: cmdline  a + b $ \badmacros $ c + d
 #
-#   What about alignment environments? 
+#   What about alignment environments?
 #     Should it be possible to give eqnarray or similar?
 #     and if so, will they give multiple math nodes?
 
 #======================================================================
 # Digest the TeX
 #======================================================================
-@paths = map(pathname_canonical($_),@paths);
-if(my @baddirs = grep(! -d $_, @paths)){
-  warn "$LaTeXML::Version::IDENTITY: these path directories do not exist: ".join(', ',@baddirs)."\n"; }
+@paths = map(pathname_canonical($_), @paths);
+if (my @baddirs = grep(!-d $_, @paths)) {
+  warn "$LaTeXML::Version::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-my $latexml= LaTeXML->new(preload=>['LaTeX.pool',@preload], searchpaths=>[@paths],
-			  verbosity=>$verbosity, strict=>$strict,
-			  includeComments=>0,includeStyles=>$includestyles,
-			  documentid=>$documentid,
-			  nomathparse=>$noparse);
+my $latexml = LaTeXML->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
+  verbosity => $verbosity, strict => $strict,
+  includeComments => 0, includeStyles => $includestyles,
+  documentid      => $documentid,
+  nomathparse     => $noparse);
 
 my $digested = $latexml->digestFile($texdoc);
 
@@ -131,10 +131,10 @@ my $digested = $latexml->digestFile($texdoc);
 # especially within automation, where latexmlmath might be used.
 my $model = $$latexml{state}->getModel;
 $$model{tagprop}{'ltx:Math'}{afterClose}
-  = [grep($_ ne \&LaTeXML::Package::Pool::cleanup_Math, @{$$model{tagprop}{'ltx:Math'}{afterClose}})];
+  = [grep($_ ne \&LaTeXML::Package::Pool::cleanup_Math, @{ $$model{tagprop}{'ltx:Math'}{afterClose} })];
 
-my $converted= $digested && $latexml->convertDocument($digested);
-my $doc = $digested && LaTeXML::Post::Document->new($converted,nocache=>1);
+my $converted = $digested && $latexml->convertDocument($digested);
+my $doc = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
 
 #======================================================================
 # Postprocess to convert the math to whatever desired forms.
@@ -150,52 +150,50 @@ $pmml = '-' unless (defined $mathimage || defined $pmml || defined $cmml || defi
 
 our %OPTIONS = ();
 
-
 # I wonder if this stuff even will be needed,
 # once fragid is sorted out?
 my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
-my $post = LaTeXML::Post->new(verbosity=>$verbosity||0);
+my $post = LaTeXML::Post->new(verbosity => $verbosity || 0);
 ($doc) = $post->ProcessChain($doc,
-     LaTeXML::Post::Scan->new(db=>$DB,%OPTIONS),
-     LaTeXML::Post::CrossRef->new(db=>$DB,%OPTIONS));
+  LaTeXML::Post::Scan->new(db => $DB, %OPTIONS),
+  LaTeXML::Post::CrossRef->new(db => $DB, %OPTIONS));
 
-if($mathimage){
-  if($mathimage eq '-'){
+if ($mathimage) {
+  if ($mathimage eq '-') {
     die "I dont really want to write the image to STDOUT, sorry!"; }
   $mathimage =~ s/\.(png|gif|jpg|jpeg)$//;
   my $imagetype = $1 || 'png';
-  my($result) = $post->ProcessChain($doc,
-      DirectMathImages->new(magnification=>$mag,
-			    imagename=>$mathimage, imagetype=>$imagetype,
-			    %OPTIONS));
+  my ($result) = $post->ProcessChain($doc,
+    DirectMathImages->new(magnification => $mag,
+      imagename => $mathimage, imagetype => $imagetype,
+      %OPTIONS));
 }
 
-
-if($pmml){
+if ($pmml) {
   require LaTeXML::Post::MathML;
-  my($result) = $post->ProcessChain($doc,
-      LaTeXML::Post::MathML::Presentation->new(
-                    (defined $linelength ? (linelength=>$linelength):()),
-                    (defined $plane1 ? (plane1=>$plane1):()),
-                    (defined $hackplane1 ? (hackplane1=>$hackplane1):()),
-		    %OPTIONS));
+  my ($result) = $post->ProcessChain($doc,
+    LaTeXML::Post::MathML::Presentation->new(
+      (defined $linelength ? (linelength => $linelength) : ()),
+      (defined $plane1     ? (plane1     => $plane1)     : ()),
+      (defined $hackplane1 ? (hackplane1 => $hackplane1) : ()),
+      %OPTIONS));
   outputXML($result->findnode('//m:math'), $pmml, $mmlURI); }
 
-if($cmml){
+if ($cmml) {
   require LaTeXML::Post::MathML;
-  my($result) = $post->ProcessChain($doc,
-      LaTeXML::Post::MathML::Content->new(%OPTIONS));
+  my ($result) = $post->ProcessChain($doc,
+    LaTeXML::Post::MathML::Content->new(%OPTIONS));
   outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
 
-if($om){
+if ($om) {
   require LaTeXML::Post::OpenMath;
-  my($result) = $post->ProcessChain($doc,
-      LaTeXML::Post::OpenMath->new(%OPTIONS));
+  my ($result) = $post->ProcessChain($doc,
+    LaTeXML::Post::OpenMath->new(%OPTIONS));
   outputXML($result->findnode('//om:OMOBJ'), $om, $omURI); }
 
-if($xmath){
+if ($xmath) {
   # extract the xmath
-  my($result) = $post->ProcessChain($doc);
+  my ($result) = $post->ProcessChain($doc);
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
 print STDERR "\nConversion complete\n" unless $verbosity < 0;
@@ -205,23 +203,23 @@ print STDERR "\nConversion complete\n" unless $verbosity < 0;
 #======================================================================
 
 sub outputXML {
-  my($xml,$destination,$defaulturi)=@_;
+  my ($xml, $destination, $defaulturi) = @_;
   # Need to move the node to a new document to set up namespaces
-  my $newdoc = XML::LibXML::Document->new("1.0","UTF-8");
+  my $newdoc = XML::LibXML::Document->new("1.0", "UTF-8");
   $newdoc->setDocumentElement($xml);
-  if(my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)){
-     $xml->setNamespaceDeclPrefix($oldprefix,undef); }
+  if (my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)) {
+    $xml->setNamespaceDeclPrefix($oldprefix, undef); }
   my $serialized = $newdoc->toString(1);
-  if($destination eq '-'){
+  if ($destination eq '-') {
     print $serialized; }
   else {
     $destination = pathname_canonical($destination);
-    if(my $dir =pathname_directory($destination)){
+    if (my $dir = pathname_directory($destination)) {
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
     my $OUT;
-    open($OUT,'>',$destination) or die "Couldn't open output file $destination: $!";
+    open($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
     print $OUT $serialized;
-    close($OUT); }}
+    close($OUT); } }
 
 #======================================================================
 # Variant of MathImages to write directly to destination
@@ -230,14 +228,15 @@ package DirectMathImages;
 use base qw(LaTeXML::Post::MathImages);
 
 our $counter;
+
 sub desiredResourcePathname {
-  my($self,$doc,$node,$source,$type)=@_;
+  my ($self, $doc, $node, $source, $type) = @_;
   my $name = $$self{imagename};
-  if($counter){			# Shouldn't get multiple images, but just in case...
-    $name.$counter++.'.'.$type; }
+  if ($counter) {    # Shouldn't get multiple images, but just in case...
+    $name . $counter++ . '.' . $type; }
   else {
     $counter++;
-    $name.'.'.$type; }}
+    $name . '.' . $type; } }
 
 #**********************************************************************
 __END__

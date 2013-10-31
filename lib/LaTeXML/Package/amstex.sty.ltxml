@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for 
+# / Thanks to the arXMLiv group for
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -22,19 +22,19 @@ RequirePackage('amsmath');
 RequirePackage('amsfonts');
 RequirePackage('amsxtra');
 
-DefMacro('\nolimits@','\nolimits');
-DefMacro('\nlimits@','\displaylimits');
+DefMacro('\nolimits@', '\nolimits');
+DefMacro('\nlimits@',  '\displaylimits');
 # Oddly, different defn than amsopn
-DefMacro('\qopname{}{}{}','\mathop{#3}\csname #2limits@\endcsname');
+DefMacro('\qopname{}{}{}', '\mathop{#3}\csname #2limits@\endcsname');
 
 #DefMacro('\Sb XUntil:\endSb','_{\substack{#1}}');
 #DefMacro('\Sp XUntil:\endSp','^{\substack{#1}}');
-#Let(T_CS('\endSb'),T_CS('\relax'));
-#Let(T_CS('\endSp'),T_CS('\relax'));
+#Let('\endSb','\relax');
+#Let('\endSp','\relax');
 
-DefMacro('\Sb','_\bgroup\substack\bgroup');
-DefMacro('\endSb','\cr\egroup\egroup');
-DefMacro('\Sp','^\bgroup\substack\bgroup');
-DefMacro('\endSp','\cr\egroup\egroup');
+DefMacro('\Sb',    '_\bgroup\substack\bgroup');
+DefMacro('\endSb', '\cr\egroup\egroup');
+DefMacro('\Sp',    '^\bgroup\substack\bgroup');
+DefMacro('\endSp', '\cr\egroup\egroup');
 
 1;

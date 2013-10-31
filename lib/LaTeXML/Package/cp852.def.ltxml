@@ -17,10 +17,10 @@ use LaTeXML::Package;
 #**********************************************************************
 # Predefine, then load standard file.
 
-# Predefine Ogonek, it's defined in cp852.def as ugly 
-DefAccent('\k',"\x{0328}","\x{02DB}");
+# Predefine Ogonek, it's defined in cp852.def as ugly
+DefAccent('\k', "\x{0328}", "\x{02DB}");
 # Now read the rest from the REAL cp852
-InputDefinitions('cp852',type=>'def',noltxml=>1);
+InputDefinitions('cp852', type => 'def', noltxml => 1);
 
 #**********************************************************************
 

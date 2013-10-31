@@ -19,32 +19,32 @@ use base qw(LaTeXML::Post::Processor);
 use Encode;
 
 sub new {
-  my($class,%options)=@_;
+  my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
-  $$self{format} = ($options{format}||'xml');
-  $$self{omit_doctype}=1 if $options{omit_doctype};
-  $$self{is_html}=1 if $options{is_html};
+  $$self{format} = ($options{format} || 'xml');
+  $$self{omit_doctype} = 1 if $options{omit_doctype};
+  $$self{is_html}      = 1 if $options{is_html};
   $self; }
 
 sub process {
-  my($self,$doc,$root)=@_;
+  my ($self, $doc, $root) = @_;
 
   my $xmldoc = $doc->getDocument;
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
 
   $root->removeAttribute('xml:id')
-    if ($root->getAttribute('xml:id')||'') eq  'TEMPORARY_DOCUMENT_ID';
+    if ($root->getAttribute('xml:id') || '') eq 'TEMPORARY_DOCUMENT_ID';
 
   my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
 
-  if(my $destination = $doc->getDestination){
+  if (my $destination = $doc->getDestination) {
     my $destdir = $doc->getDestinationDirectory;
     pathname_mkdir($destdir)
-      or return Fatal('I/O',$destdir,undef,"Couldn't create directory '$destdir'",
-		      "Response was: $!");
+      or return Fatal('I/O', $destdir, undef, "Couldn't create directory '$destdir'",
+      "Response was: $!");
     my $OUT;
-    open($OUT,'>',$destination)
-      or return Fatal('I/O',$destdir,undef,"Couldn't write '$destination'","Response was: $!");
+    open($OUT, '>', $destination)
+      or return Fatal('I/O', $destdir, undef, "Couldn't write '$destination'", "Response was: $!");
     print $OUT $string;
     close($OUT); }
   else {

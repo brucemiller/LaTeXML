@@ -18,33 +18,32 @@ use LaTeXML::Package;
 # New environment from package wrapfigure:
 # \caption will handle refnums, etc.
 DefEnvironment('{wrapfigure} {} {Dimension}',
-	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float'>"
-	       ."#body"
-	       ."</ltx:figure>",
-	       afterDigestBegin=>sub {
-		 my $dir = ToString($_[1]->getArg(1));
-		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
-					    : ($dir eq 'l' ? 'left'
-					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
-	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); });
+  "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float'>"
+    . "#body"
+    . "</ltx:figure>",
+  afterDigestBegin => sub {
+    my $dir = ToString($_[1]->getArg(1));
+    $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
+        : ($dir eq 'l' ? 'left'
+          : undef))); },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 
 DefEnvironment('{wraptable} {} {Dimension}',
-	       "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float'>"
-	       ."#body"
-	       ."</ltx:table>",
-	       afterDigestBegin=>sub {
-		 my $dir = ToString($_[1]->getArg(1));
-		 $_[1]->setProperty(float=>($dir eq 'r' ? 'right'
-					    : ($dir eq 'l' ? 'left'
-					       : undef))); },
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
-	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); });
+  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float'>"
+    . "#body"
+    . "</ltx:table>",
+  afterDigestBegin => sub {
+    my $dir = ToString($_[1]->getArg(1));
+    $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
+        : ($dir eq 'l' ? 'left'
+          : undef))); },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 
-DefMacro('\WFclear','\par');
-DefRegister('\wrapoverhang'=>Dimension(0));
+DefMacro('\WFclear', '\par');
+DefRegister('\wrapoverhang' => Dimension(0));
 
 #**********************************************************************
-
 
 1;
