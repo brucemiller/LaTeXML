@@ -11,12 +11,12 @@ use strict;
 use LaTeXML::Package;
 
 foreach my $option (qw(envcountreset citeauthoryear oribibl orivec
-  envcountsame envcountsect runningheads)) {
-  DeclareOption($option, undef); }
+		       envcountsame envcountsect runningheads)){
+  DeclareOption($option,undef); }
 
 # Anything else gets passed to article.
-DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+DeclareOption(undef,sub {
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('article');
@@ -25,128 +25,128 @@ RequirePackage('multicol');
 RequirePackage('inst_support');
 
 #======================================================================
-DefMacro('\frontmatter', Tokens());
+DefMacro('\frontmatter',Tokens());
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
-DefMacro('\emailname', 'E-mail');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-  properties => sub { (name => Digest(T_CS('\emailname'))); });
+DefMacro('\emailname','E-mail');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
+	       properties=>sub {(name=>Digest(T_CS('\emailname')));});
 DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
-DefMacro('\mailname', '\textit{Correspondence to}:');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-  properties => sub { (name => Digest(T_CS('\mailname'))); });
+DefMacro('\mailname','\textit{Correspondence to}:');
+DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
+	       properties=>sub {(name=>Digest(T_CS('\mailname')));});
 DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 
-DefMacro('\keywordname', '\textbf{Keywords}');
+DefMacro('\keywordname','\textbf{Keywords}');
 DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
-DefMacro('\ackname', 'Acknowledgements');
-DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
-  properties => sub { (name => Digest(T_CS('\ackname'))); });
+DefMacro('\ackname','Acknowledgements');
+DefConstructor('\acknowledgements',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub {(name=>Digest(T_CS('\ackname')));});
 DefMacro('\acknowledgement', '\acknowledgements');
-DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
-DefConstructor('\endacknowledgement',  "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
+DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose=>1);
 
-DefConstructor('\url Semiverbatim', "<ltx:ref href='#1'>#1</ltx:ref>");
+DefConstructor('\url Semiverbatim',"<ltx:ref href='#1'>#1</ltx:ref>");
 
 # DefMacro('\institutename',  Tokens());
 
 # DefMacro('\authcount',Tokens());
 
-DefRegister('\instindent' => Dimension(0));
+DefRegister('\instindent'=>Dimension(0));
 
 # DefMacro('\lastand',Tokens());
 
-DefRegister('\authrun'       => Tokens());    # Box!
-DefRegister('\authorrunning' => Tokens());
-DefRegister('\tocauthor'     => Tokens());    # Box!
-DefRegister('\titrun'        => Tokens());    # Box!
-DefRegister('\titlerunning'  => Tokens());
-DefRegister('\toctitle{}'    => Tokens());
+DefRegister('\authrun'=>Tokens()); # Box!
+DefRegister('\authorrunning'=>Tokens());
+DefRegister('\tocauthor'=>Tokens()); # Box!
+DefRegister('\titrun'=>Tokens());    # Box!
+DefRegister('\titlerunning'=>Tokens());
+DefRegister('\toctitle{}'=>Tokens());
 
-DefRegister('\tocchpnum'         => Dimension(0));
-DefRegister('\tocsecnum'         => Dimension('15pt'));
-DefRegister('\tocsubsecnum'      => Dimension('23pt'));
-DefRegister('\tocsubsubsecnum'   => Dimension('27pt'));
-DefRegister('\tocparanum'        => Dimension('35pt'));
-DefRegister('\tocsubparanum'     => Dimension('43pt'));
-DefRegister('\tocsectotal'       => Dimension(0));
-DefRegister('\tocsubsectotal'    => Dimension(0));
-DefRegister('\tocsubsubsectotal' => Dimension(0));
-DefRegister('\tocparatotal'      => Dimension(0));
+DefRegister('\tocchpnum'=>Dimension(0));
+DefRegister('\tocsecnum'=>Dimension('15pt'));
+DefRegister('\tocsubsecnum'=>Dimension('23pt'));
+DefRegister('\tocsubsubsecnum'=>Dimension('27pt'));
+DefRegister('\tocparanum'=>Dimension('35pt'));
+DefRegister('\tocsubparanum'=>Dimension('43pt'));
+DefRegister('\tocsectotal'=>Dimension(0));
+DefRegister('\tocsubsectotal'=>Dimension(0));
+DefRegister('\tocsubsubsectotal'=>Dimension(0));
+DefRegister('\tocparatotal'=>Dimension(0));
 
-DefMacro('\addcontentsmark{}{}{}',    Tokens());
-DefMacro('\addcontentsmarkwop{}{}{}', Tokens());
-DefMacro('\addnumcontentsmark{}{}{}', Tokens());
-DefMacro('\addtocmark[]{}{}{}',       Tokens());
+DefMacro('\addcontentsmark{}{}{}',Tokens());
+DefMacro('\addcontentsmarkwop{}{}{}',Tokens());
+DefMacro('\addnumcontentsmark{}{}{}',Tokens());
+DefMacro('\addtocmark[]{}{}{}',Tokens());
 
 #======================================================================
-DefMacro('\mainmatter', Tokens());
+DefMacro('\mainmatter',Tokens());
 
-NewCounter('chapter', 'document', idprefix => 'Pt', nested => ['section']);
-DefMacro('\thechapter',    '\arabic{chapter}');
-DefMacro('\chaptermark{}', Tokens());
+NewCounter('chapter', 'document',idprefix=>'Pt', nested=>['section']);
+DefMacro('\thechapter','\arabic{chapter}');
+DefMacro('\chaptermark{}',Tokens());
 
 # \spnewtheorem*{env}[numberedlike]{caption}[within]{capfont}{bodyfont}
 # NOTE: Can I use latex's \newtheoremstyle, or do I need to copy & adapt it?
 # Seems to be the same as \newtheoremstyle, but with additonal capfont & bodyfont
 DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
-    my ($stomach, $flag, $thmset, $otherthmset, $type, $reset, $capfont, $bodyfont) = @_;
-    $thmset      = ToString($thmset);
-    $otherthmset = $otherthmset && ToString($otherthmset);
-    $type        = undef unless $type->unlist;
-    $reset       = $reset ? ToString($reset) : undef;
+  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset,$capfont,$bodyfont) = @_;
+  $thmset = ToString($thmset);
+  $otherthmset = $otherthmset && ToString($otherthmset);
+  $type   = undef unless $type->unlist;
+  $reset  = $reset ? ToString($reset) : undef;
 
-    my $counter = $otherthmset || $thmset;
-    my $swap    = LookupValue('thm@swap') eq 'S';
-    my $style   = LookupValue('thm@style');
+  my $counter = $otherthmset || $thmset;
+  my $swap = LookupValue('thm@swap') eq 'S';
+  my $style   = LookupValue('thm@style');
 
-    if (!$otherthmset) {
-      NewCounter($counter, $reset,
-        idprefix => "Thm$counter");
-      DefMacroI(T_CS("\\the$counter"), undef,
-        "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
-        scope => 'global')
-        if $reset; }
+  if(!$otherthmset){
+    NewCounter($counter, $reset,
+	       idprefix => "Thm$counter");
+    DefMacroI(T_CS("\\the$counter"),undef,
+	      "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
+	      scope=>'global')
+      if $reset; }
 
-# Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
-    DefEnvironment("{$thmset} OptionalUndigested",
-      "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
-        . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
-        . "#body"
-        . "</ltx:theorem>",
-      beforeDigest => sub {
-        my $stylecmd = T_CS('\th@' . $style);
-        if (!LookupDefinition($stylecmd)) {
-          Warn('unexpected', $style, $_[0], "Unknown theoremstyle '$style'");
-          $stylecmd = T_CS('\th@plain'); }
-        Digest(Tokens($stylecmd)); },
-      afterDigestBegin => sub { Digest($bodyfont); },
-      properties => sub {
-        my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
-        my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
-            T_CS('\@tag'), T_BEGIN,
-            ($swap
-              ? (($flag ? () : (T_CS('\the' . $counter))),
-                (!$flag && $type ? (T_SPACE) : ()),
-                ($type ? ($type->unlist) : ()))
-              : (($type ? ($type->unlist) : ()),
-                (!$flag && $type ? (T_SPACE) : ()),
-                ($flag ? () : (T_CS('\the' . $counter))))),
-            T_END,
-            ($type && $_[1] ? (T_SPACE, T_OTHER('(')) : ()),
-            ($_[1] ? $_[1]->unlist : ()),
-            ($type && $_[1] ? (T_OTHER(')')) : ()),
-            T_CS('\the'), T_CS('\thm@headpunct'),
-            T_END));
-        (%ctr,
-          title     => $title,
-          titlefont => $title->getFont,
-          class     => 'ltx_theorem_' . CleanIndexKey($thmset)); },
-      scope => 'global');
+  # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
+  DefEnvironment("{$thmset} OptionalUndigested",
+		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
+		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+		 .  "#body"
+		 ."</ltx:theorem>",
+		 beforeDigest=>sub {
+		   my $stylecmd = T_CS('\th@'.$style);
+		   if (!LookupDefinition($stylecmd)) {
+		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
+		     $stylecmd = T_CS('\th@plain'); }
+		   Digest(Tokens($stylecmd)); },
+ 		 afterDigestBegin=>sub { Digest($bodyfont); },
+		 properties => sub {
+		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
+		   my $title = Digest(Tokens(T_BEGIN,$capfont->unlist,
+					     T_CS('\@tag'),T_BEGIN,
+					     ($swap
+					      ? ( ($flag ? ():(T_CS('\the'.$counter))),
+						  (!$flag && $type ? (T_SPACE):()),
+						  ($type ? ($type->unlist):()) )
+					      : ( ($type ? ($type->unlist):()),
+						  (!$flag && $type ? (T_SPACE):()),
+						  ($flag ? ():(T_CS('\the'.$counter))) )),
+					     T_END,
+					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
+					     ($_[1] ? $_[1]->unlist : ()),
+					     ($type && $_[1] ? (T_OTHER(')')):()),
+					     T_CS('\the'),T_CS('\thm@headpunct'),
+					     T_END));
+		   (  %ctr,
+		      title=>$title,
+		      titlefont=>$title->getFont,
+		      class=>'ltx_theorem_'.CleanIndexKey($thmset)  ); },
+		 scope => 'global');
 });
 
 RawTeX(<<'EOTeX');
@@ -186,53 +186,54 @@ RawTeX(<<'EOTeX');
 EOTeX
 
 #======================================================================
-DefPrimitiveI('\bbbc',   undef, "\x{2102}");    #not sure if ok for the ones NOT of type I$
-DefPrimitiveI('\bbbf',   undef, "\x{1D53D}");
-DefPrimitiveI('\bbbh',   undef, "\x{210D}");
-DefPrimitiveI('\bbbk',   undef, "\x{1D542}");
-DefPrimitiveI('\bbbm',   undef, "\x{1D544}");
-DefPrimitiveI('\bbbn',   undef, "\x{2115}");
-DefPrimitiveI('\bbbone', undef, "\x{1D7D9}");
-DefPrimitiveI('\bbbp',   undef, "\x{2119}");
-DefPrimitiveI('\bbbq',   undef, "\x{211A}");
-DefPrimitiveI('\bbbr',   undef, "\x{211D}");
-DefPrimitiveI('\bbbs',   undef, "\x{1D54A}");
-DefPrimitiveI('\bbbt',   undef, "\x{1D54B}");
-DefPrimitiveI('\bbbz',   undef, "\x{2124}");
+DefPrimitiveI('\bbbc',  undef,"\x{2102}");#not sure if ok for the ones NOT of type I$
+DefPrimitiveI('\bbbf',  undef,"\x{1D53D}");
+DefPrimitiveI('\bbbh',  undef,"\x{210D}");
+DefPrimitiveI('\bbbk',  undef,"\x{1D542}");
+DefPrimitiveI('\bbbm',  undef,"\x{1D544}");
+DefPrimitiveI('\bbbn',  undef,"\x{2115}");
+DefPrimitiveI('\bbbone',undef,"\x{1D7D9}");
+DefPrimitiveI('\bbbp',  undef,"\x{2119}");
+DefPrimitiveI('\bbbq',  undef,"\x{211A}");
+DefPrimitiveI('\bbbr',  undef,"\x{211D}");
+DefPrimitiveI('\bbbs',  undef,"\x{1D54A}");
+DefPrimitiveI('\bbbt',  undef,"\x{1D54B}");
+DefPrimitiveI('\bbbz',  undef,"\x{2124}");
 
-DefMath('\getsto', "\x{21C6}", role => 'ARROW');
-DefMath('\lid',    "\x{2266}", role => 'RELOP', meaning => 'less-than-or-equals');
-DefMath('\gid',    "\x{2267}", role => 'RELOP', meaning => 'greater-than-or-equals');
-DefMath('\grole',  "\x{2277}", role => 'RELOP', meaning => 'greater-than-or-less-than');
+DefMath('\getsto', "\x{21C6}", role=>'ARROW');
+DefMath('\lid',   "\x{2266}", role=>'RELOP', meaning=>'less-than-or-equals');
+DefMath('\gid',   "\x{2267}", role=>'RELOP', meaning=>'greater-than-or-equals');
+DefMath('\grole', "\x{2277}", role=>'RELOP', meaning=>'greater-than-or-less-than');
 
 DefConstructor('\squareforqed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let('\qed', '\squareforqed');
+	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\qed','\squareforqed');
 
 #======================================================================
-DefMacro('\backmatter', Tokens());
+DefMacro('\backmatter',Tokens());
 
 #======================================================================
-DefMacro('\andname',         'and');
-DefMacro('\chaptername',     'Chapter');
-DefMacro('\contriblistname', 'List of Contributors');
-DefMacro('\lastandname',     ', and');
-DefMacro('\noteaddname',     'Note added in proof');
-DefMacro('\seename',         'see');
-DefMacro('\subclassname',    '\textit{Subject Classification}:');
+DefMacro('\andname',        'and');
+DefMacro('\chaptername',    'Chapter');
+DefMacro('\contriblistname','List of Contributors');
+DefMacro('\lastandname',    ', and');
+DefMacro('\noteaddname',    'Note added in proof');
+DefMacro('\seename',        'see');
+DefMacro('\subclassname',   '\textit{Subject Classification}:');
 
-DefRegister('\fnindent' => Dimension(0));
-DefMacro('\fnmsep',   '${}^{,}$');
-DefMacro('\fnnstart', '0');
 
-DefMacro('\calctocindent', Tokens());
-DefMacro('\clearheadinfo', Tokens());
-DefRegister('\headlineindent' => Dimension(0));
-DefMacro('\thisbottomragged', Tokens());
-Let('\ts', '\,');
-DefEnvironment('{theopargself}', '#body');
-DefMacro('\homedir', "\~{ }");
-DefMacro('\idxquad', '\hskip 10pt\relax');
+DefRegister('\fnindent'=>Dimension(0));
+DefMacro('\fnmsep','${}^{,}$');
+DefMacro('\fnnstart','0');
+
+DefMacro('\calctocindent',Tokens());
+DefMacro('\clearheadinfo',Tokens());
+DefRegister('\headlineindent'=>Dimension(0));
+DefMacro('\thisbottomragged',Tokens());
+Let(T_CS('\ts'),T_CS('\,'));
+DefEnvironment('{theopargself}','#body');
+DefMacro('\homedir',"\~{ }");
+DefMacro('\idxquad','\hskip 10pt\relax');
 #======================================================================
 
 #  /--------------------------------------------------------------------\
@@ -241,5 +242,10 @@ DefMacro('\idxquad', '\hskip 10pt\relax');
 #  \--------------------------------------------------------------------/
 
 # DefMacro('\hyperhrefextend',Tokens());
+
+
+
+
+
 
 1;

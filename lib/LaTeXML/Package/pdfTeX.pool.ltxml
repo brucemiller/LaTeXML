@@ -19,90 +19,90 @@ use LaTeXML::Package;
 # See the pdfTeX User's Manual
 
 # Integer Registers
-DefRegister('\pdfoutput'           => Number(0));
-DefRegister('\pdfminorversion'     => Number(4));
-DefRegister('\pdfcompresslevel'    => Number(9));
-DefRegister('\pdfobjcompresslevel' => Number(0));
-DefRegister('\pdfdecimaldigits'    => Number(4));
-DefRegister('\pdfimageresolution'  => Number(72));
-DefRegister('\pdfpkresolution'     => Number(0));
-DefRegister('\pdftracingfonts'     => Number(0));
-DefRegister('\pdfuniqueresname'    => Number(0));
-DefRegister('\pdfadjustspacing'    => Number(0));
-DefRegister('\pdfprotrudechars'    => Number(0));
+DefRegister('\pdfoutput'              =>Number(0));
+DefRegister('\pdfminorversion'        =>Number(4));
+DefRegister('\pdfcompresslevel'       =>Number(9));
+DefRegister('\pdfobjcompresslevel'    =>Number(0));
+DefRegister('\pdfdecimaldigits'       =>Number(4));
+DefRegister('\pdfimageresolution'     =>Number(72));
+DefRegister('\pdfpkresolution'        =>Number(0));
+DefRegister('\pdftracingfonts'        =>Number(0));
+DefRegister('\pdfuniqueresname'       =>Number(0));
+DefRegister('\pdfadjustspacing'       =>Number(0));
+DefRegister('\pdfprotrudechars'       =>Number(0));
 # \efcode <font> <8bitnumber>  => <integer>
 # \lpfcode <font> <8bitnumber> => <integer>
 # \rpfcode <font> <8bitnumber> => <integer>
-DefRegister('\efcode Token Number', Number(0));
-DefRegister('\lpcode Token Number', Number(0));
-DefRegister('\rpcode Token Number', Number(0));
+DefRegister('\efcode Token Number',Number(0));
+DefRegister('\lpcode Token Number',Number(0));
+DefRegister('\rpcode Token Number',Number(0));
 
-DefRegister('\pdfforcepagebox'                => Number(0));
-DefRegister('\pdfoptionalwaysusepdfpagebox'   => Number(0));
-DefRegister('\pdfinclusionerrorlevel'         => Number(0));
-DefRegister('\pdfoptionalinclusionerrorlevel' => Number(0));
-DefRegister('\pdfimagehicolor'                => Number(0));
-DefRegister('\pdfimageapplygamma'             => Number(0));
-DefRegister('\pdfgamma'                       => Number(0));
-DefRegister('\pdfimagegamma'                  => Number(0));
-DefRegister('\pdfdraftmode'                   => Number(0));
+DefRegister('\pdfforcepagebox'        =>Number(0));
+DefRegister('\pdfoptionalwaysusepdfpagebox'=>Number(0));
+DefRegister('\pdfinclusionerrorlevel' =>Number(0));
+DefRegister('\pdfoptionalinclusionerrorlevel' =>Number(0));
+DefRegister('\pdfimagehicolor'        =>Number(0));
+DefRegister('\pdfimageapplygamma'     =>Number(0));
+DefRegister('\pdfgamma'               =>Number(0));
+DefRegister('\pdfimagegamma'          =>Number(0));
+DefRegister('\pdfdraftmode'           =>Number(0));
 
 # Dimen Registers
-DefRegister('\pdfhorigin'      => Dimension('1in'));
-DefRegister('\pdfvorigin'      => Dimension('1in'));
-DefRegister('\pdfpagewidth'    => Dimension('0pt'));
-DefRegister('\pdfpageheight'   => Dimension('0pt'));
-DefRegister('\pdflinkmargin'   => Dimension('0pt'));
-DefRegister('\pdfdestmargin'   => Dimension('0pt'));
-DefRegister('\pdfthreadmargin' => Dimension('0pt'));
-DefRegister('\pdfpxdimen'      => Dimension('0pt'));
+DefRegister('\pdfhorigin'             =>Dimension('1in'));
+DefRegister('\pdfvorigin'             =>Dimension('1in'));
+DefRegister('\pdfpagewidth'           =>Dimension('0pt'));
+DefRegister('\pdfpageheight'          =>Dimension('0pt'));
+DefRegister('\pdflinkmargin'          =>Dimension('0pt'));
+DefRegister('\pdfdestmargin'          =>Dimension('0pt'));
+DefRegister('\pdfthreadmargin'        =>Dimension('0pt'));
+DefRegister('\pdfpxdimen'             =>Dimension('0pt'));
 
 # Token Registers
-DefRegister('\pdfpagesattr'     => Tokens());
-DefRegister('\pdfpageattr'      => Tokens());
-DefRegister('\pdfpageresources' => Tokens());
-DefRegister('\pdfpkmode'        => Tokens());
+DefRegister('\pdfpagesattr'           =>Tokens());
+DefRegister('\pdfpageattr'            =>Tokens());
+DefRegister('\pdfpageresources'       =>Tokens());
+DefRegister('\pdfpkmode'              =>Tokens());
 
 # Expandable Commands
-DefMacro('\pdftexrevision',           '');
-DefMacro('\pdftexbanner',             '');
-DefMacro('\pdfcreationdate',          '');
-DefMacro('\pdfpageref Number',        '');
-DefMacro('\pdfxformname Number',      '');
-DefMacro('\pdffontname Token',        '');
-DefMacro('\pdffontobjnum Token',      '');
-DefMacro('\pdffontsize Token',        '');
-DefMacro('\pdfincludechars Token {}', '');
-DefMacro('\leftmarginkern Number',    '');
-DefMacro('\rightmarginkern Number',   '');
-DefMacro('\pdfescapestring {}',       '');
-DefMacro('\pdfescapename {}',         '');
-DefMacro('\pdfescapehex {}',          '');
-DefMacro('\pdfunescapehex {}',        '');
+DefMacro('\pdftexrevision','');
+DefMacro('\pdftexbanner','');
+DefMacro('\pdfcreationdate','');
+DefMacro('\pdfpageref Number','');
+DefMacro('\pdfxformname Number','');
+DefMacro('\pdffontname Token','');
+DefMacro('\pdffontobjnum Token','');
+DefMacro('\pdffontsize Token','');
+DefMacro('\pdfincludechars Token {}','');
+DefMacro('\leftmarginkern Number','');
+DefMacro('\rightmarginkern Number','');
+DefMacro('\pdfescapestring {}','');
+DefMacro('\pdfescapename {}','');
+DefMacro('\pdfescapehex {}','');
+DefMacro('\pdfunescapehex {}','');
 # DefMacro('\ifpdfprimitive {}','');
 # DefMacro('\ifpdfabsnum Number','');
 # DefMacro('\ifpdfabsdim Dimension','');
-DefMacro('\pdfuniformdeviate Number Token', '');
-DefMacro('\pdfnormaldeviate Token',         '');
-DefMacro('\pdfmdfivesum Number {}',         '');
-DefMacro('\pdffilemoddate {}',              '');
+DefMacro('\pdfuniformdeviate Number Token','');
+DefMacro('\pdfnormaldeviate Token','');
+DefMacro('\pdfmdfivesum Number {}','');
+DefMacro('\pdffilemoddate {}','');
 # DefMacro('\pdffiledump {}','');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
-DefRegister('\pdftexversion'      => Number(0));
-DefRegister('\pdflastobj'         => Number(0));
-DefRegister('\pdflastxform'       => Number(0));
-DefRegister('\pdflastximage'      => Number(0));
-DefRegister('\pdflastximagepages' => Number(0));
-DefRegister('\pdflastannot'       => Number(0));
-DefRegister('\pdflastlink'        => Number(0));
-DefRegister('\pdflastxpos'        => Number(0));
-DefRegister('\pdflastypos'        => Number(0));
-DefRegister('\pdflastdemerits'    => Number(0));
-DefRegister('\pdfelapsedtime'     => Number(0));
-DefRegister('\pdfrandomseed'      => Number(0));
-DefRegister('\pdfshellescape'     => Number(0));
+DefRegister('\pdftexversion'          =>Number(0));
+DefRegister('\pdflastobj'             =>Number(0));
+DefRegister('\pdflastxform'           =>Number(0));
+DefRegister('\pdflastximage'          =>Number(0));
+DefRegister('\pdflastximagepages'     =>Number(0));
+DefRegister('\pdflastannot'           =>Number(0));
+DefRegister('\pdflastlink'            =>Number(0));
+DefRegister('\pdflastxpos'            =>Number(0));
+DefRegister('\pdflastypos'            =>Number(0));
+DefRegister('\pdflastdemerits'        =>Number(0));
+DefRegister('\pdfelapsedtime'         =>Number(0));
+DefRegister('\pdfrandomseed'          =>Number(0));
+DefRegister('\pdfshellescape'         =>Number(0));
 
 # \pdfximage [ image attr spec ] general text (h, v, m)
 # \pdfrefximage object number (h, v, m)
@@ -117,26 +117,26 @@ DefRegister('\pdfshellescape'     => Number(0));
 # \pdfsavepos (h, v, m)
 
 # See lxRDFa for ideas how this info might be used!
-DefMacro('\pdfinfo{}', '');
+DefMacro('\pdfinfo{}','');
 
 # Ugh, what a mess of ugly syntax....
-DefParameterType('OpenActionSpecification', sub {
-    my ($gullet) = @_;
-    if (my $key = $gullet->readKeyword('openaction')) {
-      if (my $action = $gullet->readKeyword('user', 'goto')) {
-        # etc....
-      } } },
-  optional => 1, undigested => 1);
+DefParameterType('OpenActionSpecification',sub {
+  my($gullet)=@_;
+  if(my $key = $gullet->readKeyword('openaction')){
+    if(my $action = $gullet->readKeyword('user','goto')){
+      # etc....
+    }}},
+		 optional=>1, undigested=>1);
 
-DefMacro('\pdfcatalog{} OpenActionSpecification', '');
-DefMacro('\pdfnames{}',   {});
-DefMacro('\pdftrailer{}', {});
-DefMacro('\pdfmapfile{}', '');
-DefMacro('\pdfmapline{}', '');
+DefMacro('\pdfcatalog{} OpenActionSpecification','');
+DefMacro('\pdfnames{}',{});
+DefMacro('\pdftrailer{}',{});
+DefMacro('\pdfmapfile{}','');
+DefMacro('\pdfmapline{}','');
 # \pdffontattr font general text
 # \pdffontexpand font expand spec
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
-DefMacro('\quitvmode', '');
+DefMacro('\quitvmode','');
 # \pdfliteral [ pdfliteral spec ] general text (h, v, m)
 # \special pdfspecial spec
 # \pdfresettimer
@@ -144,9 +144,9 @@ DefMacro('\quitvmode', '');
 # \pdfnoligatures font
 # \pdfprimitive control sequence
 # \pdfcolorstack stack number stack action general text
-DefMacro('\pdfsetmatrix', '');
-DefMacro('\pdfsave',      '');
-DefMacro('\pdfrestore',   '');
+DefMacro('\pdfsetmatrix','');
+DefMacro('\pdfsave','');
+DefMacro('\pdfrestore','');
 
 # general text → { balanced text }
 # attr spec → attr general text

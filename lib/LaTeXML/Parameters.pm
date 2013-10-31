@@ -17,8 +17,8 @@ use base qw(Exporter LaTeXML::Object);
 our @EXPORT = qw(parseParameters);
 
 sub new {
-  my ($class, @paramspecs) = @_;
-  bless [@paramspecs], $class; }
+  my($class,@paramspecs)=@_;
+  bless [@paramspecs],$class; }
 
 #**********************************************************************
 # Parameter List & Arguments
@@ -38,175 +38,175 @@ sub new {
 # similarly for the other variants. What the 'stuff" means depends on the type.
 
 %LaTeXML::Parameters::PARAMETER_TABLE
-  = (Plain => { reader => sub {
-      my ($gullet, $inner) = @_;
-      my $value = $gullet->readArg;
-      if ($inner) {
-        ($value) = $inner->reparseArgument($gullet, $value); }
-      $value; },
-    reversion => sub { my ($arg, $inner) = @_;
-      (T_BEGIN,
-        ($inner ? $inner->revertArguments($arg) : Revert($arg)),
-        T_END); } },
-  Optional => { reader => sub {
-      my ($gullet, $default, $inner) = @_;
-      my $value = $gullet->readOptional;
-      if (!$value && $default) {
-        $value = $default; }
-      elsif ($inner) {
-        ($value) = $inner->reparseArgument($gullet, $value); }
-      $value; },
-    optional => 1,
-    reversion => sub { my ($arg, $default, $inner) = @_;
-      if ($arg) {
-        (T_OTHER('['),
-          ($inner ? $inner->revertArguments($arg) : Revert($arg)),
-          T_OTHER(']')); }
-      else { (); } } },
-  Until => { reader => sub { my ($gullet, $until) = @_;
-      $gullet->readUntil($until); },
-    reversion => sub { my ($arg, $until) = @_;
-      (Revert($arg), Revert($until)); } },
-  );
+  = ( Plain=>{reader=>sub {
+		my($gullet,$inner)=@_;
+		my $value = $gullet->readArg; 
+		if($inner){
+		  ($value) = $inner->reparseArgument($gullet,$value); }
+		$value; },
+	      reversion=>sub{ my($arg,$inner)=@_;
+			      (T_BEGIN,
+			       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+			       T_END); }},
+      Optional=>{reader=>sub {
+		   my($gullet,$default,$inner)=@_;
+		   my $value = $gullet->readOptional;
+		   if (!$value && $default) {
+		     $value = $default; }
+		   elsif($inner) {
+		     ($value) = $inner->reparseArgument($gullet,$value); }
+		   $value; },
+		 optional=>1,
+		 reversion=>sub{ my($arg,$default,$inner)=@_;
+				 if ($arg) {
+				   (T_OTHER('['),
+				    ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+				    T_OTHER(']')); }
+			    else { (); }}},
+      Until     => { reader => sub { my($gullet,$until)=@_;
+				     $gullet->readUntil($until); },
+		     reversion=>sub{ my($arg,$until)=@_;
+				     (Revert($arg), Revert($until)); }},
+    );
 
 # Parsing a parameter list spec.
 sub parseParameters {
-  my ($proto, $for) = @_;
-  my $p      = $proto;
-  my @params = ();
-  while ($p) {
+  my($proto, $for)=@_;
+  my $p = $proto;
+  my @params=();
+  while($p){
     # Handle possibly nested cases, such as {Number}
-    if ($p =~ s/^(\{([^\}]*)\})\s*//) {
-      my ($spec, $inner_spec) = ($1, $2);
-      my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      push(@params, newParameter('Plain', $spec, extra => [$inner])); }
-    elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
-      my ($spec, $inner_spec) = ($1, $2);
-      if ($inner_spec =~ /^Default:(.*)$/) {
-        push(@params, newParameter('Optional', $spec, extra => [TokenizeInternal($1), undef])); }
-      elsif ($inner_spec) {
-        push(@params, newParameter('Optional', $spec, extra => [undef, parseParameters($inner_spec, $for)])); }
+    if($p =~ s/^(\{([^\}]*)\})\s*//){ 
+      my($spec,$inner_spec)=($1,$2);
+      my $inner = ($inner_spec ? parseParameters($inner_spec,$for) : undef);
+      push(@params,newParameter('Plain',$spec, extra=>[$inner])); }
+    elsif($p =~ s/^(\[([^\]]*)\])\s*//){ # Ditto for Optional
+      my($spec,$inner_spec)=($1,$2);
+      if($inner_spec =~ /^Default:(.*)$/){
+	push(@params,newParameter('Optional',$spec,extra=>[TokenizeInternal($1),undef]));}
+      elsif($inner_spec){
+	push(@params,newParameter('Optional',$spec,extra=>[undef,parseParameters($inner_spec,$for)]));}
       else {
-        push(@params, newParameter('Optional', $spec)); } }
-    elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
-      my ($spec, $type, $extra) = ($1, $2, $4);
-      my @extra = map(TokenizeInternal($_), split('\|', $extra || ''));
-      push(@params, newParameter($type, $spec, extra => [@extra])); }
+	push(@params,newParameter('Optional',$spec)); }}
+    elsif($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//){
+      my($spec,$type,$extra)=($1,$2,$4); 
+      my @extra = map(TokenizeInternal($_),split('\|',$extra||''));
+      push(@params,newParameter($type,$spec,extra=>[@extra])); }
     else {
-      Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
+      Fatal('misdefined',$for,undef,"Unrecognized parameter specification at \"$proto\""); }}
   (@params ? LaTeXML::Parameters->new(@params) : undef); }
 
 # Create a parameter reading object for a specific type.
 # If either a declared entry or a function Read<Type> accessible from LaTeXML::Package::Pool
 # is defined.
 sub newParameter {
-  my ($type, $spec, %options) = @_;
+  my($type,$spec,%options)=@_;
   my $descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$type};
-  if (!defined $descriptor) {
-    if ($type =~ /^Optional(.+)$/) {
+  if(!defined $descriptor){
+    if($type =~ /^Optional(.+)$/){
       my $basetype = $1;
-      if ($descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$basetype}) { }
-      elsif (my $reader = checkReaderFunction("Read$type") || checkReaderFunction("Read$basetype")) {
-        $descriptor = { reader => $reader }; }
-      $descriptor = { %$descriptor, optional => 1 } if $descriptor; }
-    elsif ($type =~ /^Skip(.+)$/) {
+      if($descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$basetype}){}
+      elsif(my $reader = checkReaderFunction("Read$type") || checkReaderFunction("Read$basetype")){
+	$descriptor={reader=>$reader}; }
+      $descriptor = { %$descriptor, optional=>1} if $descriptor; }
+    elsif($type =~ /^Skip(.+)$/){
       my $basetype = $1;
-      if ($descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$basetype}) { }
-      elsif (my $reader = checkReaderFunction($type) || checkReaderFunction("Read$basetype")) {
-        $descriptor = { reader => $reader }; }
-      $descriptor = { %$descriptor, novalue => 1, optional => 1 } if $descriptor; }
+      if($descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$basetype}){}
+      elsif(my $reader = checkReaderFunction($type) || checkReaderFunction("Read$basetype")){
+	$descriptor={reader=>$reader}; }
+      $descriptor = { %$descriptor, novalue=>1, optional=>1} if $descriptor; }
     else {
       my $reader = checkReaderFunction("Read$type");
-      $descriptor = { reader => $reader } if $reader; } }
-  Fatal('misdefined', $type, undef, "Unrecognized parameter type in \"$spec\"") unless $descriptor;
-  LaTeXML::Parameter->new($spec, type => $type, %{$descriptor}, %options); }
+      $descriptor = { reader=>$reader} if $reader; }}
+  Fatal('misdefined',$type,undef,"Unrecognized parameter type in \"$spec\"") unless $descriptor;
+  LaTeXML::Parameter->new($spec,type=>$type, %{$descriptor},%options); }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
 sub checkReaderFunction {
-  my ($function) = @_;
-  if (defined $LaTeXML::Package::Pool::{$function}) {
+  my($function)=@_;
+  if(defined $LaTeXML::Package::Pool::{$function}){
     local *reader = $LaTeXML::Package::Pool::{$function};
-    if (defined &reader) {
-      \&reader; } } }
+    if(defined &reader){
+      \&reader; }}}
 
 #======================================================================
 
-sub getParameters { @{ $_[0] }; }
+sub getParameters { @{$_[0]}; }
 
 sub stringify {
-  my ($self) = @_;
-  my $string = '';
-  foreach my $parameter (@$self) {
+  my($self)=@_;
+  my $string='';
+  foreach my $parameter (@$self){
     my $s = $parameter->stringify;
-    $string .= ' ' if ($string =~ /\w$/) && ($s =~ /^\w/);
+    $string .= ' ' if ($string =~/\w$/)&&($s =~/^\w/);
     $string .= $s; }
   $string; }
 
 sub equals {
-  my ($self, $other) = @_;
+  my($self,$other)=@_;
   (defined $other) && ((ref $self) eq (ref $other)) && ($self->stringify eq $other->stringify); }
 
 sub getNumArgs {
-  my ($self) = @_;
+  my($self)=@_;
   my $n = 0;
-  foreach my $parameter (@$self) {
+  foreach my $parameter (@$self){
     $n++ unless $$parameter{novalue}; }
   $n; }
 
 sub revertArguments {
-  my ($self, @args) = @_;
+  my($self,@args)=@_;
   my @tokens = ();
-  foreach my $parameter (@$self) {
+  foreach my $parameter (@$self){
     next if $$parameter{novalue};
     my $arg = shift(@args);
-    if (my $retoker = $$parameter{reversion}) {
-      push(@tokens, &$retoker($arg, @{ $$parameter{extra} || [] })); }
+    if(my $retoker = $$parameter{reversion}){
+      push(@tokens,&$retoker($arg,@{$$parameter{extra}||[]})); }
     else {
-      push(@tokens, Revert($arg)) if ref $arg; } }
+      push(@tokens,Revert($arg)) if ref $arg; }}
   @tokens; }
 
 sub readArguments {
-  my ($self, $gullet, $fordefn) = @_;
+  my($self,$gullet,$fordefn)=@_;
   my @args = ();
-  foreach my $parameter (@$self) {
-    #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
+  foreach my $parameter (@$self){
+#    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
-    if ((!defined $value) && !$$parameter{optional}) {
-      Error('expected', $parameter, $gullet,
-        "Missing argument " . ToString($parameter) . " for " . ToString($fordefn),
-        $gullet->showUnexpected); }
-    push(@args, $value) unless $$parameter{novalue}; }
+    if((!defined $value) && !$$parameter{optional}){
+      Error('expected',$parameter,$gullet,
+	    "Missing argument ".ToString($parameter)." for ".ToString($fordefn),
+	    $gullet->showUnexpected); }
+    push(@args,$value) unless $$parameter{novalue}; }
   @args; }
 
 sub readArgumentsAndDigest {
-  my ($self, $stomach, $fordefn) = @_;
-  my @args   = ();
+  my($self,$stomach,$fordefn)=@_;
+  my @args = ();
   my $gullet = $stomach->getGullet;
-  foreach my $parameter (@$self) {
-    #    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
+  foreach my $parameter (@$self){
+#    my $value = &{$$parameter{reader}}($gullet,@{$$parameter{extra}||[]});
     my $value = $parameter->read($gullet);
-    if ((!defined $value) && !$$parameter{optional}) {
-      Error('expected', $parameter, $stomach,
-        "Missing argument " . Stringify($parameter) . " for " . Stringify($fordefn),
-        $gullet->showUnexpected); }
-    if (!$$parameter{novalue}) {
-      StartSemiverbatim() if $$parameter{semiverbatim};    # Corner case?
+    if((!defined $value) && !$$parameter{optional}){
+      Error('expected',$parameter,$stomach,
+	    "Missing argument ".Stringify($parameter)." for ".Stringify($fordefn),
+	    $gullet->showUnexpected); }
+    if(!$$parameter{novalue}){
+      StartSemiverbatim() if $$parameter{semiverbatim}; # Corner case?
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
-      EndSemiverbatim() if $$parameter{semiverbatim};      # Corner case?
-      push(@args, $value); } }
+      EndSemiverbatim() if $$parameter{semiverbatim}; # Corner case?
+      push(@args,$value); }}
   @args; }
 
 sub reparseArgument {
-  my ($self, $gullet, $tokens) = @_;
-  if (defined $tokens) {
-    $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {    # start with empty mouth
-        my ($gullet) = @_;
-        $gullet->unread($tokens);                             # but put back tokens to be read
-        my @values = $self->readArguments($gullet);
-        $gullet->skipSpaces;
-        @values; }); }
+  my($self,$gullet,$tokens)=@_;
+  if(defined $tokens){
+    $gullet->readingFromMouth(LaTeXML::Mouth->new(),sub { # start with empty mouth
+       my($gullet)=@_;
+       $gullet->unread($tokens); # but put back tokens to be read
+       my @values = $self->readArguments($gullet);
+       $gullet->skipSpaces;
+       @values; }); }
   else {
-    (); } }
+    (); }}
 
 #======================================================================
 package LaTeXML::Parameter;
@@ -215,26 +215,26 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
 sub new {
-  my ($class, $spec, %options) = @_;
-  bless { spec => $spec, %options }, $class; }
+  my($class,$spec,%options)=@_;
+  bless {spec=>$spec,%options}, $class; }
 
 sub stringify { $_[0]->{spec}; }
 
 sub read {
-  my ($self, $gullet) = @_;
+  my($self,$gullet)=@_;
   # For semiverbatim, I had messed with catcodes, but there are cases
-  # (eg. \caption(...\label{badchars}}) where you really need to
+  # (eg. \caption(...\label{badchars}}) where you really need to 
   # cleanup after the fact!
   # Hmmm, seem to still need it...
-  if ($$self{semiverbatim}) {
+  if($$self{semiverbatim}){
     # Nasty Hack: If immediately followed by %, should discard the comment
     # EVEN if semiverbatim makes % into other!
-    if (my $peek = $gullet->readToken) { $gullet->unread($peek); }
+    if(my $peek = $gullet->readToken){ $gullet->unread($peek); }
     StartSemiverbatim(); }
-  my $value = &{ $$self{reader} }($gullet, @{ $$self{extra} || [] });
+  my $value = &{$$self{reader}}($gullet,@{$$self{extra}||[]});
   $value = $value->neutralize if $$self{semiverbatim} && (ref $value)
-    && $value->can('neutralize');
-  if ($$self{semiverbatim}) {
+    && $value->can('neutralize'); 
+  if($$self{semiverbatim}){
     EndSemiverbatim(); }
   $value; }
 

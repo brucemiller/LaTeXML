@@ -20,94 +20,94 @@ use LaTeXML::Util::Pathname;
 #**********************************************************************
 # Package options: draft, final, hiderotate, hidescale, hiresbb
 
-DefParameterType('GraphixDimension', sub {
-    my ($gullet) = @_;
-    if ($gullet->ifNext(T_OTHER('!'))) {
-      $gullet->readToken();
-      Dimension(0); }
-    else {
-      $gullet->readDimension; } });
+DefParameterType('GraphixDimension',  sub{
+  my($gullet)=@_;
+  if($gullet->ifNext(T_OTHER('!'))){
+    $gullet->readToken(); 
+    Dimension(0); }
+  else {
+    $gullet->readDimension; }});
 
 # Unimplemented, for now: What should be the result?
 # Would seem to require different treatment if the content was ONLY \includegraphic,
 # or more general text.
 DefConstructor('\scalebox{}[]{}', sub {
-    my ($document, $xscale, $yscale, $box) = @_;
-    my @new = insertBlock($document, $box);
-    my $scale;
-    if (!$yscale) { $scale = $xscale; $xscale = undef; }
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'),
-            ($scale  ? ("scale=" . ToString($scale))   : undef),
-            ($xscale ? ("xscale=" . ToString($xscale)) : undef),
-            ($yscale ? ("yscale=" . ToString($yscale)) : undef)));
-        $node->setAttribute(options => $options); } } },
-  mode => 'text');
+  my($document,$xscale,$yscale,$box)=@_;
+  my @new = insertBlock($document,$box);
+  my $scale;
+  if(!$yscale){ $scale = $xscale; $xscale = undef; }
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),
+				  ($scale ? ("scale=".ToString($scale)) : undef),
+				  ($xscale ? ("xscale=".ToString($xscale)) : undef),
+				  ($yscale ? ("yscale=".ToString($yscale)) : undef)));
+      $node->setAttribute(options=>$options); }}},
+	       mode=>'text');
 
 DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}', sub {
-    my ($document, $star, $width, $height, $box) = @_;
-    $width  = undef unless $width->valueOf;
-    $height = undef unless $height->valueOf;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'),
-            ($width  ? ("width=" . ToString($width))   : undef),
-            ($height ? ("height=" . ToString($height)) : undef),
-            ($width && $height ? undef : "keepaspectratio")));
-        $node->setAttribute(options => $options); } } },
-  mode => 'text');
+  my($document,$star,$width,$height,$box)=@_;
+  $width  = undef unless $width->valueOf;
+  $height = undef unless $height->valueOf;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),
+				  ($width ? ("width=".ToString($width)) : undef),
+				  ($height ? ("height=".ToString($height)) : undef),
+				  ($width && $height ? undef : "keepaspectratio")));
+      $node->setAttribute(options=>$options); }}},
+	       mode=>'text');
 
 DefConstructor('\rotatebox{Float}{}', sub {
-    my ($document, $angle, $box) = @_;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'), "angle=" . ToString($angle)));
-        $node->setAttribute(options => $options); } } },
-  mode => 'text');
+  my($document,$angle,$box)=@_;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),"angle=".ToString($angle)));
+      $node->setAttribute(options=>$options); }}},
+	       mode=>'text');
 
 DefConstructor('\reflectbox{}', sub {
-    my ($document, $box) = @_;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'), "reflect"));
-        $node->setAttribute(options => $options); } } },
-  mode => 'text');
+  my($document,$box)=@_;
+  my @new = insertBlock($document,$box);
+  foreach my $node (@new){
+    # is there anything we might do to other kinds of nodes?
+    if($document->getModel->getNodeQName($node) eq 'ltx:graphics'){
+      my $options = join(',',grep($_,$node->getAttribute('options'),"reflect"));
+      $node->setAttribute(options=>$options); }}},
+	       mode=>'text');
 
 DefConstructor('\graphicspath DirectoryList', sub {
-    my ($document, $paths) = @_;
-    foreach my $dir ($paths->getValues) {
-      my $path = pathname_absolute(pathname_canonical(ToString($dir)));
-      print STDERR "GOT PATH: " . $path . "\n";
-      $document->insertPI('latexml', graphicspath => $path); } });
+  my($document,$paths)=@_;
+  foreach my $dir ($paths->getValues){
+    my $path = pathname_absolute(pathname_canonical(ToString($dir)));
+    print STDERR "GOT PATH: ".$path."\n";
+    $document->insertPI('latexml',graphicspath=>$path); }});
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
-  '\@includegraphics#1[#2][#3]{#4}');
+	 '\@includegraphics#1[#2][#3]{#4}');
 
 DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
-    my ($document, $starred, $op1, $op2, $graphic) = @_;
-    my $bb = ($op2 ? ToString($op1) . " " . ToString($op2) : ($op1 ? "0 0 " . ToString($op1) : ''));
-    $bb =~ s/,/ /g;
-    my $options = ($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-    $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
-    my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-    if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
-    $document->insertElement('ltx:graphics', undef, graphic => $graphic, options => $options,
-      candidates => join(',', @candidates)); },
-  alias => '\includegraphics');
+  my($document,$starred,$op1,$op2,$graphic)=@_;
+  my $bb = ($op2 ? ToString($op1)." ".ToString($op2) : ($op1 ? "0 0 ".ToString($op1) : ''));
+  $bb=~ s/,/ /g;
+  my $options=($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+  $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic=~ s/\s+$//;
+  my @candidates = pathname_findall($graphic,types=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+  if(my $base = LookupValue('SOURCEDIRECTORY')){
+    @candidates=map(pathname_relative($_,$base),@candidates); }
+  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,options=>$options,
+			   candidates=>join(',',@candidates)); },
+	       alias=>'\includegraphics');
 
 # Also unimplemented... probably nothing useful to pass thru anyway?
-DefConstructor('\DeclareGraphicsExtensions{}',          '');
-DefConstructor('\DeclareGraphicsRule{}{}{} Undigested', '');
+DefConstructor('\DeclareGraphicsExtensions{}','');
+DefConstructor('\DeclareGraphicsRule{}{}{} Undigested','');
 # Nothing done about the keyval package...
 #**********************************************************************
 1;

@@ -13,6 +13,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-RequirePackage('revtex3_support', withoptions => 1);
+RequirePackage('revtex3_support',withoptions=>1);
 
 1;

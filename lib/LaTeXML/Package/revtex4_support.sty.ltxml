@@ -5,8 +5,8 @@
 # |=======================================================| #
 # | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
 # | Copyright (c) 2008 arXMLiv group                      | #
-# | Catalin David <c.david@jacobs-university.de>          | #
-# | Released to Public Domain                           | #
+# | Catalin David <c.david@jacobs-university.de>	  | #
+# | Released to Public Domain 		                  | #
 # =======================================================/ #
 
 package LaTeXML::Package::Pool;
@@ -14,7 +14,7 @@ use strict;
 use LaTeXML::Package;
 
 RequirePackage('hyperref');
-RequirePackage('natbib');    # not necessarily loaded?
+RequirePackage('natbib');	# not necessarily loaded?
 RequirePackage('revsymb');
 RequirePackage('url');
 RequirePackage('longtable');
@@ -30,101 +30,102 @@ RequirePackage('dcolumn');
 # 4.3
 DefMacro('\title[]{}', '\@add@frontmatter{ltx:title}{#2}');
 
-DefMacro('\doauthor{}{}{}', '#1 #2 #3');       # -- ??
-DefMacro('\address',        '\affiliation');
+DefMacro('\doauthor{}{}{}','#1 #2 #3'); # -- ??
+DefMacro('\address','\affiliation');
 # DefMacro('\affiliation','');
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affiliation{}',  '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\altaddress',     '\altaffiliation');
-DefMacro('\altaffiliation', '\affiliation');
-DefMacro('\andname',        'and');
-DefMacro('\collaboration', '');                # Should have a look at this too
+DefConstructor('\@@@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affiliation{}','\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\altaddress','\altaffiliation');
+DefMacro('\altaffiliation','\affiliation');
+DefMacro('\andname','and');
+DefMacro('\collaboration',''); # Should have a look at this too
 DefMacro('\noaffiliation', Tokens());
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
-DefConstructor('\@@@homepage{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
-DefMacro('\homepage Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
+DefConstructor('\@@@homepage{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
+DefMacro('\homepage Semiverbatim','\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
 
-DefMacro('\firstname', '');                    # \let\firstname\@firstofone ??
-DefConstructor('\surname{}', "#1");
+DefMacro('\firstname',''); # \let\firstname\@firstofone ??
+DefConstructor('\surname{}',"#1");
 
 # 4.4
-DefMacro('\abstractname', 'Abstract');
+DefMacro('\abstractname','Abstract');
 
 # 4.5
-DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\pacs{}','\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 
 # 4.6
-DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\keywords{}','\@add@frontmatter{ltx:keywords}{#1}');
 
 # 4.7
 DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
 
 # Extra stuff
-DefMacro('\blankaffiliation', '');
-DefMacro('\checkindate',      '\today');
+DefMacro('\blankaffiliation','');
+DefMacro('\checkindate','\today');
 
-DefMacro('\received[]{}',  '\@add@frontmatter{ltx:date}[role=received]{#2}');
-DefMacro('\revised[]{}',   '\@add@frontmatter{ltx:date}[role=revised]{#2}');
-DefMacro('\accepted[]{}',  '\@add@frontmatter{ltx:date}[role=accepted]{#2}');
-DefMacro('\published[]{}', '\@add@frontmatter{ltx:date}[role=published]{#2}');
+DefMacro('\received[]{}', '\@add@frontmatter{ltx:date}[role=received]{#2}');
+DefMacro('\revised[]{}',  '\@add@frontmatter{ltx:date}[role=revised]{#2}');
+DefMacro('\accepted[]{}', '\@add@frontmatter{ltx:date}[role=accepted]{#2}');
+DefMacro('\published[]{}','\@add@frontmatter{ltx:date}[role=published]{#2}');
 
 #======================================================================
 # 5. The body of the paper
 #======================================================================
 
 # 5.3
-DefMacro('\widetext',    '');
+DefMacro('\widetext', '');
 DefMacro('\endwidetext', '');
 # These are called obsolete, but I can't even find them in earlier RevTeX's!
-DefMacro('\narrowtext',    '');
-DefMacro('\endnarrowtext', '');
-DefMacro('\mediumtext',    '');
-DefMacro('\endmediumtext', '');
+DefMacro('\narrowtext','');
+DefMacro('\endnarrowtext','');
+DefMacro('\mediumtext','');
+DefMacro('\endmediumtext','');
 
 # 5.5
 # Normally, we'd define the acknowledgements environment simply as:
 # DefEnvironment('{acknowledgements}',
-#              "<ltx:acknowledgements>#body</ltx:acknowledgements>");
+# 	       "<ltx:acknowledgements>#body</ltx:acknowledgements>");
 # However, people seem to insist on "misusing" it, by just saying
 # \acknowledgements... which actually "works".
 # So, we just open it, and let it autoclose.
-DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
-  properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
+DefConstructor('\acknowledgments',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub{ (name=>Digest(T_CS('\acknowledgmentsname'))); });
 DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
-DefMacro('\acknowledgmentsname', 'Acknowledgements');
-Let('\acknowledgements',    '\acknowledgments');
-Let('\endacknowledgements', '\endacknowledgments');
-Tag("ltx:acknowledgements", autoClose => 1);
+DefMacro('\acknowledgmentsname','Acknowledgements');
+Let(T_CS('\acknowledgements'),T_CS('\acknowledgments'));
+Let(T_CS('\endacknowledgements'),T_CS('\endacknowledgments'));
+Tag("ltx:acknowledgements", autoClose=>1);
 
 # Extra stuff
-DefMacro('\thesection', '\Roman{section}');    # Apparently the desired style.
+DefMacro('\thesection','\Roman{section}'); # Apparently the desired style.
 
-DefMacro('\thepagegrid',       'one');
-DefMacro('\onecolumngrid',     '');
-DefMacro('\twocolumngrid',     '');
-DefMacro('\restorecolumngrid', '');
+DefMacro('\thepagegrid','one');
+DefMacro('\onecolumngrid','');
+DefMacro('\twocolumngrid','');
+DefMacro('\restorecolumngrid','');
 DefPrimitive('\twocolumn', undef);
-DefConstructor('\rotatebox{Number}{}', '#2');    # dummy defn, unless graphics loaded
-DefMacro('\pagesofar', '');
+DefConstructor('\rotatebox{Number}{}','#2'); # dummy defn, unless graphics loaded
+DefMacro('\pagesofar','');
 
-# endnotes handled like footnotes
+
+# endnotes handled like footnotes 
 DefConstructor('\endnote[]{}',
-  "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
-  mode       => 'text',
-  properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+	       "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\endnotemark[]',
-  "<ltx:note role='endnotemark' mark='#refnum'></ltx:note>",
-  mode       => 'text',
-  properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+	       "<ltx:note role='endnotemark' mark='#refnum'></ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\endnotetext[]{}',
-  "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
-  mode       => 'text',
-  properties => sub {
-    ($_[1] ? (refnum => $_[1]) : (refnum => Digest(T_CS("\\thefootnote")))); });
+	       "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : (refnum=>Digest(T_CS("\\thefootnote")))); });
 
 #======================================================================
 # 6. Math and Equations
@@ -134,23 +135,23 @@ DefConstructor('\endnotetext[]{}',
 # recommends amsmath's {subequations}
 
 # Extra stuff
-Let('\case',      '\frac');
-Let('\slantfrac', '\frac');
-DefConstructor('\text{}', "<ltx:text>#1</ltx:text>", mode => 'text');
+Let('\case','\frac');
+Let('\slantfrac','\frac');
+DefConstructor('\text{}', "<ltx:text>#1</ltx:text>", mode=>'text');
 
 # RevTeX3 (obsolete in RevTeX4)
-DefConstructor('\bm{}',   '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
-DefConstructor('\bbox{}', '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
-DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1, font => { forcebold => 1,
-    family => 'blackboard' });
+DefConstructor('\bm{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
+DefConstructor('\bbox{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1});
+DefConstructor('\pmb{}', '#1', bounded=>1, requireMath=>1, font=>{forcebold=>1,
+								  family=>'blackboard'});
 DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
-  mode => 'text');
+	       afterDigest=>sub {
+		 AssignValue(EQUATIONROW_NUMBER=>ToString($_[1]), 'global'); },
+	       mode=>'text');
 
 # Redefined in revtex3_support
-DefMacro('\mathletters',    '');
-DefMacro('\endmathletters', '');
+DefMacro('\mathletters','');
+DefMacro('\endmathletters','');
 
 #======================================================================
 # 7. Footnotes
@@ -159,21 +160,22 @@ DefMacro('\endmathletters', '');
 #======================================================================
 # 8. Citations and References
 #======================================================================
-DefMacro('\onlinecite', '\citealp');
+DefMacro('\onlinecite','\citealp');
 
-Let('\textcite', '\citet');
+Let('\textcite','\citet');
+
 
 # RevTeX3; Obsolete for RevTeX4 (but semi-implemented there)
 # Should be a simple environment, but tends to be misused, so define separately
 DefConstructor('\references',
-  "<ltx:bibliography xml:id='#id' "
-    . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
-    . "<ltx:biblist>",
-  afterDigest => sub { beginBibliography($_[1]); });
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+	       . "<ltx:biblist>",
+	       afterDigest=>sub { beginBibliography($_[1]); });
 
 DefConstructor('\endreferences',
-  "</ltx:biblist></ltx:bibliography>");
+	       "</ltx:biblist></ltx:bibliography>");
 # bibliography and biblist are already set as autoClose.
 
 #======================================================================
@@ -185,34 +187,34 @@ DefConstructor('\endreferences',
 #======================================================================
 
 # Used to put double rules before & after a tabular.
-DefEnvironment('{ruledtabular}', '#body');
+DefEnvironment('{ruledtabular}','#body');
 
 # No idea what this is really for, but this seems to be the jist of it.
-DefEnvironment('{quasitable}', '#body',
-  beforeDigest => sub {
-    Let("\\begin{tabular}", "\\begin{longtable}");
-    Let("\\end{tabular}",   "\\end{longtable}");
-    Let("\\tabular",        "\\longtable");
-    Let("\\endtabular",     "\\endlongtable"); });
+DefEnvironment('{quasitable}','#body',
+	       beforeDigest=>sub {
+		 Let(T_CS("\\begin{tabular}"),T_CS("\\begin{longtable}"));
+		 Let(T_CS("\\end{tabular}"),  T_CS("\\end{longtable}"));
+		 Let(T_CS("\\tabular"),       T_CS("\\longtable"));
+		 Let(T_CS("\\endtabular"),    T_CS("\\endlongtable")); });
 
-DefMacro('\squeezetable', '');    #presentational
+DefMacro('\squeezetable',''); #presentational
 
 # Extra stuff
 DefMacro('\toprule', '\hline\hline');
-DefMacro('\colrule', '\hline');
-DefMacro('\botrule', '\hline\hline');
-DefMacro('\frstrut', '');
-DefMacro('\lrstrut', '');
-Let('\tableftsep',  '\tabcolsep');
-Let('\tabmidsep',   '\tabcolsep');
-Let('\tabrightsep', '\tabcolsep');
+DefMacro('\colrule','\hline');
+DefMacro('\botrule','\hline\hline');
+DefMacro('\frstrut','');
+DefMacro('\lrstrut','');
+Let('\tableftsep','\tabcolsep');
+Let('\tabmidsep','\tabcolsep');
+Let('\tabrightsep','\tabcolsep');
 
-Let('\tablenote',     '\footnote');
-Let('\tablenotemark', '\footnotemark');
-Let('\tablenotetext', '\footnotetext');
+Let(T_CS('\tablenote'),T_CS('\footnote'));
+Let(T_CS('\tablenotemark'),T_CS('\footnotemark'));
+Let(T_CS('\tablenotetext'),T_CS('\footnotetext'));
 
 # RevTeX3 (obsolete in RevTeX4)
-Let('\tableline', '\colrule');
+Let('\tableline','\colrule');
 
 # This seems to be implied.
 RawTeX('\newcolumntype{d}{D{.}{.}{-1}}');
@@ -221,17 +223,18 @@ RawTeX('\newcolumntype{d}{D{.}{.}{-1}}');
 # 11. Placement of Figures, Tables and Other Floats
 #======================================================================
 
-DefPrimitive('\printfigures OptionalMatch:*', undef);
-DefPrimitive('\printtables OptionalMatch:*',  undef);
-DefMacro('\oneapage',      '');
-DefMacro('\printendnotes', '');
+DefPrimitive('\printfigures OptionalMatch:*',undef);
+DefPrimitive('\printtables OptionalMatch:*',undef);
+DefMacro('\oneapage','');
+DefMacro('\printendnotes','');
 
 #======================================================================
 # 12. Rotating Floats
 #======================================================================
 
 # Rotates the page
-DefEnvironment('{turnpage}', '#body');
+DefEnvironment('{turnpage}','#body');
+
 
 #======================================================================
 # 13. RevTeX 4 symbols and the revsymb package
@@ -245,60 +248,61 @@ DefEnvironment('{turnpage}', '#body');
 # XX.  Extra stuff
 #======================================================================
 
-Let('\MakeTextLowercase', '\lowercase');
-Let('\MakeTextUppercase', '\uppercase');
-DefMacro('\NoCaseChange', '');
+Let(T_CS('\MakeTextLowercase'), T_CS('\lowercase'));
+Let(T_CS('\MakeTextUppercase'),T_CS('\uppercase'));
+DefMacro('\NoCaseChange','');
 
 # Macro & Control stuff.
 #  Are these really intended for authors to use?
-DefMacro('\absbox',           '');                                   #what does \newbox\absbox mean?
-DefMacro('\addstuff{}{}',     '');
-DefMacro('\appdef{}{}',       '');
-DefMacro('\gappdef{}{}',      '');
-DefMacro('\prepdef{}{}',      '');
-DefMacro('\lineloop{}',       '');
-DefMacro('\loopuntil{}',      '');
-DefMacro('\loopwhile{}',      '');
-DefMacro('\traceoutput',      '');
-DefMacro('\tracingplain',     '');
-DefMacro('\removephantombox', '');
-DefMacro('\removestuff',      '');
-DefMacro('\replacestuff{}{}', '');
-DefMacro('\say[]',            '\typeout{<\noexpand#1=\meaning#1>}');
-DefMacro('\saythe[]',         '\typeout{<\noexpand#1=\the#1>}');
+DefMacro('\absbox',''); #what does \newbox\absbox mean?
+DefMacro('\addstuff{}{}','');
+DefMacro('\appdef{}{}','');
+DefMacro('\gappdef{}{}','');
+DefMacro('\prepdef{}{}','');
+DefMacro('\lineloop{}','');
+DefMacro('\loopuntil{}','');
+DefMacro('\loopwhile{}','');
+DefMacro('\traceoutput', '');
+DefMacro('\tracingplain', '');
+DefMacro('\removephantombox','');
+DefMacro('\removestuff','');
+DefMacro('\replacestuff{}{}','');
+DefMacro('\say[]',   '\typeout{<\noexpand#1=\meaning#1>}');
+DefMacro('\saythe[]','\typeout{<\noexpand#1=\the#1>}');
+
 
 # Various extra i18n stuff.
-DefMacro('\copyrightname', '??');                # ?? is that ok? that is what the .sty says, but...
-DefMacro('\journalname',   '??');
-DefMacro('\lofname',       'List of Figures');
-DefMacro('\lotname',       'List of Tables');
-DefMacro('\notesname',     'Notes');
-DefMacro('\numbername',    'number');
-DefMacro('\ppname',        'pp');
-DefMacro('\tocname',       'Contents');
-DefMacro('\volumename',    'volume');
+DefMacro('\copyrightname','??'); # ?? is that ok? that is what the .sty says, but... 
+DefMacro('\journalname','??');
+DefMacro('\lofname','List of Figures');
+DefMacro('\lotname','List of Tables');
+DefMacro('\notesname','Notes');
+DefMacro('\numbername','number');
+DefMacro('\ppname','pp');
+DefMacro('\tocname','Contents');
+DefMacro('\volumename','volume');
 
 # Apparently some sort of document information?
-DefMacro('\volumenumber{}', '#1');
-DefMacro('\volumeyear{}',   '#1');
-DefMacro('\issuenumber{}',  '#1');
-DefMacro('\bibinfo{}{}',    '#2');
-DefMacro('\eprint{}',       'eprint #1');
-DefMacro('\eid{}',          '#1');
-DefMacro('\startpage{}',    '\pageref{FirstPage}{#1}');
-DefMacro('\endpage',        '\pageref{LastPage}{#1}');
+DefMacro('\volumenumber{}','#1');
+DefMacro('\volumeyear{}','#1');
+DefMacro('\issuenumber{}','#1');
+DefMacro('\bibinfo{}{}','#2');
+DefMacro('\eprint{}','eprint #1');
+DefMacro('\eid{}','#1');
+DefMacro('\startpage{}','\pageref{FirstPage}{#1}');
+DefMacro('\endpage', '\pageref{LastPage}{#1}');
 
 # Other pointless stuff.
-DefMacro('\flushing',          '');
-DefMacro('\triggerpar',        '\par');
-DefMacro('\fullinterlineskip', '');
-DefRegister('\footbox'                 => Box());
-DefRegister('\intertabularlinepenalty' => Number('100'));
+DefMacro('\flushing','');
+DefMacro('\triggerpar','\par');
+DefMacro('\fullinterlineskip','');
+DefRegister('\footbox'=>Box());
+DefRegister('\intertabularlinepenalty'=>Number('100'));
 
 # These are called obsolete, but I can't even find them in earlier RevTeX's!
-DefMacro('\FL',      '');
-DefMacro('\FR',      '');
-DefMacro('\draft',   '');
+DefMacro('\FL','');
+DefMacro('\FR','');
+DefMacro('\draft','');
 DefMacro('\tighten', '');
 
 #======================================================================
@@ -306,36 +310,36 @@ DefMacro('\tighten', '');
 # which include pra, etc.
 # I'll just define them all, and hope for no conflicts(?)
 
-DefMacro('\ao',    'Appl.~Opt.~');
-DefMacro('\ap',    'Appl.~Phys.~');
-DefMacro('\apl',   'Appl.~Phys.~Lett.~');
-DefMacro('\apj',   'Astrophys.~J.~');
-DefMacro('\bell',  'Bell Syst.~Tech.~J.~');
-DefMacro('\jqe',   'IEEE J.~Quantum Electron.~');
-DefMacro('\assp',  'IEEE Trans.~Acoust.~Speech Signal Process.~');
-DefMacro('\aprop', 'IEEE Trans.~Antennas Propag.~');
-DefMacro('\mtt',   'IEEE Trans.~Microwave Theory Tech.~');
-DefMacro('\iovs',  'Invest.~Opthalmol.~Vis.~Sci.~');
-DefMacro('\jcp',   'J.~Chem.~Phys.~');
-DefMacro('\jmo',   'J.~Mod.~Opt.~');
-DefMacro('\josa',  'J.~Opt.~Soc.~Am.~');
-DefMacro('\josaa', 'J.~Opt.~Soc.~Am.~A ');
-DefMacro('\josab', 'J.~Opt.~Soc.~Am.~B ');
-DefMacro('\jpp',   'J.~Phys.~(Paris) ');
-DefMacro('\nat',   'Nature (London) ');
-DefMacro('\oc',    'Opt.~Commun.~');
-DefMacro('\ol',    'Opt.~Lett.~');
-DefMacro('\pl',    'Phys.~Lett.~');
-DefMacro('\pra',   'Phys.~Rev.~A ');
-DefMacro('\prb',   'Phys.~Rev.~B ');
-DefMacro('\prc',   'Phys.~Rev.~C ');
-DefMacro('\prd',   'Phys.~Rev.~D ');
-DefMacro('\pre',   'Phys.~Rev.~E ');
-DefMacro('\prl',   'Phys.~Rev.~Lett.~');
-DefMacro('\rmp',   'Rev.~Mod.~Phys.~');
-DefMacro('\pspie', 'Proc.~Soc.~Photo-Opt.~Instrum.~Eng.~');
-DefMacro('\sjqe',  'Sov.~J.~Quantum Elecron.~');
-DefMacro('\vr',    'Vision Res.~');
+DefMacro('\ao',   'Appl.~Opt.~');
+DefMacro('\ap',   'Appl.~Phys.~');
+DefMacro('\apl',  'Appl.~Phys.~Lett.~');
+DefMacro('\apj',  'Astrophys.~J.~');
+DefMacro('\bell', 'Bell Syst.~Tech.~J.~');
+DefMacro('\jqe',  'IEEE J.~Quantum Electron.~');
+DefMacro('\assp', 'IEEE Trans.~Acoust.~Speech Signal Process.~');
+DefMacro('\aprop','IEEE Trans.~Antennas Propag.~');
+DefMacro('\mtt',  'IEEE Trans.~Microwave Theory Tech.~');
+DefMacro('\iovs', 'Invest.~Opthalmol.~Vis.~Sci.~');
+DefMacro('\jcp',  'J.~Chem.~Phys.~');
+DefMacro('\jmo',  'J.~Mod.~Opt.~');
+DefMacro('\josa', 'J.~Opt.~Soc.~Am.~');
+DefMacro('\josaa','J.~Opt.~Soc.~Am.~A ');
+DefMacro('\josab','J.~Opt.~Soc.~Am.~B ');
+DefMacro('\jpp',  'J.~Phys.~(Paris) ');
+DefMacro('\nat',  'Nature (London) ');
+DefMacro('\oc',   'Opt.~Commun.~');
+DefMacro('\ol',   'Opt.~Lett.~');
+DefMacro('\pl',   'Phys.~Lett.~');
+DefMacro('\pra',  'Phys.~Rev.~A ');
+DefMacro('\prb',  'Phys.~Rev.~B ');
+DefMacro('\prc',  'Phys.~Rev.~C ');
+DefMacro('\prd',  'Phys.~Rev.~D ');
+DefMacro('\pre',  'Phys.~Rev.~E ');
+DefMacro('\prl',  'Phys.~Rev.~Lett.~');
+DefMacro('\rmp',  'Rev.~Mod.~Phys.~');
+DefMacro('\pspie','Proc.~Soc.~Photo-Opt.~Instrum.~Eng.~');
+DefMacro('\sjqe', 'Sov.~J.~Quantum Elecron.~');
+DefMacro('\vr',   'Vision Res.~');
 
 #======================================================================
 1;

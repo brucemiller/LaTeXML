@@ -1038,15 +1038,15 @@ Here are a couple of trivial examples of constructors:
 DefConstructor('\emph{}',
                "<ltx:emph>#1</ltx:emph>", mode=>'text');
 DefConstructor('\item[]',
-               "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
+	       "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
 DefEnvironment('{quote}',   
-               '<ltx:quote>#body</ltx:quote>',
-               beforeDigest=>sub{ Let('\\\\','\@block@cr');});
+	       '<ltx:quote>#body</ltx:quote>',
+	       beforeDigest=>sub{ Let('\\\\','\@block@cr');});
 DefConstructor('\footnote[]{}',
-               "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
-               mode=>'text',
-               properties=> sub { 
-                 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
+	       "<ltx:note class='footnote' mark='#refnum'>#2</ltx:note>",
+	       mode=>'text',
+	       properties=> sub { 
+		 ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 \end{lstlisting}
 
 \par\noindent\ltxcode|DefConstructor($prototype,$replacement,%options)|

@@ -16,10 +16,10 @@ use LaTeXML::Package;
 
 #**********************************************************************
 # Nothing to do here!
-DefPrimitive('\scalefnt{}', sub {
-    my ($stomach, $scale) = @_;
-    # Actually, this should scale relative to whatever the CURRENT font size is....
-    MergeFont(size => abstract_font_size(ToString($scale))); });
+DefPrimitive('\scalefnt{}',sub {
+  my($stomach,$scale)=@_;
+  # Actually, this should scale relative to whatever the CURRENT font size is....
+  MergeFont(size=>abstract_font_size(ToString($scale))); });
 
 #**********************************************************************
 1;

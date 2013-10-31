@@ -21,63 +21,63 @@ use base qw(LaTeXML::Object);
 #   open,close and separator are the outermost delimiter and separator between items
 #   itemopen,itemclose are delimiters for each item
 sub new {
-  my ($class, %options) = @_;
-  return bless { type => $options{type},
-    open => $options{open}, close => $options{close}, separator => $options{separator},
-    itemopen => $options{itemopen}, itemclose => $options{itemclose},
-    values => $options{values} }, $class; }
+  my($class,%options)=@_;
+  return bless {type=>$options{type},
+		open=>$options{open}, close=>$options{close}, separator=>$options{separator},
+		itemopen=>$options{itemopen}, itemclose=>$options{itemclose},
+		values=>$options{values}},$class; }
 
 sub getValue {
-  my ($self, $n) = @_;
+  my($self,$n)=@_;
   return $$self{values}[$n]; }
 
 sub setValue {
-  my ($self, $n, $value) = @_;
-  return $$self{values}[$n] = $value; }
+  my($self,$n,$value)=@_;
+  return $$self{values}[$n]=$value; }
 
 sub getValues {
-  my ($self) = @_;
-  return @{ $$self{values} }; }
+  my($self)=@_;
+  return @{$$self{values}}; }
 
-sub beDigested {
-  my ($self, $stomach) = @_;
-  my @v = ();
-  foreach my $item (@{ $$self{values} }) {
+sub beDigested { 
+  my($self,$stomach)=@_;
+  my @v=();
+  foreach my $item (@{$$self{values}}){
     # Yuck
-    my $typedef = $$self{type} && $LaTeXML::Parameters::PARAMETER_TABLE{ $$self{type} };
+    my $typedef = $$self{type} && $LaTeXML::Parameters::PARAMETER_TABLE{$$self{type}};
     my $dodigest = (ref $item) && (!$typedef || !$$typedef{undigested});
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
     StartSemiverbatim() if $semiverb;
     push(@v, ($dodigest ? $item->beDigested($stomach) : $item));
-    EndSemiverbatim() if $semiverb;
+    EndSemiverbatim() if $semiverb; 
   }
-  return (ref $self)->new(open => $$self{open}, close => $$self{close}, separator => $$self{separator},
-    itemopen => $$self{itemopen}, itemclose => $$self{itemclose},
-    type     => $$self{type},     values    => [@v]); }
+  return (ref $self)->new(open=>$$self{open},close=>$$self{close}, separator=>$$self{separator},
+			  itemopen=>$$self{itemopen},itemclose=>$$self{itemclose},
+			  type=>$$self{type}, values=>[@v] ); }
 
 sub revert {
-  my ($self) = @_;
-  my @tokens = ();
-  foreach my $item (@{ $$self{values} }) {
-    push(@tokens, $$self{separator}->unlist) if $$self{separator} && @tokens;
-    push(@tokens, $$self{itemopen}->unlist)  if $$self{itemopen};
-    push(@tokens, Revert($item));
-    push(@tokens, $$self{itemclose}->unlist) if $$self{itemclose}; }
-  unshift(@tokens, $$self{open}->unlist) if $$self{open};
-  push(@tokens, $$self{close}->unlist) if $$self{close};
+  my($self)=@_;
+  my @tokens=();
+  foreach my $item (@{$$self{values}}){
+    push(@tokens,$$self{separator}->unlist) if $$self{separator} && @tokens;
+    push(@tokens,$$self{itemopen}->unlist) if $$self{itemopen};
+    push(@tokens,Revert($item));
+    push(@tokens,$$self{itemclose}->unlist) if $$self{itemclose}; }
+  unshift(@tokens,$$self{open}->unlist ) if $$self{open};
+  push(   @tokens,$$self{close}->unlist) if $$self{close};
   return @tokens; }
 
 sub unlist {
-  my ($self) = @_;
-  return @{ $$self{values} }; }    # ????
+  my($self)=@_;
+  return @{$$self{values}}; }	# ????
 
 sub toString {
-  my ($self) = @_;
-  my $string = '';
-  foreach my $item (@{ $$self{values} }) {
+  my($self)=@_;
+  my $string='';
+  foreach my $item (@{$$self{values}}){
     $string .= ', ' if $string;
     $string .= ToString($item); }
-  return '[[' . $string . ']]'; }
+  return '[['.$string.']]'; }
 
 #======================================================================
 1;

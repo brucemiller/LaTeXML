@@ -35,20 +35,20 @@
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:call-template name="note-mark"/>
       <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_note_outer</xsl:attribute>
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_note_content</xsl:attribute>
-          <xsl:call-template name="note-mark"/>
-          <xsl:if test="not(@role = 'footnote')">
-            <xsl:element name="span" namespace="{$html_ns}">
-              <xsl:attribute name="class">ltx_note_type</xsl:attribute>
-              <xsl:value-of select="@role"/>
-              <xsl:text>: </xsl:text>
-            </xsl:element>
-          </xsl:if>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end"/>
-        </xsl:element>
+	<xsl:attribute name="class">ltx_note_outer</xsl:attribute>
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:attribute name="class">ltx_note_content</xsl:attribute>
+	  <xsl:call-template name="note-mark"/>
+	  <xsl:if test="not(@role = 'footnote')">
+	    <xsl:element name="span" namespace="{$html_ns}">
+	      <xsl:attribute name="class">ltx_note_type</xsl:attribute>
+	      <xsl:value-of select="@role"/>
+	      <xsl:text>: </xsl:text>
+	    </xsl:element>
+	  </xsl:if>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
       </xsl:element>
     </xsl:element>
   </xsl:template>
@@ -57,8 +57,8 @@
     <xsl:element name="sup" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_note_mark</xsl:attribute>
       <xsl:choose>
-        <xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
-        <xsl:otherwise>&#x2020;</xsl:otherwise>
+	<xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
+	<xsl:otherwise>&#x2020;</xsl:otherwise>
       </xsl:choose>
     </xsl:element>
   </xsl:template>
