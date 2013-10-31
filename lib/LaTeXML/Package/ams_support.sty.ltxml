@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for 
+# / Thanks to the arXMLiv group for
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -23,34 +23,34 @@ use LaTeXML::Package;
 # [though loading an unwanted amsfonts (noamsfonts) could be an issue]
 
 foreach my $option (qw(a4paper letterpaper landscape portrait
-		       oneside twoside draft final  e-only
-		       titlepage notitlepage
-		       openright openany onecolumn twocolumn
-		       nomath noamsfonts psamsfonts
-		       leqno reqno centertags tbtags fleqn
-		       8pt 9pt 10pt 11pt 12pt
-		       makeidx)){
-  DeclareOption($option,undef); }
+  oneside twoside draft final  e-only
+  titlepage notitlepage
+  openright openany onecolumn twocolumn
+  nomath noamsfonts psamsfonts
+  leqno reqno centertags tbtags fleqn
+  8pt 9pt 10pt 11pt 12pt
+  makeidx)) {
+  DeclareOption($option, undef); }
 ProcessOptions();
 
 # #======================================================================
 # % Font size commands:
 
-our %fontup=('tiny'=>'script','script'=>'footnote','footnote'=>'small','small'=>'normal',
-	     'normal'=>'large','large'=>'Large','Large'=>'LARGE','LARGE'=>'huge','huge'=>'Huge','Huge'=>'Huge');
-our %fontdn=('tiny'=>'tiny','script'=>'tiny','footnote'=>'script','small'=>'footnote','normal'=>'small',
-	     'large'=>'normal','Large'=>'large','LARGE'=>'Large','huge'=>'LARGE','Huge'=>'huge','Huge'=>'Huge');
+our %fontup = ('tiny' => 'script', 'script' => 'footnote', 'footnote' => 'small', 'small' => 'normal',
+'normal' => 'large', 'large' => 'Large', 'Large' => 'LARGE', 'LARGE' => 'huge', 'huge' => 'Huge', 'Huge' => 'Huge');
+our %fontdn = ('tiny' => 'tiny', 'script' => 'tiny', 'footnote' => 'script', 'small' => 'footnote', 'normal' => 'small',
+'large' => 'normal', 'Large' => 'large', 'LARGE' => 'Large', 'huge' => 'LARGE', 'Huge' => 'huge', 'Huge' => 'Huge');
 
-DefPrimitiveI('\larger',undef,'', font=>{ size=>$fontup{LookupValue('font')->getSize} });
-DefPrimitiveI('\smaller',undef,'',font=>{ size=>$fontdn{LookupValue('font')->getSize} });
+DefPrimitiveI('\larger',  undef, '', font => { size => $fontup{ LookupValue('font')->getSize } });
+DefPrimitiveI('\smaller', undef, '', font => { size => $fontdn{ LookupValue('font')->getSize } });
 
 # \@xsetfontize
-DefPrimitiveI('\TINY', undef, '',font=>{size=>'TINY'});
-DefPrimitiveI('\Tiny', undef, '',font=>{size=>'Tiny'});
-Let(T_CS('\SMALL'),T_CS('\scriptsize'));
-Let(T_CS('\Small'),T_CS('\footnotesize'));
-DefPrimitiveI('\HUGE', undef, '',font=>{size=>'HUGE'});
-Let(T_CS('\upn'),T_CS('\textup'));
+DefPrimitiveI('\TINY', undef, '', font => { size => 'TINY' });
+DefPrimitiveI('\Tiny', undef, '', font => { size => 'Tiny' });
+Let('\SMALL', '\scriptsize');
+Let('\Small', '\footnotesize');
+DefPrimitiveI('\HUGE', undef, '', font => { size => 'HUGE' });
+Let('\upn', '\textup');
 
 # #======================================================================
 # # Sec. 3. The Preamble
@@ -75,50 +75,46 @@ RequirePackage('makeidx');
 # #======================================================================
 # # Sec. 4. Top Matter
 # # FrontMatter:
-DefMacroI('\shorttitle',undef,Tokens());
-DefMacroI('\shortauthor',undef,Tokens());
-DefMacroI('\authors',undef,Tokens());
-DefMacroI('\shortauthors',undef,Tokens());
-DefMacroI('\addresses',undef,Tokens());
-DefMacroI('\publname',undef,Tokens());
-DefMacroI('\publname',undef,Tokens());
+DefMacroI('\shorttitle',   undef, Tokens());
+DefMacroI('\shortauthor',  undef, Tokens());
+DefMacroI('\authors',      undef, Tokens());
+DefMacroI('\shortauthors', undef, Tokens());
+DefMacroI('\addresses',    undef, Tokens());
+DefMacroI('\publname',     undef, Tokens());
+DefMacroI('\publname',     undef, Tokens());
 
 DefMacro('\title[]{}',
-	 '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
-	 .'\@add@frontmatter{ltx:title}{#2}');
+  '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
+    . '\@add@frontmatter{ltx:title}{#2}');
 
-DefMacro('\lx@author@sep',',\ ');
-DefMacro('\lx@author@conj','\ and\ '); # \@@and
+DefMacro('\lx@author@sep',  ',\ ');
+DefMacro('\lx@author@conj', '\ and\ ');    # \@@and
 
 DefMacro('\author[]{}',
-	 '\if.#1.\else\def\shortauthor{#1}\fi'
-	 .'\@author{#2}');
+  '\if.#1.\else\def\shortauthor{#1}\fi'
+    . '\@author{#2}');
 
-DefMacroI('\datename',undef,'\textit{Date}:');
+DefMacroI('\datename', undef, '\textit{Date}:');
 
 DefMacro('\contrib[]{}',
- '\@add@frontmatter{ltx:creator}[role=contributor]{\@personname{#2}}');
+  '\@add@frontmatter{ltx:creator}[role=contributor]{\@personname{#2}}');
 
 DefMacro('\commby{}',
- '\@add@frontmatter{ltx:creator}[role=communicator]{\@personname{#1}}');
+  '\@add@frontmatter{ltx:creator}[role=communicator]{\@personname{#1}}');
 
-DefConstructor('\@@@address{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}','\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
 
+DefConstructor('\@@@curraddr{}', "^ <ltx:contact role='current_address'>#1</ltx:contact>");
+DefMacro('\curraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
 
-DefConstructor('\@@@curraddr{}',"^ <ltx:contact role='current_address'>#1</ltx:contact>");
-DefMacro('\curraddr{}','\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
-
-
-DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
+DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
-
-DefConstructor('\@@@urladdr{}',"^ <ltx:contact role='url'>#1</ltx:contact>");
+DefConstructor('\@@@urladdr{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
 DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
 
-
-DefConstructor('\@@@dedicatory{}',"^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
+DefConstructor('\@@@dedicatory{}', "^ <ltx:contact role='dedicatory'>#1</ltx:contact>");
 DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@@@dedicatory{#1}}');
 
 # \date{}
@@ -126,52 +122,51 @@ DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
 DefMacro('\thanks{}',
- '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#1}');
-
+  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#1}');
 
 DefMacro('\translator[]{}',
- '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
+  '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
 
-DefMacroI('\keywordsname',undef,'Key words and phrases');
+DefMacroI('\keywordsname', undef, 'Key words and phrases');
 DefMacro('\keywords{}',
-	 '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
+  '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
 
 # Non-standard but makes it easier to create bindings for variations on AMS classes;
 # just redefine this macro
-DefMacroI('\@subjclassyear',undef,'1991');
+DefMacroI('\@subjclassyear', undef, '1991');
 
-DefMacroI('\subjclassname',undef,'\textup{\@subjclassyear} Mathematics Subject Classification');
+DefMacroI('\subjclassname', undef, '\textup{\@subjclassyear} Mathematics Subject Classification');
 DefMacro('\subjclass[Default:\@subjclassyear]{}',
-	 '\ifx.#1.\else\xdef\@subjclassyear{#1}\fi'
-	 .'\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
-	 .                       'name={\subjclassname}]{#2}');
+  '\ifx.#1.\else\xdef\@subjclassyear{#1}\fi'
+    . '\@add@frontmatter{ltx:classification}[scheme={#1 Mathematics Subject Classification},'
+    . 'name={\subjclassname}]{#2}');
 
 DefMacro('\copyrightinfo{}{}',
-	 '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
+  '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #1: #2}');
 
-DefMacro('\pagespan{}{}','');	# ?
+DefMacro('\pagespan{}{}', '');    # ?
 DefMacro('\PII{}',
-	 '\@add@frontmatter{ltx:classification}[scheme=PII]{#1}');
+  '\@add@frontmatter{ltx:classification}[scheme=PII]{#1}');
 DefMacro('\ISSN{}',
-	 '\@add@frontmatter{ltx:classification}[scheme=ISSN]{#1}');
+  '\@add@frontmatter{ltx:classification}[scheme=ISSN]{#1}');
 
-DefMacroI('\currentvolume',undef,Tokens());
-DefMacroI('\currentissue',undef,Tokens());
-DefMacroI('\currentmonth',undef,Tokens());
-DefMacroI('\currentyear',undef,Tokens());
-DefMacroI('\volinfo',undef,Tokens());
+DefMacroI('\currentvolume', undef, Tokens());
+DefMacroI('\currentissue',  undef, Tokens());
+DefMacroI('\currentmonth',  undef, Tokens());
+DefMacroI('\currentyear',   undef, Tokens());
+DefMacroI('\volinfo',       undef, Tokens());
 DefMacro('\issueinfo{}{}{}{}',
-	 '\def\currentvolume{#1}\def\currentissue{#2}\def\currentmonth{#3}\def\currentyear{#4}'
-	 .'\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
-	 .'\@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
+  '\def\currentvolume{#1}\def\currentissue{#2}\def\currentmonth{#3}\def\currentyear{#4}'
+    . '\def\volinfo{Volume \currentvolume, Number \number0\currentissue, \currentmonth\ \currentyear}'
+    . '\@add@frontmatter{ltx:note}[role=volume-info]{\volinfo}');
 
 # abstract otherwise defined in LaTeX.pool
-DefMacroI('\abstractname',undef,'\textsc{Abstract}');
+DefMacroI('\abstractname', undef, '\textsc{Abstract}');
 
 # #======================================================================
 # # Sec. 5. Document Body
 
-# Mostly normal LaTeX 
+# Mostly normal LaTeX
 
 # For multiple indexes:
 # \usepackage{amsmidex}
@@ -181,29 +176,29 @@ DefMacroI('\abstractname',undef,'\textsc{Abstract}');
 # \index{name of index}{index term}   ...
 # \Printindex{name of index}{title of index} ...
 
-DefMacro('\format@title@abstract{}','#1. ');
-DefMacro('\format@title@section{}',    '\@tag[][.\space]{\thesection}#1');
-DefMacro('\format@title@subsection{}', '\@tag[][.\space]{\thesubsection}#1');
+DefMacro('\format@title@abstract{}',      '#1. ');
+DefMacro('\format@title@section{}',       '\@tag[][.\space]{\thesection}#1');
+DefMacro('\format@title@subsection{}',    '\@tag[][.\space]{\thesubsection}#1');
 DefMacro('\format@title@subsubsection{}', '\@tag[][.\space]{\thesubsubsection}#1');
 
-DefMacro('\format@title@description{}','\@tag[][:\space]{#1}');
-DefMacro('\descriptionlabel{}','\normalfont\bfseries #1:\space');
+DefMacro('\format@title@description{}', '\@tag[][:\space]{#1}');
+DefMacro('\descriptionlabel{}',         '\normalfont\bfseries #1:\space');
 
 #======================================================================
 # Sec 6. Floating objects: Figures and tables
-# Normal LaTeX 
+# Normal LaTeX
 
 # For compatibility
-if(LookupValue('2.09_COMPATIBILITY')){
-  DefMacroI('\defaultfont',undef,'\normalfont');
-  DefMacroI('\rom',undef,'\textup');
-#  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+if (LookupValue('2.09_COMPATIBILITY')) {
+  DefMacroI('\defaultfont', undef, '\normalfont');
+  DefMacroI('\rom',         undef, '\textup');
+  #  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
   RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}');
-  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}'); 
+  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}');
 }
 
-DefMacro('\format@title@figure{}','\@tag[][. ]{\fnum@figure}#1');
-DefMacro('\format@title@table{}','\@tag[][. ]{\fnum@table}#1');
+DefMacro('\format@title@figure{}', '\@tag[][. ]{\fnum@figure}#1');
+DefMacro('\format@title@table{}',  '\@tag[][. ]{\fnum@table}#1');
 
 # Excersise environments ??:
 # xca "must be defined with \theoremstyle{definition} and \newtheorem ???
@@ -215,8 +210,8 @@ DefMacro('\format@title@table{}','\@tag[][. ]{\fnum@table}#1');
 # \bibliography{bibfile}
 # Normal LaTeX
 
-DefConstructor('\bysame',' by same author');
-DefMacroI('\bibsetup',undef,Tokens());
+DefConstructor('\bysame', ' by same author');
+DefMacroI('\bibsetup', undef, Tokens());
 
 # #======================================================================
 # # Sec 8 Monograph Formatting:
@@ -234,73 +229,71 @@ DefMacroI('\bibsetup',undef,Tokens());
 # \end{document}
 
 # TOC's should be built by latexml... ?
-DefMacro('\tocpart{}{}{}',Tokens());
-DefMacro('\tocchapter{}{}{}',Tokens());
-DefMacro('\tocsection{}{}{}',Tokens());
-DefMacro('\tocsubsection{}{}{}',Tokens());
-DefMacro('\tocsubsubsection{}{}{}',Tokens());
-DefMacro('\tocparagraph{}{}{}',Tokens());
-DefMacro('\tocsubparagraph{}{}{}',Tokens());
-DefMacro('\tocappendix{}{}{}',Tokens());
-DefMacroI('\contentsnamefont',undef,'\scshape');
+DefMacro('\tocpart{}{}{}',          Tokens());
+DefMacro('\tocchapter{}{}{}',       Tokens());
+DefMacro('\tocsection{}{}{}',       Tokens());
+DefMacro('\tocsubsection{}{}{}',    Tokens());
+DefMacro('\tocsubsubsection{}{}{}', Tokens());
+DefMacro('\tocparagraph{}{}{}',     Tokens());
+DefMacro('\tocsubparagraph{}{}{}',  Tokens());
+DefMacro('\tocappendix{}{}{}',      Tokens());
+DefMacroI('\contentsnamefont', undef, '\scshape');
 
-DefMacroI('\labelenumi',undef,'(\theenumi)');
-DefMacroI('\labelenumii',undef,'(\theenumii)');
-DefMacroI('\labelenumiii',undef,'(\theenumiii)');
-DefMacroI('\labelenumiv',undef,'(\theenumiv)');
+DefMacroI('\labelenumi',   undef, '(\theenumi)');
+DefMacroI('\labelenumii',  undef, '(\theenumii)');
+DefMacroI('\labelenumiii', undef, '(\theenumiii)');
+DefMacroI('\labelenumiv',  undef, '(\theenumiv)');
 
-DefRegister('\normaltopskip'=>Glue('10pt'));
-DefRegister('\linespacing'=>Dimension('1pt'));
-DefRegister('\normalparindent'=>Dimension('12pt'));
-DefRegister('\abovecaptionskip'=>Glue('12pt'));
-DefRegister('\belowcaptionskip'=>Glue('12pt'));
-DefRegister('\captionindent'=>Glue('3pc'));
-DefPrimitiveI('\nonbreakingspace',undef,UTF(0xA0));
-DefMacroI('\fullwidthdisplay',undef,Tokens());
-DefRegister('\listisep'=>Glue(0));
+DefRegister('\normaltopskip'    => Glue('10pt'));
+DefRegister('\linespacing'      => Dimension('1pt'));
+DefRegister('\normalparindent'  => Dimension('12pt'));
+DefRegister('\abovecaptionskip' => Glue('12pt'));
+DefRegister('\belowcaptionskip' => Glue('12pt'));
+DefRegister('\captionindent'    => Glue('3pc'));
+DefPrimitiveI('\nonbreakingspace', undef, UTF(0xA0));
+DefMacroI('\fullwidthdisplay', undef, Tokens());
+DefRegister('\listisep' => Glue(0));
 
-DefMacroI('\calclayout',undef,Tokens());
-DefMacroI('\indentlabel',undef,Tokens());
+DefMacroI('\calclayout',  undef, Tokens());
+DefMacroI('\indentlabel', undef, Tokens());
 # #======================================================================
-DefMacroI('\@True',undef,'00');
-DefMacroI('\@False',undef,'01');
+DefMacroI('\@True',  undef, '00');
+DefMacroI('\@False', undef, '01');
 DefMacro('\newswitch[]{}', sub {
-  my($gullet,$value,$switch)=@_;
-  Let(T_CS("\\?\@".ToString($switch)), T_CS("\\\@".ToString($value || 'False'))); });
-DefMacro('\setFalse{}', sub { Let(T_CS("\\?\@".ToString($_[1])), T_CS("\\\@False")); });
-DefMacro('\setTrue{}',  sub { Let(T_CS("\\?\@".ToString($_[1])), T_CS("\\\@True")); });
+    my ($gullet, $value, $switch) = @_;
+    Let("\\?\@" . ToString($switch), "\\\@" . ToString($value || 'False')); });
+DefMacro('\setFalse{}', sub { Let("\\?\@" . ToString($_[1]), "\\\@False"); });
+DefMacro('\setTrue{}',  sub { Let("\\?\@" . ToString($_[1]), "\\\@True"); });
 
 # funny control structures, using above switches
 # \except
 # \for
 # \forany
 
-DefMacroI('\Mc',undef,'Mc');
+DefMacroI('\Mc', undef, 'Mc');
 
 # Generated comma and "and" separated lists...
 # \andify, \xandlist, \nxandlist
 
-
 # #======================================================================
 
-DefMacro('\URLhref{}','');
+DefMacro('\URLhref{}', '');
 DefMacroI('\URL', undef, sub {
-  my($gullet)=@_;
-  my $mouth = $gullet->getMouth;
-  my ($init,$body);
-  { local $STATE = LaTeXML::State->new(catcodes=>'none');
-    $init = $mouth->readToken;
-    $init = $mouth->readToken if ToString($init) eq '*'; # Should I bother handling \verb* ?
-    $body = $mouth->readTokens($init); }
-  Invocation(T_CS('\@ams@url'),Tokens($init),$body)->unlist; });
+    my ($gullet) = @_;
+    my $mouth = $gullet->getMouth;
+    my ($init, $body);
+    { local $STATE = LaTeXML::State->new(catcodes => 'none');
+      $init = $mouth->readToken;
+      $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+      $body = $mouth->readTokens($init); }
+    Invocation(T_CS('\@ams@url'), Tokens($init), $body)->unlist; });
 
 DefConstructor('\@ams@url {}',
-	       "<ltx:ref href='#href'>#1</ltx:ref>",
-	       properties=>sub { (href=>CleanURL(ToString($_[1]))); });
+  "<ltx:ref href='#href'>#1</ltx:ref>",
+  properties => sub { (href => CleanURL(ToString($_[1]))); });
 
-
-DefMacro('\MR{}','MR #1');
-DefMacro('\MRhref{}','');
+DefMacro('\MR{}',     'MR #1');
+DefMacro('\MRhref{}', '');
 # \newcommand\MR[1]{\relax\ifhmode\unskip\spacefactor3000 \space\fi
 #   \def\@tempa##1:##2:##3\@nil{%
 #     \ifx @##2\@empty##1\else\textbf{##1:}##2\fi}%

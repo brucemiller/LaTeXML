@@ -12,13 +12,14 @@ use IO::Socket;
 
 my $RealBin_safe;
 use FindBin;
+
 BEGIN {
-  $FindBin::RealBin =~ /^([^\0]+)\z/; # Valid Unix path TODO: Windows, revisit regexp
+  $FindBin::RealBin =~ /^([^\0]+)\z/;    # Valid Unix path TODO: Windows, revisit regexp
   $RealBin_safe = $1;
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e $RealBin_safe.'/latexmlc'));
+  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e $RealBin_safe . '/latexmlc'));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
-use lib $RealBin_safe."/../lib";
+use lib $RealBin_safe. "/../lib";
 #TODO: Do we ever care about ENV PATH that much? Do we miss on some feature like that?
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
 use LaTeXML::Util::Config;
@@ -27,91 +28,91 @@ use HTTP::Response;
 use HTTP::Request;
 use JSON::XS qw(decode_json);
 
-binmode(STDERR,":encoding(UTF-8)");
-binmode(STDOUT,":encoding(UTF-8)");
+binmode(STDERR, ":encoding(UTF-8)");
+binmode(STDOUT, ":encoding(UTF-8)");
 
 # Some defaults:
-my $opts=LaTeXML::Util::Config->new(input_limit=>100);
+my $opts = LaTeXML::Util::Config->new(input_limit => 100);
 
 # Parse and load command-line options
 $opts->read(\@ARGV);
 my $keyvals = $opts->scan_to_keyvals(\@ARGV);
 
 # Client-side options:
-my ($port, $address, $expire, $local) = map {$opts->get($_)} qw(port address expire);
+my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
 $address = '127.0.0.1' unless ($address && ($address ne 'localhost'));
-$address =~ s/^(\w+)\:\/\///; # strip away any protocol
+$address =~ s/^(\w+)\:\/\///;    # strip away any protocol
 my $route = q{};
-if ($address =~ s/\/(.+)$//) { # strip away route
-  $route = '/'.$1;
+if ($address =~ s/\/(.+)$//) {    # strip away route
+  $route = '/' . $1;
 }
 # Local if peerhost is localhost:
-$local = ( $expire && ($expire == -1 )) || ($address eq '127.0.0.1');
+$local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
 $expire = -1 unless defined $expire;
-$port = ($local ? 3334 : 80) unless $port; #Fall back if all fails...
+$port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
 my $cdir = abs_path(cwd());
 $cdir =~ s/ /\\ /g;
-if (! $opts->get('base')) {
-  $opts->set('base',$cdir);
-  push @$keyvals, ['base',$cdir];
+if (!$opts->get('base')) {
+  $opts->set('base', $cdir);
+  push @$keyvals, ['base', $cdir];
 }
 # Record if destination exists, for summary
 my $deststat;
 $deststat = (stat($opts->get('destination')))[9] if $opts->get('destination');
 $deststat = 0 unless defined $deststat;
 
-push @$keyvals, ['path',$cdir]; #add current path, to ensure never empty
-push @{$opts->get('paths')}, $cdir;
+push @$keyvals, ['path', $cdir];    #add current path, to ensure never empty
+push @{ $opts->get('paths') }, $cdir;
 
 # Get the full source of interest
 my $source = $opts->get('source');
 $opts->delete('source');
-if (! $source) {print STDERR "Input was empty.\n"; exit 1; }
-if($source eq '-'){
+if (!$source) { print STDERR "Input was empty.\n"; exit 1; }
+if ($source eq '-') {
   { local $/ = undef;
-    $source="literal:".<STDIN>;
+    $source = "literal:" . <STDIN>;
     # Set the source in the keyvals to be sent over the wire:
-    @$keyvals = grep { $_->[0]!~/source|tex/ } @$keyvals;
+    @$keyvals = grep { $_->[0] !~ /source|tex/ } @$keyvals;
     push @$keyvals, $source;
-  }}
+  } }
 #***************************************************************************
 # Prepare output variables:
-my  ($result, $status, $log);
+my ($result, $status, $log);
 
 # TODO: Talk to the web service via HTTP
 #Setup client and communicate
 my $sock = IO::Socket::INET->new
-  ( PeerAddr => $address,
-    PeerPort => $port,
-    Proto => 'tcp',
-  ); #Attempt connecting to a service
+  (PeerAddr => $address,
+  PeerPort => $port,
+  Proto    => 'tcp',
+  );    #Attempt connecting to a service
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML::Converter;
-  $opts->set('local',1);
+  $opts->set('local', 1);
   my $converter = LaTeXML::Converter->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
   ($result, $status, $log) = map { $response->{$_} } qw(result status log) if defined $response;
 } else {
-  my $message=q{};
-  foreach my $entry(@$keyvals) {
-    my ($key,$value) = ($entry->[0],$entry->[1]);
-    $message .= uri_escape($key).($value ? '='.uri_escape($value) : '').'&';
+  my $message = q{};
+  foreach my $entry (@$keyvals) {
+    my ($key, $value) = ($entry->[0], $entry->[1]);
+    $message .= uri_escape($key) . ($value ? '=' . uri_escape($value) : '') . '&';
   }
   chop $message;
   #Startup daemon and feed in args, if needed
-  system("$RealBin_safe/latexmls","--port=$port",
-    "--expire=$expire","--autoflush=".$opts->get('input_limit')) unless ($sock || !$local);
-  my $http_response = $local ? process_local($address,$port,$route,$message,$sock) :
-                               process_remote($address,$port,$route,$message,$sock); 
+  system("$RealBin_safe/latexmls", "--port=$port",
+    "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) unless ($sock || !$local);
+  my $http_response = $local ? process_local($address, $port, $route, $message, $sock) :
+    process_remote($address, $port, $route, $message, $sock);
   if ($http_response->is_success) {
     my $response = decode_json($http_response->content);
     ($result, $status, $log) = map { $response->{$_} } qw(result status log) if defined $response;
   } else {
-    print STDERR "Fatal:HTTP:".$http_response->code()." ".$http_response->message()."\n"; exit 1;
+    print STDERR "Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n"; exit 1;
   }
 }
 
@@ -123,48 +124,48 @@ if ($log) {
   if ($opts->get('log')) {
     my $clog = $opts->get('log');
     my $log_handle;
-    if (! open($log_handle,">",$clog)) {
+    if (!open($log_handle, ">", $clog)) {
       print STDERR "Fatal:IO:forbidden Couldn't open log file $clog : $!\n";
       exit 1;
     }
     print $log_handle $log;
     close $log_handle;
-  } else {print STDERR $log,"\n";}#STDERR log otherwise
+  } else { print STDERR $log, "\n"; }    #STDERR log otherwise
 }
 
 if ($result) {
   if ($opts->get('destination')) {
     my $output_handle;
-    if ( ! open($output_handle,">",$opts->get('destination')) ) {
-      print STDERR "Fatal:IO:forbidden Couldn't open output file ".$opts->get('destination').": $!";
+    if (!open($output_handle, ">", $opts->get('destination'))) {
+      print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1;
     }
     print $output_handle $result;
     close $output_handle;
-  } else { print STDOUT $result,"\n"; } #Output to STDOUT
+  } else { print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 
 # Print summary, if requested, to STDERR
 if ($opts->get('destination')) {
   print STDERR $status;
-  print STDERR summary($opts->get('destination'),$deststat);
+  print STDERR summary($opts->get('destination'), $deststat);
 }
 
 # == Helpers ==
 sub summary {
-  my ($destination,$prior_stat) = @_;
+  my ($destination, $prior_stat) = @_;
   my $new_stat = (stat($destination))[9] || 0;
   return ($new_stat && ($prior_stat != $new_stat)) ? "\nWrote $destination\n" :
-  "\nError! Did not write file $destination\n";
+    "\nError! Did not write file $destination\n";
 }
 
 sub process_local {
-  my ($address,$port,$route,$message,$sock) = @_;
+  my ($address, $port, $route, $message, $sock) = @_;
   #daemon is running, reconnect and feed in request
   $sock = IO::Socket::INET->new
-    ( PeerAddr => $address,
-      PeerPort => $port,
-      Proto => 'tcp',
+    (PeerAddr => $address,
+    PeerPort => $port,
+    Proto    => 'tcp',
     ) unless $sock;
   if (!$sock) { print STDERR "Fatal:perl:socket-create Could not create socket: $!\n"; exit 1; }
   my $message_length = length($message);
@@ -179,24 +180,24 @@ Content-Length: $message_length
 $message
 PAYLOADEND
   $sock->send($payload);
-  my $response_string=q{};
-  { local $/=undef;
-  $response_string=<$sock>; }
+  my $response_string = q{};
+  { local $/ = undef;
+    $response_string = <$sock>; }
   close($sock);
   $response_string ? HTTP::Response->parse($response_string) :
-                     HTTP::Response->new(500,'Internal Server Error');
+    HTTP::Response->new(500, 'Internal Server Error');
 }
 
 sub process_remote {
-  my ($address,$port,$route,$message,$sock) = @_;
-  $sock->close if $sock; # No need of the socket here, using LWP instead
-  my $payload = HTTP::Request->new(POST=>"http://$address:$port$route");
-  $payload->header('User-Agent','latexmlc');
-  $payload->header('Content-Type','application/x-www-form-urlencoded');
+  my ($address, $port, $route, $message, $sock) = @_;
+  $sock->close if $sock;    # No need of the socket here, using LWP instead
+  my $payload = HTTP::Request->new(POST => "http://$address:$port$route");
+  $payload->header('User-Agent',   'latexmlc');
+  $payload->header('Content-Type', 'application/x-www-form-urlencoded');
   $payload->content($message);
   require LWP::UserAgent;
   my $ua = LWP::UserAgent->new;
-  $ua->timeout(10);  
+  $ua->timeout(10);
   $ua->request($payload);
 }
 

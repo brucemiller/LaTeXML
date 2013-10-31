@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | # 
+# | Thanks to the arXMLiv group for initial implementation              | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -26,20 +26,20 @@ RequirePackage('xunicode');
 # And when not ignorable, may need some font re-thinking...
 
 # General Font selection
-DefMacro('\fontspec[]{}',undef);
-DefMacro('\setmainfont[]{}',undef);
-DefMacro('\setsansfont[]{}',undef);
-DefMacro('\setmonofont[]{}',undef);
-DefMacro('\newfontfamily DefToken []{}',undef);
-DefMacro('\newfontface DefToken []{}',undef);
+DefMacro('\fontspec[]{}',                undef);
+DefMacro('\setmainfont[]{}',             undef);
+DefMacro('\setsansfont[]{}',             undef);
+DefMacro('\setmonofont[]{}',             undef);
+DefMacro('\newfontfamily DefToken []{}', undef);
+DefMacro('\newfontface DefToken []{}',   undef);
 
-DefMacro('\setmathrm[]{}',undef);
-DefMacro('\setmathsf[]{}',undef);
-DefMacro('\setmathtt[]{}',undef);
-DefMacro('\setboldmathrm[]{}',undef);
+DefMacro('\setmathrm[]{}',     undef);
+DefMacro('\setmathsf[]{}',     undef);
+DefMacro('\setmathtt[]{}',     undef);
+DefMacro('\setboldmathrm[]{}', undef);
 
-DefMacro('\defaultfontfeatures[]{}',undef);
-DefMacro('\addfontfeatures[]{}',undef);
+DefMacro('\defaultfontfeatures[]{}', undef);
+DefMacro('\addfontfeatures[]{}',     undef);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

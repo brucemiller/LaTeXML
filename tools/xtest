@@ -9,101 +9,101 @@ use FindBin;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 
-our $htmldest='/local/www/site/htdocs/latexmltest';
-our $testdir="$FindBin::RealBin/../t";
-our $bindir ="$FindBin::RealBin/../blib/script";
-our @TYPES=("html","xhtml","html5");
+our $htmldest = '/local/www/site/htdocs/latexmltest';
+our $testdir  = "$FindBin::RealBin/../t";
+our $bindir   = "$FindBin::RealBin/../blib/script";
+our @TYPES    = ("html", "xhtml", "html5");
 
 #**********************************************************************
 # Parse command line
 
 my $identity = "xtest";
-my($verbosity,$force,$help)=(-1,0,0); # start off quieter
-my($timestamp)=(undef);
-GetOptions("force"     => \$force,
-	   "quiet"     => sub { $verbosity--; },
-	   "verbose"   => sub { $verbosity++; },
-	   "timestamp=s" => \$timestamp,
-	   "help"      => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+my ($verbosity, $force, $help) = (-1, 0, 0);    # start off quieter
+my ($timestamp) = (undef);
+GetOptions("force" => \$force,
+  "quiet"   => sub { $verbosity--; },
+  "verbose" => sub { $verbosity++; },
+  "timestamp=s" => \$timestamp,
+  "help"        => \$help,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
-our $makeindex=0;
-our ($HEADER,$FOOTER);
-our @testsets=();
+our $makeindex = 0;
+our ($HEADER, $FOOTER);
+our @testsets = ();
 
-if(@ARGV){
-  $makeindex=0;
-  @testsets = @ARGV; }
+if (@ARGV) {
+  $makeindex = 0;
+  @testsets  = @ARGV; }
 else {
-  $makeindex=1;
-  opendir(DIR,$testdir) or die "Couldn't read test directory $testdir: $!";
+  $makeindex = 1;
+  opendir(DIR, $testdir) or die "Couldn't read test directory $testdir: $!";
   @testsets = sort grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
   closedir(DIR); }
 
 #**********************************************************************
-if(! -d $htmldest){
+if (!-d $htmldest) {
   mkdir($htmldest) or die "Couldn't create destination directory $htmldest: $!"; }
 
 our $htmldata = '';
 
-foreach my $dir (@testsets){
+foreach my $dir (@testsets) {
   print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
-  opendir(DIR,"$testdir/$dir") or die "Couldn't read test directory $testdir/$dir: $!";
-  my @tests =  sort grep(-f "$testdir/$dir/$_.xml", map(s/\.pdf$// && $_, grep(/\.pdf$/, readdir(DIR))));
+  opendir(DIR, "$testdir/$dir") or die "Couldn't read test directory $testdir/$dir: $!";
+  my @tests = sort grep(-f "$testdir/$dir/$_.xml", map(s/\.pdf$// && $_, grep(/\.pdf$/, readdir(DIR))));
   closedir(DIR);
 
   next unless @tests;
 
-  if(! -d "$htmldest/$dir"){
+  if (!-d "$htmldest/$dir") {
     print STDERR "Creating $htmldest/$dir\n" if $verbosity >= 0;
     mkdir("$htmldest/$dir") or die "Couldn't create destination directory $htmldest: $!"; }
 
   $htmldata .= "<tr><th colspan='5' class='testgroup'>$dir</th></tr>\n";
 
-  foreach my $test (@tests){
+  foreach my $test (@tests) {
     my $srcxml = "$testdir/$dir/$test.xml";
     my $srcpdf = "$testdir/$dir/$test.pdf";
-    my @links = ("<td class='pdf'><a href='$dir/$test.pdf'>pdf</a></td>",
-		 "<td class='xml'><a href='$dir/$test.xml'>xml</a></td>");
-    my $usesdtd = system('grep','--quiet','DOCTYPE',$srcxml)==0;
-    copy($srcxml,"$htmldest/$dir/$test.xml");
-    copy($srcpdf,"$htmldest/$dir/$test.pdf");
-    foreach my $type (@TYPES){
+    my @links  = ("<td class='pdf'><a href='$dir/$test.pdf'>pdf</a></td>",
+      "<td class='xml'><a href='$dir/$test.xml'>xml</a></td>");
+    my $usesdtd = system('grep', '--quiet', 'DOCTYPE', $srcxml) == 0;
+    copy($srcxml, "$htmldest/$dir/$test.xml");
+    copy($srcpdf, "$htmldest/$dir/$test.pdf");
+    foreach my $type (@TYPES) {
       my $ext = ($type eq 'xhtml' ? 'xhtml' : 'html');
       my $dstxml = "$htmldest/$dir/$type/$test.$ext";
-      push(@links,"<td class='$type'><a href='$dir/$type/$test.$ext'>$type</a></td>");
-      if($force || (! -f $dstxml) || ((-M $srcxml) < (-M $dstxml))){
-	print STDERR "\nConverting test case $dir/$test ($type)".($usesdtd?" [dtd]":"")
-	  #if $verbosity >= 0
-;
-	system("$bindir/latexmlpost",
-	       ($usesdtd ? ("--novalidate"):()),
-	       "--dest=$dstxml",
-               "--format=$type",
-	       (defined $timestamp ? ("--timestamp=$timestamp") :()),
-	       ($verbosity > 0 ? map("--verbose",1..$verbosity)
-		: ($verbosity < 0 ? map("--quiet",1..-$verbosity)
-		   : ())),
-	       $srcxml)
-	  == 0 or die "Couldn't transform test case $testdir/$dir/$type/$test: $!"; }}
-    $htmldata .= "<tr><td class='testcase'>$test</td> ".join('',@links).".</tr>\n";  }
+      push(@links, "<td class='$type'><a href='$dir/$type/$test.$ext'>$type</a></td>");
+      if ($force || (!-f $dstxml) || ((-M $srcxml) < (-M $dstxml))) {
+        print STDERR "\nConverting test case $dir/$test ($type)" . ($usesdtd ? " [dtd]" : "")
+          #if $verbosity >= 0
+          ;
+        system("$bindir/latexmlpost",
+          ($usesdtd ? ("--novalidate") : ()),
+          "--dest=$dstxml",
+          "--format=$type",
+          (defined $timestamp ? ("--timestamp=$timestamp") : ()),
+          ($verbosity > 0 ? map("--verbose", 1 .. $verbosity)
+            : ($verbosity < 0 ? map("--quiet", 1 .. -$verbosity)
+              : ())),
+          $srcxml)
+          == 0 or die "Couldn't transform test case $testdir/$dir/$type/$test: $!"; } }
+    $htmldata .= "<tr><td class='testcase'>$test</td> " . join('', @links) . ".</tr>\n"; }
 }
 
-if($makeindex){
-  open(DIR,">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
-  print DIR $HEADER.$htmldata.$FOOTER;
+if ($makeindex) {
+  open(DIR, ">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
+  print DIR $HEADER . $htmldata . $FOOTER;
   close(DIR); }
 
 sub copy {
-  my($src,$dst)=@_;
-  if($force || (! -f $dst) || ((-M $src) < (-M $dst))){
-      print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
-      system('cp',$src,$dst) == 0 or die "Couldn't copy $src to $dst: $!"; }}
+  my ($src, $dst) = @_;
+  if ($force || (!-f $dst) || ((-M $src) < (-M $dst))) {
+    print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
+    system('cp', $src, $dst) == 0 or die "Couldn't copy $src to $dst: $!"; } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 BEGIN {
-$HEADER = <<EOHead;
+  $HEADER = <<EOHead;
 <html>
 <head><title>LaTeXML Tests</title>
 <style>
@@ -123,7 +123,7 @@ th { font-weight:bold; }
     <th colspan='3'>Generated</th></tr>
 EOHead
 
-$FOOTER = <<EOFoot;
+  $FOOTER = <<EOFoot;
 </table>;
 </body>
 EOFoot

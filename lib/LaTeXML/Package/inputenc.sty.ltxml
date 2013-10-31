@@ -16,24 +16,24 @@ use LaTeXML::Package;
 
 #**********************************************************************
 DefPrimitive('\DeclareInputMath {} {}', sub {
-  my($stomach,$code,$expansion)=@_;
-  $code = int(ToString($code));
-  my $char = pack('C',$code);
-  AssignCatcode($char,CC_ACTIVE);
-  DefMacroI($char,undef, $expansion); });
+    my ($stomach, $code, $expansion) = @_;
+    $code = int(ToString($code));
+    my $char = pack('C', $code);
+    AssignCatcode($char, CC_ACTIVE);
+    DefMacroI($char, undef, $expansion); });
 
 DefPrimitive('\DeclareInputText {} {}', sub {
-  my($stomach,$code,$expansion)=@_;
-  $code = int(ToString($code));
-  my $char = pack('C',$code);
-  AssignCatcode($char,CC_ACTIVE);
-  DefMacroI($char,undef, $expansion); });
+    my ($stomach, $code, $expansion) = @_;
+    $code = int(ToString($code));
+    my $char = pack('C', $code);
+    AssignCatcode($char, CC_ACTIVE);
+    DefMacroI($char, undef, $expansion); });
 
-DefMacro('\IeC{}','#1');
+DefMacro('\IeC{}', '#1');
 
-DefMacroI('\@inpenc@undefined',undef,sub {
-  Error('unexpected','<char>',$_[0],
-	"Keyboard character used is undefined in inputencoding ".LookupValue('INPUT_ENCODING')); });
+DefMacroI('\@inpenc@undefined', undef, sub {
+    Error('unexpected', '<char>', $_[0],
+      "Keyboard character used is undefined in inputencoding " . LookupValue('INPUT_ENCODING')); });
 
 DefPrimitive('\inputencoding{}', sub { SetInputEncoding(ToString(Digest($_[1]))); });
 
@@ -43,17 +43,17 @@ ProcessOptions();
 
 #**********************************************************************
 sub SetInputEncoding {
-  my($encoding)=@_;
+  my ($encoding) = @_;
   # Initially disable all odd & upper half-plane chars
-  foreach my $code ((0..8),0xB,(0xE..0x1E),(128..255)){
-    my $char = pack('C',$code);
-    AssignCatcode($char,CC_ACTIVE);
-    Let(T_CS($char),T_CS('\@inpenc@undefined')); }
-  AssignValue(PERL_INPUT_ENCODING=>undef); # Disable the perl-level decoding, if any.
+  foreach my $code ((0 .. 8), 0xB, (0xE .. 0x1E), (128 .. 255)) {
+    my $char = pack('C', $code);
+    AssignCatcode($char, CC_ACTIVE);
+    Let($char, '\@inpenc@undefined'); }
+  AssignValue(PERL_INPUT_ENCODING => undef);    # Disable the perl-level decoding, if any.
 
   # Then load TeX's input encoding definitions.
-  InputDefinitions($encoding,type=>'def');
-  AssignValue(INPUT_ENCODING=>$encoding);
+  InputDefinitions($encoding, type => 'def');
+  AssignValue(INPUT_ENCODING => $encoding);
   return; }
 
 #**********************************************************************

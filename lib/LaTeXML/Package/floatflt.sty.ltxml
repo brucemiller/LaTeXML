@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | # 
+# | Thanks to the arXMLiv group for initial implementation              | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -22,73 +22,73 @@ use LaTeXML::Package;
 # pos = rflt to the right, lflt to the left, v to the outer edge, p to the inner
 # Since we know nothing about pages, we'll treat v=r, p=l...
 
-AssignValue(floatfltpos=>'v');
-DeclareOption('rflt',sub { AssignValue(floatfltpos=>'r'); });
-DeclareOption('lflt',sub { AssignValue(floatfltpos=>'l'); });
-DeclareOption('pflt',sub { AssignValue(floatfltpos=>'p'); });
-DeclareOption('vflt',sub { AssignValue(floatfltpos=>'v'); });
+AssignValue(floatfltpos => 'v');
+DeclareOption('rflt', sub { AssignValue(floatfltpos => 'r'); });
+DeclareOption('lflt', sub { AssignValue(floatfltpos => 'l'); });
+DeclareOption('pflt', sub { AssignValue(floatfltpos => 'p'); });
+DeclareOption('vflt', sub { AssignValue(floatfltpos => 'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-	       "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
-	       . "#body"
-	       ."</ltx:figure>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'figure'); },
-	       afterDigest=>sub { RescueCaptionCounters('figure',$_[1]); },
-	       properties=> sub { 
-		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
-		  width=>toPercent($_[2]) ); });
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+    . "#body"
+    . "</ltx:figure>",
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
+  properties => sub {
+    (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
+      width => toPercent($_[2])); });
 
 DefEnvironment('{floatingtable}[]{Dimension}',
-	       "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
-	       . "#body"
-	       ."</ltx:table>",
-	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'table'); },
-	       afterDigest=>sub { RescueCaptionCounters('table',$_[1]); },
-	       properties=> sub { 
-		 (float=>(ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
-		  width=>toPercent($_[2])); });
+"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+    . "#body"
+    . "</ltx:table>",
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
+  properties => sub {
+    (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
+      width => toPercent($_[2])); });
 
 sub toPercent {
-  my($dimen)=@_;
-  int(100*$dimen->valueOf / LookupValue('\textwidth')->valueOf).'%'; }
+  my ($dimen) = @_;
+  int(100 * $dimen->valueOf / LookupValue('\textwidth')->valueOf) . '%'; }
 
-DefMacro('\fltitem[]{}','\item {#2}');
-DefMacro('\fltditem[]{}{}','\item[#2] {#3}');
+DefMacro('\fltitem[]{}',    '\item {#2}');
+DefMacro('\fltditem[]{}{}', '\item[#2] {#3}');
 
-DefMacro('\initfloatingfigs',''); # ?????
+DefMacro('\initfloatingfigs', '');    # ?????
 #======================================================================
-DefMacro('\dofigtest','');
-DefMacro('\dotabtest','');
-DefMacro('\tryfig','');
-DefMacro('\trytab','');
-DefMacro('\figinsert','');
-DefMacro('\tabinsert','');
-DefMacro('\dohang','');
-DefMacro('\dohangt','');
+DefMacro('\dofigtest', '');
+DefMacro('\dotabtest', '');
+DefMacro('\tryfig',    '');
+DefMacro('\trytab',    '');
+DefMacro('\figinsert', '');
+DefMacro('\tabinsert', '');
+DefMacro('\dohang',    '');
+DefMacro('\dohangt',   '');
 
-DefRegister('\figbox'=>Box());
-DefRegister('\tabbox'=>Box());
-DefRegister('\pagebox'=>Box());
+DefRegister('\figbox'  => Box());
+DefRegister('\tabbox'  => Box());
+DefRegister('\pagebox' => Box());
 
-DefRegister('\ffigcount'=>Number(0));
-DefRegister('\ftabcount'=>Number(0));
-DefRegister('\fftest'=>Number(0));
-DefRegister('\hangcount'=>Number(0));
+DefRegister('\ffigcount' => Number(0));
+DefRegister('\ftabcount' => Number(0));
+DefRegister('\fftest'    => Number(0));
+DefRegister('\hangcount' => Number(0));
 
-DefRegister('\nosuccesstryfig'=>Number(0));
-DefRegister('\nosuccesstrytab'=>Number(0));
+DefRegister('\nosuccesstryfig' => Number(0));
+DefRegister('\nosuccesstrytab' => Number(0));
 
-DefRegister('\figgutter'=>Dimension('1pc'));
-DefRegister('\tabgutter'=>Dimension('1pc'));
+DefRegister('\figgutter' => Dimension('1pc'));
+DefRegister('\tabgutter' => Dimension('1pc'));
 
-DefRegister('\htdone'=>Number(0));
-DefRegister('\pageht'=>Dimension('0pt'));
-DefRegister('\startpageht'=>Dimension('0pt'));
+DefRegister('\htdone'      => Number(0));
+DefRegister('\pageht'      => Dimension('0pt'));
+DefRegister('\startpageht' => Dimension('0pt'));
 
-DefRegister('\tabbredd'=>Dimension('0pt'));
-DefRegister('\floatfltwidth'=>Dimension('0pt'));
-DefRegister('\fltitemwidth'=>Dimension('0pt'));
-DefRegister('\outputpretest'=>Tokens());
+DefRegister('\tabbredd'      => Dimension('0pt'));
+DefRegister('\floatfltwidth' => Dimension('0pt'));
+DefRegister('\fltitemwidth'  => Dimension('0pt'));
+DefRegister('\outputpretest' => Tokens());
 
 RawTeX('
 \newif\iftryingfig     \tryingfigfalse

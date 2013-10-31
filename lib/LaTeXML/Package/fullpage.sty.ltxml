@@ -15,8 +15,8 @@ use strict;
 use LaTeXML::Package;
 
 # Ignore the options
-foreach my $option (qw(in cm plain empty headings myheadings)){
-  DeclareOption($option, sub {}); }
+foreach my $option (qw(in cm plain empty headings myheadings)) {
+  DeclareOption($option, sub { }); }
 ProcessOptions();
 
 # Nothing else to do....

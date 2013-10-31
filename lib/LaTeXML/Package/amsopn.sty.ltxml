@@ -18,42 +18,41 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}',sub{
-  my($stomach,$star,$cs,$text)=@_;
-  DefMathI($cs,undef,$text,scriptpos=>($star ? 'mid':'post'),
-	   role=>'OPFUNCTION',	# or FUNCTION or TRIGFUNCTION or.. ?  but Something!
-	   font=>{family=>'serif'}); });
+DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
+    my ($stomach, $star, $cs, $text) = @_;
+    DefMathI($cs, undef, $text, scriptpos => ($star ? 'mid' : 'post'),
+      role => 'OPFUNCTION',                 # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
+      font => { family => 'serif' }); });
 
 # See p.18
 # New functions (most are already in TeX)
-DefMath('\injlim', "inj lim", 
-	role=>'LIMITOP', meaning=>'injective-limit',
-	scriptpos=>\&doScriptpos);
+DefMath('\injlim', "inj lim",
+  role => 'LIMITOP', meaning => 'injective-limit',
+  scriptpos => \&doScriptpos);
 DefMath('\projlim', "proj lim",
-	role=>'LIMITOP', meaning=>'projective-limit',
-	scriptpos=>\&doScriptpos);
-
+  role => 'LIMITOP', meaning => 'projective-limit',
+  scriptpos => \&doScriptpos);
 
 DefMath('\varlimsup', '\overline{\lim}',
-	role=>'LIMITOP', meaning=>'limit-supremum');
+  role => 'LIMITOP', meaning => 'limit-supremum');
 DefMath('\varliminf', '\underline{\lim}',
-	role=>'LIMITOP', meaning=>'limit-infimum');
+  role => 'LIMITOP', meaning => 'limit-infimum');
 DefMath('\varinjlim', '\underrightarrow{\lim}',
-	role=>'LIMITOP', meaning=>'injective-limit');
-DefMath('\varprojlim','\underleftarrow{\lim}',
-	role=>'LIMITOP', meaning=>'projective-limit');
+  role => 'LIMITOP', meaning => 'injective-limit');
+DefMath('\varprojlim', '\underleftarrow{\lim}',
+  role => 'LIMITOP', meaning => 'projective-limit');
 
 # Hmm... OPERATOR or LIMITOP ??
 DefConstructor('\operatorname OptionalMatch:* {}',
-	       "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
-	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
+  "<ltx:XMWrap role='OPERATOR' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
+  bounded => 1, requireMath => 1, font => { family => 'serif' });
 DefConstructor('\operatornamewithlimits {}',
-	       "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
-	       bounded=>1, requireMath=>1, font=>{family=>'serif'});
+  "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
+  bounded => 1, requireMath => 1, font => { family => 'serif' });
 
-DefMacro('\nolimits@','\nolimits');
-DefMacro('\nmlimits@','\displaylimits');
-DefMacro('\qopname{}{}{}','\mathop{#3}\csname n#2limits@\endcsname');
+DefMacro('\nolimits@',     '\nolimits');
+DefMacro('\nmlimits@',     '\displaylimits');
+DefMacro('\qopname{}{}{}', '\mathop{#3}\csname n#2limits@\endcsname');
 
 #**********************************************************************
 1;

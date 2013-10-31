@@ -17,80 +17,80 @@ use LaTeXML::Package;
 RequirePackage('hyperref');
 #**********************************************************************
 # A quite perverse redefinition allows an optional arg after the \begin
-# which presumably supplies some sort of style info.... 
+# which presumably supplies some sort of style info....
 # we'll ignore it, but we do at least have to parse
-DefMacro('\begin[]{}',sub { 
-  my($gullet,$style,$env)=@_;
-  my $name = $env && ToString($env);
-  if(LookupDefinition(T_CS("\\begin{$name}"))){
-    T_CS("\\begin{$name}"); } # Magic cs!
-  else {			# If not defined, let stomach handle it.
-    (T_CS('\begingroup'),T_CS("\\$name")); }});
+DefMacro('\begin[]{}', sub {
+    my ($gullet, $style, $env) = @_;
+    my $name = $env && ToString($env);
+    if (LookupDefinition(T_CS("\\begin{$name}"))) {
+      T_CS("\\begin{$name}"); }    # Magic cs!
+    else {                         # If not defined, let stomach handle it.
+      (T_CS('\begingroup'), T_CS("\\$name")); } });
 #======================================================================
-DefMacro('\latextohtml','\LaTeX2\texttt{HTML}');
-DefMacro('\htmladdnormallinkfoot{}{}','\href{#2}{#1}');
-DefMacro('\htmladdnormallink{}{}','\href{#2}{#1}');
-DefMacro('\htmladdimg{}','\hyperimage{#1}');
-DefMacro('\externallabels Semiverbatim Semiverbatim','');
-DefMacro('\externalref{}',''); # ???
-DefMacro('\externalcite','\nocite');
-DefMacro('\htmladdTOClink[]{}{}{}', '');
-DefConstructor('\htmlrule OptionalMatch:*','<ltx:rule/>');
-DefConstructor('\HTMLrule OptionalMatch:*','<ltx:rule/>');
-DefConstructor('\htmlclear','<ltx:br/>');
-DefMacro('\bodytext{}','');
-DefMacro('\htmlbody','');
+DefMacro('\latextohtml',                              '\LaTeX2\texttt{HTML}');
+DefMacro('\htmladdnormallinkfoot{}{}',                '\href{#2}{#1}');
+DefMacro('\htmladdnormallink{}{}',                    '\href{#2}{#1}');
+DefMacro('\htmladdimg{}',                             '\hyperimage{#1}');
+DefMacro('\externallabels Semiverbatim Semiverbatim', '');
+DefMacro('\externalref{}',                            '');                       # ???
+DefMacro('\externalcite',                             '\nocite');
+DefMacro('\htmladdTOClink[]{}{}{}',                   '');
+DefConstructor('\htmlrule OptionalMatch:*', '<ltx:rule/>');
+DefConstructor('\HTMLrule OptionalMatch:*', '<ltx:rule/>');
+DefConstructor('\htmlclear',                '<ltx:br/>');
+DefMacro('\bodytext{}', '');
+DefMacro('\htmlbody',   '');
 
 DefConstructor('\hyperrefdef {} {}{} Semiverbatim', "<ltx:ref labelref='#label'>#1</ltx:ref>",
-	       properties=>sub { (label=>CleanLabel($_[4])); });
+  properties => sub { (label => CleanLabel($_[4])); });
 
-Let('\hyperrefhyper',  '\hyperrefdef');
-Let('\hyperrefpagedef','\hyperrefdef');
-Let('\hyperrefnoref',  '\hyperrefdef');
-Let('\hyperrefhtml',   '\hyperrefdef');
+Let('\hyperrefhyper',   '\hyperrefdef');
+Let('\hyperrefpagedef', '\hyperrefdef');
+Let('\hyperrefnoref',   '\hyperrefdef');
+Let('\hyperrefhtml',    '\hyperrefdef');
 
 DefConstructor('\hypercite [] {}{} [] Semiverbatim',
-	       "<ltx:cite>#4 <ltx:bibref bibrefs='#5'>?#2(<ltx:bibrefphrase>#2</ltx:bibrefphrase>)</ltx:bibref> #1</ltx:cite>");
-DefMacro('\htmlcite{}{}','\hypercite{#1}{}{#2}');
-DefMacro('\htmlimage{}','');
-DefMacro('\htmlborder{}','');
-DefEnvironment('{makeimage}','#body');
-DefEnvironment('{tex2html_deferred}','#body');
-DefMacro('\htmladdtonavigation{}','');
+"<ltx:cite>#4 <ltx:bibref bibrefs='#5'>?#2(<ltx:bibrefphrase>#2</ltx:bibrefphrase>)</ltx:bibref> #1</ltx:cite>");
+DefMacro('\htmlcite{}{}', '\hypercite{#1}{}{#2}');
+DefMacro('\htmlimage{}',  '');
+DefMacro('\htmlborder{}', '');
+DefEnvironment('{makeimage}',         '#body');
+DefEnvironment('{tex2html_deferred}', '#body');
+DefMacro('\htmladdtonavigation{}', '');
 
 # These get excluded, since we probably don't even want to try to include html?
 #DefEnvironment('{rawhtml}','');
 #DefEnvironment('{htmlonly}','');
-DefConstructorI(T_CS("\\begin{rawhtml}"),undef,'', reversion=>'',
-		afterDigest=>[sub {
-				my($stomach,$whatsit)=@_;
-				my $end = "\\end{rawhtml}";
-				my @lines = $stomach->getGullet->getMouth->readRawLines($end,0);
-				NoteProgress("[Skip rawhtml (".scalar(@lines)."lines)]"); }]);
-DefConstructorI(T_CS("\\begin{htmlonly}"),undef,'', reversion=>'',
-		afterDigest=>[sub {
-				my($stomach,$whatsit)=@_;
-				my $end = "\\end{htmlonly}";
-				my @lines = $stomach->getGullet->getMouth->readRawLines($end,0);
-				NoteProgress("[Skip htmlonly (".scalar(@lines)."lines)]"); }]);
-DefMacro('\html{}','');
+DefConstructorI(T_CS("\\begin{rawhtml}"), undef, '', reversion => '',
+  afterDigest => [sub {
+      my ($stomach, $whatsit) = @_;
+      my $end = "\\end{rawhtml}";
+      my @lines = $stomach->getGullet->getMouth->readRawLines($end, 0);
+      NoteProgress("[Skip rawhtml (" . scalar(@lines) . "lines)]"); }]);
+DefConstructorI(T_CS("\\begin{htmlonly}"), undef, '', reversion => '',
+  afterDigest => [sub {
+      my ($stomach, $whatsit) = @_;
+      my $end = "\\end{htmlonly}";
+      my @lines = $stomach->getGullet->getMouth->readRawLines($end, 0);
+      NoteProgress("[Skip htmlonly (" . scalar(@lines) . "lines)]"); }]);
+DefMacro('\html{}', '');
 # I assume we should go ahead and try to include this material?
-DefEnvironment('{latexonly}','#body');
+DefEnvironment('{latexonly}', '#body');
 # If we get a plain \latexonly, instead of an environment,
 # look for \latexonly{some material}
-DefMacro('\latexonly',sub {
-  my($gullet)=@_;
-  ($gullet->ifNext(T_BEGIN) ? T_CS('\latexonly@onearg') : T_CS('\begin{latexonly}')); });
-DefMacro('\latexonly@onearg{}','#1');
+DefMacro('\latexonly', sub {
+    my ($gullet) = @_;
+    ($gullet->ifNext(T_BEGIN) ? T_CS('\latexonly@onearg') : T_CS('\begin{latexonly}')); });
+DefMacro('\latexonly@onearg{}', '#1');
 
-DefMacro('\latex{}','#1');
-DefMacro('\latexhtml{}{}','#1');
+DefMacro('\latex{}',       '#1');
+DefMacro('\latexhtml{}{}', '#1');
 
-DefMacro('\strikeout{}','#1');
-DefMacro('\htmlurl Semiverbatim','\url{#1}');
+DefMacro('\strikeout{}',          '#1');
+DefMacro('\htmlurl Semiverbatim', '\url{#1}');
 
-DefMacro('\HTMLset{}{}','');
-DefMacro('\htmlinfo OptionalMatch:*','');
+DefMacro('\HTMLset{}{}',              '');
+DefMacro('\htmlinfo OptionalMatch:*', '');
 # Not implemented!
 #**********************************************************************
 1;

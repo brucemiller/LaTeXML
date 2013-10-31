@@ -18,7 +18,7 @@ use strict;
 # What an interesting package! A bit complex to rewrite in Perl
 # So, we'd prefer to just process the TeX source for it.
 # Basically, we read in the TeX distribution's numprint
-InputDefinitions('numprint',type=>'sty', noltxml=>1);
+InputDefinitions('numprint', type => 'sty', noltxml => 1);
 # That done, however, there are a few issues.
 #  * numprint uses a mix of text & math modes to get the desired appearance.
 #    Here, we'd like to try to be slightly semantic, so rewrap things.
@@ -32,82 +32,81 @@ InputDefinitions('numprint',type=>'sty', noltxml=>1);
 # When printing in text mode, wrap the number in something that _says_ that it's a number!
 # And, avoid putting the various symbolic bits in Math mode (if we can)
 # In Math mode, wrap it in an XMDual, and try to avoid parsing too much 'nonsense'.
-Let(T_CS('\ltx@orig@numprint'),T_CS('\numprint'));
+Let('\ltx@orig@numprint', '\numprint');
 DefMacro('\numprint[]{}',
-         '\ifx.#1.\ltx@numprint@{#2}\else\ltx@numprint@@{#1}{#2}\fi');
+  '\ifx.#1.\ltx@numprint@{#2}\else\ltx@numprint@@{#1}{#2}\fi');
 DefMacro('\ltx@numprint@{}',
-         '\ifmmode\ltx@math@numprint@{#1}\else\ltx@text@numprint@{#1}\fi');
+  '\ifmmode\ltx@math@numprint@{#1}\else\ltx@text@numprint@{#1}\fi');
 DefMacro('\ltx@numprint@@{}{}',
-         '\ifmmode\ltx@math@numprint@@{#1}{#2}\else\ltx@text@numprint@@{#1}{#2}\fi');
+  '\ifmmode\ltx@math@numprint@@{#1}{#2}\else\ltx@text@numprint@@{#1}{#2}\fi');
 
 # Text Mode
-DefMacro('\ltx@text@numprint@{}',   '\ltx@text@number{\ltx@orig@numprint{#1}}');
-DefMacro('\ltx@text@numprint@@{}{}','\ltx@text@number{\ltx@orig@numprint[#1]{#2}}');
+DefMacro('\ltx@text@numprint@{}',    '\ltx@text@number{\ltx@orig@numprint{#1}}');
+DefMacro('\ltx@text@numprint@@{}{}', '\ltx@text@number{\ltx@orig@numprint[#1]{#2}}');
 
 DefConstructor('\ltx@text@number{}',
-	       "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>");
+  "<ltx:text class='ltx_number' _noautoclose='1'>#1</ltx:text>");
 
 # Math mode
 DefMacro('\ltx@math@numprint@{}',
-         '\ltx@math@@numprint@{#1}{\ltx@orig@numprint{#1}}');
+  '\ltx@math@@numprint@{#1}{\ltx@orig@numprint{#1}}');
 DefMacro('\ltx@math@numprint@@{}{}',
-         '\ltx@math@@numprint@@{#1}{#2}{\ltx@mark@units{#1}}{\ltx@orig@numprint[#1]{#2}}');
+  '\ltx@math@@numprint@@{#1}{#2}{\ltx@mark@units{#1}}{\ltx@orig@numprint[#1]{#2}}');
 
 # Note that this could be even more "semantic" if we'd peel off any sign...
 DefConstructor('\ltx@math@@numprint@{}{}',
-               "<ltx:XMDual>"
-               .  "<ltx:XMTok meaning='#value' role='NUMBER'>#value</ltx:XMTok>"
-               .  "<ltx:XMWrap>#2</ltx:XMWrap>"
-               ."</ltx:XMDual>",
-               reversion=>'\numprint{#1}',
-               properties=>sub { (value=>ToString($_[1])); });
+  "<ltx:XMDual>"
+    . "<ltx:XMTok meaning='#value' role='NUMBER'>#value</ltx:XMTok>"
+    . "<ltx:XMWrap>#2</ltx:XMWrap>"
+    . "</ltx:XMDual>",
+  reversion => '\numprint{#1}',
+  properties => sub { (value => ToString($_[1])); });
 DefConstructor('\ltx@math@@numprint@@{}{}{}{}',
-               "<ltx:XMDual>"
-               .  "<ltx:XMApp>"
-               .     "<ltx:XMTok meaning='times' role='MULOP'>\x{2062}</ltx:XMTok>"
-               .     "<ltx:XMTok meaning='#value' role='NUMBER'>#value</ltx:XMTok>"
-               .     "<ltx:XMWrap>#3</ltx:XMWrap>"
-               .  "</ltx:XMApp>"
-               .  "<ltx:XMWrap>#4</ltx:XMWrap>"
-               ."</ltx:XMDual>",
-               reversion=>'\numprint[#1]{#2}',
-               properties=>sub { (value=>ToString($_[2])); });
-
+  "<ltx:XMDual>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='times' role='MULOP'>\x{2062}</ltx:XMTok>"
+    . "<ltx:XMTok meaning='#value' role='NUMBER'>#value</ltx:XMTok>"
+    . "<ltx:XMWrap>#3</ltx:XMWrap>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMWrap>#4</ltx:XMWrap>"
+    . "</ltx:XMDual>",
+  reversion => '\numprint[#1]{#2}',
+  properties => sub { (value => ToString($_[2])); });
 
 # When printing the numbers in text, use (unicode) text symbols where possible
-DefMacroI('\nprt@sign@+',undef,'\ifmmode+\else\ltx@text@plus\fi');
-DefMacroI('\nprt@sign@-',undef,'\ifmmode-\else\ltx@text@minus\fi');
-DefMacroI('\nprt@sign@+-',undef,'\ifmmode\pm\else\ltx@text@plusminus\fi');
-DefPrimitiveI('\ltx@text@plus',undef,'+');
-DefPrimitiveI('\ltx@text@minus',undef,'-');
-DefPrimitiveI('\ltx@text@plusminus',undef,UTF(0xB1));
+DefMacroI('\nprt@sign@+',  undef, '\ifmmode+\else\ltx@text@plus\fi');
+DefMacroI('\nprt@sign@-',  undef, '\ifmmode-\else\ltx@text@minus\fi');
+DefMacroI('\nprt@sign@+-', undef, '\ifmmode\pm\else\ltx@text@plusminus\fi');
+DefPrimitiveI('\ltx@text@plus',      undef, '+');
+DefPrimitiveI('\ltx@text@minus',     undef, '-');
+DefPrimitiveI('\ltx@text@plusminus', undef, UTF(0xB1));
 
 # When defining the product sign, use the text form, if possible...
 DefMacro('\npproductsign{}',
-         '\ifmmode #1'
-         .'\else\@ifundefined{ltx@text@prod\string #1}'
-         .  '{\def\nprt@prod{\ensuremath{{}#1{}}}}'
-         .  '{\def\nprt@prod{\csname ltx@text@prod\string #1\endcsname}}'
-         .'\fi');
-DefPrimitiveI('\ltx@text@prod\times',undef,UTF(0xD7));
-DefPrimitiveI('\ltx@text@prod\cdot',undef,"\x{22C5}");
+  '\ifmmode #1'
+    . '\else\@ifundefined{ltx@text@prod\string #1}'
+    . '{\def\nprt@prod{\ensuremath{{}#1{}}}}'
+    . '{\def\nprt@prod{\csname ltx@text@prod\string #1\endcsname}}'
+    . '\fi');
+DefPrimitiveI('\ltx@text@prod\times', undef, UTF(0xD7));
+DefPrimitiveI('\ltx@text@prod\cdot',  undef, "\x{22C5}");
 
 # Mark units, as well
 # But note that this effect is easily lost,
 # since \npunitcommand is an official "customization" point (and thus user defined)!
-DefMacro('\npunitcommand{}','\ensuremath{\mathrm{\ltx@mark@units #1}}');
-DefConstructor('\ltx@mark@units{}',sub {
-  my($document,$units)=@_;
-  my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($units)));
-  foreach my $node (@nodes){
-    # Only add this class to "identifiers" ?
-    my $role;
-    if(($node->nodeType == XML_ELEMENT_NODE)
-       && ( ! ($role=$node->getAttribute('role'))
-            || ($role eq 'ID')||($role eq 'UNKNOWN')
-            ||($role eq 'FLOATSUPERSCRIPT'))){ # This covers things like primes(?)
-      addClass($node,'ltx_unit'); }}},
-  reversion=>'#1');
+DefMacro('\npunitcommand{}', '\ensuremath{\mathrm{\ltx@mark@units #1}}');
+DefConstructor('\ltx@mark@units{}', sub {
+    my ($document, $units) = @_;
+    my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($units)));
+    foreach my $node (@nodes) {
+      # Only add this class to "identifiers" ?
+      my $role;
+      if (($node->nodeType == XML_ELEMENT_NODE)
+        && (!($role = $node->getAttribute('role'))
+          || ($role eq 'ID') || ($role eq 'UNKNOWN')
+          || ($role eq 'FLOATSUPERSCRIPT'))) {    # This covers things like primes(?)
+        addClass($node, 'ltx_unit'); } } },
+  reversion => '#1');
 
 #======================================================================
 # Tabular issues
@@ -123,25 +122,25 @@ DefConstructor('\ltx@mark@units{}',sub {
 # Thus (at the moment) these tabulars will not be aligned on the . Sigh!
 # But maybe soon...?
 
-DefColumnType('N Optional:-1 Optional:-1 {}{}',sub {
-  my($gullet,$nd_exp_before,$nd_exp_after,$nd_man_before,$nd_man_after)=@_;
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\nprt@begin'),T_CS('\ignorespaces')),
-                                      after=>Invocation(T_CS('\nprt@end'),
-                                                        $nd_man_before,$nd_man_after,
-                                                        $nd_exp_before,$nd_exp_after,
-                                                        Tokens(),Tokens()),
-				      align=>'char:'.ToString(Digest(T_CS('\nprt@decimal'))));
-  return; });
+DefColumnType('N Optional:-1 Optional:-1 {}{}', sub {
+    my ($gullet, $nd_exp_before, $nd_exp_after, $nd_man_before, $nd_man_after) = @_;
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\nprt@begin'), T_CS('\ignorespaces')),
+      after => Invocation(T_CS('\nprt@end'),
+        $nd_man_before, $nd_man_after,
+        $nd_exp_before, $nd_exp_after,
+        Tokens(), Tokens()),
+      align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
+    return; });
 
-DefColumnType('n Optional:-1 Optional:-1 {}{}',sub {
-  my($gullet,$nd_exp_before,$nd_exp_after,$nd_man_before,$nd_man_after)=@_;
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\nprt@begin'),T_CS('\ignorespaces')),
-                                      after=>Invocation(T_CS('\nprt@end'),
-                                                        $nd_man_before,$nd_man_after,
-                                                        $nd_exp_before,$nd_exp_after,
-                                                        T_MATH,T_MATH),
-				      align=>'char:'.ToString(Digest(T_CS('\nprt@decimal'))));
-  return; });
+DefColumnType('n Optional:-1 Optional:-1 {}{}', sub {
+    my ($gullet, $nd_exp_before, $nd_exp_after, $nd_man_before, $nd_man_after) = @_;
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\nprt@begin'), T_CS('\ignorespaces')),
+      after => Invocation(T_CS('\nprt@end'),
+        $nd_man_before, $nd_man_after,
+        $nd_exp_before, $nd_exp_after,
+        T_MATH, T_MATH),
+      align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
+    return; });
 
 # numprint wants to scan the tokens in the column ITSELF
 # until it encouters &,\tabularnewline or \endtabular

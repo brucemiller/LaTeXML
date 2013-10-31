@@ -26,86 +26,86 @@ use LaTeXML::Common::XML;
 use Time::HiRes;
 
 use base qw(Exporter);
-our  @EXPORT = (# Global STATE; This gets bound by LaTeXML.pm
-		qw( *STATE),
-		# Catcode constants
-		qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
-		    CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
-		    CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
-		    CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-		    CC_CS      CC_NOTEXPANDED ),
-		# Token constructors
-		qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE 
-		    &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-		    &T_CR
-		    &Token &Tokens
-		    &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
-		    &StartSemiverbatim &EndSemiverbatim),
-		# Number & Dimension constructors
-		qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
-		# Box constructor
-		qw( &Box ),
-		# Fonts
-		qw( &Color &Black &White),
-		# Progress reporting
-		qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
-		# And some generics
-		qw(&Stringify &ToString &Revert &Equals),
-		# And some really simple useful stuff.
-		qw(&min &max),
-		# And, anything exported from LaTeXML::Error
-		@LaTeXML::Error::EXPORT,
-		# And, anything exported from LaTeXML::Common::XML
-		@LaTeXML::Common::XML::EXPORT
+our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
+  qw( *STATE),
+  # Catcode constants
+  qw( CC_ESCAPE  CC_BEGIN  CC_END     CC_MATH
+    CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
+    CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
+    CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
+    CC_CS      CC_NOTEXPANDED ),
+  # Token constructors
+  qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE
+    &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
+    &T_CR
+    &Token &Tokens
+    &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
+    &StartSemiverbatim &EndSemiverbatim),
+  # Number & Dimension constructors
+  qw( &Number &Float &Dimension &MuDimension &Glue &MuGlue &Pair &PairList),
+  # Box constructor
+  qw( &Box ),
+  # Fonts
+  qw( &Color &Black &White),
+  # Progress reporting
+  qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  # And some generics
+  qw(&Stringify &ToString &Revert &Equals),
+  # And some really simple useful stuff.
+  qw(&min &max),
+  # And, anything exported from LaTeXML::Error
+  @LaTeXML::Error::EXPORT,
+  # And, anything exported from LaTeXML::Common::XML
+  @LaTeXML::Common::XML::EXPORT
 );
 
 #======================================================================
 # Catcodes & Standard Token constructors.
 #  CC_whatever names the catcode numbers
-#  T_whatever creates a token with the corresponding catcode, 
+#  T_whatever creates a token with the corresponding catcode,
 #   some take a string argument, if they don't have a `standard' character.
 
-use constant CC_ESCAPE  =>  0;
-use constant CC_BEGIN   =>  1;
-use constant CC_END     =>  2;
-use constant CC_MATH    =>  3;
-use constant CC_ALIGN   =>  4;
-use constant CC_EOL     =>  5;
-use constant CC_PARAM   =>  6;
-use constant CC_SUPER   =>  7;
-use constant CC_SUB     =>  8;
-use constant CC_IGNORE  =>  9;
+use constant CC_ESCAPE  => 0;
+use constant CC_BEGIN   => 1;
+use constant CC_END     => 2;
+use constant CC_MATH    => 3;
+use constant CC_ALIGN   => 4;
+use constant CC_EOL     => 5;
+use constant CC_PARAM   => 6;
+use constant CC_SUPER   => 7;
+use constant CC_SUB     => 8;
+use constant CC_IGNORE  => 9;
 use constant CC_SPACE   => 10;
 use constant CC_LETTER  => 11;
 use constant CC_OTHER   => 12;
 use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
-use constant CC_INVALID => 15;  
+use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS      => 16;
+use constant CC_CS          => 16;
 use constant CC_NOTEXPANDED => 17;
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
 # These are immutable
-use constant T_BEGIN => bless ['{',   1], 'LaTeXML::Token';
-use constant T_END   => bless ['}',   2], 'LaTeXML::Token';
-use constant T_MATH  => bless ['$',   3], 'LaTeXML::Token';
-use constant T_ALIGN => bless ['&',   4], 'LaTeXML::Token';
-use constant T_PARAM => bless ['#',   6], 'LaTeXML::Token';
-use constant T_SUPER => bless ['^',   7], 'LaTeXML::Token';
-use constant T_SUB   => bless ['_',   8], 'LaTeXML::Token';
+use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Token';
+use constant T_END   => bless ['}',  2],  'LaTeXML::Token';
+use constant T_MATH  => bless ['$',  3],  'LaTeXML::Token';
+use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Token';
+use constant T_PARAM => bless ['#',  6],  'LaTeXML::Token';
+use constant T_SUPER => bless ['^',  7],  'LaTeXML::Token';
+use constant T_SUB   => bless ['_',  8],  'LaTeXML::Token';
 use constant T_SPACE => bless [' ',  10], 'LaTeXML::Token';
 use constant T_CR    => bless ["\n", 10], 'LaTeXML::Token';
-sub T_LETTER  { bless [$_[0],11], 'LaTeXML::Token'; }
-sub T_OTHER   { bless [$_[0],12], 'LaTeXML::Token'; }
-sub T_ACTIVE  { bless [$_[0],13], 'LaTeXML::Token'; }
-sub T_COMMENT { bless ['%'.($_[0]||''),14], 'LaTeXML::Token'; }
-sub T_CS      { bless [$_[0],16], 'LaTeXML::Token'; }
+sub T_LETTER { bless [$_[0], 11], 'LaTeXML::Token'; }
+sub T_OTHER  { bless [$_[0], 12], 'LaTeXML::Token'; }
+sub T_ACTIVE { bless [$_[0], 13], 'LaTeXML::Token'; }
+sub T_COMMENT { bless ['%' . ($_[0] || ''), 14], 'LaTeXML::Token'; }
+sub T_CS { bless [$_[0], 16], 'LaTeXML::Token'; }
 
 sub Token {
-  my($string,$cc)=@_;
-  bless [$string,(defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
+  my ($string, $cc) = @_;
+  bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
 
 #======================================================================
 # These belong to Mouth, but make more sense here.
@@ -119,29 +119,29 @@ our $STD_CATTABLE;
 our $STY_CATTABLE;
 
 # Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
-sub Tokenize         {
-  my($string)=@_;
-  $STD_CATTABLE = LaTeXML::State->new(catcodes=>'standard') unless $STD_CATTABLE;
+sub Tokenize {
+  my ($string) = @_;
+  $STD_CATTABLE = LaTeXML::State->new(catcodes => 'standard') unless $STD_CATTABLE;
   local $LaTeXML::STATE = $STD_CATTABLE;
   LaTeXML::Mouth->new($string)->readTokens; }
 
 # TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
-sub TokenizeInternal { 
-  my($string)=@_;
-  $STY_CATTABLE = LaTeXML::State->new(catcodes=>'style') unless  $STY_CATTABLE;
+sub TokenizeInternal {
+  my ($string) = @_;
+  $STY_CATTABLE = LaTeXML::State->new(catcodes => 'style') unless $STY_CATTABLE;
   local $LaTeXML::STATE = $STY_CATTABLE;
   LaTeXML::Mouth->new($string)->readTokens; }
 
 sub StartSemiverbatim {
   $LaTeXML::STATE->pushFrame;
-  $LaTeXML::STATE->assignValue(MODE=>'text'); # only text mode makes sense here... BUT is this shorthand safe???
-  $LaTeXML::STATE->assignValue(IN_MATH=>0);
-  map($LaTeXML::STATE->assignCatcode($_=>CC_OTHER,'local'),@{$LaTeXML::STATE->lookupValue('SPECIALS')});
-  $LaTeXML::STATE->assignMathcode('\''=>0x8000,'local');
-  $LaTeXML::STATE->assignValue(font=>$LaTeXML::STATE->lookupValue('font')->merge(encoding=>'ASCII'), 'local'); # try to stay as ASCII as possible
+  $LaTeXML::STATE->assignValue(MODE => 'text'); # only text mode makes sense here... BUT is this shorthand safe???
+  $LaTeXML::STATE->assignValue(IN_MATH => 0);
+  map($LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local'), @{ $LaTeXML::STATE->lookupValue('SPECIALS') });
+  $LaTeXML::STATE->assignMathcode('\'' => 0x8000, 'local');
+  $LaTeXML::STATE->assignValue(font => $LaTeXML::STATE->lookupValue('font')->merge(encoding => 'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
-sub EndSemiverbatim {  $LaTeXML::STATE->popFrame; }
+sub EndSemiverbatim { $LaTeXML::STATE->popFrame; }
 
 #======================================================================
 # Token List constructors.
@@ -152,67 +152,62 @@ sub Tokens {
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
-  my($string)=@_;
-  (defined $string ? map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)),split('',$string)) : ()); }
+  my ($string) = @_;
+  (defined $string ? map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)), split('', $string)) : ()); }
 
 # Similar to Explode, but convert letters to catcode LETTER
 # Hopefully, this is essentially correct WITHOUT resorting to catcode lookup?
 sub ExplodeText {
-  my($string)=@_;
+  my ($string) = @_;
   (defined $string
-   ? map(($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))),split('',$string))
-   : ()); }
+    ? map(($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))), split('', $string))
+    : ()); }
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
 sub Revert {
-  my($thing)=@_;
-  (defined $thing ? (ref $thing ? map($_->unlist,$thing->revert) : Explode($thing)) : ()); }
+  my ($thing) = @_;
+  (defined $thing ? (ref $thing ? map($_->unlist, $thing->revert) : Explode($thing)) : ()); }
 
 our $UNTEX_LINELENGTH = 78;
+
 sub UnTeX {
-  my($thing)=@_;
+  my ($thing) = @_;
   return unless defined $thing;
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
   my $length = 0;
-#  my $level = 0;
-  my($prevs,$prevcc)=('',CC_COMMENT);
-  while(@tokens){
+  #  my $level = 0;
+  my ($prevs, $prevcc) = ('', CC_COMMENT);
+  while (@tokens) {
     my $token = shift(@tokens);
-    my $cc = $token->getCatcode;
+    my $cc    = $token->getCatcode;
     next if $cc == CC_COMMENT;
     my $s = $token->getString();
-    if($cc == CC_LETTER){	# keep "words" together, just for aesthetics
-      while(@tokens && ($tokens[0]->getCatcode == CC_LETTER)){
-	$s .= shift(@tokens)->getString; }}
+    if ($cc == CC_LETTER) {    # keep "words" together, just for aesthetics
+      while (@tokens && ($tokens[0]->getCatcode == CC_LETTER)) {
+        $s .= shift(@tokens)->getString; } }
     my $l = length($s);
-#    if($cc == CC_BEGIN){ $level++; }
+    #    if($cc == CC_BEGIN){ $level++; }
     # Seems a reasonable & safe time to line break, for readability, etc.
-    if(($cc==CC_SPACE) && ($s eq "\n")){ # preserve newlines already present
-      if($length > 0){
-	$string .= $s; $length=0; }}
-##    elsif((($cc==CC_CS) && ($s =~ /^(\\\\|\\cr$|\\crcr$)/))){
-##      # Insert a (virtual) newline token after a \\, \cr, etc (after a & is too much?)
-##      $string .= $s."\n"; $length=0;
-##      $s="\n"; $cc=CC_SPACE; }				       # pretend newline
-    elsif((($cc==CC_LETTER) || (($cc==CC_OTHER) && ($s =~/^\d+$/))) # Letter(s) or digit(s)
-	  && ($prevcc == CC_CS) && ($prevs =~ /(.)$/)
-	  && (($LaTeXML::Global::STATE->lookupCatcode($1)||CC_COMMENT) == CC_LETTER)){
+    if (($cc == CC_SPACE) && ($s eq "\n")) {    # preserve newlines already present
+      if ($length > 0) {
+        $string .= $s; $length = 0; } }
+    elsif ((($cc == CC_LETTER) || (($cc == CC_OTHER) && ($s =~ /^\d+$/)))    # Letter(s) or digit(s)
+      && ($prevcc == CC_CS) && ($prevs =~ /(.)$/)
+      && (($LaTeXML::Global::STATE->lookupCatcode($1) || CC_COMMENT) == CC_LETTER)) {
       # Insert a (virtual) space before a letter if previous token was a CS w/letters
       # This is required for letters, but just aesthetic for digits (to me?)
       # Of course, use a newline if we're already at end
-      my $space = (($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n":' ');
-      $string .= $space.$s; $length += 1+$l; }
-    elsif(($length > 0) && ($length + $l > $UNTEX_LINELENGTH) # linebreak before this token?
-##	  && (! (($cc==CC_LETTER)&&($prevcc==CC_LETTER))) # but not between letters!
-	  && (scalar(@tokens) > 1)                        # and not at end!
-##	  && ($level < 1)
-){	                          # Or even within an arg!
-      $string .= "%\n".$s; $length=$l; }		  # with %, so that it "disappears"
+      my $space = (($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n" : ' ');
+      $string .= $space . $s; $length += 1 + $l; }
+    elsif (($length > 0) && ($length + $l > $UNTEX_LINELENGTH)    # linebreak before this token?
+      && (scalar(@tokens) > 1)                                    # and not at end!
+      ) {                                                         # Or even within an arg!
+      $string .= "%\n" . $s; $length = $l; }                      # with %, so that it "disappears"
     else {
       $string .= $s; $length += $l; }
-#    if($cc == CC_END  ){ $level--; }
+    #    if($cc == CC_END  ){ $level--; }
     $prevs = $s; $prevcc = $cc; }
   $string; }
 
@@ -232,16 +227,16 @@ sub PairList    { LaTeXML::PairList->new(@_); }
 # Constructors for Boxes and Lists.
 
 sub Box {
-  my($string,$font,$locator,$tokens)=@_;
+  my ($string, $font, $locator, $tokens) = @_;
   $font = $LaTeXML::Global::STATE->lookupValue('font') unless defined $font;
   $locator = $LaTeXML::Global::STATE->getStomach->getGullet->getLocator unless defined $locator;
-  $tokens  = T_OTHER($string) if $string && !defined $tokens;
+  $tokens = T_OTHER($string) if $string && !defined $tokens;
   my $state = $LaTeXML::Global::STATE;
-  if($state->lookupValue('IN_MATH')){
-    my $attr = (defined $string) && $state->lookupValue('math_token_attributes_'.$string);
-    LaTeXML::MathBox->new($string,$font->specialize($string),$locator,$tokens,$attr); }
+  if ($state->lookupValue('IN_MATH')) {
+    my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
+    LaTeXML::MathBox->new($string, $font->specialize($string), $locator, $tokens, $attr); }
   else {
-    LaTeXML::Box->new($string, $font, $locator,$tokens); }}
+    LaTeXML::Box->new($string, $font, $locator, $tokens); } }
 
 #
 # sub List {
@@ -253,87 +248,89 @@ sub Box {
 #======================================================================
 # Colors
 sub Color {
-  my($model,@components)=@_;
+  my ($model, @components) = @_;
   # Beware of clumsy invention of $class; see LaTeXML::Color
-  my $class = 'LaTeXML::Color::'.$model;
+  my $class = 'LaTeXML::Color::' . $model;
   $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
-  bless [$model,@components],$class; }
+  bless [$model, @components], $class; }
 
-use constant Black => bless ['rgb',0,0,0],'LaTeXML::Color::rgb';
-use constant White => bless ['rgb',1,1,1],'LaTeXML::Color::rgb';
+use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Color::rgb';
+use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Color::rgb';
 
 #**********************************************************************
 # Progress reporting.
 
-sub NoteProgress { 
+sub NoteProgress {
   print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
   return; }
-sub NoteProgressDetailed { 
+
+sub NoteProgressDetailed {
   print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
   return; }
 
-our %note_timers=();
+our %note_timers = ();
+
 sub NoteBegin {
-  my($state)=@_;
-  if($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0){
-    $note_timers{$state}=[Time::HiRes::gettimeofday];
-    print STDERR "\n($state..."; }}
+  my ($state) = @_;
+  if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
+    $note_timers{$state} = [Time::HiRes::gettimeofday];
+    print STDERR "\n($state..."; } }
 
 sub NoteEnd {
-  my($state)=@_;
-  if(my $start = $note_timers{$state}){
+  my ($state) = @_;
+  if (my $start = $note_timers{$state}) {
     undef $note_timers{$state};
-    if($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0){
-      my $elapsed = Time::HiRes::tv_interval($start,[Time::HiRes::gettimeofday]);
-      print STDERR sprintf(" %.2f sec)",$elapsed); }}}
+    if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
+      my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
+      print STDERR sprintf(" %.2f sec)", $elapsed); } } }
 
 #**********************************************************************
 # Generic functions
-our %NOBLESS= map(($_=>1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
+our %NOBLESS = map(($_ => 1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
 
 sub Stringify {
-  my($object)=@_;
-  if(!defined $object){ 'undef'; }
-  elsif(!ref $object){ $object; }
-  elsif($NOBLESS{ref $object}){ "$object"; }
-  elsif($object->can('stringify')){ $object->stringify; }
+  my ($object) = @_;
+  if    (!defined $object)          { 'undef'; }
+  elsif (!ref $object)              { $object; }
+  elsif ($NOBLESS{ ref $object })   { "$object"; }
+  elsif ($object->can('stringify')) { $object->stringify; }
   # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
-  elsif($object->isa('XML::LibXML::Node')){
-    if($object->nodeType == XML_ELEMENT_NODE){ 
-      my $tag = $LaTeXML::Global::STATE->getModel->getNodeQName($object);
-      my $attributes ='';
-      foreach my $attr ($object->attributes){
-	my $name = $attr->nodeName;
-###	next if $name =~ /^_/;
-	my $val = $attr->getData;
-	$val = substr($val,0,30)."..." if length($val)>35;
-	$attributes .= ' '. $name. "=\"".$val."\""; }
-      "<".$tag.$attributes. ($object->hasChildNodes ? ">..." : "/>");
+  elsif ($object->isa('XML::LibXML::Node')) {
+    if ($object->nodeType == XML_ELEMENT_NODE) {
+      my $tag        = $LaTeXML::Global::STATE->getModel->getNodeQName($object);
+      my $attributes = '';
+      foreach my $attr ($object->attributes) {
+        my $name = $attr->nodeName;
+        my $val = $attr->getData;
+        $val = substr($val, 0, 30) . "..." if length($val) > 35;
+        $attributes .= ' ' . $name . "=\"" . $val . "\""; }
+      "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
     }
-    elsif($object->nodeType == XML_TEXT_NODE){
-      "XMLText[".$object->data."]"; }
-    elsif($object->nodeType == XML_DOCUMENT_NODE){
-      "XMLDocument[".$$object."]"; }
-    else { "$object"; }}
-  else { "$object"; }}
+    elsif ($object->nodeType == XML_TEXT_NODE) {
+      "XMLText[" . $object->data . "]"; }
+    elsif ($object->nodeType == XML_DOCUMENT_NODE) {
+      "XMLDocument[" . $$object . "]"; }
+    else { "$object"; } }
+  else { "$object"; } }
 
 sub ToString {
-  my($object)=@_;
+  my ($object) = @_;
   my $r;
-  (defined $object ? (($r=ref $object) && !$NOBLESS{$r} ? $object->toString : "$object"):''); }
+  (defined $object ? (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object") : ''); }
 
 # Just how deep of an equality test should this be?
 sub Equals {
-  my($a,$b)=@_;
-  return 1 if !(defined $a) && !(defined $b); # both undefined, equal, I guess
-  return 0 unless (defined $a) && (defined $b); # else both must be defined
+  my ($a, $b) = @_;
+  return 1 if !(defined $a) && !(defined $b);    # both undefined, equal, I guess
+  return 0 unless (defined $a) && (defined $b);  # else both must be defined
   my $refa = (ref $a) || '_notype_';
   my $refb = (ref $b) || '_notype_';
-  return 0 if $refa ne $refb;					# same type?
-  return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa}; # Deep comparison of builtins?
-  return 1 if $a->equals($b);					# semi-shallow comparison?
-  # Special cases? (should be methods, but that embeds State knowledge too low)
-  if($refa eq 'LaTeXML::Token'){ # Check if they've been \let to the same defn.
+  return 0 if $refa ne $refb;                    # same type?
+  return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa};    # Deep comparison of builtins?
+  return 1 if $a->equals($b);                                     # semi-shallow comparison?
+       # Special cases? (should be methods, but that embeds State knowledge too low)
+
+  if ($refa eq 'LaTeXML::Token') {    # Check if they've been \let to the same defn.
     my $defa = $LaTeXML::Global::STATE->lookupDefinition($a);
     my $defb = $LaTeXML::Global::STATE->lookupDefinition($b);
     return $defa && $defb && ($defa eq $defb); }
