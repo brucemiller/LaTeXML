@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
+# | Thanks to the arXMLiv group for initial implementation              | # 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -24,16 +24,16 @@ use LaTeXML::Package;
 # Class Options
 # Ignorable options
 foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
-  draft final referee
-  leqno fleqn longauth rnote
-  oldversion
-  runningheads
-  envcountreset envcountsect
-  structabstract traditabstract
-  letter)) {
-  DeclareOption($option, undef); }
-DeclareOption('openbib', sub {
-    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
+		       draft final referee
+		       leqno fleqn longauth rnote
+		       oldversion
+		       runningheads
+		       envcountreset envcountsect
+		       structabstract traditabstract
+		       letter)){
+  DeclareOption($option,undef); }
+DeclareOption('openbib',sub {
+  RequireResource(undef,type=>'text/css',content=>'.ltx_bibblock{display:block;}'); });
 
 #DeclareOption(undef,sub {
 #  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
@@ -53,69 +53,69 @@ DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 # NOT an environment!!!
 DefConstructor('\abstract@old{}', '<ltx:abstract>#1</ltx:abstract>');
 DefConstructor('\abstract@new{}{}{}{}{}',
-  "<ltx:abstract name='#name'>"
-    . "  <ltx:p><ltx:text>Context:</ltx:text>#1</ltx:p>"
-    . "  <ltx:p><ltx:text>Aims:</ltx:text>#2</ltx:p>"
-    . "  <ltx:p><ltx:text>Methods:</ltx:text>#3</ltx:p>"
-    . "  <ltx:p><ltx:text>Results:</ltx:text>#4</ltx:p>"
-    . "  <ltx:p><ltx:text>Conclusions:</ltx:text>#5</ltx:p>"
-    . "</ltx:abstract>",
-  properties => sub { (name => DigestIf('\abstractname')); });
+	       "<ltx:abstract name='#name'>"
+	       ."  <ltx:p><ltx:text>Context:</ltx:text>#1</ltx:p>"
+	       ."  <ltx:p><ltx:text>Aims:</ltx:text>#2</ltx:p>"
+	       ."  <ltx:p><ltx:text>Methods:</ltx:text>#3</ltx:p>"
+	       ."  <ltx:p><ltx:text>Results:</ltx:text>#4</ltx:p>"
+	       ."  <ltx:p><ltx:text>Conclusions:</ltx:text>#5</ltx:p>"
+	       ."</ltx:abstract>",
+	      properties=>sub { (name=>DigestIf('\abstractname')); });
 
 DefMacro('\abstract{}', sub {
-    my ($gullet, $arg1) = @_;
-    $gullet->skipSpaces;    # I think?
-    (T_CS($gullet->ifNext(T_BEGIN)
-        ? '\abstract@new' : '\abstract@old')),
-      T_BEGIN, $arg1->unlist, T_END; });
+   my($gullet,$arg1)=@_;
+   $gullet->skipSpaces; # I think?
+   ( T_CS($gullet->ifNext(T_BEGIN)
+      ? '\abstract@new' : '\abstract@old')),
+     T_BEGIN,$arg1->unlist,T_END; });
 
 # Keywords
-DefMacroI('\keywordname', undef, '\sffamily\bfseries Key Words.');
+DefMacroI('\keywordname',undef,'\sffamily\bfseries Key Words.');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
 # Formatting the header and running title
-DefMacro('\titlerunning{}',  '');    # Ignorable
-DefMacro('\authorrunning{}', '');
+DefMacro('\titlerunning{}','');	# Ignorable
+DefMacro('\authorrunning{}','');
 #DefRegister('\authrun'=>Box());
 #DefRegister('\titrun'=>Box());
-DefMacro('\authrun', '');
-DefMacro('\titrun',  '');
+DefMacro('\authrun','');
+DefMacro('\titrun','');
 
 # undocumented ?
-DefMacro('\offprints{}', '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\offprints{}','\@add@frontmatter{ltx:note}[role=offprints]{#1}');
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
-DefMacro('\journalname{}', '');
-DefMacro('\rnotename',     '(Research Note)');
-DefMacro('\rnotname',      '(RN)');
+DefMacro('\journalname{}','');
+DefMacro('\rnotename','(Research Note)');
+DefMacro('\rnotname','(RN)');
 
 # should add a note?
-DefMacro('\headnote{}',   '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}', '\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
-DefConstructor('\@@@mail{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\headnote{}','\@add@frontmatter{ltx:note}{#1}');
+DefMacro('\dedication{}','\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
+DefConstructor('\@@@mail{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
-DefMacro('\mailname',          '\it Correspondence to \/');
-DefMacro('\doi{}',             '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+DefMacro('\mailname','\it Correspondence to \/');
+DefMacro('\doi{}','\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
 
-DefMacro('\idline{}{}',    '');                             # ?
-DefMacro('\msnr{}',        '');                             # ??
-DefMacro('\institutename', '');                             # ?
-DefMacro('\hugehead',      '');
-DefMacro('\AALogo',        'Astronomy and Astrophysics');
+DefMacro('\idline{}{}','');	# ?
+DefMacro('\msnr{}','');		# ??
+DefMacro('\institutename','');	# ?
+DefMacro('\hugehead','');
+DefMacro('\AALogo','Astronomy and Astrophysics');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The main text
 
-DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
-  properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
-DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
-DefConstructor('\acknowledgement', "<ltx:acknowledgements name='#name'>",
-  properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
-DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose => 1);
-DefMacro('\acknowledgmentsname', 'Acknowledgements');
-DefMacro('\ackname',             'Acknowledgements');
+DefConstructor('\acknowledgements',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub{ (name=>Digest(T_CS('\acknowledgmentsname'))); });
+DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
+DefConstructor('\acknowledgement',"<ltx:acknowledgements name='#name'>",
+	       properties=>sub{ (name=>Digest(T_CS('\acknowledgmentsname'))); });
+DefConstructor('\endacknowledgement',"</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose=>1);
+DefMacro('\acknowledgmentsname','Acknowledgements');
+DefMacro('\ackname','Acknowledgements');
 
 RawTeX(<<'EoTeX');
 \newtheorem*{proof}{Proof}{\it}{\rm}
@@ -132,11 +132,11 @@ RawTeX(<<'EoTeX');
 \newtheorem{solution}[theorem]{Solution}{\it}{\rm}
 EoTeX
 
-DefMacro('\noteaddname', 'Note added in proof');
-DefEnvironment('{noteadd}', "<ltx:note>#body</ltx:note>");
+DefMacro('\noteaddname','Note added in proof');
+DefEnvironment('{noteadd}',"<ltx:note>#body</ltx:note>");
 
 # Undocumented, but something like:
-DefMacro('\thesaurus{}', '');
+DefMacro('\thesaurus{}','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Figures
@@ -145,7 +145,7 @@ DefMacro('\thesaurus{}', '');
 # Should be something like this
 # DefMacro('\sidecaption Until:\caption', ... );
 # but let's just ignore it for now.
-DefMacro('\sidecaption', '');
+DefMacro('\sidecaption','');
 
 # NOTE: Sort this out!!
 # I'm a little unclear how this is supposed to be used -- it isn't documented.
@@ -153,8 +153,8 @@ DefMacro('\sidecaption', '');
 # are people supposed to put multiple figure environments within {figure}
 # or just multiple graphics and multiple captions?
 # The latter, probably, but....
-DefMacro('\resetsubfig{}', '');    #
-DefMacro('\subfigures',    '');
+DefMacro('\resetsubfig{}','');#
+DefMacro('\subfigures','');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Tables
@@ -162,12 +162,12 @@ DefMacro('\subfigures',    '');
 
 # Actually not sure exactly what this is,
 #   \longtab{num}{table}
-DefMacro('\longtab{}', '');    # just let it do the table contents as usual.
+DefMacro('\longtab{}','');	# just let it do the table contents as usual.
 
 # variations of footnote used within tables
-Let('\tablefoot', '\footnote');
-DefMacro('\tablefootmark{}',   '\footnotemark[$#1$]');
-DefMacro('\tablefoottext{}{}', '\footnotetext[$#1$]{#2}');
+Let(T_CS('\tablefoot'),T_CS('\footnote'));
+DefMacro('\tablefootmark{}','\footnotemark[$#1$]');
+DefMacro('\tablefoottext{}{}','\footnotetext[$#1$]{#2}');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # References
@@ -176,105 +176,105 @@ DefMacro('\tablefoottext{}{}', '\footnotetext[$#1$]{#2}');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Typography
 
-DefMacro('\vec{}', '\ensuremath{\@vec{#1}}');
-DefMath('\@vec{}', '#1', role => 'ID', font => { forcebold => 1 });
-DefMacro('\tens{}', '\ensuremath{\@tens{#1}}');
-DefMath('\@tens{}', '\mathsf{#1}', role => 'ID');    # semantics?
+DefMacro('\vec{}','\ensuremath{\@vec{#1}}');
+DefMath('\@vec{}','#1', role=>'ID',font=>{forcebold=>1});
+DefMacro('\tens{}','\ensuremath{\@tens{#1}}');
+DefMath('\@tens{}','\mathsf{#1}', role=>'ID'); # semantics?
 
 # \ion{symbol}{ionization}
 # Note that semantics could be useful!
-DefMacro('\ion{}{}', '{#1 \textsc{#2}}');
+DefMacro('\ion{}{}','{#1 \textsc{#2}}');
 
 # \element[charge][nucleons][protons][neutrons]{symbol}
-DefMacro('\element[][][][]{}', '\ensuremath{\@element[#1][#2][#3][#4]{\mathrm{#5}}}');
+DefMacro('\element[][][][]{}','\ensuremath{\@element[#1][#2][#3][#4]{\mathrm{#5}}}');
 
-DefConstructor('\@element[][][][]{}', sub {
-    my ($document, $charge, $nucleons, $protons, $neutrons, $element, %props) = @_;
-    my $level = $props{level};
-    my $node = $document->insertElement('ltx:XMArg', $element);
-    $node = wrapIsotope($document, $node, $charge,   'post', 'SUPER', $level) if $charge;
-    $node = wrapIsotope($document, $node, $neutrons, 'post', 'SUB',   $level) if $neutrons;
-    $node = wrapIsotope($document, $node, $nucleons, 'pre',  'SUPER', $level) if $nucleons;
-    $node = wrapIsotope($document, $node, $protons,  'pre',  'SUB',   $level) if $protons;
-    $node; },
-  properties => sub { (level => $_[0]->getBoxingLevel); });
+DefConstructor('\@element[][][][]{}',sub {
+ my($document,$charge,$nucleons,$protons,$neutrons,$element,%props)=@_;
+ my $level = $props{level};
+ my $node = $document->insertElement('ltx:XMArg',$element);
+ $node = wrapIsotope($document,$node,$charge,  'post','SUPER',$level) if $charge;
+ $node = wrapIsotope($document,$node,$neutrons,'post','SUB',  $level) if $neutrons;
+ $node = wrapIsotope($document,$node,$nucleons,'pre', 'SUPER',$level) if $nucleons;
+ $node = wrapIsotope($document,$node,$protons, 'pre', 'SUB',  $level) if $protons;
+ $node; },
+       properties=>sub { (level=>$_[0]->getBoxingLevel); });
 
 sub wrapIsotope {
-  my ($document, $node, $script, $x, $y, $l) = @_;
+  my($document,$node,$script,$x,$y,$l)=@_;
   my $new = $document->openElement('ltx:XMApp');
-  $document->insertElement('ltx:XMTok', undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l");
+  $document->insertElement('ltx:XMTok',undef, role=>$y.'SCRIPTOP',scriptpos=>"$x$l");
   $new->appendChild($node);
-  $document->insertElement('ltx:XMWrap', $script);
+  $document->insertElement('ltx:XMWrap',$script);
   $document->closeElement('ltx:XMApp');
   $node = $new; }
 
-DefPrimitiveI('\sun',      undef, "\x{2609}");
-DefPrimitiveI('\diameter', undef, "\x{2300}");
+DefPrimitiveI('\sun',     undef,"\x{2609}");
+DefPrimitiveI('\diameter',undef,"\x{2300}");
 
-DefPrimitiveI('\degr',   undef, UTF(0xB0));
-DefPrimitiveI('\arcmin', undef, "\x{2032}");
-DefPrimitiveI('\arcsec', undef, "\x{2033}");
+DefPrimitiveI('\degr',    undef,UTF(0xB0));
+DefPrimitiveI('\arcmin',  undef,"\x{2032}");
+DefPrimitiveI('\arcsec',  undef,"\x{2033}");
 
-DefMath('\la',    "\x{2272}", role => 'RELOP', meaning => 'less-than-or-similar-to');
-DefMath('\ga',    "\x{2273}", role => 'RELOP', meaning => 'greater-than-or-similar-to');
-DefMath('\cor',   "\x{2258}", role => 'RELOP', meaning => 'corresonds-to');
-DefMath('\sol',   "\x{2A9D}", role => 'RELOP', meaning => 'similar-to-or-less-than');
-DefMath('\sog',   "\x{2A9E}", role => 'RELOP', meaning => 'similar-to-or-greater-than');
-DefMath('\lse',   "\x{2A8D}", role => 'RELOP', meaning => 'less-than-or-similar-to-or-equal');
-DefMath('\gse',   "\x{2A8E}", role => 'RELOP', meaning => 'greater-than-or-similar-to-or-equal');
-DefMath('\leogr', "\x{2276}", role => 'RELOP', meaning => 'less-than-or-greater-than');
-DefMath('\grole', "\x{2277}", role => 'RELOP', meaning => 'greater-than-or-less-than');
-DefMath('\loa',   "\x{2A85}", role => 'RELOP', meaning => 'less-than-or-approximately-equals');
-DefMath('\goa',   "\x{2A86}", role => 'RELOP', meaning => 'greater-than-or-approximately-equals');
-DefMath('\lid',   "\x{2266}", role => 'RELOP', meaning => 'less-than-or-equals');
-DefMath('\gid',   "\x{2267}", role => 'RELOP', meaning => 'greater-than-or-equals');
+DefMath('\la',    "\x{2272}", role=>'RELOP', meaning=>'less-than-or-similar-to');
+DefMath('\ga',    "\x{2273}", role=>'RELOP', meaning=>'greater-than-or-similar-to');
+DefMath('\cor',   "\x{2258}", role=>'RELOP', meaning=>'corresonds-to');
+DefMath('\sol',   "\x{2A9D}", role=>'RELOP', meaning=>'similar-to-or-less-than');
+DefMath('\sog',   "\x{2A9E}", role=>'RELOP', meaning=>'similar-to-or-greater-than');
+DefMath('\lse',   "\x{2A8D}", role=>'RELOP', meaning=>'less-than-or-similar-to-or-equal');
+DefMath('\gse',   "\x{2A8E}", role=>'RELOP', meaning=>'greater-than-or-similar-to-or-equal');
+DefMath('\leogr', "\x{2276}", role=>'RELOP', meaning=>'less-than-or-greater-than');
+DefMath('\grole', "\x{2277}", role=>'RELOP', meaning=>'greater-than-or-less-than');
+DefMath('\loa',   "\x{2A85}", role=>'RELOP', meaning=>'less-than-or-approximately-equals');
+DefMath('\goa',   "\x{2A86}", role=>'RELOP', meaning=>'greater-than-or-approximately-equals');
+DefMath('\lid',   "\x{2266}", role=>'RELOP', meaning=>'less-than-or-equals');
+DefMath('\gid',   "\x{2267}", role=>'RELOP', meaning=>'greater-than-or-equals');
 
-DefMath('\getsto', "\x{21C6}", role => 'ARROW');
+DefMath('\getsto', "\x{21C6}", role=>'ARROW');
 
 # Various degrees etc.
 # Copied from aas_support
 DefConstructor('\aas@@fstack{}',
-  "<ltx:XMApp role='POSTFIX'>"
-    . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMTok>.</ltx:XMTok>"
-    . "<ltx:XMWrap>#1</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
-  mode => 'math', bounded => 1);
-DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
-DefMacro('\fd',           '\aas@fstack{d}');
-DefMacro('\fh',           '\aas@fstack{h}');
-DefMacro('\fm',           '\aas@fstack{m}');
-DefMacro('\fs',           '\aas@fstack{s}');
-DefMacro('\fdg',          '\aas@fstack{\circ}');
-DefMacro('\farcm',        '\aas@fstack{\prime}');
-DefMacro('\farcs',        '\aas@fstack{\prime\prime}');
-DefMacro('\fp',           '\aas@fstack{p}');
+	       "<ltx:XMApp role='POSTFIX'>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+	       .  "<ltx:XMTok>.</ltx:XMTok>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
+	       mode=>'math', bounded=>1);
+DefMacro('\aas@fstack{}','\ensuremath{\aas@@fstack{#1}}');
+DefMacro('\fd','\aas@fstack{d}');
+DefMacro('\fh','\aas@fstack{h}');
+DefMacro('\fm','\aas@fstack{m}');
+DefMacro('\fs','\aas@fstack{s}');
+DefMacro('\fdg','\aas@fstack{\circ}');
+DefMacro('\farcm','\aas@fstack{\prime}');
+DefMacro('\farcs','\aas@fstack{\prime\prime}');
+DefMacro('\fp','\aas@fstack{p}');
 
-DefConstructor('\mathsc{}', '#1', bounded => 1, requireMath => 1, font => { family => 'smallcaps' });
+DefConstructor('\mathsc{}', '#1', bounded=>1, requireMath=>1, font=>{family=>'smallcaps'});
 
 # NOTE: Would like to see this used; do these put a \sim or \approx underneath something?
 #DefMacro('\udtw','');
 #DefMacro('\utw','');
 
 DefConstructor('\squareforqed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let('\sq',  '\squareforqed');
-Let('\qed', '\squareforqed');
+	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\sq','\squareforqed');
+Let('\qed','\squareforqed');
 
-DefPrimitiveI('\bbbc',   undef, "\x{2102}");    #not sure if ok for the ones NOT of type I$
-DefPrimitiveI('\bbbf',   undef, "\x{1D53D}");
-DefPrimitiveI('\bbbh',   undef, "\x{210D}");
-DefPrimitiveI('\bbbk',   undef, "\x{1D542}");
-DefPrimitiveI('\bbbm',   undef, "\x{1D544}");
-DefPrimitiveI('\bbbn',   undef, "\x{2115}");
-DefPrimitiveI('\bbbone', undef, "\x{1D7D9}");
-DefPrimitiveI('\bbbp',   undef, "\x{2119}");
-DefPrimitiveI('\bbbq',   undef, "\x{211A}");
-DefPrimitiveI('\bbbr',   undef, "\x{211D}");
-DefPrimitiveI('\bbbs',   undef, "\x{1D54A}");
-DefPrimitiveI('\bbbt',   undef, "\x{1D54B}");
-DefPrimitiveI('\bbbz',   undef, "\x{2124}");
+DefPrimitiveI('\bbbc',  undef,"\x{2102}");#not sure if ok for the ones NOT of type I$
+DefPrimitiveI('\bbbf',  undef,"\x{1D53D}");
+DefPrimitiveI('\bbbh',  undef,"\x{210D}");
+DefPrimitiveI('\bbbk',  undef,"\x{1D542}");
+DefPrimitiveI('\bbbm',  undef,"\x{1D544}");
+DefPrimitiveI('\bbbn',  undef,"\x{2115}");
+DefPrimitiveI('\bbbone',undef,"\x{1D7D9}");
+DefPrimitiveI('\bbbp',  undef,"\x{2119}");
+DefPrimitiveI('\bbbq',  undef,"\x{211A}");
+DefPrimitiveI('\bbbr',  undef,"\x{211D}");
+DefPrimitiveI('\bbbs',  undef,"\x{1D54A}");
+DefPrimitiveI('\bbbt',  undef,"\x{1D54B}");
+DefPrimitiveI('\bbbz',  undef,"\x{2124}");
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Appendices
@@ -287,45 +287,45 @@ DefPrimitiveI('\bbbz',   undef, "\x{2124}");
 # Astronomical objects
 
 DefConstructor('\object Semiverbatim',
-  "<ltx:text class='ltx_ast_objectname'>#1</ltx:text>");
-DefMacro('\listofobjects',  '');
-DefMacro('\listobjectname', 'List of Objects');
+	       "<ltx:text class='ltx_ast_objectname'>#1</ltx:text>");
+DefMacro('\listofobjects','');
+DefMacro('\listobjectname','List of Objects');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Extra stuff
-DefMacro('\setitemindent{}',     '');    # Ignorable
-DefMacro('\setitemitemindent{}', '');
+DefMacro('\setitemindent{}',''); # Ignorable
+DefMacro('\setitemitemindent{}','');
 
-DefMacro('\andname', 'and');
+DefMacro('\andname','and');
 #DefMacro('\lastand','');
-DefMacro('\lastandname', ', and');
+DefMacro('\lastandname',', and');
 
-DefMacro('\AASection{}', '');            # Ignorable
-DefMacro('\Online',      '');
+DefMacro('\AASection{}','');	# Ignorable
+DefMacro('\Online','');
 
 # Random dimensions, or spacing; would anyone use?
-DefRegister('\aftertext'         => Dimension('5pt'));
-DefRegister('\betweenumberspace' => Dimension('3.33pt'));
-DefRegister('\figcapgap'         => Dimension('5pt'));
-DefRegister('\tabcapgap'         => Dimension('10pt'));
-DefRegister('\figgap'            => Dimension('1cc'));
-DefRegister('\headerboxheight'   => Dimension('143pt'));
-DefRegister('\headlineindent'    => Dimension('1.166cm'));
-DefRegister('\instindent'        => Dimension(0));
-DefMacro('\leftlegendglue', '');
-DefRegister('\logodepth' => Dimension('1.3cm'));
+DefRegister('\aftertext'=>Dimension('5pt'));
+DefRegister('\betweenumberspace'=>Dimension('3.33pt'));
+DefRegister('\figcapgap'=>Dimension('5pt'));
+DefRegister('\tabcapgap'=>Dimension('10pt'));
+DefRegister('\figgap'=>Dimension('1cc'));
+DefRegister('\headerboxheight'=>Dimension('143pt'));
+DefRegister('\headlineindent'=>Dimension('1.166cm'));
+DefRegister('\instindent'=>Dimension(0));
+DefMacro('\leftlegendglue','');
+DefRegister('\logodepth'=>Dimension('1.3cm'));
 
-DefMacro('\capstrut',         '');
-DefMacro('\captionstyle',     '');
-DefMacro('\clearelargs',      '');
-DefMacro('\errorref',         '@latex@error{Citations are not allowed in the abstract}');
-DefMacro('\floatcounterend',  '.');
-DefMacro('\sectcounterend',   '.');
-DefMacro('\floatlegendstyle', '\bf');
-DefMacro('\thisbottomragged', '');
-DefMacro('\ts',               '\thinspace');
-DefMacro('\fnmsep',           '\unskip$^,$');                                               # ?
-DefMacro('\makeheadbox',      '');
+DefMacro('\capstrut','');
+DefMacro('\captionstyle','');
+DefMacro('\clearelargs','');
+DefMacro('\errorref','@latex@error{Citations are not allowed in the abstract}');
+DefMacro('\floatcounterend','.');
+DefMacro('\sectcounterend','.');
+DefMacro('\floatlegendstyle','\bf');
+DefMacro('\thisbottomragged','');
+DefMacro('\ts','\thinspace');
+DefMacro('\fnmsep','\unskip$^,$'); # ?
+DefMacro('\makeheadbox','');
 #DefMacro('\stripauthor','');
 #DefMacro('\theapsection','Appendix \@Alph\c@section:');
 #DefMacro('\theapsubsection','\@Alph\c@section.\@arabic\c@subsection.');
@@ -333,69 +333,70 @@ DefMacro('\makeheadbox',      '');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Journal shorthands
-DefMacro('\aj',       'AJ');
-DefMacro('\actaa',    'Acta Astron.');
-DefMacro('\araa',     'ARA\&A');
-DefMacro('\apj',      'ApJ');
-DefMacro('\apjl',     'ApJ');
-DefMacro('\apjs',     'ApJS');
-DefMacro('\ao',       'Appl.~Opt.');
-DefMacro('\apss',     'Ap\&SS');
-DefMacro('\aap',      'A\&A');
-DefMacro('\aapr',     'A\&A~Rev.');
-DefMacro('\aaps',     'A\&AS');
-DefMacro('\azh',      'AZh');
-DefMacro('\baas',     'BAAS');
-DefMacro('\bac',      'Bull. astr. Inst. Czechosl.');
-DefMacro('\caa',      'Chinese Astron. Astrophys.');
-DefMacro('\cjaa',     'Chinese J. Astron. Astrophys.');
-DefMacro('\icarus',   'Icarus');
-DefMacro('\jcap',     'J. Cosmology Astropart. Phys.');
-DefMacro('\jrasc',    'JRASC');
-DefMacro('\mnras',    'MNRAS');
-DefMacro('\memras',   'MmRAS');
-DefMacro('\na',       'New A');
-DefMacro('\nar',      'New A Rev.');
-DefMacro('\pasa',     'PASA');
-DefMacro('\pra',      'Phys.~Rev.~A');
-DefMacro('\prb',      'Phys.~Rev.~B');
-DefMacro('\prc',      'Phys.~Rev.~C');
-DefMacro('\prd',      'Phys.~Rev.~D');
-DefMacro('\pre',      'Phys.~Rev.~E');
-DefMacro('\prl',      'Phys.~Rev.~Lett.');
-DefMacro('\pasp',     'PASP');
-DefMacro('\pasj',     'PASJ');
-DefMacro('\qjras',    'QJRAS');
-DefMacro('\rmxaa',    'Rev. Mexicana Astron. Astrofis.');
-DefMacro('\skytel',   'S&T');
-DefMacro('\solphys',  'Sol.~Phys.');
-DefMacro('\sovast',   'Sov.~Ast.');
-DefMacro('\ssr',      'Space~Sci.~Rev.');
-DefMacro('\zap',      'ZAp');
-DefMacro('\nat',      'Nature');
-DefMacro('\iaucirc',  'IAU~Circ.');
-DefMacro('\aplett',   'Astrophys.~Lett.');
-DefMacro('\apspr',    'Astrophys.~Space~Phys.~Res.');
-DefMacro('\bain',     'Bull.~Astron.~Inst.~Netherlands');
-DefMacro('\fcp',      'Fund.~Cosmic~Phys.');
-DefMacro('\gca',      'Geochim.~Cosmochim.~Acta.');
-DefMacro('\grl',      'Geochim.~Res.~Lett.');
-DefMacro('\jcp',      'J.~Chem.~Phys.');
-DefMacro('\jgr',      'J.~Geophys.~Res.');
-DefMacro('\jqsrt',    'J.~Quant.~Spec.~Radiat.~Transf.');
-DefMacro('\memsai',   'Mem.~Soc.~Astron.~Italiana');
-DefMacro('\nphysa',   'Nucl.~Phys.~A');
-DefMacro('\physrep',  'Phys.~Rep');
-DefMacro('\physscr',  'Phys.~Scr');
-DefMacro('\planss',   'Planet.~Space~Sci.');
-DefMacro('\procspie', 'Proc.~SPIE');
-Let('\astap',   '\aap');
-Let('\apjlett', '\ajpl');
-Let('\apjsupp', '\ajps');
-Let('\applopt', '\ao');
+DefMacro('\aj',     'AJ');
+DefMacro('\actaa',  'Acta Astron.');
+DefMacro('\araa',   'ARA\&A');
+DefMacro('\apj',    'ApJ');
+DefMacro('\apjl',   'ApJ');
+DefMacro('\apjs',   'ApJS');
+DefMacro('\ao',     'Appl.~Opt.');
+DefMacro('\apss',   'Ap\&SS');
+DefMacro('\aap',    'A\&A');
+DefMacro('\aapr',   'A\&A~Rev.');
+DefMacro('\aaps',   'A\&AS');
+DefMacro('\azh',    'AZh');
+DefMacro('\baas',   'BAAS');
+DefMacro('\bac',    'Bull. astr. Inst. Czechosl.');
+DefMacro('\caa',    'Chinese Astron. Astrophys.');
+DefMacro('\cjaa',   'Chinese J. Astron. Astrophys.');
+DefMacro('\icarus', 'Icarus');
+DefMacro('\jcap',   'J. Cosmology Astropart. Phys.');
+DefMacro('\jrasc',  'JRASC');
+DefMacro('\mnras',  'MNRAS');
+DefMacro('\memras', 'MmRAS');
+DefMacro('\na',     'New A');
+DefMacro('\nar',    'New A Rev.');
+DefMacro('\pasa',   'PASA');
+DefMacro('\pra',    'Phys.~Rev.~A');
+DefMacro('\prb',    'Phys.~Rev.~B');
+DefMacro('\prc',    'Phys.~Rev.~C');
+DefMacro('\prd',    'Phys.~Rev.~D');
+DefMacro('\pre',    'Phys.~Rev.~E');
+DefMacro('\prl',    'Phys.~Rev.~Lett.');
+DefMacro('\pasp',   'PASP');
+DefMacro('\pasj',   'PASJ');
+DefMacro('\qjras',  'QJRAS');
+DefMacro('\rmxaa',  'Rev. Mexicana Astron. Astrofis.');
+DefMacro('\skytel', 'S&T');
+DefMacro('\solphys','Sol.~Phys.');
+DefMacro('\sovast', 'Sov.~Ast.');
+DefMacro('\ssr',    'Space~Sci.~Rev.');
+DefMacro('\zap',    'ZAp');
+DefMacro('\nat',    'Nature');
+DefMacro('\iaucirc','IAU~Circ.');
+DefMacro('\aplett', 'Astrophys.~Lett.');
+DefMacro('\apspr',  'Astrophys.~Space~Phys.~Res.');
+DefMacro('\bain',   'Bull.~Astron.~Inst.~Netherlands');
+DefMacro('\fcp',    'Fund.~Cosmic~Phys.');
+DefMacro('\gca',    'Geochim.~Cosmochim.~Acta.');
+DefMacro('\grl',    'Geochim.~Res.~Lett.');
+DefMacro('\jcp',    'J.~Chem.~Phys.');
+DefMacro('\jgr',    'J.~Geophys.~Res.');
+DefMacro('\jqsrt',  'J.~Quant.~Spec.~Radiat.~Transf.');
+DefMacro('\memsai', 'Mem.~Soc.~Astron.~Italiana');
+DefMacro('\nphysa', 'Nucl.~Phys.~A');
+DefMacro('\physrep','Phys.~Rep');
+DefMacro('\physscr','Phys.~Scr');
+DefMacro('\planss', 'Planet.~Space~Sci.');
+DefMacro('\procspie','Proc.~SPIE');
+Let('\astap','\aap');
+Let('\apjlett','\ajpl');
+Let('\apjsupp','\ajps');
+Let('\applopt','\ao');
 
-DefMacro('\errorref', '');
-DefEnvironment('{stopref}', '#1');
+
+DefMacro('\errorref','');
+DefEnvironment('{stopref}','#1');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

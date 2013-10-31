@@ -31,18 +31,18 @@
   <xsl:template match="ltx:biblist">
     <xsl:choose>
       <xsl:when test="$twocolumn-biblist">
-        <xsl:apply-templates select="." mode="twocolumns"/>
+	<xsl:apply-templates select="." mode="twocolumns"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:text>&#x0A;</xsl:text>
-        <xsl:element name="ul" namespace="{$html_ns}">
-          <xsl:call-template name="add_id"/>
-          <xsl:call-template name="add_attributes"/>
-          <xsl:apply-templates select="." mode="begin"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end"/>
-          <xsl:text>&#x0A;</xsl:text>
-        </xsl:element>
+	<xsl:text>&#x0A;</xsl:text>
+	<xsl:element name="ul" namespace="{$html_ns}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	  <xsl:text>&#x0A;</xsl:text>
+	</xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -74,12 +74,12 @@
        choose which bibtag is used to display? -->
   <xsl:template match="ltx:bibitem/ltx:bibtag[@role='refnum']">
     <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:call-template name="add_id"/>
-        <xsl:call-template name="add_attributes"/>
-        <xsl:apply-templates select="." mode="begin"/>
-        <xsl:value-of select="@open"/>
-        <xsl:apply-templates/>
-        <xsl:value-of select="@close"/>
+	<xsl:call-template name="add_id"/>
+	<xsl:call-template name="add_attributes"/>
+	<xsl:apply-templates select="." mode="begin"/>
+	<xsl:value-of select="@open"/>
+	<xsl:apply-templates/>
+	<xsl:value-of select="@close"/>
       <xsl:apply-templates select="." mode="end"/>
     </xsl:element>
   </xsl:template>

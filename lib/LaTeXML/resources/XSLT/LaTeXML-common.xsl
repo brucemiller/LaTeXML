@@ -59,26 +59,26 @@
   <xsl:template name="LaTeXML_identifier">
     <xsl:if test="$LATEXML_VERSION or $TIMESTAMP">
       <xsl:comment>
-        <xsl:text>Generated</xsl:text>
-        <xsl:if test="$TIMESTAMP">
-          <xsl:text> on </xsl:text>
-          <xsl:value-of select="$TIMESTAMP"/>
-        </xsl:if>
-        <xsl:text> by LaTeXML</xsl:text>
-        <xsl:if test="$LATEXML_VERSION">
-          <xsl:text> (version </xsl:text>
-          <xsl:value-of select="$LATEXML_VERSION"/>
-          <xsl:text>)</xsl:text>
-        </xsl:if>
-        <xsl:text> http://dlmf.nist.gov/LaTeXML/.</xsl:text>
+	<xsl:text>Generated</xsl:text>
+	<xsl:if test="$TIMESTAMP">
+	  <xsl:text> on </xsl:text>
+	  <xsl:value-of select="$TIMESTAMP"/>
+	</xsl:if>
+	<xsl:text> by LaTeXML</xsl:text>
+	<xsl:if test="$LATEXML_VERSION">
+	  <xsl:text> (version </xsl:text>
+	  <xsl:value-of select="$LATEXML_VERSION"/>
+	  <xsl:text>)</xsl:text>
+	</xsl:if>
+	<xsl:text> http://dlmf.nist.gov/LaTeXML/.</xsl:text>
       </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
       <xsl:comment>
-        <xsl:text>Document created on </xsl:text>
-        <xsl:value-of select='//ltx:date/node()'/>
-        <xsl:text>.</xsl:text>
+	<xsl:text>Document created on </xsl:text>
+	<xsl:value-of select='//ltx:date/node()'/>
+	<xsl:text>.</xsl:text>
       </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:if>
@@ -132,7 +132,7 @@
     <xsl:param name="ending"/>
     <func:result>
       <xsl:value-of select="substring($string,string-length($string) - string-length($ending))
-                            = $ending"/>
+			    = $ending"/>
     </func:result>
   </func:function>
 
@@ -158,14 +158,14 @@
     <xsl:param name="string"/>
     <func:result>
       <xsl:choose>
-        <xsl:when test="$string = ''"></xsl:when>
-        <xsl:when test="contains($string,' ')">
-          <xsl:value-of select="concat($prefix,substring-before($string,' '),
-                                ' ',f:class-pref-aux($prefix,substring-after($string,' ')))"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="concat($prefix,$string)"/>
-        </xsl:otherwise>
+	<xsl:when test="$string = ''"></xsl:when>
+	<xsl:when test="contains($string,' ')">
+	  <xsl:value-of select="concat($prefix,substring-before($string,' '),
+				' ',f:class-pref-aux($prefix,substring-after($string,' ')))"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="concat($prefix,$string)"/>
+	</xsl:otherwise>
       </xsl:choose>
     </func:result>
   </func:function>
@@ -195,7 +195,7 @@
   <xsl:template match="*" mode='copy-foreign'>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
-        <xsl:apply-templates select="." mode="copy-attribute"/>
+	<xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates mode='copy-foreign'/>
     </xsl:element>
@@ -210,7 +210,7 @@
   <xsl:template match="xhtml:*" mode='copy-foreign'>
     <xsl:element name="{local-name()}" namespace="{$html_ns}">
       <xsl:for-each select="@*">
-        <xsl:apply-templates select="." mode="copy-attribute"/>
+	<xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates mode='copy-foreign'/>
     </xsl:element>
@@ -227,7 +227,7 @@
                        | ltx:XMArray | ltx:XMRow | ltx:XMCell" mode='copy-foreign'>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
-        <xsl:apply-templates select="." mode="copy-attribute"/>
+	<xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
       <xsl:apply-templates mode='copy-foreign'/>
     </xsl:element>
@@ -300,11 +300,11 @@
     <xsl:call-template name="add_attribute">
       <xsl:with-param name="name" select="'class'"/>
       <xsl:with-param name="value">
-        <xsl:apply-templates select="." mode="classes"/>
-        <xsl:if test="$extra_classes">
-          <xsl:text> </xsl:text>
-          <xsl:value-of select="$extra_classes"/>
-        </xsl:if>
+	<xsl:apply-templates select="." mode="classes"/>
+	<xsl:if test="$extra_classes">
+	  <xsl:text> </xsl:text>
+	  <xsl:value-of select="$extra_classes"/>
+	</xsl:if>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
@@ -353,10 +353,10 @@
     <xsl:call-template name="add_attribute">
       <xsl:with-param name="name" select="'style'"/>
       <xsl:with-param name="value">
-        <xsl:apply-templates select="." mode="styling"/>
-        <xsl:if test="$extra_style">
-          <xsl:value-of select="$extra_style"/>
-        </xsl:if>
+	<xsl:apply-templates select="." mode="styling"/>
+	<xsl:if test="$extra_style">
+	  <xsl:value-of select="$extra_style"/>
+	</xsl:if>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>
@@ -381,36 +381,36 @@
     <xsl:if test="@framed='rectangle'">
       <xsl:value-of select="'border:1px solid '"/>
       <xsl:choose>
-        <xsl:when test="@framecolor">
-          <xsl:value-of select="@framecolor"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="'black'"/>
-        </xsl:otherwise>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
       </xsl:choose>
       <xsl:value-of select="';'"/>
     </xsl:if>
     <xsl:if test="@framed='left'">
       <xsl:value-of select="'border-left:1px solid '"/>
       <xsl:choose>
-        <xsl:when test="@framecolor">
-          <xsl:value-of select="@framecolor"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="'black'"/>
-        </xsl:otherwise>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
       </xsl:choose>
       <xsl:value-of select="';'"/>
     </xsl:if>
     <xsl:if test="@framed='right'">
       <xsl:value-of select="'border-right:1px solid '"/>
       <xsl:choose>
-        <xsl:when test="@framecolor">
-          <xsl:value-of select="@framecolor"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="'black'"/>
-        </xsl:otherwise>
+	<xsl:when test="@framecolor">
+	  <xsl:value-of select="@framecolor"/>
+	</xsl:when>
+	<xsl:otherwise>
+	  <xsl:value-of select="'black'"/>
+	</xsl:otherwise>
       </xsl:choose>
       <xsl:value-of select="';'"/>
     </xsl:if>
@@ -466,10 +466,10 @@
     <xsl:if test='/*/@prefix'>
       <xsl:attribute name='prefix'><xsl:value-of select='/*/@prefix'/></xsl:attribute>
       <xsl:if test="$RDFA_VERSION = '1.0'">
-        <xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
-        <xsl:call-template name="add_RDFa1.0_namespaces">
-          <xsl:with-param name="prefix" select="normalize-space(/*/@prefix)"/>
-        </xsl:call-template>
+	<xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
+	<xsl:call-template name="add_RDFa1.0_namespaces">
+	  <xsl:with-param name="prefix" select="normalize-space(/*/@prefix)"/>
+	</xsl:call-template>
       </xsl:if>
     </xsl:if>
   </xsl:template>
@@ -481,21 +481,21 @@
     <xsl:if test="$prefix != ''">
       <!-- peal off 1st "prefix: url" pair, and add as namespace declaration. -->
       <xsl:call-template name="add_namespace">
-        <xsl:with-param name="prefix" select="substring-before($prefix,':')"/>
-        <xsl:with-param name="url">
-          <xsl:choose>
-            <xsl:when test="substring-before(substring-after($prefix,' '),' ')">
-              <xsl:value-of select="substring-before(substring-after($prefix,' '),' ')"/>           
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:value-of select="substring-after($prefix,' ')"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:with-param>
+	<xsl:with-param name="prefix" select="substring-before($prefix,':')"/>
+	<xsl:with-param name="url">
+	  <xsl:choose>
+	    <xsl:when test="substring-before(substring-after($prefix,' '),' ')">
+	      <xsl:value-of select="substring-before(substring-after($prefix,' '),' ')"/>	    
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <xsl:value-of select="substring-after($prefix,' ')"/>
+	    </xsl:otherwise>
+	  </xsl:choose>
+	</xsl:with-param>
       </xsl:call-template>
       <!-- Recurse on any remaining pairs -->
       <xsl:call-template name="add_RDFa1.0_namespaces">
-        <xsl:with-param name="prefix" select="substring-after(substring-after($prefix,' '),' ')"/>
+	<xsl:with-param name="prefix" select="substring-after(substring-after($prefix,' '),' ')"/>
       </xsl:call-template>
     </xsl:if>
   </xsl:template>

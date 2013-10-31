@@ -17,6 +17,6 @@ use LaTeXML::Package;
 #**********************************************************************
 # Conceivably could be useful to add "pagination markers"
 # (empty elements that are normally ignored) at beginning and end
-DefEnvironment('{landscape}', "#body");
+DefEnvironment('{landscape}',"#body");
 #**********************************************************************
 1;

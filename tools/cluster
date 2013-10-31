@@ -15,152 +15,152 @@ use LaTeXML::Util::Pathname;
 #    texscan --signature --quiet *.sty > style.signatures
 
 my $identity = 'cluster';
-my ($help) = (0);
-local $::MAXDIFF   = 20;
+my($help)=(0);
+local $::MAXDIFF = 20;
 local $::VERBOSITY = 0;
 our $MAXSIMILAR = 3;
-my $CLUSTERTOOSMALL = 5;
-my $sigfile         = 'signatures';
-my ($workplan, $dosimilar) = (undef, 1);
+my $CLUSTERTOOSMALL=5;
+my $sigfile = 'signatures';
+my($workplan,$dosimilar) = (undef,1);
 GetOptions("signaturefile=s" => \$sigfile,
-  "help"            => \$help,
-  "verbose"         => sub { $::VERBOSITY++; },
-  "quiet"           => sub { $::VERBOSITY--; },
-  "maxdifference=i" => \$::MAXDIFF,
-  "similar!"        => \$dosimilar,
-  "workplan!"       => \$workplan,
-) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
-pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDOUT) unless $sigfile;
+	   "help"        => \$help,
+	   "verbose"     => sub { $::VERBOSITY++; },
+	   "quiet"       => sub { $::VERBOSITY--; },
+	   "maxdifference=i" => \$::MAXDIFF,
+	   "similar!"    => \$dosimilar,
+	   "workplan!"   => \$workplan,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>0, -output=>\*STDOUT) unless $sigfile;
 #======================================================================
-local $::LTXMLDIR   = "$FindBin::RealBin/../blib/lib/LaTeXML";
+local $::LTXMLDIR = "$FindBin::RealBin/../blib/lib/LaTeXML";
 local $::ARXMLIVDIR = ".";
 
-my %files    = ();
+my %files = ();
 my %clusters = ();
 
-$| = 1;    # Flush!
+$| = 1; 			# Flush!
 
-if ($workplan) {
-  print '' . ('%' x 60) . "\n Workplan for LaTeXML implementation\n" . ('%' x 60) . "\n"; }
+if($workplan){
+  print ''.('%' x 60)."\n Workplan for LaTeXML implementation\n".('%' x 60)."\n"; }
 
 #======================================================================
 # Read Usage statistics
 #======================================================================
 my $usagefile = 'usage.counts';
-print STDERR "Loading usage statistics from $usagefile...\n";
-my %usage = ();
-open(SIG, $usagefile) or die "Couldn't read usage statistics from $usagefile! $!";
-while (<SIG>) {
+print STDERR "Loading usage statistics from $usagefile...\n"; 
+my %usage=();
+open(SIG,$usagefile) or die "Couldn't read usage statistics from $usagefile! $!";
+while(<SIG>){
   next if /^\s*#/;
   /^(.*?)=(\d+)$/;
-  my ($name, $n) = ($1, $2);
+  my($name,$n)=($1,$2);
   $usage{$name} = $n; }
 
 #======================================================================
 # Read signatures
 #======================================================================
-print STDERR "Loading signatures from $sigfile...\n";
-open(SIG, $sigfile) or die "Couldn't read signatures from $sigfile! $!";
-my $neverused = 0;
-while (<SIG>) {
+print STDERR "Loading signatures from $sigfile...\n"; 
+open(SIG,$sigfile) or die "Couldn't read signatures from $sigfile! $!";
+my $neverused=0;
+while(<SIG>){
   next if /^\s*#/;
   /^(.*?):(.*?):(.*)$/;
-  my ($path, $declname, $sig) = ($1, $2, $3);
+  my($path,$declname,$sig)=($1,$2,$3);
   next if @ARGV && !grep($path eq $_, @ARGV);
-  my ($dir, $name, $type) = pathname_split($path);
+  my($dir,$name,$type)=pathname_split($path);
   my $usage = $usage{$name};
-  if (!$usage) {
+  if(!$usage){
     $neverused++; next; }
-  my $file = File->new($path, $declname, $sig, $usage);
-  $files{ $file->name } = $file; }
+  my $file = File->new($path,$declname,$sig,$usage);
+  $files{$file->name} = $file; }
 
-print STDERR "Read " . scalar(keys %files) . " style/class signatures"
-  . "  (after ignoring $neverused files never used(?))\n";
+print STDERR "Read ".scalar(keys %files)." style/class signatures"
+  ."  (after ignoring $neverused files never used(?))\n";
 
 #======================================================================
 # Check for broken class files
 #======================================================================
-my @broken = ();
-foreach my $name (keys %files) {
+my @broken=();
+foreach my $name (keys %files){
   my $file = $files{$name};
-  if (($name =~ /\.cls$/) && !$$file{declaredname}
-    && grep(!$$file{signature}{$_}, qw(\section \theequation))) {
-    push(@broken, $file);
-    delete $files{$name}; } }
-if (@broken) {
-  print STDERR "The following " . scalar(@broken) . " files appear not to be valid classes:\n"
-    . '   ' . join(', ', map($_->show, @broken)) . "\n"; }
+  if(($name =~ /\.cls$/) && !$$file{declaredname}
+     && grep(! $$file{signature}{$_}, qw(\section \theequation))){
+    push(@broken,$file);
+    delete $files{$name}; }}
+if(@broken){
+  print STDERR "The following ".scalar(@broken)." files appear not to be valid classes:\n"
+    .'   '.join(', ',map($_->show,@broken))."\n"; }
 
-print STDERR "Summary: " . File::showUsage(values %files) . "\n";
+print STDERR "Summary: ".File::showUsage(values %files)."\n";
 
 #======================================================================
 # Group into Identical clusters
 #======================================================================
-my @toscan = (@ARGV ? grep($_, map($files{$_}, @ARGV)) : values %files);
-print "Grouping " . scalar(@toscan) . " files into identical clusters ...\n";
-while (@toscan) {
-  my $file1    = shift(@toscan);
-  my @same     = ($file1);
+my @toscan = (@ARGV ? grep($_,map($files{$_}, @ARGV)) : values %files);
+print "Grouping ".scalar(@toscan)." files into identical clusters ...\n";
+while(@toscan){
+  my $file1 = shift(@toscan);
+  my @same = ($file1);
   my @scanning = @toscan;
-  foreach my $file2 (@scanning) {
-    my ($nextra1, $nextra2) = $file1->difference($file2);
-    if ($nextra1 + $nextra2 == 0) {    # files are identical
-      push(@same, $file2);
-      @toscan = grep($_ ne $file2, @toscan); }    # Don't need to compare this one anymore
+  foreach my $file2 (@scanning){
+    my($nextra1,$nextra2) =$file1->difference($file2);
+    if($nextra1+$nextra2  == 0) {			# files are identical
+      push(@same,$file2);
+      @toscan = grep($_ ne $file2,@toscan); } # Don't need to compare this one anymore
     else {
-      $file1->noteSimilar($file2, $nextra2, $nextra1);
-      $file2->noteSimilar($file1, $nextra1, $nextra2); } }
+      $file1->noteSimilar($file2,$nextra2,$nextra1);
+      $file2->noteSimilar($file1,$nextra1,$nextra2); }}
   my $cluster = Cluster->new(@same);
-  $clusters{ $cluster->name } = $cluster; }
+  $clusters{$cluster->name} = $cluster; }
 
-print "Comparison yeilded " . scalar(keys %clusters) . " identical clusters.\n";
+print "Comparison yeilded ".scalar(keys %clusters)." identical clusters.\n";
 
 #======================================================================
 # Further group clusters that are simple subsets of others and combine.
 #======================================================================
-if ($dosimilar) {
-  print "Looking for simple subsets...\n";
-  my $nsub = 0;
-  foreach my $cluster (values %clusters) {
-    if (!$cluster->isDistribution) {    # Don't merge distribution files into superclasses!
-      local $::MAXDIFF = $::MAXDIFF;
-      $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
-      # Look for the closest superset to this cluster; if found, merge into it.
-      my $supersets = $cluster->mergeSimilarities('superset');
-      my ($superdiff, $super) = $supersets->closest;
-      if ($super) {
-        delete $clusters{ $$cluster{name} };
-        $super = $$super{parent} if $$super{parent};  # in case superset has, itself, already been absorbed!
-        $$cluster{parent} = $super;
-        $nsub++;
-        #      absorb the files of that cluster into the superset
-        # NOTE: Would be nice to record the fact that the file is a subset!!
-        foreach my $f (@{ $$cluster{files} }) {
-          $super->adoptFile($f, $superdiff); }
-      } } }
-  print "Combined $nsub subsets, resulting in " . scalar(keys %clusters) . " similar clusters\n";
+if($dosimilar){
+print "Looking for simple subsets...\n";
+my $nsub=0;
+foreach my $cluster (values %clusters){
+  if(!$cluster->isDistribution){ # Don't merge distribution files into superclasses!
+    local $::MAXDIFF = $::MAXDIFF;
+    $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
+    # Look for the closest superset to this cluster; if found, merge into it.
+    my $supersets = $cluster->mergeSimilarities('superset');
+    my($superdiff,$super)= $supersets->closest;
+    if($super){
+      delete $clusters{$$cluster{name}};
+      $super = $$super{parent} if $$super{parent}; # in case superset has, itself, already been absorbed!
+      $$cluster{parent} = $super;
+      $nsub++;
+      #      absorb the files of that cluster into the superset
+      # NOTE: Would be nice to record the fact that the file is a subset!!
+      foreach my $f (@{$$cluster{files}}){
+	$super->adoptFile($f,$superdiff); }
+    }}}
+print "Combined $nsub subsets, resulting in ".scalar(keys %clusters)." similar clusters\n";
 }
 #======================================================================
 # Report on clusters.
 #======================================================================
 #my @core = map($clusters{$_},qw(article.cls report.cls book.cls));
-my @core = grep($_->isDistribution, values %clusters);
+my @core = grep($_->isDistribution,values %clusters);
 my $nsmall = scalar(grep($$_{usage} <= $CLUSTERTOOSMALL, values %clusters));
 
 print "There are $nsmall clusters with usage less than $CLUSTERTOOSMALL.\n" if $nsmall;
-foreach my $cluster (sort { $$b{usage} <=> $$a{usage} } values %clusters) {
-  #  next if $$cluster{usage} <= $CLUSTERTOOSMALL;
+foreach my $cluster (sort {$$b{usage} <=> $$a{usage}} values %clusters){
+#  next if $$cluster{usage} <= $CLUSTERTOOSMALL;
   local $::MAXDIFF = $::MAXDIFF;
   $::MAXDIFF = $$cluster{nsymbols} if $::MAXDIFF > $$cluster{nsymbols};
 
   print "\n%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n";
-  $cluster->describe;
+  $cluster->describe; 
   $cluster->classify(@core) unless $cluster->isDistribution;
 
-  #  $cluster->mergeSimilarities('subset')->describe('  Subsets'); #  if ? ...
-  #  $cluster->mergeSimilarities('superset')->describe('  Supersets');
-  $cluster->mergeSimilarities('similar')->describe('  Similar Clusters', $MAXSIMILAR);
+#  $cluster->mergeSimilarities('subset')->describe('  Subsets'); #  if ? ...
+#  $cluster->mergeSimilarities('superset')->describe('  Supersets');
+  $cluster->mergeSimilarities('similar')->describe('  Similar Clusters',$MAXSIMILAR);
 
   $cluster->workplan if $workplan;
 }
@@ -172,19 +172,19 @@ package File;
 use LaTeXML::Util::Pathname;
 
 sub new {
-  my ($class, $name, $declname, $signature, $usage) = @_;
-  my $distribution = pathname_find("$name.ltxml", paths => [$::LTXMLDIR], installation_subdir => 'Package');
-  my $self = bless { name => $name,
-    declaredname => $declname,
-    signature => { map(($_ => 1), split(/,\s*/, $signature)) },
-    usage => $usage || 0,
-    distribution => $distribution,
-    implemented  => $distribution || pathname_find("$name.ltxml", paths => [$::ARXMLIVDIR]),
-    cluster      => undef, clusterdiff => 0 }, $class;
-  $$self{nsymbols} = scalar(keys %{ $$self{signature} });
-  $$self{subset}   = Similarity->new($self);
-  $$self{superset} = Similarity->new($self);
-  $$self{similar}  = Similarity->new($self);
+  my($class,$name,$declname,$signature,$usage)=@_;
+  my $distribution = pathname_find("$name.ltxml",paths=>[$::LTXMLDIR],installation_subdir=>'Package');
+  my $self = bless { name=>$name,
+		     declaredname=>$declname,
+		     signature=> { map( ($_=>1), split(/,\s*/, $signature)) },
+		     usage=>$usage||0,
+		     distribution=>$distribution,
+		     implemented=>$distribution ||pathname_find("$name.ltxml",paths=>[$::ARXMLIVDIR]),
+		     cluster=>undef, clusterdiff=>0}, $class;
+  $$self{nsymbols} = scalar(keys %{$$self{signature}});
+  $$self{subset}  =Similarity->new($self);
+  $$self{superset}=Similarity->new($self);
+  $$self{similar} =Similarity->new($self);
   $self; }
 
 sub name { $_[0]->{name}; }
@@ -193,32 +193,32 @@ sub isDistribution { $_[0]->{distribution}; }
 sub isImplemented  { $_[0]->{implemented}; }
 
 sub status {
-  my ($self) = @_;
+  my($self)=@_;
   ($$self{distribution} ? "D" : ($$self{implemented} ? "I" : 'U')); }
 
 sub show {
-  my ($self) = @_;
-  $$self{name} . '[' . $self->status . ',u=' . $$self{usage} . ',n=' . $$self{nsymbols} . ',d=' . $$self{clusterdiff} . ']'; }
+  my($self)=@_;
+  $$self{name}.'['.$self->status.',u='.$$self{usage}.',n='.$$self{nsymbols}.',d='.$$self{clusterdiff}.']'; }
 
 # not a method!
 sub showUsage {
-  my (@files) = @_;
-  my ($ndist, $udist, $nimpl, $uimpl, $nun, $uun) = (0, 0, 0, 0, 0, 0);
-  foreach my $file (@files) {
-    if ($$file{distribution}) {
-      $ndist++; $udist += $$file{usage}; }
-    elsif ($$file{implemented}) {
-      $nimpl++; $uimpl += $$file{usage}; }
+  my(@files)=@_;
+  my($ndist,$udist, $nimpl,$uimpl, $nun,$uun)=(0,0, 0,0, 0,0);
+  foreach my $file (@files){
+    if($$file{distribution}){
+      $ndist++; $udist +=$$file{usage}; }
+    elsif($$file{implemented}){
+      $nimpl++; $uimpl +=$$file{usage}; }
     else {
-      $nun++; $uun += $$file{usage}; } }
-  my $ntot = $ndist + $nimpl + $nun;
-  my $utot = $udist + $uimpl + $uun;
+      $nun++; $uun +=$$file{usage}; }}
+  my $ntot = $ndist+$nimpl+$nun;
+  my $utot = $udist+$uimpl+$uun;
   join(', ',
-    grep($_,
-      ($ntot  ? "$ntot files (u=$utot)"           : ''),
-      ($ndist ? "$ndist in dist. (u=$udist)"      : ''),
-      ($nimpl ? "$nimpl `implemented' (u=$uimpl)" : ''),
-      ($nun   ? "$nun not-done (u=$uun)"          : ''))); }
+       grep($_,
+	    ($ntot  ? "$ntot files (u=$utot)" :''),
+	    ($ndist ? "$ndist in dist. (u=$udist)" :''),
+	    ($nimpl ? "$nimpl `implemented' (u=$uimpl)" :''),
+	    ($nun   ? "$nun not-done (u=$uun)" :''))); }
 
 #======================================================================
 # Question: How good should the match be?
@@ -233,36 +233,36 @@ sub showUsage {
 #======================================================================
 
 sub difference {
-  my ($self, $file2) = @_;
-  my %sig1 = %{ $$self{signature} };
-  my %sig2 = %{ $$file2{signature} };
+  my($self,$file2)=@_;
+  my %sig1 = %{$$self{signature}};
+  my %sig2 = %{$$file2{signature}};
   my $same = 0;
-  foreach my $cs (keys %sig1) {
-    if ($sig2{$cs}) {
+  foreach my $cs (keys %sig1){
+    if($sig2{$cs}){
       delete $sig1{$cs};
       delete $sig2{$cs};
-      $same++; } }
-  (scalar(keys %sig1), scalar(keys %sig2)); }
+      $same++; }}
+  (scalar(keys %sig1),scalar(keys %sig2)); }
 
 sub differenceSignature {
-  my ($self, $file2) = @_;
-  my %sig1 = %{ $$self{signature} };
-  my %sig2 = %{ $$file2{signature} };
+  my($self,$file2)=@_;
+  my %sig1 = %{$$self{signature}};
+  my %sig2 = %{$$file2{signature}};
   my $same = 0;
-  foreach my $cs (keys %sig1) {
-    if ($sig2{$cs}) {
+  foreach my $cs (keys %sig1){
+    if($sig2{$cs}){
       delete $sig1{$cs};
       delete $sig2{$cs};
-      $same++; } }
-  (join(',', sort keys %sig1), join(',', sort keys %sig2)); }
+      $same++; }}
+  (join(',',sort keys %sig1),join(',',sort keys %sig2)); }
 
 sub noteSimilar {
-  my ($self, $other, $nadded, $nmissing) = @_;
-  if ($nadded == 0) {
-    $$self{subset}->add($other, $nmissing); }
-  elsif ($nmissing == 0) {
-    $$self{superset}->add($other, $nadded); }
-  $$self{similar}->add($other, $nadded + $nmissing); }
+  my($self,$other,$nadded,$nmissing)=@_;
+  if($nadded == 0){
+    $$self{subset}->add($other,$nmissing); }
+  elsif($nmissing == 0){
+    $$self{superset}->add($other,$nadded); }
+  $$self{similar}->add($other,$nadded+$nmissing); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cluster object
@@ -270,134 +270,133 @@ sub noteSimilar {
 package Cluster;
 
 sub new {
-  my ($class, @files) = @_;
+  my($class,@files)=@_;
   my @f;
   # Choose a Representative file from the set
   # Prefer Distribution over Implemented over unimplemented, then choose the shortest.
-  if    ((@f) = grep($_->isDistribution, @files)) { }
-  elsif ((@f) = grep($_->isImplemented,  @files)) { }
-  else                                            { @f = @files; }
-  @f = sort { ($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); } @f;
-  my $representative = $f[0];
-  my $self = bless { name => $representative->name, representative => $representative, files => [], nsymbols => 0 }, $class;
+  if((@f)=grep($_->isDistribution,@files)){}
+  elsif((@f)= grep($_->isImplemented,@files)){}
+  else{ @f = @files; }
+  @f = sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); } @f;
+  my $representative=$f[0];
+  my $self = bless { name=>$representative->name, representative=>$representative, files=>[], nsymbols=>0}, $class;
 
-  foreach my $file (@files) {
-    $self->adoptFile($file, 0); }
+  foreach my $file (@files){
+    $self->adoptFile($file,0); }
   $self; }
 
 sub name { $_[0]->{name}; }
 
 sub adoptFile {
-  my ($self, $file, $d) = @_;
-  push(@{ $$self{files} }, $file);
+  my($self,$file,$d)=@_;
+  push(@{$$self{files}}, $file);
   $$file{cluster} = $self;
   $$file{clusterdiff} += $d || 0;
   $$self{usage} += $$file{usage};
-  $$self{declarednames}{ $$file{declaredname} } = 1;
-  $$self{nsymbols} = $$file{nsymbols} if $$self{nsymbols} < $$file{nsymbols};
+  $$self{declarednames}{$$file{declaredname}}=1; 
+  $$self{nsymbols} = $$file{nsymbols}  if $$self{nsymbols} < $$file{nsymbols};
   $file; }
 
 sub show {
-  my ($self) = @_;
-  $$self{name} . '[' . $$self{representative}->status . ',u=' . $$self{usage} . ',n=' . $$self{nsymbols} . ']'; }
+  my($self)=@_;
+  $$self{name}.'['.$$self{representative}->status.',u='.$$self{usage}.',n='.$$self{nsymbols}.']'; }
 
 sub isDistribution { $_[0]->{representative}->{distribution}; }
 sub isImplemented  { $_[0]->{representative}->{implemented}; }
 
 sub difference {
-  my ($self, $cluster2) = @_;
+  my($self,$cluster2)=@_;
   $$self{representative}->difference($$cluster2{representative}); }
 
 sub differenceSignature {
-  my ($self, $cluster2) = @_;
+  my($self,$cluster2)=@_;
   $$self{representative}->differenceSignature($$cluster2{representative}); }
 
 sub describe {
-  my ($self) = @_;
-  print "Cluster " . $self->show . "\n";
-  #  print "  Declared as: ".join(', ',sort keys %{$$self{declarednames}})."\n";
-  print "  Summary: " . File::showUsage(@{ $$self{files} }) . "\n";
-  print "  Files: " . join(', ', map($_->show,
-      sort { ($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
-        @{ $$self{files} })) . "\n";
+  my($self)=@_;
+  print "Cluster ".$self->show."\n";
+#  print "  Declared as: ".join(', ',sort keys %{$$self{declarednames}})."\n";
+  print "  Summary: ".File::showUsage(@{$$self{files}})."\n";
+  print "  Files: ".join(', ', map($_->show,
+				   sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
+				   @{$$self{files}}))."\n";
 }
 
 # Generate a "Work Plan" for producing the implementation files for this cluster.
 sub workplan {
-  my ($self) = @_;
+  my($self)=@_;
   my $name = $$self{name};
-  print '#' . ('=' x 40) . "\n#  Work Plan:\n";
+  print '#'.('=' x 40)."\n#  Work Plan:\n";
 
   my $base = ($$self{nsymbols} ? "--base=$name " : '');
-# Typical commands to implement, test & commit the implementation of the representative for the cluster.
-  if (!($self->isDistribution || $self->isImplemented)) {
+  # Typical commands to implement, test & commit the implementation of the representative for the cluster.
+  if(! ($self->isDistribution || $self->isImplemented)){
     print "#======\n# Generate base file\n"
-      . "  texscan --stub $name\n"
-      . "# Edit if needed to complete the implementation\n"
-      . "# Verify base file $$self{name}\n"
-      . "  texscan $$self{name}\n"
-      . "# Add to svn or distribution and commit, as needed.\n"
-      . "  svn add $name.ltxml\n"
-      . "  svn commit -m 'Initial implementation of $name by texscan' $name.ltxml\n"; }
+      ."  texscan --stub $name\n"
+      ."# Edit if needed to complete the implementation\n"
+      ."# Verify base file $$self{name}\n"
+      ."  texscan $$self{name}\n"
+      ."# Add to svn or distribution and commit, as needed.\n"
+      ."  svn add $name.ltxml\n"
+      ."  svn commit -m 'Initial implementation of $name by texscan' $name.ltxml\n"; }
   else {
     print "#======\n# Verify base file $$self{name} and edit as needed\n"
       . "  texscan $name\n"
-      . "# Commit to svn, as needed.\n"
-      . "  svn commit -m 'Corrected implementation of $name' $name\n"; }
+      ."# Commit to svn, as needed.\n"
+      ."  svn commit -m 'Corrected implementation of $name' $name\n"; }
 
-  my @variants = sort { ($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
-    grep($$_{name} ne $name, @{ $$self{files} });
-  my @implvar = grep($_->isDistribution || $_->isImplemented, @variants);
-  my @unimvar = grep(!$_->isDistribution && !$_->isImplemented, @variants);
-  if (@implvar) {
-    my $files   = join(' ', map($$_{name},            @implvar));
-    my $derived = join(' ', map($$_{name} . ".ltxml", @implvar));
-    print "#======\n# Verify Implemented variant files" . File::showUsage(@implvar) . "\n"
+  my @variants = sort {($$b{usage} <=> $$a{usage}) || (length($$a{name}) <=> length($$b{name})); }
+                      grep($$_{name} ne $name,@{$$self{files}});
+  my @implvar  =grep( $_->isDistribution ||  $_->isImplemented, @variants);
+  my @unimvar  =grep(!$_->isDistribution && !$_->isImplemented, @variants);
+  if(@implvar){
+    my $files   = join(' ',map($$_{name},@implvar));
+    my $derived = join(' ',map($$_{name}.".ltxml",@implvar));
+    print "#======\n# Verify Implemented variant files".File::showUsage(@implvar)."\n"
       . "  texscan $files\n"
       . "# OR regenerate them\n"
       . "  texscan --stub $base $files\n";
     print "# Commit to svn if needed\n"
-      . "  svn commit -m 'Derived implementation by texscan' $derived\n"; }
-
-  if (@unimvar) {
-    my $files   = join(' ', map($$_{name},            @unimvar));
-    my $derived = join(' ', map($$_{name} . ".ltxml", @unimvar));
-    print "#======\n# Generate UN-Implemented variant files" . File::showUsage(@unimvar) . "\n"
+      ."  svn commit -m 'Derived implementation by texscan' $derived\n"; }
+  if(@unimvar){
+    my $files   = join(' ',map($$_{name},@unimvar));
+    my $derived = join(' ',map($$_{name}.".ltxml",@unimvar));
+    print "#======\n# Generate UN-Implemented variant files".File::showUsage(@unimvar)."\n"
       . "  texscan --stub $base $files\n";
     print "# Add to svn if needed\n"
-      . "  svn add $derived\n"
-      . "  svn commit -m 'Derived implementation by texscan' $derived\n";
+      ."  svn add $derived\n"
+      ."  svn commit -m 'Derived implementation by texscan' $derived\n";
   }
-  print '' . ('=' x 40) . "\n";
+  print ''.('=' x 40)."\n";
 }
 
 sub classify {
-  my ($self, @core) = @_;
-  my ($best, $nmissing, $nextra) = (undef, 999999999, 999999999);
-  foreach my $core (@core) {
-    my ($missing, $extra) = $self->difference($core);
-    if (($missing < $nmissing) || (($missing == $nmissing) && ($extra < $nextra))) {
+  my($self,@core)=@_;
+  my($best,$nmissing,$nextra)=(undef,999999999,999999999);
+  foreach my $core (@core){
+    my($missing,$extra) = $self->difference($core);
+    if(($missing < $nmissing) || (($missing == $nmissing) && ($extra < $nextra))){
       $nmissing = $missing;
       $nextra   = $extra;
-      $best     = $core; } }
-  if ($best) {
-    print "Closest Core file: " . $best->show
-      . join(';', grep($_, ($nmissing ? " missing $nmissing" : ''),
-        ($nextra ? " extra $nextra" : ''))) . "\n";
-  } }
+      $best     = $core; }}
+  if($best){
+    print "Closest Core file: ".$best->show
+      . join(';',grep($_, ($nmissing ? " missing $nmissing":''),
+		      ($nextra   ? " extra $nextra":''))). "\n";
+  }}
 
 # Merge the similarity data from the cluster's files
 # $setname is one of 'superset', 'subset', 'similar'
 sub mergeSimilarities {
-  my ($self, $setname) = @_;
+  my($self,$setname)=@_;
   my $sim = Similarity->new($self);
-  foreach my $file (@{ $$self{files} }) {
+  foreach my $file (@{$$self{files}}){
     next if $$file{clusterdiff}; # if non-zero, this file was added as a `subset', so its diffs aren't correct
-    my $fileset = $$file{$setname}{diffs};    # get the diff table from the Similarity
-    foreach my $d (keys %{$fileset}) {
-      foreach my $f (values %{ $$fileset{$d} }) {
-        next if $$f{clusterdiff};
-        $sim->add($$f{cluster}, $d); } } }
+    my $fileset = $$file{$setname}{diffs}; # get the diff table from the Similarity
+    foreach my $d (keys %{$fileset}){
+      foreach my $f (values %{$$fileset{$d}}){
+	next if $$f{clusterdiff};
+	$sim->add($$f{cluster},$d); }}}
   $sim; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -408,39 +407,39 @@ sub mergeSimilarities {
 package Similarity;
 
 sub new {
-  my ($class, $object) = @_;
-  bless { object => $object, diffs => {} }, $class; }
+  my($class,$object)=@_;
+  bless {object=>$object, diffs=>{}},$class; }
 
 sub add {
-  my ($self, $object, $ndiffs) = @_;
-  $$self{diffs}{$ndiffs}{ $$object{name} } = $object; }
+  my($self,$object,$ndiffs)=@_;
+  $$self{diffs}{$ndiffs}{$$object{name}} = $object; }
 
 sub describe {
-  my ($self, $label, $nmax) = @_;
-  my $object   = $$self{object};
-  my $nsim     = 0;
-  my $labelled = 0;
+  my($self,$label,$nmax)=@_;
+  my $object = $$self{object};
+  my $nsim = 0;
+  my $labelled=0;
   $label =~ /^(\s*)/;
-  my $indent = $1 . $1;
-  foreach my $d (sort keys %{ $$self{diffs} }) {
+  my $indent= $1.$1;
+  foreach my $d (sort keys %{$$self{diffs}}){
     last if ($d > $::MAXDIFF) || (($d > 1) && $nmax && ($nsim > $nmax));
-    foreach my $ob (sort { $$b{usage} <=> $$a{usage} } values %{ $$self{diffs}{$d} }) {
-      my ($extra, $missing) = $ob->differenceSignature($object);
-      if (!$labelled) {
-        print $label. "\n"; $labelled = 1; }
-      print $indent. $ob->show . " with $d differences\n"
-        . ($extra   ? $indent . "   adds : $extra\n"   : '')
-        . ($missing ? $indent . "  misses: $missing\n" : '');
-      $nsim++; } }
+    foreach my $ob (sort {$$b{usage} <=> $$a{usage}} values %{$$self{diffs}{$d}}){
+      my($extra,$missing) = $ob->differenceSignature($object);
+      if(!$labelled){
+	print $label."\n"; $labelled=1; }
+      print $indent.$ob->show." with $d differences\n"
+	.   ($extra   ? $indent."   adds : $extra\n" : '')
+	  . ($missing ? $indent."  misses: $missing\n" : '');
+      $nsim++; }}
 }
 
 sub closest {
-  my ($self) = @_;
-  my (@d)    = sort keys %{ $$self{diffs} };
-  if (@d && ($d[0] < $::MAXDIFF)) {
-    my (@s) = keys %{ $$self{diffs}{ $d[0] } };
-    if (scalar(@s) == 1) {
-      ($d[0], $$self{diffs}{ $d[0] }{ $s[0] }); } } }
+  my($self)=@_;
+  my (@d)=sort keys %{$$self{diffs}};
+    if(@d && ($d[0] < $::MAXDIFF)){
+      my (@s)=keys %{$$self{diffs}{$d[0]}};
+      if(scalar(@s) == 1){
+	($d[0], $$self{diffs}{$d[0]}{$s[0]}); }}}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

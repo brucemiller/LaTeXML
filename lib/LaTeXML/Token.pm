@@ -28,36 +28,36 @@ use base qw(LaTeXML::Object);
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-our @primitive_catcode = (1, 1, 1, 1,
-  1, 1, 1, 1,
-  1, 0, 1, 0,
-  0, 0, 0, 0,
-  0, 1);
-our @executable_catcode = (0, 1, 1, 1,
-  1, 0, 0, 1,
-  1, 0, 0, 0,
-  0, 1, 0, 0,
-  1, 0);
+our @primitive_catcode = (1,1,1,1,
+			  1,1,1,1,
+			  1,0,1,0,
+			  0,0,0,0,
+			  0,1);
+our @executable_catcode= (0,1,1,1,
+			  1,0,0,1,
+			  1,0,0,0,
+			  0,1,0,0,
+			  1,0);
 
-my @standardchar = ("\\", '{', '}', q{$},
-  q{&},  "\n",  q{#},  q{^},
-  q{_},  undef, undef, undef,
-  undef, undef, q{%},  undef);
+my @standardchar=("\\",'{','}',q{$},
+		  q{&},"\n",q{#},q{^},
+		  q{_},undef,undef,undef,
+		  undef,undef,q{%},undef);
 
-our @CC_NAME = qw(Escape Begin End Math Align EOL Parameter Superscript Subscript
-  Ignore Space Letter Other Active Comment Invalid
-  ControlSequence NotExpanded);
-our @PRIMITIVE_NAME = ('Escape', 'Begin', 'End', 'Math',
-  'Align',     'EOL', 'Parameter', 'Superscript',
-  'Subscript', undef, 'Space',     undef,
-  undef,       undef, undef,       undef,
-  undef,       'NotExpanded');
+our @CC_NAME=qw(Escape Begin End Math Align EOL Parameter Superscript Subscript
+		Ignore Space Letter Other Active Comment Invalid
+		ControlSequence NotExpanded);
+our @PRIMITIVE_NAME=('Escape','Begin','End','Math',
+		     'Align','EOL','Parameter','Superscript',
+		     'Subscript',undef,'Space',undef,
+		     undef,undef,undef,undef,
+		     undef,'NotExpanded');
 our @CC_SHORT_NAME = qw(T_ESCAPE T_BEGIN T_END T_MATH
-  T_ALIGN T_EOL T_PARAM T_SUPER
-  T_SUB T_IGNORE T_SPACE T_LETTER
-  T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS T_NOTEXPANDED
-);
+			T_ALIGN T_EOL T_PARAM T_SUPER
+			T_SUB T_IGNORE T_SPACE T_LETTER
+			T_OTHER T_ACTIVE T_COMMENT T_INVALID
+			T_CS T_NOTEXPANDED
+		       );
 
 #======================================================================
 # Accessors.
@@ -67,51 +67,51 @@ sub isaToken { return 1; }
 # Get the CS Name of the token. This is the name that definitions will be
 # stored under; It's the same for various `different' BEGIN tokens, eg.
 sub getCSName {
-  my ($token) = @_;
+  my($token)=@_;
   return $PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
 
 # Get the CSName only if the catcode is executable!
 sub getExecutableName {
-  my ($cs, $cc) = @{ $_[0] };
+  my($cs,$cc)=@{$_[0]};
   return $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
 
 # Return the string or character part of the token
-sub getString {
-  my ($self) = @_;
+sub getString  {
+  my($self)=@_;
   return $$self[0]; }
 
 # Return the character code of  character part of the token, or 256 if it is a control sequence
-sub getCharcode {
-  my ($self) = @_;
+sub getCharcode{
+  my($self)=@_;
   return ($$self[1] == CC_CS ? 256 : ord($$self[0])); }
 
 # Return the catcode of the token.
 sub getCatcode {
-  my ($self) = @_;
+  my($self)=@_;
   return $$self[1]; }
 
 sub isExecutable {
-  my ($self) = @_;
+  my($self)=@_;
   return $executable_catcode[$$self[1]]; }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist {
-  my ($self) = @_;
+  my($self)=@_;
   return ($self); }
 
-our @NEUTRALIZABLE = (0, 0, 0, 1,
-  1, 0, 1, 1,
-  1, 0, 0, 0,
-  0, 1, 1, 0,
-  0, 0);
+our @NEUTRALIZABLE=(0,0,0,1,
+		    1,0,1,1,
+		    1,0,0,0,
+		    0,1,1,0,
+		    0,0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
 sub neutralize {
-  my ($self) = @_;
-  my ($ch, $cc) = @$self;
-  return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $LaTeXML::STATE->lookupValue('SPECIALS') })
-    ? T_OTHER($ch) : $self); }
+  my($self)=@_;
+  my($ch,$cc)=@$self;
+  return ($NEUTRALIZABLE[$cc] && (grep {$ch} @{ $LaTeXML::STATE->lookupValue('SPECIALS')})
+	  ? T_OTHER($ch) : $self); }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -122,15 +122,15 @@ sub neutralize {
 #  ($standardchar[$$self[1]] || $$self[0]); }
 
 sub revert {
-  my ($self) = @_;
+  my($self)=@_;
   return $self; }
 
 sub toString {
-  my ($self) = @_;
+  my($self)=@_;
   return $$self[0]; }
 
-sub beDigested {
-  my ($self, $stomach) = @_;
+sub beDigested { 
+  my($self,$stomach)=@_;
   return $stomach->digest($self); }
 
 #======================================================================
@@ -142,25 +142,25 @@ sub beDigested {
 # NOTE: That another popular equality checks whether the "meaning" (defn) are the same.
 # That is NOT done here; see Equals(x,y).
 sub equals {
-  my ($a, $b) = @_;
-  return
+  my($a,$b)=@_;
+  return 
     (defined $b
-      && (ref $a) eq (ref $b))
-    && ($$a[1] == $$b[1])
-    && ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
+     && (ref $a) eq (ref $b))
+      && ($$a[1] == $$b[1])
+	&& ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
 
-our @CONTROLNAME = (qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
-    DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
+our @CONTROLNAME=(qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
+		      DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
 sub stringify {
-  my ($self) = @_;
+  my($self)=@_;
   my $string = $$self[0];
   # Make the token's char content more printable, since this is for error messages.
-  if (length($string) == 1) {
+  if(length($string) == 1){
     my $c = ord($string);
-    if ($c < 0x020) {
-      $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
+    if($c < 0x020){
+      $string = 'U+'.sprintf("%04x",$c).'/'.$CONTROLNAME[$c]; }}
+  return $CC_SHORT_NAME[$$self[1]].'['.$string.']'; }
 
 #**********************************************************************
 # LaTeXML::Tokens
@@ -176,55 +176,56 @@ use base qw(LaTeXML::Object);
 # Flatten the arguments Token's and Tokens's into plain Token's
 # .... Efficiently! since this seems to be called MANY times.
 sub new {
-  my ($class, @tokens) = @_;
+  my($class,@tokens)=@_;
   my $r;
-  return bless [map { (($r = ref $_) eq 'LaTeXML::Token' ? $_
-        : ($r eq 'LaTeXML::Tokens' ? @$_
-          : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
-      @tokens], $class; }
+  return bless [map {(($r=ref $_) eq 'LaTeXML::Token' ? $_
+		      : ($r eq 'LaTeXML::Tokens' ? @$_
+			 : Fatal('misdefined',$r,undef,"Expected a Token, got ".Stringify($_))))}
+		@tokens], $class; }
 
 # Return a list of the tokens making up this Tokens
 sub unlist {
-  my ($self) = @_;
+  my($self)=@_;
   return @$self; }
 
 # Return a shallow copy of the Tokens
 sub clone {
-  my ($self) = @_;
+  my($self)=@_;
   return bless [@$self], ref $self; }
+
 
 # Return a string containing the TeX form of the Tokens
 sub revert {
-  my ($self) = @_;
+  my($self)=@_;
   return @$self; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
-  my ($self) = @_;
-  return join('', map { $$_[0] } @$self); }
+  my($self)=@_;
+  return join('',map {$$_[0]} @$self); }
 
 # Methods for overloaded ops.
 sub equals {
-  my ($a, $b) = @_;
+  my($a,$b)=@_;
   return 0 unless defined $b && (ref $a) eq (ref $b);
   my @a = @$a;
   my @b = @$b;
-  while (@a && @b && ($a[0]->equals($b[0]))) {
+  while(@a && @b && ($a[0]->equals($b[0]))){
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
 sub stringify {
-  my ($self) = @_;
-  return "Tokens[" . join(',', map { $_->toString } @$self) . "]"; }
+  my($self)=@_;
+  return "Tokens[".join(',',map {$_->toString} @$self)."]"; }
 
-sub beDigested {
-  my ($self, $stomach) = @_;
+sub beDigested { 
+  my($self,$stomach)=@_;
   return $stomach->digest($self); }
 
 sub neutralize {
-  my ($self) = @_;
-  return Tokens(map { $_->neutralize } $self->unlist); }
+  my($self)=@_;
+  return Tokens(map {$_->neutralize} $self->unlist); }
 
 #**********************************************************************
 1;

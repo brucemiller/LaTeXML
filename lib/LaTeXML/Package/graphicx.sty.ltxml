@@ -20,28 +20,28 @@ use LaTeXML::Util::KeyVal;
 # Provides alternative argument syntax.
 RequirePackage('graphics');
 
-DefKeyVal('Gin', 'width',           'Dimension');
-DefKeyVal('Gin', 'height',          'Dimension');
-DefKeyVal('Gin', 'keepaspectratio', '', 'true');
-DefKeyVal('Gin', 'clip',            '', 'true');
+DefKeyVal('Gin','width','Dimension');
+DefKeyVal('Gin','height','Dimension');
+DefKeyVal('Gin','keepaspectratio','','true');
+DefKeyVal('Gin','clip','','true');
 
-DefKeyVal('Gin', 'vrml', 'Semiverbatim');
-DefKeyVal('Gin', 'magnifiable', '', 'true');
+DefKeyVal('Gin','vrml','Semiverbatim');
+DefKeyVal('Gin','magnifiable','','true');
 
 # Redefine
 DefMacro('\includegraphics OptionalMatch:* []',
-  '\@ifnextchar[{\@includegraphics#1[#2]}{\@includegraphicx#1[#2]}');
+	 '\@ifnextchar[{\@includegraphics#1[#2]}{\@includegraphicx#1[#2]}');
 
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
-  "<ltx:graphics graphic='#path' candidates='#candidates' options='#2?#1(,clip=true)'/>",
-  alias      => '\includegraphics',
-  properties => sub {
-    my $path = ToString($_[3]); $path =~ s/^\s+//; $path =~ s/\s+$//;
-    my @candidates = pathname_findall($path, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-    if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
-    (path => $path,
-      candidates => join(',', @candidates)) });
+	       "<ltx:graphics graphic='#path' candidates='#candidates' options='#2?#1(,clip=true)'/>",
+	       alias=>'\includegraphics',
+	       properties=>sub {
+		 my $path = ToString($_[3]); $path =~ s/^\s+//; $path=~ s/\s+$//;
+		 my @candidates = pathname_findall($path,types=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+		 if(my $base = LookupValue('SOURCEDIRECTORY')){
+		   @candidates=map(pathname_relative($_,$base),@candidates); }
+		 (path=>$path,
+		  candidates=>join(',',@candidates)) });
 
 #**********************************************************************
 1;

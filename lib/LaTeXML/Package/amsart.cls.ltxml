@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for
+# / Thanks to the arXMLiv group for 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -19,7 +19,7 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document structure.
 
-LoadClass('ams_core', withoptions => 1);
+LoadClass('ams_core', withoptions=>1);
 RequireResource('ltx-amsart.css');
 
 # amsart.cls.ltxml : journal article
@@ -30,7 +30,7 @@ RequireResource('ltx-amsart.css');
 # gen-m-l.cls.ltxml "monograph" => amsbook
 
 # # MANY more styles!
-# conm-p-l "Contemporary Mathematics proceedings series"
+# conm-p-l "Contemporary Mathematics proceedings series" 
 # (conm-p-l-version ?? )
 # And, the following from arXMLiv have similar naming format(?)
 # crmp-l.cls
@@ -54,7 +54,7 @@ RequireResource('ltx-amsart.css');
 
 #======================================================================
 # Sec. 5. Document Body
-Let('\specialsection', '\chapter');    # Close enough?
+Let('\specialsection','\chapter'); # Close enough?
 
 # #======================================================================
 1;

@@ -44,10 +44,10 @@
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:attribute name="style">visibility:hidden</xsl:attribute>
-        <xsl:apply-templates select="." mode="begin"/>
-        <xsl:apply-templates/>
-        <xsl:apply-templates select="." mode="end"/>
+	<xsl:attribute name="style">visibility:hidden</xsl:attribute>
+	<xsl:apply-templates select="." mode="begin"/>
+	<xsl:apply-templates/>
+	<xsl:apply-templates select="." mode="end"/>
       </xsl:element>
     </xsl:element>
   </xsl:template>
@@ -107,7 +107,7 @@
     <xsl:apply-imports/>
     <xsl:choose>
       <xsl:when test="@color">
-        <xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
+	<xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>
       </xsl:when>
       <!-- Note: width doesn't affect an inline element, but we don't want to be a block -->
       <xsl:otherwise>background:black;display:inline-block;</xsl:otherwise>
@@ -127,26 +127,26 @@
   <xsl:template match="ltx:ref">
     <xsl:choose>
       <xsl:when test="not(@href) or @href=''">
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:call-template name="add_id"/>
-          <xsl:call-template name="add_attributes">
-            <xsl:with-param name="extra_classes" select="'ltx_ref_self'"/>
-          </xsl:call-template>
-          <xsl:apply-templates select="." mode="begin"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end"/>
-        </xsl:element>
+	<xsl:element name="span" namespace="{$html_ns}">
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes">
+	    <xsl:with-param name="extra_classes" select="'ltx_ref_self'"/>
+	  </xsl:call-template>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="a" namespace="{$html_ns}">
-          <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
-          <xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
-          <xsl:call-template name="add_id"/>
-          <xsl:call-template name="add_attributes"/>
-          <xsl:apply-templates select="." mode="begin"/>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end"/>
-        </xsl:element>
+	<xsl:element name="a" namespace="{$html_ns}">
+	  <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+	  <xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
+	  <xsl:call-template name="add_id"/>
+	  <xsl:call-template name="add_attributes"/>
+	  <xsl:apply-templates select="." mode="begin"/>
+	  <xsl:apply-templates/>
+	  <xsl:apply-templates select="." mode="end"/>
+	</xsl:element>
       </xsl:otherwise>
     </xsl:choose>    
   </xsl:template>

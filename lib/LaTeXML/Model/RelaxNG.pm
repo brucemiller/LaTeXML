@@ -34,94 +34,93 @@ our $XMLPARSER = LaTeXML::Common::XML::Parser->new();
 
 # Scan a RelaxNG schema into an internal summary of modules.
 sub new {
-  my ($class, $model, $name) = @_;
-  my $self = { name => $name, model => $model,
-    modules => [], elementdefs => {}, defs => {}, elements => {} };
-  weaken($$self{model});    # circular back ref; weaked so can be garbage collected.
-  bless $self, $class;
+  my($class,$model,$name)=@_;
+  my $self = {name=>$name, model=>$model,
+	      modules=>[],elementdefs=>{},defs=>{}, elements=>{}};
+  weaken($$self{model});        # circular back ref; weaked so can be garbage collected.
+  bless $self,$class;
   $self; }
 
 sub addSchemaDeclaration {
-  my ($self, $document, $tag) = @_;
-  $document->insertPI('latexml', RelaxNGSchema => $$self{name});
+  my($self,$document,$tag)=@_;
+  $document->insertPI('latexml',RelaxNGSchema=>$$self{name});
 }
 
 sub loadSchema {
-  my ($self) = @_;
+  my($self)=@_;
   NoteBegin("Loading RelaxNG $$self{name}");
   # Scan the schema file(s), and extract the info
 
   my @schema = $self->scanExternal($$self{name});
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
+  if($LaTeXML::Model::RelaxNG::DEBUG){
     print "========================\nRaw Schema\n";
-    map(showSchema($_), @schema); }
-  @schema = map($self->simplify($_), @schema);
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
+    map(showSchema($_),@schema); }
+  @schema = map($self->simplify($_),@schema);
+  if($LaTeXML::Model::RelaxNG::DEBUG){
     print "========================\nSimplified Schema\n";
-    map(showSchema($_), @schema);
+    map(showSchema($_),@schema);
     print "========================\nElements\n";
-    foreach my $tag (sort keys %{ $$self{elements} }) {
-      showSchema(['element', $tag, @{ $$self{elements}{$tag} }]); }
+    foreach my $tag (sort keys %{$$self{elements}}){
+      showSchema(['element',$tag,@{$$self{elements}{$tag}}]); }
     print "========================\nModules\n";
-    foreach my $mod (@{ $$self{modules} }) {
-      showSchema($mod); } }
+    foreach my $mod (@{$$self{modules}}){
+      showSchema($mod); }}
 
   # The resulting @schema should contain the "start" of the grammar.
-  my ($startcontent) = $self->extractContent('#Document', @schema);
-  $$self{model}->setTagProperty('#Document', 'model', $startcontent);
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
-    print "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
+  my($startcontent)=$self->extractContent('#Document',@schema);
+  $$self{model}->setTagProperty('#Document','model',$startcontent);
+  if($LaTeXML::Model::RelaxNG::DEBUG){
+    print "========================\nStart\n".join(', ',keys %$startcontent)."\n"; }
 
   # NOTE: Do something automatic about this too!?!
   # We'll need to generate namespace prefixes for all namespaces found in the doc!
-  $$self{model}->registerDocumentNamespace(undef, "http://dlmf.nist.gov/LaTeXML");
+  $$self{model}->registerDocumentNamespace(undef,"http://dlmf.nist.gov/LaTeXML");
 
   # Distill the info into allowed children & attributes for each element.
-  foreach my $tag (sort keys %{ $$self{elements} }) {
-    if ($tag eq 'ANY') {
+  foreach my $tag (sort keys %{$$self{elements}}){
+    if($tag eq 'ANY'){
       # Ignore any internal structure (side effect of restricted names)
-      $$self{model}->setTagProperty($tag, 'model', { ANY => 1 });
+      $$self{model}->setTagProperty($tag,'model',{ANY=>1});
       next; }
-    my @body = @{ $$self{elements}{$tag} };
-    my ($content, $attributes) = $self->extractContent($tag, @body);
-    $$self{model}->setTagProperty($tag, 'model',      $content);
-    $$self{model}->setTagProperty($tag, 'attributes', $attributes); }
+    my @body = @{$$self{elements}{$tag}};
+    my($content,$attributes) = $self->extractContent($tag,@body);
+    $$self{model}->setTagProperty($tag,'model',$content);
+    $$self{model}->setTagProperty($tag,'attributes',$attributes); }
   # Extract definitions of symbols that define Schema Classes, too
-  foreach my $symbol (sort keys %{ $$self{defs} }) {
-    if ($symbol =~ /^grammar\d+:(.+?)\.class$/) {
+  foreach my $symbol (sort keys %{$$self{defs}}){
+    if($symbol =~ /^grammar\d+:(.+?)\.class$/){
       my $name = $1;
-      my ($content, $attributes) = $self->extractContent($symbol, $$self{defs}{$symbol});
-      $$self{model}->setSchemaClass($name, $content); } }
+      my($content,$attributes) = $self->extractContent($symbol,$$self{defs}{$symbol});
+      $$self{model}->setSchemaClass($name,$content); }}
   NoteEnd("Loading RelaxNG $$self{name}"); }
 
 # Return two hashrefs for content & attributes
 sub extractContent {
-  my ($self, $tag, @body) = @_;
-  my (%attr, %child);
-  while (@body) {
+  my($self,$tag,@body)=@_;
+  my(%attr,%child);
+  while(@body){
     my $item = shift(@body);
-    if (ref $item eq 'ARRAY') {
-      my ($op, $name, @args) = @$item;
-      if    ($op eq 'attribute')  { $attr{$name}  = 1; }
-      elsif ($op eq 'elementref') { $child{$name} = 1; }
-      elsif ($op eq 'doc')        { }
-      elsif ($op eq 'combination') { push(@body, @args); }
-      elsif ($op eq 'grammar')     { push(@body, $self->extractStart(@args)); }
-      elsif ($op eq 'module')      { push(@body, $self->extractStart(@args)); }
-      elsif (($op eq 'ref') || ($op eq 'parentref')) {
-
-        if (my $el = $$self{elementdefs}{$name}) {
-          push(@body, ['elementref', $el]); }
-        elsif (my $expansion = $$self{defs}{$name}) {
-          push(@body, $expansion); }
+    if(ref $item eq 'ARRAY'){
+      my($op,$name,@args)=@$item;
+      if($op eq 'attribute'){ $attr{$name}=1; }
+      elsif($op eq 'elementref'){ $child{$name}=1; }
+      elsif($op eq 'doc'){}
+      elsif($op eq 'combination'){ push(@body,@args); }
+      elsif($op eq 'grammar'){     push(@body,$self->extractStart(@args)); }
+      elsif($op eq 'module'){      push(@body,$self->extractStart(@args)); }
+      elsif(($op eq 'ref') || ($op eq 'parentref')){
+	if(my $el = $$self{elementdefs}{$name}){
+	  push(@body,['elementref',$el]); }
+	elsif(my $expansion = $$self{defs}{$name}){
+	  push(@body,$expansion); }
       }
-      elsif ($op eq 'element') {
-        $child{$name} = 1; }    # ???
-      elsif (($op eq 'value') || ($op eq 'data')) {
-        $child{'#PCDATA'} = 1; }
-      else { print STDERR "Unknown child $op [$name] of element $tag in extractContent\n"; } }
-    elsif ($item eq '#PCDATA') { $child{'#PCDATA'} = 1; } }
-  ({%child}, {%attr}); }
+      elsif($op eq 'element'){
+	$child{$name}=1; }	# ???
+      elsif(($op eq 'value') || ($op eq 'data')){
+	$child{'#PCDATA'} = 1; }
+      else { print STDERR "Unknown child $op [$name] of element $tag in extractContent\n"; }}
+    elsif($item eq '#PCDATA'){  $child{'#PCDATA'}=1; }}
+  ({%child},{%attr}); }
 
 #======================================================================
 # Internal Representation of a RelaxNG Schema
@@ -130,7 +129,7 @@ sub extractContent {
 # WITHOUT side effects so that an (eventual) rnc parser
 # can create the same intermediate!
 
-# Intermediate structure is a list of
+# Intermediate structure is a list of 
 #    strings (representing the raw leave data)
 # and recursive items of the following form:
 #     [$op, $name, @forms]
@@ -157,6 +156,7 @@ sub extractContent {
 #                for documentation purposes;  $name is the name of the file
 #                [Recored in the modules list and replaced by its content in simplify]
 
+
 # Tricky is getting the thing scanned and creating blocks
 # that should be separately documentable.
 # Each external schema (whether include or external)?
@@ -169,174 +169,174 @@ sub extractContent {
 # so that hopefully it will be feasable to generate the same structure
 # from a parsed RelaxNG Compact, without duplicating the processing.
 #======================================================================
-our %RNGNSMAP = ("http://relaxng.org/ns/structure/1.0" => 'rng',
-  "http://relaxng.org/ns/compatibility/annotations/1.0" => 'rnga');
+our %RNGNSMAP = ("http://relaxng.org/ns/structure/1.0"=>'rng',
+		 "http://relaxng.org/ns/compatibility/annotations/1.0"=>'rnga');
 
-local @LaTeXML::Model::RelaxNG::PATHS = ();
+local @LaTeXML::Model::RelaxNG::PATHS=();
 
 sub scanExternal {
-  my ($self, $name, $inherit_ns) = @_;
+  my($self,$name,$inherit_ns)=@_;
   my $mod = $name; $mod =~ s/\.rn(g|c)$//;
-  my $paths = [@LaTeXML::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
-  if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
+  my $paths = [@LaTeXML::Model::RelaxNG::PATHS,@{$STATE->lookupValue('SEARCHPATHS')}];
+  if(my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name,searchpaths=>$paths)){
     my $uri = $schemadoc->URI;
     NoteBegin("Loading RelaxNG schema from $uri");
     local @LaTeXML::Model::RelaxNG::PATHS
-      = (pathname_directory($schemadoc->URI), @LaTeXML::Model::RelaxNG::PATHS);
+      = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
     my $node = $schemadoc->documentElement;
     # Fetch any additional namespaces
-    foreach my $ns ($node->getNamespaces) {
-      my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
-      next if $uri =~ m|^http://relaxng.org|;    # Ignore RelaxNG namespaces(!!)
-      $$self{model}->registerDocumentNamespace($prefix, $uri); }
-    my $mod = (['module', $mod, $self->scanPattern($node, $inherit_ns)]);
+    foreach my $ns ($node->getNamespaces){
+	my($prefix,$uri)=($ns->getLocalName,$ns->getData);
+	next if $uri =~ m|^http://relaxng.org|; # Ignore RelaxNG namespaces(!!)
+	$$self{model}->registerDocumentNamespace($prefix,$uri); }
+    my $mod = (['module',$mod,$self->scanPattern($node,$inherit_ns)]);
     NoteEnd("Loading RelaxNG schema from $uri");
     $mod; }
   else {
-    Warn('expected', $name, undef, "Failed to find RelaxNG schema for name '$name'");
-    (); } }
+    Warn('expected',$name,undef,"Failed to find RelaxNG schema for name '$name'");
+    (); }}
 
 sub getRelaxOp {
-  my ($node) = @_;
+  my($node)=@_;
   return unless $node->nodeType == XML_ELEMENT_NODE;
   my $ns = $node->namespaceURI;
   my $prefix = $ns && $RNGNSMAP{$ns};
-  ($prefix ? $prefix : "{$ns}") . ":" . $node->localname; }
+  ($prefix ? $prefix : "{$ns}").":".$node->localname; }
 
-our $GRAMMAR = 0;
+our $GRAMMAR=0;
 
 sub getElements {
-  my ($node) = @_;
+  my($node)=@_;
   grep($_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
 
 sub scanPattern {
-  my ($self, $node, $inherit_ns) = @_;
-  if (my $relaxop = getRelaxOp($node)) {
+  my($self,$node,$inherit_ns)=@_;
+  if(my $relaxop = getRelaxOp($node)){
     my @children = getElements($node);
-    my $ns = $node->getAttribute('ns') || $inherit_ns;    # Possibly bind new namespace
+    my $ns = $node->getAttribute('ns') || $inherit_ns; # Possibly bind new namespace
 
     # Element description
-    if ($relaxop eq 'rng:element') {
-      if (my $name = $node->getAttribute('name')) {
-        (['element', $$self{model}->encodeQName($ns, $name),
-            map($self->scanPattern($_, $ns), @children)]); }
+    if($relaxop eq 'rng:element'){
+      if(my $name = $node->getAttribute('name')){
+	(['element',$$self{model}->encodeQName($ns,$name),
+	  map($self->scanPattern($_,$ns),@children)]); }
       else {
-        my $namenode = shift(@children);
-        my @names = $self->scanNameClass($namenode, $ns);
-        map(['element', $_, map($self->scanPattern($_, $ns), @children)], @names); } }
+	my $namenode = shift(@children);
+	my @names = $self->scanNameClass($namenode,$ns);
+	map(['element',$_,map($self->scanPattern($_,$ns),@children)], @names); }}
     # Attribute description
-    elsif ($relaxop eq 'rng:attribute') {
-      $ns = $node->getAttribute('ns');    # ONLY explicit declaration!
-      if (my $name = $node->getAttribute('name')) {
-        (['attribute', $$self{model}->encodeQName($ns, $name),
-            map($self->scanPattern($_, $ns), @children)]); }
+    elsif($relaxop eq 'rng:attribute'){
+      $ns = $node->getAttribute('ns'); # ONLY explicit declaration!
+      if(my $name = $node->getAttribute('name')){
+	(['attribute',$$self{model}->encodeQName($ns,$name),
+	  map($self->scanPattern($_,$ns),@children)]); }
       else {
-        my $namenode = shift(@children);
-        my @names = $self->scanNameClass($namenode, $ns);
-        map(['attribute', $_, map($self->scanPattern($_, $ns), @children)], @names); } }
+	my $namenode = shift(@children);
+	my @names = $self->scanNameClass($namenode,$ns);
+	map(['attribute',$_,map($self->scanPattern($_,$ns),@children)], @names); }}
     # Various combiners
-    elsif ($relaxop =~ /^rng:(group|interleave|choice|optional|zeroOrMore|oneOrMore|list)$/) {
+    elsif($relaxop =~ /^rng:(group|interleave|choice|optional|zeroOrMore|oneOrMore|list)$/){
       my $op = $1;
-      (['combination', $op, map($self->scanPattern($_, $ns), @children)]); }
+      (['combination',$op,map($self->scanPattern($_,$ns), @children)]); }
     # Mixed is a combiner but includes #PCDATA
-    elsif ($relaxop eq 'rng:mixed') {
-      (['combination', 'interleave', '#PCDATA', map($self->scanPattern($_, $ns), @children)]); }
+    elsif($relaxop eq 'rng:mixed'){
+      (['combination','interleave','#PCDATA',map($self->scanPattern($_,$ns), @children)]); }
     # Reference to a defined symbol.
-    elsif ($relaxop eq 'rng:ref') {
-      (['ref', $node->getAttribute('name')]); }
+    elsif($relaxop eq 'rng:ref'){
+      (['ref',$node->getAttribute('name')]); }
     # Reference to parent grammar's defined symbol
-    elsif ($relaxop eq 'rng:parentRef') {
-      (['parentref', $node->getAttribute('name')]); }
-    elsif ($relaxop =~ /^rng:(empty|notAllowed)$/) {    # Ignorable here
+    elsif($relaxop eq 'rng:parentRef'){
+      (['parentref',$node->getAttribute('name')]); }
+    elsif($relaxop =~ /^rng:(empty|notAllowed)$/){ # Ignorable here
       (); }
-    elsif ($relaxop eq 'rng:text') {
+    elsif($relaxop eq 'rng:text'){ 
       ('#PCDATA'); }
-    elsif ($relaxop eq 'rng:value') {                   # Not interested in details here.
+    elsif($relaxop eq 'rng:value'){ # Not interested in details here.
       (['value', undef, $node->textContent]); }
-    elsif ($relaxop eq 'rng:data') {                    # Not interested in details here.
+    elsif($relaxop eq 'rng:data'){ # Not interested in details here.
       (['data', undef, $node->getAttribute('type')]); }
     # Include an external grammar
-    elsif ($relaxop eq 'rng:externalRef') {
-      $self->scanExternal($node->getAttribute('href'), $ns); }
+    elsif($relaxop eq 'rng:externalRef'){
+      $self->scanExternal($node->getAttribute('href'),$ns); }
     # Include an internal grammar
-    elsif ($relaxop eq 'rng:grammar') {
-      my $name = "grammar" . (++$GRAMMAR);
-      (['grammar', $name, map($self->scanGrammarContent($_, $ns), @children)]); }
-    elsif ($relaxop =~ /^rnga:documentation$/) {
-      (['doc', undef, $node->textContent]); }
+    elsif($relaxop eq 'rng:grammar'){
+      my $name = "grammar".(++$GRAMMAR);
+      (['grammar',$name, map($self->scanGrammarContent($_,$ns),@children)]); }
+    elsif($relaxop =~ /^rnga:documentation$/){
+      (['doc',undef,$node->textContent]); }
     else {
-      Warn('misdefined', $relaxop, undef, "Didn't expect '$relaxop' in RelaxNG Schema (scanPattern)");
-      (); } }
+      Warn('misdefined',$relaxop,undef,"Didn't expect '$relaxop' in RelaxNG Schema (scanPattern)");
+      (); }}
   else {
-    (); } }
+    (); }}
 
 sub scanGrammarContent {
-  my ($self, $node, $inherit_ns) = @_;
-  if (my $relaxop = getRelaxOp($node)) {
+  my($self,$node,$inherit_ns)=@_;
+  if(my $relaxop = getRelaxOp($node)){
     my @children = getElements($node);
-    my $ns       = $node->getAttribute('ns') || $inherit_ns;   # Possibly bind new namespace
-                                                               # The start element's content is returned
-    if ($relaxop eq 'rng:start') {
-      (['start', undef, map($self->scanPattern($_, $ns), @children)]); }
-    elsif ($relaxop eq 'rng:define') {
+    my $ns = $node->getAttribute('ns') || $inherit_ns; # Possibly bind new namespace
+    # The start element's content is returned
+    if($relaxop eq 'rng:start'){
+      (['start',undef,map($self->scanPattern($_,$ns), @children)]); }
+    elsif($relaxop eq 'rng:define'){
       my $name = $node->getAttribute('name');
-      my $op = $node->getAttribute('combine') || '';
-      (['def' . $op, $name, map($self->scanPattern($_, $ns), @children)]); }
-    elsif ($relaxop eq 'rng:div') {
-      map($self->scanGrammarContent($_, $ns), @children); }
-    elsif ($relaxop eq 'rng:include') {
+      my $op = $node->getAttribute('combine')||'';
+      (['def'.$op, $name, map($self->scanPattern($_,$ns),@children)]); }
+    elsif($relaxop eq 'rng:div'){
+      map($self->scanGrammarContent($_,$ns), @children); }
+    elsif($relaxop eq 'rng:include'){
       my $name = $node->getAttribute('href');
-      my $paths = [@LaTeXML::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
-      if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
-        local @LaTeXML::Model::RelaxNG::PATHS
-          = (pathname_directory($schemadoc->URI), @LaTeXML::Model::RelaxNG::PATHS);
-        my @patterns;
-        #  Hopefully, just a file, not a URL?
-        my $doc = $schemadoc->documentElement;
-        # Ignore the grammar level, if any, since we do NOT establish a binding with include
-        if (getRelaxOp($doc) eq 'rng:grammar') {
-          my $ns = $doc->getAttribute('ns') || $inherit_ns;    # Possibly bind new namespace
-          @patterns = map($self->scanGrammarContent($_, $ns), getElements($doc)); }
-        else {
-          @patterns = $self->scanPattern($doc, undef); }
-        # The rule is "includeContent", same as grammarContent
-        # except that it shouldn't have nested rng:include;
-        # we'll just assume there aren't any.
-        my $mod = $name; $mod =~ s/\.rn(g|c)$//;
-        if (my @replacements = map($self->scanGrammarContent($_, $ns), @children)) {
-          (['override', undef, ['module', $mod, @patterns], @replacements]); }
-        else {
-          (['module', $mod, @patterns]); } }
+      my $paths = [@LaTeXML::Model::RelaxNG::PATHS,@{$STATE->lookupValue('SEARCHPATHS')}];
+      if(my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name,searchpaths=>$paths)){
+	local @LaTeXML::Model::RelaxNG::PATHS
+	  = (pathname_directory($schemadoc->URI),@LaTeXML::Model::RelaxNG::PATHS);
+	my @patterns;
+	#  Hopefully, just a file, not a URL?
+	my $doc = $schemadoc->documentElement;
+	# Ignore the grammar level, if any, since we do NOT establish a binding with include
+	if(getRelaxOp($doc) eq 'rng:grammar'){
+	  my $ns = $doc->getAttribute('ns') || $inherit_ns; # Possibly bind new namespace
+	  @patterns = map($self->scanGrammarContent($_,$ns),  getElements($doc)); }
+	else {
+	  @patterns = $self->scanPattern($doc,undef); }
+	# The rule is "includeContent", same as grammarContent
+	# except that it shouldn't have nested rng:include;
+	# we'll just assume there aren't any.
+	my $mod = $name; $mod =~ s/\.rn(g|c)$//;
+	if(my @replacements = map($self->scanGrammarContent($_,$ns),@children)){
+	  (['override',undef,['module',$mod,@patterns],@replacements]); }
+	else {
+	  (['module',$mod,@patterns]); }}
       else {
-        (); } } }
+	(); }}}
   else {
-    (); } }
+    (); }}
 
 sub scanNameClass {
-  my ($self, $node, $ns) = @_;
+  my($self,$node,$ns)=@_;
   my $relaxop = getRelaxOp($node);
-  if ($relaxop eq 'rng:name') {
-    ($$self{model}->encodeQName($ns, $node->textContent)); }
-  elsif ($relaxop eq 'rng:anyName') {
-    Info('unexpected', $relaxop, undef, "Can't handle RelaxNG operation '$relaxop'",
-      "Treating " . ToString($node) . " as ANY")
+  if($relaxop eq 'rng:name'){
+    ($$self{model}->encodeQName($ns,$node->textContent)); }
+  elsif($relaxop eq 'rng:anyName'){
+    Info('unexpected',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+	 "Treating ".ToString($node)." as ANY")
       if $node->hasChildNodes;
     ('ANY'); }
-  elsif ($relaxop eq 'rng:nsName') {
-    Info('unexpected', $relaxop, undef, "Can't handle RelaxNG operation '$relaxop'",
-      "Treating " . ToString($node) . " as ANY");
+  elsif($relaxop eq 'rng:nsName'){
+    Info('unexpected',$relaxop,undef,"Can't handle RelaxNG operation '$relaxop'",
+	 "Treating ".ToString($node)." as ANY");
     # NOTE: We _could_ conceivably use a namespace predicate,
     # but Model has to be extended to support it!
     ('ANY'); }
-  elsif ($relaxop eq 'rng:choice') {
-    my %names = ();
-    foreach my $choice ($node->childNodes) {
-      map($names{$_} = 1, $self->scanNameClass($choice, $ns)); }
+  elsif($relaxop eq 'rng:choice'){
+    my %names=();
+    foreach my $choice ($node->childNodes){
+      map($names{$_}=1, $self->scanNameClass($choice,$ns)); }
     ($names{ANY} ? ('ANY') : keys %names); }
   else {
     my $op = $node->nodeName;
-    Fatal('misdefined', $op, undef,
-      "Expected a RelaxNG name element (rng:name|rng:anyName|rng:nsName|rng:choice), got '$op'"); } }
+    Fatal('misdefined',$op,undef,
+	  "Expected a RelaxNG name element (rng:name|rng:anyName|rng:nsName|rng:choice), got '$op'"); }}
 
 #======================================================================
 # Simplify
@@ -350,20 +350,20 @@ sub scanNameClass {
 #   and
 #     symbols, elements are recorded.
 
-sub eqOp {
-  my ($form, $op) = @_;
+sub eqOp { 
+  my($form,$op)=@_;
   (ref $form eq 'ARRAY') && ($$form[0] eq $op); }
 
 sub extractStart {
-  my ($self, @items) = @_;
+  my($self,@items)=@_;
   my @starts = ();
-  foreach my $item (@items) {
-    if (ref $item eq 'ARRAY') {
-      my ($op, $name, @args) = @$item;
-      if    ($op eq 'start')   { push(@starts, @args); }
-      elsif ($op eq 'module')  { push(@starts, $self->extractStart(@args)); }
-      elsif ($op eq 'grammar') { push(@starts, $self->extractStart(@args)); }
-    } }
+  foreach my $item (@items){
+    if(ref $item eq 'ARRAY'){
+      my($op,$name,@args)=@$item;
+      if($op eq 'start'){ push(@starts,@args); }
+      elsif($op eq 'module'){ push(@starts,$self->extractStart(@args)); }
+      elsif($op eq 'grammar'){ push(@starts,$self->extractStart(@args)); }
+    }}
   @starts; }
 
 # NOTE: Reconsider this process.
@@ -396,111 +396,117 @@ sub extractStart {
 #             [for doc,we'd like to return nothing? but for getting grammar start we want content?]
 
 sub simplify {
-  my ($self, $form, $binding, $parentbinding, $container) = @_;
-  if (ref $form eq 'ARRAY') {
-    my ($op, $name, @args) = @$form;
-    if ($op eq 'grammar') {
+  my($self,$form,$binding,$parentbinding,$container)=@_;
+  if(ref $form eq 'ARRAY'){
+    my($op,$name,@args)=@$form;
+    if($op eq 'grammar'){
       # Simplify, for side-effect
-      my @patterns = map($self->simplify($_, $name, $binding, $container), @args);
+      my @patterns = map($self->simplify($_,$name,$binding,$container),@args);
       # and return the start
-###      extractStart(@patterns);
+###      extractStart(@patterns); 
       ## OR maybe later?
-      (['grammar', $name, @patterns]);
+      (['grammar',$name,@patterns]);
     }
-    elsif ($op eq 'override') {
+    elsif($op eq 'override'){
       # Note that we do NOT simplify till we've made the replacements!
-      my ($module, @replacements) = @args;
-      my ($modop, $modname, @patterns) = @$module;
+      my($module,@replacements)=@args;
+      my($modop,$modname,@patterns)=@$module;
       # Replace any start from @patterns by that from @replacement, if any.
-      if (my @replacement_start = grep(eqOp($_, 'start'), @replacements)) {
-        @patterns = grep(!eqOp($_, 'start'), @patterns); }
-      foreach my $def (grep((ref $_ eq 'ARRAY') && ($$_[0] =~ /^def/), @replacements)) {
-        my ($defop, $symbol) = @$def;
-        @patterns = grep(!(eqOp($_, $defop) && ($$_[1] eq $symbol)), @patterns); }
+      if(my @replacement_start = grep(eqOp($_,'start'),@replacements)){
+	@patterns = grep(!eqOp($_,'start'),@patterns); }
+      # NOTE: WRONG; need to handle ALL def forms !?!?!?
+##      foreach my $def (grep(eqOp($_,'def'),@replacements)){
+##	my $symbol = $$def[1];
+##	@patterns = grep(!(eqOp($_,'def') && ($$_[1] eq $symbol)),@patterns); }
+      foreach my $def (grep( (ref $_ eq 'ARRAY') && ($$_[0] =~ /^def/),@replacements)){
+	my($defop,$symbol) = @$def;
+	@patterns = grep(!(eqOp($_,$defop) && ($$_[1] eq $symbol)),@patterns); }
       # Recurse on the overridden module
-      $self->simplify(['module', "$modname (overridden)", @patterns, @replacements],
-        $binding, $parentbinding, $container); }
-    elsif ($op eq 'module') {
-      my $module = ['module', $name];
-      push(@{ $$self{modules} }, $module);
-      push(@$module, map($self->simplify($_, $binding, $parentbinding, $container), @args));
+      $self->simplify(['module',"$modname (overridden)",@patterns,@replacements],
+		      $binding,$parentbinding,$container); }
+    elsif($op eq 'module'){
+      my $module = ['module',$name];
+      push(@{$$self{modules}},$module);
+      push(@$module,map($self->simplify($_,$binding,$parentbinding,$container),@args));
       $module; }
-    elsif ($op eq 'element') {
-      @args = map($self->simplify($_, $binding, $parentbinding, "element:$name"), @args);
+      #	@args; }
+    elsif($op eq 'element'){
+      @args = map($self->simplify($_,$binding,$parentbinding,"element:$name"),@args);
       my $prev = $$self{elements}{$name};
-      $$self{elements}{$name} = ($prev ? [@$prev, @args] : [@args]);
-      (['element', $name, @args]); }
-    elsif ($op eq 'ref') {
-      my $qname = $binding . ":" . $name;
-      @args = map($self->simplify($_, $binding, $parentbinding, $container), @args);
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      (['ref', $qname]); }
-    elsif ($op eq 'parentref') {
-      my $qname = $parentbinding . ":" . $name;
-      @args = map($self->simplify($_, $binding, $parentbinding, $container), @args);
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      (['ref', $qname]); }
-    elsif ($op eq 'defchoice') {
-      my $qname = $binding . ":" . $name;
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      @args = map($self->simplify($_, $binding, $parentbinding, "pattern:$qname"), @args);
+      $$self{elements}{$name} = ($prev ? [@$prev,@args] : [@args]);
+      (['element',$name,@args]); }
+    elsif($op eq 'ref'){
+      my $qname = $binding.":".$name;
+      @args = map($self->simplify($_,$binding,$parentbinding,$container),@args);
+      $$self{usesname}{$qname}{$container}=1 if $container;
+      (['ref',$qname]); }
+    elsif($op eq 'parentref'){
+      my $qname = $parentbinding.":".$name;
+      @args = map($self->simplify($_,$binding,$parentbinding,$container),@args);
+      $$self{usesname}{$qname}{$container}=1 if $container;
+      (['ref',$qname]); }
+    elsif($op eq 'defchoice'){
+      my $qname = $binding.":".$name;
+      $$self{usesname}{$qname}{$container}=1 if $container;
+      @args = map($self->simplify($_,$binding,$parentbinding,"pattern:$qname"),@args);
       my $prev = $$self{defs}{$qname};
-      my @xargs = grep(!eqOp($_, 'doc'), @args);    # Remove annotations
-      $$self{defs}{$qname} = simplifyCombination(['combination', 'choice', ($prev ? $prev : ()), @xargs]);
-      ([$op, $qname, @args]); }
-    elsif ($op eq 'definterleave') {
-      my $qname = $binding . ":" . $name;
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      @args = map($self->simplify($_, $binding, $parentbinding, "pattern:$qname"), @args);
+      my @xargs = grep(!eqOp($_,'doc'),@args); # Remove annotations
+      $$self{defs}{$qname} = simplifyCombination(['combination','choice',($prev ? $prev : ()),@xargs]);
+      ([$op,$qname,@args]); }
+    elsif($op eq 'definterleave'){
+      my $qname = $binding.":".$name;
+      $$self{usesname}{$qname}{$container}=1 if $container;
+      @args = map($self->simplify($_,$binding,$parentbinding,"pattern:$qname"),@args);
       my $prev = $$self{defs}{$qname};
-      my @xargs = grep(!eqOp($_, 'doc'), @args);    # Remove annotations
-      $$self{defs}{$qname} = simplifyCombination(['combination', 'interleave', ($prev ? $prev : ()), @xargs]);
-      ([$op, $qname, @args]); }
-    elsif ($op eq 'def') {
-      my $qname = $binding . ":" . $name;
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      @args = map($self->simplify($_, $binding, $parentbinding, "pattern:$qname"), @args);
-      if ((scalar(@args) == 1) && eqOp($args[0], 'element')) {
-        $$self{elementdefs}{$qname} = $args[0][1];
-        $$self{elementreversedefs}{ $args[0][1] } = $qname;
-        @args; }
+      my @xargs = grep(!eqOp($_,'doc'),@args); # Remove annotations
+      $$self{defs}{$qname} = simplifyCombination(['combination','interleave',($prev ? $prev : ()),@xargs]);
+      ([$op,$qname,@args]); }
+    elsif($op eq 'def'){
+      my $qname = $binding.":".$name;
+      $$self{usesname}{$qname}{$container}=1 if $container;
+      @args = map($self->simplify($_,$binding,$parentbinding,"pattern:$qname"),@args);
+      if((scalar(@args)==1) && eqOp($args[0],'element')){
+	$$self{elementdefs}{$qname} = $args[0][1];
+	$$self{elementreversedefs}{$args[0][1]} = $qname;
+	@args; }
       else {
-        my @xargs = grep(!eqOp($_, 'doc'), @args);    # Remove annotations
-        $$self{defs}{$qname} = (scalar(@xargs) > 1 ? ['combination', 'group', @xargs] : $xargs[0]);
-        ([$op, $qname, @args]); } }
+	my @xargs = grep(!eqOp($_,'doc'),@args); # Remove annotations
+	$$self{defs}{$qname} = (scalar(@xargs) > 1 ? ['combination','group',@xargs] : $xargs[0]);
+	([$op,$qname,@args]); }}
     else {
-      @args = map($self->simplify($_, $binding, $parentbinding, $container), @args);
-      ([$op, $name, @args]); } }
+      @args = map($self->simplify($_,$binding,$parentbinding,$container),@args);
+      ([$op,$name,@args]); }}
   else {
-    $form; } }
+    $form; }}
 
 sub simplifyCombination {
-  my ($combination) = @_;
-  if ((ref $combination) && ($$combination[0] eq 'combination')) {
-    my ($c, $op, @stuff) = @$combination;
-    @stuff = map(simplifyCombination($_), @stuff);
-    if ($op =~ /^(group|choice)$/) {    # These can be flattened.
-      @stuff = map(((ref $_) && ($$_[0] eq 'combination') && ($$_[1] eq $op)
-          ? @$_[2 .. $#$_] : ($_)),
-        @stuff); }
-    [$c, $op, @stuff]; }
+  my($combination)=@_;
+  if((ref $combination) && ($$combination[0] eq 'combination')){
+    my($c,$op,@stuff)=@$combination;
+    @stuff = map(simplifyCombination($_),@stuff);
+    if($op =~ /^(group|choice)$/){ # These can be flattened.
+      @stuff=map( ( (ref $_) && ($$_[0] eq 'combination') && ($$_[1] eq $op)
+		    ? @$_[2..$#$_] : ($_)),
+		  @stuff); }
+    [$c,$op,@stuff]; }
   else {
-    $combination; } }
+    $combination;}}
+
 
 #======================================================================
 # For debugging...
 sub showSchema {
-  my ($item, $level) = @_;
+  my($item,$level)=@_;
   $level = 0 unless defined $level;
-  if (ref $item eq 'ARRAY') {
-    my ($op, $name, @args) = @$item;
-    if ($op eq 'doc') { $name = "..."; @args = (); }
-    print "" . (' ' x (2 * $level)) . $op . ($name ? " " . $name : '') . "\n";
+  if(ref $item eq 'ARRAY'){
+    my($op,$name,@args) = @$item;
+    if($op eq 'doc'){ $name ="..."; @args = (); }
+    print "".(' 'x (2*$level)).$op.($name ? " ".$name :'')."\n";
 
-    foreach my $arg (@args) {
-      showSchema($arg, $level + 1); } }
+    foreach my $arg (@args){
+      showSchema($arg,$level+1); }}
   else {
-    print "" . (' ' x (2 * $level)) . $item . "\n"; } }
+    print "".(' 'x (2*$level)).$item."\n"; }}
 
 #======================================================================
 # Generate TeX documentation for a Schema
@@ -510,184 +516,189 @@ sub showSchema {
 our $SKIP_SVG = 1;
 
 sub documentModules {
-  my ($self) = @_;
-  my $docs = "";
-  $$self{defined_patterns} = {};
-  foreach my $module (@{ $$self{modules} }) {
-    my ($op, $name, @content) = @$module;
-    next if $SKIP_SVG && $name =~ /:svg:/;    # !!!!
-    $name =~ s/^urn:x-LaTeXML:RelaxNG://;     # Remove the urn part.
-    $docs = join("\n", $docs,
-      "\\begin{schemamodule}{$name}",
-      map($self->toTeX($_), @content),
-      "\\end{schemamodule}"); }
-  foreach my $name (keys %{ $$self{defined_patterns} }) {
-    if ($$self{defined_patterns}{$name} < 0) {
-      $docs =~ s/\\patternadd{$name}/\\patterndefadd{$name}/s; } }
+  my($self)=@_;
+  my $docs="";
+  $$self{defined_patterns}={};
+  foreach my $module (@{$$self{modules}}){
+    my($op,$name,@content)=@$module;
+    next if $SKIP_SVG && $name =~ /:svg:/;	# !!!!
+    $name =~ s/^urn:x-LaTeXML:RelaxNG://; # Remove the urn part.
+    $docs = join("\n",$docs,
+		 "\\begin{schemamodule}{$name}",
+		 map($self->toTeX($_),@content),
+		 "\\end{schemamodule}"); }
+  foreach my $name (keys %{$$self{defined_patterns}}){
+    if($$self{defined_patterns}{$name} < 0){
+      $docs =~ s/\\patternadd{$name}/\\patterndefadd{$name}/s; }}
   $docs; }
 
 sub cleanTeX {
-  my ($string) = @_;
+  my($string)=@_;
   return '\typename{text}' if $string eq '#PCDATA';
   $string =~ s/\#/\\#/g;
-  $string =~ s/<([^>]*)>/\\texttt{$1}/g;    # An apparent convention <sometext> == ttfont?
+  $string =~ s/<([^>]*)>/\\texttt{$1}/g; # An apparent convention <sometext> == ttfont?
   $string =~ s/_/\\_/g;
   $string; }
 
 sub cleanTeXName {
-  my ($string) = @_;
+  my($string)=@_;
   $string = cleanTeX($string);
   $string =~ s/^ltx://;
-  #  $string =~ s/:/../;
+#  $string =~ s/:/../;
   $string; }
 
 sub toTeX {
-  my ($self, $object) = @_;
-  if (ref $object eq 'HASH') {
-    join(', ', map("$_=" . $self->toTeX($$object{$_}), sort keys %$object)); }
-  elsif (ref $object eq 'ARRAY') {    # an object?
-    my ($op, $name, @data) = @$object;
-    if ($op eq 'doc') {
-      join(' ', map(cleanTeX($_), @data)) . "\n"; }
-    elsif ($op eq 'ref') {
-      if (my $el = $$self{elementdefs}{$name}) {
-        $el = cleanTeXName($el);
-        "\\elementref{$el}"; }
+  my($self,$object)=@_;
+  if(ref $object eq 'HASH'){
+    join(', ',map("$_=".$self->toTeX($$object{$_}), sort keys %$object)); }
+  elsif(ref $object eq 'ARRAY'){ # an object?
+    my($op,$name,@data)=@$object;
+    if($op eq 'doc'){
+      join(' ',map(cleanTeX($_),@data))."\n"; }
+    elsif($op eq 'ref'){
+      if(my $el = $$self{elementdefs}{$name}){
+	$el = cleanTeXName($el);
+      "\\elementref{$el}"; }
       else {
-        $name =~ s/^\w+://;           # Strip off qualifier!!!! (watch for clash in docs?)
-        "\\patternref{" . cleanTeX($name) . "}"; } }
-    elsif ($op =~ /^def(choice|interleave|)$/) {
-      my $combiner = $1;
-      my $qname    = $name;
-      $name =~ s/^\w+://;             # Strip off qualifier!!!! (watch for clash in docs?)
+	$name =~ s/^\w+://;	# Strip off qualifier!!!! (watch for clash in docs?)
+	"\\patternref{".cleanTeX($name)."}"; }}
+    elsif($op =~ /^def(choice|interleave|)$/){
+      my $combiner   = $1;
+      my $qname = $name;
+      $name =~ s/^\w+://;	# Strip off qualifier!!!! (watch for clash in docs?)
       $name = cleanTeX($name);
-      my ($docs, @spec)    = $self->toTeXExtractDocs(@data);
-      my ($attr, $content) = $self->toTeXBody(@spec);
-      if ($combiner) {
-        my $body = $attr;
-        $body .= '\item[' . ($combiner eq 'choice' ? '\textbar=' : '\&=') . '] ' . $content if $content;
-        $$self{defined_patterns}{$name} = -1 unless defined $$self{defined_patterns}{$name};
-        "\\patternadd{$name}{$docs}{$body}\n"; }
-      #      elsif((scalar(@data)==1) && (ref $data[0] eq 'ARRAY') && ($data[0][0] eq 'grammar')){
+      my($docs,@spec)=$self->toTeXExtractDocs(@data);
+      my ($attr,$content) = $self->toTeXBody(@spec);
+      if($combiner){
+	my $body = $attr;
+	$body .= '\item['.($combiner eq 'choice' ? '\textbar=' : '\&=').'] '.$content if $content;
+	$$self{defined_patterns}{$name}=-1 unless defined $$self{defined_patterns}{$name};
+	"\\patternadd{$name}{$docs}{$body}\n";  }
+#      elsif((scalar(@data)==1) && (ref $data[0] eq 'ARRAY') && ($data[0][0] eq 'grammar')){
+#	print STDERR "========================================================\n";
+#	print STDERR "IMPORTING GRAMMAR! $name\n";
+#	print STDERR "docs: \"$docs\"\n";
+#	print STDERR "specs: ".join(', ',map($self->toTeX($_), @spec))."\n";
+#	"\\patterndef{$name}{$docs}{\\item[Import grammar] $data[0][1]}\n"; }
       else {
-        $attr = '\item[\textit{Attributes:}] \textit{empty}' if !$attr && ($name =~ /\\_attributes/);
-        $content = '\textit{empty}' if !$content && ($name =~ /\\_model/);
-        my $body = $attr;
-        $body .= '\item[\textit{Content}:] ' . $content if $content;
-        my ($xattr, $xcontent) = $self->toTeXBody($$self{defs}{$qname});
-        $body .= '\item[\textit{Expansion}:] ' . $xcontent
-          if !$attr && !$xattr && $xcontent && ($xcontent ne $content);
-        if ($name !~ /_(attributes|model)$/) {  # Skip the "used by" if element-specific attributes or moel.
-
-          if (my $uses = $self->getSymbolUses($qname)) {
-            $body .= '\item[\textit{Used by}:] ' . $uses; } }
-        if ((defined $$self{defined_patterns}{$name}) && ($$self{defined_patterns}{$name} > 0)) { # Already been defined???
-          ''; }
-        else {
-          $$self{defined_patterns}{$name} = 1;
-          "\\patterndef{$name}{$docs}{$body}\n"; } } }
-    elsif ($op eq 'element') {
+	$attr = '\item[\textit{Attributes:}] \textit{empty}' if !$attr && ($name =~ /\\_attributes/);
+	$content = '\textit{empty}' if !$content && ($name =~ /\\_model/);
+	my $body = $attr;
+	$body .= '\item[\textit{Content}:] '.$content if $content;
+	my($xattr,$xcontent) = $self->toTeXBody($$self{defs}{$qname});
+	$body .= '\item[\textit{Expansion}:] '.$xcontent
+	  if !$attr && !$xattr && $xcontent && ($xcontent ne $content);
+	if($name !~ /_(attributes|model)$/){ # Skip the "used by" if element-specific attributes or moel.
+	  if(my $uses = $self->getSymbolUses($qname)){
+	    $body .= '\item[\textit{Used by}:] '.$uses; }}
+	if((defined $$self{defined_patterns}{$name}) && ($$self{defined_patterns}{$name} > 0)){ # Already been defined???
+	  ''; }
+	else {
+	  $$self{defined_patterns}{$name} = 1;
+	  "\\patterndef{$name}{$docs}{$body}\n"; }}}
+    elsif($op eq 'element'){
       my $qname = $name;
       $name =~ s/^ltx://;
       $name = cleanTeXName($name);
-      my ($docs, @spec)    = $self->toTeXExtractDocs(@data);
-      my ($attr, $content) = $self->toTeXBody(@spec);
+      my($docs,@spec)=$self->toTeXExtractDocs(@data);
+      my($attr,$content) = $self->toTeXBody(@spec);
       $content = "\\typename{empty}" unless $content;
       # Shorten display for element-specific attributes & model, ASSUMING they immediately folllow!
-      $attr    = '' if $attr eq '\item[\textit{Attributes}:] \patternref{' . $name . '\\_attributes}';
-      $content = '' if $content eq '\patternref{' . $name . '\\_model}';
+      $attr    = '' if $attr    eq '\item[\textit{Attributes}:] \patternref{'.$name.'\\_attributes}';
+      $content = '' if $content eq '\patternref{'.$name.'\\_model}';
       my $body = $attr;
-      $body .= '\item[\textit{Content}:] ' . $content if $content;
-      if (my $ename = $$self{elementreversedefs}{$qname}) {
-        if (my $uses = $self->getSymbolUses($ename)) {
-          $body .= '\item[\textit{Used by}:] ' . $uses; } }
+      $body .= '\item[\textit{Content}:] '.$content if $content;
+      if(my $ename = $$self{elementreversedefs}{$qname}){
+	if(my $uses = $self->getSymbolUses($ename)){
+	  $body .= '\item[\textit{Used by}:] '.$uses; }}
       "\\elementdef{$name}{$docs}{$body}\n"; }
-    elsif ($op eq 'attribute') {
+    elsif($op eq 'attribute'){
       $name = cleanTeXName($name);
-      my ($docs, @spec) = $self->toTeXExtractDocs(@data);
-      my $content = join(' ', map($self->toTeX($_), @spec)) || '\typename{text}';
+      my($docs,@spec)=$self->toTeXExtractDocs(@data);
+      my $content = join(' ',map($self->toTeX($_),@spec)) || '\typename{text}';
       "\\attrdef{$name}{$docs}{$content}"; }
-    elsif ($op eq 'combination') {
-      if    ($name eq 'group')      { "(" . join(', ',     map($self->toTeX($_), @data)) . ")"; }
-      elsif ($name eq 'interleave') { "(" . join(' ~\&~ ', map($self->toTeX($_), @data)) . ")"; }    # ?
-      elsif ($name eq 'choice') { "(" . join(' ~\textbar~ ', map($self->toTeX($_), @data)) . ")"; }
-      elsif ($name eq 'optional') {
-        if ((@data == 1) && eqOp($data[0], 'attribute')) { $self->toTeX($data[0]); }
-        else { $self->toTeX($data[0]) . "?"; } }
-      elsif ($name eq 'zeroOrMore') { $self->toTeX($data[0]) . "*"; }
-      elsif ($name eq 'oneOrMore')  { $self->toTeX($data[0]) . "+"; }
-      elsif ($name eq 'list')       { "(" . join(', ', map($self->toTeX($_), @data)) . ")"; } }      # ?
-    elsif ($op eq 'data')  { "\\typename{" . cleanTeX($data[0]) . "}"; }
-    elsif ($op eq 'value') { '\attrval{' . cleanTeX($data[0]) . "}"; }
-    elsif ($op eq 'start') {
-      my ($docs, @spec) = $self->toTeXExtractDocs(@data);
-      my $content = join(' ', map($self->toTeX($_), @spec));
-      "\\item[\\textit{Start}]\\textbf{==}\\ $content" . ($docs ? " \\par$docs" : ''); }
-    elsif ($op eq 'grammar') {    # Don't otherwise mention it?
+    elsif($op eq 'combination'){
+      if   ($name eq 'group'     ){ "(".join(', ',map($self->toTeX($_),@data)).")"; }
+      elsif($name eq 'interleave'){ "(".join(' ~\&~ ',map($self->toTeX($_),@data)).")"; } # ?
+      elsif($name eq 'choice'    ){ "(".join(' ~\textbar~ ',map($self->toTeX($_),@data)).")"; }
+      elsif($name eq 'optional'  ){
+	if((@data == 1) && eqOp($data[0],'attribute')){ $self->toTeX($data[0]); }
+	else { $self->toTeX($data[0])."?"; }}
+      elsif($name eq 'zeroOrMore'){ $self->toTeX($data[0])."*"; }
+      elsif($name eq 'oneOrMore' ){ $self->toTeX($data[0])."+"; }
+      elsif($name eq 'list'      ){ "(".join(', ',map($self->toTeX($_),@data)).")"; }} # ?
+    elsif($op eq 'data'){ "\\typename{".cleanTeX($data[0])."}"; }
+    elsif($op eq 'value'){ '\attrval{'.cleanTeX($data[0])."}"; }
+    elsif($op eq 'start'){ 
+      my($docs,@spec) = $self->toTeXExtractDocs(@data);
+      my $content = join(' ',map($self->toTeX($_),@spec));
+      "\\item[\\textit{Start}]\\textbf{==}\\ $content".($docs ? " \\par$docs" :''); }
+    elsif($op eq 'grammar'){	# Don't otherwise mention it?
 ##      join("\n",'\item[\textit{Grammar}:] '.$name,
-      join("\n", map($self->toTeX($_), @data)); }
-    elsif ($op eq 'module') {
-      if (($name =~ /^svg/) && $SKIP_SVG) {
-        '\item[\textit{Module }' . cleanTeX($name) . '] included.'; }
+      join("\n",map($self->toTeX($_),@data)); }
+    elsif($op eq 'module'){
+      if(($name=~ /^svg/) && $SKIP_SVG){
+	'\item[\textit{Module }'.cleanTeX($name).'] included.'; }
       else {
-        '\item[\textit{Module }\moduleref{' . cleanTeX($name) . '}] included.'; } }
+	'\item[\textit{Module }\moduleref{'.cleanTeX($name).'}] included.'; }}
     else {
       warn "RelaxNG->toTeX: Unrecognized item $op";
-      "[$op: " . join(', ', map($self->toTeX($_), @data)) . "]"; } }
+      "[$op: ".join(', ',map($self->toTeX($_),@data))."]"; }}
   else {
-    cleanTeX($object); } }
+    cleanTeX($object);}}
 
 sub getSymbolUses {
-  my ($self, $qname) = @_;
-  if (my $uses = $$self{usesname}{$qname}) {
+  my($self,$qname)=@_;
+  if(my $uses = $$self{usesname}{$qname}){
     my @uses = sort keys %$uses;
-    @uses = grep(!/\bSVG./, @uses) if $SKIP_SVG;    # !!!
+    @uses = grep( ! /\bSVG./, @uses) if $SKIP_SVG; # !!!
     join(', ',
-      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}') : (), @uses),
-      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}') : (), @uses),
-      map(/^element:(.*)$/ ? ('\elementref{' . cleanTeXName($1) . '}') : (), @uses)); }
-  else { ''; } }
+	 map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{'.cleanTeX($1).'}'):(), @uses),
+	 map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{'.cleanTeX($1).'}'):(), @uses),
+##	 map(/^element:[^:]*:(.*)$/ ? ('\elementref{'.cleanTeX($1).'}'):(), @uses)); }
+	 map(/^element:(.*)$/ ? ('\elementref{'.cleanTeXName($1).'}'):(), @uses)); }
+  else { ''; }}
 
 # Extract any documentation nodes from @data
 sub toTeXExtractDocs {
-  my ($self, @data) = @_;
-  my $docs = "";
-  my @rest = ();
-  while (my $item = shift(@data)) {
-    if ((ref $item eq 'ARRAY') && ($$item[0] eq 'doc')) {
+  my($self,@data)=@_;
+  my $docs="";
+  my @rest=();
+  while(my $item = shift(@data)){
+    if((ref $item eq 'ARRAY') && ($$item[0] eq 'doc')){
       $docs .= $self->toTeX($item); }
     else {
-      push(@rest, $item); } }
-  ($docs, @rest); }
+      push(@rest,$item); }}
+  ($docs,@rest); }
 
 # Format the attributes & content model of a named pattern or element.
 # This generates a sequence of \item's to be put in a definition list.
 sub toTeXBody {
-  my ($self, @data) = @_;
-  my (@attributes, @content, @patterns);
-  while (my $item = shift(@data)) {
-    if (ref $item eq 'ARRAY') {
-      my ($op, $name, @args) = @$item;
+  my($self,@data)=@_;
+  my(@attributes,@content,@patterns);
+  while(my $item = shift(@data)){
+    if(ref $item eq 'ARRAY'){
+      my($op,$name,@args)=@$item;
       # NOTE: W/o the simplification of optional(attribute), above,
       # we've got to do some extra work here!
-      if ($op eq 'attribute') {
-        push(@attributes, $self->toTeX($item)); }
-      elsif (($op eq 'combination') && ($name eq 'optional')
-        && (@args == 1) && eqOp($args[0], 'attribute')) {
-        unshift(@data, $args[0]); }
+      if($op eq 'attribute'){ 
+	push(@attributes, $self->toTeX($item)); }
+      elsif(($op eq 'combination') && ($name eq 'optional')
+	    && (@args == 1) && eqOp($args[0],'attribute')){
+	unshift(@data,$args[0]); }
       # Note dubious assumption about naming convention!
-      elsif (($op eq 'ref') && ($name =~ /[^a-zA-Z]attributes$/)) {
-        push(@patterns, $self->toTeX($item)); }
-      else {
-        push(@content, $self->toTeX($item)); } }
+      elsif(($op eq 'ref') && ($name =~ /[^a-zA-Z]attributes$/)){
+	push(@patterns, $self->toTeX($item)); }
+      else { 
+	push(@content, $self->toTeX($item)); }}
     else {
-      push(@content, $self->toTeX($item)); } }
-  (join('', (@patterns
-        ? '\item[\textit{' . (grep($_ !~ /[^a-zA-Z]attributes\}*?$/, @patterns) ? 'Includes' : 'Attributes') . '}:] '
-          . join(', ', @patterns)
-        : ''),
-      @attributes),
-    join(', ', @content)); }
+      push(@content, $self->toTeX($item)); }}
+  (join('',(@patterns
+	    ? '\item[\textit{'.(grep($_ !~ /[^a-zA-Z]attributes\}*?$/, @patterns) ? 'Includes' : 'Attributes').'}:] '
+	    .   join(', ',@patterns)
+	    : ''),
+	@attributes),
+   join(', ',@content)); }
 
 #======================================================================
 

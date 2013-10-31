@@ -10,12 +10,12 @@ RequirePackage('graphicx');
 RequirePackage('hyperref');
 
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
-DefMacro('\toctitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\BibTeX',     'BibTeX');
+DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\BibTeX','BibTeX');
 
-DefMacro('\thesection',       '');
-DefMacro('\thesubsection',    '');
-DefMacro('\thesubsubsection', '');
+DefMacro('\thesection','');
+DefMacro('\thesubsection','');
+DefMacro('\thesubsubsection','');
 
 #======================================================================
 1;

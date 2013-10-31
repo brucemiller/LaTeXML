@@ -15,47 +15,47 @@ use strict;
 use LaTeXML::Package;
 
 #======================================================================
-DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1, font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\mathbb{}', '#1', bounded=>1, requireMath=>1, font=>{encoding=>'U', family=>'blackboard'});
 
-DefConstructor('\textbb{}', '#1', bounded => 1, forbidMath => 1, font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\textbb{}', '#1', bounded=>1, forbidMath=>1, font=>{encoding=>'U', family=>'blackboard'});
 
-DefConstructor('\bbfamily', '', font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\bbfamily', '', font=>{encoding=>'U', family=>'blackboard'});
 
 # Note that there aren't blackboard bold symbols/glyphs in Unicode for many of these characters!
 DeclareFontMap('U',
-  [    # \Gamma     \Delta      \Theta      \Lambda      \Xi         \Pi         \Sigma      \Upsilon
-    "\x{213E}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{213F}", "\x{2140}", "\x{03A5}",
+   [# \Gamma     \Delta      \Theta      \Lambda      \Xi         \Pi         \Sigma      \Upsilon
+    "\x{213E}", "\x{0394}", "\x{0398}", "\x{039B}",  "\x{039E}", "\x{213F}", "\x{2140}", "\x{03A5}",
     # \Phi       \Psi        \Omega      alpha        beta        gamma       delta       epsilon
-    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{03B1}", "\x{03B2}", "\x{213D}", "\x{03B4}", "\x{03F5}",
+    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{03B1}",  "\x{03B2}","\x{213D}",  "\x{03B4}", "\x{03F5}",
     # zeta       eta         theta       iota         kappa      lambda       mu         nu
     "\x{03B6}", "\x{03B7}", "\x{03B8}", "\x{03B9}", "\x{03BA}", "\x{03BB}", "\x{03BC}", "\x{03BD}",
     # xi         pi          rho         sigma       tau         upsilon     phi         chi
     "\x{03BE}", "\x{213C}", "\x{03C1}", "\x{03C3}", "\x{03C4}", "\x{03C5}", "\x{03D5}", "\x{03C7}",
-    # psi
-    "\x{03C8}", "!",        "\"", "#", '$', '%', '&', "'",
-    "\x{27EC}", "\x{27ED}", '*',  '+', ',', '-', '.', '/',
+    # psi        
+    "\x{03C8}", "!",         "\"",      "#",        '$',        '%',        '&',        "'",
+    "\x{27EC}", "\x{27ED}",  '*',       '+',        ',',        '-',        '.',        '/',
     # 0          1           2           3             4           5          6           7
-"\x{1D7D8}", "\x{1D7D9}", "\x{1D7DA}", "\x{1D7DB}", "\x{1D7DC}", "\x{1D7DD}", "\x{1D7DE}", "\x{1D7DF}",
+    "\x{1D7D8}","\x{1D7D9}","\x{1D7DA}","\x{1D7DB}","\x{1D7DC}","\x{1D7DD}","\x{1D7DE}","\x{1D7DF}",
     # 8          9           .           ,             <           /          >
-    "\x{1D7E0}", "\x{1D7E1}", ':', ';', '<', "\x{22C5}", '>', '?',
+    "\x{1D7E0}","\x{1D7E1}",':',        ';',           '<',       "\x{22C5}", '>',        '?',
     # partial    A           B           C             D           E          F           G
-    "@", "\x{1D538}", "\x{1D539}", "\x{2102}", "\x{1D53B}", "\x{1D53C}", "\x{1D53D}", "\x{1D53E}",
+    "@",        "\x{1D538}","\x{1D539}","\x{2102}","\x{1D53B}","\x{1D53C}","\x{1D53D}","\x{1D53E}",
     # H          I           J           K             L           M          N           O
-"\x{210D}", "\x{1D540}", "\x{1D541}", "\x{1D542}", "\x{1D543}", "\x{1D544}", "\x{2115}", "\x{1D546}",
+    "\x{210D}","\x{1D540}","\x{1D541}","\x{1D542}", "\x{1D543}","\x{1D544}","\x{2115}","\x{1D546}",
     # P          Q           R           S             T           U          V           W
-    "\x{2119}", "\x{211A}", "\x{211D}", "\x{1D54A}", "\x{1D54B}", "\x{1D54C}", "\x{1D54D}", "\x{1D54E}",
+    "\x{2119}", "\x{211A}", "\x{211D}","\x{1D54A}", "\x{1D54B}", "\x{1D54C}","\x{1D54D}","\x{1D54E}",
     # X          Y           Z
-    "\x{1D54F}", "\x{1D550}", "\x{2124}", "\x{27E6}", "\\", "\x{27E7}", "{", "}",
+    "\x{1D54F}","\x{1D550}","\x{2124}", "\x{27E6}",  "\\",        "\x{27E7}",       "{",        "}",
     # ell        a           b           c             d           e          f           g
-    "`", "\x{1D552}", "\x{1D553}", "\x{1D554}", "\x{1D555}", "\x{1D556}", "\x{1D557}", "\x{1D558}",
+    "`",       "\x{1D552}","\x{1D553}","\x{1D554}", "\x{1D555}", "\x{1D556}","\x{1D557}","\x{1D558}",
 
     # h          i           j           k             l           m          n           o
-"\x{1D559}", "\x{1D55A}", "\x{1D55B}", "\x{1D55C}", "\x{1D55D}", "\x{1D55E}", "\x{1D55F}", "\x{1D560}",
+    "\x{1D559}","\x{1D55A}","\x{1D55B}","\x{1D55C}", "\x{1D55D}", "\x{1D55E}","\x{1D55F}","\x{1D560}",
     # p          q           r           s             t           u          v           w
-"\x{1D561}", "\x{1D562}", "\x{1D563}", "\x{1D564}", "\x{1D565}", "\x{1D566}", "\x{1D567}", "\x{1D568}",
+    "\x{1D561}","\x{1D562}","\x{1D563}","\x{1D564}", "\x{1D565}", "\x{1D566}","\x{1D567}","\x{1D568}",
     # x          y           z
-    "\x{1D569}", "\x{1D56A}", "\x{1D56B}", "-", "|", "--", "``", "\x{03C9}"
-  ]);
+    "\x{1D569}","\x{1D56A}","\x{1D56B}","-",          "|",       "--",       "``",       "\x{03C9}"
+]);
 
 #======================================================================
 1;

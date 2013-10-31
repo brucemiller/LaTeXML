@@ -19,303 +19,305 @@ RequirePackage('amssymb');
 #================================================================================
 # See LaTeX Symbol list, Table 27.
 
-DefMath('\circledbar',    "\x{29B6}");
-DefMath('\circledbslash', "\x{29B8}");
-DefMath('\circledvee',    "\x{2228}\x{20DD}");    # overlay circle?
-DefMath('\circledwedge',  "\x{2227}\x{20DD}");    # overlay cirxle?
-DefMath('\invamp',        "\x{214B}");
+DefMath('\circledbar',      "\x{29B6}");
+DefMath('\circledbslash',   "\x{29B8}");
+DefMath('\circledvee',      "\x{2228}\x{20DD}"); # overlay circle?
+DefMath('\circledwedge',    "\x{2227}\x{20DD}"); # overlay cirxle?
+DefMath('\invamp',          "\x{214B}");
 # DefMath('\medbullet',     "\x{}");
 # DefMath('\medcirc',       "\x{}");
 # DefMath('\sqcapplus',     "\x{}");
 # DefMath('\sqcupplus',     "\x{}");
 
 # Not in table, but apparently defined?
-DefMath('\boxast',       "\x{29C6}");
-DefMath('\boxbar',       "\x{25EB}");    # ?
-DefMath('\boxbslash',    "\x{29C4}");
-DefMath('\boxslash',     "\x{29C5}");
-DefMath('\circleddot',   "\x{2299}");
-DefMath('\circledminus', "\x{2296}");
-DefMath('\circledplus',  "\x{2295}");
-DefMath('\circledslash', "\x{2298}");
-DefMath('\circledtimes', "\x{2297}");
+DefMath('\boxast',          "\x{29C6}");
+DefMath('\boxbar',          "\x{25EB}");	# ?
+DefMath('\boxbslash',       "\x{29C4}");
+DefMath('\boxslash',        "\x{29C5}");
+DefMath('\circleddot',      "\x{2299}");
+DefMath('\circledminus',    "\x{2296}");
+DefMath('\circledplus',     "\x{2295}");
+DefMath('\circledslash',    "\x{2298}");
+DefMath('\circledtimes',    "\x{2297}");
+
 
 #================================================================================
 # See LaTeX Symbol list, Table 28.
-DefMath('\fint', "\x{2A0F}", meaning => 'integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\fintop', "\x{2A0F}", meaning => 'integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\idotsint', "\x{222B}\x{22EF}\x{222B}", meaning => 'multiple-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\idotsintop', "\x{222B}\x{22EF}\x{222B}", meaning => 'multiple-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\iint', "\x{222C}", meaning => 'double-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\iintop', "\x{222C}", meaning => 'double-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\iiint', "\x{222D}", meaning => 'triple-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\iiintop', "\x{222D}", meaning => 'triple-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\iiiint', "\x{2A0C}", meaning => 'quadruple-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\iiiintop', "\x{2A0C}", meaning => 'quadruple-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
+DefMath('\fint',     "\x{2A0F}", meaning=>'integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\fintop',     "\x{2A0F}", meaning=>'integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\idotsint', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\idotsintop', "\x{222B}\x{22EF}\x{222B}", meaning=>'multiple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iint',     "\x{222C}", meaning=>'double-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iintop',   "\x{222C}", meaning=>'double-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iiint',    "\x{222D}", meaning=>'triple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiintop',  "\x{222D}", meaning=>'triple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\iiiint',   "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\iiiintop', "\x{2A0C}", meaning=>'quadruple-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
 # Following made with combining clockwise or counter clockwise overlay
-DefMath('\oiiintclockwise', "\x{222D}\x{20D9}",
-  meaning => 'triple-clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiiintclockwiseop', "\x{222D}\x{20D9}",
-  meaning => 'triple-clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varoiiintclockwise', "\x{222D}\x{20D9}",
-  meaning => 'triple-clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\varoiiintclockwiseop', "\x{222D}\x{20D9}",
-  meaning => 'triple-clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\oiiintctrclockwise', "\x{222D}\x{20DA}",
-  meaning => 'triple-counterclockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiiintctrclockwiseop', "\x{222D}\x{20DA}",
-  meaning => 'triple-counterclockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varoiiintctrclockwise', "\x{222D}\x{20DA}",
-  meaning => 'triple-counterclockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\varoiiintctrclockwiseop', "\x{222D}\x{20DA}",
-  meaning => 'triple-counterclockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
+DefMath('\oiiintclockwise',        "\x{222D}\x{20D9}",
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiiintclockwiseop',        "\x{222D}\x{20D9}",
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiiintclockwise',     "\x{222D}\x{20D9}",
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiiintclockwiseop',     "\x{222D}\x{20D9}",
+	meaning=>'triple-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\oiiintctrclockwise',     "\x{222D}\x{20DA}",
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiiintctrclockwiseop',     "\x{222D}\x{20DA}",
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiiintctrclockwise',  "\x{222D}\x{20DA}",
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiiintctrclockwiseop',  "\x{222D}\x{20DA}",
+	meaning=>'triple-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
-DefMath('\oiiint', "\x{2230}",
-  meaning => 'triple-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiiintop', "\x{2230}",
-  meaning => 'triple-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\oiintclockwise', "\x{222C}\x{20D9}",
-  meaning => 'double-clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiintclockwiseop', "\x{222C}\x{20D9}",
-  meaning => 'double-clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varoiintclockwise', "\x{222C}\x{20D9}",
-  meaning => 'double-clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\varoiintclockwiseop', "\x{222C}\x{20D9}",
-  meaning => 'double-clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\oiintctrclockwise', "\x{222C}\x{20DA}",
-  meaning => 'double-counterclockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiintctrclockwiseop', "\x{222C}\x{20DA}",
-  meaning => 'double-counterclockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varoiintctrclockwise', "\x{222C}\x{20DA}",
-  meaning => 'double-counterclockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\varoiintctrclockwiseop', "\x{222C}\x{20DA}",
-  meaning => 'double-counterclockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
+DefMath('\oiiint',                 "\x{2230}",
+	meaning=>'triple-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiiintop',                 "\x{2230}",
+	meaning=>'triple-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\oiintclockwise',         "\x{222C}\x{20D9}",
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiintclockwiseop',         "\x{222C}\x{20D9}",
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiintclockwise',      "\x{222C}\x{20D9}",
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiintclockwiseop',      "\x{222C}\x{20D9}",
+	meaning=>'double-clockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\oiintctrclockwise',      "\x{222C}\x{20DA}",
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiintctrclockwiseop',      "\x{222C}\x{20DA}",
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiintctrclockwise',   "\x{222C}\x{20DA}",
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\varoiintctrclockwiseop',   "\x{222C}\x{20DA}",
+	meaning=>'double-counterclockwise-contour-integral',role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 
-DefMath('\oiint', "\x{222F}", meaning => 'double-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\oiintop', "\x{222F}", meaning => 'double-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\ointclockwise', "\x{2232}", meaning => 'clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\ointclockwiseop', "\x{2232}", meaning => 'clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\ointctrclockwise', "\x{2233}", meaning => 'counter-clockwise-contour-integral',
-  role => 'INTOP', mathstyle => \&doVariablesizeOp);
-DefMath('\ointctrclockwiseop', "\x{2233}", meaning => 'counter-clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varointclockwise', "\x{2232}", meaning => 'clockwise-contour-integral', role => 'INTOP',
-  mathstyle => \&doVariablesizeOp);
-DefMath('\varointclockwiseop', "\x{2232}", meaning => 'clockwise-contour-integral', role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
-DefMath('\varointctrclockwise', "\x{2233}", meaning => 'counter-clockwise-contour-integral',
-  role => 'INTOP', mathstyle => \&doVariablesizeOp);
-DefMath('\varointctrclockwiseop', "\x{2233}", meaning => 'counter-clockwise-contour-integral',
-  role => 'INTOP',
-  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
+DefMath('\oiint',                "\x{222F}", meaning=>'double-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\oiintop',              "\x{222F}", meaning=>'double-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\ointclockwise',        "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\ointclockwiseop',      "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\ointctrclockwise',     "\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP', mathstyle=>\&doVariablesizeOp);
+DefMath('\ointctrclockwiseop',   "\x{2233}", meaning=>'counter-clockwise-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointclockwise',     "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	mathstyle=>\&doVariablesizeOp);
+DefMath('\varointclockwiseop',   "\x{2232}", meaning=>'clockwise-contour-integral', role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointctrclockwise',  "\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP', mathstyle=>\&doVariablesizeOp);
+DefMath('\varointctrclockwiseop',"\x{2233}", meaning=>'counter-clockwise-contour-integral',
+	role=>'INTOP',
+	scriptpos=>'mid', mathstyle=>\&doVariablesizeOp);
 # \sqiiint
 # \sqiint
-DefMath('\sqint', "\x{2A16}", role => 'INTOP', meaning => 'square-contour-integral',
-  mathstyle => \&doVariablesizeOp);
+DefMath('\sqint',              "\x{2A16}",role=>'INTOP', meaning=>'square-contour-integral',
+	mathstyle=>\&doVariablesizeOp);
 # \varprod
+
 
 #================================================================================
 # See LaTeX Symbol list, Table 29 --- also in amsfonts
 
 #================================================================================
 # See LaTeX Symbol list, Table 34.
-DefMath('\boxdotleft',      "\x{2190}\x{22A1}", role => 'RELOP');
-DefMath('\boxdotLeft',      "\x{21D0}\x{22A1}", role => 'RELOP');
-DefMath('\boxdotright',     "\x{22A1}\x{2192}", role => 'RELOP');
-DefMath('\boxdotRight',     "\x{22A1}\x{21D2}", role => 'RELOP');
-DefMath('\boxleft',         "\x{2190}\x{25A1}", role => 'RELOP');
-DefMath('\boxLeft',         "\x{21D0}\x{25A1}", role => 'RELOP');
-DefMath('\boxright',        "\x{25A1}\x{2192}", role => 'RELOP');
-DefMath('\boxRight',        "\x{25A1}\x{21D2}", role => 'RELOP');
-DefMath('\circleddotleft',  "\x{2190}\x{2299}", role => 'RELOP');
-DefMath('\circleddotright', "\x{2299}\x{2192}", role => 'RELOP');
-DefMath('\circledgtr',      "\x{29C1}",         role => 'RELOP');
-DefMath('\circledless',     "\x{29C0}",         role => 'RELOP');
-DefMath('\circleleft',      "\x{2190}\x{25CB}", role => 'RELOP');
-DefMath('\circleright',     "\x{25CB}\x{2192}", role => 'RELOP');
-DefMath('\colonapprox',     ":\x{2248}",        role => 'RELOP');
-DefMath('\Colonapprox',     "::\x{2248}",       role => 'RELOP');
-DefMath('\coloneq',         ":-",               role => 'RELOP');
-DefMath('\Coloneq',         "::-",              role => 'RELOP');
-DefMath('\coloneqq',        "\x{2254}",         role => 'RELOP');
-DefMath('\Coloneqq',        "\x{2A74}",         role => 'RELOP');
-DefMath('\colonsim',        ":\x{223C}",        role => 'RELOP');
-DefMath('\Colonsim',        "::\x{223C}",       role => 'RELOP');
+DefMath('\boxdotleft',           "\x{2190}\x{22A1}", role=>'RELOP');
+DefMath('\boxdotLeft',           "\x{21D0}\x{22A1}", role=>'RELOP');
+DefMath('\boxdotright',          "\x{22A1}\x{2192}", role=>'RELOP');
+DefMath('\boxdotRight',          "\x{22A1}\x{21D2}", role=>'RELOP');
+DefMath('\boxleft',              "\x{2190}\x{25A1}", role=>'RELOP');
+DefMath('\boxLeft',              "\x{21D0}\x{25A1}", role=>'RELOP');
+DefMath('\boxright',             "\x{25A1}\x{2192}", role=>'RELOP');
+DefMath('\boxRight',             "\x{25A1}\x{21D2}", role=>'RELOP');
+DefMath('\circleddotleft',       "\x{2190}\x{2299}", role=>'RELOP');
+DefMath('\circleddotright',      "\x{2299}\x{2192}", role=>'RELOP');
+DefMath('\circledgtr',           "\x{29C1}",         role=>'RELOP');
+DefMath('\circledless',          "\x{29C0}",         role=>'RELOP');
+DefMath('\circleleft',           "\x{2190}\x{25CB}", role=>'RELOP');
+DefMath('\circleright',          "\x{25CB}\x{2192}", role=>'RELOP');
+DefMath('\colonapprox',          ":\x{2248}",        role=>'RELOP');
+DefMath('\Colonapprox',          "::\x{2248}",       role=>'RELOP');
+DefMath('\coloneq',              ":-",               role=>'RELOP');
+DefMath('\Coloneq',              "::-",              role=>'RELOP');
+DefMath('\coloneqq',             "\x{2254}",         role=>'RELOP');
+DefMath('\Coloneqq',             "\x{2A74}",         role=>'RELOP');
+DefMath('\colonsim',             ":\x{223C}",        role=>'RELOP');
+DefMath('\Colonsim',             "::\x{223C}",       role=>'RELOP');
 # \dashleftrightarrow
-DefMath('\Diamonddotleft',  "\x{2190}\x{27D0}", role => 'RELOP');
-DefMath('\DiamonddotLeft',  "\x{21D0}\x{27D0}", role => 'RELOP');
-DefMath('\Diamonddotright', "\x{27D0}\x{2192}", role => 'RELOP');
-DefMath('\DiamonddotRight', "\x{27D0}\x{21D2}", role => 'RELOP');
-DefMath('\Diamondleft',     "\x{2190}\x{25C7}", role => 'RELOP');
-DefMath('\DiamondLeft',     "\x{21D0}\x{25C7}", role => 'RELOP');
-DefMath('\Diamondright',    "\x{25C7}\x{2192}", role => 'RELOP');
-DefMath('\DiamondRight',    "\x{25C7}\x{21D2}", role => 'RELOP');
-DefMath('\Eqcolon',         "-::",              role => 'RELOP');
-DefMath('\eqcolon',         "-:",               role => 'RELOP');
-DefMath('\Eqqcolon',        "=::",              role => 'RELOP');
-DefMath('\eqqcolon',        "\x{2255}",         role => 'RELOP');
-DefMath('\eqsim',           "\x{2242}",         role => 'RELOP');
-DefMath('\leftsquigarrow',  "\x{21DC}",         role => 'RELOP');
-DefMath('\lJoin',           "\x{22C9}",         role => 'RELOP');
+DefMath('\Diamonddotleft',       "\x{2190}\x{27D0}", role=>'RELOP');
+DefMath('\DiamonddotLeft',       "\x{21D0}\x{27D0}", role=>'RELOP');
+DefMath('\Diamonddotright',      "\x{27D0}\x{2192}", role=>'RELOP');
+DefMath('\DiamonddotRight',      "\x{27D0}\x{21D2}", role=>'RELOP');
+DefMath('\Diamondleft',          "\x{2190}\x{25C7}", role=>'RELOP');
+DefMath('\DiamondLeft',          "\x{21D0}\x{25C7}", role=>'RELOP');
+DefMath('\Diamondright',         "\x{25C7}\x{2192}", role=>'RELOP');
+DefMath('\DiamondRight',         "\x{25C7}\x{21D2}", role=>'RELOP');
+DefMath('\Eqcolon',              "-::",              role=>'RELOP');
+DefMath('\eqcolon',              "-:",               role=>'RELOP');
+DefMath('\Eqqcolon',             "=::",              role=>'RELOP');
+DefMath('\eqqcolon',             "\x{2255}",         role=>'RELOP');
+DefMath('\eqsim',                "\x{2242}",         role=>'RELOP');
+DefMath('\leftsquigarrow',       "\x{21DC}",         role=>'RELOP');
+DefMath('\lJoin',                "\x{22C9}",         role=>'RELOP');
 
-DefMath('\lrtimes',        "\x{22C8}", role => 'RELOP');    # ?
-DefMath('\Join',           "\x{22C8}", role => 'RELOP');
-DefMath('\lrJoin',         "\x{22C8}", role => 'RELOP');
-DefMath('\Mappedfromchar', "\x{2AE4}", role => 'RELOP');
-DefMath('\mappedfromchar', "\x{2ADE}", role => 'RELOP');
-DefMath('\mmapstochar',    "\x{2AE3}", role => 'RELOP');
-DefMath('\Mmapstochar',    "\x{2AE5}", role => 'RELOP');
-DefMath('\multimapboth',   "\x{29DF}", role => 'RELOP');
+DefMath('\lrtimes',              "\x{22C8}",         role=>'RELOP'); # ?
+DefMath('\Join',                 "\x{22C8}",         role=>'RELOP');
+DefMath('\lrJoin',               "\x{22C8}",         role=>'RELOP');
+DefMath('\Mappedfromchar',       "\x{2AE4}",         role=>'RELOP');
+DefMath('\mappedfromchar',       "\x{2ADE}",         role=>'RELOP');
+DefMath('\mmapstochar',          "\x{2AE3}",         role=>'RELOP');
+DefMath('\Mmapstochar',          "\x{2AE5}",         role=>'RELOP');
+DefMath('\multimapboth',         "\x{29DF}",         role=>'RELOP');
 #DefMath('\multimapbothvert',    "\x{}",             role=>'RELOP');
 #DefMath('\multimapdot',         "\x{}",             role=>'RELOP');
 #DefMath('\multimapdotboth',     "\x{}",             role=>'RELOP');
-DefMath('\multimapdotbothA', "\x{22B6}", role => 'RELOP');
+DefMath('\multimapdotbothA',     "\x{22B6}",         role=>'RELOP');
 #DefMath('\multimapdotbothAvert',"\x{}",             role=>'RELOP');
-DefMath('\multimapdotbothB', "\x{22B7}", role => 'RELOP');
+DefMath('\multimapdotbothB',     "\x{22B7}",         role=>'RELOP');
 #DefMath('\multimapdotbothBvert',"\x{}",             role=>'RELOP');
 #DefMath('\multimapdotinv',      "\x{}",             role=>'RELOP');
-DefMath('\multimapinv', "\x{27DC}",         role    => 'RELOP');
-DefMath('\napproxeq',   "\x{224A}\x{0338}", meaning => 'not-approximately-equals', role => 'RELOP');
-DefMath('\nasymp',      "\x{226D}",         meaning => 'not-equivalent-to', role => 'RELOP');
-DefMath('\nbacksim',    "\x{223D}\x{0337}", role    => 'RELOP');
-DefMath('\nbacksimeq',  "\x{224C}\x{0338}", role    => 'RELOP');
-DefMath('\nBumpeq',     "\x{224E}\x{0338}", role    => 'RELOP');
-DefMath('\nbumpeq',     "\x{224F}\x{0338}", role    => 'RELOP');
-DefMath('\Nearrow',     "\x{21D7}",         role    => 'ARROW');
-DefMath('\nequiv',      "\x{2262}",         meaning => 'not-equivalent-to', role => 'RELOP');
-DefMath('\ngg',         "\x{226B}\x{0338}", role    => 'RELOP');
-DefMath('\ngtrapprox', "\x{2A86}\x{0338}",
-  meaning => 'not-greater-than-nor-approximately-equals', role => 'RELOP');
-DefMath('\ngtrless', "\x{2278}",
-  meaning => 'not-greater-than-nor-less-than', role => 'RELOP');
-DefMath('\ngtrsim', "\x{2275}",
-  meaning => 'not-greater-than-nor-equivalent-to', role => 'RELOP');
-DefMath('\nlessapprox', "\x{2A85}\x{0338}",
-  meaning => 'not-less-than-nor-approximately-equals', role => 'RELOP');
-DefMath('\nlessgtr', "\x{2279}",
-  meaning => 'not-less-than-nor-greater-than', role => 'RELOP');
-DefMath('\nlesssim', "\x{2274}",
-  meaning => 'not-less-than-nor-equivalent-to', role => 'RELOP');
-DefMath('\nll', "\x{226A}\x{0338}",
-  meaning => 'not-much-less-than', role => 'RELOP');
-DefMath('\notin', "\x{2209}",
-  meaning => 'not-element-of', role => 'RELOP');
-DefMath('\notni', "\x{220C}",
-  meaning => 'not-contains', role => 'RELOP');
-DefMath('\notowns', "\x{220C}",
-  meaning => 'not-contains', role => 'RELOP');
+DefMath('\multimapinv',          "\x{27DC}",         role=>'RELOP');
+DefMath('\napproxeq',            "\x{224A}\x{0338}", meaning=>'not-approximately-equals', role=>'RELOP');
+DefMath('\nasymp',               "\x{226D}", meaning=>'not-equivalent-to', role=>'RELOP');
+DefMath('\nbacksim',             "\x{223D}\x{0337}", role=>'RELOP');
+DefMath('\nbacksimeq',           "\x{224C}\x{0338}", role=>'RELOP');
+DefMath('\nBumpeq',              "\x{224E}\x{0338}", role=>'RELOP');
+DefMath('\nbumpeq',              "\x{224F}\x{0338}", role=>'RELOP');
+DefMath('\Nearrow',              "\x{21D7}",         role=>'ARROW');
+DefMath('\nequiv',               "\x{2262}",         meaning=>'not-equivalent-to', role=>'RELOP');
+DefMath('\ngg',                  "\x{226B}\x{0338}", role=>'RELOP');
+DefMath('\ngtrapprox',           "\x{2A86}\x{0338}",
+	meaning=>'not-greater-than-nor-approximately-equals', role=>'RELOP');
+DefMath('\ngtrless',             "\x{2278}",
+	meaning=>'not-greater-than-nor-less-than', role=>'RELOP');
+DefMath('\ngtrsim',              "\x{2275}",
+	meaning=>'not-greater-than-nor-equivalent-to', role=>'RELOP');
+DefMath('\nlessapprox',          "\x{2A85}\x{0338}",
+	meaning=>'not-less-than-nor-approximately-equals', role=>'RELOP');
+DefMath('\nlessgtr',             "\x{2279}",
+	meaning=>'not-less-than-nor-greater-than', role=>'RELOP');
+DefMath('\nlesssim',             "\x{2274}",
+	meaning=>'not-less-than-nor-equivalent-to', role=>'RELOP');
+DefMath('\nll',                  "\x{226A}\x{0338}",
+	meaning=>'not-much-less-than', role=>'RELOP');
+DefMath('\notin',                "\x{2209}",
+	meaning=>'not-element-of', role=>'RELOP');
+DefMath('\notni',                "\x{220C}",
+	meaning=>'not-contains', role=>'RELOP');
+DefMath('\notowns',              "\x{220C}",
+	meaning=>'not-contains', role=>'RELOP');
 
-DefMath('\nprecapprox', "\x{2AB7}\x{0338}",
-  meaning => 'not-precedes-nor-approximately-equals', role => 'RELOP');
-DefMath('\npreccurlyeq', "\x{22E0}",
-  meaning => 'not-precedes-nor-equals', role => 'RELOP');
+DefMath('\nprecapprox',          "\x{2AB7}\x{0338}",
+	meaning=>'not-precedes-nor-approximately-equals', role=>'RELOP');
+DefMath('\npreccurlyeq',         "\x{22E0}",
+	meaning=>'not-precedes-nor-equals', role=>'RELOP');
 
-DefMath('\npreceqq', "\x{2AB3}\x{0338}", role => 'RELOP',
-  meaning => 'not-precedes-nor-equals');
-DefMath('\nprecsim', "\x{227E}\x{0338}", role => 'RELOP',
-  meaning => 'not-precedes-nor-equivalent-to');
-DefMath('\nsimeq', "\x{2243}\x{0338}", role => 'RELOP',
-  meaning => 'not-equivalent-to-nor-equals');
-DefMath('\nsqsubset', "\x{228F}\x{0338}", role => 'RELOP',
-  meaning => 'not-square-image-of');
-DefMath('\nsqsubseteq', "\x{22E2}", role => 'RELOP',
-  meaning => 'not-square-image-of-nor-equals');
-DefMath('\nsqsupset', "\x{2290}\x{0338}", role => 'RELOP',
-  meaning => 'not-square-original-of');
-DefMath('\nsqsupseteq', "\x{22E3}", role => 'RELOP',
-  meaning => 'not-square-original-of-nor-equals');
-DefMath('\nSubset', "\x{22D0}\x{0338}", role => 'RELOP',
-  meaning => 'not-double-subset-of');
-DefMath('\nsubseteqq', "\x{2AC5}\x{0338}", role => 'RELOP',
-  meaning => 'not-subset-nor-equals');
-DefMath('\nsuccapprox', "\x{2AB8}\x{0338}", role => 'RELOP',
-  meaning => 'not-succeeds-nor-approximately-equals');
-DefMath('\nsucccurlyeq', "\x{22E1}", role => 'RELOP',
-  meaning => 'not-succeeds-nor-equals');
-DefMath('\nsucceqq', "\x{2AB4}\x{0338}", role => 'RELOP',
-  meaning => 'not-succeeds-nor-equals');
-DefMath('\nsuccsim', "\x{227F}\x{0338}", role => 'RELOP',
-  meaning => 'not-succeeds-nor-equivalent-to');
-DefMath('\nSupset', "\x{22D1}\x{0338}", role => 'RELOP',
-  meaning => 'not-double-superset-of');
-DefMath('\nthickapprox', "\x{2249}", role => 'RELOP',
-  meaning => 'not-approximately-equals');
-DefMath('\ntwoheadleftarrow',  "\x{2B34}", role => 'RELOP');
-DefMath('\ntwoheadrightarrow', "\x{2900}", role => 'RELOP');
+DefMath('\npreceqq',             "\x{2AB3}\x{0338}", role=>'RELOP',
+	meaning=>'not-precedes-nor-equals');
+DefMath('\nprecsim',             "\x{227E}\x{0338}", role=>'RELOP',
+	meaning=>'not-precedes-nor-equivalent-to');
+DefMath('\nsimeq',               "\x{2243}\x{0338}", role=>'RELOP',
+	meaning=>'not-equivalent-to-nor-equals');
+DefMath('\nsqsubset',            "\x{228F}\x{0338}", role=>'RELOP',
+	meaning=>'not-square-image-of');
+DefMath('\nsqsubseteq',          "\x{22E2}",         role=>'RELOP',
+	meaning=>'not-square-image-of-nor-equals');
+DefMath('\nsqsupset',            "\x{2290}\x{0338}", role=>'RELOP',
+	meaning=>'not-square-original-of');
+DefMath('\nsqsupseteq',          "\x{22E3}",         role=>'RELOP',
+	meaning=>'not-square-original-of-nor-equals');
+DefMath('\nSubset',              "\x{22D0}\x{0338}", role=>'RELOP',
+	meaning=>'not-double-subset-of');
+DefMath('\nsubseteqq',           "\x{2AC5}\x{0338}", role=>'RELOP',
+	meaning=>'not-subset-nor-equals');
+DefMath('\nsuccapprox',          "\x{2AB8}\x{0338}", role=>'RELOP',
+	meaning=>'not-succeeds-nor-approximately-equals');
+DefMath('\nsucccurlyeq',         "\x{22E1}",         role=>'RELOP',
+	meaning=>'not-succeeds-nor-equals');
+DefMath('\nsucceqq',             "\x{2AB4}\x{0338}", role=>'RELOP',
+	meaning=>'not-succeeds-nor-equals');
+DefMath('\nsuccsim',             "\x{227F}\x{0338}", role=>'RELOP',
+	meaning=>'not-succeeds-nor-equivalent-to');
+DefMath('\nSupset',              "\x{22D1}\x{0338}", role=>'RELOP',
+	meaning=>'not-double-superset-of');
+DefMath('\nthickapprox',         "\x{2249}",         role=>'RELOP',
+	meaning=>'not-approximately-equals');
+DefMath('\ntwoheadleftarrow',    "\x{2B34}",         role=>'RELOP');
+DefMath('\ntwoheadrightarrow',   "\x{2900}",         role=>'RELOP');
 # DefMath('\nvparallel',         "\x{}",             role=>'RELOP');
 # DefMath('\nvparallelinv',      "\x{}",             role=>'RELOP');
-DefMath('\nVdash', "\x{22AE}", role => 'RELOP',
-  meaning => 'not-forces');
-DefMath('\Nwarrow', "\x{21D6}", role => 'ARROW');
+DefMath('\nVdash',               "\x{22AE}",         role=>'RELOP',
+	meaning=>'not-forces');
+DefMath('\Nwarrow',              "\x{21D6}",         role=>'ARROW');
 # DefMath('\openJoin',           "\x{}",             role=>'RELOP');
 # DefMath('\opentimes',          "\x{}",             role=>'RELOP');
-DefMath('\Perp', "\x{2AEB}", role => 'RELOP');
-DefMath('\preceqq', "\x{2AB3}", role => 'RELOP',
-  meaning => 'precedes-or-equals');
-DefMath('\precneqq', "\x{2AB5}", role => 'RELOP',
-  meaning => 'precedes-and-not-equals');
-DefMath('\rJoin', "\x{22CA}", role => 'RELOP',
-  meaning => 'right-normal-factor-semidirect-product');
-DefMath('\Rrightarrow', "\x{21DB}",         role => 'RELOP');
-DefMath('\Searrow',     "\x{21D8}",         role => 'ARROW');
-DefMath('\strictfi',    "\x{297C}",         role => 'RELOP');
-DefMath('\strictif',    "\x{297D}",         role => 'RELOP');
-DefMath('\strictiff',   "\x{297C}\x{297D}", role => 'RELOP');
-DefMath('\succeqq', "\x{2AB4}", role => 'RELOP',
-  meaning => 'succeeds-or-equals');
-DefMath('\succneqq', "\x{2AB6}", role => 'RELOP',
-  meaning => 'succeeds-and-not-equals');
-DefMath('\Swarrow',     "\x{21D9}", role => 'ARROW');
-DefMath('\varparallel', "\x{2AFD}", role => 'RELOP');
+DefMath('\Perp',                 "\x{2AEB}",         role=>'RELOP');
+DefMath('\preceqq',              "\x{2AB3}",         role=>'RELOP',
+	meaning=>'precedes-or-equals');
+DefMath('\precneqq',             "\x{2AB5}",         role=>'RELOP',
+	meaning=>'precedes-and-not-equals');
+DefMath('\rJoin',                "\x{22CA}",         role=>'RELOP',
+	meaning=>'right-normal-factor-semidirect-product');
+DefMath('\Rrightarrow',          "\x{21DB}",         role=>'RELOP');
+DefMath('\Searrow',              "\x{21D8}",         role=>'ARROW');
+DefMath('\strictfi',             "\x{297C}",         role=>'RELOP');
+DefMath('\strictif',             "\x{297D}",         role=>'RELOP');
+DefMath('\strictiff',            "\x{297C}\x{297D}", role=>'RELOP');
+DefMath('\succeqq',              "\x{2AB4}",         role=>'RELOP',
+	meaning=>'succeeds-or-equals');
+DefMath('\succneqq',             "\x{2AB6}",         role=>'RELOP',
+	meaning=>'succeeds-and-not-equals');
+DefMath('\Swarrow',              "\x{21D9}",         role=>'ARROW');
+DefMath('\varparallel',          "\x{2AFD}",         role=>'RELOP');
 # DefMath('\varparallelinv',     "\x{}",             role=>'RELOP');
 # DefMath('\VvDash',             "\x{}",             role=>'RELOP');
 
 # Not in the table?
-DefMath('\napprox', "\x{2249}", meaning => 'not-approximately-equals', role => 'RELOP');
-DefMath('\nsubset', "\x{2284}", meaning => 'not-subset-of',            role => 'RELOP');
-DefMath('\nsupset', "\x{2285}", meaning => 'not-superset-of',          role => 'RELOP');
+DefMath('\napprox',              "\x{2249}",         meaning=>'not-approximately-equals', role=>'RELOP');
+DefMath('\nsubset',              "\x{2284}",         meaning=>'not-subset-of', role=>'RELOP');
+DefMath('\nsupset',              "\x{2285}",         meaning=>'not-superset-of', role=>'RELOP');
 
 #================================================================================
 # LaTeX Symbol List, Table 38. that are apparently in txfonts
-DefMath('\Longmappedfrom', "\x{27FD}", role => 'ARROW');
-DefMath('\Longmapsto',     "\x{27FE}", role => 'ARROW');
+DefMath('\Longmappedfrom',       "\x{27FD}",         role=>'ARROW');
+DefMath('\Longmapsto',           "\x{27FE}",         role=>'ARROW');
 #DefMath('\Longmmappedfrom',      "\x{}",         role=>'ARROW');
 #DefMath('\Longmmasto',           "\x{}",         role=>'ARROW');
-DefMath('\Mappedfrom', "\x{2906}", role => 'ARROW');
-DefMath('\Mapsto',     "\x{2907}", role => 'ARROW');
+DefMath('\Mappedfrom',           "\x{2906}",         role=>'ARROW');
+DefMath('\Mapsto',               "\x{2907}",         role=>'ARROW');
 # \Mapstochar ??
 #DefMath('\Mmappedfrom',          "\x{}",         role=>'ARROW');
 # \Mmappedfromchar
@@ -324,35 +326,35 @@ DefMath('\Mapsto',     "\x{2907}", role => 'ARROW');
 #================================================================================
 # LaTeX Symbol List, Table 43.
 
-DefMath('\alphaup', "\x{03B1}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER ALPHA
-DefMath('\betaup', "\x{03B2}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER BETA
-DefMath('\gammaup', "\x{03B3}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER GAMMA
-DefMath('\deltaup', "\x{03B4}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER DELTA
-DefMath('\epsilonup', "\x{03F5}", font => { shape => 'upright', forceshape => 1 }); # GREEK LUNATE EPSILON SYMBOL
-DefMath('\varepsilonup', "\x{03B5}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER EPSILON
-DefMath('\zetaup', "\x{03B6}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER ZETA
-DefMath('\etaup', "\x{03B7}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER ETA
-DefMath('\thetaup', "\x{03B8}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER THETA
-DefMath('\varthetaup', "\x{03D1}", font => { shape => 'upright', forceshape => 1 }); # GREEK THETA SYMBOL
-DefMath('\iotaup', "\x{03B9}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER IOTA
-DefMath('\kappaup', "\x{03BA}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER KAPPA
-DefMath('\lambdaup', "\x{03BB}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER LAMDA
-DefMath('\muup', "\x{03BC}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER MU
-DefMath('\nuup', "\x{03BD}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER NU
-DefMath('\xiup', "\x{03BE}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER XI
-DefMath('\piup', "\x{03C0}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER PI
-DefMath('\varpiup', "\x{03D6}", font => { shape => 'upright', forceshape => 1 });  # GREEK PI SYMBOL
-DefMath('\rhoup', "\x{03C1}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER RHO
-DefMath('\varrhoup', "\x{03F1}", font => { shape => 'upright', forceshape => 1 }); # GREEK RHO SYMBOL
-DefMath('\sigmaup', "\x{03C3}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER SIGMA
-DefMath('\varsigmaup', "\x{03C2}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER FINAL SIGMA
-DefMath('\tauup', "\x{03C4}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER TAU
-DefMath('\upsilonup', "\x{03C5}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER UPSILON
-DefMath('\phiup', "\x{03D5}", font => { shape => 'upright', forceshape => 1 });   # GREEK PHI SYMBOL
-DefMath('\varphiup', "\x{03C6}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER PHI
-DefMath('\chiup', "\x{03C7}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER CHI
-DefMath('\psiup', "\x{03C8}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER PSI
-DefMath('\omegaup', "\x{03C9}", font => { shape => 'upright', forceshape => 1 }); # GREEK SMALL LETTER OMEGA
+DefMath('\alphaup',     "\x{03B1}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ALPHA
+DefMath('\betaup',      "\x{03B2}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER BETA
+DefMath('\gammaup',     "\x{03B3}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER GAMMA
+DefMath('\deltaup',     "\x{03B4}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER DELTA
+DefMath('\epsilonup'  , "\x{03F5}", font=>{shape=>'upright',forceshape=>1}); # GREEK LUNATE EPSILON SYMBOL
+DefMath('\varepsilonup',"\x{03B5}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER EPSILON
+DefMath('\zetaup',      "\x{03B6}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ZETA
+DefMath('\etaup',       "\x{03B7}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER ETA
+DefMath('\thetaup',     "\x{03B8}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER THETA
+DefMath('\varthetaup',  "\x{03D1}", font=>{shape=>'upright',forceshape=>1}); # GREEK THETA SYMBOL
+DefMath('\iotaup',      "\x{03B9}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER IOTA
+DefMath('\kappaup',     "\x{03BA}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER KAPPA
+DefMath('\lambdaup',    "\x{03BB}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER LAMDA
+DefMath('\muup',        "\x{03BC}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER MU
+DefMath('\nuup',        "\x{03BD}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER NU
+DefMath('\xiup',        "\x{03BE}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER XI
+DefMath('\piup',        "\x{03C0}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PI
+DefMath('\varpiup',     "\x{03D6}", font=>{shape=>'upright',forceshape=>1}); # GREEK PI SYMBOL
+DefMath('\rhoup',       "\x{03C1}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER RHO
+DefMath('\varrhoup',    "\x{03F1}", font=>{shape=>'upright',forceshape=>1}); # GREEK RHO SYMBOL
+DefMath('\sigmaup',     "\x{03C3}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER SIGMA
+DefMath('\varsigmaup',  "\x{03C2}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER FINAL SIGMA
+DefMath('\tauup',       "\x{03C4}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER TAU
+DefMath('\upsilonup',   "\x{03C5}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER UPSILON
+DefMath('\phiup',       "\x{03D5}", font=>{shape=>'upright',forceshape=>1}); # GREEK PHI SYMBOL
+DefMath('\varphiup',    "\x{03C6}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PHI
+DefMath('\chiup',       "\x{03C7}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER CHI
+DefMath('\psiup',       "\x{03C8}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER PSI
+DefMath('\omegaup',     "\x{03C9}", font=>{shape=>'upright',forceshape=>1}); # GREEK SMALL LETTER OMEGA
 # Where did I think I found these?
 # DefMath('\Gammaup',     "\x{0393}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER GAMMA
 # DefMath('\Deltaup',     "\x{0394}", font=>{shape=>'upright',forceshape=>1}); # GREEK CAPITAL LETTER DELTA
@@ -377,19 +379,19 @@ DefMath('\varg', "\x{210A}");
 #================================================================================
 # LaTeX Symbol List, Table 61
 DefMath('\Diamondblack', "\x{25C6}");
-DefMath('\Diamonddot',   "\x{27D0}");
+DefMath('\Diamonddot', "\x{27D0}");
 # DefMath('\lambdabar', "\x{}");
 # DefMath('\lambdaslash', "\x{}");
-DefMath('\mathcent',       UTF(0xA2));
-DefMath('\mathsterling',   UTF(0xA3));
-DefMath('\varclubsuit',    "\x{2667}");
+DefMath('\mathcent',     UTF(0xA2));
+DefMath('\mathsterling', UTF(0xA3));
+DefMath('\varclubsuit', "\x{2667}");
 DefMath('\vardiamondsuit', "\x{2666}");
-DefMath('\varheartsuit',   "\x{2665}");
-DefMath('\varspadesuit',   "\x{2664}");
+DefMath('\varheartsuit', "\x{2665}");
+DefMath('\varspadesuit', "\x{2664}");
 
 #================================================================================
-DefMath('\llbracket', "\x{27E6}", role => 'OPEN');
-DefMath('\rrbracket', "\x{27E7}", role => 'CLOSE');
+DefMath('\llbracket',  "\x{27E6}", role=>'OPEN');
+DefMath('\rrbracket',  "\x{27E7}", role=>'CLOSE');
 # \lbag, \rbag ?
 #================================================================================
 

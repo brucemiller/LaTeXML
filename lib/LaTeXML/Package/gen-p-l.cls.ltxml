@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for
+# / Thanks to the arXMLiv group for 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -17,6 +17,6 @@ use strict;
 use LaTeXML::Package;
 
 # Generic AMS Proceedings
-LoadClass('amsprocs', withoptions => 1);
+LoadClass('amsprocs', withoptions=>1);
 
 1;

@@ -1,0 +1,23 @@
+# -*- CPERL -*-
+#**********************************************************************
+# Generate test cases for LaTeXML Client-Server processing
+#**********************************************************************
+use FindBin;
+use lib "$FindBin::Bin/lib";
+use LaTeXML::Util::Test;
+
+# For each test $name there should be $name.xml and $name.log
+# (the latter from a previous `good' run of 
+#  latexmlc {$triggers} $name
+#).
+
+latexml_tests('t/daemon/api',generate=>1);
+latexml_tests('t/daemon/profiles',generate=>1);
+latexml_tests('t/daemon/profiles/stex',generate=>1);
+latexml_tests('t/daemon/formats',generate=>1);
+latexml_tests('t/daemon/runtimes',generate=>1);
+latexml_tests('t/daemon/complex',generate=>1);
+latexml_tests('t/daemon/marpa',generate=>1);
+
+#**********************************************************************
+1;

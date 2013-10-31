@@ -18,31 +18,31 @@ use LaTeXML::Package;
 # Define \name and \begin{name} to start an ignored section
 # until \endname or \end{name}, respectively
 sub defineExcluded {
-  my ($stomach, $name) = @_;
+  my($stomach,$name)=@_;
   $name = ToString($name);
-  DefConstructorI(T_CS("\\begin{$name}"), undef, '', reversion => '',
-    afterDigest => [sub {
-        my ($stomach, $whatsit) = @_;
-        my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n", 1);
-        NoteProgress("[Skipped $name (" . scalar(@lines) . " lines)]"); }]);
+  DefConstructorI(T_CS("\\begin{$name}"),undef,'', reversion=>'',
+		  afterDigest=>[sub {
+				  my($stomach,$whatsit)=@_;
+				  my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n",1);
+				  NoteProgress("[Skipped $name (".scalar(@lines)." lines)]"); }]);
   return; }
 
 sub defineIncluded {
-  my ($stomach, $name, $before, $after) = @_;
+  my($stomach,$name,$before,$after)=@_;
   $name = ToString($name);
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
-  DefMacroI(T_CS("\\begin{$name}"), undef,
-    Tokens(($before ? $before->unlist : ()), T_CS('\ignorespaces')));
-  DefMacroI(T_CS("\\end{$name}"), undef,
-    Tokens(($after ? $after->unlist : ()), T_CS('\ignorespaces')));
+  DefMacroI(T_CS("\\begin{$name}"),undef,
+	    Tokens(($before ? $before->unlist:()),T_CS('\ignorespaces')));
+  DefMacroI(T_CS("\\end{$name}"),undef,
+	    Tokens(($after ? $after->unlist:()),T_CS('\ignorespaces')));
   return; }
 
-defineExcluded(undef, 'comment');
+defineExcluded(undef,'comment');
 
-DefPrimitive('\includecomment{}',     \&defineIncluded);
-DefPrimitive('\excludecomment{}',     \&defineExcluded);
-DefPrimitive('\specialcomment{}{}{}', \&defineIncluded);
+DefPrimitive('\includecomment{}',\&defineIncluded);
+DefPrimitive('\excludecomment{}',\&defineExcluded);
+DefPrimitive('\specialcomment{}{}{}',\&defineIncluded);
 #DefPrimitive('\processcomment{}{}{}{}',);
 
 #**********************************************************************

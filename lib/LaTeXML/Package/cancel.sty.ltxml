@@ -16,8 +16,8 @@ use LaTeXML::Package;
 
 #======================================================================
 # Ignore them all, for the moment.
-foreach my $option (qw(samesize smaller Smaller makeroom overlap thicklines)) {
-  DeclareOption($option, undef); }
+foreach my $option (qw(samesize smaller Smaller makeroom overlap thicklines)){
+  DeclareOption($option,undef); }
 
 #======================================================================
 
@@ -26,14 +26,14 @@ foreach my $option (qw(samesize smaller Smaller makeroom overlap thicklines)) {
 # but have the contents be "normal" color!
 
 # \def\CancelColor{\black} ??
-DefMacro('\CancelColor', '');
+DefMacro('\CancelColor','');
 
 sub cancelColorProperties {
-  my %props = (innerfont => LookupValue('font'));
+  my %props = (innerfont=>LookupValue('font'));
   $STATE->getStomach->bgroup;
-  if (Digest(T_CS('\CancelColor'))) {
-    $props{cancelfont} = LookupValue('font');
-    $props{forcefont}  = 1; }
+  if(Digest(T_CS('\CancelColor'))){
+    $props{cancelfont}=LookupValue('font');
+    $props{forcefont}=1; }
   $STATE->getStomach->egroup;
   %props; }
 
@@ -42,44 +42,44 @@ sub cancelColorProperties {
 
 # \cancel{expression}  Cancels with /
 DefMacro('\cancel{}',
-  '\ifmmode\@@math@cancel{#1}\else\@@text@cancel{#1}\fi');
+	 '\ifmmode\@@math@cancel{#1}\else\@@text@cancel{#1}\fi');
 
 # \bcancel{expression} Cancels with \
 DefMacro('\bcancel{}',
-  '\ifmmode\@@math@bcancel{#1}\else\@@text@bcancel{#1}\fi');
+	 '\ifmmode\@@math@bcancel{#1}\else\@@text@bcancel{#1}\fi');
 
 # \xcancel{expression} Cancels with X
 DefMacro('\xcancel{}',
-  '\ifmmode\@@math@xcancel{#1}\else\@@text@xcancel{#1}\fi');
+	 '\ifmmode\@@math@xcancel{#1}\else\@@text@xcancel{#1}\fi');
 
 #======================================================================
 # Math mode
 DefConstructor('\@@math@cancel{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike' meaning='cancel'"
-    . " _force_font='#forcefont' _font='#cancelfont'/>"
-    . "<ltx:XMWrap>#1</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  alias      => '\cancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:XMApp>"
+	       .  "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike' meaning='cancel'"
+	       .             " _force_font='#forcefont' _font='#cancelfont'/>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       alias=>'\cancel',
+ 	      properties=>\&cancelColorProperties);
 
 DefConstructor('\@@math@bcancel{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok role='ENCLOSE' enclose='downdiagonalstrike' meaning='cancel'"
-    . " _force_font='#forcefont' _font='#cancelfont'/>"
-    . "<ltx:XMWrap>#1</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  alias      => '\bcancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:XMApp>"
+	       .  "<ltx:XMTok role='ENCLOSE' enclose='downdiagonalstrike' meaning='cancel'"
+	       .             " _force_font='#forcefont' _font='#cancelfont'/>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       alias=>'\bcancel',
+ 	      properties=>\&cancelColorProperties);
 
 DefConstructor('\@@math@xcancel{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike downdiagonalstrike' meaning='cancel'"
-    . " _force_font='#forcefont' _font='#cancelfont'/>"
-    . "<ltx:XMWrap>#1</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  alias      => '\xcancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:XMApp>"
+	       .  "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike downdiagonalstrike' meaning='cancel'"
+	       .             " _force_font='#forcefont' _font='#cancelfont'/>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       alias=>'\xcancel',
+ 	      properties=>\&cancelColorProperties);
 
 # This only works in math mode
 # \cancelto{value}{expression}
@@ -87,44 +87,44 @@ DefConstructor('\@@math@xcancel{}',
 # Since enclose maps to MathML's menclose notation, which is open-ended,
 # we can add a not-(yet)-standard updiagnonalarrow (as suggested by Frederic Wang)
 DefConstructor('\cancelto{}{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok role='SUPERSCRIPTOP'/>"
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike updiagonalarrow' meaning='cancel'"
-    . " _force_font='#forcefont' _font='#cancelfont'/>"
-    . "<ltx:XMWrap>#2</ltx:XMWrap>"
-    . "</ltx:XMApp>"
-    . "<ltx:XMWrap>#1</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  properties => \&cancelColorProperties);
+	       "<ltx:XMApp>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP'/>"
+	       .    "<ltx:XMApp>"
+	       .      "<ltx:XMTok role='ENCLOSE' enclose='updiagonalstrike updiagonalarrow' meaning='cancel'"
+	       .           " _force_font='#forcefont' _font='#cancelfont'/>"
+	       .      "<ltx:XMWrap>#2</ltx:XMWrap>"
+	       .    "</ltx:XMApp>"
+	       .  "<ltx:XMWrap>#1</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+ 	      properties=>\&cancelColorProperties);
 
 #======================================================================
 # This works, except that
 # there isn't any CSS to create the different types of cross throughs
 DefConstructor('\@@text@cancel{}',
-  "<ltx:del class='downdiagonalstrike' _force_font='1' _font='#cancelfont'>"
-    . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
-    . "#1"
-    . "</ltx:text>"
-    . "</ltx:del>",
-  alias      => '\cancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:del class='downdiagonalstrike' _force_font='1' _font='#cancelfont'>"
+	       .  "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
+	       .     "#1"
+	       .  "</ltx:text>"
+	       ."</ltx:del>",
+	       alias=>'\cancel',
+	      properties=>\&cancelColorProperties);
 DefConstructor('\@@text@bcancel{}',
-  "<ltx:del class='updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
-    . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
-    . "#1"
-    . "</ltx:text>"
-    . "</ltx:del>",
-  alias      => '\bcancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:del class='updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
+	       .  "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
+	       .     "#1"
+	       .  "</ltx:text>"
+	       ."</ltx:del>",
+	       alias=>'\bcancel',
+	      properties=>\&cancelColorProperties);
 DefConstructor('\@@text@xcancel{}',
-  "<ltx:del class='downdiagonalstrike updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
-    . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
-    . "#1"
-    . "</ltx:text>"
-    . "</ltx:del>",
-  alias      => '\xcancel',
-  properties => \&cancelColorProperties);
+	       "<ltx:del class='downdiagonalstrike updiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
+	       .  "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
+	       .     "#1"
+	       .  "</ltx:text>"
+	       ."</ltx:del>",
+	       alias=>'\xcancel',
+	      properties=>\&cancelColorProperties);
 
 ProcessOptions();
 

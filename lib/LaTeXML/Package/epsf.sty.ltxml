@@ -37,25 +37,27 @@ RawTeX(<<'EOTeX');
 \epsfframethickness = 0.4pt
 EOTeX
 
-DefPrimitive('\epsfclipon',  sub { AssignValue(epsf_clip => 1); return; });
-DefPrimitive('\epsfclipoff', sub { AssignValue(epsf_clip => 0); return; });
+DefPrimitive('\epsfclipon', sub { AssignValue(epsf_clip=>1); return; });
+DefPrimitive('\epsfclipoff', sub { AssignValue(epsf_clip=>0); return; });
 DefConstructor('\epsfbox[] Semiverbatim', sub {
-    my ($document, $bb, $graphic) = @_;
-    my $clip = LookupValue('epsf_clip');
-    my $options = ($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-    $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
-    my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-    if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
-    $document->insertElement('ltx:graphics', undef, graphic => $graphic,
-      candidates => join(',', @candidates), options => $options); });
+  my($document,$bb,$graphic)=@_;
+  my $clip = LookupValue('epsf_clip');
+  my $options=($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+  $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic=~ s/\s+$//;
+  my @candidates = pathname_findall($graphic,types=>['*'],paths=>LookupValue('GRAPHICSPATHS'));
+  if(my $base = LookupValue('SOURCEDIRECTORY')){
+    @candidates=map(pathname_relative($_,$base),@candidates); }
+  $document->insertElement('ltx:graphics',undef,graphic=>$graphic,
+			   candidates=>join(',',@candidates),options=>$options); });
 
-Let('\epsfgetlitbb', '\epsfbox');
-Let('\epsfnormal',   '\epsfbox');
-Let('\epsffile',     '\epsfbox');
+Let('\epsfgetlitbb','\epsfbox');
+Let('\epsfnormal','\epsfbox');
+Let('\epsffile','\epsfbox');
 
-DefPrimitive('\epsfgetbb Semiverbatim', undef);
-DefPrimitive('\epsfframe',              undef);    # Ignore (?), and process the arg.
+DefPrimitive('\epsfgetbb Semiverbatim',undef);
+DefPrimitive('\epsfframe', undef); # Ignore (?), and process the arg.
+
+
 
 #**********************************************************************
 1;

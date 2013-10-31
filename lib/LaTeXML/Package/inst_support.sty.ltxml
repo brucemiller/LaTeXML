@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
+# | Thanks to the arXMLiv group for initial implementation              | # 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -37,50 +37,49 @@ use LaTeXML::Package;
 # with the same mark number, and copy the institute information into that creator element
 # as an ltx:contact(with @role='institute').
 
-DefMacro('\author{}', sub {
-    map((T_CS('\@author'), T_BEGIN, @$_, T_END), SplitTokens($_[1], T_CS('\and'), T_OTHER(','))); });
+DefMacro('\author{}', sub { 
+  map( (T_CS('\@author'),T_BEGIN,@$_,T_END), SplitTokens($_[1],T_CS('\and'),T_OTHER(','))); });
 
-DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' mark='#1'/>");
+DefConstructor('\@institutemark{}',"<ltx:contact role='institutemark' mark='#1'/>");
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\@inst{}', "^<ltx:contact role='institutemark' mark='#1'/>");
-DefMacro('\inst{}', sub {
-    map((T_CS('\@inst'), T_BEGIN, @$_, T_END), SplitTokens($_[1], T_OTHER(','))); });
+DefConstructor('\@inst{}',"^<ltx:contact role='institutemark' mark='#1'/>");
+DefMacro('\inst{}',sub {
+ map( (T_CS('\@inst'),T_BEGIN,@$_,T_END), SplitTokens($_[1],T_OTHER(','))); });
 
-NewCounter('inst', 'document');
+NewCounter('inst','document');
 DefMacro('\institute{}',
-  '\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
-DefMacro('\institute@and', '\@end@institute\stepcounter{inst}\@new@institute');
-DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{#1}\fi');
+         '\bgroup\setcounter{inst}{1}\let\and\institute@and\@new@institute#1\@end@institute\egroup');
+DefMacro('\institute@and','\@end@institute\stepcounter{inst}\@new@institute');
+DefMacro('\@new@institute XUntil:\@end@institute','\if.#1.\else\@add@institute{#1}\fi');
 
 # This creates the note for each institute.
 DefConstructor('\@add@institute {}',
-  "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
-  bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); },
-  properties => sub { (mark => ToString(Expand(T_CS('\theinst')))); });
+	       "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
+               bounded=>1, beforeDigest=>sub{ AssignValue(inPreamble=>0); },
+	       properties=>sub { (mark=>ToString(Expand(T_CS('\theinst')))); });
 
 # Reconnecting the institute to the appropriate author:
 # [Handling is similar to reconnecting footnotemark & footnotetext]
-Tag('ltx:note', afterClose => \&relocateInstitute);
-
+Tag('ltx:note',afterClose=>\&relocateInstitute);
 sub relocateInstitute {
-  my ($document, $instnode) = @_;
-  if (($instnode->getAttribute('role') || '') eq 'institutetext') {
-    if (my $mark = $instnode->getAttribute('mark')) {
+  my($document,$instnode)=@_;
+  if(($instnode->getAttribute('role')||'') eq 'institutetext'){
+    if(my $mark = $instnode->getAttribute('mark')){
       # Find authors with same mark.
       my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")) {
-        foreach my $author (@authors) {
-          $document->appendClone($author, $instnode->childNodes);
-          $author->setAttribute(role => 'institute');
-          $author->removeAttribute('mark'); }
-        $instnode->parentNode->removeChild($instnode); }
+      if(@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")){
+	foreach my $author (@authors){
+	  $document->appendClone($author,$instnode->childNodes);
+	  $author->setAttribute(role=>'institute');
+	  $author->removeAttribute('mark'); }
+	$instnode->parentNode->removeChild($instnode); }
       # Not sure if this is right; find authors WITHOUT a contact mark.
-      elsif (@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")) {
-        foreach my $author (@authors) {
-          $document->appendTree($author, ['ltx:contact', { role => 'institute' }, $instnode->childNodes]);
-          $instnode->parentNode->removeChild($instnode); } }
-    } } }
+      elsif(@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")){
+	foreach my $author (@authors){
+          $document->appendTree($author,['ltx:contact',{role=>'institute'},$instnode->childNodes]);
+          $instnode->parentNode->removeChild($instnode); }}
+}}}
 
 1;
 

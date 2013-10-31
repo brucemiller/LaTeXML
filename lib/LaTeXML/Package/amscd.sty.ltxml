@@ -25,87 +25,89 @@ use LaTeXML::Package;
 
 DefMacro('\CD',    '\@@CD\@start@alignment');
 DefMacro('\endCD', '\@finish@alignment\@end@CD');
-DefPrimitive('\@end@CD', sub { $_[0]->egroup; });
+DefPrimitive('\@end@CD',sub{ $_[0]->egroup; });
 DefConstructor('\@@CD DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate());
-    Let(T_ALIGN, '\@cd@invisible@align');
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body,attributes=>{name=>'Matrix'}); },
+	       beforeDigest=>sub {
+	        $_[0]->bgroup;
+	        alignmentBindings(MatrixTemplate()); 
+                Let(T_ALIGN,        T_CS('\@cd@invisible@align'));
 
-    Let("\\\\", '\@alignment@newline@noskip');
-    $STATE->assignMathcode('@' => 0x8000);
-    Let('@', '\cd@'); },
-  reversion => '\begin{CD}#1\end{CD}');
+		Let(T_CS("\\\\"),   T_CS('\@alignment@newline@noskip'));
+		$STATE->assignMathcode('@'=>0x8000);
+		Let(T_CS('@'),T_CS('\cd@')); },
+	       reversion=>'\begin{CD}#1\end{CD}');
 
-DefMacroI('\@cd@invisible@align', undef,
-  '\@close@inner@column\@close@column'
-    . '\@open@column\@open@inner@column');
+DefMacroI('\@cd@invisible@align',undef,
+	  '\@close@inner@column\@close@column'
+	  .'\@open@column\@open@inner@column');
 #DefConstructorI('\@alignment@align@marker',undef,'',reversion=>'&');
 
-DefMacro('\cd@ Token', sub {
-    my ($gullet, $token) = @_;
-    (T_CS('@' . ToString($token))); });
+DefMacro('\cd@ Token',sub {
+  my($gullet,$token)=@_;
+  (T_CS('@'.ToString($token))); });
 
-DefMacroI(T_CS('@>'), 'Until:> Until:>',
-  '&\cd@stack{>}{\rightarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@)'), 'Until:) Until:)',
-  '&\cd@stack{)}{\rightarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@<'), 'Until:< Until:<',
-  '&\cd@stack{<}{\leftarrowfill@}{#1}{#2}&');
-DefMacroI(T_CS('@('), 'Until:( Until:(',
-  '&\cd@stack{(}{\leftarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@>'),'Until:> Until:>',
+	       '&\cd@stack{>}{\rightarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@)'),'Until:) Until:)',
+	       '&\cd@stack{)}{\rightarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@<'),'Until:< Until:<',
+	       '&\cd@stack{<}{\leftarrowfill@}{#1}{#2}&');
+DefMacroI(T_CS('@('),'Until:( Until:(',
+	       '&\cd@stack{(}{\leftarrowfill@}{#1}{#2}&');
 
-DefMacroI(T_CS('@A'), 'Until:A Until:A',
-  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}&&');
-DefMacroI(T_CS('@V'), 'Until:V Until:V',
-  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}&&');
+DefMacroI(T_CS('@A'),'Until:A Until:A',
+	       '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}&&');
+DefMacroI(T_CS('@V'),'Until:V Until:V',
+	       '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}&&');
 
-DefMacroI(T_CS('@='), undef,
-  '&\@cd@equals@&');
-DefMacroI(T_CS('@|'), undef,
-  '\Big\Vert&&');
-DefMacroI(T_CS('@\vert'), undef,
-  '\Big\Vert&&');
-DefMacroI(T_CS('@.'), undef,
-  '&&');
+DefMacroI(T_CS('@='),undef,
+	       '&\@cd@equals@&');
+DefMacroI(T_CS('@|'),undef,
+	       '\Big\Vert&&');
+DefMacroI(T_CS('@\vert'),undef,
+	       '\Big\Vert&&');
+DefMacroI(T_CS('@.'),undef,
+	       '&&');
 
 # Horizontal
-DefMath('\@cd@equals@', "=", role => 'ARROW', font => { size => 'stretchy' }, reversion => '@=');
+DefMath('\@cd@equals@', "=",        role=>'ARROW', font=>{size=>'stretchy'}, reversion=>'@=');
 # Vertical
-DefMath('\@cd@bar@', "|", role => 'ARROW', font => { size => 'Big' }, reversion => '@|');
-DefMath('\@cd@vert@', "\x{2225}", role => 'ARROW', font => { size => 'Big' }, reversion => '@\vert');
+DefMath('\@cd@bar@',    "|",        role=>'ARROW',font=>{size=>'Big'}, reversion=>'@|');
+DefMath('\@cd@vert@',   "\x{2225}", role=>'ARROW',font=>{size=>'Big'}, reversion=>'@\vert');
 
-DefRegister('\minaw@' => Dimension('11.111pt'));
+
+DefRegister('\minaw@'=>Dimension('11.111pt'));
+
 
 # deal with under, over & underover!
 DefConstructor('\cd@stack Undigested {}{}{}', sub {
-    my ($document, $reversion, $op, $over, $under, %props) = @_;
-    my $scriptpos = $props{scriptpos};
-    if ($under->unlist) {
-      $document->openElement('ltx:XMApp', role => 'ARROW');    # Role?
-      $document->insertElement('ltx:XMTok', undef, role => 'SUBSCRIPTOP', scriptpos => $scriptpos);
-      if ($over->unlist) {
-        $document->openElement('ltx:XMApp');                   # Role?
-        $document->insertElement('ltx:XMTok', undef, role => 'SUPERSCRIPTOP', scriptpos => $scriptpos);
-        $document->insertElement('ltx:XMArg', $op);
-        $document->insertElement('ltx:XMArg', $over);
-        $document->closeElement('ltx:XMApp'); }
-      else {
-        $document->insertElement('ltx:XMArg', $op); }
-      $document->insertElement('ltx:XMArg', $under);
-      $document->closeElement('ltx:XMApp'); }
-    elsif ($over->unlist) {
-      $document->openElement('ltx:XMApp');                     # Role?
-      $document->insertElement('ltx:XMTok', undef, role => 'SUPERSCRIPTOP', scriptpos => $scriptpos);
-      $document->insertElement('ltx:XMArg', $op);
-      $document->insertElement('ltx:XMArg', $over);
+  my($document,$reversion,$op,$over,$under,%props)=@_;
+  my $scriptpos = $props{scriptpos};
+  if($under->unlist){
+    $document->openElement('ltx:XMApp',role=>'ARROW'); # Role?
+    $document->insertElement('ltx:XMTok',undef,role=>'SUBSCRIPTOP', scriptpos=>$scriptpos);
+    if($over->unlist){
+      $document->openElement('ltx:XMApp'); # Role?
+      $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
+      $document->insertElement('ltx:XMArg',$op);
+      $document->insertElement('ltx:XMArg',$over);
       $document->closeElement('ltx:XMApp'); }
     else {
-      $document->insertElement('ltx:XMArg', $op); } },
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
-  reversion => '@#1{#3}#1{#4}#1');
+      $document->insertElement('ltx:XMArg',$op); }
+    $document->insertElement('ltx:XMArg',$under);
+    $document->closeElement('ltx:XMApp'); }
+  elsif($over->unlist){
+    $document->openElement('ltx:XMApp'); # Role?
+    $document->insertElement('ltx:XMTok',undef,role=>'SUPERSCRIPTOP', scriptpos=>$scriptpos);
+    $document->insertElement('ltx:XMArg',$op);
+    $document->insertElement('ltx:XMArg',$over);
+    $document->closeElement('ltx:XMApp'); }
+  else {
+    $document->insertElement('ltx:XMArg',$op); }},
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
+              reversion=>'@#1{#3}#1{#4}#1');
 
 # \cd@adj{}{}{}
 # Temporary...
@@ -113,20 +115,21 @@ DefConstructor('\cd@stack Undigested {}{}{}', sub {
 #DefMacro('\cd@adjacent{}{}{}{}','{#3}{#2}{#4}');
 
 DefConstructor('\cd@adjacent Undigested {}{}{}', sub {
-    my ($document, $reversion, $op, $left, $right, %props) = @_;
-    $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
-    $document->insertElement('ltx:XMArg', $left)  if $left->unlist;
-    $document->insertElement('ltx:XMArg', $op);
-    $document->insertElement('ltx:XMArg', $right) if $right->unlist;
-    $document->closeElement('ltx:XMWrap'); },
-  reversion => '@#1{#3}#1{#4}#1');
+  my($document,$reversion,$op,$left,$right,%props)=@_;
+  $document->openElement('ltx:XMWrap',role=>'ARROW'); # Role?
+  $document->insertElement('ltx:XMArg',$left) if $left->unlist;
+  $document->insertElement('ltx:XMArg',$op);
+  $document->insertElement('ltx:XMArg',$right) if $right->unlist;
+  $document->closeElement('ltx:XMWrap'); },
+              reversion=>'@#1{#3}#1{#4}#1');
+
 
 # This isn't really having the desired effect when transformed to MathML and
 # displayed in Firefox.... have I got it right; has Firefox???
-DefMath('\leftarrowfill@',  "\x{2190}", role => 'ARROW', font => { size => 'stretchy' });
-DefMath('\rightarrowfill@', "\x{2192}", role => 'ARROW', font => { size => 'stretchy' });
+DefMath('\leftarrowfill@',  "\x{2190}", role=>'ARROW', font=>{size=>'stretchy'});
+DefMath('\rightarrowfill@', "\x{2192}", role=>'ARROW', font=>{size=>'stretchy'});
 
-DefRegister('\minCDarrowwidth' => Dimension('2.5pc'));
+DefRegister('\minCDarrowwidth'=>Dimension('2.5pc'));
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

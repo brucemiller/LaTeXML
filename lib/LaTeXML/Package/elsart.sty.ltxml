@@ -11,12 +11,12 @@ use LaTeXML::Package;
 
 # Generally ignorable options
 foreach my $option (qw(12pt 11pt 10pt oneside twoside onecolumn twocolumn
-  symbold ussrhead nameyear doublespacing reviewcopy)) {
+		       symbold ussrhead nameyear doublespacing reviewcopy)){
   DeclareOption($option, undef); }
 
-DeclareOption("seceqn", sub { AssignValue('@seceqn' => 1); });
-DeclareOption("secthm", sub { AssignValue('@secthm' => 1); });
-DeclareOption("amsthm", sub { AssignValue('@amsthm' => 1); });
+DeclareOption("seceqn", sub { AssignValue('@seceqn'=>1); });
+DeclareOption("secthm", sub { AssignValue('@secthm'=>1); });
+DeclareOption("amsthm", sub { AssignValue('@amsthm'=>1); });
 
 ProcessOptions();
 RequirePackage('elsart_support');
