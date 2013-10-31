@@ -558,7 +558,6 @@ sub getSearchPaths          { @{ $_[0]->{searchpaths} }; }
 sub getDestination          { $_[0]->{destination}; }
 sub getDestinationDirectory { $_[0]->{destinationDirectory}; }
 sub getSiteDirectory        { $_[0]->{siteDirectory}; }
-sub setDestination          { $_[0]->{destination} = $_[1]; }
 
 # Given an absolute pathname in the document destination directory,
 # return the corresponding pathname relative to the site directory (they maybe different!).
