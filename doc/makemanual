@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 use strict;
 use FindBin;
-use lib "$FindBin::RealBin/../blib/lib",$FindBin::RealBin;
+use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -9,37 +9,37 @@ use MakeTools;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Assume this script is in LaTeXML's doc directory!
-my $DOCDIR   = $FindBin::RealBin;
+my $DOCDIR = $FindBin::RealBin;
 # Use latexml from blib!
 my $LATEXMLDIR = "$DOCDIR/..";
-$ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
+$ENV{PATH}      = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 $ENV{TEXINPUTS} = "$LATEXMLDIR/blib/lib/LaTeXML/texmf"
-  .($ENV{TEXINPUTS} ? ":".$ENV{TEXINPUTS} : '')
-  ."::";
-my $MANDIR   = "$DOCDIR/manual";
-my $WEBDEST  = "/local/www/site/htdocs/LaTeXML";
+  . ($ENV{TEXINPUTS} ? ":" . $ENV{TEXINPUTS} : '')
+  . "::";
+my $MANDIR  = "$DOCDIR/manual";
+my $WEBDEST = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
-my($force,$help,$validate,$verbosity)=(0,0,1,0);
-my ($dopdf,$doxhtml)=(undef,undef);
-GetOptions("force!"  => \$force,
-	   "help"    => \$help,
-	   "pdf!"    => \$dopdf,
-	   "xhtml!"  => \$doxhtml,
-	   "validate!"=>\$validate,
-	   verbose   => sub { $verbosity++; },
-	   quiet     => sub { $verbosity--; },
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+my ($force, $help, $validate, $verbosity) = (0, 0, 1, 0);
+my ($dopdf, $doxhtml) = (undef, undef);
+GetOptions("force!" => \$force,
+  "help"      => \$help,
+  "pdf!"      => \$dopdf,
+  "xhtml!"    => \$doxhtml,
+  "validate!" => \$validate,
+  verbose     => sub { $verbosity++; },
+  quiet       => sub { $verbosity--; },
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
-if((! defined $dopdf) && (! defined $doxhtml)){
+if ((!defined $dopdf) && (!defined $doxhtml)) {
   $dopdf = $doxhtml = 1; }
-elsif(!defined $dopdf){
-  $dopdf = 1 if defined $doxhtml && !$doxhtml;}
-elsif(!defined $doxhtml){
-  $doxhtml = 1 if defined $dopdf && !$dopdf;}
+elsif (!defined $dopdf) {
+  $dopdf = 1 if defined $doxhtml && !$doxhtml; }
+elsif (!defined $doxhtml) {
+  $doxhtml = 1 if defined $dopdf && !$dopdf; }
 
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
@@ -47,53 +47,53 @@ elsif(!defined $doxhtml){
 setVerbosity($verbosity);
 
 heading("Extracting Appendices");
-system("$MANDIR/genpods".($force ? " --force":""))==0
+system("$MANDIR/genpods" . ($force ? " --force" : "")) == 0
   or warn "Failed to generate pods?";
-system("$MANDIR/genschema".($force ? " --force":""))==0
+system("$MANDIR/genschema" . ($force ? " --force" : "")) == 0
   or warn "Failed to generate schema documentation?";
 my $version;
 { use LaTeXML;
   $version = $LaTeXML::VERSION; }
 
-opendir(DIR,"$LATEXMLDIR/lib/LaTeXML/Package") or die "Couldn't read Packages: $!";
-my @bindings = sort grep(!/(_support\.|_core\.|\#)/,grep($_,map(s/.ltxml$// && $_,readdir(DIR))));
+opendir(DIR, "$LATEXMLDIR/lib/LaTeXML/Package") or die "Couldn't read Packages: $!";
+my @bindings = sort grep(!/(_support\.|_core\.|\#)/, grep($_, map(s/.ltxml$// && $_, readdir(DIR))));
 closedir(DIR);
 
 my $classes  = join(', ', grep($_, map(s/\.cls$// && $_, @bindings)));
 my $packages = join(', ', grep($_, map(s/\.sty$// && $_, @bindings)));
 
 saveData("$MANDIR/release.tex",
-	 "\\def\\CurrentVersion{$version}\n"
-	 ."\\def\\CurrentClasses{$classes}\n"
-	 ."\\def\\CurrentPackages{$packages}\n");
+  "\\def\\CurrentVersion{$version}\n"
+    . "\\def\\CurrentClasses{$classes}\n"
+    . "\\def\\CurrentPackages{$packages}\n");
 
 #======================================================================
 # Now generate the manual
 #======================================================================
-if($dopdf){
+if ($dopdf) {
   heading("Generating pdf of manual");
   pdflatex("$MANDIR/manual.tex",
-	   dependencies=>["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
-			  "$MANDIR/schema.tex","$MANDIR/pods"],
-	   indexoptions=>[],
-	   force=>$force);
-  copy("$MANDIR/manual.pdf","$LATEXMLDIR/manual.pdf");
-  copy("$MANDIR/manual.pdf","$WEBDEST/manual.pdf");
+    dependencies => ["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
+      "$MANDIR/schema.tex", "$MANDIR/pods"],
+    indexoptions => [],
+    force        => $force);
+  copy("$MANDIR/manual.pdf", "$LATEXMLDIR/manual.pdf");
+  copy("$MANDIR/manual.pdf", "$WEBDEST/manual.pdf");
 }
 
-if($doxhtml){
+if ($doxhtml) {
   heading("Generating xhtml of manual");
-  latexml("$MANDIR/manual.tex"=>"$WEBDEST/manual/index.xhtml",
-	  dependencies=>["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
-			 "$MANDIR/schema.tex","$MANDIR/pods"],
-	  postoptions=>["--split","--splitnaming=labelrelative",
-			"--sourcedir=$MANDIR",
-			"--urlstyle=server",
-			"--sitedirectory=$WEBDEST",
-			"--css=../latexmldoc.css",
-			($validate ?():("--novalidate")),
-			"--icon=../favicon.ico"],
-	  force=>$force);
+  latexml("$MANDIR/manual.tex" => "$WEBDEST/manual/index.xhtml",
+    dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
+      "$MANDIR/schema.tex", "$MANDIR/pods"],
+    postoptions => ["--split", "--splitnaming=labelrelative",
+      "--sourcedir=$MANDIR",
+      "--urlstyle=server",
+      "--sitedirectory=$WEBDEST",
+      "--css=../latexmldoc.css",
+      ($validate ? () : ("--novalidate")),
+      "--icon=../favicon.ico"],
+    force => $force);
 }
 #======================================================================
 __END__

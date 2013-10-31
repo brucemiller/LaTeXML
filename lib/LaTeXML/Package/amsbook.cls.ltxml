@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for 
+# / Thanks to the arXMLiv group for
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -17,18 +17,18 @@ use strict;
 use LaTeXML::Package;
 
 foreach my $option (qw(a4paper letterpaper landscape portrait
-		       oneside twoside draft final  e-only
-		       titlepage notitlepage
-		       openright openany onecolumn twocolumn
-		       nomath noamsfonts psamsfonts
-		       centertags tbtags
-		       8pt 9pt 10pt 11pt 12pt
-		       makeidx)){
-  DeclareOption($option,undef); }
-AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); # Default is left!
-DeclareOption('leqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); });
-DeclareOption('reqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>undef); });
-DeclareOption('fleqn',sub { AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1); });
+  oneside twoside draft final  e-only
+  titlepage notitlepage
+  openright openany onecolumn twocolumn
+  nomath noamsfonts psamsfonts
+  centertags tbtags
+  8pt 9pt 10pt 11pt 12pt
+  makeidx)) {
+  DeclareOption($option, undef); }
+AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1);    # Default is left!
+DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
+DeclareOption('reqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => undef); });
+DeclareOption('fleqn', sub { AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1); });
 
 ProcessOptions();
 
@@ -42,15 +42,15 @@ RequirePackage('ams_support');
 # preamble
 # \begin{document}
 # \frontmatter
-DefPrimitive('\frontmatter',undef); # Do we need this?
+DefPrimitive('\frontmatter', undef);    # Do we need this?
 # frontmatter stuff
 # \maketitle
 # \include various preface, introduction, etc
 # \mainmatter
-DefPrimitive('\mainmatter',undef);
+DefPrimitive('\mainmatter', undef);
 # \include various chapters, appendices
 # \backmatter
-DefPrimitive('\backmatter',undef);
+DefPrimitive('\backmatter', undef);
 # commands for bibliography, indices
 # \end{document}
 

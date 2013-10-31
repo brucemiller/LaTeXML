@@ -16,7 +16,7 @@ use LaTeXML::Package;
 #**********************************************************************
 # I'm inclined to think there's nothing to do here!
 #**********************************************************************
-foreach my $option (qw(notbib notindex nottoc notlof notlot)){
+foreach my $option (qw(notbib notindex nottoc notlof notlot)) {
   DeclareOption($option, undef); }
 
 ProcessOptions();

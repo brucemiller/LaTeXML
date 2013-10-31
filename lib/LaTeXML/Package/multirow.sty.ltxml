@@ -15,12 +15,12 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DefPrimitive('\multirowsetup',undef);
-DefPrimitive('\multirow{Number}{}{}',sub {
-  my($stomach,$nrows,$width,$content)=@_;
-  my $colspec = LookupValue('Alignment')->currentColumn;
-  $$colspec{rowspan}=$nrows->valueOf;
-  Digest(Tokens(T_CS('\hbox'),T_BEGIN,T_CS('\multirowsetup'),$content->unlist,T_END)); });
+DefPrimitive('\multirowsetup', undef);
+DefPrimitive('\multirow{Number}{}{}', sub {
+    my ($stomach, $nrows, $width, $content) = @_;
+    my $colspec = LookupValue('Alignment')->currentColumn;
+    $$colspec{rowspan} = $nrows->valueOf;
+    Digest(Tokens(T_CS('\hbox'), T_BEGIN, T_CS('\multirowsetup'), $content->unlist, T_END)); });
 
 #**********************************************************************
 1;

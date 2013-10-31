@@ -15,19 +15,19 @@ use LaTeXML::Package;
 
 #**********************************************************************
 foreach my $option (qw(perpage para side ragged symbol symbol* bottom
-                       marginal flushmargin hang norule splitrule
-                       split multiple)){
-  DeclareOption($option,undef); }
+  marginal flushmargin hang norule splitrule
+  split multiple)) {
+  DeclareOption($option, undef); }
 ProcessOptions();
 
-DefMacro('\footnotelayout','');
+DefMacro('\footnotelayout', '');
 # could define & use these, but...
-DefMacro('\DefineFNsymbols OptionalMatch:* {}{}','');
-DefMacro('\setfnsymbol{}','');
+DefMacro('\DefineFNsymbols OptionalMatch:* {}{}', '');
+DefMacro('\setfnsymbol{}',                        '');
 
-DefMacro('\mpfootnoterule','\footnoterule');
-DefMacro('\pagefootnoterule','\footnoterule');
-DefMacro('\splitfootnoterule','\footnoterule');
+DefMacro('\mpfootnoterule',    '\footnoterule');
+DefMacro('\pagefootnoterule',  '\footnoterule');
+DefMacro('\splitfootnoterule', '\footnoterule');
 #**********************************************************************
 
 1;

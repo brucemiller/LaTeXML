@@ -23,7 +23,7 @@
 #   If it is NOT the primary representation, however, then we'll need
 # to MOVE the XMath from where it is to whereever the primary representation
 # wants it.  Since it has ID's within it that are already known to the document,
-# it needs to move, rather than be copied. 
+# it needs to move, rather than be copied.
 #
 # AND, since any formatters that would follow this one would want to translate
 # the XMath (which is now gone), this math formatter MUST be the last one....
@@ -41,22 +41,22 @@ use base qw(LaTeXML::Post::MathProcessor);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sub convertNode {
-  my($self,$doc,$xmath,$style)=@_;
+  my ($self, $doc, $xmath, $style) = @_;
   my $idsuffix = $self->IDSuffix;
-  if($idsuffix){
-    ['ltx:XMath',{},map($doc->cloneNode($_,$idsuffix), element_nodes($xmath))]; }
+  if ($idsuffix) {
+    ['ltx:XMath', {}, map($doc->cloneNode($_, $idsuffix), element_nodes($xmath))]; }
   else {
     # If no idsuffix, we're actually just PRESERVING the xmath,
     # so we shouldn't need any cloning or id munging (!?!?!?!)
-    $xmath; }}
+    $xmath; } }
 
 sub combineParallel {
-  my($self,$doc,$math,$xmath,$primary,@secondaries)=@_;
+  my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
   # Just return the converted nodes to be added to the ltx:Math
-  ($primary, map( $$_[1], @secondaries)); }
+  ($primary, map($$_[1], @secondaries)); }
 
 sub getEncodingName { 'application/x-latexml'; }
-sub rawIDSuffix { '.xm'; }
+sub rawIDSuffix     { '.xm'; }
 
 #================================================================================
 

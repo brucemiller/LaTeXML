@@ -18,19 +18,18 @@ use LaTeXML::Package;
 # "Compression" of citation lists doesn't make much sense in XML.
 # Likewise, the options aren't much help.
 
-
 # These macros _could_ be used in formatting the citations,
 # but that seems something better left to whoever is formatting
 # the XML at the end.
 # An alternative would be to store various styling info,
 # but I'll leave that off, for now.
-DefMacro('\citeleft','[');
-DefMacro('\citeright',']');
-DefMacro('\citedash','--');
-DefMacro('\citemid', ', ');
-DefMacro('\citepunct',', ');
-DefMacro('\citeform{}','#1');
+DefMacro('\citeleft',   '[');
+DefMacro('\citeright',  ']');
+DefMacro('\citedash',   '--');
+DefMacro('\citemid',    ', ');
+DefMacro('\citepunct',  ', ');
+DefMacro('\citeform{}', '#1');
 
-DefMacro('\citen','\citet');
+DefMacro('\citen', '\citet');
 
 1;

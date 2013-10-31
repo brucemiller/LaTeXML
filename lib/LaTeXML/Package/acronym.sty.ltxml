@@ -16,54 +16,53 @@ use LaTeXML::Package;
 
 # Note that this binding is really insufficient
 #**********************************************************************
-DefMacro('\acsfont{}','#1');
-DefMacro('\acffont{}','#1');
-DefMacro('\acfsfont{}','#1');
+DefMacro('\acsfont{}',  '#1');
+DefMacro('\acffont{}',  '#1');
+DefMacro('\acfsfont{}', '#1');
 
 DefMacro('\ac{}', '\@AC@if{#1}{\acs{#1}}{\acf{#1}}');
 DefConstructor('\acs{}',
-               "<ltx:glossaryref role='acronym' key='#1' show='short'/>",
-               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
+  "<ltx:glossaryref role='acronym' key='#1' show='short'/>",
+  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
 DefConstructor('\acl{}',
-               "<ltx:glossaryref role='acronym' key='#1' show='long'/>",
-               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
+  "<ltx:glossaryref role='acronym' key='#1' show='long'/>",
+  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
 DefConstructor('\acf{}',
-               "<ltx:glossaryref role='acronym' key='#1' show='long (short)'/>",
-               afterDigest=>sub { AssignValue('ACROUSED@'.ToString($_[1]) =>1,'global'); });
+  "<ltx:glossaryref role='acronym' key='#1' show='long (short)'/>",
+  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
 
 DefEnvironment('{acronym}',
-               "<ltx:glossary role='acronym' class='ltx_acronym'>"
-               . "<ltx:glossarylist>"
-               .   "#body"
-               . "</ltx:glossarylist>"
-               ."</ltx:glossary>",
-	      beforeDigest=>sub { Let(T_CS('\acro'),T_CS('\@acro@item'));
-                                  Let(T_CS('\acrodef'),T_CS('\@acro@item')); });
+  "<ltx:glossary role='acronym' class='ltx_acronym'>"
+    . "<ltx:glossarylist>"
+    . "#body"
+    . "</ltx:glossarylist>"
+    . "</ltx:glossary>",
+  beforeDigest => sub { Let('\acro', '\@acro@item');
+    Let('\acrodef', '\@acro@item'); });
 
 DefConstructor('\@acro@item{}[]{}',
-               "<ltx:glossaryentry role='acronym'>"
-               .  "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
-               .  "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
-               .  "<ltx:glossarydefinition>");
+  "<ltx:glossaryentry role='acronym'>"
+    . "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
+    . "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
+    . "<ltx:glossarydefinition>");
 
-Tag('ltx:glossarydefinition',autoClose=>1);
-Tag('ltx:glossaryentry',autoClose=>1);
+Tag('ltx:glossarydefinition', autoClose => 1);
+Tag('ltx:glossaryentry',      autoClose => 1);
 
 DefConstructor('\acrodef{}[]{}',
-               "<ltx:glossarymark role='acronym'>"
-               .  "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
-               .  "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
-               ."</ltx:glossarymark>");
+  "<ltx:glossarymark role='acronym'>"
+    . "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
+    . "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
+    . "</ltx:glossarymark>");
 
-DefMacro('\@AC@if{}{}{}', sub { 
-  my($gullet,$id,$short,$long)=@_;
-  my $key = 'ACROUSED@'.ToString($_[1]);
-  if(LookupValue($key)){
-    $short->unlist; }
-  else {
-    AssignValue($key=>1, 'global');
-    $long->unlist; }});
-
+DefMacro('\@AC@if{}{}{}', sub {
+    my ($gullet, $id, $short, $long) = @_;
+    my $key = 'ACROUSED@' . ToString($_[1]);
+    if (LookupValue($key)) {
+      $short->unlist; }
+    else {
+      AssignValue($key => 1, 'global');
+      $long->unlist; } });
 
 #**********************************************************************
 1;

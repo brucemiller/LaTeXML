@@ -21,8 +21,8 @@ use LaTeXML::Package;
 # 3.1 Additional control over expansion
 # \protected associates with the next defn
 # (note that it isn't actually used anywhere).
-DefPrimitiveI('\protected',undef,sub {
-  $STATE->setPrefix('protected'); return; }, isPrefix=>1);
+DefPrimitiveI('\protected', undef, sub {
+    $STATE->setPrefix('protected'); return; }, isPrefix => 1);
 
 # \detokenize
 DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });
@@ -31,34 +31,34 @@ DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });
 # This is obviously not right, but... how?
 # Should \noexpand be stuffed throughout?
 # or is something related to \protected useable?
-DefMacro('\unexpanded {}','#1');
+DefMacro('\unexpanded {}', '#1');
 
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 
 # \readline
 # Since we haven't implemented \read ... ?!
-DefMacro('\read Number SkipKeyword:to Token',sub {
-  my($gullet,$fh,$token)=@_;
-  DefMacroI($token,undef,Tokens()); });
+DefMacro('\read Number SkipKeyword:to Token', sub {
+    my ($gullet, $fh, $token) = @_;
+    DefMacroI($token, undef, Tokens()); });
 
-DefMacro('\scantokens {}',sub {
-  LaTeXML::Mouth->new(UnTeX($_[1]))->readTokens; });
+DefMacro('\scantokens {}', sub {
+    LaTeXML::Mouth->new(UnTeX($_[1]))->readTokens; });
 
 #======================================================================
 # 3.3 Environmental enquiries
 
-our @ETEX_VERSION=(qw(2 .2));
-DefMacro('\eTeXrevision',sub { Explode($ETEX_VERSION[1]); });
-DefRegister('\eTeXversion'=> Number($ETEX_VERSION[0]));
+our @ETEX_VERSION = (qw(2 .2));
+DefMacro('\eTeXrevision', sub { Explode($ETEX_VERSION[1]); });
+DefRegister('\eTeXversion' => Number($ETEX_VERSION[0]));
 
 # \currentgrouplevel
-DefRegister('\currentgrouplevel',Number(0),
-            readonly=>1,
-	    getter=>sub { Number($_[0]->getBoxingLevel); }); # ?
+DefRegister('\currentgrouplevel', Number(0),
+  readonly => 1,
+  getter => sub { Number($_[0]->getBoxingLevel); });    # ?
 
 # \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
-DefRegister('\currentgrouptype',Number(0), readonly=>1);
+DefRegister('\currentgrouptype', Number(0), readonly => 1);
 
 # \ifcsname stuff \endcsname
 DefConditional('\ifcsname CSName', sub { defined LookupMeaning($_[1]); });
@@ -67,13 +67,13 @@ DefConditional('\ifcsname CSName', sub { defined LookupMeaning($_[1]); });
 DefConditional('\ifdefined Token', sub { defined LookupMeaning($_[1]); });
 
 # ???
-DefRegister('\lastnodetype',Number(0));
+DefRegister('\lastnodetype', Number(0));
 
 #======================================================================
 # 3.4 Generalization of the \mark concept: a class of \marks
 # but since we don't manage Pages...
 
-DefPrimitive('\marks Number {}',undef);
+DefPrimitive('\marks Number {}', undef);
 DefMacroI('\topmarks Number',        undef, Tokens());
 DefMacroI('\firstmarks Number',      undef, Tokens());
 DefMacroI('\botmarks Number',        undef, Tokens());
@@ -96,52 +96,52 @@ DefMacroI('\splitbotmarks Number',   undef, Tokens());
 # Presumably we can't rely on the material itself being directional.
 
 # By leaving this 0, we're saying "Don't use these features"!
-DefRegister('\TeXXeTstate'=>Number(0));
+DefRegister('\TeXXeTstate' => Number(0));
 
-DefMacroI('\beginL',undef,'');
-DefMacroI('\beginR',undef,'');
-DefMacroI('\endL',undef,'');
-DefMacroI('\endR',undef,'');
+DefMacroI('\beginL', undef, '');
+DefMacroI('\beginR', undef, '');
+DefMacroI('\endL',   undef, '');
+DefMacroI('\endR',   undef, '');
 
-DefRegister('\predisplaydirection'=>Number(0)); # ???
+DefRegister('\predisplaydirection' => Number(0));    # ???
 
 #======================================================================
 # 3.6 Additional debugging features
-DefRegister('\interactionmode'=>Number(0));
+DefRegister('\interactionmode' => Number(0));
 
 # Should show all open groups & their type.
-DefPrimitive('\showgroups',undef);
+DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
 # NOTE Debugging aids are currently IGNORED!
-DefPrimitive('\showtokens {}',undef);
+DefPrimitive('\showtokens {}', undef);
 
-DefRegister('\tracingassigns'=>Number(0)); # ???
-DefRegister('\tracinggroups'=>Number(0));
-DefRegister('\tracingifs'=>Number(0)); # ???
-DefRegister('\tracingscantokens'=>Number(0));
+DefRegister('\tracingassigns'    => Number(0));    # ???
+DefRegister('\tracinggroups'     => Number(0));
+DefRegister('\tracingifs'        => Number(0));    # ???
+DefRegister('\tracingscantokens' => Number(0));
 
 #======================================================================
 # 3.7 Miscellaneous primitives
 
 # \everyeof
 # NOTE: These tokens are NOT used anywhere (yet?)
-DefRegister('\everyeof',Tokens());
+DefRegister('\everyeof', Tokens());
 
 # NOTE REMOVE defn from TeX.pool.ltxml.
 # \middle
-DefConstructor('\middle Token ',"<ltx:XMWrap fontsize='stretchy'>#1</ltx:XMWrap>",
-	       afterConstruct=>sub { addDelimiterRole($_[0],'MIDDLE'); });
+DefConstructor('\middle Token ', "<ltx:XMWrap fontsize='stretchy'>#1</ltx:XMWrap>",
+  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
 
 # \unless someif
-DefConditional('\unless Token',sub {
- my($gullet,$if)=@_;
- my($defn,$test);
- if( ($defn=LookupMeaning($if)) && $defn->isConditional && ($test=$defn->getTest)){
-   # Invert the if's test!
-   ! &$test($gullet,$defn->readArguments($gullet)); }
- else {
-   Error('unexpected',$if,"\\unless should not be followed by ".Stringify($if)); }});
+DefConditional('\unless Token', sub {
+    my ($gullet, $if) = @_;
+    my ($defn, $test);
+    if (($defn = LookupMeaning($if)) && $defn->isConditional && ($test = $defn->getTest)) {
+      # Invert the if's test!
+      !&$test($gullet, $defn->readArguments($gullet)); }
+    else {
+      Error('unexpected', $if, "\\unless should not be followed by " . Stringify($if)); } });
 
 #======================================================================
 1;

@@ -35,49 +35,49 @@ EoTeX
 
 # \epigraph{text}{source}
 DefConstructor('\epigraph{}{}',
-               "<ltx:quote class='ltx_epigraph #epigraphflush' cssstyle='#qwidth #qalign'>"
-               .  "<ltx:block class='ltx_epigraph_text' cssstyle='#talign'>"
-               .    "#1"
-               .  "</ltx:block>"
-               .  "<ltx:block class='ltx_epigraph_source' cssstyle='#srule #salign'>"
-               .    "#2"
-               .  "</ltx:block>"
-               ."</ltx:quote>",
-               bounded=>1,
-               beforeDigest=>sub { Digest(T_CS('\epigraphsize')); },
-               afterDigest=>sub {
-                 my($stomach,$whatsit)=@_;
-                 my $rule = LookupValue('\epigraphrule')->ptValue.'pt';
-                 my $width = LookupValue('\epigraphwidth')->ptValue.'pt';
-                 my $qa = ToString(Digest(T_CS('\epigraphflush')));
-                 my $ta = ToString(Digest(T_CS('\textflush')));
-                 my $sa = ToString(Digest(T_CS('\sourceflush')));
-                 $whatsit->setProperties(srule=>"border-top:solid $rule;",
-                                         qwidth=>"width:$width;",
-                                         qalign=>($qa eq 'center'
-                                                  ? "margin-right:auto; margin-left:auto;"
-                                                  : ($qa eq 'flushleft' ? "margin-right:auto;"
-                                                     : ($qa eq 'flushright' ? "margin-left:auto;"
-                                                        :''))),
-                                         talign=>($ta eq 'center'
-                                                  ? "text-align:center; "
-                                                  : ($ta eq 'flushleft'
-                                                     ? "text-align:left; "
-                                                     : ($ta eq 'flushright'
-                                                        ? "text-align:right; "
-                                                        :''))),
-                                         salign=>($sa eq 'center'
-                                                  ? "text-align:center; "
-                                                  : ($sa eq 'flushleft'
-                                                     ? "text-align:left; "
-                                                     : ($sa eq 'flushright'
-                                                        ? "text-align:right; "
-                                                        :''))));
-                 return; });
+  "<ltx:quote class='ltx_epigraph #epigraphflush' cssstyle='#qwidth #qalign'>"
+    . "<ltx:block class='ltx_epigraph_text' cssstyle='#talign'>"
+    . "#1"
+    . "</ltx:block>"
+    . "<ltx:block class='ltx_epigraph_source' cssstyle='#srule #salign'>"
+    . "#2"
+    . "</ltx:block>"
+    . "</ltx:quote>",
+  bounded      => 1,
+  beforeDigest => sub { Digest(T_CS('\epigraphsize')); },
+  afterDigest  => sub {
+    my ($stomach, $whatsit) = @_;
+    my $rule  = LookupValue('\epigraphrule')->ptValue . 'pt';
+    my $width = LookupValue('\epigraphwidth')->ptValue . 'pt';
+    my $qa    = ToString(Digest(T_CS('\epigraphflush')));
+    my $ta    = ToString(Digest(T_CS('\textflush')));
+    my $sa    = ToString(Digest(T_CS('\sourceflush')));
+    $whatsit->setProperties(srule => "border-top:solid $rule;",
+      qwidth => "width:$width;",
+      qalign => ($qa eq 'center'
+        ? "margin-right:auto; margin-left:auto;"
+        : ($qa eq 'flushleft' ? "margin-right:auto;"
+          : ($qa eq 'flushright' ? "margin-left:auto;"
+            : ''))),
+      talign => ($ta eq 'center'
+        ? "text-align:center; "
+        : ($ta eq 'flushleft'
+          ? "text-align:left; "
+          : ($ta eq 'flushright'
+            ? "text-align:right; "
+            : ''))),
+      salign => ($sa eq 'center'
+        ? "text-align:center; "
+        : ($sa eq 'flushleft'
+          ? "text-align:left; "
+          : ($sa eq 'flushright'
+            ? "text-align:right; "
+            : ''))));
+    return; });
 
 # epigraph environment contains a set of epigraphs
-DefEnvironment("{epigraphs}","#body",
-               beforeDigest=>sub { Let(T_CS('\qitem'),T_CS('\epigraph')); });
+DefEnvironment("{epigraphs}", "#body",
+  beforeDigest => sub { Let('\qitem', '\epigraph'); });
 
 # Each epigraph in an epigraph environment
 # \qitem{text}{source}
@@ -85,11 +85,11 @@ DefEnvironment("{epigraphs}","#body",
 #======================================================================
 # Since we aren't managing pages,
 # We'll just immediately output the material
-DefMacro('\epigraphhead[]{}','#1');
+DefMacro('\epigraphhead[]{}', '#1');
 # Or do nothing for these
-DefMacro('\dropchapter{}','');
-DefMacro('\undodrop','');
-DefMacro('\cleartoevenpage','');
+DefMacro('\dropchapter{}',   '');
+DefMacro('\undodrop',        '');
+DefMacro('\cleartoevenpage', '');
 #======================================================================
 1;
 

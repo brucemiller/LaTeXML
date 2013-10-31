@@ -17,7 +17,6 @@ use LaTeXML::Package;
 
 # This should be essentially the same, right?
 # (considering we don't do hyphenation, etc)
-RequirePackage('babel',options=>['german']);
+RequirePackage('babel', options => ['german']);
 1;
-
 

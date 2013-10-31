@@ -57,50 +57,50 @@
 # with the lead-in text effectively being the LHS. eg. function $=foo$;
 # similarly you can end up with a missing RHS, $x=$ even.
 
-Start	: Anything /^\Z/			{ $item[1]; }
+Start   : Anything /^\Z/                        { $item[1]; }
 
 #======================================================================
 Anything : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
-Anything : AnythingAny /^\Z/			{ $item[1]; }
+Anything : AnythingAny /^\Z/                    { $item[1]; }
 
 #======================================================================
 AnythingAny :
- 	  Formulae 
-	| OPEN Formulae CLOSE		  { Fence($item[1],$item[2],$item[3]); }
-	| modifierFormula
-	| OPEN modifierFormula CLOSE	  { Fence($item[1],$item[2],$item[3]); }
+          Formulae 
+        | OPEN Formulae CLOSE             { Fence($item[1],$item[2],$item[3]); }
+        | modifierFormula
+        | OPEN modifierFormula CLOSE      { Fence($item[1],$item[2],$item[3]); }
         | MODIFIER
- 	| MODIFIEROP Expression           { Apply($item[1],Absent(),$item[2]);}
-	| METARELOP Formula		  { Apply($item[1],Absent(),$item[2]); }
-	| AnyOp (PUNCT(?) AnyOp {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
-	    			          { NewList($item[1],map(@$_,@{$item[2]})); }
+        | MODIFIEROP Expression           { Apply($item[1],Absent(),$item[2]);}
+        | METARELOP Formula               { Apply($item[1],Absent(),$item[2]); }
+        | AnyOp (PUNCT(?) AnyOp {[$item[1]->[0]||InvisibleComma(), $item[2]]})(s)
+                                          { NewList($item[1],map(@$_,@{$item[2]})); }
         | FLOATSUPERSCRIPT FLOATSUBSCRIPT { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
         | FLOATSUBSCRIPT FLOATSUPERSCRIPT { NewScript(NewScript(Absent(),$item[1]),$item[2]); }
-        | FLOATSUPERSCRIPT  		  { NewScript(Absent(),$item[1]); }
-        | FLOATSUBSCRIPT    		  { NewScript(Absent(),$item[1]); }
- 	| AnyOp Expression                { Apply($item[1],Absent(),$item[2]);}
-					  
+        | FLOATSUPERSCRIPT                { NewScript(Absent(),$item[1]); }
+        | FLOATSUBSCRIPT                  { NewScript(Absent(),$item[1]); }
+        | AnyOp Expression                { Apply($item[1],Absent(),$item[2]);}
+                                          
 # a top level rule for sub and superscripts that can accept all sorts of junk.
 Subscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Subscript :
           aSubscript   (PUNCT(?) aSubscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-	         { NewList($item[1],map(@$_,@{$item[2]})); }
+                 { NewList($item[1],map(@$_,@{$item[2]})); }
 
 Superscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Superscript :
           aSuperscript (PUNCT(?) aSuperscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-	         { NewList($item[1],map(@$_,@{$item[2]})); }
+                 { NewList($item[1],map(@$_,@{$item[2]})); }
 
 aSubscript :
           Formulae
- 	| AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
-	| AnyOp
+        | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
+        | AnyOp
 
 aSuperscript :
           supops
-	| Formulae 
- 	| AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
-	| AnyOp
+        | Formulae 
+        | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
+        | AnyOp
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
@@ -118,11 +118,11 @@ Formulae : Formula moreFormulae[$item[1]]
 # moreFormulae[$formula]; Got a Formula, what can follow?
 moreFormulae :
           /^\Z/ { $arg[0];}   # short circuit!
-	| (endPunct Formula { [$item[1],$item[2]]; })(s)
-	            { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
-##        | METARELOP Formula 	  { Apply($item[1],$arg[0],$item[2]); }
-	| metarelopFormula(s)     { NewFormula($arg[0],map(@$_,@{$item[1]})); }
-	| { $arg[0]; }
+        | (endPunct Formula { [$item[1],$item[2]]; })(s)
+                    { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
+##        | METARELOP Formula     { Apply($item[1],$arg[0],$item[2]); }
+        | metarelopFormula(s)     { NewFormula($arg[0],map(@$_,@{$item[1]})); }
+        | { $arg[0]; }
 
 # Punctuation that ends a formula
 endPunct : PUNCT | PERIOD
@@ -135,59 +135,59 @@ Formula : Expression extendFormula[$item[1]]
 extendFormula :
           /^\Z/ { $arg[0];}   # short circuit!
         | punctExpr(s) maybeRHS[$arg[0],map(@$_,@{$item[1]})]
-	| relop Expression moreRHS[$arg[0],$item[1],$item[2]]
-	| relop /^\Z/    { NewFormula($arg[0],$item[1], Absent()); }
-	| { $arg[0]; }
+        | relop Expression moreRHS[$arg[0],$item[1],$item[2]]
+        | relop /^\Z/    { NewFormula($arg[0],$item[1], Absent()); }
+        | { $arg[0]; }
 
 # maybeRHS[$expr,(punct,$expr)*]; 
 #    Could have RELOP Expression (which means the (collected LHS) relation RHS)
 #    or done (just collection)
 maybeRHS :
-	  /^\Z/ { NewList(@arg); }
-	| relopExpr(s) { NewFormula(NewList(@arg),map(@$_,@{$item[1]})); }
-	| { NewList(@arg); }
+          /^\Z/ { NewList(@arg); }
+        | relopExpr(s) { NewFormula(NewList(@arg),map(@$_,@{$item[1]})); }
+        | { NewList(@arg); }
 # --- either line could be followed by (>0)
 # For the latter, does a,b,c (<0) mean c<0 or all of them are <0 ????
 
 # moreRHS[$expr,$relop,$expr]; Could have more (relop Expression)
 # or (punct Expression)*
 moreRHS :
-	  /^\Z/   { NewFormula($arg[0],$arg[1],$arg[2]); } # short circuit!
-	| PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
-	| relopExpr(s?) { NewFormula($arg[0],$arg[1],$arg[2],
-				     map(@$_,@{$item[1]})); }
+          /^\Z/   { NewFormula($arg[0],$arg[1],$arg[2]); } # short circuit!
+        | PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
+        | relopExpr(s?) { NewFormula($arg[0],$arg[1],$arg[2],
+                                     map(@$_,@{$item[1]})); }
 # --- 1st line could be preceded by (>0) IF it ends up end of formula
 # --- 2nd line could be followed by (>0)
 
 # maybeColRHS[$expr,$relop,$expr,(punct, $expr)*];
 #    Could be done, get punct (collection) or rel Expression (another formula)
 maybeColRHS :
-	  /^\Z/ { NewFormula($arg[0],$arg[1],NewList(@arg[2..$#arg])); }
+          /^\Z/ { NewFormula($arg[0],$arg[1],NewList(@arg[2..$#arg])); }
         | relop Expression moreRHS[$arg[$#arg],$item[1],$item[2]]
-	    { NewFormulae(NewFormula($arg[0],$arg[1],
-		  	  NewList(@arg[2..$#arg-2])),$arg[$#arg-1],$item[3]); }
-	| PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
-	| { NewFormula($arg[0],$arg[1],NewList(@arg[2..$#arg])); }
+            { NewFormulae(NewFormula($arg[0],$arg[1],
+                          NewList(@arg[2..$#arg-2])),$arg[$#arg-1],$item[3]); }
+        | PUNCT Expression maybeColRHS[@arg,$item[1],$item[2]]
+        | { NewFormula($arg[0],$arg[1],NewList(@arg[2..$#arg])); }
 # --- 1st line handles it through more RHS ???
 # --- 2nd line could be preceded by (>0) if it ends formula
 # --- 3rd line could be followed by (>0)
 
 
-punctExpr : PUNCT Expression			{ [$item[1],$item[2]]; }
-relopExpr : relop Expression			{ [$item[1],$item[2]]; }
-	  | relop /^\Z/				{ [$item[1], Absent()]; }
+punctExpr : PUNCT Expression                    { [$item[1],$item[2]]; }
+relopExpr : relop Expression                    { [$item[1],$item[2]]; }
+          | relop /^\Z/                         { [$item[1], Absent()]; }
 
 metarelopFormula :
-            METARELOP Formula			{ [$item[1],$item[2]]; }
-	  | METARELOP /^\Z/			{ [$item[1], Absent()]; }
+            METARELOP Formula                   { [$item[1],$item[2]]; }
+          | METARELOP /^\Z/                     { [$item[1], Absent()]; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Absent() is a placeholder for the missing thing... (?)
 
 #modifierFormula : relopExpr(s) { NewFormula(Absent(),map(@{$_},@{$item[1]}));}
 modifierFormula : relop Expression punctExpr(s?) 
-		 { NewFormula(Absent(),$item[1],
-			      NewList($item[2],map(@$_,@{$item[3]})));}
+                 { NewFormula(Absent(),$item[1],
+                              NewList($item[2],map(@$_,@{$item[3]})));}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Expressions; sums of terms
@@ -195,7 +195,7 @@ modifierFormula : relop Expression punctExpr(s?)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 Expressions : Expression punctExpr(s?)
-				{ NewList($item[1],map(@$_,@{$item[2]})); }
+                                { NewList($item[1],map(@$_,@{$item[2]})); }
 
 Expression  : SignedTerm moreTerms[[],$item[1]] addExpressionModifier[$item[2]]
 
@@ -203,32 +203,32 @@ Expression  : SignedTerm moreTerms[[],$item[1]] addExpressionModifier[$item[2]]
 moreTerms :
           /^\Z/ { LeftRec(@{$arg[0]},$arg[1]); }   # short circuit!
         | AddOp moreTerms2[$arg[0],$arg[1],$item[1]]
-	| { LeftRec(@{$arg[0]},$arg[1]); }
+        | { LeftRec(@{$arg[0]},$arg[1]); }
 
 # moreTerms2[ [($term,$addop)*], $term, $addop]; Check if addop is followed
 #  by another term, or if not, it presumably represents a limiting form
 #  like "a+" (ie a from above)
 moreTerms2   : Term moreTerms[ [@{$arg[0]},$arg[1],$arg[2]],$item[1] ]
-	    | { LeftRec(@{$arg[0]},Apply(New('limit-from'),$arg[1],$arg[2])); }
+            | { LeftRec(@{$arg[0]},Apply(New('limit-from'),$arg[1],$arg[2])); }
 
 
 addExpressionModifier :
           /^\Z/ { $arg[0];}   # short circuit!
         | PUNCT(?) OPEN relop Expression balancedClose[$item[2]]
-	    { Apply(New('annotated'),$arg[0],
- 		    Fence($item[2], Apply($item[3],Absent(),$item[4]),$item[5])); }
+            { Apply(New('annotated'),$arg[0],
+                    Fence($item[2], Apply($item[3],Absent(),$item[4]),$item[5])); }
         # An alternative form would have OPEN Expression relop...
-	# but that seems less like a "modifier" and more like a relation as argument!
+        # but that seems less like a "modifier" and more like a relation as argument!
 ###        | PUNCT(?) OPEN Expression relop Expression
-###	  	    moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
+###                 moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
 ###            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
-	| PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
+        | PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
             { Apply($item[3],$arg[0],$item[4]); }
         | MODIFIER
             { Apply(New('annotated'),$arg[0],$item[1]); }
-	| MODIFIEROP Expression
+        | MODIFIEROP Expression
             { Apply($item[1],$arg[0],$item[2]); }
-	| { $arg[0]; }
+        | { $arg[0]; }
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -236,26 +236,26 @@ addExpressionModifier :
 # Abstractly, things combined by operators binding tighter than addition
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-SignedTerm : AddOp Term				{ Apply($item[1],$item[2]); }
+SignedTerm : AddOp Term                         { Apply($item[1],$item[2]); }
         | Term
 
-### Term	: Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
-###					{ LeftRec($item[1],map(@$_,@{$item[2]})); }
+### Term        : Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
+###                                     { LeftRec($item[1],map(@$_,@{$item[2]})); }
 
 Term    : Factor moreFactors[$item[1]]
 moreFactors :
           /^\Z/ { $arg[0];}   # short circuit!
         | MulOp Factor moreFactors[ApplyNary($item[1],$arg[0],$item[2])]
-	# Given an explicit COMPOSEOP, we'll assume the preceding is
-	# an implicit lambda of some sort(?)
-	| COMPOSEOP makeComposition[$arg[0],$item[1]]
+        # Given an explicit COMPOSEOP, we'll assume the preceding is
+        # an implicit lambda of some sort(?)
+        | COMPOSEOP makeComposition[$arg[0],$item[1]]
 #        | { ($forbidEvalAt ? undef : 1); }
-#	  evalAtOp POSTSUBSCRIPT
-#	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
+#         evalAtOp POSTSUBSCRIPT
+#                  moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
         | { ($forbidEvalAt ? undef : 1); }
-	  evalAtOp maybeEvalAt[$arg[0],$item[2]]
- 	| Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
-	| { $arg[0]; }
+          evalAtOp maybeEvalAt[$arg[0],$item[2]]
+        | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+        | { $arg[0]; }
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -263,40 +263,40 @@ moreFactors :
 # Abstractly, things combined by operators binding tighter than multiplication
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Factor	: 
-	# These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
-	  OPEN ARRAY CLOSE  addScripts[Fence($item[1],$item[2],$item[3])]
-	  # perhaps only when OPEN or CLOSED is { or } ??
-#	| OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
-#	| ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
-	# should be explicitly {, and moreover the array should be only 1 or 2 columns!
-	| LBRACE ARRAY { Annotate($item[2], meaning=>'cases',open=>$item[1]); }
-	| ARRAY RBRACE { Annotate($item[1], meaning=>'cases',close=>$item[2]); }
-	| preScripted['FUNCTION'] addArgs[$item[1]]
-	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
-	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
-	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
-	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
-	| NUMBER   addScripts[$item[1]]
-	| SCRIPTOPEN scriptFactorOpen[$item[1]]
-	| OPEN factorOpen[$item[1]]
-	| preScripted['bigop'] addOpArgs[$item[1]]
-	| { ($forbidVertBar ? undef : 1); }
-	  VERTBAR VERTBAR absExpression VERTBAR VERTBAR # || exp || ==> norm
-	      addScripts[Fence('||',$item[4],'||')]
-	| { ($forbidVertBar ? undef : 1); }
-	  VERTBAR absExpression VERTBAR			    # | exp | => absolute-value
-	      addScripts[Fence($item[2],$item[3],$item[4])]
-	| { ($forbidVertBar ? undef : IsNotationAllowed('QM')); }
-	  VERTBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
- 	      addScripts[Fence('|',$item[3],'>')] # ket
-	| { IsNotationAllowed('QM'); }
-	  LANGLE ketExpression VERTBAR maybeBra[$item[3]]
-	| { IsNotationAllowed('QM'); }
-	  LANGLE absExpression RANGLE
-	       addScripts[Fence($item[2],$item[3],$item[4])]
-	| OPERATOR addScripts[$item[1]] nestOperators[$item[2]]
-	  	    addOpFunArgs[$item[3]]
+Factor  : 
+        # These 2nd two are Iffy; hopefully the 1st rule will protect from backtrack?
+          OPEN ARRAY CLOSE  addScripts[Fence($item[1],$item[2],$item[3])]
+          # perhaps only when OPEN or CLOSED is { or } ??
+#       | OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
+#       | ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
+        # should be explicitly {, and moreover the array should be only 1 or 2 columns!
+        | LBRACE ARRAY { Annotate($item[2], meaning=>'cases',open=>$item[1]); }
+        | ARRAY RBRACE { Annotate($item[1], meaning=>'cases',close=>$item[2]); }
+        | preScripted['FUNCTION'] addArgs[$item[1]]
+        | preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+        | preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
+        | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
+        | preScripted['UNKNOWN'] doubtArgs[$item[1]]
+        | NUMBER   addScripts[$item[1]]
+        | SCRIPTOPEN scriptFactorOpen[$item[1]]
+        | OPEN factorOpen[$item[1]]
+        | preScripted['bigop'] addOpArgs[$item[1]]
+        | { ($forbidVertBar ? undef : 1); }
+          VERTBAR VERTBAR absExpression VERTBAR VERTBAR # || exp || ==> norm
+              addScripts[Fence('||',$item[4],'||')]
+        | { ($forbidVertBar ? undef : 1); }
+          VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
+              addScripts[Fence($item[2],$item[3],$item[4])]
+        | { ($forbidVertBar ? undef : IsNotationAllowed('QM')); }
+          VERTBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
+              addScripts[Fence('|',$item[3],'>')] # ket
+        | { IsNotationAllowed('QM'); }
+          LANGLE ketExpression VERTBAR maybeBra[$item[3]]
+        | { IsNotationAllowed('QM'); }
+          LANGLE absExpression RANGLE
+               addScripts[Fence($item[2],$item[3],$item[4])]
+        | OPERATOR addScripts[$item[1]] nestOperators[$item[2]]
+                    addOpFunArgs[$item[3]]
 
 ATOM_OR_ID : ATOM | ID | ARRAY
 
@@ -306,47 +306,47 @@ ATOM_OR_ID : ATOM | ID | ARRAY
 # Should there be a special case for trigs?
 barearg : aBarearg moreBareargs[$item[1]]
 aBarearg : 
-	  preScripted['FUNCTION'] addArgs[$item[1]]
-	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
-	| preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
-	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
-	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
-	| NUMBER   addScripts[$item[1]]
-	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+          preScripted['FUNCTION'] addArgs[$item[1]]
+        | preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+        | preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
+        | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
+        | preScripted['UNKNOWN'] doubtArgs[$item[1]]
+        | NUMBER   addScripts[$item[1]]
+        | VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 
 moreBareargs :
-	  /^\Z/ { $arg[0];}   # short circuit!
-	| MulOp aBarearg moreBareargs[ApplyNary($item[1],$arg[0],$item[2])]
-	| aBarearg moreBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
-	| { $arg[0]; }
+          /^\Z/ { $arg[0];}   # short circuit!
+        | MulOp aBarearg moreBareargs[ApplyNary($item[1],$arg[0],$item[2])]
+        | aBarearg moreBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+        | { $arg[0]; }
 
 # A variation that does not allow a bare trig function
 trigBarearg : aTrigBarearg moreTrigBareargs[$item[1]]
 aTrigBarearg : 
-	  preScripted['FUNCTION'] addArgs[$item[1]]
-	| preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
-	| preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
-	| preScripted['UNKNOWN'] doubtArgs[$item[1]]
-	| NUMBER   addScripts[$item[1]]
-	| VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+          preScripted['FUNCTION'] addArgs[$item[1]]
+        | preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
+        | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
+        | preScripted['UNKNOWN'] doubtArgs[$item[1]]
+        | NUMBER   addScripts[$item[1]]
+        | VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 moreTrigBareargs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | MulOp aTrigBarearg
-	   	 moreTrigBareargs[ApplyNary($item[1],$arg[0],$item[2])]
- 	| aTrigBarearg 
-	  moreTrigBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
-	| { $arg[0]; }
+                 moreTrigBareargs[ApplyNary($item[1],$arg[0],$item[2])]
+        | aTrigBarearg 
+          moreTrigBareargs[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+        | { $arg[0]; }
 
 # maybeEvalAt[$thing,$at_op]
 maybeEvalAt :
-	  POSTSUBSCRIPT moreEvalAt[$arg[0],$arg[1],Arg($item[1],0)]
-	| POSTSUPERSCRIPT POSTSUBSCRIPT
-	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[2],0),Arg($item[1],0))]
+          POSTSUBSCRIPT moreEvalAt[$arg[0],$arg[1],Arg($item[1],0)]
+        | POSTSUPERSCRIPT POSTSUBSCRIPT
+                   moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[2],0),Arg($item[1],0))]
 
 # maybeEvalAt[$thing,$atop,$sub]
 moreEvalAt :
-	  POSTSUPERSCRIPT
-	  	   moreFactors[Apply(New('evaluated-at'),$arg[0],$arg[2],Arg($item[1],0))]
+          POSTSUPERSCRIPT
+                   moreFactors[Apply(New('evaluated-at'),$arg[0],$arg[2],Arg($item[1],0))]
          | moreFactors[Apply(New('evaluated-at'),$arg[0],$arg[2])]
 
 #======================================================================
@@ -354,17 +354,17 @@ moreEvalAt :
 
 # <$expr |   maybeBra[$expr]
 maybeBra :
-	  ketExpression maybeBraket[$arg[0],$item[1]]
-	| { SawNotation('QM'); } addScripts[Fence('<',$arg[0],'|')]
+          ketExpression maybeBraket[$arg[0],$item[1]]
+        | { SawNotation('QM'); } addScripts[Fence('<',$arg[0],'|')]
 # <$expr1|$expr2   maybeBraket[$expr1,$expr2]
 maybeBraket :
           RANGLE { SawNotation('QM'); }
-	      addScripts[Annotate(Apply(New('inner-product', "|",role=>'MIDDLE'),$arg[0],$arg[1]),
+              addScripts[Annotate(Apply(New('inner-product', "|",role=>'MIDDLE'),$arg[0],$arg[1]),
                                   open=>'<',close=>'>')]
         | VERTBAR ketExpression RANGLE { SawNotation('QM'); }
-	      addScripts[Apply(New('inner-product', "\x{2061}",role=>'MIDDLE'), # Is this a good representation?
-		               Fence('<',$arg[0],'|'),
-			       Apply($arg[1],Fence('|',$item[2],'>')))]
+              addScripts[Apply(New('inner-product', "\x{2061}",role=>'MIDDLE'), # Is this a good representation?
+                               Fence('<',$arg[0],'|'),
+                               Apply($arg[1],Fence('|',$item[2],'>')))]
 
 # bra's and ket's (ie <foo| & |foo>) can contain a rather wide variety of things
 # from simple symbols to full (but typically short) formula, and so we
@@ -375,7 +375,7 @@ maybeBraket :
 ketExpression : <rulevar: local $forbidVertBar = 1>
 ketExpression : <rulevar: local $forbidLRAngle = 1>
 ketExpression : Formulae
-	      | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
+              | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
 
 #======================================================================
 # absExpression; need to be careful about misinterpreting the next |
@@ -394,16 +394,16 @@ addScripts :
           /^\Z/ { $arg[0];}   # short circuit!
         | POSTSUPERSCRIPT  addScripts[NewScript($arg[0],$item[1])]
         | POSTSUBSCRIPT    addScripts[NewScript($arg[0],$item[1])]
-	| POSTFIX          addScripts[Apply($item[1],$arg[0])]
-	| { $arg[0]; }
+        | POSTFIX          addScripts[Apply($item[1],$arg[0])]
+        | { $arg[0]; }
 
 # ================================================================================
 # preScripted['RULE']; match a RULE possibly preceded by sub/super prescripts,
 #  possibly followed by sub/superscripts
 
 preScripted :
-	  FLOATSUPERSCRIPT preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
-	| FLOATSUBSCRIPT   preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
+          FLOATSUPERSCRIPT preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
+        | FLOATSUBSCRIPT   preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
         | <matchrule:$arg[0]> addScripts[$item[1]]
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -415,129 +415,129 @@ preScripted :
 # intervals, etc.
 # factorOpen[$open] : Dealing with various things that start with an open.
 factorOpen :
-	  AddOp balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
+          AddOp balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (-)
         # Parenthesized Operator possibly w/scripts
         | preScripted['bigop'] balancedClose[$arg[0]] 
-	  	 addScripts[Fence($arg[0],$item[1],$item[2])] Factor
+                 addScripts[Fence($arg[0],$item[1],$item[2])] Factor
             { Apply($item[3],$item[4]); }
-	# Parenthesized Operator including a pre-factor
-	| Factor preScripted['bigop'] balancedClose[$arg[0]] 
-	     addScripts[Fence($arg[0],
+        # Parenthesized Operator including a pre-factor
+        | Factor preScripted['bigop'] balancedClose[$arg[0]] 
+             addScripts[Fence($arg[0],
                         Apply(InvisibleTimes(),$item[1],$item[2]),$item[3])] Factor
           { Apply($item[4],$item[5]); }
-	# read expression too? match subcases.
+        # read expression too? match subcases.
         | Expression factorOpenExpr[$arg[0],$item[1]]
-	# Empty OPEN CLOSE ?
-	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
-	# Singlet containing an operator ? 
+        # Empty OPEN CLOSE ?
+        | balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
+        # Singlet containing an operator ? 
         | AnyOp balancedClose[$arg[0]]
-	           addScripts[Fence($arg[0],$item[1],$item[2])]
+                   addScripts[Fence($arg[0],$item[1],$item[2])]
 
 
 # factorOpenExpr[$open,$expr];  Try to recognize various things that start
 #   this way. Need some extra productions for sets (w/possible middle '|' )
 #   and vectors; all n-ary.
 factorOpenExpr :
-	# 2nd expression; some kind of pair, interval, set, whatever
+        # 2nd expression; some kind of pair, interval, set, whatever
          (PUNCT Expression { [$item[1],$item[2]]; })(s)  CLOSE
-		  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
-	# only 2 things and 2nd one is an op?; some kind of group???
+                  addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
+        # only 2 things and 2nd one is an op?; some kind of group???
         | PUNCT AnyOp balancedClose[$arg[0]]
-	           addScripts[Annotate(Apply(New('group',undef,role=>'FENCED'),$arg[1],$item[2]),
+                   addScripts[Annotate(Apply(New('group',undef,role=>'FENCED'),$arg[1],$item[2]),
                                       open=>$arg[0],separators=>$item[1],close=>$item[3])]
- 	# parenthesized expression.
-	| balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
+        # parenthesized expression.
+        | balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
 
 # ================================================================================
 # Sets special cases
 # A conditionalized set
 scriptFactorOpen :
           Formula suchThatOp Formulae balancedClose[$arg[0]]
-	  addScripts[ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
-	                            $arg[0], $item[1],$item[2], $item[3],$item[4])]
+          addScripts[ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
+                                    $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
         | factorOpen[$arg[0]]
 
 # The "such that" that can appear in a sets like {a "such that" predicate(a)}
 # accept vertical bars, and colon
 suchThatOp : MIDDLE | VERTBAR 
-	 | /METARELOP:colon:\d+/	{ Lookup($item[1]); }
+         | /METARELOP:colon:\d+/        { Lookup($item[1]); }
 # ================================================================================
 # Function args, etc.
 
 # maybeArgs[$function] ; Add arguments to an identifier, but only if made explict.
 maybeArgs : 
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | APPLYOP requireArgs[$arg[0]]
-	| { $arg[0]; }
+        | { $arg[0]; }
 
 # doubtArgs[$unknown]; Check for apparent arguments following an
 #   Unknown (unclassified) item. If an explicit APPLYOP follows,
 #   it seemingly asserts that the preceding _is_ a function,
 #   otherwise Warn if there seems to be an arglist.
 doubtArgs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | APPLYOP requireArgs[$arg[0]]
-	| OPEN forbidArgs[$arg[0],$item[1]]
-	| { $arg[0]; }
+        | OPEN forbidArgs[$arg[0],$item[1]]
+        | { $arg[0]; }
 
 # forbidArgs[$unknown,$open]; Got a suspicious pattern: an unknown and open. 
 #    If the following seems to be an argument list, warn.
 forbidArgs :
-	  Argument (argPunct Argument)(s) balancedClose[$arg[1]]
-	     		       		        { MaybeFunction($arg[0]); undef; }
-	# Term really could be Argument, but that gives a "possible function" warning
-	# even for a(b+c) which has a good reason for the parentheses; These patterns FAIL anyway!!
-	| Term balancedClose[$arg[1]]		{ MaybeFunction($arg[0]); undef; }
+          Argument (argPunct Argument)(s) balancedClose[$arg[1]]
+                                                { MaybeFunction($arg[0]); undef; }
+        # Term really could be Argument, but that gives a "possible function" warning
+        # even for a(b+c) which has a good reason for the parentheses; These patterns FAIL anyway!!
+        | Term balancedClose[$arg[1]]           { MaybeFunction($arg[0]); undef; }
 
 # requireArgs[$function]; Add arguments following a known function, failing if it
 #   isn't there! Typically this follows an explicit applyop
 requireArgs :
-	  OPEN Argument (argPunct Argument {[$item[1],$item[2]];})(s?)
-	       balancedClose[$item[1]]
+          OPEN Argument (argPunct Argument {[$item[1],$item[2]];})(s?)
+               balancedClose[$item[1]]
                   { ApplyDelimited($arg[0],$item[1],$item[2],
-				   map(@$_,@{$item[3]}),$item[4]); }
-        # Hmm, should only be applicable to _some_ functions ???		  
-	| barearg				{ Apply($arg[0],$item[1]); }
+                                   map(@$_,@{$item[3]}),$item[4]); }
+        # Hmm, should only be applicable to _some_ functions ???                  
+        | barearg                               { Apply($arg[0],$item[1]); }
 
 # addArgs[$function]; We've got a function; Add following arguments to a
 #   function, if present.  Also recognizes compostion type ops (something
 #   combining two functions into a function)
 addArgs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | addEasyArgs[$arg[0]]
-	# Accept bare arg (w/o parens) ONLY if an explicit APPLYOP
-	| APPLYOP barearg				{ Apply($arg[0],$item[2]);}
-	| { $arg[0]; }   # Just return the function itself,then.
+        # Accept bare arg (w/o parens) ONLY if an explicit APPLYOP
+        | APPLYOP barearg                               { Apply($arg[0],$item[2]);}
+        | { $arg[0]; }   # Just return the function itself,then.
 
 # addOpFunArgs[$function]; Same as above but for functions classified as
 #   OPFUNCTION. Ie operator-like functions such as \sin, that don't
 #   absolutely require parens around args.
 addOpFunArgs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | addEasyArgs[$arg[0]]
         # Accept bare arg (w/o parens) for this class of functions.
-	| APPLYOP(?) barearg				{ Apply($arg[0],$item[2]);}
-	| { $arg[0]; }   # Just return the function itself,then.
+        | APPLYOP(?) barearg                            { Apply($arg[0],$item[2]);}
+        | { $arg[0]; }   # Just return the function itself,then.
 
 # addTrigFunArgs[$function]; Yet another variation;
 #   It differs in the barearg is restricted to non-trig
 addTrigFunArgs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | addEasyArgs[$arg[0]]
         # Accept bare arg (w/o parens) for this class of functions.
-	| APPLYOP(?) trigBarearg			{ Apply($arg[0],$item[2]);}
-	| { $arg[0]; }   # Just return the function itself,then.
+        | APPLYOP(?) trigBarearg                        { Apply($arg[0],$item[2]);}
+        | { $arg[0]; }   # Just return the function itself,then.
 
 # addEasyArgs[$function]; gets unambiguous compositions or parenthesized arguments
 #  These are the "easy" cases for addArgs and addOpFunArgs.
 addEasyArgs :
-	  COMPOSEOP makeComposition[$arg[0],$item[1]]
+          COMPOSEOP makeComposition[$arg[0],$item[1]]
         |  APPLYOP(?) OPEN Argument
-	   	      (argPunct Argument {[$item[1],$item[2]];})(s?)
+                      (argPunct Argument {[$item[1],$item[2]];})(s?)
                    balancedClose[$item[2]]
- 	  	  { ApplyDelimited($arg[0],$item[2],$item[3],
-				   map(@$_,@{$item[4]}),$item[5]); }
+                  { ApplyDelimited($arg[0],$item[2],$item[3],
+                                   map(@$_,@{$item[4]}),$item[5]); }
 
 # A function (or other) argument would normally be a simple expression,
 # but often relations (esp. Statistics) or arrows appear, so allow those as well.
@@ -545,38 +545,38 @@ Argument : Expression extendArgument[$item[1]]
 
 # recognize some longer form "arguments"; things that may look like relations.
 extendArgument :
-	  /^\Z/ { $arg[0]; } # short circuit
-	| relopExpr(s) extendArgument[NewFormula($arg[0],map(@$_,@{$item[1]}))]
+          /^\Z/ { $arg[0]; } # short circuit
+        | relopExpr(s) extendArgument[NewFormula($arg[0],map(@$_,@{$item[1]}))]
         | METARELOP Formula extendArgument[Apply($item[1],$arg[0],$item[2])]
-	| { $arg[0]; }
+        | { $arg[0]; }
 
 # makeComposition[$thing,$comp]; Given something that presumably is a function,
 #  and a composition operator, read another function and possibly args
 makeComposition :
-	  preScripted['FUNCTION'] addArgs[Apply($arg[1],$arg[0],$item[1])]
-		   { $item[2]; }
+          preScripted['FUNCTION'] addArgs[Apply($arg[1],$arg[0],$item[1])]
+                   { $item[2]; }
         | preScripted['OPFUNCTION'] addOpFunArgs[Apply($arg[1],$arg[0],$item[1])]
-		   { $item[2]; }
+                   { $item[2]; }
         | preScripted['TRIGFUNCTION']
-	  addTrigFunArgs[Apply($arg[1],$arg[0],$item[1])]	{ $item[2]; }
-	# Given an explicit composition operator, the next thing may safely(?)
-	# be assumed to be a function, so treat it as such.
-	| Factor addArgs[Apply($arg[1],$arg[0],$item[1])]		{ $item[2]; }
+          addTrigFunArgs[Apply($arg[1],$arg[0],$item[1])]       { $item[2]; }
+        # Given an explicit composition operator, the next thing may safely(?)
+        # be assumed to be a function, so treat it as such.
+        | Factor addArgs[Apply($arg[1],$arg[0],$item[1])]               { $item[2]; }
 
 # addOpArgs[$bigop]; Add following Term to a bigop, if present.
 addOpArgs :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | APPLYOP(?) Factor moreOpArgFactors[$item[2]] { Apply($arg[0],$item[3]);}
-	| { $arg[0]; }
+        | { $arg[0]; }
 
 # moreOpArgFactors[$factor1] : Similar to moreFactors, 
 #   but w/o evalAtOp since that most likely belongs to the operator, not
 #   the factors.
 moreOpArgFactors :
-	  /^\Z/ { $arg[0];}   # short circuit!
+          /^\Z/ { $arg[0];}   # short circuit!
         | MulOp Factor moreOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
-	| Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
-	| { $arg[0]; }
+        | Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+        | { $arg[0]; }
 
 
 # Punctuation separating function arguments; things marked MIDDLE could
@@ -589,15 +589,15 @@ argPunct : PUNCT | MIDDLE | VERTBAR
 
 # nestOperators[$operator*]; Nest a possible sequence of operators
 nestOperators :
-	  /^\Z/ { recApply(@arg); }
-	| OPERATOR addScripts[$item[1]] nestOperators[@arg,$item[2]]
-	| FUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
-	| OPFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
-	| TRIGFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
-	| OPEN Expression balancedClose[$item[1]] 
+          /^\Z/ { recApply(@arg); }
+        | OPERATOR addScripts[$item[1]] nestOperators[@arg,$item[2]]
+        | FUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
+        | OPFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
+        | TRIGFUNCTION addScripts[$item[1]] { recApply(@arg,$item[2]); }
+        | OPEN Expression balancedClose[$item[1]] 
                { recApply(@arg[0..$#arg-1],
-			ApplyDelimited($arg[$#arg],$item[1],$item[2],$item[3])); }
-	| { recApply(@arg); }
+                        ApplyDelimited($arg[$#arg],$item[1],$item[2],$item[3])); }
+        | { recApply(@arg); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # (slightly) structured operators
@@ -605,8 +605,8 @@ nestOperators :
 
 # Same as anyop, at the moment.
 AnyOp   : relop | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
-	| preScripted['bigop']
-	| OPERATOR addScripts[$item[1]]
+        | preScripted['bigop']
+        | OPERATOR addScripts[$item[1]]
 
 # Sub or superscripts on operators;
 # we recognize the structure, not necessarily the meaning
@@ -623,7 +623,7 @@ addOpDecoration :
           /^\Z/ { $arg[0];}   # short circuit!
         | POSTSUPERSCRIPT  addOpDecoration[DecorateOperator($arg[0],$item[1])]
         | POSTSUBSCRIPT    addOpDecoration[DecorateOperator($arg[0],$item[1])]
-	| { $arg[0]; }
+        | { $arg[0]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Pseudo-Terminals. 
@@ -631,10 +631,10 @@ addOpDecoration :
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # A generalized relational operator or arrow
 # Note we disallow < or > if we're parsing the contents of a bra or ket!
-relop	: 
-	  { ($forbidLRAngle ? 1 : undef); } /RELOP:(less|greater)-than:\d+/ <commit> <reject>
+relop   : 
+          { ($forbidLRAngle ? 1 : undef); } /RELOP:(less|greater)-than:\d+/ <commit> <reject>
         | RELOP addOpDecoration[$item[1]]
-	| ARROW addOpDecoration[$item[1]]
+        | ARROW addOpDecoration[$item[1]]
 
 # Check out whether diffop should be treated as bigop or operator
 # It depends on the binding 
@@ -642,9 +642,9 @@ bigop   : BIGOP | SUMOP | INTOP | LIMITOP | DIFFOP
 operator: OPERATOR
 
 # SUPOP is really only \prime(s) (?)
-supops   : SUPOP(s)				{ New(undef,
-	   					      join('',map($_->textContent,@{$item[1]})),
- 						       name=>'prime'.scalar(@{$item[1]})); }
+supops   : SUPOP(s)                             { New(undef,
+                                                      join('',map($_->textContent,@{$item[1]})),
+                                                       name=>'prime'.scalar(@{$item[1]})); }
 
 # ================================================================================
 # And some special cases...
@@ -655,7 +655,7 @@ balancedClose : CLOSE { (isMatchingClose($arg[0],$item[1]) ? 1 : undef) } { $ite
 # The "evaluated at" operator, typically a vertical bar followed by a subscript
 # equation. But it is ofen used in \left. \right| pairs!
 evalAtOp : VERTBAR
-	 | /CLOSE:\|:\d+/	{ Lookup($item[1]); }
+         | /CLOSE:\|:\d+/       { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminals / Lexer
@@ -683,49 +683,49 @@ evalAtOp : VERTBAR
 # \left< can be an OPEN _or_ RELOP
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-ATOM     	: /ATOM:\S*:\d+/		{ Lookup($item[1]); }
-UNKNOWN		: /UNKNOWN:\S*:\d+/		{ Lookup($item[1]); }
-ID		: /ID:\S*:\d+/			{ Lookup($item[1]); }
-ARRAY		: /ARRAY:\S*:\d+/		{ Lookup($item[1]); }
-NUMBER      	: /NUMBER:\S*:\d+/		{ Lookup($item[1]); }
-PUNCT		: /PUNCT:\S*:\d+/		{ Lookup($item[1]); }
-PERIOD		: /PERIOD:\S*:\d+/		{ Lookup($item[1]); }
-RELOP		: /RELOP:\S*:\d+/		{ Lookup($item[1]); }
-LANGLE          : /RELOP:less-than:\d+/		{ Lookup($item[1]); }
-		| /OPEN:langle:\d+/		{ Lookup($item[1]); }
-RANGLE          : /RELOP:greater-than:\d+/	{ Lookup($item[1]); }
-		| /CLOSE:rangle:\d+/		{ Lookup($item[1]); }
+ATOM            : /ATOM:\S*:\d+/                { Lookup($item[1]); }
+UNKNOWN         : /UNKNOWN:\S*:\d+/             { Lookup($item[1]); }
+ID              : /ID:\S*:\d+/                  { Lookup($item[1]); }
+ARRAY           : /ARRAY:\S*:\d+/               { Lookup($item[1]); }
+NUMBER          : /NUMBER:\S*:\d+/              { Lookup($item[1]); }
+PUNCT           : /PUNCT:\S*:\d+/               { Lookup($item[1]); }
+PERIOD          : /PERIOD:\S*:\d+/              { Lookup($item[1]); }
+RELOP           : /RELOP:\S*:\d+/               { Lookup($item[1]); }
+LANGLE          : /RELOP:less-than:\d+/         { Lookup($item[1]); }
+                | /OPEN:langle:\d+/             { Lookup($item[1]); }
+RANGLE          : /RELOP:greater-than:\d+/      { Lookup($item[1]); }
+                | /CLOSE:rangle:\d+/            { Lookup($item[1]); }
 LBRACE          : /OPEN:\{:\d+/                 { Lookup($item[1]); }
 RBRACE          : /CLOSE:\}:\d+/                { Lookup($item[1]); }
-METARELOP	: /METARELOP:\S*:\d+/		{ Lookup($item[1]); }
-MODIFIEROP      : /MODIFIEROP:\S*:\d+/		{ Lookup($item[1]); }
-MODIFIER        : /MODIFIER:\S*:\d+/		{ Lookup($item[1]); }
-ARROW		: /ARROW:\S*:\d+/		{ Lookup($item[1]); }
-ADDOP		: /ADDOP:\S*:\d+/		{ Lookup($item[1]); }
-MULOP		: /MULOP:\S*:\d+/		{ Lookup($item[1]); }
-BINOP		: /BINOP:\S*:\d+/		{ Lookup($item[1]); }
-POSTFIX		: /POSTFIX:\S*:\d+/		{ Lookup($item[1]); }
-FUNCTION        : /FUNCTION:\S*:\d+/		{ Lookup($item[1]); }
-OPFUNCTION      : /OPFUNCTION:\S*:\d+/		{ Lookup($item[1]); }
-TRIGFUNCTION    : /TRIGFUNCTION:\S*:\d+/	{ Lookup($item[1]); }
-APPLYOP		: /APPLYOP:\S*:\d+/		{ Lookup($item[1]); }
-COMPOSEOP	: /COMPOSEOP:\S*:\d+/		{ Lookup($item[1]); }
-SUPOP		: /SUPOP:\S*:\d+/		{ Lookup($item[1]); }
-OPEN		: /OPEN:\S*:\d+/		{ Lookup($item[1]); }
-SCRIPTOPEN	: /OPEN:\{:\d+/			{ Lookup($item[1]); }
-CLOSE		: /CLOSE:\S*:\d+/		{ Lookup($item[1]); }
-MIDDLE		: /MIDDLE:\S*:\d+/		{ Lookup($item[1]); }
-VERTBAR		: /VERTBAR:\S*:\d+/		{ Lookup($item[1]); }
-BIGOP		: /BIGOP:\S*:\d+/		{ Lookup($item[1]); }
-SUMOP		: /SUMOP:\S*:\d+/		{ Lookup($item[1]); }
-INTOP		: /INTOP:\S*:\d+/		{ Lookup($item[1]); }
-LIMITOP		: /LIMITOP:\S*:\d+/		{ Lookup($item[1]); }
-DIFFOP		: /DIFFOP:\S*:\d+/		{ Lookup($item[1]); }
-OPERATOR	: /OPERATOR:\S*:\d+/		{ Lookup($item[1]); }
-##DIFF		: /DIFF:\S*:\d+/		{ Lookup($item[1]); }
-POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
-POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
-FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
-FLOATSUBSCRIPT	: /FLOATSUBSCRIPT:\S*:\d+/	{ Lookup($item[1]); }
+METARELOP       : /METARELOP:\S*:\d+/           { Lookup($item[1]); }
+MODIFIEROP      : /MODIFIEROP:\S*:\d+/          { Lookup($item[1]); }
+MODIFIER        : /MODIFIER:\S*:\d+/            { Lookup($item[1]); }
+ARROW           : /ARROW:\S*:\d+/               { Lookup($item[1]); }
+ADDOP           : /ADDOP:\S*:\d+/               { Lookup($item[1]); }
+MULOP           : /MULOP:\S*:\d+/               { Lookup($item[1]); }
+BINOP           : /BINOP:\S*:\d+/               { Lookup($item[1]); }
+POSTFIX         : /POSTFIX:\S*:\d+/             { Lookup($item[1]); }
+FUNCTION        : /FUNCTION:\S*:\d+/            { Lookup($item[1]); }
+OPFUNCTION      : /OPFUNCTION:\S*:\d+/          { Lookup($item[1]); }
+TRIGFUNCTION    : /TRIGFUNCTION:\S*:\d+/        { Lookup($item[1]); }
+APPLYOP         : /APPLYOP:\S*:\d+/             { Lookup($item[1]); }
+COMPOSEOP       : /COMPOSEOP:\S*:\d+/           { Lookup($item[1]); }
+SUPOP           : /SUPOP:\S*:\d+/               { Lookup($item[1]); }
+OPEN            : /OPEN:\S*:\d+/                { Lookup($item[1]); }
+SCRIPTOPEN      : /OPEN:\{:\d+/                 { Lookup($item[1]); }
+CLOSE           : /CLOSE:\S*:\d+/               { Lookup($item[1]); }
+MIDDLE          : /MIDDLE:\S*:\d+/              { Lookup($item[1]); }
+VERTBAR         : /VERTBAR:\S*:\d+/             { Lookup($item[1]); }
+BIGOP           : /BIGOP:\S*:\d+/               { Lookup($item[1]); }
+SUMOP           : /SUMOP:\S*:\d+/               { Lookup($item[1]); }
+INTOP           : /INTOP:\S*:\d+/               { Lookup($item[1]); }
+LIMITOP         : /LIMITOP:\S*:\d+/             { Lookup($item[1]); }
+DIFFOP          : /DIFFOP:\S*:\d+/              { Lookup($item[1]); }
+OPERATOR        : /OPERATOR:\S*:\d+/            { Lookup($item[1]); }
+##DIFF          : /DIFF:\S*:\d+/                { Lookup($item[1]); }
+POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/       { Lookup($item[1]); }
+POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/     { Lookup($item[1]); }
+FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/   { Lookup($item[1]); }
+FLOATSUBSCRIPT  : /FLOATSUBSCRIPT:\S*:\d+/      { Lookup($item[1]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

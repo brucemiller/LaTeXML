@@ -30,96 +30,96 @@ use strict;
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
-our %default_macros =(jan=>"January",   feb=>"February", mar=>"March",    apr=>"April",
-		      may=>"May",       jun=>"June",     jul=>"July",     aug=>"August",
-		      sep=>"September", oct=>"October",  nov=>"November", dec=>"December",
-		      acmcs=>"ACM Computing Surveys",
-		      acta=>"Acta Informatica",
-		      cacm=>"Communications of the ACM",
-		      ibmjrd=>"IBM Journal of Research and Development",
-		      ibmsj=>"IBM Systems Journal",
-		      ieeese=>"IEEE Transactions on Software Engineering",
-		      ieeetc=>"IEEE Transactions on Computers",
-		      ieeetcad=>"IEEE Transactions on Computer-Aided Design of Integrated Circuits",
-		      ipl=>"Information Processing Letters",
-		      jacm=>"Journal of the ACM",
-		      jcss=>"Journal of Computer and System Sciences",
-		      scp=>"Science of Computer Programming",
-		      sicomp=>"SIAM Journal on Computing",
-		      tocs=>"ACM Transactions on Computer Systems",
-		      tods=>"ACM Transactions on Database Systems",
-		      tog=>"ACM Transactions on Graphics",
-		      toms=>"ACM Transactions on Mathematical Software",
-		      toois=>"ACM Transactions on Office Information Systems",
-		      toplas=>"ACM Transactions on Programming Languages and Systems",
-		      tcs=>"Theoretical Computer Science");
+our %default_macros = (jan => "January", feb => "February", mar => "March", apr => "April",
+  may => "May",       jun => "June",    jul => "July",     aug => "August",
+  sep => "September", oct => "October", nov => "November", dec => "December",
+  acmcs    => "ACM Computing Surveys",
+  acta     => "Acta Informatica",
+  cacm     => "Communications of the ACM",
+  ibmjrd   => "IBM Journal of Research and Development",
+  ibmsj    => "IBM Systems Journal",
+  ieeese   => "IEEE Transactions on Software Engineering",
+  ieeetc   => "IEEE Transactions on Computers",
+  ieeetcad => "IEEE Transactions on Computer-Aided Design of Integrated Circuits",
+  ipl      => "Information Processing Letters",
+  jacm     => "Journal of the ACM",
+  jcss     => "Journal of Computer and System Sciences",
+  scp      => "Science of Computer Programming",
+  sicomp   => "SIAM Journal on Computing",
+  tocs     => "ACM Transactions on Computer Systems",
+  tods     => "ACM Transactions on Database Systems",
+  tog      => "ACM Transactions on Graphics",
+  toms     => "ACM Transactions on Mathematical Software",
+  toois    => "ACM Transactions on Office Information Systems",
+  toplas   => "ACM Transactions on Programming Languages and Systems",
+  tcs      => "Theoretical Computer Science");
 #======================================================================
 
 sub newFromFile {
-  my($class,$bibname)=@_;
-  my $self = {source=>$bibname, preamble=>[], entries=>[], macros=>{%default_macros}};
-  bless $self,$class;
+  my ($class, $bibname) = @_;
+  my $self = { source => $bibname, preamble => [], entries => [], macros => {%default_macros} };
+  bless $self, $class;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
-  my $file = pathname_find($bibname,types=>['bib'],paths=>$paths);
-  Fatal('missing_file',$bibname,undef,"Can't find BibTeX file $bibname",
-	"SEACHPATHS is ".join(', ',@$paths)) unless $file;
+  my $file = pathname_find($bibname, types => ['bib'], paths => $paths);
+  Fatal('missing_file', $bibname, undef, "Can't find BibTeX file $bibname",
+    "SEACHPATHS is " . join(', ', @$paths)) unless $file;
   my $BIB;
-  open($BIB,'<',$file) or Fatal('I/O',$file,undef,"Can't open BibTeX $file for reading",$!);
-  $$self{file} = $bibname;
-  $$self{lines} = [<$BIB>];
-  $$self{line} = shift(@{$$self{lines}}) || '';
+  open($BIB, '<', $file) or Fatal('I/O', $file, undef, "Can't open BibTeX $file for reading", $!);
+  $$self{file}   = $bibname;
+  $$self{lines}  = [<$BIB>];
+  $$self{line}   = shift(@{ $$self{lines} }) || '';
   $$self{lineno} = 1;
   close($BIB);
   $self; }
 
 sub newFromString {
-  my($class,$string)=@_;
-  my $self = {source=>"<Unknown>", preamble=>[], entries=>[], macros=>{%default_macros}};
-  bless $self,$class;
+  my ($class, $string) = @_;
+  my $self = { source => "<Unknown>", preamble => [], entries => [], macros => {%default_macros} };
+  bless $self, $class;
 
-  $$self{file} = "<anonymous>";
-  $$self{lines} = [split(/\n/,$string)]; # Uh, what about CR's?
-  $$self{line} = shift(@{$$self{lines}});
+  $$self{file}   = "<anonymous>";
+  $$self{lines}  = [split(/\n/, $string)];      # Uh, what about CR's?
+  $$self{line}   = shift(@{ $$self{lines} });
   $$self{lineno} = 1;
   $self; }
 
 # Read all available lines from available Mouth's in the Gullet.
 sub newFromGullet {
-  my($class,$name,$gullet)=@_;
-  my $self = {source=>$name, preamble=>[], entries=>[], macros=>{%default_macros}};
-  bless $self,$class;
+  my ($class, $name, $gullet) = @_;
+  my $self = { source => $name, preamble => [], entries => [], macros => {%default_macros} };
+  bless $self, $class;
 
   my @lines = ();
-  while($gullet->getMouth->hasMoreInput){
-    push(@lines,$gullet->getMouth->readRawLines());
+  while ($gullet->getMouth->hasMoreInput) {
+    push(@lines, $gullet->getMouth->readRawLines());
     $gullet->closeMouth; }
 
-  $$self{file} = $name;
-  $$self{lines} = [@lines];
-  $$self{line} = shift(@{$$self{lines}});
+  $$self{file}   = $name;
+  $$self{lines}  = [@lines];
+  $$self{line}   = shift(@{ $$self{lines} });
   $$self{lineno} = 1;
   $self; }
 
 sub toString {
-  my($self)=@_;
+  my ($self) = @_;
   "Bibliography[$$self{source}]"; }
 
 sub toTeX {
-  my($self)=@_;
+  my ($self) = @_;
   $self->parseTopLevel unless $$self{parsed};
   # Store all entries into $STATE under BIBKEY@$key.
-   foreach my $entry (@{$$self{entries}}){
-     $STATE->assignValue('BIBENTRY@'.$entry->getKey => $entry); }
+  foreach my $entry (@{ $$self{entries} }) {
+    $STATE->assignValue('BIBENTRY@' . $entry->getKey => $entry); }
 
   join("\n",
-       @{$$self{preamble}},
-       '\begin{bibtex@bibliography}',
-       map('\ProcessBibTeXEntry{'.$_->getKey.'}',@{$$self{entries}}),
-       '\end{bibtex@bibliography}'); }
+    @{ $$self{preamble} },
+    '\begin{bibtex@bibliography}',
+    map('\ProcessBibTeXEntry{' . $_->getKey . '}', @{ $$self{entries} }),
+    '\end{bibtex@bibliography}'); }
 
 # This lets Bib support formatted error messages.
 sub getLocator {
-  my($self)=@_;
+  my ($self) = @_;
   "at $$self{source}; line $$self{lineno}\n  $$self{line}"; }
 
 #======================================================================
@@ -130,73 +130,73 @@ sub getLocator {
 # consists of skipping till we find an @name
 # and parse the body according to the type.
 sub parseTopLevel {
-  my($self)=@_;
+  my ($self) = @_;
   NoteBegin("Preparsing Bibliography $$self{source}");
-  while($self->skipJunk){
+  while ($self->skipJunk) {
     my $type = $self->parseEntryType;
-    if   ($type eq 'preamble'){ $self->parsePreamble; }
-    elsif($type eq 'string')  { $self->parseMacro; }
-    elsif($type eq 'comment') { $self->parseComment; }
-    else {                      $self->parseEntry($type); }
+    if    ($type eq 'preamble') { $self->parsePreamble; }
+    elsif ($type eq 'string')   { $self->parseMacro; }
+    elsif ($type eq 'comment')  { $self->parseComment; }
+    else                        { $self->parseEntry($type); }
   }
   NoteEnd("Preparsing Bibliography $$self{source}");
-  $$self{parsed}=1; }
+  $$self{parsed} = 1; }
 
 #==============================
-our %CLOSE=("{"=>"}","("=>")");
+our %CLOSE = ("{" => "}", "(" => ")");
 
 # @preamble open "rawtex" close
 # open = { or (  close is balancing } or )
-sub parsePreamble{
-  my($self)=@_;
+sub parsePreamble {
+  my ($self) = @_;
   my $open = $self->parseMatch("({");
-  my($value,$rawvalue)=  $self->parseValue();
-  push(@{$$self{preamble}}, $value);
+  my ($value, $rawvalue) = $self->parseValue();
+  push(@{ $$self{preamble} }, $value);
   $self->parseMatch($CLOSE{$open}); }
 
 # @string open [name = value]* close
 # open = { or (  close is balancing } or )
 sub parseMacro {
-  my($self)=@_;
+  my ($self) = @_;
   my $open = $self->parseMatch("({");
-  my($fields,$rawfields)= $self->parseFields('@string',$open);
-  foreach my $macro (@$fields){
-    $$self{macros}{$$macro[0]} = $$macro[1]; }}
+  my ($fields, $rawfields) = $self->parseFields('@string', $open);
+  foreach my $macro (@$fields) {
+    $$self{macros}{ $$macro[0] } = $$macro[1]; } }
 
 # @comment string
 sub parseComment {
-  my($self)=@_;
-  my $comment = $self->parseString(); # Supposedly should accept () delimited strings, too?
-  # store it?
+  my ($self)  = @_;
+  my $comment = $self->parseString();    # Supposedly should accept () delimited strings, too?
+                                         # store it?
 }
 
 # @entryname open name, [name = value]* close
 # open = { or (  close is balancing } or )
-sub parseEntry{
-  my($self,$type)=@_;
+sub parseEntry {
+  my ($self, $type) = @_;
   my $open = $self->parseMatch("({");
-  my $key = $self->parseEntryName();
+  my $key  = $self->parseEntryName();
   $self->parseMatch(',');
   # NOTE: actually, the entry should be ignored if there already is one for $key!
-  my($fields,$rawfields)= $self->parseFields('@string',$open);
-  push(@{$$self{entries}},LaTeXML::Bib::BibEntry->new($type,$key,$fields,$rawfields)); }
+  my ($fields, $rawfields) = $self->parseFields('@string', $open);
+  push(@{ $$self{entries} }, LaTeXML::Bib::BibEntry->new($type, $key, $fields, $rawfields)); }
 
 sub parseFields {
-  my($self,$for,$open)=@_;
-  my @fields=();
-  my @rawfields=();
+  my ($self, $for, $open) = @_;
+  my @fields    = ();
+  my @rawfields = ();
   my $closed;
   do {
     my $name = $self->parseFieldName;
     $self->parseMatch('=');
-    my($value,$rawvalue)= $self->parseValue;
-    push(@fields,[$name,$value]);
-    push(@rawfields,[$name,$rawvalue]);
+    my ($value, $rawvalue) = $self->parseValue;
+    push(@fields,    [$name, $value]);
+    push(@rawfields, [$name, $rawvalue]);
     $self->skipWhite;
-  } while( ($$self{line}=~ s/^,//) # like parseMatch, but we just end parsing fields if missing
-	   && $self->skipWhite && ($$self{line} !~ /^\Q$CLOSE{$open}\E/));
+    } while (($$self{line} =~ s/^,//)    # like parseMatch, but we just end parsing fields if missing
+    && $self->skipWhite && ($$self{line} !~ /^\Q$CLOSE{$open}\E/));
   $self->parseMatch($CLOSE{$open});
-  ([@fields],[@rawfields]); }
+  ([@fields], [@rawfields]); }
 
 #==============================
 # Low level parsing
@@ -205,149 +205,149 @@ sub parseFields {
 # Most of the odd stuff eventually will cause problems processing by LaTeX,
 # but I guess we've got to accept them at this level.
 sub parseEntryType {
-  my($self)=@_;
+  my ($self) = @_;
   $self->skipWhite;
   $$self{line} =~ s/^([a-zA-Z0-9\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\!\$\~]*)//;
   lc($1); }
 
 sub parseEntryName {
-  my($self)=@_;
+  my ($self) = @_;
   $self->skipWhite;
   $$self{line} =~ s/^([a-zA-Z0-9\!\"\#\$\%\&\'\(\)\*\+\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\~]*)//;
   lc($1); }
 
 sub parseFieldName {
-  my($self)=@_;
+  my ($self) = @_;
   $self->skipWhite;
   $$self{line} =~ s/^([a-zA-Z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\~]*)//;
   lc($1); }
 
 sub parseMatch {
-  my($self,$delims)=@_;
+  my ($self, $delims) = @_;
   $self->skipWhite;
-  if($$self{line}=~ s/^([\Q$delims\E])//){
+  if ($$self{line} =~ s/^([\Q$delims\E])//) {
     $1; }
   else {
-    Error('expected',$delims,undef,"Expected one of ".join(' ',split(//,$delims)));
-    undef; }}
+    Error('expected', $delims, undef, "Expected one of " . join(' ', split(//, $delims)));
+    undef; } }
 
 # A string is delimited with balanced {}, or ""
 sub parseString {
-  my($self)=@_;
+  my ($self) = @_;
   $self->skipWhite;
   my $string;
-  if   ($$self{line} =~ /^\"/){
-    while(($$self{line} !~ /\".*\"/) && $self->extendLine) {} # minor optimization: make sure there's at least two ""
-    # Hmmm.. apparently " is effectively quoted within the string as {"} ?
-    while((! defined($string = extract_delimited($$self{line},'\"'))) && $self->extendLine){} # extend till balanced.
+  if ($$self{line} =~ /^\"/) {
+    while (($$self{line} !~ /\".*\"/) && $self->extendLine) { } # minor optimization: make sure there's at least two ""
+          # Hmmm.. apparently " is effectively quoted within the string as {"} ?
+    while ((!defined($string = extract_delimited($$self{line}, '\"'))) && $self->extendLine) { } # extend till balanced.
   }
-  elsif($$self{line} =~ /^\{/){
-    while(($$self{line} !~ /\}/) && $self->extendLine){} # minor optimization: make sure there's at least a closing }
-    while((! defined($string = extract_bracketed($$self{line},'{}'))) && $self->extendLine){} # extend till balanced
+  elsif ($$self{line} =~ /^\{/) {
+    while (($$self{line} !~ /\}/) && $self->extendLine) { } # minor optimization: make sure there's at least a closing }
+    while ((!defined($string = extract_bracketed($$self{line}, '{}'))) && $self->extendLine) { } # extend till balanced
   }
   else {
-    Error('expected','<delimitedstring>',undef,
-	  "Expected a string delimited by \"..\", (..) or {..}"); }
-  $string =~ s/^.//;		# Remove the delimiters.
+    Error('expected', '<delimitedstring>', undef,
+      "Expected a string delimited by \"..\", (..) or {..}"); }
+  $string =~ s/^.//;      # Remove the delimiters.
   $string =~ s/.$//;
-  $string =~ s/^\s+//;		# and trim
+  $string =~ s/^\s+//;    # and trim
   $string =~ s/\s+$//;
   $string; }
 
 sub extendLine {
-  my($self)=@_;
-  my $nextline = shift(@{$$self{lines}});
-  if(defined $nextline){
+  my ($self) = @_;
+  my $nextline = shift(@{ $$self{lines} });
+  if (defined $nextline) {
     $$self{line} .= $nextline;
-    $$self{lineno} ++; 
+    $$self{lineno}++;
     1; }
   else {
-    Error('unexpected','<EOF>',undef,
-	  "Input ended while parsing string");
-    undef; }}
+    Error('unexpected', '<EOF>', undef,
+      "Input ended while parsing string");
+    undef; } }
 
 # value : simple_value ( HASH simple_value)*
 # simple_value : string | NAME
 sub parseValue {
-  my($self)=@_;
+  my ($self) = @_;
   my $value = "";
   do {
     $self->skipWhite;
-    if($$self{line} =~ /^[\"\{]/){
+    if ($$self{line} =~ /^[\"\{]/) {
       $value .= $self->parseString; }
-    elsif(my $name = $self->parseFieldName){
+    elsif (my $name = $self->parseFieldName) {
       my $macro = ($name =~ /^\d+$/ ? $name : $$self{macros}{$name});
-      if(!defined $macro){
-	Error('unexpected',$name,undef,
-	      "The BibTeX macro '$name' is not defined");
-	$macro=$name; }		# Default error handling is leave the text in?
+      if (!defined $macro) {
+        Error('unexpected', $name, undef,
+          "The BibTeX macro '$name' is not defined");
+        $macro = $name; }    # Default error handling is leave the text in?
       $value .= $macro; }
     else {
-      Error('expected','<value>',undef,
-	    "Expected a BibTeX value"); }
+      Error('expected', '<value>', undef,
+        "Expected a BibTeX value"); }
     $self->skipWhite;
   } while ($$self{line} =~ s/^#//);
   $value; }
 
-sub skipWhite{
-  my($self)=@_;
+sub skipWhite {
+  my ($self) = @_;
   my $nextline;
   do {
     $$self{line} =~ s/^(\s+)//s;
     return 1 if $$self{line};
-    $nextline = shift(@{$$self{lines}});
+    $nextline = shift(@{ $$self{lines} });
     $$self{line} = $nextline || "";
     $$self{lineno}++;
-  } while defined $nextline; }
+    } while defined $nextline; }
 
 # Although % officially starts comments, apparently BibTeX accepts
 # anything until @ as an "implied comment"
 # So, until an @ is encountered, pretty much skip anything
 sub skipJunk {
-  my($self)=@_;
-  while(1){
-    $$self{line} =~ s/^[^@%]*//; # Skip till comment or @
-    return '@' if $$self{line} =~ s/^@//; # Found @
-    # else line is empty, or a comment, so get next
-    my $nextline = shift(@{$$self{lines}});
+  my ($self) = @_;
+  while (1) {
+    $$self{line} =~ s/^[^@%]*//;    # Skip till comment or @
+    return '@' if $$self{line} =~ s/^@//;    # Found @
+                                             # else line is empty, or a comment, so get next
+    my $nextline = shift(@{ $$self{lines} });
     $$self{line} = $nextline || "";
     $$self{lineno}++;
-    return unless defined $nextline; }}
+    return unless defined $nextline; } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Bib::BibEntry;
 
 sub new {
-  my($class,$type,$key,$fields,$rawfields)=@_;
-  my $self = {type=>$type,key=>$key,
-	      fieldlist=>$fields, rawfieldlist=>$rawfields,
-	      fieldmap=>{   map( ($$_[0] => $$_[1]),   @$fields) },
-	      rawfieldmap=>{   map( ($$_[0] => $$_[1]), @$rawfields) }};
-  bless $self,$class;
+  my ($class, $type, $key, $fields, $rawfields) = @_;
+  my $self = { type => $type, key => $key,
+    fieldlist => $fields, rawfieldlist => $rawfields,
+    fieldmap    => { map(($$_[0] => $$_[1]), @$fields) },
+    rawfieldmap => { map(($$_[0] => $$_[1]), @$rawfields) } };
+  bless $self, $class;
   $self; }
 
-sub getType   { $_[0]->{type}; }
-sub getKey    { $_[0]->{key}; }
-sub getFields { @{$_[0]->{fieldlist}}; }
-sub getField  { $_[0]->{fieldmap}{$_[1]}; }
-sub getRawField { $_[0]->{rawfieldmap}{$_[1]}; }
+sub getType     { $_[0]->{type}; }
+sub getKey      { $_[0]->{key}; }
+sub getFields   { @{ $_[0]->{fieldlist} }; }
+sub getField    { $_[0]->{fieldmap}{ $_[1] }; }
+sub getRawField { $_[0]->{rawfieldmap}{ $_[1] }; }
 
-sub addField  {
-  my($self,$field,$value)=@_;
-  push(@{ $$self{fieldlist}},[$field,$value]);
+sub addField {
+  my ($self, $field, $value) = @_;
+  push(@{ $$self{fieldlist} }, [$field, $value]);
   $$self{fieldmap}{$field} = $value; }
 
-sub addRawField  {
-  my($self,$field,$value)=@_;
-  push(@{ $$self{rawfieldlist}},[$field,$value]);
+sub addRawField {
+  my ($self, $field, $value) = @_;
+  push(@{ $$self{rawfieldlist} }, [$field, $value]);
   $$self{rawfieldmap}{$field} = $value; }
 
 sub prettyPrint {
-  my($self)=@_;
+  my ($self) = @_;
   join(",\n",
-       "@".$$self{type}."{".$$self{key},
-       map(  (" "x(10-length($$_[0]))).$$_[0]." = {".$$_[1]."}",   @{$$self{fieldlist}})
-      )."}\n"; }
+    "@" . $$self{type} . "{" . $$self{key},
+    map((" " x (10 - length($$_[0]))) . $$_[0] . " = {" . $$_[1] . "}", @{ $$self{fieldlist} })
+    ) . "}\n"; }
 
 #**********************************************************************
 1;

@@ -12,24 +12,25 @@
 # \=========================================================ooo==U==ooo=/ #
 use strict;
 use LaTeXML::Package;
+
 package LaTeXML::Package::Pool;
 
 LoadPool('LaTeX');
 #**********************************************************************
 # Option handling
-foreach my $option (qw(10pt 11pt 12pt 
-		       letterpaper legalpaper executivepaper a4paper a5paper b5paper
-		       landscape
-		       final draft
-		       oneside twoside
-		       openright openany
-		       onecolumn twocolumn 
-		       notitlepage titlepage)){
-  DeclareOption($option,undef); }
-DeclareOption('openbib',sub {
-  RequireResource(undef,type=>'text/css',content=>'.ltx_bibblock{display:block;}'); });
-DeclareOption('leqno',sub { AssignMapping('DOCUMENT_CLASSES',ltx_leqno=>1); });
-DeclareOption('fleqn',sub { AssignMapping('DOCUMENT_CLASSES',ltx_fleqn=>1); });
+foreach my $option (qw(10pt 11pt 12pt
+  letterpaper legalpaper executivepaper a4paper a5paper b5paper
+  landscape
+  final draft
+  oneside twoside
+  openright openany
+  onecolumn twocolumn
+  notitlepage titlepage)) {
+  DeclareOption($option, undef); }
+DeclareOption('openbib', sub {
+    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
+DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
+DeclareOption('fleqn', sub { AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1); });
 
 ProcessOptions();
 
@@ -40,9 +41,9 @@ RequireResource('ltx-report.css');
 
 # This makes the authors appear on 1 line;
 # for derived classes with multiple lines, map this to undef and add ltx_authors_multiline
-AddToMacro(T_CS('\maketitle'),T_CS('\ltx@authors@oneline'));
+AddToMacro(T_CS('\maketitle'), T_CS('\ltx@authors@oneline'));
 
-DefMacro('\@ptsize','0');	# should depend on options...
+DefMacro('\@ptsize', '0');    # should depend on options...
 RawTeX(<<'EOTeX');
 \newif\if@restonecol
 \newif\if@titlepage
@@ -52,66 +53,66 @@ EOTeX
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-NewCounter('part',         'document',     idprefix=>'Pt', nested=>['chapter']);
-NewCounter('chapter',      'document',     idprefix=>'Ch', nested=>['section']);
-NewCounter('section',      'chapter',      idprefix=>'S',  nested=>['subsection']);
-NewCounter('subsection',   'section',      idprefix=>'SS', nested=>['subsubsection']);
-NewCounter('subsubsection','subsection',   idprefix=>'SSS',nested=>['paragraph']);
-NewCounter('paragraph',    'subsubsection',idprefix=>'P',  nested=>['subparagraph']);
-NewCounter('subparagraph', 'paragraph',    idprefix=>'SP', nested=>['equation','figure','table']);
+NewCounter('part',          'document',      idprefix => 'Pt',  nested => ['chapter']);
+NewCounter('chapter',       'document',      idprefix => 'Ch',  nested => ['section']);
+NewCounter('section',       'chapter',       idprefix => 'S',   nested => ['subsection']);
+NewCounter('subsection',    'section',       idprefix => 'SS',  nested => ['subsubsection']);
+NewCounter('subsubsection', 'subsection',    idprefix => 'SSS', nested => ['paragraph']);
+NewCounter('paragraph',     'subsubsection', idprefix => 'P',   nested => ['subparagraph']);
+NewCounter('subparagraph', 'paragraph', idprefix => 'SP', nested => ['equation', 'figure', 'table']);
 
-DefMacro('\thepart',         '\Roman{part}');
-DefMacro('\thechapter',      '\arabic{chapter}');
-DefMacro('\thesection',      '\thechapter.\arabic{section}');
-DefMacro('\thesubsection',   '\thesection.\arabic{subsection}');
-DefMacro('\thesubsubsection','');
-DefMacro('\theparagraph',    '');
-DefMacro('\thesubparagraph', '');
+DefMacro('\thepart',          '\Roman{part}');
+DefMacro('\thechapter',       '\arabic{chapter}');
+DefMacro('\thesection',       '\thechapter.\arabic{section}');
+DefMacro('\thesubsection',    '\thesection.\arabic{subsection}');
+DefMacro('\thesubsubsection', '');
+DefMacro('\theparagraph',     '');
+DefMacro('\thesubparagraph',  '');
 
-NewCounter('equation', 'chapter', idprefix=>'E');
-NewCounter('@equationgroup', 'document', idprefix=>'EG', idwithin=>'section');
-NewCounter('figure',   'chapter', idprefix=>'F');
-NewCounter('table',    'chapter', idprefix=>'T');
+NewCounter('equation',       'chapter',  idprefix => 'E');
+NewCounter('@equationgroup', 'document', idprefix => 'EG', idwithin => 'section');
+NewCounter('figure',         'chapter',  idprefix => 'F');
+NewCounter('table',          'chapter',  idprefix => 'T');
 DefMacro('\theequation', '\thechapter.\arabic{equation}');
 DefMacro('\thefigure',   '\thechapter.\arabic{figure}');
 DefMacro('\thetable',    '\thechapter.\arabic{table}');
-SetCounter(tocdepth=>Number(2));
+SetCounter(tocdepth => Number(2));
 
-NewCounter('@itemizei',   'chapter',    idprefix=>'I');
-NewCounter('@itemizeii',  '@itemizei',  idprefix=>'I');
-NewCounter('@itemizeiii', '@itemizeii', idprefix=>'I');
-NewCounter('@itemizeiv',  '@itemizeiii',idprefix=>'I');
-NewCounter('@itemizev',   '@itemizeiv', idprefix=>'I');
-NewCounter('@itemizevi',  '@itemizev',  idprefix=>'I');
+NewCounter('@itemizei',   'chapter',     idprefix => 'I');
+NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
+NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
+NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
+NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
+NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
 
-NewCounter('enumi',  '@itemizei',   idprefix=>'i');
-NewCounter('enumii', '@itemizeii',  idprefix=>'i');
-NewCounter('enumiii','@itemizeiii', idprefix=>'i');
-NewCounter('enumiv', '@itemizeiv',  idprefix=>'i');
+NewCounter('enumi',   '@itemizei',   idprefix => 'i');
+NewCounter('enumii',  '@itemizeii',  idprefix => 'i');
+NewCounter('enumiii', '@itemizeiii', idprefix => 'i');
+NewCounter('enumiv',  '@itemizeiv',  idprefix => 'i');
 # A couple of more levels, since we use these for ID's!
-NewCounter('enumv',  '@itemizev',   idprefix=>'i');
-NewCounter('enumvi', '@itemizevi',  idprefix=>'i');
+NewCounter('enumv',  '@itemizev',  idprefix => 'i');
+NewCounter('enumvi', '@itemizevi', idprefix => 'i');
 
-DefMacro('\theenumi',           '\arabic{enumi}');
-DefMacro('\theenumii',          '\alph{enumii}');
-DefMacro('\theenumiii',         '\roman{enumiii}');
-DefMacro('\theenumiv',          '\Alph{enumiv}');
+DefMacro('\theenumi',   '\arabic{enumi}');
+DefMacro('\theenumii',  '\alph{enumii}');
+DefMacro('\theenumiii', '\roman{enumiii}');
+DefMacro('\theenumiv',  '\Alph{enumiv}');
 
-DefMacro('\bibname','Bibliography');
+DefMacro('\bibname', 'Bibliography');
 
-Tag('ltx:appendix',autoClose=>1);
-AssignValue(counter_for_appendix=>'chapter');
+Tag('ltx:appendix', autoClose => 1);
+AssignValue(counter_for_appendix => 'chapter');
 DefMacro('\appendix@chapter', '\@startsection{appendix}{}{}{}{}{}');
-DefMacro('\appendix','\@appendix');
-DefPrimitive('\@appendix',sub{
-  NewCounter('chapter', 'document', idprefix=>'A',nested=>['section']);
-  DefMacro('\thechapter', '\Alph{chapter}',scope=>'global');
-  DefMacroI('\theappendix',undef,'\thechapter',scope=>'global');
-  Let(T_CS('\chapter'),T_CS('\appendix@chapter'),'global');
-  Let(T_CS('\@appendix'),T_CS('\relax'),'global');
-  if(LookupDefinition(T_CS('\appendixname'))){
-    Let(T_CS('\chaptername'),T_CS('\appendixname'),'global'); }
-  return; });
+DefMacro('\appendix',         '\@appendix');
+DefPrimitive('\@appendix', sub {
+    NewCounter('chapter', 'document', idprefix => 'A', nested => ['section']);
+    DefMacro('\thechapter', '\Alph{chapter}', scope => 'global');
+    DefMacroI('\theappendix', undef, '\thechapter', scope => 'global');
+    Let('\chapter',   '\appendix@chapter', 'global');
+    Let('\@appendix', '\relax',            'global');
+    if (LookupDefinition(T_CS('\appendixname'))) {
+      Let('\chaptername', '\appendixname', 'global'); }
+    return; });
 
 #**********************************************************************
 1;

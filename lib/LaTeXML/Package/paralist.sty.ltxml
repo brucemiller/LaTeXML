@@ -29,21 +29,21 @@ RawTeX(<<'EOTeX');
 \newif\if@plloadcfg\@plloadcfgtrue
 EOTeX
 
-DeclareOption('newitem',      sub { AssignValue('Boolean:@plnewitem' => 1); });
-DeclareOption('olditem',      sub { AssignValue('Boolean:@plnewitem' => 0); });
-DeclareOption('newenum',      sub { AssignValue('Boolean:@plnewenum' => 1); });
-DeclareOption('oldenum',      sub { AssignValue('Boolean:@plnewenum' => 0); });
-DeclareOption('alwaysadjust', sub { AssignValue('Boolean:@plalwaysadjust' => 1); });
-DeclareOption('neveradjust',  sub { AssignValue('Boolean:@plneveradjust' => 1); });
-DeclareOption('neverdecrease',sub { AssignValue('Boolean:@plneverdecrease' => 1); });
-DeclareOption('increaseonly', sub { AssignValue('Boolean:@plneverdecrease' => 1); });
-DeclareOption('defblank',     sub { AssignValue('Boolean:@pldefblank' => 1); });
-DeclareOption('pointedenum',  sub { AssignValue('Boolean:@plpointedenum' => 1); });
-DeclareOption('pointlessenum',sub { AssignValue('Boolean:@plpointlessenum' => 1); });
-DeclareOption('cfg',          sub { AssignValue('Boolean:@plloadcfg' => 1); });
-DeclareOption('nocfg',        sub { AssignValue('Boolean:@plloadcfg' => 0); });
-DeclareOption('flushright',   sub { AssignValue('Boolean:@plflushright' => 1); });
-DeclareOption('flushleft',    sub { AssignValue('Boolean:@plflushright' => 0); });
+DeclareOption('newitem',       sub { AssignValue('Boolean:@plnewitem'       => 1); });
+DeclareOption('olditem',       sub { AssignValue('Boolean:@plnewitem'       => 0); });
+DeclareOption('newenum',       sub { AssignValue('Boolean:@plnewenum'       => 1); });
+DeclareOption('oldenum',       sub { AssignValue('Boolean:@plnewenum'       => 0); });
+DeclareOption('alwaysadjust',  sub { AssignValue('Boolean:@plalwaysadjust'  => 1); });
+DeclareOption('neveradjust',   sub { AssignValue('Boolean:@plneveradjust'   => 1); });
+DeclareOption('neverdecrease', sub { AssignValue('Boolean:@plneverdecrease' => 1); });
+DeclareOption('increaseonly',  sub { AssignValue('Boolean:@plneverdecrease' => 1); });
+DeclareOption('defblank',      sub { AssignValue('Boolean:@pldefblank'      => 1); });
+DeclareOption('pointedenum',   sub { AssignValue('Boolean:@plpointedenum'   => 1); });
+DeclareOption('pointlessenum', sub { AssignValue('Boolean:@plpointlessenum' => 1); });
+DeclareOption('cfg',           sub { AssignValue('Boolean:@plloadcfg'       => 1); });
+DeclareOption('nocfg',         sub { AssignValue('Boolean:@plloadcfg'       => 0); });
+DeclareOption('flushright',    sub { AssignValue('Boolean:@plflushright'    => 1); });
+DeclareOption('flushleft',     sub { AssignValue('Boolean:@plflushright'    => 0); });
 
 ExecuteOptions(qw(newitem newenum cfg flushright));
 ProcessOptions();
@@ -56,7 +56,7 @@ ProcessOptions();
 #   item for itemize,
 #   desc for description
 # The formatting is
-#   inpara : done inline. 
+#   inpara : done inline.
 #   compact: same as normal, but w/less spacing above & below
 #   aspara : same as normal, but each item is formatted as a paragraph
 #            (ie. leftmargin is normal)
@@ -64,83 +64,83 @@ ProcessOptions();
 #
 # setEnumerationStyle & setItemizationStyle are defined in LaTeX.pool
 #======================================================================
-DefRegister('\pltopsep'   =>Dimension(0));
-DefRegister('\plpartopsep'=>Dimension(0));
-DefRegister('\plitemsep'  =>Dimension(0));
-DefRegister('\plpaarsep'  =>Dimension(0));
+DefRegister('\pltopsep'    => Dimension(0));
+DefRegister('\plpartopsep' => Dimension(0));
+DefRegister('\plitemsep'   => Dimension(0));
+DefRegister('\plpaarsep'   => Dimension(0));
 
-DefMacro('\setdefaultleftmargin{}{}{}{}{}{}',''); # Ignore?
+DefMacro('\setdefaultleftmargin{}{}{}{}{}{}', '');    # Ignore?
 #======================================================================
 # Enumerations
 
-DefMacro('\setdefaultenum{}{}{}{}',sub {
-  my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
-  setEnumerationStyle($tag1,1);
-  setEnumerationStyle($tag2,2);
-  setEnumerationStyle($tag3,3);
-  setEnumerationStyle($tag4,4); });
+DefMacro('\setdefaultenum{}{}{}{}', sub {
+    my ($gullet, $tag1, $tag2, $tag3, $tag4) = @_;
+    setEnumerationStyle($tag1, 1);
+    setEnumerationStyle($tag2, 2);
+    setEnumerationStyle($tag3, 3);
+    setEnumerationStyle($tag4, 4); });
 
 DefEnvironment('{inparaenum} OptionalUndigested',
-	       "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
-	       properties=>sub { beginItemize('inline@enumerate','enum'); },
-	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
+  "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
+  properties => sub { beginItemize('inline@enumerate', 'enum'); },
+  afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 DefEnvironment('{compactenum} OptionalUndigested',
-	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-	       properties=>sub { beginItemize('enumerate','enum'); },
-	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
+  "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaenum} OptionalUndigested',
-	       "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-	       properties=>sub { beginItemize('enumerate','enum'); },
-	       afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); });
+  "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 # Possibly redefine stock itemize to take optional argument
-if(LookupValue('Boolean:@plnewenum')){
+if (LookupValue('Boolean:@plnewenum')) {
   DefEnvironment('{enumerate} OptionalUndigested',
-                 "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
-                 properties=>sub { beginItemize('enumerate','enum'); },
-                 afterDigestBegin=>sub { setEnumerationStyle($_[1]->getArg(1)); }); }
+    "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
+    properties => sub { beginItemize('enumerate', 'enum'); },
+    afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
 # Itemizations
 
-DefMacro('\setdefaultitem{}{}{}{}',sub {
-  my($gullet,$tag1,$tag2,$tag3,$tag4)=@_;
-  setItemizationStyle($tag1,1);
-  setItemizationStyle($tag2,2);
-  setItemizationStyle($tag3,3);
-  setItemizationStyle($tag4,4); });
+DefMacro('\setdefaultitem{}{}{}{}', sub {
+    my ($gullet, $tag1, $tag2, $tag3, $tag4) = @_;
+    setItemizationStyle($tag1, 1);
+    setItemizationStyle($tag2, 2);
+    setItemizationStyle($tag3, 3);
+    setItemizationStyle($tag4, 4); });
 
 DefEnvironment('{inparaitem} OptionalUndigested',
-	       "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
-	       properties=>sub { beginItemize('inline@itemize','@@item'); },
-	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
+  "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
+  properties => sub { beginItemize('inline@itemize', '@@item'); },
+  afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{compactitem} OptionalUndigested',
-	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       properties=>sub { beginItemize('itemize','@@item'); },
-	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
+  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  properties => sub { beginItemize('itemize', '@@item'); },
+  afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaitem} OptionalUndigested',
-	       "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-	       properties=>sub { beginItemize('itemize','@@item'); },
-	       afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); });
+  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  properties => sub { beginItemize('itemize', '@@item'); },
+  afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 
-if(LookupValue('Boolean:@plnewitem')){
+if (LookupValue('Boolean:@plnewitem')) {
   DefEnvironment('{itemize} OptionalUndigested',
-                 "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-                 properties=>sub { beginItemize('itemize','@@item'); },
-                 afterDigestBegin=>sub { setItemizationStyle($_[1]->getArg(1)); }); }
+    "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+    properties => sub { beginItemize('itemize', '@@item'); },
+    afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
 # Descriptions
 DefEnvironment('{inparadesc}',
-	       "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
-	       properties=>sub { beginItemize('inline@description','@@desc'); });
+  "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
+  properties => sub { beginItemize('inline@description', '@@desc'); });
 
 DefEnvironment('{compactdesc}',
-	       "<ltx:description xml:id='#id'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description','@@desc'); });
+  "<ltx:description xml:id='#id'>#body</ltx:description>",
+  properties => sub { beginItemize('description', '@@desc'); });
 DefEnvironment('{asparadesc}',
-	       "<ltx:description xml:id='#id'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description','@@desc'); });
+  "<ltx:description xml:id='#id'>#body</ltx:description>",
+  properties => sub { beginItemize('description', '@@desc'); });
 # \paradescriptionlabel{}
 
 #======================================================================

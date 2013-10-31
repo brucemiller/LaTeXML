@@ -5,69 +5,68 @@
 package LaTeXML::Package::Pool;
 use LaTeXML::Package;
 
-Let('\orig@maketitle','\maketitle'); # Save!!!
+Let('\orig@maketitle', '\maketitle');    # Save!!!
 
-UnshiftValue(SEARCHPATHS=>'sty');
+UnshiftValue(SEARCHPATHS => 'sty');
 # Load the raw style file, to get most of the definitions, as is.
-InputDefinitions('latexmlman',type=>'sty',noltxml=>1);
+InputDefinitions('latexmlman', type => 'sty', noltxml => 1);
 
-Let('\maketitle','\orig@maketitle'); # Restore!!!
+Let('\maketitle', '\orig@maketitle');    # Restore!!!
 
 # Redefine title page & front matter stuff
 DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
-DefMacro('\toctitle{}','\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\BibTeX','BibTeX');
+DefMacro('\toctitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\BibTeX',     'BibTeX');
 
 DefConstructor('\ltxcmd{}',
-	       "<ltx:ref labelref='#label'>#1</ltx:ref>",
-	       properties=>sub { (label=>CleanLabel($_[1])); });
+  "<ltx:ref labelref='#label'>#1</ltx:ref>",
+  properties => sub { (label => CleanLabel($_[1])); });
 DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
-	       afterDigest=>sub{
-		 my $name = $_[1]->getArg(1)->toString;
-		 $_[1]->setProperty(ref=>CleanLabel("LaTeXML::".$name)); });
-
+  afterDigest => sub {
+    my $name = $_[1]->getArg(1)->toString;
+    $_[1]->setProperty(ref => CleanLabel("LaTeXML::" . $name)); });
 
 DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
-	       afterDigest=>sub{
-		 my $name = $_[1]->getArg(1)->toString;
-		 if(($name =~ /^LaTeXML/) || ($name =~ /^latexml/)){
-		   $_[1]->setProperty(ref=>CleanLabel($name)); }
-		 else {
-		   $name =~ s/::/%3A%3A/g;
-		   my $url = "http://search.cpan.org/search?query=$name&mode=module";
-		   $_[1]->setProperty(href=>$url); }});
+  afterDigest => sub {
+    my $name = $_[1]->getArg(1)->toString;
+    if (($name =~ /^LaTeXML/) || ($name =~ /^latexml/)) {
+      $_[1]->setProperty(ref => CleanLabel($name)); }
+    else {
+      $name =~ s/::/%3A%3A/g;
+      my $url = "http://search.cpan.org/search?query=$name&mode=module";
+      $_[1]->setProperty(href => $url); } });
 
 #======================================================================
-DefEnvironment('{advanced}',"<ltx:paragraph class='advanced'>#body</ltx:paragraph>");
+DefEnvironment('{advanced}', "<ltx:paragraph class='advanced'>#body</ltx:paragraph>");
 
 #======================================================================
 DefEnvironment('{moduledescription}',
-	       "<ltx:description  xml:id='#id' class='ltx_moduledescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
+  "<ltx:description  xml:id='#id' class='ltx_moduledescription'>#body</ltx:description>",
+  properties => sub { beginItemize('description'); });
 
 DefEnvironment('{elementdescription}',
-	       "<ltx:description  xml:id='#id' class='ltx_elementdescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
+  "<ltx:description  xml:id='#id' class='ltx_elementdescription'>#body</ltx:description>",
+  properties => sub { beginItemize('description'); });
 
 DefEnvironment('{patterndescription}',
-	       "<ltx:description  xml:id='#id' class='ltx_patterndescription'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); });
+  "<ltx:description  xml:id='#id' class='ltx_patterndescription'>#body</ltx:description>",
+  properties => sub { beginItemize('description'); });
 
 #======================================================================
 # Section heading styles...
-DefMacroI('\chaptername',undef,'Chapter');
-DefMacroI('\sectionname',undef,'\S');
-DefMacroI('\subsectionname',undef,'\S');
-DefMacroI('\subsubsectionname',undef,'\S');
-DefMacroI('\paragraphname',undef,'\P');
-DefMacroI('\subparagraphname',undef,'\P');
-DefMacroI('\appendixname',undef,'Appendix');
+DefMacroI('\chaptername',       undef, 'Chapter');
+DefMacroI('\sectionname',       undef, '\S');
+DefMacroI('\subsectionname',    undef, '\S');
+DefMacroI('\subsubsectionname', undef, '\S');
+DefMacroI('\paragraphname',     undef, '\P');
+DefMacroI('\subparagraphname',  undef, '\P');
+DefMacroI('\appendixname',      undef, 'Appendix');
 
-DefMacroI('\appendix',undef,
-	  '\@appendix'
-	  .'\def\sectionname{}'
-	  .'\def\subsectionname{}'
-	  .'\def\subsubsectionname{}');
+DefMacroI('\appendix', undef,
+  '\@appendix'
+    . '\def\sectionname{}'
+    . '\def\subsectionname{}'
+    . '\def\subsubsectionname{}');
 
 #======================================================================
 1;

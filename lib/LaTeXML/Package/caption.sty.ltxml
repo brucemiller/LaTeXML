@@ -14,45 +14,44 @@ use LaTeXML::Package;
 #RequirePackage('ragged2e');
 #RequirePackage('keyval');
 
-DefMacro('\captionsetup[]{}',Tokens());
+DefMacro('\captionsetup[]{}', Tokens());
 
-DefMacro('\DeclareCaptionStyle{}[]{}',Tokens());
-DefMacro('\DeclareCaptionLabelFormat{}{}',Tokens());
-DefMacro('\DeclareCaptionLabelSeparator{}{}',Tokens());
+DefMacro('\DeclareCaptionStyle{}[]{}',        Tokens());
+DefMacro('\DeclareCaptionLabelFormat{}{}',    Tokens());
+DefMacro('\DeclareCaptionLabelSeparator{}{}', Tokens());
 
-DefMacro('\DeclareCaptionFont{}{}',Tokens());
-DefMacro('\DeclareCaptionFormat{}{}',Tokens());
-DefMacro('\DeclareCaptionJustification{}{}',Tokens());
-DefMacro('\DeclareCaptionOption{}{}',Tokens());
-DefMacro('\DeclareCaptionPackage{}',Tokens());
+DefMacro('\DeclareCaptionFont{}{}',          Tokens());
+DefMacro('\DeclareCaptionFormat{}{}',        Tokens());
+DefMacro('\DeclareCaptionJustification{}{}', Tokens());
+DefMacro('\DeclareCaptionOption{}{}',        Tokens());
+DefMacro('\DeclareCaptionPackage{}',         Tokens());
 
+DefMacro('\bothIfFirst{}{}', sub {
+    my ($gullet, $first, $second) = @_;
+    ($first->unlist ? ($first->unlist, $second->unlist) : ()); });
 
-DefMacro('\bothIfFirst{}{}',sub {
- my($gullet,$first,$second)=@_;
- ($first->unlist ? ($first->unlist,$second->unlist):()); });
+DefMacro('\bothIfSecond{}{}', sub {
+    my ($gullet, $first, $second) = @_;
+    ($second->unlist ? ($first->unlist, $second->unlist) : ()); });
 
-DefMacro('\bothIfSecond{}{}',sub {
- my($gullet,$first,$second)=@_;
- ($second->unlist ? ($first->unlist,$second->unlist):()); });
+DefMacro('\AtBeginCaption{}',       Tokens());
+DefMacro('\AtEndCaption{}',         Tokens());
+DefMacro('\ContinuedFloat',         Tokens());
+DefMacro('\ProcessOptionsWithKV{}', Tokens());
 
-DefMacro('\AtBeginCaption{}',Tokens());
-DefMacro('\AtEndCaption{}',Tokens());
-DefMacro('\ContinuedFloat',Tokens());
-DefMacro('\ProcessOptionsWithKV{}',Tokens());
+DefMacro('\captionfont', Tokens());
+DefMacro('\captionsize', Tokens());
 
-DefMacro('\captionfont',Tokens());
-DefMacro('\captionsize',Tokens());
+DefRegister('\captionparindent'  => Dimension(0));
+DefRegister('\captionindent'     => Dimension(0));
+DefRegister('\captionhangindent' => Dimension(0));
+DefRegister('\captionmargin'     => Dimension(0));
+DefRegister('\captionwidth'      => Dimension(0));
 
-DefRegister('\captionparindent'=>Dimension(0));
-DefRegister('\captionindent'=>Dimension(0));
-DefRegister('\captionhangindent'=>Dimension(0));
-DefRegister('\captionmargin'=>Dimension(0));
-DefRegister('\captionwidth'=>Dimension(0));
+DefMacro('\captionof OptionalMatch:* {}', '#1');
 
-DefMacro('\captionof OptionalMatch:* {}','#1');
- 
-DefMacro('\clearcaptionsetup',Tokens());
-DefMacro('\rotcaption',Tokens());
-DefMacro('\showcaptionsetup[]{}',Tokens());
+DefMacro('\clearcaptionsetup',    Tokens());
+DefMacro('\rotcaption',           Tokens());
+DefMacro('\showcaptionsetup[]{}', Tokens());
 
 1;

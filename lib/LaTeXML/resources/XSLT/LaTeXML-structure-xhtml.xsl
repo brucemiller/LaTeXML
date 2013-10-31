@@ -32,10 +32,10 @@
        ====================================================================== -->
 
   <xsl:template match="ltx:document  | ltx:part | ltx:chapter
-		       | ltx:section | ltx:subsection | ltx:subsubsection
-		       | ltx:paragraph | ltx:subparagraph
-		       | ltx:bibliography | ltx:appendix | ltx:index | ltx:glossary
-		       | ltx:slide | ltx:sidebar">
+                       | ltx:section | ltx:subsection | ltx:subsubsection
+                       | ltx:paragraph | ltx:subparagraph
+                       | ltx:bibliography | ltx:appendix | ltx:index | ltx:glossary
+                       | ltx:slide | ltx:sidebar">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if($USE_HTML5,'section','div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
@@ -55,10 +55,10 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:if test="@name">
-	<xsl:element name="h6" namespace="{$html_ns}">	
-	  <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
-	  <xsl:apply-templates select="@name"/>
-	</xsl:element>
+        <xsl:element name="h6" namespace="{$html_ns}">  
+          <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
+          <xsl:apply-templates select="@name"/>
+        </xsl:element>
       </xsl:if>
       <xsl:apply-templates/>
       <xsl:apply-templates select="." mode="end"/>
@@ -73,12 +73,12 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:if test="@name">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="h6" namespace="{$html_ns}">	
-	  <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
-	  <xsl:apply-templates select="@name"/>
-	  <xsl:text>.</xsl:text>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="h6" namespace="{$html_ns}">  
+          <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
+          <xsl:apply-templates select="@name"/>
+          <xsl:text>.</xsl:text>
+        </xsl:element>
       </xsl:if>
       <xsl:apply-templates/>
       <xsl:apply-templates select="." mode="end"/>
@@ -93,12 +93,12 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:if test="@name">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="h6" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_title ltx_title_keywords</xsl:attribute>
-	  <xsl:apply-templates select="@name"/>
-	  <xsl:text>:</xsl:text>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="h6" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_title ltx_title_keywords</xsl:attribute>
+          <xsl:apply-templates select="@name"/>
+          <xsl:text>:</xsl:text>
+        </xsl:element>
       </xsl:if>
       <xsl:apply-templates/>
       <xsl:apply-templates select="." mode="end"/>
@@ -113,12 +113,12 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:element name="h6" namespace="{$html_ns}"> <!--should be italic ? -->
-	<xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
-	<xsl:choose>
-	  <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
-	  <xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
-	</xsl:choose>
-	<xsl:text>: </xsl:text>
+        <xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
+        <xsl:choose>
+          <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
+          <xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
+        </xsl:choose>
+        <xsl:text>: </xsl:text>
       </xsl:element>
       <xsl:apply-templates/>
       <xsl:apply-templates select="." mode="end"/>
@@ -157,13 +157,13 @@
     <xsl:param name="level" select="f:seclev-aux($name)"/>
     <func:result>
       <xsl:choose>
-	<xsl:when test="$level > 0"><xsl:value-of select="$level"/></xsl:when>
+        <xsl:when test="$level > 0"><xsl:value-of select="$level"/></xsl:when>
         <!-- Fallback: If some ancestor has a title, we're 1 deeper than its level -->
-	<xsl:when test="exsl:node-set($node)/ancestor::*[ltx:title]">
-	  <xsl:value-of select="1+f:section-level(exsl:node-set($node)/ancestor::*[ltx:title][1])"/>
-	</xsl:when>
-	<!-- Otherwise, whatever we are, we're the top level(?) -->
-	<xsl:otherwise>1</xsl:otherwise>
+        <xsl:when test="exsl:node-set($node)/ancestor::*[ltx:title]">
+          <xsl:value-of select="1+f:section-level(exsl:node-set($node)/ancestor::*[ltx:title][1])"/>
+        </xsl:when>
+        <!-- Otherwise, whatever we are, we're the top level(?) -->
+        <xsl:otherwise>1</xsl:otherwise>
       </xsl:choose>
     </func:result>
   </func:function>
@@ -173,39 +173,39 @@
     <xsl:param name="name"/>
     <func:result>
       <xsl:choose>
-	<xsl:when test="$name = 'document'">1</xsl:when>
-	<xsl:when test="$name = 'part'"><!-- The logic: 1+doc level, if there IS a ltx:document-->
-	  <xsl:value-of select="f:seclev-aux('document')+number(boolean(//ltx:document/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'chapter'">
-	  <xsl:value-of select="f:seclev-aux('part')+number(boolean(//ltx:part/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'section'">
-	  <xsl:value-of select="f:seclev-aux('chapter')+number(boolean(//ltx:chapter/ltx:title))"/>
-	</xsl:when>
-	<!-- These are same level as chapter, if there IS a chapter, otherwise same as section-->
-	<xsl:when test="$name = 'appendix' or $name = 'index'
-			or $name = 'glossary' or $name = 'bibliography'">
-	  <xsl:value-of
-	      select="f:if(//ltx:chapter,f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'subsection'"> <!--Weird? (could be in appendix!)-->
-	  <xsl:value-of select="f:seclev-aux('section')
-				+number(boolean(//ltx:section/ltx:title | //ltx:appendix/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'subsubsection'">
-	  <xsl:value-of select="f:seclev-aux('subsection')
-				+number(boolean(//ltx:subsection/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'paragraph'">
-	  <xsl:value-of select="f:seclev-aux('subsubsection')
-				+number(boolean(//ltx:subsubsection/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'subparagraph'">
-	  <xsl:value-of select="f:seclev-aux('paragraph')
-				+number(boolean(//ltx:paragraph/ltx:title))"/>
-	</xsl:when>
-	<xsl:when test="$name = 'theorem' or $name = 'proof'">6</xsl:when> <!--what else?-->
+        <xsl:when test="$name = 'document'">1</xsl:when>
+        <xsl:when test="$name = 'part'"><!-- The logic: 1+doc level, if there IS a ltx:document-->
+          <xsl:value-of select="f:seclev-aux('document')+number(boolean(//ltx:document/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'chapter'">
+          <xsl:value-of select="f:seclev-aux('part')+number(boolean(//ltx:part/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'section'">
+          <xsl:value-of select="f:seclev-aux('chapter')+number(boolean(//ltx:chapter/ltx:title))"/>
+        </xsl:when>
+        <!-- These are same level as chapter, if there IS a chapter, otherwise same as section-->
+        <xsl:when test="$name = 'appendix' or $name = 'index'
+                        or $name = 'glossary' or $name = 'bibliography'">
+          <xsl:value-of
+              select="f:if(//ltx:chapter,f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'subsection'"> <!--Weird? (could be in appendix!)-->
+          <xsl:value-of select="f:seclev-aux('section')
+                                +number(boolean(//ltx:section/ltx:title | //ltx:appendix/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'subsubsection'">
+          <xsl:value-of select="f:seclev-aux('subsection')
+                                +number(boolean(//ltx:subsection/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'paragraph'">
+          <xsl:value-of select="f:seclev-aux('subsubsection')
+                                +number(boolean(//ltx:subsubsection/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'subparagraph'">
+          <xsl:value-of select="f:seclev-aux('paragraph')
+                                +number(boolean(//ltx:paragraph/ltx:title))"/>
+        </xsl:when>
+        <xsl:when test="$name = 'theorem' or $name = 'proof'">6</xsl:when> <!--what else?-->
       </xsl:choose>
     </func:result>
   </func:function>
@@ -257,8 +257,8 @@
        The title chunk also contains authors, subtitles, etc. -->
   <xsl:template name="maketitle">
     <xsl:element
-	name="{f:if($USE_HTML5,'h1',concat('h',f:section-head-level(parent::*)))}"
-	namespace="{$html_ns}">
+        name="{f:if($USE_HTML5,'h1',concat('h',f:section-head-level(parent::*)))}"
+        namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
@@ -305,7 +305,7 @@
           <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
           <xsl:element name="span" namespace="{$html_ns}">
             <xsl:apply-templates select="ltx:contact"/>
-	  </xsl:element>
+          </xsl:element>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates select="." mode="end"/>
@@ -326,15 +326,15 @@
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:choose>
-	<xsl:when test="@href">
-	  <xsl:element name="a" namespace="{$html_ns}">
-	    <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
-	    <xsl:apply-templates/>
-	  </xsl:element>
-	</xsl:when>
-	<xsl:otherwise>
-	  <xsl:apply-templates/>
-	</xsl:otherwise>
+        <xsl:when test="@href">
+          <xsl:element name="a" namespace="{$html_ns}">
+            <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+            <xsl:apply-templates/>
+          </xsl:element>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates/>
+        </xsl:otherwise>
       </xsl:choose>
       <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="end"/>
@@ -362,8 +362,8 @@
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:element name="a" namespace="{$html_ns}">      
-	<xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
-	<xsl:apply-templates/>
+        <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
+        <xsl:apply-templates/>
       </xsl:element>
       <xsl:apply-templates select="." mode="end"/>
       <xsl:text>&#x0A;</xsl:text>
@@ -427,17 +427,17 @@
   <xsl:template match="ltx:indexlist">
     <xsl:choose>
       <xsl:when test="$twocolumn-indexlist and not(ancestor::ltx:indexlist)">
-	<xsl:apply-templates select="." mode="twocolumn"/>
+        <xsl:apply-templates select="." mode="twocolumn"/>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="ul" namespace="{$html_ns}">
-	  <xsl:call-template name="add_id"/>
-	  <xsl:call-template name="add_attributes"/>
-	  <xsl:apply-templates select="." mode="begin"/>
-	  <xsl:apply-templates/>
-	  <xsl:apply-templates select="." mode="end"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="ul" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes"/>
+          <xsl:apply-templates select="." mode="begin"/>
+          <xsl:apply-templates/>
+          <xsl:apply-templates select="." mode="end"/>
+        </xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -447,7 +447,7 @@
     <xsl:param name="lines"    select="descendant::ltx:indexphrase"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem"
-	       select="count($lines[position() &lt; $halflines]/ancestor::ltx:indexentry[parent::ltx:indexlist[parent::ltx:index]]) + 1"/>
+               select="count($lines[position() &lt; $halflines]/ancestor::ltx:indexentry[parent::ltx:indexlist[parent::ltx:index]]) + 1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="wrapper" select="'ul'"/>
       <xsl:with-param name="items"   select="$items"/>
@@ -485,17 +485,17 @@
   <xsl:template match="ltx:glossarylist">
     <xsl:choose>
       <xsl:when test="$twocolumn-glossarylist">
-	<xsl:apply-templates select="." mode="twocolumn"/>
+        <xsl:apply-templates select="." mode="twocolumn"/>
       </xsl:when>
       <xsl:otherwise>
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="dl" namespace="{$html_ns}">
-	  <xsl:call-template name="add_id"/>
-	  <xsl:call-template name="add_attributes"/>
-	  <xsl:apply-templates select="." mode="begin"/>
-	  <xsl:apply-templates/>
-	  <xsl:apply-templates select="." mode="end"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="dl" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes"/>
+          <xsl:apply-templates select="." mode="begin"/>
+          <xsl:apply-templates/>
+          <xsl:apply-templates select="." mode="end"/>
+        </xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -503,7 +503,7 @@
   <xsl:template match="ltx:glossarylist" mode="twocolumn">
     <xsl:param name="items"    select="ltx:glossaryentry"/>
     <xsl:param name="miditem"
-	       select="ceiling(count($items) div 2)+1"/>
+               select="ceiling(count($items) div 2)+1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="wrapper" select="'dl'"/>
       <xsl:with-param name="items"   select="$items"/>

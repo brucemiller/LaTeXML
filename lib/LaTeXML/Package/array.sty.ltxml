@@ -13,28 +13,28 @@
 use LaTeXML::Package;
 
 # Not sure how to effect these
-DefMacroI('\firsthline',undef,'\hline');
-DefMacroI('\lasthline', undef,'\hline');
+DefMacroI('\firsthline', undef, '\hline');
+DefMacroI('\lasthline',  undef, '\hline');
 
-DefColumnType('>{}',sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
-DefColumnType('<{}',sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist); return; });
+DefColumnType('>{}', sub { $LaTeXML::BUILD_TEMPLATE->addBeforeColumn($_[1]->unlist); return; });
+DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlist);  return; });
 
 # This is the same as p
 # but really needs to specify vertical alignment as centered
-DefColumnType('m{Dimension}',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\tabularcell@hbox'),T_BEGIN),#Tokens(T_BEGIN),
-				      after=>Tokens(T_END),
-				      align=>'justify', width=>$_[1], vattach=>'middle'); return; });
+DefColumnType('m{Dimension}', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN), #Tokens(T_BEGIN),
+      after => Tokens(T_END),
+      align => 'justify', width => $_[1], vattach => 'middle'); return; });
 # This is also the same as p
 # but really needs to specify vertical alignment as bottom
-DefColumnType('b{Dimension}',sub {
-  $LaTeXML::BUILD_TEMPLATE->addColumn(before=>Tokens(T_CS('\tabularcell@hbox'),T_BEGIN),#Tokens(T_BEGIN),
-				      after=>Tokens(T_END),
-				      align=>'justify', width=>$_[1], vattach=>'bottom'); return; });
+DefColumnType('b{Dimension}', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN), #Tokens(T_BEGIN),
+      after => Tokens(T_END),
+      align => 'justify', width => $_[1], vattach => 'bottom'); return; });
 
 # NOTE:  Come back & check this; is the arglist right??
-DefPrimitive('\newcolumntype{}[][]{}',sub {
-  my($stomach,$char,$nargs,$opt,$replacement)=@_;
-  DefMacroI(T_CS('\NC@rewrite@'.ToString($char)),convertLaTeXArgs($nargs,$opt), $replacement); });
+DefPrimitive('\newcolumntype{}[][]{}', sub {
+    my ($stomach, $char, $nargs, $opt, $replacement) = @_;
+    DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement); });
 
 1;

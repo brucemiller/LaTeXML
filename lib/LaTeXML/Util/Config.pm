@@ -22,178 +22,177 @@ use Pod::Find qw(pod_where);
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use Data::Dumper;
-our $PROFILES_DB={}; # Class-wide, caches all profiles that get used while the server is alive
+our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
 our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
 
 sub new {
-  my ($class,%opts) = @_;
+  my ($class, %opts) = @_;
   #TODO: How about defaults in the daemon server use case? Should we support those here?
   #      or are defaults always bad/confusing to allow?
   %opts = () unless %opts;
-  bless {dirty=>1,opts=>\%opts}, $class;
+  bless { dirty => 1, opts => \%opts }, $class;
 }
-
 
 ###########################################
 #### Command-line reader              #####
 ###########################################
 sub getopt_specification {
   my (%options) = @_;
-  my $opts = $options{options}||{};
+  my $opts = $options{options} || {};
   my $spec = {
-  # Basics and Paths
-  "output=s" => \$opts->{destination}, 
-  "destination=s" => \$opts->{destination},
-  "log=s"       => \$opts->{log},
-  "preload=s" => \@{$opts->{preload}},
-  "preamble=s" => \$opts->{preamble},
-  "postamble=s" => \$opts->{postamble},
-  "base=s"  => \$opts->{base},
-  "path=s"    => \@{$opts->{paths}},
-  "quiet"     => sub { $opts->{verbosity}--; },
-  "verbose"   => sub { $opts->{verbosity}++; },
-  "strict"    => \$opts->{strict},
-  "includestyles"=> \$opts->{includestyles},
-  "inputencoding=s"=> \$opts->{inputencoding},
-  # Formats
-  "xml"       => sub { $opts->{format} = 'xml'; },
-  "tex"       => sub { $opts->{format} = 'tex'; },
-  "box"       => sub { $opts->{format} = 'box'; },
-  "bibtex"    => sub { $opts->{type}='BibTeX'; },
-  "noparse"   => sub { $opts->{mathparse} = 'no'; },
-  "format=s"   => \$opts->{format},
-  "parse=s"   => \$opts->{mathparse},
-  # Profiles
-  "profile=s"  => \$opts->{profile},
-  "cache_key=s" => \$opts->{cache_key},
-  "mode=s"  => \$opts->{profile},
-  "source=s"  => \$opts->{source},
-  # Output framing
-  "embed"   => sub { $opts->{whatsin} = 'fragment'; },
-  "whatsin=s" => \$opts->{whatsin},
-  "whatsout=s" => \$opts->{whatsout},
-  # Daemon options
-  "autoflush=i" => \$opts->{input_limit},
-  "timeout=i"   => \$opts->{timeout},
-  "expire=i"    => \$opts->{expire},
-  "address=s"   => \$opts->{address},
-  "port=i"      => \$opts->{port},
-  # Post-processing
-  "post!"      => \$opts->{post},
-  "validate!" => \$opts->{validate},
-  "omitdoctype!" => \$opts->{omitdoctype},
-  "numbersections!" => \$opts->{numbersections},
-  "timestamp=s" => \$opts->{timestamp},
-  # Various choices for math processing.
-  # Note: Could want OM embedded in mml annotation, too.
-  # In general, could(?) want multiple math reps within <Math>
-  # OR, multiple math reps combined with <mml:sematics>
-  #   or, in fact, _other_ parallel means? (om?, omdoc? ...)
-  # So, need to separate multiple transformations from the combination.
-  # However, IF combining, then will need to support a id/ref mechanism.
-  "mathimages!"                 => \$opts->{mathimages},
-  "mathimagemagnification=f"    => \$opts->{mathimagemag},
-  "linelength=i"                => \$opts->{linelength},
-  "plane1!"                     => \$opts->{plane1},
-  "hackplane1!"                 => \$opts->{hackplane1},
-  "presentationmathml|pmml"     => sub { _addMathFormat($opts,'pmml'); },
-  "contentmathml|cmml"          => sub { _addMathFormat($opts,'cmml'); },
-  "openmath|om"                 => sub { _addMathFormat($opts,'om'); },
-  "keepXMath|xmath"             => sub { _addMathFormat($opts,'xmath'); },
-  "nopresentationmathml|nopmml" => sub { _removeMathFormat($opts,'pmml'); },
-  "nocontentmathml|nocmml"      => sub { _removeMathFormat($opts,'cmml'); },
-  "noopenmath|noom"             => sub { _removeMathFormat($opts,'om'); },
-  "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts,'xmath'); },
-  "parallelmath"               => \$opts->{parallelmath},
-  # Some general XSLT/CSS/JavaScript options.
-  "stylesheet=s"=>  \$opts->{stylesheet},
-  "xsltparameter=s" => \@{$opts->{xsltparameters}},
-  "css=s"       =>  \@{$opts->{css}},
-  "defaultresources!" =>  \$opts->{defaultresources},
-  "javascript=s" => \@{$opts->{javascript}},
-  "icon=s" => \$opts->{icon},
-  # Options for broader document set processing
-  "split!" => \$opts->{split},
-  "splitat=s"             =>sub { $opts->{splitat}=$_[1];
-     $opts->{split}=1 unless defined $opts->{split};},
-  "splitpath=s"           =>sub { $opts->{splitpath}=$_[1];
-     $opts->{split}=1 unless defined $opts->{split};},
-  "splitnaming=s"         =>sub { $opts->{splitnaming}=$_[1];
-     $opts->{split}=1 unless defined $opts->{split};},
-  "scan!"                 =>\$opts->{scan},
-  "crossref!"             =>\$opts->{crossref},
-  "urlstyle=s"            =>\$opts->{urlstyle} ,
-  "navigationtoc=s"       =>\$opts->{navtoc},
-  "navtoc=s"              =>\$opts->{navtoc},
-  # Generating indices
-  "index!"                =>\$opts->{index},
-  "permutedindex!"        =>\$opts->{permutedindex},
-  "splitindex!"           =>\$opts->{splitindex},
-  # Generating Bibliographies
-  "bibliography=s" => \@{$opts->{bibliographies}}, # TODO: Document
-  "splitbibliography!"    =>\$opts->{splitbibliography},
-  # Options for two phase processing
-  "prescan"               =>\$opts->{prescan},
-  "dbfile=s"              =>\$opts->{dbfile},
-  "sitedirectory=s"=>\$opts->{sitedirectory},
-  "sourcedirectory=s"=>\$opts->{sourcedirectory},
-  # For graphics: vaguely similar issues, but more limited.
-  # includegraphics images (eg. ps) can be converted to webimages (eg.png)
-  # picture/pstricks images can be converted to png or possibly svg.
-  "graphicimages!"=>\$opts->{dographics},
-  "graphicsmap=s" =>\@{$opts->{graphicsmaps}},
-  "svg!"       => \$opts->{svg},
-  "pictureimages!"=>\$opts->{picimages},
-  # HELP
-  "comments!" =>  \$opts->{comments},
-  "VERSION!"   => \$opts->{showversion},
-  "debug=s"   => \@{$opts->{debug}},
-  "documentid=s" => \$opts->{documentid},
-  "help"      => \$opts->{help}
+    # Basics and Paths
+    "output=s"        => \$opts->{destination},
+    "destination=s"   => \$opts->{destination},
+    "log=s"           => \$opts->{log},
+    "preload=s"       => \@{ $opts->{preload} },
+    "preamble=s"      => \$opts->{preamble},
+    "postamble=s"     => \$opts->{postamble},
+    "base=s"          => \$opts->{base},
+    "path=s"          => \@{ $opts->{paths} },
+    "quiet"           => sub { $opts->{verbosity}--; },
+    "verbose"         => sub { $opts->{verbosity}++; },
+    "strict"          => \$opts->{strict},
+    "includestyles"   => \$opts->{includestyles},
+    "inputencoding=s" => \$opts->{inputencoding},
+    # Formats
+    "xml"     => sub { $opts->{format}    = 'xml'; },
+    "tex"     => sub { $opts->{format}    = 'tex'; },
+    "box"     => sub { $opts->{format}    = 'box'; },
+    "bibtex"  => sub { $opts->{type}      = 'BibTeX'; },
+    "noparse" => sub { $opts->{mathparse} = 'no'; },
+    "format=s" => \$opts->{format},
+    "parse=s"  => \$opts->{mathparse},
+    # Profiles
+    "profile=s"   => \$opts->{profile},
+    "cache_key=s" => \$opts->{cache_key},
+    "mode=s"      => \$opts->{profile},
+    "source=s"    => \$opts->{source},
+    # Output framing
+    "embed" => sub { $opts->{whatsin} = 'fragment'; },
+    "whatsin=s"  => \$opts->{whatsin},
+    "whatsout=s" => \$opts->{whatsout},
+    # Daemon options
+    "autoflush=i" => \$opts->{input_limit},
+    "timeout=i"   => \$opts->{timeout},
+    "expire=i"    => \$opts->{expire},
+    "address=s"   => \$opts->{address},
+    "port=i"      => \$opts->{port},
+    # Post-processing
+    "post!"           => \$opts->{post},
+    "validate!"       => \$opts->{validate},
+    "omitdoctype!"    => \$opts->{omitdoctype},
+    "numbersections!" => \$opts->{numbersections},
+    "timestamp=s"     => \$opts->{timestamp},
+    # Various choices for math processing.
+    # Note: Could want OM embedded in mml annotation, too.
+    # In general, could(?) want multiple math reps within <Math>
+    # OR, multiple math reps combined with <mml:sematics>
+    #   or, in fact, _other_ parallel means? (om?, omdoc? ...)
+    # So, need to separate multiple transformations from the combination.
+    # However, IF combining, then will need to support a id/ref mechanism.
+    "mathimages!"                 => \$opts->{mathimages},
+    "mathimagemagnification=f"    => \$opts->{mathimagemag},
+    "linelength=i"                => \$opts->{linelength},
+    "plane1!"                     => \$opts->{plane1},
+    "hackplane1!"                 => \$opts->{hackplane1},
+    "presentationmathml|pmml"     => sub { _addMathFormat($opts, 'pmml'); },
+    "contentmathml|cmml"          => sub { _addMathFormat($opts, 'cmml'); },
+    "openmath|om"                 => sub { _addMathFormat($opts, 'om'); },
+    "keepXMath|xmath"             => sub { _addMathFormat($opts, 'xmath'); },
+    "nopresentationmathml|nopmml" => sub { _removeMathFormat($opts, 'pmml'); },
+    "nocontentmathml|nocmml"      => sub { _removeMathFormat($opts, 'cmml'); },
+    "noopenmath|noom"             => sub { _removeMathFormat($opts, 'om'); },
+    "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
+    "parallelmath"                => \$opts->{parallelmath},
+    # Some general XSLT/CSS/JavaScript options.
+    "stylesheet=s"      => \$opts->{stylesheet},
+    "xsltparameter=s"   => \@{ $opts->{xsltparameters} },
+    "css=s"             => \@{ $opts->{css} },
+    "defaultresources!" => \$opts->{defaultresources},
+    "javascript=s"      => \@{ $opts->{javascript} },
+    "icon=s"            => \$opts->{icon},
+    # Options for broader document set processing
+    "split!" => \$opts->{split},
+    "splitat=s" => sub { $opts->{splitat} = $_[1];
+      $opts->{split} = 1 unless defined $opts->{split}; },
+    "splitpath=s" => sub { $opts->{splitpath} = $_[1];
+      $opts->{split} = 1 unless defined $opts->{split}; },
+    "splitnaming=s" => sub { $opts->{splitnaming} = $_[1];
+      $opts->{split} = 1 unless defined $opts->{split}; },
+    "scan!"           => \$opts->{scan},
+    "crossref!"       => \$opts->{crossref},
+    "urlstyle=s"      => \$opts->{urlstyle},
+    "navigationtoc=s" => \$opts->{navtoc},
+    "navtoc=s"        => \$opts->{navtoc},
+    # Generating indices
+    "index!"         => \$opts->{index},
+    "permutedindex!" => \$opts->{permutedindex},
+    "splitindex!"    => \$opts->{splitindex},
+    # Generating Bibliographies
+    "bibliography=s"     => \@{ $opts->{bibliographies} },    # TODO: Document
+    "splitbibliography!" => \$opts->{splitbibliography},
+    # Options for two phase processing
+    "prescan"           => \$opts->{prescan},
+    "dbfile=s"          => \$opts->{dbfile},
+    "sitedirectory=s"   => \$opts->{sitedirectory},
+    "sourcedirectory=s" => \$opts->{sourcedirectory},
+    # For graphics: vaguely similar issues, but more limited.
+    # includegraphics images (eg. ps) can be converted to webimages (eg.png)
+    # picture/pstricks images can be converted to png or possibly svg.
+    "graphicimages!" => \$opts->{dographics},
+    "graphicsmap=s"  => \@{ $opts->{graphicsmaps} },
+    "svg!"           => \$opts->{svg},
+    "pictureimages!" => \$opts->{picimages},
+    # HELP
+    "comments!"    => \$opts->{comments},
+    "VERSION!"     => \$opts->{showversion},
+    "debug=s"      => \@{ $opts->{debug} },
+    "documentid=s" => \$opts->{documentid},
+    "help"         => \$opts->{help}
   };
-  return ($spec,$opts) unless ($options{type} && ($options{type} eq 'keyvals'));
+  return ($spec, $opts) unless ($options{type} && ($options{type} eq 'keyvals'));
   # Representation use case:
-  my $keyvals = $options{keyvals}||[];
-  my $rep_spec = {}; # Representation specification
-  foreach my $key(keys %$spec) {
+  my $keyvals = $options{keyvals} || [];
+  my $rep_spec = {};    # Representation specification
+  foreach my $key (keys %$spec) {
     if ($key =~ /^(.+)=\w$/) {
       my $name = $1;
-      $rep_spec->{$key} = sub {push @$keyvals, [$name,$_[1]]};
+      $rep_spec->{$key} = sub { push @$keyvals, [$name, $_[1]] };
     } else {
       $rep_spec->{$key} = sub {
         my $ctl = $_[0]->{ctl};
-        my $used = ($ctl->[0] ? 'no' : '').$ctl->[1];
-        push @$keyvals, [$used,undef]};
+        my $used = ($ctl->[0] ? 'no' : '') . $ctl->[1];
+        push @$keyvals, [$used, undef] };
     }
   }
-  return ($rep_spec,$keyvals); 
+  return ($rep_spec, $keyvals);
 }
 # TODO: Separate the keyvals scan from getopt_specification()
 #       into its own sub, using @GETOPT_KEYS entirely.
-our @GETOPT_KEYS = keys %{(getopt_specification())[0]};
+our @GETOPT_KEYS = keys %{ (getopt_specification())[0] };
 
 sub read {
-  my ($self,$argref) = @_;
+  my ($self, $argref) = @_;
   my $opts = $self->{opts};
   local @ARGV = @$argref;
-  my ($spec) = getopt_specification(options=>$opts);
-  GetOptions(%{$spec}) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>99,
-			 -input => pod_where({-inc => 1}, __PACKAGE__),
-			 -sections => 'OPTIONS/SYNOPSIS', -output=>\*STDERR);
+  my ($spec) = getopt_specification(options => $opts);
+  GetOptions(%{$spec}) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+    -input => pod_where({ -inc => 1 }, __PACKAGE__),
+    -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
 
-  pod2usage(-message=>$LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>99,
-	    -input => pod_where({-inc => 1}, __PACKAGE__),
-	    -sections => 'OPTIONS/SYNOPSIS', output=>\*STDOUT) if $opts->{help};
+  pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+    -input => pod_where({ -inc => 1 }, __PACKAGE__),
+    -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT) if $opts->{help};
 
   # Check that destination is valid before wasting any time...
-  if($opts->{destination}){
+  if ($opts->{destination}) {
     $opts->{destination} = pathname_canonical($opts->{destination});
-    if(my $dir = pathname_directory($opts->{destination})){
-      pathname_mkdir($dir) or croak "Couldn't create destination directory $dir: $!"; }}
+    if (my $dir = pathname_directory($opts->{destination})) {
+      pathname_mkdir($dir) or croak "Couldn't create destination directory $dir: $!"; } }
   # Removed math formats are irrelevant for conversion:
   delete $opts->{removed_math_formats};
 
-  if($opts->{showversion}){ print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+  if ($opts->{showversion}) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
 
   $opts->{source} = $ARGV[0] unless $opts->{source};
   if (!$opts->{type} || ($opts->{type} eq 'auto')) {
@@ -203,12 +202,12 @@ sub read {
 }
 
 sub read_keyvals {
-  my ($self,$opts) = @_;
+  my ($self, $opts) = @_;
   my $cmdopts = [];
-  while (my ($key,$value) = splice(@$opts,0,2)) {
+  while (my ($key, $value) = splice(@$opts, 0, 2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
-    next if (! length($value)) && (grep {/^$key\=/} @GETOPT_KEYS);
-    $key = "--$key" unless $key=~/^\-\-/;
+    next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
+    $key = "--$key" unless $key =~ /^\-\-/;
     $value = length($value) ? "=$value" : '';
     push @$cmdopts, "$key$value";
   }
@@ -217,48 +216,54 @@ sub read_keyvals {
 }
 
 sub scan_to_keyvals {
-  my ($self,$argref) = @_;
+  my ($self, $argref) = @_;
   local @ARGV = @$argref;
-  my ($spec,$keyvals) = getopt_specification(type=>'keyvals');
-  GetOptions(%$spec) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval=>1, -verbose=>99,
-       -input => pod_where({-inc => 1}, __PACKAGE__),
-       -sections => 'OPTIONS/SYNOPSIS', -output=>\*STDERR);
-  push @$keyvals, ['source',$ARGV[0]] if $ARGV[0];
-  return $keyvals;  
+  my ($spec, $keyvals) = getopt_specification(type => 'keyvals');
+  GetOptions(%$spec) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+    -input => pod_where({ -inc => 1 }, __PACKAGE__),
+    -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+  push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
+  return $keyvals;
 }
 
 ###########################################
 #### Options Object Hashlike API      #####
 ###########################################
 sub get {
-  my ($self,$key,$value) = @_;
+  my ($self, $key, $value) = @_;
   $self->{opts}->{$key};
 }
+
 sub set {
-  my ($self,$key,$value) = @_;
-  $self->{dirty}=1;
+  my ($self, $key, $value) = @_;
+  $self->{dirty} = 1;
   $self->{opts}->{$key} = $value;
 }
+
 sub delete {
   my ($self, $key) = @_;
-  $self->{dirty}=1;
+  $self->{dirty} = 1;
   delete $self->{opts}->{$key};
 }
+
 sub exists {
   my ($self, $key) = @_;
   exists $self->{opts}->{$key};
 }
+
 sub keys {
   my ($self) = @_;
-  keys %{$self->{opts}};
+  keys %{ $self->{opts} };
 }
+
 sub options {
   my ($self) = @_;
   $self->{opts};
 }
+
 sub clone {
   my ($self) = @_;
-  my $clone = LaTeXML::Util::Config->new(%{$self->options});
+  my $clone = LaTeXML::Util::Config->new(%{ $self->options });
   $clone->{dirty} = $self->{dirty};
   $clone;
 }
@@ -279,16 +284,16 @@ sub check {
 
 sub _obey_profile {
   my ($self) = @_;
-  $self->{dirty}=1;
+  $self->{dirty} = 1;
   my $opts = $self->{opts};
-  my $profile = lc($opts->{profile}||'custom');
+  my $profile = lc($opts->{profile} || 'custom');
   # Look at the PROFILES_DB or find a profiles file (otherwise fallback to custom)
-  my $profile_opts={};
+  my $profile_opts = {};
   if ($profile ne 'custom') {
     if (defined $PROFILES_DB->{$profile}) {
-      %$profile_opts = %{$PROFILES_DB->{$profile}}
-    } elsif (my $file = pathname_find($profile.'.opt',paths=>[],
-                                      types=>[], installation_subdir=>'resources/Profiles')) {
+      %$profile_opts = %{ $PROFILES_DB->{$profile} }
+    } elsif (my $file = pathname_find($profile . '.opt', paths => [],
+        types => [], installation_subdir => 'resources/Profiles')) {
       my $conf_tmp = LaTeXML::Util::Config->new;
       $conf_tmp->read(_read_options_file($file));
       $profile_opts = $conf_tmp->options;
@@ -296,7 +301,7 @@ sub _obey_profile {
       # Throw an error, fallback to custom
       carp("Warning:unexpected:$profile Profile $profile was not recognized, reverting to 'custom'\n");
       $opts->{profile} = 'custom';
-      $profile='custom';
+      $profile = 'custom';
     }
   }
   # Erase the profile, save it as cache key
@@ -304,26 +309,26 @@ sub _obey_profile {
   $opts->{cache_key} = $profile unless defined $opts->{cache_key};
   if (%$profile_opts) {
     # Merge the new options with the profile defaults:
-    for my $key (grep {defined $opts->{$_}} (CORE::keys %$opts)) {
-      if ($key =~ /^p(ath|reload)/) { # Paths and preloads get merged in
-	$profile_opts->{$key} = [] unless defined $profile_opts->{$key};
-	foreach my $entry (@{$opts->{$key}}) {
-	  my $new=1;
-	  foreach (@{$profile_opts->{$key}}) {
-	    if ($entry eq $_) { $new=0; last; }
-	  }
-	  # If new to the array, push:
-	  push (@{$profile_opts->{$key}}, $entry) if ($new);
-	}
-      } else { # The other options get overwritten
-	$profile_opts->{$key} = $opts->{$key};
+    for my $key (grep { defined $opts->{$_} } (CORE::keys %$opts)) {
+      if ($key =~ /^p(ath|reload)/) {    # Paths and preloads get merged in
+        $profile_opts->{$key} = [] unless defined $profile_opts->{$key};
+        foreach my $entry (@{ $opts->{$key} }) {
+          my $new = 1;
+          foreach (@{ $profile_opts->{$key} }) {
+            if ($entry eq $_) { $new = 0; last; }
+          }
+          # If new to the array, push:
+          push(@{ $profile_opts->{$key} }, $entry) if ($new);
+        }
+      } else {                           # The other options get overwritten
+        $profile_opts->{$key} = $opts->{$key};
       }
     }
-    %$opts=%$profile_opts; # Move back into the user options
+    %$opts = %$profile_opts;             # Move back into the user options
   }
 }
 
-# TODO: Best way to throw errors when options don't work out? 
+# TODO: Best way to throw errors when options don't work out?
 #       How about in the case of Extras::ReadOptions?
 #       Error() and Warn() would be neat, but we have to make sure STDERR is caught beforehand.
 #       Also, there is no eval() here, so we might need a softer handling of Error()s.
@@ -333,40 +338,40 @@ sub _prepare_options {
   #======================================================================
   # I. Sanity check and Completion of Core options.
   #======================================================================
-  eval "\$LaTeXML::".$_."::DEBUG=1; " foreach @{$opts->{debug}};
-  $opts->{timeout} = 600 if ((! defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
-  $opts->{expire} = 600 if ((! defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
-  $opts->{dographics} = 1 unless defined $opts->{dographics}; #TODO: Careful, POST overlap!
-  $opts->{mathparse} = 'RecDescent' unless defined $opts->{mathparse};
+  eval "\$LaTeXML::" . $_ . "::DEBUG=1; " foreach @{ $opts->{debug} };
+  $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
+  $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
+  $opts->{dographics} = 1            unless defined $opts->{dographics}; #TODO: Careful, POST overlap!
+  $opts->{mathparse}  = 'RecDescent' unless defined $opts->{mathparse};
   if ($opts->{mathparse} eq 'no') {
-    $opts->{mathparse} = 0;
-    $opts->{nomathparse} = 1; } #Backwards compatible
-  $opts->{verbosity} = 10 unless defined $opts->{verbosity};
-  $opts->{preload} = [] unless defined $opts->{preload};
-  $opts->{paths} = ['.'] unless defined $opts->{paths};
-  @{$opts->{paths}} = map {pathname_canonical($_)} @{$opts->{paths}};
-  foreach (('destination','dbfile','sourcedirectory','sitedirectory')) {
+    $opts->{mathparse}   = 0;
+    $opts->{nomathparse} = 1; }                                          #Backwards compatible
+  $opts->{verbosity} = 10    unless defined $opts->{verbosity};
+  $opts->{preload}   = []    unless defined $opts->{preload};
+  $opts->{paths}     = ['.'] unless defined $opts->{paths};
+  @{ $opts->{paths} } = map { pathname_canonical($_) } @{ $opts->{paths} };
+  foreach (('destination', 'dbfile', 'sourcedirectory', 'sitedirectory')) {
     $opts->{$_} = pathname_canonical($opts->{$_}) if defined $opts->{$_};
   }
 
-  $opts->{whatsin} = 'document' unless defined $opts->{whatsin};
+  $opts->{whatsin}  = 'document' unless defined $opts->{whatsin};
   $opts->{whatsout} = 'document' unless defined $opts->{whatsout};
-  $opts->{type} = 'auto' unless defined $opts->{type};
-  unshift(@{$opts->{preload}}, ('TeX.pool','LaTeX.pool','BibTeX.pool')) if ($opts->{type} eq 'BibTeX');
+  $opts->{type}     = 'auto'     unless defined $opts->{type};
+  unshift(@{ $opts->{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($opts->{type} eq 'BibTeX');
 
   # Destination extension might indicate the format:
-  if ((!defined $opts->{format}) && (defined $opts->{destination})){
-    if ($opts->{destination}=~/\.([^.]+)$/) {
-      $opts->{format}=$1; }}
+  if ((!defined $opts->{format}) && (defined $opts->{destination})) {
+    if ($opts->{destination} =~ /\.([^.]+)$/) {
+      $opts->{format} = $1; } }
   if ($opts->{format}) {
     # Lower-case for sanity's sake
     $opts->{format} = lc($opts->{format});
     if ($opts->{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
-      $opts->{format} = 'html5';
+      $opts->{format}   = 'html5';
       $opts->{whatsout} = 'archive';
     }
-    $opts->{is_html} = ($opts->{format}=~/^html5?$/);
+    $opts->{is_html} = ($opts->{format} =~ /^html5?$/);
     $opts->{whatsout} = 'archive' if (($opts->{format} eq 'epub') || ($opts->{format} eq 'mobi'));
   }
   #======================================================================
@@ -374,98 +379,98 @@ sub _prepare_options {
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  $opts->{post}=1 if ( (! defined $opts->{post}) &&
-    (scalar(@{$opts->{math_formats}}) )
+  $opts->{post} = 1 if ((!defined $opts->{post}) &&
+    (scalar(@{ $opts->{math_formats} }))
     || ($opts->{stylesheet})
     || $opts->{is_html}
     || ($opts->{whatsout} && ($opts->{whatsout} ne 'document'))
   );
-                       # || ... || ... || ...
-  # $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
-  if ($opts->{post}) { # No need to bother if we're not post-processing
+# || ... || ... || ...
+# $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
+  if ($opts->{post}) {    # No need to bother if we're not post-processing
 
     # Default: scan and crossref on, other advanced off
-    $opts->{prescan}=undef unless defined $opts->{prescan};
-    $opts->{dbfile}=undef unless defined $opts->{dbfile};
-    $opts->{scan}=1 unless defined $opts->{scan};
-    $opts->{index}=1 unless defined $opts->{index};
-    $opts->{crossref}=1 unless defined $opts->{crossref};
+    $opts->{prescan}  = undef unless defined $opts->{prescan};
+    $opts->{dbfile}   = undef unless defined $opts->{dbfile};
+    $opts->{scan}     = 1     unless defined $opts->{scan};
+    $opts->{index}    = 1     unless defined $opts->{index};
+    $opts->{crossref} = 1     unless defined $opts->{crossref};
     $opts->{sitedirectory} = defined $opts->{sitedirectory} ? $opts->{sitedirectory}
-                             : (defined $opts->{destination} ? pathname_directory($opts->{destination})
-                                : (defined $opts->{dbfile} ? pathname_directory($opts->{dbfile})
-                                   : "."));
-    $opts->{sourcedirectory}=undef unless defined $opts->{sourcedirectory};
-    $opts->{numbersections}=1 unless defined $opts->{numbersections};
-    $opts->{navtoc}=undef unless defined $opts->{numbersections};
-    $opts->{navtocstyles}={context=>1,normal=>1,none=>1} unless defined $opts->{navtocstyles};
+      : (defined $opts->{destination} ? pathname_directory($opts->{destination})
+      : (defined $opts->{dbfile} ? pathname_directory($opts->{dbfile})
+        : "."));
+    $opts->{sourcedirectory} = undef unless defined $opts->{sourcedirectory};
+    $opts->{numbersections}  = 1     unless defined $opts->{numbersections};
+    $opts->{navtoc}          = undef unless defined $opts->{numbersections};
+    $opts->{navtocstyles} = { context => 1, normal => 1, none => 1 } unless defined $opts->{navtocstyles};
     $opts->{navtoc} = lc($opts->{navtoc}) if defined $opts->{navtoc};
     delete $opts->{navtoc} if ($opts->{navtoc} && ($opts->{navtoc} eq 'none'));
-    if($opts->{navtoc}){
-      if(!$opts->{navtocstyles}->{$opts->{navtoc}}){
-        croak($opts->{navtoc}." is not a recognized style of navigation TOC"); }
-      if(!$opts->{crossref}){
-        croak("Cannot use option \"navigationtoc\" (".$opts->{navtoc}.") without \"crossref\""); }}
-    $opts->{urlstyle}='server' unless defined $opts->{urlstyle};
-    $opts->{bibliographies} = [] unless defined $opts->{bibliographies};
+    if ($opts->{navtoc}) {
+      if (!$opts->{navtocstyles}->{ $opts->{navtoc} }) {
+        croak($opts->{navtoc} . " is not a recognized style of navigation TOC"); }
+      if (!$opts->{crossref}) {
+        croak("Cannot use option \"navigationtoc\" (" . $opts->{navtoc} . ") without \"crossref\""); } }
+    $opts->{urlstyle}       = 'server' unless defined $opts->{urlstyle};
+    $opts->{bibliographies} = []       unless defined $opts->{bibliographies};
 
     # Validation:
     $opts->{validate} = 1 unless defined $opts->{validate};
     # Graphics:
-    $opts->{dographics} = 1 unless defined $opts->{dographics};
-    $opts->{mathimages} = undef unless defined $opts->{mathimages};
-    $opts->{mathimagemag} = 1.75 unless defined $opts->{mathimagemag};
-    $opts->{picimages} = 1 unless defined $opts->{picimages};
+    $opts->{dographics}   = 1     unless defined $opts->{dographics};
+    $opts->{mathimages}   = undef unless defined $opts->{mathimages};
+    $opts->{mathimagemag} = 1.75  unless defined $opts->{mathimagemag};
+    $opts->{picimages}    = 1     unless defined $opts->{picimages};
     # Split:
-    $opts->{split}=undef unless defined $opts->{split};
-    $opts->{splitat}='section' unless defined $opts->{splitat};
-    $opts->{splitpath}=undef unless defined $opts->{splitpath};
-    $opts->{splitnaming}='id' unless defined $opts->{splitnaming};
+    $opts->{split}       = undef     unless defined $opts->{split};
+    $opts->{splitat}     = 'section' unless defined $opts->{splitat};
+    $opts->{splitpath}   = undef     unless defined $opts->{splitpath};
+    $opts->{splitnaming} = 'id'      unless defined $opts->{splitnaming};
     $opts->{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $opts->{splitback};
     $opts->{splitpaths} =
-      {chapter=>"//ltx:chapter | ".$opts->{splitback},
-       section=>"//ltx:chapter | //ltx:section | ".$opts->{splitback},
-       subsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | ".$opts->{splitback},
-       subsubsection=>"//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | ".$opts->{splitback}}
-	unless defined $opts->{splitpaths};
+      { chapter => "//ltx:chapter | " . $opts->{splitback},
+      section    => "//ltx:chapter | //ltx:section | " . $opts->{splitback},
+      subsection => "//ltx:chapter | //ltx:section | //ltx:subsection | " . $opts->{splitback},
+      subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $opts->{splitback} }
+      unless defined $opts->{splitpaths};
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
-    $opts->{format}="xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
-    $opts->{format}="xhtml" unless defined $opts->{format};
+    $opts->{format} = "xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
+    $opts->{format} = "xhtml" unless defined $opts->{format};
     if (!$opts->{stylesheet}) {
-      if ($opts->{format} =~ /^xhtml|epub|mobi$/) {$opts->{stylesheet} = "LaTeXML-xhtml.xsl";}
-      elsif ($opts->{format} eq "html") {$opts->{stylesheet} = "LaTeXML-html.xsl";}
-      elsif ($opts->{format} eq "html5") {$opts->{stylesheet} = "LaTeXML-html5.xsl";}
-      elsif ($opts->{format} eq "xml") {delete $opts->{stylesheet};}
-      else {croak("Unrecognized target format: ".$opts->{format});}
+      if    ($opts->{format} =~ /^xhtml|epub|mobi$/) { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
+      elsif ($opts->{format} eq "html")              { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
+      elsif ($opts->{format} eq "html5")             { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
+      elsif ($opts->{format} eq "xml") { delete $opts->{stylesheet}; }
+      else                             { croak("Unrecognized target format: " . $opts->{format}); }
     }
     # Check format and complete math and image options
     if ($opts->{format} eq 'html') {
-      $opts->{svg}=0 unless defined $opts->{svg}; # No SVG by default.
-      croak("Default html stylesheet only supports math images, not ".join(', ',@{$opts->{math_formats}}))
-        if scalar(@{$opts->{math_formats}});
+      $opts->{svg} = 0 unless defined $opts->{svg};    # No SVG by default.
+      croak("Default html stylesheet only supports math images, not " . join(', ', @{ $opts->{math_formats} }))
+        if scalar(@{ $opts->{math_formats} });
       croak("Default html stylesheet does not support svg") if $opts->{svg};
-      $opts->{mathimages} = 1;
+      $opts->{mathimages}   = 1;
       $opts->{math_formats} = [];
     }
     $opts->{dographics} = 1 unless defined $opts->{dographics};
     $opts->{picimages}  = 1 unless defined $opts->{picimages};
-    $opts->{svg} = 1 unless defined $opts->{svg};
+    $opts->{svg}        = 1 unless defined $opts->{svg};
     # PMML default if we're HTMLy and all else fails and no mathimages:
-    if  (((! defined $opts->{math_formats}) || (!scalar(@{$opts->{math_formats}}))) &&
+    if (((!defined $opts->{math_formats}) || (!scalar(@{ $opts->{math_formats} }))) &&
       (!$opts->{mathimages}) && $opts->{is_html})
     {
-      push @{$opts->{math_formats}}, 'pmml';
+      push @{ $opts->{math_formats} }, 'pmml';
     }
     # use parallel markup if there are multiple formats requested.
-    $opts->{parallelmath} = 1 if ($opts->{math_formats} && (@{$opts->{math_formats}}>1));
+    $opts->{parallelmath} = 1 if ($opts->{math_formats} && (@{ $opts->{math_formats} } > 1));
   }
   # If really nothing hints to define format, then default it to XML
   $opts->{format} = 'xml' unless defined $opts->{format};
 
   #TODO: HACK: Disable for now, causes problems...
-  $opts->{picimages}  = 0;
+  $opts->{picimages} = 0;
 
-  $self->{dirty}=0;
+  $self->{dirty} = 0;
 }
 
 # TODO: All of the below
@@ -474,7 +479,7 @@ sub _prepare_options {
 #   Error("Must supply --destination when using --split"); }
 # if($split){
 #   $splitnaming = checkOptionValue('--splitnaming',$splitnaming,
-# 				  qw(id idrelative label labelrelative)); 
+#                  qw(id idrelative label labelrelative));
 #   $splitat = checkOptionValue('--splitat',$splitat,keys %splitpaths);
 #   $splitpath = $splitpaths{$splitat} unless defined $splitpath;
 # }
@@ -494,26 +499,26 @@ sub _prepare_options {
 #   Error("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
 #if((!defined $destination) && ($mathimages || $dographics || $picimages)){
 #  Error("Must supply --destination unless all auxilliary file writing is disabled"
-#	."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
+#          ."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
 #}
-
 
 ## Utilities:
 
 sub _addMathFormat {
-  my($opts,$fmt)=@_;
+  my ($opts, $fmt) = @_;
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  push(@{$opts->{math_formats}},$fmt) 
-    unless grep($_ eq $fmt,@{$opts->{math_formats}}) || $opts->{removed_math_formats}->{$fmt}; }
+  push(@{ $opts->{math_formats} }, $fmt)
+    unless grep($_ eq $fmt, @{ $opts->{math_formats} }) || $opts->{removed_math_formats}->{$fmt}; }
+
 sub _removeMathFormat {
-  my($opts,$fmt)=@_;
-  @{$opts->{math_formats}} = grep($_ ne $fmt, @{$opts->{math_formats}});
-  $opts->{removed_math_formats}->{$fmt}=1; }
+  my ($opts, $fmt) = @_;
+  @{ $opts->{math_formats} } = grep($_ ne $fmt, @{ $opts->{math_formats} });
+  $opts->{removed_math_formats}->{$fmt} = 1; }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {
   my $opts = [];
-  unless (open (OPT,"<",shift)) {
+  unless (open(OPT, "<", shift)) {
     Error("unexpected:IO:$_ Could not open $_");
     return;
   }
@@ -521,37 +526,36 @@ sub _read_options_file {
     next if /^#/;
     chomp;
     /(\S+)\s*=\s*(.*)/;
-    my ($key,$value) = ($1,$2||'');
+    my ($key, $value) = ($1, $2 || '');
     $value =~ s/\s+$//;
     # Special treatment for --path=$env:
-    if ($value=~/^\$(.+)$/) {
-      my @values = ();
+    if ($value =~ /^\$(.+)$/) {
+      my @values   = ();
       my $env_name = $1;
       my $env_value;
       # Allow $env/foo paths, starting with $env prefixes
-      if ($env_name =~ /^([^\/]+)(\/+)(.+)$/ ) {
+      if ($env_name =~ /^([^\/]+)(\/+)(.+)$/) {
         my $trailer = $3;
         if (my $env_path = $ENV{$1}) {
-          $env_path.= '/' unless $env_path =~ /\/$/;
-          push @values, $env_path.$trailer;
+          $env_path .= '/' unless $env_path =~ /\/$/;
+          push @values, $env_path . $trailer;
         }
       } else {
-      # But also the standard behaviour, where the $env is an array of paths
+        # But also the standard behaviour, where the $env is an array of paths
         $env_value = $ENV{$env_name};
         next unless $env_value;
-        @values = grep(-d $_,reverse(split(':',$env_value)));
+        @values = grep(-d $_, reverse(split(':', $env_value)));
         next unless @values;
       }
       push(@$opts, "--$key=$_") foreach (@values);
     } else {
       $value = $value ? "=$value" : '';
-      push @$opts, "--$key".$value;
+      push @$opts, "--$key" . $value;
     }
   }
   close OPT;
   $opts;
 }
-
 
 1;
 

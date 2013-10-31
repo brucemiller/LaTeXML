@@ -18,46 +18,45 @@ RequirePackage('inst_support');
 
 #======================================================================
 # Frontmatter
-DefMacro('\titlerunning',Tokens());
-DefMacro('\titrun',Tokens());
-DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\titlerunning', Tokens());
+DefMacro('\titrun',       Tokens());
+DefMacro('\subtitle{}',   '\@add@frontmatter{ltx:subtitle}{#1}');
 
-DefMacro('\authorrunning',Tokens());
-DefMacro('\authrun',Tokens());
+DefMacro('\authorrunning', Tokens());
+DefMacro('\authrun',       Tokens());
 
-DefMacro('\emailname','E-mail');
-DefConstructor('\@@@email{}',"^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
-	       properties=>{(name=>Digest(T_CS('\emailname')))});
+DefMacro('\emailname', 'E-mail');
+DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
+  properties => { (name => Digest(T_CS('\emailname'))) });
 DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\mailname','\textit{Correspondence}');
-DefConstructor('\@@@mail{}',"^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
-	       properties=>{ (name=>Digest(T_CS('\mailname'))) });
+DefMacro('\mailname',           '\textit{Correspondence}');
+DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx:contact>",
+  properties => { (name => Digest(T_CS('\mailname'))) });
 DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 
 # What's all this for?
-Let(T_CS('\at'),T_CS('\and'));
-Let(T_CS('\iand'),T_CS('\and'));
-Let(T_CS('\nand'),T_CS('\and'));
-Let(T_CS('\lastand'),T_CS('\and'));
+Let('\at',      '\and');
+Let('\iand',    '\and');
+Let('\nand',    '\and');
+Let('\lastand', '\and');
 
-DefMacro('\keywordname','\textbf{Keywords}');
-DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
-DefMacro('\subclassname','\textbf{Mathematics Subject Classification (2000)}');
-DefMacro('\subclass{}',  '\@add@frontmatter{ltx:classification}[scheme=MSC,name={\subclassname}]{#1}');
-DefMacro('\CRclassname','\textbf{CR Subject Classification}');
-DefMacro('\CRclass{}',   '\@add@frontmatter{ltx:classification}[scheme=CR,name={\CRclassname}]{#1}');
-DefMacro('\ESMname','\textbf{Electronic Supplementary Material}');
-DefMacro('\ESM{}',       '\@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
-DefMacro('\PACSname','\textbf{PACS}');
-DefMacro('\PACS{}',      '\@add@frontmatter{ltx:classification}[scheme=pacs,name={\PACSname}]{#1}');
-DefMacro('\headnote{}',  '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}','\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
-DefMacro('\offprints{}', '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
-DefMacro('\journalname{}','\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\papertype{}',  '\@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
+DefMacro('\keywordname',  '\textbf{Keywords}');
+DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
+DefMacro('\subclassname', '\textbf{Mathematics Subject Classification (2000)}');
+DefMacro('\subclass{}', '\@add@frontmatter{ltx:classification}[scheme=MSC,name={\subclassname}]{#1}');
+DefMacro('\CRclassname', '\textbf{CR Subject Classification}');
+DefMacro('\CRclass{}',  '\@add@frontmatter{ltx:classification}[scheme=CR,name={\CRclassname}]{#1}');
+DefMacro('\ESMname',    '\textbf{Electronic Supplementary Material}');
+DefMacro('\ESM{}',      '\@add@frontmatter{ltx:note}[role=supplemental,name={\ESMname}]{#1}');
+DefMacro('\PACSname',   '\textbf{PACS}');
+DefMacro('\PACS{}',     '\@add@frontmatter{ltx:classification}[scheme=pacs,name={\PACSname}]{#1}');
+DefMacro('\headnote{}', '\@add@frontmatter{ltx:note}{#1}');
+DefMacro('\dedication{}',  '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
+DefMacro('\offprints{}',   '\@add@frontmatter{ltx:note}[role=offprints]{#1}');
+DefMacro('\journalname{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\papertype{}',   '\@add@frontmatter{ltx:classification}[scheme=papertype]{#1}');
 
-Let(T_CS('\journalopt'),T_CS('\@empty'));
-
+Let('\journalopt', '\@empty');
 
 # svjour covers several specific journal styles.
 # And SOME (but not all!) of those journal styles call for \abstract{...}
@@ -68,123 +67,122 @@ Let(T_CS('\journalopt'),T_CS('\@empty'));
 # We'll try just redefining \abstract (and leave the abstract environment
 # for when people need and actually use \begin[abstract}...)
 
-Let(T_CS('\@orig@abstract'),T_CS('\abstract'));
-DefMacro('\abstract',sub {
-  if($_[0]->ifNext(T_BEGIN)){ T_CS('\@abstract@with@arg'); }
-  else { T_CS('\@orig@abstract'); }});
+Let('\@orig@abstract', '\abstract');
+DefMacro('\abstract', sub {
+    if ($_[0]->ifNext(T_BEGIN)) { T_CS('\@abstract@with@arg'); }
+    else { T_CS('\@orig@abstract'); } });
 
 DefMacro('\@abstract@with@arg{}', '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
 
+DefMacro('\makereferee', Tokens());
 
-DefMacro('\makereferee',Tokens());
-
-DefMacro('\ackname','Acknowledgements');
-DefConstructor('\acknowledgements',"<ltx:acknowledgements name='#name'>",
-	       properties=>{(name=>Digest(T_CS('\ackname')))});
+DefMacro('\ackname', 'Acknowledgements');
+DefConstructor('\acknowledgements', "<ltx:acknowledgements name='#name'>",
+  properties => { (name => Digest(T_CS('\ackname'))) });
 DefMacro('\acknowledgement', '\acknowledgements');
-DefConstructor('\endacknowledgements',"</ltx:acknowledgements>");
-DefConstructor('\endacknowledgement', "</ltx:acknowledgements>");
-Tag("ltx:acknowledgements", autoClose=>1);
+DefConstructor('\endacknowledgements', "</ltx:acknowledgements>");
+DefConstructor('\endacknowledgement',  "</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose => 1);
 
-DefMacro('\noteaddname','Note added in proof');
-DefMacro('\notename','Note');
-DefEnvironment('{noteadd}',"<ltx:note name='#name'>#body</ltx:note>",
-	       properties=>{(name=>Digest(T_CS('\noteaddname')))});
+DefMacro('\noteaddname', 'Note added in proof');
+DefMacro('\notename',    'Note');
+DefEnvironment('{noteadd}', "<ltx:note name='#name'>#body</ltx:note>",
+  properties => { (name => Digest(T_CS('\noteaddname'))) });
 
-Let(T_CS('\orithanks'),T_CS('\thanks'));
-DefMacro('\runheadhook',Tokens());
-DefMacro('\svlanginfo',Tokens());
-DefMacro('\makeheadbox',Tokens()); # Should be covered by frontmatter/maketitle
-DefMacro('\authdepth','2');
-DefMacro('\authorfont','\bfseries');
-DefMacro('\stripauthor',Tokens()); # ?
-DefRegister('\instindent'=>Dimension(0));
-DefMacro('\combirun',Tokens());
-DefMacro('\combirunning{}',Tokens());
+Let('\orithanks', '\thanks');
+DefMacro('\runheadhook', Tokens());
+DefMacro('\svlanginfo',  Tokens());
+DefMacro('\makeheadbox', Tokens());      # Should be covered by frontmatter/maketitle
+DefMacro('\authdepth',   '2');
+DefMacro('\authorfont',  '\bfseries');
+DefMacro('\stripauthor', Tokens());      # ?
+DefRegister('\instindent' => Dimension(0));
+DefMacro('\combirun',       Tokens());
+DefMacro('\combirunning{}', Tokens());
 
-DefMacro('\validfor',Tokens());
-DefMacro('\ClassInfoNoLine{}{}',Tokens());
-DefMacro('\ProcessRunnHead',Tokens());
-DefMacro('\fnmsep',Tokens());	# ?
-DefMacro('\institutename',Tokens());	# ?
+DefMacro('\validfor',            Tokens());
+DefMacro('\ClassInfoNoLine{}{}', Tokens());
+DefMacro('\ProcessRunnHead',     Tokens());
+DefMacro('\fnmsep',              Tokens());    # ?
+DefMacro('\institutename',       Tokens());    # ?
 #======================================================================
-DefMacro('\nocaption{}',Tokens());
-DefMacro('\sidecaption {}',Tokens());
+DefMacro('\nocaption{}',    Tokens());
+DefMacro('\sidecaption {}', Tokens());
 
-DefMacro('\capstrut',Tokens());
-DefMacro('\captionstyle','\normalfont\small');
-DefRegister('\figcapgap'=>Dimension('3pt'));
-DefRegister('\tabcapgap'=>Dimension('5.5pt'));
-DefRegister('\figgap'=>Dimension('1cc'));
+DefMacro('\capstrut',     Tokens());
+DefMacro('\captionstyle', '\normalfont\small');
+DefRegister('\figcapgap' => Dimension('3pt'));
+DefRegister('\tabcapgap' => Dimension('5.5pt'));
+DefRegister('\figgap'    => Dimension('1cc'));
 
-DefMacro('\tableheadseprule','\hrule');
-DefMacro('\floatlegendstyle','\bfseries');
-DefMacro('\leftlegendglue',Tokens());
+DefMacro('\tableheadseprule', '\hrule');
+DefMacro('\floatlegendstyle', '\bfseries');
+DefMacro('\leftlegendglue',   Tokens());
 
-DefPrimitive('\normalthmheadings', sub { AssignValue('thm@swap' => 'N'); });
-DefPrimitive('\reversethmheadings',sub { AssignValue('thm@swap' => 'S'); });
-DefRegister('\spthmsep'=>Dimension('5pt'));
+DefPrimitive('\normalthmheadings',  sub { AssignValue('thm@swap' => 'N'); });
+DefPrimitive('\reversethmheadings', sub { AssignValue('thm@swap' => 'S'); });
+DefRegister('\spthmsep' => Dimension('5pt'));
 
 # \spnewtheorem*{env}[numberedlike]{caption}[within]{capfont}{bodyfont}
 # NOTE: Can I use latex's \newtheoremstyle, or do I need to copy & adapt it?
 # Seems to be the same as \newtheoremstyle, but with additonal capfont & bodyfont
 DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
-  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset,$capfont,$bodyfont) = @_;
-  $thmset = ToString($thmset);
-  $otherthmset = $otherthmset && ToString($otherthmset);
-  $type   = undef unless $type->unlist;
-  $reset  = $reset ? ToString($reset) : undef;
+    my ($stomach, $flag, $thmset, $otherthmset, $type, $reset, $capfont, $bodyfont) = @_;
+    $thmset      = ToString($thmset);
+    $otherthmset = $otherthmset && ToString($otherthmset);
+    $type        = undef unless $type->unlist;
+    $reset       = $reset ? ToString($reset) : undef;
 
-  my $counter = $otherthmset || $thmset;
-  my $swap = LookupValue('thm@swap') eq 'S';
-  my $style   = LookupValue('thm@style');
+    my $counter = $otherthmset || $thmset;
+    my $swap    = LookupValue('thm@swap') eq 'S';
+    my $style   = LookupValue('thm@style');
 
-  if(!$otherthmset){
-    NewCounter($counter, $reset,
-	       idprefix => "Thm$counter");
-    DefMacroI(T_CS("\\the$counter"),undef,
-	      "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
-	      scope=>'global')
-      if $reset; }
+    if (!$otherthmset) {
+      NewCounter($counter, $reset,
+        idprefix => "Thm$counter");
+      DefMacroI(T_CS("\\the$counter"), undef,
+        "\\csname the$reset\\endcsname\\\@thmcountersep\\arabic{$counter}",
+        scope => 'global')
+        if $reset; }
 
-  # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
-  DefEnvironment("{$thmset} OptionalUndigested",
-		 "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
-		 . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
-		 .  "#body"
-		 ."</ltx:theorem>",
-		 beforeDigest=>sub {
-		   my $stylecmd = T_CS('\th@'.$style);
-		   if (!LookupDefinition($stylecmd)) {
-		     Warn('unexpected',$style,$_[0],"Unknown theoremstyle '$style'");
-		     $stylecmd = T_CS('\th@plain'); }
-		   Digest(Tokens($stylecmd)); },
- 		 afterDigestBegin=>sub { Digest($bodyfont); },
-		 properties => sub {
-		   my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) :());
-		   my $title = Digest(Tokens(T_BEGIN,$capfont->unlist,
-					     T_CS('\@tag'),T_BEGIN,
-					     ($swap
-					      ? ( ($flag ? ():(T_CS('\the'.$counter))),
-						  (!$flag && $type ? (T_SPACE):()),
-						  ($type ? ($type->unlist):()) )
-					      : ( ($type ? ($type->unlist):()),
-						  (!$flag && $type ? (T_SPACE):()),
-						  ($flag ? ():(T_CS('\the'.$counter))) )),
-					     T_END,
-					     ($type && $_[1] ? (T_SPACE,T_OTHER('(')):()),
-					     ($_[1] ? $_[1]->unlist : ()),
-					     ($type && $_[1] ? (T_OTHER(')')):()),
-					     T_CS('\the'),T_CS('\thm@headpunct'),
-					     T_END));
-		   (  %ctr,
-		      title=>$title,
-		      titlefont=>$title->getFont,
-		      class=>'ltx_theorem_'.CleanIndexKey($thmset)  ); },
-		 scope => 'global');
+# Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
+    DefEnvironment("{$thmset} OptionalUndigested",
+      "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
+        . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+        . "#body"
+        . "</ltx:theorem>",
+      beforeDigest => sub {
+        my $stylecmd = T_CS('\th@' . $style);
+        if (!LookupDefinition($stylecmd)) {
+          Warn('unexpected', $style, $_[0], "Unknown theoremstyle '$style'");
+          $stylecmd = T_CS('\th@plain'); }
+        Digest(Tokens($stylecmd)); },
+      afterDigestBegin => sub { Digest($bodyfont); },
+      properties => sub {
+        my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
+        my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
+            T_CS('\@tag'), T_BEGIN,
+            ($swap
+              ? (($flag ? () : (T_CS('\the' . $counter))),
+                (!$flag && $type ? (T_SPACE) : ()),
+                ($type ? ($type->unlist) : ()))
+              : (($type ? ($type->unlist) : ()),
+                (!$flag && $type ? (T_SPACE) : ()),
+                ($flag ? () : (T_CS('\the' . $counter))))),
+            T_END,
+            ($type && $_[1] ? (T_SPACE, T_OTHER('(')) : ()),
+            ($_[1] ? $_[1]->unlist : ()),
+            ($type && $_[1] ? (T_OTHER(')')) : ()),
+            T_CS('\the'), T_CS('\thm@headpunct'),
+            T_END));
+        (%ctr,
+          title     => $title,
+          titlefont => $title->getFont,
+          class     => 'ltx_theorem_' . CleanIndexKey($thmset)); },
+      scope => 'global');
 });
 
-Let(T_CS('\spdefaulttheorem'),T_CS('\spnewtheoerem'));
+Let('\spdefaulttheorem', '\spnewtheoerem');
 
 RawTeX(<<'EOTeX');
 \def\theoremname{Theorem}
@@ -222,68 +220,68 @@ RawTeX(<<'EOTeX');
 \spnewtheorem{remark}{Remark}{\itshape}{\rmfamily}
 EOTeX
 
-DefEnvironment('{theopargself*}','#body'); # ?
-DefEnvironment('{theopargself}','#body');  # ?
+DefEnvironment('{theopargself*}', '#body');    # ?
+DefEnvironment('{theopargself}',  '#body');    # ?
 
-DefEnvironment('{translation}{}',"<ltx:quote role='translation' lang='#1'>#body</ltx:quote>");
+DefEnvironment('{translation}{}', "<ltx:quote role='translation' lang='#1'>#body</ltx:quote>");
 
 #======================================================================
 DefConstructor('\qed',
-	       "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let(T_CS('\smartqed'),   T_CS('\qed'));
-Let(T_CS('\squareforqed'),   T_CS('\qed'));
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\smartqed',     '\qed');
+Let('\squareforqed', '\qed');
 
-DefMacro('\tens{}','\ensuremath{\mathsf{#1}}');
+DefMacro('\tens{}', '\ensuremath{\mathsf{#1}}');
 
 #======================================================================
 # Random text
 
-DefMacro('\andname','and');
-DefMacro('\chaptername','Chapter');
-DefMacro('\contriblistname','List of Contributors');
-DefMacro('\lastandname',', and');
-DefMacro('\seename','see');
-DefMacro('\etal','et al.');
-DefMacro('\notused','~');
+DefMacro('\andname',         'and');
+DefMacro('\chaptername',     'Chapter');
+DefMacro('\contriblistname', 'List of Contributors');
+DefMacro('\lastandname',     ', and');
+DefMacro('\seename',         'see');
+DefMacro('\etal',            'et al.');
+DefMacro('\notused',         '~');
 
 #======================================================================
-DefRegister('\aftertext'=>Dimension('5pt'));
-DefRegister('\betweenumberspace'=>Dimension('3.33pt'));
-DefRegister('\headerboxheight'=>Dimension('180pt'));
-DefRegister('\headlineindent'=>Dimension('1.166cm'));
+DefRegister('\aftertext'         => Dimension('5pt'));
+DefRegister('\betweenumberspace' => Dimension('3.33pt'));
+DefRegister('\headerboxheight'   => Dimension('180pt'));
+DefRegister('\headlineindent'    => Dimension('1.166cm'));
 
-DefMacro('\runinend',Tokens());
-DefMacro('\floatcounterend',Tokens());
-DefMacro('\sectcounterend',Tokens());
+DefMacro('\runinend',        Tokens());
+DefMacro('\floatcounterend', Tokens());
+DefMacro('\sectcounterend',  Tokens());
 
 # These should do 1 or 2 depending on twocolumn mode!
-DefMacro('\columncase','\makeatletter\twocolteset');
-DefMacro('\twocoltest{}{}','#1\makeatother');
+DefMacro('\columncase',     '\makeatletter\twocolteset');
+DefMacro('\twocoltest{}{}', '#1\makeatother');
 
 NewCounter('lastpage');
-DefMacro('\getlastpagenumber',Tokens());
-DefMacro('\islastpageeven',Tokens());
+DefMacro('\getlastpagenumber', Tokens());
+DefMacro('\islastpageeven',    Tokens());
 
-DefMacro('\makesectrule',Tokens());
-DefMacro('\makesectruleori',Tokens());
-DefMacro('\nosectrule',Tokens());
-DefMacro('\restoresectrule',Tokens());
-DefMacro('\nothanksmarks',Tokens());
-DefMacro('\setitemindent{}',Tokens());
-DefMacro('\setitemitemindent{}',Tokens());
-DefMacro('\thisbottomragged',Tokens());
+DefMacro('\makesectrule',        Tokens());
+DefMacro('\makesectruleori',     Tokens());
+DefMacro('\nosectrule',          Tokens());
+DefMacro('\restoresectrule',     Tokens());
+DefMacro('\nothanksmarks',       Tokens());
+DefMacro('\setitemindent{}',     Tokens());
+DefMacro('\setitemitemindent{}', Tokens());
+DefMacro('\thisbottomragged',    Tokens());
 
-DefMacro('\rubric',Tokens());
-DefRegister('\rubricwidth'=>Dimension('0pt'));
-DefMacro('\strich',Tokens());
-DefRegister('\logodepth'=>Dimension('1.2cm'));
-DefMacro('\lastevenhead',Tokens());
+DefMacro('\rubric', Tokens());
+DefRegister('\rubricwidth' => Dimension('0pt'));
+DefMacro('\strich', Tokens());
+DefRegister('\logodepth' => Dimension('1.2cm'));
+DefMacro('\lastevenhead', Tokens());
 #======================================================================
 # Odd; they add an optional arg!
 DefEnvironment('{description}[]',
-	       "<ltx:description  xml:id='#id'>#body</ltx:description>",
-	       properties=>sub { beginItemize('description'); },
-	       locked=>1);
+  "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  properties => sub { beginItemize('description'); },
+  locked => 1);
 
 #======================================================================
 1;

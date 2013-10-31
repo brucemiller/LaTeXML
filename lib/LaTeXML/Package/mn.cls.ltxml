@@ -10,16 +10,16 @@ use strict;
 use LaTeXML::Package;
 
 # Generally ignorable options
-foreach my $option (qw(letters landscape galley referee)){
+foreach my $option (qw(letters landscape galley referee)) {
   DeclareOption($option, undef); }
 
-DeclareOption("usenatbib", sub { AssignValue('@usenatbib'=>1); });
-DeclareOption("usedcolum", sub { AssignValue('@usedcolum'=>1); });
-DeclareOption("usegraphicx", sub { AssignValue('@usegraphicx'=>1); });
+DeclareOption("usenatbib",   sub { AssignValue('@usenatbib'   => 1); });
+DeclareOption("usedcolum",   sub { AssignValue('@usedcolum'   => 1); });
+DeclareOption("usegraphicx", sub { AssignValue('@usegraphicx' => 1); });
 
 # Anything else is for article.
-DeclareOption(undef,sub {
-  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+DeclareOption(undef, sub {
+    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('article');
@@ -27,14 +27,14 @@ RequirePackage('mn2e_support');
 
 # And some stuff not in the later version...
 
-DefMacro('\NewSymbolFont{}{}','');
-DefMacro('\NewMathSymbol{}{}{}{}','');
-DefMacro('\NewMathDelimiter{}{}{}{}{}{}','');
-DefMacro('\NewMathAlphabet{}{}{}','');
-DefMacro('\NewTextAlphabet{}{}{}','');
-DefMacro('\UseAMStwoboldmath','');
+DefMacro('\NewSymbolFont{}{}',            '');
+DefMacro('\NewMathSymbol{}{}{}{}',        '');
+DefMacro('\NewMathDelimiter{}{}{}{}{}{}', '');
+DefMacro('\NewMathAlphabet{}{}{}',        '');
+DefMacro('\NewTextAlphabet{}{}{}',        '');
+DefMacro('\UseAMStwoboldmath',            '');
 RawTeX('\newif\ifnfssone\newif\ifnfsstwo\newif\ifoldfss');
-DefRegister('\realparindent'=>Dimension('18pt'));
-DefMacro('\resetsizehook{}{}{}{}','');
+DefRegister('\realparindent' => Dimension('18pt'));
+DefMacro('\resetsizehook{}{}{}{}', '');
 
 1;

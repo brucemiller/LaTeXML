@@ -41,22 +41,22 @@
        You can, of course, use CSS to lay it out differently!
        <html>
          <head>...</head>
-	 <body>
-	   <div class="ltx_page_navbar>...</div>
-	   <div class="ltx_page_main">
-	     <div class="ltx_page_header">
-	       header navigation
-	     </div>
-	     <div class="ltx_page_content">
-	       Your Document Here!
-	       ...
-	     </div>
-	     <div class="ltx_page_footer">
-	       footer navigation
-	       LaTeXML logo
-	     </div>
-	   </div>
-	 </body>
+         <body>
+           <div class="ltx_page_navbar>...</div>
+           <div class="ltx_page_main">
+             <div class="ltx_page_header">
+               header navigation
+             </div>
+             <div class="ltx_page_content">
+               Your Document Here!
+               ...
+             </div>
+             <div class="ltx_page_footer">
+               footer navigation
+               LaTeXML logo
+             </div>
+           </div>
+         </body>
        </html>
   -->
   <!-- This version generates MathML & SVG with an xmlns namespace declaration 
@@ -115,13 +115,13 @@
     <xsl:element name="title" namespace="{$html_ns}">
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
       <xsl:if test="*/ltx:title">
-	<xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
-	<xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
-	  <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
-	    <xsl:text>&#x2023; </xsl:text>
-	    <xsl:value-of select="@title"/>
-	  </xsl:for-each>
-	</xsl:if>
+        <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
+        <xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
+          <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
+            <xsl:text>&#x2023; </xsl:text>
+            <xsl:value-of select="@title"/>
+          </xsl:for-each>
+        </xsl:if>
       </xsl:if>
     </xsl:element>
   </xsl:template>
@@ -149,8 +149,8 @@
     <xsl:element name="meta" namespace="{$html_ns}">
       <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
       <xsl:attribute name="content">
-	<xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
-	<xsl:text>; charset=UTF-8</xsl:text>
+        <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
+        <xsl:text>; charset=UTF-8</xsl:text>
       </xsl:attribute>
     </xsl:element>
   </xsl:template>
@@ -160,14 +160,14 @@
     <xsl:if test='$ICON'>
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="link" namespace="{$html_ns}">
-	<xsl:attribute name="rel">shortcut icon</xsl:attribute>
-	<xsl:attribute name="href"><xsl:value-of select="f:url($ICON)"/></xsl:attribute>
-	<xsl:attribute name="type">
-	  <xsl:choose>		<!--Ugh-->
-	    <xsl:when test="f:ends-with($ICON,'.png')">image/png</xsl:when>
-	    <xsl:otherwise>image/x-icon</xsl:otherwise>
-	  </xsl:choose>
-	</xsl:attribute>
+        <xsl:attribute name="rel">shortcut icon</xsl:attribute>
+        <xsl:attribute name="href"><xsl:value-of select="f:url($ICON)"/></xsl:attribute>
+        <xsl:attribute name="type">
+          <xsl:choose>          <!--Ugh-->
+            <xsl:when test="f:ends-with($ICON,'.png')">image/png</xsl:when>
+            <xsl:otherwise>image/x-icon</xsl:otherwise>
+          </xsl:choose>
+        </xsl:attribute>
       </xsl:element>
     </xsl:if>
   </xsl:template>
@@ -178,7 +178,7 @@
        so that the latter will override the former. -->
   <xsl:template match="/" mode="head-resources">
     <xsl:apply-templates select="//ltx:resource[@type='text/css']
-				 | //ltx:resource[@type='text/javascript']" mode="inhead"/>
+                                 | //ltx:resource[@type='text/javascript']" mode="inhead"/>
   </xsl:template>
 
   <!-- By default, these disappear -->
@@ -191,7 +191,7 @@
       <xsl:attribute name="href"><xsl:value-of select="f:url(@src)"/></xsl:attribute>
       <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
       <xsl:if test="@media">
-	<xsl:attribute name="media"><xsl:value-of select="@media"/></xsl:attribute>
+        <xsl:attribute name="media"><xsl:value-of select="@media"/></xsl:attribute>
       </xsl:if>
     </xsl:element>
   </xsl:template>
@@ -201,7 +201,7 @@
     <xsl:element name="style" namespace="{$html_ns}">
       <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
       <xsl:if test="@media">
-	<xsl:attribute name="media"><xsl:value-of select="@media"/></xsl:attribute>
+        <xsl:attribute name="media"><xsl:value-of select="@media"/></xsl:attribute>
       </xsl:if>
       <xsl:apply-templates select="text()"/>
     </xsl:element>
@@ -228,12 +228,12 @@
   <xsl:template match="/" mode="head-css">
     <xsl:if test='$CSS'>
       <xsl:for-each select="string:split($CSS,'|')">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="link" namespace="{$html_ns}">
-	  <xsl:attribute name="rel">stylesheet</xsl:attribute>
-	  <xsl:attribute name="href"><xsl:value-of select="f:url(text())"/></xsl:attribute>
-	  <xsl:attribute name="type">text/css</xsl:attribute>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="link" namespace="{$html_ns}">
+          <xsl:attribute name="rel">stylesheet</xsl:attribute>
+          <xsl:attribute name="href"><xsl:value-of select="f:url(text())"/></xsl:attribute>
+          <xsl:attribute name="type">text/css</xsl:attribute>
+        </xsl:element>
       </xsl:for-each>
     </xsl:if>
   </xsl:template>
@@ -242,11 +242,11 @@
   <xsl:template match="/" mode="head-javascript">
     <xsl:if test='$JAVASCRIPT'>
       <xsl:for-each select="string:split($JAVASCRIPT,'|')">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="script" namespace="{$html_ns}">
-	  <xsl:attribute name="src"><xsl:value-of select="f:url(text())"/></xsl:attribute>
-	  <xsl:attribute name="type">text/javascript</xsl:attribute>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="script" namespace="{$html_ns}">
+          <xsl:attribute name="src"><xsl:value-of select="f:url(text())"/></xsl:attribute>
+          <xsl:attribute name="type">text/javascript</xsl:attribute>
+        </xsl:element>
       </xsl:for-each>
     </xsl:if>
   </xsl:template>
@@ -280,17 +280,17 @@
     <xsl:element name="link" namespace="{$html_ns}">
       <xsl:attribute name="rel"><xsl:value-of select='@role'/></xsl:attribute>
       <xsl:attribute name="href">
-	<xsl:choose>
-	  <xsl:when test="ltx:personname/@href">
-	    <xsl:value-of select="f:url(ltx:personname/@href)"/>
-	  </xsl:when>
-	  <xsl:when test="ltx:contact/@href">
-	    <xsl:value-of select="f:url(ltx:contact/@href)"/>
-	  </xsl:when>
-	</xsl:choose>
+        <xsl:choose>
+          <xsl:when test="ltx:personname/@href">
+            <xsl:value-of select="f:url(ltx:personname/@href)"/>
+          </xsl:when>
+          <xsl:when test="ltx:contact/@href">
+            <xsl:value-of select="f:url(ltx:contact/@href)"/>
+          </xsl:when>
+        </xsl:choose>
       </xsl:attribute>
       <xsl:attribute name="title">
-	<xsl:value-of select="normalize-space(ltx:personname/text())"/>
+        <xsl:value-of select="normalize-space(ltx:personname/text())"/>
       </xsl:attribute>
     </xsl:element>
   </xsl:template>
@@ -300,15 +300,15 @@
     <xsl:if test="//ltx:indexphrase">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="meta" namespace="{$html_ns}">
-	<xsl:attribute name="name">keywords</xsl:attribute>
-	<xsl:attribute name="{f:if($USE_NAMESPACES,'xml:lang','lang')}">en-us</xsl:attribute>
-	<xsl:attribute name="content">
-	  <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
-	    <xsl:sort select="text()"/>
-	    <xsl:if test="position() &gt; 1">, </xsl:if> 
-	    <xsl:value-of select="text()"/>
-	  </xsl:for-each>
-	</xsl:attribute>
+        <xsl:attribute name="name">keywords</xsl:attribute>
+        <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:lang','lang')}">en-us</xsl:attribute>
+        <xsl:attribute name="content">
+          <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
+            <xsl:sort select="text()"/>
+            <xsl:if test="position() &gt; 1">, </xsl:if> 
+            <xsl:value-of select="text()"/>
+          </xsl:for-each>
+        </xsl:attribute>
       </xsl:element>
     </xsl:if>
     <!-- Should include ltx:keywords here? But, we don't know how the content is formatted!-->
@@ -370,20 +370,20 @@
   <xsl:template match="/" mode="navbar">
     <xsl:choose>
       <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']/*"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']/*"/>
+        </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:TOC">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='start']"/>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:TOC"/>
-	  <xsl:text>&#x0A;</xsl:text>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
+          <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='start']"/>
+          <xsl:apply-templates select="//ltx:navigation/ltx:TOC"/>
+          <xsl:text>&#x0A;</xsl:text>
+        </xsl:element>
       </xsl:when>
     </xsl:choose>
   </xsl:template>
@@ -396,18 +396,18 @@
   <xsl:template match="/" mode="header">
     <xsl:choose>
       <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_header</xsl:attribute>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']/*"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_header</xsl:attribute>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']/*"/>
+        </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:ref">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_header</xsl:attribute>
-	  <xsl:apply-templates select="." mode="header-navigation"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_header</xsl:attribute>
+          <xsl:apply-templates select="." mode="header-navigation"/>
+        </xsl:element>
       </xsl:when>
     </xsl:choose>
   </xsl:template>
@@ -415,20 +415,20 @@
   <xsl:template match="/" mode="footer">
     <xsl:choose>
       <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']">
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
-	  <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']/*"/>
-	</xsl:element>
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']/*"/>
+        </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-	<!-- no test, since we'll default at least with logo -->
-	<xsl:text>&#x0A;</xsl:text>
-	<xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
-	  <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
-	  <xsl:apply-templates select="." mode="footer-navigation"/>
-	  <xsl:apply-templates select="." mode="footer-generator-identifier"/>
-	</xsl:element>
+        <!-- no test, since we'll default at least with logo -->
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
+          <xsl:apply-templates select="." mode="footer-navigation"/>
+          <xsl:apply-templates select="." mode="footer-generator-identifier"/>
+        </xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -442,10 +442,10 @@
     <xsl:if test="//ltx:navigation/ltx:ref">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='up']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
-	<xsl:text>&#x0A;</xsl:text>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='up']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
+        <xsl:text>&#x0A;</xsl:text>
       </xsl:element>
     </xsl:if>
   </xsl:template>
@@ -454,12 +454,12 @@
     <xsl:if test="//ltx:navigation/ltx:ref">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='bibliography']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='index']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='glossary']"/>
-	<xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
-	<xsl:text>&#x0A;</xsl:text>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='bibliography']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='index']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='glossary']"/>
+        <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
+        <xsl:text>&#x0A;</xsl:text>
       </xsl:element>
     </xsl:if>
   </xsl:template>
@@ -474,12 +474,12 @@
       <xsl:if test="$TIMESTAMP"> on <xsl:value-of select="$TIMESTAMP"/></xsl:if>
       <xsl:text> by </xsl:text>
       <xsl:element name="a" namespace="{$html_ns}">
-	<xsl:attribute name="href">http://dlmf.nist.gov/LaTeXML/</xsl:attribute>
-	<xsl:text>LaTeXML </xsl:text>
-	<xsl:element name="img" namespace="{$html_ns}">
-	  <xsl:attribute name="src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==</xsl:attribute>
-	  <xsl:attribute name="alt">[LOGO]</xsl:attribute>
-	</xsl:element>
+        <xsl:attribute name="href">http://dlmf.nist.gov/LaTeXML/</xsl:attribute>
+        <xsl:text>LaTeXML </xsl:text>
+        <xsl:element name="img" namespace="{$html_ns}">
+          <xsl:attribute name="src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==</xsl:attribute>
+          <xsl:attribute name="alt">[LOGO]</xsl:attribute>
+        </xsl:element>
       </xsl:element>
     </xsl:element>
   </xsl:template>
@@ -501,10 +501,10 @@
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:if test="@name">
-	<xsl:element name="h6" namespace="{$html_ns}">
-	  <xsl:apply-templates select="@name"/>
-	  <xsl:text>:</xsl:text>
-	</xsl:element>
+        <xsl:element name="h6" namespace="{$html_ns}">
+          <xsl:apply-templates select="@name"/>
+          <xsl:text>:</xsl:text>
+        </xsl:element>
       </xsl:if>
       <xsl:apply-templates/>
     </xsl:if>
