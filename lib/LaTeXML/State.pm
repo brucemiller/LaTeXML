@@ -139,12 +139,17 @@ sub assign_internal {
     assign_internal($self, 'stash', $scope, [], 'global') unless $$table{stash}{$scope}[0];
     push(@{ $$table{stash}{$scope}[0] }, [$subtable, $key, $value]);
     assign_internal($self, $subtable, $key, $value, 'local')
-      if $$table{stash_active}{$scope}[0];  }
+      if $$table{stash_active}{$scope}[0]; }
   return; }
 
 #======================================================================
-sub getStomach { $_[0]->{stomach}; }
-sub getModel   { $_[0]->{model}; }
+sub getStomach {
+  my ($self) = @_;
+  return $$self{stomach}; }
+
+sub getModel {
+  my ($self) = @_;
+  return $$self{model}; }
 
 #======================================================================
 
@@ -152,12 +157,12 @@ sub getModel   { $_[0]->{model}; }
 # [Note that the more direct $_[0]->{table}{value}{$_[1]}[0]; works, but creates entries
 # this could concievably cause space issues, but timing doesn't show improvements this way]
 sub lookupValue {
-  my ($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{value}{$key};
   return $e && $$e[0]; }
 
 sub assignValue {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'value', $key, $value, $scope);
   return; }
 
@@ -166,7 +171,7 @@ sub pushValue {
   my ($self, $key, @values) = @_;
   my $vtable = $$self{table}{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  push(@{ $$vtable{$key}[0] }, @values); 
+  push(@{ $$vtable{$key}[0] }, @values);
   return; }
 
 sub popValue {
@@ -179,7 +184,7 @@ sub unshiftValue {
   my ($self, $key, @values) = @_;
   my $vtable = $$self{table}{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  unshift(@{ $$vtable{$key}[0] }, @values); 
+  unshift(@{ $$vtable{$key}[0] }, @values);
   return; }
 
 sub shiftValue {
@@ -202,7 +207,7 @@ sub assignMapping {
   if (!defined $value) {
     delete $$vtable{$map}[0]{$key}; }
   else {
-    $$vtable{$map}[0]{$key} = $value; } 
+    $$vtable{$map}[0]{$key} = $value; }
   return; }
 
 sub lookupMappingKeys {
@@ -222,68 +227,69 @@ sub lookupStackedValues {
 sub isValueBound {
   my ($self, $key, $frame) = @_;
   return (defined $frame ? $$self{undo}[$frame]{value}{$key}
-            : defined $$self{table}{value}{$key}[0]); }
+    : defined $$self{table}{value}{$key}[0]); }
 
 #======================================================================
 # Lookup & assign a character's Catcode
 sub lookupCatcode {
-  my ($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{catcode}{$key};
   return $e && $$e[0]; }
 
 sub assignCatcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'catcode', $key, $value, $scope);
   return; }
 
 # The following rarely used.
 sub lookupMathcode {
-  my($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{mathcode}{$key};
   return $e && $$e[0]; }
 
 sub assignMathcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'mathcode', $key, $value, $scope);
   return; }
 
 sub lookupSFcode {
-  my($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{sfcode}{$key};
   return $e && $$e[0]; }
 
 sub assignSFcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
+>>>>>>>  merging perltidied upstream and perltidy-ing diffs
   assign_internal($self, 'sfcode', $key, $value, $scope);
   return; }
 
 sub lookupLCcode {
-  my($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{lccode}{$key};
   return $e && $$e[0]; }
 
 sub assignLCcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'lccode', $key, $value, $scope);
   return; }
 
 sub lookupUCcode {
-  my($self,$key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{uccode}{$key};
   return $e && $$e[0]; }
 
 sub assignUCcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'uccode', $key, $value, $scope);
   return; }
 
 sub lookupDelcode {
-  my($self, $key)=@_;
+  my ($self, $key) = @_;
   my $e = $$self{table}{delcode}{$key};
   return $e && $$e[0]; }
 
 sub assignDelcode {
-  my($self, $key, $value, $scope)=@_;
+  my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'delcode', $key, $value, $scope);
   return; }
 
@@ -306,15 +312,15 @@ sub lookupMeaning_internal {
 
 sub assignMeaning {
   my ($self, $token, $definition, $scope) = @_;
-  assign_internal($self, 'meaning', $token->getCSName => $definition, $scope); 
+  assign_internal($self, 'meaning', $token->getCSName => $definition, $scope);
   return; }
 
 sub lookupDefinition {
   my ($self, $token) = @_;
   my $x;
   return (($x = $token->getExecutableName) && ($x = $$self{table}{meaning}{$x}) && ($x = $$x[0])
-            && $x->isaDefinition
-            ? $x : undef); }
+      && $x->isaDefinition
+    ? $x : undef); }
 
 # And a shorthand for installing definitions
 sub installDefinition {
@@ -327,14 +333,14 @@ sub installDefinition {
       if (($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)) {
         Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs");
         return; } } }
-  assign_internal($self, 'meaning', $cs => $definition, $scope); 
+  assign_internal($self, 'meaning', $cs => $definition, $scope);
   return; }
 
 #======================================================================
 sub pushFrame {
   my ($self, $nobox) = @_;
   # Easy: just push a new undo hash.
-  unshift(@{ $$self{undo} }, {}); 
+  unshift(@{ $$self{undo} }, {});
   return; }
 
 sub popFrame {
@@ -358,20 +364,20 @@ sub pushDaemonFrame {
   unshift(@{ $$self{undo} }, {});
   # Push copys of data for any data that is mutable;
   # Only the value & stash subtables need to be to be checked.
-  foreach my $subtable (qw(value stash)){
-    if(my $hash=$$self{table}{$subtable}){
-      foreach my $key (keys %$hash){
-	my $value = $$hash{$key}[0];
-	my $type = ref $value;
-	if(($type eq 'HASH') || ($type eq 'ARRAY')){ # Only concerned with mutable perl data?
-	  # Local assignment
-	  $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
-	  unshift(@{$$hash{$key}},daemon_copy($value)); }}}} # And push new binding.
-  # Record the contents of LaTeXML::Package::Pool as preloaded
-  my $pool_sub_hash = { map {$_ => 1} keys %LaTeXML::Package::Pool:: };
-  foreach my $constructor(grep {/^constructor_/} keys %LaTeXML::Definition::) {
+  foreach my $subtable (qw(value stash)) {
+    if (my $hash = $$self{table}{$subtable}) {
+      foreach my $key (keys %$hash) {
+        my $value = $$hash{$key}[0];
+        my $type  = ref $value;
+        if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
+                                                # Local assignment
+          $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
+          unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
+      # Record the contents of LaTeXML::Package::Pool as preloaded
+  my $pool_sub_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
+  foreach my $constructor (grep { /^constructor_/ } keys %LaTeXML::Definition::) {
     $pool_sub_hash->{$constructor} = 1; }
-  $self->assignValue('_PRELOADED_POOL_',$pool_sub_hash,'global');
+  $self->assignValue('_PRELOADED_POOL_', $pool_sub_hash, 'global');
   # Now mark the top frame as LOCKED!!!
   $$self{undo}[0]{_FRAME_LOCK_} = 1; }
 
@@ -394,16 +400,16 @@ sub popDaemonFrame {
     # Any non-preloaded Pool routines should be wiped away, as we
     # might want to reuse the Pool namespaces for the next run.
     my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
-    $self->assignValue('_PRELOADED_POOL_',undef,'global');
+    $self->assignValue('_PRELOADED_POOL_', undef, 'global');
     foreach my $subname (keys %LaTeXML::Package::Pool::) {
       unless (exists $pool_preloaded_hash->{$subname}) {
-        delete $LaTeXML::Package::Pool::{$subname};  
+        delete $LaTeXML::Package::Pool::{$subname};
       }
     }
-    foreach my $constructor (grep {/^constructor_/} (keys %LaTeXML::Definition::)) {
+    foreach my $constructor (grep { /^constructor_/ } (keys %LaTeXML::Definition::)) {
       unless (exists $pool_preloaded_hash->{$constructor}) {
         delete $LaTeXML::Definition::{$constructor};
-    }}
+      } }
     # Finally, pop the frame
     $self->popFrame; }
   else {
@@ -413,17 +419,17 @@ sub popDaemonFrame {
 
 #======================================================================
 # Set one of the definition prefixes global, etc (only global matters!)
-sub setPrefix     {
-  my($self, $prefix)=@_;
+sub setPrefix {
+  my ($self, $prefix) = @_;
   $$self{prefixes}{$prefix} = 1;
   return; }
 
 sub getPrefix {
-  my($self,$prefix)=@_;
+  my ($self, $prefix) = @_;
   return $$self{prefixes}{$prefix}; }
 
 sub clearPrefixes {
-  my($self)=@_;
+  my ($self) = @_;
   $$self{prefixes} = {};
   return; }
 
@@ -510,9 +516,9 @@ sub getStatus {
   return $$self{status}{$type}; }
 
 sub setStatus {
-  my($self,$type,$value)=@_;
+  my ($self, $type, $value) = @_;
   if (($type ne "missing") && ($type ne "undefined")) {
-  $$self{status}{$type} = $value; }}
+    $$self{status}{$type} = $value; } }
 
 sub getStatusMessage {
   my ($self) = @_;
@@ -536,17 +542,17 @@ sub getStatusMessage {
   return join('; ', @report) || 'No obvious problems'; }
 
 sub getStatusCode {
-  my($self)=@_;
-  my $status= $$self{status};
+  my ($self) = @_;
+  my $status = $$self{status};
   my $code;
-  if ($$status{fatal} && $$status{fatal}>0) {
-      $code=3;
-  } elsif ($$status{error} && $$status{error}>0) {
-      $code=2;
-  } elsif ($$status{warning} && $$status{warning}>0) {
-      $code=1;
+  if ($$status{fatal} && $$status{fatal} > 0) {
+    $code = 3;
+  } elsif ($$status{error} && $$status{error} > 0) {
+    $code = 2;
+  } elsif ($$status{warning} && $$status{warning} > 0) {
+    $code = 1;
   } else {
-      $code=0;
+    $code = 0;
   }
   $code;
 }

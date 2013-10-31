@@ -22,7 +22,7 @@ use Pod::Find qw(pod_where);
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use Data::Dumper;
-our $PROFILES_DB={}; # Class-wide, caches all profiles that get used while the server is alive
+our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
 our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
 
 sub new {
@@ -206,8 +206,8 @@ sub read_keyvals {
   my $cmdopts = [];
   while (my ($key, $value) = splice(@$opts, 0, 2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
-    next if (! length($value)) && (grep {/^$key\=/} @GETOPT_KEYS);
-    $key = "--$key" unless $key=~/^\-\-/;
+    next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
+    $key = "--$key" unless $key =~ /^\-\-/;
     $value = length($value) ? "=$value" : '';
     push @$cmdopts, "$key$value";
   }
@@ -360,18 +360,18 @@ sub _prepare_options {
   unshift(@{ $opts->{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($opts->{type} eq 'BibTeX');
 
   # Destination extension might indicate the format:
-  if ((!defined $opts->{format}) && (defined $opts->{destination})){
-    if ($opts->{destination}=~/\.([^.]+)$/) {
-      $opts->{format}=$1; }}
+  if ((!defined $opts->{format}) && (defined $opts->{destination})) {
+    if ($opts->{destination} =~ /\.([^.]+)$/) {
+      $opts->{format} = $1; } }
   if ($opts->{format}) {
     # Lower-case for sanity's sake
     $opts->{format} = lc($opts->{format});
     if ($opts->{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
-      $opts->{format} = 'html5';
+      $opts->{format}   = 'html5';
       $opts->{whatsout} = 'archive';
     }
-    $opts->{is_html} = ($opts->{format}=~/^html5?$/);
+    $opts->{is_html} = ($opts->{format} =~ /^html5?$/);
     $opts->{whatsout} = 'archive' if (($opts->{format} eq 'epub') || ($opts->{format} eq 'mobi'));
   }
   #======================================================================
@@ -379,15 +379,16 @@ sub _prepare_options {
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  $opts->{post}=1 if ( (! defined $opts->{post}) &&
-    (scalar(@{$opts->{math_formats}}) )
+  $opts->{post} = 1 if ((!defined $opts->{post}) &&
+    (scalar(@{ $opts->{math_formats} }))
     || ($opts->{stylesheet})
     || $opts->{is_html}
     || ($opts->{whatsout} && ($opts->{whatsout} ne 'document'))
   );
-                       # || ... || ... || ...
-  # $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
-  if ($opts->{post}) { # No need to bother if we're not post-processing
+# || ... || ... || ...
+# $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
+  if ($opts->{post}) {    # No need to bother if we're not post-processing
+
     # Default: scan and crossref on, other advanced off
     $opts->{prescan}  = undef unless defined $opts->{prescan};
     $opts->{dbfile}   = undef unless defined $opts->{dbfile};
@@ -404,13 +405,13 @@ sub _prepare_options {
     $opts->{navtocstyles} = { context => 1, normal => 1, none => 1 } unless defined $opts->{navtocstyles};
     $opts->{navtoc} = lc($opts->{navtoc}) if defined $opts->{navtoc};
     delete $opts->{navtoc} if ($opts->{navtoc} && ($opts->{navtoc} eq 'none'));
-    if($opts->{navtoc}){
-      if(!$opts->{navtocstyles}->{$opts->{navtoc}}){
-        croak($opts->{navtoc}." is not a recognized style of navigation TOC"); }
-      if(!$opts->{crossref}){
-        croak("Cannot use option \"navigationtoc\" (".$opts->{navtoc}.") without \"crossref\""); }}
-    $opts->{urlstyle}='server' unless defined $opts->{urlstyle};
-    $opts->{bibliographies} = [] unless defined $opts->{bibliographies};
+    if ($opts->{navtoc}) {
+      if (!$opts->{navtocstyles}->{ $opts->{navtoc} }) {
+        croak($opts->{navtoc} . " is not a recognized style of navigation TOC"); }
+      if (!$opts->{crossref}) {
+        croak("Cannot use option \"navigationtoc\" (" . $opts->{navtoc} . ") without \"crossref\""); } }
+    $opts->{urlstyle}       = 'server' unless defined $opts->{urlstyle};
+    $opts->{bibliographies} = []       unless defined $opts->{bibliographies};
 
     # Validation:
     $opts->{validate} = 1 unless defined $opts->{validate};
@@ -436,26 +437,26 @@ sub _prepare_options {
     $opts->{format} = "xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
     $opts->{format} = "xhtml" unless defined $opts->{format};
     if (!$opts->{stylesheet}) {
-      if ($opts->{format} =~ /^xhtml|epub|mobi$/) {$opts->{stylesheet} = "LaTeXML-xhtml.xsl";}
-      elsif ($opts->{format} eq "html") {$opts->{stylesheet} = "LaTeXML-html.xsl";}
-      elsif ($opts->{format} eq "html5") {$opts->{stylesheet} = "LaTeXML-html5.xsl";}
-      elsif ($opts->{format} eq "xml") {delete $opts->{stylesheet};}
-      else {croak("Unrecognized target format: ".$opts->{format});}
+      if    ($opts->{format} =~ /^xhtml|epub|mobi$/) { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
+      elsif ($opts->{format} eq "html")              { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
+      elsif ($opts->{format} eq "html5")             { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
+      elsif ($opts->{format} eq "xml") { delete $opts->{stylesheet}; }
+      else                             { croak("Unrecognized target format: " . $opts->{format}); }
     }
     # Check format and complete math and image options
     if ($opts->{format} eq 'html') {
-      $opts->{svg}=0 unless defined $opts->{svg}; # No SVG by default.
-      croak("Default html stylesheet only supports math images, not ".join(', ',@{$opts->{math_formats}}))
-        if scalar(@{$opts->{math_formats}});
+      $opts->{svg} = 0 unless defined $opts->{svg};    # No SVG by default.
+      croak("Default html stylesheet only supports math images, not " . join(', ', @{ $opts->{math_formats} }))
+        if scalar(@{ $opts->{math_formats} });
       croak("Default html stylesheet does not support svg") if $opts->{svg};
       $opts->{mathimages}   = 1;
       $opts->{math_formats} = [];
     }
     $opts->{dographics} = 1 unless defined $opts->{dographics};
     $opts->{picimages}  = 1 unless defined $opts->{picimages};
-    $opts->{svg} = 1 unless defined $opts->{svg};
+    $opts->{svg}        = 1 unless defined $opts->{svg};
     # PMML default if we're HTMLy and all else fails and no mathimages:
-    if  (((! defined $opts->{math_formats}) || (!scalar(@{$opts->{math_formats}}))) &&
+    if (((!defined $opts->{math_formats}) || (!scalar(@{ $opts->{math_formats} }))) &&
       (!$opts->{mathimages}) && $opts->{is_html})
     {
       push @{ $opts->{math_formats} }, 'pmml';
