@@ -16,26 +16,30 @@ use strict;
 use LaTeXML::Package;
 
 RawTeX('\newif\if@EURleft\@EURlefttrue');
-DeclareOption('left',      '\@EURlefttrue');
-DeclareOption('right',     '\@EURleftfalse');
-DeclareOption('official',  undef);
-DeclareOption('gen',       undef);
-DeclareOption('gennorrow', undef);
-DeclareOption('genwide',   undef);
+DeclareOption('left',  '\@EURlefttrue');
+DeclareOption('right', '\@EURleftfalse');
+DeclareOption('official', undef);
+DeclareOption('gen',      undef);
+DeclareOption('gennorrow',undef);
+DeclareOption('genwide',  undef);
 
 ProcessOptions();
 
-DefMacro('\EUR{}', '{\if@EURleft\euro\,\fi#1\if@EURleft\else\,\euro\fi}');
+DefMacro('\EUR{}','{\if@EURleft\euro\,\fi#1\if@EURleft\else\,\euro\fi}');
 
 DefMacro('\officialeuro', "\x{20AC}");
 Let('\euro', '\officialeuro');
 
 # People shouldn't be using these, but let's at least avoid errors.
-DefMacro('\eurobars',       '=');
-DefMacro('\eurobarsnarrow', '=');
-DefMacro('\eurobarswide',   '=');
+DefMacro('\eurobars','=');
+DefMacro('\eurobarsnarrow','=');
+DefMacro('\eurobarswide','=');
 Let('\geneuro',       '\officialeuro');
 Let('\geneuronarrow', '\officialeuro');
 Let('\geneurowide',   '\officialeuro');
+
+
+
+
 
 1;

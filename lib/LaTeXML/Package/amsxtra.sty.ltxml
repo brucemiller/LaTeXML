@@ -16,18 +16,18 @@ use LaTeXML::Package;
 #**********************************************************************
 # See amsldoc
 
-DefMacro('\sphat', Tokens(T_SUPER, T_OTHER('^')));
-DefMacro('\spcheck', '^{\vee}');
-DefMacro('\sptilde', Tokens(T_SUPER, T_OTHER('~')));
-DefMacro('\spdot',   '^{\dot}');
-DefMacro('\spddot',  '^{\dot\dot}');
-DefMacro('\spdddot', '^{\dot\dot\dot}');
-DefMacro('\spbreve', '^{\smile}');                     # close enough?
+DefMacro('\sphat',Tokens(T_SUPER,T_OTHER('^')));
+DefMacro('\spcheck','^{\vee}');
+DefMacro('\sptilde',Tokens(T_SUPER,T_OTHER('~')));
+DefMacro('\spdot','^{\dot}');
+DefMacro('\spddot','^{\dot\dot}');
+DefMacro('\spdddot','^{\dot\dot\dot}');
+DefMacro('\spbreve','^{\smile}'); # close enough?
 
 # Oh what the heck...
-DefMacro('\fracwithdelims[]{}{}{}{}', '\left#2\frac{#4}{#5}\right#3');
+DefMacro('\fracwithdelims[]{}{}{}{}','\left#2\frac{#4}{#5}\right#3');
 # I can't quite figure out what the point of this one is,
 # and can't find documentation.
-DefMacro('\accentedsymbol{}{}', '\def\#1{$#2}');
+DefMacro('\accentedsymbol{}{}','\def\#1{$#2}');
 #**********************************************************************
 1;

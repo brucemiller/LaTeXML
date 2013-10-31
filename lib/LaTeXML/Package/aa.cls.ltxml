@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
+# | Thanks to the arXMLiv group for initial implementation              | # 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -24,18 +24,18 @@ use LaTeXML::Package;
 # Class Options
 # Ignorable options
 foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
-  draft final referee
-  longauth rnote
-  oldversion
-  runningheads
-  envcountreset envcountsect
-  structabstract traditabstract
-  letter)) {
-  DeclareOption($option, undef); }
+		       draft final referee
+		       longauth rnote
+		       oldversion
+		       runningheads
+		       envcountreset envcountsect
+		       structabstract traditabstract
+		       letter)){
+  DeclareOption($option,undef); }
 
 # Anything else gets passed to article.
-DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+DeclareOption(undef,sub {
+  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 

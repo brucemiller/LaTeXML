@@ -18,9 +18,9 @@ use LaTeXML::Package;
 # Predefine, then load standard file.
 
 # Pre-define Ogonek, it's defined in t1enc.def as ugly ooalign
-DefPrimitiveI('\textapplelogo', undef, "[applelogo]");
+DefPrimitiveI('\textapplelogo',undef,"[applelogo]");
 # Now read the rest from the REAL applemac
-InputDefinitions('applemac', type => 'def', noltxml => 1);
+InputDefinitions('applemac',type=>'def',noltxml=>1);
 
 #**********************************************************************
 

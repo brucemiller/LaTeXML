@@ -21,189 +21,189 @@ RequirePackage('amsfonts');
 
 #======================================================================
 # Lowercase Greek letters
-DefMath('\digamma',  "\x{03DD}");    # GREEK SMALL LETTER DIGAMMA
-DefMath('\varkappa', "\x{03F0}");    # GREEK KAPPA SYMBOL
+DefMath('\digamma',            "\x{03DD}"); # GREEK SMALL LETTER DIGAMMA
+DefMath('\varkappa',           "\x{03F0}"); # GREEK KAPPA SYMBOL
 
 #======================================================================
 # Hebrew
-DefMath('\beth',   "\x{2136}");    # BET SYMBOL
-DefMath('\daleth', "\x{2138}");    # DALET SYMBOL
-DefMath('\gimel',  "\x{2137}");    # GIMEL SYMBOL
+DefMath('\beth',               "\x{2136}"); # BET SYMBOL
+DefMath('\daleth',             "\x{2138}"); # DALET SYMBOL
+DefMath('\gimel',              "\x{2137}"); # GIMEL SYMBOL
 
 #======================================================================
 # Miscellaneous
 # \hbar  in LaTeX
-DefMath('\hslash', "\x{210F}", role => 'ID', meaning => 'Planck-constant-over-2-pi');
-DefMath('\vartriangle',  "\x{25B3}");
-DefMath('\triangledown', "\x{25BD}");
+DefMath('\hslash',             "\x{210F}", role=>'ID', meaning=>'Planck-constant-over-2-pi');
+DefMath('\vartriangle',        "\x{25B3}");
+DefMath('\triangledown',       "\x{25BD}");
 # \square, \lozenge in amsfonts
-DefMath('\circledS', "\x{24C8}");
+DefMath('\circledS',           "\x{24C8}");
 # \angle in tex
-DefMath('\measuredangle', "\x{2221}");
-DefMath('\nexists', "\x{2204}", role => 'FUNCTION', meaning => 'not-exists');
+DefMath('\measuredangle',      "\x{2221}");
+DefMath('\nexists',            "\x{2204}", role=>'FUNCTION', meaning=>'not-exists');
 # \mho in latex
-DefMath('\Finv',              "\x{2132}");
-DefMath('\Game',              "\x{2141}");
+DefMath('\Finv',               "\x{2132}");
+DefMath('\Game',               "\x{2141}");
 DefMath('\Bbbk',              "\x{1D55C}");
-DefMath('\backprime',         "\x{2035}");
-DefMath('\varnothing',        "\x{2205}", role => 'ID', meaning => 'empty-set');
-DefMath('\blacktriangle',     "\x{25B2}");
-DefMath('\blacktriangledown', "\x{25BC}");
-DefMath('\blacksquare',       "\x{25A0}");
-DefMath('\blacklozenge',      "\x{25C6}");
-DefMath('\bigstar',           "\x{2605}");
-DefMath('\sphericalangle',    "\x{2222}");
-DefMath('\complement', "\x{2201}", meaning => 'complement');
-DefMath('\eth',        UTF(0xF0));
-DefMath('\diagup',     "\x{2571}");
-DefMath('\diagdown',   "\x{2572}");
+DefMath('\backprime',          "\x{2035}");
+DefMath('\varnothing',         "\x{2205}", role=>'ID', meaning=>'empty-set');
+DefMath('\blacktriangle',      "\x{25B2}");
+DefMath('\blacktriangledown',  "\x{25BC}");
+DefMath('\blacksquare',        "\x{25A0}");
+DefMath('\blacklozenge',       "\x{25C6}");
+DefMath('\bigstar',            "\x{2605}");
+DefMath('\sphericalangle',     "\x{2222}");
+DefMath('\complement',         "\x{2201}", meaning=>'complement');
+DefMath('\eth',                UTF(0xF0));
+DefMath('\diagup',             "\x{2571}");
+DefMath('\diagdown',           "\x{2572}");
 
 #======================================================================
 # Binary operators
-DefMath('\dotplus',        "\x{2214}", role => 'ADDOP');                                  # DOT PLUS
-DefMath('\smallsetminus',  "\x{2216}", role => 'ADDOP', meaning => 'set-minus');
-DefMath('\Cap',            "\x{22D2}", role => 'ADDOP', meaning => 'double-intersection');
-DefMath('\doublecap',      "\x{22D2}", role => 'ADDOP', meaning => 'double-intersection');
-DefMath('\Cup',            "\x{22D3}", role => 'ADDOP', meaning => 'double-union');
-DefMath('\doublecup',      "\x{22D3}", role => 'ADDOP', meaning => 'double-union');
-DefMath('\barwedge',       "\x{22BC}", role => 'ADDOP', meaning => 'not-and');
-DefMath('\veebar',         "\x{22BB}", role => 'ADDOP', meaning => 'exclusive-or');
-DefMath('\doublebarwedge', "\x{2A5E}", role => 'ADDOP');
-DefMath('\boxminus',      "\x{229F}", role => 'ADDOP');    # SQUARED MINUS
-DefMath('\boxtimes',      "\x{22A0}", role => 'MULOP');    # SQUARED TIMES
-DefMath('\boxdot',        "\x{22A1}", role => 'MULOP');    # SQUARED DOT OPERATOR
-DefMath('\boxplus',       "\x{229E}", role => 'ADDOP');    # SQUARED PLUS
-DefMath('\divideontimes', "\x{22C7}", role => 'MULOP');    # DIVISION TIMES
-DefMath('\ltimes', "\x{22C9}", role => 'MULOP', meaning => 'left-normal-factor-semidirect-product');
-DefMath('\rtimes', "\x{22CA}", role => 'MULOP', meaning => 'right-normal-factor-semidirect-product');
-DefMath('\leftthreetimes',  "\x{22CB}", role => 'MULOP', meaning => 'left-semidirect-product');
-DefMath('\rightthreetimes', "\x{22CC}", role => 'MULOP', meaning => 'right-semidirect-product');
-DefMath('\curlywedge',      "\x{22CF}", role => 'ADDOP', meaning => 'and');
-DefMath('\curlyvee',        "\x{22CE}", role => 'ADDOP', meaning => 'or');
-DefMath('\circleddash', "\x{229D}", role => 'ADDOP');      # CIRCLED DASH
-DefMath('\circledast',  "\x{229B}", role => 'MULOP');      # CIRCLED ASTERISK OPERATOR
-DefMath('\circledcirc', "\x{229A}", role => 'MULOP');      # CIRCLED RING OPERATOR
-DefMath('\centerdot',   "\x{2219}", role => 'MULOP');      # CIRCLED DOT OPERATOR
-DefMath('\intercal',    "\x{22BA}", role => 'ADDOP');      # INTERCALATE
+DefMath('\dotplus',            "\x{2214}", role=>'ADDOP'); # DOT PLUS
+DefMath('\smallsetminus',      "\x{2216}", role=>'ADDOP', meaning=>'set-minus');
+DefMath('\Cap',                "\x{22D2}", role=>'ADDOP', meaning=>'double-intersection');
+DefMath('\doublecap',          "\x{22D2}", role=>'ADDOP', meaning=>'double-intersection');
+DefMath('\Cup',                "\x{22D3}", role=>'ADDOP', meaning=>'double-union');
+DefMath('\doublecup',          "\x{22D3}", role=>'ADDOP', meaning=>'double-union');
+DefMath('\barwedge',           "\x{22BC}", role=>'ADDOP', meaning=>'not-and');
+DefMath('\veebar',             "\x{22BB}", role=>'ADDOP', meaning=>'exclusive-or');
+DefMath('\doublebarwedge',     "\x{2A5E}", role=>'ADDOP');
+DefMath('\boxminus',           "\x{229F}", role=>'ADDOP'); # SQUARED MINUS
+DefMath('\boxtimes',           "\x{22A0}", role=>'MULOP'); # SQUARED TIMES
+DefMath('\boxdot',             "\x{22A1}", role=>'MULOP'); # SQUARED DOT OPERATOR
+DefMath('\boxplus',            "\x{229E}", role=>'ADDOP'); # SQUARED PLUS
+DefMath('\divideontimes',      "\x{22C7}", role=>'MULOP'); # DIVISION TIMES
+DefMath('\ltimes',             "\x{22C9}", role=>'MULOP', meaning=>'left-normal-factor-semidirect-product');
+DefMath('\rtimes',             "\x{22CA}", role=>'MULOP', meaning=>'right-normal-factor-semidirect-product');
+DefMath('\leftthreetimes',     "\x{22CB}", role=>'MULOP', meaning=>'left-semidirect-product');
+DefMath('\rightthreetimes',    "\x{22CC}", role=>'MULOP', meaning=>'right-semidirect-product');
+DefMath('\curlywedge',         "\x{22CF}", role=>'ADDOP', meaning=>'and');
+DefMath('\curlyvee',           "\x{22CE}", role=>'ADDOP', meaning=>'or');
+DefMath('\circleddash',        "\x{229D}", role=>'ADDOP'); # CIRCLED DASH
+DefMath('\circledast',         "\x{229B}", role=>'MULOP'); # CIRCLED ASTERISK OPERATOR
+DefMath('\circledcirc',        "\x{229A}", role=>'MULOP'); # CIRCLED RING OPERATOR
+DefMath('\centerdot',          "\x{2219}", role=>'MULOP'); # CIRCLED DOT OPERATOR
+DefMath('\intercal',           "\x{22BA}", role=>'ADDOP'); # INTERCALATE
 
 #======================================================================
 # Binary relations
-DefMath('\leqq', "\x{2266}", role => 'RELOP',
-  meaning => 'less-than-or-equals');
-DefMath('\leqslant', "\x{2A7D}", role => 'RELOP',
-  meaning => 'less-than-or-equals');
-DefMath('\eqslantless', "\x{2A95}", role => 'RELOP',
-  meaning => 'less-than-or-equals');
-DefMath('\lesssim', "\x{2272}", role => 'RELOP',
-  meaning => 'less-than-or-similar-to');
-DefMath('\lessapprox', "\x{2A85}", role => 'RELOP',
-  meaning => 'less-than-or-approximately-equals');
-DefMath('\approxeq', "\x{224A}", role => 'RELOP',
-  meaning => 'approximately-equals-or-equals');
-DefMath('\lessdot', "\x{22D6}", role => 'RELOP');    # LESS-THAN WITH DOT
-DefMath('\lll', "\x{22D8}", role => 'RELOP',
-  meaning => 'very-much-less-than');                 # VERY MUCH LESS-THAN
-DefMath('\llless', "\x{22D8}", role => 'RELOP',
-  meaning => 'very-much-less-than');                 # VERY MUCH LESS-THAN
-DefMath('\lessgtr', "\x{2276}", role => 'RELOP',
-  meaning => 'less-than-or-greater-than');
-DefMath('\lesseqgtr', "\x{22DA}", role => 'RELOP',
-  meaning => 'less-than-or-equals-or-greater-than');
-DefMath('\lesseqqgtr', "\x{2A8B}", role => 'RELOP',
-  meaning => 'less-than-or-equals-or-greater-than');
-DefMath('\doteqdot', "\x{2251}", role => 'RELOP',
-  meaning => 'geometrically-equals');
-DefMath('\Doteq', "\x{2251}", role => 'RELOP',
-  meaning => 'geometrically-equals');
-DefMath('\risingdotseq', "\x{2253}", role => 'RELOP',
-  meaning => 'image-of-or-approximately-equals');
-DefMath('\fallingdotseq', "\x{2252}", role => 'RELOP',
-  meaning => 'approximately-equals-or-image-of');
-DefMath('\backsim', "\x{223D}", role => 'RELOP');    # REVERSED TILDE
-DefMath('\backsimeq', "\x{224C}", role => 'RELOP'); # ALL EQUAL TO; Note: this has double rather than single bar!!!
-DefMath('\subseteqq', "\x{2AC5}", role => 'RELOP',
-  meaning => 'subset-of-or-equals');
-DefMath('\Subset', "\x{22D0}", role => 'RELOP',
-  meaning => 'double-subset-of');
+DefMath('\leqq',               "\x{2266}", role=>'RELOP',
+	meaning=>'less-than-or-equals');
+DefMath('\leqslant',           "\x{2A7D}", role=>'RELOP',
+	meaning=>'less-than-or-equals');
+DefMath('\eqslantless',        "\x{2A95}", role=>'RELOP',
+	meaning=>'less-than-or-equals');
+DefMath('\lesssim',            "\x{2272}", role=>'RELOP',
+	meaning=>'less-than-or-similar-to');
+DefMath('\lessapprox',         "\x{2A85}", role=>'RELOP',
+	meaning=>'less-than-or-approximately-equals');
+DefMath('\approxeq',           "\x{224A}", role=>'RELOP',
+	meaning=>'approximately-equals-or-equals');
+DefMath('\lessdot',            "\x{22D6}", role=>'RELOP'); # LESS-THAN WITH DOT
+DefMath('\lll',                "\x{22D8}", role=>'RELOP',
+	meaning=>'very-much-less-than'); # VERY MUCH LESS-THAN
+DefMath('\llless',             "\x{22D8}", role=>'RELOP',
+	meaning=>'very-much-less-than'); # VERY MUCH LESS-THAN
+DefMath('\lessgtr',            "\x{2276}", role=>'RELOP',
+	meaning=>'less-than-or-greater-than');
+DefMath('\lesseqgtr',          "\x{22DA}", role=>'RELOP',
+	meaning=>'less-than-or-equals-or-greater-than');
+DefMath('\lesseqqgtr',         "\x{2A8B}", role=>'RELOP',
+	meaning=>'less-than-or-equals-or-greater-than');
+DefMath('\doteqdot',           "\x{2251}", role=>'RELOP',
+       meaning=>'geometrically-equals');
+DefMath('\Doteq',              "\x{2251}", role=>'RELOP',
+	meaning=>'geometrically-equals');
+DefMath('\risingdotseq',       "\x{2253}", role=>'RELOP',
+	meaning=>'image-of-or-approximately-equals');
+DefMath('\fallingdotseq',      "\x{2252}", role=>'RELOP',
+	meaning=>'approximately-equals-or-image-of');
+DefMath('\backsim',            "\x{223D}", role=>'RELOP'); # REVERSED TILDE
+DefMath('\backsimeq',          "\x{224C}", role=>'RELOP'); # ALL EQUAL TO; Note: this has double rather than single bar!!!
+DefMath('\subseteqq',          "\x{2AC5}", role=>'RELOP',
+	meaning=>'subset-of-or-equals');
+DefMath('\Subset',             "\x{22D0}", role=>'RELOP',
+	meaning=>'double-subset-of');
 # \sqsubset in tex
-DefMath('\preccurlyeq', "\x{227C}", role => 'RELOP',
-  meaning => 'precedes-or-equals');
-DefMath('\curlyeqprec', "\x{22DE}", role => 'RELOP',
-  meaning => 'equals-or-preceeds');
-DefMath('\precsim', "\x{227E}", role => 'RELOP',
-  meaning => 'precedes-or-equivalent-to');
-DefMath('\precapprox', "\x{2AB7}", role => 'RELOP',
-  meaning => 'precedes-or-approximately-equals');
+DefMath('\preccurlyeq',        "\x{227C}", role=>'RELOP',
+	meaning=>'precedes-or-equals');
+DefMath('\curlyeqprec',        "\x{22DE}", role=>'RELOP',
+	meaning=>'equals-or-preceeds');
+DefMath('\precsim',            "\x{227E}", role=>'RELOP',
+	meaning=>'precedes-or-equivalent-to');
+DefMath('\precapprox',         "\x{2AB7}", role=>'RELOP',
+	meaning=>'precedes-or-approximately-equals');
 # \vartriangleleft, trianglelefteq in amsfonts
-DefMath('\vDash',      "\x{22A8}", role => 'RELOP');    # TRUE
-DefMath('\Vvdash',     "\x{22AA}", role => 'RELOP');    # TRIPLE VERTICAL BAR RIGHT TURNSTILE
-DefMath('\smallsmile', "\x{2323}", role => 'RELOP');    # SMILE (small ?)
-DefMath('\smallfrown', "\x{2322}", role => 'RELOP');    # FROWN (small ?)
-DefMath('\bumpeq', "\x{224F}", role => 'RELOP',
-  meaning => 'difference-between');
-DefMath('\Bumpeq', "\x{224E}", role => 'RELOP',
-  meaning => 'geometrically-equals');
-DefMath('\geqq', "\x{2267}", role => 'RELOP',
-  meaning => 'greater-than-or-equals');
-DefMath('\geqslant', "\x{2A7E}", role => 'RELOP',
-  meaning => 'greater-than-or-equals');
-DefMath('\eqslantgtr', "\x{2A96}", role => 'RELOP',
-  meaning => 'greater-than-or-equals');
-DefMath('\gtrsim', "\x{2273}", role => 'RELOP',
-  meaning => 'greater-than-or-equivalent-to');
-DefMath('\gtrapprox', "\x{2A86}", role => 'RELOP',
-  meaning => 'greater-than-or-approximately-equals');
-DefMath('\eqsim',  "\x{2242}", role => 'RELOP');    # MINUS TILDE
-DefMath('\gtrdot', "\x{22D7}", role => 'RELOP');    # GREATER-THAN WITH DOT
-DefMath('\ggg', "\x{22D9}", role => 'RELOP',
-  meaning => 'very-much-greater-than');
-DefMath('\gggtr', "\x{22D9}", role => 'RELOP',
-  meaning => 'very-much-greater-than');
-DefMath('\gtrless', "\x{2277}", role => 'RELOP',
-  meaning => 'greater-than-or-less-than');
-DefMath('\gtreqless', "\x{22DB}", role => 'RELOP',
-  meaning => 'greater-than-or-equals-or-less-than');
-DefMath('\gtreqqless', "\x{2A8C}", role => 'RELOP',
-  meaning => 'greater-than-or-equals-or-less-than');
-DefMath('\eqcirc',    "\x{2256}", role => 'RELOP');    # RING IN EQUAL TO
-DefMath('\circeq',    "\x{2257}", role => 'RELOP');    # RING EQUAL TO
-DefMath('\triangleq', "\x{225C}", role => 'RELOP');    # DELTA EQUAL TO
-DefMath('\thicksim',  "\x{223C}", role => 'RELOP');    # TILDE OPERATOR; Not thick!!!
-DefMath('\thickapprox', "\x{2248}", role => 'RELOP',
-  meaning => 'approximately-equals');
-DefMath('\supseteqq', "\x{2AC6}", role => 'RELOP',
-  meaning => 'superset-of-or-equals');
-DefMath('\Supset', "\x{22D1}", role => 'RELOP',
-  meaning => 'double-superset-of');
+DefMath('\vDash',              "\x{22A8}", role=>'RELOP'); # TRUE
+DefMath('\Vvdash',             "\x{22AA}", role=>'RELOP'); # TRIPLE VERTICAL BAR RIGHT TURNSTILE
+DefMath('\smallsmile',         "\x{2323}", role=>'RELOP'); # SMILE (small ?)
+DefMath('\smallfrown',         "\x{2322}", role=>'RELOP'); # FROWN (small ?)
+DefMath('\bumpeq',             "\x{224F}", role=>'RELOP',
+	meaning=>'difference-between');
+DefMath('\Bumpeq',             "\x{224E}", role=>'RELOP',
+	meaning=>'geometrically-equals');
+DefMath('\geqq',               "\x{2267}", role=>'RELOP',
+	meaning=>'greater-than-or-equals');
+DefMath('\geqslant',           "\x{2A7E}", role=>'RELOP',
+	meaning=>'greater-than-or-equals');
+DefMath('\eqslantgtr',         "\x{2A96}", role=>'RELOP',
+	meaning=>'greater-than-or-equals');
+DefMath('\gtrsim',             "\x{2273}", role=>'RELOP',
+	meaning=>'greater-than-or-equivalent-to');
+DefMath('\gtrapprox',          "\x{2A86}", role=>'RELOP',
+	meaning=>'greater-than-or-approximately-equals');
+DefMath('\eqsim',              "\x{2242}", role=>'RELOP'); # MINUS TILDE
+DefMath('\gtrdot',             "\x{22D7}", role=>'RELOP'); # GREATER-THAN WITH DOT
+DefMath('\ggg',                "\x{22D9}", role=>'RELOP',
+	meaning=>'very-much-greater-than');
+DefMath('\gggtr',              "\x{22D9}", role=>'RELOP',
+	meaning=>'very-much-greater-than');
+DefMath('\gtrless',            "\x{2277}", role=>'RELOP',
+	meaning=>'greater-than-or-less-than');
+DefMath('\gtreqless',          "\x{22DB}", role=>'RELOP',
+	meaning=>'greater-than-or-equals-or-less-than');
+DefMath('\gtreqqless',         "\x{2A8C}", role=>'RELOP',
+        meaning=>'greater-than-or-equals-or-less-than');
+DefMath('\eqcirc',             "\x{2256}", role=>'RELOP'); # RING IN EQUAL TO
+DefMath('\circeq',             "\x{2257}", role=>'RELOP'); # RING EQUAL TO
+DefMath('\triangleq',          "\x{225C}", role=>'RELOP'); # DELTA EQUAL TO
+DefMath('\thicksim',           "\x{223C}", role=>'RELOP'); # TILDE OPERATOR; Not thick!!!
+DefMath('\thickapprox',        "\x{2248}", role=>'RELOP',
+	meaning=>'approximately-equals');
+DefMath('\supseteqq',          "\x{2AC6}", role=>'RELOP',
+	meaning=>'superset-of-or-equals');
+DefMath('\Supset',             "\x{22D1}", role=>'RELOP',
+	meaning=>'double-superset-of');
 # \sqsupset in TeX
-DefMath('\succcurlyeq', "\x{227D}", role => 'RELOP',
-  meaning => 'succeeds-or-equals');
-DefMath('\curlyeqsucc', "\x{22DF}", role => 'RELOP',
-  meaning => 'equals-or-succeeds');
-DefMath('\succsim', "\x{227F}", role => 'RELOP',
-  meaning => 'succeeds-or-equivalent-to');
-DefMath('\succapprox', "\x{2AB8}", role => 'RELOP',
-  meaning => 'succeeds-or-approximately-equals');
+DefMath('\succcurlyeq',        "\x{227D}", role=>'RELOP',
+	meaning=>'succeeds-or-equals');
+DefMath('\curlyeqsucc',        "\x{22DF}", role=>'RELOP',
+	meaning=>'equals-or-succeeds');
+DefMath('\succsim',            "\x{227F}", role=>'RELOP',
+	meaning=>'succeeds-or-equivalent-to');
+DefMath('\succapprox',         "\x{2AB8}", role=>'RELOP',
+	meaning=>'succeeds-or-approximately-equals');
 # \vartriangleright, \trianglerighteq in amsfonts
-DefMath('\Vdash', "\x{22A9}", role => 'RELOP',
-  meaning => 'forces');
-DefMath('\shortmid', "\x{2223}", role => 'RELOP',
-  meaning => 'divides');
-DefMath('\shortparallel', "\x{2225}", role => 'RELOP',
-  meaning => 'parallel-to');
-DefMath('\between', "\x{226C}", role => 'RELOP',
-  meaning => 'between');
-DefMath('\pitchfork', "\x{22D4}", role => 'RELOP',
-  meaning => 'proper-intersection');
-DefMath('\varpropto', "\x{221D}", role => 'RELOP',
-  meaning => 'proportional-to');
-DefMath('\blacktriangleleft', "\x{25C0}", role => 'RELOP');    # BLACK LEFT-POINTING TRIANGLE
-DefMath('\therefore', "\x{2234}", role => 'METARELOP',
-  meaning => 'therefore');
-DefMath('\backepsilon',        "\x{03F6}", role => 'RELOP');  # GREEK REVERSED LUNATE EPSILON SYMBOL
-DefMath('\blacktriangleright', "\x{25B6}", role => 'RELOP');  # BLACK RIGHT-POINTING TRIANGLE
-DefMath('\because', "\x{2235}", role => 'METARELOP',
-  meaning => 'because');
+DefMath('\Vdash',              "\x{22A9}", role=>'RELOP',
+	meaning=>'forces');
+DefMath('\shortmid',           "\x{2223}", role=>'RELOP',
+	meaning=>'divides');
+DefMath('\shortparallel',      "\x{2225}", role=>'RELOP',
+	meaning=>'parallel-to');
+DefMath('\between',            "\x{226C}", role=>'RELOP',
+	meaning=>'between');
+DefMath('\pitchfork',          "\x{22D4}", role=>'RELOP',
+	meaning=>'proper-intersection');
+DefMath('\varpropto',          "\x{221D}", role=>'RELOP',
+	meaning=>'proportional-to');
+DefMath('\blacktriangleleft',  "\x{25C0}", role=>'RELOP'); # BLACK LEFT-POINTING TRIANGLE
+DefMath('\therefore',          "\x{2234}", role=>'METARELOP',
+	meaning=>'therefore');
+DefMath('\backepsilon',        "\x{03F6}", role=>'RELOP'); # GREEK REVERSED LUNATE EPSILON SYMBOL
+DefMath('\blacktriangleright', "\x{25B6}", role=>'RELOP'); # BLACK RIGHT-POINTING TRIANGLE
+DefMath('\because',            "\x{2235}", role=>'METARELOP',
+	meaning=>'because');
 
 #======================================================================
 # Negated relations
@@ -211,156 +211,156 @@ DefMath('\because', "\x{2235}", role => 'METARELOP',
 # were negations of other symbols. I've used 0338 COMBINING LONG SOLIDUS OVERLAY
 # to create them, but I don't know if that's right.
 
-DefMath('\nless', "\x{226E}", role => 'RELOP',
-  meaning => 'not-less-than');
-DefMath('\nleq', "\x{2270}", role => 'RELOP',
-  meaning => 'not-less-than-nor-greater-than');
-DefMath('\nleqslant', "\x{2A7D}\x{0338}", role => 'RELOP',
-  meaning => 'not-less-than-nor-equals');
-DefMath('\nleqq', "\x{2266}\x{0338}", role => 'RELOP',
-  meaning => 'not-less-than-nor-equals');
-DefMath('\lneq', "\x{2A87}", role => 'RELOP',
-  meaning => 'less-than-and-not-equals');
-DefMath('\lneqq', "\x{2268}", role => 'RELOP',
-  meaning => 'less-than-and-not-equals');
-DefMath('\lvertneqq', "\x{2268}", role => 'RELOP',
-  meaning => 'less-than-and-not-equals');
-DefMath('\lnsim', "\x{22E6}", role => 'RELOP',
-  meaning => 'less-than-and-not-equivalent-to');
-DefMath('\lnapprox', "\x{2A89}", role => 'RELOP',
-  meaning => 'less-than-and-not-approximately-equals');
-DefMath('\nprec', "\x{2280}", role => 'RELOP',
-  meaning => 'not-precedes');
-DefMath('\npreceq', "\x{22E0}", role => 'RELOP',
-  meaning => 'not-precedes-nor-equals');    # Using slant equals?
-DefMath('\precneqq', "\x{2AB5}", role => 'RELOP',
-  meaning => 'precedes-and-not-equals');
-DefMath('\precnsim', "\x{22E8}", role => 'RELOP',
-  meaning => 'precedes-and-not-equivalent-to');
-DefMath('\precnapprox', "\x{2AB9}", role => 'RELOP',
-  meaning => 'precedes-and-not-approximately-equals');
-DefMath('\nsim', "\x{2241}", role => 'RELOP',
-  meaning => 'not-similar-to');             # NOTE TILDE
-DefMath('\nshortmid', "\x{2224}", role => 'RELOP',
-  meaning => 'not-divides');                # DOES NOT DIVIDE; Note: not short!
-DefMath('\nmid', "\x{2224}", role => 'RELOP',
-  meaning => 'not-divides');                # DOES NOT DIVIDE
-DefMath('\nvdash', "\x{22AC}", role => 'RELOP',
-  meaning => 'not-proves');
-DefMath('\nVdash', "\x{22AE}", role => 'RELOP',
-  meaning => 'not-forces');
-DefMath('\ntriangleleft', "\x{22EA}", role => 'RELOP',
-  meaning => 'not-subgroup-of');
-DefMath('\ntrianglelefteq', "\x{22EC}", role => 'RELOP',
-  meaning => 'not-subgroup-of-nor-equals');
-DefMath('\nsubseteq', "\x{2288}", role => 'RELOP',
-  meaning => 'not-subset-of-nor-equals');
-DefMath('\nsubseteqq', "\x{2AC5}\x{0338}", role => 'RELOP',
-  meaning => 'not-subset-of-nor-equals');
-DefMath('\subsetneq', "\x{228A}", role => 'RELOP',
-  meaning => 'subset-of-and-not-equals');
-DefMath('\varsubsetneq', "\x{228A}", role => 'RELOP',
-  meaning => 'subset-of-and-not-equals');
-DefMath('\subsetneqq', "\x{2ACB}", role => 'RELOP',
-  meaning => 'subset-of-and-not-equals');
-DefMath('\varsubsetneqq', "\x{2ACB}", role => 'RELOP',
-  meaning => 'subset-of-and-not-equals');
-DefMath('\supsetneq', "\x{228B}", role => 'RELOP',
-  meaning => 'superset-of-and-not-equals');
-DefMath('\varsupsetneq', "\x{228B}", role => 'RELOP',
-  meaning => 'superset-of-and-not-equals');
-DefMath('\supsetneqq', "\x{2ACC}", role => 'RELOP',
-  meaning => 'superset-of-and-not-equals');
-DefMath('\varsupsetneqq', "\x{2ACC}", role => 'RELOP',
-  meaning => 'superset-of-and-not-equals');
+DefMath('\nless',              "\x{226E}", role=>'RELOP',
+	meaning=>'not-less-than');
+DefMath('\nleq',               "\x{2270}", role=>'RELOP',
+	meaning=>'not-less-than-nor-greater-than');
+DefMath('\nleqslant',          "\x{2A7D}\x{0338}", role=>'RELOP',
+	meaning=>'not-less-than-nor-equals');
+DefMath('\nleqq',              "\x{2266}\x{0338}", role=>'RELOP',
+	meaning=>'not-less-than-nor-equals');
+DefMath('\lneq',               "\x{2A87}", role=>'RELOP',
+	meaning=>'less-than-and-not-equals');
+DefMath('\lneqq',              "\x{2268}", role=>'RELOP',
+	meaning=>'less-than-and-not-equals');
+DefMath('\lvertneqq',          "\x{2268}", role=>'RELOP',
+       meaning=>'less-than-and-not-equals');
+DefMath('\lnsim',              "\x{22E6}", role=>'RELOP',
+	meaning=>'less-than-and-not-equivalent-to');
+DefMath('\lnapprox',           "\x{2A89}", role=>'RELOP',
+	meaning=>'less-than-and-not-approximately-equals');
+DefMath('\nprec',              "\x{2280}", role=>'RELOP',
+	meaning=>'not-precedes');
+DefMath('\npreceq',            "\x{22E0}", role=>'RELOP',
+	meaning=>'not-precedes-nor-equals'); # Using slant equals?
+DefMath('\precneqq',           "\x{2AB5}", role=>'RELOP',
+	meaning=>'precedes-and-not-equals');
+DefMath('\precnsim',           "\x{22E8}", role=>'RELOP',
+	meaning=>'precedes-and-not-equivalent-to');
+DefMath('\precnapprox',        "\x{2AB9}", role=>'RELOP',
+	meaning=>'precedes-and-not-approximately-equals');
+DefMath('\nsim',               "\x{2241}", role=>'RELOP',
+	meaning=>'not-similar-to'); # NOTE TILDE
+DefMath('\nshortmid',          "\x{2224}", role=>'RELOP',
+	meaning=>'not-divides'); # DOES NOT DIVIDE; Note: not short!
+DefMath('\nmid',               "\x{2224}", role=>'RELOP',
+	meaning=>'not-divides'); # DOES NOT DIVIDE
+DefMath('\nvdash',             "\x{22AC}", role=>'RELOP',
+	meaning=>'not-proves');
+DefMath('\nVdash',             "\x{22AE}", role=>'RELOP',
+	meaning=>'not-forces');
+DefMath('\ntriangleleft',      "\x{22EA}", role=>'RELOP',
+	meaning=>'not-subgroup-of');
+DefMath('\ntrianglelefteq',    "\x{22EC}", role=>'RELOP',
+	meaning=>'not-subgroup-of-nor-equals');
+DefMath('\nsubseteq',          "\x{2288}", role=>'RELOP',
+	meaning=>'not-subset-of-nor-equals');
+DefMath('\nsubseteqq',         "\x{2AC5}\x{0338}", role=>'RELOP',
+	meaning=>'not-subset-of-nor-equals');
+DefMath('\subsetneq',          "\x{228A}", role=>'RELOP',
+	meaning=>'subset-of-and-not-equals');
+DefMath('\varsubsetneq',       "\x{228A}", role=>'RELOP',
+	meaning=>'subset-of-and-not-equals');
+DefMath('\subsetneqq',         "\x{2ACB}", role=>'RELOP',
+	meaning=>'subset-of-and-not-equals');
+DefMath('\varsubsetneqq',      "\x{2ACB}", role=>'RELOP',
+	meaning=>'subset-of-and-not-equals');
+DefMath('\supsetneq',         "\x{228B}", role=>'RELOP',
+	meaning=>'superset-of-and-not-equals');
+DefMath('\varsupsetneq',         "\x{228B}", role=>'RELOP',
+	meaning=>'superset-of-and-not-equals');
+DefMath('\supsetneqq',         "\x{2ACC}", role=>'RELOP',
+	meaning=>'superset-of-and-not-equals');
+DefMath('\varsupsetneqq',         "\x{2ACC}", role=>'RELOP',
+	meaning=>'superset-of-and-not-equals');
 
-DefMath('\ngtr', "\x{226F}", role => 'RELOP',
-  meaning => 'not-greater-than');
-DefMath('\ngeq', "\x{2271}", role => 'RELOP',
-  meaning => 'not-greater-than-nor-equals');
-DefMath('\ngeqslant', "\x{2A7E}\x{0338}", role => 'RELOP',
-  meaning => 'not-greater-than-nor-equals');
-DefMath('\ngeqq', "\x{2267}\x{0338}", role => 'RELOP',
-  meaning => 'not-greater-than-nor-equals');
-DefMath('\gneq', "\x{2A88}", role => 'RELOP',
-  meaning => 'greater-than-and-not-equals');
-DefMath('\gneqq', "\x{2269}", role => 'RELOP',
-  meaning => 'greater-than-and-not-equals');
-DefMath('\gvertneqq', "\x{2269}", role => 'RELOP',
-  meaning => 'greater-than-and-not-equals');
-DefMath('\gnsim', "\x{22E7}", role => 'RELOP',
-  meaning => 'greater-than-and-not-equivalent-to');
-DefMath('\gnapprox', "\x{2A8A}", role => 'RELOP',
-  meaning => 'greater-than-and-not-approximately-equals');
-DefMath('\nsucc', "\x{2281}", role => 'RELOP',
-  meaning => 'not-succeeds');
-DefMath('\nsucceq', "\x{22E1}", role => 'RELOP',
-  meaning => 'not-succeeds-nor-equals');
-DefMath('\succneqq', "\x{2AB6}", role => 'RELOP',
-  meaning => 'succeeds-and-not-equals');
-DefMath('\succnsim', "\x{22E9}", role => 'RELOP',
-  meaning => 'succeeds-and-not-equivalent-to');
-DefMath('\succnapprox', "\x{2ABA}", role => 'RELOP',
-  meaning => 'succeeds-and-not-approximately-equals');
-DefMath('\ncong', "\x{2247}", role => 'RELOP',
-  meaning => 'not-approximately-equals');
-DefMath('\nshortparallel', "\x{2226}", role => 'RELOP',
-  meaning => 'not-parallel-to');
-DefMath('\nparallel', "\x{2226}", role => 'RELOP',
-  meaning => 'not-parallel-to');
-DefMath('\nvDash', "\x{22AD}", role => 'RELOP');    # NOT TRUE
-DefMath('\nVDash', "\x{22AF}", role => 'RELOP'); # NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
-DefMath('\ntriangleright', "\x{22EB}", role => 'RELOP',
-  meaning => 'not-contains');
-DefMath('\ntrianglerighteq', "\x{22ED}", role => 'RELOP',
-  meaning => 'not-contains-nor-equals');
-DefMath('\nsupseteq', "\x{2289}", role => 'RELOP',
-  meaning => 'not-superset-of-nor-equals');
-DefMath('\nsupseteqq', "\x{2AC6}\x{0338}", role => 'RELOP',
-  meaning => 'not-superset-of-nor-equals');
+DefMath('\ngtr',               "\x{226F}", role=>'RELOP',
+	meaning=>'not-greater-than');
+DefMath('\ngeq',               "\x{2271}", role=>'RELOP',
+	meaning=>'not-greater-than-nor-equals');
+DefMath('\ngeqslant',          "\x{2A7E}\x{0338}", role=>'RELOP',
+	meaning=>'not-greater-than-nor-equals');
+DefMath('\ngeqq',              "\x{2267}\x{0338}", role=>'RELOP',
+	meaning=>'not-greater-than-nor-equals');
+DefMath('\gneq',               "\x{2A88}", role=>'RELOP',
+	meaning=>'greater-than-and-not-equals');
+DefMath('\gneqq',              "\x{2269}", role=>'RELOP',
+	meaning=>'greater-than-and-not-equals');
+DefMath('\gvertneqq',          "\x{2269}", role=>'RELOP',
+	meaning=>'greater-than-and-not-equals');
+DefMath('\gnsim',              "\x{22E7}", role=>'RELOP',
+	meaning=>'greater-than-and-not-equivalent-to');
+DefMath('\gnapprox',           "\x{2A8A}", role=>'RELOP',
+	meaning=>'greater-than-and-not-approximately-equals');
+DefMath('\nsucc',              "\x{2281}", role=>'RELOP',
+	meaning=>'not-succeeds');
+DefMath('\nsucceq',            "\x{22E1}", role=>'RELOP',
+	meaning=>'not-succeeds-nor-equals');
+DefMath('\succneqq',           "\x{2AB6}", role=>'RELOP',
+	meaning=>'succeeds-and-not-equals');
+DefMath('\succnsim',            "\x{22E9}", role=>'RELOP',
+	meaning=>'succeeds-and-not-equivalent-to');
+DefMath('\succnapprox',        "\x{2ABA}", role=>'RELOP',
+	meaning=>'succeeds-and-not-approximately-equals');
+DefMath('\ncong',              "\x{2247}", role=>'RELOP',
+	meaning=>'not-approximately-equals');
+DefMath('\nshortparallel',     "\x{2226}", role=>'RELOP',
+	meaning=>'not-parallel-to');
+DefMath('\nparallel',          "\x{2226}", role=>'RELOP',
+	meaning=>'not-parallel-to');
+DefMath('\nvDash',             "\x{22AD}", role=>'RELOP'); # NOT TRUE
+DefMath('\nVDash',             "\x{22AF}", role=>'RELOP'); # NEGATED DOUBLE VERTICAL BAR DOUBLE RIGHT TURNSTILE
+DefMath('\ntriangleright',     "\x{22EB}", role=>'RELOP',
+	meaning=>'not-contains');
+DefMath('\ntrianglerighteq',   "\x{22ED}", role=>'RELOP',
+	meaning=>'not-contains-nor-equals');
+DefMath('\nsupseteq',          "\x{2289}", role=>'RELOP',
+	meaning=>'not-superset-of-nor-equals');
+DefMath('\nsupseteqq',         "\x{2AC6}\x{0338}", role=>'RELOP',
+	meaning=>'not-superset-of-nor-equals');
 
 #======================================================================
 # Arrows
-DefMath('\leftleftarrows',   "\x{21C7}", role => 'ARROW');   # LEFTWARDS PAIRED ARROWS
-DefMath('\leftrightarrows',  "\x{21C6}", role => 'ARROW');   # LEFTWARDS ARROW OVER RIGHTWARDS ARROW
-DefMath('\Lleftarrow',       "\x{21DA}", role => 'ARROW');   # LEFTWARDS TRIPLE ARROW
-DefMath('\twoheadleftarrow', "\x{219E}", role => 'ARROW');   # LEFTWARDS TWHO HEADED ARROW
-DefMath('\leftarrowtail',    "\x{21A2}", role => 'ARROW');   # LEFTWARDS ARROW WITH TAIL
-DefMath('\looparrowleft',    "\x{21AB}", role => 'ARROW');   # leftwards arrow with loop
-DefMath('\leftrightharpoons', "\x{21CB}", role => 'ARROW'); # LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
-DefMath('\curvearrowleft',    "\x{21B6}", role => 'ARROW'); # ANTICLOCKWISE TOP SEMICIRCLE ARROW
-DefMath('\circlearrowleft',   "\x{21BA}", role => 'ARROW'); # ANTICLOCKWISE OPEN CIRCLE ARROW
-DefMath('\Lsh',               "\x{21B0}", role => 'ARROW'); # UPWAARDS ARROW WITH TIP LEFTWARDS
-DefMath('\upuparrows',        "\x{21C8}", role => 'ARROW'); # UPWARDS PAIRED ARROWS
-DefMath('\upharpoonleft',     "\x{21BF}", role => 'ARROW'); # UPWARDS HARPOON WITH BARB LEFTWARDS
-DefMath('\rightrightarrows',  "\x{21C9}", role => 'ARROW'); # RIGHTWARDS PAIRED ARROWS
-DefMath('\rightleftarrows',   "\x{21C4}", role => 'ARROW'); # RIGHTWARDS ARROW OVER LEFTWARD ARROW
-DefMath('\Rrightarrow',       "\x{21DB}", role => 'ARROW'); # RIGHTWARDS TRIPLE ARROW
-DefMath('\twoheadrightarrow', "\x{21A0}", role => 'ARROW'); # RIGHTWARDS TWO HEADED ARROW
-DefMath('\rightarrowtail',    "\x{21A3}", role => 'ARROW'); # RIGHTWARDS ARROW WITH TAIL
-DefMath('\looparrowright',    "\x{21AC}", role => 'ARROW'); # RIGHTWARDS ARROW WITH LOOP
+DefMath('\leftleftarrows',     "\x{21C7}", role=>'ARROW'); # LEFTWARDS PAIRED ARROWS
+DefMath('\leftrightarrows',    "\x{21C6}", role=>'ARROW'); # LEFTWARDS ARROW OVER RIGHTWARDS ARROW
+DefMath('\Lleftarrow',         "\x{21DA}", role=>'ARROW'); # LEFTWARDS TRIPLE ARROW
+DefMath('\twoheadleftarrow',   "\x{219E}", role=>'ARROW'); # LEFTWARDS TWHO HEADED ARROW
+DefMath('\leftarrowtail',      "\x{21A2}", role=>'ARROW'); # LEFTWARDS ARROW WITH TAIL
+DefMath('\looparrowleft',      "\x{21AB}", role=>'ARROW'); # leftwards arrow with loop
+DefMath('\leftrightharpoons',  "\x{21CB}", role=>'ARROW'); # LEFTWARDS HARPOON OVER RIGHTWARDS HARPOON
+DefMath('\curvearrowleft',     "\x{21B6}", role=>'ARROW'); # ANTICLOCKWISE TOP SEMICIRCLE ARROW
+DefMath('\circlearrowleft',    "\x{21BA}", role=>'ARROW'); # ANTICLOCKWISE OPEN CIRCLE ARROW
+DefMath('\Lsh',                "\x{21B0}", role=>'ARROW'); # UPWAARDS ARROW WITH TIP LEFTWARDS
+DefMath('\upuparrows',         "\x{21C8}", role=>'ARROW'); # UPWARDS PAIRED ARROWS
+DefMath('\upharpoonleft',      "\x{21BF}", role=>'ARROW'); # UPWARDS HARPOON WITH BARB LEFTWARDS
+DefMath('\rightrightarrows',   "\x{21C9}", role=>'ARROW'); # RIGHTWARDS PAIRED ARROWS
+DefMath('\rightleftarrows',    "\x{21C4}", role=>'ARROW'); # RIGHTWARDS ARROW OVER LEFTWARD ARROW
+DefMath('\Rrightarrow',        "\x{21DB}", role=>'ARROW'); # RIGHTWARDS TRIPLE ARROW
+DefMath('\twoheadrightarrow',  "\x{21A0}", role=>'ARROW'); # RIGHTWARDS TWO HEADED ARROW
+DefMath('\rightarrowtail',     "\x{21A3}", role=>'ARROW'); # RIGHTWARDS ARROW WITH TAIL
+DefMath('\looparrowright',     "\x{21AC}", role=>'ARROW'); # RIGHTWARDS ARROW WITH LOOP
 # \rightleftharpoons  21CC # RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON ; in amsfonts
-DefMath('\curvearrowright',  "\x{21B7}", role => 'ARROW');   # CLOCKWISE TOP SEMICIRCLE ARROW
-DefMath('\circlearrowright', "\x{21BB}", role => 'ARROW');   # CLOCKWISE OPEN CIRCLE ARROW
-DefMath('\Rsh',              "\x{21B1}", role => 'ARROW');   # UPWAARDS ARROW WITH TIP RIGHTWARDS
-DefMath('\downdownarrows',   "\x{21CA}", role => 'ARROW');   # DOWNWARDS PAIRED ARROWS
-DefMath('\upharpoonright',   "\x{21BE}", role => 'ARROW');   # UPWARDS HARPOON WITH BARB RIGHTWARDS
-DefMath('\restriction',      "\x{21BE}", role => 'ARROW');   # UPWARDS HARPOON WITH BARB RIGHTWARDS
-                                                             # (same as \upharpoonright)
-DefMath('\downharpoonleft',  "\x{21C3}", role => 'ARROW');   # DOWNWARDS HARPOON WITH BARB LEFTWARDS
-DefMath('\multimap',         "\x{22B8}", role => 'ARROW');   # MULTIMAP
-DefMath('\leftrightsquigarrow', "\x{21AD}", role => 'ARROW');    # LEFT RIGHT WAVE ARROW
-DefMath('\downharpoonright', "\x{21C2}", role => 'ARROW');  # DOWNWARDS HARPOON WITH BARB RIGHTWARDS
+DefMath('\curvearrowright',    "\x{21B7}", role=>'ARROW'); # CLOCKWISE TOP SEMICIRCLE ARROW
+DefMath('\circlearrowright',   "\x{21BB}", role=>'ARROW'); # CLOCKWISE OPEN CIRCLE ARROW
+DefMath('\Rsh',                "\x{21B1}", role=>'ARROW'); # UPWAARDS ARROW WITH TIP RIGHTWARDS
+DefMath('\downdownarrows',     "\x{21CA}", role=>'ARROW'); # DOWNWARDS PAIRED ARROWS
+DefMath('\upharpoonright',     "\x{21BE}", role=>'ARROW'); # UPWARDS HARPOON WITH BARB RIGHTWARDS
+DefMath('\restriction',        "\x{21BE}", role=>'ARROW'); # UPWARDS HARPOON WITH BARB RIGHTWARDS 
+				# (same as \upharpoonright)
+DefMath('\downharpoonleft',    "\x{21C3}", role=>'ARROW'); # DOWNWARDS HARPOON WITH BARB LEFTWARDS
+DefMath('\multimap',           "\x{22B8}", role=>'ARROW'); # MULTIMAP
+DefMath('\leftrightsquigarrow', "\x{21AD}", role=>'ARROW'); # LEFT RIGHT WAVE ARROW
+DefMath('\downharpoonright',   "\x{21C2}", role=>'ARROW'); # DOWNWARDS HARPOON WITH BARB RIGHTWARDS
 # \rightsquigarrow amsfonts
 
 #======================================================================
 # Negated arrows
-DefMath('\nleftarrow',      "\x{219A}", role => 'ARROW');    # LEFTWARDS ARROW WITH STROKE
-DefMath('\nLeftarrow',      "\x{21CD}", role => 'ARROW');    # LEFTWARDS DOUBLE ARROW WITH STROKE
-DefMath('\nleftrightarrow', "\x{21AE}", role => 'ARROW');    # LEFT RIGHT ARROW WITH STROKE
-DefMath('\nrightarrow',     "\x{219B}", role => 'ARROW');    # RIGHTWARDS ARROW WITH STROKE
-DefMath('\nRightarrow',     "\x{21CF}", role => 'ARROW');    # LEFTWARDS DOUBLE ARROW WITH STROKE
-DefMath('\nLeftrightarrow', "\x{21CE}", role => 'ARROW');    # LEFT RIGHT DOUBLE ARROW WITH STROKE
+DefMath('\nleftarrow',         "\x{219A}", role=>'ARROW'); # LEFTWARDS ARROW WITH STROKE
+DefMath('\nLeftarrow',         "\x{21CD}", role=>'ARROW'); # LEFTWARDS DOUBLE ARROW WITH STROKE
+DefMath('\nleftrightarrow',    "\x{21AE}", role=>'ARROW'); # LEFT RIGHT ARROW WITH STROKE
+DefMath('\nrightarrow',        "\x{219B}", role=>'ARROW'); # RIGHTWARDS ARROW WITH STROKE
+DefMath('\nRightarrow',        "\x{21CF}", role=>'ARROW'); # LEFTWARDS DOUBLE ARROW WITH STROKE
+DefMath('\nLeftrightarrow',    "\x{21CE}", role=>'ARROW'); # LEFT RIGHT DOUBLE ARROW WITH STROKE
 
 #======================================================================
 1;

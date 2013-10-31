@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for
+# / Thanks to the arXMLiv group for 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -31,42 +31,42 @@ DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
 DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
 
 # Could add more metadata..
-DefMacro('\journalid{}{}', '');
-DefMacro('\articleid{}{}', '');
-DefMacro('\paperid{}',     '');
-DefMacro('\msid{}',        '');    # Manuscript id.
+DefMacro('\journalid{}{}','');
+DefMacro('\articleid{}{}','');
+DefMacro('\paperid{}','');
+DefMacro('\msid{}','');		# Manuscript id.
 
 #\ccc{code}
-DefMacro('\ccc{}', '');            # Ignorable?
+DefMacro('\ccc{}','');		# Ignorable?
 #\cpright{type}{year}   Should be recorded somehow?
 # type is AAS, ASP, PD, none
 DefMacro('\cpright{}{}', '\@add@frontmatter{ltx:note}[role=copyright]{\copyright #2: #1}');
 
 # Editorial additions?
-DefMacro('\journal{}',    '');
-DefMacro('\volume{}',     '');
-DefMacro('\issue{}',      '');
-DefMacro('\SGMLbi{}',     '#1');
-DefMacro('\SGMLbsc{}',    '#1');
-DefMacro('\SGMLclc{}',    '#1');
-DefMacro('\SGMLentity{}', '#1');    # Actually should produce &#1; !!!
-DefMacro('\SGML{}',       '');
+DefMacro('\journal{}','');
+DefMacro('\volume{}','');
+DefMacro('\issue{}','');
+DefMacro('\SGMLbi{}','#1');
+DefMacro('\SGMLbsc{}','#1');
+DefMacro('\SGMLclc{}','#1');
+DefMacro('\SGMLentity{}','#1');	# Actually should produce &#1; !!!
+DefMacro('\SGML{}','');
 
 #======================================================================
 # 2.1.4 Short Comment
 
-DefMacro('\slugcomment{}', '\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
+DefMacro('\slugcomment{}','\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 #======================================================================
 # 2.1.5 Running Heads
 
-DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\shortauthors{}', '');                                      # not useful?
+DefMacro('\shorttitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\shortauthors{}','');	# not useful?
 # I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
 # but who knows which goes on which side.... anyway, they get misused too.
 # better have them just disappear.
-DefMacro('\lefthead{}',  '');    # Obsolete form
-DefMacro('\righthead{}', '');    # Obsolete form
+DefMacro('\lefthead{}', ''); # Obsolete form
+DefMacro('\righthead{}',''); # Obsolete form
 
 #======================================================================
 # 2.2 Starting the Main Body
@@ -76,31 +76,31 @@ DefMacro('\righthead{}', '');    # Obsolete form
 # 2.3 Title and Author Information
 
 DefMacro('\author{}',
-  '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+ '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefConstructor('\@@@affiliation{}',"^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil{}','\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 
-DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
+DefConstructor('\@@@authoraddr{}',"^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\authoraddr{}','\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
-DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefConstructor('\@@@email{}',"^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 # Redefine to straight email address after document begin.
-AddToMacro(T_CS('\@startsection@hook'), TokenizeInternal('\let\email\@@email'));
+AddToMacro(T_CS('\@startsection@hook'),TokenizeInternal('\let\email\@@email'));
 
-DefPrimitive('\and', undef);
-DefMacro('\authoremail', '\email');    # Obsolete form
+DefPrimitive('\and',undef);
+DefMacro('\authoremail','\email');  # Obsolete form
 
 # NOTE: the the footnote machinery in LaTeX.pool will connect these.
 # Ideally, we'd like these comma separated!
-DefMacro('\altaffilmark{}', sub {
-    my ($gullet, $marks) = @_;
-    map((T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END), SplitTokens($marks, T_OTHER(','))); });
+DefMacro('\altaffilmark{}',sub {
+  my($gullet,$marks)=@_;
+  map( (T_CS('\@altaffilmark'),T_BEGIN,@$_,T_END),  SplitTokens($marks,T_OTHER(','))); });
 DefConstructor('\@altaffilmark{}',
-  "<ltx:note role='affiliationmark' mark='#1'/> ");
+               "<ltx:note role='affiliationmark' mark='#1'/> ");
 DefConstructor('\altaffiltext{}{}',
-  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+	       "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
 
 #======================================================================
 # 2.4 Abstract
@@ -110,17 +110,17 @@ DefConstructor('\altaffiltext{}{}',
 # 2.5 Keywords
 
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\@ifundefined{keywordsname}{}{\keywordsname}}]{#1}');
-Let('\subjectheadings', '\keywords');
+Let(T_CS('\subjectheadings'),T_CS('\keywords'));
 
 #======================================================================
 # 2.6 Comments to Editors
 
 # Perhaps this should actually disappear?
 # DefConstructor('\notetoeditor{}',"<ltx:note role='toeditor'>#1</ltx:note>");
-DefMacro('\notetoeditor{}', '');
+DefMacro('\notetoeditor{}','');
 
 NewCounter('editornote');
-DefMacroI('\theeditornote', undef, 'E\arabic{editornote}');
+DefMacroI('\theeditornote',undef,'E\arabic{editornote}');
 #======================================================================
 # 2.7 Sections
 # normal LaTeX
@@ -135,57 +135,57 @@ DefMacroI('\theeditornote', undef, 'E\arabic{editornote}');
 # \placetable{key}
 # \placefigure{key}
 # For now, we ignore them, however.
-DefMacro('\placetable{}',  '');
-DefMacro('\placefigure{}', '');
-DefMacro('\placeplate{}',  '');
+DefMacro('\placetable{}','');
+DefMacro('\placefigure{}','');
+DefMacro('\placeplate{}','');
 
 NewCounter('plate');
-DefMacroI('\platename', undef, 'Plate');
+DefMacroI('\platename',undef,'Plate');
 
 DefEnvironment('{plate}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
-    . "#body"
-    . "</ltx:float>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+	       . "#body"
+	       ."</ltx:float>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },
+	       afterDigest=>sub { RescueCaptionCounters('plate',$_[1]); });
 
 DefEnvironment('{plate*}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
-    . "#body"
-    . "</ltx:float>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
+	       "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+	       . "#body"
+	       ."</ltx:float>",
+	       beforeDigest=>sub{ DefMacroI('\@captype',undef,'plate'); },
+	       afterDigest=>sub { RescueCaptionCounters('plate',$_[1]); });
 
 #======================================================================
 # 2.9 Acknowledgements
 
 # acts like \section{Acknowledgements}, rather than container.
-Tag("ltx:acknowledgements", autoClose => 1);
+Tag("ltx:acknowledgements", autoClose=>1);
 DefConstructor('\acknowledgements', "<ltx:acknowledgements>");
-Let('\acknowledgments', '\acknowledgements');
+Let(T_CS('\acknowledgments'),T_CS('\acknowledgements'));
 
 #======================================================================
 # 2.10 Facilities
 
 # Ultimately, this would get some more explicit semantic markup, but..
 # \facility{facilityID}
-DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>");
+DefConstructor('\facility{}',"<ltx:text class='ltx_ast_facility'>#1</ltx:text>");
 
 #======================================================================
 # 2.11 Appendices
 # almost normal LaTeX
-DefMacro('\appendix', '\@appendix');
-DefPrimitive('\@appendix', sub {
-    NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
-    NewCounter('equation', 'section', idprefix => 'E');
-    DefMacro('\thesection', '\Alph{section}', scope => 'global');
-    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
-    Let('\section',   '\appendix@section', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (LookupDefinition(T_CS('\appendixname'))) {
-      Let('\sectionname', '\appendixname', 'global'); }
-});
+DefMacro('\appendix','\@appendix');
+DefPrimitive('\@appendix',sub{
+  NewCounter('section', 'document', idprefix=>'A',nested=>['subsection']);
+  NewCounter('equation', 'section', idprefix=>'E');
+  DefMacro('\thesection', '\Alph{section}', scope=>'global');
+  DefMacro('\theequation','\thesection\arabic{equation}', scope=>'global');
+  DefMacroI('\theappendix',undef,'\thesection', scope=>'global');
+  Let(T_CS('\section'),T_CS('\appendix@section'),'global');
+  Let(T_CS('\@appendix'),T_CS('\relax'),'global');
+  if(LookupDefinition(T_CS('\appendixname'))){
+    Let(T_CS('\sectionname'),T_CS('\appendixname'),'global'); }
+ });
 
 #======================================================================
 # 2.12 Equations
@@ -193,32 +193,32 @@ DefPrimitive('\@appendix', sub {
 
 # Basically, {mathletters} is a copy of AMSMath's {subequations}... Isn't it?
 DefEnvironment('{mathletters}',
-  "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  properties => sub { RefStepID('@equationgroup'); },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+	       "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
+	       afterDigestBegin=>sub {
+		 my($stomach,$whatsit)=@_;
+		 my %eqn = RefStepCounter('equation');
+		 AssignValue(SAVED_EQUATION_NUMBER=>LookupValue('\c@equation'));
+		 ResetCounter('equation');
+		 DefMacro('\theequation',UnTeX($eqn{refnum}).'\alph{equation}');
+		 DefMacro('\theequation@ID',UnTeX($eqn{id}).'.\@equation@ID');
+	       },
+	       properties=>sub{ RefStepID('@equationgroup'); },
+	       afterDigest =>sub{ 
+		 AssignValue('\c@equation',LookupValue('SAVED_EQUATION_NUMBER'),'global'); });
 
 # \eqnum{text}  specifies equation number inside an equation
 # Basically, AMSMath's \tag ?
 DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString(Digest($_[1])), 'global'); },
-  mode => 'text');
+	       afterDigest=>sub {
+		 AssignValue(EQUATIONROW_NUMBER=>ToString(Digest($_[1])), 'global'); },
+	       mode=>'text');
 
 #======================================================================
 # 2.13 Citations and Bibliography
 
-DefMacro('\markcite{}', '');    # apparently like \cite w/o text?
+DefMacro('\markcite{}','');	# apparently like \cite w/o text?
 #======================================================================
-# 2.13.1 The thebibliography Environment
+# 2.13.1 The thebibliography Environment 
 # normal LaTeX
 
 #======================================================================
@@ -234,69 +234,69 @@ RequirePackage('natbib');
 # Is this the right treatment?
 # Is the same true for RevTeX?
 DefConstructor('\references',
-  "<ltx:bibliography xml:id='#id' "
-    . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title>#title</ltx:title>"
-    . "<ltx:biblist>",
-  afterDigest => sub { beginBibliography($_[1]); });
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
+	       . "<ltx:title>#title</ltx:title>"
+	       . "<ltx:biblist>",
+	       afterDigest=>sub { beginBibliography($_[1]); });
 DefConstructor('\endreferences',
-  "</ltx:biblist></ltx:bibliography>");
+	       "</ltx:biblist></ltx:bibliography>");
 
-Let('\reference', '\bibitem');
+Let(T_CS('\reference'),T_CS('\bibitem'));
 
 #======================================================================
 # 2.13.4 Abbreviations for Journal Names
 
-DefMacro('\aj',      '{AJ}');                             # Astronomical Journal
-DefMacro('\araa',    '{ARA\&A}');                         # Annual Review of Astron and Astrophys
-DefMacro('\apj',     '{ApJ}');                            # Astrophysical Journal
-DefMacro('\apjl',    '{ApJ}');                            # Astrophysical Journal, Letters
-DefMacro('\apjs',    '{ApJS}');                           # Astrophysical Journal, Supplement
-DefMacro('\ao',      '{Appl.~Opt.}');                     # Applied Optics
-DefMacro('\apss',    '{Ap\&SS}');                         # Astrophysics and Space Science
-DefMacro('\aap',     '{A\&A}');                           # Astronomy and Astrophysics
-DefMacro('\aapr',    '{A\&A~Rev.}');                      # Astronomy and Astrophysics Reviews
-DefMacro('\aaps',    '{A\&AS}');                          # Astronomy and Astrophysics, Supplement
-DefMacro('\azh',     '{AZh}');                            # Astronomicheskii Zhurnal
-DefMacro('\baas',    '{BAAS}');                           # Bulletin of the AAS
-DefMacro('\jrasc',   '{JRASC}');                          # Journal of the RAS of Canada
-DefMacro('\memras',  '{MmRAS}');                          # Memoirs of the RAS
-DefMacro('\mnras',   '{MNRAS}');                          # Monthly Notices of the RAS
-DefMacro('\pra',     '{Phys.~Rev.~A}');                   # Physical Review A: General Physics
-DefMacro('\prb',     '{Phys.~Rev.~B}');                   # Physical Review B: Solid State
-DefMacro('\prc',     '{Phys.~Rev.~C}');                   # Physical Review C
-DefMacro('\prd',     '{Phys.~Rev.~D}');                   # Physical Review D
-DefMacro('\pre',     '{Phys.~Rev.~E}');                   # Physical Review E
-DefMacro('\prl',     '{Phys.~Rev.~Lett.}');               # Physical Review Letters
-DefMacro('\pasp',    '{PASP}');                           # Publications of the ASP
-DefMacro('\pasj',    '{PASJ}');                           # Publications of the ASJ
-DefMacro('\qjras',   '{QJRAS}');                          # Quarterly Journal of the RAS
-DefMacro('\skytel',  '{S\&T}');                           # Sky and Telescope
-DefMacro('\solphys', '{Sol.~Phys.}');                     # Solar Physics
-DefMacro('\sovast',  '{Soviet~Ast.}');                    # Soviet Astronomy
-DefMacro('\ssr',     '{Space~Sci.~Rev.}');                # Space Science Reviews
-DefMacro('\zap',     '{ZAp}');                            # Zeitschrift fuer Astrophysik
-DefMacro('\nat',     '{Nature}');                         # Nature
-DefMacro('\iaucirc', '{IAU~Circ.}');                      # IAU Cirulars
-DefMacro('\aplett',  '{Astrophys.~Lett.}');               # Astrophysics Letters
-DefMacro('\apspr',   '{Astrophys.~Space~Phys.~Res.}');    # Astrophysics Space Physics Research
-DefMacro('\bain', '{Bull.~Astron.~Inst.~Netherlands}'); # Bulletin Astronomical Institute of the Netherlands
-DefMacro('\fcp',  '{Fund.~Cosmic~Phys.}');              # Fundamental Cosmic Physics
-DefMacro('\gca',  '{Geochim.~Cosmochim.~Acta}');        # Geochimica Cosmochimica Acta
-DefMacro('\grl',  '{Geophys.~Res.~Lett.}');             # Geophysics Research Letters
-DefMacro('\jcp',  '{J.~Chem.~Phys.}');                  # Journal of Chemical Physics
-DefMacro('\jgr',  '{J.~Geophys.~Res.}');                # Journal of Geophysics Research
-DefMacro('\jqsrt', '{J.~Quant.~Spec.~Radiat.~Transf.}'); # Journal of Quantitiative Spectroscopy and Radiative Trasfer
-DefMacro('\memsai',   '{Mem.~Soc.~Astron.~Italiana}');   # Mem. Societa Astronomica Italiana
-DefMacro('\nphysa',   '{Nucl.~Phys.~A}');                # Nuclear Physics A
-DefMacro('\physrep',  '{Phys.~Rep.}');                   # Physics Reports
-DefMacro('\physscr',  '{Phys.~Scr}');                    # Physica Scripta
-DefMacro('\planss',   '{Planet.~Space~Sci.}');           # Planetary Space Science
-DefMacro('\procspie', '{Proc.~SPIE}');                   # Proceedings of the SPIE
-Let('\astap',   '\aap');
-Let('\apjlett', '\apjl');
-Let('\apjsupp', '\apjs');
-Let('\applopt', '\ao');
+DefMacro('\aj','{AJ}');	       # Astronomical Journal
+DefMacro('\araa','{ARA\&A}');  # Annual Review of Astron and Astrophys
+DefMacro('\apj','{ApJ}');      # Astrophysical Journal
+DefMacro('\apjl','{ApJ}');     # Astrophysical Journal, Letters
+DefMacro('\apjs','{ApJS}');    # Astrophysical Journal, Supplement
+DefMacro('\ao','{Appl.~Opt.}');	# Applied Optics
+DefMacro('\apss','{Ap\&SS}');	# Astrophysics and Space Science
+DefMacro('\aap','{A\&A}');	# Astronomy and Astrophysics
+DefMacro('\aapr','{A\&A~Rev.}'); # Astronomy and Astrophysics Reviews
+DefMacro('\aaps','{A\&AS}'); # Astronomy and Astrophysics, Supplement
+DefMacro('\azh','{AZh}');    # Astronomicheskii Zhurnal
+DefMacro('\baas','{BAAS}');  # Bulletin of the AAS
+DefMacro('\jrasc','{JRASC}');	# Journal of the RAS of Canada
+DefMacro('\memras','{MmRAS}');	# Memoirs of the RAS
+DefMacro('\mnras','{MNRAS}');	# Monthly Notices of the RAS
+DefMacro('\pra','{Phys.~Rev.~A}'); # Physical Review A: General Physics
+DefMacro('\prb','{Phys.~Rev.~B}'); # Physical Review B: Solid State
+DefMacro('\prc','{Phys.~Rev.~C}'); # Physical Review C
+DefMacro('\prd','{Phys.~Rev.~D}'); # Physical Review D
+DefMacro('\pre','{Phys.~Rev.~E}'); # Physical Review E
+DefMacro('\prl','{Phys.~Rev.~Lett.}'); # Physical Review Letters
+DefMacro('\pasp','{PASP}');	       # Publications of the ASP
+DefMacro('\pasj','{PASJ}');	       # Publications of the ASJ
+DefMacro('\qjras','{QJRAS}');	       # Quarterly Journal of the RAS
+DefMacro('\skytel','{S\&T}');	       # Sky and Telescope
+DefMacro('\solphys','{Sol.~Phys.}');   # Solar Physics
+DefMacro('\sovast','{Soviet~Ast.}');   # Soviet Astronomy
+DefMacro('\ssr','{Space~Sci.~Rev.}');  # Space Science Reviews
+DefMacro('\zap','{ZAp}');	       # Zeitschrift fuer Astrophysik
+DefMacro('\nat','{Nature}');           # Nature
+DefMacro('\iaucirc','{IAU~Circ.}');    # IAU Cirulars
+DefMacro('\aplett','{Astrophys.~Lett.}'); # Astrophysics Letters
+DefMacro('\apspr','{Astrophys.~Space~Phys.~Res.}'); # Astrophysics Space Physics Research
+DefMacro('\bain','{Bull.~Astron.~Inst.~Netherlands}'); # Bulletin Astronomical Institute of the Netherlands
+DefMacro('\fcp','{Fund.~Cosmic~Phys.}'); # Fundamental Cosmic Physics
+DefMacro('\gca','{Geochim.~Cosmochim.~Acta}'); # Geochimica Cosmochimica Acta
+DefMacro('\grl','{Geophys.~Res.~Lett.}'); # Geophysics Research Letters
+DefMacro('\jcp','{J.~Chem.~Phys.}'); # Journal of Chemical Physics
+DefMacro('\jgr','{J.~Geophys.~Res.}'); # Journal of Geophysics Research
+DefMacro('\jqsrt','{J.~Quant.~Spec.~Radiat.~Transf.}');	# Journal of Quantitiative Spectroscopy and Radiative Trasfer
+DefMacro('\memsai','{Mem.~Soc.~Astron.~Italiana}'); # Mem. Societa Astronomica Italiana
+DefMacro('\nphysa','{Nucl.~Phys.~A}'); # Nuclear Physics A
+DefMacro('\physrep','{Phys.~Rep.}');   # Physics Reports
+DefMacro('\physscr','{Phys.~Scr}');    # Physica Scripta
+DefMacro('\planss','{Planet.~Space~Sci.}'); # Planetary Space Science
+DefMacro('\procspie','{Proc.~SPIE}');	    # Proceedings of the SPIE
+Let(T_CS('\astap'),T_CS('\aap'));
+Let(T_CS('\apjlett'),T_CS('\apjl'));
+Let(T_CS('\apjsupp'),T_CS('\apjs'));
+Let(T_CS('\applopt'),T_CS('\ao'));
 
 #======================================================================
 # 2.14.1 Electronic Art
@@ -309,18 +309,18 @@ RequirePackage('graphicx');
 #   \plottwo{epsfile}{epsfile}
 #   \caption{text}
 # \end{figure}
-DefMacro('\figurenum{}', '\def\thefigure{#1}');
+DefMacro('\figurenum{}','\def\thefigure{#1}');
 # Note: This needs an UnRefStepCounter('figure');
 # or at least, defer the refstep till late enough to skip if needed?
 
-DefMacro('\epsscale{}',           '');
-DefMacro('\plotone Semiverbatim', '\includegraphics[width=\textwidth]{#1}');
+DefMacro('\epsscale{}','');
+DefMacro('\plotone Semiverbatim','\includegraphics[width=\textwidth]{#1}');
 DefMacro('\plottwo Semiverbatim Semiverbatim',
-  '\hbox{\includegraphics[width=\textwidth]{#1}\includegraphics[width=\textwidth]{#2}}');
+	 '\hbox{\includegraphics[width=\textwidth]{#1}\includegraphics[width=\textwidth]{#2}}');
 
 # \plotfiddle{epsfile}{vsize}{rot}{hsf}{vsf}{htrans}{vtrans}
 # Ugh...
-DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}', '\includegraphics[width=#4pt,height=#5pt]{#1}');
+DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}','\includegraphics[width=#4pt,height=#5pt]{#1}');
 
 #======================================================================
 # 2.14.2 Figure Captions
@@ -328,15 +328,15 @@ DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}', '\includegraphics[width=#4pt,h
 # For figures added externally; Used at end of file.
 # \figcaption[filename]{text\label{key}}
 # But sometimes used just like \caption!
-DefMacro('\@figcaption OptionalSemiverbatim {}', '\begin{figure}[#1]#2\end{figure}');
-DefMacro('\figcaption', sub {
-    (((LookupValue('current_environment') || '') =~ 'figure')
-      ? T_CS('\caption') : T_CS('\@figcaption')); });
-
+DefMacro('\@figcaption OptionalSemiverbatim {}','\begin{figure}[#1]#2\end{figure}');
+DefMacro('\figcaption',sub {
+	   ( ((LookupValue('current_environment')||'') =~ 'figure') 
+	     ? T_CS('\caption') : T_CS('\@figcaption')); });
+	     
 #======================================================================
 # 2.15 Tables
 
-DefMacro('\dummytable', '\refstepcounter{table}');
+DefMacro('\dummytable','\refstepcounter{table}');
 
 #======================================================================
 # 2.15.1 The deluxetable Environment
@@ -348,90 +348,90 @@ DefMacro('\dummytable', '\refstepcounter{table}');
 #    \tablenotetext,\tablecomments,\tablerefs
 # \end{deluxetable}
 
-DefMacroI(T_CS('\begin{deluxetable}'), "{}",
-  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable}'), undef, '\end{table}');
+DefMacroI(T_CS('\begin{deluxetable}'),"{}",
+	  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable}'),undef,'\end{table}');
 
-DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
-  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable*}'), undef, '\end{table}');
+DefMacroI(T_CS('\begin{deluxetable*}'),"{}",
+	  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable*}'),undef,'\end{table}');
 
-DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
-    AssignValue('@deluxetable@template', $_[1]); });
+DefMacro('\set@deluxetable@template AlignmentTemplate',sub {
+   AssignValue('@deluxetable@template',$_[1]); });
 
-DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
-DefMacro('\enddata', '\hline\@finish@alignment\@end@deluxetabular\egroup');
+DefMacro('\startdata',  '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
+DefMacro('\enddata',    '\hline\@finish@alignment\@end@deluxetabular\egroup');
 
-DefPrimitive('\@deluxetable@bindings', sub {
-    alignmentBindings(LookupValue('@deluxetable@template'), 'text'); });
+DefPrimitive('\@deluxetable@bindings',sub {
+  alignmentBindings(LookupValue('@deluxetable@template'),'text'); });
 DefConstructor('\@@deluxetabular DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
-  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
-  beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
-DefPrimitive('\@end@deluxetabular', sub { $_[0]->egroup; });
+	       sub { my($document,$body,%props)=@_;
+		     constructAlignment($document,$body); },
+	       reversion=>'\begin{tabular}[#1]{#2}#3\end{tabular}',
+	       beforeDigest=>sub { $_[0]->bgroup; },
+	       mode=>'text');
+DefPrimitive('\@end@deluxetabular',sub{ $_[0]->egroup; });
 
 #======================================================================
 # 2.15.2 Preamble to the deluxetable
 
-DefMacro('\tabletypesize{}',       '');                    # Ignorable
-DefMacro('\rotate',                '');                    # Ignorable ?
-DefMacro('\tabletail{}',           '');
-DefMacro('\tablewidth{Dimension}', '');                    # Ignorable?
-DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
-DefMacro('\tablenum{}',            '\def\thetable{#1}');
+DefMacro('\tabletypesize{}','');	# Ignorable
+DefMacro('\rotate','');			# Ignorable ?
+DefMacro('\tabletail{}','');
+DefMacro('\tablewidth{Dimension}','');	# Ignorable?
+DefMacro('\platewidth{Dimension}','');	# Ignorable?
+DefMacro('\tablenum{}','\def\thetable{#1}');
 # Note: This needs an UnRefStepCounter('table');
-DefMacro('\platenum{}', '\def\theplate{#1}');
+DefMacro('\platenum{}','\def\theplate{#1}');
 
-DefMacro('\tablecolumns{Number}', '');                     # Ignorable ???
+DefMacro('\tablecolumns{Number}',''); # Ignorable ???
 
-Let('\tablecaption', '\caption');
+Let(T_CS('\tablecaption'),T_CS('\caption'));
 
-DefMacro('\tablehead{}', '\def\@deluxetable@header{#1\\\\\hline}');
-DefMacro('\colhead{}',   '#1');
+DefMacro('\tablehead{}','\def\@deluxetable@header{#1\\\\\hline}');
+DefMacro('\colhead{}','#1');
 
 # Mark the existing rows as being headers
-DefPrimitive('\@mark@tableheader', sub {
-    my $alignment = LookupValue('Alignment');
-    foreach my $row ($alignment->rows) {
-      map($$_{head} = 1, $row->columns); }
-    return; });
+DefPrimitive('\@mark@tableheader',sub {
+  my $alignment = LookupValue('Alignment');
+  foreach my $row ($alignment->rows){
+    map($$_{head}=1, $row->columns); }
+  return; });
 
-DefMacro('\nl',          '\\\\[0pt]');    # Obsolete form
-DefMacro('\nextline',    '\\\\[0pt]');    # Obsolete form
-DefMacro('\tablevspace', '\\\\[0pt]');    # Obsolete form
-DefMacro('\tablebreak',  '\\\\[0pt]');    # Obsolete form
+DefMacro('\nl',         '\\\\[0pt]'); # Obsolete form
+DefMacro('\nextline',   '\\\\[0pt]'); # Obsolete form
+DefMacro('\tablevspace','\\\\[0pt]'); # Obsolete form
+DefMacro('\tablebreak', '\\\\[0pt]'); # Obsolete form
 
 #======================================================================
 # 2.15.3 Content of deluxetable
 
-DefMacro('\phn',   '\phantom{0}');
-DefMacro('\phd',   '\phantom{.}');
-DefMacro('\phs',   '\phantom{+}');
-DefMacro('\phm{}', '\phantom{string}');
+DefMacro('\phn','\phantom{0}');
+DefMacro('\phd','\phantom{.}');
+DefMacro('\phs','\phantom{+}');
+DefMacro('\phm{}','\phantom{string}');
 
-DefMacro('\tablebreak', '');    # Ignorable; we're not splitting tables.
-DefMacro('\nodata',     '');    # Ignorable
+DefMacro('\tablebreak','');	# Ignorable; we're not splitting tables.
+DefMacro('\nodata','');		# Ignorable
 
-DefMacro('\cutinhead{}', '\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
-DefMacro('\sidehead{}',  '\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
+DefMacro('\cutinhead{}','\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
+DefMacro('\sidehead{}','\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
 
 #======================================================================
 # 2.15.4 The table Environment
 # normal LaTeX
 
-DefMacro('\tableline', '\hline');
+DefMacro('\tableline','\hline');
 
 DefConstructor('\tablenotemark{}',
-  "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
-  mode => 'text');
+	       "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
+	       mode=>'text');
 DefConstructor('\tablenotetext{}{}',
-  "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
-  mode => 'text');
+	       "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
+	       mode=>'text');
 
-DefMacro('\tablerefs{}',     'References. -- #1');
-DefMacro('\tablecomments{}', 'Note. -- #1');
+DefMacro('\tablerefs{}',    'References. -- #1');
+DefMacro('\tablecomments{}','Note. -- #1');
 
 #======================================================================
 # 2.17 Miscellaneous
@@ -442,134 +442,134 @@ DefMacro('\tablecomments{}', 'Note. -- #1');
 # \objectname[catalogid]{text}
 # \dataset[catalogid]{text}
 DefConstructor('\objectname OptionalSemiverbatim Semiverbatim',
-  "<ltx:text class='ltx_ast_objectname'>#1 (catalog #2)</ltx:text>");
-Let('\object', '\objectname');    # ???
+	       "<ltx:text class='ltx_ast_objectname'>#1 (catalog #2)</ltx:text>");
+Let(T_CS('\object'),T_CS('\objectname')); # ???
 DefConstructor('\dataset OptionalSemiverbatim Semiverbatim',
-  "<ltx:text class='ltx_ast_dataset'>#1 (catalog #2)</ltx:text>");
+	       "<ltx:text class='ltx_ast_dataset'>#1 (catalog #2)</ltx:text>");
 
 #======================================================================
 # 2.17.2 Ionic Species and Chemical Bonds
 
 # Note that semantics could be useful!
 #  \ion{element}{level}
-DefMacro('\ion{}{}', '{#1 \uppercase{\romannumeral #2}}');
+DefMacro('\ion{}{}','{#1 \uppercase{\romannumeral #2}}');
 
 # NOTE: These are almost totally wrong...
-DefPrimitiveI('\sbond', undef, "\x{2212}");
-DefPrimitiveI('\dbond', undef, "=");
-DefPrimitiveI('\tbond', undef, "\x{2261}");
+DefPrimitiveI('\sbond',undef,"\x{2212}");
+DefPrimitiveI('\dbond',undef,"=");
+DefPrimitiveI('\tbond',undef,"\x{2261}");
 
 #======================================================================
 # 2.17.3 Fractions
 
 # \case{1}{2} == textstyle fraction
 # AND, apparently allowed in text mode!
-DefMacro('\case{}{}', '\ensuremath{\text@frac{#1}{#2}}');
+DefMacro('\case{}{}','\ensuremath{\text@frac{#1}{#2}}');
 DefConstructor('\text@frac{}{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
-Let('\slantfrac', '\case');
+	       "<ltx:XMApp>"
+	       . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+	       . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+	       ."</ltx:XMApp>",
+	       beforeDigest=>\&beforeTFrac, afterDigest =>\&afterTFrac);
+Let(T_CS('\slantfrac'),T_CS('\case'));
 #======================================================================
 # 2.17.4 Astronomical Symbols
 # See aassymbols document.
 # Table 1: Additional AASTeX symbols
 
-DefPrimitiveI('\micron', undef, UTF(0xB5) . "m");
-DefMacro('\Sun', '\sun');
-DefMacro('\Sol', '\sun');
-DefPrimitiveI('\sun',     undef, "\x{2609}");
-DefPrimitiveI('\Mercury', undef, "\x{263F}");
-DefPrimitiveI('\Venus',   undef, "\x{2640}");
-DefMacro('\Earth', '\earth');
-DefMacro('\Terra', '\earth');
-DefPrimitiveI('\earth',   undef, "\x{2295}");
-DefPrimitiveI('\Mars',    undef, "\x{2642}");
-DefPrimitiveI('\Jupiter', undef, "\x{2643}");
-DefPrimitiveI('\Saturn',  undef, "\x{2644}");
-DefPrimitiveI('\Uranus',  undef, "\x{2645}");
-DefPrimitiveI('\Neptune', undef, "\x{2646}");
-DefPrimitiveI('\Pluto',   undef, "\x{2647}");
-DefPrimitiveI('\Moon',    undef, "\x{263D}");    # Not sure if this is the right Moon?
-DefMacro('\Luna', '\Moon');
-DefPrimitiveI('\Aries', undef, "\x{2648}");
-DefMacro('\VEq', '\Aries');                      # Vernal Equinox
-DefPrimitiveI('\Taurus', undef, "\x{2649}");
-DefPrimitiveI('\Gemini', undef, "\x{264A}");
-DefPrimitiveI('\Cancer', undef, "\x{264B}");
-DefPrimitiveI('\Leo',    undef, "\x{264C}");
-DefPrimitiveI('\Virgo',  undef, "\x{264D}");
-DefPrimitiveI('\Libra',  undef, "\x{264E}");
-DefMacro('\AEq', '\Libra');                      # Autumnal Equinox
-DefPrimitiveI('\Scorpius',    undef, "\x{264F}");
-DefPrimitiveI('\Sagittarius', undef, "\x{2650}");
-DefPrimitiveI('\Capricornus', undef, "\x{2651}");
-DefPrimitiveI('\Aquarius',    undef, "\x{2652}");
-DefPrimitiveI('\Pisces',      undef, "\x{2653}");
+DefPrimitiveI('\micron',undef,UTF(0xB5)."m");
+DefMacro('\Sun','\sun');
+DefMacro('\Sol','\sun');
+DefPrimitiveI('\sun',     undef,"\x{2609}");
+DefPrimitiveI('\Mercury', undef,"\x{263F}");
+DefPrimitiveI('\Venus',   undef,"\x{2640}");
+DefMacro('\Earth','\earth');
+DefMacro('\Terra','\earth');
+DefPrimitiveI('\earth',   undef,"\x{2295}");
+DefPrimitiveI('\Mars',    undef,"\x{2642}");
+DefPrimitiveI('\Jupiter', undef,"\x{2643}");
+DefPrimitiveI('\Saturn',  undef,"\x{2644}");
+DefPrimitiveI('\Uranus',  undef,"\x{2645}");
+DefPrimitiveI('\Neptune', undef,"\x{2646}");
+DefPrimitiveI('\Pluto',   undef,"\x{2647}");
+DefPrimitiveI('\Moon',    undef,"\x{263D}"); # Not sure if this is the right Moon?
+DefMacro('\Luna','\Moon');
+DefPrimitiveI('\Aries',   undef,"\x{2648}");
+DefMacro('\VEq','\Aries');	# Vernal Equinox
+DefPrimitiveI('\Taurus',  undef,"\x{2649}");
+DefPrimitiveI('\Gemini',  undef,"\x{264A}");
+DefPrimitiveI('\Cancer',  undef,"\x{264B}");
+DefPrimitiveI('\Leo',     undef,"\x{264C}");
+DefPrimitiveI('\Virgo',   undef,"\x{264D}");
+DefPrimitiveI('\Libra',   undef,"\x{264E}");
+DefMacro('\AEq','\Libra');	# Autumnal Equinox
+DefPrimitiveI('\Scorpius',undef,"\x{264F}");
+DefPrimitiveI('\Sagittarius', undef,"\x{2650}");
+DefPrimitiveI('\Capricornus', undef,"\x{2651}");
+DefPrimitiveI('\Aquarius',undef,"\x{2652}");
+DefPrimitiveI('\Pisces',  undef,"\x{2653}");
 
-DefPrimitiveI('\diameter', undef, "\x{2300}");
-DefPrimitiveI('\sq',       undef, "\x{25A1}");
+DefPrimitiveI('\diameter',undef,"\x{2300}");
+DefPrimitiveI('\sq',      undef,"\x{25A1}");
 
-DefPrimitiveI('\arcdeg', undef, UTF(0xB0));
-Let('\degr', '\arcdeg');
-DefPrimitiveI('\arcmin', undef, "\x{2032}");
-DefPrimitiveI('\arcsec', undef, "\x{2033}");
+DefPrimitiveI('\arcdeg',undef,UTF(0xB0));
+Let(T_CS('\degr'),T_CS('\arcdeg'));
+DefPrimitiveI('\arcmin',  undef,"\x{2032}");
+DefPrimitiveI('\arcsec',  undef,"\x{2033}");
 
 # 1st arg is the original macro so that it can be the reversion for UnTeX!
 # 2nd arg is the superscript
 DefConstructor('\aas@@fstack Undigested {}',
-  "<ltx:XMApp role='POSTFIX'>"
-    . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMTok>.</ltx:XMTok>"
-    . "<ltx:XMWrap>#2</ltx:XMWrap>"
-    . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
-  mode => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
-DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
+	       "<ltx:XMApp role='POSTFIX'>"
+	       .  "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
+	       .  "<ltx:XMTok>.</ltx:XMTok>"
+	       .  "<ltx:XMWrap>#2</ltx:XMWrap>"
+	       ."</ltx:XMApp>",
+	       properties=>{scriptpos=>sub{ "mid".$_[0]->getBoxingLevel; }},
+	       mode=>'math', font=>{shape=>'upright'}, bounded=>1, reversion=>'#1');
+DefMacro('\aas@fstack{}','\ensuremath{\aas@@fstack{#1}}');
 
-DefMacro('\fd',    '\ensuremath{\@fd}');
-DefMacro('\fh',    '\ensuremath{\@fh}');
-DefMacro('\fm',    '\ensuremath{\@fm}');
-DefMacro('\fs',    '\ensuremath{\@fs}');
-DefMacro('\fdg',   '\ensuremath{\@fdg}');
-DefMacro('\farcm', '\ensuremath{\@farcm}');
-DefMacro('\farcs', '\ensuremath{\@farcs}');
-DefMacro('\fp',    '\ensuremath{\@fp}');
+DefMacro('\fd',   '\ensuremath{\@fd}');
+DefMacro('\fh',   '\ensuremath{\@fh}');
+DefMacro('\fm',   '\ensuremath{\@fm}');
+DefMacro('\fs',   '\ensuremath{\@fs}');
+DefMacro('\fdg',  '\ensuremath{\@fdg}');
+DefMacro('\farcm','\ensuremath{\@farcm}');
+DefMacro('\farcs','\ensuremath{\@farcs}');
+DefMacro('\fp',   '\ensuremath{\@fp}');
 
-DefMath('\@fd',  '\aas@@fstack{\fd}{d}',      role => 'ID', meaning => 'day',    alias => '\fd');
-DefMath('\@fh',  '\aas@@fstack{\fh}{h}',      role => 'ID', meaning => 'hour',   alias => '\fh');
-DefMath('\@fm',  '\aas@@fstack{\fm}{m}',      role => 'ID', meaning => 'minute', alias => '\fm');
-DefMath('\@fs',  '\aas@@fstack{\fs}{s}',      role => 'ID', meaning => 'second', alias => '\fs');
-DefMath('\@fdg', '\aas@@fstack{\fdg}{\circ}', role => 'ID', meaning => 'degree', alias => '\fdg');
-DefMath('\@farcm', '\aas@@fstack{\farcm}{\prime}', role => 'ID', meaning => 'arcminute', alias => '\farcm');
-DefMath('\@farcs', '\aas@@fstack{\farcs}{\prime\prime}', role => 'ID', meaning => 'arcsecond', alias => '\farcs');
-DefMath('\@fp', '\aas@@fstack{\fp}{p}');
+DefMath('\@fd',   '\aas@@fstack{\fd}{d}',      role=>'ID', meaning=>'day', alias=>'\fd');
+DefMath('\@fh',   '\aas@@fstack{\fh}{h}',      role=>'ID', meaning=>'hour', alias=>'\fh');
+DefMath('\@fm',   '\aas@@fstack{\fm}{m}',      role=>'ID', meaning=>'minute', alias=>'\fm');
+DefMath('\@fs',   '\aas@@fstack{\fs}{s}',      role=>'ID', meaning=>'second', alias=>'\fs');
+DefMath('\@fdg',  '\aas@@fstack{\fdg}{\circ}',  role=>'ID', meaning=>'degree', alias=>'\fdg');
+DefMath('\@farcm','\aas@@fstack{\farcm}{\prime}', role=>'ID', meaning=>'arcminute', alias=>'\farcm');
+DefMath('\@farcs','\aas@@fstack{\farcs}{\prime\prime}', role=>'ID', meaning=>'arcsecond', alias=>'\farcs');
+DefMath('\@fp',   '\aas@@fstack{\fp}{p}');
 
-DefMacro('\onehalf', '\ifmmode\case{1}{2}\else\text@onehalf\fi');
-DefPrimitiveI('\text@onehalf', undef, UTF(0xBD));
-DefMacro('\onethird', '\ifmmode\case{1}{3}\else\text@onethird\fi');
-DefPrimitiveI('\text@onethird', undef, "\x{2153}");
-DefMacro('\twothirds', '\ifmmode\case{2}{3}\else\text@twothirds\fi');
-DefPrimitiveI('\text@twothirds', undef, "\x{2154}");
-DefMacro('\onequarter', '\ifmmode\case{1}{4}\else\text@onequarter\fi');
-DefPrimitiveI('\text@onequarter', undef, UTF(0xBC));
-DefMacro('\threequarters', '\ifmmode\case{3}{4}\else\text@threequarters\fi');
-DefPrimitiveI('\text@threequarters', undef, UTF(0xBE));
-DefPrimitiveI('\ubvr', undef, "UBVR", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\ub', undef, "U\x{2000}B", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\bv', undef, "B\x{2000}V", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\vr', undef, "V\x{2000}R", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\ur', undef, "U\x{2000}R", bounded => 1, font => { shape => 'italic' });
+DefMacro('\onehalf','\ifmmode\case{1}{2}\else\text@onehalf\fi');
+DefPrimitiveI('\text@onehalf',  undef,UTF(0xBD));
+DefMacro('\onethird','\ifmmode\case{1}{3}\else\text@onethird\fi');
+DefPrimitiveI('\text@onethird', undef,"\x{2153}");
+DefMacro('\twothirds','\ifmmode\case{2}{3}\else\text@twothirds\fi');
+DefPrimitiveI('\text@twothirds',undef,"\x{2154}");
+DefMacro('\onequarter','\ifmmode\case{1}{4}\else\text@onequarter\fi');
+DefPrimitiveI('\text@onequarter',undef, UTF(0xBC));
+DefMacro('\threequarters','\ifmmode\case{3}{4}\else\text@threequarters\fi');
+DefPrimitiveI('\text@threequarters',undef, UTF(0xBE));
+DefPrimitiveI('\ubvr',undef, "UBVR",    bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\ub',  undef,"U\x{2000}B",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\bv',  undef,"B\x{2000}V",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\vr',  undef,"V\x{2000}R",bounded=>1, font=>{shape=>'italic'});
+DefPrimitiveI('\ur',  undef,"U\x{2000}R",bounded=>1, font=>{shape=>'italic'});
 
 # Remaining tables standard LaTeX or amssymb
 RequirePackage('latexsym');
 RequirePackage('amssymb');
 
 # \lesssim,\gtrsim in amssymb
-Let('\la', '\lesssim');
-Let('\ga', '\gtrsim');
+Let(T_CS('\la'),T_CS('\lesssim'));
+Let(T_CS('\ga'),T_CS('\gtrsim'));
 
 #======================================================================
 # 2.17.5 Hypertext Constructs
@@ -577,18 +577,19 @@ Let('\ga', '\gtrsim');
 RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
-  "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+	       "<ltx:ref href='#href'>#2</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
 # \url{text}
 DefConstructor('\url Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+	       "<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(LookupValue('BASE_URL').ToString($_[1]))); } );
+
 
 # This should be in effect only after frontmatter
 # \email{address}
 DefConstructor('\@@email Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
-  properties => sub { (href => CleanURL("mailto:" . ToString($_[1]))); });
+	       "<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>CleanURL("mailto:".ToString($_[1]))); } );
 
 # RequirePackage('verbatim');
 
@@ -598,20 +599,20 @@ DefConstructor('\@@email Semiverbatim',
 
 # Number equations within sections
 DefMacro('\eqsecnum',
-  '\@addtoreset{equation}{section}'
-    . '\def\theequation{\arabic{section}-\arabic{equation}}');
+	 '\@addtoreset{equation}{section}'
+	 .'\def\theequation{\arabic{section}-\arabic{equation}}'); 
 
 #======================================================================
 # Random extra bits
-DefMacroI('\singlespace',    undef, '');
-DefMacroI('\doublespace',    undef, '');
-DefMacroI('\tighten',        undef, '');
-DefMacroI('\tightenlines',   undef, '');
-DefMacroI('\nohyphenation',  undef, '');
-DefMacroI('\offhyphenation', undef, '');
-DefMacroI('\ptlandscape',    undef, '');
-DefMacroI('\refpar',         undef, '');
-DefMacroI('\traceoutput',    undef, '');
-DefMacroI('\tracingplain',   undef, '');
+DefMacroI('\singlespace',undef,'');
+DefMacroI('\doublespace',undef,'');
+DefMacroI('\tighten',    undef,'');
+DefMacroI('\tightenlines',undef,'');
+DefMacroI('\nohyphenation',undef,'');
+DefMacroI('\offhyphenation',undef,'');
+DefMacroI('\ptlandscape',undef,'');
+DefMacroI('\refpar',undef,'');
+DefMacroI('\traceoutput',undef,'');
+DefMacroI('\tracingplain',undef,'');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

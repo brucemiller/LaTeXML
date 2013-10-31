@@ -20,9 +20,9 @@ use base qw(LaTeXML::Model::Schema);
 # NOTE: Arglist is DTD specific.
 # Effectively asks for DTD submodel.
 sub new {
-  my ($class, $model, $roottag, $publicid, $systemid) = @_;
-  my $self = { model => $model, roottag => $roottag, public_id => $publicid, system_id => $systemid };
-  bless $self, $class;
+  my($class,$model,$roottag,$publicid,$systemid)=@_;
+  my $self = {model=>$model,roottag=>$roottag,public_id=>$publicid,system_id=>$systemid};
+  bless $self,$class;
   $self; }
 
 # Question: if we don't have a doctype, can we rig the queries to
@@ -31,8 +31,8 @@ sub new {
 # This is responsible for setting any DocType, and adding any
 # required namespace declarations to the root element.
 sub addSchemaDeclaration {
-  my ($self, $document, $tag) = @_;
-  $document->getDocument->createInternalSubset($tag, $$self{public_id}, $$self{system_id}); }
+  my($self,$document,$tag)=@_;
+  $document->getDocument->createInternalSubset($tag,$$self{public_id},$$self{system_id}); }
 
 #**********************************************************************
 # DTD Analysis
@@ -47,85 +47,86 @@ sub addSchemaDeclaration {
 # to create & insert, and insert the #PCDATA into it.
 
 sub loadSchema {
-  my ($self) = @_;
-  $$self{schema_loaded} = 1;
-  NoteBegin("Loading DTD " . $$self{public_id} || $$self{system_id});
+  my($self)=@_;
+  $$self{schema_loaded}=1;
+  NoteBegin("Loading DTD ".$$self{public_id}||$$self{system_id});
   my $model = $$self{model};
-  $model->setTagProperty('#Document', 'model', { $$self{roottag} => 1 }) if $$self{roottag};
+  $model->setTagProperty('#Document','model',{$$self{roottag}=>1}) if $$self{roottag};
   # Parse the DTD
   my $dtd = $self->readDTD;
   return unless $dtd;
 
   NoteBegin("Analyzing DTD");
   # Extract all possible namespace attributes
-  foreach my $node ($dtd->childNodes()) {
-    if ($node->nodeType() == XML_ATTRIBUTE_DECL) {
-      if ($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9\-\_\:]+)\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/) {
-        my ($tag, $attr, $extra) = ($1, $2, $3);
-        if ($attr =~ /^xmlns(:([a-zA-Z0-9-]+))?$/) {
-          my $prefix = ($1 ? $2 : '#default');
-          $extra =~ /^CDATA\s+#FIXED\s+(\'|\")(.*)\1\s*$/;
-          my $ns = $2;
-          # Just record prefix, not element??
-          $model->registerDocumentNamespace($prefix, $ns); } } } }
+  foreach my $node ($dtd->childNodes()){
+    if($node->nodeType() == XML_ATTRIBUTE_DECL){
+      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9\-\_\:]+)\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/){
+	my($tag,$attr,$extra)=($1,$2,$3);
+	if($attr =~ /^xmlns(:([a-zA-Z0-9-]+))?$/){
+	  my $prefix = ($1 ? $2 : '#default');
+	  $extra =~ /^CDATA\s+#FIXED\s+(\'|\")(.*)\1\s*$/;
+	  my $ns = $2;
+	  # Just record prefix, not element??
+	  $model->registerDocumentNamespace($prefix,$ns); }}}}
 
   # Extract all possible children for each tag.
-  foreach my $node ($dtd->childNodes()) {
-    if ($node->nodeType() == XML_ELEMENT_DECL) {
+  foreach my $node ($dtd->childNodes()){
+    if($node->nodeType() == XML_ELEMENT_DECL){
       my $decl = $node->toString();
       chomp($decl);
-      if ($decl =~ /^<!ELEMENT\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/) {
-        my ($tag, $content) = ($1, $2);
-        $tag = $model->recodeDocumentQName($tag);
-        $content =~ s/[\+\*\?\,\(\)\|]/ /g;
-        $content =~ s/\s+/ /g; $content =~ s/^\s+//; $content =~ s/\s+$//;
-        if ($content eq 'EMPTY') {
-          $model->setTagProperty($tag, 'model', {}); }
-        else {
-          my @content = map($model->recodeDocumentQName($_), split(/ /, $content));
-          $model->setTagProperty($tag, 'model', { map(($_ => 1), @content) });
-        } }
-      else { Warn('misdefined', $decl, undef, "Can't process DTD declaration '$decl'"); }
+      if($decl =~ /^<!ELEMENT\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/){
+	my($tag,$content)=($1,$2);
+##	$$self{tagprop}{$tag}{preferred_prefix} = $1 	if $tag =~ /^([^:]+):(.+)/;
+	$tag = $model->recodeDocumentQName($tag);
+	$content=~ s/[\+\*\?\,\(\)\|]/ /g;
+	$content=~ s/\s+/ /g; $content=~ s/^\s+//; $content=~ s/\s+$//;
+	if($content eq 'EMPTY'){
+	  $model->setTagProperty($tag,'model',{}); }
+	else {
+	  my @content = map($model->recodeDocumentQName($_),split(/ /,$content));
+	  $model->setTagProperty($tag,'model',{ map(($_ => 1), @content)});
+	}}
+      else { Warn('misdefined',$decl,undef,"Can't process DTD declaration '$decl'");}
     }
-    elsif ($node->nodeType() == XML_ATTRIBUTE_DECL) {
-      if ($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/) {
-        my ($tag, $attr, $extra) = ($1, $2, $3);
-        if ($attr !~ /^xmlns/) {
-          $tag = $model->recodeDocumentQName($tag);
-          my $attrlist = $model->getTagProperty($tag, 'attributes');
-          $model->setTagProperty($tag, 'attributes', $attrlist = {}) unless $attrlist;
-          if ($attr =~ /:/) {
-            $attr = $model->recodeDocumentQName($attr); }
-          $$attrlist{$attr} = 1; } } }
-  }
-  NoteEnd("Analyzing DTD");    # Done analyzing
-  NoteEnd("Loading DTD " . $$self{public_id} || $$self{system_id});
+    elsif($node->nodeType() == XML_ATTRIBUTE_DECL){
+      if($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/){
+	my($tag,$attr,$extra)=($1,$2,$3);
+	if($attr !~ /^xmlns/){
+	  $tag = $model->recodeDocumentQName($tag);
+	  my $attrlist = $model->getTagProperty($tag,'attributes');
+	  $model->setTagProperty($tag,'attributes', $attrlist={}) unless $attrlist;
+	  if($attr =~ /:/){
+	    $attr = $model->recodeDocumentQName($attr); }
+	  $$attrlist{$attr}=1; }}}
+    }
+  NoteEnd("Analyzing DTD");		# Done analyzing
+  NoteEnd("Loading DTD ".$$self{public_id}||$$self{system_id});
 }
 
 sub readDTD {
-  my ($self) = @_;
+  my($self)=@_;
   LaTeXML::Common::XML::initialize_catalogs();
 
   NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
   # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
-  my $dtd = XML::LibXML::Dtd->new($$self{public_id}, $$self{system_id});
-  if ($dtd) {
+  my $dtd = XML::LibXML::Dtd->new($$self{public_id},$$self{system_id});
+  if($dtd){
     NoteProgress(" via catalog "); }
-  else {    # Couldn't find dtd in catalog, try finding the file. (search path?)
+  else { # Couldn't find dtd in catalog, try finding the file. (search path?)
     my $dtdfile = pathname_find($$self{system_id},
-      paths               => $STATE->lookupValue('SEARCHPATHS'),
-      installation_subdir => 'resources/DTD');
-    if ($dtdfile) {
+				paths=>$STATE->lookupValue('SEARCHPATHS'),
+				installation_subdir=>'resources/DTD');
+    if($dtdfile){
       NoteProgress(" from $dtdfile ");
-      $dtd = XML::LibXML::Dtd->new($$self{public_id}, $dtdfile);
+      $dtd = XML::LibXML::Dtd->new($$self{public_id},$dtdfile);
       NoteProgress(" from $dtdfile ") if $dtd;
-      Error('misdefined', $$self{system_id}, undef,
-        "Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
-        unless $dtd;
-    }
+      Error('misdefined',$$self{system_id},undef,
+	    "Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
+	unless $dtd;
+      }
     else {
-      Error('missing_file', $$self{system_id}, undef,
-        "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
+      Error('missing_file',$$self{system_id},undef,
+	    "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); }}
   $dtd; }
 
 #**********************************************************************

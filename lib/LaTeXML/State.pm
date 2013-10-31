@@ -12,7 +12,6 @@
 
 package LaTeXML::State;
 use strict;
-use warnings;
 use LaTeXML::Global;
 
 # Naming scheme for keys (such as it is)
@@ -69,7 +68,7 @@ use LaTeXML::Global;
 #      push an entry [$subtable,$key,$value] globally to the 'stash' subtable's value.
 #      And assign locally, if the $scope is active (has non-zero value in stash_active subtable),
 #
-# There are subtables for
+# There are subtables for 
 #  catcode: keys are char;
 #         Also, "math:$char" =1 when $char is active in math.
 #  value: keys are anything (typically a string, though) and value is the value associated with it
@@ -79,41 +78,41 @@ use LaTeXML::Global;
 #      (see also activateScope & deactivateScope)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# options:
+# options: 
 #     catcodes => (standard|style|none)
 #     stomach  => a Stomach object.
 #     model    => a Mod el object.
 sub new {
-  my ($class, %options) = @_;
-  my $self = bless { table => {}, undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach}, model => $options{model} }, $class;
-  $$self{table}{value}{VERBOSITY} = [0];
-  if ($options{catcodes} =~ /^(standard|style)/) {
+  my($class, %options)=@_;
+  my $self = bless {table=>{}, undo=>[{_FRAME_LOCK_=>1}], prefixes=>{}, status=>{},
+		    stomach=>$options{stomach}, model=>$options{model}}, $class; 
+  $$self{table}{value}{VERBOSITY}=[0];
+  if($options{catcodes} =~ /^(standard|style)/){
     # Setup default catcodes.
-    my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
-      "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
-      "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
-      "~" => CC_ACTIVE, chr(0) => CC_IGNORE);
-    map { $$self{table}{catcode}{$_} = [$std{$_}] } keys %std;
-    for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
-      $$self{table}{catcode}{ chr($c) } = [CC_LETTER];
-      $$self{table}{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
+    my %std = ( "\\"=>   CC_ESCAPE, "{"=>    CC_BEGIN,  "}"=>    CC_END,   "\$"=>   CC_MATH,
+		"\&"=>   CC_ALIGN,  "\r"=>   CC_EOL,    "#"=>    CC_PARAM,  "^"=>   CC_SUPER,
+		"_"=>    CC_SUB,    " "=>    CC_SPACE,  "\t"=>   CC_SPACE,  "%"=>   CC_COMMENT,
+		"~"=>    CC_ACTIVE, chr(0)=> CC_IGNORE);
+    map( $$self{table}{catcode}{$_} = [$std{$_}], keys %std);
+    for(my $c=ord('A'); $c <= ord('Z'); $c++){
+      $$self{table}{catcode}{chr($c)} = [CC_LETTER];
+      $$self{table}{catcode}{chr($c+ord('a')-ord('A'))} = [CC_LETTER];  }
   }
-  $$self{table}{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', '%', "'"]];
-  if ($options{catcodes} eq 'style') {
+  $$self{table}{value}{SPECIALS}=[['^','_','@','~','&','$','#','%',"'"]];
+  if($options{catcodes} eq 'style'){
     $$self{table}{catcode}{'@'} = [CC_LETTER]; }
   $$self{table}{mathcode} = {};
-  $$self{table}{sfcode}   = {};
-  $$self{table}{lccode}   = {};
-  $$self{table}{uccode}   = {};
-  $$self{table}{delcode}  = {};
-  return $self; }
+  $$self{table}{sfcode} = {};
+  $$self{table}{lccode} = {};
+  $$self{table}{uccode} = {};
+  $$self{table}{delcode}= {};
+  $self; }
 
 sub assign_internal {
-  my ($self, $subtable, $key, $value, $scope) = @_;
+  my($self,$subtable,$key,$value,$scope)=@_;
   my $table = $$self{table};
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
-  if ($scope eq 'global') {
+  if($scope eq 'global'){
 ## This was was sufficient before having lockable frames
 ##    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
 ##      delete $$undo{$subtable}{$key}; }
@@ -121,176 +120,113 @@ sub assign_internal {
     # Remove bindings made in all frames down-to & including the next lower locked frame
 ###    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
     my $frame;
-    my @frames = @{ $$self{undo} };
-    while (@frames) {
+    my @frames = @{$$self{undo}};
+    while(@frames){
       $frame = shift(@frames);
-      if (my $n = $$frame{$subtable}{$key}) {    # Undo the bindings, if $key was bound in this frame
-        map { shift(@{ $$table{$subtable}{$key} }) } 1 .. $n if $n;
-        delete $$frame{$subtable}{$key}; }
+      if(my $n = $$frame{$subtable}{$key}){ # Undo the bindings, if $key was bound in this frame
+	map( shift(@{$$table{$subtable}{$key}}), 1..$n) if $n;
+	delete $$frame{$subtable}{$key}; }
       last if $$frame{_FRAME_LOCK_}; }
     # whatever is left -- if anything -- should be bindings below the locked frame.
-    $$frame{$subtable}{$key}++;    # Note that this many values -- ie. one more -- must be undone
-    unshift(@{ $$table{$subtable}{$key} }, $value); }
-  elsif ($scope eq 'local') {
-    $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
-    unshift(@{ $$table{$subtable}{$key} }, $value); }    # And push new binding.
+    $$frame{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
+    unshift(@{$$table{$subtable}{$key}},$value); }
+  elsif($scope eq 'local'){
+    $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
+    unshift(@{$$table{$subtable}{$key}},$value); } # And push new binding.
   else {
     # print STDERR "Assigning $key in stash $stash\n";
-    assign_internal($self, 'stash', $scope, [], 'global') unless $$table{stash}{$scope}[0];
-    push(@{ $$table{stash}{$scope}[0] }, [$subtable, $key, $value]);
-    assign_internal($self, $subtable, $key, $value, 'local')
-      if $$table{stash_active}{$scope}[0]; }
-  return; }
+    assign_internal($self,'stash',$scope,[],'global') unless $$table{stash}{$scope}[0];
+    push(@{ $$table{stash}{$scope}[0] }, [$subtable,$key,$value]);
+    assign_internal($self,$subtable,$key,$value,'local')
+      if $$table{stash_active}{$scope}[0];
+  }}
 
 #======================================================================
-sub getStomach {
-  my ($self) = @_;
-  return $$self{stomach}; }
-
-sub getModel {
-  my ($self) = @_;
-  return $$self{model}; }
+sub getStomach { $_[0]->{stomach}; }
+sub getModel   { $_[0]->{model}; }
 
 #======================================================================
 
 # Lookup & assign a general Value
 # [Note that the more direct $_[0]->{table}{value}{$_[1]}[0]; works, but creates entries
 # this could concievably cause space issues, but timing doesn't show improvements this way]
-sub lookupValue {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{value}{$key};
-  return $e && $$e[0]; }
-
-sub assignValue {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'value', $key, $value, $scope);
-  return; }
+sub lookupValue { my $e=$_[0]->{table}{value}{$_[1]}; $e && $$e[0]; }
+sub assignValue { assign_internal($_[0],'value',$_[1], $_[2],$_[3]); }
 
 # manage a (global) list of values
 sub pushValue {
-  my ($self, $key, @values) = @_;
+  my($self,$key,@values)=@_;
   my $vtable = $$self{table}{value};
-  assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  push(@{ $$vtable{$key}[0] }, @values);
-  return; }
+  assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
+  push(@{$$vtable{$key}[0]},@values); }
 
 sub popValue {
-  my ($self, $key) = @_;
+  my($self,$key)=@_;
   my $vtable = $$self{table}{value};
-  assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  return pop(@{ $$vtable{$key}[0] }); }
+  assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
+  pop(@{$$vtable{$key}[0]}); }
 
 sub unshiftValue {
-  my ($self, $key, @values) = @_;
+  my($self,$key,@values)=@_;
   my $vtable = $$self{table}{value};
-  assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  unshift(@{ $$vtable{$key}[0] }, @values);
-  return; }
+  assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
+  unshift(@{$$vtable{$key}[0]},@values); }
 
 sub shiftValue {
-  my ($self, $key) = @_;
+  my($self,$key)=@_;
   my $vtable = $$self{table}{value};
-  assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
-  return shift(@{ $$vtable{$key}[0] }); }
+  assign_internal($self,'value',$key,[],'global') unless $$vtable{$key}[0];
+  shift(@{$$vtable{$key}[0]}); }
 
 # manage a (global) hash of values
 sub lookupMapping {
-  my ($self, $map, $key) = @_;
-  my $vtable  = $$self{table}{value};
+  my($self,$map,$key)=@_;
+  my $vtable = $$self{table}{value};
   my $mapping = $$vtable{$map}[0];
-  return ($mapping ? $$mapping{$key} : undef); }
+  ($mapping ? $$mapping{$key} : undef); }
 
 sub assignMapping {
-  my ($self, $map, $key, $value) = @_;
+  my($self,$map,$key,$value)=@_;
   my $vtable = $$self{table}{value};
-  assign_internal($self, 'value', $map, {}, 'global') unless $$vtable{$map}[0];
-  if (!defined $value) {
+  assign_internal($self,'value',$map,{},'global') unless $$vtable{$map}[0];
+  if(! defined $value){
     delete $$vtable{$map}[0]{$key}; }
   else {
-    $$vtable{$map}[0]{$key} = $value; }
-  return; }
+    $$vtable{$map}[0]{$key}=$value; }}
 
 sub lookupMappingKeys {
-  my ($self, $map) = @_;
-  my $vtable  = $$self{table}{value};
+  my($self,$map)=@_;
+  my $vtable = $$self{table}{value};
   my $mapping = $$vtable{$map}[0];
-  return ($mapping ? sort keys %$mapping : ()); }
+  ($mapping ? sort keys %$mapping : ()); }
 
-sub lookupStackedValues {
-  my ($self, $key) = @_;
-  my $stack = $$self{table}{value}{$key};
-  return ($stack ? @$stack : ()); }
+sub lookupStackedValues { 
+  my $stack = $_[0]->{table}{value}{$_[1]};
+  ($stack ? @$stack : ()); }
 
 #======================================================================
-# Was $name bound?  If  $frame is given, check only whether it is bound in
+# Was $name bound?  If  $frame is given, check only whether it is bound in 
 # that frame (0 is the topmost).
 sub isValueBound {
-  my ($self, $key, $frame) = @_;
-  return (defined $frame ? $$self{undo}[$frame]{value}{$key}
-    : defined $$self{table}{value}{$key}[0]); }
+  my($self,$key,$frame)=@_;
+  (defined $frame ? $$self{undo}[$frame]{value}{$key} : defined $$self{table}{value}{$key}[0]); }
 
 #======================================================================
 # Lookup & assign a character's Catcode
-sub lookupCatcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{catcode}{$key};
-  return $e && $$e[0]; }
-
-sub assignCatcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'catcode', $key, $value, $scope);
-  return; }
+sub lookupCatcode { my $e=$_[0]->{table}{catcode}{$_[1]}; $e && $$e[0]; }
+sub assignCatcode { assign_internal($_[0],'catcode',$_[1], $_[2],$_[3]); }
 
 # The following rarely used.
-sub lookupMathcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{mathcode}{$key};
-  return $e && $$e[0]; }
-
-sub assignMathcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'mathcode', $key, $value, $scope);
-  return; }
-
-sub lookupSFcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{sfcode}{$key};
-  return $e && $$e[0]; }
-
-sub assignSFcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'sfcode', $key, $value, $scope);
-  return; }
-
-sub lookupLCcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{lccode}{$key};
-  return $e && $$e[0]; }
-
-sub assignLCcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'lccode', $key, $value, $scope);
-  return; }
-
-sub lookupUCcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{uccode}{$key};
-  return $e && $$e[0]; }
-
-sub assignUCcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'uccode', $key, $value, $scope);
-  return; }
-
-sub lookupDelcode {
-  my ($self, $key) = @_;
-  my $e = $$self{table}{delcode}{$key};
-  return $e && $$e[0]; }
-
-sub assignDelcode {
-  my ($self, $key, $value, $scope) = @_;
-  assign_internal($self, 'delcode', $key, $value, $scope);
-  return; }
+sub lookupMathcode { my $e=$_[0]->{table}{mathcode}{$_[1]}; $e && $$e[0]; }
+sub assignMathcode { assign_internal($_[0],'mathcode',$_[1], $_[2],$_[3]); }
+sub lookupSFcode   { my $e=$_[0]->{table}{sfcode}{$_[1]}; $e && $$e[0]; }
+sub assignSFcode   { assign_internal($_[0],'sfcode',$_[1], $_[2],$_[3]); }
+sub lookupLCcode   { my $e=$_[0]->{table}{lccode}{$_[1]}; $e && $$e[0]; }
+sub assignLCcode   { assign_internal($_[0],'lccode',$_[1], $_[2],$_[3]); }
+sub lookupUCcode   { my $e=$_[0]->{table}{uccode}{$_[1]}; $e && $$e[0]; }
+sub assignUCcode   { assign_internal($_[0],'uccode',$_[1], $_[2],$_[3]); }
+sub lookupDelcode  { my $e=$_[0]->{table}{delcode}{$_[1]}; $e && $$e[0]; }
+sub assignDelcode  { assign_internal($_[0],'delcode',$_[1], $_[2],$_[3]); }
 
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
@@ -299,265 +235,249 @@ sub assignDelcode {
 # this may give the definition object or a regular token (if it was \let), or undef.
 # Otherwise, the token itself is returned.
 sub lookupMeaning {
-  my ($self, $token) = @_;
-  if (my $cs = $token && $token->getExecutableName) {
-    my $e = $$self{table}{meaning}{$cs}; return $e && $$e[0]; }
-  else { return $token; } }
+  my($self,$token)=@_;
+  if(my $cs = $token && $token->getExecutableName){
+    my $e=$$self{table}{meaning}{$cs}; $e && $$e[0]; }
+  else { $token; }}
 
 sub lookupMeaning_internal {
-  my ($self, $token) = @_;
-  my $e = $$self{table}{meaning}{ $token->getCSName };
-  return $e && $$e[0]; }
+  my($self,$token)=@_;
+  my $e=$$self{table}{meaning}{$token->getCSName};
+  $e && $$e[0]; }
 
 sub assignMeaning {
-  my ($self, $token, $definition, $scope) = @_;
-  assign_internal($self, 'meaning', $token->getCSName => $definition, $scope);
-  return; }
+  my($self,$token,$definition,$scope)=@_;
+  assign_internal($self,'meaning',$token->getCSName => $definition, $scope); }
 
 sub lookupDefinition {
-  my ($self, $token) = @_;
+  my($self,$token)=@_;
   my $x;
-  return (($x = $token->getExecutableName) && ($x = $$self{table}{meaning}{$x}) && ($x = $$x[0])
-      && $x->isaDefinition
-    ? $x : undef); }
+  (($x=$token->getExecutableName) && ($x=$$self{table}{meaning}{$x}) && ($x=$$x[0])
+   && $x->isaDefinition
+   ? $x : undef); }
 
 # And a shorthand for installing definitions
 sub installDefinition {
-  my ($self, $definition, $scope) = @_;
+  my($self,$definition,$scope)=@_;
   # Locked definitions!!! (or should this test be in assignMeaning?)
   # Ignore attempts to (re)define $cs from tex sources
-  my $cs = $definition->getCS->getCSName;
-  if ($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED) {
-    if (my $s = $self->getStomach->getGullet->getSource) {
-      if (($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)) {
-        Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs");
-        return; } } }
-  assign_internal($self, 'meaning', $cs => $definition, $scope);
-  return; }
+  my $cs= $definition->getCS->getCSName;
+  if($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED){
+    if(my $s = $self->getStomach->getGullet->getSource){
+      if(($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)){
+	Info('ignore',$cs,$self->getStomach,"Ignoring redefinition of $cs");
+	return; }}}
+  assign_internal($self,'meaning',$cs => $definition, $scope); }
 
 #======================================================================
 sub pushFrame {
-  my ($self, $nobox) = @_;
+  my($self,$nobox)=@_;
   # Easy: just push a new undo hash.
-  unshift(@{ $$self{undo} }, {});
-  return; }
+  unshift(@{$$self{undo}},{}); }
 
 sub popFrame {
-  my ($self) = @_;
+  my($self)=@_;
   my $table = $$self{table};
-  if ($$self{undo}[0]{_FRAME_LOCK_}) {
-    Fatal('unexpected', '<endgroup>', $self->getStomach,
-      "Attempt to pop last locked stack frame"); }
+  if($$self{undo}[0]{_FRAME_LOCK_}){
+    Fatal('unexpected','<endgroup>',$self->getStomach,
+	  "Attempt to pop last locked stack frame"); }
   else {
-    my $undo = shift(@{ $$self{undo} });
-    foreach my $subtable (keys %$undo) {
+    my $undo = shift(@{$$self{undo}});
+    foreach my $subtable (keys %$undo){
       my $undosubtable = $$undo{$subtable};
-      foreach my $name (keys %$undosubtable) {
-        map { shift(@{ $$table{$subtable}{$name} }) } 1 .. $$undosubtable{$name}; } } }
-  return; }
+      foreach my $name (keys %$undosubtable){
+	map( shift(@{$$table{$subtable}{$name}}), 1..$$undosubtable{$name}); }}}
+}
 
 #======================================================================
 
 sub pushDaemonFrame {
-  my ($self) = @_;
-  unshift(@{ $$self{undo} }, {});
+  my($self)=@_;
+  unshift(@{$$self{undo}},{});
   # Push copys of data for any data that is mutable;
   # Only the value & stash subtables need to be to be checked.
-  foreach my $subtable (qw(value stash)) {
-    if (my $hash = $$self{table}{$subtable}) {
-      foreach my $key (keys %$hash) {
-        my $value = $$hash{$key}[0];
-        my $type  = ref $value;
-        if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
-                                                # Local assignment
-          $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
-          unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
-      # Record the contents of LaTeXML::Package::Pool as preloaded
-  my $pool_sub_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
-  foreach my $constructor (grep { /^constructor_/ } keys %LaTeXML::Definition::) {
+  foreach my $subtable (qw(value stash)){
+    if(my $hash=$$self{table}{$subtable}){
+      foreach my $key (keys %$hash){
+	my $value = $$hash{$key}[0];
+	my $type = ref $value;
+	if(($type eq 'HASH') || ($type eq 'ARRAY')){ # Only concerned with mutable perl data?
+	  # Local assignment
+	  $$self{undo}[0]{$subtable}{$key}++; # Note that this many values -- ie. one more -- must be undone
+	  unshift(@{$$hash{$key}},daemon_copy($value)); }}}} # And push new binding.
+  # Record the contents of LaTeXML::Package::Pool as preloaded
+  my $pool_sub_hash = { map {$_ => 1} keys %LaTeXML::Package::Pool:: };
+  foreach my $constructor(grep {/^constructor_/} keys %LaTeXML::Definition::) {
     $pool_sub_hash->{$constructor} = 1; }
-  $self->assignValue('_PRELOADED_POOL_', $pool_sub_hash, 'global');
+  $self->assignValue('_PRELOADED_POOL_',$pool_sub_hash,'global');
   # Now mark the top frame as LOCKED!!!
   $$self{undo}[0]{_FRAME_LOCK_} = 1; }
 
 sub daemon_copy {
-  my ($ob) = @_;
-  if (ref $ob eq 'HASH') {
-    my %hash = map { ($_ => daemon_copy($$ob{$_})) } keys %$ob;
-    return \%hash; }
-  elsif (ref $ob eq 'ARRAY') {
-    return [map { daemon_copy($_) } @$ob]; }
+  my($ob)=@_;
+  if(ref $ob eq 'HASH'){
+    my %hash = map( ($_ => daemon_copy($$ob{$_})), keys %$ob);
+    \%hash; }
+  elsif(ref $ob eq 'ARRAY'){
+    [ map( daemon_copy($_), @$ob) ]; }
   else {
-    return $ob; } }
+    $ob; }}
 
 sub popDaemonFrame {
-  my ($self) = @_;
-  while (!$$self{undo}[0]{_FRAME_LOCK_}) {
+  my($self)=@_;
+  while(! $$self{undo}[0]{_FRAME_LOCK_}){
     $self->popFrame; }
-  if (scalar(@{ $$self{undo} } > 1)) {
+  if(scalar( @{$$self{undo}} > 1)){
     delete $$self{undo}[0]{_FRAME_LOCK_};
     # Any non-preloaded Pool routines should be wiped away, as we
     # might want to reuse the Pool namespaces for the next run.
     my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
-    $self->assignValue('_PRELOADED_POOL_', undef, 'global');
+    $self->assignValue('_PRELOADED_POOL_',undef,'global');
     foreach my $subname (keys %LaTeXML::Package::Pool::) {
       unless (exists $pool_preloaded_hash->{$subname}) {
-        delete $LaTeXML::Package::Pool::{$subname};
+        delete $LaTeXML::Package::Pool::{$subname};  
       }
     }
-    foreach my $constructor (grep { /^constructor_/ } (keys %LaTeXML::Definition::)) {
+    foreach my $constructor (grep {/^constructor_/} (keys %LaTeXML::Definition::)) {
       unless (exists $pool_preloaded_hash->{$constructor}) {
         delete $LaTeXML::Definition::{$constructor};
-      } }
+    }}
     # Finally, pop the frame
     $self->popFrame; }
   else {
-    Fatal('unexpected', '<endgroup>', $self->getStomach,
-      "Daemon Attempt to pop last stack frame"); }
-  return; }
+    Fatal('unexpected','<endgroup>',$self->getStomach,
+	  "Daemon Attempt to pop last stack frame"); }}
 
 #======================================================================
 # Set one of the definition prefixes global, etc (only global matters!)
-sub setPrefix {
-  my ($self, $prefix) = @_;
-  $$self{prefixes}{$prefix} = 1;
-  return; }
-
-sub getPrefix {
-  my ($self, $prefix) = @_;
-  return $$self{prefixes}{$prefix}; }
-
-sub clearPrefixes {
-  my ($self) = @_;
-  $$self{prefixes} = {};
-  return; }
+sub setPrefix     { $_[0]->{prefixes}{$_[1]} = 1; }
+sub getPrefix     { $_[0]->{prefixes}{$_[1]}; }
+sub clearPrefixes { $_[0]->{prefixes} = {}; }
 
 #======================================================================
 
 sub activateScope {
-  my ($self, $scope) = @_;
+  my($self,$scope)=@_;
   my $table = $$self{table};
-  if (!$$table{stash_active}{$scope}[0]) {
-    assign_internal($self, 'stash_active', $scope, 1, 'local');
-    if (defined(my $defns = $$table{stash}{$scope}[0])) {
+  if(! $$table{stash_active}{$scope}[0]){
+    assign_internal($self,'stash_active',$scope, 1, 'local');
+    if(defined (my $defns = $$table{stash}{$scope}[0])){
       # Now make local assignments for all those in the stash.
       my $frame = $$self{undo}[0];
-      foreach my $entry (@$defns) {
-        my ($subtable, $key, $value) = @$entry;
-        $$frame{$subtable}{$key}++;    # Note that this many values must be undone
-        unshift(@{ $$table{$subtable}{$key} }, $value); } } }    # And push new binding.
-  return; }
+      foreach my $entry (@$defns){
+	my($subtable,$key,$value)=@$entry;
+	$$frame{$subtable}{$key}++; # Note that this many values must be undone
+	unshift(@{$$table{$subtable}{$key}},$value); }}}} # And push new binding.
 
 # Probably, in most cases, the assignments made by activateScope
 # will be undone by egroup or popping frames.
 # But they can also be undone explicitly
 sub deactivateScope {
-  my ($self, $scope) = @_;
+  my($self,$scope)=@_;
   my $table = $$self{table};
-  if ($$table{stash_active}{$scope}[0]) {
-    assign_internal($self, 'stash_active', $scope, 0, 'global');
-    if (defined(my $defns = $$table{stash}{$scope}[0])) {
+  if( $$table{stash_active}{$scope}[0]){
+    assign_internal($self,'stash_active',$scope, 0, 'global');
+    if(defined (my $defns = $$table{stash}{$scope}[0])){
       my $frame = $$self{undo}[0];
-      foreach my $entry (@$defns) {
-        my ($subtable, $key, $value) = @$entry;
-        if ($$table{$subtable}{$key}[0] eq $value) {
-          shift(@{ $$table{$subtable}{$key} });
-          $$frame{$subtable}{$key}--; }
-        else {
-          Warn('internal', $key, $self->getStomach,
-            "Unassigning wrong value for $key from subtable $subtable in deactivateScope",
-            "value is $value but stack is " . join(', ', @{ $$table{$subtable}{$key} })); } } } }
-  return; }
+      foreach my $entry (@$defns){
+	my($subtable,$key,$value)=@$entry;
+	if($$table{$subtable}{$key}[0] eq $value){
+	  shift(@{$$table{$subtable}{$key}});
+	  $$frame{$subtable}{$key}--; }
+	else {
+	  Warn('internal',$key,$self->getStomach,
+	       "Unassigning wrong value for $key from subtable $subtable in deactivateScope",
+	       "value is $value but stack is ".join(', ',@{$$table{$subtable}{$key}})); }}}}}
 
 sub getActiveScopes {
-  my ($self) = @_;
+  my($self)=@_;
   my $table = $$self{table};
-  my $scopes = $$table{stash_active} || {};
-  return [keys %$scopes]; }
+  my $scopes = $$table{stash_active}||{};
+  [keys %$scopes];
+}
 
 #======================================================================
 # Units.
 #   Put here since it could concievably evolve to depend on the current font.
 
 # Conversion to scaled points
-our %UNITS = (pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-  cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-  cc => 12 * 1238 * 65536 / 1157, sp => 1);
+our %UNITS= (pt=>65536, pc=>12*65536, in=>72.27*65536, bp=>72.27*65536/72, 
+	     cm=>72.27*65536/2.54, mm=>72.27*65536/2.54/10, dd=>1238*65536/1157,
+	     cc=>12*1238*65536/1157, sp=>1);
 
 sub convertUnit {
-  my ($self, $unit) = @_;
+  my($self,$unit)=@_;
   $unit = lc($unit);
   # Eventually try to track font size?
-  if    ($unit eq 'em') { return 10.0 * 65536; }
-  elsif ($unit eq 'ex') { return 4.3 * 65536; }
-  elsif ($unit eq 'mu') { return 10.0 * 65536 / 18; }
-  else {
-    my $sp = $UNITS{$unit};
-    if (!$sp) {
-      Warn('expected', '<unit>', undef, "Illegal unit of measure '$unit', assuming pt.");
+  if   ($unit eq 'em'){ 10.0 * 65536; }
+  elsif($unit eq 'ex'){  4.3 * 65536; }
+  elsif($unit eq 'mu'){ 10.0 * 65536 / 18; }
+  else{
+    my $sp = $UNITS{$unit}; 
+    if(!$sp){
+      Warn('expected','<unit>',undef,"Illegal unit of measure '$unit', assuming pt.");
       $sp = $UNITS{'pt'}; }
-    return $sp; } }
+    $sp; }}
 
 #======================================================================
 
 sub noteStatus {
-  my ($self, $type, @data) = @_;
-  if ($type eq 'undefined') {
-    map { $$self{status}{undefined}{$_}++ } @data; }
-  elsif ($type eq 'missing') {
-    map { $$self{status}{missing}{$_}++ } @data; }
+  my($self,$type,@data)=@_;
+  if($type eq 'undefined'){
+    map($$self{status}{undefined}{$_}++, @data); }
+  elsif($type eq 'missing'){
+    map($$self{status}{missing}{$_}++, @data); }
   else {
-    $$self{status}{$type}++; }
-  return; }
+    $$self{status}{$type}++; }}
 
 sub getStatus {
-  my ($self, $type) = @_;
-  return $$self{status}{$type}; }
+  my($self,$type)=@_;
+  $$self{status}{$type}; }
 
 sub setStatus {
-  my ($self, $type, $value) = @_;
+  my($self,$type,$value)=@_;
   if (($type ne "missing") && ($type ne "undefined")) {
-    $$self{status}{$type} = $value; } }
+  $$self{status}{$type} = $value; }}
 
 sub getStatusMessage {
-  my ($self) = @_;
-  my $status = $$self{status};
-  my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''))
+  my($self)=@_;
+  my $status= $$self{status};
+  my @report=();
+  push(@report, "$$status{warning} warning".($$status{warning}>1?'s':''))
     if $$status{warning};
-  push(@report, "$$status{error} error" . ($$status{error} > 1 ? 's' : ''))
+  push(@report, "$$status{error} error".($$status{error}>1?'s':''))
     if $$status{error};
-  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''))
-
+  push(@report, "$$status{fatal} fatal error".($$status{fatal}>1?'s':''))
     if $$status{fatal};
-  my @undef = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  push(@report, scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-      . "[" . join(', ', @undef) . "]")
+  my @undef = ($$status{undefined} ? keys %{$$status{undefined}} :());
+  push(@report, scalar(@undef)." undefined macro".(@undef > 1 ? 's':'')
+       ."[".join(', ',@undef)."]")
     if @undef;
-  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  push(@report, scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-      . "[" . join(', ', @miss) . "]")
+  my @miss = ($$status{missing} ? keys %{$$status{missing}} :());
+  push(@report, scalar(@miss)." missing file".(@miss > 1 ? 's':'')
+       ."[".join(', ',@miss)."]")
     if @miss;
-  return join('; ', @report) || 'No obvious problems'; }
+  join('; ', @report) || 'No obvious problems'; }
 
 sub getStatusCode {
-  my ($self) = @_;
-  my $status = $$self{status};
+  my($self)=@_;
+  my $status= $$self{status};
   my $code;
-  if ($$status{fatal} && $$status{fatal} > 0) {
-    $code = 3;
-  } elsif ($$status{error} && $$status{error} > 0) {
-    $code = 2;
-  } elsif ($$status{warning} && $$status{warning} > 0) {
-    $code = 1;
+  if ($$status{fatal} && $$status{fatal}>0) {
+      $code=3;
+  } elsif ($$status{error} && $$status{error}>0) {
+      $code=2;
+  } elsif ($$status{warning} && $$status{warning}>0) {
+      $code=1;
   } else {
-    $code = 0;
+      $code=0;
   }
   $code;
 }
 
 #======================================================================
 1;
+
 
 __END__
 

@@ -7,7 +7,7 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
+# | Thanks to the arXMLiv group for initial implementation              | # 
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -20,30 +20,30 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Choose the current float style (plain, plaintop, boxed, ruled) Ignorable
-DefMacro('\floatstyle{}', '');
+DefMacro('\floatstyle{}','');
 # \restylefloat{style}  Ignorable
-DefMacro('\restylefloat OptionalMatch:* {}', undef);
+DefMacro('\restylefloat OptionalMatch:* {}',undef);
 # \floatplacement{style}{placement}  Ignorable
-DefMacro('\floatplacement{}{}', undef);
+DefMacro('\floatplacement{}{}',undef);
 
 # \listof{type}{title}   Ignorable
-DefMacro('\listof{}{}', undef);
+DefMacro('\listof{}{}',undef);
 
 # \floatname{type}{name}  Ignorable, but tempting
-DefMacro('\floatname{}{}', '\@namedef{fname@#1}{#2}');
+DefMacro('\floatname{}{}','\@namedef{fname@#1}{#2}');
 
-DefPrimitive('\newfloat{}{}{}[]', sub {
-    my ($gullet, $type, $placement, $auxext, $within) = @_;
-    $type = ToString($type);
-    NewCounter($type, $within);
-    if (!LookupDefinition(T_CS('\fname@' . ToString($type)))) {
-      DefMacroI('\fname@' . $type, undef, $type); }
-    DefEnvironment("{$type}[]",
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
-        . "#body"
-        . "</ltx:float>",
-      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+DefPrimitive('\newfloat{}{}{}[]',sub {
+  my($gullet,$type,$placement,$auxext,$within)=@_;
+  $type = ToString($type);
+  NewCounter($type,$within);
+  if(!LookupDefinition(T_CS('\fname@'.ToString($type)))){
+    DefMacroI('\fname@'.$type,undef,$type); }
+  DefEnvironment("{$type}[]",
+		 "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+		 . "#body"
+		 ."</ltx:float>",
+		 beforeDigest=>sub{ DefMacroI('\@captype',undef,$type); },
+		 afterDigest=>sub { RescueCaptionCounters($type,$_[1]); });
 });
 ## ??? DefMacro('\plain','');
 

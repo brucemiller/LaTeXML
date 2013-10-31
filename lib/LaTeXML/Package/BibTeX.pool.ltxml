@@ -58,6 +58,7 @@ LoadPool('LaTeX');
 #     [still can't do a/b... suffixing until inclusion time!]
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Customizability
 # There are 3 mechanisms to customize the conversion
@@ -73,7 +74,7 @@ LoadPool('LaTeX');
 #   \bib@field@<type>@<field>
 #   \bib@field@<origtype>@<field>  (if an alias was defined)
 #   \bib@field@default@<field>
-# If no handler is defined,
+# If no handler is defined, 
 #   \bib@field@default@default{field}{value}
 # is used; it is initially bound to \bib@field@@ignore, which ignores the field.
 # An alternative would be
@@ -107,159 +108,159 @@ LoadPool('LaTeX');
 # entry and its fields, depending on what sorts of
 # aliases and commands have been defined.
 DefMacro('\ProcessBibTeXEntry Semiverbatim',
-  '\bibentry@prepare{#1}\bibentry@create{#1}');
+	 '\bibentry@prepare{#1}\bibentry@create{#1}');
 
-DefPrimitive('\bibentry@prepare Semiverbatim', sub {
-    my ($stomach, $key) = @_;
-    $key = ToString($key);
-    my $entry = LookupValue('BIBENTRY@' . $key);
+DefPrimitive('\bibentry@prepare Semiverbatim',sub {
+  my($stomach,$key)=@_;
+  $key = ToString($key);
+  my $entry = LookupValue('BIBENTRY@'.$key);
+  
+  my $origtype = $entry->getType;
+  my $type = $origtype;
+  my $alias_defn = T_CS('\bib@entry@'.$type.'@alias');
+  if(LookupDefinition($alias_defn)){
+    $type = ToString(Digest($alias_defn)); }
 
-    my $origtype   = $entry->getType;
-    my $type       = $origtype;
-    my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
-      $type = ToString(Digest($alias_defn)); }
+  # invoke ALL entry preparers
+  $stomach->bgroup;
+  AssignValue('CURRENT@BIBKEY'=>$key);
+  Digest(Tokens(grep(LookupDefinition($_),
+		  T_CS('\bib@entry@'.$type.'@prepare'),
+		  ($origtype ne $type ? (T_CS('\bib@entry@'.$origtype.'@prepare')):()),
+		  T_CS('\bib@entry@default@prepare'))));
+  $stomach->egroup;
+  return; });
 
-    # invoke ALL entry preparers
-    $stomach->bgroup;
-    AssignValue('CURRENT@BIBKEY' => $key);
-    Digest(Tokens(grep(LookupDefinition($_),
-          T_CS('\bib@entry@' . $type . '@prepare'),
-          ($origtype ne $type ? (T_CS('\bib@entry@' . $origtype . '@prepare')) : ()),
-          T_CS('\bib@entry@default@prepare'))));
-    $stomach->egroup;
-    return; });
+DefPrimitive('\bibentry@create Semiverbatim',sub {
+  my($stomach,$key)=@_;
+  $key = ToString($key);
+  my $entry = LookupValue('BIBENTRY@'.$key);
+  my $origtype = $entry->getType;
+  my $type = $origtype;
+  my $alias_defn = T_CS('\bib@entry@'.$type.'@alias');
+  if(LookupDefinition($alias_defn)){
+    $type = ToString(Digest($alias_defn)); }
 
-DefPrimitive('\bibentry@create Semiverbatim', sub {
-    my ($stomach, $key) = @_;
-    $key = ToString($key);
-    my $entry      = LookupValue('BIBENTRY@' . $key);
-    my $origtype   = $entry->getType;
-    my $type       = $origtype;
-    my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
-      $type = ToString(Digest($alias_defn)); }
+  my @tex = (join('','\begin{bib@entry}{',$type,'}{',$key,'}'));
+  # Add the most specific handler for each field
+  foreach my $pair ($entry->getFields){
+    my($field,$value)= @$pair;
+    my($handler) = grep(LookupDefinition(T_CS('\\'.$_)),
+			'bib@field@'.$type.'@'.$field,
+			($origtype ne $type 
+			 ? ('bib@field@'.$origtype.'@'.$field) : ()),
+			'bib@field@default@'.$field);
+    if($handler){
+      push(@tex, join('','\csname ',$handler,'\endcsname{',$value,'}')); }
+    else {
+      push(@tex, join('','\csname bib@field@default@default\endcsname{',$field,'}{',$value,'}')); }}
+  # Add ALL entry completers
+  foreach my $completer (grep(LookupDefinition(T_CS('\\'.$_)),
+			      'bib@entry@'.$type.'@complete',
+			      ($origtype ne $type 
+			       ? ('bib@entry@'.$origtype.'@complete'):()),
+			      'bib@entry@default@complete')){
+    push(@tex,join('','\csname ',$completer,'\endcsname')); }
+  my $tex = join("\n",@tex,'\end{bib@entry}');
 
-    my @tex = (join('', '\begin{bib@entry}{', $type, '}{', $key, '}'));
-    # Add the most specific handler for each field
-    foreach my $pair ($entry->getFields) {
-      my ($field, $value) = @$pair;
-      my ($handler) = grep(LookupDefinition(T_CS('\\' . $_)),
-        'bib@field@' . $type . '@' . $field,
-        ($origtype ne $type
-          ? ('bib@field@' . $origtype . '@' . $field) : ()),
-        'bib@field@default@' . $field);
-      if ($handler) {
-        push(@tex, join('', '\csname ', $handler, '\endcsname{', $value, '}')); }
-      else {
-        push(@tex, join('', '\csname bib@field@default@default\endcsname{', $field, '}{', $value, '}')); } }
-    # Add ALL entry completers
-    foreach my $completer (grep(LookupDefinition(T_CS('\\' . $_)),
-        'bib@entry@' . $type . '@complete',
-        ($origtype ne $type
-          ? ('bib@entry@' . $origtype . '@complete') : ()),
-        'bib@entry@default@complete')) {
-      push(@tex, join('', '\csname ', $completer, '\endcsname')); }
-    my $tex = join("\n", @tex, '\end{bib@entry}');
-
-    $stomach->getGullet->openMouth(LaTeXML::Mouth->new($tex));
-    (); });
+  $stomach->getGullet->openMouth(LaTeXML::Mouth->new($tex));
+  (); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing Entries
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Math ID's within the bibliography.
-DefMacro('\the@XMARG@ID', '\thebibliography@ID.XM\arabic{@XMARG}');
+DefMacro('\the@XMARG@ID','\thebibliography@ID.XM\arabic{@XMARG}');
 
 DefEnvironment('{bibtex@bibliography}',
-  "<ltx:bibliography xml:id='#id' "
-    . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
-    . "<ltx:biblist>#body</ltx:biblist>"
-    . "</ltx:bibliography>",
-  beforeDigest => sub {
-    AssignValue(inPreamble => 0); },
-  afterDigestBegin => sub { beginBibliography($_[1]); });
+	       "<ltx:bibliography xml:id='#id' "
+               .   "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
+	       . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+	       . "<ltx:biblist>#body</ltx:biblist>"
+	       ."</ltx:bibliography>",
+	       beforeDigest=>sub {
+		 AssignValue(inPreamble=>0); },
+	       afterDigestBegin=>sub { beginBibliography($_[1]); });
 
 DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
-  "<ltx:bibentry type='#1' key='#key' xml:id='#id'>#body</ltx:bibentry>",
-  afterDigestBegin => sub {
-    my $key = CleanBibKey($_[1]->getArg(2));
-    AssignValue('CURRENT@BIBKEY' => $key);
-    $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); });
+	       "<ltx:bibentry type='#1' key='#key' xml:id='#id'>#body</ltx:bibentry>",
+ 	       afterDigestBegin=>sub {
+		 my $key = CleanBibKey($_[1]->getArg(2));
+ 		 AssignValue('CURRENT@BIBKEY'=>$key);
+		 $_[1]->setProperties(key=>$key,RefStepCounter('@bibitem')); });
 
-sub currentBibKey           { LookupValue('CURRENT@BIBKEY'); }
-sub currentBibEntry         { LookupValue('BIBENTRY@' . currentBibKey()); }
-sub currentBibEntryField    { currentBibEntry()->getField($_[0]); }
+sub currentBibKey   { LookupValue('CURRENT@BIBKEY'); }
+sub currentBibEntry { LookupValue('BIBENTRY@'.currentBibKey()); }
+sub currentBibEntryField { currentBibEntry()->getField($_[0]); }
 sub currentBibEntryRawField { currentBibEntry()->getRawField($_[0]); }
 
 #======================================================================
 DefMacro('\bib@entry@default@prepare', sub {
-    copyCrossrefFields(qw(date year month day)); });
+	   copyCrossrefFields(qw(date year month day)); });
 
 DefMacro('\bib@entry@default@complete',
-  '\bib@synthesize@mr\bib@synthesize@zbl\bib@@origbibentry');
+	 '\bib@synthesize@mr\bib@synthesize@zbl\bib@@origbibentry');
 
 sub copyCrossrefFields {
-  my (@fields) = @_;
+  my(@fields)=@_;
   my $entry = currentBibEntry();
-  if (my $xref = $entry->getField('crossref')) {
-    if (my $xentry = LookupValue('BIBENTRY@' . CleanBibKey($xref))) {
-      foreach my $field (@fields) {
-        if (!defined $entry->getField($field)) {
-          if (my $value = $xentry->getField($field)) {
-            $entry->addField($field, $value); } }
-        if (!defined $entry->getRawField($field)) {
-          if (my $value = $xentry->getRawField($field)) {
-            $entry->addRawField($field, $value); } }
-      } } }
+  if(my $xref = $entry->getField('crossref')){
+    if(my $xentry = LookupValue('BIBENTRY@'.CleanBibKey($xref))){
+      foreach my $field (@fields){
+	if(! defined $entry->getField($field)){
+	  if(my $value = $xentry->getField($field)){
+	    $entry->addField($field,$value); }}
+	if(! defined $entry->getRawField($field)){
+	  if(my $value = $xentry->getRawField($field)){
+	    $entry->addRawField($field,$value); }}
+      }}}
   return; }
 #======================================================================
 # Supporters
 
 DefConstructor('\bib@@field {} OptionalKeyVals Digested', sub {
-    my ($document, $tag, $attr, $content) = @_;
-    $document->insertElement(ToString($tag), $content, ($attr ? $attr->getHash : ())); });
+  my($document,$tag,$attr,$content)=@_;
+  $document->insertElement(ToString($tag),$content,($attr ? $attr->getHash : ())); });
 
 # Hmm, should this be something like an "add default field value"?
-DefMacro('\bib@addtype{}', sub {
-    my ($gullet, $type) = @_;
-    if (currentBibEntryField('type')) {
-      (); }
-    else {
-      Invocation(T_CS('\bib@field@default@type'), $type)->unlist; } });
+DefMacro('\bib@addtype{}',sub {
+  my($gullet,$type)=@_;
+  if(currentBibEntryField('type')){
+    (); }
+  else {
+    Invocation(T_CS('\bib@field@default@type'),$type)->unlist; }});
 
 sub bibAddToContainer {
-  my ($document, $tag, $data, %attr) = @_;
+  my($document,$tag,$data,%attr)=@_;
   my $currentnode = $document->getNode;
   my $entry = $document->findnode('ancestor-or-self::ltx:bibentry | ancestor-or-self::ltx:bib-related',
-    $currentnode);
+				  $currentnode);
 
   my $xpath = $tag;
-  $xpath .= '[' . join(' and ', map("\@$_='" . ToString($attr{$_}) . "'", keys %attr)) . ']'
+  $xpath .= '['.join(' and ',map("\@$_='".ToString($attr{$_})."'",keys %attr)).']'
     if keys %attr;
-  if (my $rel = $document->findnode($xpath, $entry)) {
+  if(my $rel = $document->findnode($xpath,$entry)){
     $document->setNode($rel);
     $document->absorb($data) if $data;
     $document->setNode($currentnode); }
   else {
-    $document->insertElement($tag, $data, %attr); } }
+    $document->insertElement($tag,$data,%attr); }}
 
 # Insert the argument into the bib-related node in the current bibentry.
 # \bib@addtorelated{type}{role}
-DefConstructor('\bib@addto@related {}{} Digested', sub {
-    my ($document, $type, $role, $data) = @_;
-    bibAddToContainer($document, 'ltx:bib-related', $data, type => $type, role => $role); });
+DefConstructor('\bib@addto@related {}{} Digested',sub {
+  my($document,$type,$role,$data)=@_;
+  bibAddToContainer($document,'ltx:bib-related',$data,type=>$type,role=>$role); });
 
 # author : The name(s) of the author(s); this gets NameList treatment
 DefConstructor('\bib@@@name{}{}',
-  "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
+	       "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
 DefMacro('\bib@@names{}{}', sub {
-    my ($gullet, $field, $ignore) = @_;
-    map(Invocation(T_CS('\bib@@@name'), $field, $_),
-      processBibNameList(currentBibEntryField(ToString($field)))); });
+   my($gullet,$field,$ignore)=@_;
+   map(Invocation(T_CS('\bib@@@name'),$field,$_),
+       processBibNameList(currentBibEntryField(ToString($field)))); });
 
-# Now, we define
+# Now, we define 
 # \bib@@title
 # which will do appropriate case conversion... but what's appropriate?
 # Setting BibTeX_title_case to one of the following chooses.
@@ -273,46 +274,46 @@ DefMacro('\bib@@names{}{}', sub {
 # * lowercase   : convert to lowercase.
 
 DefMacro('\bib@@title{}{}{}', sub {
-    my ($gullet, $field, $tag, $ignoretitle) = @_;
-    my $title = currentBibEntryField(ToString($field));              # Get it in raw string form.
-    my $mode  = LookupValue('BibTeX_title_case') || 'capitalize1';
-    my $recap = '';
-    my ($wb, $wc) = (1, 0);
-    while ($title ne "") {
-      if ($title =~ s/^(\s+)//) {
-        $recap .= $1; $wb = 1; }
-      #    elsif($title =~ s/^([\w\\]+)//){
-      elsif ($title =~ s/^((?:\w|\\(?:\w+|.))+)//) {
-        if ($mode eq 'asis') {
-          $recap .= $1; }
-        elsif ($mode eq 'uppercase') {
-          $recap .= uc($1); }
-        elsif (($wb == 0)
-          || (($mode eq 'capitalize1') && ($wc > 0))
-          || ($mode eq 'lowercase')) {
-          $recap .= lc($1); }
-        elsif (($mode eq 'capitalize')
-          || (($mode eq 'capitalize1') && ($wc == 0))) {
-          $recap .= ucfirst($1); }
-        $wc++ if $wb;
-        $wb = 0; }
-      elsif ($title =~ /^\{/) {
-        my $t = extract_bracketed($title, '{}');
-        if (!defined $t) {
-          Error('expected', '}', $gullet, "Expected balancing } in bibliographic title");
-          $title =~ s/^\{//; }
-        else {
-          $recap .= $t; $wb = 0; } }
-      elsif ($title =~ /^\$/) {
-        my $t = extract_delimited($title, '$');
-        if (!defined $t) {
-          Error('expected', '$', $gullet, "Expected balancing \$ in bibliographic title");
-          $title =~ s/^\$//; }
-        else {
-          $recap .= $t; $wb = 0; } }
-      elsif ($title =~ s/^(.)//) {
-        $recap .= $1; $wb = 1; } }
-    Invocation(T_CS('\bib@@field'), $tag, undef, Tokenize($recap)); });
+  my($gullet,$field,$tag,$ignoretitle)=@_;
+  my $title = currentBibEntryField(ToString($field)); # Get it in raw string form.
+  my $mode = LookupValue('BibTeX_title_case') || 'capitalize1';
+  my $recap='';
+  my ($wb,$wc)=(1,0);
+  while($title ne ""){
+    if($title =~ s/^(\s+)//){
+      $recap .= $1; $wb=1;}
+#    elsif($title =~ s/^([\w\\]+)//){
+    elsif($title =~ s/^((?:\w|\\(?:\w+|.))+)//){
+      if($mode eq 'asis'){
+	$recap .= $1; }
+      elsif($mode eq 'uppercase'){
+	$recap .= uc($1); }
+      elsif(($wb == 0)
+	    || (($mode eq 'capitalize1') && ($wc > 0))
+	    || ($mode eq 'lowercase')){
+	$recap .= lc($1); }
+      elsif(($mode eq 'capitalize')
+	    || (($mode eq 'capitalize1') && ($wc == 0))){
+	$recap .= ucfirst($1); }
+      $wc++ if $wb;
+      $wb=0;  }
+    elsif($title =~ /^\{/){
+      my $t = extract_bracketed($title,'{}');
+      if(!defined $t){
+	Error('expected','}',$gullet,"Expected balancing } in bibliographic title");
+	$title =~ s/^\{//; }
+      else {
+	$recap .= $t; $wb=0; }}
+    elsif($title =~ /^\$/){
+      my $t = extract_delimited($title,'$');
+      if(!defined $t){
+	Error('expected','$',$gullet,"Expected balancing \$ in bibliographic title");
+	$title =~ s/^\$//; }
+      else {
+	$recap .= $t; $wb=0; }}
+    elsif($title =~ s/^(.)//){
+      $recap .= $1; $wb=1; }}
+  Invocation(T_CS('\bib@@field'),$tag,undef,Tokenize($recap)); });
 
 # I'd thought booktitle were treated like title, but I think I was mistaken.
 #DefMacro('\bib@@booktitle{}{}', '\bib@@title{booktitle}{#1}{#2}');
@@ -322,18 +323,18 @@ DefMacro('\bib@@booktitle{}{}', '\bib@@field{#1}{#2}');
 # Default field handlers
 
 # This ignores the field.
-DefMacro('\bib@field@@ignore Semiverbatim Semiverbatim', '');
+DefMacro('\bib@field@@ignore Semiverbatim Semiverbatim','');
 
-# By default, we'll copy unrecognized fields to bib-data,
+# By default, we'll copy unrecognized fields to bib-data, 
 DefMacro('\bib@field@default@default {}{}', '\bib@field@unknownasdata{#1}'); # IGNORE the tokenized data.
 DefConstructor('\bib@field@unknownasdata Semiverbatim',
-  "<ltx:bib-data role='#1'>#rawdata</ltx:bib-data>",
-  afterDigest => sub {
-    my $field = ToString($_[1]->getArg(1));
-    $_[1]->setProperty(rawdata => currentBibEntryField($field)); });
+	       "<ltx:bib-data role='#1'>#rawdata</ltx:bib-data>",
+	      afterDigest=>sub {
+		my $field = ToString($_[1]->getArg(1));
+		$_[1]->setProperty(rawdata=>currentBibEntryField($field)); });
 
 # OTOH, if you'd like to simply ignore them, do this:
-# Let('\bib@field@default@default','\bib@field@@ignore');
+# Let(T_CS('\bib@field@default@default'),T_CS('\bib@field@@ignore'));
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The Standard BibTeX Entries
@@ -349,7 +350,7 @@ DefMacro('\bib@entry@article@prepare', sub { copyCrossrefFields(qw(author title 
 
 # journal : the journal that an article is part of
 DefMacro('\bib@field@article@journal',
-  '\bib@addto@related{journal}{host}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{journal}{host}\bib@@field{ltx:bib-title}');
 
 #======================================================================
 # Book
@@ -357,6 +358,7 @@ DefMacro('\bib@field@article@journal',
 #  optional: volume or number, series, address, edition, month, note
 
 DefMacro('\bib@entry@book@prepare', sub { copyCrossrefFields(qw(author editor title publisher)); });
+
 
 #======================================================================
 # Booklet
@@ -367,7 +369,7 @@ DefMacro('\bib@entry@booklet@prepare', sub { copyCrossrefFields(qw(title)); });
 
 #======================================================================
 # conference
-DefMacro('\bib@entry@conference@alias', 'inproceedings');
+DefMacro('\bib@entry@conference@alias','inproceedings');
 
 #======================================================================
 # inbook
@@ -376,23 +378,23 @@ DefMacro('\bib@entry@conference@alias', 'inproceedings');
 # inbook gets a related item for the book, with fields:
 #    editor, publisher, booktitle, volume or number, series, address, edition.
 DefMacro('\bib@entry@inbook@prepare', sub {
-    copyCrossrefFields(qw(author editor title chapter pages publisher)); });
+	   copyCrossrefFields(qw(author editor title chapter pages publisher)); });
 DefMacro('\bib@field@inbook@booktitle',
-  '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@inbook@editor',
-  '\bib@addto@related{book}{host}\bib@@names{editor}');
+	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inbook@publisher',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
 DefMacro('\bib@field@inbook@number',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
 DefMacro('\bib@field@inbook@volume',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
 DefMacro('\bib@field@inbook@series',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
 DefMacro('\bib@field@inbook@address',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
 DefMacro('\bib@field@inbook@edition',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
 
 #======================================================================
 # incollection
@@ -402,24 +404,24 @@ DefMacro('\bib@field@inbook@edition',
 # incollection gets a related item book, with fields:
 #    booktitle, publisher, editor, volume or number, series, address, edition
 DefMacro('\bib@entry@incollection@prepare', sub {
-    copyCrossrefFields(qw(author title booktitle publisher)); });
+	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@incollection@booktitle',
-  '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
+	 '\bib@addto@related{book}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@incollection@editor',
-  '\bib@addto@related{book}{host}\bib@@names{editor}');
+	 '\bib@addto@related{book}{host}\bib@@names{editor}');
 DefMacro('\bib@field@incollection@publisher',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-publisher}');
 DefMacro('\bib@field@incollection@number',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=number]');
 DefMacro('\bib@field@incollection@volume',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=volume]');
 DefMacro('\bib@field@incollection@series',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-part}[role=series]');
 DefMacro('\bib@field@incollection@address',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-place}');
 DefMacro('\bib@field@incollection@edition',
-  '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
+	 '\bib@addto@related{book}{host}\bib@@field{ltx:bib-edition}');
 
 #======================================================================
 # inproceedings
@@ -429,31 +431,31 @@ DefMacro('\bib@field@incollection@edition',
 # inproceedings gets a related item proceedings, with fields:
 #   booktitle, editor,volume or number, series, address, organization, publisher
 DefMacro('\bib@entry@inproceedings@prepare', sub {
-    copyCrossrefFields(qw(author title booktitle publisher)); });
+	   copyCrossrefFields(qw(author title booktitle publisher)); });
 
 DefMacro('\bib@field@inproceedings@booktitle',
-  '\bib@addto@related{proceedings}{host}\bib@@booktitle{ltx:bib-title}');
+	 '\bib@addto@related{proceedings}{host}\bib@@booktitle{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@editor',
-  '\bib@addto@related{proceedings}{host}\bib@@names{editor}');
+	 '\bib@addto@related{proceedings}{host}\bib@@names{editor}');
 DefMacro('\bib@field@inproceedings@number',
-  '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=number]');
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=number]');
 DefMacro('\bib@field@inproceedings@volume',
-  '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=volume]');
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=volume]');
 DefMacro('\bib@field@inproceedings@series',
-  '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=series]');
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-part}[role=series]');
 DefMacro('\bib@field@inproceedings@organization',
-  '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-organization}');
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-organization}');
 DefMacro('\bib@field@inproceedings@publisher',
-  '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-publisher}');
+	 '\bib@addto@related{proceedings}{host}\bib@@field{ltx:bib-publisher}');
 
 DefMacro('\bib@field@inproceedings@conference',
-  '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@meeting',
-  '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-title}');
 DefMacro('\bib@field@inproceedings@location',
-  '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
 DefMacro('\bib@field@inproceedings@place',
-  '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
+	 '\bib@addto@related{conference}{event}\bib@@field{ltx:bib-place}');
 
 #======================================================================
 # manual
@@ -467,10 +469,10 @@ DefMacro('\bib@entry@manual@prepare', sub { copyCrossrefFields(qw(title)); });
 #   required: author, title, school, year,
 #   optional: type, address, month, note
 
-DefMacro('\bib@entry@thesis@prepare', sub { copyCrossrefFields(qw(author title school)); });
+DefMacro('\bib@entry@thesis@prepare', sub { copyCrossrefFields(qw(author title school));  });
 
-DefMacro('\bib@entry@mastersthesis@alias',    'thesis');
-DefMacro('\bib@entry@mastersthesis@complete', '\bib@addtype{Master\'s Thesis}');
+DefMacro('\bib@entry@mastersthesis@alias','thesis');
+DefMacro('\bib@entry@mastersthesis@complete','\bib@addtype{Master\'s Thesis}');
 
 #======================================================================
 # misc
@@ -482,8 +484,8 @@ DefMacro('\bib@entry@mastersthesis@complete', '\bib@addtype{Master\'s Thesis}');
 #   required: author, title, school, year,
 #   optional: type, address, month, note.
 
-DefMacro('\bib@entry@phdthesis@alias',    'thesis');
-DefMacro('\bib@entry@phdthesis@complete', '\bib@addtype{Ph.D. Thesis}');
+DefMacro('\bib@entry@phdthesis@alias','thesis');
+DefMacro('\bib@entry@phdthesis@complete','\bib@addtype{Ph.D. Thesis}');
 
 #======================================================================
 # proceedings
@@ -494,20 +496,20 @@ DefMacro('\bib@entry@phdthesis@complete', '\bib@addtype{Ph.D. Thesis}');
 DefMacro('\bib@entry@proceedings@prepare', sub { copyCrossrefFields(qw(title)); });
 
 DefMacro('\bib@field@proceedings@booktitle', sub {
-    my ($gullet) = @_;
-    if (currentBibEntryField('title')) {    # Already have a title.
-      $gullet->readArg;
-      (); }
-    else {                                  # Else use this as the title.
-      (TokenizeInternal('\bib@@field{ltx:bib-title}')->unlist); } });
+  my($gullet)=@_;
+  if(currentBibEntryField('title')){ # Already have a title.
+    $gullet->readArg;
+    (); }
+  else {			# Else use this as the title.
+    (TokenizeInternal('\bib@@field{ltx:bib-title}')->unlist); }});
 
 #======================================================================
 # techreport
 #   required: author, title, institution, year
 #   optional: type, number, address, month, note.
-DefMacro('\bib@entry@techreport@alias', 'report');
+DefMacro('\bib@entry@techreport@alias','report');
 DefMacro('\bib@entry@report@prepare', sub { copyCrossrefFields(qw(author title institution)); });
-DefMacro('\bib@entry@techreport@complete', '\bib@addtype{Technical report}');
+DefMacro('\bib@entry@techreport@complete','\bib@addtype{Technical report}');
 
 #======================================================================
 # unpublished
@@ -516,12 +518,13 @@ DefMacro('\bib@entry@techreport@complete', '\bib@addtype{Technical report}');
 
 DefMacro('\bib@entry@unpublished@prepare', sub { copyCrossrefFields(qw(author title)); });
 
+
 #======================================================================
 # Common non-standard entry types.
-DefMacro('\bib@entry@online@alias',     'website');
-DefMacro('\bib@entry@electronic@alias', 'website');
-DefMacro('\bib@entry@www@alias',        'website');
-DefMacro('\bib@entry@webpage@alias',    'website');
+DefMacro('\bib@entry@online@alias',    'website');
+DefMacro('\bib@entry@electronic@alias','website');
+DefMacro('\bib@entry@www@alias',       'website');
+DefMacro('\bib@entry@webpage@alias',   'website');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing Fields
@@ -533,25 +536,25 @@ DefMacro('\bib@entry@webpage@alias',    'website');
 
 # author : The name(s) of the author(s); this gets NameList treatment
 DefMacro('\bib@field@default@author',
-  '\bib@@names{author}');
+	 '\bib@@names{author}');
 
 # editor : The name(s) of the editor(s); this gets NameList treatment
 DefMacro('\bib@field@default@editor',
-  '\bib@@names{editor}');
+	 '\bib@@names{editor}');
 
 # translator : The names(s) of any translator(s); this gets NameList treatment
 DefMacro('\bib@field@default@translator',
-  '\bib@@names{translator}');
+	 '\bib@@names{translator}');
 
 #======================================================================
 # Titles
 
 # title : the title of the work.
 DefMacro('\bib@field@default@title',
-  '\bib@@title{title}{ltx:bib-title}');
+	 '\bib@@title{title}{ltx:bib-title}');
 
 DefMacro('\bib@field@default@subtitle',
-  '\bib@@field{ltx:bib-subtitle}');
+	 '\bib@@field{ltx:bib-subtitle}');
 
 #======================================================================
 # Origin info.
@@ -559,34 +562,34 @@ DefMacro('\bib@field@default@subtitle',
 # date : iso formatted yyy-mm-dd
 #  year (& month, day) fields can generate this element, as well.
 DefMacro('\bib@field@default@date',
-  '\bib@@field{ltx:bib-date}[role=publication]');
+	 '\bib@@field{ltx:bib-date}[role=publication]');
 
 # edition : the edition of a book
 DefMacro('\bib@field@default@edition',
-  '\bib@@field{ltx:bib-edition}');
+	 '\bib@@field{ltx:bib-edition}');
 
 # address : Publisher's address
 DefMacro('\bib@field@default@address',
-  '\bib@@field{ltx:bib-place}');
+	 '\bib@@field{ltx:bib-place}');
 
 # publisher : the name of the publisher
 DefMacro('\bib@field@default@publisher',
-  '\bib@@field{ltx:bib-publisher}');
+	 '\bib@@field{ltx:bib-publisher}');
 
 # institution : an institution involved in publishing, (distinct from publisher?)
 DefMacro('\bib@field@default@institution',
-  '\bib@@field{ltx:bib-organization}');
+	 '\bib@@field{ltx:bib-organization}');
 
 # organization : a conference sponsor
 DefMacro('\bib@field@default@organization',
-  '\bib@@field{ltx:bib-organization}');
+	 '\bib@@field{ltx:bib-organization}');
 
 # school : The school where a thesis was written; analogous to institution
 DefMacro('\bib@field@default@school',
-  '\bib@@field{ltx:bib-organization}');
+	 '\bib@@field{ltx:bib-organization}');
 
 DefMacro('\bib@field@default@status',
-  '\bib@@field{ltx:bib-status}');
+	 '\bib@@field{ltx:bib-status}');
 
 # year : the year of publication.
 # Try to synthesize an ISO date, if at all possible.
@@ -594,90 +597,90 @@ DefMacro('\bib@field@default@status',
 # otherwise the field may end up
 # Note that month and day do not directly contribute entries;
 # year incorporates them if found.
-our %months = (    # Standard abbreviations (usually would appear in raw form of month field).
-  jan => "1", feb => "2", mar => "3", apr => "4",  may => "5",  jun => "6",
-  jul => "7", aug => "8", sep => "9", oct => "10", nov => "11", dec => "12",
-  # English month names, perhaps in expanded form of month field
-  january => "1", february => "2", march => "3", april => "4", may => "5", june => "6",
-  july => "7", august => "8", september => "9", october => "10", november => "11", december => "12");
+our %months =( # Standard abbreviations (usually would appear in raw form of month field).
+	      jan=>"1", feb=>"2", mar=>"3", apr=>"4",  may=>"5",  jun=>"6",
+	      jul=>"7", aug=>"8", sep=>"9", oct=>"10", nov=>"11", dec=>"12",
+	      # English month names, perhaps in expanded form of month field
+	      january=>"1", february=>"2", march=>"3", april=>"4",  may=>"5",  june=>"6",
+	      july=>"7",    august=>"8",   september=>"9", october=>"10", november=>"11", december=>"12");
 # Is there any sane way of looking up month names from other languages; maybe something from babel?
 
 DefMacro('\bib@field@default@year {}', sub {
-    if (currentBibEntryField('date')) {
-      (); }        # Ignore this, if we've already been given a date field.
-    else {
-      my $date = currentBibEntryField('year');
-      my $x;
-      my $month;
-      if (($x = currentBibEntryRawField('month')) && ($x = $months{ lc($x) })) { $month = $x; }
-      elsif ($x = currentBibEntryField('month')) { $month = $months{ lc($x) } || $x; }
-      my $day = currentBibEntryField('day');
-      # What if month or day is given, but not year ???
-      if (defined $month) {
-        $date .= '-' . ($month =~ /^\d$/ ? '0' . $month : $month);
-        if (defined $day) {
-          $date .= '-' . ($day =~ /^\d$/ ? '0' . $day : $day); } }
-      (T_CS('\bib@field@default@date'), T_BEGIN, Tokenize($date)->unlist, T_END); } });
+  if(currentBibEntryField('date')){
+    (); }			# Ignore this, if we've already been given a date field.
+  else {
+    my $date  = currentBibEntryField('year');
+    my $x;
+    my $month;
+    if(($x = currentBibEntryRawField('month')) && ($x = $months{lc($x)})){ $month = $x; }
+    elsif($x = currentBibEntryField('month')){ $month = $months{lc($x)} || $x; }
+    my $day   = currentBibEntryField('day');
+    # What if month or day is given, but not year ???
+    if(defined $month){
+      $date .= '-'.($month=~/^\d$/ ? '0'.$month : $month); 
+      if(defined $day){
+	$date .= '-'.($day  =~/^\d$/ ? '0'.$day   : $day  ); }}
+    (T_CS('\bib@field@default@date'),T_BEGIN,Tokenize($date)->unlist,T_END); }});
 
 # howpublished : if something non-standard
 DefMacro('\bib@field@default@howpublished',
-  '\bib@@field{ltx:bib-note}[role=publication]');
+	 '\bib@@field{ltx:bib-note}[role=publication]');
 
 #======================================================================
 # Part info.
 
 # chapter : the chapter number (of a book, presumably inbook or similar)
 DefMacro('\bib@field@default@chapter',
-  '\bib@@field{ltx:bib-part}[role=chapter]');
+	 '\bib@@field{ltx:bib-part}[role=chapter]');
 
 # number : the number of a journal, magazine, or whatever
 DefMacro('\bib@field@default@number',
-  '\bib@@field{ltx:bib-part}[role=number]');
+	 '\bib@@field{ltx:bib-part}[role=number]');
 
 # volume : the volume of a journal or multi-volume work
 DefMacro('\bib@field@default@volume',
-  '\bib@@field{ltx:bib-part}[role=volume]');
+	 '\bib@@field{ltx:bib-part}[role=volume]');
 
 DefMacro('\bib@field@default@part',
-  '\bib@@field{ltx:bib-part}[role=part]');
+	 '\bib@@field{ltx:bib-part}[role=part]');
 
 # series : the series of books a book was published in.
 DefMacro('\bib@field@default@series',
-  '\bib@@field{ltx:bib-part}[role=series]');
+	 '\bib@@field{ltx:bib-part}[role=series]');
 
 # pages : the page or page range
 DefMacro('\bib@field@default@pages',
-  '\bib@@field{ltx:bib-part}[role=pages]\bib@@pages');
+	 '\bib@@field{ltx:bib-part}[role=pages]\bib@@pages');
 
-DefConstructor('\bib@@pages{}', "#pages",
-  afterDigest => sub {
-    my $pages = currentBibEntryField('pages');
-    $pages =~ s/-+/--/g;    # Force - to -- (ligature will turn into endash
-    $_[1]->setProperty(pages => Digest(Tokenize($pages))); });
+DefConstructor('\bib@@pages{}',"#pages",
+	       afterDigest=>sub {
+		 my $pages = currentBibEntryField('pages');
+		 $pages =~ s/-+/--/g;		# Force - to -- (ligature will turn into endash
+		 $_[1]->setProperty(pages=>Digest(Tokenize($pages))); });
 
 #======================================================================
 # The Standard BibTeX Fields
 
 # annote : annotations; I'll assume annote is equivalent to note.
 DefMacro('\bib@field@default@annote',
-  '\bib@@field{ltx:bib-note}[role=annotation]');
+	 '\bib@@field{ltx:bib-note}[role=annotation]');
 
 # crossref : the key of a cross-referenced entry
-DefConstructor('\bib@field@default@crossref Semiverbatim', sub {
-    my ($document, $key) = @_;
-    bibAddToContainer($document, 'ltx:bib-related', undef, role => 'host', bibrefs => CleanBibKey($key)); });
+DefConstructor('\bib@field@default@crossref Semiverbatim',sub {
+  my($document,$key)=@_;
+  bibAddToContainer($document,'ltx:bib-related',undef,role=>'host',bibrefs=>CleanBibKey($key)); });
 
 # key : a normally hidden field for ordering
 DefConstructor('\bib@field@default@key Digested',
-  "<ltx:bib-key>#1</ltx:bib-key>");
+	       "<ltx:bib-key>#1</ltx:bib-key>");
 
 # note : miscellaneous annotation
 DefMacro('\bib@field@default@note',
-  '\bib@@field{ltx:bib-note}[role=annotation]');
+	 '\bib@@field{ltx:bib-note}[role=annotation]');
 
 # type : the type of a report
 DefConstructor('\bib@field@default@type Digested',
-  "<ltx:bib-type>#1</ltx:bib-type>");
+	       "<ltx:bib-type>#1</ltx:bib-type>");
 
 #======================================================================
 # Non-Standard but Common (?) fields.
@@ -688,81 +691,81 @@ DefConstructor('\bib@field@default@type Digested',
 
 # abstract : a copy of the abstract
 DefMacro('\bib@field@default@abstract',
-  '\bib@@field{ltx:bib-extract}[role=abstract]');
+	 '\bib@@field{ltx:bib-extract}[role=abstract]');
 
 # archive : specifies where this is archived (URL?)
 DefMacro('\bib@field@default@archive',
-  '\bib@@field{ltx:bib-links}');    # add text? or role?
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # contents : a table of contents
 DefMacro('\bib@field@default@contents',
-  '\bib@@field{ltx:bib-extract}[role=contents]');
+	 '\bib@@field{ltx:bib-extract}[role=contents]');
 
 # copyright : copyright information
 DefMacro('\bib@field@default@copyright',
-  '\bib@@field{ltx:bib-date}[role=copyright]');
+	 '\bib@@field{ltx:bib-date}[role=copyright]');
 
 # eprint : specifies an electronic publication; Is this a URL?
 DefMacro('\bib@field@default@eprint',
-  '\bib@@field{ltx:bib-links}');    # add text? or role?
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # preprint : specifies an electronic publication (not a URL).
 DefMacro('\bib@field@default@preprint',
-  '\bib@@field{ltx:bib-links}');    # add text? or role?
+	 '\bib@@field{ltx:bib-links}'); # add text? or role?
 
 # keywords : a list of subject keywords
 DefMacro('\bib@field@default@keywords',
-  '\bib@@field{ltx:bib-extract}[role=keywords]');
+	 '\bib@@field{ltx:bib-extract}[role=keywords]');
 
 # language : the language a document is in.
 DefMacro('\bib@field@default@language',
-  '\bib@@field{ltx:bib-language}');
+	 '\bib@@field{ltx:bib-language}');
 
 # url : specifies a URL where the work can be found.
 DefConstructor('\bib@field@default@url Semiverbatim',
-  "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
+	       "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
 
 # enote : miscellaneous annotation
 DefMacro('\bib@field@default@enote',
-  '\bib@@field{ltx:bib-note}[role=electronic-annotation]');
+	 '\bib@@field{ltx:bib-note}[role=electronic-annotation]');
 
 #======================================================================
 # Interesting Identifiers
 # doi : Document Object Identifier
 DefConstructor('\bib@field@default@doi Semiverbatim',
-  "<ltx:bib-identifier scheme='doi' id='#1' href='#href'>Document</ltx:bib-identifier>",
-  properties => sub {
-    my $id = processIdentifier($_[1]);
-    (id => $id, href => "http://dx.doi.org/$id"); });
+	       "<ltx:bib-identifier scheme='doi' id='#1' href='#href'>Document</ltx:bib-identifier>",
+	       properties=>sub { 
+		 my $id = processIdentifier($_[1]);
+		 (id=>$id, href=>"http://dx.doi.org/$id"); });
 
 # ISBN : the International Standard Book Number
 # Is there any useful URL that could be associated here?
 DefConstructor('\bib@field@default@isbn Semiverbatim',
-  "<ltx:bib-identifier scheme='isbn' id='#id'>ISBN #1</ltx:bib-identifier>",
-  properties => sub {
-    (id => processIdentifier($_[1])); });
+	       "<ltx:bib-identifier scheme='isbn' id='#id'>ISBN #1</ltx:bib-identifier>",
+	       properties=>sub {
+		 (id=>processIdentifier($_[1])); });
 
 # ISSN : the International Standard Serial Number (eg. of a Journal)
 # Is there any useful URL that could be associated here?
 DefConstructor('\bib@field@default@issn Semiverbatim',
-  "<ltx:bib-identifier scheme='issn' id='#id'>ISSN #1</ltx:bib-identifier>",
-  properties => sub {
-    (id => processIdentifier($_[1])); });
+	       "<ltx:bib-identifier scheme='issn' id='#id'>ISSN #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
 
 # LCCN : the Library of Congress Call Number
 DefConstructor('\bib@field@default@lccn Semiverbatim',
-  "<ltx:bib-identifier scheme='lccn' id='#id'>LCCN #1</ltx:bib-identifier>",
-  properties => sub {
-    (id => processIdentifier($_[1])); });
+	       "<ltx:bib-identifier scheme='lccn' id='#id'>LCCN #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
 
 # PII : the Publisher Item Identifier (?)
 DefConstructor('\bib@field@default@pii Semiverbatim',
-  "<ltx:bib-identifier scheme='pii' id='#id'>PII #1</ltx:bib-identifier>",
-  properties => sub {
-    (id => processIdentifier($_[1])); });
+	       "<ltx:bib-identifier scheme='pii' id='#id'>PII #1</ltx:bib-identifier>",
+	       properties=>sub { 
+		 (id=>processIdentifier($_[1])); });
 
 sub processIdentifier {
-  my ($string) = @_;
+  my($string)=@_;
   $string = ToString($string) if ref $string;
   $string =~ s/^\s+//;
   $string =~ s/\s+$//;
@@ -772,7 +775,7 @@ sub processIdentifier {
 # Reviews.
 
 DefConstructor('\bib@field@default@review Digested',
-  "<ltx:bib-review>Review #1</ltx:bib-review>");
+	       "<ltx:bib-review>Review #1</ltx:bib-review>");
 
 # mrnumber is a common non-standard field
 # mrreviewer isn't
@@ -780,64 +783,64 @@ DefConstructor('\bib@field@default@review Digested',
 #
 # I'm synthesize 1 field from mrrnumber & mrreviewer (as done in DLMF)
 # Similarly for zblno & zblreviewer.
-DefMacro('\bib@synthesize@mr', sub {
-    my $mrnumber   = currentBibEntryField('mrnumber');
-    my $mrreviewer = currentBibEntryField('mrreviewer');
-    if ($mrnumber || $mrreviewer) {
-      Invocation(T_CS('\bib@@mr'), Tokenize($mrnumber),
-        ($mrreviewer ? Tokenize($mrreviewer) : Tokens())); }
-    else {
-      (); } });
+DefMacro('\bib@synthesize@mr',sub {
+  my $mrnumber  = currentBibEntryField('mrnumber');
+  my $mrreviewer= currentBibEntryField('mrreviewer');
+  if($mrnumber || $mrreviewer){
+    Invocation(T_CS('\bib@@mr'),Tokenize($mrnumber),
+	       ($mrreviewer ? Tokenize($mrreviewer) : Tokens())); }
+  else {
+    (); }});
 
 DefConstructor('\bib@@mr {}{}',
-  "?#isreview"
-    . "(?#reviewer"
-    . "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview (#reviewer)</ltx:bib-review>)"
-    . "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview</ltx:bib-review>))"
-    . "(<ltx:bib-identifier scheme='mr' id='#id' href='#href'>MathReview Entry</ltx:bib-identifier>)",
-  properties => sub {
-    my $id = ToString($_[1]);
-    $id =~ s/^\s+//; $id =~ s/\s+$//;
-    my $reviewer = $_[2];
-    my $isreview = ToString($reviewer) ne '';
-    if ($id =~ /^\s*MR(\d+)\s+\(.*\)\s*$/) {    # If extra number, there's a review
-      $id = $1; $isreview = 1; }
-    my $href = "http://www.ams.org/mathscinet-getitem?mr=" . $id;
-    (isreview => $isreview, id => $id, href => $href, reviewer => $reviewer); });
+	       "?#isreview"
+	       . "(?#reviewer"
+	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview (#reviewer)</ltx:bib-review>)"
+	       .   "(<ltx:bib-review scheme='mr' id='#id' href='#href'>MathReview</ltx:bib-review>))"
+	       . "(<ltx:bib-identifier scheme='mr' id='#id' href='#href'>MathReview Entry</ltx:bib-identifier>)",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 $id =~ s/^\s+//; $id =~ s/\s+$//;
+		 my $reviewer = $_[2];
+		 my $isreview = ToString($reviewer) ne '';
+		 if($id =~ /^\s*MR(\d+)\s+\(.*\)\s*$/){ # If extra number, there's a review
+		   $id = $1; $isreview = 1; }
+		 my $href ="http://www.ams.org/mathscinet-getitem?mr=".$id;
+		 (isreview=>$isreview, id=>$id, href=>$href, reviewer=>$reviewer); });
 
-DefMacro('\bib@synthesize@zbl', sub {
-    my $zblno       = currentBibEntryField('zblno');
-    my $zblreviewer = currentBibEntryField('zblreviewer');
-    if ($zblno || $zblreviewer) {
-      Invocation(T_CS('\bib@@zbl'), Tokenize($zblno),
-        ($zblreviewer ? Tokenize($zblreviewer) : Tokens())); }
-    else {
-      (); } });
+DefMacro('\bib@synthesize@zbl',sub {
+  my $zblno     = currentBibEntryField('zblno');
+  my $zblreviewer= currentBibEntryField('zblreviewer');
+  if($zblno || $zblreviewer){
+    Invocation(T_CS('\bib@@zbl'),Tokenize($zblno),
+	       ($zblreviewer ? Tokenize($zblreviewer) : Tokens())); }
+  else {
+    (); }});
 
 DefConstructor('\bib@@zbl {}{}',
-  "?#reviewer"
-    . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt (#reviewer)</ltx:bib-review>)"
-    . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt</ltx:bib-review>)",
-  properties => sub {
-    my $id       = ToString($_[1]);
-    my $reviewer = $_[2];
-    my $href     = "http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
-    (id => $id, href => $href, reviewer => $reviewer); });
+	       "?#reviewer"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt (#reviewer)</ltx:bib-review>)"
+	       . "(<ltx:bib-review scheme='zbl' id='#id' href='#href'>ZentralBlatt</ltx:bib-review>)",
+	       properties=>sub {
+		 my $id = ToString($_[1]);
+		 my $reviewer = $_[2];
+		 my $href ="http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
+		 (id=>$id, href=>$href, reviewer=>$reviewer); });
 
 #======================================================================
 # Extra fields used in DLMF (elsewhere?)
 
 DefConstructor('\bib@field@default@links Digested',
-  "<ltx:bib-links>#1</ltx:bib-links>");
+	       "<ltx:bib-links>#1</ltx:bib-links>");
 
 # This puts a copy of the BibTeX entry into the XML
 # It is expanded for BibTeX data, but not TeX expanded.
 # It seems that using bib-identifier is only slightly perverse.
 DefConstructor('\bib@@origbibentry',
-  "<ltx:bib-data role='self' type='BibTeX'>#bibentry</ltx:bib-data>",
-  afterDigest => sub {
-    $_[1]->setProperty(bibentry => currentBibEntry()->prettyPrint);
-    return; });
+	       "<ltx:bib-data role='self' type='BibTeX'>#bibentry</ltx:bib-data>",
+	       afterDigest=>sub {
+		 $_[1]->setProperty(bibentry=>currentBibEntry()->prettyPrint); 
+		 return; });
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Processing BibTeX Name formats
 # Multiple names are separated by " and " and be ended by " and others".
@@ -850,83 +853,83 @@ DefConstructor('\bib@@origbibentry',
 # This simplifies the processing of all but the first case.
 
 sub processBibNameList {
-  my ($string) = @_;
-  my @names    = ();
-  my @words    = splitWords($string);
-  my $etal     = 0;
+  my($string)=@_;
+  my @names = ();
+  my @words = splitWords($string);
+  my $etal =0;
   # NOTE: Should formally represent the etal???
-  if (($words[$#words - 1] =~ /^and$/i) && ($words[$#words] =~ /^(others|et\s*al\.?)$/i)) {
-    pop(@words); pop(@words); $etal = 1; }
-  while (@words) {
-    my @phrases = ();
-    my @phrase  = ();
-    while (@words) {
+  if(($words[$#words-1] =~ /^and$/i) && ($words[$#words] =~ /^(others|et\s*al\.?)$/i)){
+    pop(@words); pop(@words); $etal=1; }
+  while(@words){
+    my @phrases=();
+    my @phrase=();
+    while(@words){
       my $word = shift(@words);
       last if $word =~ /^and$/i;
-      if ($word eq ',') {
-        push(@phrases, [@phrase]); @phrase = (); }
+      if ($word eq ','){
+	push(@phrases,[@phrase]); @phrase=(); }
       else {
-        push(@phrase, $word); } }
-    if (!scalar(@phrase)) {
-      Warn('expected', "<bibname>", undef,
-        "Empty name in bibliographic name list for " . currentBibKey());
+	push(@phrase,$word); }}
+    if(!scalar(@phrase)){
+      Warn('expected',"<bibname>",undef,
+	   "Empty name in bibliographic name list for ".currentBibKey());
       next; }
-    push(@phrases, [@phrase]) if @phrase;
+    push(@phrases,[@phrase]) if @phrase;
 
-    my ($given, $surname, $jr);
-    if (scalar(@phrases) == 3) {    # von Last, Jr, First
-      $surname = join(' ', @{ $phrases[0] });
-      $jr      = join(' ', @{ $phrases[1] });
-      $given   = join(' ', @{ $phrases[2] }); }
-    elsif (scalar(@phrases) == 2) {    # von Last, First
-      $surname = join(' ', @{ $phrases[0] });
-      $given   = join(' ', @{ $phrases[1] }); }
-    else {                             # First von Last
-      my @words = @{ $phrases[0] };
+    my($given,$surname,$jr);
+    if(scalar(@phrases) == 3){	# von Last, Jr, First
+      $surname = join(' ',@{$phrases[0]});
+      $jr      = join(' ',@{$phrases[1]});
+      $given   = join(' ',@{$phrases[2]}); }
+    elsif(scalar(@phrases) == 2){ # von Last, First
+      $surname = join(' ',@{$phrases[0]});
+      $given   = join(' ',@{$phrases[1]}); }
+    else {			# First von Last
+      my @words = @{$phrases[0]};
       my @first;
-      while (@words && ($words[0] !~ /^[a-z]/)) {    # This case test is not correct!!!
-        push(@first, shift(@words)); }
-      push(@words, pop(@first)) unless @words;
-      $given   = join(' ', @first);
-      $surname = join(' ', @words); }
-    push(@names, Tokens(($surname ? Invocation(T_CS('\bib@surname'), Tokenize($surname)) : ()),
-        ($given ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
-        ($jr    ? Invocation(T_CS('\bib@lineage'), Tokenize($jr))    : ())));
+      while(@words && ($words[0] !~ /^[a-z]/)){ # This case test is not correct!!!
+	push(@first,shift(@words));}
+      push(@words,pop(@first)) unless @words;
+      $given   = join(' ',@first);
+      $surname = join(' ',@words); }
+    push(@names,Tokens(($surname  ? Invocation(T_CS('\bib@surname'), Tokenize($surname)) : ()),
+		       ($given    ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
+		       ($jr       ? Invocation(T_CS('\bib@lineage'), Tokenize($jr)) : ())));
   }
   @names; }
 
 # Split into space separated words, but ignore spaces within {}
 sub splitWords {
-  my ($string) = @_;
-  $string =~ s/\\~/####/g;    # Protect \~ so we can split on hard spaces (~) as well as regular ones.
+  my($string)=@_;
+  $string =~ s/\\~/####/g;	# Protect \~ so we can split on hard spaces (~) as well as regular ones.
   my @words = ();
   $string =~ s/^[\s~]+//;
   my $word = '';
-  while ($string) {
-    if ($string =~ s/^(,?)[\s~]+//s) {
-      push(@words, $word) if $word;
-      push(@words, $1)    if $1;
+  while($string){
+    if($string =~ s/^(,?)[\s~]+//s){
+      push(@words,$word) if $word;
+      push(@words,$1) if $1;
       $word = ''; }
-    #    elsif($string =~ s/^([^\{\s,~]+)//){
-    elsif ($string =~ s/^([^\{\s,~]+)//) {
+#    elsif($string =~ s/^([^\{\s,~]+)//){
+    elsif($string =~ s/^([^\{\s,~]+)//){
       $word .= $1; }
-    elsif ($string =~ /^\{/) {
-      my $t = extract_bracketed($string, '{}');
-      if (!defined $t) {
-        Error('expected', '}', $STATE->getStomach->getGullet,
-          "Expected balancing } in bibliographic phrases");
-        $string =~ s/^\{//; }
+    elsif($string =~ /^\{/){
+      my $t = extract_bracketed($string,'{}');
+      if(!defined $t){
+	Error('expected','}',$STATE->getStomach->getGullet,
+	      "Expected balancing } in bibliographic phrases");
+	$string =~ s/^\{//; }
       else {
-        $word .= $t; } }
-    elsif ($string =~ s/^(.)//) {
-      $word .= $1; } }
-  push(@words, $word) if $word;
-  @words = map(((s/####/\\~/g || 1) && $_), @words);    # Put any \~ back
+	$word .= $t; }}
+    elsif($string =~ s/^(.)//){
+      $word .= $1; }}
+  push(@words,$word) if $word;
+  @words = map( ((s/####/\\~/g || 1) && $_), @words); # Put any \~ back
   @words; }
 
-DefConstructor('\bib@surname{}', "<ltx:surname>#1</ltx:surname>");
-DefConstructor('\bib@given{}',   "<ltx:givenname>#1</ltx:givenname>");
-DefConstructor('\bib@lineage{}', "<ltx:lineage>#1</ltx:lineage>");
+DefConstructor('\bib@surname{}',  "<ltx:surname>#1</ltx:surname>");
+DefConstructor('\bib@given{}',    "<ltx:givenname>#1</ltx:givenname>");
+DefConstructor('\bib@lineage{}',  "<ltx:lineage>#1</ltx:lineage>");
 
 #**********************************************************************
 1;

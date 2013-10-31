@@ -32,25 +32,25 @@ use File::Spec;
 use File::Copy;
 use Cwd;
 use Exporter;
-our @ISA    = qw(Exporter);
+our @ISA = qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall
-  &pathname_make &pathname_canonical
-  &pathname_split &pathname_directory &pathname_name &pathname_type
-  &pathname_timestamp
-  &pathname_concat
-  &pathname_relative &pathname_absolute
-  &pathname_is_absolute &pathname_is_contained
-  &pathname_is_url &pathname_is_literaldata
-  &pathname_protocol
-  &pathname_cwd &pathname_mkdir &pathname_copy);
+		  &pathname_make &pathname_canonical
+		  &pathname_split &pathname_directory &pathname_name &pathname_type
+		  &pathname_timestamp
+		  &pathname_concat
+		  &pathname_relative &pathname_absolute
+		  &pathname_is_absolute &pathname_is_contained
+                  &pathname_is_url &pathname_is_literaldata
+                  &pathname_protocol
+		  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
 #======================================================================
 # Ioan Sucan suggests switching this to '\\' for windows, but notes
 # that it works as it is, so we'll leave it (for now).
-our $SEP         = '/';
-our $LITERAL_RE  = '(?:literal)(?=:)';
+our $SEP = '/';
+our $LITERAL_RE = '(?:literal)(?=:)';
 our $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';
 
 #======================================================================
@@ -58,106 +58,105 @@ our $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';
 # Returns a pathname.  This will be an absolute path if
 # dir (or the first, if dir is an array), is absolute.
 sub pathname_make {
-  my (%pieces) = @_;
-  my $pathname = '';
-  if (my $dir = $pieces{dir}) {
+  my(%pieces)=@_;
+  my $pathname= '';
+  if(my $dir = $pieces{dir}){
     my @dirs = (ref $dir eq 'ARRAY' ? @$dir : ($dir));
     $pathname = shift(@dirs);
-    foreach my $d (@dirs) {
+    foreach my $d (@dirs ){
       $pathname =~ s|\Q$SEP\E$||; $dir =~ s|^\Q$SEP\E||;
-      $pathname .= $SEP . $dir; } }
+      $pathname .= $SEP.$dir; }}
   $pathname .= $SEP if $pathname && $pieces{name} && $pathname !~ m|\Q$SEP\E$|;
   $pathname .= $pieces{name} if $pieces{name};
-  $pathname .= '.' . $pieces{type} if $pieces{type};
+  $pathname .= '.'.$pieces{type} if $pieces{type};
   pathname_canonical($pathname); }
 
 # Split the pathname into components (dir,name,type).
 # If pathname is absolute, dir starts with volume or '/'
 sub pathname_split {
-  my ($pathname) = @_;
+  my($pathname)=@_;
   $pathname = pathname_canonical($pathname);
-  my ($vol, $dir, $name) = File::Spec->splitpath($pathname);
+  my($vol,$dir,$name)=File::Spec->splitpath($pathname);
   # Hmm, for /, we get $dir = / but we want $vol='/'  ?????
-  if ($vol) { $dir = $vol . $dir; }
-  elsif (File::Spec->file_name_is_absolute($pathname) && !File::Spec->file_name_is_absolute($dir)) { $dir = $SEP . $dir; }
+  if($vol) { $dir = $vol.$dir; }
+  elsif(File::Spec->file_name_is_absolute($pathname) && !File::Spec->file_name_is_absolute($dir)){ $dir = $SEP.$dir; }
   # $dir shouldn't end with separator, unless it is root.
   $dir =~ s/\Q$SEP\E$// unless $dir eq $SEP;
   my $type = '';
   $type = $1 if $name =~ s/\.([^\.]+)$//;
-  ($dir, $name, $type); }
+  ($dir,$name,$type); }
 
 use Carp;
-
 sub pathname_canonical {
-  my ($pathname) = @_;
-  if ($pathname =~ /^($LITERAL_RE)/) {
-    return $pathname; }
+  my($pathname)=@_;
+  if($pathname =~ /^($LITERAL_RE)/){
+      return $pathname; }
   # Don't call pathname_is_absolute, etc, here, cause THEY call US!
-  confess "Undefined pathname!" unless defined $pathname;
-  #  File::Spec->canonpath($pathname); }
+confess "Undefined pathname!" unless defined $pathname;
+#  File::Spec->canonpath($pathname); }
   $pathname =~ s|^~|$ENV{HOME}|;
   # We CAN canonicalize urls, but we need to be careful about the // before host!
-  my $urlprefix = undef;
-  if ($pathname =~ s|^($PROTOCOL_RE//[^/]*)/|/|) {
+  my $urlprefix= undef;
+  if($pathname =~ s|^($PROTOCOL_RE//[^/]*)/|/|){
     $urlprefix = $1; }
 
-  if ($pathname =~ m|//+/|) {
+  if($pathname =~ m|//+/|){
     Carp::cluck "Recursive pathname? : $pathname\n"; }
 ##  $pathname =~ s|//+|/|g;
   $pathname =~ s|/\./|/|g;
   # Collapse any foo/.. patterns, but not ../..
-  while ($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|) { }
+  while($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|){}
   $pathname =~ s|^\./||;
-  (defined $urlprefix ? $urlprefix . $pathname : $pathname); }
+  (defined $urlprefix ? $urlprefix . $pathname : $pathname);  }
 
 # Convenient extractors;
-sub pathname_directory {
-  my ($dir, $name, $type) = pathname_split(@_);
+sub pathname_directory { 
+  my($dir,$name,$type)=pathname_split(@_);
   $dir; }
 
 sub pathname_name {
-  my ($dir, $name, $type) = pathname_split(@_);
+  my($dir,$name,$type)=pathname_split(@_);
   $name; }
 
 sub pathname_type {
-  my ($dir, $name, $type) = pathname_split(@_);
+  my($dir,$name,$type)=pathname_split(@_);
   $type; }
 
 # Note that this returns ONLY recognized protocols!
 sub pathname_protocol {
-  my ($pathname) = @_;
+  my($pathname)=@_;
   return ($pathname =~ /^($PROTOCOL_RE|$LITERAL_RE)/ ? $1 : 'file'); }
 
 #======================================================================
 sub pathname_concat {
-  my ($dir, $file) = @_;
+  my($dir,$file)=@_;
   return $file unless $dir;
   return $dir if !defined $file || ($file eq '.');
-  pathname_canonical(File::Spec->catpath('', $dir || '', $file)); }
+  pathname_canonical(File::Spec->catpath('',$dir || '',$file)); }
 
 #======================================================================
 # Is $pathname an absolute pathname ?
 # pathname_is_absolute($pathname) => (0|1)
 sub pathname_is_absolute {
-  my ($pathname) = @_;
+  my($pathname)=@_;
   $pathname && File::Spec->file_name_is_absolute(pathname_canonical($pathname)); }
 
 sub pathname_is_url {
-  my ($pathname) = @_;
-  $pathname && $pathname =~ /^($PROTOCOL_RE)/ && $1; }    # Other protocols?
+  my($pathname)=@_;
+  $pathname && $pathname =~ /^($PROTOCOL_RE)/ && $1; } # Other protocols?
 
 sub pathname_is_literaldata {
-  my ($pathname) = @_;
+  my($pathname)=@_;
   ($pathname =~ /^($LITERAL_RE)/) && $1; }
 
 # Check whether $pathname is contained in (ie. underneath) $base
 # Returns the relative pathname if it is underneath; undef otherwise.
 sub pathname_is_contained {
-  my ($pathname, $base) = @_;
+  my($pathname,$base)=@_;
   # after assuring that both paths are absolute,
   # get $pathname relative to $base
   my $rel = pathname_canonical(pathname_relative(pathname_absolute($pathname),
-      pathname_absolute($base)));
+						 pathname_absolute($base)));
   # If the relative pathname starts with "../" that it apparently is NOT underneath base!
   ($rel =~ m|^\.\./| ? undef : $rel); }
 
@@ -165,21 +164,21 @@ sub pathname_is_contained {
 # If $pathname is an absolute, non-URL pathname,
 # return the pathname relative to $base,
 # else just return its canonical form.
-# Actually, if it's a url and $base is also url, to SAME host! & protocol...
+# Actually, if it's a url and $base is also url, to SAME host! & protocol... 
 # we _could_ make relative...
 sub pathname_relative {
-  my ($pathname, $base) = @_;
+  my($pathname,$base)=@_;
   $pathname = pathname_canonical($pathname);
   ($base && pathname_is_absolute($pathname) && !pathname_is_url($pathname)
-    ? File::Spec->abs2rel($pathname, pathname_canonical($base))
-    : $pathname); }
+   ? File::Spec->abs2rel($pathname,pathname_canonical($base))
+   : $pathname); }
 
 sub pathname_absolute {
-  my ($pathname, $base) = @_;
+  my($pathname,$base)=@_;
   $pathname = pathname_canonical($pathname);
   (!pathname_is_absolute($pathname) && !pathname_is_url($pathname)
-    ? File::Spec->rel2abs($pathname, ($base ? pathname_canonical($base) : pathname_cwd()))
-    : $pathname); }
+   ? File::Spec->rel2abs($pathname,($base ? pathname_canonical($base) : pathname_cwd()))
+   : $pathname); }
 
 #======================================================================
 # Actual file system operations.
@@ -189,36 +188,36 @@ sub pathname_timestamp {
 sub pathname_cwd { pathname_canonical(cwd()); }
 
 sub pathname_mkdir {
-  my ($directory) = @_;
+  my($directory)=@_;
   return unless $directory;
   $directory = pathname_canonical($directory);
-  my ($volume, $dirs, $last) = File::Spec->splitpath($directory);
-  my (@dirs) = (File::Spec->splitdir($dirs), $last);
-  for (my $i = 0 ; $i <= $#dirs ; $i++) {
-    my $dir = File::Spec->catpath($volume, File::Spec->catdir(@dirs[0 .. $i]), '');
-    if (!-d $dir) {
-      mkdir($dir) or return; } }
+  my($volume,$dirs,$last)=File::Spec->splitpath($directory);
+  my(@dirs)=(File::Spec->splitdir($dirs),$last);
+  for(my $i=0; $i <= $#dirs; $i++){
+    my $dir = File::Spec->catpath($volume,File::Spec->catdir(@dirs[0..$i]),'');
+    if(! -d $dir){
+      mkdir($dir) or return; }}
   return $directory; }
 
 # copy a file, preserving attributes, if possible.
 # Why doesn't File::Copy preserve attributes on Unix !?!?!?
 sub pathname_copy {
-  my ($source, $destination) = @_;
+  my($source,$destination)=@_;
   # If it _needs_ to be copied:
   $source      = pathname_canonical($source);
   $destination = pathname_canonical($destination);
-  if ((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
-    if (my $destdir = pathname_directory($destination)) {
+  if((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))){
+    if(my $destdir = pathname_directory($destination)){
       pathname_mkdir($destdir) or return; }
 ###    if($^O =~ /^(MSWin32|NetWare)$/){ # Windows
 ###      # According to Ioan, this should work:
 ###      system("xcopy /P $source $destination")==0 or return; }
-###    else {               # Unix
+###    else {			# Unix
 ###      system("cp --preserve=timestamps $source $destination")==0 or return; }
     # Hopefully this portably copies, preserving timestamp.
-    copy($source, $destination) or return;
-    my ($atime, $mtime) = (stat($source))[8, 9];
-    utime $atime, $mtime, $destination;    # And set the modification time
+    copy($source,$destination) or return; 
+    my($atime,$mtime)= (stat($source))[8,9];
+    utime $atime,$mtime,$destination; # And set the modification time
   }
   return $destination; }
 
@@ -226,13 +225,13 @@ sub pathname_copy {
 # pathname_find($pathname, paths=>[...], types=>[...])  => $absolute_pathname;
 # Find a file corresponding to $pathname returning the absolute,
 # completed pathname if found, else undef
-#  * If $pathname is a not an absolute pathname
+#  * If $pathname is a not an absolute pathname 
 #    (although it may still have directory components)
 #    then if search $paths are given, search for it relative to
 #    each of the directories in $paths,
 #    else search for it relative to the current working directory.
 #  * If types is given, then search (in each searched directory)
-#    for the first file with the given extension.
+#    for the first file with the given extension. 
 #    The extension "" (empty string) means to search for the exact name.
 #  * If types is not given, search for the exact named file
 #    without additional extension.
@@ -242,65 +241,69 @@ sub pathname_copy {
 our @INSTALLDIRS = grep(-d $_, map(pathname_canonical("$_/LaTeXML"), @INC));
 
 sub pathname_find {
-  my ($pathname, %options) = @_;
+  my($pathname,%options)=@_;
   return unless $pathname;
-  my @paths = candidate_pathnames($pathname, %options);
-  foreach my $path (@paths) {
-    return $path if -f $path; } }
+  my @paths = candidate_pathnames($pathname,%options);
+  foreach my $path (@paths){
+    return $path if -f $path; }}
 
 sub pathname_findall {
-  my ($pathname, %options) = @_;
+  my($pathname,%options)=@_;
   return unless $pathname;
-  my @paths = candidate_pathnames($pathname, %options);
+  my @paths = candidate_pathnames($pathname,%options);
   grep(-f $_, @paths); }
 
 # It's presumably cheep to concatinate all the pathnames,
 # relative to the cost of testing for files,
 # and this simplifies overall.
 sub candidate_pathnames {
-  my ($pathname, %options) = @_;
-  my @dirs = ();
+  my($pathname,%options)=@_;
+  my @dirs=();
   $pathname = pathname_canonical($pathname);
-  my ($pathdir, $name, $type) = pathname_split($pathname);
-  $name .= '.' . $type if $type;
-  if (pathname_is_absolute($pathname)) {
-    push(@dirs, $pathdir); }
+  my($pathdir,$name,$type)=pathname_split($pathname);
+  $name .= '.'.$type if $type;
+  if(pathname_is_absolute($pathname)){
+    push(@dirs,$pathdir); }
   else {
     my $cwd = pathname_cwd();
-    if ($options{paths}) {
-      foreach my $p (@{ $options{paths} }) {
-        # Complete the search paths by prepending current dir to relative paths,
-        my $pp = pathname_concat((pathname_is_absolute($p) ? pathname_canonical($p) : pathname_concat($cwd, $p)),
-          $pathdir);
-        push(@dirs, $pp) unless grep($pp eq $_, @dirs); } }    # but only include each dir ONCE
-    push(@dirs, pathname_concat($cwd, $pathdir)) unless @dirs;    # At least have the current directory!
-           # And, if installation dir specified, append it.
-    if (my $subdir = $options{installation_subdir}) {
-      push(@dirs, map(pathname_concat($_, $subdir), @INSTALLDIRS)); } }
+    if($options{paths}){
+      foreach my $p (@{$options{paths}}){
+	# Complete the search paths by prepending current dir to relative paths,
+	my $pp = pathname_concat((pathname_is_absolute($p) ? pathname_canonical($p) : pathname_concat($cwd,$p)),
+				 $pathdir);
+	push(@dirs,$pp) unless grep($pp eq $_, @dirs); }} # but only include each dir ONCE
+    push(@dirs,pathname_concat($cwd,$pathdir)) unless @dirs; # At least have the current directory!
+    # And, if installation dir specified, append it.
+    if(my $subdir = $options{installation_subdir}){
+      push(@dirs,map(pathname_concat($_,$subdir),@INSTALLDIRS)); }}
 
   # extract the desired extensions.
   my @exts = ();
-  if ($options{types}) {
-    foreach my $ext (@{ $options{types} }) {
-      if ($ext eq '') { push(@exts, ''); }
-      elsif ($ext eq '*') {
-        push(@exts, '.*', ''); }
-      elsif ($pathname =~ /\.\Q$ext\E$/i) {
-        push(@exts, ''); }
+  if($options{types}){
+    foreach my $ext (@{$options{types}}){
+      if($ext eq ''){ push(@exts,''); }
+      elsif($ext eq '*'){
+	push(@exts,'.*',''); }
+      elsif($pathname =~ /\.\Q$ext\E$/i){
+	push(@exts,''); }
       else {
-        push(@exts, '.' . $ext); } } }
-  push(@exts, '') unless @exts;
+	# Half attempt at case insensitivity; not actually correct, though.
+## Disabled, since it screws up on the Mac's partially case-insensitive (?) filesystem.
+##	push(@exts,'.'.lc($ext)) if $ext =~/[A-Z]/;
+##	push(@exts,'.'.uc($ext)) if $ext =~/[a-z]/;
+	push(@exts, '.'.$ext); }}}
+    push(@exts,'') unless @exts;
 
   my @paths = ();
   # Now, combine; precedence to leading directories.
-  foreach my $dir (@dirs) {
-    foreach my $ext (@exts) {
-      if ($ext eq '.*') {    # Unfortunately, we've got to test the file system NOW...
-        opendir(DIR, $dir) or next;    # ???
-        push(@paths, map(pathname_concat($dir, $_), grep(/^\Q$name\E\.\w+$/, readdir(DIR))));
-        closedir(DIR); }
+  foreach my $dir (@dirs){
+    foreach my $ext (@exts){
+      if($ext eq '.*'){		# Unfortunately, we've got to test the file system NOW...
+	opendir(DIR,$dir) or next; # ???
+	push(@paths,map(pathname_concat($dir,$_), grep( /^\Q$name\E\.\w+$/, readdir(DIR))));
+	closedir(DIR); }
       else {
-        push(@paths, pathname_concat($dir, $name . $ext)); } } }
+	push(@paths,pathname_concat($dir,$name.$ext)); }}}
   @paths; }
 
 #======================================================================

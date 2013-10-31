@@ -17,12 +17,13 @@ use LaTeXML::Package;
 #**********************************************************************
 # Actually, the source TeX works, too, but ...
 
-our @XSPACES = (T_BEGIN, T_END, T_CS('\/'), T_CS('\ '), T_CS('~'),
-  map(T_OTHER($_), '.', '!', ',', ':', ';', '?', '/', "'", ")", '-'),
-  T_CS('\@xobeysp'), T_CS('\space'), T_CS('\@sptoken'));
+our @XSPACES =(T_BEGIN,T_END,T_CS('\/'),T_CS('\ '),T_CS('~'),
+	       map(T_OTHER($_), '.','!',',',':',';','?','/',"'",")",'-'),
+	       T_CS('\@xobeysp'),T_CS('\space'),T_CS('\@sptoken'));
 
 DefMacro('\xspace Token', sub {
-    my ($gullet, $token) = @_;
-    (grep(Equals($token, $_), @XSPACES) ? ($token) : (T_SPACE, $token)); });
+  my($gullet,$token)=@_;
+  (grep(Equals($token,$_),@XSPACES) ? ($token) : (T_SPACE,$token)); });
+
 
 1;

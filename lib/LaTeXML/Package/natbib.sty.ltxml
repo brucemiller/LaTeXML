@@ -53,60 +53,60 @@ use LaTeXML::Util::KeyVal;
 # ExecuteOptions('square','comma','authoryear');
 
 # The kind of citation
-DeclareOption('numbers', sub {
-    setCitationStyle(numbers => 1);
-    ExecuteOptions('square', 'comma', 'nobibstyle'); });
-DeclareOption('super', sub {
-    setCitationStyle(super => 1, open => Tokens(), close => Tokens());
-    ExecuteOptions('nobibstyle'); });
-DeclareOption('authoryear', sub {
-    setCitationStyle(authoryear => 1);
-    ExecuteOptions('round', 'semicolon', 'bibstyle'); });
+DeclareOption('numbers',   sub {
+  setCitationStyle(numbers=>1);
+  ExecuteOptions('square','comma','nobibstyle'); });
+DeclareOption('super',     sub {
+  setCitationStyle(super=>1, open=>Tokens(), close=>Tokens());
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('authoryear',sub {
+  setCitationStyle(authoryear=>1);
+  ExecuteOptions('round','semicolon','bibstyle');});
 # # The kind of braces around citations
-DeclareOption('round', sub {
-    setCitationStyle(round => 1);
-    ExecuteOptions('nobibstyle'); });
-DeclareOption('curly', sub {
-    setCitationStyle(curly => 1);
-    ExecuteOptions('nobibstyle'); });
-DeclareOption('square', sub {
-    setCitationStyle(square => 1);
-    ExecuteOptions('nobibstyle'); });
-DeclareOption('angle', sub {
-    setCitationStyle(angle => 1);
-    ExecuteOptions('nobibstyle'); });
+DeclareOption('round',     sub {
+  setCitationStyle(round=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('curly',     sub {
+  setCitationStyle(curly=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('square',    sub {
+  setCitationStyle(square=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('angle',     sub {
+  setCitationStyle(angle=>1);
+  ExecuteOptions('nobibstyle'); });
 
 # The kind of separator between multiple citations
-DeclareOption('comma', sub {
-    setCitationStyle(comma => 1);
-    ExecuteOptions('nobibstyle'); });
+DeclareOption('comma',     sub {
+  setCitationStyle(comma=>1);
+  ExecuteOptions('nobibstyle'); });
 DeclareOption('semicolon', sub {
-    setCitationStyle(semicolon => 1);
-    ExecuteOptions('nobibstyle'); });
-DeclareOption('colon', sub {
-    ExecuteOptions('semicolon'); });    # SIC!
+  setCitationStyle(semicolon=>1);
+  ExecuteOptions('nobibstyle'); });
+DeclareOption('colon',     sub {
+  ExecuteOptions('semicolon'); }); # SIC!
 
 # This disables any future \bibstyle found in the aux file (or from \bibliographystyle)
-DeclareOption('nobibstyle', sub {
-    Let('\bibstyle', '\@gobble'); });
-DeclareOption('bibstyle', sub {
-    Let('\bibstyle', '\@citestyle'); });
+DeclareOption('nobibstyle',   sub { 
+  Let(T_CS('\bibstyle'),T_CS('\@gobble')); });
+DeclareOption('bibstyle',     sub {
+  Let(T_CS('\bibstyle'),T_CS('\@citestyle')); });
 
 # sorting options
-DeclareOption('sort',          sub { });
-DeclareOption('sort&compress', sub { });
-DeclareOption('compress',      sub { });
+DeclareOption('sort',         sub {});
+DeclareOption('sort&compress',sub {});
+DeclareOption('compress',     sub {});
 
-DeclareOption('longnamesfirst', sub { });
+DeclareOption('longnamesfirst',sub {});
 
-DeclareOption('openbib',     sub { });
-DeclareOption('sectionbib',  sub { });
-DeclareOption('nonamebreak', sub { });
+DeclareOption('openbib', sub {});
+DeclareOption('sectionbib', sub {});
+DeclareOption('nonamebreak',sub {});
 
 # They _say_ round & semicolon but ...
 #ExecuteOptions('round','semicolon','authoryear');
 #ExecuteOptions('square','comma','authoryear');
-setCitationStyle(round => 1, semicolon => 1);
+setCitationStyle(round=>1,semicolon=>1);
 
 # NOTE \bibliographystyle puts \bibstyle in the *.aux, read at the beginning!
 # Normally, \bibliography appears at the end next to the bibliography.... it's TOO LATE!
@@ -114,10 +114,10 @@ setCitationStyle(round => 1, semicolon => 1);
 #  But then we need to put in stub elements to be filled in by CrossRef! Ugh]
 # In any case, \bibstyle may get redefined by options, so define it now!
 DefMacro('\bibstyle{}', sub {
-    my $style = T_CS('\bibstyle@' . ToString($_[1]));
-    (LookupDefinition($style) ? ($style) : (T_CS('\relax'))); });
+  my $style = T_CS('\bibstyle@'.ToString($_[1]));
+  (LookupDefinition($style) ? ($style) : (T_CS('\relax'))); });
 #AtBeginDocument{\global\let\bibstyle=\@gobble}
-Let('\@citestyle', '\bibstyle');
+Let(T_CS('\@citestyle'),T_CS('\bibstyle'));
 
 ProcessOptions();
 #======================================================================
@@ -128,156 +128,156 @@ ProcessOptions();
 # Note that LaTeX's \cite command is treated almost equivalent to \citet in authoryear mode,
 # but like \citep in numbers mode.
 DefMacro('\cite[] Semiverbatim', sub {
-    my ($gullet, $post, $keys) = @_;
-    my ($style, $open, $close, $ns)
-      = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
-    $post = undef unless $post && $post->unlist;
-    if ($style eq 'numbers') {
-      Invocation(T_CS('\@@cite'),
-        Tokens($open,
-          Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef),
-          ($post ? ($ns, T_SPACE, $post) : ()),
-          $close)); }
-    elsif ($style eq 'super') {
-      Invocation(T_CS('\@@cite'),
-        Tokens(Invocation(T_CS('\textsuperscript'),
-            Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys,
-              undef, undef)),
-          ($post ? (T_SPACE, $post) : ()))); }
-    else {
-      Invocation(T_CS('\@@cite'),
-        Invocation(T_CS('\@@bibref'),
-          Tokens(Explode("Authors Phrase1YearPhrase2")),
-          $keys,
-          Invocation(T_CS('\@@citephrase'), $open),
-          Invocation(T_CS('\@@citephrase'),
-            Tokens(($post ? ($ns, T_SPACE, $post) : ()), $close)))); }
-});
+  my($gullet,$post,$keys)=@_;
+  my($style,$open,$close,$ns)
+    =map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  $post = undef unless $post && $post->unlist;
+  if($style eq 'numbers'){
+     Invocation(T_CS('\@@cite'),
+		Tokens($open,
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,undef,undef),
+		       ($post ? ($ns,T_SPACE,$post):()),
+		       $close)); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+                Tokens(Invocation(T_CS('\textsuperscript'),
+                                  Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,
+                                             undef,undef)),
+                       ($post ? (T_SPACE,$post):()))); }
+  else {
+     Invocation(T_CS('\@@cite'),
+		Invocation(T_CS('\@@bibref'),
+			   Tokens(Explode("Authors Phrase1YearPhrase2")),
+			   $keys,
+			   Invocation(T_CS('\@@citephrase'),$open),
+			   Invocation(T_CS('\@@citephrase'),
+				      Tokens(($post ? ($ns,T_SPACE,$post):()), $close)))); }
+  });
 
 DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
-    my ($gullet, $star, $pre, $post, $keys) = @_;
-    my ($style, $open, $close, $ns)
-      = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
-    if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
-    my $author = ($star ? "FullAuthors" : "Authors");
-    if ($style eq 'numbers') {
-      Invocation(T_CS('\@@cite'),
-        Tokens(($pre ? ($pre, T_SPACE) : ()),
-          Invocation(T_CS('\@@bibref'),
-            Tokens(Explode("$author Phrase1NumberPhrase2")),
-            $keys,
-            Invocation(T_CS('\@@citephrase'), $open),
-            Invocation(T_CS('\@@citephrase'), $close))->unlist,
-          ($post ? ($ns->unlist, T_SPACE, $post->unlist) : ()))); }
-    elsif ($style eq 'super') {
-      Invocation(T_CS('\@@cite'),
-        Tokens(($pre ? ($pre, T_SPACE) : ()),
-          Invocation(T_CS('\@@bibref'),
-            Tokens(Explode("$author Phrase1SuperPhrase2")),
-            $keys, undef, undef)->unlist,
-          ($post ? ($ns, T_SPACE, $post->unlist) : ()))); }
-    else {
-      Invocation(T_CS('\@@cite'),
-        Invocation(T_CS('\@@bibref'),
-          Tokens(Explode("$author Phrase1YearPhrase2")),
-          $keys,
-          Invocation(T_CS('\@@citephrase'),
-            Tokens($open, ($pre ? ($pre, T_SPACE) : ()))),
-          Invocation(T_CS('\@@citephrase'),
-            Tokens(($post ? ($ns, T_SPACE, $post) : ()), $close)))); }
-});
+  my($gullet,$star,$pre,$post,$keys)=@_;
+  my($style,$open,$close,$ns)
+    =map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+  if(!$post){ ($pre,$post)=(undef,$pre); }
+  $pre  = undef unless $pre  && $pre->unlist;
+  $post = undef unless $post && $post->unlist;
+  my $author = ($star ? "FullAuthors" : "Authors");
+  if($style eq 'numbers'){
+     Invocation(T_CS('\@@cite'),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),
+				  Tokens(Explode("$author Phrase1NumberPhrase2")),
+				  $keys,
+				  Invocation(T_CS('\@@citephrase'),$open),
+				  Invocation(T_CS('\@@citephrase'),$close))->unlist,
+		       ($post ? ($ns->unlist,T_SPACE,$post->unlist):()))); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),
+				  Tokens(Explode("$author Phrase1SuperPhrase2")),
+				  $keys,undef,undef)->unlist,
+		       ($post ? ($ns,T_SPACE,$post->unlist):()))); }
+  else {
+     Invocation(T_CS('\@@cite'),
+		Invocation(T_CS('\@@bibref'),
+			   Tokens(Explode("$author Phrase1YearPhrase2")),
+			   $keys,
+			   Invocation(T_CS('\@@citephrase'),
+				      Tokens($open,($pre ? ($pre,T_SPACE):()))),
+			   Invocation(T_CS('\@@citephrase'),
+				      Tokens(($post ? ($ns,T_SPACE,$post):()),$close)))); }
+  });
 
 DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
-    my ($gullet, $star, $pre, $post, $keys) = @_;
-    my ($style, $open, $close, $ns, $ay) = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE
-        CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR));
-    if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
-    my $author = ($star ? "FullAuthors" : "Authors");
-    if ($style eq 'numbers') {
-      Invocation(T_CS('\@@cite'),
-        Tokens($open, ($pre ? ($pre, T_SPACE) : ()),
-          Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef),
-          ($post ? ($ns, T_SPACE, $post) : ()), $close)); }
-    elsif ($style eq 'super') {
-      Invocation(T_CS('\@@cite'),
-        Tokens(($pre ? ($pre, T_SPACE) : ()),
-          Invocation(T_CS('\@@bibref'), Tokens(Explode("Super")), $keys, undef, undef),
-          ($post ? (T_SPACE, $post) : ()))); }
-    else {
-      Invocation(T_CS('\@@cite'),
-        Tokens($open->unlist, ($pre ? ($pre, T_SPACE) : ()),
-          Invocation(T_CS('\@@bibref'),
-            Tokens(Explode("${author}Phrase1Year")),
-            $keys,
-            Invocation(T_CS('\@@citephrase'), Tokens($ay->unlist, T_SPACE)),
-            undef),
-          ($post ? ($ns, T_SPACE, $post) : ()), $close)); }
-});
+  my($gullet,$star,$pre,$post,$keys)=@_;
+  my($style,$open,$close,$ns,$ay)=map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE
+                                                         CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR));
+  if(!$post){ ($pre,$post)=(undef,$pre); }
+  $pre  = undef unless $pre  && $pre->unlist;
+  $post = undef unless $post && $post->unlist;
+  my $author = ($star ? "FullAuthors" : "Authors");
+  if($style eq 'numbers'){
+     Invocation(T_CS('\@@cite'),
+		Tokens($open,($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys, undef,undef),
+		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
+  elsif($style eq 'super'){
+     Invocation(T_CS('\@@cite'),
+		Tokens(($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),Tokens(Explode("Super")),$keys, undef,undef),
+		       ($post ? (T_SPACE,$post):()))); }
+  else {
+     Invocation(T_CS('\@@cite'),
+		Tokens($open->unlist,($pre  ? ($pre,T_SPACE):()),
+		       Invocation(T_CS('\@@bibref'),
+				  Tokens(Explode("${author}Phrase1Year")),
+				  $keys,
+				  Invocation(T_CS('\@@citephrase'),Tokens($ay->unlist,T_SPACE)),
+				  undef),
+		       ($post ? ($ns,T_SPACE,$post):()),$close)); }
+  });
 
 #======================================================================
 # 2.4 Extended Citation Commands
-DefMacro('\@@cite@noparens', sub {
-    AssignValue(CITE_OPEN  => Tokens());
-    AssignValue(CITE_CLOSE => Tokens()); });
+DefMacro('\@@cite@noparens',sub {
+  AssignValue(CITE_OPEN=>Tokens());
+  AssignValue(CITE_CLOSE=>Tokens()); });
 
 # The next two are the same as \citet, \citep, but redefine open & close to empty.
 DefMacro('\citealt OptionalMatch:* [][] Semiverbatim', sub {
-    my ($gullet, $star, $pre, $post, $keys) = @_;
-    (T_CS('\bgroup'), T_CS('\@@cite@noparens'),
-      Invocation(T_CS('\citet'), $star, $pre, $post, $keys)->unlist,
-      T_CS('\egroup')); });
+  my($gullet,$star,$pre,$post,$keys)=@_;
+  (T_CS('\bgroup'),T_CS('\@@cite@noparens'),
+   Invocation(T_CS('\citet'),$star,$pre,$post,$keys)->unlist,
+   T_CS('\egroup')); });
 
 DefMacro('\citealp OptionalMatch:* [][] Semiverbatim', sub {
-    my ($gullet, $star, $pre, $post, $keys) = @_;
-    (T_CS('\bgroup'), T_CS('\@@cite@noparens'),
-      Invocation(T_CS('\citep'), $star, $pre, $post, $keys)->unlist,
-      T_CS('\egroup')); });
+  my($gullet,$star,$pre,$post,$keys)=@_;
+  (T_CS('\bgroup'),T_CS('\@@cite@noparens'),
+   Invocation(T_CS('\citep'),$star,$pre,$post,$keys)->unlist,
+   T_CS('\egroup')); });
 
 DefMacro('\citenum Semiverbatim', sub {
-    my ($gullet, $keys) = @_;
-    Invocation(T_CS('\@@cite'),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef)); });
+  my($gullet,$keys)=@_;
+  Invocation(T_CS('\@@cite'),
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("Number")),$keys,undef,undef)); });
 
 # Sorta right, but would like to avoid the nested <ltx:cite>!
 # maybe can neutralize \@@cite?
-DefMacro('\citetext', '\@@cite');
+DefMacro('\citetext','\@@cite');
 
 DefMacro('\citeauthor OptionalMatch:* Semiverbatim', sub {
-    my ($gullet, $star, $keys) = @_;
-    my $author = ($star ? "FullAuthors" : "Authors");
-    Invocation(T_CS('\@@cite'),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode($author)), $keys, undef, undef)); });
+  my($gullet,$star,$keys)=@_;
+  my $author = ($star ? "FullAuthors" : "Authors");
+  Invocation(T_CS('\@@cite'),
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode($author)),$keys,undef,undef)); });
 
 DefMacro('\citefullauthor Semiverbatim', sub {
-    my ($gullet, $star, $keys) = @_;
-    Invocation(T_CS('\@@cite'),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("FullAuthors")), $keys, undef, undef)); });
+  my($gullet,$star,$keys)=@_;
+  Invocation(T_CS('\@@cite'),
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("FullAuthors")),$keys,undef,undef)); });
 
 DefMacro('\citeyear Semiverbatim', sub {
-    my ($gullet, $keys) = @_;
-    Invocation(T_CS('\@@cite'),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef)); });
+  my($gullet,$keys)=@_;
+  Invocation(T_CS('\@@cite'),
+	     Invocation(T_CS('\@@bibref'),Tokens(Explode("Year")),$keys,undef,undef)); });
 
 DefMacro('\citeyearpar Semiverbatim', sub {
-    my ($gullet, $keys) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
-    Invocation(T_CS('\@@cite'),
-      Tokens($open,
-        Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef),
-        $close)); });
+  my($gullet,$keys)=@_;
+  my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
+  Invocation(T_CS('\@@cite'),
+	     Tokens($open,
+		    Invocation(T_CS('\@@bibref'),Tokens(Explode("Year")),$keys,undef,undef),
+		    $close)); });
 
 #======================================================================
 # 2.5 Forcing Upper Cased Name
 # These are SUPPOSED to capitalize the first letter, .. but
-DefMacro('\Citet',      '\citet');
-DefMacro('\Citep',      '\citep');
-DefMacro('\Citealt',    '\citealt');
-DefMacro('\Citealp',    '\citealp');
-DefMacro('\Citeauthor', '\citeauthor');
+DefMacro('\Citet','\citet');
+DefMacro('\Citep','\citep');
+DefMacro('\Citealt','\citealt');
+DefMacro('\Citealp','\citealp');
+DefMacro('\Citeauthor','\citeauthor');
 
 #======================================================================
 # 2.6 Citation Aliasing
@@ -289,127 +289,127 @@ DefMacro('\Citeauthor', '\citeauthor');
 # should end the defined key with \@extra@b@citeb ???
 
 DefPrimitive('\defcitealias Semiverbatim {}', sub {
-    my ($gullet, $key, $text) = @_;
-    DefMacroI(T_CS('\al@' . ToString($key)), undef, $text); });
+  my($gullet,$key,$text)=@_;
+  DefMacroI(T_CS('\al@'.ToString($key)),undef,$text); });
 
 # These use the above defined text to fill in the bibref
 # (which will still be a link to the bibitem!)
 DefMacro('\citetalias Semiverbatim', sub {
-    my ($gullet, $key) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
-    Invocation(T_CS('\@@cite'),
-      Invocation(T_CS('\@@bibref'),
-        Tokens(Explode("Phrase1")),
-        $key,
-        Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key))))); });
+  my($gullet,$key)=@_;
+  my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
+  Invocation(T_CS('\@@cite'),
+	     Invocation(T_CS('\@@bibref'),
+			Tokens(Explode("Phrase1")),
+			$key,
+			Invocation(T_CS('\@@citephrase'),T_CS('\al@'.ToString($key))))); });
 
 DefMacro('\citepalias Semiverbatim', sub {
-    my ($gullet, $key) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
-    Invocation(T_CS('\@@cite'),
-      Tokens($open,
-        Invocation(T_CS('\@@bibref'),
-          Tokens(Explode("Phrase1")),
-          $key,
-          Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key)))),
-        $close)); });
+  my($gullet,$key)=@_;
+  my($open,$close)=map(LookupValue($_),qw(CITE_OPEN CITE_CLOSE));
+  Invocation(T_CS('\@@cite'),
+	     Tokens($open,
+		    Invocation(T_CS('\@@bibref'),
+			       Tokens(Explode("Phrase1")),
+			       $key,
+			       Invocation(T_CS('\@@citephrase'),T_CS('\al@'.ToString($key)))),
+		    $close)); });
 
 #======================================================================
 # 2.9 Selecting Citation Punctuation
-DefKeyVal('natbib', 'authoryear', '', 'true');
-DefKeyVal('natbib', 'numbers',    '', 'true');
-DefKeyVal('natbib', 'super',      '', 'true');
-DefKeyVal('natbib', 'round',      '', 'true');
-DefKeyVal('natbib', 'square',     '', 'true');
-DefKeyVal('natbib', 'open',       '');
-DefKeyVal('natbib', 'close',      '');
-DefKeyVal('natbib', 'semicolon',  '');
-DefKeyVal('natbib', 'comma',      '');
-DefKeyVal('natbib', 'citesep',    '');
-DefKeyVal('natbib', 'aysep',      '');
-DefKeyVal('natbib', 'yysep',      '');
-DefKeyVal('natbib', 'notesep',    '');
+DefKeyVal('natbib','authoryear','','true');
+DefKeyVal('natbib','numbers','','true');
+DefKeyVal('natbib','super','','true');
+DefKeyVal('natbib','round','','true');
+DefKeyVal('natbib','square','','true');
+DefKeyVal('natbib','open','');
+DefKeyVal('natbib','close','');
+DefKeyVal('natbib','semicolon','');
+DefKeyVal('natbib','comma','');
+DefKeyVal('natbib','citesep','');
+DefKeyVal('natbib','aysep','');
+DefKeyVal('natbib','yysep','');
+DefKeyVal('natbib','notesep','');
 
-AssignValue(CITE_AY_SEPARATOR => T_OTHER(','));
+AssignValue(CITE_AY_SEPARATOR=>T_OTHER(','));
 
 sub setCitationStyle {
-  my (@pairs) = @_;
-  while (@pairs) {
-    my ($key, $value) = (shift(@pairs), shift(@pairs));
-    $key = ToString(Digest($key)) if ref $key;
-    if    ($key eq 'authoryear') { AssignValue(CITE_STYLE => 'authoryear'); }
-    elsif ($key eq 'numbers')    { AssignValue(CITE_STYLE => 'numbers'); }
-    elsif ($key eq 'super')      { AssignValue(CITE_STYLE => 'super'); }
-    elsif ($key eq 'round')      { AssignValue(CITE_OPEN  => T_OTHER('('));
-      AssignValue(CITE_CLOSE => T_OTHER(')')); }
-    elsif ($key eq 'square') { AssignValue(CITE_OPEN => T_OTHER('['));
-      AssignValue(CITE_CLOSE => T_OTHER(']')); }
-    elsif ($key eq 'curly') { AssignValue(CITE_OPEN => T_OTHER('{'));
-      AssignValue(CITE_CLOSE => T_OTHER('}')); }
-    elsif ($key eq 'angle') { AssignValue(CITE_OPEN => T_OTHER('<'));
-      AssignValue(CITE_CLOSE => T_OTHER('>')); }
-    elsif ($key eq 'open')      { AssignValue(CITE_OPEN           => $value); }
-    elsif ($key eq 'close')     { AssignValue(CITE_CLOSE          => $value); }
-    elsif ($key eq 'semicolon') { AssignValue(CITE_SEPARATOR      => T_OTHER(';')); }
-    elsif ($key eq 'comma')     { AssignValue(CITE_SEPARATOR      => T_OTHER(',')); }
-    elsif ($key eq 'aysep')     { AssignValue(CITE_AY_SEPARATOR   => $value); }
-    elsif ($key eq 'yysep')     { AssignValue(CITE_YY_SEPARATOR   => $value); }
-    elsif ($key eq 'notesep')   { AssignValue(CITE_NOTE_SEPARATOR => $value); }
+  my(@pairs)=@_;
+  while(@pairs){
+    my($key,$value)=(shift(@pairs),shift(@pairs));
+    $key   = ToString(Digest($key))   if ref $key;
+    if   ($key eq 'authoryear'){ AssignValue(CITE_STYLE=>'authoryear'); }
+    elsif($key eq 'numbers'){    AssignValue(CITE_STYLE=>'numbers'); }
+    elsif($key eq 'super'){      AssignValue(CITE_STYLE=>'super'); }
+    elsif($key eq 'round'){      AssignValue(CITE_OPEN=>T_OTHER('('));
+				 AssignValue(CITE_CLOSE=>T_OTHER(')')); }
+    elsif($key eq 'square'){     AssignValue(CITE_OPEN=>T_OTHER('['));
+				 AssignValue(CITE_CLOSE=>T_OTHER(']')); }
+    elsif($key eq 'curly'){      AssignValue(CITE_OPEN=>T_OTHER('{'));
+				 AssignValue(CITE_CLOSE=>T_OTHER('}')); }
+    elsif($key eq 'angle'){      AssignValue(CITE_OPEN=>T_OTHER('<')); 
+				 AssignValue(CITE_CLOSE=>T_OTHER('>')); }
+    elsif($key eq 'open'){       AssignValue(CITE_OPEN=>$value); }
+    elsif($key eq 'close'){      AssignValue(CITE_CLOSE=>$value); }
+    elsif($key eq 'semicolon'){  AssignValue(CITE_SEPARATOR=>T_OTHER(';')); }
+    elsif($key eq 'comma'){      AssignValue(CITE_SEPARATOR=>T_OTHER(',')); }
+    elsif($key eq 'aysep'){      AssignValue(CITE_AY_SEPARATOR=>$value); }
+    elsif($key eq 'yysep'){      AssignValue(CITE_YY_SEPARATOR=>$value); }
+    elsif($key eq 'notesep'){    AssignValue(CITE_NOTE_SEPARATOR=>$value); }
     else {
-      Warn('unexpected', $key, undef, "Unexpected Citation Style keyword '$key'"); } }
+      Warn('unexpected',$key,undef,"Unexpected Citation Style keyword '$key'"); }}
   return; }
 
 DefPrimitive('\setcitestyle RequiredKeyVals:natbib', sub {
-    setCitationStyle($_[1]->getPairs); });
+  setCitationStyle($_[1]->getPairs);  });
 
 DefPrimitive('\bibpunct[]{}{}{}{}{}{}', sub {
-    my ($stomach, $notesep, $open, $close, $sep, $style, $aysep, $yysep) = @_;
-    $style = ToString(Digest($style));
-    AssignValue(CITE_OPEN      => $open);
-    AssignValue(CITE_CLOSE     => $close);
-    AssignValue(CITE_SEPARATOR => $sep);
-    AssignValue(CITE_STYLE => ($style eq 'n' ? 'numbers' : ($style eq 's' ? 'super' : 'authoryear')));
-    AssignValue(CITE_AY_SEPARATOR   => $aysep);
-    AssignValue(CITE_YY_SEPARATOR   => $yysep);
-    AssignValue(CITE_NOTE_SEPARATOR => $notesep) if $notesep;
-    return; });
+  my($stomach,$notesep,$open,$close,$sep,$style,$aysep,$yysep)=@_;
+  $style = ToString(Digest($style));
+  AssignValue(CITE_OPEN=>$open);
+  AssignValue(CITE_CLOSE=>$close);
+  AssignValue(CITE_SEPARATOR=>$sep);
+  AssignValue(CITE_STYLE=>($style eq 'n' ? 'numbers' : ($style eq 's' ? 'super' : 'authoryear')));
+  AssignValue(CITE_AY_SEPARATOR=>$aysep);
+  AssignValue(CITE_YY_SEPARATOR=>$yysep);
+  AssignValue(CITE_NOTE_SEPARATOR=>$notesep) if $notesep;
+  return; });
 
-DefMacro('\citestyle{}', '\@citestyle{#1}\let\bibstyle\@gobble');
+DefMacro('\citestyle{}','\@citestyle{#1}\let\bibstyle\@gobble');
 
 DefMacro('\bibstyle@chicago',    '\bibpunct{(}{)}{;}{a}{,}{,}');
 DefMacro('\bibstyle@named',      '\bibpunct{[}{]}{;}{a}{,}{,}');
-DefMacro('\bibstyle@agu',        '\bibpunct{[}{]}{;}{a}{,}{,~}');    #Amer. Geophys. Union
-DefMacro('\bibstyle@copernicus', '\bibpunct{(}{)}{;}{a}{,}{,}');     #Copernicus Publications
-Let('\bibstyle@egu', '\bibstyle@copernicus');
-Let('\bibstyle@egs', '\bibstyle@copernicus');
-DefMacro('\bibstyle@agsm',   '\bibpunct{(}{)}{,}{a}{}{,}\gdef\harvardand{\&}');
-DefMacro('\bibstyle@kluwer', '\bibpunct{(}{)}{,}{a}{}{,}\gdef\harvardand{\&}');
-DefMacro('\bibstyle@dcu',    '\bibpunct{(}{)}{;}{a}{;}{,}\gdef\harvardand{and}');
-DefMacro('\bibstyle@aa',       '\bibpunct{(}{)}{;}{a}{}{,}');        # Astronomy & Astrophysics
-DefMacro('\bibstyle@pass',     '\bibpunct{(}{)}{;}{a}{,}{,}');       #Planet. & Space Sci
-DefMacro('\bibstyle@anngeo',   '\bibpunct{(}{)}{;}{a}{,}{,}');       #Annales Geophysicae
-DefMacro('\bibstyle@nlinproc', '\bibpunct{(}{)}{;}{a}{,}{,}');       #Nonlin.Proc.Geophys.
-DefMacro('\bibstyle@cospar',   '\bibpunct{/}{/}{,}{n}{}{}');
-DefMacro('\bibstyle@esa',      '\bibpunct{(Ref.~}{)}{,}{n}{}{}');
-DefMacro('\bibstyle@nature', '\bibpunct{}{}{,}{s}{}{\textsuperscript{,}}');
-DefMacro('\bibstyle@plain',  '\bibpunct{[}{]}{,}{n}{}{,}');
-Let('\bibstyle@alpha', '\bibstyle@plain');
-Let('\bibstyle@abbrv', '\bibstyle@plain');
-Let('\bibstyle@unsrt', '\bibstyle@plain');
-DefMacro('\bibstyle@plainnat', '\bibpunct{[}{]}{,}{a}{,}{,}');
-Let('\bibstyle@abbrvnat', '\bibstyle@plainnat');
-Let('\bibstyle@unsrtnat', '\bibstyle@plainnat');
+DefMacro('\bibstyle@agu',        '\bibpunct{[}{]}{;}{a}{,}{,~}'); #Amer. Geophys. Union
+DefMacro('\bibstyle@copernicus', '\bibpunct{(}{)}{;}{a}{,}{,}'); #Copernicus Publications
+Let(T_CS('\bibstyle@egu'),T_CS('\bibstyle@copernicus'));
+Let(T_CS('\bibstyle@egs'),T_CS('\bibstyle@copernicus'));
+DefMacro('\bibstyle@agsm',       '\bibpunct{(}{)}{,}{a}{}{,}\gdef\harvardand{\&}');
+DefMacro('\bibstyle@kluwer',     '\bibpunct{(}{)}{,}{a}{}{,}\gdef\harvardand{\&}');
+DefMacro('\bibstyle@dcu',        '\bibpunct{(}{)}{;}{a}{;}{,}\gdef\harvardand{and}');
+DefMacro('\bibstyle@aa',         '\bibpunct{(}{)}{;}{a}{}{,}'); # Astronomy & Astrophysics
+DefMacro('\bibstyle@pass',       '\bibpunct{(}{)}{;}{a}{,}{,}'); #Planet. & Space Sci
+DefMacro('\bibstyle@anngeo',     '\bibpunct{(}{)}{;}{a}{,}{,}'); #Annales Geophysicae
+DefMacro('\bibstyle@nlinproc',   '\bibpunct{(}{)}{;}{a}{,}{,}'); #Nonlin.Proc.Geophys.
+DefMacro('\bibstyle@cospar',     '\bibpunct{/}{/}{,}{n}{}{}');
+DefMacro('\bibstyle@esa',        '\bibpunct{(Ref.~}{)}{,}{n}{}{}');
+DefMacro('\bibstyle@nature',     '\bibpunct{}{}{,}{s}{}{\textsuperscript{,}}');
+DefMacro('\bibstyle@plain',      '\bibpunct{[}{]}{,}{n}{}{,}');
+Let(T_CS('\bibstyle@alpha'),T_CS('\bibstyle@plain'));
+Let(T_CS('\bibstyle@abbrv'),T_CS('\bibstyle@plain'));
+Let(T_CS('\bibstyle@unsrt'),T_CS('\bibstyle@plain'));
+DefMacro('\bibstyle@plainnat',    '\bibpunct{[}{]}{,}{a}{,}{,}');
+Let(T_CS('\bibstyle@abbrvnat'),T_CS('\bibstyle@plainnat'));
+Let(T_CS('\bibstyle@unsrtnat'),T_CS('\bibstyle@plainnat'));
 
 #======================================================================
 # 2.12 Other Formatting Options
 # mostly ignored...
-DefMacro('\bibsection',  '');
-DefMacro('\bibpreamble', '');
-DefMacro('\bibfont',     '');
-DefMacro('\citenumfont', '');
-DefMacro('\bibnumfmt{}', '#1');
-DefRegister('\bibhang', Dimension(0));
-DefRegister('\bibsep',  Dimension(0));
+DefMacro('\bibsection','');
+DefMacro('\bibpreamble','');
+DefMacro('\bibfont','');
+DefMacro('\citenumfont','');
+DefMacro('\bibnumfmt{}','#1');
+DefRegister('\bibhang',Dimension(0));
+DefRegister('\bibsep',Dimension(0));
 
 #======================================================================
 # 2.13 Automatic Indexing of Citations
@@ -417,14 +417,14 @@ DefRegister('\bibsep',  Dimension(0));
 # However, it is basically equivalent to backrefs which are
 # automatically handled in MakeBibliography, anyway...
 RawTeX('\newif\ifciteindex');
-DefMacro('\citeindextrue',  '');
-DefMacro('\citeindexfalse', '');
-DefMacro('\citeindextype',  '');
+DefMacro('\citeindextrue','');
+DefMacro('\citeindexfalse','');
+DefMacro('\citeindextype','');
 
 #======================================================================
 # 2.17 Long Author List on First Citation
 #  Ignored (for now...)
-DefMacro('\shortcites Semiverbatim', '');
+DefMacro('\shortcites Semiverbatim','');
 
 #======================================================================
 # Less Documented
@@ -440,7 +440,7 @@ DefMacro('\shortcites Semiverbatim', '');
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
 ##DefMacro('\bibitem','\refstepcounter{enumiv}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
-DefMacro('\bibitem', '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
+DefMacro('\bibitem','\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}');
 
 RawTeX(<<'EOTeX');
 %%%
@@ -471,66 +471,67 @@ RawTeX(<<'EOTeX');
 %%%%
 EOTeX
 # Sometimes, perversely, redefined, so re-redefine them now...
-DefPrimitiveI('\reset@natbib@cites', undef, sub {
-    Let('\citeauthoryear', '\natbib@citeauthoryear');
-    Let('\astroncite',     '\natbib@astroncite');
-    Let('\citename',       '\natbib@citename'); });
+DefPrimitiveI('\reset@natbib@cites',undef,sub {
+  Let(T_CS('\citeauthoryear'),T_CS('\natbib@citeauthoryear'));
+  Let(T_CS('\astroncite'),T_CS('\natbib@astroncite'));
+  Let(T_CS('\citename'),T_CS('\natbib@citename')); });
 
 # By this time, \NAT@wrout should look like:
 # \NAT@wrout{number}{year}{authors}{fullauthors}{bibkey}
 # So, we'll do one extra step, and format the refnum form
 DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
-    my ($gullet, $number, $year, $authors, $fullauthors, $key) = @_;
-    my ($style, $open, $close) = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE));
-    $style = 'number' unless $authors->unlist && $year->unlist;
-    if ($style eq 'number') {
-      Invocation(T_CS('\NAT@@wrout'), $number, $year, $authors, $fullauthors,
-        Tokens($open, $number, $close),
-        $key)->unlist; }
-    else {
-      Invocation(T_CS('\NAT@@wrout'), $number, $year, $authors, $fullauthors,
-        Tokens($authors, T_SPACE, $open, $year, $close),
-        $key)->unlist; } });
+  my($gullet,$number,$year,$authors,$fullauthors,$key)=@_;
+  my($style,$open,$close)=map(LookupValue($_),qw(CITE_STYLE CITE_OPEN CITE_CLOSE));
+  $style = 'number' unless $authors->unlist && $year->unlist;
+  if($style eq 'number'){
+    Invocation(T_CS('\NAT@@wrout'),$number,$year,$authors,$fullauthors,
+	       Tokens($open,$number,$close),
+	       $key)->unlist; }
+  else {
+    Invocation(T_CS('\NAT@@wrout'),$number,$year,$authors,$fullauthors,
+	       Tokens($authors,T_SPACE,$open,$year,$close),
+	       $key)->unlist; }});
 
 DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
-  "?#1(<ltx:bibtag role='number'>#1</ltx:bibtag>)"
-    . "?#2(<ltx:bibtag role='year'>#2</ltx:bibtag>)"
-    . "?#3(<ltx:bibtag role='authors'>#3</ltx:bibtag>)"
-    . "?#4(<ltx:bibtag role='fullauthors'>#4</ltx:bibtag>)"
-    . "?#5(<ltx:bibtag role='refnum'>#5</ltx:bibtag>)",
-  # Allow plain & in here ???
-  bounded => 1, beforeDigest => sub { Let(T_ALIGN, '\&'); }
-);
+	       "?#1(<ltx:bibtag role='number'>#1</ltx:bibtag>)"
+	       ."?#2(<ltx:bibtag role='year'>#2</ltx:bibtag>)"
+	       ."?#3(<ltx:bibtag role='authors'>#3</ltx:bibtag>)"
+	       ."?#4(<ltx:bibtag role='fullauthors'>#4</ltx:bibtag>)"
+	       ."?#5(<ltx:bibtag role='refnum'>#5</ltx:bibtag>)",
+	       # Allow plain & in here ???
+	       bounded=>1, beforeDigest=>sub{ Let(T_ALIGN,T_CS('\&')); }
+	      );
 
 # Similar to the one defined in LaTeX.pool, but the bibtag's have been setup above.
 DefConstructor('\@@lbibitem Semiverbatim',
-  "<ltx:bibitem key='#key' xml:id='#id'>",
-  afterDigest => sub {
-    my $key = CleanBibKey($_[1]->getArg(1));
-    my $id  = ToString(Expand(T_CS('\the@bibitem@ID')));
-    $_[1]->setProperties(key => $key, id => $id); });
+	       "<ltx:bibitem key='#key' xml:id='#id'>",
+	       afterDigest=>sub {
+		 my $key = CleanBibKey($_[1]->getArg(1));
+		 my $id = ToString(Expand(T_CS('\the@bibitem@ID')));
+		 $_[1]->setProperties(key=>$key, id=>$id); });
 
 #======================================================================
 # These macros allow you to get the pieces used in the current style
 # but don't seem to be used in natbib, so redefining them does nothing.
-DefMacro('\citestarts', sub { LookupValue('CITE_OPEN')->unlist; });
-DefMacro('\citeends',   sub { LookupValue('CITE_CLOSE')->unlist; });
-DefMacro('\betweenauthors', 'and');
+DefMacro('\citestarts',sub { LookupValue('CITE_OPEN')->unlist; });
+DefMacro('\citeends',  sub { LookupValue('CITE_CLOSE')->unlist; });
+DefMacro('\betweenauthors',  'and');
 
-DefMacro('\harvardleft',      sub { LookupValue('CITE_OPEN')->unlist; });
-DefMacro('\harvardright',     sub { LookupValue('CITE_CLOSE')->unlist; });
+DefMacro('\harvardleft',  sub { LookupValue('CITE_OPEN')->unlist; });
+DefMacro('\harvardright', sub { LookupValue('CITE_CLOSE')->unlist; });
 DefMacro('\harvardyearleft',  sub { LookupValue('CITE_OPEN')->unlist; });
 DefMacro('\harvardyearright', sub { LookupValue('CITE_CLOSE')->unlist; });
-DefMacro('\harvardand',       'and');
+DefMacro('\harvardand',  'and');
 
 DefConstructor('\harvardurl Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
-  properties => sub { (href => CleanURL(ToString($_[1]))); });
+	       "<ltx:ref href='#href'>#1</ltx:ref>",
+	       properties=>sub { (href=>CleanURL(ToString($_[1]))); });
 
-Let('\citeN',      '\cite');
-Let('\shortcite',  '\cite');
-Let('\citeasnoun', '\cite');
 
-DefMacro('\natexlab{}', '#1');    # ????
+Let(T_CS('\citeN'),T_CS('\cite'));
+Let(T_CS('\shortcite'),T_CS('\cite'));
+Let(T_CS('\citeasnoun'),T_CS('\cite'));
+
+DefMacro('\natexlab{}', '#1');	# ????
 
 1;

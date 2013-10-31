@@ -14,11 +14,11 @@ package LaTeXML::Package::Pool;
 use strict;
 use LaTeXML::Package;
 
-DefPrimitive('\makeindex', undef);
-DefMacro('\see{}{}',     '\emph{\seename} #1');
-DefMacro('\seealso{}{}', '\emph{\alsoname} #1');
+DefPrimitive('\makeindex',   undef);
+DefMacro('\see{}{}','\emph{\seename} #1');
+DefMacro('\seealso{}{}','\emph{\alsoname} #1');
 DefMacro('\printindex',  '\begin{theindex}\end{theindex}');
-DefMacro('\seename',     'see');
-DefMacro('\alsoname',    'see also');
+DefMacro('\seename','see');
+DefMacro('\alsoname','see also');
 
 1;

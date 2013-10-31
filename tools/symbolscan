@@ -13,61 +13,61 @@ use LaTeXML::Util::Pathname;
 # symbolscan : Scans for math symbol definitions in LaTeXML binding files.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 my $identity = 'symbolscan';
-my ($help) = (0);
+my($help)=(0);
 local $::VERBOSITY = 0;
-my ($FORMATTED, $CUMULATIVE, $INTERNAL) = (1, 0, 0);
-my ($UNICODETHESAURUS, $THESAURUS) = (0, 0);
-my $DO_ALL      = 0;
+my ($FORMATTED,$CUMULATIVE,$INTERNAL)=(1,0,0);
+my ($UNICODETHESAURUS,$THESAURUS)=(0,0);
+my $DO_ALL=0;
 my @SEARCHPATHS = ();
-GetOptions("help" => \$help,
-  "verbose" => sub { $::VERBOSITY++; },
-  "quiet"   => sub { $::VERBOSITY--; },
-  "path=s"  => \@SEARCHPATHS,
-  "formatted!"       => \$FORMATTED,
-  "cumulative!"      => \$CUMULATIVE,
-  "internal!"        => \$INTERNAL,
-  "unicodethesaurus" => \$UNICODETHESAURUS,
-  "thesaurus"        => \$THESAURUS,
-  "all"              => \$DO_ALL,
-) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
-pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) unless $DO_ALL || @ARGV;
+GetOptions("help"        => \$help,
+	   "verbose"     => sub { $::VERBOSITY++; },
+	   "quiet"       => sub { $::VERBOSITY--; },
+	   "path=s"      => \@SEARCHPATHS,
+	   "formatted!"  => \$FORMATTED,
+	   "cumulative!" => \$CUMULATIVE,
+	   "internal!"   => \$INTERNAL,
+	   "unicodethesaurus" => \$UNICODETHESAURUS,
+	   "thesaurus"   => \$THESAURUS,
+	   "all"         => \$DO_ALL,
+	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
+pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) unless $DO_ALL || @ARGV;
 
 ######################################################################
 # Find the packages, classes implementations that we should look at.
 # [Should get this from LaTeXML?]
 our $LTXPACKAGEDIR = "$FindBin::RealBin/../blib/lib/LaTeXML/Package/";
 
-@SEARCHPATHS = map((s|^~/|$ENV{HOME}/| ? $_ : $_), @SEARCHPATHS);
-$INTERNAL   = 1 if $THESAURUS || $UNICODETHESAURUS;
-$CUMULATIVE = 1 if $THESAURUS || $UNICODETHESAURUS;
+@SEARCHPATHS = map( (s|^~/|$ENV{HOME}/| ? $_ : $_), @SEARCHPATHS);
+$INTERNAL=1 if $THESAURUS || $UNICODETHESAURUS;
+$CUMULATIVE=1 if $THESAURUS || $UNICODETHESAURUS;
 
 # See what package files we're going to analyze
-my $pkgs = [($DO_ALL ? allPackages() : ()), @ARGV];
+my $pkgs = [ ($DO_ALL ? allPackages() : ()) , @ARGV];
 
 # Load the packages, extract the symbols
 my $state = loadPackages($pkgs);
-my $symbols = sortSymbols(extractSymbols($state, $pkgs));
+my $symbols = sortSymbols(extractSymbols($state,$pkgs));
 
 # and format the result.
-if ($UNICODETHESAURUS) {
+if($UNICODETHESAURUS){
   my $thesaurus = completeUnicodeThesaurus($symbols);
-  binmode(STDOUT, ":encoding(UTF-8)");
+  binmode(STDOUT,":encoding(UTF-8)");
   printThesaurus($thesaurus); }
-elsif ($THESAURUS) {
+elsif($THESAURUS){
   my $thesaurus = completeThesaurus($symbols);
   printThesaurus($thesaurus); }
-elsif ($FORMATTED) {
+elsif($FORMATTED){
   formatSymbols($symbols); }
 # Or just list the symbols
 else {
-  foreach my $entry (@$symbols) {
-    print join(', ', $$entry{cs},
-      ($$entry{role}         || ''),
-      ($$entry{meaning}      || ''),
-      ($$entry{presentation} || ''),
-      $$entry{package})
-      . "\n"; }
+  foreach my $entry (@$symbols){
+    print join(', ',$$entry{cs},
+	       ($$entry{role}||''),
+	       ($$entry{meaning}|| ''),
+	       ($$entry{presentation}||''),
+	       $$entry{package})
+      ."\n"; }
 }
 
 ######################################################################
@@ -76,11 +76,11 @@ else {
 # Get a list of all implemented classes & packages.
 sub allPackages {
   my @pkgs = ();
-  push(@pkgs, "TeX.pool", "LaTeX.pool");
-  foreach my $dir ($LTXPACKAGEDIR, @SEARCHPATHS) {
-    opendir(DIR, $dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
-    foreach my $file (sort readdir(DIR)) {
-      next if $file =~ /pxfonts.sty.ltxml$/;    # This duplicates txfonts!
+  push(@pkgs,"TeX.pool","LaTeX.pool");
+  foreach my $dir ($LTXPACKAGEDIR,@SEARCHPATHS){
+    opendir(DIR,$dir) or die "Couldn't read LaTeXML Package directory $dir: $!";
+    foreach my $file (sort readdir(DIR)){
+      next if $file =~ /pxfonts.sty.ltxml$/; # This duplicates txfonts!
       ## ONLY include style files (cls files generally don't define math?)
       push(@pkgs, $1) if $file =~ /^(.*?\.sty)\.ltxml$/; }
     closedir(DIR); }
@@ -91,32 +91,32 @@ sub allPackages {
 # (along with the TeX and LaTeX pools, if necessary)
 # and return the STATE.
 sub loadPackages {
-  my ($pkgs) = @_;
+  my($pkgs)=@_;
 
   my @pkgs = @$pkgs;
   # Require LaTeX & TeX if needed and not present.
-  if (grep(/\.(cls|sty)$/, @pkgs) && !grep(/^(.*\/)?LaTeX\.pool$/, @pkgs)) {
-    unshift(@pkgs, "LaTeX.pool"); }
-  if (grep(/^(.*\/)?LaTeX.pool$/, @pkgs) && !grep(/^(.*\/)?TeX\.pool$/, @pkgs)) {
-    unshift(@pkgs, "TeX.pool"); }
+  if(grep(/\.(cls|sty)$/,@pkgs) && !grep(/^(.*\/)?LaTeX\.pool$/,@pkgs)){
+      unshift(@pkgs,"LaTeX.pool"); }
+  if(grep(/^(.*\/)?LaTeX.pool$/,@pkgs) && !grep(/^(.*\/)?TeX\.pool$/,@pkgs)){
+    unshift(@pkgs,"TeX.pool"); }
 
   # Create and initialize the LaTeXML parser
-  my $latexml = LaTeXML->new(searchpaths => [@SEARCHPATHS]);
+  my $latexml = LaTeXML->new(searchpaths=>[@SEARCHPATHS]);
   local $LaTeXML::STATE = $$latexml{state};
-  my $stomach = $LaTeXML::STATE->getStomach;    # The current Stomach;
-  my $gullet  = $stomach->getGullet;
+  my $stomach  = $LaTeXML::STATE->getStomach; # The current Stomach;
+  my $gullet   = $stomach->getGullet;
   $stomach->initialize;
   my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
 
   # Load all of the requested packages into LaTeXML
-  foreach my $pkg (@pkgs) {
-    my $loadpath = pathname_find($pkg, types => ['ltxml', ''],
-      paths => $paths, installation_subdir => 'Package');
-    if (!$loadpath) {
+  foreach my $pkg (@pkgs){
+    my $loadpath = pathname_find($pkg,types=>['ltxml',''],
+				 paths=>$paths,installation_subdir=>'Package');
+    if(!$loadpath){
       print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
-    if    ($pkg =~ /(.*)\.sty$/) { LaTeXML::Package::RequirePackage($1); }
-    elsif ($pkg =~ /(.*)\.cls$/) { LaTeXML::Package::LoadClass($1); }
-    else { LaTeXML::Package::InputDefinitions($loadpath); } }
+    if($pkg =~ /(.*)\.sty$/)   {  LaTeXML::Package::RequirePackage($1); }
+    elsif($pkg =~ /(.*)\.cls$/){  LaTeXML::Package::LoadClass($1); }
+    else                       {  LaTeXML::Package::InputDefinitions($loadpath); }}
 
   # And, digest in case there is any pending plain TeX.
   $stomach->digestNextBody;
@@ -129,63 +129,63 @@ sub loadPackages {
 # Skips internal symbols (w/ @), unless $INTERNAL is set
 # Skips symbols from other packages, unless $CUMULATIVE is set.
 sub extractSymbols {
-  my ($state, $pkgs) = @_;
+  my($state,$pkgs)=@_;
 
   my %includes = ();
-  foreach my $pkg (@$pkgs) {
-    if ($pkg =~ m/^(.*?\/)?([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/) {
-      $includes{$2} = 1; } }
-
+  foreach my $pkg (@$pkgs){
+    if($pkg =~ m/^(.*?\/)?([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/){
+      $includes{$2}=1; }}
+    
   # Pick out all the defined Math Symbols
-  #  print STDERR "Scanning defined symbols in $name\n"  if $::VERBOSITY;
-  my $table   = $state->{table}{value};
+#  print STDERR "Scanning defined symbols in $name\n"  if $::VERBOSITY;
+  my $table = $state->{table}{value};
   my @symbols = ();
-  foreach my $key (keys %{$table}) {
-    if ($key =~ /^math_definition##/) {
-      my ($ignore, $cs, $nargs, $role, $name, $meaning, $source, $pres) = split('##', $key);
+  foreach my $key (keys %{$table}){
+    if($key =~ /^math_definition##/){
+      my($ignore,$cs,$nargs,$role,$name,$meaning,$source,$pres)=split('##',$key);
       next if !$INTERNAL && $cs =~ /@/;
       $role = '' if $role eq 'UNKNOWN';
-      my $pkg = $2 if $source =~ m/^(.*?)\/([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/;
+      my $pkg     = $2 if $source =~ m/^(.*?)\/([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/;
       next if $pkg && !$CUMULATIVE && !$includes{$pkg};
       push(@symbols,
-        { cs => $cs, nargs => $nargs,
-          role => $role, name => $name, meaning => $meaning,
-          presentation => $pres,
-          package => $pkg || 'unknown' }); } }
+	   {cs=>$cs, nargs=>$nargs,
+	    role=>$role, name=>$name,meaning=>$meaning,
+	    presentation=>$pres,
+	    package=>$pkg || 'unknown'}); }}
   [@symbols]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Sort the symbols and collapse duplicates from different packages.
 sub sortSymbols {
-  my ($symbols) = @_;
-  my $z         = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzz';
-  my @symbols   = sort {
-    (($$a{role} || $z) cmp($$b{role} || $z))
-      || (($$a{meaning} || $z) cmp($$b{meaning} || $z))
-      || (($$a{cs}      || $z) cmp($$b{cs}      || $z))
-      || (($$a{package} || $z) cmp($$b{package} || $z)); }
+  my($symbols)=@_;
+  my $z = 'zzzzzzzzzzzzzzzzzzzzzzzzzzzz';
+  my @symbols = sort {
+    (($$a{role}||$z) cmp ($$b{role}||$z))
+      || (($$a{meaning}||$z) cmp ($$b{meaning}||$z))
+	|| (($$a{cs}||$z) cmp ($$b{cs}||$z))
+	  || (($$a{package}||$z) cmp ($$b{package}||$z)); }
     @$symbols;
 
-  if (my $current = shift(@symbols)) {
+  if(my $current = shift(@symbols)){
     my @filtered = ($current);
-    while (@symbols) {
+    while(@symbols){
       my $next = shift(@symbols);
-      if (($$current{cs} eq $$next{cs})
-        && (($$current{role}         || $z) eq ($$next{role}         || $z))
-        && (($$current{meaning}      || $z) eq ($$next{meaning}      || $z))
-        && (($$current{nargs}        || $z) eq ($$next{nargs}        || $z))
-        && (($$current{presentation} || $z) eq ($$next{presentation} || $z))) {
-        $$current{package} .= ',' . $$next{package}; }
+      if(($$current{cs} eq $$next{cs})
+	 && (($$current{role}||$z) eq ($$next{role}||$z))
+	 && (($$current{meaning}||$z) eq ($$next{meaning}||$z))
+	 && (($$current{nargs}||$z) eq ($$next{nargs}||$z))
+	 && (($$current{presentation}||$z) eq ($$next{presentation}||$z))){
+	$$current{package} .= ','.$$next{package}; }
       else {
-        push(@filtered, $current = $next); } }
-    @symbols = @filtered; }
+	push(@filtered,$current=$next); }}
+    @symbols=@filtered; }
   [@symbols]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Format the symbols in a table (in a TeX document)
 # Need some smarts about what packages to use!!!
 sub formatSymbols {
-  my ($symbols) = @_;
+  my($symbols)=@_;
   my $ucnames = readUnicodeNames();
   print "\\documentclass{article}\n";
   print "\\usepackage{supertabular}\n";
@@ -195,38 +195,37 @@ sub formatSymbols {
   print "\\advance\\oddsidemargin-2cm\\relax\n";
   print "\\begin{document}\n";
   print "\\begin{landscape}\n";
-  #  print "{\\scriptsize\n";
-  #  print "{\\small\n";
+#  print "{\\scriptsize\n";
+#  print "{\\small\n";
   print " \\tablehead{Macro & Example & Role & Meaning & Unicode & Unicode Name & Packages\\\\ \\hline}\n";
   print "\\begin{supertabular}{lllllll}\n";
-  foreach my $entry (@$symbols) {
-    my $cs   = $$entry{cs};
-    my $role = $$entry{role};
-    $role = ($role ne '' ? "\\texttt{$role}" : '');
+  foreach my $entry (@$symbols){
+    my $cs      = $$entry{cs};
+    my $role    = $$entry{role};
+    $role = ($role ne '' ?  "\\texttt{$role}" : '');
     my $meaning = $$entry{meaning};
-    $meaning = ($meaning ne '' ? "\\texttt{$meaning}" : '');
-    my $nargs = $$entry{nargs};
-    my $invocation = ($nargs ? join("", $cs, map("{" . chr(ord('a') + $_ - 1) . "}", 1 .. $nargs)) : $cs);
-    my $presentation = (defined $$entry{presentation}) && ($$entry{presentation} !~ /(\\|\#|\^)/)
-      ? $$entry{presentation} : '';
+    $meaning = ($meaning ne '' ?  "\\texttt{$meaning}" : '') ;
+    my $nargs   = $$entry{nargs};
+    my $invocation = ($nargs ? join("",$cs,map("{".chr(ord('a')+$_-1)."}",1..$nargs)) : $cs);
+    my $presentation = (defined $$entry{presentation})&&($$entry{presentation}!~/(\\|\#|\^)/)
+			? $$entry{presentation} : '';
     my $ucname = '';
     $presentation =~ s/(\#|\^)/\\$1/g;
     $presentation =~ s/([^\000-\177])/'\\&\#'.sprintf('%04x',(ord($1))).';'/eg;
-
-    if ($presentation =~ /^(.)$/) {    # Single chars
-      $ucname = $$ucnames{ lc(sprintf('%04x', ord($1))) }; }
-    elsif ($presentation =~ /^\\&\\#([0-9a-fA-F]+);$/) {    # &#xxxx;
-      $ucname = $$ucnames{ lc($1) }; }
-    elsif ($presentation =~ /^\\&\\#([0-9a-fA-F]+);\\&\\#0338;$/) {    # &#xxxx;&#0338;
-      $ucname = 'not(' . $$ucnames{ lc($1) } . ')'; }
+    if($presentation =~ /^(.)$/){ # Single chars
+      $ucname = $$ucnames{lc(sprintf('%04x',ord($1)))}; }
+    elsif($presentation =~ /^\\&\\#([0-9a-fA-F]+);$/){ # &#xxxx;
+      $ucname = $$ucnames{lc($1)}; }
+    elsif($presentation =~ /^\\&\\#([0-9a-fA-F]+);\\&\\#0338;$/){ # &#xxxx;&#0338;
+      $ucname = 'not('.$$ucnames{lc($1)}.')'; }
 
     my $package = $$entry{package};
 #    print "\\verb#$cs # & \$$invocation\$ & $role & $meaning & $presentation & $ucname  & \\verb#$package #\\\\\n";
     print "{\\scriptsize \\verb#$cs #} & \$$invocation\$ & {\\scriptsize $role} & {\\scriptsize $meaning} & {\\scriptsize $presentation} & {\\scriptsize $ucname}  & {\\scriptsize \\verb#$package #}\\\\\n";
   }
-  print "\\end{supertabular}\n";                                       #}\n";
+  print "\\end{supertabular}\n";#}\n";
   print "\\end{landscape}\n";
-  print "\\end{document}\n";
+  print "\\end{document}\n"; 
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -241,275 +240,276 @@ our %split_stopwords;
 
 # Complete the Mapping tables from token CONTENT to various aliases
 sub completeUnicodeThesaurus {
-  my ($symbols) = @_;
+  my($symbols)=@_;
   my $thesaurus = {};
-  foreach my $entry (@$symbols) {
-    my $presentation = (defined $$entry{presentation}) && ($$entry{presentation} !~ /(\\|\#|\^)/)
-      ? $$entry{presentation} : '';
-    if ($presentation
-      && ($presentation !~ /^\d+$/)         # omit pure numbers
-      && ($presentation !~ /^[a-zA-Z]$/)    #  or single latin letters
-      && ($presentation !~ /[\s_^]/)) {     # or stuff with markup in them.
-      my @keywords = grep($_ ne $presentation,
-        generateThesaurusKeywords($presentation, $$entry{name}, $$entry{meaning}));
-      map($$thesaurus{$presentation}{$_} = 1, @keywords); } }
+  foreach my $entry (@$symbols){
+    my $presentation = (defined $$entry{presentation})&&($$entry{presentation}!~/(\\|\#|\^)/)
+			? $$entry{presentation} : '';
+    if($presentation
+       && ($presentation !~ /^\d+$/) # omit pure numbers
+       && ($presentation !~ /^[a-zA-Z]$/) #  or single latin letters
+       && ($presentation !~ /[\s_^]/)){	  # or stuff with markup in them.
+      my @keywords = grep( $_ ne $presentation,
+			   generateThesaurusKeywords($presentation,$$entry{name},$$entry{meaning}));
+      map($$thesaurus{$presentation}{$_}=1, @keywords); }}
   $thesaurus; }
 
 sub completeThesaurus {
-  my ($symbols) = @_;
+  my($symbols)=@_;
   my $thesaurus = {};
-  foreach my $entry (@$symbols) {
+  foreach my $entry (@$symbols){
     my $meaning = $$entry{meaning};
-    if ($meaning ne '') {
-      my @keywords = grep($_ ne $meaning,
-        generateThesaurusKeywords(undef, $$entry{name}, $meaning));
-      map($$thesaurus{$meaning}{$_} = 1, @keywords); } }
+    if($meaning ne ''){
+      my @keywords = grep( $_ ne $meaning,
+			   generateThesaurusKeywords(undef,$$entry{name},$meaning));
+      map($$thesaurus{$meaning}{$_}=1, @keywords); }}
   $thesaurus; }
 
-sub generateThesaurusKeywords {
-  my ($presentation, $name, $meaning) = @_;
+sub generateThesaurusKeywords{
+  my($presentation,$name,$meaning)=@_;
   my %keywords = ();
-  if ($presentation) {
-    if (my $p_alia = $unicode_map{$presentation}) {
-      map($keywords{$_} = 1, split(/\s/, $p_alia)); } }
-  if ($name && ($name !~ /@/)) {
-    $keywords{$name} = 1;
-    if (my $n_alia = $name_map{$name}) {
-      map($keywords{$_} = 1, split(/\s/, $n_alia)); }
+  if($presentation){
+    if(my $p_alia = $unicode_map{$presentation}){
+      map($keywords{$_}=1, split(/\s/,$p_alia)); }}
+  if($name && ($name !~ /@/)){
+    $keywords{$name} = 1; 
+    #	if($name ne lc($name)){
+    #	  $keywords{'big'.lc($name)}=1; }
+    if(my $n_alia = $name_map{$name}){
+      map($keywords{$_}=1, split(/\s/,$n_alia)); }
     # Strip non-significant pre/postfixes from some command names.
-    #    if($name =~ /^(?:up|varup|var)(..+)$/){ $keywords{$1}=1; }
-    if ($name =~ /^(?:varup|var)(..+)$/) { $keywords{$1} = 1; }
-    #    if($name =~ /^(..+?)(?:up)$/){ $keywords{$1}=1; }
-    if ($name =~ /^n([^ew].+?)$/) {
+#    if($name =~ /^(?:up|varup|var)(..+)$/){ $keywords{$1}=1; }
+    if($name =~ /^(?:varup|var)(..+)$/){ $keywords{$1}=1; }
+#    if($name =~ /^(..+?)(?:up)$/){ $keywords{$1}=1; }
+    if($name =~ /^n([^ew].+?)$/){
       my $n = $1;
-      if ($n =~ /arrow/) { $keywords{not} = 1; $keywords{$n} = 1; } }
+      if($n =~/arrow/){ $keywords{not}=1; $keywords{$n}=1; }}
   }
-  if ($meaning) {
-    $keywords{$meaning} = 1;
-    my @splits = split(/-/, $meaning);
-    if (scalar(@splits) > 1) {
-      map($keywords{$_} = 1, grep(!$split_stopwords{$_}, @splits)); } }
+  if($meaning){
+    $keywords{$meaning}=1;
+    my @splits = split(/-/,$meaning);
+    if(scalar(@splits) > 1){
+      map($keywords{$_}=1, grep(!$split_stopwords{$_}, @splits)); }}
 
-  foreach my $k (keys %keywords) {
-    if (my $alia = $alias_map{$k}) {
-      map($keywords{$_} = 1, split(/\s/, $alia)); }
+  foreach my $k (keys %keywords){
+    if(my $alia = $alias_map{$k}){
+      map($keywords{$_}=1, split(/\s/,$alia)); }
   }
   # Special cases for arrows, since they typically have no meaning assigned, but need aliases!
-  if ($name =~ /arrow/) {
-    $keywords{arrow} = 1;
+  if($name =~ /arrow/){
+    $keywords{arrow}=1;
     my $n;
-    do {    # Repeat as long as we're adding variations
+    do {			# Repeat as long as we're adding variations
       $n = scalar(keys %keywords);
-      foreach my $k (keys %keywords) {
-        if ($k =~ /^(..+?)arrows$/) { $keywords{ $1 . 'arrow' } = 1; }
-        if ($k =~ /^[A-Z]/) { $keywords{double} = 1; $keywords{ lc($k) } = 1; } # Starts uppercase? assume "double"
-        if ($k =~ /^(?:dash|long|twohead|circle|curve|over|under|hook|loop)(..+)$/) { $keywords{$1} = 1; }
-        if ($k =~ /^(..+?)(?:tail)$/) { $keywords{$1} = 1; }
-        if ($k =~ /^(.*?)squig(.*)$/) { $keywords{ $1 . $2 } = 1; $keywords{squigarrow} = 1; }
-        if ($k =~ /^(.*?)rightright(.*)$/) { $keywords{ $1 . 'right' . $2 }      = 1; }
-        if ($k =~ /^(.*?)leftright(.*)$/)  { $keywords{ $1 . 'rightleft' . $2 }  = 1; }
-        if ($k =~ /^(.*?)leftleft(.*)$/)   { $keywords{ $1 . 'left' . $2 }       = 1; }
-        if ($k =~ /^(.*?)upup(.*)$/)       { $keywords{ $1 . 'up' . $2 }         = 1; }
-        if ($k =~ /^(.*?)updown(.*)$/)     { $keywords{ $1 . 'downup' . $2 }     = 1; }
-        if ($k =~ /^(.*?)downdown(.*)$/)   { $keywords{ $1 . 'down' . $2 }       = 1; }
-        if ($k =~ /^(.*?)arrowleft(.*)$/)  { $keywords{ $1 . 'leftarrow' . $2 }  = 1; }
-        if ($k =~ /^(.*?)arrowright(.*)$/) { $keywords{ $1 . 'rightarrow' . $2 } = 1; }
-    } } while (scalar(keys %keywords) > $n);
+      foreach my $k (keys %keywords){
+	if($k =~ /^(..+?)arrows$/) { $keywords{$1.'arrow'}=1; }
+	if($k =~ /^[A-Z]/){ $keywords{double}=1; $keywords{lc($k)}=1; } # Starts uppercase? assume "double"
+	if($k =~ /^(?:dash|long|twohead|circle|curve|over|under|hook|loop)(..+)$/){ $keywords{$1}=1; }
+	if($k =~ /^(..+?)(?:tail)$/){ $keywords{$1}=1; }
+	if($k =~ /^(.*?)squig(.*)$/){ $keywords{$1.$2}=1; $keywords{squigarrow}=1; }
+	if($k =~ /^(.*?)rightright(.*)$/){ $keywords{$1.'right'.$2}=1; }
+	if($k =~ /^(.*?)leftright(.*)$/){ $keywords{$1.'rightleft'.$2}=1; }
+	if($k =~ /^(.*?)leftleft(.*)$/){ $keywords{$1.'left'.$2}=1; }
+	if($k =~ /^(.*?)upup(.*)$/){ $keywords{$1.'up'.$2}=1; }
+	if($k =~ /^(.*?)updown(.*)$/){ $keywords{$1.'downup'.$2}=1; }
+	if($k =~ /^(.*?)downdown(.*)$/){ $keywords{$1.'down'.$2}=1; }
+	if($k =~ /^(.*?)arrowleft(.*)$/){ $keywords{$1.'leftarrow'.$2}=1; }
+	if($k =~ /^(.*?)arrowright(.*)$/){ $keywords{$1.'rightarrow'.$2}=1; }
+      }} while (scalar(keys %keywords) > $n);
   }
-  foreach my $k (keys %keywords) {
-    my $lc = lc($k);
-    if (($k ne $lc) && (length($k) <= 2)) {
-      $keywords{$lc} = 1;
-      $keywords{"big$lc"} = 1; } }
+  foreach my $k (keys %keywords){
+    my $lc= lc($k);
+    if(($k ne $lc) && (length($k)<=2)){
+      $keywords{$lc}=1;
+      $keywords{"big$lc"}=1; }}
   keys %keywords; }
 
 sub printThesaurus {
-  my ($thesaurus) = @_;
-  foreach my $key (sort keys %$thesaurus) {
-    print join(' ', $key, sort keys %{ $$thesaurus{$key} }) . "\n"; } }
+  my($thesaurus)=@_;
+  foreach my $key (sort keys %$thesaurus){
+    print join(' ',$key, sort keys %{$$thesaurus{$key}})."\n"; }}
+
 
 # Compute a set of aliases from the macro name (w/o \) and meaning
 our %searchform;
-
-BEGIN {
-  %searchform = (
-    # Uppercase greek
-    Gamma  => 'biggamma',  Delta   => 'bigdelta',   Theta => 'bigtheta',
-    Lambda => 'biglambda', Xi      => 'bigxi',      Pi    => 'bigpi',
-    Sigma  => 'bigsigma',  Upsilon => 'bigupsilon', Phi   => 'bigphi',
-    Psi    => 'bigpsi',    Omega   => 'bigomega',
-    # Short forms
-    integral => 'int',
-    # Abdou's shorthands
-    # We should probably refine these at the query end
-    # but for now...
-    'plus-or-minus'              => 'plusminus',               # from +-
-    'minus-or-plus'              => 'minusplus',               # from -+
-                                                               # ~= => cong ??
-                                                               # .= => doteq ??
-                                                               # <-   leftarrow  ???? Is it in there?
-    'not-equals'                 => 'neq',                     # !=
-    'less-than'                  => 'lt',                      # <
-    'less-than-or-equals'        => 'leq',                     # <=
-    'not-less-than'              => 'notlt',                   # !<
-    'not-less-than-or-equals'    => 'notleq',                  # !<=
-    'greater-than'               => 'gt',                      # >
-    'greater-than-or-equals'     => 'geq',                     # >=
-    'not-greater-than'           => 'notgt',                   # !>
-    'not-greater-than-or-equals' => 'notgeq',                  # !>=
-    'Rightarrow'                 => 'rightdoublearrow',        # =>
-    'Leftrightarrow'             => 'leftrightdoublearrow',    # <=>
-    'rvert'                      => 'norm',                    # ??
-    'absolute-value'             => 'norm',
-  );
+BEGIN{
+ %searchform=(
+	      # Uppercase greek
+	      Gamma =>'biggamma',   Delta  =>'bigdelta',   Theta =>'bigtheta',
+	      Lambda=>'biglambda',  Xi     =>'bigxi',      Pi    =>'bigpi',
+	      Sigma =>'bigsigma',   Upsilon=>'bigupsilon', Phi   =>'bigphi',
+	      Psi   =>'bigpsi',     Omega  =>'bigomega',
+	      # Short forms
+	      integral=>'int',
+	      # Abdou's shorthands
+	      # We should probably refine these at the query end
+	      # but for now...
+	      'plus-or-minus'=>'plusminus', # from +-
+	      'minus-or-plus' =>'minusplus', # from -+
+	      # ~= => cong ??
+	      # .= => doteq ??
+	      # <-   leftarrow  ???? Is it in there?
+	      'not-equals'=>'neq', # !=
+	      'less-than'=>'lt',   # <
+	      'less-than-or-equals'=>'leq', # <=
+	      'not-less-than'=>'notlt',	    # !<
+	      'not-less-than-or-equals'=>'notleq', # !<=
+	      'greater-than'=>'gt',		   # >
+	      'greater-than-or-equals'=>'geq',	   # >=
+	      'not-greater-than'=>'notgt',	   # !>
+	      'not-greater-than-or-equals'=>'notgeq', # !>=
+	      'Rightarrow'=>'rightdoublearrow',		# =>
+	      'Leftrightarrow'=>'leftrightdoublearrow', # <=>
+	      'rvert'=>'norm',				# ??
+	      'absolute-value'=>'norm',
+	      );
 }
-
 sub computeAliases {
-  my ($name, $meaning) = @_;
+  my($name, $meaning)=@_;
   # Use the macro name as an alias,
   # split the meaning at hypens to get separate words
   my %aliases = ();
-  foreach my $a (grep($_, $name, $meaning, split('-', $meaning))) {
+  foreach my $a (grep($_,$name, $meaning,split('-',$meaning))){
     next if $a eq '';
-    $aliases{$a} = 1;
-    if (my $aa = $searchform{$a}) {
-      $aliases{$aa} = 1; } }
+    $aliases{$a}=1;
+    if(my $aa = $searchform{$a}){
+      $aliases{$aa}=1; }}
   [sort keys %aliases]; }
 
 BEGIN {
   # Maps unicode characters to thesaurus words
   %unicode_map =
     (
-    # Greek entries no longer needed; they come from command names.
-    #      "\x{03B1}"=>'alpha',
-    #      "\x{03B2}"=>'beta',
-    #      "\x{03B3}"=>'gamma',
-    #      "\x{03B4}"=>'delta',
-    #      "\x{03F5}"=>'epsilon',
-    #      "\x{03B5}"=>'varepsilon epsilon',
-    #      "\x{03B6}"=>'zeta',
-    #      "\x{03B7}"=>'eta',
-    #      "\x{03B8}"=>'theta',
-    #      "\x{03D1}"=>'vartheta theta',
-    #      "\x{03B9}"=>'iota',
-    #      "\x{03BA}"=>'kappa',
-    #      "\x{03BB}"=>'lambda',
-    #      "\x{03BC}"=>'mu',
-    #      "\x{03BD}"=>'nu',
-    #      "\x{03BE}"=>'xi',
-    #      "\x{03C0}"=>'pi',
-    #      "\x{03D6}"=>'varpi pi',
-    #      "\x{03C1}"=>'rho',
-    #      "\x{03F1}"=>'varrho rho',
-    #      "\x{03C3}"=>'sigma',
-    #      "\x{03C2}"=>'varsigma sigma',
-    #      "\x{03C4}"=>'tau',
-    #      "\x{03C5}"=>'upsilon',
-    #      "\x{03D5}"=>'phi',
-    #      "\x{03C6}"=>'varphi phi',
-    #      "\x{03C7}"=>'chi',
-    #      "\x{03C8}"=>'psi',
-    #      "\x{03C9}"=>'omega',
-    #      "\x{0393}"=>'Gamma',
-    #      "\x{0394}"=>'Delta',
-    #      "\x{0398}"=>'Theta',
-    #      "\x{039B}"=>'Lambda',
-    #      "\x{039E}"=>'Xi',
-    #      "\x{03A0}"=>'Pi',
-    #      "\x{03A3}"=>'Sigma',
-    #      "\x{03A5}"=>'Upsilon',
-    #      "\x{03A6}"=>'Phi',
-    #      "\x{03A8}"=>'Psi',
-    #      "\x{03A9}"=>'Omega',
+# Greek entries no longer needed; they come from command names.
+#      "\x{03B1}"=>'alpha',
+#      "\x{03B2}"=>'beta',
+#      "\x{03B3}"=>'gamma',
+#      "\x{03B4}"=>'delta',
+#      "\x{03F5}"=>'epsilon',
+#      "\x{03B5}"=>'varepsilon epsilon',
+#      "\x{03B6}"=>'zeta',
+#      "\x{03B7}"=>'eta',
+#      "\x{03B8}"=>'theta',
+#      "\x{03D1}"=>'vartheta theta',
+#      "\x{03B9}"=>'iota',
+#      "\x{03BA}"=>'kappa',
+#      "\x{03BB}"=>'lambda',
+#      "\x{03BC}"=>'mu',
+#      "\x{03BD}"=>'nu',
+#      "\x{03BE}"=>'xi',
+#      "\x{03C0}"=>'pi',
+#      "\x{03D6}"=>'varpi pi',
+#      "\x{03C1}"=>'rho',
+#      "\x{03F1}"=>'varrho rho',
+#      "\x{03C3}"=>'sigma',
+#      "\x{03C2}"=>'varsigma sigma',
+#      "\x{03C4}"=>'tau',
+#      "\x{03C5}"=>'upsilon',
+#      "\x{03D5}"=>'phi',
+#      "\x{03C6}"=>'varphi phi',
+#      "\x{03C7}"=>'chi',
+#      "\x{03C8}"=>'psi',
+#      "\x{03C9}"=>'omega',
+#      "\x{0393}"=>'Gamma',
+#      "\x{0394}"=>'Delta',
+#      "\x{0398}"=>'Theta',
+#      "\x{039B}"=>'Lambda',
+#      "\x{039E}"=>'Xi',
+#      "\x{03A0}"=>'Pi',
+#      "\x{03A3}"=>'Sigma',
+#      "\x{03A5}"=>'Upsilon',
+#      "\x{03A6}"=>'Phi',
+#      "\x{03A8}"=>'Psi',
+#      "\x{03A9}"=>'Omega',
 
-    #     "\x{211C}"=>'re bigre',
-    #     "\x{2111}"=>'im bigim',
+#     "\x{211C}"=>'re bigre',
+#     "\x{2111}"=>'im bigim',
 
-    #     "\x{2190}"=>'arrow leftarrow',
-    #     "\x{2192}"=>'arrow rightarrow',
-    #     "\x{21D0}"=>'arrow leftarrow double leftdoublearrow',
-    #     "\x{21D2}"=>'arrow rightarrow double rightdoublearrow',
+#     "\x{2190}"=>'arrow leftarrow',
+#     "\x{2192}"=>'arrow rightarrow',
+#     "\x{21D0}"=>'arrow leftarrow double leftdoublearrow',
+#     "\x{21D2}"=>'arrow rightarrow double rightdoublearrow',
 
-    );
+     );
 
-  #   @plane1_map =
-  #     (
-  #      [0x1D400,   26,'A',       'bold'],
-  #      [0x1D400+26,26,'a',       'bold'],
-  #      [0x1D6A8,   24,"\x{0391}",'bold'], # ALPHA
-  #      [0x1D6C2,   24,"\x{03B1}",'bold'], # alpha
-  #      [0x1D7CE,   10,'0',       'bold'],
-  #      [0x1D434,   26,'A',       'italic'],
-  #      [0x1D434+26,26,'a',       'italic'],
-  #      [0x1D6E2,   24,"\x{0391}",'italic'],
-  #      [0x1D6FC,   24,"\x{03B1}",'italic'],
-  #      [0x1D468,   26,'A',       'bold italic'],
-  #      [0x1D468+26,26,'a',       'bold italic'],
-  #      [0x1D71C,   24,"\x{0391}",'bold italic'],
-  #      [0x1D736,   24,"\x{03B1}",'bold italic'],
-  #      [0x1D5A0,   26,'A',       'sansserif sans'],
-  #      [0x1D5A0+26,26,'a',       'sansserif sans'],
-  #      [0x1D7E2,   10,'0',       'sansserif sans'],
-  #      [0x1D5D4,   26,'A',       'sansserif sans bold'],
-  #      [0x1D5D4+26,26,'a',       'sansserif sans bold'],
-  #      [0x1D756,   24,"\x{0391}",'sansserif sans bold'],
-  #      [0x1D770,   24,"\x{03B1}",'sansserif sans bold'],
-  #      [0x1D7EC,   10,'0',       'sansserif sans bold'],
-  #      [0x1D608,   26,'A',       'sansserif sans italic'],
-  #      [0x1D608+26,26,'a',       'sansserif sans italic'],
-  #      [0x1D63C,   26,'A',       'sansserif sans bold italic'],
-  #      [0x1D63C+26,26,'a',       'sansserif sans bold italic'],
-  #      [0x1D790,   24,"\x{0391}",'sansserif sans bold italic'],
-  #      [0x1D7AA,   24,"\x{03B1}",'sansserif sans bold italic'],
-  #      [0x1D670,   26,'A',       'monospace tt typewriter'],
-  #      [0x1D670+26,26,'a',       'monospace tt typewriter'],
-  #      [0x1D7F6,   10,'0',       'monospace tt typewriter'],
-  #      [0x1D49C,   26,'A',       'script caligraphic cal'],
-  #      [0x1D49C+26,26,'a',       'script caligraphic cal'],
-  #      [0x1D4D0,   26,'A',       'script caligraphic cal bold'],
-  #      [0x1D4D0+26,26,'a',       'script caligraphic cal bold'],
-  #      [0x1D504,   26,'A',       'fraktur'],
-  #      [0x1D504+26,26,'a',       'fraktur'],
-  #      [0x1D56C,   26,'A',       'fraktur bold'],
-  #      [0x1D56C+26,26,'a',       'fraktur bold'],
-  #      [0x1D538,   26,'A',       'doublestruck bb blackboard bold'],
-  #      [0x1D538+26,26,'a',       'doublestruck bb blackboard bold'],
-  #      [0x1D7D8,   10,'0',       'doublestruck bb blackboard bold'],
-  # )
+#   @plane1_map =
+#     (
+#      [0x1D400,   26,'A',       'bold'],
+#      [0x1D400+26,26,'a',       'bold'],
+#      [0x1D6A8,   24,"\x{0391}",'bold'], # ALPHA
+#      [0x1D6C2,   24,"\x{03B1}",'bold'], # alpha
+#      [0x1D7CE,   10,'0',       'bold'],
+#      [0x1D434,   26,'A',       'italic'],
+#      [0x1D434+26,26,'a',       'italic'],
+#      [0x1D6E2,   24,"\x{0391}",'italic'],
+#      [0x1D6FC,   24,"\x{03B1}",'italic'],
+#      [0x1D468,   26,'A',       'bold italic'],
+#      [0x1D468+26,26,'a',       'bold italic'],
+#      [0x1D71C,   24,"\x{0391}",'bold italic'],
+#      [0x1D736,   24,"\x{03B1}",'bold italic'],
+#      [0x1D5A0,   26,'A',       'sansserif sans'],
+#      [0x1D5A0+26,26,'a',       'sansserif sans'],
+#      [0x1D7E2,   10,'0',       'sansserif sans'],
+#      [0x1D5D4,   26,'A',       'sansserif sans bold'],
+#      [0x1D5D4+26,26,'a',       'sansserif sans bold'],
+#      [0x1D756,   24,"\x{0391}",'sansserif sans bold'],
+#      [0x1D770,   24,"\x{03B1}",'sansserif sans bold'],
+#      [0x1D7EC,   10,'0',       'sansserif sans bold'],
+#      [0x1D608,   26,'A',       'sansserif sans italic'],
+#      [0x1D608+26,26,'a',       'sansserif sans italic'],
+#      [0x1D63C,   26,'A',       'sansserif sans bold italic'],
+#      [0x1D63C+26,26,'a',       'sansserif sans bold italic'],
+#      [0x1D790,   24,"\x{0391}",'sansserif sans bold italic'],
+#      [0x1D7AA,   24,"\x{03B1}",'sansserif sans bold italic'],
+#      [0x1D670,   26,'A',       'monospace tt typewriter'],
+#      [0x1D670+26,26,'a',       'monospace tt typewriter'],
+#      [0x1D7F6,   10,'0',       'monospace tt typewriter'],
+#      [0x1D49C,   26,'A',       'script caligraphic cal'],
+#      [0x1D49C+26,26,'a',       'script caligraphic cal'],
+#      [0x1D4D0,   26,'A',       'script caligraphic cal bold'],
+#      [0x1D4D0+26,26,'a',       'script caligraphic cal bold'],
+#      [0x1D504,   26,'A',       'fraktur'],
+#      [0x1D504+26,26,'a',       'fraktur'],
+#      [0x1D56C,   26,'A',       'fraktur bold'],
+#      [0x1D56C+26,26,'a',       'fraktur bold'],
+#      [0x1D538,   26,'A',       'doublestruck bb blackboard bold'],
+#      [0x1D538+26,26,'a',       'doublestruck bb blackboard bold'],
+#      [0x1D7D8,   10,'0',       'doublestruck bb blackboard bold'],
+# )
 
   # Maps latex command names to thesaurus words
   %name_map =
-    (diffd => 'diff',
-    loarrow => 'leftarrow', roarrow => 'rightarrow'
+    (diffd=>'diff',
+     loarrow=>'leftarrow', roarrow=>'rightarrow'
     );
 
   # Maps thesaurus words to more thesaurus words
   %alias_map =
-    (Alpha => 'alpha bigalpha', Beta => 'beta bigbeta b bigb', Gamma => 'gamma biggamma', Delta => 'delta bigdelta',
-    Epsilon => 'epsilon bigepsilon e bige', Zeta => 'zeta bigzeta z bigz', Eta => 'eta bigeta h bigh',
-    Theta  => 'theta bigtheta',   Iota => 'iota bigiota i bigi', Kappa => 'kappa bigkappa k bigk',
-    Lambda => 'lambda biglambda', Mu   => 'mu bigmu m bigm',     Nu    => 'nu bignu n bign',
-    Xi => 'xi bigxi x bigx', Pi => 'pi bigpi', Rho => 'rho bigrho r bigr', Sigma => 'sigma bigsigma',
-    Tau => 'tau bigtau t bigt', Upsilon => 'upsilon bigupsilon y bigy', Phi => 'phi bigphi',
-    Chi => 'chi bigchi x bigx', Psi => 'psi bigpsi', Omega => 'omega bigomega',
-    cosine => 'trig trigonometric', sine     => 'trig trigonometric', tangent   => 'trig trigonometric',
-    secant => 'trig trigonometric', cosecant => 'trig trigonometric', cotangent => 'trig trigonometric',
-    integral => 'int',
-    divide   => 'div frac', product => 'times',
-    rvert    => 'abs absolute-value norm', norm => 'abs absolute-value', abs => 'norm absolute-value',
-    conj     => 'conjugate',
-    'less-than' => 'lt', 'greater-than' => 'gt',
-    'less-than-or-equals' => 'le leq', 'greater-than-or-equals' => 'ge geq',
-    'cdot' => 'dot', 'cdots' => 'dot dots', 'vdots' => 'dot dots', 'ddots' => 'dot dots',
-    'overbrace' => 'brace', 'underbrace' => 'brace', hat => 'circumflex', bar => 'macron overline',
-    overline => 'bar',
-    ddot                     => 'dot diaresis double',
-    'very-much-less-than'    => 'less-than',
-    'very-much-greater-than' => 'greater-than',
-    'square-root'            => 'sqrt',
-    );
+    (Alpha=>'alpha bigalpha', Beta=>'beta bigbeta b bigb', Gamma=>'gamma biggamma', Delta=>'delta bigdelta',
+     Epsilon=>'epsilon bigepsilon e bige', Zeta=>'zeta bigzeta z bigz', Eta=>'eta bigeta h bigh',
+     Theta=>'theta bigtheta', Iota=>'iota bigiota i bigi', Kappa=>'kappa bigkappa k bigk',
+     Lambda=>'lambda biglambda', Mu=>'mu bigmu m bigm', Nu=>'nu bignu n bign', 
+     Xi=>'xi bigxi x bigx', Pi=>'pi bigpi', Rho=>'rho bigrho r bigr', Sigma=>'sigma bigsigma',
+     Tau=>'tau bigtau t bigt', Upsilon=>'upsilon bigupsilon y bigy', Phi=>'phi bigphi',
+     Chi=>'chi bigchi x bigx', Psi=>'psi bigpsi', Omega=>'omega bigomega',
+     cosine=>'trig trigonometric', sine=>'trig trigonometric', tangent=>'trig trigonometric',
+     secant=>'trig trigonometric', cosecant=>'trig trigonometric', cotangent=>'trig trigonometric',
+     integral=>'int',
+     divide=>'div frac', product=>'times',
+     rvert=>'abs absolute-value norm', norm=>'abs absolute-value', abs=>'norm absolute-value',
+     conj=>'conjugate',
+     'less-than'=>'lt', 'greater-than'=>'gt',
+     'less-than-or-equals'=>'le leq', 'greater-than-or-equals'=>'ge geq',
+     'cdot'=>'dot', 'cdots'=>'dot dots', 'vdots'=>'dot dots', 'ddots'=>'dot dots',
+     'overbrace'=>'brace', 'underbrace'=>'brace', hat=>'circumflex', bar=>'macron overline',
+     overline=>'bar',
+     ddot=>'dot diaresis double',
+     'very-much-less-than'=>'less-than',
+     'very-much-greater-than'=>'greater-than',
+     'square-root'=>'sqrt',
+     );
 
-  %split_stopwords = map(($_ => 1), qw(and or than of by as to very much));
+  %split_stopwords = map(($_=>1), qw(and or than of by as to very much));
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -518,12 +518,12 @@ BEGIN {
 # Could use more of the data?
 sub readUnicodeNames {
   my $unicodefile = '/usr/share/perl5/unicore/UnicodeData.txt';
-  open(UC, $unicodefile) or die "Couldn't read $unicodefile: $!";
-  my $names = {};
-  while (<UC>) {
-    my ($code, $name, $category, $combining, $bidi, $decomp, $decimal, $digit, $numeric,
-      $mirrored, $oldname, $comment, $uppercase, $lowercase, $titlecase) = split(';', $_);
-    $$names{ lc($code) } = $name; }
+  open(UC,$unicodefile) or die "Couldn't read $unicodefile: $!";
+  my $names={};
+  while(<UC>){
+    my($code,$name,$category,$combining,$bidi,$decomp,$decimal,$digit,$numeric,
+       $mirrored,$oldname,$comment,$uppercase,$lowercase,$titlecase)=split(';',$_);
+    $$names{lc($code)} = $name; }
   $names; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
