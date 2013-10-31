@@ -217,9 +217,7 @@ sub process {
   $doc; }
 
 # Hook for singleton processors/wrapp-up operations
-sub finalize {
-  my ($self) = @_;
-  return (); }
+sub finalize {();}
 
 #======================================================================
 # Some postprocessors will want to create a bunch of "resource"s,
@@ -434,18 +432,11 @@ sub addCrossrefs {
   my $selfs_map  = $$self{convertedIDs};
   my $others_map = $$otherprocessor{convertedIDs};
   foreach my $xid (keys %$selfs_map) {    # For each XMath id that $self converted
-    if (my $other_ids = $$others_map{$xid} || $$others_map{ $self->unmodifyID($xid) }) { # Did $other also convert those ids?
+    if (my $other_ids = $$others_map{$xid}) { # Did $other also convert those ids?
       if (my $xref_id = $other_ids && $$other_ids[0]) {    # get (first) id $other created from $xid.
         foreach my $id (@{ $$selfs_map{$xid} }) {          # look at each node $self created from $xid
           if (my $node = $doc->findNodeByID($id)) {        # If we find a node,
             $self->addCrossref($node, $xref_id); } } } } } }    # add a crossref from it to $others's node
-
-# Get a new, related, but unique id
-# Sneaky option: try $LaTeXML::Document::ID_SUFFIX as a suffix for id, first.
-sub unmodifyID {
-  my ($self, $id) = @_;
-  $id =~ s/(\d)(\w+)(\.|$)/$1$3/;
-  $id; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
