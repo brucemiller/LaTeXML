@@ -643,9 +643,9 @@ sub getSymbolUses {
     my @uses = sort keys %$uses;
     @uses = grep(!/\bSVG./, @uses) if $SKIP_SVG;    # !!!
     join(', ',
-      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}') : (), @uses),
-      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}') : (), @uses),
-      map(/^element:(.*)$/ ? ('\elementref{' . cleanTeXName($1) . '}') : (), @uses)); }
+      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}')     : (), @uses),
+      map(/^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}')     : (), @uses),
+      map(/^element:(.*)$/       ? ('\elementref{' . cleanTeXName($1) . '}') : (), @uses)); }
   else { ''; } }
 
 # Extract any documentation nodes from @data

@@ -301,7 +301,7 @@ sub Stringify {
       my $attributes = '';
       foreach my $attr ($object->attributes) {
         my $name = $attr->nodeName;
-        my $val = $attr->getData;
+        my $val  = $attr->getData;
         $val = substr($val, 0, 30) . "..." if length($val) > 35;
         $attributes .= ' ' . $name . "=\"" . $val . "\""; }
       "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");

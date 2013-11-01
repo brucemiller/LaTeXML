@@ -1019,7 +1019,7 @@ sub removeNode {
 
 sub removeNode_aux {
   my ($self, $node) = @_;
-  if ($node->nodeType == XML_ELEMENT_NODE) {    # If an element, do ID bookkeeping.
+  if ($node->nodeType == XML_ELEMENT_NODE) {      # If an element, do ID bookkeeping.
     if (my $id = $node->getAttribute('xml:id')) {
       $self->unRecordID($id); }
     map($self->removeNode_aux($_), $node->childNodes); } }

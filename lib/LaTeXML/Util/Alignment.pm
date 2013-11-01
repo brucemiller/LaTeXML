@@ -703,7 +703,7 @@ sub alignment_characterize_lines {
   while (($diff = alignment_compare($axis, 1, $reversed, $maxh - 1, $maxh)) < $::TAB_THRESHOLD) {
     $maxh++; }
   return if $maxh > $MAX_ALIGNMENT_HEADER_LINES;    # too many before even finding diffs? give up!
-  #  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
+       #  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
   while (alignment_compare($axis, 1, $reversed, $maxh, $maxh + 1) > $::TAB_THRESHOLD) {
     $maxh++; }
   $maxh = $MAX_ALIGNMENT_HEADER_LINES if $maxh > $MAX_ALIGNMENT_HEADER_LINES;
@@ -900,7 +900,7 @@ sub alignment_compare {
       if ($$cell1{$pedge} && ($$cell1{$pedge} != $$cell2{$pedge})) {
         $diff += abs($$cell1{$pedge} - $$cell2{$pedge}) * 1.0; }
     }
-    else {    # Compare edges for rows from diff places for potential similarity
+    else {                  # Compare edges for rows from diff places for potential similarity
       $diff += 0.3 * scalar(grep($$cell1{$_} != $$cell2{$_}, qw(r l t b))); }
   }
   $diff /= $ncells;

@@ -653,8 +653,8 @@ BREAKSET: foreach my $breakset (reverse @breaksets) {    # prunes better reverse
           $depth += $h + $d; }
         $rowheight = max($rowheight, $h + $d); }
       push(@layouts, { node => $node, type => $type,
-          penalty => $penalty,
-          width => $width, height => $height, depth => $depth,
+          penalty     => $penalty,
+          width       => $width, height => $height, depth => $depth,
           indentation => $indentation, rowheight => $rowheight, lhs_pos => $lhs_pos,
           (scalar(@$breakset) ? (breakset => $breakset) : ()),
           hasbreak => scalar(@$breakset) || scalar(grep($$_{hasbreak}, @$children_layout)),
