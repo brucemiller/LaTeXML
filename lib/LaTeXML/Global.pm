@@ -21,6 +21,7 @@
 #======================================================================
 package LaTeXML::Global;
 use strict;
+use warnings;
 use LaTeXML::Error;
 use LaTeXML::Common::XML;
 use Time::HiRes;
@@ -97,15 +98,15 @@ use constant T_SUPER => bless ['^',  7],  'LaTeXML::Token';
 use constant T_SUB   => bless ['_',  8],  'LaTeXML::Token';
 use constant T_SPACE => bless [' ',  10], 'LaTeXML::Token';
 use constant T_CR    => bless ["\n", 10], 'LaTeXML::Token';
-sub T_LETTER { bless [$_[0], 11], 'LaTeXML::Token'; }
-sub T_OTHER  { bless [$_[0], 12], 'LaTeXML::Token'; }
-sub T_ACTIVE { bless [$_[0], 13], 'LaTeXML::Token'; }
-sub T_COMMENT { bless ['%' . ($_[0] || ''), 14], 'LaTeXML::Token'; }
-sub T_CS { bless [$_[0], 16], 'LaTeXML::Token'; }
+sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Token'; }
+sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Token'; }
+sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Token'; }
+sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Token'; }
+sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
-  bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
+  return bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
 
 #======================================================================
 # These belong to Mouth, but make more sense here.
@@ -123,51 +124,57 @@ sub Tokenize {
   my ($string) = @_;
   $STD_CATTABLE = LaTeXML::State->new(catcodes => 'standard') unless $STD_CATTABLE;
   local $LaTeXML::STATE = $STD_CATTABLE;
-  LaTeXML::Mouth->new($string)->readTokens; }
+  return LaTeXML::Mouth->new($string)->readTokens; }
 
 # TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
 sub TokenizeInternal {
   my ($string) = @_;
   $STY_CATTABLE = LaTeXML::State->new(catcodes => 'style') unless $STY_CATTABLE;
   local $LaTeXML::STATE = $STY_CATTABLE;
-  LaTeXML::Mouth->new($string)->readTokens; }
+  return LaTeXML::Mouth->new($string)->readTokens; }
 
 sub StartSemiverbatim {
   $LaTeXML::STATE->pushFrame;
   $LaTeXML::STATE->assignValue(MODE => 'text'); # only text mode makes sense here... BUT is this shorthand safe???
   $LaTeXML::STATE->assignValue(IN_MATH => 0);
-  map($LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local'), @{ $LaTeXML::STATE->lookupValue('SPECIALS') });
+  map { $LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local') }
+    @{ $LaTeXML::STATE->lookupValue('SPECIALS') };
   $LaTeXML::STATE->assignMathcode('\'' => 0x8000, 'local');
   $LaTeXML::STATE->assignValue(font => $LaTeXML::STATE->lookupValue('font')->merge(encoding => 'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
-sub EndSemiverbatim { $LaTeXML::STATE->popFrame; }
+sub EndSemiverbatim {
+  $LaTeXML::STATE->popFrame;
+  return; }
 
 #======================================================================
 # Token List constructors.
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
 sub Tokens {
-  LaTeXML::Tokens->new(@_); }
+  return LaTeXML::Tokens->new(@_); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
   my ($string) = @_;
-  (defined $string ? map(($_ eq ' ' ? T_SPACE() : T_OTHER($_)), split('', $string)) : ()); }
+  return (defined $string
+    ? map { ($_ eq ' ' ? T_SPACE() : T_OTHER($_)) } split('', $string)
+    : ()); }
 
 # Similar to Explode, but convert letters to catcode LETTER
 # Hopefully, this is essentially correct WITHOUT resorting to catcode lookup?
 sub ExplodeText {
   my ($string) = @_;
-  (defined $string
-    ? map(($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))), split('', $string))
+  return (defined $string
+    ? map { ($_ eq ' ' ? T_SPACE() : (/[a-zA-Z]/ ? T_LETTER($_) : T_OTHER($_))) }
+      split('', $string)
     : ()); }
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
 sub Revert {
   my ($thing) = @_;
-  (defined $thing ? (ref $thing ? map($_->unlist, $thing->revert) : Explode($thing)) : ()); }
+  return (defined $thing ? (ref $thing ? map { $_->unlist } $thing->revert : Explode($thing)) : ()); }
 
 our $UNTEX_LINELENGTH = 78;
 
@@ -209,19 +216,19 @@ sub UnTeX {
       $string .= $s; $length += $l; }
     #    if($cc == CC_END  ){ $level--; }
     $prevs = $s; $prevcc = $cc; }
-  $string; }
+  return $string; }
 
 #======================================================================
 # Constructors for number and dimension types.
 
-sub Number      { LaTeXML::Number->new(@_); }
-sub Float       { LaTeXML::Float->new(@_); }
-sub Dimension   { LaTeXML::Dimension->new(@_); }
-sub MuDimension { LaTeXML::MuDimension->new(@_); }
-sub Glue        { LaTeXML::Glue->new(@_); }
-sub MuGlue      { LaTeXML::MuGlue->new(@_); }
-sub Pair        { LaTeXML::Pair->new(@_); }
-sub PairList    { LaTeXML::PairList->new(@_); }
+sub Number      { return LaTeXML::Number->new(@_); }
+sub Float       { return LaTeXML::Float->new(@_); }
+sub Dimension   { return LaTeXML::Dimension->new(@_); }
+sub MuDimension { return LaTeXML::MuDimension->new(@_); }
+sub Glue        { return LaTeXML::Glue->new(@_); }
+sub MuGlue      { return LaTeXML::MuGlue->new(@_); }
+sub Pair        { return LaTeXML::Pair->new(@_); }
+sub PairList    { return LaTeXML::PairList->new(@_); }
 
 #======================================================================
 # Constructors for Boxes and Lists.
@@ -234,9 +241,9 @@ sub Box {
   my $state = $LaTeXML::Global::STATE;
   if ($state->lookupValue('IN_MATH')) {
     my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
-    LaTeXML::MathBox->new($string, $font->specialize($string), $locator, $tokens, $attr); }
+    return LaTeXML::MathBox->new($string, $font->specialize($string), $locator, $tokens, $attr); }
   else {
-    LaTeXML::Box->new($string, $font, $locator, $tokens); } }
+    return LaTeXML::Box->new($string, $font, $locator, $tokens); } }
 
 #
 # sub List {
@@ -252,7 +259,7 @@ sub Color {
   # Beware of clumsy invention of $class; see LaTeXML::Color
   my $class = 'LaTeXML::Color::' . $model;
   $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
-  bless [$model, @components], $class; }
+  return bless [$model, @components], $class; }
 
 use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Color::rgb';
 use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Color::rgb';
@@ -274,7 +281,8 @@ sub NoteBegin {
   my ($state) = @_;
   if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
     $note_timers{$state} = [Time::HiRes::gettimeofday];
-    print STDERR "\n($state..."; } }
+    print STDERR "\n($state..."; }
+  return; }
 
 sub NoteEnd {
   my ($state) = @_;
@@ -282,18 +290,19 @@ sub NoteEnd {
     undef $note_timers{$state};
     if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
       my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
-      print STDERR sprintf(" %.2f sec)", $elapsed); } } }
+      print STDERR sprintf(" %.2f sec)", $elapsed); } }
+  return; }
 
 #**********************************************************************
 # Generic functions
-our %NOBLESS = map(($_ => 1), qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE));
+our %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);
 
 sub Stringify {
   my ($object) = @_;
-  if    (!defined $object)          { 'undef'; }
-  elsif (!ref $object)              { $object; }
-  elsif ($NOBLESS{ ref $object })   { "$object"; }
-  elsif ($object->can('stringify')) { $object->stringify; }
+  if    (!defined $object)          { return 'undef'; }
+  elsif (!ref $object)              { return $object; }
+  elsif ($NOBLESS{ ref $object })   { return "$object"; }
+  elsif ($object->can('stringify')) { return $object->stringify; }
   # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
   elsif ($object->isa('XML::LibXML::Node')) {
     if ($object->nodeType == XML_ELEMENT_NODE) {
@@ -304,19 +313,20 @@ sub Stringify {
         my $val  = $attr->getData;
         $val = substr($val, 0, 30) . "..." if length($val) > 35;
         $attributes .= ' ' . $name . "=\"" . $val . "\""; }
-      "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
+      return "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
     }
     elsif ($object->nodeType == XML_TEXT_NODE) {
-      "XMLText[" . $object->data . "]"; }
+      return "XMLText[" . $object->data . "]"; }
     elsif ($object->nodeType == XML_DOCUMENT_NODE) {
-      "XMLDocument[" . $$object . "]"; }
-    else { "$object"; } }
-  else { "$object"; } }
+      return "XMLDocument[" . $$object . "]"; }
+    else { return "$object"; } }
+  else { return "$object"; } }
 
 sub ToString {
   my ($object) = @_;
   my $r;
-  (defined $object ? (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object") : ''); }
+  return (defined $object
+    ? (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object") : ''); }
 
 # Just how deep of an equality test should this be?
 sub Equals {

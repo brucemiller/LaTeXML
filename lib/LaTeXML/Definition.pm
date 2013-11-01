@@ -12,6 +12,7 @@
 
 package LaTeXML::Definition;
 use strict;
+use warnings;
 use LaTeXML::Global;
 use Exporter;
 use LaTeXML::Parameters;
@@ -19,21 +20,42 @@ use base qw(LaTeXML::Object);
 
 #**********************************************************************
 
-sub isaDefinition { 1; }
-sub getCS         { $_[0]->{cs}; }
-sub getCSName     { (defined $_[0]->{alias} ? $_[0]->{alias} : $_[0]->{cs}->getCSName); }
-sub isExpandable  { 0; }
-sub isConditional { 0; }
-sub isRegister    { ''; }
-sub isPrefix      { 0; }
-sub getLocator    { $_[0]->{locator}; }
+sub isaDefinition {
+  return 1; }
+
+sub getCS {
+  my ($self) = @_;
+  return $$self{cs}; }
+
+sub getCSName {
+  my ($self) = @_;
+  return (defined $$self{alias} ? $$self{alias} : $$self{cs}->getCSName); }
+
+sub isExpandable {
+  return 0; }
+
+sub isConditional {
+  return 0; }
+
+sub isRegister {
+  return ''; }
+
+sub isPrefix {
+  return 0; }
+
+sub getLocator {
+  my ($self) = @_;
+  return $$self{locator}; }
 
 sub readArguments {
   my ($self, $gullet) = @_;
   my $params = $$self{parameters};
-  ($params ? $params->readArguments($gullet, $self) : ()); }
+  return ($params ? $params->readArguments($gullet, $self) : ()); }
 
-sub getParameters { $_[0]->{parameters}; }
+sub getParameters {
+  my ($self) = @_;
+  return $$self{parameters}; }
+
 #======================================================================
 # Overriding methods
 sub stringify {
@@ -41,16 +63,18 @@ sub stringify {
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
   my $name = ($$self{alias} || $$self{cs}->getCSName);
-  $type . '[' . ($$self{parameters} ? $name . ' ' . Stringify($$self{parameters}) : $name) . ']'; }
+  return $type . '[' . ($$self{parameters}
+    ? $name . ' ' . Stringify($$self{parameters}) : $name) . ']'; }
 
 sub toString {
   my ($self) = @_;
-  ($$self{parameters} ? ToString($$self{cs}) . ' ' . ToString($$self{parameters}) : ToString($$self{cs})); }
+  return ($$self{parameters}
+    ? ToString($$self{cs}) . ' ' . ToString($$self{parameters}) : ToString($$self{cs})); }
 
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
   my ($self, @args) = @_;
-  ($$self{cs}, ($$self{parameters} ? $$self{parameters}->revertArguments(@args) : ())); }
+  return ($$self{cs}, ($$self{parameters} ? $$self{parameters}->revertArguments(@args) : ())); }
 
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.
@@ -70,38 +94,42 @@ sub new {
       $level-- if $t->equals(T_END); }
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) if $level; }
-  bless { cs => $cs, parameters => $parameters, expansion => $expansion,
+  return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     locator     => "from " . $source->getLocator(-1),
     isProtected => $STATE->getPrefix('protected'),
     %traits }, $class; }
 
-sub isExpandable { 1; }
-sub isProtected  { $_[0]->{isProtected}; }
+sub isExpandable {
+  return 1; }
+
+sub isProtected {
+  my ($self) = @_;
+  return $$self{isProtected}; }
 
 sub getExpansion {
   my ($self) = @_;
   if (!ref $$self{expansion}) {
     $$self{expansion} = TokenizeInternal($$self{expansion}); }
-  $$self{expansion}; }
+  return $$self{expansion}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
   my ($self, $gullet) = @_;
-  $self->doInvocation($gullet, $self->readArguments($gullet)); }
+  return $self->doInvocation($gullet, $self->readArguments($gullet)); }
 
 sub doInvocation {
   my ($self, $gullet, @args) = @_;
   my $expansion = $self->getExpansion;
   my $r;
-  (ref $expansion eq 'CODE'
+  return (ref $expansion eq 'CODE'
     ? &$expansion($gullet, @args)
     : substituteTokens($expansion,
-      map($_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
+      map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
           ? $_
           : ($r && ($r eq 'LaTeXML::Token')
             ? Tokens($_)
-            : Tokens(Revert($_)))),
-        @args))); }
+            : Tokens(Revert($_)))) }
+        @args)); }
 
 # NOTE: Assumes $tokens is a Tokens list of Token's and each arg either undef or also Tokens
 # Using inline accessors on those assumptions
@@ -118,11 +146,11 @@ sub substituteTokens {
         push(@result, @$arg); } }                       # ->unlist, assuming it's a Tokens() !!!
     else {                                              # Duplicated '#', copy 2nd '#'
       push(@result, $token); } }
-  @result; }
+  return @result; }
 
 sub equals {
   my ($self, $other) = @_;
-  (defined $other && (ref $self) eq (ref $other))
+  return (defined $other && (ref $self) eq (ref $other))
     && Equals($$self{parameters},  $$other{parameters})
     && Equals($self->getExpansion, $other->getExpansion); }
 
@@ -141,13 +169,16 @@ sub new {
   my $source = $STATE->getStomach->getGullet->getMouth;
   Fatal('misdefined', $cs, $source, "Conditional '" . ToString($cs) . "' has neither a test nor a skipper.")
     unless $test or $traits{skipper};
-  bless { cs => $cs, parameters => $parameters, test => $test,
+  return bless { cs => $cs, parameters => $parameters, test => $test,
     locator => "from " . $source->getLocator(-1),
     %traits }, $class; }
 
-sub isConditional { 1; }
+sub isConditional {
+  return 1; }
 
-sub getTest { $_[0]->{test}; }
+sub getTest {
+  my ($self) = @_;
+  return $$self{test}; }
 
 # Note that although conditionals are Expandable,
 # they do NOT defined as macros, so they don't need to handle doInvocation,
@@ -163,10 +194,10 @@ sub invoke {
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
 
   if (my $test = $self->getTest) {
-    ifHandler($gullet, &$test($gullet, @args)); }
+    return ifHandler($gullet, &$test($gullet, @args)); }
   # If there's no test, it must be the Special Case, \ifcase
   elsif (my $skipper = $$self{skipper}) {
-    &$skipper($gullet, @args); } }
+    return &$skipper($gullet, @args); } }
 
 #======================================================================
 # Support for conditionals:
@@ -220,11 +251,13 @@ sub skipConditionalBody {
         $STATE->lookupValue('if_stack')->[0]->{elses} = 1;
         return; } } }
   Fatal('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
-    "Conditional started at $start"); }
+    "Conditional started at $start");
+  return; }
 
 sub ifHandler {
   my ($gullet, $boolean) = @_;
-  skipConditionalBody($gullet, -1) unless $boolean; return; }
+  skipConditionalBody($gullet, -1) unless $boolean;
+  return; }
 
 # These next two should NOT be called by Conditionals,
 # but they complete the set of conditional operations.
@@ -238,13 +271,14 @@ sub elseHandler {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
+    return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet, "Extra " . Stringify($LaTeXML::CURRENT_TOKEN));
     return; }
   else {
     local $LaTeXML::IFFRAME = $stack->[0];
-    skipConditionalBody($gullet, 0); return; } }
+    skipConditionalBody($gullet, 0);
+    return; } }
 
 sub fiHandler {
   my ($gullet) = @_;
@@ -255,7 +289,7 @@ sub fiHandler {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
+    return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   else {                            # "expand" by removing the stack entry for this level
     $STATE->shiftValue('if_stack');    # Done with this frame
     return; } }
@@ -277,34 +311,37 @@ sub new {
   Fatal('misdefined', $cs, $source, "Primitive replacement for '" . ToString($cs) . "' is not CODE",
     "Replacement is $replacement")
     unless ref $replacement eq 'CODE';
-  bless { cs => $cs, parameters => $parameters, replacement => $replacement,
+  return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
     locator => "from " . $source->getLocator(-1),
     %traits }, $class; }
 
-sub isPrefix { $_[0]->{isPrefix}; }
+sub isPrefix {
+  my ($self) = @_;
+  return $$self{isPrefix}; }
 
 sub executeBeforeDigest {
   my ($self, $stomach) = @_;
   local $LaTeXML::State::UNLOCKED = 1;
   my $pre = $$self{beforeDigest};
-  ($pre ? map(&$_($stomach), @$pre) : ()); }
+  return ($pre ? map { &$_($stomach) } @$pre : ()); }
 
 sub executeAfterDigest {
   my ($self, $stomach, @whatever) = @_;
   local $LaTeXML::State::UNLOCKED = 1;
   my $post = $$self{afterDigest};
-  ($post ? map(&$_($stomach, @whatever), @$post) : ()); }
+  return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
 
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
   my ($self, $stomach) = @_;
-  ($self->executeBeforeDigest($stomach),
+  return (
+    $self->executeBeforeDigest($stomach),
     &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
     $self->executeAfterDigest($stomach)); }
 
 sub equals {
   my ($self, $other) = @_;
-  (defined $other
+  return (defined $other
       && (ref $self) eq (ref $other)) && Equals($$self{parameters}, $$other{parameters})
     && Equals($$self{replacement}, $$other{replacement}); }
 
@@ -322,18 +359,25 @@ use base qw(LaTeXML::Primitive);
 #    readonly : whether this register can only be read
 sub new {
   my ($class, $cs, $parameters, $type, $getter, $setter, %traits) = @_;
-  bless { cs => $cs, parameters => $parameters,
+  return bless { cs => $cs, parameters => $parameters,
     registerType => $type, getter => $getter, setter => $setter,
     locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
     %traits }, $class; }
 
-sub isPrefix   { 0; }
-sub isRegister { $_[0]->{registerType}; }
-sub isReadonly { $_[0]->{readonly}; }
+sub isPrefix {
+  return 0; }
+
+sub isRegister {
+  my ($self) = @_;
+  return $$self{registerType}; }
+
+sub isReadonly {
+  my ($self) = @_;
+  return $$self{readonly}; }
 
 sub valueOf {
   my ($self, @args) = @_;
-  &{ $$self{getter} }(@args); }
+  return &{ $$self{getter} }(@args); }
 
 sub setValue {
   my ($self, $value, @args) = @_;
@@ -366,19 +410,25 @@ use base qw(LaTeXML::Register);
 
 sub new {
   my ($class, $cs, $value, $internalcs, %traits) = @_;
-  bless { cs => $cs, parameters => undef,
+  return bless { cs => $cs, parameters => undef,
     value => $value, internalcs => $internalcs,
     registerType => 'Number', readonly => 1,
     locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
     %traits }, $class; }
 
-sub valueOf { $_[0]->{value}; }
-sub setValue { Error('unexpected', $_[0], undef, "Can't assign to chardef " . $_[0]->getCSName); return; }
+sub valueOf {
+  my ($self) = @_;
+  return $$self{value}; }
+
+sub setValue {
+  my ($self, $value) = @_;
+  Error('unexpected', $self, undef, "Can't assign to chardef " . $self->getCSName);
+  return; }
 
 sub invoke {
   my ($self, $stomach) = @_;
-  if (my $cs = $$self{internalcs}) {
-    $stomach->invokeToken($cs); } }
+  my $cs = $$self{internalcs};
+  return (defined $cs ? $stomach->invokeToken($cs) : undef); }
 
 #**********************************************************************
 # Constructor control sequences.
@@ -406,13 +456,18 @@ sub new {
     "Constructor replacement for '" . ToString($cs) . "' is not a string or CODE",
     "Replacement is $replacement")
     unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
-  bless { cs => $cs, parameters => $parameters, replacement => $replacement,
+  return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
     locator => "from " . $source->getLocator(-1), %traits,
     nargs => (defined $traits{nargs} ? $traits{nargs}
       : ($parameters ? $parameters->getNumArgs : 0)) }, $class; }
 
-sub getReversionSpec { $_[0]->{reversion}; }
-sub getAlias         { $_[0]->{alias}; }
+sub getReversionSpec {
+  my ($self) = @_;
+  return $$self{reversion}; }
+
+sub getAlias {
+  my ($self) = @_;
+  return $$self{alias}; }
 
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
 # The whatsit which will be further processed to create the document.
@@ -450,7 +505,7 @@ sub invoke {
   my @post = $self->executeAfterDigest($stomach, $whatsit);
   if (my $cap = $$self{captureBody}) {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
-  (@pre, $whatsit, @post); }
+  return (@pre, $whatsit, @post); }
 
 sub doAbsorbtion {
   my ($self, $document, $whatsit) = @_;
@@ -460,11 +515,11 @@ sub doAbsorbtion {
     $$self{replacement} = $replacement = LaTeXML::ConstructorCompiler::compileConstructor($self); }
   # Now do the absorbtion.
   if (my $pre = $$self{beforeConstruct}) {
-    map(&$_($document, $whatsit), @$pre); }
+    map { &$_($document, $whatsit) } @$pre; }
   &{$replacement}($document, $whatsit->getArgs, $whatsit->getProperties);
   if (my $post = $$self{afterConstruct}) {
-    map(&$_($document, $whatsit), @$post); }
-}
+    map { &$_($document, $whatsit) } @$post; }
+  return; }
 
 #**********************************************************************
 package LaTeXML::ConstructorCompiler;
@@ -498,7 +553,7 @@ sub compileConstructor {
   # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
   my $code =
     " sub $name {\n"
-    . "my(" . join(', ', '$document', map("\$arg$_", 1 .. $nargs), '%prop') . ")=\@_;\n"
+    . "my(" . join(', ', '$document', (map { "\$arg$_" } 1 .. $nargs), '%prop') . ")=\@_;\n"
     # Put the body in the Pool package, so that functions defined there can be used with &foo(..)
     . "package LaTeXML::Package::Pool;\n"
     . ($floats ? "my \$savenode;\n" : '')
@@ -511,7 +566,7 @@ sub compileConstructor {
   Fatal('misdefined', $name, $constructor,
     "Compilation of constructor code for '$name' failed",
     "\"$replacement\" => $code", $@) if $@;
-  \&$name; }
+  return \&$name; }
 
 sub translate_constructor {
   my ($constructor, $float) = @_;
@@ -559,12 +614,12 @@ sub translate_constructor {
     elsif (s/^$TEXT_RE//so) {    # Else, just some text.
       $code .= "\$document->absorb('" . slashify($1) . "',\%prop);\n"; }
   }
-  $code; }
+  return $code; }
 
 sub slashify {
   my ($string) = @_;
   $string =~ s/\\/\\\\/g;
-  $string; }
+  return $string; }
 
 # parse a conditional in a constructor
 # Conditionals are of the form ?value(...)(...),
@@ -578,10 +633,11 @@ sub parse_conditional {
     $if =~ s/^\(//; $if =~ s/\)$//;
     my $else = Text::Balanced::extract_bracketed($_, '()');
     $else =~ s/^\(// if $else; $else =~ s/\)$// if $else;
-    ($bool, $if, $else); }
+    return ($bool, $if, $else); }
   else {
     Fatal('misdefined', $LaTeXML::Constructor::NAME, $LaTeXML::Constructor::CONSTRUCTOR,
-      "Unbalanced conditional in constructor template \"$_\""); } }
+      "Unbalanced conditional in constructor template \"$_\"");
+    return; } }
 
 # Parse a substitutable value from the constructor (in $_)
 # Recognizes the #1, #prop, and also &function(args,...)
@@ -591,8 +647,8 @@ sub translate_value {
     my $fcn  = $1;
     my @args = ();
     while (!/^\s*\)/) {
-      if   (/^\s*([\'\"])/) { push(@args, translate_string()); }
-      else                  { push(@args, translate_value()); }
+      if   (/^\s*[\'\"]/) { push(@args, translate_string()); }
+      else                { push(@args, translate_value()); }
       last unless s/^\s*\,\s*//; }
     Error('misdefined', $LaTeXML::Constructor::NAME, $LaTeXML::Constructor::CONSTRUCTOR,
       "Missing ')' in &$fcn(...) in constructor pattern for $LaTeXML::Constructor::NAME")
@@ -609,7 +665,7 @@ sub translate_value {
       $value = "\$arg$n" } }
   elsif (s/^\#([\w\-_]+)//) { $value = "\$prop{'$1'}"; }    # Recognize #prop for whatsit properties
   elsif (s/$TEXT_RE//so) { $value = "'" . slashify($1) . "'"; }
-  $value; }
+  return $value; }
 
 # Parse a delimited string from the constructor (in $_),
 # for example, an attribute value.  Can contain substitutions (above),
@@ -634,9 +690,9 @@ sub translate_string {
         push(@values, $code); }
       elsif (/^$VALUE_RE/o)             { push(@values, translate_value()); }
       elsif (s/^(.[^\#<\?\!$quote]*)//) { push(@values, "'" . slashify($1) . "'"); } } }
-  if    (!@values)     { undef; }
-  elsif (@values == 1) { $values[0]; }
-  else { join('.', map((/^\'/ ? $_ : " ToString($_)"), @values)); } }
+  if    (!@values)     { return; }
+  elsif (@values == 1) { return $values[0]; }
+  else { return join('.', (map { (/^\'/ ? $_ : " ToString($_)") } @values)); } }
 
 # Parse a set of attribute value pairs from a constructor pattern,
 # substituting argument and property values from the whatsit.
@@ -660,7 +716,7 @@ sub translate_avpairs {
       push(@avs, "'$key'=>$value"); }    # if defined $value; }
     else { last; }
     s|^\s*||; }
-  join(', ', @avs); }
+  return join(', ', @avs); }
 
 #**********************************************************************
 1;

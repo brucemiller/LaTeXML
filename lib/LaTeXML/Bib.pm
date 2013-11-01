@@ -11,11 +11,12 @@
 # \=========================================================ooo==U==ooo=/ #
 
 package LaTeXML::Bib;
+use strict;
+use warnings;
 use LaTeXML;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
 use Text::Balanced qw(extract_delimited extract_bracketed);
-use strict;
 
 #**********************************************************************
 # LaTeXML::Bib is responsible for the lowest level parsing of
@@ -30,9 +31,10 @@ use strict;
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
-our %default_macros = (jan => "January", feb => "February", mar => "March", apr => "April",
-  may => "May",       jun => "June",    jul => "July",     aug => "August",
-  sep => "September", oct => "October", nov => "November", dec => "December",
+our %default_macros = (
+  jan => "January",   feb => "February", mar => "March",    apr => "April",
+  may => "May",       jun => "June",     jul => "July",     aug => "August",
+  sep => "September", oct => "October",  nov => "November", dec => "December",
   acmcs    => "ACM Computing Surveys",
   acta     => "Acta Informatica",
   cacm     => "Communications of the ACM",
@@ -64,13 +66,13 @@ sub newFromFile {
   Fatal('missing_file', $bibname, undef, "Can't find BibTeX file $bibname",
     "SEACHPATHS is " . join(', ', @$paths)) unless $file;
   my $BIB;
+  $$self{file} = $bibname;
   open($BIB, '<', $file) or Fatal('I/O', $file, undef, "Can't open BibTeX $file for reading", $!);
-  $$self{file}   = $bibname;
-  $$self{lines}  = [<$BIB>];
-  $$self{line}   = shift(@{ $$self{lines} }) || '';
-  $$self{lineno} = 1;
+  $$self{lines} = [<$BIB>];
   close($BIB);
-  $self; }
+  $$self{line} = shift(@{ $$self{lines} }) || '';
+  $$self{lineno} = 1;
+  return $self; }
 
 sub newFromString {
   my ($class, $string) = @_;
@@ -81,7 +83,7 @@ sub newFromString {
   $$self{lines}  = [split(/\n/, $string)];      # Uh, what about CR's?
   $$self{line}   = shift(@{ $$self{lines} });
   $$self{lineno} = 1;
-  $self; }
+  return $self; }
 
 # Read all available lines from available Mouth's in the Gullet.
 sub newFromGullet {
@@ -98,11 +100,11 @@ sub newFromGullet {
   $$self{lines}  = [@lines];
   $$self{line}   = shift(@{ $$self{lines} });
   $$self{lineno} = 1;
-  $self; }
+  return $self; }
 
 sub toString {
   my ($self) = @_;
-  "Bibliography[$$self{source}]"; }
+  return "Bibliography[$$self{source}]"; }
 
 sub toTeX {
   my ($self) = @_;
@@ -111,16 +113,16 @@ sub toTeX {
   foreach my $entry (@{ $$self{entries} }) {
     $STATE->assignValue('BIBENTRY@' . $entry->getKey => $entry); }
 
-  join("\n",
+  return join("\n",
     @{ $$self{preamble} },
     '\begin{bibtex@bibliography}',
-    map('\ProcessBibTeXEntry{' . $_->getKey . '}', @{ $$self{entries} }),
+    (map { '\ProcessBibTeXEntry{' . $_->getKey . '}' } @{ $$self{entries} }),
     '\end{bibtex@bibliography}'); }
 
 # This lets Bib support formatted error messages.
 sub getLocator {
   my ($self) = @_;
-  "at $$self{source}; line $$self{lineno}\n  $$self{line}"; }
+  return "at $$self{source}; line $$self{lineno}\n  $$self{line}"; }
 
 #======================================================================
 #  Greg Ward has a pretty good description of the BibTeX data format
@@ -140,7 +142,8 @@ sub parseTopLevel {
     else                        { $self->parseEntry($type); }
   }
   NoteEnd("Preparsing Bibliography $$self{source}");
-  $$self{parsed} = 1; }
+  $$self{parsed} = 1;
+  return; }
 
 #==============================
 our %CLOSE = ("{" => "}", "(" => ")");
@@ -152,7 +155,8 @@ sub parsePreamble {
   my $open = $self->parseMatch("({");
   my ($value, $rawvalue) = $self->parseValue();
   push(@{ $$self{preamble} }, $value);
-  $self->parseMatch($CLOSE{$open}); }
+  $self->parseMatch($CLOSE{$open});
+  return; }
 
 # @string open [name = value]* close
 # open = { or (  close is balancing } or )
@@ -161,14 +165,15 @@ sub parseMacro {
   my $open = $self->parseMatch("({");
   my ($fields, $rawfields) = $self->parseFields('@string', $open);
   foreach my $macro (@$fields) {
-    $$self{macros}{ $$macro[0] } = $$macro[1]; } }
+    $$self{macros}{ $$macro[0] } = $$macro[1]; }
+  return; }
 
 # @comment string
 sub parseComment {
   my ($self)  = @_;
   my $comment = $self->parseString();    # Supposedly should accept () delimited strings, too?
                                          # store it?
-}
+  return; }
 
 # @entryname open name, [name = value]* close
 # open = { or (  close is balancing } or )
@@ -179,13 +184,13 @@ sub parseEntry {
   $self->parseMatch(',');
   # NOTE: actually, the entry should be ignored if there already is one for $key!
   my ($fields, $rawfields) = $self->parseFields('@string', $open);
-  push(@{ $$self{entries} }, LaTeXML::Bib::BibEntry->new($type, $key, $fields, $rawfields)); }
+  push(@{ $$self{entries} }, LaTeXML::Bib::BibEntry->new($type, $key, $fields, $rawfields));
+  return; }
 
 sub parseFields {
   my ($self, $for, $open) = @_;
   my @fields    = ();
   my @rawfields = ();
-  my $closed;
   do {
     my $name = $self->parseFieldName;
     $self->parseMatch('=');
@@ -196,7 +201,7 @@ sub parseFields {
     } while (($$self{line} =~ s/^,//)    # like parseMatch, but we just end parsing fields if missing
     && $self->skipWhite && ($$self{line} !~ /^\Q$CLOSE{$open}\E/));
   $self->parseMatch($CLOSE{$open});
-  ([@fields], [@rawfields]); }
+  return ([@fields], [@rawfields]); }
 
 #==============================
 # Low level parsing
@@ -207,29 +212,30 @@ sub parseFields {
 sub parseEntryType {
   my ($self) = @_;
   $self->skipWhite;
-  $$self{line} =~ s/^([a-zA-Z0-9\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\!\$\~]*)//;
-  lc($1); }
+  return ($$self{line} =~ s/^([a-zA-Z0-9\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\!\$\~]*)//
+    ? lc($1) : undef); }
 
 sub parseEntryName {
   my ($self) = @_;
   $self->skipWhite;
-  $$self{line} =~ s/^([a-zA-Z0-9\!\"\#\$\%\&\'\(\)\*\+\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\~]*)//;
-  lc($1); }
+  return (
+    $$self{line} =~ s/^([a-zA-Z0-9\!\"\#\$\%\&\'\(\)\*\+\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\~]*)//
+    ? lc($1) : undef); }
 
 sub parseFieldName {
   my ($self) = @_;
   $self->skipWhite;
-  $$self{line} =~ s/^([a-zA-Z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\~]*)//;
-  lc($1); }
+  return ($$self{line} =~ s/^([a-zA-Z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\~]*)//
+    ? lc($1) : undef); }
 
 sub parseMatch {
   my ($self, $delims) = @_;
   $self->skipWhite;
   if ($$self{line} =~ s/^([\Q$delims\E])//) {
-    $1; }
+    return $1; }
   else {
     Error('expected', $delims, undef, "Expected one of " . join(' ', split(//, $delims)));
-    undef; } }
+    return; } }
 
 # A string is delimited with balanced {}, or ""
 sub parseString {
@@ -252,7 +258,7 @@ sub parseString {
   $string =~ s/.$//;
   $string =~ s/^\s+//;    # and trim
   $string =~ s/\s+$//;
-  $string; }
+  return $string; }
 
 sub extendLine {
   my ($self) = @_;
@@ -260,11 +266,11 @@ sub extendLine {
   if (defined $nextline) {
     $$self{line} .= $nextline;
     $$self{lineno}++;
-    1; }
+    return 1; }
   else {
     Error('unexpected', '<EOF>', undef,
       "Input ended while parsing string");
-    undef; } }
+    return; } }
 
 # value : simple_value ( HASH simple_value)*
 # simple_value : string | NAME
@@ -287,7 +293,7 @@ sub parseValue {
         "Expected a BibTeX value"); }
     $self->skipWhite;
   } while ($$self{line} =~ s/^#//);
-  $value; }
+  return $value; }
 
 sub skipWhite {
   my ($self) = @_;
@@ -298,7 +304,8 @@ sub skipWhite {
     $nextline = shift(@{ $$self{lines} });
     $$self{line} = $nextline || "";
     $$self{lineno}++;
-    } while defined $nextline; }
+  } while defined $nextline;
+  return; }
 
 # Although % officially starts comments, apparently BibTeX accepts
 # anything until @ as an "implied comment"
@@ -312,7 +319,8 @@ sub skipJunk {
     my $nextline = shift(@{ $$self{lines} });
     $$self{line} = $nextline || "";
     $$self{lineno}++;
-    return unless defined $nextline; } }
+    return unless defined $nextline; }
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Bib::BibEntry;
@@ -321,32 +329,49 @@ sub new {
   my ($class, $type, $key, $fields, $rawfields) = @_;
   my $self = { type => $type, key => $key,
     fieldlist => $fields, rawfieldlist => $rawfields,
-    fieldmap    => { map(($$_[0] => $$_[1]), @$fields) },
-    rawfieldmap => { map(($$_[0] => $$_[1]), @$rawfields) } };
+    fieldmap    => { map { ($$_[0] => $$_[1]) } @$fields },
+    rawfieldmap => { map { ($$_[0] => $$_[1]) } @$rawfields } };
   bless $self, $class;
-  $self; }
+  return $self; }
 
-sub getType     { $_[0]->{type}; }
-sub getKey      { $_[0]->{key}; }
-sub getFields   { @{ $_[0]->{fieldlist} }; }
-sub getField    { $_[0]->{fieldmap}{ $_[1] }; }
-sub getRawField { $_[0]->{rawfieldmap}{ $_[1] }; }
+sub getType {
+  my ($self) = @_;
+  return $$self{type}; }
+
+sub getKey {
+  my ($self) = @_;
+  return $$self{key}; }
+
+sub getFields {
+  my ($self) = @_;
+  return @{ $$self{fieldlist} }; }
+
+sub getField {
+  my ($self, $key) = @_;
+  return $$self{fieldmap}{$key}; }
+
+sub getRawField {
+  my ($self, $key) = @_;
+  return $$self{rawfieldmap}{$key}; }
 
 sub addField {
   my ($self, $field, $value) = @_;
   push(@{ $$self{fieldlist} }, [$field, $value]);
-  $$self{fieldmap}{$field} = $value; }
+  $$self{fieldmap}{$field} = $value;
+  return; }
 
 sub addRawField {
   my ($self, $field, $value) = @_;
   push(@{ $$self{rawfieldlist} }, [$field, $value]);
-  $$self{rawfieldmap}{$field} = $value; }
+  $$self{rawfieldmap}{$field} = $value;
+  return; }
 
 sub prettyPrint {
   my ($self) = @_;
-  join(",\n",
+  return join(",\n",
     "@" . $$self{type} . "{" . $$self{key},
-    map((" " x (10 - length($$_[0]))) . $$_[0] . " = {" . $$_[1] . "}", @{ $$self{fieldlist} })
+    (map { (" " x (10 - length($$_[0]))) . $$_[0] . " = {" . $$_[1] . "}" }
+        @{ $$self{fieldlist} })
     ) . "}\n"; }
 
 #**********************************************************************

@@ -12,6 +12,7 @@
 
 package LaTeXML::Error;
 use strict;
+use warnings;
 use base qw(Exporter);
 our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 
@@ -22,8 +23,14 @@ our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 # ======================================================================
 # We want LaTeXML::Global to import this package,
 # but we also want to use some of it's low-level functions.
-sub ToString  { ($LaTeXML::BAILOUT ? "$_[0]" : LaTeXML::Global::ToString(@_)); }
-sub Stringify { ($LaTeXML::BAILOUT ? "$_[0]" : LaTeXML::Global::Stringify(@_)); }
+sub ToString {
+  my ($item, @more) = @_;
+  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Global::ToString($item, @more)); }
+
+sub Stringify {
+  my ($item, @more) = @_;
+  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Global::Stringify($item, @more)); }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
 # Public API
@@ -51,10 +58,7 @@ sub Fatal {
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
   local $LaTeXML::Error::InHandler = 1;
-  die $message;
-###  print STDERR "\n".$message;
-###  exit(1);
-  return; }
+  die $message; }
 
 sub checkRecursiveError {
   my @caller;
@@ -78,7 +82,7 @@ sub Error {
     $LaTeXML::Global::STATE->noteStatus('error');
     print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details)
-      unless $verbosity < -2; }
+      if $verbosity >= -2; }
   if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
     Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!"); }
   return; }
@@ -91,7 +95,7 @@ sub Warn {
   $state && $state->noteStatus('warning');
   print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
     $where, $message, 0, @details)
-    unless $verbosity < -1;
+    if $verbosity >= -1;
   return; }
 
 # Informational message; results likely unaffected
@@ -103,7 +107,7 @@ sub Info {
   $state && $state->noteStatus('info');
   print STDERR generateMessage("Info:" . $category . ":" . LaTeXML::Global::ToString($object),
     $where, $message, 0, @details)
-    unless $verbosity < 0;
+    if $verbosity >= 0;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -129,10 +133,13 @@ sub perl_die_handler {
     my ($file) = ($1);
     Fatal('misdefined', $file, undef, @line); }
   else {
-    Fatal('perl', 'die', undef, "Perl died", @_); } }
+    Fatal('perl', 'die', undef, "Perl died", @_); }
+  return; }
 
 sub perl_warn_handler {
-  Warn('perl', 'warn', undef, "Perl warning", @_); }
+  my (@line) = @_;
+  Warn('perl', 'warn', undef, "Perl warning", @line);
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
@@ -170,7 +177,7 @@ sub generateMessage {
     $docloc = $gullet->getLocator(); }
 
   # $message and each of @extra should be single lines
-  ($message, @extra) = grep($_ ne '', map(split("\n", $_), $message, @extra));
+  ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } $message, @extra;
   my @lines = ($errorcode . ' ' . $message,
     ($docloc ? ($docloc) : ()),
     @extra);
@@ -193,23 +200,23 @@ sub generateMessage {
     my $top = shift(@objects);
     push(@lines,   "In " . trim(ToString($top)) . ' ' . ToString(Locator($top)));
     push(@objects, '...') if @objects && defined $nstack;
-    push(@lines,   join('', map(' <= ' . trim(ToString($_)), @objects))) if @objects; }
+    push(@lines,   join('', (map { ' <= ' . trim(ToString($_)) } @objects))) if @objects; }
 
-  "\n" . join("\n\t", @lines) . "\n"; }
+  return "\n" . join("\n\t", @lines) . "\n"; }
 
 sub Locator {
   my ($object) = @_;
-  ($object && $object->can('getLocator') ? $object->getLocator : "???"); }
+  return ($object && $object->can('getLocator') ? $object->getLocator : "???"); }
 
 sub callerName {
   my ($frame) = @_;
   my %info = caller_info(($frame || 0) + 2);
-  $info{sub}; }
+  return $info{sub}; }
 
 sub callerInfo {
   my ($frame) = @_;
   my %info = caller_info(($frame || 0) + 2);
-  "$info{call} @ $info{file} line $info{line}"; }
+  return "$info{call} @ $info{file} line $info{line}"; }
 
 #======================================================================
 # This portion adapted from Carp; simplified (but hopefully still correct),
@@ -222,7 +229,7 @@ sub trim {
   my ($string) = @_;
   substr($string, $MAXLEN - 3) = "..." if (length($string) > $MAXLEN);
   $string =~ s/\n/\x{240D}/gs;    # symbol for CR
-  $string; }
+  return $string; }
 
 sub caller_info {
   my ($i) = @_;
@@ -250,17 +257,17 @@ sub caller_info {
     $method =~ s/^.*:://;
     # If $arg[0] is blessed, and `can' do $method, then we'll guess it's a method call?
     if ($info{has_args} && @args
-      && ref $args[0] && ((ref $args[0]) !~ /^(SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)
+      && ref $args[0] && ((ref $args[0]) !~ /^(?:SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)
       && $args[0]->can($method)) {
       $call = format_arg(shift(@args)) . "->" . $method; } }
   # Append arguments, if any.
   if ($info{has_args}) {
-    @args = map(format_arg($_), @args);
+    @args = map { format_arg($_) } @args;
     if (@args > $MAXARGS) {
       $#args = $MAXARGS; push(@args, '...'); }
     $call .= '(' . join(',', @args) . ')'; }
   $info{call} = $call;
-  %info; }
+  return %info; }
 
 sub format_arg {
   my ($arg) = @_;
@@ -271,7 +278,7 @@ sub format_arg {
     $arg =~ s/'/\\'/g;                                    # Slashify '
     $arg =~ s/([[:cntrl::]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
-  trim($arg); }
+  return trim($arg); }
 
 # Semi-traditional (but reformatted) stack trace
 sub stacktrace {
@@ -281,7 +288,7 @@ sub stacktrace {
     next if $info{sub} =~ /^LaTeXML::Error/;
     $info{call} = '' if $info{sub} =~ /^LaTeXML::Error::Error/;
     $trace .= "\t$info{call} @ $info{file} line $info{line}\n"; }
-  $trace; }
+  return $trace; }
 
 # Extract blessed `interesting' objects on stack.
 # Get a maximum of $maxdepth objects (if $maxdepth is defined).
@@ -299,7 +306,7 @@ sub objectStack {
     my $self = $args[0];
     # If $arg[0] is blessed, and `can' do $method, then we'll guess it's a method call?
     # We'll collect such objects provided they can ->getLocator
-    if ((ref $self) && ((ref $self) !~ /^(SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)) {
+    if ((ref $self) && ((ref $self) !~ /^(?:SCALAR|ARRAY|HASH|CODE|REF|GLOB|LVALUE)$/)) {
       my $method = $info{sub};
       $method =~ s/^.*:://;
       if ($self->can($method)) {
@@ -307,7 +314,7 @@ sub objectStack {
         next unless $self->can('getLocator');
         push(@objects, $self);
         last if $maxdepth && (scalar(@objects) >= $maxdepth); } } }
-  @objects; }
+  return @objects; }
 
 #**********************************************************************
 1;
