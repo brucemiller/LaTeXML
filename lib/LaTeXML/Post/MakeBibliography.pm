@@ -126,6 +126,7 @@ sub getBibEntries {
   while (my $bibkey = shift(@queue)) {
     next if $seen_keys{$bibkey};    # Done already.
     $seen_keys{$bibkey} = 1;
+    next if $bibkey eq '*';
     if (my $bibentry = $entries{$bibkey}{bibentry}) {
       my $entry = $entries{$bibkey};
       # Extract names, year and title from bibentry.
