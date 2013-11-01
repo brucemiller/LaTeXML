@@ -2786,7 +2786,13 @@ DefMacro('\cite[] Semiverbatim', sub {
         ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
-DefConstructor('\nocite Semiverbatim', '');
+DefMacro('\nocite Semiverbatim', sub {
+  my ($gullet,$arg) = @_;
+  if (ToString($arg) eq '*') {
+    return (T_CS('\cite'), T_BEGIN,T_OTHER('*'),T_END); }
+  else {
+    Warn('TODO','\nocite',$gullet,"LaTeXML only recognizes \\nocite{*} for now, single citations are to be implemented.");
+    return; }});
 
 #======================================================================
 # C.11.4 Splitting the input
