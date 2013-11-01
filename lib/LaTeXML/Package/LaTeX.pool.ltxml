@@ -2786,7 +2786,9 @@ DefMacro('\cite[] Semiverbatim', sub {
         ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
-DefConstructor('\nocite Semiverbatim', '');
+DefConstructor('\nocite Semiverbatim',
+  "<ltx:cite><ltx:bibref show='nothing' bibrefs='#bibrefs'/></ltx:cite>",
+  properties => sub { (bibrefs => CleanBibKey($_[1])) });
 
 #======================================================================
 # C.11.4 Splitting the input
