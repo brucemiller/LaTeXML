@@ -356,7 +356,8 @@ sub make_bibcite {
   if (!$show) {
     map($self->note_missing("bibref 'show' parameter", $_), @keys);
     $show = 'refnum'; }
-
+  if($show eq 'nothing'){       # Ad Hoc support for \nocite!t
+    return (); }
   my $sep   = $bibref->getAttribute('separator')   || ',';
   my $yysep = $bibref->getAttribute('yyseparator') || ',';
   my @phrases = $bibref->getChildNodes();    # get the ltx;bibrefphrase's in the bibref!
