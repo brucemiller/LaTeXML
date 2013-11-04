@@ -12,6 +12,7 @@
 
 package LaTeXML::Model;
 use strict;
+use warnings;
 use LaTeXML::Global;
 use LaTeXML::Font;
 use LaTeXML::Rewrite;
@@ -32,15 +33,17 @@ sub new {
     %options }, $class;
   $$self{xpath}->registerFunction('match-font', \&LaTeXML::Font::match_font);
   $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
-  $self; }
+  return $self; }
 
 sub setDocType {
   my ($self, $roottag, $publicid, $systemid) = @_;
-  $$self{schemadata} = ['DTD', $roottag, $publicid, $systemid]; }
+  $$self{schemadata} = ['DTD', $roottag, $publicid, $systemid];
+  return; }
 
 sub setRelaxNGSchema {
   my ($self, $schema) = @_;
-  $$self{schemadata} = ['RelaxNG', $schema]; }
+  $$self{schemadata} = ['RelaxNG', $schema];
+  return; }
 
 sub loadSchema {
   my ($self) = @_;
@@ -78,11 +81,12 @@ sub loadSchema {
   $self->computeIndirect;
   $self->describeModel if $LaTeXML::Model::DEBUG;
   $$self{schema_loaded} = 1;
-  $$self{schema}; }
+  return $$self{schema}; }
 
 sub addSchemaDeclaration {
   my ($self, $document, $tag) = @_;
-  $$self{schema}->addSchemaDeclaration($document, $tag); }
+  $$self{schema}->addSchemaDeclaration($document, $tag);
+  return; }
 
 #=====================================================================
 # Make provision to precompile the schema.
@@ -98,7 +102,8 @@ sub compileSchema {
   foreach my $tag (keys %{ $$self{tagprop} }) {
     print $tag
       . '{' . join(',', sort keys %{ $$self{tagprop}{$tag}{attributes} }) . '}'
-      . '(' . join(',', sort keys %{ $$self{tagprop}{$tag}{model} }) . ')' . "\n"; } }
+      . '(' . join(',', sort keys %{ $$self{tagprop}{$tag}{model} }) . ')' . "\n"; }
+  return; }
 
 sub loadCompiledSchema {
   my ($self, $file) = @_;
@@ -109,11 +114,11 @@ sub loadCompiledSchema {
   while ($line = <$MODEL>) {
     if ($line =~ /^([^\{]+)\{(.*?)\}\((.*?)\)$/) {
       my ($tag, $attr, $children) = ($1, $2, $3);
-      $self->setTagProperty($tag, 'attributes', { map(($_ => 1), split(/,/, $attr)) });
-      $self->setTagProperty($tag, 'model',      { map(($_ => 1), split(/,/, $children)) }); }
+      $self->setTagProperty($tag, 'attributes', { map { ($_ => 1) } split(/,/, $attr) });
+      $self->setTagProperty($tag, 'model',      { map { ($_ => 1) } split(/,/, $children) }); }
     elsif ($line =~ /^([^:=]+):=(.*?)$/) {
       my ($classname, $elements) = ($1, $2);
-      $self->setSchemaClass($classname, { map(($_ => 1), split(/,/, $elements)) }); }
+      $self->setSchemaClass($classname, { map { ($_ => 1) } split(/,/, $elements) }); }
     elsif ($line =~ /^([^=]+)=(.*?)$/) {
       my ($prefix, $namespace) = ($1, $2);
       $self->registerDocumentNamespace($prefix, $namespace); }
@@ -121,7 +126,8 @@ sub loadCompiledSchema {
       Fatal('internal', $file, undef, "Compiled model '$file' is malformatted at \"$line\""); }
   }
   close($MODEL);
-  NoteEnd("Loading compiled schema $file"); }
+  NoteEnd("Loading compiled schema $file");
+  return; }
 
 #**********************************************************************
 # Namespaces
@@ -146,7 +152,8 @@ sub registerNamespace {
   else {
     my $prev = $$self{code_namespaces}{$codeprefix};
     delete $$self{code_namespace_prefixes}{$prev} if $prev;
-    delete $$self{code_namespaces}{$codeprefix}; } }
+    delete $$self{code_namespaces}{$codeprefix}; }
+  return; }
 
 our $NAMESPACE_ERROR = 0;
 
@@ -164,7 +171,7 @@ sub getNamespacePrefix {
       Warn('malformed', $namespace, undef,
         "No prefix has been registered for namespace '$namespace' (in code)",
         "Using '$codeprefix' instead"); }
-    $codeprefix; } }
+    return $codeprefix; } }
 
 sub getNamespace {
   my ($self, $codeprefix, $probe) = @_;
@@ -175,7 +182,7 @@ sub getNamespace {
     Error('malformed', $codeprefix, undef,
       "No namespace has been registered for prefix '$codeprefix' (in code)",
       "Using '$ns' isntead"); }
-  $ns; }
+  return $ns; }
 
 sub registerDocumentNamespace {
   my ($self, $docprefix, $namespace) = @_;
@@ -189,7 +196,8 @@ sub registerDocumentNamespace {
   else {
     my $prev = $$self{document_namespaces}{$docprefix};
     delete $$self{document_namespace_prefixes}{$prev} if $prev;
-    delete $$self{document_namespaces}{$docprefix}; } }
+    delete $$self{document_namespaces}{$docprefix}; }
+  return; }
 
 sub getDocumentNamespacePrefix {
   my ($self, $namespace, $forattribute, $probe) = @_;
@@ -203,7 +211,7 @@ sub getDocumentNamespacePrefix {
       Warn('malformed', $namespace, undef,
         "No prefix has been registered for namespace '$namespace' (in document)",
         "Using '$docprefix' instead"); }
-    (($docprefix || '#default') eq '#default' ? '' : $docprefix); } }
+    return (($docprefix || '#default') eq '#default' ? '' : $docprefix); } }
 
 sub getDocumentNamespace {
   my ($self, $docprefix, $probe) = @_;
@@ -216,7 +224,7 @@ sub getDocumentNamespace {
     Error('malformed', $docprefix, undef,
       "No namespace has been registered for prefix '$docprefix' (in document)",
       "Using '$ns' instead"); }
-  $ns; }
+  return $ns; }
 
 # Given a Qualified name, possibly prefixed with a namespace prefix,
 # as defined by the code namespace mapping,
@@ -226,14 +234,14 @@ sub decodeQName {
   if ($codetag =~ /^([^:]+):(.+)$/) {
     my ($prefix, $localname) = ($1, $2);
     return (undef, $codetag) if $prefix eq 'xml';
-    ($self->getNamespace($prefix), $localname); }
+    return ($self->getNamespace($prefix), $localname); }
   else {
-    (undef, $codetag); } }
+    return (undef, $codetag); } }
 
 sub encodeQName {
   my ($self, $ns, $name) = @_;
   my $codeprefix = $ns && $self->getNamespacePrefix($ns);
-  ($codeprefix ? "$codeprefix:$name" : $name); }
+  return ($codeprefix ? "$codeprefix:$name" : $name); }
 
 # Get the node's qualified name in standard form
 # Ie. using the registered (code) prefix for that namespace.
@@ -242,23 +250,24 @@ sub getNodeQName {
   my ($self, $node) = @_;
   my $type = $node->nodeType;
   if ($type == XML_TEXT_NODE) {
-    '#PCDATA'; }
+    return '#PCDATA'; }
   elsif ($type == XML_DOCUMENT_NODE) {
-    '#Document'; }
+    return '#Document'; }
   elsif ($type == XML_COMMENT_NODE) {
-    '#Comment'; }
+    return '#Comment'; }
   elsif ($type == XML_PI_NODE) {
-    '#ProcessingInstruction'; }
+    return '#ProcessingInstruction'; }
   elsif ($type == XML_DTD_NODE) {
-    '#DTD'; }
+    return '#DTD'; }
   # Need others?
   elsif (($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)) {
     Fatal('misdefined', '<caller>', undef,
-      "Should not ask for Qualified Name for node of type $type: " . Stringify($node)); }
+      "Should not ask for Qualified Name for node of type $type: " . Stringify($node));
+    return; }
   elsif (my $ns = $node->namespaceURI) {
-    $self->getNamespacePrefix($ns) . ":" . $node->localname; }
+    return $self->getNamespacePrefix($ns) . ":" . $node->localname; }
   else {
-    $node->localname; } }
+    return $node->localname; } }
 
 # Given a Document QName, convert to "code" form
 # Used to convert a possibly prefixed name from the DTD
@@ -269,13 +278,15 @@ sub recodeDocumentQName {
   my ($self, $docQName) = @_;
   my ($docprefix, $name) = (undef, $docQName);
   if ($docQName =~ /^(#PCDATA|#Comment|ANY|#ProcessingInstruction|#Document)$/) {
-    $docQName; }
+    return $docQName; }
   else {
     ($docprefix, $name) = ($1, $2) if $docQName =~ /^([^:]+):(.+)/;
-    $self->encodeQName($self->getDocumentNamespace($docprefix), $name); } }
+    return $self->encodeQName($self->getDocumentNamespace($docprefix), $name); } }
 
 # Get an XPath context that knows about our namespace mappings.
-sub getXPath { $_[0]->{xpath}; }
+sub getXPath {
+  my ($self) = @_;
+  return $$self{xpath}; }
 
 #**********************************************************************
 # Accessors
@@ -283,7 +294,8 @@ sub getXPath { $_[0]->{xpath}; }
 
 sub setTagProperty {
   my ($self, $tag, $property, $value) = @_;
-  $$self{tagprop}{$tag}{$property} = $value; }
+  $$self{tagprop}{$tag}{$property} = $value;
+  return; }
 
 sub getTagProperty {
   my ($self, $tag, $prop) = @_;
@@ -291,7 +303,7 @@ sub getTagProperty {
 ####  $$self{tagprop}{$tag}{$prop}; }
   my ($p, $n) = $self->decodeQName($tag);
   my $v;
-  (defined($v = $$self{tagprop}{$tag}{$prop}) ? $v
+  return (defined($v = $$self{tagprop}{$tag}{$prop}) ? $v
     : (defined $p && defined($v = $$self{tagprop}{ $p . ":*" }{$prop}) ? $v
       : (defined($v = $$self{tagprop}{"*"}{$prop}) ? $v
         : undef))); }
@@ -308,7 +320,7 @@ sub getTagPropertyList {
   my $nshash  = (defined $p) && $$self{tagprop}{ $p . ":*" };
   my $allhash = $$self{tagprop}{"*"};
   my $v;
-  (
+  return (
     ($taghash && defined($v = $$taghash{$prop0}) ? @$v : ()),
     ($nshash  && defined($v = $$nshash{$prop0})  ? @$v : ()),
     ($allhash && defined($v = $$allhash{$prop0}) ? @$v : ()),
@@ -322,7 +334,8 @@ sub getTagPropertyList {
 
 sub setSchemaClass {
   my ($self, $classname, $content) = @_;
-  $$self{schemaclass}{$classname} = $content; }
+  $$self{schemaclass}{$classname} = $content;
+  return; }
 
 #**********************************************************************
 # Document Structure Queries
@@ -351,7 +364,7 @@ sub canContain {
   return 1 if $$self{permissive} && ($tag eq '#Document') && ($childtag ne '#PCDATA'); # No DTD? Punt!
          # Else query tag properties.
   my $model = $$self{tagprop}{$tag}{model};
-  $$model{ANY} || $$model{$childtag}; }
+  return $$model{ANY} || $$model{$childtag}; }
 
 # Can an element with (qualified name) $tag contain a $childtag element indirectly?
 # That is, by openning some number of autoOpen'able tags?
@@ -361,13 +374,13 @@ sub canContainIndirect {
   $self->loadSchema unless $$self{schema_loaded};
   $tag      = $self->getNodeQName($tag)      if ref $tag;         # In case tag is a node.
   $childtag = $self->getNodeQName($childtag) if ref $childtag;    # In case tag is a node.
-  $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
+  return $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
 
 sub canContainSomehow {
   my ($self, $tag, $childtag) = @_;
   $tag      = $self->getNodeQName($tag)      if ref $tag;         # In case tag is a node.
   $childtag = $self->getNodeQName($childtag) if ref $childtag;    # In case tag is a node.
-  $self->canContain($tag, $childtag) || $self->canContainIndirect($tag, $childtag); }
+  return $self->canContain($tag, $childtag) || $self->canContainIndirect($tag, $childtag); }
 
 # Can this node be automatically closed, if needed?
 sub canAutoClose {
@@ -376,7 +389,7 @@ sub canAutoClose {
   $tag = $self->getNodeQName($tag) if ref $tag;                   # In case tag is a node.
   return 1                         if $tag eq '#PCDATA';
   return 1                         if $tag eq '#Comment';
-  $$self{tagprop}{$tag}{autoClose}; }
+  return $$self{tagprop}{$tag}{autoClose}; }
 
 sub canHaveAttribute {
   my ($self, $tag, $attrib) = @_;
@@ -388,13 +401,13 @@ sub canHaveAttribute {
   return 0                         if $tag eq '#ProcessingInstruction';
   return 0                         if $tag eq '#DTD';
   return 1                         if $$self{permissive};
-  $$self{tagprop}{$tag}{attributes}{$attrib}; }
+  return $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
 sub isInSchemaClass {
   my ($self, $classname, $tag) = @_;
   $tag = $self->getNodeQName($tag) if ref $tag;                           # In case tag is a node.
   my $class = $$self{schemaclass}{$classname};
-  $class && $$class{$tag}; }
+  return $class && $$class{$tag}; }
 
 #**********************************************************************
 # Support for filling in the model from a Schema.
@@ -409,7 +422,7 @@ sub computeIndirect {
   # PATCHUP
   if ($$self{permissive}) {
     $$self{tagprop}{'#Document'}{indirect_model}{'#PCDATA'} = 'ltx:p'; }
-}
+  return; }
 
 sub computeDescendents {
   my ($self, $tag, $start) = @_;
@@ -419,7 +432,7 @@ sub computeDescendents {
     if (($kid ne '#PCDATA') && $$self{tagprop}{$kid}{autoOpen}) {
       computeDescendents($self, $kid, $start || $kid); }
   }
-}
+  return; }
 
 sub describeModel {
   my ($self) = @_;
@@ -433,7 +446,8 @@ sub describeModel {
           if keys %$indirect; } }
     else {
       print STDERR "$tag is empty\n"; }
-  } }
+  }
+  return; }
 
 #**********************************************************************
 sub addLigature {
@@ -442,50 +456,55 @@ sub addLigature {
   my $fcn  = eval $code;
   Error('misdefined', $regexp, undef,
     "Failed to compile regexp pattern '$regexp' into \"$code\"", $!) if $@;
-  unshift(@{ $$self{ligatures} }, { regexp => $regexp, code => $fcn, %options }); }
+  unshift(@{ $$self{ligatures} }, { regexp => $regexp, code => $fcn, %options });
+  return; }
 
 sub getLigatures {
   my ($self) = @_;
-  @{ $$self{ligatures} }; }
+  return @{ $$self{ligatures} }; }
 
 sub addMathLigature {
   my ($self, $matcher, %options) = @_;
-  unshift(@{ $$self{mathligatures} }, { matcher => $matcher, %options }); }
+  unshift(@{ $$self{mathligatures} }, { matcher => $matcher, %options });
+  return; }
 
 sub getMathLigatures {
   my ($self) = @_;
-  @{ $$self{mathligatures} }; }
+  return @{ $$self{mathligatures} }; }
 
 #**********************************************************************
 # Rewrite Rules
 
 sub addRewriteRule {
   my ($self, $mode, @specs) = @_;
-  push(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs)); }
+  push(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs));
+  return; }
 
 # This adds the rule to the front.
 # We probably need a more powerful ordering scheme?
 sub prependRewriteRule {
   my ($self, $mode, @specs) = @_;
-  unshift(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs)); }
+  unshift(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs));
+  return; }
 
 # Why is this in this class?
 sub applyRewrites {
   my ($self, $document, $node, $until_rule) = @_;
   foreach my $rule (@{ $$self{rewrites} }) {
     last if $until_rule && ($rule eq $until_rule);
-    $rule->rewrite($document, $node); } }
+    $rule->rewrite($document, $node); }
+  return; }
 
 #**********************************************************************
 package LaTeXML::Model::Schema;
 
 sub new {
   my ($class) = @_;
-  bless {}, $class; }
+  return bless {}, $class; }
 
 sub addSchemaDeclaration {
   my ($self, $xmldocument, $tag) = @_;
-}
+  return; }
 
 #**********************************************************************
 1;
