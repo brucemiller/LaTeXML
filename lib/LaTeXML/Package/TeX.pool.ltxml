@@ -113,9 +113,9 @@ RequireResource('LaTeXML.css');
 # Define parsers for standard parameter types.
 
 # Skip any spaces, but don't contribute an argument.
-DefParameterType('SkipSpaces', sub { $_[0]->skipSpaces; }, novalue => 1);
+DefParameterType('SkipSpaces', sub { $_[0]->skipSpaces; 1; }, novalue => 1);
 
-DefParameterType('Skip1Space', sub { $_[0]->skip1Space; }, novalue => 1);
+DefParameterType('Skip1Space', sub { $_[0]->skip1Space; 1; }, novalue => 1);
 
 # Read the next token
 DefParameterType('Token', sub { $_[0]->readToken; });
