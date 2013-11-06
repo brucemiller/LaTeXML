@@ -174,6 +174,7 @@ sub processGraphic {
     Warn('expected', 'source', $node, "No graphic source specified; skipping"); return; }
   my $transform = $self->getTransform($node);
   my ($image, $width, $height) = $self->transformGraphic($doc, $node, $source, $transform);
+  $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
   $self->setGraphicSrc($node, $image, $width, $height) if $image;
 }
 
