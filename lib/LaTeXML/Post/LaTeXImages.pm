@@ -301,6 +301,8 @@ sub process {
   foreach my $entry (values %table) {
     next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
     my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
+    # Make sure the image path is relative
+    $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
     foreach my $node (@{ $$entry{nodes} }) {
       $self->setTeXImage($doc, $node, $image, $width, $height, $depth); } }
   $doc->closeCache;    # If opened.
