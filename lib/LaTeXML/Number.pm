@@ -23,7 +23,10 @@ sub new {
 sub valueOf  { $_[0]->[0]; }
 sub toString { $_[0]->[0]; }
 
-sub ptValue { int($_[0]->[0] / 655.36) / 100; }
+sub ptValue {
+  my ($self) = @_;
+  my $h = $$self[0] / 655.36;
+  int($h < 0 ? $h - 0.5 : $h + 0.5) / 100; }
 
 sub unlist { $_[0]; }
 sub revert { ExplodeText($_[0]->toString); }
