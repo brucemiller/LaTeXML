@@ -3116,12 +3116,8 @@ DefRegister('\fill', Glue(0, '1fill'));
 #======================================================================
 # C.13.2 Space
 #======================================================================
-DefPrimitive('\hspace OptionalMatch:* {Dimension}', sub {
-    my ($stomach, $star, $length) = @_;
-    if (LookupValue('IN_MATH')) { return; }
-    # Is this wise?
-    else {
-      DimensionToSpaces($length); } });
+DefMacro('\hspace  OptionalMatch:* {Dimension}',
+  '\ifmmode\@math@hskip{#2}\else\@text@hskip{#2}\fi');
 
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);
