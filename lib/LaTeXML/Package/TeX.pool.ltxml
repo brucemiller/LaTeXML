@@ -1556,8 +1556,8 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $vmode  = $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
     my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width       => $spec && $$spec{to},
-      'pad-width' => $spec && $$spec{spread});
+      width       => $spec && CleanDimension($$spec{to}),
+      'pad-width' => $spec && CleanDimension($$spec{spread}));
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -1794,7 +1794,6 @@ DefPrimitive('\kern Dimension', undef);
 DefPrimitive('\mkern MuGlue',   undef);
 DefPrimitiveI('\unpenalty', undef, undef);
 DefPrimitiveI('\unkern',    undef, undef);
-###DefPrimitiveI('\unskip',   undef,undef);
 ## Worrisome, but...
 DefPrimitiveI('\unskip', undef, sub {
     my ($stomach) = @_;
@@ -2222,7 +2221,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
       elsif (ref $boxes[0] eq 'LaTeXML::Comment') {
         push(@saveleft, shift(@boxes)); }
       elsif ($boxes[0]->getProperty('isSpace')) {
-        shift(@boxes); }
+        push(@saveleft, shift(@boxes)); }
       elsif (IsEmpty($boxes[0])) {
         push(@saveleft, shift(@boxes)); }
       else {
@@ -2240,7 +2239,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
       elsif (ref $boxes[$#boxes] eq 'LaTeXML::Comment') {
         unshift(@saveright, pop(@boxes)); }
       elsif ($boxes[$#boxes]->getProperty('isSpace')) {
-        pop(@boxes); }
+        unshift(@saveright, pop(@boxes)); }
       elsif (IsEmpty($boxes[$#boxes])) {
         unshift(@saveright, pop(@boxes)); }
       else {
@@ -2553,12 +2552,23 @@ sub DimensionToSpaces {
   elsif ($pt < 3.5) { Box("\x{2005}"); }
   elsif ($pt < 5.0) { Box("\x{2004}"); }
   else {
-    my $n = int(($pt + 9) / 10);
+    my $n = int(($pt + 9) / 10);    # 10pts per space...?
     Box((UTF(0xA0) x $n)); } }
 
 DefPrimitiveI('\noboundary', undef, undef);
-DefPrimitive('\hskip Glue', sub { DimensionToSpaces($_[1]); });
-DefPrimitive('\mskip MuGlue', undef);
+DefMacro('\hskip Glue',   '\ifmmode\@math@hskip{#1}\else\@text@hskip{#1}\fi');
+DefMacro('\mskip MuGlue', '\ifmmode\@math@hskip{#1}\else\@text@hskip{#1}\fi');
+
+DefConstructor('\@math@hskip {Dimension}',
+  "<ltx:XMHint width='#1'/>",
+  alias => '\hskip',
+  properties => sub { (width => CleanDimension($_[1]), isSpace => 1); }
+);
+DefPrimitive('\@text@hskip {Dimension}', sub {
+    my ($stomach, $length) = @_;
+    DimensionToSpaces($length); },
+  alias => '\hskip');
+
 DefPrimitiveI('\hss', undef, undef);
 DefConstructorI('\hfil', undef, "?#isMath(<ltx:XMHint name='hfil'/>)( )",
   properties => { isSpace => 1, isFill => 1 });
@@ -3124,7 +3134,7 @@ sub scriptHandler {
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if ((ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')) {
-        unshift(@putback, $prev);    # put back? assuming it will add rspace to previous???
+        unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
         last; }
@@ -3845,21 +3855,21 @@ DefMacroI('\enskip', undef, '\ifmmode\@math@enskip\else\@text@enskip\fi');
 DefConstructorI('\@math@enskip', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enskip',
-  properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.5em')); } });
 DefPrimitiveI('\@text@enskip', undef, "\x{2000}", alias => '\enskip');
 
 DefMacroI('\enspace', undef, '\ifmmode\@math@espace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enspace',
-  properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.5em')); } });
 DefPrimitiveI('\@text@enspace', undef, "\x{2000}", alias => '\enspace');
 
 DefMacroI('\quad', undef, '\ifmmode\@math@quad\else\@text@quad\fi');
 DefConstructorI('\@math@quad', undef,
   "<ltx:XMHint name='quad' width='#width'/>",
   alias => '\quad',
-  properties => { isSpace => 1, width => sub { Dimension('1em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('1em')); } });
 DefPrimitiveI('\@text@quad', undef, "\x{2001}", alias => '\quad');
 
 # Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
@@ -3867,25 +3877,25 @@ DefMacroI('\qquad', undef, '\ifmmode\@math@qquad\else\@text@qquad\fi');
 DefConstructorI('\@math@qquad', undef,
   "<ltx:XMHint name='qquad' width='#width'/>",
   alias => '\qquad',
-  properties => { isSpace => 1, width => sub { Dimension('2em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('2em')); } });
 DefPrimitiveI('\@text@qquad', undef, "\x{2001}\x{2001}", alias => '\qquad');
 
 DefMacroI('\thinspace', undef, '\ifmmode\@math@thinspace\else\@text@thinspace\fi');
 DefConstructorI('\@math@thinspace', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
   alias => '\thinspace',
-  properties => { isSpace => 1, width => sub { Dimension('0.16667em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.16667em')); } });
 DefPrimitiveI('\@text@thinspace', undef, "\x{2009}", alias => '\thinspace');
 
 DefMacroI('\negthinspace', undef, '\ifmmode\@math@negthinspace\else\@text@negthinspace\fi');
 DefConstructorI('\@math@negthinspace', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
   alias => '\negthinspace',
-  properties => { isSpace => 1, width => sub { Dimension('-0.16667em'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('-0.16667em')); } });
 DefPrimitiveI('\@text@negthinspace', undef, "", alias => '\negthinspace');
 
-DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#1'/>)(\x{2001})",
-  properties => { isSpace => 1 });
+DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#width'/>)(\x{2001})",
+  properties => sub { (isSpace => 1, width => CleanDimension($_[1])); });
 DefPrimitive('\vglue Glue', undef);
 DefPrimitiveI('\topglue',          undef, undef);
 DefPrimitiveI('\nointerlineskip',  undef, undef);
@@ -3906,7 +3916,7 @@ DefMacroI('\nobreakspace', undef, '\ifmmode\math@nobreakspace\else\text@nobreaks
 DefPrimitiveI('\text@nobreakspace', undef, UTF(0xA0), alias => '~');
 DefConstructorI('\math@nobreakspace', undef,
   "<ltx:XMHint name='nobreakspace' width='#width'/>",
-  properties => { isSpace => 1, width => sub { Dimension('1em'); } },
+  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.333em')); } },
   alias => '~');
 DefMacro("~", '\nobreakspace{}');
 
@@ -4291,28 +4301,31 @@ DefMacroI('\,', undef, '\ifmmode\@math@thinmuskip\else\@text@thinmuskip\fi');
 DefConstructorI('\@math@thinmuskip', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
   alias => '\,',
-  properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip'); } });
+  properties => { isSpace => 1, width => sub { CleanDimension(LookupValue('\thinmuskip')); } });
 DefPrimitiveI('\@text@thinmuskip', undef, "\x{2009}", alias => '\,');
 
 DefMacroI('\!', undef, '\ifmmode\@math@negthinmuskip\else\@text@negthinmuskip\fi');
 DefConstructorI('\@math@negthinmuskip', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
   alias => '\!',
-  properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip')->negate; } });
+  properties => { isSpace => 1,
+    width => sub { CleanDimension(LookupValue('\thinmuskip')->negate); } });
 DefPrimitiveI('\@text@negthinmuskip', undef, "", alias => '\!');
 
 DefMacroI('\>', undef, '\ifmmode\@math@medmuskip\else\@text@medmuskip\fi');
 DefConstructorI('\@math@medmuskip', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => '\>',
-  properties => { isSpace => 1, width => sub { LookupValue('\medmuskip'); } });
+  properties => { isSpace => 1,
+    width => sub { CleanDimension(LookupValue('\medmuskip')); } });
 DefPrimitiveI('\@text@medmuskip', undef, "", alias => '\>');
 
 DefMacroI('\;', undef, '\ifmmode\@math@thickmuskip\else\@text@thickmuskip\fi');
 DefConstructorI('\@math@thickmuskip', undef,
   "<ltx:XMHint name='thickspace' width='#width'/>",
   alias => '\;',
-  properties => { isSpace => 1, width => sub { LookupValue('\thickmuskip'); } });
+  properties => { isSpace => 1,
+    width => sub { CleanDimension(LookupValue('\thickmuskip')); } });
 DefPrimitiveI('\@text@thickmuskip', undef, "\x{2004}", alias => '\;');
 
 Let('\:', '\>');
@@ -4320,15 +4333,17 @@ DefMacroI('\ ', undef, '\ifmmode\@math@nbspace\else\@text@nbspace\fi');
 DefConstructorI('\@math@nbspace', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => '\ ',
-  properties => { isSpace => 1, width => sub { Dimension('1em'); } });
+  properties => { isSpace => 1,
+    width => sub { CleanDimension(Dimension('1em')); } });
 DefPrimitiveI('\@text@nbspace', undef, UTF(0xA0), alias => '\ ');
 
 DefMacroI("\\\t", undef, '\ifmmode\@math@tab\else\@text@tab\fi');
 DefConstructorI('\@math@tab', undef,    # Tab!!
   "<ltx:XMHint name='medspace' width='#width'/>",
-  alias => "\\\t",                                                       # TAB
-  properties => { isSpace => 1, width => sub { Dimension('1em'); } });
-DefPrimitiveI('\@text@tab', undef, UTF(0xA0), alias => "\\\t");          # TAB!!! What else?
+  alias => "\\\t",                      # TAB
+  properties => { isSpace => 1,
+    width => sub { CleanDimension(Dimension('1em')); } });
+DefPrimitiveI('\@text@tab', undef, UTF(0xA0), alias => "\\\t");    # TAB!!! What else?
 
 DefMacroI('\/', undef, '\ifmmode\@math@italiccorr\else\@text@italiccorr\fi');
 DefConstructorI('\@math@italiccorr', undef,
