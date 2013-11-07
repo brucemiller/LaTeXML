@@ -262,11 +262,10 @@ sub filter_hints {
           push(@filtered, $c); }
         else {
           if ($pts) {
-            if ($prev) {                        # Else add rspace to previous item
-              $prev->setAttribute(rspace => $pts . 'pt'); }
-### This should be enabled, but think some more about the contexts (eg split in t/ams/amsdisplay)
-###      elsif(scalar(@nodes)){ # or maybe lspace to next??
-###        $nodes[0]->setAttribute(lspace=>$pts.'pt'); }
+            if ($prev) {                        # Else add rpadding to previous item
+              $prev->setAttribute(rpadding => $pts . 'pt'); }
+            elsif (scalar(@nodes)) {            # or maybe lpadding to next??
+              $nodes[0]->setAttribute(lpadding => $pts . 'pt'); }
           } } }
       $prev = undef; }                          # at any rate, remove it now
     else {                                      # Normal node? keep it
@@ -837,9 +836,9 @@ sub extract_separators {
       my $p = shift(@stuff);
       $punct .=
         ($punct ? ' ' : '')        # Delimited by SINGLE SPACE!
-        . spacingToString(getXMHintSpacing(p_getAttribute($p, 'lspace')))
+        . spacingToString(getXMHintSpacing(p_getAttribute($p, 'lpadding')))
         . p_getValue($p)
-        . spacingToString(getXMHintSpacing(p_getAttribute($p, 'rspace')));
+        . spacingToString(getXMHintSpacing(p_getAttribute($p, 'rpadding')));
       push(@args, shift(@stuff)); } }    # Collect the next expression.
   ($punct, @args); }
 
@@ -889,6 +888,7 @@ sub isMatchingClose {
   (defined $expect) && ($expect eq $cname); }
 
 # Given a delimited sequence: open expr (punct expr)* close
+# (OR, an empty sequence open close)
 # Convert it into the appropriate thing, depending on the specific open & close used.
 # If the open/close are `simple' delimiters and there is only one expr,
 # simply add open/close attributes.
@@ -899,16 +899,16 @@ sub Fence {
   Error("expected", "arguments", undef,
     "Even number of arguments to Fence(); should be of form open,expr,(punct,expr)*,close",
     "got " . join(' ', map(ToString($_), @stuff)))
-    unless $nargs % 2;
+    if ($nargs != 2) && (($nargs % 2) == 0);    # either empty or odd number
   my ($open, $close) = ($stuff[0], $stuff[$#stuff]);
-  my $lspace = (ref $open)  && $open->getAttribute('lspace');
-  my $rspace = (ref $close) && $close->getAttribute('rspace');
-  my $o      = p_getValue($open);
-  my $c      = p_getValue($close);
-  my $n      = int(($nargs - 2 + 1) / 2);
+  my $lpad = (ref $open)  && $open->getAttribute('lpadding');
+  my $rpad = (ref $close) && $close->getAttribute('rpadding');
+  my $o    = p_getValue($open);
+  my $c    = p_getValue($close);
+  my $n    = int(($nargs - 2 + 1) / 2);
   my @p = map(p_getValue(@stuff[2 * $_]), 1 .. $n - 1);
   my $op = ($n == 0
-    ? undef
+    ? 'list'                                    # ?
     : ($n == 1
       ? $enclose1{ $o . '@' . $c }
       : ($n == 2
@@ -916,12 +916,12 @@ sub Fence {
         : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
   # When we're parsing XMWrap, we shouldn't try so hard to infer a meaning (it'll usually be wrong)
   $op = undef unless $LaTeXML::MathParser::STRICT;
-  if (($n == 1) && (!defined $op)) {    # Simple case.
+  if (($n == 1) && (!defined $op)) {            # Simple case.
     Annotate($stuff[1],
-      open   => ($open   ? $open   : undef),
-      close  => ($close  ? $close  : undef),
-      lspace => ($lspace ? $lspace : undef),
-      rspace => ($rspace ? $rspace : undef)); }
+      open     => ($open  ? $open  : undef),
+      close    => ($close ? $close : undef),
+      lpadding => ($lpad  ? $lpad  : undef),
+      rpadding => ($rpad  ? $rpad  : undef)); }
   else {
     ApplyDelimited(New($op, undef, role => 'FENCED'), @stuff); } }
 
@@ -1004,8 +1004,8 @@ sub NewScript {
   my ($sx, $sl) = (p_getAttribute($script, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($x, $y) = p_getAttribute($script, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
   $x = ($x eq 'FLOAT' ? 'pre' : $bx || 'post');
-  my $lspace = ($x eq 'pre') && p_getAttribute($script, 'lspace');
-  my $rspace = ($x ne 'pre') && p_getAttribute($script, 'rspace');
+  my $lpad = ($x eq 'pre') && p_getAttribute($script, 'lpadding');
+  my $rpad = ($x ne 'pre') && p_getAttribute($script, 'rpadding');
 
   my $t;
   my $l = $sl || $bl ||
@@ -1013,9 +1013,9 @@ sub NewScript {
     && ($t->getProperty('level'))) || 0;
   my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l"),
     $base, Arg($script, 0));
-  $$app[1]{scriptpos} = $bx     if $bx ne 'post';
-  $$app[1]{lspace}    = $lspace if $lspace && !$$app[1]{lspace};    # better to add?
-  $$app[1]{rspace}    = $rspace if $rspace && !$$app[1]{rspace};    # better to add?
+  $$app[1]{scriptpos} = $bx   if $bx ne 'post';
+  $$app[1]{lpadding}  = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
+  $$app[1]{rpadding}  = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
   $app; }
 
 # Basically, like NewScript, but decorates an operator with sub/superscripts
