@@ -131,7 +131,7 @@
     <xsl:param name="string"/>
     <xsl:param name="ending"/>
     <func:result>
-      <xsl:value-of select="substring($string,string-length($string) - string-length($ending))
+      <xsl:value-of select="substring($string,string-length($string) - string-length($ending)+1)
                             = $ending"/>
     </func:result>
   </func:function>
