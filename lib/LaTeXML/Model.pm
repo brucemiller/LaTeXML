@@ -167,7 +167,13 @@ sub getNamespacePrefix {
   if ($namespace) {
     my $codeprefix = $$self{code_namespace_prefixes}{$namespace};
     if ((!defined $codeprefix) && !$probe) {
-      $self->registerNamespace($codeprefix = "namespace" . (++$NAMESPACE_ERROR), $namespace);
+      my $docprefix = $$self{document_namespace_prefixes}{$namespace};
+      # if there's a doc prefix and it's NOT already used in code namespace mapping
+      if ($docprefix && !$$self{code_namespaces}{$docprefix}) {
+        $codeprefix = $docprefix; }
+      else {    # Else synthesize one
+        $codeprefix = "namespace" . (++$NAMESPACE_ERROR); }
+      $self->registerNamespace($codeprefix, $namespace);
       Warn('malformed', $namespace, undef,
         "No prefix has been registered for namespace '$namespace' (in code)",
         "Using '$codeprefix' instead"); }
