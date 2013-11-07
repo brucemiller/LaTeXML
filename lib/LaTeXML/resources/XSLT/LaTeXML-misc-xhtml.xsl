@@ -118,7 +118,7 @@
 
   <!-- svg graphics should use the object tag, rather than img,
        to preserve any interactivity. -->
-  <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')]">
+  <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
     <xsl:element name="object" namespace="{$html_ns}">
       <xsl:attribute name="data"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
