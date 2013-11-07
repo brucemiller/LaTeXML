@@ -75,7 +75,7 @@ our @EXPORT = (qw(&DefExpandable
     ),
 
   # Random low-level token or string operations.
-  qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &CleanURL
+  qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &CleanURL &CleanDimension
     &UTF
     &roman &Roman),
   # Math & font state.
@@ -277,6 +277,17 @@ sub CleanURL {
   $url =~ s/^\s+//s; $url =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $url =~ s/\\~{}/~/g;
   $url; }
+
+# pretty printer, sorta
+sub CleanDimension {
+  my ($dim) = @_;
+  if (ref $dim) {
+    $dim = $dim->ptValue; }
+  elsif ($dim =~ /\s*(.*)\s*pt\s*$/) {
+    $dim = $1; }
+  elsif ($dim) {
+    $dim = int($dim * 100); }
+  return ($dim ? $dim . "pt" : undef); }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -1214,7 +1225,7 @@ sub FindFile_aux {
         # Do we need to sanitize these environment variables?
   my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
-    @$paths, $ENV{TEXINPUTS}||$Config::Config{'path_sep'});
+    @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   my $candidates = join(' ',
     ((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
