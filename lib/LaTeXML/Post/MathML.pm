@@ -300,8 +300,8 @@ sub pmml_dowrap {
   my $c  = $node->getAttribute('close');
   my $e  = $node->getAttribute('enclose');
   my $p  = $node->getAttribute('punctuation');
-  my $l  = $node->getAttribute('lspace');
-  my $r  = $node->getAttribute('rspace');
+  my $l  = $node->getAttribute('lpadding');
+  my $r  = $node->getAttribute('rpadding');
   my $cl = $node->getAttribute('class');
   # Handle generic things: open/close delimiters, punctuation
   $result = pmml_parenthesize($result, $o, $c) if $o || $c;
@@ -310,13 +310,25 @@ sub pmml_dowrap {
   # Add spacing last; outside parens & enclosing (?)
   if (!(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo'))  # mo will already have gotten spacing!
     && ($r || $l)) {
+    my $w = $r;
+    if ($l && $w) {
+      $w = (getXMHintSpacing($l) + getXMHintSpacing($w)) . "pt"; }
+    elsif ($l) {
+      $w = $l; }
     $result = ['m:mpadded', { ($l ? (lspace => $l) : ()),
-        ($r ? (width => ($r =~ /^-/ ? $r : '+' . $r)) : ()) }, $result]; }
+        ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w)) : ()) }, $result]; }
 
   if ($cl && ((ref $result) eq 'ARRAY')) {                      # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
   $result; }
+
+# Needs to be a utility somewhere...
+sub getXMHintSpacing {
+  my ($width) = @_;
+  if ($width && ($width =~ /^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)) {
+    ($2 eq 'mu' ? $1 / 1.8 : $1); }
+  else { 0; } }
 
 our $NBSP = pack('U', 0xA0);
 
@@ -604,16 +616,16 @@ sub pmml_mo {
   my $role = (ref $item ? $item->getAttribute('role') : $attr{role});
   my $isfence = $role && ($role =~ /^(OPEN|CLOSE)$/);
   my $ispunct = $role && ($role eq 'PUNCT');
-  my $lspace = ((ref $item) && $item->getAttribute('lspace'))
+  my $lpad = ((ref $item) && $item->getAttribute('lpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
-  my $rspace = ((ref $item) && $item->getAttribute('rspace'))
+  my $rpad = ((ref $item) && $item->getAttribute('rpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   ['m:mo', { %mmlattr,
       ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
       ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-      ($lspace ? (lspace => $lspace) : ()),
-      ($rspace ? (rspace => $rspace) : ()),
+      ($lpad ? (lpadding => $lpad) : ()),
+      ($rpad ? (rpadding => $rpad) : ()),
       # If an operator has specifically located it's scripts,
       # don't let mathml move them.
       (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
