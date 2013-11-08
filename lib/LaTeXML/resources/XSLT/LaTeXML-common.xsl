@@ -170,6 +170,24 @@
     </func:result>
   </func:function>
 
+  <func:function name="f:subst">
+    <xsl:param name="string"/>
+    <xsl:param name="pattern"/>
+    <xsl:param name="replacement"/>
+    <xsl:choose>
+      <xsl:when test="contains($string,$pattern)">
+        <func:result><xsl:value-of
+        select="concat(substring-before($string,$pattern),
+                       $replacement,
+                       f:subst(substring-after($string,$pattern),$pattern,$replacement))"/>
+        </func:result>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result><xsl:value-of select="$string"/></func:result>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
   <!-- ======================================================================
        Utility Templates
   -->
