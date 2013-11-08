@@ -301,8 +301,10 @@ sub process {
   foreach my $entry (values %table) {
     next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
     my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
-    # Make sure the image path is relative
-    $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
+###    # Make sure the image path is relative
+### No, this is from the cache and shouldn't be changed now.
+### Question: Why is it absolute?
+###    $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
     foreach my $node (@{ $$entry{nodes} }) {
       $self->setTeXImage($doc, $node, $image, $width, $height, $depth); } }
   $doc->closeCache;    # If opened.
