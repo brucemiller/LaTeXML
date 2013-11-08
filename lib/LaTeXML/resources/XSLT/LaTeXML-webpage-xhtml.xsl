@@ -297,12 +297,16 @@
 
   <!-- Generate a keywords meta entry for the head; typically from indexphrase's or keywords-->
   <xsl:template match="/" mode="head-keywords">
-    <xsl:if test="//ltx:indexphrase">
+    <xsl:if test="//ltx:indexphrase | //ltx:keywords">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="meta" namespace="{$html_ns}">
         <xsl:attribute name="name">keywords</xsl:attribute>
         <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:lang','lang')}">en-us</xsl:attribute>
         <xsl:attribute name="content">
+          <xsl:value-of select="f:subst(//ltx:keywords/text(),',',', ')"/>
+          <xsl:if test="//ltx:indexphrase and //ltx:keywords">
+            <xsl:text>, </xsl:text>
+          </xsl:if>
           <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
             <xsl:sort select="text()"/>
             <xsl:if test="position() &gt; 1">, </xsl:if> 
