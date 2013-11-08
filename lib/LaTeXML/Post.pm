@@ -577,8 +577,10 @@ sub getDestinationExtension {
 
 sub checkDestination {
   my ($self, $reldest) = @_;
-  my $dest = (pathname_absolute($reldest) && $reldest)
-    || pathname_concat($self->getDestinationDirectory, $reldest);
+### No, this is wrong
+###  my $dest = (pathname_absolute($reldest) && $reldest)
+##    || pathname_concat($self->getDestinationDirectory, $reldest);
+  my $dest = pathname_concat($self->getDestinationDirectory, $reldest);
   if (my $destdir = pathname_directory($dest)) {
     pathname_mkdir($destdir)
       or return Fatal("I/O", $destdir, undef,
