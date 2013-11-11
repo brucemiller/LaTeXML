@@ -281,7 +281,9 @@ sub CleanURL {
 # pretty printer, sorta
 sub CleanDimension {
   my ($dim) = @_;
-  if (ref $dim) {
+  if(! defined $dim){
+    return $dim; }
+  elsif (ref $dim) {
     $dim = $dim->ptValue; }
   elsif ($dim =~ /\s*(.*)\s*pt\s*$/) {
     $dim = $1; }
