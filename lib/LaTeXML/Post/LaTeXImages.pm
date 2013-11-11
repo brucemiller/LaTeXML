@@ -190,12 +190,13 @@ sub process {
     next if !(defined $tex) or ($tex =~ /^\s*$/);
     $ntotal++;
 
-    my $reldest = $self->desiredResourcePathname($doc, $node, undef, $$self{imagetype});
-    my $key = (ref $self) . ":" . $tex . ($reldest ? ":$reldest" : '');
+    # Ideally, $dest is relative to document..
+    my $dest = $self->desiredResourcePathname($doc, $node, undef, $$self{imagetype});
+    my $key = (ref $self) . ":" . $tex . ($dest ? ":$dest" : '');
     my $entry = $table{$key};
     if (!$entry) {
       $nuniq++;
-      $entry = $table{$key} = { tex => $tex, key => $key, nodes => [], reldest => $reldest }; }
+      $entry = $table{$key} = { tex => $tex, key => $key, nodes => [], dest => $dest }; }
     push(@{ $$entry{nodes} }, $node); }
 
   return $doc unless $nuniq;    # No strings to process!
@@ -206,7 +207,7 @@ sub process {
   foreach my $key (sort keys %table) {
     my $store = $doc->cacheLookup($key);
     if ($store && ($store =~ /^(.*);(\d+);(\d+);(\d+)$/)) {
-      next if -f pathname_concat($destdir, $1); }
+      next if -f pathname_absolute($1,$destdir); }
     push(@pending, $table{$key}); }
 
   NoteProgress(" [$nuniq unique; " . scalar(@pending) . " new]");
@@ -281,17 +282,17 @@ sub process {
     foreach my $entry (@pending) {
       my $src = "$workdir/imgx" . sprintf("%03d", ++$index);
       if (-f $src) {
-        my $reldest = $$entry{reldest}
+        my $dest = $$entry{dest}
           || $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype});
-        my $dest = $doc->checkDestination($reldest);
-        my ($w, $h) = $self->convert_image($doc, $src, $dest);
+        my $absdest = $doc->checkDestination($dest);
+        my ($w, $h) = $self->convert_image($doc, $src, $absdest);
         next unless defined $w && defined $h;
         my ($ww, $hh, $dd) = map($_ * $pixels_per_pt, @{ $dimensions[$index] });
         my $d = int(0.5 + $dd + $$self{padding});
         if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
           Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
         # print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
-        $doc->cacheStore($$entry{key}, "$reldest;$w;$h;$d"); }
+        $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       else {
         Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } }
     # Cleanup
@@ -301,10 +302,8 @@ sub process {
   foreach my $entry (values %table) {
     next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
     my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
-###    # Make sure the image path is relative
-### No, this is from the cache and shouldn't be changed now.
-### Question: Why is it absolute?
-###    $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
+    # Ideally, $image is already relative, but if not, make relative to document
+    my $reldest = pathname_relative($image,$doc->getDestinationDirectory);
     foreach my $node (@{ $$entry{nodes} }) {
       $self->setTeXImage($doc, $node, $image, $width, $height, $depth); } }
   $doc->closeCache;    # If opened.
