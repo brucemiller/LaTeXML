@@ -174,8 +174,10 @@ sub processGraphic {
     Warn('expected', 'source', $node, "No graphic source specified; skipping"); return; }
   my $transform = $self->getTransform($node);
   my ($image, $width, $height) = $self->transformGraphic($doc, $node, $source, $transform);
-###  $image = pathname_relative($image,$doc->getDestinationDirectory) if pathname_absolute($image);
-  $self->setGraphicSrc($node, $image, $width, $height) if $image;
+  # $image should probably be relative already, except corner applications?
+  # But definitely should be stored in doc relative to the doc itself!
+  $self->setGraphicSrc($node, pathname_relative($image,$doc->getDestinationDirectory),
+                       $width, $height) if $image;
 }
 
 #======================================================================
@@ -193,13 +195,14 @@ sub transformGraphic {
   return Warn('unexpected', $source, undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
-  my $reldest = $self->desiredResourcePathname($doc, $node, $source, $type);
+  my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
     $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
     my ($cached, $width, $height) = ($1, $2, $3);
-    if ((!defined $reldest) || ($cached eq $reldest)) {
-      my $dest = pathname_make(dir => $doc->getDestinationDirectory, name => $cached);
-      if (pathname_timestamp($source) <= pathname_timestamp($dest)) {
+    # If so, check that it is still there, up to date, etc.
+    if ((!defined $dest) || ($cached eq $dest)) {
+      my $absdest = pathname_absolute($cached,$doc->getDestinationDirectory);
+      if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
         NoteProgressDetailed(" [Reuse $cached @ $width x $height]");
         return ($cached, $width, $height); } } }
   # Trivial scaling case: Use original image with (at most) different width & height.
@@ -216,35 +219,35 @@ sub transformGraphic {
     # With a simple scaling transformation we can preserve path & file-names
     # But only if we can mimic the relative path in the site directory.
     # Get image source file relative to the document's source file
-    $reldest = pathname_relative($source, $doc->getSourceDirectory);
+    $dest = pathname_relative($source, $doc->getSourceDirectory);
     # and it's (eventual) absolute path in the destination directory
     # assuming it had the same relative path from the destination file.
-    my $dest = pathname_absolute($reldest, $doc->getDestinationDirectory);
+    my $absdest = pathname_absolute($dest, $doc->getDestinationDirectory);
     # Now IFF that is a valid relative path WITHIN the site directory, we'll use it.
     # Otherwise, we'd better fall back to a generated name.
-    if (!pathname_is_contained($dest, $doc->getSiteDirectory)) {
-      $reldest = $self->generateResourcePathname($doc, $node, $source, $type);
-      $dest = $doc->checkDestination($reldest); }
+    if (!pathname_is_contained($absdest, $doc->getSiteDirectory)) {
+      $dest = $self->generateResourcePathname($doc, $node, $source, $type);
+      $absdest = $doc->checkDestination($dest); }
 
-    NoteProgressDetailed(" [Destination $dest]");
+    NoteProgressDetailed(" [Destination $absdest]");
     ($width, $height) = $self->trivial_scaling($doc, $source, $transform);
     return unless $width && $height;
-    pathname_copy($source, $dest)
-      or Warn('I/O', $dest, undef, "Couldn't copy $source to $dest", "Response was: $!");
-    NoteProgressDetailed(" [Copied to $reldest for $width x $height]"); }
+    pathname_copy($source, $absdest)
+      or Warn('I/O', $absdest, undef, "Couldn't copy $source to $absdest", "Response was: $!");
+    NoteProgressDetailed(" [Copied to $dest for $width x $height]"); }
   else {
     # With a complex transformation, we really needs a new name (well, don't we?)
-    $reldest = $self->generateResourcePathname($doc, $node, $source, $type) unless $reldest;
-    my $dest = $doc->checkDestination($reldest);
-    NoteProgressDetailed(" [Destination $dest]");
+    $dest = $self->generateResourcePathname($doc, $node, $source, $type) unless $dest;
+    my $absdest = $doc->checkDestination($dest);
+    NoteProgressDetailed(" [Destination $absdest]");
     ($image, $width, $height) = $self->complex_transform($doc, $source, $transform, %properties);
     return unless $image && $width && $height;
-    NoteProgressDetailed(" [Writing to $dest]");
-    $self->ImageWrite($doc, $image, $dest) or return; }
+    NoteProgressDetailed(" [Writing to $absdest]");
+    $self->ImageWrite($doc, $image, $absdest) or return; }
 
-  $doc->cacheStore($key, "$reldest|$width|$height");
+  $doc->cacheStore($key, "$dest|$width|$height");
   NoteProgressDetailed(" [done with $key]");
-  ($reldest, $width, $height); }
+  ($dest, $width, $height); }
 
 #======================================================================
 # Compute the desired image size (width,height)
