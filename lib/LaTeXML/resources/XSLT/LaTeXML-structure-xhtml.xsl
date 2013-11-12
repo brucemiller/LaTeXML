@@ -320,7 +320,6 @@
 
   <xsl:template match="ltx:personname">
     <xsl:text>&#x0A;</xsl:text>
-<!--    <xsl:element name="div" namespace="{$html_ns}">-->
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -343,7 +342,7 @@
 
   <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
@@ -356,7 +355,7 @@
 
   <xsl:template match="ltx:contact[@role='email']">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
@@ -372,7 +371,7 @@
 
   <xsl:template match="ltx:contact[@role='dedicatory']">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
