@@ -49,7 +49,7 @@ sub new {
   my $self = bless { dbfile => $dbfile,
     objects => {}, externaldb => {},
     verbosity => $options{verbosity} || 0,
-    read_write => $options{read_write},
+    readonly => $options{readonly},
   }, $class;
   if ($dbfile) {
 ##    my $flags = ($options{read_write} ? O_RDWR|O_CREAT : O_RDONLY);
@@ -74,7 +74,7 @@ sub status {
 
 sub finish {
   my ($self) = @_;
-  if ($$self{externaldb} && $$self{dbfile}) {
+  if ($$self{externaldb} && $$self{dbfile} && !$$self{readonly}) {
     my $n     = 0;
     my %types = ();
     foreach my $key (keys %{ $$self{objects} }) {
