@@ -100,6 +100,9 @@ DefConstructor('\lxRef Semiverbatim {}',
 #    navbar: full content, context TOC, ...
 #    headers, footers
 
+DefMacro('\lxKeywords{}',
+  '\@add@frontmatter{ltx:keywords}[name={keywords}]{#1}');
+
 DefConstructor('\lxContextTOC',
   "<ltx:TOC format='context'/>");
 
