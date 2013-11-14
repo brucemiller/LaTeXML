@@ -51,7 +51,7 @@ sub loadSchema {
   $$self{schema_loaded} = 1;
   NoteBegin("Loading DTD " . $$self{public_id} || $$self{system_id});
   my $model = $$self{model};
-  $model->setTagProperty('#Document', 'model', { $$self{roottag} => 1 }) if $$self{roottag};
+  $model->addTagContent('#Document', $$self{roottag}) if $$self{roottag};
   # Parse the DTD
   my $dtd = $self->readDTD;
   return unless $dtd;
@@ -80,10 +80,10 @@ sub loadSchema {
         $content =~ s/[\+\*\?\,\(\)\|]/ /g;
         $content =~ s/\s+/ /g; $content =~ s/^\s+//; $content =~ s/\s+$//;
         if ($content eq 'EMPTY') {
-          $model->setTagProperty($tag, 'model', {}); }
+          $model->addTagContent($tag, ()); }
         else {
-          my @content = map($model->recodeDocumentQName($_), split(/ /, $content));
-          $model->setTagProperty($tag, 'model', { map(($_ => 1), @content) });
+          $model->addTagContent($tag,
+            map($model->recodeDocumentQName($_), split(/ /, $content)));
         } }
       else { Warn('misdefined', $decl, undef, "Can't process DTD declaration '$decl'"); }
     }
@@ -92,11 +92,10 @@ sub loadSchema {
         my ($tag, $attr, $extra) = ($1, $2, $3);
         if ($attr !~ /^xmlns/) {
           $tag = $model->recodeDocumentQName($tag);
-          my $attrlist = $model->getTagProperty($tag, 'attributes');
-          $model->setTagProperty($tag, 'attributes', $attrlist = {}) unless $attrlist;
           if ($attr =~ /:/) {
             $attr = $model->recodeDocumentQName($attr); }
-          $$attrlist{$attr} = 1; } } }
+          $model->addTagAttribute($tag, $attr);
+        } } }
   }
   NoteEnd("Analyzing DTD");    # Done analyzing
   NoteEnd("Loading DTD " . $$self{public_id} || $$self{system_id});

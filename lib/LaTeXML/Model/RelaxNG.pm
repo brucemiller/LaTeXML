@@ -68,7 +68,7 @@ sub loadSchema {
 
   # The resulting @schema should contain the "start" of the grammar.
   my ($startcontent) = $self->extractContent('#Document', @schema);
-  $$self{model}->setTagProperty('#Document', 'model', $startcontent);
+  $$self{model}->addTagContent('#Document', $startcontent);
   if ($LaTeXML::Model::RelaxNG::DEBUG) {
     print "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
 
@@ -80,12 +80,12 @@ sub loadSchema {
   foreach my $tag (sort keys %{ $$self{elements} }) {
     if ($tag eq 'ANY') {
       # Ignore any internal structure (side effect of restricted names)
-      $$self{model}->setTagProperty($tag, 'model', { ANY => 1 });
+      $$self{model}->addTagContent($tag, 'ANY');
       next; }
     my @body = @{ $$self{elements}{$tag} };
     my ($content, $attributes) = $self->extractContent($tag, @body);
-    $$self{model}->setTagProperty($tag, 'model',      $content);
-    $$self{model}->setTagProperty($tag, 'attributes', $attributes); }
+    $$self{model}->addTagContent($tag, 'model', keys %$content);
+    $$self{model}->addTagAttribute($tag, 'attributes', keys %$attributes); }
   # Extract definitions of symbols that define Schema Classes, too
   foreach my $symbol (sort keys %{ $$self{defs} }) {
     if ($symbol =~ /^grammar\d+:(.+?)\.class$/) {
