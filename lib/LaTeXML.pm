@@ -187,9 +187,11 @@ sub convertDocument {
       $document->absorb($digested);
       NoteEnd("Building");
 
-      NoteBegin("Rewriting");
-      $model->applyRewrites($document, $document->getDocument->documentElement);
-      NoteEnd("Rewriting");
+      if (my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES')) {
+        NoteBegin("Rewriting");
+        foreach my $rule (@$rules) {
+          $rule->rewrite($document, $document->getDocument->documentElement); }
+        NoteEnd("Rewriting"); }
 
       LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
       NoteBegin("Finalizing");
