@@ -29,7 +29,6 @@ sub new {
   my $self = bless { xpath => LaTeXML::Common::XML::XPath->new(),
     code_namespace_prefixes => {}, code_namespaces => {},
     doctype_namespaces => {},
-    rewrites => [], ligatures => [], mathligatures => [],
     %options }, $class;
   $$self{xpath}->registerFunction('match-font', \&LaTeXML::Font::match_font);
   $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
@@ -78,7 +77,6 @@ sub loadSchema {
     $self->loadCompiledSchema($compiled); }
   else {
     $$self{schema}->loadSchema; }
-  $self->computeIndirect;
   $self->describeModel if $LaTeXML::Model::DEBUG;
   $$self{schema_loaded} = 1;
   return $$self{schema}; }
@@ -114,8 +112,9 @@ sub loadCompiledSchema {
   while ($line = <$MODEL>) {
     if ($line =~ /^([^\{]+)\{(.*?)\}\((.*?)\)$/) {
       my ($tag, $attr, $children) = ($1, $2, $3);
-      $self->setTagProperty($tag, 'attributes', { map { ($_ => 1) } split(/,/, $attr) });
-      $self->setTagProperty($tag, 'model',      { map { ($_ => 1) } split(/,/, $children) }); }
+      $self->addTagAttribute($tag, split(/,/, $attr));
+      $self->addTagContent($tag, split(/,/, $children)); }
+
     elsif ($line =~ /^([^:=]+):=(.*?)$/) {
       my ($classname, $elements) = ($1, $2);
       $self->setSchemaClass($classname, { map { ($_ => 1) } split(/,/, $elements) }); }
@@ -298,45 +297,29 @@ sub getXPath {
 # Accessors
 #**********************************************************************
 
-sub setTagProperty {
-  my ($self, $tag, $property, $value) = @_;
-  $$self{tagprop}{$tag}{$property} = $value;
-  return; }
+sub getTags {
+  my ($self) = @_;
+  return keys %{ $$self{tagprop} }; }
 
-sub getTagProperty {
-  my ($self, $tag, $prop) = @_;
-  $tag = $self->getNodeQName($tag) if ref $tag;    # In case tag is a node.
-####  $$self{tagprop}{$tag}{$prop}; }
-  my ($p, $n) = $self->decodeQName($tag);
-  my $v;
-  return (defined($v = $$self{tagprop}{$tag}{$prop}) ? $v
-    : (defined $p && defined($v = $$self{tagprop}{ $p . ":*" }{$prop}) ? $v
-      : (defined($v = $$self{tagprop}{"*"}{$prop}) ? $v
-        : undef))); }
+sub getTagContents {
+  my ($self, $tag) = @_;
+  my $h = $$self{tagprop}{$tag}{model};
+  return $h ? keys %$h : (); }
 
-sub getTagPropertyList {
-  my ($self, $tag, $prop) = @_;
-  $tag = $self->getNodeQName($tag) if ref $tag;    # In case tag is a node.
-  my ($p, $n) = (undef, $tag);
-  if ($tag =~ /^([^:]+):(.+)$/) {
-    ($p, $n) = ($1, $2); }
-  my $prop0   = $prop . ':early';
-  my $prop1   = $prop . ':late';
-  my $taghash = $$self{tagprop}{$tag};
-  my $nshash  = (defined $p) && $$self{tagprop}{ $p . ":*" };
-  my $allhash = $$self{tagprop}{"*"};
-  my $v;
-  return (
-    ($taghash && defined($v = $$taghash{$prop0}) ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$prop0})  ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$prop0}) ? @$v : ()),
-    ($taghash && defined($v = $$taghash{$prop})  ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$prop})   ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$prop})  ? @$v : ()),
-    ($taghash && defined($v = $$taghash{$prop1}) ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$prop1})  ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$prop1}) ? @$v : ()),
-    ); }
+sub addTagContent {
+  my ($self, $tag, @elements) = @_;
+  $$self{tagprop}{$tag}{model} = {} unless $$self{tagprop}{$tag}{model};
+  map($$self{tagprop}{$tag}{model}{$_} = 1, @elements); }
+
+sub getTagAttributes {
+  my ($self, $tag) = @_;
+  my $h = $$self{tagprop}{$tag}{attributes};
+  return $h ? keys %$h : (); }
+
+sub addTagAttribute {
+  my ($self, $tag, @attributes) = @_;
+  $$self{tagprop}{$tag}{attributes} = {} unless $$self{tagprop}{$tag}{attributes};
+  map($$self{tagprop}{$tag}{attributes}{$_} = 1, @attributes); }
 
 sub setSchemaClass {
   my ($self, $classname, $content) = @_;
@@ -354,12 +337,10 @@ sub setSchemaClass {
 sub canContain {
   my ($self, $tag, $childtag) = @_;
   $self->loadSchema unless $$self{schema_loaded};
-  $tag      = $self->getNodeQName($tag)      if ref $tag;         # In case tag is a node.
-  $childtag = $self->getNodeQName($childtag) if ref $childtag;    # In case tag is a node.
-                                                                  # Handle obvious cases explicitly.
+  # Handle obvious cases explicitly.
   return 0 if $tag eq '#PCDATA';
   return 0 if $tag eq '#Comment';
-  return 1 if $tag =~ /(.*?:)?_Capture_$/;                        # with or without namespace prefix
+  return 1 if $tag =~ /(.*?:)?_Capture_$/;             # with or without namespace prefix
   return 1 if $tag eq '_WildCard_';
   return 1 if $childtag =~ /(.*?:)?_Capture_$/;
   return 1 if $childtag eq '_WildCard_';
@@ -372,136 +353,38 @@ sub canContain {
   my $model = $$self{tagprop}{$tag}{model};
   return $$model{ANY} || $$model{$childtag}; }
 
-# Can an element with (qualified name) $tag contain a $childtag element indirectly?
-# That is, by openning some number of autoOpen'able tags?
-# And if so, return the tag to open.
-sub canContainIndirect {
-  my ($self, $tag, $childtag) = @_;
-  $self->loadSchema unless $$self{schema_loaded};
-  $tag      = $self->getNodeQName($tag)      if ref $tag;         # In case tag is a node.
-  $childtag = $self->getNodeQName($childtag) if ref $childtag;    # In case tag is a node.
-  return $$self{tagprop}{$tag}{indirect_model}{$childtag}; }
-
-sub canContainSomehow {
-  my ($self, $tag, $childtag) = @_;
-  $tag      = $self->getNodeQName($tag)      if ref $tag;         # In case tag is a node.
-  $childtag = $self->getNodeQName($childtag) if ref $childtag;    # In case tag is a node.
-  return $self->canContain($tag, $childtag) || $self->canContainIndirect($tag, $childtag); }
-
-# Can this node be automatically closed, if needed?
-sub canAutoClose {
-  my ($self, $tag) = @_;
-  $self->loadSchema unless $$self{schema_loaded};
-  $tag = $self->getNodeQName($tag) if ref $tag;                   # In case tag is a node.
-  return 1                         if $tag eq '#PCDATA';
-  return 1                         if $tag eq '#Comment';
-  return $$self{tagprop}{$tag}{autoClose}; }
-
 sub canHaveAttribute {
   my ($self, $tag, $attrib) = @_;
   $self->loadSchema unless $$self{schema_loaded};
-  $tag = $self->getNodeQName($tag) if ref $tag;                           # In case tag is a node.
-  return 0                         if $tag eq '#PCDATA';
-  return 0                         if $tag eq '#Comment';
-  return 0                         if $tag eq '#Document';
-  return 0                         if $tag eq '#ProcessingInstruction';
-  return 0                         if $tag eq '#DTD';
-  return 1                         if $$self{permissive};
+  return 0 if $tag eq '#PCDATA';
+  return 0 if $tag eq '#Comment';
+  return 0 if $tag eq '#Document';
+  return 0 if $tag eq '#ProcessingInstruction';
+  return 0 if $tag eq '#DTD';
+  return 1 if $$self{permissive};
   return $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
 sub isInSchemaClass {
   my ($self, $classname, $tag) = @_;
-  $tag = $self->getNodeQName($tag) if ref $tag;                           # In case tag is a node.
+  $tag = $self->getNodeQName($tag) if ref $tag;    # In case tag is a node.
   my $class = $$self{schemaclass}{$classname};
   return $class && $$class{$tag}; }
 
 #**********************************************************************
-# Support for filling in the model from a Schema.
-sub computeIndirect {
-  my ($self) = @_;
-  # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
-  foreach my $tag (keys %{ $$self{tagprop} }) {
-    if ($$self{tagprop}{$tag}{model}) {
-      local %::DESC = ();
-      computeDescendents($self, $tag, '');
-      $$self{tagprop}{$tag}{indirect_model} = {%::DESC}; } }
-  # PATCHUP
-  if ($$self{permissive}) {
-    $$self{tagprop}{'#Document'}{indirect_model}{'#PCDATA'} = 'ltx:p'; }
-  return; }
-
-sub computeDescendents {
-  my ($self, $tag, $start) = @_;
-  foreach my $kid (keys %{ $$self{tagprop}{$tag}{model} }) {
-    next if $::DESC{$kid};
-    $::DESC{$kid} = $start if $start;
-    if (($kid ne '#PCDATA') && $$self{tagprop}{$kid}{autoOpen}) {
-      computeDescendents($self, $kid, $start || $kid); }
-  }
-  return; }
-
 sub describeModel {
   my ($self) = @_;
   print STDERR "Doctype\n";
   foreach my $tag (sort keys %{ $$self{tagprop} }) {
     if (my $model = $$self{tagprop}{$tag}{model}) {
       if (keys %$model) {
-        print STDERR "$tag can contain " . join(', ', sort keys %{ $$self{tagprop}{$tag}{model} }) . "\n"; }
-      if (my $indirect = $$self{tagprop}{$tag}{indirect_model}) {
-        print STDERR "$tag can indirectly contain " . join(', ', sort keys %$indirect) . "\n"
-          if keys %$indirect; } }
+        print STDERR "$tag can contain " . join(', ', sort keys %{ $$self{tagprop}{$tag}{model} }) . "\n"; } }
     else {
       print STDERR "$tag is empty\n"; }
   }
   return; }
 
 #**********************************************************************
-sub addLigature {
-  my ($self, $regexp, %options) = @_;
-  my $code = "sub { \$_[0] =~ s${regexp}g; }";
-  my $fcn  = eval $code;
-  Error('misdefined', $regexp, undef,
-    "Failed to compile regexp pattern '$regexp' into \"$code\"", $!) if $@;
-  unshift(@{ $$self{ligatures} }, { regexp => $regexp, code => $fcn, %options });
-  return; }
-
-sub getLigatures {
-  my ($self) = @_;
-  return @{ $$self{ligatures} }; }
-
-sub addMathLigature {
-  my ($self, $matcher, %options) = @_;
-  unshift(@{ $$self{mathligatures} }, { matcher => $matcher, %options });
-  return; }
-
-sub getMathLigatures {
-  my ($self) = @_;
-  return @{ $$self{mathligatures} }; }
-
-#**********************************************************************
-# Rewrite Rules
-
-sub addRewriteRule {
-  my ($self, $mode, @specs) = @_;
-  push(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs));
-  return; }
-
-# This adds the rule to the front.
-# We probably need a more powerful ordering scheme?
-sub prependRewriteRule {
-  my ($self, $mode, @specs) = @_;
-  unshift(@{ $$self{rewrites} }, LaTeXML::Rewrite->new($mode, @specs));
-  return; }
-
-# Why is this in this class?
-sub applyRewrites {
-  my ($self, $document, $node, $until_rule) = @_;
-  foreach my $rule (@{ $$self{rewrites} }) {
-    last if $until_rule && ($rule eq $until_rule);
-    $rule->rewrite($document, $node); }
-  return; }
-
-#**********************************************************************
+# Abstract schema
 package LaTeXML::Model::Schema;
 
 sub new {
@@ -612,76 +495,10 @@ with qualified name C<$childtag>.
 The tag names #PCDATA, #Document, #Comment and #ProcessingInstruction
 are specially recognized.
 
-=item C<< $auto = $model->canContainIndirect($tag,$childtag); >>
-
-Checks whether an element with qualified name C<$tag> could contain an element
-with qualified name C<$childtag>, provided an `autoOpen'able element C<$auto> 
-were inserted in C<$tag>.
-
-=item C<< $boole = $model->canContainSomehow($tag,$childtag); >>
-
-Returns whether an element with qualified name C<$tag> could contain an element
-with qualified name C<$childtag>, either directly or indirectly.
-
-=item C<< $boole = $model->canAutoClose($tag); >>
-
-Returns whether an element with qualified name C<$tag> is allowed to be closed automatically,
-if needed.
-
 =item C<< $boole = $model->canHaveAttribute($tag,$attribute); >>
 
 Returns whether an element with qualified name C<$tag> is allowed to have an attribute
 with the given name.
-
-=back
-
-=head2 Tag Properties
-
-=over 2
-
-=item C<< $value = $model->getTagProperty($tag,$property); >>
-
-Gets the value of the $property associated with the qualified name C<$tag>
-Known properties are:
-
- autoOpen   : This asserts that the tag is allowed to
-              be opened automatically if needed to
-              insert some other element.  If not set,
-              the tag can only be opened explicitly.
- autoClose  : This asserts that the $tag is allowed to
-              be closed automatically if needed to
-              insert some other element.  If not set,
-              the tag can only be closed explicitly.
- afterOpen  : supplies code to be executed whenever
-              an element of this type is opened. It
-              is called with the created node and the
-              responsible digested object as arguments.
- afterClose : supplies code to be executed whenever
-              an element of this type is closed.  It
-              is called with the created node and the
-              responsible digested object as arguments.
-
-=item C<< $model->setTagProperty($tag,$property,$value); >>
-
-sets the value of the C<$property> associated with the qualified name C<$tag> to C<$value>.
-
-=back
-
-=head2 Rewrite Rules
-
-=over 2
-
-=item C<< $model->addRewriteRule($mode,@specs); >>
-
-Install a new rewrite rule with the given C<@specs> to be used 
-in C<$mode> (being either C<math> or C<text>).
-See L<LaTeXML::Rewrite> for a description of the specifications.
-
-=item C<< $model->applyRewrites($document,$node,$until_rule); >>
-
-Apply all matching rewrite rules to C<$node> in the given document.
-If C<$until_rule> is define, apply all those rules that were defined
-before it, otherwise, all rules
 
 =back
 
