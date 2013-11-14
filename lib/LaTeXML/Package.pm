@@ -281,7 +281,7 @@ sub CleanURL {
 # pretty printer, sorta
 sub CleanDimension {
   my ($dim) = @_;
-  if(! defined $dim){
+  if (!defined $dim) {
     return $dim; }
   elsif (ref $dim) {
     $dim = $dim->ptValue; }
@@ -494,7 +494,7 @@ sub ResetCounter {
 # <number> for <prefix> amongst its descendents.
 sub GenerateID {
   my ($document, $node, $whatsit, $prefix) = @_;
-  if (!$node->hasAttribute('xml:id') && $document->getModel->canHaveAttribute($node, 'xml:id')) {
+  if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')) {
     my $ancestor = $document->findnode('ancestor::*[@xml:id][1]', $node)
       || $document->getDocument->documentElement;
     ## Old versions don't like $ancestor->getAttribute('xml:id');
@@ -1114,12 +1114,17 @@ sub Tag {
   my ($tag, %properties) = @_;
   CheckOptions("Tag ($tag)", $tag_options, %properties);
   my $model = $STATE->getModel;
+  AssignMapping('TAG_PROPERTIES', $tag => {}) unless LookupMapping('TAG_PROPERTIES', $tag);
+  my $props = LookupMapping('TAG_PROPERTIES', $tag);
   foreach my $key (keys %properties) {
     my $new = $properties{$key};
-    my $old = $model->getTagProperty($tag, $key);
-    if    ($$tag_prepend_options{$key}) { $new = flatten($new, $old); }
-    elsif ($$tag_append_options{$key})  { $new = flatten($old, $new); }
-    $model->setTagProperty($tag, $key => $new); }
+    my $old = $$props{$key};
+    # These keys accumulate information which should not carry over daemon frames.
+    if ($$tag_prepend_options{$key}) {
+      $new = flatten($new, $old); }
+    elsif ($$tag_append_options{$key}) {
+      $new = flatten($old, $new); }
+    $$props{$key} = $new; }
   return; }
 
 sub DocType {
@@ -1763,28 +1768,37 @@ sub DefColorModel {
 
 #======================================================================
 # Defining Rewrite rules that act on the DOM
-
+# These are applied after the document is completely constructed
 our $rewrite_options = { label => 1, scope => 1, xpath => 1, match => 1,
   attributes => 1, replace => 1, regexp => 1, select => 1 };
 
 sub DefRewrite {
   my (@specs) = @_;
   CheckOptions("DefRewrite", $rewrite_options, @specs);
-  $STATE->getModel->addRewriteRule('text', @specs);
+  PushValue('DOCUMENT_REWRITE_RULES', LaTeXML::Rewrite->new('text', @specs));
   return; }
 
 sub DefMathRewrite {
   my (@specs) = @_;
   CheckOptions("DefMathRewrite", $rewrite_options, @specs);
-  $STATE->getModel->addRewriteRule('math', @specs);
+  PushValue('DOCUMENT_REWRITE_RULES', LaTeXML::Rewrite->new('math', @specs));
   return; }
 
 our $ligature_options = { fontTest => 1 };
 
+#======================================================================
+# Defining "Ligatures" rules that act on the DOM
+# These are actually a sort of rewrite that is applied while the doom
+# is being constructed, in particular as each node is closed.
+
 sub DefLigature {
   my ($regexp, %options) = @_;
   CheckOptions("DefLigature", $ligature_options, %options);
-  $STATE->getModel->addLigature($regexp, %options);
+  my $code = "sub { \$_[0] =~ s${regexp}g; }";
+  my $fcn  = eval $code;
+  Error('misdefined', $regexp, undef,
+    "Failed to compile regexp pattern '$regexp' into \"$code\"", $!) if $@;
+  UnshiftValue('TEXT_LIGATURES', { regexp => $regexp, code => $fcn, %options });
   return; }
 
 our $math_ligature_options = {};
@@ -1792,7 +1806,7 @@ our $math_ligature_options = {};
 sub DefMathLigature {
   my ($matcher, %options) = @_;
   CheckOptions("DefMathLigature", $math_ligature_options, %options);
-  $STATE->getModel->addMathLigature($matcher, %options);
+  UnshiftValue('MATH_LIGATURES', { matcher => $matcher, %options });
   return; }
 
 #======================================================================
