@@ -302,19 +302,21 @@ sub createDeclarationRewrite {
   my ($id, $match, $wrap, $role, $name, $meaning, $ref, $trace, $replace)
     = map($props{$_}, qw(id match wrap role name meaning ref trace replace));
 ###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
-  $STATE->getModel->prependRewriteRule('math',
-    ($trace ? (trace => $trace) : ()),
-    ($scope ? (scope => $scope) : ()),
-    ($match ? (match => $match) : ()),
-    ($wrap  ? (wrap  => $wrap)  : ()),
-    ($replace
-      ? (replace => $replace)
-      : attributes => { ($role ? (role => $role) : ()),
-        ($name    ? (name    => $name)    : ()),
-        ($meaning ? (meaning => $meaning) : ()),
-        ($id      ? (dec_id  => $id)      : ()),
-        }),
-  );
+  # Put this rule IN FRONT of other rules!
+  UnshiftValue('DOCUMENT_REWRITE_RULES',
+    LaTeXML::Rewrite->new('math',
+      ($trace ? (trace => $trace) : ()),
+      ($scope ? (scope => $scope) : ()),
+      ($match ? (match => $match) : ()),
+      ($wrap  ? (wrap  => $wrap)  : ()),
+      ($replace
+        ? (replace => $replace)
+        : attributes => { ($role ? (role => $role) : ()),
+          ($name    ? (name    => $name)    : ()),
+          ($meaning ? (meaning => $meaning) : ()),
+          ($id      ? (dec_id  => $id)      : ()),
+          }),
+    ));
   return; }
 
 #======================================================================
