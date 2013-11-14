@@ -1,0 +1,23 @@
+# Code Indentation Control
+--indent-columns=2
+--maximum-line-length=100
+--variable-maximum-line-length
+
+# Whitespace Control
+--paren-tightness=2
+--square-bracket-tightness=2
+## but NOT --block-brace-tightness=2
+
+# Blank line control
+--noblanks-before-comments
+--blank-lines-before-subs=1
+
+# But in the end, perltidy breaks too many lines
+# so it is Coder's responsibility to linebreak!
+--nodelete-old-newlines
+--noadd-newlines
+
+#====================
+# shorthand equivalent:
+# perltidy -i=2 -l=100 -vmll -pt=2 -sbt=2 -nbbc -blbs=1 -ndnl -nanl
+

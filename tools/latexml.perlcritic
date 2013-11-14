@@ -1,0 +1,23 @@
+#======================================================================
+# perlcritic profile for LaTeXML
+#
+# See /usr/share/doc/perl-perlCritic-1.118/examples/perlcriticrc-conway
+# for a guide to the naming conventions of the modules.
+#======================================================================
+# Level 5
+# Probably not a bad idea, but bindings need a special treatment!
+[-Perl::Critic::Policy::Modules::RequireFilenameMatchesPackage]
+
+# Level 4
+#   OK?
+
+# Level 3
+# requiring /x on all regexps !?!?!?  (see p 236)
+[-Perl::Critic::Policy::RegularExpressions::RequireExtendedFormatting]
+
+# don't use map in void context????
+[-Perl::Critic::Policy::BuiltinFunctions::ProhibitVoidMap]
+
+# This could be useful except that it seems to trigger
+# any time there's an open!!
+[-Perl::Critic::Policy::InputOutput::RequireBriefOpen]
