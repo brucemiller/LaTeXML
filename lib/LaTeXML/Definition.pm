@@ -250,7 +250,7 @@ sub skipConditionalBody {
         # No need to actually call elseHandler, but note that we've seen an \else!
         $STATE->lookupValue('if_stack')->[0]->{elses} = 1;
         return; } } }
-  Fatal('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
+  Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
     "Conditional started at $start");
   return; }
 
