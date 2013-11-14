@@ -778,11 +778,10 @@ sub Annotate {
         { map((getQName($_) => $_->getValue),
             grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)) },
         $node->childNodes]; }
-    my $model = $LaTeXML::MathParser::DOCUMENT->getModel;
     my $qname = $$node[0];
     # Remove any attributes that aren't allowed!!!
     foreach my $k (keys %attrib) {
-      delete $attrib{$k} unless $k =~ /^_/ || $model->canHaveAttribute($qname, $k); }
+      delete $attrib{$k} unless $k =~ /^_/ || $LaTeXML::MathParser::DOCUMENT->canHaveAttribute($qname, $k); }
     # Special treatment for some attributes:
     # Combine opens & closes
     foreach my $k (qw(open argopen)) {

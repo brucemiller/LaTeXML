@@ -140,8 +140,6 @@ sub applyClause {
     my $insertion = $document->openElement('_Capture_', font => $document->getNodeFont($parent));
     map($insertion->appendChild($_), @inserted);
 
-    # Apply PRECEDING rules to the insertion.
-#####    $document->getModel->applyRewrites($document,$insertion,$self);
     # Now remove the insertion and replace with rewritten nodes and replace the following siblings.
     @inserted = $insertion->childNodes;
     $parent->removeChild($insertion);
@@ -229,7 +227,6 @@ sub compile_match1 {
   my $capdocument = LaTeXML::Document->new($document->getModel);
   my $capture = $capdocument->openElement('_Capture_', font => LaTeXML::Font->new());
   $capdocument->absorb($patternbox);
-#####  $capdocument->getModel->applyRewrites($capdocument,$capdocument->getDocument->documentElement,$self);
   my @nodes = ($$self{mode} eq 'math'
     ? $capdocument->findnodes("//ltx:XMath/*", $capture)
     : $capture->childNodes);
@@ -335,7 +332,7 @@ sub domToXPath_rec {
       else {
         Fatal('misdefined', '<rewrite>', $node,
           "Can't generate XPath for mixed content"); } }
-    if ($document->getModel->canHaveAttribute($qname, 'font')) {
+    if ($document->canHaveAttribute($qname, 'font')) {
       if (my $font = $node->getAttribute('_font')) {
         my $pred = LaTeXML::Font::font_match_xpaths($font);
         push(@predicates, $pred); } }

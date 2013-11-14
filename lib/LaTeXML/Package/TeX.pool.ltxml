@@ -1585,10 +1585,10 @@ sub insertBlock {
   my $unwrap   = 0;
   map(($blockattr{$_} || delete $blockattr{$_}), keys %blockattr);
   my $hasattr = scalar(keys %blockattr);
-  if ($hasattr || !$model->canContainSomehow($context, 'ltx:p') || $model->canContain($context, '#PCDATA')) {
+  if ($hasattr || !$document->canContainSomehow($context, 'ltx:p') || $document->canContain($context, '#PCDATA')) {
     # [If we DONT open, we lose the vattach!]
     $newblock = $document->openElement('ltx:inline-block', '_autoclose' => 1, %blockattr); }
-  elsif ($model->canContainSomehow($context, 'ltx:para')) {
+  elsif ($document->canContainSomehow($context, 'ltx:para')) {
     $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
   #  else {
   #    $unwrap = 1;
@@ -1622,8 +1622,8 @@ sub insertBlock {
       $document->removeNode($newblock); }    # then remove the new block entirely
     elsif ($unwrap ||
       ((scalar(@rows) == 1)                  # Else only 1 item inside, then flatten
-        && $model->canContain($newblock->parentNode, $rows[0])    # if allowed.
-        && (!$hasattr || grep($model->canHaveAttribute($rows[0], $_), keys %blockattr)))) {
+        && $document->canContain($newblock->parentNode, $rows[0])    # if allowed.
+        && (!$hasattr || grep($document->canHaveAttribute($rows[0], $_), keys %blockattr)))) {
       map($rows[0]->setAttribute($_ => $blockattr{$_}), keys %blockattr);
       $document->unwrapNodes($newblock); } }
 
@@ -4067,7 +4067,7 @@ sub insertFrontMatter {
       foreach my $item (@$list) {
         my ($tag, $attr, @stuff) = @$item;
         $document->openElement($tag, ($attr ? %$attr : ()),
-          (scalar(@stuff) && $document->getModel->canHaveAttribute($tag, 'font')
+          (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
             ? (font => $stuff[0]->getFont, _force_font => 'yes') : ()));
         map($document->absorb($_), @stuff);
         $document->closeElement($tag); } } }
@@ -5518,9 +5518,9 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($align && $model->canHaveAttribute($qname, 'align')) {
+  if ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
-  elsif ($class && $model->canHaveAttribute($qname, 'class')) {
+  elsif ($class && $document->canHaveAttribute($qname, 'class')) {
     addClass($node, $class); } }
 
 #======================================================================
