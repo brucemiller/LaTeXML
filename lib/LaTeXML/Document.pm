@@ -127,6 +127,79 @@ sub getNodeQName {
   my ($self, $node) = @_;
   return $$self{model}->getNodeQName($node); }
 
+#**********************************************************************
+# Extensions of Model.
+
+sub canContain {
+  my ($self, $tag, $child) = @_;
+  my $model = $$self{model};
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
+  $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
+  return $model->canContain($tag, $child); }
+
+# Can an element with (qualified name) $tag contain a $childtag element indirectly?
+# That is, by openning some number of autoOpen'able tags?
+# And if so, return the tag to open.
+sub canContainIndirect {
+  my ($self, $tag, $child) = @_;
+  my $model = $$self{model};
+  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
+        # $imodel{$tag}{$child} => $intermediate || $child
+  my $imodel = $STATE->lookupValue('INDIRECT_MODEL');
+  if (!$imodel) {
+    $imodel = $self->computeIndirectModel();
+    $STATE->assignValue(INDIRECT_MODEL => $imodel, 'global'); }
+  return $$imodel{$tag}{$child}; }
+
+# The indirect model includes all elements allowed as direct children,
+# and all descendents of a node that can be inserted after autoOpen'ing intermediate elements.
+# This model therefor includes information from the Schema, as well as
+# autoOpen information that may be introduced in binding files.
+# [Thus it should NOT be modifying the Model object, which may cover several documents in Daemon]
+sub computeIndirectModel {
+  my ($self) = @_;
+  my $model  = $$self{model};
+  my $imodel = {};
+  # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
+  foreach my $tag ($model->getTags) {
+    local %::DESC = ();
+    computeIndirectModel_aux($model, $tag, '');
+    $$imodel{$tag} = {%::DESC}; }
+  # PATCHUP
+  if ($$model{permissive}) {    # !!! Alarm!!!
+    $$imodel{'#Document'}{'#PCDATA'} = 'ltx:p'; }
+  return $imodel; }
+
+sub computeIndirectModel_aux {
+  my ($model, $tag, $start) = @_;
+  my $x;
+  foreach my $kid ($model->getTagContents($tag)) {
+    next if $::DESC{$kid};      # already seen
+    $::DESC{$kid} = $start if $start;
+    if (($kid ne '#PCDATA') && ($x = $STATE->lookupMapping('TAG_PROPERTIES', $kid)) && $$x{autoOpen}) {
+      computeIndirectModel_aux($model, $kid, $start || $kid); }
+  }
+  return; }
+
+sub canContainSomehow {
+  my ($self, $tag, $child) = @_;
+  my $model = $$self{model};
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
+  $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
+  return $model->canContain($tag, $child) || $self->canContainIndirect($tag, $child); }
+
+sub canHaveAttribute {
+  my ($self, $tag, $attrib) = @_;
+  my $model = $$self{model};
+  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  return $model->canHaveAttribute($tag, $attrib); }
+
+sub canAutoOpen {
+  my ($self, $tag) = @_;
+  if (my $props = $STATE->lookupMapping('TAG_PROPERTIES', $tag)) {
+    return $$props{autoClose}; } }
+
 # Dirty little secrets:
 #  You can generically allow an element to autoClose using Tag.
 # OR you can indicate a specific node can autoClose, or forbid it, using
@@ -135,9 +208,43 @@ sub canAutoClose {
   my ($self, $node) = @_;
   my $t     = $node->nodeType;
   my $model = $$self{model};
-  return (($t == XML_TEXT_NODE) || $model->canAutoClose($model->getNodeQName($node))
-      || (($t == XML_ELEMENT_NODE) && $node->getAttribute('_autoclose')))
-    && (($t != XML_ELEMENT_NODE) || !$node->getAttribute('_noautoclose')); }
+  my $props;
+  return ($t == XML_TEXT_NODE) || ($t == XML_COMMENT_NODE)    # text or comments auto close
+    || (($t == XML_ELEMENT_NODE)                              # otherwise must be element
+    && !$node->getAttribute('_noautoclose')                   # without _noautoclose
+    && ($node->getAttribute('_autoclose')                     # and either with _autoclose
+                                                              # OR it has autoClose set on tag properties
+      || (($props = $STATE->lookupMapping('TAG_PROPERTIES', $self->getNodeQName($node)))
+        && $$props{autoClose})));
+}
+
+# get the actions that should be performed on afterOpen or afterClose
+sub getTagActionList {
+  my ($self, $tag, $when) = @_;
+  $tag = $$self{model}->getNodeQName($tag) if ref $tag;       # In case tag is a node.
+  my ($p, $n) = (undef, $tag);
+  if ($tag =~ /^([^:]+):(.+)$/) {
+    ($p, $n) = ($1, $2); }
+  my $when0 = $when . ':early';
+  my $when1 = $when . ':late';
+###  my $taghash = $$self{tagprop}{$tag};
+###  my $nshash  = (defined $p) && $$self{tagprop}{ $p . ":*" };
+####  my $allhash = $$self{tagprop}{"*"};
+  my $taghash = $STATE->lookupMapping('TAG_PROPERTIES', $tag);
+  my $nshash = (defined $p) && $STATE->lookupMapping('TAG_PROPERTIES', $p . ':*');
+  my $allhash = $STATE->lookupMapping('TAG_PROPERTIES', '*');
+  my $v;
+  return (
+    ($taghash && defined($v = $$taghash{$when0}) ? @$v : ()),
+    ($nshash  && defined($v = $$nshash{$when0})  ? @$v : ()),
+    ($allhash && defined($v = $$allhash{$when0}) ? @$v : ()),
+    ($taghash && defined($v = $$taghash{$when})  ? @$v : ()),
+    ($nshash  && defined($v = $$nshash{$when})   ? @$v : ()),
+    ($allhash && defined($v = $$allhash{$when})  ? @$v : ()),
+    ($taghash && defined($v = $$taghash{$when1}) ? @$v : ()),
+    ($nshash  && defined($v = $$nshash{$when1})  ? @$v : ()),
+    ($allhash && defined($v = $$allhash{$when1}) ? @$v : ()),
+    ); }
 
 #**********************************************************************
 # This is a diagnostic tool that MIGHT help locate XML::LibXML bugs;
@@ -247,13 +354,13 @@ sub finalize_rec {
       if (($model->getNodeQName($child) eq $FONT_ELEMENT_NAME)
         && !$was_forcefont && !$child->hasAttributes) {
         my @grandchildren = $child->childNodes;
-        if (!grep { !$model->canContain($qname, $model->getNodeQName($_)) } @grandchildren) {
+        if (!grep { !$self->canContain($qname, $_) } @grandchildren) {
           $self->replaceNode($child, @grandchildren); } }
     }
     # On the other hand, if the font declaration has NOT been effected,
     # We'll need to put an extra wrapper around the text!
     elsif ($type == XML_TEXT_NODE) {
-      if ($model->canContain($qname, $FONT_ELEMENT_NAME)
+      if ($self->canContain($qname, $FONT_ELEMENT_NAME)
         && scalar(keys %pending_declaration)) {
         # Too late to do wrapNodes?
         my $text = $self->wrapNodes($FONT_ELEMENT_NAME, $child);
@@ -434,7 +541,7 @@ sub openText {
   my $t    = $node->nodeType;
   return if $text =~ /^\s+$/ &&
     (($t == XML_DOCUMENT_NODE)    # Ignore initial whitespace
-    || (($t == XML_ELEMENT_NODE) && !$$self{model}->canContain($node, '#PCDATA')));
+    || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
   print STDERR "Insert text \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
     if $LaTeXML::Document::DEBUG;
@@ -515,10 +622,9 @@ sub closeElement {
 # possibly by autoOpen'ing & autoClosing other tags.
 sub isOpenable {
   my ($self, $qname) = @_;
-  my $model = $$self{model};
-  my $node  = $$self{node};
+  my $node = $$self{node};
   while ($node) {
-    return 1 if $model->canContainSomehow($node, $qname);
+    return 1 if $self->canContainSomehow($node, $qname);
     return 0 unless $self->canAutoClose($node);    # could close, then check if parent can contain
     $node = $node->parentNode; }
   return 0; }
@@ -632,10 +738,10 @@ sub find_insertion_point {
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
   my $inter;
   # If $qname is allowed at the current point, we're done.
-  if ($$self{model}->canContain($cur_qname, $qname)) {
+  if ($self->canContain($cur_qname, $qname)) {
     return $$self{node}; }
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
-  elsif (($inter = $$self{model}->canContainIndirect($cur_qname, $qname))
+  elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
     $self->openElement($inter, font => $self->getNodeFont($$self{node}));
     return $self->find_insertion_point($qname); }    # And retry insertion (should work now).
@@ -644,7 +750,7 @@ sub find_insertion_point {
     my ($node, $closeto) = ($$self{node});
     while (($node->nodeType != XML_DOCUMENT_NODE) && $self->canAutoClose($node)) {
       my $parent = $node->parentNode;
-      if ($$self{model}->canContainSomehow($parent, $qname)) {
+      if ($self->canContainSomehow($parent, $qname)) {
         $closeto = $node; last; }
       $node = $parent; }
     if ($closeto) {
@@ -690,7 +796,7 @@ sub getInsertionCandidates {
 sub floatToElement {
   my ($self, $qname) = @_;
   my @candidates = getInsertionCandidates($$self{node});
-  while (@candidates && !$$self{model}->canContain($candidates[0], $qname)) {
+  while (@candidates && !$self->canContain($candidates[0], $qname)) {
     shift(@candidates); }
   if (my $n = shift(@candidates)) {
     my $savenode = $$self{node};
@@ -701,14 +807,14 @@ sub floatToElement {
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
       $self->getInsertionContext())
-      unless $$self{model}->canContainSomehow($$self{node}, $qname);
+      unless $self->canContainSomehow($$self{node}, $qname);
     return; } }
 
 # Find a node in the document that can accept the attribute $key
 sub floatToAttribute {
   my ($self, $key) = @_;
   my @candidates = getInsertionCandidates($$self{node});
-  while (@candidates && !$$self{model}->canHaveAttribute($candidates[0], $key)) {
+  while (@candidates && !$self->canHaveAttribute($candidates[0], $key)) {
     shift(@candidates); }
   if (my $n = shift(@candidates)) {
     my $savenode = $$self{node};
@@ -726,14 +832,14 @@ sub openText_internal {
     print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Document::DEBUG;
     $$self{node}->appendData($text); }
   elsif (($text =~ /\S/)                            # If non space
-    || $$self{model}->canContain($$self{node}, '#PCDATA')) {    # or text allowed here
+    || $self->canContain($$self{node}, '#PCDATA')) {    # or text allowed here
     my $point = $self->find_insertion_point('#PCDATA');
     my $node  = $$self{document}->createTextNode($text);
     print STDERR "Inserting text node for \"$text\" into " . Stringify($point) . "\n"
       if $LaTeXML::Document::DEBUG;
     $point->appendChild($node);
     $$self{node} = $node; }
-  return $$self{node}; }                                        # return the text node (current)
+  return $$self{node}; }                                # return the text node (current)
 
 # Question: Why do I have math ligatures handled within openMathText_internal,
 # but text ligatures handled within closeText_internal ???
@@ -748,28 +854,20 @@ sub openMathText_internal {
   $self->applyMathLigatures($node);
   return $node; }
 
-# Old strategy: apply ligatures until ANY one succeeds,
-# then return, assuming "all done" (!)
-sub XXXapplyMathLigatures {
-  my ($self, $node) = @_;
-  my @ligatures = $STATE->getModel->getMathLigatures;
-  foreach my $ligature (@ligatures) {
-    last if $self->applyMathLigature($node, $ligature); }    # Hmm.. last? Or restart matches?
-  return; }
-
 # New stategy (but inefficient): apply ligatures until one succeeds,
 # then remove it, and repeat until ALL (remaining) fail.
 sub applyMathLigatures {
   my ($self, $node) = @_;
-  my @ligatures = $STATE->getModel->getMathLigatures;
-  while (@ligatures) {
-    my $matched = 0;
-    foreach my $ligature (@ligatures) {
-      if ($self->applyMathLigature($node, $ligature)) {
-        @ligatures = grep { $_ ne $ligature } @ligatures;
-        $matched = 1;
-        last; } }
-    return unless $matched; }
+  if (my $ligatures = $STATE->lookupValue('MATH_LIGATURES')) {
+    my @ligatures = @$ligatures;
+    while (@ligatures) {
+      my $matched = 0;
+      foreach my $ligature (@ligatures) {
+        if ($self->applyMathLigature($node, $ligature)) {
+          @ligatures = grep { $_ ne $ligature } @ligatures;
+          $matched = 1;
+          last; } }
+      return unless $matched; } }
   return; }
 
 # Apply ligature operation to $node, presumed the last insertion into it's parent(?)
@@ -809,9 +907,10 @@ sub closeText_internal {
     my $string  = $node->data;
     my $ostring = $string;
     my $fonttest;
-    foreach my $ligature ($STATE->getModel->getLigatures) {
-      next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
-      $string =~ &{ $$ligature{code} }($string); }
+    if (my $ligatures = $STATE->lookupValue('TEXT_LIGATURES')) {
+      foreach my $ligature (@$ligatures) {
+        next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
+        $string =~ &{ $$ligature{code} }($string); } }
     $node->setData($string) unless $string eq $ostring;
     $$self{node} = $parent;                  # Now, effectively Closed
     return $parent; }
@@ -1133,7 +1232,7 @@ sub afterOpen {
   my $savenode = $$self{node};
   $$self{node} = $node;
   my $box = $self->getNodeBox($node);
-  map { &$_($self, $node, $box) } $$self{model}->getTagPropertyList($node, 'afterOpen');
+  map { &$_($self, $node, $box) } $self->getTagActionList($node, 'afterOpen');
   $$self{node} = $savenode;
   return $node; }
 
@@ -1142,7 +1241,7 @@ sub afterClose {
   # Should we set point to this node? (or to last child, or something ??
   my $savenode = $$self{node};
   my $box      = $self->getNodeBox($node);
-  map { &$_($self, $node, $box) } $$self{model}->getTagPropertyList($node, 'afterClose');
+  map { &$_($self, $node, $box) } $self->getTagActionList($node, 'afterClose');
   $$self{node} = $savenode;
   return $node; }
 
@@ -1215,8 +1314,6 @@ sub wrapNodes {
   return unless @nodes;
   my $model  = $$self{model};
   my $parent = $nodes[0]->parentNode;
-##  return unless $model->canContain($model->getNodeQName($parent),$qname)
-##    && ! grep( ! $model->canContain($qname,$model->getNodeQName($_)), @nodes);
   my ($ns, $tag) = $model->decodeQName($qname);
   my $new = $self->openElement_internal($parent, $ns, $tag);
   $self->afterOpen($new);
@@ -1425,6 +1522,37 @@ otherwise it is the document element.
 Returns the qualified name (localname with namespace prefix)
 of the given C<$node>.  The namespace prefix mapping is the
 code mapping of the current document model.
+
+=item C<< $boolean = $document->canContain($tag,$child); >>
+
+Returns whether an element C<$tag> can contain a child C<$child>.
+C<$tag> and C<$child> can be nodes, qualified names of nodes
+(prefix:localname), or one of a set of special symbols
+C<#PCDATA>, C<#Comment>, C<#Document> or C<#ProcessingInstruction>.
+
+=item C<< $boolean = $document->canContainIndirect($tag,$child); >>
+
+Returns whether an element C<$tag> can contain a child C<$child>
+either directly, or after automatically opening one or more autoOpen-able
+elements.
+
+=item C<< $boolean = $document->canContainSomehow($tag,$child); >>
+
+Returns whether an element C<$tag> can contain a child C<$child>
+either directly, or after automatically opening one or more autoOpen-able
+elements.
+
+=item C<< $boolean = $document->canHaveAttribute($tag,$attrib); >>
+
+Returns whether an element C<$tag> can have an attribute named C<$attrib>.
+
+=item C<< $boolean = $document->canAutoOpen($tag); >>
+
+Returns whether an element C<$tag> is able to be automatically opened.
+
+=item C<< $boolean = $document->canAutoClose($node); >>
+
+Returns whether the node C<$node> can be automatically closed.
 
 =back
 
