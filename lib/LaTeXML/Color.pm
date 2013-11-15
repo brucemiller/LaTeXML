@@ -182,7 +182,7 @@ sub hsb {
   elsif ($i == 6) { return Phi($r, $g, $b, 1, -1); }
   elsif ($i == 7) { return LaTeXML::Color::hsb->new(0, 0, $b); } }
 
-our @hex = qw(0 1 2 3 4 5 6 7 8 9 A B C D E F);
+my @hex = qw(0 1 2 3 4 5 6 7 8 9 A B C D E F);
 sub hex2 { my ($n) = @_; return $hex[int($n / 16)] . $hex[$n % 16]; }
 
 sub toHex {
