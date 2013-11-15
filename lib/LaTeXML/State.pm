@@ -517,6 +517,19 @@ sub getStatusMessage {
     if @miss;
   return join('; ', @report) || 'No obvious problems'; }
 
+sub getStatusCode {
+  my ($self) = @_;
+  my $status = $$self{status};
+  my $code;
+  if ($$status{fatal} && $$status{fatal} > 0) {
+    $code = 3; }
+  elsif ($$status{error} && $$status{error} > 0) {
+    $code = 2; }
+  elsif ($$status{warning} && $$status{warning} > 0) {
+    $code = 1; }
+  else {
+    $code = 0; }
+  return $code; }
 #======================================================================
 1;
 
