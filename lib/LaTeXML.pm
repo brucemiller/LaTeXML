@@ -28,7 +28,7 @@ use LaTeXML::Package;
 use LaTeXML::Version;
 use Encode;
 use vars qw($VERSION);
-our @ISA = (qw(LaTeXML::Object));
+use base qw(LaTeXML::Object);
 $VERSION = $LaTeXML::Version::VERSION;    # for backward compatibility
 
 #**********************************************************************
