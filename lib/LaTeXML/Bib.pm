@@ -13,6 +13,7 @@
 package LaTeXML::Bib;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
 use Text::Balanced qw(extract_delimited extract_bracketed);
@@ -30,7 +31,7 @@ use Text::Balanced qw(extract_delimited extract_bracketed);
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
-our %default_macros = (
+Readonly my %default_macros = (
   jan => "January",   feb => "February", mar => "March",    apr => "April",
   may => "May",       jun => "June",     jul => "July",     aug => "August",
   sep => "September", oct => "October",  nov => "November", dec => "December",
