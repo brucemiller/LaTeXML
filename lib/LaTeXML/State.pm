@@ -372,7 +372,10 @@ sub pushDaemonFrame {
                                                 # Local assignment
           $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
-      # Now mark the top frame as LOCKED!!!
+      # Record the contents of LaTeXML::Package::Pool as preloaded
+  my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
+  $self->assignValue('_PRELOADED_POOL_', $pool_preloaded_hash, 'global');
+  # Now mark the top frame as LOCKED!!!
   $$self{undo}[0]{_FRAME_LOCK_} = 1;
   return; }
 
@@ -392,6 +395,16 @@ sub popDaemonFrame {
     $self->popFrame; }
   if (scalar(@{ $$self{undo} } > 1)) {
     delete $$self{undo}[0]{_FRAME_LOCK_};
+    # Any non-preloaded Pool routines should be wiped away, as we
+    # might want to reuse the Pool namespaces for the next run.
+    my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
+    $self->assignValue('_PRELOADED_POOL_', undef, 'global');
+    foreach my $subname (keys %LaTeXML::Package::Pool::) {
+      unless (exists $pool_preloaded_hash->{$subname}) {
+        undef $LaTeXML::Package::Pool::{$subname};
+        delete $LaTeXML::Package::Pool::{$subname};
+      } }
+    # Finally, pop the frame
     $self->popFrame; }
   else {
     Fatal('unexpected', '<endgroup>', $self->getStomach,
