@@ -12,13 +12,14 @@
 
 package LaTeXML::Parameters;
 use strict;
+use warnings;
 use LaTeXML::Global;
 use base qw(Exporter LaTeXML::Object);
 our @EXPORT = qw(parseParameters);
 
 sub new {
   my ($class, @paramspecs) = @_;
-  bless [@paramspecs], $class; }
+  return bless [@paramspecs], $class; }
 
 #**********************************************************************
 # Parameter List & Arguments
@@ -90,11 +91,11 @@ sub parseParameters {
         push(@params, newParameter('Optional', $spec)); } }
     elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
       my ($spec, $type, $extra) = ($1, $2, $4);
-      my @extra = map(TokenizeInternal($_), split('\|', $extra || ''));
+      my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
       push(@params, newParameter($type, $spec, extra => [@extra])); }
     else {
       Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
-  (@params ? LaTeXML::Parameters->new(@params) : undef); }
+  return (@params ? LaTeXML::Parameters->new(@params) : undef); }
 
 # Create a parameter reading object for a specific type.
 # If either a declared entry or a function Read<Type> accessible from LaTeXML::Package::Pool
@@ -119,7 +120,7 @@ sub newParameter {
       my $reader = checkReaderFunction("Read$type");
       $descriptor = { reader => $reader } if $reader; } }
   Fatal('misdefined', $type, undef, "Unrecognized parameter type in \"$spec\"") unless $descriptor;
-  LaTeXML::Parameter->new($spec, type => $type, %{$descriptor}, %options); }
+  return LaTeXML::Parameter->new($spec, type => $type, %{$descriptor}, %options); }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
 sub checkReaderFunction {
@@ -127,11 +128,13 @@ sub checkReaderFunction {
   if (defined $LaTeXML::Package::Pool::{$function}) {
     local *reader = $LaTeXML::Package::Pool::{$function};
     if (defined &reader) {
-      \&reader; } } }
+      return \&reader; } } }
 
 #======================================================================
 
-sub getParameters { @{ $_[0] }; }
+sub getParameters {
+  my ($self) = @_;
+  return @$self; }
 
 sub stringify {
   my ($self) = @_;
@@ -140,18 +143,19 @@ sub stringify {
     my $s = $parameter->stringify;
     $string .= ' ' if ($string =~ /\w$/) && ($s =~ /^\w/);
     $string .= $s; }
-  $string; }
+  return $string; }
 
 sub equals {
   my ($self, $other) = @_;
-  (defined $other) && ((ref $self) eq (ref $other)) && ($self->stringify eq $other->stringify); }
+  return (defined $other)
+    && ((ref $self) eq (ref $other)) && ($self->stringify eq $other->stringify); }
 
 sub getNumArgs {
   my ($self) = @_;
   my $n = 0;
   foreach my $parameter (@$self) {
     $n++ unless $$parameter{novalue}; }
-  $n; }
+  return $n; }
 
 sub revertArguments {
   my ($self, @args) = @_;
@@ -163,7 +167,7 @@ sub revertArguments {
       push(@tokens, &$retoker($arg, @{ $$parameter{extra} || [] })); }
     else {
       push(@tokens, Revert($arg)) if ref $arg; } }
-  @tokens; }
+  return @tokens; }
 
 sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
@@ -176,7 +180,7 @@ sub readArguments {
         "Missing argument " . ToString($parameter) . " for " . ToString($fordefn),
         $gullet->showUnexpected); }
     push(@args, $value) unless $$parameter{novalue}; }
-  @args; }
+  return @args; }
 
 sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;
@@ -194,19 +198,19 @@ sub readArgumentsAndDigest {
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
       EndSemiverbatim() if $$parameter{semiverbatim};      # Corner case?
       push(@args, $value); } }
-  @args; }
+  return @args; }
 
 sub reparseArgument {
   my ($self, $gullet, $tokens) = @_;
   if (defined $tokens) {
-    $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {    # start with empty mouth
-        my ($gullet) = @_;
-        $gullet->unread($tokens);                             # but put back tokens to be read
-        my @values = $self->readArguments($gullet);
-        $gullet->skipSpaces;
-        @values; }); }
+    return $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {    # start with empty mouth
+        my ($gulletx) = @_;
+        $gulletx->unread($tokens);                                   # but put back tokens to be read
+        my @values = $self->readArguments($gulletx);
+        $gulletx->skipSpaces;
+        return @values; }); }
   else {
-    (); } }
+    return (); } }
 
 #======================================================================
 package LaTeXML::Parameter;
@@ -216,9 +220,11 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my ($class, $spec, %options) = @_;
-  bless { spec => $spec, %options }, $class; }
+  return bless { spec => $spec, %options }, $class; }
 
-sub stringify { $_[0]->{spec}; }
+sub stringify {
+  my ($self) = @_;
+  return $$self{spec}; }
 
 sub read {
   my ($self, $gullet) = @_;
@@ -236,7 +242,7 @@ sub read {
     && $value->can('neutralize');
   if ($$self{semiverbatim}) {
     EndSemiverbatim(); }
-  $value; }
+  return $value; }
 
 #======================================================================
 1;

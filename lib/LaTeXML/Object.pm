@@ -19,6 +19,7 @@
 #**********************************************************************
 package LaTeXML::Object;
 use strict;
+use warnings;
 
 sub stringify {
   my ($object) = @_;
@@ -26,32 +27,39 @@ sub stringify {
   $string =~ s/^LaTeXML:://;
   $string =~ s/=(SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE|)\(/\[@/;
   $string =~ s/\)$/\]/;
-  $string; }
+  return $string; }
 
-sub toString { $_[0]->stringify; }
+sub toString {
+  my ($self) = @_;
+  return $self->stringify; }
 
 sub equals {
   my ($a, $b) = @_;
-  "$a" eq "$b"; }    # overload::StrVal($a) eq overload::StrVal($b); }
+  return "$a" eq "$b"; }    # overload::StrVal($a) eq overload::StrVal($b); }
 
 sub notequals {
   my ($a, $b) = @_;
-  !($a->equals($b)); }
+  return !($a->equals($b)); }
 
-sub isaToken      { 0; }
-sub isaBox        { 0; }
-sub isaDefinition { 0; }
+sub isaToken      { return 0; }
+sub isaBox        { return 0; }
+sub isaDefinition { return 0; }
 
 # These should really only make sense for Data objects within the
 # processing stream.
 # Defaults (probably poor)
-sub beDigested { $_[0]; }
+sub beDigested {
+  my ($self) = @_;
+  return $self; }
 
 sub beAbsorbed {
   my ($self, $document) = @_;
-  $document->openText($self->toString, $document->getNodeFont($document->getElement)); }
+  return $document->openText($self->toString, $document->getNodeFont($document->getElement)); }
 
-sub unlist { $_[0]; }
+sub unlist {
+  my ($self) = @_;
+  return $self; }
+
 #**********************************************************************
 1;
 

@@ -15,33 +15,69 @@ package LaTeXML::Number;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 use strict;
+use warnings;
 
 sub new {
   my ($class, $number) = @_;
-  bless [$number || "0"], $class; }
+  return bless [$number || "0"], $class; }
 
-sub valueOf  { $_[0]->[0]; }
-sub toString { $_[0]->[0]; }
+sub valueOf {
+  my ($self) = @_;
+  return $$self[0]; }
+
+sub toString {
+  my ($self) = @_;
+  return $$self[0]; }
 
 sub ptValue {
   my ($self) = @_;
   my $h = $$self[0] / 655.36;
-  int($h < 0 ? $h - 0.5 : $h + 0.5) / 100; }
+  return int($h < 0 ? $h - 0.5 : $h + 0.5) / 100; }
 
-sub unlist { $_[0]; }
-sub revert { ExplodeText($_[0]->toString); }
+sub unlist {
+  my ($self) = @_;
+  return $self; }
 
-sub smaller { ($_[0]->valueOf < $_[1]->valueOf) ? $_[0] : $_[1]; }
-sub larger  { ($_[0]->valueOf > $_[1]->valueOf) ? $_[0] : $_[1]; }
-sub absolute { (ref $_[0])->new(abs($_[0]->valueOf)); }
-sub sign     { ($_[0]->valueOf < 0) ? -1 : (($_[0]->valueOf > 0) ? 1 : 0); }
-sub negate   { (ref $_[0])->new(-$_[0]->valueOf); }
-sub add      { (ref $_[0])->new($_[0]->valueOf + $_[1]->valueOf); }
-sub subtract { (ref $_[0])->new($_[0]->valueOf - $_[1]->valueOf); }
+sub revert {
+  my ($self) = @_;
+  return ExplodeText($self->toString); }
+
+sub smaller {
+  my ($self, $other) = @_;
+  return ($self->valueOf < $other->valueOf) ? $self : $other; }
+
+sub larger {
+  my ($self, $other) = @_;
+  return ($self->valueOf > $other->valueOf) ? $self : $other; }
+
+sub absolute {
+  my ($self, $other) = @_;
+  return (ref $self)->new(abs($self->valueOf)); }
+
+sub sign {
+  my ($self) = @_;
+  return ($self->valueOf < 0) ? -1 : (($self->valueOf > 0) ? 1 : 0); }
+
+sub negate {
+  my ($self) = @_;
+  return (ref $self)->new(-$self->valueOf); }
+
+sub add {
+  my ($self, $other) = @_;
+  return (ref $self)->new($self->valueOf + $other->valueOf); }
+
+sub subtract {
+  my ($self, $other) = @_;
+  return (ref $self)->new($self->valueOf - $other->valueOf); }
+
 # arg 2 is a number
-sub multiply { (ref $_[0])->new(int($_[0]->valueOf * (ref $_[1] ? $_[1]->valueOf : $_[1]))); }
+sub multiply {
+  my ($self, $other) = @_;
+  return (ref $self)->new(int($self->valueOf * (ref $other ? $other->valueOf : $other))); }
 
-sub stringify { "Number[" . $_[0]->[0] . "]"; }
+sub stringify {
+  my ($self) = @_;
+  return "Number[" . $$self[0] . "]"; }
 
 #**********************************************************************
 # Strictly speaking, Float isn't part of TeX, but it's handy.
@@ -50,17 +86,26 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Number);
 use strict;
 
-sub toString  { LaTeXML::Float::format($_[0]->[0]); }
-sub multiply  { (ref $_[0])->new($_[0]->valueOf * (ref $_[1] ? $_[1]->valueOf : $_[1])); }
-sub stringify { "Float[" . $_[0]->[0] . "]"; }
+sub toString {
+  my ($self) = @_;
+  return LaTeXML::Float::floatformat($$self[0]); }
+
+sub multiply {
+  my ($self, $other) = @_;
+  return (ref $self)->new($self->valueOf * (ref $other ? $other->valueOf : $other)); }
+
+sub stringify {
+  my ($self) = @_;
+  return "Float[" . $$self[0] . "]"; }
 
 # Utility for formatting sane numbers.
-sub format {
-  my $s = sprintf("%5f", $_[0]);
+sub floatformat {
+  my ($n) = @_;
+  my $s = sprintf("%5f", $n);
   $s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
   $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
-  $s; }
+  return $s; }
 
 #**********************************************************************
 package LaTeXML::Dimension;
@@ -73,11 +118,16 @@ sub new {
   $sp = "0" unless $sp;
   if ($sp =~ /^(-?\d*\.?\d*)([a-zA-Z][a-zA-Z])$/) {    # Dimensions given.
     $sp = $1 * $STATE->convertUnit($2); }
-  bless [$sp || "0"], $class; }
+  return bless [$sp || "0"], $class; }
 
-sub toString { LaTeXML::Float::format($_[0]->[0] / 65536) . 'pt'; }
+sub toString {
+  my ($self) = @_;
+  return LaTeXML::Float::floatformat($$self[0] / 65536) . 'pt'; }
 
-sub stringify { "Dimension[" . $_[0]->[0] . "]"; }
+sub stringify {
+  my ($self) = @_;
+  return "Dimension[" . $$self[0] . "]"; }
+
 #**********************************************************************
 package LaTeXML::MuDimension;
 use LaTeXML::Global;
@@ -85,17 +135,22 @@ use base qw(LaTeXML::Dimension);
 
 # A mu is 1/18th of an em in the current math font.
 # 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
-sub toString { LaTeXML::Float::format($_[0]->[0] / 65536 * 1.8) . 'mu'; }
+sub toString {
+  my ($self) = @_;
+  return LaTeXML::Float::floatformat($$self[0] / 65536 * 1.8) . 'mu'; }
 
-sub stringify { "MuDimension[" . $_[0]->[0] . "]"; }
+sub stringify {
+  my ($self) = @_;
+  return "MuDimension[" . $$self[0] . "]"; }
+
 #**********************************************************************
 package LaTeXML::Glue;
 use LaTeXML::Global;
 use base qw(LaTeXML::Dimension);
 use strict;
 
-our %fillcode = (fil => 1, fill => 2, filll => 3);
-our @FILL = ('', 'fil', 'fill', 'filll');
+my %fillcode = (fil => 1, fill => 2, filll => 3);
+my @FILL = ('', 'fil', 'fill', 'filll');
 
 sub new {
   my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;
@@ -111,7 +166,7 @@ sub new {
       elsif ($fillcode{$mu}) { $minus = $m;                            $mfill = $mu; }
       else                   { $minus = $m * $STATE->convertUnit($mu); $mfill = 0; }
     } }
-  bless [$sp || "0", $plus || "0", $pfill || 0, $minus || "0", $mfill || 0], $class; }
+  return bless [$sp || "0", $plus || "0", $pfill || 0, $minus || "0", $mfill || 0], $class; }
 
 #sub getStretch { $_[0]->[1]; }
 #sub getShrink  { $_[0]->[2]; }
@@ -119,14 +174,15 @@ sub new {
 sub toString {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Float::format($sp / 65536) . 'pt';
-  $string .= ' plus ' . ($pfill ? $plus . $FILL[$pfill] : LaTeXML::Float::format($plus / 65536) . 'pt') if $plus != 0;
-  $string .= ' minus ' . ($mfill ? $minus . $FILL[$mfill] : LaTeXML::Float::format($minus / 65536) . 'pt') if $minus != 0;
-  $string; }
+  my $string = LaTeXML::Float::floatformat($sp / 65536) . 'pt';
+  $string .= ' plus ' . ($pfill ? $plus . $FILL[$pfill] : LaTeXML::Float::floatformat($plus / 65536) . 'pt') if $plus != 0;
+  $string .= ' minus ' . ($mfill ? $minus . $FILL[$mfill] : LaTeXML::Float::floatformat($minus / 65536) . 'pt') if $minus != 0;
+  return $string; }
 
 sub negate {
-  my ($pts, $p, $pf, $m, $mf) = @{ $_[0] };
-  (ref $_[0])->new(-$pts, -$p, $pf, -$m, $mf); }
+  my ($self) = @_;
+  my ($pts, $p, $pf, $m, $mf) = @$self;
+  return (ref $self)->new(-$pts, -$p, $pf, -$m, $mf); }
 
 sub add {
   my ($self, $other) = @_;
@@ -138,17 +194,20 @@ sub add {
     elsif ($pf < $pf2) { $p = $p2; $pf = $pf2; }
     if ($mf == $mf2) { $m += $m2; }
     elsif ($mf < $mf2) { $m = $m2; $mf = $mf2; }
-    (ref $_[0])->new($pts, $p, $pf, $m, $mf); }
+    return (ref $self)->new($pts, $p, $pf, $m, $mf); }
   else {
-    (ref $_[0])->new($pts + $other->valueOf, $p, $pf, $m, $mf); } }
+    return (ref $self)->new($pts + $other->valueOf, $p, $pf, $m, $mf); } }
 
 sub multiply {
   my ($self, $other) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
   $other = $other->valueOf if ref $other;
-  (ref $_[0])->new($pts * $other, $p * $other, $pf, $m * $other, $mf); }
+  return (ref $self)->new($pts * $other, $p * $other, $pf, $m * $other, $mf); }
 
-sub stringify { "Glue[" . join(',', @{ $_[0] }) . "]"; }
+sub stringify {
+  my ($self) = @_;
+  return "Glue[" . join(',', @$self) . "]"; }
+
 #**********************************************************************
 package LaTeXML::MuGlue;
 use LaTeXML::Global;
@@ -161,9 +220,11 @@ sub toString {
   my $string = LaTeXML::Float::format($sp / 65536 * 1.8) . "mu";
   $string .= ' plus ' . ($pfill ? $plus . $FILL[$pfill] : LaTeXML::Float::format($plus / 65536 * 1.8) . 'mu') if $plus != 0;
   $string .= ' minus ' . ($mfill ? $minus . $FILL[$mfill] : LaTeXML::Float::format($minus / 65536 * 1.8) . 'mu') if $minus != 0;
-  $string; }
+  return $string; }
 
-sub stringify { "MuGlue[" . join(',', @{ $_[0] }) . "]"; }
+sub stringify {
+  my ($self) = @_;
+  return "MuGlue[" . join(',', @$self) . "]"; }
 
 #**********************************************************************
 package LaTeXML::BoxDimensions;
@@ -172,15 +233,15 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my ($class, %specs) = @_;
-  bless {%specs}, $class; }
+  return bless {%specs}, $class; }
 
 sub toString {
   my ($self) = @_;
-  join(' ', map(ToString($_) . ' ' . ToString($$self{$_}), keys %{$self})); }
+  return join(' ', map { ToString($_) . ' ' . ToString($$self{$_}) } keys %{$self}); }
 
 sub revert {
   my ($self) = @_;
-  map((ExplodeText($_), T_SPACE, Revert($$self{$_})), keys %{$self}); }
+  return map { (ExplodeText($_), T_SPACE, Revert($$self{$_})) } keys %{$self}; }
 
 #**********************************************************************
 
@@ -190,29 +251,51 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my ($class, $x, $y) = @_;
-  bless [$x, $y], $class; }
+  return bless [$x, $y], $class; }
 
-sub getX { $_[0][0]; }
-sub getY { $_[0][1]; }
+sub getX {
+  my ($self) = @_;
+  return $$self[0]; }
+
+sub getY {
+  my ($self) = @_;
+  return $$self[1]; }
 
 # multiply by anything; this keeps the same type of elements in the pair
-sub multiplyN { (ref $_[0])->new($_[0][0]->multiply($_[1]), $_[0][1]->multiply($_[2] || $_[1])); }
+sub multiplyN {
+  my ($self, $other, $other2) = @_;
+  return (ref $self)->new($$self[0]->multiply($other), $$self[1]->multiply($other2 || $other)); }
+
 # multiply by a dimension or such; this upgrades the elements in the pair to
 # the type used in multiplication
-sub multiply { return $_[0]->multiplyN($_[1], $_[2]) unless (ref $_[1] && (!$_[2] || ref $_[2]));
-  (ref $_[0])->new($_[1]->multiply($_[0][0]), ($_[2] || $_[1])->multiply($_[0][1])); }
+sub multiply {
+  my ($self, $other, $other2) = @_;
+  return $self->multiplyN($other, $other2) if !(ref $other) || ($other2 && !ref $other2);
+  return (ref $self)->new($other->multiply($$self[0]), ($other2 || $other)->multiply($$self[1])); }
 
-sub swap { (ref $_[0])->new($_[0][1], $_[0][0]); }
+sub swap {
+  my ($self) = @_;
+  return (ref $self)->new($$self[1], $$self[0]); }
 
-sub ptValue   { $_[0][0]->ptValue() . ',' . $_[0][1]->ptValue(); }
-sub toString  { $_[0][0]->toString() . ',' . $_[0][1]->toString(); }
-sub stringify { "Pair[" . join(',', map($_->stringify, @{ $_[0] })) . "]"; }
+sub ptValue {
+  my ($self) = @_;
+  return $$self[0]->ptValue() . ',' . $$self[1]->ptValue(); }
+
+sub toString {
+  my ($self) = @_;
+  return $$self[0]->toString() . ',' . $$self[1]->toString(); }
+
+sub stringify {
+  my ($self) = @_;
+  return "Pair[" . join(',', map { $_->stringify } @$self) . "]"; }
 
 sub revert {
   my ($self) = @_;
-  (T_OTHER('('), Revert($$self[0]), T_OTHER(','), Revert($$self[1]), T_OTHER(')')); }
+  return (T_OTHER('('), Revert($$self[0]), T_OTHER(','), Revert($$self[1]), T_OTHER(')')); }
 
-sub negate { $_[0]->multiply(-1); }
+sub negate {
+  my ($self) = @_;
+  return $self->multiply(-1); }
 
 #**********************************************************************
 package LaTeXML::PairList;
@@ -221,18 +304,37 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my ($class, @pairs) = @_;
-  bless [@pairs], $class; }
+  return bless [@pairs], $class; }
 
-sub getCount { $#{ $_[0] } + 1; }
-sub getPair  { $_[0][$_[1]]; }
-sub getPairs { @{ $_[0] }; }
+sub getCount {
+  my ($self) = @_;
+  return $#{$self} + 1; }
 
-sub ptValue { join(' ', map($_->ptValue, @{ $_[0] })); }
+sub getPair {
+  my ($self, $n) = @_;
+  return $$self[$n]; }
 
-sub toString { join(' ', map($_->toString, @{ $_[0] })); }
-sub stringify { "PairList[" . join(',', map($_->stringify, @{ $_[0] })) . "]"; }
+sub getPairs {
+  my ($self) = @_;
+  return @$self; }
 
-sub revert { my @rev = (); map(push(@rev, Revert($_)), @{ $_[0] }); @rev; }
+sub ptValue {
+  my ($self) = @_;
+  return join(' ', map { $_->ptValue } @$self); }
+
+sub toString {
+  my ($self) = @_;
+  return join(' ', map { $_->toString } @$self); }
+
+sub stringify {
+  my ($self) = @_;
+  return "PairList[" . join(',', map { $_->stringify } @$self) . "]"; }
+
+sub revert {
+  my ($self) = @_;
+  my @rev = ();
+  map { push(@rev, Revert($_)) } @$self;
+  return @rev; }
 
 1;
 

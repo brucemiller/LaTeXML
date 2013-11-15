@@ -28,12 +28,12 @@ use base qw(LaTeXML::Object);
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-our @primitive_catcode = (1, 1, 1, 1,
+my @primitive_catcode = (1, 1, 1, 1,
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
   0, 1);
-our @executable_catcode = (0, 1, 1, 1,
+my @executable_catcode = (0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
@@ -72,7 +72,8 @@ sub getCSName {
 
 # Get the CSName only if the catcode is executable!
 sub getExecutableName {
-  my ($cs, $cc) = @{ $_[0] };
+  my ($self) = @_;
+  my ($cs, $cc) = @$self;
   return $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
 
 # Return the string or character part of the token
