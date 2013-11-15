@@ -4,14 +4,17 @@
 # See /usr/share/doc/perl-perlCritic-1.118/examples/perlcriticrc-conway
 # for a guide to the naming conventions of the modules.
 #======================================================================
-# Level 5
+# Let's aim for passing level 3, by default
+
+severity=3
+
+#======================================================================
+
+# I can see why this is discouraged, but I use it very much
+[-Perl::Critic::Policy::Modules::ProhibitMultiplePackages]
 # Probably not a bad idea, but bindings need a special treatment!
 [-Perl::Critic::Policy::Modules::RequireFilenameMatchesPackage]
 
-# Level 4
-#   OK?
-
-# Level 3
 # requiring /x on all regexps !?!?!?  (see p 236)
 [-Perl::Critic::Policy::RegularExpressions::RequireExtendedFormatting]
 
@@ -21,3 +24,6 @@
 # This could be useful except that it seems to trigger
 # any time there's an open!!
 [-Perl::Critic::Policy::InputOutput::RequireBriefOpen]
+
+# The names very often are not ambiguous in their context
+[-Perl::Critic::Policy::NamingConventions::ProhibitAmbiguousNames]
