@@ -434,7 +434,7 @@ sub recordConstructedNode {
   my ($self, $node) = @_;
   if ((defined $LaTeXML::RECORDING_CONSTRUCTION)    # If we're recording!
     && (!@LaTeXML::CONSTRUCTED_NODES                # and this node isn't already recorded
-      || !$node->isSameNode($LaTeXML::CONSTRUCTED_NODES[$#LaTeXML::CONSTRUCTED_NODES]))) {
+      || !$node->isSameNode($LaTeXML::CONSTRUCTED_NODES[-1]))) {
     push(@LaTeXML::CONSTRUCTED_NODES, $node); }
   return; }
 
@@ -561,7 +561,7 @@ sub openText {
         $bestdiff = $d;
         $closeto  = $n;
         last if ($d == 0); }
-      last unless ($$self{model}->getNodeQName($n) eq $FONT_ELEMENT_NAME) && !$n->getAttribute('_noautoclose');
+      last if ($$self{model}->getNodeQName($n) ne $FONT_ELEMENT_NAME) || $n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
     $self->closeNode_internal($node) if $closeto ne $node;  # Move to best starting point for this text.
     $self->openElement($FONT_ELEMENT_NAME, font => $font, _fontswitch => 1) if $bestdiff > 0; # Open if needed.
@@ -660,22 +660,22 @@ sub closeToNode {
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
-  my $last;
+  my $lastopen;
+  # go up the tree from current node, till we find $node
   while ((($t = $n->getType) != XML_DOCUMENT_NODE) && !$n->isSameNode($node)) {
     push(@cant_close, $n) unless $self->canAutoClose($n);
-    $last = $n;
-    $n    = $n->parentNode; }
-  if ($t == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
+    $lastopen = $n;
+    $n        = $n->parentNode; }
+  if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
       "Currently in " . $self->getInsertionContext); }
   else {                            # Found node.
-                                    # Intervening non-auto-closeable nodes!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Closing " . Stringify($node) . " whose open descendents do not auto-close",
       "Descendents are " . join(', ', map { Stringify($_) } @cant_close))
-      if @cant_close;
-    $self->closeNode_internal($last) if $last; }
+      if @cant_close;               # But found has intervening non-auto-closeable nodes!!
+    $self->closeNode_internal($lastopen) if $lastopen; }
   return; }
 
 # This closes all nodes until $node is closed.
