@@ -309,7 +309,8 @@ sub getTagContents {
 sub addTagContent {
   my ($self, $tag, @elements) = @_;
   $$self{tagprop}{$tag}{model} = {} unless $$self{tagprop}{$tag}{model};
-  map($$self{tagprop}{$tag}{model}{$_} = 1, @elements); }
+  map { $$self{tagprop}{$tag}{model}{$_} = 1 } @elements;
+  return; }
 
 sub getTagAttributes {
   my ($self, $tag) = @_;
@@ -319,7 +320,8 @@ sub getTagAttributes {
 sub addTagAttribute {
   my ($self, $tag, @attributes) = @_;
   $$self{tagprop}{$tag}{attributes} = {} unless $$self{tagprop}{$tag}{attributes};
-  map($$self{tagprop}{$tag}{attributes}{$_} = 1, @attributes); }
+  map { $$self{tagprop}{$tag}{attributes}{$_} = 1 } @attributes;
+  return; }
 
 sub setSchemaClass {
   my ($self, $classname, $content) = @_;
