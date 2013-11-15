@@ -547,15 +547,16 @@ sub compileConstructor {
   local $LaTeXML::Constructor::NAME        = $name;
   local $LaTeXML::Constructor::NARGS       = $nargs;
   $name =~ s/\W//g;
-  $name = "constructor_" . $name . '_' . $GEN++;
+  $name = "LaTeXML::Package::Pool::constructor_" . $name . '_' . $GEN++;
   my $floats = ($replacement =~ s/^\^\s*//);                 # Grab float marker.
   my $body = translate_constructor($replacement, $floats);
   # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
   my $code =
-    " sub $name {\n"
+    # Put the function in the Pool package, so that functions defined there can be used within"
+    # And, also that these definitions get cleaned up by the Daemon.
+    " package LaTeXML::Package::Pool;\n"
+    . " sub $name {\n"
     . "my(" . join(', ', '$document', (map { "\$arg$_" } 1 .. $nargs), '%prop') . ")=\@_;\n"
-    # Put the body in the Pool package, so that functions defined there can be used with &foo(..)
-    . "package LaTeXML::Package::Pool;\n"
     . ($floats ? "my \$savenode;\n" : '')
     . $body
     . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
