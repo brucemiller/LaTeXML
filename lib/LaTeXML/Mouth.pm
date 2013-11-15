@@ -16,6 +16,7 @@
 #**********************************************************************
 package LaTeXML::Mouth;
 use strict;
+use warnings;
 use LaTeXML::Global;
 use LaTeXML::Token;
 use LaTeXML::Util::Pathname;
@@ -33,7 +34,7 @@ sub create {
   my $newclass = "LaTeXML::Mouth::$type";
   if (!$newclass->can('new')) {    # not already defined somewhere?
     require "LaTeXML/Mouth/$type.pm"; }
-  $newclass->new($source, %options); }
+  return $newclass->new($source, %options); }
 
 sub new {
   my ($class, $string) = @_;
@@ -41,13 +42,13 @@ sub new {
   my $self = bless { source => "Anonymous String", shortsource => "String" }, $class;
   $self->openString($string);
   $self->initialize;
-  $self; }
+  return $self; }
 
 sub openString {
   my ($self, $string) = @_;
   $$self{string} = $string;
   $$self{buffer} = [(defined $string ? splitLines($string) : ())];
-}
+  return; }
 
 sub initialize {
   my ($self) = @_;
@@ -64,7 +65,7 @@ sub initialize {
     $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
     $STATE->assignCatcode('@' => CC_LETTER);
     $STATE->assignValue(INCLUDE_COMMENTS => 0); }
-}
+  return; }
 
 sub finish {
   my ($self) = @_;
@@ -78,7 +79,7 @@ sub finish {
     $STATE->assignValue(INCLUDE_COMMENTS => $$self{SAVED_INCLUDE_COMMENTS}); }
   if ($$self{notes}) {
     NoteEnd($$self{note_message}); }
-}
+  return; }
 
 # This is (hopefully) a platform independent way of splitting a string
 # into "lines" ending with CRLF, CR or LF (DOS, Mac or Unix).
@@ -86,7 +87,7 @@ sub finish {
 sub splitLines {
   my ($string) = @_;
   $string =~ s/(?:\015\012|\015|\012)/\r/sg;    #  Normalize remaining
-  split("\r", $string); }                       # And split.
+  return split("\r", $string); }                # And split.
 
 # This is (hopefully) a correct way to split a line into "chars",
 # or what is probably more desired is "Grapheme clusters" (even "extended")
@@ -96,17 +97,17 @@ sub splitLines {
 # have to be converted to the proper accent control sequences!
 sub splitChars {
   my ($line) = @_;
-  $line =~ m/\X/g; }
+  return $line =~ m/\X/g; }
 
 sub getNextLine {
   my ($self) = @_;
   return unless scalar(@{ $$self{buffer} });
   my $line = shift(@{ $$self{buffer} });
-  (scalar(@{ $$self{buffer} }) ? $line . "\r" : $line); }    # No CR on last line!
+  return (scalar(@{ $$self{buffer} }) ? $line . "\r" : $line); }    # No CR on last line!
 
 sub hasMoreInput {
   my ($self) = @_;
-  ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }); }
+  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }); }
 
 # Get the next character & it's catcode from the input,
 # handling TeX's "^^" encoding.
@@ -134,20 +135,20 @@ sub getNextChar {
         $$self{nchars} -= 2; }
       $cc = $STATE->lookupCatcode($ch); }
     $cc = CC_OTHER unless defined $cc;
-    ($ch, $cc); }
+    return ($ch, $cc); }
   else {
-    (undef, undef); } }
+    return (undef, undef); } }
 
 sub stringify {
   my ($self) = @_;
-  "Mouth[<string>\@$$self{lineno}x$$self{colno}]"; }
+  return "Mouth[<string>\@$$self{lineno}x$$self{colno}]"; }
 
 #**********************************************************************
 sub getLocator {
   my ($self, $length) = @_;
   my ($l, $c) = ($$self{lineno}, $$self{colno});
   if ($length && ($length < 0)) {
-    "at $$self{shortsource}; line $l col $c"; }
+    return "at $$self{shortsource}; line $l col $c"; }
   elsif ($length && (defined $l || defined $c)) {
     my $msg   = "at $$self{source}; line $l col $c";
     my $chars = $$self{chars};
@@ -158,13 +159,14 @@ sub getLocator {
       my $cn = ($n - $c > 50 ? $c + 40 : $n - 1);
       my $p1 = ($c0 <= $cm ? join('', @$chars[$c0 .. $cm]) : ''); chomp($p1);
       my $p2 = ($c <= $cn  ? join('', @$chars[$c .. $cn])  : ''); chomp($p2);
-      $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; } }
+      $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; }
+    return $msg; }
   else {
-    "at $$self{source}; line $l col $c"; } }
+    return "at $$self{source}; line $l col $c"; } }
 
 sub getSource {
   my ($self) = @_;
-  $$self{source}; }
+  return $$self{source}; }
 
 #**********************************************************************
 # See The TeXBook, Chapter 8, The Characters You Type, pp.46--47.
@@ -186,7 +188,7 @@ sub handle_escape {    # Read control sequence
                                                  # Now, skip spaces
     while ((($ch, $cc) = $self->getNextChar) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) { }
     $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
-  T_CS($cs); }
+  return T_CS($cs); }
 
 sub handle_EOL {
   my ($self) = @_;
@@ -196,7 +198,7 @@ sub handle_EOL {
     ? T_CS('\par')
     : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n", CC_SPACE) : T_SPACE));
   $$self{colno} = $$self{nchars};    # Ignore any remaining characters after EOL
-  $token; }
+  return $token; }
 
 sub handle_comment {
   my ($self) = @_;
@@ -204,7 +206,7 @@ sub handle_comment {
   $$self{colno} = $$self{nchars};
   my $comment = join('', @{ $$self{chars} }[$n .. $$self{nchars} - 1]);
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
-  ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : undef); }
+  return ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : undef); }
 
 # Some caches
 my %LETTER = ();
@@ -263,7 +265,8 @@ sub readToken {
     my $token = $DISPATCH[$cc];
     $token = &$token($self, $ch) if ref $token eq 'CODE';
     return $token if defined $token;    # Else, repeat till we get something or run out.
-  } }
+  }
+  return; }
 
 #**********************************************************************
 # Read all tokens until a token equal to $until (if given), or until exhausted.
@@ -275,9 +278,9 @@ sub readTokens {
   while (defined(my $token = $self->readToken())) {
     last if $until and $token->getString eq $until->getString;
     push(@tokens, $token); }
-  while (@tokens && $tokens[$#tokens]->getCatcode == CC_SPACE) {    # Remove trailing space
+  while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
     pop(@tokens); }
-  Tokens(@tokens); }
+  return Tokens(@tokens); }
 
 #**********************************************************************
 # Read raw lines, until a line matches $endline.
@@ -318,7 +321,7 @@ sub readRawLines {
       last; }
     else {
       push(@lines, $line); } }
-  @lines; }
+  return @lines; }
 
 #**********************************************************************
 # LaTeXML::FileMouth
@@ -340,7 +343,7 @@ sub new {
   $$self{notes} = 1;
   $self->openFile($pathname);
   $self->initialize;
-  $self; }
+  return $self; }
 
 sub openFile {
   my ($self, $pathname) = @_;
@@ -350,19 +353,20 @@ sub openFile {
   open($IN, '<', $pathname) || Fatal('I/O', $pathname, $self, "Can't open $pathname for reading", $!);
   $$self{IN}     = $IN;
   $$self{buffer} = [];
-}
+  return; }
 
 sub finish {
   my ($self) = @_;
   $self->SUPER::finish;
   if ($$self{IN}) {
     close(\*{ $$self{IN} }); $$self{IN} = undef; }
-}
+  return; }
 
 sub hasMoreInput {
   my ($self) = @_;
   #  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
-  ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }) || $$self{IN}; }
+  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }) || $$self{IN}; }
+
 our $WARNED_8BIT = 0;
 
 sub getNextLine {
@@ -389,11 +393,11 @@ sub getNextLine {
 
   if (!($$self{lineno} % 25)) {
     NoteProgress("[#$$self{lineno}]"); }
-  $line; }
+  return $line; }
 
 sub stringify {
   my ($self) = @_;
-  "FileMouth[$$self{source}\@$$self{lineno}x$$self{colno}]"; }
+  return "FileMouth[$$self{source}\@$$self{lineno}x$$self{colno}]"; }
 
 #**********************************************************************
 # LaTeXML::StyleMixin
@@ -440,7 +444,7 @@ sub new {
   $self->openFile($pathname);
   $self->initialize;
   #  $self->postInitialize;
-  $self; }
+  return $self; }
 
 # sub finish {
 #   my($self)=@_;
@@ -466,7 +470,7 @@ sub new {
   $self->openString($string);
   $self->initialize;
   #  $self->postInitialize;
-  $self; }
+  return $self; }
 
 # sub finish {
 #   my($self)=@_;
@@ -484,7 +488,7 @@ sub new {
   $$self{notes}          = 1 if $options{notes};
   $self->openString($data);
   $self->initialize;
-  $self; }
+  return $self; }
 
 #**********************************************************************
 package LaTeXML::Mouth::cached;
@@ -500,7 +504,7 @@ sub new {
   $$self{notes}          = 1 if $options{notes};
   $self->openString($options{content});
   $self->initialize;
-  $self; }
+  return $self; }
 
 #**********************************************************************
 package LaTeXML::Mouth::file;
@@ -516,7 +520,7 @@ sub new {
   $$self{notes}          = 1 if $options{notes};
   $self->openFile($pathname);
   $self->initialize;
-  $self; }
+  return $self; }
 
 #**********************************************************************
 package LaTeXML::Mouth::http;
@@ -534,7 +538,7 @@ sub new {
   my $content = auth_get($url);
   $self->openString($content);
   $self->initialize;
-  $self; }
+  return $self; }
 
 #**********************************************************************
 package LaTeXML::Mouth::https;
@@ -555,11 +559,12 @@ sub new {
   my ($dir, $name, $ext) = pathname_split($pathname);
   my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
   NoteBegin("Loading $$self{source}");
-  $self; }
+  return $self; }
 
 sub finish {
   my ($self) = @_;
-  NoteEnd("Loading $$self{source}"); }
+  NoteEnd("Loading $$self{source}");
+  return; }
 
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
@@ -570,18 +575,21 @@ sub getLocator {
   my ($pkg, $file, $line);
   while (($pkg, $file, $line) = caller($frame++)) {
     last if $file eq $path; }
-  $loc . ($line ? " line $line" : ''); }
+  return $loc . ($line ? " line $line" : ''); }
 
 sub getSource {
   my ($self) = @_;
-  $$self{source}; }
+  return $$self{source}; }
 
-sub hasMoreInput { 0; }
-sub readToken    { undef; }
+sub hasMoreInput {
+  return 0; }
+
+sub readToken {
+  return; }
 
 sub stringify {
   my ($self) = @_;
-  "PerlMouth[$$self{source}]"; }
+  return "PerlMouth[$$self{source}]"; }
 
 #**********************************************************************
 1;
