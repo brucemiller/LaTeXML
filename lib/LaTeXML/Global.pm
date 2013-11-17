@@ -307,14 +307,14 @@ our %note_timers = ();
 sub NoteBegin {
   my ($state) = @_;
   if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
-    $note_timers{$state} = [Time::HiRes::gettimeofday];
+    $LaTeXML::Global::STATE->assignMapping('NOTE_TIMERS', $state, [Time::HiRes::gettimeofday]);
     print STDERR "\n($state..."; }
   return; }
 
 sub NoteEnd {
   my ($state) = @_;
-  if (my $start = $note_timers{$state}) {
-    undef $note_timers{$state};
+  if (my $start = $LaTeXML::Global::STATE->lookupMapping('NOTE_TIMERS', $state)) {
+    $LaTeXML::Global::STATE->assignMapping('NOTE_TIMERS', $state, undef);
     if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
       my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
       print STDERR sprintf(" %.2f sec)", $elapsed); } }
