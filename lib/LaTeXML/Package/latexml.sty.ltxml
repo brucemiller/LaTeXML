@@ -273,14 +273,7 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   properties => { alignmentSkippable => 1 },
   reversion => '');
 
-our $XMDeclID = 0;
-
 sub next_declaration_id {
-##  ToString(LookupValue('Chapter')).":LXDeclID".$XMDeclID++; }
-
-##  my $docid = LookupValue('DOCUMENTID');
-##  ($docid ? "$docid.XMD" : 'XMD').++$XMDeclID; }
-
   StepCounter('@XMDECL');
   DefMacroI(T_CS('\@@XMDECL@ID'), undef,
     Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
