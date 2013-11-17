@@ -528,6 +528,7 @@ package LaTeXML::ConstructorCompiler;
 use strict;
 use Readonly;
 use LaTeXML::Global;
+use Scalar::Util qw(refaddr);
 
 Readonly my $VALUE_RE => "(\\#|\\&[\\w\\:]*\\()";
 Readonly my $COND_RE  => "\\?$VALUE_RE";
@@ -535,8 +536,6 @@ Readonly my $COND_RE  => "\\?$VALUE_RE";
 Readonly my $QNAME_RE => "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"
   . "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
 Readonly my $TEXT_RE => "(.[^\\#<\\?\\)\\&\\,]*)";
-
-our $GEN = 0;
 
 sub compileConstructor {
   my ($constructor) = @_;
@@ -549,7 +548,8 @@ sub compileConstructor {
   local $LaTeXML::Constructor::NAME        = $name;
   local $LaTeXML::Constructor::NARGS       = $nargs;
   $name =~ s/\W//g;
-  $name = "LaTeXML::Package::Pool::constructor_" . $name . '_' . $GEN++;
+  my $uid = refaddr $constructor;
+  $name = "LaTeXML::Package::Pool::constructor_" . $name . '_' . $uid;
   my $floats = ($replacement =~ s/^\^\s*//);                 # Grab float marker.
   my $body = translate_constructor($replacement, $floats);
   # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
