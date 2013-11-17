@@ -17,6 +17,7 @@
 package LaTeXML::Mouth;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Token;
 use LaTeXML::Util::Pathname;
@@ -32,7 +33,7 @@ sub create {
   elsif (!defined $source)  { $type = 'empty'; }
   else                      { $type = pathname_protocol($source); }
   my $newclass = "LaTeXML::Mouth::$type";
-  if (!$newclass->can('new')) {    # not already defined somewhere?
+  if (!$class->can('new')) {    # not already defined somewhere?
     require "LaTeXML/Mouth/$type.pm"; }
   return $newclass->new($source, %options); }
 
@@ -208,29 +209,34 @@ sub handle_comment {
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
   return ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : undef); }
 
-# Some caches
+# These cache the (presumably small) set of distinct letters, etc
+# converted to Tokens.
+# Note that this gets filled during runtime and carries over to through Daemon frames.
+# However, since the values don't depend on any particular document, bindings, etc,
+# they should be safe.
 my %LETTER = ();
 my %OTHER  = ();
 my %ACTIVE = ();
 
-my @DISPATCH
-  = (\&handle_escape,    # T_ESCAPE
-  T_BEGIN,               # T_BEGIN
-  T_END,                 # T_END
-  T_MATH,                # T_MATH
-  T_ALIGN,               # T_ALIGN
-  \&handle_EOL,          # T_EOL
-  T_PARAM,               # T_PARAM
-  T_SUPER,               # T_SUPER
-  T_SUB,                 # T_SUB
-  sub { undef; },        # T_IGNORE (we'll read next token)
-  T_SPACE,               # T_SPACE
+# Dispatch table for catcodes.
+Readonly my @DISPATCH => (
+  \&handle_escape,    # T_ESCAPE
+  T_BEGIN,            # T_BEGIN
+  T_END,              # T_END
+  T_MATH,             # T_MATH
+  T_ALIGN,            # T_ALIGN
+  \&handle_EOL,       # T_EOL
+  T_PARAM,            # T_PARAM
+  T_SUPER,            # T_SUPER
+  T_SUB,              # T_SUB
+  sub { undef; },     # T_IGNORE (we'll read next token)
+  T_SPACE,            # T_SPACE
   sub { $LETTER{ $_[1] } || ($LETTER{ $_[1] } = T_LETTER($_[1])); },    # T_LETTER
   sub { $OTHER{ $_[1] }  || ($OTHER{ $_[1] }  = T_OTHER($_[1])); },     # T_OTHER
   sub { $ACTIVE{ $_[1] } || ($ACTIVE{ $_[1] } = T_ACTIVE($_[1])); },    # T_ACTIVE
   \&handle_comment,                                                     # T_COMMENT
   sub { T_OTHER($_[1]); }    # T_INVALID (we could get unicode!)
-  );
+);
 
 # Read the next token, or undef if exhausted.
 # Note that this also returns COMMENT tokens containing source comments,

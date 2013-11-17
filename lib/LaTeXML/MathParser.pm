@@ -16,6 +16,7 @@
 package LaTeXML::MathParser;
 use strict;
 use warnings;
+use Readonly;
 use Parse::RecDescent;
 use LaTeXML::Global;
 use LaTeXML::Font;
@@ -38,10 +39,12 @@ our %EXPORT_TAGS = (constructors
       &Arg &MaybeFunction
       &SawNotation &IsNotationAllowed
       &isMatchingClose &Fence)]);
-#our $DEFAULT_FONT = LaTeXML::MathFont->default();
-our $DEFAULT_FONT = LaTeXML::MathFont->new(family => 'serif', series => 'medium',
-  shape => 'upright', size => 'normal',
-  color => 'black', background => 'white', opacity => 1);
+
+Readonly my $DEFAULT_FONT
+  => LaTeXML::MathFont->new(
+  family => 'serif',   series     => 'medium',
+  shape  => 'upright', size       => 'normal',
+  color  => 'black',   background => 'white', opacity => 1);
 
 # ================================================================================
 sub new {
@@ -178,7 +181,7 @@ sub parse {
     $p->setAttribute('text', text_form($result)); }
   return; }
 
-our %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');
+Readonly my %TAG_FEEDBACK => ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
@@ -239,7 +242,7 @@ sub parse_children {
       $self->parse_children($child, $document); } }
   return; }
 
-our $HINT_PUNCT_THRESHOLD = 10.0;    # \quad or bigger becomes punctuation ?
+Readonly my $HINT_PUNCT_THRESHOLD => 10.0;    # \quad or bigger becomes punctuation ?
 
 sub filter_hints {
   my ($self, $document, @nodes) = @_;
@@ -247,46 +250,47 @@ sub filter_hints {
   my $prev     = undef;
   while (@nodes) {
     my $c = shift(@nodes);
-    if (getQName($c) eq 'ltx:XMHint') {    # Is this a Hint node?
-      if (my $width = $c->getAttribute('width')) {    # Is it a spacing hint?
-            # Get the pts (combining w/any following spacing hints)
-        my $pts = getXMHintSpacing($width);
-        while (@nodes && (getQName($nodes[0]) eq 'ltx:XMHint')    # Combine w/ more?
-          && ($width = $c->getAttribute('width'))) {
-          $pts += getXMHintSpacing($width);
-          shift(@nodes); }                                        # and remove the extra hints
-            # A wide space, between Stuff, is likely acting like punctuation, so convert it
-        if ($prev && (($prev->getAttribute('role') || '') ne 'PUNCT')
-          && scalar(@nodes) && ($pts >= $HINT_PUNCT_THRESHOLD)) {
-          $c = $c->cloneNode(1); $c->setNodeName('XMTok');
-          $c->removeAttribute('width');
-          $c->removeAttribute('height');    # ?
-          $c->setAttribute(role => 'PUNCT');    # convert to punctuation!
-          $c->appendText(spacingToString($pts));
-          push(@filtered, $c); }
-        else {
-          if ($pts) {
-            if ($prev) {                        # Else add rpadding to previous item
-              $prev->setAttribute(rpadding => $pts . 'pt'); }
-            elsif (scalar(@nodes)) {            # or maybe lpadding to next??
-              $nodes[0]->setAttribute(lpadding => $pts . 'pt'); }
-          } } }
-      $prev = undef; }                          # at any rate, remove it now
-    else {                                      # Normal node? keep it
-      push(@filtered, $c); $prev = $c; } }
+    if (getQName($c) ne 'ltx:XMHint') {       # Is it NOT a Hint node?
+      push(@filtered, $c); $prev = $c; }      # Keep it.
+    elsif (my $width = $c->getAttribute('width')) {    # Is it a spacing hint?
+          # Get the pts (combining w/any following spacing hints)
+      my $pts = getXMHintSpacing($width);
+      while (@nodes && (getQName($nodes[0]) eq 'ltx:XMHint')    # Combine w/ more?
+        && ($width = $c->getAttribute('width'))) {
+        $pts += getXMHintSpacing($width);
+        shift(@nodes); }                                        # and remove the extra hints
+          # A wide space, between Stuff, is likely acting like punctuation, so convert it
+      if ($prev && (($prev->getAttribute('role') || '') ne 'PUNCT')
+        && scalar(@nodes) && ($pts >= $HINT_PUNCT_THRESHOLD)) {
+        $c = $c->cloneNode(1); $c->setNodeName('XMTok');
+        $c->removeAttribute('width');
+        $c->removeAttribute('height');    # ?
+        $c->setAttribute(role => 'PUNCT');    # convert to punctuation!
+        $c->appendText(spacingToString($pts));
+        push(@filtered, $c); }
+      else {
+        if ($pts) {
+          if ($prev) {                        # Else add rpadding to previous item
+            $prev->setAttribute(rpadding => $pts . 'pt'); }
+          elsif (scalar(@nodes)) {            # or maybe lpadding to next??
+            $nodes[0]->setAttribute(lpadding => $pts . 'pt'); }
+        } }
+      $prev = undef; }                        # at any rate, remove it now
+    else {
+      $prev = undef; } }                      # other hint; remove it now
   return @filtered; }
 
 # Given a width attribute on an XMHint, return the pts, if any
 sub getXMHintSpacing {
   my ($width) = @_;
-  if ($width && ($width =~ /^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)) {
+  if ($width && ($width =~ /^$LaTeXML::Glue::GLUE_re$/)) {
     return ($2 eq 'mu' ? $1 / 1.8 : $1); }
   else {
     return 0; } }
 
 # We've pretty much builtin the assumption that the target XML is "As If" 10 pts,
 # so we'll assume that 1em is 10 pts.
-our $POINTS_PER_EM = 10.0;
+Readonly my $POINTS_PER_EM => 10.0;
 # Convert spacing, given as a number of points, to a string of appropriate spacing chars
 sub spacingToString {
   my ($points) = @_;
@@ -515,8 +519,8 @@ sub getGrammaticalRole {
   return $role; }
 
 # How many tokens before & after the failure point to report in the Warning message.
-our $FAILURE_PRETOKENS  = 3;
-our $FAILURE_POSTTOKENS = 1;
+Readonly my $FAILURE_PRETOKENS  => 3;
+Readonly my $FAILURE_POSTTOKENS => 1;
 
 sub failureReport {
   my ($self, $document, $mathnode, $rule, $unparsed, @nodes) = @_;
@@ -573,13 +577,14 @@ sub text_form {
   $text =~ s/</less/g;
   return $text; }
 
-our %PREFIX_ALIAS = (SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times => => '*',
-  'equals' => '=', 'less-than' => '<', 'greater-than' => '>',
+Readonly my %PREFIX_ALIAS => (
+  SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => => '*',
+  'equals'      => '=', 'less-than' => '<', 'greater-than' => '>',
   'less-than-or-equals' => '<=', 'greater-than-or-equals' => '>=',
   'much-less-than'      => '<<', 'much-greater-than'      => '>>',
   'plus'                => '+',  'minus'                  => '-', 'divide' => '/');
 # Put infix, along with `binding power'
-our %IS_INFIX = (METARELOP => 1,
+Readonly my %IS_INFIX => (METARELOP => 1,
   RELOP         => 2,    ARROW       => 2,
   ADDOP         => 10,   MULOP       => 100,
   SUPERSCRIPTOP => 1000, SUBSCRIPTOP => 1000);
@@ -590,36 +595,15 @@ sub textrec {
   $outer_bp   = 0  unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
   if ($tag eq 'ltx:XMApp') {
-    my ($op, @args) = element_nodes($node);
     my $app_role = $node->getAttribute('role');
-    if ($app_role && $app_role =~ /^FLOAT/) {
-      return ($app_role eq 'FLOATSUPERSCRIPT' ? '^' : '_') . textrec($op); }
+    my ($op, @args) = element_nodes($node);
+    if ($app_role && $app_role =~ /^FLOAT(SUB|SUPER)SCRIPT$/) {
+      return ($1 eq 'SUPER' ? '^' : '_') . textrec($op); }
     else {
       my $name = ((getQName($op) eq 'ltx:XMTok') && getTokenMeaning($op)) || 'unknown';
-      my $role = $op->getAttribute('role') || 'Unknown';
-      my ($bp, $string);
-      if (($role =~ /^(SUB|SUPER)SCRIPTOP$/) && (($op->getAttribute('scriptpos') || '') =~ /^pre\d+$/)) {
-        # Note that this will likely get parenthesized due to high bp
-        $bp     = 5000;
-        $string = textrec($op) . " " . textrec($args[1]) . " " . textrec($args[0]); }
-      elsif ($bp = $IS_INFIX{$role}) {
-        # Format as infix.
-        $string = (scalar(@args) == 1    # unless a single arg; then prefix.
-          ? textrec($op) . ' ' . textrec($args[0], $bp, $name)
-          : join(' ' . textrec($op) . ' ', map { textrec($_, $bp, $name) } @args)); }
-      elsif ($role eq 'POSTFIX') {
-        $bp = 10000;
-        $string = textrec($args[0], $bp, $name) . textrec($op); }
-      elsif ($name eq 'multirelation') {
-        $bp = 2;
-        $string = join(' ', map { textrec($_, $bp, $name) } @args); }
-      ##    elsif($name eq 'fenced'){
-      ##      $bp = -1;   # to force parentheses
-      ##      $string = join(', ',map { textrec($_) } @args); }
-      else {
-        $bp = 500;
-        $string = textrec($op, 10000, $name) . '@(' . join(', ', map { textrec($_) } @args) . ')'; }
-      return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name)) ? '(' . $string . ')' : $string); } }
+      my ($bp, $string) = textrec_apply($name, $op, @args);
+      return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name))
+        ? '(' . $string . ')' : $string); } }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     return textrec($content, $outer_bp, $outer_name); }    # Just send out the semantic form.
@@ -631,17 +615,35 @@ sub textrec {
     # ??
     return join('@', map { textrec($_) } element_nodes($node)); }
   elsif ($tag eq 'ltx:XMArray') {
-    my $name = $node->getAttribute('meaning') || $node->getAttribute('name')
-      || 'Array';
-    my @rows = ();
-    foreach my $row (element_nodes($node)) {
-      push(@rows,
-'[' . join(', ', map { ($_->firstChild ? textrec($_->firstChild) : '') } element_nodes($row)) . ']'); }
-    return $name . '[' . join(', ', @rows) . ']'; }
+    return textrec_array($node); }
   else {
-    #    my $string = ($tag eq 'ltx:XMText' ? $node->textContent : $node->getAttribute('tex') || '?');
-    my $string = $node->textContent;
-    return "[$string]"; } }
+    return '[' . $node->textContent . ']'; } }
+
+sub textrec_apply {
+  my ($name, $op, @args) = @_;
+  my $role = $op->getAttribute('role') || 'Unknown';
+  if (($role =~ /^(SUB|SUPER)SCRIPTOP$/) && (($op->getAttribute('scriptpos') || '') =~ /^pre\d+$/)) {
+    # Note that this will likely get parenthesized due to high bp
+    return (5000, textrec($op) . " " . textrec($args[1]) . " " . textrec($args[0])); }
+  elsif (my $bp = $IS_INFIX{$role}) {
+    # Format as infix.
+    return ($bp, (scalar(@args) == 1    # unless a single arg; then prefix.
+        ? textrec($op) . ' ' . textrec($args[0], $bp, $name)
+        : join(' ' . textrec($op) . ' ', map { textrec($_, $bp, $name) } @args))); }
+  elsif ($role eq 'POSTFIX') {
+    return (10000, textrec($args[0], 10000, $name) . textrec($op)); }
+  elsif ($name eq 'multirelation') {
+    return (2, join(' ', map { textrec($_, 2, $name) } @args)); }
+  else {
+    return (500, textrec($op, 10000, $name) . '@(' . join(', ', map { textrec($_) } @args) . ')'); } }
+
+sub textrec_array {
+  my ($node) = @_;
+  my $name = $node->getAttribute('meaning') || $node->getAttribute('name') || 'Array';
+  my @rows = ();
+  foreach my $row (element_nodes($node)) {
+    push(@rows, '[' . join(', ', map { ($_->firstChild ? textrec($_->firstChild) : '') } element_nodes($row)) . ']'); }
+  return $name . '[' . join(', ', @rows) . ']'; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cute! Were it NOT for Sub/Superscripts, the whole parsing process only
@@ -875,7 +877,8 @@ sub extract_separators {
 # Question: Is there enough context to guess better?
 # For example, whether (a,b) is an interval or list?
 #  (both could reasonably be preceded by \in )
-our %balanced = ('(' => ')', '[' => ']', '{' => '}',
+Readonly my %balanced => (
+  '(' => ')', '[' => ']', '{' => '}',
   '|' => '|', '||' => '||',
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
@@ -885,22 +888,25 @@ our %balanced = ('(' => ')', '[' => ']', '{' => '}',
 );
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
-our %enclose1 = ('{@}' => 'set',    # alternatively, just variant parentheses
-  '|@|'               => 'absolute-value',
-  '||@||'             => 'norm', "\x{2225}@\x{2225}" => 'norm',
+Readonly my %enclose1 => (
+  '{@}'   => 'set',                                   # alternatively, just variant parentheses
+  '|@|'   => 'absolute-value',
+  '||@||' => 'norm', "\x{2225}@\x{2225}" => 'norm',
   "\x{230A}@\x{230B}" => 'floor',
   "\x{2308}@\x{2309}" => 'ceiling',
-  '<@>'               => 'expectation',                           # or just average?
+  '<@>'               => 'expectation',               # or just average?
   '<@|'               => 'bra', '|@>' => 'ket');
 # For enclosing more than 2 objects; the punctuation is significant too
-our %enclose2 = ('(@,@)' => 'open-interval',                      # alternatively, just a list
+Readonly my %enclose2 => (
+  '(@,@)' => 'open-interval',                                           # alternatively, just a list
   '[@,@]' => 'closed-interval',
   '(@,@]' => 'open-closed-interval', '[@,@)' => 'closed-open-interval',
   '{@,@}' => 'set',                                                     # alternatively, just a list ?
 );
 # For enclosing more than 2 objects.
 # assume 1st punct? or should we check all are same?
-our %encloseN = ('(@,@)' => 'vector', '{@,@}' => 'set',);
+Readonly my %encloseN => (
+  '(@,@)' => 'vector', '{@,@}' => 'set',);
 
 sub isMatchingClose {
   my ($open, $close) = @_;

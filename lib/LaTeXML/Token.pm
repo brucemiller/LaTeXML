@@ -18,6 +18,7 @@
 package LaTeXML::Token;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
@@ -28,31 +29,39 @@ use base qw(LaTeXML::Object);
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-my @primitive_catcode = (1, 1, 1, 1,
+Readonly my @primitive_catcode => (
+  1, 1, 1, 1,
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
   0, 1);
-my @executable_catcode = (0, 1, 1, 1,
+Readonly my @executable_catcode => (
+  0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
   1, 0);
 
-my @standardchar = ("\\", '{', '}', q{$},
+Readonly my @standardchar => (
+  "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef);
 
-our @CC_NAME = qw(Escape Begin End Math Align EOL Parameter Superscript Subscript
-  Ignore Space Letter Other Active Comment Invalid
+Readonly my @CC_NAME => qw(
+  Escape Begin End Math
+  Align EOL Parameter Superscript
+  Subscript Ignore Space Letter
+  Other Active Comment Invalid
   ControlSequence NotExpanded);
-our @PRIMITIVE_NAME = ('Escape', 'Begin', 'End', 'Math',
-  'Align',     'EOL', 'Parameter', 'Superscript',
-  'Subscript', undef, 'Space',     undef,
-  undef,       undef, undef,       undef,
+Readonly my @PRIMITIVE_NAME => (
+  'Escape',    'Begin', 'End',       'Math',
+  'Align',     'EOL',   'Parameter', 'Superscript',
+  'Subscript', undef,   'Space',     undef,
+  undef,       undef,   undef,       undef,
   undef,       'NotExpanded');
-our @CC_SHORT_NAME = qw(T_ESCAPE T_BEGIN T_END T_MATH
+Readonly my @CC_SHORT_NAME = qw(
+  T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
@@ -100,7 +109,8 @@ sub unlist {
   my ($self) = @_;
   return ($self); }
 
-our @NEUTRALIZABLE = (0, 0, 0, 1,
+Readonly my @NEUTRALIZABLE => (
+  0, 0, 0, 1,
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 1, 0,
@@ -150,7 +160,8 @@ sub equals {
     && ($$a[1] == $$b[1])
     && ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
 
-our @CONTROLNAME = (qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
+Readonly my @CONTROLNAME => (qw(
+    NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
 sub stringify {

@@ -225,25 +225,22 @@ sub getTagActionList {
   my ($p, $n) = (undef, $tag);
   if ($tag =~ /^([^:]+):(.+)$/) {
     ($p, $n) = ($1, $2); }
-  my $when0 = $when . ':early';
-  my $when1 = $when . ':late';
-###  my $taghash = $$self{tagprop}{$tag};
-###  my $nshash  = (defined $p) && $$self{tagprop}{ $p . ":*" };
-####  my $allhash = $$self{tagprop}{"*"};
-  my $taghash = $STATE->lookupMapping('TAG_PROPERTIES', $tag);
-  my $nshash = (defined $p) && $STATE->lookupMapping('TAG_PROPERTIES', $p . ':*');
-  my $allhash = $STATE->lookupMapping('TAG_PROPERTIES', '*');
+  my $when0   = $when . ':early';
+  my $when1   = $when . ':late';
+  my $taghash = $STATE->lookupMapping('TAG_PROPERTIES', $tag) || {};
+  my $nshash  = ((defined $p) && $STATE->lookupMapping('TAG_PROPERTIES', $p . ':*')) || {};
+  my $allhash = $STATE->lookupMapping('TAG_PROPERTIES', '*') || {};
   my $v;
   return (
-    ($taghash && defined($v = $$taghash{$when0}) ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$when0})  ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$when0}) ? @$v : ()),
-    ($taghash && defined($v = $$taghash{$when})  ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$when})   ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$when})  ? @$v : ()),
-    ($taghash && defined($v = $$taghash{$when1}) ? @$v : ()),
-    ($nshash  && defined($v = $$nshash{$when1})  ? @$v : ()),
-    ($allhash && defined($v = $$allhash{$when1}) ? @$v : ()),
+    (($v = $$taghash{$when0}) ? @$v : ()),
+    (($v = $$nshash{$when0})  ? @$v : ()),
+    (($v = $$allhash{$when0}) ? @$v : ()),
+    (($v = $$taghash{$when})  ? @$v : ()),
+    (($v = $$nshash{$when})   ? @$v : ()),
+    (($v = $$allhash{$when})  ? @$v : ()),
+    (($v = $$taghash{$when1}) ? @$v : ()),
+    (($v = $$nshash{$when1})  ? @$v : ()),
+    (($v = $$allhash{$when1}) ? @$v : ()),
     ); }
 
 #**********************************************************************
@@ -261,15 +258,9 @@ sub doctest {
 
 sub doctest_rec {
   my ($self, $parent, $node, $severe) = @_;
-  print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d" if $severe;
-  if (!$node->ownerDocument->isSameNode($self->getDocument)) { print STDERR "!" if $severe; }
-  print STDERR "p" if $severe;
-  if ($parent && !$node->parentNode->isSameNode($parent)) { print STDERR "!" if $severe; }
-  print STDERR "t" if $severe;
+  # Check consistency of document, parent & type, before proceeding
+  $self->doctest_head($parent, $node, $severe);
   my $type = $node->nodeType;
-  print STDERR "] " if $severe;
-
   if ($type == XML_ELEMENT_NODE) {
     print STDERR "ELEMENT "
       . join(' ', "<" . $$self{model}->getNodeQName($node),
@@ -298,6 +289,21 @@ sub doctest_rec {
   #  elsif($type == XML_DTD_NODE){}
   else {
     print STDERR "OTHER $type\n" if $severe; }
+  return; }
+
+sub doctest_head {
+  my ($self, $parent, $node, $severe) = @_;
+  # Check consistency of document, parent & type, before proceeding
+  print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
+  print STDERR "d" if $severe;
+  if (!$node->ownerDocument->isSameNode($self->getDocument)) {
+    print STDERR "!" if $severe; }
+  print STDERR "p" if $severe;
+  if ($parent && !$node->parentNode->isSameNode($parent)) {
+    print STDERR "!" if $severe; }
+  print STDERR "t" if $severe;
+  my $type = $node->nodeType;
+  print STDERR "] " if $severe;
   return; }
 
 sub doctest_children {
@@ -398,22 +404,23 @@ sub finalize_rec {
 sub absorb {
   my ($self, $box, %props) = @_;
   # Nothing? Skip it
-  if (!defined $box) { return; }
+  if (!defined $box) {
+    return; }
   # A Proper Box or List or Whatsit? It will handle it.
   elsif (ref $box) {
-    { local $LaTeXML::BOX = $box;
-      # [ATTEMPT to] only record if we're running in NON-VOID context.
-      # [but wantarray seems defined MUCH more than I would have expected!?]
-      if ($LaTeXML::RECORDING_CONSTRUCTION || defined wantarray) {
-        my @n = ();
-        { local $LaTeXML::RECORDING_CONSTRUCTION = 1;
-          local @LaTeXML::CONSTRUCTED_NODES = ();
-          $box->beAbsorbed($self);
-          @n = @LaTeXML::CONSTRUCTED_NODES; }    # These were created just now
-        map { $self->recordConstructedNode($_) } @n;    # record these for OUTER caller!
-        return @n; }                                    # but return only the most recent set.
-      else {
-        return $box->beAbsorbed($self); } } }
+    local $LaTeXML::BOX = $box;
+    # [ATTEMPT to] only record if we're running in NON-VOID context.
+    # [but wantarray seems defined MUCH more than I would have expected!?]
+    if ($LaTeXML::RECORDING_CONSTRUCTION || defined wantarray) {
+      my @n = ();
+      { local $LaTeXML::RECORDING_CONSTRUCTION = 1;
+        local @LaTeXML::CONSTRUCTED_NODES = ();
+        $box->beAbsorbed($self);
+        @n = @LaTeXML::CONSTRUCTED_NODES; }    # These were created just now
+      map { $self->recordConstructedNode($_) } @n;    # record these for OUTER caller!
+      return @n; }                                    # but return only the most recent set.
+    else {
+      return $box->beAbsorbed($self); } }
   # Else, plain string in text mode.
   elsif (!$props{isMath}) {
     return $self->openText($box, $props{font} || ($LaTeXML::BOX && $LaTeXML::BOX->getFont)); }

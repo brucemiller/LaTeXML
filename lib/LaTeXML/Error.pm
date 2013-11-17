@@ -13,6 +13,7 @@
 package LaTeXML::Error;
 use strict;
 use warnings;
+use Readonly;
 use base qw(Exporter);
 our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 
@@ -69,7 +70,7 @@ sub checkRecursiveError {
   return; }
 
 # Note that "100" is hardwired into TeX, The Program!!!
-our $MAXERRORS = 100;
+Readonly my $MAXERRORS => 100;
 
 # Should be fatal if strict is set, else warn.
 sub Error {
@@ -115,15 +116,22 @@ sub Info {
 # We'll try to decode some common errors to make them more usable
 # for build systems.
 
+Readonly my $quoted_re     => qr/\"([^\"]*)\"/;
+Readonly my $cantcall_re   => qr/Can't call method/;
+Readonly my $cantlocate_re => qr/Can't locate object method/;
+Readonly my $noself_re     => qr/on an undefined value|without a package or object reference/;
+Readonly my $via_re        => qr/via package/;
+Readonly my $at_re         => qr/at (.*)/;
+
 sub perl_die_handler {
   my (@line) = @_;
   # We try to find a meaningful name for where the error occurred;
   # That's the thing that is "misdefined", after all.
   # Not completely sure we're looking in the right place up the stack, though.
-  if ($line[0] =~ /^Can't call method \"([^\"]*)\" (on an undefined value|without a package or object reference) at (.*)$/) {
+  if ($line[0] =~ /^$cantcall_re\s+$cantcall_re\s+($noself_re)\s+$at_re$/) {
     my ($method, $kind, $where) = ($1, $2, $3);
     Fatal('misdefined', callerName(2), $where, @line); }
-  elsif ($line[0] =~ /^Can't locate object method \"([^\"]*)\" via package \"([^\"]*)\" at (.*)$/) {
+  elsif ($line[0] =~ /^$cantlocate_re\s+$quoted_re\s+$via_re\s+$quoted_re\s+$at_re$/) {
     my ($method, $class, $where) = ($1, $2, $3);
     Fatal('misdefined', callerName(2), $where, @line); }
   elsif ($line[0] =~ /^Not an? (\w*) reference at (.*)$/) {
@@ -133,7 +141,7 @@ sub perl_die_handler {
     my ($file) = ($1);
     Fatal('misdefined', $file, undef, @line); }
   else {
-    Fatal('perl', 'die', undef, "Perl died", @_); }
+    Fatal('perl', 'die', undef, "Perl died", @line); }
   return; }
 
 sub perl_warn_handler {
@@ -149,32 +157,9 @@ sub perl_warn_handler {
 
 sub generateMessage {
   my ($errorcode, $where, $message, $long, @extra) = @_;
-  my $docloc;
-
-  my $state = $LaTeXML::Global::STATE;    # Maybe bound?
-                                          # Generate location information; basic and for stack trace.
-       # If we've been given an object $where, where the error occurred, use it.
-  my $wheretype = ref $where;
-  if ($wheretype && ($wheretype =~ /^XML::LibXML/)) {
-    my $box = $LaTeXML::DOCUMENT->getNodeBox($where);
-    $docloc = Locator($box) if $box; }
-  elsif ($wheretype && $where->can('getLocator')) {
-    $docloc = $where->getLocator; }
-  elsif (defined $where) {
-    $docloc = $where; }
-  # Otherwise, try to guess where the error came from!
-  elsif ($LaTeXML::DOCUMENT) {    # During construction?
-    my $node = $LaTeXML::DOCUMENT->getNode;
-    my $box  = $LaTeXML::DOCUMENT->getNodeBox($node);
-    $docloc = Locator($box) if $box; }
-  if (!$docloc && $LaTeXML::BOX) {    # In constructor?
-    $docloc = Locator($LaTeXML::BOX); }
-  if (!$docloc && $state && $state->getStomach) {
-    my $gullet = $state->getStomach->getGullet;
-    # NOTE: Problems here.
-    # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
-    # (2) If gullet is the source, we probably want to include next token, etc or
-    $docloc = $gullet->getLocator(); }
+  # Generate location information; basic and for stack trace.
+  # If we've been given an object $where, where the error occurred, use it.
+  my $docloc = getLocation($where);
 
   # $message and each of @extra should be single lines
   ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } $message, @extra;
@@ -183,10 +168,12 @@ sub generateMessage {
     @extra);
 
   # Now add a certain amount of stack trace and/or context info.
-  $long = 0 if $state && $state->lookupValue('VERBOSITY') < -1;
-  $long++ if $state && $state->lookupValue('VERBOSITY') > +1;
+  if (my $v = $LaTeXML::Global::STATE && $LaTeXML::Global::STATE->lookupValue('VERBOSITY')) {
+    $long = 0 if defined $v && $v < -1;
+    $long++ if defined $v && $v > +1; }
 
   # FIRST line of stack trace information ought to look at the $where
+  my $wheretype = ref $where;
   if (!$long) { }
   elsif ($wheretype =~ /^XML::LibXML/) {
     push(@lines, "Node is " . Stringify($where)); }
@@ -208,6 +195,31 @@ sub Locator {
   my ($object) = @_;
   return ($object && $object->can('getLocator') ? $object->getLocator : "???"); }
 
+sub getLocation {
+  my ($where) = @_;
+  my $wheretype = ref $where;
+  if ($wheretype && ($wheretype =~ /^XML::LibXML/)) {
+    my $box = $LaTeXML::DOCUMENT->getNodeBox($where);
+    return Locator($box) if $box; }
+  elsif ($wheretype && $where->can('getLocator')) {
+    return $where->getLocator; }
+  elsif (defined $where) {
+    return $where; }
+  # Otherwise, try to guess where the error came from!
+  elsif ($LaTeXML::DOCUMENT) {    # During construction?
+    my $node = $LaTeXML::DOCUMENT->getNode;
+    my $box  = $LaTeXML::DOCUMENT->getNodeBox($node);
+    return Locator($box) if $box; }
+  if ($LaTeXML::BOX) {            # In constructor?
+    return Locator($LaTeXML::BOX); }
+  if ($LaTeXML::Global::STATE && $LaTeXML::Global::STATE->getStomach) {
+    my $gullet = $LaTeXML::Global::STATE->getStomach->getGullet;
+    # NOTE: Problems here.
+    # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
+    # (2) If gullet is the source, we probably want to include next token, etc or
+    return $gullet->getLocator(); }
+  return; }
+
 sub callerName {
   my ($frame) = @_;
   my %info = caller_info(($frame || 0) + 2);
@@ -222,12 +234,12 @@ sub callerInfo {
 # This portion adapted from Carp; simplified (but hopefully still correct),
 # allow stringify overload, handle methods, make more concise!
 #======================================================================
-our $MAXARGS = 8;
-our $MAXLEN  = 40;    # Or more?
+Readonly my $MAXARGS => 8;
+Readonly my $MAXLEN  => 40;    # Or more?
 
 sub trim {
   my ($string) = @_;
-  substr($string, $MAXLEN - 3) = "..." if (length($string) > $MAXLEN);
+  $string = substr($string, $MAXLEN - 3, length($string), "...") if (length($string) > $MAXLEN);
   $string =~ s/\n/\x{240D}/gs;    # symbol for CR
   return $string; }
 
@@ -310,7 +322,7 @@ sub objectStack {
       my $method = $info{sub};
       $method =~ s/^.*:://;
       if ($self->can($method)) {
-        next if @objects && ($self eq $objects[$#objects]);
+        next if @objects && ($self eq $objects[-1]);
         next unless $self->can('getLocator');
         push(@objects, $self);
         last if $maxdepth && (scalar(@objects) >= $maxdepth); } } }

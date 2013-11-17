@@ -21,14 +21,14 @@ use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
-our ($STD_PUBLIC_ID, $STD_SYSTEM_ID) = ("-//NIST LaTeXML//LaTeXML article", 'LaTeXML.dtd');
 our $LTX_NAMESPACE = "http://dlmf.nist.gov/LaTeXML";
 
 sub new {
   my ($class, %options) = @_;
   my $self = bless { xpath => LaTeXML::Common::XML::XPath->new(),
     code_namespace_prefixes => {}, code_namespaces => {},
-    doctype_namespaces => {},
+    doctype_namespaces      => {},
+    namespace_errors        => 0,
     %options }, $class;
   $$self{xpath}->registerFunction('match-font', \&LaTeXML::Font::match_font);
   $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
@@ -154,8 +154,6 @@ sub registerNamespace {
     delete $$self{code_namespaces}{$codeprefix}; }
   return; }
 
-our $NAMESPACE_ERROR = 0;
-
 # In the following:
 #    $forattribute is 1 if the namespace is for an attribute (in which case, there must be a non-empty prefix)
 #    $probe, if non 0, just test for namespace, without creating an entry if missing.
@@ -171,7 +169,7 @@ sub getNamespacePrefix {
       if ($docprefix && !$$self{code_namespaces}{$docprefix}) {
         $codeprefix = $docprefix; }
       else {    # Else synthesize one
-        $codeprefix = "namespace" . (++$NAMESPACE_ERROR); }
+        $codeprefix = "namespace" . (++$$self{namespace_errors}); }
       $self->registerNamespace($codeprefix, $namespace);
       Warn('malformed', $namespace, undef,
         "No prefix has been registered for namespace '$namespace' (in code)",
@@ -183,7 +181,7 @@ sub getNamespace {
   my $ns = $$self{code_namespaces}{$codeprefix};
   if ((!defined $ns) && !$probe) {
     $self->registerNamespace($codeprefix,
-      $ns = "http://example.com/namespace" . (++$NAMESPACE_ERROR));
+      $ns = "http://example.com/namespace" . (++$$self{namespace_errors}));
     Error('malformed', $codeprefix, undef,
       "No namespace has been registered for prefix '$codeprefix' (in code)",
       "Using '$ns' isntead"); }
@@ -212,7 +210,7 @@ sub getDocumentNamespacePrefix {
     my $docprefix = (!$forattribute && $$self{document_namespace_prefixes}{ "DEFAULT#" . $namespace })
       || $$self{document_namespace_prefixes}{$namespace};
     if ((!defined $docprefix) && !$probe) {
-      $self->registerDocumentNamespace($docprefix = "namespace" . (++$NAMESPACE_ERROR), $namespace);
+      $self->registerDocumentNamespace($docprefix = "namespace" . (++$$self{namespace_errors}), $namespace);
       Warn('malformed', $namespace, undef,
         "No prefix has been registered for namespace '$namespace' (in document)",
         "Using '$docprefix' instead"); }
@@ -225,7 +223,7 @@ sub getDocumentNamespace {
   $ns =~ s/^DEFAULT#// if $ns;    # Remove the default hack, if present!
   if (($docprefix ne '#default') && (!defined $ns) && !$probe) {
     $self->registerDocumentNamespace($docprefix,
-      $ns = "http://example.com/namespace" . (++$NAMESPACE_ERROR));
+      $ns = "http://example.com/namespace" . (++$$self{namespace_errors}));
     Error('malformed', $docprefix, undef,
       "No namespace has been registered for prefix '$docprefix' (in document)",
       "Using '$ns' instead"); }

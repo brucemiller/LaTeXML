@@ -355,12 +355,14 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Primitive);
 
 # Known Traits:
+#    registerType : the type of register (a LaTeXML class)
+#    getter : a sub to get the value (essentially required)
+#    setter : a sub to set the value (estentially required)
 #    beforeDigest, afterDigest : code for before/after digestion daemons
 #    readonly : whether this register can only be read
 sub new {
-  my ($class, $cs, $parameters, $type, $getter, $setter, %traits) = @_;
+  my ($class, $cs, $parameters, %traits) = @_;
   return bless { cs => $cs, parameters => $parameters,
-    registerType => $type, getter => $getter, setter => $setter,
     locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
     %traits }, $class; }
 
@@ -455,7 +457,7 @@ sub new {
   Fatal('misdefined', $cs, $source,
     "Constructor replacement for '" . ToString($cs) . "' is not a string or CODE",
     "Replacement is $replacement")
-    unless (defined $replacement) && (!(ref $replacement) || (ref $replacement eq 'CODE'));
+    if !(defined $replacement) || ((ref $replacement) && !(ref $replacement eq 'CODE'));
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
     locator => "from " . $source->getLocator(-1), %traits,
     nargs => (defined $traits{nargs} ? $traits{nargs}
@@ -524,15 +526,15 @@ sub doAbsorbtion {
 #**********************************************************************
 package LaTeXML::ConstructorCompiler;
 use strict;
+use Readonly;
 use LaTeXML::Global;
 
-our $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";
-our $COND_RE  = "\\?$VALUE_RE";
-#our $QNAME_RE = "([\\w\\-_:]+)";
+Readonly my $VALUE_RE => "(\\#|\\&[\\w\\:]*\\()";
+Readonly my $COND_RE  => "\\?$VALUE_RE";
 # Attempt to follow XML Spec, Appendix B
-our $QNAME_RE = "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"
+Readonly my $QNAME_RE => "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"
   . "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
-our $TEXT_RE = "(.[^\\#<\\?\\)\\&\\,]*)";
+Readonly my $TEXT_RE => "(.[^\\#<\\?\\)\\&\\,]*)";
 
 our $GEN = 0;
 
@@ -555,18 +557,19 @@ sub compileConstructor {
     # Put the function in the Pool package, so that functions defined there can be used within"
     # And, also that these definitions get cleaned up by the Daemon.
     " package LaTeXML::Package::Pool;\n"
-    . " sub $name {\n"
+    . "sub $name {\n"
     . "my(" . join(', ', '$document', (map { "\$arg$_" } 1 .. $nargs), '%prop') . ")=\@_;\n"
     . ($floats ? "my \$savenode;\n" : '')
     . $body
     . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
-    . "}\n";
+    . "}\n"
+    . "1;\n";
 ###print STDERR "Compilation of \"$replacement\" => \n$code\n";
 
-  eval $code;
+  my $result = eval $code;
   Fatal('misdefined', $name, $constructor,
     "Compilation of constructor code for '$name' failed",
-    "\"$replacement\" => $code", $@) if $@;
+    "\"$replacement\" => $code", $@) if !$result || $@;
   return \&$name; }
 
 sub translate_constructor {

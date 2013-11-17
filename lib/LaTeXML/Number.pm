@@ -145,18 +145,26 @@ sub stringify {
 
 #**********************************************************************
 package LaTeXML::Glue;
+use Readonly;
 use LaTeXML::Global;
 use base qw(LaTeXML::Dimension);
 use strict;
 
-my %fillcode = (fil => 1, fill => 2, filll => 3);
-my @FILL = ('', 'fil', 'fill', 'filll');
+Readonly my %fillcode => (fil => 1, fill => 2, filll => 3);
+Readonly my @FILL => ('', 'fil', 'fill', 'filll');
+
+Readonly my $num_re   => qr/\d*\.?\d*/;
+Readonly my $unit_re  => qr/\w\w/;
+Readonly my $fill_re  => qr/fil|fill|filll|[a-zA-Z][a-zA-Z]/;
+Readonly my $plus_re  => qr/\s+plus\s*($num_re)($fill_re)/;
+Readonly my $minus_re => qr/\s+minus\s*($num_re)($fill_re)/;
+Readonly our $GLUE_re => qr/(\+?\-?$num_re)($unit_re)($plus_re)?($minus_re)?/;
 
 sub new {
   my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;
   if ((!defined $plus) && (!defined $pfill) && (!defined $minus) && (!defined $mfill)) {
     if ($sp =~ /^(\d*\.?\d*)$/) { }
-    elsif ($sp =~ /^(\d*\.?\d*)(\w\w)(\s+plus\s*(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?(\s+minus\s*(\d*\.?\d*)(fil|fill|filll|[a-zA-Z][a-zA-Z]))?$/) {
+    elsif ($sp =~ /^$GLUE_re$/) {
       my ($f, $u, $p, $pu, $m, $mu) = ($1, $2, $4, $5, $7, $8);
       $sp = $f * $STATE->convertUnit($u);
       if (!$pu) { }

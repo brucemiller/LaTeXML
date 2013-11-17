@@ -31,7 +31,7 @@ use Text::Balanced qw(extract_delimited extract_bracketed);
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
-Readonly my %default_macros = (
+Readonly my %default_macros => (
   jan => "January",   feb => "February", mar => "March",    apr => "April",
   may => "May",       jun => "June",     jul => "July",     aug => "August",
   sep => "September", oct => "October",  nov => "November", dec => "December",
@@ -146,7 +146,7 @@ sub parseTopLevel {
   return; }
 
 #==============================
-our %CLOSE = ("{" => "}", "(" => ")");
+Readonly my %CLOSE => ("{" => "}", "(" => ")");
 
 # @preamble open "rawtex" close
 # open = { or (  close is balancing } or )
@@ -208,25 +208,27 @@ sub parseFields {
 
 # There are several kinds of names here, and they allow different stuff.
 # Most of the odd stuff eventually will cause problems processing by LaTeX,
-# but I guess we've got to accept them at this level.
+# Especially "\", which BibTeX allows, but it throws us off (semiverbatim vs verbatim)
+# when we store the bibentries before digesting the key!
+
+Readonly my $BIBNAME_re  => qr/a-zA-Z0-9/x;
+Readonly my $BIBNOISE_re => qr/\.\+\-\*\/\^\_\:\;\@\`\?\!\~\|\<\>\$\[\]/x;
+
 sub parseEntryType {
   my ($self) = @_;
   $self->skipWhite;
-  return ($$self{line} =~ s/^([a-zA-Z0-9\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\!\$\~]*)//
-    ? lc($1) : undef); }
+  return ($$self{line} =~ s/^([$BIBNAME_re$BIBNOISE_re]*)//x ? lc($1) : undef); }
 
 sub parseEntryName {
   my ($self) = @_;
   $self->skipWhite;
   return (
-    $$self{line} =~ s/^([a-zA-Z0-9\!\"\#\$\%\&\'\(\)\*\+\-\.\/\:\;\<\=\>\?\@\[\\\]\^\_\`\{\|\~]*)//
-    ? lc($1) : undef); }
+    $$self{line} =~ s/^([\"\#\%\&\'\(\)\=\{$BIBNAME_re$BIBNOISE_re]*)//x ? lc($1) : undef); }
 
 sub parseFieldName {
   my ($self) = @_;
   $self->skipWhite;
-  return ($$self{line} =~ s/^([a-zA-Z0-9\!\$\&\*\+\-\.\/\:\;\<\>\?\@\[\\\]\^\_\`\|\~]*)//
-    ? lc($1) : undef); }
+  return ($$self{line} =~ s/^([\&$BIBNAME_re$BIBNOISE_re]*)//x ? lc($1) : undef); }
 
 sub parseMatch {
   my ($self, $delims) = @_;

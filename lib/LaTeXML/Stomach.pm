@@ -13,6 +13,7 @@
 package LaTeXML::Stomach;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Gullet;
 use LaTeXML::Box;
@@ -76,7 +77,7 @@ sub digestNextBody {
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc))
-    if $terminal and !Equals($token, $terminal);
+    if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, LaTeXML::List->new()) unless $token;       # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
 
@@ -97,8 +98,7 @@ sub digest {
       local @LaTeXML::LIST = ();
       while (defined(my $token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
         push(@LaTeXML::LIST, $self->invokeToken($token));
-        my $depth = scalar(@{ $$self{boxing} });
-        last if $initdepth > $depth; }                                   # if we've closed the initial mode.
+        last if $initdepth > scalar(@{ $$self{boxing} }); }              # if we've closed the initial mode.
       Fatal('internal', '<EOF>', $self,
         "We've fallen off the end, somehow!?!?!",
         "Last token " . ToString($LaTeXML::CURRENT_TOKEN)
@@ -115,7 +115,7 @@ sub digest {
 # possibly arguments will be parsed from the Gullet.
 # Otherwise, the token is simply digested: turned into an appropriate box.
 # Returns a list of boxes/whatsits.
-our $MAXSTACK = 200;    # ?
+Readonly my $MAXSTACK => 200;    # ?
 
 sub invokeToken {
   my ($self, $token) = @_;
@@ -126,7 +126,7 @@ sub invokeToken {
       "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
   my @result = $self->invokeToken_internal($token);
   if ((scalar(@result) == 1) && (!defined $result[0])) {
-    @result = (); }     # Just paper over the obvious thing.
+    @result = (); }              # Just paper over the obvious thing.
   if (my ($x) = grep { !$_->isaBox } @result) {
     Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
   pop(@{ $$self{token_stack} });
@@ -143,7 +143,8 @@ sub makeError {
   $document->setNode($savenode) if $savenode;
   return; }
 
-our @forbidden_cc = (1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1);
+Readonly my @forbidden_cc => (
+  1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1);
 
 sub invokeToken_internal {
   my ($self, $token) = @_;
@@ -153,59 +154,78 @@ sub invokeToken_internal {
       && (($STATE->lookupMathcode($token->getString) || 0) == 0x8000))
     ? $STATE->lookupMeaning_internal($token)
     : $token);
+
   if (!defined $meaning) {    # Supposedly executable token, but no definition!
-    my $cs = $token->getCSName;
-    $STATE->noteStatus(undefined => $cs);
-    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.");
-    $STATE->installDefinition(LaTeXML::Constructor->new($token, undef,
-        sub { makeError($_[0], 'undefined', $cs); }),
-      'global');
-    $self->invokeToken($token); }
+    return $self->invokeToken_undefined($token); }
   elsif ($meaning->isaToken) {    # Common case
-    my $cc   = $meaning->getCatcode;
-    my $font = $STATE->lookupValue('font');
-    $STATE->clearPrefixes;        # prefixes shouldn't apply here.
-    if ($cc == CC_SPACE) {
-      if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))) {
-        (); }
-      else {
-        Box($meaning->getString, $font, $$self{gullet}->getLocator, $meaning); } }
-    elsif ($cc == CC_COMMENT) {    # Note: Comments need char decoding as well!
-      my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
-      # However, spaces normally would have be digested away as positioning...
-      my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
-      $comment =~ s/\Q$badspace\E/ /g;
-      LaTeXML::Comment->new($comment); }
-    elsif ($forbidden_cc[$cc]) {
-      Fatal('misdefined', $token, $self,
-        "The token " . Stringify($token) . " should never reach Stomach!"); }
-    else {
-      Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1), undef, undef, $meaning); } }
+    return $self->invokeToken_simple($token, $meaning); }
   elsif ($meaning->isaDefinition) {
-    # A math-active character will (typically) be a macro,
-    # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
-    if ($meaning->isExpandable) {
-      my $gullet = $$self{gullet};
-      $gullet->unread($meaning->invoke($$self{gullet}));
-      if (my $replacement = $gullet->readXToken()) {
-        $self->invokeToken($replacement); } }    # recurse!!
-    else {                                       # Otherwise, a normal primitive or constructor
-      if ($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble'))) {
-        return (); }
-      my @boxes = $meaning->invoke($self);
-      if ((scalar(@boxes) == 1) && (!defined $boxes[0])) {
-        @boxes = (); }                           # Just paper over the obvious thing.
-      my @err = grep { (!ref $_) || (!$_->isaBox) } @boxes;
-      Fatal('misdefined', $token, $self,
-        "Execution yielded non boxes",
-        "Returned " . join(',', map { "'" . Stringify($_) . "'" }
-            grep { (!ref $_) || (!$_->isaBox) } @boxes))
-        if grep { (!ref $_) || (!$_->isaBox) } @boxes;
-      $STATE->clearPrefixes unless $meaning->isPrefix;    # Clear prefixes unless we just set one.
-      @boxes; } }
+    return $self->invokeToken_definition($token, $meaning); }
   else {
     Fatal('misdefined', $meaning, $self,
-      "The object " . Stringify($meaning) . " should never reach Stomach!"); } }
+      "The object " . Stringify($meaning) . " should never reach Stomach!");
+    return; } }
+
+sub invokeToken_undefined {
+  my ($self, $token) = @_;
+  my $cs = $token->getCSName;
+  $STATE->noteStatus(undefined => $cs);
+  Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.");
+  # To minimize chatter, go ahead and define it...
+  $STATE->installDefinition(LaTeXML::Constructor->new($token, undef,
+      sub { makeError($_[0], 'undefined', $cs); }),
+    'global');
+  # and then invoke it.
+  return $self->invokeToken($token); }
+
+sub invokeToken_simple {
+  my ($self, $token, $meaning) = @_;
+  my $cc   = $meaning->getCatcode;
+  my $font = $STATE->lookupValue('font');
+  $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+  if ($cc == CC_SPACE) {
+    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))) {
+      return (); }
+    else {
+      return Box($meaning->getString, $font, $$self{gullet}->getLocator, $meaning); } }
+  elsif ($cc == CC_COMMENT) {    # Note: Comments need char decoding as well!
+    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
+    # However, spaces normally would have be digested away as positioning...
+    my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
+    $comment =~ s/\Q$badspace\E/ /g;
+    return LaTeXML::Comment->new($comment); }
+  elsif ($forbidden_cc[$cc]) {
+    Fatal('misdefined', $token, $self,
+      "The token " . Stringify($token) . " should never reach Stomach!");
+    return; }
+  else {
+    return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
+      undef, undef, $meaning); } }
+
+sub invokeToken_definition {
+  my ($self, $token, $meaning) = @_;
+  # A math-active character will (typically) be a macro,
+  # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
+  if ($meaning->isExpandable) {
+    my $gullet = $$self{gullet};
+    $gullet->unread($meaning->invoke($$self{gullet}));
+    if (my $replacement = $gullet->readXToken()) {
+      return $self->invokeToken($replacement); }    # recurse!!
+    return; }                                       # fell off?
+  else {                                            # Otherwise, a normal primitive or constructor
+    if ($token->equals(T_CS('\par') && $STATE->lookupValue('inPreamble'))) {
+      return (); }
+    my @boxes = $meaning->invoke($self);
+    if ((scalar(@boxes) == 1) && (!defined $boxes[0])) {
+      @boxes = (); }                                # Just paper over the obvious thing.
+    my @err = grep { (!ref $_) || (!$_->isaBox) } @boxes;
+    Fatal('misdefined', $token, $self,
+      "Execution yielded non boxes",
+      "Returned " . join(',', map { "'" . Stringify($_) . "'" }
+          grep { (!ref $_) || (!$_->isaBox) } @boxes))
+      if grep { (!ref $_) || (!$_->isaBox) } @boxes;
+    $STATE->clearPrefixes unless $meaning->isPrefix;    # Clear prefixes unless we just set one.
+    return @boxes; } }
 
 # Regurgitate: steal the previously digested boxes from the current level.
 sub regurgitate {

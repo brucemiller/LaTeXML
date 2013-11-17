@@ -12,6 +12,8 @@
 
 package LaTeXML::Model::DTD;
 use strict;
+use warnings;
+use Readonly;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use base qw(LaTeXML::Model::Schema);
@@ -23,7 +25,7 @@ sub new {
   my ($class, $model, $roottag, $publicid, $systemid) = @_;
   my $self = { model => $model, roottag => $roottag, public_id => $publicid, system_id => $systemid };
   bless $self, $class;
-  $self; }
+  return $self; }
 
 # Question: if we don't have a doctype, can we rig the queries to
 # let it build a `reasonable' document?
@@ -32,7 +34,8 @@ sub new {
 # required namespace declarations to the root element.
 sub addSchemaDeclaration {
   my ($self, $document, $tag) = @_;
-  $document->getDocument->createInternalSubset($tag, $$self{public_id}, $$self{system_id}); }
+  $document->getDocument->createInternalSubset($tag, $$self{public_id}, $$self{system_id});
+  return; }
 
 #**********************************************************************
 # DTD Analysis
@@ -45,6 +48,8 @@ sub addSchemaDeclaration {
 # Thus, if we want to insert an element (or, say #PCDATA) into an
 # element that doesn't allow it, we may find an implied element
 # to create & insert, and insert the #PCDATA into it.
+
+Readonly my $NAME_re => qr/[a-zA-Z0-9\-\_\:]+/;
 
 sub loadSchema {
   my ($self) = @_;
@@ -60,12 +65,13 @@ sub loadSchema {
   # Extract all possible namespace attributes
   foreach my $node ($dtd->childNodes()) {
     if ($node->nodeType() == XML_ATTRIBUTE_DECL) {
-      if ($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9\-\_\:]+)\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/) {
+      if ($node->toString =~ /^<!ATTLIST\s+($NAME_re)\s+($NAME_re)\s+(.*)>$/) {
         my ($tag, $attr, $extra) = ($1, $2, $3);
-        if ($attr =~ /^xmlns(:([a-zA-Z0-9-]+))?$/) {
+        if ($attr =~ /^xmlns(:($NAME_re))?$/) {
           my $prefix = ($1 ? $2 : '#default');
-          $extra =~ /^CDATA\s+#FIXED\s+(\'|\")(.*)\1\s*$/;
-          my $ns = $2;
+          my $ns;
+          if ($extra =~ /^CDATA\s+#FIXED\s+(\'|\")(.*)\1\s*$/) {
+            $ns = $2; }
           # Just record prefix, not element??
           $model->registerDocumentNamespace($prefix, $ns); } } } }
 
@@ -74,32 +80,28 @@ sub loadSchema {
     if ($node->nodeType() == XML_ELEMENT_DECL) {
       my $decl = $node->toString();
       chomp($decl);
-      if ($decl =~ /^<!ELEMENT\s+([a-zA-Z0-9\-\_\:]+)\s+(.*)>$/) {
+      if ($decl =~ /^<!ELEMENT\s+($NAME_re)\s+(.*)>$/) {
         my ($tag, $content) = ($1, $2);
-        $tag = $model->recodeDocumentQName($tag);
         $content =~ s/[\+\*\?\,\(\)\|]/ /g;
         $content =~ s/\s+/ /g; $content =~ s/^\s+//; $content =~ s/\s+$//;
-        if ($content eq 'EMPTY') {
-          $model->addTagContent($tag, ()); }
-        else {
-          $model->addTagContent($tag,
-            map($model->recodeDocumentQName($_), split(/ /, $content)));
-        } }
-      else { Warn('misdefined', $decl, undef, "Can't process DTD declaration '$decl'"); }
-    }
+        $model->addTagContent($model->recodeDocumentQName($tag),
+          ($content eq 'EMPTY'
+            ? ()
+            : map { $model->recodeDocumentQName($_) } split(/ /, $content))); }
+      else {
+        Warn('misdefined', $decl, undef, "Can't process DTD declaration '$decl'"); } }
+
     elsif ($node->nodeType() == XML_ATTRIBUTE_DECL) {
-      if ($node->toString =~ /^<!ATTLIST\s+([a-zA-Z0-9-]+)\s+([a-zA-Z0-9-]+)\s+(.*)>$/) {
+      if ($node->toString =~ /^<!ATTLIST\s+($NAME_re)\s+($NAME_re)\s+(.*)>$/) {
         my ($tag, $attr, $extra) = ($1, $2, $3);
         if ($attr !~ /^xmlns/) {
-          $tag = $model->recodeDocumentQName($tag);
-          if ($attr =~ /:/) {
-            $attr = $model->recodeDocumentQName($attr); }
-          $model->addTagAttribute($tag, $attr);
+          $model->addTagAttribute($model->recodeDocumentQName($tag),
+            ($attr =~ /:/ ? $model->recodeDocumentQName($attr) : $attr));
         } } }
   }
   NoteEnd("Analyzing DTD");    # Done analyzing
   NoteEnd("Loading DTD " . $$self{public_id} || $$self{system_id});
-}
+  return; }
 
 sub readDTD {
   my ($self) = @_;
@@ -125,7 +127,7 @@ sub readDTD {
     else {
       Error('missing_file', $$self{system_id}, undef,
         "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
-  $dtd; }
+  return $dtd; }
 
 #**********************************************************************
 1;

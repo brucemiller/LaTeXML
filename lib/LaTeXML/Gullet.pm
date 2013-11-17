@@ -13,6 +13,7 @@
 package LaTeXML::Gullet;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Mouth;
 use LaTeXML::Number;
@@ -655,7 +656,7 @@ sub readGlue {
     ($r2, $f2) = $self->readRubber if $self->readKeyword('minus');
     return Glue($d->valueOf, $r1, $f1, $r2, $f2); } }
 
-our %FILLS = (fil => 1, fill => 2, filll => 3);
+Readonly my %FILLS => (fil => 1, fill => 2, filll => 3);
 
 sub readRubber {
   my ($self, $mu) = @_;

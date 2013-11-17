@@ -22,6 +22,7 @@
 package LaTeXML::Global;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Error;
 use LaTeXML::Common::XML;
 use Time::HiRes;
@@ -152,7 +153,8 @@ sub EndSemiverbatim {
 
 # Return a LaTeXML::Tokens made from the arguments (tokens)
 sub Tokens {
-  return LaTeXML::Tokens->new(@_); }
+  my (@tokens) = @_;
+  return LaTeXML::Tokens->new(@tokens); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
@@ -176,7 +178,7 @@ sub Revert {
   my ($thing) = @_;
   return (defined $thing ? (ref $thing ? map { $_->unlist } $thing->revert : Explode($thing)) : ()); }
 
-our $UNTEX_LINELENGTH = 78;
+Readonly my $UNTEX_LINELENGTH => 78;
 
 sub UnTeX {
   my ($thing) = @_;
@@ -221,14 +223,37 @@ sub UnTeX {
 #======================================================================
 # Constructors for number and dimension types.
 
-sub Number      { return LaTeXML::Number->new(@_); }
-sub Float       { return LaTeXML::Float->new(@_); }
-sub Dimension   { return LaTeXML::Dimension->new(@_); }
-sub MuDimension { return LaTeXML::MuDimension->new(@_); }
-sub Glue        { return LaTeXML::Glue->new(@_); }
-sub MuGlue      { return LaTeXML::MuGlue->new(@_); }
-sub Pair        { return LaTeXML::Pair->new(@_); }
-sub PairList    { return LaTeXML::PairList->new(@_); }
+sub Number {
+  my ($number) = @_;
+  return LaTeXML::Number->new($number); }
+
+sub Float {
+  my ($number) = @_;
+  return LaTeXML::Float->new($number); }
+
+sub Dimension {
+  my ($scaledpoints) = @_;
+  return LaTeXML::Dimension->new($scaledpoints); }
+
+sub MuDimension {
+  my ($scaledpoints) = @_;
+  return LaTeXML::MuDimension->new($scaledpoints); }
+
+sub Glue {
+  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::Glue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+
+sub MuGlue {
+  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::MuGlue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+
+sub Pair {
+  my ($x, $y) = @_;
+  return LaTeXML::Pair->new($x, $y); }
+
+sub PairList {
+  my (@pairs) = @_;
+  return LaTeXML::PairList->new(@pairs); }
 
 #======================================================================
 # Constructors for Boxes and Lists.
@@ -268,11 +293,13 @@ use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Color::rgb';
 # Progress reporting.
 
 sub NoteProgress {
-  print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
+  my (@stuff) = @_;
+  print STDERR @stuff if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0;
   return; }
 
 sub NoteProgressDetailed {
-  print STDERR @_ if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
+  my (@stuff) = @_;
+  print STDERR @stuff if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
   return; }
 
 our %note_timers = ();
@@ -295,7 +322,7 @@ sub NoteEnd {
 
 #**********************************************************************
 # Generic functions
-our %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);
+Readonly my %NOBLESS => map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);
 
 sub Stringify {
   my ($object) = @_;
@@ -347,8 +374,13 @@ sub Equals {
   return 0; }
 
 #**********************************************************************
-sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }
-sub max { ($_[0] > $_[1] ? $_[0] : $_[1]); }
+sub min {
+  my ($x, $y) = @_;
+  return ($x < $y ? $x : $y); }
+
+sub max {
+  my ($x, $y) = @_;
+  return ($x > $y ? $x : $y); }
 
 #**********************************************************************
 1;

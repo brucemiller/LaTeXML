@@ -13,17 +13,18 @@
 package LaTeXML::Font;
 use strict;
 use warnings;
+use Readonly;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
-our $DEFFAMILY     = 'serif';
-our $DEFSERIES     = 'medium';
-our $DEFSHAPE      = 'upright';
-our $DEFSIZE       = 'normal';
-our $DEFCOLOR      = 'black';
-our $DEFBACKGROUND = 'white';
-our $DEFOPACITY    = '1';
-our $DEFENCODING   = 'OT1';
+Readonly my $DEFFAMILY     => 'serif';
+Readonly my $DEFSERIES     => 'medium';
+Readonly my $DEFSHAPE      => 'upright';
+Readonly my $DEFSIZE       => 'normal';
+Readonly my $DEFCOLOR      => 'black';
+Readonly my $DEFBACKGROUND => 'white';
+Readonly my $DEFOPACITY    => '1';
+Readonly my $DEFENCODING   => 'OT1';
 
 # NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
@@ -114,48 +115,47 @@ sub specialize {
   my ($self, $string) = @_;
   return $self; }
 
+sub isDiff {
+  my ($x, $y) = @_;
+  return (defined $x) && (!(defined $y) || ($x ne $y)); }
+
 # Return a hash of the differences in font, size and color
 # [does encoding play a role here?]
 # Note that this returns a hash of Fontable.attributes & Colorable.attributes,
 # NOT the font keywords!!!
 sub relativeTo {
   my ($self, $other) = @_;
-  my ($family,  $series,  $shape,  $size,  $color,  $bg,  $opacity,  $encoding)  = @$self;
-  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding) = @$other;
-  $family  = 'serif' if $family  && ($family eq 'math');
-  $ofamily = 'serif' if $ofamily && ($ofamily eq 'math');
-  my @diffs = ((defined $family && (!defined $ofamily || ($family ne $ofamily)) ? $family : undef),
-    (defined $series && (!defined $oseries || ($series ne $oseries)) ? $series : undef),
-    (defined $shape  && (!defined $oshape  || ($shape ne $oshape))   ? $shape  : undef));
-  @diffs = grep { defined $_ } @diffs;
-  my $fdiff = (@diffs ? join(' ', @diffs) : undef);
-  my $sdiff = (defined $size  && (!defined $osize  || ($size ne $osize))   ? $size  : undef);
-  my $cdiff = (defined $color && (!defined $ocolor || ($color ne $ocolor)) ? $color : undef);
-  my $bdiff = (defined $bg    && (!defined $obg    || ($bg ne $obg))       ? $bg    : undef);
-  my $odiff = (defined $opacity && (!defined $oopacity || ($opacity ne $oopacity)) ? $opacity : undef);
-##  my $ediff=($encoding && (!$oencoding || ($encoding ne $oencoding)) ? $encoding : '');
-  return ((defined $fdiff ? (font => $fdiff) : ()),
-    (defined $sdiff ? (fontsize        => $sdiff) : ()),
-    (defined $cdiff ? (color           => $cdiff) : ()),
-    (defined $bdiff ? (backgroundcolor => $bdiff) : ()),
-    (defined $odiff ? (opacity         => $odiff) : ()),
-##    ($ediff ? (encoding=>$ediff):()),
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
+  $fam  = 'serif' if $fam  && ($fam eq 'math');
+  $ofam = 'serif' if $ofam && ($ofam eq 'math');
+  my @diffs = (
+    (isDiff($fam, $ofam) ? ($fam) : ()),
+    (isDiff($ser, $oser) ? ($ser) : ()),
+    (isDiff($shp, $oshp) ? ($shp) : ()));
+  return (
+    (@diffs ? (font => join(' ', @diffs)) : ()),
+    (isDiff($siz, $osiz) ? (fontsize        => $siz) : ()),
+    (isDiff($col, $ocol) ? (color           => $col) : ()),
+    (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
+    (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
     ); }
 
 sub distance {
   my ($self, $other) = @_;
-  my ($family,  $series,  $shape,  $size,  $color,  $bg,  $opacity,  $encoding)  = @$self;
-  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding) = @$other;
-  $family  = 'serif' if $family  && ($family eq 'math');
-  $ofamily = 'serif' if $ofamily && ($ofamily eq 'math');
-  return (defined $family && (!defined $ofamily || ($family ne $ofamily)) ? 1 : 0)
-    + (defined $series  && (!defined $oseries  || ($series ne $oseries))   ? 1 : 0)
-    + (defined $shape   && (!defined $oshape   || ($shape ne $oshape))     ? 1 : 0)
-    + (defined $size    && (!defined $osize    || ($size ne $osize))       ? 1 : 0)
-    + (defined $color   && (!defined $ocolor   || ($color ne $ocolor))     ? 1 : 0)
-    + (defined $bg      && (!defined $obg      || ($bg ne $obg))           ? 1 : 0)
-    + (defined $opacity && (!defined $oopacity || ($opacity ne $oopacity)) ? 1 : 0)
-##  + ($encoding  && (!$oencoding  || ($encoding  ne $oencoding))  ? 1 : 0)
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
+  $fam  = 'serif' if $fam  && ($fam eq 'math');
+  $ofam = 'serif' if $ofam && ($ofam eq 'math');
+  return
+    (isDiff($fam, $ofam) ? 1 : 0)
+    + (isDiff($ser, $oser) ? 1 : 0)
+    + (isDiff($shp, $oshp) ? 1 : 0)
+    + (isDiff($siz, $osiz) ? 1 : 0)
+    + (isDiff($col, $ocol) ? 1 : 0)
+    + (isDiff($bkg, $obkg) ? 1 : 0)
+    + (isDiff($opa, $oopa) ? 1 : 0)
+##  + (isDiff($enc,$oenc)  ? 1 : 0)
     ; }
 
 # This matches fonts when both are converted to strings (toString),
@@ -177,23 +177,23 @@ sub match_font {
 
 sub font_match_xpaths {
   my ($font) = @_;
-  $font =~ /^Font\[(.*)\]$/;
-  my @comps = split(',', $1);
-  my ($frag, @frags) = ();
-  for (my $i = 0 ; $i <= $#comps ; $i++) {
-    my $comp = $comps[$i];
-    if ($comp eq '*') {
-      push(@frags, $frag) if $frag;
-      $frag = undef; }
-    else {
-      my $post = ($i == $#comps ? ']' : ',');
-      if ($frag) {
-        $frag .= $comp . $post; }
+  if ($font =~ /^Font\[(.*)\]$/) {
+    my @comps = split(',', $1);
+    my ($frag, @frags) = ();
+    for (my $i = 0 ; $i <= $#comps ; $i++) {
+      my $comp = $comps[$i];
+      if ($comp eq '*') {
+        push(@frags, $frag) if $frag;
+        $frag = undef; }
       else {
-        $frag = ($i == 0 ? 'Font[' : ',') . $comp . $post; } } }
-  push(@frags, $frag) if $frag;
-  return join(' and ', '@_font',
-    map { "contains(\@_font,'$_')" } @frags); }
+        my $post = ($i == $#comps ? ']' : ',');
+        if ($frag) {
+          $frag .= $comp . $post; }
+        else {
+          $frag = ($i == 0 ? 'Font[' : ',') . $comp . $post; } } }
+    push(@frags, $frag) if $frag;
+    return join(' and ', '@_font',
+      map { "contains(\@_font,'$_')" } @frags); } }
 
 # Presumably a text font is "sticky", if used in math?
 sub isSticky { return 1; }
@@ -201,16 +201,17 @@ sub isSticky { return 1; }
 #**********************************************************************
 package LaTeXML::MathFont;
 use strict;
+use Readonly;
 use LaTeXML::Global;
 use base qw(LaTeXML::Font);
 
-our $DEFFAMILY     = 'serif';
-our $DEFSERIES     = 'medium';
-our $DEFSHAPE      = 'upright';
-our $DEFSIZE       = 'normal';
-our $DEFCOLOR      = 'black';
-our $DEFBACKGROUND = 'white';
-our $DEFOPACITY    = '1';
+Readonly my $MDEFFAMILY     => 'serif';
+Readonly my $MDEFSERIES     => 'medium';
+Readonly my $MDEFSHAPE      => 'upright';
+Readonly my $MDEFSIZE       => 'normal';
+Readonly my $MDEFCOLOR      => 'black';
+Readonly my $MDEFBACKGROUND => 'white';
+Readonly my $MDEFOPACITY    => '1';
 
 sub new {
   my ($class, %options) = @_;
@@ -233,8 +234,8 @@ sub new {
 
 sub default {
   my ($self) = @_;
-  return $self->new_internal('math', $DEFSERIES, 'italic', $DEFSIZE,
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY,
+  return $self->new_internal('math', $MDEFSERIES, 'italic', $MDEFSIZE,
+    $MDEFCOLOR, $MDEFBACKGROUND, $MDEFOPACITY,
     undef, undef, undef); }
 
 sub isSticky {
@@ -256,9 +257,9 @@ sub merge {
   $color = $color->toHex if ref $color;
   $bg    = $bg->toHex    if ref $bg;
   # In math, setting any one of these, resets the others to default.
-  $family = $DEFFAMILY if !$options{family} && ($options{series} || $options{shape});
-  $series = $DEFSERIES if !$options{series} && ($options{family} || $options{shape});
-  $shape  = $DEFSHAPE  if !$options{shape}  && ($options{family} || $options{series});
+  $family = $MDEFFAMILY if !$options{family} && ($options{series} || $options{shape});
+  $series = $MDEFSERIES if !$options{series} && ($options{family} || $options{shape});
+  $shape  = $MDEFSHAPE  if !$options{shape}  && ($options{family} || $options{series});
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,
     $encoding, $forcebold, $forceshape); }
@@ -283,24 +284,24 @@ sub specialize {
     if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
       print STDERR "Greek Upper" if $LaTeXML::Font::DEBUG;
       if (!$family || ($family eq 'math')) {
-        $family = $DEFFAMILY;
-        $shape = $DEFSHAPE if $shape && ($shape ne $DEFSHAPE); } }
+        $family = $MDEFFAMILY;
+        $shape = $MDEFSHAPE if $shape && ($shape ne $MDEFSHAPE); } }
     else {                                                       # Lowercase
       print STDERR "Greek Lower" if $LaTeXML::Font::DEBUG;
-      $family = $DEFFAMILY if !$family || ($family ne $DEFFAMILY);
-      $shape  = 'italic'   if !$shape  || !$forceshape;              # always ?
+      $family = $MDEFFAMILY if !$family || ($family ne $MDEFFAMILY);
+      $shape  = 'italic'    if !$shape  || !$forceshape;               # always ?
       if ($forcebold) { $series = 'bold'; }
-      elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } } }
-  elsif ($string =~ /^\p{N}$/) {                                     # Digit
+      elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } } }
+  elsif ($string =~ /^\p{N}$/) {                                       # Digit
     print STDERR "Digit" if $LaTeXML::Font::DEBUG;
     if (!$family || ($family eq 'math')) {
-      $family = $DEFFAMILY;
-      $shape = $DEFSHAPE if !$shape || ($shape ne $DEFSHAPE); } }
-  else {                                                             # Other Symbol
+      $family = $MDEFFAMILY;
+      $shape = $MDEFSHAPE if !$shape || ($shape ne $MDEFSHAPE); } }
+  else {                                                               # Other Symbol
     print STDERR "Symbol" if $LaTeXML::Font::DEBUG;
-    $family = $DEFFAMILY; $shape = $DEFSHAPE;                        # defaults, always.
+    $family = $MDEFFAMILY; $shape = $MDEFSHAPE;                        # defaults, always.
     if ($forcebold) { $series = 'bold'; }
-    elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } }
+    elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } }
 
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,

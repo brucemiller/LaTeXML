@@ -13,6 +13,8 @@
 #======================================================================
 package LaTeXML::Rewrite;
 use strict;
+use warnings;
+use Readonly;
 use LaTeXML::Global;
 
 sub new {
@@ -21,9 +23,13 @@ sub new {
   while (@specs) {
     my ($op, $pattern) = (shift(@specs), shift(@specs));
     push(@clauses, ['uncompiled', $op, $pattern]); }
-  bless { mode => $mode, math => ($mode eq 'math'), clauses => [@clauses], labels => {} }, $class; }
+  return bless {
+    mode => $mode, math => ($mode eq 'math'), clauses => [@clauses], labels => {}
+    }, $class; }
 
-sub clauses { @{ $_[0]->{clauses} }; }
+sub clauses {
+  my ($self) = @_;
+  return @{ $$self{clauses} }; }
 
 sub rewrite {
   my ($self, $document, $node) = @_;
@@ -34,14 +40,16 @@ sub rewrite {
         $$self{labels}{$label} = $id; } }
     else {
       Error('malformed', 'label', $node, "Node has labels but no xml:id"); } }
-  $self->applyClause($document, $node, 0, $self->clauses); }
+  $self->applyClause($document, $node, 0, $self->clauses);
+  return; }
 
 sub getLabelID {
   my ($self, $label) = @_;
-  if (my $id = $$self{labels}{ LaTeXML::Package::CleanLabel($label) }) { $id; }
+  if (my $id = $$self{labels}{ LaTeXML::Package::CleanLabel($label) }) {
+    return $id; }
   else {
     Error('misdefined', '<rewrite>', undef, "No id for label $label in Rewrite");
-    undef; } }
+    return; } }
 
 # Rewrite spec as input
 #   scope  => $scope  : a scope like "section:1.2.3" or "label:eq.one"; translated to xpath
@@ -103,12 +111,12 @@ sub applyClause {
         $parent->removeChild($sib);
         unshift(@following, $sib);
         last if $$sib == $$tree; }
-      my @replaced = map(shift(@following), 1 .. $n_to_replace);    # Remove the nodes to be replaced
+      my @replaced = map { shift(@following) } 1 .. $n_to_replace;    # Remove the nodes to be replaced
       $document->setNode($parent);
       $tree = $document->openElement('ltx:XMWrap', font => $document->getNodeFont($parent));
-      print STDERR "Wrapping " . join(' ', map(Stringify($_), @replaced)) . "\n" if $LaTeXML::Rewrite::DEBUG;
-      map($tree->appendChild($_),   @replaced);                     # Add matched nodes to XMWrap
-      map($parent->appendChild($_), @following);                    # Add back the following nodes.
+      print STDERR "Wrapping " . join(' ', map { Stringify($_) } @replaced) . "\n" if $LaTeXML::Rewrite::DEBUG;
+      map { $tree->appendChild($_) } @replaced;                       # Add matched nodes to XMWrap
+      map { $parent->appendChild($_) } @following;                    # Add back the following nodes.
     }
     $self->applyClause($document, $tree, 1, @more_clauses); }
   elsif ($op eq 'replace') {
@@ -121,15 +129,15 @@ sub applyClause {
       $parent->removeChild($sib);
       unshift(@following, $sib);
       last if $$sib == $$tree; }
-    my @replaced = map(shift(@following), 1 .. $n_to_replace);    # Remove the nodes to be replaced
+    my @replaced = map { shift(@following) } 1 .. $n_to_replace;    # Remove the nodes to be replaced
 
     # Carry out the operation, inserting whatever nodes.
     $document->setNode($parent);
     my $point = $parent->lastChild;
-    &$pattern($document, @replaced);                              # Carry out the insertion.
+    &$pattern($document, @replaced);                                # Carry out the insertion.
 
     # Now collect the newly inserted nodes and store in a _Capture_ node.
-    my @inserted = ();                                            # Collect the newly added nodes.
+    my @inserted = ();                                              # Collect the newly added nodes.
     if ($point) {
       while (my $sib = $parent->lastChild) {
         $parent->removeChild($sib);
@@ -138,18 +146,18 @@ sub applyClause {
     else {
       @inserted = $parent->childNodes; }
     my $insertion = $document->openElement('_Capture_', font => $document->getNodeFont($parent));
-    map($insertion->appendChild($_), @inserted);
+    map { $insertion->appendChild($_) } @inserted;
 
     # Now remove the insertion and replace with rewritten nodes and replace the following siblings.
     @inserted = $insertion->childNodes;
     $parent->removeChild($insertion);
-    map($parent->appendChild($_), @inserted, @following);
+    map { $parent->appendChild($_) } @inserted, @following;
   }
   elsif ($op eq 'action') {
     print STDERR "Rewrite action at " . $tree->toString . " using $pattern\n" if $LaTeXML::Rewrite::DEBUG;
     &$pattern($tree); }
   elsif ($op eq 'attributes') {
-    map($tree->setAttribute($_, $$pattern{$_}), keys %$pattern);
+    map { $tree->setAttribute($_, $$pattern{$_}) } keys %$pattern;
     print STDERR "Rewrite attributes for " . Stringify($tree) . "\n" if $LaTeXML::Rewrite::DEBUG;
   }
   elsif ($op eq 'regexp') {
@@ -161,7 +169,7 @@ sub applyClause {
         $text->setData($string); } } }
   else {
     Error('misdefined', '<rewrite>', undef, "Unknown directive '$op' in Compiled Rewrite spec"); }
-}
+  return; }
 
 #**********************************************************************
 sub compileClause {
@@ -172,11 +180,12 @@ sub compileClause {
     if (ref $pattern eq 'ARRAY') {
       #      $op='multi_select'; $pattern = [map(["descendant-or-self::*[\@label='$_']",1], @$pattern)]; }
 
-      $op = 'multi_select'; $pattern = [map(["descendant-or-self::*[\@xml:id='$_']", 1],
-          map($self->getLabelID($_), @$pattern))]; }
+      $op = 'multi_select'; $pattern = [map { ["descendant-or-self::*[\@xml:id='$_']", 1] }
+          map { $self->getLabelID($_) } @$pattern]; }
     else {
       #      $op='select'; $pattern=["descendant-or-self::*[\@label='$pattern']",1]; }}
-      $op = 'select'; $pattern = ["descendant-or-self::*[\@xml:id='" . $self->getLabelID($pattern) . "']", 1]; } }
+      $op = 'select';
+      $pattern = ["descendant-or-self::*[\@xml:id='" . $self->getLabelID($pattern) . "']", 1]; } }
   elsif ($op eq 'scope') {
     $op = 'select';
     if ($pattern =~ /^label:(.*)$/) {
@@ -197,7 +206,7 @@ sub compileClause {
       $op = 'test'; }
     elsif (ref $pattern eq 'ARRAY') {    # Multiple patterns!
       $op = 'multi_select';
-      $pattern = [map($self->compile_match($document, $_), @$pattern)]; }
+      $pattern = [map { $self->compile_match($document, $_) } @$pattern]; }
     else {
       $op = 'select'; $pattern = $self->compile_match($document, $pattern); } }
   elsif ($op eq 'replace') {
@@ -208,18 +217,21 @@ sub compileClause {
     $pattern = $self->compile_regexp($pattern); }
   print STDERR "Compiled clause $oop=>" . ToString($opattern) . "  ==> $op=>" . ToString($pattern) . "\n"
     if $LaTeXML::Rewrite::DEBUG;
-  $$clause[0] = 'compiled'; $$clause[1] = $op; $$clause[2] = $pattern; }
+  $$clause[0] = 'compiled'; $$clause[1] = $op; $$clause[2] = $pattern;
+  return; }
 
 #**********************************************************************
 sub compile_match {
   my ($self, $document, $pattern) = @_;
   if (!ref $pattern) {
-    $self->compile_match1($document, digest_rewrite(($$self{math} ? '$' . $pattern . '$' : $pattern))); }
+    return $self->compile_match1($document,
+      digest_rewrite(($$self{math} ? '$' . $pattern . '$' : $pattern))); }
   elsif ($pattern->isaBox) {
-    $self->compile_match1($document, $pattern); }
+    return $self->compile_match1($document, $pattern); }
   else {
     Error('misdefined', '<rewrite>', undef,
-      "Don't know what to do with match=>\"" . Stringify($pattern) . "\""); } }
+      "Don't know what to do with match=>\"" . Stringify($pattern) . "\"");
+    return; } }
 
 sub compile_match1 {
   my ($self, $document, $patternbox) = @_;
@@ -231,7 +243,7 @@ sub compile_match1 {
     ? $capdocument->findnodes("//ltx:XMath/*", $capture)
     : $capture->childNodes);
   my $frag = $capdocument->getDocument->createDocumentFragment;
-  map($frag->appendChild($_), @nodes);
+  map { $frag->appendChild($_) } @nodes;
   # Convert the captured nodes to an XPath that would match them.
   my $xpath = domToXPath($capdocument, $frag);
   # For math, restrict to NOT operate on presentation branch of XMDual.
@@ -242,22 +254,7 @@ sub compile_match1 {
     if $$self{math};
 
   print STDERR "Converting \"" . ToString($patternbox) . "\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
-  [$xpath, scalar(@nodes)]; }
-
-sub XXXcompile_replacement {
-  my ($self, $document, $pattern) = @_;
-  if (!ref $pattern) {
-    $self->compile_replacement1(digest_rewrite(($$self{math} ? '$' . $pattern . '$' : $pattern))); }
-  elsif ($pattern->isaBox) {
-    $self->compile_replacement1($pattern); }
-  else {
-    $self->compile_replacement1(digest_rewrite($pattern));
-  } }
-
-sub XXXcompile_replacement1 {
-  my ($self, $patternbox) = @_;
-  $patternbox = $patternbox->getBody if $$self{math};
-  sub { $_[0]->absorb($patternbox); } }
+  return [$xpath, scalar(@nodes)]; }
 
 # Reworked to do digestion at replacement time.
 sub compile_replacement {
@@ -265,10 +262,10 @@ sub compile_replacement {
 
   if ((ref $pattern) && $pattern->isaBox) {
     $pattern = $pattern->getBody if $$self{math};
-    sub { $_[0]->absorb($pattern); } }
+    return sub { $_[0]->absorb($pattern); } }
   else {
     $pattern = Tokenize($$self{math} ? '$' . $pattern . '$' : $pattern) unless ref $pattern;
-    sub {
+    return sub {
       my $stomach = $STATE->getStomach;
       $stomach->bgroup;
       $STATE->assignValue(font     => LaTeXML::Font->new(),     'local');
@@ -285,7 +282,7 @@ sub compile_regexp {
   my $fcn  = eval $code;
   Error('misdefined', '<rewrite>', undef,
     "Failed to compile regexp pattern \"$pattern\" into \"$code\": $!") if $@;
-  $fcn; }
+  return $fcn; }
 
 #**********************************************************************
 
@@ -297,37 +294,38 @@ sub digest_rewrite {
   $STATE->assignValue(mathfont => LaTeXML::MathFont->new(), 'local');
   my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
   $stomach->egroup;
-  $box; }
+  return $box; }
 
 #**********************************************************************
 sub domToXPath {
   my ($document, $node) = @_;
-  "descendant-or-self::" . domToXPath_rec($document, $node); }
+  return "descendant-or-self::" . domToXPath_rec($document, $node); }
 
 # May need some work here;
-our %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);
+Readonly my %EXCLUDED_MATCH_ATTRIBUTES => (scriptpos => 1, 'xml:id' => 1);
 
 sub domToXPath_rec {
   my ($document, $node, @extra_predicates) = @_;
   my $type = $node->nodeType;
   if ($type == XML_DOCUMENT_FRAG_NODE) {
     my @nodes = $node->childNodes;
-    domToXPath_rec($document, shift(@nodes), domToXPath_seq($document, 'following-sibling', @nodes), @extra_predicates); }
+    return domToXPath_rec($document, shift(@nodes),
+      domToXPath_seq($document, 'following-sibling', @nodes), @extra_predicates); }
   elsif ($type == XML_ELEMENT_NODE) {
     my $qname = $document->getNodeQName($node);
     return '*[true()]' if $qname eq '_WildCard_';
     my @predicates = ();
     # Order the predicates so as to put most quickly restrictive first.
     if ($node->hasAttributes) {
-      foreach my $attribute (grep($_->nodeType == XML_ATTRIBUTE_NODE, $node->attributes)) {
+      foreach my $attribute (grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes) {
         my $key = $attribute->nodeName;
         next if ($key =~ /^_/) || $EXCLUDED_MATCH_ATTRIBUTES{$key};
         push(@predicates, "\@" . $key . "='" . $attribute->getValue . "'"); } }
     if ($node->hasChildNodes) {
       my @children = $node->childNodes;
-      if (!grep($_->nodeType != XML_TEXT_NODE, @children)) {    # All are text nodes:
+      if (!grep { $_->nodeType != XML_TEXT_NODE } @children) {    # All are text nodes:
         push(@predicates, "text()='" . $node->textContent . "'"); }
-      elsif (!grep($_->nodeType != XML_ELEMENT_NODE, @children)) {
+      elsif (!grep { $_->nodeType != XML_ELEMENT_NODE } @children) {
         push(@predicates, domToXPath_seq($document, 'child', @children)); }
       else {
         Fatal('misdefined', '<rewrite>', $node,
@@ -337,19 +335,20 @@ sub domToXPath_rec {
         my $pred = LaTeXML::Font::font_match_xpaths($font);
         push(@predicates, $pred); } }
 
-    $qname . "[" . join(' and ', grep($_, @predicates, @extra_predicates)) . "]"; }
+    return $qname . "[" . join(' and ', grep { $_ } @predicates, @extra_predicates) . "]"; }
 
   elsif ($type == XML_TEXT_NODE) {
 ###    "text()='".$node->textContent."'"; }}
-    "*[text()='" . $node->textContent . "']"; } }
+    return "*[text()='" . $node->textContent . "']"; } }
 
 # $axis would be child or following-sibling
 sub domToXPath_seq {
   my ($document, $axis, @nodes) = @_;
   if (@nodes) {
-    $axis . "::*[position()=1 and self::"
+    return $axis . "::*[position()=1 and self::"
       . domToXPath_rec($document, shift(@nodes), domToXPath_seq($document, 'following-sibling', @nodes)) . ']'; }
-  else { (); } }
+  else {
+    return (); } }
 
 #**********************************************************************
 1;
