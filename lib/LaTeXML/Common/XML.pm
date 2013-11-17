@@ -33,6 +33,7 @@
 
 package LaTeXML::Common::XML;
 use strict;
+use warnings;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
 use LaTeXML::Util::Pathname;
@@ -95,14 +96,19 @@ BEGIN {
 # XML Utilities
 sub element_nodes {
   my ($node) = @_;
-  grep($_->nodeType == XML_ELEMENT_NODE, $node->childNodes); }
+  return grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes; }
 
 sub text_in_node {
   my ($node) = @_;
-  join("\n", map($_->data, grep($_->nodeType == XML_TEXT_NODE, $node->childNodes))); }
+  return join("\n", map { $_->data } grep { $_->nodeType == XML_TEXT_NODE } $node->childNodes); }
 
-sub isTextNode    { $_[0]->nodeType == XML_TEXT_NODE; }
-sub isElementNode { $_[0]->nodeType == XML_ELEMENT_NODE; }
+sub isTextNode {
+  my ($node) = @_;
+  return $node->nodeType == XML_TEXT_NODE; }
+
+sub isElementNode {
+  my ($node) = @_;
+  return $node->nodeType == XML_ELEMENT_NODE; }
 
 # Is $child a child of $parent?
 sub isChild {
@@ -144,7 +150,7 @@ sub new_node {
   append_nodes($node, $children);
   foreach my $key (sort keys %attributes) {
     $node->setAttribute($key, $attributes{$key}) if defined $attributes{$key}; }
-  $node; }
+  return $node; }
 
 # Append the given nodes (which might also be array ref's of nodes, or even strings)
 # to $node.  This takes care to clone any node that already has a parent.
@@ -157,13 +163,13 @@ sub append_nodes {
       $node->appendChild(maybe_clone($child)); }
     elsif (defined $child) {
       $node->appendText($child); } }
-  $node; }
+  return $node; }
 
 sub clear_node {
   my ($node) = @_;
-  map($node->removeChild($_),
-    grep(($_->nodeType == XML_ELEMENT_NODE) || ($_->nodeType == XML_TEXT_NODE),
-      $node->childNodes)); }
+  return map { $node->removeChild($_) }
+    grep { ($_->nodeType == XML_ELEMENT_NODE) || ($_->nodeType == XML_TEXT_NODE) }
+    $node->childNodes; }
 
 # We have to be _extremely_ careful when rearranging trees when using XML::LibXML!!!
 # If we add one node to another, it is _silently_ removed from it's previous
@@ -171,22 +177,26 @@ sub clear_node {
 # Hopefully, this test is sufficient?
 sub maybe_clone {
   my ($node) = @_;
-  ($node->parentNode ? $node->cloneNode(1) : $node); }
+  return ($node->parentNode ? $node->cloneNode(1) : $node); }
 
 # the attributes list may contain undefined values
 # and attributes with no name (?)
 sub valid_attributes {
   my ($node) = @_;
-  grep($_ && $_->getName, $node->attributes); }
+  return grep { $_ && $_->getName } $node->attributes; }
 
 # copy @attr attributes from $from to $to
 sub copy_attributes {
   my ($to, $from, $mode, @attr) = @_;
   $mode = CA_OVERWRITE unless defined $mode;
   if ($mode & CA_EXCEPT) {
-    my %ex; map($ex{$_} = 1, @attr); $mode &= !CA_EXCEPT; $mode = CA_OVERWRITE unless $mode;
-    @attr = map($_->getName, grep(!$ex{ $_->getName }, valid_attributes($from))); }
-  else { @attr = map($_->getName, valid_attributes($from)) unless @attr; }
+    my %ex;
+    map { $ex{$_} = 1 } @attr;
+    $mode &= !CA_EXCEPT;
+    $mode = CA_OVERWRITE unless $mode;
+    @attr = map { $_->getName } grep { !$ex{ $_->getName } } valid_attributes($from); }
+  elsif (!@attr) {
+    @attr = map { $_->getName } valid_attributes($from); }
   foreach my $attr (@attr) {
     my $at = $from->getAttribute($attr);
     next if ((!defined $at) || (($mode == CA_KEEP) && $to->hasAttribute($attr)));
@@ -194,43 +204,48 @@ sub copy_attributes {
       my $old = $to->getAttribute($attr);
       $at = "$old $at" if $old; }
     $to->setAttribute($attr, $at); }
-}
+  return; }
 
 sub rename_attribute {
   my ($node, $from, $to) = @_;
   $node->setAttribute($to, $node->getAttribute($from));
-  $node->removeAttribute($from); }
+  $node->removeAttribute($from);
+  return; }
 
 sub remove_attr {
   my ($node, @attr) = @_;
-  map($node->removeAttribute($_), @attr); }
+  map { $node->removeAttribute($_) } @attr;
+  return; }
 
 sub get_attr {
   my ($node, @attr) = @_;
-  map($node->getAttribute($_), @attr); }
+  return map { $node->getAttribute($_) } @attr; }
 
 # NOTE: This really should be part of some top-level 'common' initialization
 # and probably should accommodate catalogs being given as configuration options!
+# However, it presumably sets some global state in XML::LibXML,
+# so it's safe to do ( record! ) once, even across Daemon calls.
 our $catalogs_initialized = 0;
 
 sub initialize_catalogs {
   return if $catalogs_initialized;
   $catalogs_initialized = 1;
   foreach my $catalog (pathname_findall('LaTeXML.catalog', installation_subdir => '.')) {
-    XML::LibXML->load_catalog($catalog); } }
+    XML::LibXML->load_catalog($catalog); }
+  return; }
 
 #======================================================================
 # Odd place for this utility, but it is needed in both conversion & post
 # ALSO needs error reporting capability.
 
 our @RDF_TERM_ATTRIBUTES = (qw(about resource property typeof rel rev datatype));
-our %NON_RDF_PREFIXES = map(($_ => 1), qw(http https ftp));
+our %NON_RDF_PREFIXES = map { ($_ => 1) } qw(http https ftp);
 
 sub set_RDFa_prefixes {
   my ($document, $map) = @_;
   my $root     = $document->documentElement;
   my %prefixes = ();
-  my %localmap = map(($_ => $$map{$_}), keys %$map);
+  my %localmap = map { ($_ => $$map{$_}) } keys %$map;
   if (my $prefixes = $root->getAttribute('prefix')) {
     my @x = split(/\s/, $prefixes);
     while (@x) {
@@ -252,15 +267,16 @@ sub set_RDFa_prefixes {
     warn "RDFa attribute 'vocab' on non-root node; "
       . "Skipping RDFa prefix management";
     return; }
-  my $xpath = 'descendant::*[' . join(' or ', map('@' . $_, @RDF_TERM_ATTRIBUTES)) . ']';
+  my $xpath = 'descendant::*[' . join(' or ', map { '@' . $_ } @RDF_TERM_ATTRIBUTES) . ']';
   foreach my $node ($document->findnodes($xpath)) {
     foreach my $k (@RDF_TERM_ATTRIBUTES) {
       if (my $v = $node->getAttribute($k)) {
         foreach my $term (split(/\s/, $v)) {
           if (($term =~ /^(\w+):/) && !$NON_RDF_PREFIXES{$1}) {
             $prefixes{$1} = 1 if $localmap{$1}; } } } } }    # A prefix is a prefix IFF there is a mapping!!
-  if (my $prefixes = join(' ', map($_ . ": " . $localmap{$_}, keys %prefixes))) {
-    $root->setAttribute(prefix => $prefixes); } }
+  if (my $prefixes = join(' ', map { $_ . ": " . $localmap{$_} } keys %prefixes)) {
+    $root->setAttribute(prefix => $prefixes); }
+  return; }
 
 ######################################################################
 # PATCH Section
@@ -285,7 +301,7 @@ BEGIN {
 sub encoding_XML_LibXML_Document_toString {
   my ($self, $depth) = @_;
   #  Encode::encode("utf-8", $self->original_XML_LibXML_Document_toString($depth)); }
-  Encode::encode("utf-8", original_XML_LibXML_Document_toString($self, $depth)); }
+  return Encode::encode("utf-8", original_XML_LibXML_Document_toString($self, $depth)); }
 
 # As of 1.59, element attribute methods accept attributes names as "xml:foo"
 # (in particular, xml:id), without explicitly calling the NS versions.
@@ -294,25 +310,25 @@ sub xmlns_XML_LibXML_Element_getAttribute {
   my ($self, $name) = @_;
   if ($name =~ /^xml:(.*)$/) {
     my $attr = $1;
-    $self->getAttributeNS($LaTeXML::Common::XML::XML_NS, $attr); }
+    return $self->getAttributeNS($LaTeXML::Common::XML::XML_NS, $attr); }
   else {
-    original_XML_LibXML_Element_getAttribute($self, $name); } }
+    return original_XML_LibXML_Element_getAttribute($self, $name); } }
 
 sub xmlns_XML_LibXML_Element_hasAttribute {
   my ($self, $name) = @_;
   if ($name =~ /^xml:(.*)$/) {
     my $attr = $1;
-    $self->hasAttributeNS($LaTeXML::Common::XML::XML_NS, $attr); }
+    return $self->hasAttributeNS($LaTeXML::Common::XML::XML_NS, $attr); }
   else {
-    original_XML_LibXML_Element_hasAttribute($self, $name); } }
+    return original_XML_LibXML_Element_hasAttribute($self, $name); } }
 
 sub xmlns_XML_LibXML_Element_setAttribute {
   my ($self, $name, $value) = @_;
   if ($name =~ /^xml:(.*)$/) {
     my $attr = $1;
-    $self->setAttributeNS($LaTeXML::Common::XML::XML_NS, $attr, $value); }
+    return $self->setAttributeNS($LaTeXML::Common::XML::XML_NS, $attr, $value); }
   else {
-    original_XML_LibXML_Element_setAttribute($self, $name, $value); } }
+    return original_XML_LibXML_Element_setAttribute($self, $name, $value); } }
 
 our $xml_libxml_version;
 
@@ -346,16 +362,16 @@ sub new {
 ###  $parser->clean_namespaces(1);
   $parser->validation(0);
   $parser->keep_blanks(0);    # This allows formatting the output.
-  bless { parser => $parser }, $class; }
+  return bless { parser => $parser }, $class; }
 
 sub parseFile {
   my ($self, $file) = @_;
   LaTeXML::Common::XML::initialize_catalogs();
-  $$self{parser}->parse_file($file); }
+  return $$self{parser}->parse_file($file); }
 
 sub parseString {
   my ($self, $string) = @_;
-  $$self{parser}->parse_string($string); }
+  return $$self{parser}->parse_string($string); }
 
 sub parseChunk {
   my ($self, $string) = @_;
@@ -385,7 +401,7 @@ sub parseChunk {
     }
     #    print STDERR "\nXML: ".$xml->toString."\n";
   }
-  $xml; }
+  return $xml; }
 
 ######################################################################
 package LaTeXML::Common::XML::XPath;
@@ -396,23 +412,25 @@ sub new {
   my $context = XML::LibXML::XPathContext->new();
   foreach my $prefix (keys %mappings) {
     $context->registerNs($prefix => $mappings{$prefix}); }
-  bless { context => $context }, $class; }
+  return bless { context => $context }, $class; }
 
 sub registerNS {
   my ($self, $prefix, $url) = @_;
-  $$self{context}->registerNs($prefix => $url); }
+  $$self{context}->registerNs($prefix => $url);
+  return; }
 
 sub registerFunction {
   my ($self, $name, $function) = @_;
-  $$self{context}->registerFunction($name => $function); }
+  $$self{context}->registerFunction($name => $function);
+  return; }
 
 sub findnodes {
   my ($self, $xpath, $node) = @_;
-  $$self{context}->findnodes($xpath, $node); }
+  return $$self{context}->findnodes($xpath, $node); }
 
 sub findvalue {
   my ($self, $xpath, $node) = @_;
-  $$self{context}->findvalue($xpath, $node); }
+  return $$self{context}->findvalue($xpath, $node); }
 
 ######################################################################
 package LaTeXML::Common::XML::XSLT;
@@ -425,11 +443,11 @@ sub new {
     $stylesheet = LaTeXML::Common::XML::Parser->new()->parseFile($stylesheet); }
   if (ref $stylesheet eq 'XML::LibXML::Document') {
     $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
-  bless { stylesheet => $stylesheet }, $class; }
+  return bless { stylesheet => $stylesheet }, $class; }
 
 sub transform {
   my ($self, $document, %params) = @_;
-  $$self{stylesheet}->transform($document, %params); }
+  return $$self{stylesheet}->transform($document, %params); }
 
 ######################################################################
 package LaTeXML::Common::XML::RelaxNG;
@@ -469,19 +487,23 @@ sub new {
 ###      Error('missing_file',$name,"Can't find RelaxNG schema module $name");
       return;                                            # ???
     } }
-  bless { schemadoc => $schemadoc }, $class; }
+  return bless { schemadoc => $schemadoc }, $class; }
 
 sub validate {
   my ($self, $document) = @_;
   # Lazy conversion of the Schema's XML doc into an actual RelaxNG object.
   if (!$$self{schema} && $$self{schemadoc}) {
     $$self{schema} = XML::LibXML::RelaxNG->new(DOM => $$self{schemadoc}); }
-  $$self{schema}->validate($document); }
+  return $$self{schema}->validate($document); }
 
 # This returns the root element of the XML document representing the schema!
-sub documentElement { $_[0]->{schemadoc}->documentElement; }
+sub documentElement {
+  my ($self) = @_;
+  return $$self{schemadoc}->documentElement; }
 
-sub URI { $_[0]->{schemadoc}->URI; }
+sub URI {
+  my ($self) = @_;
+  return $$self{schemadoc}->URI; }
 
 #**********************************************************************
 1;
