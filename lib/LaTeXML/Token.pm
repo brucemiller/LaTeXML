@@ -60,7 +60,7 @@ Readonly my @PRIMITIVE_NAME => (
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
   undef,       'NotExpanded');
-Readonly my @CC_SHORT_NAME = qw(
+Readonly my @CC_SHORT_NAME => qw(
   T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
