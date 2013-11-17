@@ -215,7 +215,7 @@ sub LookupMathcode {
 
 sub AssignMathcode {
   my ($char, $mathcode, $scope) = @_;
-  $STATE->assigbMathcode($char, $mathcode, $scope);
+  $STATE->assignMathcode($char, $mathcode, $scope);
   return; }
 
 sub LookupSFcode {
