@@ -27,3 +27,14 @@ severity=3
 
 # The names very often are not ambiguous in their context
 [-Perl::Critic::Policy::NamingConventions::ProhibitAmbiguousNames]
+
+# This one can be a good clue to confusingly written subs.
+# But it's also rather annoying about subs that have to do confusing stuff.
+[-Perl::Critic::Policy::ControlStructures::ProhibitCascadingIfElse]
+
+# Could be a another useful warning, but such vars often ARE useful or necessary
+[-Perl::Critic::Policy::Variables::ProhibitPackageVars]
+
+# Well, if I exported them, I meant it; OK?
+[-Perl::Critic::Policy::Modules::ProhibitAutomaticExportation]
+
