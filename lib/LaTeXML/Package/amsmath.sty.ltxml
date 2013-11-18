@@ -117,6 +117,36 @@ sub amsalignBindings {
 
 #  equation, equation*
 
+# Note that amsmath respects \nonumber !!!!
+# So, we've got to delay the properties
+DefEnvironment('{equation}',
+  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode => 'display_math',
+  # NOT this
+  #  properties => sub { RefStepCounter('equation') },
+  # BUT this:
+  beforeDigest => sub {
+    AssignValue(EQUATIONROW_NUMBER => '_AUTO_', 'global');
+    return; },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $num   = LookupValue('EQUATIONROW_NUMBER');
+    my %props = ();
+    if    (!$num)            { %props = RefStepID('equation'); }
+    elsif ($num eq '_AUTO_') { %props = RefStepCounter('equation'); }
+    else {
+      %props = RefStepID('equation');
+      $props{refnum} = $num; }
+    $whatsit->setProperties(%props);
+    return; },
+  locked => 1);
+
 #======================================================================
 # Section 3.3 Split equations without alignment
 
