@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::Split;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
@@ -23,7 +24,7 @@ sub new {
   $$self{split_xpath}   = $options{split_xpath};
   $$self{splitnaming}   = $options{splitnaming};
   $$self{no_navigation} = $options{no_navigation};
-  $self; }
+  return $self; }
 
 # Could this actually just return the nodes that are to become pages?
 # sub toProcess { ??? }
@@ -37,7 +38,7 @@ sub process {
   my @docs  = ($doc);
   my @pages = $self->getPages($doc);
   # Weird test: exclude the "whole document" from the list (?)
-  @pages = grep($_->parentNode->parentNode, @pages);    # Strip out the root node.
+  @pages = grep { $_->parentNode->parentNode } @pages;    # Strip out the root node.
   if (@pages) {
     my @nav = $doc->findnodes("descendant::ltx:navigation");
     $doc->removeNodes(@nav) if @nav;
@@ -55,14 +56,14 @@ sub process {
 
     $self->addNavigation($tree, @nav) if @nav;
   }
-  @docs; }
+  return @docs; }
 
 # Get the nodes in the document that WILL BECOME separate "pages".
 # (they are not yet removed from the main document)
 # Subclass can override, if needed.
 sub getPages {
   my ($self, $doc) = @_;
-  $doc->findnodes($$self{split_xpath}); }
+  return $doc->findnodes($$self{split_xpath}); }
 
 # Sort the pages into a tree, in case some pages are children of others
 # If a page contains NOTHING BUT child pages (except frontmatter),
@@ -76,7 +77,8 @@ sub presortPages {
   else {
     $$haschildren{ $$tree{node}->localname } = 1;    # Wrong key for this!?!
     push(@{ $$tree{children} },
-      { node => $page, upid => $$tree{id}, id => $page->getAttribute('xml:id'), parent => $tree, children => [] }); } }
+      { node => $page, upid => $$tree{id}, id => $page->getAttribute('xml:id'), parent => $tree, children => [] }); }
+  return; }
 
 # Get destination pathnames for each page.
 sub prenamePages {
@@ -85,7 +87,7 @@ sub prenamePages {
     $$entry{name} = $self->getPageName($doc, $$entry{node}, $$tree{node}, $$tree{name},
       $$haschildren{ $$entry{node}->localname });
     $self->prenamePages($doc, $entry, $haschildren); }
-}
+  return; }
 
 # Process a sequence of page entries, removing them and generating documents for each.
 sub processPages {
@@ -122,8 +124,8 @@ sub processPages {
     my $type = $parent->localname;
     $doc->addNodes($parent, ['ltx:TOC', {}, ['ltx:toclist', { class => 'ltx_toc_' . $type }, @toc]])
       if @toc && !$doc->findnodes("descendant::ltx:TOC[\@role='contents']", $parent);
-    map($parent->addChild($_), @removed); }
-  @docs; }
+    map { $parent->addChild($_) } @removed; }
+  return @docs; }
 
 sub addNavigation {
   my ($self, $entry, @nav) = @_;
@@ -131,7 +133,8 @@ sub addNavigation {
   $doc->addNodes($doc->getDocumentElement, @nav);    # cloning, as needed...
   foreach my $child (@{ $$entry{children} }) {
     my $childdoc = $$child{document};
-    $self->addNavigation($child, @nav); } }          # now, recurse
+    $self->addNavigation($child, @nav); }            # now, recurse
+  return; }
 
 our $COUNTER = 0;
 
@@ -160,11 +163,11 @@ sub getPageName {
     $asdir = $recursive; }
   $name =~ s/:+/_/g;
   if ($asdir) {
-    pathname_make(dir => pathname_concat(pathname_directory($parentpath), $name),
+    return pathname_make(dir => pathname_concat(pathname_directory($parentpath), $name),
       name => 'index',
       type => $doc->getDestinationExtension); }
   else {
-    pathname_make(dir => pathname_directory($parentpath),
+    return pathname_make(dir => pathname_directory($parentpath),
       name => $name,
       type => $doc->getDestinationExtension); } }
 

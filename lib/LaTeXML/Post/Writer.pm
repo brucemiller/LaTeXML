@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::Writer;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
@@ -24,7 +25,7 @@ sub new {
   $$self{format} = ($options{format} || 'xml');
   $$self{omit_doctype} = 1 if $options{omit_doctype};
   $$self{is_html}      = 1 if $options{is_html};
-  $self; }
+  return $self; }
 
 sub process {
   my ($self, $doc, $root) = @_;
@@ -49,7 +50,7 @@ sub process {
     close($OUT); }
   else {
     print $string; }
-  $doc; }
+  return $doc; }
 
 # ================================================================================
 1;

@@ -32,6 +32,7 @@
 
 package LaTeXML::Post::XMath;
 use strict;
+use warnings;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
@@ -44,19 +45,22 @@ sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my $idsuffix = $self->IDSuffix;
   if ($idsuffix) {
-    ['ltx:XMath', {}, map($doc->cloneNode($_, $idsuffix), element_nodes($xmath))]; }
+    return ['ltx:XMath', {}, map { $doc->cloneNode($_, $idsuffix) } element_nodes($xmath)]; }
   else {
     # If no idsuffix, we're actually just PRESERVING the xmath,
     # so we shouldn't need any cloning or id munging (!?!?!?!)
-    $xmath; } }
+    return $xmath; } }
 
 sub combineParallel {
   my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
   # Just return the converted nodes to be added to the ltx:Math
-  ($primary, map($$_[1], @secondaries)); }
+  return ($primary, map { $$_[1] } @secondaries); }
 
-sub getEncodingName { 'application/x-latexml'; }
-sub rawIDSuffix     { '.xm'; }
+sub getEncodingName {
+  return 'application/x-latexml'; }
+
+sub rawIDSuffix {
+  return '.xm'; }
 
 #================================================================================
 

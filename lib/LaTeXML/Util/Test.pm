@@ -7,9 +7,7 @@ use LaTeXML::Util::Pathname;
 use JSON::XS;
 use FindBin;
 use File::Copy;
-use Exporter;
-
-our @ISA    = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
     latexml_tests),
   @Test::More::EXPORT);
@@ -21,15 +19,15 @@ our $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
 # Skip any that have no corresponding *.xml file.
 sub latexml_tests {
   my ($directory, %options) = @_;
-
-  if (!opendir(DIR, $directory)) {
+  my $DIR;
+  if (!opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
-    do_fail($directory, "Couldn't read directory $directory:$!"); }
+    return do_fail($directory, "Couldn't read directory $directory:$!"); }
   else {
-    my @dir_contents = sort readdir(DIR);
-    my @core_tests   = grep(s/\.tex$//, @dir_contents);
-    my @daemon_tests = grep(s/\.spec$//, @dir_contents);
-    closedir(DIR);
+    my @dir_contents = sort readdir($DIR);
+    my @core_tests   = grep { s/\.tex$// } @dir_contents;
+    my @daemon_tests = grep { s/\.spec$// } @dir_contents;
+    closedir($DIR);
     eval { use_ok("LaTeXML"); };    # || skip_all("Couldn't load LaTeXML"); }
 
   SKIP: {
@@ -54,7 +52,7 @@ sub latexml_tests {
           next unless check_requirements($test, $$requires{$name});
           daemon_ok($test, $directory, $options{generate});
         } } } }
-  done_testing(); }
+  return done_testing(); }
 
 sub check_requirements {
   my ($test, $reqmts) = @_;
@@ -85,13 +83,13 @@ sub latexml_ok {
 
   eval { $dom = $latexml->convertFile($texpath); };
   return do_fail($name, "Couldn't convert $texpath: " . @!) unless $dom;
-  is_xmlcontent($latexml, $dom, $xmlpath, $name); }
+  return is_xmlcontent($latexml, $dom, $xmlpath, $name); }
 
 sub is_xmlcontent {
   my ($latexml, $xmldom, $path, $name) = @_;
   my ($domstring);
   if (!defined $xmldom) {
-    do_fail($name, "The XML DOM was undefined for $name"); }
+    return do_fail($name, "The XML DOM was undefined for $name"); }
   else {
 ###    eval { $domstring = $xmldom->toString(1); };
 ####    eval { $domstring = $xmldom->toStringC14N(0); };
@@ -102,19 +100,20 @@ sub is_xmlcontent {
       $parser->keep_blanks(1);
       $domstring = $parser->parse_string($string)->toStringC14N(0); };
     return do_fail($name, "Couldn't convert dom to string: " . @!) unless $domstring;
-    is_xmlfilecontent([split('\n', $domstring)], $path, $name); } }
+    return is_xmlfilecontent([split('\n', $domstring)], $path, $name); } }
 
 sub is_filecontent {
   my ($strings, $path, $name) = @_;
   #  if(!open(IN,"<:utf8",$path)){
-  if (!open(IN, "<", $path)) {
-    do_fail($name, "Could not open $path"); }
+  my $IN;
+  if (!open($IN, "<", $path)) {
+    return do_fail($name, "Could not open $path"); }
   else {
     my @lines;
     { local $\ = undef;
-      @lines = <IN>; }
-    close(IN);
-    is_strings($strings, [@lines], $name); } }
+      @lines = <$IN>; }
+    close($IN);
+    return is_strings($strings, [@lines], $name); } }
 
 sub is_xmlfilecontent {
   my ($strings, $path, $name) = @_;
@@ -124,7 +123,7 @@ sub is_xmlfilecontent {
     $parser->keep_blanks(1);
     $domstring = $parser->parse_file($path)->toStringC14N(0); };
   return do_fail($name, "Could not open $path") unless $domstring;
-  is_strings($strings, [split('\n', $domstring)], $name); }
+  return is_strings($strings, [split('\n', $domstring)], $name); }
 
 sub is_strings {
   my ($strings1, $strings2, $name) = @_;
@@ -146,7 +145,7 @@ sub is_strings {
         "Difference at line " . ($i + 1) . " for $name\n"
           . "      got : '$string1'\n"
           . " expected : '$string2'\n"); } }
-  ok(1, $name); }
+  return ok(1, $name); }
 
 sub daemon_ok {
   my ($base, $dir, $generate) = @_;
@@ -185,12 +184,13 @@ sub daemon_ok {
     move("$base.test.xml",    "$base.xml")    if -e "$base.test.xml";
     move("$base.test.status", "$base.status") if -e "$base.test.status";
   }
-}
+  return; }
 
 sub read_options {
   my $opts = [];
-  open(OPT, "<", shift);
-  while (<OPT>) {
+  my $OPT;
+  open($OPT, "<", shift);
+  while (<$OPT>) {
     next if /^#/;
     chomp;
     /(\S+)\s*=\s*(.*)/;
@@ -198,20 +198,20 @@ sub read_options {
     $value =~ s/\s+$//;
     push @$opts, [$key, $value];
   }
-  close OPT;
-  $opts;
-}
+  close $OPT;
+  return $opts; }
 
 sub get_filecontent {
   my ($path, $name) = @_;
+  my $IN;
   my @lines;
   if (-e $path) {
-    if (!open(IN, "<", $path)) {
+    if (!open($IN, "<", $path)) {
       do_fail($name, "Could not open $path"); }
     else {
       { local $\ = undef;
-        @lines = <IN>; }
-      close(IN);
+        @lines = <$IN>; }
+      close($IN);
     }
   }
   if (scalar(@lines)) {
@@ -219,8 +219,7 @@ sub get_filecontent {
   } else {
     push @lines, '';
   }
-  \@lines;
-}
+  return \@lines; }
 
 # TODO: Reconsider what else we need to test, ideas below:
 

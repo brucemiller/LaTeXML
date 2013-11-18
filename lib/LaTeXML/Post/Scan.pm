@@ -11,6 +11,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Post::Scan;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
@@ -57,11 +58,12 @@ sub new {
 
   $self->registerHandler('ltx:rawhtml' => \&rawhtml_handler);
 
-  $self; }
+  return $self; }
 
 sub registerHandler {
   my ($self, $tag, $handler) = @_;
-  $$self{handlers}{$tag} = $handler; }
+  $$self{handlers}{$tag} = $handler;
+  return; }
 
 sub process {
   my ($self, $doc, $root) = @_;
@@ -83,19 +85,21 @@ sub process {
 
   $self->scan($doc, $root, $$doc{parent_id});
   NoteProgressDetailed(" [DBStatus: " . $$self{db}->status . "]");
-  $doc; }
+  return $doc; }
 
 sub scan {
   my ($self, $doc, $node, $parent_id) = @_;
   my $tag = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
-  &$handler($self, $doc, $node, $tag, $parent_id); }
+  &$handler($self, $doc, $node, $tag, $parent_id);
+  return; }
 
 sub scanChildren {
   my ($self, $doc, $node, $parent_id) = @_;
   foreach my $child ($node->childNodes) {
     if ($child->nodeType == XML_ELEMENT_NODE) {
-      $self->scan($doc, $child, $parent_id); } } }
+      $self->scan($doc, $child, $parent_id); } }
+  return; }
 
 sub addAsChild {
   my ($self, $id, $parent_id) = @_;
@@ -105,11 +109,12 @@ sub addAsChild {
       $parent->pushNew('children', $id);
       last; }
     else {
-      $parent_id = $parent->getValue('parent'); } } }
+      $parent_id = $parent->getValue('parent'); } }
+  return; }
 
 sub pageID {
   my ($self, $doc) = @_;
-  $doc->getDocumentElement->getAttribute('xml:id'); }
+  return $doc->getDocumentElement->getAttribute('xml:id'); }
 
 # Compute a "Fragment ID", ie. an ID based on the given ID,
 # but which is potentially shortened so that it need only be
@@ -118,13 +123,13 @@ sub inPageID {
   my ($self, $doc, $id) = @_;
   my $baseid = $doc->getDocumentElement->getAttribute('xml:id') || '';
   if ($baseid eq $id) {
-    undef; }
+    return; }
   elsif ($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)) {
-    $1; }
+    return $1; }
   elsif ($$doc{split_from_id} && ($id =~ /^\Q$$doc{split_from_id}\E\.(.*)$/)) {
-    $1; }
+    return $1; }
   else {
-    $id; } }
+    return $id; } }
 
 sub noteLabels {
   my ($self, $node) = @_;
@@ -133,7 +138,8 @@ sub noteLabels {
       my @labels = split(' ', $node->getAttribute('labels'));
       foreach my $label (@labels) {
         $$self{db}->register($label, id => $id); }
-      [@labels]; } } }
+      return [@labels]; } }
+  return undef; }
 
 # Clean up a node before insertion into database.
 sub cleanNode {
@@ -141,56 +147,62 @@ sub cleanNode {
   return $node unless $node;
   my $cleaned = $node->cloneNode(1);
   # Remove indexmark (anything else ?)
-  map($_->parentNode->removeChild($_), $doc->findnodes('.//ltx:indexmark', $cleaned));
-  $cleaned; }
+  map { $_->parentNode->removeChild($_) } $doc->findnodes('.//ltx:indexmark', $cleaned);
+  return $cleaned; }
 
 sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id));
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef);
     $self->addAsChild($id, $parent_id); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 sub section_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
       primary  => 1,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id),
-      refnum   => $node->getAttribute('refnum'),
-      frefnum  => $node->getAttribute('frefnum'),
-      rrefnum  => $node->getAttribute('rrefnum'),
-      title    => $self->cleanNode($doc, $doc->findnode('ltx:title',    $node)),
-      toctitle => $self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node)),
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef,
+      refnum  => $node->getAttribute('refnum')  // undef,
+      frefnum => $node->getAttribute('frefnum') // undef,
+      rrefnum => $node->getAttribute('rrefnum') // undef,
+      title    => $self->cleanNode($doc, $doc->findnode('ltx:title',    $node)) // undef,
+      toctitle => $self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node)) // undef,
       children => [],
       stub     => $node->getAttribute('stub'));
     $self->addAsChild($id, $parent_id); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 sub captioned_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id),
-      refnum   => $node->getAttribute('refnum'),
-      frefnum  => $node->getAttribute('frefnum'),
-      rrefnum  => $node->getAttribute('rrefnum'),
-      caption  => $self->cleanNode($doc,
-        $doc->findnode('descendant::ltx:caption', $node)),
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef,
+      refnum  => $node->getAttribute('refnum')  // undef,
+      frefnum => $node->getAttribute('frefnum') // undef,
+      rrefnum => $node->getAttribute('rrefnum') // undef,
+      caption => $self->cleanNode($doc,
+        $doc->findnode('descendant::ltx:caption', $node)) // undef,
       toccaption => $self->cleanNode($doc,
-        $doc->findnode('descendant::ltx:toccaption', $node)));
+        $doc->findnode('descendant::ltx:toccaption', $node)) // undef);
     $self->addAsChild($id, $parent_id); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 sub labelled_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
@@ -206,42 +218,47 @@ sub labelled_handler {
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id),
-      refnum   => $refnum,
-      frefnum  => ($refnum && $reftag ? $reftag : $frefnum),
-      rrefnum  => ($refnum && $reftag ? $reftag : $rrefnum));
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef,
+      refnum => $refnum,
+      frefnum => ($refnum && $reftag ? $reftag : $frefnum),
+      rrefnum => ($refnum && $reftag ? $reftag : $rrefnum));
     $self->addAsChild($id, $parent_id); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 sub anchor_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id),
-      title    => $node->cloneNode(1)->childNodes,                             # document fragment?
-      refnum   => $node->getAttribute('refnum'),
-      frefnum  => $node->getAttribute('frefnum'),
-      rrefnum  => $node->getAttribute('rrefnum'));
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef,
+      title   => $node->cloneNode(1)->childNodes // undef,    # document fragment?
+      refnum  => $node->getAttribute('refnum')   // undef,
+      frefnum => $node->getAttribute('frefnum')  // undef,
+      rrefnum => $node->getAttribute('rrefnum')  // undef);
     $self->addAsChild($id, $parent_id); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 sub ref_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
-  if (my $label = $node->getAttribute('labelref')) {    # Only record refs of labels
-                                                        # Don't scan refs from TOC or 'cited' bibblock
+  if (my $label = $node->getAttribute('labelref')) {          # Only record refs of labels
+        # Don't scan refs from TOC or 'cited' bibblock
     if (!$doc->findnodes('ancestor::ltx:tocentry'
           . '| ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]',
         $node)) {
       my $entry = $$self{db}->register($label);
       $entry->noteAssociation(referrers => $parent_id); } }
   # Usually, a ref won't YET have content; but if it does, we should scan it.
-  $self->default_handler($doc, $node, $tag, $parent_id); }
+  $self->default_handler($doc, $node, $tag, $parent_id);
+  return; }
 
 sub bibref_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
@@ -254,7 +271,8 @@ sub bibref_handler {
         my $entry = $$self{db}->register("BIBLABEL:$bibkey");
         $entry->noteAssociation(referrers => $parent_id); } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
-  $self->default_handler($doc, $node, $tag, $parent_id); }
+  $self->default_handler($doc, $node, $tag, $parent_id);
+  return; }
 
 # Note that index entries get stored in simple form; just the terms & location.
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
@@ -264,13 +282,14 @@ sub indexmark_handler {
   # Get the actual phrases, and any see_also phrases (if any)
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
-  my $key = join(':', 'INDEX', map($_->getAttribute('key'), @phrases));
+  my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
   my $entry = $$self{db}->lookup($key)
     || $$self{db}->register($key, phrases => [@phrases], see_also => []);
   if (@seealso) {
     $entry->pushNew('see_also', @seealso); }
   else {
-    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); } }
+    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
+  return; }
 
 # This handles glossarymark and glossaryentry
 sub glossarymark_handler {
@@ -288,11 +307,13 @@ sub glossarymark_handler {
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
   if ($id) {
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node),
-      location => $doc->siteRelativeDestination,
-      pageid   => $self->pageID($doc), fragid => $self->inPageID($doc, $id)); }
+      labels   => $self->noteLabels($node)      // undef,
+      location => $doc->siteRelativeDestination // undef,
+      pageid   => $self->pageID($doc)           // undef,
+      fragid => $self->inPageID($doc, $id) // undef); }
   # Scan content, since could contain other interesting stuff...
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 # Note this bit of perversity:
 #  <ltx:bibentry> is a semantic bibliographic entry,
@@ -308,17 +329,19 @@ sub bibitem_handler {
     my $key = $node->getAttribute('key');
     $$self{db}->register("BIBLABEL:$key", id => $id) if $key;
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id, bibkey => $key,
-      location => $doc->siteRelativeDestination,
-      pageid => $self->pageID($doc), fragid => $self->inPageID($doc, $id),
-      authors     => $doc->findnode('ltx:bibtag[@role="authors"]',     $node),
-      fullauthors => $doc->findnode('ltx:bibtag[@role="fullauthors"]', $node),
-      year        => $doc->findnode('ltx:bibtag[@role="year"]',        $node),
-      number      => $doc->findnode('ltx:bibtag[@role="number"]',      $node),
-      refnum      => $doc->findnode('ltx:bibtag[@role="refnum"]',      $node),
-      title       => $doc->findnode('ltx:bibtag[@role="title"]',       $node),
-      keytag      => $doc->findnode('ltx:bibtag[@role="key"]',         $node),
-      typetag     => $doc->findnode('ltx:bibtag[@role="bibtype"]',     $node)); }
-  $self->scanChildren($doc, $node, $id || $parent_id); }
+      location    => $doc->siteRelativeDestination,
+      pageid      => $self->pageID($doc) // undef,
+      fragid      => $self->inPageID($doc, $id) // undef,
+      authors     => $doc->findnode('ltx:bibtag[@role="authors"]', $node) // undef,
+      fullauthors => $doc->findnode('ltx:bibtag[@role="fullauthors"]', $node) // undef,
+      year        => $doc->findnode('ltx:bibtag[@role="year"]', $node) // undef,
+      number      => $doc->findnode('ltx:bibtag[@role="number"]', $node) // undef,
+      refnum      => $doc->findnode('ltx:bibtag[@role="refnum"]', $node) // undef,
+      title       => $doc->findnode('ltx:bibtag[@role="title"]', $node) // undef,
+      keytag      => $doc->findnode('ltx:bibtag[@role="key"]', $node) // undef,
+      typetag     => $doc->findnode('ltx:bibtag[@role="bibtype"]', $node) // undef); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
 
 # For a bibentry, we'll only store the citation key, so we know it's there.
 sub bibentry_handler {
@@ -333,17 +356,17 @@ sub bibentry_handler {
 
 ## HOWEVER; this ultimately requires formatting the bibliography twice (for complex sites).
 ## This needs to be reworked!
-}
+  return; }
 
 # I'm thinking we shouldn't acknowledge navigation data at all?
 sub navigation_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-}
+  return; }
 
 # I'm thinking we shouldn't acknowledge rawhtml data at all?
 sub rawhtml_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-}
+  return; }
 
 # ================================================================================
 1;

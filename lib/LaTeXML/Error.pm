@@ -239,7 +239,9 @@ Readonly my $MAXLEN  => 40;    # Or more?
 
 sub trim {
   my ($string) = @_;
-  $string = substr($string, $MAXLEN - 3, length($string), "...") if (length($string) > $MAXLEN);
+###  $string = substr($string, $MAXLEN - 3, length($string), "...") if (length($string) > $MAXLEN);
+  substr($string, $MAXLEN - 3) = "..." if (length($string) > $MAXLEN);
+###  $string = substr($string, $MAXLEN - 3,undef, "...") if (length($string) > $MAXLEN);
   $string =~ s/\n/\x{240D}/gs;    # symbol for CR
   return $string; }
 

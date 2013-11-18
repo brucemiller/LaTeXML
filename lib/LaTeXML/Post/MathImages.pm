@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::MathImages;
 use strict;
+use warnings;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::LaTeXImages);
 
@@ -19,12 +20,14 @@ sub new {
   my ($class, %options) = @_;
   $options{resource_directory} = 'mi' unless defined $options{resource_directory};
   $options{resource_prefix}    = 'mi' unless defined $options{resource_prefix};
-  $class->SUPER::new(%options); }
+  return $class->SUPER::new(%options); }
 
 #======================================================================
 
 # Return the list of Math nodes.
-sub toProcess { $_[1]->findnodes('//ltx:Math'); }
+sub toProcess {
+  my ($self, $doc) = @_;
+  return $doc->findnodes('//ltx:Math'); }
 
 # Return the TeX string to format the image for this node.
 sub extractTeX {
@@ -33,7 +36,7 @@ sub extractTeX {
   my $tex = $self->cleanTeX($node->getAttribute('tex'));
   return unless defined $tex;
   $mode = 'DISPLAY' if $tex =~ s/^\s*\\displaystyle\s+//;    # Strip leading displaystyle
-  ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
+  return ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
 our $MML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
 
@@ -46,7 +49,8 @@ sub setTeXImage {
     $mml->setAttribute('altimg',        $path);
     $mml->setAttribute('altimg-width',  $width);
     $mml->setAttribute('altimg-height', $height);
-    $mml->setAttribute('altimg-valign', -$depth) if defined $depth; } }    # Note the sign!!
+    $mml->setAttribute('altimg-valign', -$depth) if defined $depth; }    # Note the sign!!
+  return; }
 
 # Definitions needed for processing inline & display math images
 sub preamble {

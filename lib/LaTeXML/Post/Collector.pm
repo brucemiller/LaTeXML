@@ -11,6 +11,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Post::Collector;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
@@ -24,7 +25,7 @@ sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
   $$self{scanner} = $options{scanner};
-  $self; }
+  return $self; }
 
 # Abstract class:
 # Needs sub process {...
@@ -60,7 +61,7 @@ sub makeSubCollectionDocuments {
   my $rootrole = $root->getAttribute('role');
   my @initials = sort keys %collections;
   my $init0    = $initials[0];
-  my @ids      = ([$rootid, $init0], map(["$rootid.$_", $_], @initials[1 .. $#initials]));
+  my @ids      = ([$rootid, $init0], map { ["$rootid.$_", $_] } @initials[1 .. $#initials]);
   # Patchup the main node; Replace title, add nav, add the 1st subcollection.
   my @titles = $doc->findnodes('//ltx:title | //ltx:toctitle', $root);
   my @titlestuff = $doc->trimChildNodes($titles[0]);
@@ -80,22 +81,22 @@ sub makeSubCollectionDocuments {
       ['ltx:title', {}, @titlestuff, ($i == 0 ? () : (' ', $ids[$i][1]))],
       ['ltx:TOC', { format => 'veryshort' },
         ['ltx:toclist', {},
-          map(($_ == $i
+          map { ($_ == $i
               ? ['ltx:tocentry', {}, $ids[$_][1]]
               : ['ltx:tocentry', {}, ['ltx:ref',
                   { idref => $ids[$_][0], show => 'refnum' },
-                  $ids[$_][1]]]),
-            0 .. $#ids)]],
+                  $ids[$_][1]]]) }
+            0 .. $#ids]],
       $collections{ $ids[$i][1] });
     if ($i > 0) {
 ####      $docs[$i  ]->addNavigation(previous=>$ids[$i-1][0]);
 ####      $docs[$i-1]->addNavigation(next    =>$ids[$i  ][0]);
     } }
-  @docs; }
+  return @docs; }
 
 sub rescan {
   my ($self, $doc) = @_;
-  ($$self{scanner} ? $$self{scanner}->process($doc, $$self{scanner}->toProcess($doc)) : $doc); }
+  return ($$self{scanner} ? $$self{scanner}->process($doc, $$self{scanner}->toProcess($doc)) : $doc); }
 
 # If the main document is named "index", (like index.html) presumably this collection
 # will be contained in its own directory, so the sub document names can be short.
@@ -103,7 +104,7 @@ sub rescan {
 sub getPageName {
   my ($self, $doc,  $initial) = @_;
   my ($dir,  $name, $type)    = pathname_split($doc->getDestination);
-  pathname_make(dir => $dir,
+  return pathname_make(dir => $dir,
     name => ($name eq 'index' ? $initial : "$name.$initial"),
     type => $type); }
 

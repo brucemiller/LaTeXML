@@ -12,10 +12,10 @@
 
 package LaTeXML::Util::Alignment;
 use strict;
+use warnings;
+use Readonly;
 use LaTeXML::Package;
-use Exporter;
-
-our @ISA    = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT = (qw(
     &constructAlignment
     &ReadAlignmentTemplate &parseAlignmentTemplate &MatrixTemplate));
@@ -34,7 +34,7 @@ our @EXPORT = (qw(
 #   colElement => name of col element.
 sub new {
   my ($class, %data) = @_;
-  bless { %data,
+  return bless { %data,
     template => LaTeXML::AlignmentTemplate->new(), rows => [],
     current_column => 0, current_row => undef }, $class; }
 
@@ -42,21 +42,22 @@ sub new {
 
 sub setMath {
   my ($self) = @_;
-  $$self{isMath} = 1; }
+  return $$self{isMath} = 1; }
 
 ###
 sub getTemplate {
   my ($self, $template) = @_;
-  $$self{template}; }
+  return $$self{template}; }
 
 sub setTemplate {
   my ($self, $template) = @_;
-  $$self{template} = $template; }
+  $$self{template} = $template;
+  return; }
 
 ###
 sub currentRow {
   my ($self) = @_;
-  $$self{current_row}; }
+  return $$self{current_row}; }
 
 sub newRow {
   my ($self) = @_;
@@ -64,7 +65,7 @@ sub newRow {
   $$self{current_row}    = $row;
   $$self{current_column} = 0;
   push(@{ $$self{rows} }, $row);
-  $row; }
+  return $row; }
 
 sub removeRow {
   my ($self) = @_;
@@ -72,21 +73,23 @@ sub removeRow {
   if (@rows) {
     my $row = pop(@rows);
     $$self{rows} = [@rows];
-    $row; }
+    return $row; }
   else {
-    undef; } }
+    return; } }
 
 sub prependRows {
   my ($self, @rows) = @_;
-  unshift(@{ $$self{rows} }, @rows); }
+  unshift(@{ $$self{rows} }, @rows);
+  return; }
 
 sub appendRows {
   my ($self, @rows) = @_;
-  push(@{ $$self{rows} }, @rows); }
+  push(@{ $$self{rows} }, @rows);
+  return; }
 
 sub rows {
   my ($self) = @_;
-  @{ $$self{rows} }; }
+  return @{ $$self{rows} }; }
 
 ###
 
@@ -110,32 +113,34 @@ sub nextColumn {
     Error('unexpected', '&', $STATE->getStomach->getGullet, "Extra alignment tab '&'");
     $$self{current_row}->addColumn(align => 'center');
     $colspec = $$self{current_row}->column($$self{current_column}); }
-  $colspec; }
+  return $colspec; }
 
 sub currentColumnNumber {
   my ($self) = @_;
-  $$self{current_column}; }
+  return $$self{current_column}; }
 
 sub currentRowNumber {
   my ($self) = @_;
-  scalar(@{ $$self{rows} }); }
+  return scalar(@{ $$self{rows} }); }
 
 sub currentColumn {
   my ($self) = @_;
-  $$self{current_row}->column($$self{current_column}); }
+  return $$self{current_row}->column($$self{current_column}); }
 
 sub getColumn {
   my ($self, $n) = @_;
-  $$self{current_row}->column($n); }
+  return $$self{current_row}->column($n); }
 
 # Ugh... these take boxes; adding before/after columns takes tokens!
 sub addBeforeRow {
   my ($self, @boxes) = @_;
-  $$self{current_row}{before} = [@{ $$self{current_row}{before} || [] }, @boxes]; }
+  $$self{current_row}{before} = [@{ $$self{current_row}{before} || [] }, @boxes];
+  return; }
 
 sub addAfterRow {
   my ($self, @boxes) = @_;
-  $$self{current_row}{after} = [@{ $$self{current_row}{after} || [] }, @boxes]; }
+  $$self{current_row}{after} = [@{ $$self{current_row}{after} || [] }, @boxes];
+  return; }
 
 # sub missingColumns {
 #   my($self)=@_;
@@ -176,7 +181,7 @@ sub constructAlignment {
   my ($document, $body, %props) = @_;
   my $alignment;
   while (!($alignment = $body->getProperty('alignment'))) {
-    ($body) = grep($_->getProperty('alignment'), $body->unlist); }
+    ($body) = grep { $_->getProperty('alignment') } $body->unlist; }
   $alignment->setMath if $body->isMath;
 
   my %attr = ($props{attributes} ? %{ $props{attributes} } : ());
@@ -187,7 +192,7 @@ sub constructAlignment {
       guess_alignment_headers($document, $node, $alignment); }
     elsif (!$body->isMath) {    # in case already marked w/thead|tbody
       alignment_regroup_rows($document, $node); } }
-  $node; }
+  return $node; }
 
 sub beAbsorbed {
   my ($self, $document, %attributes) = @_;
@@ -199,15 +204,15 @@ sub beAbsorbed {
   while (my $row = shift(@filtering)) {
     foreach my $c (@{ $$row{columns} }) {    # Fill in empty on completely empty columns
       $$c{empty} = 1 unless $$c{boxes} && $$c{boxes}->unlist; }
-    if (grep(!$$_{empty}, @{ $$row{columns} })) {    # Not empty! so keep it
+    if (grep { !$$_{empty} } @{ $$row{columns} }) {    # Not empty! so keep it
       push(@rows, $row); }
-    elsif (my $next = $filtering[0]) {               # Remove empty row, but copy top border to NEXT row
-      if ($$row{empty}) {    # Only remove middle rows if EXPLICITLY marked (\noalign)
+    elsif (my $next = $filtering[0]) {    # Remove empty row, but copy top border to NEXT row
+      if ($$row{empty}) {                 # Only remove middle rows if EXPLICITLY marked (\noalign)
         my $nc = scalar(@{ $$row{columns} });
         for (my $c = 0 ; $c < $nc ; $c++) {
           my $border = $$row{columns}[$c]{border} || '';
-          $border =~ s/[^tTbB]//g;    # mask all but top & bottom border
-          $border =~ s/./t/g;         # but convert to top
+          $border =~ s/[^tTbB]//g;        # mask all but top & bottom border
+          $border =~ s/./t/g;             # but convert to top
           $$next{columns}[$c]{border} .= $border; } }    # add to next row
       else {
         push(@rows, $row); } }
@@ -243,11 +248,11 @@ sub beAbsorbed {
     &{ $$self{openRow} }($document, 'xml:id' => $$row{id},
       refnum => $$row{refnum}, frefnum => $$row{frefnum}, rrefnum => $$row{rrefnum});
     if (my $before = $$row{before}) {
-      map($document->absorb($_), @$before); }
+      map { $document->absorb($_) } @$before; }
     foreach my $cell (@{ $$row{columns} }) {
       next if $$cell{skipped};
       # Normalize the border attribute
-      my $border = join(' ', sort(map(split(/ */, $_), $$cell{border} || '')));
+      my $border = join(' ', sort(map { split(/ */, $_) } $$cell{border} || ''));
       $border =~ s/(.) \1/$1$1/g;
       my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       $$cell{cell} = &{ $$self{openColumn} }($document,
@@ -265,10 +270,9 @@ sub beAbsorbed {
       }
       &{ $$self{closeColumn} }($document); }
     if (my $after = $$row{after}) {
-      map($document->absorb($_), @$after); }
+      map { $document->absorb($_) } @$after; }
     &{ $$self{closeRow} }($document); }
-  &{ $$self{closeContainer} }($document);
-}
+  return &{ $$self{closeContainer} }($document); }
 
 #======================================================================
 
@@ -318,11 +322,11 @@ sub ReadAlignmentTemplate {
 
 sub parseAlignmentTemplate {
   my ($spec) = @_;
-  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new("{" . $spec . "}"), sub {
+  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new("{" . $spec . "}"), sub {
       ReadAlignmentTemplate($_[0]); }); }
 
 sub MatrixTemplate {
-  LaTeXML::AlignmentTemplate->new(repeated => [{ before => Tokens(T_CS('\hfil')),
+  return LaTeXML::AlignmentTemplate->new(repeated => [{ before => Tokens(T_CS('\hfil')),
         after => Tokens(T_CS('\hfil')) }]); }
 {
 
@@ -339,32 +343,36 @@ sub MatrixTemplate {
     $data{save_before}   = [] unless $data{save_before};
     $data{save_between}  = [] unless $data{save_between};    # between comes before before!
 
-    map($$_{empty} = 1, @{ $data{columns} });
-    map($$_{empty} = 1, @{ $data{repeated} });
-    bless {%data}, $class; }
+    map { $$_{empty} = 1 } @{ $data{columns} };
+    map { $$_{empty} = 1 } @{ $data{repeated} };
+    return bless {%data}, $class; }
 
   sub revert {
     my ($self) = @_;
-    @{ $$self{tokens} }; }
+    return @{ $$self{tokens} }; }
 
   # Methods for constructing a template.
 
   sub setReversion {
     my ($self, @tokens) = @_;
-    $$self{tokens} = [@tokens]; }
+    $$self{tokens} = [@tokens];
+    return; }
 
   sub setRepeating {
     my ($self) = @_;
-    $$self{repeating} = 1; }
+    $$self{repeating} = 1;
+    return; }
 
   # These add material before & after the current column
   sub addBeforeColumn {
     my ($self, @tokens) = @_;
-    unshift(@{ $$self{save_before} }, @tokens); }    # NOTE: goes all the way to front!
+    unshift(@{ $$self{save_before} }, @tokens);    # NOTE: goes all the way to front!
+    return; }
 
   sub addAfterColumn {
     my ($self, @tokens) = @_;
-    $$self{current_column}{after} = Tokens(@tokens, @{ $$self{current_column}{after} }); }
+    $$self{current_column}{after} = Tokens(@tokens, @{ $$self{current_column}{after} });
+    return; }
 
   # Or between this column & next...
   sub addBetweenColumn {
@@ -373,7 +381,8 @@ sub MatrixTemplate {
     if ($$self{current_column}) {
       $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
     else {
-      push(@{ $$self{save_between} }, @tokens); } }
+      push(@{ $$self{save_between} }, @tokens); }
+    return; }
 
   sub addColumn {
     my ($self, %properties) = @_;
@@ -393,7 +402,8 @@ sub MatrixTemplate {
       $$self{non_repeating} = scalar(@{ $$self{columns} });
       push(@{ $$self{repeated} }, $col); }
     else {
-      push(@{ $$self{columns} }, $col); } }
+      push(@{ $$self{columns} }, $col); }
+    return; }
 
   # Methods for using a template.
   sub clone {
@@ -401,7 +411,7 @@ sub MatrixTemplate {
     my @dup = ();
     foreach my $cell (@{ $$self{columns} }) {
       push(@dup, {%$cell}); }
-    bless { columns => [@dup],
+    return bless { columns => [@dup],
       repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
       repeating => $$self{repeating} }, ref $self; }
 
@@ -410,12 +420,12 @@ sub MatrixTemplate {
     my @strings = ();
     push(@strings, "\nColumns:\n");
     foreach my $col (@{ $$self{columns} }) {
-      push(@strings, "\n{" . join(', ', map("$_=>" . Stringify($$col{$_}), keys %$col)) . '}'); }
+      push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); }
     if ($$self{repeating}) {
       push(@strings, "\nRepeated Columns:\n");
       foreach my $col (@{ $$self{repeated} }) {
-        push(@strings, "\n{" . join(', ', map("$_=>" . Stringify($$col{$_}), keys %$col)) . '}'); } }
-    join(', ', @strings); }
+        push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); } }
+    return join(', ', @strings); }
 
   sub column {
     my ($self, $n) = @_;
@@ -426,11 +436,11 @@ sub MatrixTemplate {
         for (my $i = $N ; $i < $n ; $i++) {
           my %dup = %{ $rep[($i - $$self{non_repeating}) % $m] };
           push(@{ $$self{columns} }, {%dup}); } } }
-    $$self{columns}->[$n - 1]; }
+    return $$self{columns}->[$n - 1]; }
 
   sub columns {
     my ($self) = @_;
-    @{ $$self{columns} }; }
+    return @{ $$self{columns} }; }
 
 }
 
@@ -465,7 +475,7 @@ sub guess_alignment_headers {
   my @cols = ();
   return unless @rows;
   for (my $c = 0 ; $c < scalar(@{ $rows[0] }) ; $c++) {
-    push(@cols, [map($$_[$c], @rows)]); }
+    push(@cols, [map { $$_[$c] } @rows]); }
 
   # Attempt to recognize header lines.
   if (alignment_characterize_lines(0, 0, @rows)) { }
@@ -491,7 +501,7 @@ sub guess_alignment_headers {
     alignment_regroup_rows($document, $table); }
   # Debugging report!
   summarize_alignment([@rows], [@cols]) if $LaTeXML::Alignment::DEBUG;
-}
+  return; }
 
 #======================================================================
 # Regroup the rows into thead & tbody
@@ -499,12 +509,12 @@ sub alignment_regroup {
   my ($document, $table, @rows) = @_;
   my ($group, $grouptype) = (undef, 0);
   foreach my $xrow ($document->findnodes("ltx:tr", $table)) {
-    my $rowtype = (grep($$_{cell_type} ne 'h', @{ shift(@rows) }) ? 'tbody' : 'thead');
+    my $rowtype = (scalar(grep { $$_{cell_type} ne 'h' } @{ shift(@rows) }) ? 'tbody' : 'thead');
     if ($grouptype ne $rowtype) {
       $group = $table->addNewChild($xrow->getNamespaceURI, $grouptype = $rowtype);
       $table->insertBefore($group, $xrow); }
     $group->appendChild($xrow); }
-}
+  return; }
 
 # this version works w/o the row data
 sub alignment_regroup_rows {
@@ -512,18 +522,20 @@ sub alignment_regroup_rows {
   my ($group, $grouptype) = (undef, 0);
   foreach my $xrow ($document->findnodes("ltx:tr", $table)) {
     # if any non thead cells, we'll consider it tbody...
-    my $rowtype = (grep((!$_->getAttribute('thead')) && (($_->getAttribute('class') || '') !~ /\bthead\b/),
-        $document->findnodes('ltx:td', $xrow))
+    my $rowtype = (scalar(grep { (!$_->getAttribute('thead'))
+            && (($_->getAttribute('class') || '') !~ /\bthead\b/) }
+          $document->findnodes('ltx:td', $xrow))
       ? 'tbody' : 'thead');
     if ($grouptype ne $rowtype) {
       $group = $table->addNewChild($xrow->getNamespaceURI, $grouptype = $rowtype);
       $table->insertBefore($group, $xrow); }
     $group->appendChild($xrow); }
-}
+  return; }
 
 #======================================================================
 # Build a View of the alignment, with characterized cells, for analysis.
-our %ALIGNMENT_CODE = (right => 'r', left => 'l', center => 'c', justify => 'p');
+Readonly my %ALIGNMENT_CODE => (
+  right => 'r', left => 'l', center => 'c', justify => 'p');
 
 sub collect_alignment_rows {
   my ($document, $table, $alignment) = @_;
@@ -539,26 +551,26 @@ sub collect_alignment_rows {
     push(@rows, []);
     my @cols = @{ $$arow{columns} };
     foreach my $col (@cols) {
-      push(@{ $rows[$#rows] }, $col);
+      push(@{ $rows[-1] }, $col);
       $$col{cell_type} = 'd';
       $$col{content_class} = (($$col{align} || '') eq 'justify' ? 'mx' # Assume mixed content for any justified cell???
         : ($$col{cell} ? classify_alignment_cell($document, $$col{cell}) : '?'));
       $$col{content_length} = ($$col{content_class} eq 'g' ? 1000
         : ($$col{cell} ? length($$col{cell}->textContent) : 0));
       my %border = (t => 0, r => 0, b => 0, l => 0);                   # Decode border
-      map($border{$_}++, split(/ */, $$col{border} || ''));
+      map { $border{$_}++ } split(/ */, $$col{border} || '');
       $h = 1 if $border{t} || $border{b};
       $v = 1 if $border{r} || $border{l};
-      map($$col{$_} = $border{$_}, keys %border); }
+      map { $$col{$_} = $border{$_} } keys %border; }
     # pad the columns out.
     for (my $c = scalar(@cols) ; $c < $ncols ; $c++) {
       my $col = {};
-      push(@{ $rows[$#rows] }, $col);
+      push(@{ $rows[-1] }, $col);
       $$col{align}          = 'c';
       $$col{cell_type}      = 'd';
       $$col{content_class}  = '_';
       $$col{content_length} = 0;
-      map($$col{$_} = 0, qw(t r b l)); }
+      map { $$col{$_} = 0 } qw(t r b l); }
   }
   # copy the characterizations to spanned cells
   for (my $r = 0 ; $r < $nrows ; $r++) {
@@ -612,11 +624,11 @@ sub collect_alignment_rows {
           . ($$col{align} ? $ALIGNMENT_CODE{ $$col{align} } : ' ')
           . ($$col{content_class} || '?')
           . ' ' . $$col{content_length}
-          . ' ' . $$col{border} . "=>" . join('', grep($$col{$_}, qw(t r b l)))
+          . ' ' . $$col{border} . "=>" . join('', grep { $$col{$_} } qw(t r b l))
           . (($$col{rowspan} || 1) > 1 ? " rowspan=" . $$col{rowspan} : '')
           . (($$col{span}    || 1) > 1 ? " colspan=" . $$col{span}    : '')
           . "\n"; } } }
-  @rows; }
+  return @rows; }
 
 # Return one of: i(nteger), t(ext), m(ath), ? (unknown) or '_' (empty) (or some combination)
 #  or 'mx' for alternating text & math.
@@ -654,7 +666,7 @@ sub classify_alignment_cell {
           $class .= '?' unless $class; }
       } } }
   $class = 'mx' if $class && (($class =~ /^((m|i)t)+(m|i)?$/) || ($class =~ /^(t(m|i))+t?$/));
-  $class || '_'; }
+  return $class || '_'; }
 
 #======================================================================
 # Scan pairs of rows/columns attempting to recognize differences that
@@ -662,8 +674,8 @@ sub classify_alignment_cell {
 # Warning: This section is full of "magic numbers"
 # guessed by sampling various test cases.
 
-our $MIN_ALIGNMENT_DATA_LINES   = 1;    #  (or 2?)
-our $MAX_ALIGNMENT_HEADER_LINES = 4;
+Readonly my $MIN_ALIGNMENT_DATA_LINES   => 1;    #  (or 2?)
+Readonly my $MAX_ALIGNMENT_HEADER_LINES => 4;
 
 # We expect to find header lines at the beginning, noticably different from the eventual data lines.
 # Both header lines and data lines can consist of several neighboring lines.
@@ -672,7 +684,7 @@ our $MAX_ALIGNMENT_HEADER_LINES = 4;
 sub alignment_characterize_lines {
   my ($axis, $reversed, @lines) = @_;
   my $n = scalar(@lines);
-  return unless $n > 1;
+  return if $n < 2;
   local @::TABLINES = @lines;
   print STDERR "\nCharacterizing $n " . ($axis ? "columns" : "rows") . "\n   " if $LaTeXML::Alignment::DEBUG;
 
@@ -728,7 +740,7 @@ sub alignment_characterize_lines {
               $$cell{cell}->setAttribute(thead => 'true'); } }
           $i++; } }
       return 1; } }
-  undef; }
+  return; }
 
 # Test whether $nhead lines makes a good fit for the headers
 sub alignment_test_headers {
@@ -751,8 +763,8 @@ sub alignment_test_headers {
 
   # And find a following grouping of data lines.
   my $ndata = alignment_skip_data($nextline);
-  return unless $ndata >= $nhead;                      # ???? Well, maybe if _really_ convincing???
-  return unless ($ndata >= $nhead) || ($ndata >= 2);
+  return if $ndata < $nhead;                     # ???? Well, maybe if _really_ convincing???
+  return if ($ndata < $nhead) && ($ndata < 2);
   # Check that the content of the headers isn't dramatically larger than the content in the data
   $datalength = alignment_max_content_length($datalength, $nextline, $nextline + $ndata - 1);
   $nextline += $ndata;
@@ -789,7 +801,7 @@ sub alignment_test_headers {
     return; }
 
   print STDERR "Succeeded with $nhead headers\n" if $LaTeXML::Alignment::DEBUG;
-  @heads; }
+  return @heads; }
 
 sub alignment_match_head {
   my ($p1, $p2, $nhead) = @_;
@@ -797,7 +809,7 @@ sub alignment_match_head {
   my $nh = alignment_match_lines($p1, $p2, $nhead);
   my $ok = $nhead == $nh;
   print STDERR "\nMatched $nh header lines => " . ($ok ? "Succeed" : "Failed") . "\n" if $LaTeXML::Alignment::DEBUG;
-  ($ok ? $nhead : 0); }
+  return ($ok ? $nhead : 0); }
 
 sub alignment_match_data {
   my ($p1, $p2, $ndata) = @_;
@@ -805,7 +817,7 @@ sub alignment_match_data {
   my $nd = alignment_match_lines($p1, $p2, $ndata);
   my $ok = ($nd * 1.0) / $ndata > 0.66;
   print STDERR "\nMatched $nd data lines => " . ($ok ? "Succeed" : "Failed") . "\n" if $LaTeXML::Alignment::DEBUG;
-  ($ok ? $nd : 0); }
+  return ($ok ? $nd : 0); }
 
 # Match the $n lines starting at $i2 to those starting at $i1.
 sub alignment_match_lines {
@@ -826,10 +838,10 @@ sub alignment_skip_data {
   while ($i + $n < scalar(@::TABLINES)) {
     last unless (alignment_compare($::TAB_AXIS, 1, 0, $i + $n - 1, $i + $n) < $::TAB_THRESHOLD)
       # Accept an outlying `continuation line' as data, if mostly empty
-      || (($n > 1) && (scalar(grep($$_{content_class} eq '_', @{ $::TABLINES[$i + $n] })) > 0.4 * scalar($::TABLINES[0])));
+      || (($n > 1) && (scalar(grep { $$_{content_class} eq '_' } @{ $::TABLINES[$i + $n] }) > 0.4 * scalar($::TABLINES[0])));
     $n++; }
   print STDERR "\nFound $n data lines at $i\n" if $LaTeXML::Alignment::DEBUG;
-  ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
+  return ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
 
 sub XXXalignment_max_content_length {
   my ($length, $from, $to) = @_;
@@ -837,7 +849,7 @@ sub XXXalignment_max_content_length {
     foreach my $cell (@{ $::TABLINES[$j] }) {
       $length = $$cell{content_length}
         if $$cell{content_length} && ($$cell{content_length} > $length); } }
-  $length; }
+  return $length; }
 
 # Return the maximum "content length" for lines from $from to $to.
 sub alignment_max_content_length {
@@ -847,7 +859,7 @@ sub alignment_max_content_length {
     foreach my $cell (@{ $::TABLINES[$j] }) {
       $l += $$cell{content_length}; }
     $length = $l if $l > $length; }
-  $length; }
+  return $length; }
 
 #======================================================================
 # The comparator.
@@ -894,14 +906,14 @@ sub alignment_compare {
       $diff += 0.75; }
     # compare certain edges
     if ($foradjacency) {    # Compare edges for adjacent rows of potentially different purpose
-      $diff += 0.3 * scalar(grep($$cell1{$_} != $$cell2{$_}, ($axis == 0 ? qw(r l) : qw(t b))));
+      $diff += 0.3 * scalar(grep { $$cell1{$_} != $$cell2{$_} } ($axis == 0 ? qw(r l) : qw(t b)));
       # Penalty for apparent divider between.
       my $pedge = ($axis == 0 ? ($reversed ? 't' : 'b') : ($reversed ? 'l' : 'r'));
       if ($$cell1{$pedge} && ($$cell1{$pedge} != $$cell2{$pedge})) {
         $diff += abs($$cell1{$pedge} - $$cell2{$pedge}) * 1.0; }
     }
     else {                  # Compare edges for rows from diff places for potential similarity
-      $diff += 0.3 * scalar(grep($$cell1{$_} != $$cell2{$_}, qw(r l t b))); }
+      $diff += 0.3 * scalar(grep { $$cell1{$_} != $$cell2{$_} } qw(r l t b)); }
   }
   $diff /= $ncells;
   print STDERR "$p1-$p2 => $diff; " if $LaTeXML::Alignment::DEBUG;
@@ -938,7 +950,7 @@ sub summarize_alignment {
   #  for(my $c = 0; $c < $ncols-1; $c++){
   #    print STDERR sprintf(" %.3f ",alignment_compare(1,1,$$cols[$c],$$cols[$c+1])); }
   print STDERR "\n";
-}
+  return; }
 
 #======================================================================
 

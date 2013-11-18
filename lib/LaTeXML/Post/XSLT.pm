@@ -12,6 +12,8 @@
 
 package LaTeXML::Post::XSLT;
 use strict;
+use warnings;
+use Readonly;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
@@ -46,7 +48,7 @@ sub new {
   $$self{parameters}         = {%params};
   $$self{noresources}        = $options{noresources};
   $$self{resource_directory} = $options{resource_directory};    # ???
-  $self; }
+  return $self; }
 
 sub process {
   my ($self, $doc, $root) = @_;
@@ -63,18 +65,19 @@ sub process {
         my $path = $self->copyResource($doc, $src, $node->getAttribute('type'));
         $node->setAttribute(src => $path) unless $path eq $src; } } }
   if (my $css = $params{CSS}) {
-    $params{CSS} = '"' . join('|', map($self->copyResource($doc, $_, 'text/css'), @$css)) . '"'; }
+    $params{CSS} = '"' . join('|', map { $self->copyResource($doc, $_, 'text/css') } @$css) . '"'; }
   if (my $js = $params{JAVASCRIPT}) {
     $params{JAVASCRIPT}
-      = '"' . join('|', map($self->copyResource($doc, $_, 'text/javascript'), @$js)) . '"'; }
+      = '"' . join('|', map { $self->copyResource($doc, $_, 'text/javascript') } @$js) . '"'; }
   if (my $icon = $params{ICON}) {
     # Hmm.... what type? could be various image types
     $params{ICON} = '"' . $self->copyResource($doc, $icon, undef) . '"'; }
   my $newdoc = $doc->new($$self{stylesheet}->transform($doc->getDocument, %params));
-  $newdoc; }
+  return $newdoc; }
 
-our $RESOURCE_INFO = { 'text/css' => { extension => 'css', subdir => 'resources/CSS' },
-  'text/javascript' => { extension => 'js', subdir => 'resources/javascript' }
+Readonly my $RESOURCE_INFO => {
+  'text/css'        => { extension => 'css', subdir => 'resources/CSS' },
+  'text/javascript' => { extension => 'js',  subdir => 'resources/javascript' }
 };
 # Copy a resource file, if found, and return the relative path to it
 # (in case it has been adjusted to be local to the destination document)
@@ -85,7 +88,7 @@ sub copyResource {
   my @searchpaths => $doc->getSearchPaths;
   # If the $reqsrc is a URL, no need to copy the resource, or modify the path to it.
   if (pathname_is_url($reqsrc)) {
-    $reqsrc; }
+    return $reqsrc; }
   # Else find the file somewhere; in user's source or in distribution
   elsif (my $path = pathname_find($reqsrc, ($ext ? (types => [$ext]) : ()),
       paths => [@searchpaths],
@@ -111,10 +114,10 @@ sub copyResource {
     # Now, copy (unless in same place! happens a lot during testing!!!!)
     pathname_copy($path, $dest) unless $path eq $dest;
     # and return the relative path from the dest doc to the resource
-    pathname_relative($dest, $doc->getDestinationDirectory); }
+    return pathname_relative($dest, $doc->getDestinationDirectory); }
   else {
     warn "Couldn't find resource file $reqsrc in paths " . join(',', @searchpaths) . "\n";
-    $reqsrc; } }
+    return $reqsrc; } }
 
 # ================================================================================
 1;

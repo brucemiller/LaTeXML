@@ -12,13 +12,14 @@
 
 package LaTeXML::Util::ObjectDB;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use DB_File;
 use Storable qw(nfreeze thaw);
 use strict;
 use Encode;
 use Carp;
-our @ISA = qw(Storable);
+use base qw(Storable);
 
 #======================================================================
 # NOTES:
@@ -57,17 +58,18 @@ sub new {
     tie %{ $$self{externaldb} }, 'DB_File', $dbfile, $flags
       or die "Couldn't attach DB $dbfile for object table";
   }
-  $self; }
+  return $self; }
 
 sub DESTROY {
   my ($self) = @_;
-  $self->finish; }
+  $self->finish;
+  return; }
 
 sub status {
   my ($self) = @_;
   my $status = scalar(keys %{ $$self{objects} }) . "/" . scalar(keys %{ $$self{externaldb} }) . " objects";
   #  if($$self{dbfile}){ ...
-  $status; }
+  return $status; }
 
 #======================================================================
 # This saves the db
@@ -92,31 +94,37 @@ sub finish {
 
   $$self{externaldb} = undef;
   $$self{objects}    = undef;
-}
+  return }
 
 sub compare {
   my ($a, $b) = @_;
   my $ra = ref $a;
   if (!$ra) {
-    if (ref $b) { 0; }
-    else { compare_scalar($a, $b); } }
-  elsif ($ra ne ref $b) { 0; }
-  elsif ($ra eq 'HASH') { compare_hash($a, $b); }
-  elsif ($ra eq 'ARRAY') { compare_array($a, $b); }
-  else { compare_scalar($a, $b); } }
+    if (ref $b) {
+      return 0; }
+    else {
+      return compare_scalar($a, $b); } }
+  elsif ($ra ne ref $b) {
+    return 0; }
+  elsif ($ra eq 'HASH') {
+    return compare_hash($a, $b); }
+  elsif ($ra eq 'ARRAY') {
+    return compare_array($a, $b); }
+  else {
+    return compare_scalar($a, $b); } }
 
 sub compare_scalar {
   my ($a, $b) = @_;
-  ((!defined $a) && (!defined $b)) ||
+  return ((!defined $a) && (!defined $b)) ||
     (defined $a && defined $b && $a eq $b); }
 
 sub compare_hash {
   my ($a, $b) = @_;
   my %attr = ();
-  map($attr{$_} = 1, keys %$a);
-  map($attr{$_} = 1, keys %$b);
-  (grep(!((exists $$a{$_}) && (exists $$b{$_})
-        && compare($$a{$_}, $$b{$_})), keys %attr) ? 0 : 1); }
+  map { $attr{$_} = 1 } keys %$a;
+  map { $attr{$_} = 1 } keys %$b;
+  return (grep { !((exists $$a{$_}) && (exists $$b{$_}) && compare($$a{$_}, $$b{$_})) }
+      keys %attr) ? 0 : 1; }
 
 sub compare_array {
   my ($a, $b) = @_;
@@ -124,16 +132,16 @@ sub compare_array {
   my @b = @$b;
   while (@a && @b) {
     return 0 unless compare(shift(@a), shift(@b)); }
-  (@a || @b ? 0 : 1); }
+  return (@a || @b ? 0 : 1); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub getKeys {
   my ($self) = @_;
   # Get union of all keys in externaldb & local objects.
   my %keys = ();
-  map($keys{$_} = 1, keys %{ $$self{objects} });
-  map($keys{ Encode::decode('utf8', $_) } = 1, keys %{ $$self{externaldb} });
-  keys %keys; }
+  map { $keys{$_} = 1 } keys %{ $$self{objects} };
+  map { $keys{ Encode::decode('utf8', $_) } = 1 } keys %{ $$self{externaldb} };
+  return keys %keys; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Lookup of various kinds of things in the DB.
@@ -153,7 +161,7 @@ sub lookup {
     $$entry{key} = $key;
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
     $$self{objects}{$key} = $entry; }
-  $entry; }
+  return $entry; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Register various interesting document nodes.
@@ -170,13 +178,14 @@ sub register {
     $$self{objects}{$key} = $entry; }
   $entry->setValues(%props);
 
-  $entry; }
+  return $entry; }
 
 sub unregister {
   my ($self, $key) = @_;
   delete $$self{objects}{$key};
   # Must remove external entry (if any) as well, else it'll get pulled back in!
-  delete $$self{externaldb}{ Encode::encode('utf8', $key) } if $$self{externaldb}; }
+  delete $$self{externaldb}{ Encode::encode('utf8', $key) } if $$self{externaldb};
+  return; }
 
 #********************************************************************************
 # DB Entries
@@ -189,23 +198,25 @@ our $XMLParser = LaTeXML::Common::XML::Parser->new();
 
 sub new {
   my ($class, $key, %data) = @_;
-  bless { key => $key, %data }, $class; }
+  return bless { key => $key, %data }, $class; }
 
-sub key { $_[0]->{key}; }
+sub key {
+  my ($entry) = @_;
+  return $$entry{key}; }
 
 sub getAttributes {
   my ($self) = @_;
-  keys %$self; }
+  return keys %$self; }
 
 # Get/Set a value (column) in the DBRow entry, noting whether it modifies the entry.
 # Note that XML data is stored in it's serialized form, prefixed by "XML::".
 sub hasValue {
   my ($self, $attr) = @_;
-  exists $$self{$attr}; }
+  return exists $$self{$attr}; }
 
 sub getValue {
   my ($self, $attr) = @_;
-  decodeValue($$self{$attr}); }
+  return decodeValue($$self{$attr}); }
 
 sub setValues {
   my ($self, %avpairs) = @_;
@@ -215,20 +226,23 @@ sub setValues {
       if (defined $$self{$attr}) {
         delete $$self{$attr}; } }
     elsif ((!defined $$self{$attr}) || ($$self{$attr} ne $value)) {
-      $$self{$attr} = $value; } } }
+      $$self{$attr} = $value; } }
+  return; }
 
 sub pushValues {
   my ($self, $attr, @values) = @_;
   my $list = $$self{$attr};
   foreach my $value (@values) {
-    push(@$list, encodeValue($value)) if defined $value; } }
+    push(@$list, encodeValue($value)) if defined $value; }
+  return; }
 
 sub pushNew {
   my ($self, $attr, @values) = @_;
   my $list = $$self{$attr};
   foreach my $value (@values) {
     my $value = encodeValue($value);
-    push(@$list, $value) if (defined $value) && !grep($_ eq $value, @$list); } }
+    push(@$list, $value) if (defined $value) && !grep { $_ eq $value } @$list; }
+  return; }
 
 # Note an association with this entry
 # Roughly equivalent to $$entry{key1}{key2}{...}=1,
@@ -241,7 +255,8 @@ sub noteAssociation {
     if (defined $$hash{$key}) {
       $hash = $$hash{$key}; }
     else {
-      $hash = $$hash{$key} = (@keys ? {} : 1); } } }
+      $hash = $$hash{$key} = (@keys ? {} : 1); } }
+  return; }
 
 # Debugging aid
 use Text::Wrap;
@@ -249,18 +264,20 @@ use Text::Wrap;
 sub show {
   my ($self) = @_;
   my $string = "ObjectDB Entry for: $$self{key}\n";
-  foreach my $attr (grep($_ ne 'key', keys %{$self})) {
+  foreach my $attr (grep { $_ ne 'key' } keys %{$self}) {
     $string .= wrap(sprintf(' %16s : ', $attr), (' ' x 20), showvalue($self->getValue($attr))) . "\n"; }
-  $string; }
+  return $string; }
 
 sub showvalue {
   my ($value) = @_;
-  if ((ref $value) =~ /^XML::/) { $value->toString; }
+  if ((ref $value) =~ /^XML::/) {
+    return $value->toString; }
   elsif (ref $value eq 'HASH') {
-    "{" . join(', ', map("$_=>" . showvalue($$value{$_}), keys %$value)) . "}"; }
+    return "{" . join(', ', map { "$_=>" . showvalue($$value{$_}) } keys %$value) . "}"; }
   elsif (ref $value eq 'ARRAY') {
-    "[" . join(', ', map(showvalue($_), @$value)) . "]"; }
-  else { "$value"; } }
+    return "[" . join(', ', map { showvalue($_) } @$value) . "]"; }
+  else {
+    return "$value"; } }
 
 #======================================================================
 # Internal methods to encode/decode values; primarily to serialize/deserialize XML.
@@ -268,23 +285,37 @@ sub showvalue {
 sub encodeValue {
   my ($value) = @_;
   my $ref = ref $value;
-  if    (!defined $value) { $value; }
-  elsif (!$ref)           { $value; }
+  if (!defined $value) {
+    return $value; }
+  elsif (!$ref) {
+    return $value; }
   # The node is cloned so as to copy any inherited namespace nodes.
-  elsif ($ref =~ /^XML::/) { "XML::" . $value->cloneNode(1)->toString; }
-  elsif ($ref eq 'ARRAY') { [map(encodeValue($_), @$value)]; }
-  elsif ($ref eq 'HASH') { my %h = map(($_ => encodeValue($$value{$_})), keys %$value); \%h; }
-  else { $value; } }
+  elsif ($ref =~ /^XML::/) {
+    return "XML::" . $value->cloneNode(1)->toString; }
+  elsif ($ref eq 'ARRAY') {
+    return [map { encodeValue($_) } @$value]; }
+  elsif ($ref eq 'HASH') {
+    my %h = map { ($_ => encodeValue($$value{$_})) } keys %$value;
+    return \%h; }
+  else {
+    return $value; } }
 
 sub decodeValue {
   my ($value) = @_;
   my $ref = ref $value;
-  if (!defined $value) { $value; }
-  elsif ($value =~ /^XML::/) { $XMLParser->parseChunk(substr($value, 5)); }
-  elsif (!$ref) { $value; }
-  elsif ($ref eq 'ARRAY') { [map(decodeValue($_), @$value)]; }
-  elsif ($ref eq 'HASH') { my %h = map(($_ => decodeValue($$value{$_})), keys %$value); \%h; }
-  else { $value; } }
+  if (!defined $value) {
+    return $value; }
+  elsif ($value =~ /^XML::/) {
+    return $XMLParser->parseChunk(substr($value, 5)); }
+  elsif (!$ref) {
+    return $value; }
+  elsif ($ref eq 'ARRAY') {
+    return [map { decodeValue($_) } @$value]; }
+  elsif ($ref eq 'HASH') {
+    my %h = map { ($_ => decodeValue($$value{$_})) } keys %$value;
+    return \%h; }
+  else {
+    return $value; } }
 
 #======================================================================
 1;

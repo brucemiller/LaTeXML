@@ -34,10 +34,13 @@
 package LaTeXML::Common::XML;
 use strict;
 use warnings;
+use Readonly;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
 use LaTeXML::Util::Pathname;
 use Encode;
+use Carp;
+# we're too low-level to use LaTeXML's error handling, but at least use Carp....(?)
 
 use base qw(Exporter);
 our @EXPORT = (
@@ -72,26 +75,13 @@ our @EXPORT = (
     &valid_attributes &copy_attributes &rename_attribute &remove_attr
     &get_attr &isTextNode &isElementNode &isChild &isDescendant &isDescendantOrSelf
     &set_RDFa_prefixes
-    &CA_KEEP &CA_OVERWRITE &CA_MERGE &CA_EXCEPT
     &initialize_catalogs)
 );
 
-# attribute copying modes
-use constant CA_KEEP      => 1;
-use constant CA_OVERWRITE => 2;
-use constant CA_MERGE     => 4;
-use constant CA_EXCEPT    => 128;
+# These really should be constant, but visible outside!
+our $XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
+our $XML_NS   = 'http://www.w3.org/XML/1998/namespace';
 
-# We won't export XML_XMLNS_NS and XML_XML_NS, since
-#  1. They were added after XML::LibXML 1.58, and
-#  2. we'd be better off keeping their use local, anyway.
-local $LaTeXML::Common::XML::XMLNS_NS;
-local $LaTeXML::Common::XML::XML_NS;
-
-BEGIN {
-  $LaTeXML::Common::XML::XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
-  $LaTeXML::Common::XML::XML_NS   = 'http://www.w3.org/XML/1998/namespace';
-}
 #======================================================================
 # XML Utilities
 sub element_nodes {
@@ -187,23 +177,10 @@ sub valid_attributes {
 
 # copy @attr attributes from $from to $to
 sub copy_attributes {
-  my ($to, $from, $mode, @attr) = @_;
-  $mode = CA_OVERWRITE unless defined $mode;
-  if ($mode & CA_EXCEPT) {
-    my %ex;
-    map { $ex{$_} = 1 } @attr;
-    $mode &= !CA_EXCEPT;
-    $mode = CA_OVERWRITE unless $mode;
-    @attr = map { $_->getName } grep { !$ex{ $_->getName } } valid_attributes($from); }
-  elsif (!@attr) {
-    @attr = map { $_->getName } valid_attributes($from); }
-  foreach my $attr (@attr) {
-    my $at = $from->getAttribute($attr);
-    next if ((!defined $at) || (($mode == CA_KEEP) && $to->hasAttribute($attr)));
-    if ($mode == CA_MERGE) {
-      my $old = $to->getAttribute($attr);
-      $at = "$old $at" if $old; }
-    $to->setAttribute($attr, $at); }
+  my ($to, $from) = @_;
+  foreach my $attr ($from->attributes) {
+    my $key = $attr->getName;
+    $to->setAttribute($key, $from->getAttribute($key)); }
   return; }
 
 sub rename_attribute {
@@ -255,16 +232,16 @@ sub set_RDFa_prefixes {
       if (!$localmap{$prefix}) {
         $localmap{$prefix} = $uri; }
       elsif ($localmap{$prefix} ne $uri) {
-        warn "Clash of RDFa prefix '$prefix' ('$uri' vs '$localmap{$prefix}'); "
+        carp "Clash of RDFa prefix '$prefix' ('$uri' vs '$localmap{$prefix}'); "
           . "Skipping RDFa prefix management";
         return; } } }
   if (my @n = $document->findnodes('descendant::*[@prefix]')) {
     if ((scalar(@n) > 1) || !$root->isSameNode($n[0])) {
-      warn "RDFa attribute 'prefix' on non-root node; "
+      carp "RDFa attribute 'prefix' on non-root node; "
         . "Skipping RDFa prefix management";
       return; } }
   if (my @n = $document->findnodes('descendant::*[@vocab]')) {
-    warn "RDFa attribute 'vocab' on non-root node; "
+    carp "RDFa attribute 'vocab' on non-root node; "
       . "Skipping RDFa prefix management";
     return; }
   my $xpath = 'descendant::*[' . join(' or ', map { '@' . $_ } @RDF_TERM_ATTRIBUTES) . ']';
@@ -349,13 +326,6 @@ BEGIN {
 ######################################################################
 package LaTeXML::Common::XML::Parser;
 
-our $xml_libxml_version;
-
-BEGIN {
-  $xml_libxml_version = $XML::LibXML::VERSION;
-  $xml_libxml_version =~ s/_\d+$//;
-}
-
 sub new {
   my ($class) = @_;
   my $parser = XML::LibXML->new();
@@ -387,7 +357,8 @@ sub parseChunk {
   ####
   # In 1.58, the prefix for the XML_NS, which should be DEFINED to be "xml"
   # is sometimes unbound, leading to mysterious segfaults!!!
-  if (($xml_libxml_version < 1.59) && $hasxmlns) {
+###  if (($xml_libxml_version < 1.59) && $hasxmlns) {
+  if (($LaTeXML::Common::XML::xml_libxml_version < 1.59) && $hasxmlns) {
     #print STDERR "Patchup...\n";
     # Re-create all xml:id entrys, hopefully with correct NS!
     # We assume all id are, in fact, xml:id,
@@ -397,8 +368,7 @@ sub parseChunk {
       my $id      = $attr->getValue();
       #print STDERR "RESET ID: $id\n";
       $attr->unbindNode();
-      $element->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $id);
-    }
+      $element->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $id); }
     #    print STDERR "\nXML: ".$xml->toString."\n";
   }
   return $xml; }
@@ -473,10 +443,11 @@ sub new {
   # First, try to load directly, in case it's found via libxml's catalogs...
   # But be careful calling C library; its failures are harder to trap w/eval
   if (!$options{nocatalogs}) {
-    eval {
+    $schemadoc = eval {
       no warnings 'all';
-      local $SIG{'__DIE__'};
-      $schemadoc = $xmlparser->parseFile($name); }; }
+      local $SIG{'__DIE__'} = undef;
+      $xmlparser->parseFile($name); }; }
+
   if (!$schemadoc) {
     if (my $path = pathname_find($name, paths => $options{searchpaths} || ['.'],
         types               => ['rng'],                  # Eventually, rnc?

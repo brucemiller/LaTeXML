@@ -75,7 +75,7 @@ Readonly my %RELATIONOPS => map { ($_ => 1) }
   # Various relops
   "=",        "<",        ">",        "\x{2264}", "\x{2265}", "\x{2260}", "\x{226A}",
   "\x{2261}", "\x{223C}", "\x{2243}", "\x{224D}", "\x{2248}", "\x{2260}", "\x{221D}";
-Readonly my %CONVERTOPS = ("\x{2062}" => UTF(0xD7),    # Invisible (discretionary) times
+Readonly my %CONVERTOPS => ("\x{2062}" => UTF(0xD7),    # Invisible (discretionary) times
 );
 Readonly my %FENCEOPS => map { ($_ => 1) }
   "(", ")", "[", "]", "{", "}", "|", "||", "|||",

@@ -12,9 +12,9 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Util::KeyVal;
 use strict;
+use warnings;
 use LaTeXML::Package;
-
-our @ISA    = qw(Exporter);
+use base qw(Exporter);
 our @EXPORT = (qw(&ReadRequiredKeyVals &ReadOptionalKeyVals
     &DefKeyVal
     &KeyVal &KeyVals));
@@ -27,14 +27,14 @@ our @EXPORT = (qw(&ReadRequiredKeyVals &ReadOptionalKeyVals
 sub ReadRequiredKeyVals {
   my ($gullet, $keyset) = @_;
   if ($gullet->ifNext(T_BEGIN)) {
-    (readKeyVals($gullet, $keyset, T_END)); }
+    return (readKeyVals($gullet, $keyset, T_END)); }
   else {
     Error('expected', '{', $gullet, "Missing keyval arguments");
-    (LaTeXML::KeyVals->new($keyset, T_BEGIN, T_END,)); } }
+    return (LaTeXML::KeyVals->new($keyset, T_BEGIN, T_END,)); } }
 
 sub ReadOptionalKeyVals {
   my ($gullet, $keyset) = @_;
-  ($gullet->ifNext(T_OTHER('[')) ? (readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); }
+  return ($gullet->ifNext(T_OTHER('[')) ? (readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); }
 
 #======================================================================
 # This new declaration allows you to define the type associated with
@@ -54,13 +54,13 @@ sub DefKeyVal {
 # Can use in constructor: eg. <foo attrib='&KeyVal(#1,'key')'>
 sub KeyVal {
   my ($keyval, $key) = @_;
-  (defined $keyval) && $keyval->getValue($key); }
+  return (defined $keyval) && $keyval->getValue($key); }
 
 # Access the entire hash.
 # Can use in constructor: <foo %&KeyVals(#1)/>
 sub KeyVals {
   my ($keyval) = @_;
-  (defined $keyval ? $keyval->getKeyVals : {}); }
+  return (defined $keyval ? $keyval->getKeyVals : {}); }
 
 #======================================================================
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
@@ -117,7 +117,7 @@ sub readKeyVals {
       "key started at $startloc")
       unless $delim;
     last if $delim->equals($close); }
-  LaTeXML::KeyVals->new($keyset, $open, $close, @kv); }
+  return LaTeXML::KeyVals->new($keyset, $open, $close, @kv); }
 
 #**********************************************************************
 # This defines the KeyVal data object that can appear in the datastream
@@ -153,30 +153,33 @@ sub new {
     # This is unlikely to be what the caller expects!! But what?
     elsif (ref $hash{$k} eq 'ARRAY') { push(@{ $hash{$k} }, $v); }
     else { $hash{$k} = [$hash{$k}, $v]; } }
-  bless { keyset => $keyset, open => $open, close => $close, keyvals => [@pairs], hash => {%hash} }, $class; }
+  return bless {
+    keyset => $keyset, open => $open, close => $close, keyvals => [@pairs], hash => {%hash} },
+    $class; }
 
 sub getValue {
   my ($self, $key) = @_;
-  $$self{hash}{$key}; }
+  return $$self{hash}{$key}; }
 
 sub setValue {
   my ($self, $key, $value) = @_;
   if (defined $value) {
     $$self{hash}{$key} = $value; }
   else {
-    delete $$self{hash}{$key}; } }
+    delete $$self{hash}{$key}; }
+  return; }
 
 sub getPairs {
   my ($self) = @_;
-  @{ $$self{keyvals} }; }
+  return @{ $$self{keyvals} }; }
 
 sub getKeyVals {
   my ($self) = @_;
-  $$self{hash}; }
+  return $$self{hash}; }
 
 sub getHash {
   my ($self) = @_;
-  map(($_ => ToString($$self{hash}{$_})), keys %{ $$self{hash} }); }
+  return map { ($_ => ToString($$self{hash}{$_})) } keys %{ $$self{hash} }; }
 
 sub beDigested {
   my ($self, $stomach) = @_;
@@ -195,7 +198,7 @@ sub beDigested {
     push(@dkv, $key, ($dodigest ? $value->beDigested($stomach) : $value));
     EndSemiverbatim() if $semiverb;
   }
-  (ref $self)->new($$self{keyset}, $$self{open}, $$self{close}, @dkv); }
+  return (ref $self)->new($$self{keyset}, $$self{open}, $$self{close}, @dkv); }
 
 sub revert {
   my ($self) = @_;
@@ -211,9 +214,11 @@ sub revert {
       ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
   unshift(@tokens, $$self{open}) if $$self{open};
   push(@tokens, $$self{close}) if $$self{close};
-  @tokens; }
+  return @tokens; }
 
-sub unlist { $_[0]; }    # ????
+sub unlist {
+  my ($self) = @_;
+  return $self; }    # ????
 
 sub toString {
   my ($self) = @_;
@@ -223,7 +228,7 @@ sub toString {
     my ($key, $value) = (shift(@kv), shift(@kv));
     $string .= ', ' if $string;
     $string .= $key . '=' . ToString($value); }
-  $string; }
+  return $string; }
 
 #======================================================================
 1;

@@ -98,14 +98,14 @@ sub makeConcrete {
 
 sub merge {
   my ($self, %options) = @_;
-  my $family   = (defined $options{family}     ? $options{family}     : $$self[0]);
-  my $series   = (defined $options{series}     ? $options{series}     : $$self[1]);
-  my $shape    = (defined $options{shape}      ? $options{shape}      : $$self[2]);
-  my $size     = (defined $options{size}       ? $options{size}       : $$self[3]);
-  my $color    = (defined $options{color}      ? $options{color}      : $$self[4]);
-  my $bg       = (defined $options{background} ? $options{background} : $$self[5]);
-  my $opacity  = (defined $options{opacity}    ? $options{opacity}    : $$self[6]);
-  my $encoding = (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
+  my $family   = $options{family}     // $$self[0];
+  my $series   = $options{series}     // $$self[1];
+  my $shape    = $options{shape}      // $$self[2];
+  my $size     = $options{size}       // $$self[3];
+  my $color    = $options{color}      // $$self[4];
+  my $bg       = $options{background} // $$self[5];
+  my $opacity  = $options{opacity}    // $$self[6];
+  my $encoding = $options{encoding}   // $$self[7];
   $color = $color->toHex if ref $color;
   $bg    = $bg->toHex    if ref $bg;
   return (ref $self)->new_internal($family, $series, $shape, $size, $color, $bg, $opacity, $encoding); }
@@ -244,16 +244,16 @@ sub isSticky {
 
 sub merge {
   my ($self, %options) = @_;
-  my $family     = (defined $options{family}     ? $options{family}     : $$self[0]);
-  my $series     = (defined $options{series}     ? $options{series}     : $$self[1]);
-  my $shape      = (defined $options{shape}      ? $options{shape}      : $$self[2]);
-  my $size       = (defined $options{size}       ? $options{size}       : $$self[3]);
-  my $color      = (defined $options{color}      ? $options{color}      : $$self[4]);
-  my $bg         = (defined $options{background} ? $options{background} : $$self[5]);
-  my $opacity    = (defined $options{opacity}    ? $options{opacity}    : $$self[6]);
-  my $encoding   = (defined $options{encoding}   ? $options{encoding}   : $$self[7]);
-  my $forcebold  = (defined $options{forcebold}  ? $options{forcebold}  : $$self[8]);
-  my $forceshape = (defined $options{forceshape} ? $options{forceshape} : $$self[9]);
+  my $family     = $options{family}     // $$self[0];
+  my $series     = $options{series}     // $$self[1];
+  my $shape      = $options{shape}      // $$self[2];
+  my $size       = $options{size}       // $$self[3];
+  my $color      = $options{color}      // $$self[4];
+  my $bg         = $options{background} // $$self[5];
+  my $opacity    = $options{opacity}    // $$self[6];
+  my $encoding   = $options{encoding}   // $$self[7];
+  my $forcebold  = $options{forcebold}  // $$self[8];
+  my $forceshape = $options{forceshape} // $$self[9];
   $color = $color->toHex if ref $color;
   $bg    = $bg->toHex    if ref $bg;
   # In math, setting any one of these, resets the others to default.
@@ -275,31 +275,33 @@ sub merge {
 sub specialize {
   my ($self, $string) = @_;
   return $self unless defined $string;
-  my ($family, $series, $shape, $size, $color, $bg, $opacity, $encoding, $forcebold, $forceshape) = @$self;
+  my ($family, $series, $shape, $size, $color, $bg, $opacity,
+    $encoding, $forcebold, $forceshape) = @$self;
   $series = 'bold' if $forcebold;
   if (($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)) {    # Latin Letter
-    print STDERR "Letter" if $LaTeXML::Font::DEBUG;
+##    print STDERR "Letter" if $LaTeXML::Font::DEBUG;
     $shape = 'italic' if !$shape && !$family; }
   elsif ($string =~ /^\p{Greek}$/) {                             # Single Greek character?
     if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
-      print STDERR "Greek Upper" if $LaTeXML::Font::DEBUG;
+##      print STDERR "Greek Upper" if $LaTeXML::Font::DEBUG;
       if (!$family || ($family eq 'math')) {
         $family = $MDEFFAMILY;
-        $shape = $MDEFSHAPE if $shape && ($shape ne $MDEFSHAPE); } }
-    else {                                                       # Lowercase
-      print STDERR "Greek Lower" if $LaTeXML::Font::DEBUG;
+        $shape = $MDEFSHAPE if $shape && ($shape ne $MDEFSHAPE); } }    # if ANY shape, must be default
+    else {    # Lowercase
+##      print STDERR "Greek Lower" if $LaTeXML::Font::DEBUG;
       $family = $MDEFFAMILY if !$family || ($family ne $MDEFFAMILY);
       $shape  = 'italic'    if !$shape  || !$forceshape;               # always ?
       if ($forcebold) { $series = 'bold'; }
       elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } } }
   elsif ($string =~ /^\p{N}$/) {                                       # Digit
-    print STDERR "Digit" if $LaTeXML::Font::DEBUG;
+##    print STDERR "Digit" if $LaTeXML::Font::DEBUG;
     if (!$family || ($family eq 'math')) {
       $family = $MDEFFAMILY;
-      $shape = $MDEFSHAPE if !$shape || ($shape ne $MDEFSHAPE); } }
+      $shape  = $MDEFSHAPE; } }                                        # defaults, always.
   else {                                                               # Other Symbol
-    print STDERR "Symbol" if $LaTeXML::Font::DEBUG;
-    $family = $MDEFFAMILY; $shape = $MDEFSHAPE;                        # defaults, always.
+##    print STDERR "Symbol" if $LaTeXML::Font::DEBUG;
+    $family = $MDEFFAMILY;
+    $shape  = $MDEFSHAPE;                                              # defaults, always.
     if ($forcebold) { $series = 'bold'; }
     elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } }
 

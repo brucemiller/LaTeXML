@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::PictureImages;
 use strict;
+use warnings;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::LaTeXImages);
 
@@ -20,12 +21,14 @@ sub new {
   $options{resource_directory} = 'pic' unless defined $options{resource_directory};
   $options{resource_prefix}    = 'pic' unless defined $options{resource_prefix};
   $options{use_dvipng}         = 0     unless defined $options{use_dvipng};
-  $class->SUPER::new(%options); }
+  return $class->SUPER::new(%options); }
 
 #======================================================================
 
 # Return the list of Picture nodes.
-sub toProcess { $_[1]->findnodes('//ltx:picture'); }
+sub toProcess {
+  my ($self, $doc) = @_;
+  return $doc->findnodes('//ltx:picture'); }
 
 # Return the TeX string to format the image for this node.
 sub extractTeX {
@@ -35,7 +38,7 @@ sub extractTeX {
   if (my $u = $node->getAttribute('unitlength')) {
     $tex = "\\setlength{\\unitlength}{$u}" . $tex; }
   # xunitlength, yunitlength for pstricks???
-  "\\beginPICTURE $tex\\endPICTURE"; }
+  return "\\beginPICTURE $tex\\endPICTURE"; }
 
 # Definitions needed for processing inline & display picture images
 sub preamble {
