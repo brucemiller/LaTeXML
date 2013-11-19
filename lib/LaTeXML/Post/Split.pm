@@ -136,7 +136,11 @@ sub addNavigation {
     $self->addNavigation($child, @nav); }            # now, recurse
   return; }
 
-our $COUNTER = 0;
+# error situation: generate some kind of unique name for page
+sub generateUnnamedPageName {
+  my ($self) = @_;
+  my $ctr = ++$$self{unnamed_page_counter};
+  return "FOO" . $ctr; }
 
 sub getPageName {
   my ($self, $doc, $page, $parent, $parentpath, $recursive) = @_;
@@ -145,7 +149,7 @@ sub getPageName {
   my $attr = ($naming =~ /^id/ ? 'xml:id'
     : ($naming =~ /^label/ ? 'labels' : undef));
   my $name = $page->getAttribute($attr);
-  $name =~ s/\s+.*//   if $name;                     # Truncate in case multiple labels.
+  $name =~ s/\s+.*//   if $name;    # Truncate in case multiple labels.
   $name =~ s/^LABEL:// if $name;
   if (!$name) {
     if (($attr eq 'labels') && ($name = $page->getAttribute('xml:id'))) {
@@ -153,7 +157,7 @@ sub getPageName {
         "Expected attribute '$attr' to create page pathname", "using id=$name");
       $attr = 'xml:id'; }
     else {
-      $name = "FOO" . ++$COUNTER;
+      $name = $self->generateUnnamedPageName;
       Warn('expected', $attr, $doc->getQName($page),
         "Expected attribute '$attr' to create page pathname", "using id=$name"); } }
   if ($naming =~ /relative$/) {
