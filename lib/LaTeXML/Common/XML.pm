@@ -34,7 +34,6 @@
 package LaTeXML::Common::XML;
 use strict;
 use warnings;
-use Readonly;
 use XML::LibXML qw(:all);
 use XML::LibXML::XPathContext;
 use LaTeXML::Util::Pathname;
@@ -79,8 +78,8 @@ our @EXPORT = (
 );
 
 # These really should be constant, but visible outside!
-our $XMLNS_NS = 'http://www.w3.org/2000/xmlns/';
-our $XML_NS   = 'http://www.w3.org/XML/1998/namespace';
+our $XMLNS_NS = 'http://www.w3.org/2000/xmlns/';           # [CONSTANT]
+our $XML_NS   = 'http://www.w3.org/XML/1998/namespace';    # [CONSTANT]
 
 #======================================================================
 # XML Utilities
@@ -202,7 +201,7 @@ sub get_attr {
 # and probably should accommodate catalogs being given as configuration options!
 # However, it presumably sets some global state in XML::LibXML,
 # so it's safe to do ( record! ) once, even across Daemon calls.
-our $catalogs_initialized = 0;
+my $catalogs_initialized = 0;    # [CONFIGURATION]
 
 sub initialize_catalogs {
   return if $catalogs_initialized;
@@ -215,8 +214,9 @@ sub initialize_catalogs {
 # Odd place for this utility, but it is needed in both conversion & post
 # ALSO needs error reporting capability.
 
-our @RDF_TERM_ATTRIBUTES = (qw(about resource property typeof rel rev datatype));
-our %NON_RDF_PREFIXES = map { ($_ => 1) } qw(http https ftp);
+my @RDF_TERM_ATTRIBUTES = (    # [CONSTANT]
+  qw(about resource property typeof rel rev datatype));
+my %NON_RDF_PREFIXES = map { ($_ => 1) } qw(http https ftp);    # [CONSTANT]
 
 sub set_RDFa_prefixes {
   my ($document, $map) = @_;
@@ -262,10 +262,10 @@ sub set_RDFa_prefixes {
 # We can run using older versions, but have to patch things up to
 # a consistent level.
 
-our $original_XML_LibXML_Document_toString;
-our $original_XML_LibXML_Element_getAttribute;
-our $original_XML_LibXML_Element_hasAttribute;
-our $original_XML_LibXML_Element_setAttribute;
+our $original_XML_LibXML_Document_toString;       # [CONFIGURATION]
+our $original_XML_LibXML_Element_getAttribute;    # [CONFIGURATION]
+our $original_XML_LibXML_Element_hasAttribute;    # [CONFIGURATION]
+our $original_XML_LibXML_Element_setAttribute;    # [CONFIGURATION]
 
 BEGIN {
   *original_XML_LibXML_Document_toString    = *XML::LibXML::Document::toString;
@@ -307,7 +307,7 @@ sub xmlns_XML_LibXML_Element_setAttribute {
   else {
     return original_XML_LibXML_Element_setAttribute($self, $name, $value); } }
 
-our $xml_libxml_version;
+our $xml_libxml_version;    # [CONFIGURATION]
 
 BEGIN {
   $xml_libxml_version = $XML::LibXML::VERSION;

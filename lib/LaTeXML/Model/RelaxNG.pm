@@ -13,14 +13,13 @@
 package LaTeXML::Model::RelaxNG;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Global;
 use Scalar::Util qw(weaken);
 use base qw(LaTeXML::Model::Schema);
 
-our $XMLPARSER = LaTeXML::Common::XML::Parser->new();
+my $XMLPARSER = LaTeXML::Common::XML::Parser->new();    # [CONSTANT]
 
 #  $schema->documentModules;
 
@@ -173,7 +172,8 @@ sub extractContent {
 # so that hopefully it will be feasable to generate the same structure
 # from a parsed RelaxNG Compact, without duplicating the processing.
 #======================================================================
-our %RNGNSMAP = ("http://relaxng.org/ns/structure/1.0" => 'rng',
+my %RNGNSMAP = (    # [CONSTANT]
+  "http://relaxng.org/ns/structure/1.0"                 => 'rng',
   "http://relaxng.org/ns/compatibility/annotations/1.0" => 'rnga');
 
 local @LaTeXML::Model::RelaxNG::PATHS = ();
@@ -211,7 +211,8 @@ sub getElements {
   my ($node) = @_;
   return grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes; }
 
-Readonly my $COMBINER_re => qr/group|interleave|choice|optional|zeroOrMore|oneOrMore|list/;
+my $COMBINER_re =    # [CONSTANT]
+  qr/group|interleave|choice|optional|zeroOrMore|oneOrMore|list/;
 
 sub scanPattern {
   my ($self, $node, $inherit_ns) = @_;
@@ -516,7 +517,7 @@ sub showSchema {
 #======================================================================
 # The svg schema can only just barely be read in and recognized,
 # but it is structured in a way that makes a joke of our attempt at automatic documentation
-Readonly my $SKIP_SVG => 1;
+my $SKIP_SVG = 1;    # [CONFIGURABLE?]
 
 sub documentModules {
   my ($self) = @_;

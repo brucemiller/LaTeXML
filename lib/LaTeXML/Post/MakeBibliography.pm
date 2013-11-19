@@ -19,8 +19,8 @@ use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
 
 # These are really constant, but set at bottom, for readability
-our %FMT_SPEC;                  # CONSTANT
-our @META_BLOCK;                # CONSTANT
+our %FMT_SPEC;      # CONSTANT
+our @META_BLOCK;    # CONSTANT
 
 # Options:
 #   bibliographies : list of xml file names containing bibliographies (from bibtex)
@@ -299,7 +299,8 @@ sub formatBibEntry {
       $aa = join('', map { substr($_->textContent, 0, 1); } @rfnames); }
     else {
       $aa = uc(substr($rfnames[0]->textContent, 0, 3)); }
-    my $yy = (@year ? substr(join('', map { (ref $_ ? $_->textContent : $_); } @year), 2, 2) : '');
+    my $yrtext = (@year ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
+    my $yy = (length($yrtext) >= 2 ? substr($yrtext, 2, 2) : $yrtext);
     push(@tags, ['ltx:bibtag', { role => 'refnum', class => 'ltx_bib_abbrv', open => '[', close => ']' },
         $aa . $yy . ($$entry{suffix} || '')]); }
 
@@ -432,7 +433,7 @@ sub do_crossref {
   return (['ltx:cite', {},
       ['ltx:bibref', { bibrefs => $node->getAttribute('bibrefs'), show => 'refnum' }]]); }
 
-my $LINKS =                     # CONSTANT
+my $LINKS =                                       # CONSTANT
   "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
 
 sub do_links {

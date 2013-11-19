@@ -22,7 +22,6 @@
 package LaTeXML::Global;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Error;
 use LaTeXML::Common::XML;
 use Time::HiRes;
@@ -178,7 +177,7 @@ sub Revert {
   my ($thing) = @_;
   return (defined $thing ? (ref $thing ? map { $_->unlist } $thing->revert : Explode($thing)) : ()); }
 
-Readonly my $UNTEX_LINELENGTH => 78;
+my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 
 sub UnTeX {
   my ($thing) = @_;
@@ -302,8 +301,6 @@ sub NoteProgressDetailed {
   print STDERR @stuff if $LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 1;
   return; }
 
-our %note_timers = ();
-
 sub NoteBegin {
   my ($state) = @_;
   if ($LaTeXML::Global::STATE->lookupValue('VERBOSITY') >= 0) {
@@ -322,7 +319,7 @@ sub NoteEnd {
 
 #**********************************************************************
 # Generic functions
-Readonly my %NOBLESS => map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);
+my %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);    # [CONSTANT]
 
 sub Stringify {
   my ($object) = @_;

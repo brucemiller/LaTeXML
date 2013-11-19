@@ -87,7 +87,8 @@ sub getStatusMessage {
 #    preamble = names a tex file (or standard_preamble.tex)
 #    postamble = names a tex file (or standard_postamble.tex)
 
-our %MODE_EXTENSION = (TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
+our %MODE_EXTENSION = (          # CONFIGURATION?
+  TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
 
 sub digestFile {
   my ($self, $request, %options) = @_;

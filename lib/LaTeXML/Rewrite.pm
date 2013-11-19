@@ -14,7 +14,6 @@
 package LaTeXML::Rewrite;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 
 sub new {
@@ -302,7 +301,7 @@ sub domToXPath {
   return "descendant-or-self::" . domToXPath_rec($document, $node); }
 
 # May need some work here;
-Readonly my %EXCLUDED_MATCH_ATTRIBUTES => (scriptpos => 1, 'xml:id' => 1);
+my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);    # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, @extra_predicates) = @_;

@@ -526,16 +526,15 @@ sub doAbsorbtion {
 #**********************************************************************
 package LaTeXML::ConstructorCompiler;
 use strict;
-use Readonly;
 use LaTeXML::Global;
 use Scalar::Util qw(refaddr);
 
-Readonly my $VALUE_RE => "(\\#|\\&[\\w\\:]*\\()";
-Readonly my $COND_RE  => "\\?$VALUE_RE";
+my $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";    # [CONSTANT]
+my $COND_RE  = "\\?$VALUE_RE";             # [CONSTANT]
 # Attempt to follow XML Spec, Appendix B
-Readonly my $QNAME_RE => "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"
+my $QNAME_RE = "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"    # [CONSTANT]
   . "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
-Readonly my $TEXT_RE => "(.[^\\#<\\?\\)\\&\\,]*)";
+my $TEXT_RE = "(.[^\\#<\\?\\)\\&\\,]*)";                             # [CONSTANT]
 
 sub compileConstructor {
   my ($constructor) = @_;

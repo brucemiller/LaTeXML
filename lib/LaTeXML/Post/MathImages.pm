@@ -38,7 +38,7 @@ sub extractTeX {
   $mode = 'DISPLAY' if $tex =~ s/^\s*\\displaystyle\s+//;    # Strip leading displaystyle
   return ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }
 
-our $MML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";
+my $MML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";    # [CONSTANT]
 
 sub setTeXImage {
   my ($self, $doc, $node, $path, $width, $height, $depth) = @_;

@@ -13,7 +13,6 @@
 package LaTeXML::Stomach;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Gullet;
 use LaTeXML::Box;
@@ -115,7 +114,7 @@ sub digest {
 # possibly arguments will be parsed from the Gullet.
 # Otherwise, the token is simply digested: turned into an appropriate box.
 # Returns a list of boxes/whatsits.
-Readonly my $MAXSTACK => 200;    # ?
+my $MAXSTACK = 200;    # [CONSTANT]
 
 sub invokeToken {
   my ($self, $token) = @_;
@@ -126,7 +125,7 @@ sub invokeToken {
       "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
   my @result = $self->invokeToken_internal($token);
   if ((scalar(@result) == 1) && (!defined $result[0])) {
-    @result = (); }              # Just paper over the obvious thing.
+    @result = (); }    # Just paper over the obvious thing.
   if (my ($x) = grep { !$_->isaBox } @result) {
     Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
   pop(@{ $$self{token_stack} });
@@ -143,7 +142,7 @@ sub makeError {
   $document->setNode($savenode) if $savenode;
   return; }
 
-Readonly my @forbidden_cc => (
+my @forbidden_cc = (    # [CONSTANT]
   1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1);
 
 sub invokeToken_internal {

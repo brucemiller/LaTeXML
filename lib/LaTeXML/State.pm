@@ -13,7 +13,6 @@
 package LaTeXML::State;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 
 # Naming scheme for keys (such as it is)
@@ -476,7 +475,7 @@ sub getActiveScopes {
 #   Put here since it could concievably evolve to depend on the current font.
 
 # Conversion to scaled points
-Readonly my %UNITS => (
+my %UNITS = (    # [CONSTANT]
   pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
   cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
   cc => 12 * 1238 * 65536 / 1157, sp => 1);

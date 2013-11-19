@@ -145,20 +145,19 @@ sub stringify {
 
 #**********************************************************************
 package LaTeXML::Glue;
-use Readonly;
 use LaTeXML::Global;
 use base qw(LaTeXML::Dimension);
 use strict;
 
-Readonly my %fillcode => (fil => 1, fill => 2, filll => 3);
-Readonly my @FILL => ('', 'fil', 'fill', 'filll');
+my %fillcode = (fil => 1, fill => 2, filll => 3);    # [CONSTANT]
+my @FILL = ('', 'fil', 'fill', 'filll');             # [CONSTANT]
 
-Readonly my $num_re   => qr/\d*\.?\d*/;
-Readonly my $unit_re  => qr/\w\w/;
-Readonly my $fill_re  => qr/fil|fill|filll|[a-zA-Z][a-zA-Z]/;
-Readonly my $plus_re  => qr/\s+plus\s*($num_re)($fill_re)/;
-Readonly my $minus_re => qr/\s+minus\s*($num_re)($fill_re)/;
-Readonly our $GLUE_re => qr/(\+?\-?$num_re)($unit_re)($plus_re)?($minus_re)?/;
+my $num_re   = qr/\d*\.?\d*/;                        # [CONSTANT]
+my $unit_re  = qr/\w\w/;                             # [CONSTANT]
+my $fill_re  = qr/fil|fill|filll|[a-zA-Z][a-zA-Z]/;  # [CONSTANT]
+my $plus_re  = qr/\s+plus\s*($num_re)($fill_re)/;    # [CONSTANT]
+my $minus_re = qr/\s+minus\s*($num_re)($fill_re)/;   # [CONSTANT]
+our $GLUE_re = qr/(\+?\-?$num_re)($unit_re)($plus_re)?($minus_re)?/;    # [CONSTANT]
 
 sub new {
   my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;

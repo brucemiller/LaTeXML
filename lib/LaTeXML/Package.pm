@@ -15,7 +15,6 @@ package LaTeXML::Package;
 use strict;
 use warnings;
 use Exporter;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Definition;
 use LaTeXML::Parameters;
@@ -299,7 +298,7 @@ sub MergeFont {
 
 # Dumb place for this, but where else...
 # The TeX way! (bah!! hint: try a large number)
-Readonly my @rmletters => ('i', 'v', 'x', 'l', 'c', 'd', 'm');
+my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 
 sub roman_aux {
   my ($n) = @_;
@@ -386,7 +385,7 @@ sub CleanDimension {
 # Defining new Control-sequence Parameter types.
 #======================================================================
 
-Readonly my $parameter_options => {
+my $parameter_options = {    # [CONSTANT]
   nargs => 1, reversion => 1, optional => 1, novalue => 1,
   semiverbatim => 1, undigested => 1 };
 
@@ -691,7 +690,7 @@ sub forbidMath {
 # substituted for any #1,...), or a sub which returns a list of tokens (or just return;).
 # Those tokens, if any, will be reinserted into the input.
 # There are no options to these definitions.
-Readonly my $expandable_options => {
+my $expandable_options = {    # [CONSTANT]
   scope => 1, locked => 1 };
 
 sub DefExpandable {
@@ -703,7 +702,7 @@ sub DefExpandable {
 
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
-Readonly my $macro_options => {
+my $macro_options = {    # [CONSTANT]
   scope => 1, locked => 1, mathactive => 1 };
 
 sub DefMacro {
@@ -737,7 +736,7 @@ sub DefMacroI {
 # If you supply a skipper instead of a test, it is also applied to the arguments
 # and should skip to the right place in the following \or, \else, \fi.
 # This is ONLY used for \ifcase.
-Readonly my $conditional_options => {
+my $conditional_options = {    # [CONSTANT]
   scope => 1, locked => 1, skipper => 1 };
 
 sub DefConditional {
@@ -774,7 +773,7 @@ sub DefConditionalI {
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
-Readonly my $primitive_options => {
+my $primitive_options = {    # [CONSTANT]
   isPrefix => 1, scope => 1, mode => 1, font => 1,
   requireMath  => 1, forbidMath  => 1,
   beforeDigest => 1, afterDigest => 1,
@@ -813,9 +812,9 @@ sub DefPrimitiveI {
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
 
-Readonly my $register_options => {
+my $register_options = {    # [CONSTANT]
   readonly => 1, getter => 1, setter => 1 };
-Readonly my %register_types => (
+my %register_types = (      # [CONSTANT]
   'LaTeXML::Number'    => 'Number',
   'LaTeXML::Dimension' => 'Dimension',
   'LaTeXML::Glue'      => 'Glue',
@@ -877,7 +876,7 @@ sub flatten {
 #                     useful for setting Whatsit properties,
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
-Readonly my $constructor_options => {
+my $constructor_options = {    # [CONSTANT]
   mode         => 1, requireMath => 1, forbidMath      => 1, font           => 1,
   reversion    => 1, properties  => 1, alias           => 1, nargs          => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
@@ -932,13 +931,13 @@ sub DefConstructorI {
 # HMM.... Still fishy.
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
-Readonly my $math_options => {
+my $math_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, reversion => 1, alias => 1,
   role => 1, operator_role => 1, reorder => 1, dual => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
   beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1 };
-Readonly my $simpletoken_options => {
+my $simpletoken_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
 
@@ -1152,7 +1151,7 @@ sub defmath_cons {
 #======================================================================
 # Define a LaTeX environment
 # Note that the body of the environment is treated is the 'body' parameter in the constructor.
-Readonly my $environment_options => {
+my $environment_options = {    # [CONSTANT]
   mode       => 1, requireMath => 1, forbidMath => 1,
   properties => 1, nargs       => 1, font       => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
@@ -1246,13 +1245,13 @@ sub DefEnvironmentI {
 #======================================================================
 
 # Specify the properties of a Node tag.
-Readonly my $tag_options => {
+my $tag_options = {    # [CONSTANT]
   autoOpen => 1, autoClose => 1, afterOpen => 1, afterClose => 1,
   'afterOpen:early' => 1, 'afterClose:early' => 1,
   'afterOpen:late'  => 1, 'afterClose:late'  => 1 };
-Readonly my $tag_prepend_options => {
+my $tag_prepend_options = {    # [CONSTANT]
   'afterOpen:early' => 1, 'afterClose:early' => 1 };
-Readonly my $tag_append_options => {
+my $tag_append_options = {     # [CONSTANT]
   'afterOpen'      => 1, 'afterClose'      => 1,
   'afterOpen:late' => 1, 'afterClose:late' => 1 };
 
@@ -1309,7 +1308,7 @@ sub RegisterDocumentNamespace {
 # Ah, but what about \InputFileIfExists type stuff...
 # should we assume a raw type can be processed if being read from within a raw type????
 # yeah, that sounds about right...
-Readonly my %definition_name => (
+my %definition_name = (    # [CONSTANT]
   sty => 'package', cls => 'class', clo => 'class options',
   'cnf' => 'configuration', 'cfg' => 'configuration',
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
@@ -1318,7 +1317,7 @@ sub pathname_is_raw {
   my ($pathname) = @_;
   return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
-Readonly my $findfile_options => {
+my $findfile_options = {    # [CONSTANT]
   type => 1, notex => 1, noltxml => 1 };
 
 sub FindFile {
@@ -1402,7 +1401,7 @@ sub maybeReportSearchPaths {
     AssignValue('SEARCHPATHS_REPORTED' => 1, 'global');
     return ("search paths are " . join(', ', @{ LookupValue('SEARCHPATHS') })); } }
 
-Readonly my $inputcontent_options => {
+my $inputcontent_options = {    # [CONSTANT]
   noerror => 1, type => 1 };
 
 sub InputContent {
@@ -1426,7 +1425,7 @@ sub InputContent {
 # But we may have implemented a .sty.ltxml, so we override the .tex.
 # Is this actually safe, or should we be explicilty providing .tex.ltxml ?
 
-Readonly my $input_options => {};
+my $input_options = {};    # [CONSTANT]
 
 sub Input {
   my ($request, %options) = @_;
@@ -1579,7 +1578,7 @@ sub PassOptions {
 # otherwise, they are processed in the order declared.
 # Unless noundefine=>1 (like for \ExecuteOptions), all option definitions
 # undefined after execution.
-Readonly my $processoptions_options => {
+my $processoptions_options = {    # [CONSTANT]
   inorder => 1 };
 
 sub ProcessOptions {
@@ -1655,7 +1654,7 @@ sub AddToMacro {
   return; }
 
 #======================================================================
-Readonly my $inputdefinitions_options => {
+my $inputdefinitions_options = {    # [CONSTANT]
   options => 1, withoptions => 1, handleoptions => 1,
   type => 1, as_class => 1, noltxml => 1, notex => 1, noerror => 1, after => 1 };
 #   options=>[options...]
@@ -1734,7 +1733,7 @@ sub InputDefinitions {
       maybeReportSearchPaths()); }
   return; }
 
-Readonly my $require_options => {
+my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
   noltxml => 1, notex       => 1, raw  => 1, after    => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
@@ -1758,7 +1757,7 @@ sub RequirePackage {
     %options);
   return; }
 
-Readonly my $loadclass_options => {
+my $loadclass_options = {    # [CONSTANT]
   options => 1, withoptions => 1, after => 1 };
 
 sub LoadClass {
@@ -1824,7 +1823,7 @@ sub AtEndDocument {
 
 #======================================================================
 #
-Readonly my $fontmap_options => {
+my $fontmap_options = {    # [CONSTANT]
   family => 1 };
 
 sub DeclareFontMap {
@@ -1931,7 +1930,7 @@ sub DefColorModel {
 #======================================================================
 # Defining Rewrite rules that act on the DOM
 # These are applied after the document is completely constructed
-Readonly my $rewrite_options => {
+my $rewrite_options = {    # [CONSTANT]
   label      => 1, scope   => 1, xpath  => 1, match  => 1,
   attributes => 1, replace => 1, regexp => 1, select => 1 };
 
@@ -1947,13 +1946,13 @@ sub DefMathRewrite {
   PushValue('DOCUMENT_REWRITE_RULES', LaTeXML::Rewrite->new('math', @specs));
   return; }
 
-Readonly my $ligature_options => {
-  fontTest => 1 };
-
 #======================================================================
 # Defining "Ligatures" rules that act on the DOM
 # These are actually a sort of rewrite that is applied while the doom
 # is being constructed, in particular as each node is closed.
+
+my $ligature_options = {    # [CONSTANT]
+  fontTest => 1 };
 
 sub DefLigature {
   my ($regexp, %options) = @_;
@@ -1965,7 +1964,7 @@ sub DefLigature {
   UnshiftValue('TEXT_LIGATURES', { regexp => $regexp, code => $fcn, %options });
   return; }
 
-Readonly my $math_ligature_options => {};
+my $math_ligature_options = {};    # [CONSTANT]
 
 sub DefMathLigature {
   my ($matcher, %options) = @_;
@@ -1976,9 +1975,9 @@ sub DefMathLigature {
 #======================================================================
 # Support for requiring "Resources", ie CSS, Javascript, whatever
 
-Readonly my $resource_options => {
+my $resource_options = {    # [CONSTANT]
   type => 1, media => 1, content => 1 };
-Readonly my $resource_types => {
+my $resource_types = {      # [CONSTANT]
   css => 'text/css', js => 'text/javascript' };
 
 sub RequireResource {

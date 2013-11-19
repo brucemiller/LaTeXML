@@ -13,7 +13,6 @@
 package LaTeXML::Model::DTD;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use base qw(LaTeXML::Model::Schema);
@@ -49,7 +48,7 @@ sub addSchemaDeclaration {
 # element that doesn't allow it, we may find an implied element
 # to create & insert, and insert the #PCDATA into it.
 
-Readonly my $NAME_re => qr/[a-zA-Z0-9\-\_\:]+/;
+my $NAME_re = qr/[a-zA-Z0-9\-\_\:]+/;    # [CONSTANT]
 
 sub loadSchema {
   my ($self) = @_;

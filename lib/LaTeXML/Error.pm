@@ -13,7 +13,6 @@
 package LaTeXML::Error;
 use strict;
 use warnings;
-use Readonly;
 use base qw(Exporter);
 our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 
@@ -70,7 +69,7 @@ sub checkRecursiveError {
   return; }
 
 # Note that "100" is hardwired into TeX, The Program!!!
-Readonly my $MAXERRORS => 100;
+my $MAXERRORS = 100;    # [CONSTANT]
 
 # Should be fatal if strict is set, else warn.
 sub Error {
@@ -116,12 +115,12 @@ sub Info {
 # We'll try to decode some common errors to make them more usable
 # for build systems.
 
-Readonly my $quoted_re     => qr/\"([^\"]*)\"/;
-Readonly my $cantcall_re   => qr/Can't call method/;
-Readonly my $cantlocate_re => qr/Can't locate object method/;
-Readonly my $noself_re     => qr/on an undefined value|without a package or object reference/;
-Readonly my $via_re        => qr/via package/;
-Readonly my $at_re         => qr/at (.*)/;
+my $quoted_re     = qr/\"([^\"]*)\"/;                                                   # [CONSTANT]
+my $cantcall_re   = qr/Can't call method/;                                              # [CONSTANT]
+my $cantlocate_re = qr/Can't locate object method/;                                     # [CONSTANT]
+my $noself_re     = qr/on an undefined value|without a package or object reference/;    # [CONSTANT]
+my $via_re        = qr/via package/;                                                    # [CONSTANT]
+my $at_re         = qr/at (.*)/;                                                        # [CONSTANT]
 
 sub perl_die_handler {
   my (@line) = @_;
@@ -234,8 +233,8 @@ sub callerInfo {
 # This portion adapted from Carp; simplified (but hopefully still correct),
 # allow stringify overload, handle methods, make more concise!
 #======================================================================
-Readonly my $MAXARGS => 8;
-Readonly my $MAXLEN  => 40;    # Or more?
+my $MAXARGS = 8;     # [CONSTANT]
+my $MAXLEN  = 40;    # Or more? [CONSTANT]
 
 sub trim {
   my ($string) = @_;

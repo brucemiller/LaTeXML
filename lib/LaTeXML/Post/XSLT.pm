@@ -13,7 +13,6 @@
 package LaTeXML::Post::XSLT;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
@@ -75,7 +74,7 @@ sub process {
   my $newdoc = $doc->new($$self{stylesheet}->transform($doc->getDocument, %params));
   return $newdoc; }
 
-Readonly my $RESOURCE_INFO => {
+my $RESOURCE_INFO = {    # [CONSTANT]
   'text/css'        => { extension => 'css', subdir => 'resources/CSS' },
   'text/javascript' => { extension => 'js',  subdir => 'resources/javascript' }
 };

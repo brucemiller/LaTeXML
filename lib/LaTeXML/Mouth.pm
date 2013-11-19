@@ -17,7 +17,6 @@
 package LaTeXML::Mouth;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Token;
 use LaTeXML::Util::Pathname;
@@ -219,7 +218,7 @@ my %OTHER  = ();
 my %ACTIVE = ();
 
 # Dispatch table for catcodes.
-Readonly my @DISPATCH => (
+my @DISPATCH = (    # [CONSTANT]
   \&handle_escape,    # T_ESCAPE
   T_BEGIN,            # T_BEGIN
   T_END,              # T_END
@@ -372,8 +371,6 @@ sub hasMoreInput {
   my ($self) = @_;
   #  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
   return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }) || $$self{IN}; }
-
-our $WARNED_8BIT = 0;
 
 sub getNextLine {
   my ($self) = @_;

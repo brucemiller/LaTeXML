@@ -16,7 +16,6 @@
 package LaTeXML::MathParser;
 use strict;
 use warnings;
-use Readonly;
 use Parse::RecDescent;
 use LaTeXML::Global;
 use LaTeXML::Font;
@@ -40,8 +39,7 @@ our %EXPORT_TAGS = (constructors
       &SawNotation &IsNotationAllowed
       &isMatchingClose &Fence)]);
 
-Readonly my $DEFAULT_FONT
-  => LaTeXML::MathFont->new(
+my $DEFAULT_FONT = LaTeXML::MathFont->new(    # [CONSTANT]
   family => 'serif',   series     => 'medium',
   shape  => 'upright', size       => 'normal',
   color  => 'black',   background => 'white', opacity => 1);
@@ -181,7 +179,7 @@ sub parse {
     $p->setAttribute('text', text_form($result)); }
   return; }
 
-Readonly my %TAG_FEEDBACK => ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');
+my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
 # Recursively parse a node with some internal structure
 # by first parsing any structured children, then it's content.
 sub parse_rec {
@@ -242,7 +240,7 @@ sub parse_children {
       $self->parse_children($child, $document); } }
   return; }
 
-Readonly my $HINT_PUNCT_THRESHOLD => 10.0;    # \quad or bigger becomes punctuation ?
+my $HINT_PUNCT_THRESHOLD = 10.0;    # \quad or bigger becomes punctuation ? [CONSTANT]
 
 sub filter_hints {
   my ($self, $document, @nodes) = @_;
@@ -250,8 +248,8 @@ sub filter_hints {
   my $prev     = undef;
   while (@nodes) {
     my $c = shift(@nodes);
-    if (getQName($c) ne 'ltx:XMHint') {       # Is it NOT a Hint node?
-      push(@filtered, $c); $prev = $c; }      # Keep it.
+    if (getQName($c) ne 'ltx:XMHint') {    # Is it NOT a Hint node?
+      push(@filtered, $c); $prev = $c; }    # Keep it.
     elsif (my $width = $c->getAttribute('width')) {    # Is it a spacing hint?
           # Get the pts (combining w/any following spacing hints)
       my $pts = getXMHintSpacing($width);
@@ -290,7 +288,7 @@ sub getXMHintSpacing {
 
 # We've pretty much builtin the assumption that the target XML is "As If" 10 pts,
 # so we'll assume that 1em is 10 pts.
-Readonly my $POINTS_PER_EM => 10.0;
+my $POINTS_PER_EM = 10.0;    # [CONSTANT]
 # Convert spacing, given as a number of points, to a string of appropriate spacing chars
 sub spacingToString {
   my ($points) = @_;
@@ -519,8 +517,8 @@ sub getGrammaticalRole {
   return $role; }
 
 # How many tokens before & after the failure point to report in the Warning message.
-Readonly my $FAILURE_PRETOKENS  => 3;
-Readonly my $FAILURE_POSTTOKENS => 1;
+my $FAILURE_PRETOKENS  = 3;    # [CONSTANT]
+my $FAILURE_POSTTOKENS = 1;    # [CONSTANT]
 
 sub failureReport {
   my ($self, $document, $mathnode, $rule, $unparsed, @nodes) = @_;
@@ -577,14 +575,14 @@ sub text_form {
   $text =~ s/</less/g;
   return $text; }
 
-Readonly my %PREFIX_ALIAS => (
+my %PREFIX_ALIAS = (    # [CONSTANT]
   SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => => '*',
   'equals'      => '=', 'less-than' => '<', 'greater-than' => '>',
   'less-than-or-equals' => '<=', 'greater-than-or-equals' => '>=',
   'much-less-than'      => '<<', 'much-greater-than'      => '>>',
   'plus'                => '+',  'minus'                  => '-', 'divide' => '/');
 # Put infix, along with `binding power'
-Readonly my %IS_INFIX => (METARELOP => 1,
+my %IS_INFIX = (METARELOP => 1,    # [CONSTANT]
   RELOP         => 2,    ARROW       => 2,
   ADDOP         => 10,   MULOP       => 100,
   SUPERSCRIPTOP => 1000, SUBSCRIPTOP => 1000);
@@ -877,7 +875,7 @@ sub extract_separators {
 # Question: Is there enough context to guess better?
 # For example, whether (a,b) is an interval or list?
 #  (both could reasonably be preceded by \in )
-Readonly my %balanced => (
+my %balanced = (    # [CONSTANT]
   '(' => ')', '[' => ']', '{' => '}',
   '|' => '|', '||' => '||',
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
@@ -888,7 +886,7 @@ Readonly my %balanced => (
 );
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
-Readonly my %enclose1 => (
+my %enclose1 = (    # [CONSTANT]
   '{@}'   => 'set',                                   # alternatively, just variant parentheses
   '|@|'   => 'absolute-value',
   '||@||' => 'norm', "\x{2225}@\x{2225}" => 'norm',
@@ -897,7 +895,7 @@ Readonly my %enclose1 => (
   '<@>'               => 'expectation',               # or just average?
   '<@|'               => 'bra', '|@>' => 'ket');
 # For enclosing more than 2 objects; the punctuation is significant too
-Readonly my %enclose2 => (
+my %enclose2 = (                                      # [CONSTANT]
   '(@,@)' => 'open-interval',                                           # alternatively, just a list
   '[@,@]' => 'closed-interval',
   '(@,@]' => 'open-closed-interval', '[@,@)' => 'closed-open-interval',
@@ -905,7 +903,7 @@ Readonly my %enclose2 => (
 );
 # For enclosing more than 2 objects.
 # assume 1st punct? or should we check all are same?
-Readonly my %encloseN => (
+my %encloseN = (    # [CONSTANT]
   '(@,@)' => 'vector', '{@,@}' => 'set',);
 
 sub isMatchingClose {

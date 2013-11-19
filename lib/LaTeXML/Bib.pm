@@ -13,7 +13,6 @@
 package LaTeXML::Bib;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Util::Pathname;
 use Text::Balanced qw(extract_delimited extract_bracketed);
@@ -31,7 +30,7 @@ use Text::Balanced qw(extract_delimited extract_bracketed);
 # for the TeX fragments to assist in debugging message later.
 # Column number is currently kinda flubbed up.
 #**********************************************************************
-Readonly my %default_macros => (
+my %default_macros = (    # [CONSTANT]
   jan => "January",   feb => "February", mar => "March",    apr => "April",
   may => "May",       jun => "June",     jul => "July",     aug => "August",
   sep => "September", oct => "October",  nov => "November", dec => "December",
@@ -146,7 +145,7 @@ sub parseTopLevel {
   return; }
 
 #==============================
-Readonly my %CLOSE => ("{" => "}", "(" => ")");
+my %CLOSE = ("{" => "}", "(" => ")");    # [CONSTANT]
 
 # @preamble open "rawtex" close
 # open = { or (  close is balancing } or )
@@ -211,8 +210,8 @@ sub parseFields {
 # Especially "\", which BibTeX allows, but it throws us off (semiverbatim vs verbatim)
 # when we store the bibentries before digesting the key!
 
-Readonly my $BIBNAME_re  => qr/a-zA-Z0-9/x;
-Readonly my $BIBNOISE_re => qr/\.\+\-\*\/\^\_\:\;\@\`\?\!\~\|\<\>\$\[\]/x;
+my $BIBNAME_re  = qr/a-zA-Z0-9/x;                                   # [CONSTANT]
+my $BIBNOISE_re = qr/\.\+\-\*\/\^\_\:\;\@\`\?\!\~\|\<\>\$\[\]/x;    # [CONSTANT]
 
 sub parseEntryType {
   my ($self) = @_;
