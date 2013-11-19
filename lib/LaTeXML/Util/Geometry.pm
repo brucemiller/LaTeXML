@@ -1,7 +1,6 @@
 package LaTeXML::Util::Geometry;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Number;
 use Math::Trig;
@@ -9,7 +8,7 @@ use base qw(Exporter);
 our @EXPORT = (qw(&coordList &explodeCoord &radians &trunc &round &lineParams &pointPointDist
     &linePointDist &lineIntersect &lineAngle));
 
-Readonly my $eps => 0.000001;
+my $eps = 0.000001;    # [CONSTANT]
 
 sub coordList {
   my @points = @_; my ($l, $spc) = ('', '');

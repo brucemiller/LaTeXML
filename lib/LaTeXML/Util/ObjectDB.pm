@@ -194,7 +194,7 @@ package LaTeXML::Util::ObjectDB::Entry;
 use strict;
 use LaTeXML::Common::XML;
 
-our $XMLParser = LaTeXML::Common::XML::Parser->new();
+my $XMLParser = LaTeXML::Common::XML::Parser->new();    # [CONSTANT]
 
 sub new {
   my ($class, $key, %data) = @_;

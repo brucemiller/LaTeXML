@@ -29,7 +29,6 @@
 package LaTeXML::Util::Pathname;
 use strict;
 use warnings;
-use Readonly;
 use File::Spec;
 use File::Copy;
 use Cwd;
@@ -50,9 +49,9 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 #======================================================================
 # Ioan Sucan suggests switching this to '\\' for windows, but notes
 # that it works as it is, so we'll leave it (for now).
-Readonly my $SEP         => '/';
-Readonly my $LITERAL_RE  => '(?:literal)(?=:)';
-Readonly my $PROTOCOL_RE => '(?:https|http|ftp)(?=:)';
+my $SEP         = '/';                          # [CONSTANT]
+my $LITERAL_RE  = '(?:literal)(?=:)';           # [CONSTANT]
+my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';    # [CONSTANT]
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -245,7 +244,8 @@ sub pathname_copy {
 #  * If installation_subdir is given, look in that subdirectory of where LaTeXML
 #    was installed, by appending it to the paths.
 
-our @INSTALLDIRS = grep { -d $_ } map { pathname_canonical("$_/LaTeXML") } @INC;
+# This is presumably daemon safe...
+my @INSTALLDIRS = grep { -d $_ } map { pathname_canonical("$_/LaTeXML") } @INC;    # [CONSTANT]
 
 sub pathname_find {
   my ($pathname, %options) = @_;

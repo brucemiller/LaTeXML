@@ -11,7 +11,7 @@ use base qw(Exporter);
 our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
     latexml_tests),
   @Test::More::EXPORT);
-our $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';
+my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';    # [CONFIGURATION]
 
 # Note that this is a singlet; the same Builder is shared.
 

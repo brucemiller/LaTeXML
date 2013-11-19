@@ -13,7 +13,6 @@
 package LaTeXML::Util::MathMLLinebreaker;
 use strict;
 use warnings;
-use Readonly;
 
 #======================================================================
 # General MathML Line-Breaking Strategy.
@@ -51,13 +50,13 @@ use LaTeXML::Common::XML;
 #######################################################################
 # Parameters
 #######################################################################
-Readonly my $DEBUG             => 0;
-Readonly my $NOBREAK           => 99999999;    # penalty=$NOBREAK means don't break at all.
-Readonly my $POORBREAK_FACTOR  => 20;          # to make breaks less desirable.
-Readonly my $BADBREAK_FACTOR   => 100;         # to make breaks much less desirable.
-Readonly my $PENALTY_OK        => 5;
-Readonly my $PENALTY_LIMIT     => 1000;        # worst penalty we'll tolerate; prune anything above.
-Readonly my $CONVERSION_FACTOR => 2;           # to make breaks at converted ops less desirable
+my $DEBUG             = 0;           # [CONSTANT]
+my $NOBREAK           = 99999999;    # penalty=$NOBREAK means don't break at all. [CONSTANT]
+my $POORBREAK_FACTOR  = 20;          # to make breaks less desirable.[CONSTANT]
+my $BADBREAK_FACTOR   = 100;         # to make breaks much less desirable.[CONSTANT]
+my $PENALTY_OK        = 5;           # [CONSTANT]
+my $PENALTY_LIMIT     = 1000;        # worst penalty we'll tolerate; prune anything above.[CONSTANT]
+my $CONVERSION_FACTOR = 2;           # to make breaks at converted ops less desirable[CONSTANT]
 
 # TODO: Integrate default operator dictionary, and recognize attributes
 # TODO: all addops, relops,
@@ -66,18 +65,19 @@ sub UTF {
   my ($code) = @_;
   return pack('U', $code); }
 
-Readonly my %BREAKBEFOREOPS => map { ($_ => 1) }
-  # Various addops
+my %BREAKBEFOREOPS = map { ($_ => 1) }    # [CONSTANT]
+                                          # Various addops
   "+", "-", UTF(0xB1), "\x{2213}";
-Readonly my %BREAKAFTEROPS => map { ($_ => 1) }
+my %BREAKAFTEROPS = map { ($_ => 1) }     # [CONSTANT]
   ",";
-Readonly my %RELATIONOPS => map { ($_ => 1) }
-  # Various relops
+my %RELATIONOPS = map { ($_ => 1) }       # [CONSTANT]
+                                          # Various relops
   "=",        "<",        ">",        "\x{2264}", "\x{2265}", "\x{2260}", "\x{226A}",
   "\x{2261}", "\x{223C}", "\x{2243}", "\x{224D}", "\x{2248}", "\x{2260}", "\x{221D}";
-Readonly my %CONVERTOPS => ("\x{2062}" => UTF(0xD7),    # Invisible (discretionary) times
+my %CONVERTOPS = (                        # [CONSTANT]
+  "\x{2062}" => UTF(0xD7),                # Invisible (discretionary) times
 );
-Readonly my %FENCEOPS => map { ($_ => 1) }
+my %FENCEOPS = map { ($_ => 1) }          # [CONSTANT]
   "(", ")", "[", "]", "{", "}", "|", "||", "|||",
   "\x{2018}", "\x{2019}", "\x{201C}", "\x{201D}", "\x{2016}", "\x{2016}", "\x{2308}",
   "\x{2309}", "\x{230A}", "\x{230B}", "\x{2772}", "\x{2773}", "\x{27E6}", "\x{27E7}",
@@ -86,7 +86,8 @@ Readonly my %FENCEOPS => map { ($_ => 1) }
   "\x{2987}", "\x{2988}", "\x{2989}", "\x{298A}", "\x{298B}", "\x{298C}", "\x{298D}",
   "\x{298E}", "\x{298F}", "\x{2990}", "\x{2991}", "\x{2992}", "\x{2993}", "\x{2994}",
   "\x{2995}", "\x{2996}", "\x{2997}", "\x{2998}", "\x{29FC}", "\x{29FD}";
-Readonly my %SEPARATOROPS => map { ($_ => 1) } ",", ";", ".", "\x{2063}";
+my %SEPARATOROPS = map { ($_ => 1) }      # [CONSTANT]
+  ",", ";", ".", "\x{2063}";
 
 binmode(STDOUT, ":encoding(UTF-8)") if $DEBUG;
 
@@ -742,7 +743,8 @@ sub layout_empty {
 # These are just simple boxes that don't break.
 # Approximate their size.
 
-Readonly my @SIZE => (1.0, 0.71, 0.71 * 0.71, 0.71 * 0.71 * 0.71);
+my @SIZE = (    # [CONSTANT]
+  1.0, 0.71, 0.71 * 0.71, 0.71 * 0.71 * 0.71);
 # TODO: spacing ?
 # TODO for mo:  largeop ?
 sub simpleSize {

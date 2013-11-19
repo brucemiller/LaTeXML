@@ -66,8 +66,8 @@ sub KeyVals {
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
 # This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
 # after the fact), since some values may have special catcode needs.
-our $T_EQ    = T_OTHER('=');
-our $T_COMMA = T_OTHER(',');
+my $T_EQ    = T_OTHER('=');    # [CONSTANT]
+my $T_COMMA = T_OTHER(',');    # [CONSTANT]
 
 sub readKeyVals {
   my ($gullet, $keyset, $close) = @_;

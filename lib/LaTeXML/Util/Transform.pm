@@ -1,7 +1,6 @@
 package LaTeXML::Util::Transform;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Global;
 use LaTeXML::Number;
 use LaTeXML::Util::Geometry;
@@ -9,7 +8,7 @@ use Math::Trig;
 use base qw(Exporter);
 our @EXPORT = (qw(&Transform));
 
-Readonly my $eps => 0.000001;
+my $eps = 0.000001;    # [CONSTANT]
 
 sub Transform {
   my (@args) = @_;

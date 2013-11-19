@@ -13,7 +13,6 @@
 package LaTeXML::Util::Alignment;
 use strict;
 use warnings;
-use Readonly;
 use LaTeXML::Package;
 use base qw(Exporter);
 our @EXPORT = (qw(
@@ -534,7 +533,7 @@ sub alignment_regroup_rows {
 
 #======================================================================
 # Build a View of the alignment, with characterized cells, for analysis.
-Readonly my %ALIGNMENT_CODE => (
+my %ALIGNMENT_CODE = (    # CONSTANT
   right => 'r', left => 'l', center => 'c', justify => 'p');
 
 sub collect_alignment_rows {
@@ -674,8 +673,8 @@ sub classify_alignment_cell {
 # Warning: This section is full of "magic numbers"
 # guessed by sampling various test cases.
 
-Readonly my $MIN_ALIGNMENT_DATA_LINES   => 1;    #  (or 2?)
-Readonly my $MAX_ALIGNMENT_HEADER_LINES => 4;
+my $MIN_ALIGNMENT_DATA_LINES   = 1;    #  (or 2?) [CONSTANT]
+my $MAX_ALIGNMENT_HEADER_LINES = 4;    # [CONSTANT]
 
 # We expect to find header lines at the beginning, noticably different from the eventual data lines.
 # Both header lines and data lines can consist of several neighboring lines.
@@ -871,8 +870,8 @@ sub alignment_max_content_length {
 #    '?'=>{'_'=>0.1, '?'=>0.0, mx=>0.2},
 #    mx=>{'_'=>0.1, m=>0.2, i=>0.2, t=>0.2, '?'=>0.2, mx=>0.0});
 
-our %cell_class_diff =
-  ('_' => { '_' => 0.0, m => 0.05, i => 0.05, t => 0.05, '?' => 0.05, mx => 0.05 },
+my %cell_class_diff = (    # [CONSTANT]
+  '_' => { '_' => 0.0, m => 0.05, i => 0.05, t => 0.05, '?' => 0.05, mx => 0.05 },
   m => { '_' => 0.05, m => 0.0, i => 0.1, mx => 0.2 },
   i => { '_' => 0.05, m => 0.1, i => 0.0, mx => 0.2 },
   t   => { '_' => 0.05, t   => 0.0, mx => 0.2 },
