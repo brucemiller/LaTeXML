@@ -14,6 +14,7 @@
 #======================================================================
 package LaTeXML::Post::Graphics;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use POSIX;
 use Image::Magick;
@@ -76,25 +77,25 @@ sub new {
       ncolors => '400%', unit => 'pixel' },
     svg => { destination_type => 'svg',
       raster => 0, desirability => 11 },    # use these, as is
-    },
-    $$self{background} = $options{background} || "#FFFFFF";
-  $self; }
+    };
+  $$self{background} = $options{background} || "#FFFFFF";
+  return $self; }
 
 # Return a list of XML nodes which have graphics that need processing.
 sub toProcess {
   my ($self, $doc) = @_;
-  $doc->findnodes('//ltx:graphics[not(@imagesrc)]'); }
+  return $doc->findnodes('//ltx:graphics[not(@imagesrc)]'); }
 
 sub process {
   my ($self, $doc, @nodes) = @_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
-    = [map(pathname_canonical($_), $self->findGraphicsPaths($doc), $doc->getSearchPaths)];
+    = [map { pathname_canonical($_) } $self->findGraphicsPaths($doc), $doc->getSearchPaths];
   NoteProgressDetailed(" [Using graphicspaths: "
       . join(', ', @$LaTeXML::Post::Graphics::SEARCHPATHS) . "]");
   foreach my $node (@nodes) {
     $self->processGraphic($doc, $node); }
   $doc->closeCache;    # If opened.
-  $doc; }
+  return $doc; }
 
 #======================================================================
 # Potentially customizable operations.
@@ -109,11 +110,11 @@ sub findGraphicsPaths {
   foreach my $pi ($doc->findnodes('.//processing-instruction("latexml")')) {
     if ($pi->textContent =~ /^\s*graphicspath\s*=\s*([\"\'])(.*?)\1\s*$/) {
       push(@paths, $2); } }
-  @paths; }
+  return @paths; }
 
 sub getGraphicsSourceTypes {
   my ($self) = @_;
-  @{ $$self{graphics_types} }; }
+  return @{ $$self{graphics_types} }; }
 
 # Return the pathname to an appropriate image.
 sub findGraphicFile {
@@ -133,9 +134,9 @@ sub findGraphicFile {
       if ($desirability > $best) {
         $best     = $desirability;
         $bestpath = $path; } }
-    $bestpath; }
+    return $bestpath; }
   else {
-    undef; } }
+    return; } }
 
 #======================================================================
 # Return the Transform to be used for this node
@@ -143,7 +144,7 @@ sub findGraphicFile {
 sub getTransform {
   my ($self, $node) = @_;
   my $options = $node->getAttribute('options');
-  ($options ? $self->parseOptions($options) : []); }
+  return ($options ? $self->parseOptions($options) : []); }
 
 # Get a hash of the image processing properties to be applied to this image.
 sub getTypeProperties {
@@ -156,7 +157,7 @@ sub getTypeProperties {
     my ($image, $type);
     if (($image = $self->ImageRead(undef, $source)) && (($type) = $image->Get('magick'))) {
       $props = $$self{type_properties}{ lc($type) }; } }
-  ($props ? %$props : ()); }
+  return ($props ? %$props : ()); }
 
 # Set the attributes of the graphics node to record the image file name,
 # width and height.
@@ -165,7 +166,7 @@ sub setGraphicSrc {
   $node->setAttribute('imagesrc',    $src);
   $node->setAttribute('imagewidth',  $width);
   $node->setAttribute('imageheight', $height);
-}
+  return; }
 
 sub processGraphic {
   my ($self, $doc, $node) = @_;
@@ -176,9 +177,9 @@ sub processGraphic {
   my ($image, $width, $height) = $self->transformGraphic($doc, $node, $source, $transform);
   # $image should probably be relative already, except corner applications?
   # But definitely should be stored in doc relative to the doc itself!
-  $self->setGraphicSrc($node, pathname_relative($image,$doc->getDestinationDirectory),
-                       $width, $height) if $image;
-}
+  $self->setGraphicSrc($node, pathname_relative($image, $doc->getDestinationDirectory),
+    $width, $height) if $image;
+  return; }
 
 #======================================================================
 
@@ -188,7 +189,8 @@ sub transformGraphic {
   ($sourcedir) = $doc->getSearchPaths unless $sourcedir;    # Fishing...
   my ($reldir, $name, $srctype)
     = pathname_split(pathname_relative($source, $sourcedir));
-  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype", map(join(' ', @$_), @$transform));
+  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype",
+    map { join(' ', @$_) } @$transform);
   NoteProgressDetailed("\n[Processing $source as key=$key]");
 
   my %properties = $self->getTypeProperties($source, $transform);
@@ -197,23 +199,23 @@ sub transformGraphic {
   my $type = $properties{destination_type} || $srctype;
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
-    $prev =~ /^(.*?)\|(\d+)\|(\d+)$/;
-    my ($cached, $width, $height) = ($1, $2, $3);
-    # If so, check that it is still there, up to date, etc.
-    if ((!defined $dest) || ($cached eq $dest)) {
-      my $absdest = pathname_absolute($cached,$doc->getDestinationDirectory);
-      if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
-        NoteProgressDetailed(" [Reuse $cached @ $width x $height]");
-        return ($cached, $width, $height); } } }
+    if ($prev =~ /^(.*?)\|(\d+)\|(\d+)$/) {
+      my ($cached, $width, $height) = ($1, $2, $3);
+      # If so, check that it is still there, up to date, etc.
+      if ((!defined $dest) || ($cached eq $dest)) {
+        my $absdest = pathname_absolute($cached, $doc->getDestinationDirectory);
+        if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
+          NoteProgressDetailed(" [Reuse $cached @ $width x $height]");
+          return ($cached, $width, $height); } } } }
   # Trivial scaling case: Use original image with (at most) different width & height.
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
-    && !grep(!($_->[0] =~ /^scale/), @$transform);
+    && !grep { !($_->[0] =~ /^scale/) } @$transform;
   if (!$triv_scaling && (defined $properties{raster}) && !$properties{raster}) {
     Warn("limitation", $source, undef,
       "Cannot (yet) apply complex transforms to non-raster images",
-      join(',', map(join(' ', @$_), grep(!($_->[0] =~ /^scale/), @$transform))));
+      join(',', map { join(' ', @$_) } grep { !($_->[0] =~ /^scale/) } @$transform));
     $triv_scaling = 1;
-    $transform = [grep(($_->[0] =~ /^scale/), @$transform)]; }
+    $transform = [grep { ($_->[0] =~ /^scale/) } @$transform]; }
   my ($image, $width, $height);
   if ($triv_scaling) {
     # With a simple scaling transformation we can preserve path & file-names
@@ -247,7 +249,7 @@ sub transformGraphic {
 
   $doc->cacheStore($key, "$dest|$width|$height");
   NoteProgressDetailed(" [done with $key]");
-  ($dest, $width, $height); }
+  return ($dest, $width, $height); }
 
 #======================================================================
 # Compute the desired image size (width,height)
@@ -373,10 +375,15 @@ sub complex_transform {
     $self->ImageSet($doc, $image, quality => $properties{quality}) or return; }
 
   NoteProgressDetailed(" [Transformed : $notes]") if $notes;
-  ($image, $w, $h); }
+  return ($image, $w, $h); }
 
-sub min { ($_[0] < $_[1] ? $_[0] : $_[1]); }
-sub max { ($_[0] > $_[1] ? $_[0] : $_[1]); }
+sub min {
+  my ($x, $y) = @-;
+  return ($x < $y ? $x : $y); }
+
+sub max {
+  my ($x, $y) = @-;
+  return ($x > $y ? $x : $y); }
 
 # Wrap up ImageMagick's methods to give more useful & consistent error handling.
 # These all return non-zero on success!
@@ -388,7 +395,7 @@ sub ImageRead {
   my $image = Image::Magick->new();
   $self->ImageOp($doc, $image, 'Set',  @args)   or return;
   $self->ImageOp($doc, $image, 'Read', $source) or return;
-  $image; }
+  return $image; }
 
 sub ImageWrite {
   my ($self, $doc, $image, $destination) = @_;
@@ -396,31 +403,33 @@ sub ImageWrite {
   if (@$image > 1) {
     my $fimage = $image->Flatten();    # Just in case we ended up with pieces!?!?!?
     $image = $fimage if $fimage; }
-  $self->ImageOp($doc, $image, 'Write', filename => $destination) or return; }
+  return $self->ImageOp($doc, $image, 'Write', filename => $destination) or return; }
 
 sub ImageGet {
   my ($self, $doc, $image, @args) = @_;
   my @values = $image->Get(@args);
-  @values; }
+  return @values; }
 
 sub ImageSet {
   my ($self, $doc, $image, @args) = @_;
-  $self->ImageOp($doc, $image, 'Set', @args); }
+  $self->ImageOp($doc, $image, 'Set', @args);
+  return; }
 
 sub ImageOp {
   my ($self, $doc, $image, $operation, @args) = @_;
   my $retval = $image->$operation(@args);
   return 1 unless $retval;
-  $retval =~ /(\d+)/;
-  my $retcode = $1;
+  my $retcode = 999;
+  if ($retval =~ /(\d+)/) {
+    $retcode = $1; }
   if ($retcode < 400) {    # Warning
     Warn('imageprocessing', $operation, undef,
       "Image processing operation $operation (" . join(', ', @args) . ") returned $retval");
-    1; }
+    return 1; }
   else {                   # Error
     Error('imageprocessing', $operation, undef,
       "Image processing operation $operation (" . join(', ', @args) . ") returned $retval");
-    0; } }
+    return 0; } }
 
 #**********************************************************************
 # Note that viewport is supposed to be relative to bounding box,
@@ -440,40 +449,42 @@ sub parseOptions {
   local $_;
   # --------------------------------------------------
   # Parse options
-  my ($v, $clip, $trim, $width, $height, $xscale, $yscale, $aspect, $a, $rotfirst, $mag, @bb, @vp,)
+  my ($v, $clip, $trim, $width, $height, $xscale, $yscale, $aspect, $angle, $rotfirst, $mag, @bb, @vp,)
     = ('', '', '', 0, 0, 0, 0, '', 0, '', 1, 0);
   my @unknown = ();
   foreach (split(',', $options || '')) {
-    /^\s*(\w+)(=\s*(.*))?\s*$/; $_ = $1; $v = $3 || '';
-    my $op = $_;
-    if (grep($op eq $_, @{ $$self{ignore_options} })) { }    # Ignore this option
-    elsif (/^bb$/) { @bb = map(to_bp($_), split(' ', $v)); }
-    elsif (/^bb(ll|ur)(x|y)$/) { $bb[2 * /ur/ + /y/] = to_bp($v); }
-    elsif (/^nat(width|height)$/) { $bb[2 + /width/] = to_bp($v); }
-    elsif (/^viewport$/) { @vp = map(to_bp($_), split(' ', $v)); $trim = 0; }
-    elsif (/^trim$/)     { @vp = map(to_bp($_), split(' ', $v)); $trim = 1; }
-    elsif (/^clip$/)            { $clip   = !($v eq 'false'); }
-    elsif (/^keepaspectratio$/) { $aspect = !($v eq 'false'); }
-    elsif (/^width$/)           { $width  = to_bp($v); }
-    elsif (/^(total)?height$/)  { $height = to_bp($v); }
-    elsif (/^scale$/)           { $xscale = $yscale = $v; }
-    elsif (/^xscale$/)          { $xscale = $v; }
-    elsif (/^yscale$/)          { $yscale = $v; }
-    elsif (/^angle$/) { $a = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
-    elsif (/^origin$/)        { }              # ??
-                                               # Non-standard option
-    elsif (/^magnification$/) { $mag = $v; }
-    else { push(@unknown, [$op, $v]); } }
-  # --------------------------------------------------
-  # Now, compile the options into a sequence of `transformations'.
-  # Note: the order of rotation & scaling is significant,
-  # but the order of various clipping options w.r.t rotation or scaling is not.
+    if (/^\s*(\w+)(?:=\s*(.*))?\s*$/) {
+      $_ = $1; $v = $2 || '';
+      my $op = $_;
+      if (grep { $op eq $_ } @{ $$self{ignore_options} }) { }    # Ignore this option
+      elsif (/^bb$/) { @bb = map { to_bp($_) } split(' ', $v); }
+      elsif (/^bb(?:ll|ur)(?:x|y)$/) { $bb[2 * /ur/ + /y/] = to_bp($v); }
+      elsif (/^nat(?:width|height)$/) { $bb[2 + /width/] = to_bp($v); }
+      elsif (/^viewport$/) { @vp = map { to_bp($_) } split(' ', $v); $trim = 0; }
+      elsif (/^trim$/)     { @vp = map { to_bp($_) } split(' ', $v); $trim = 1; }
+      elsif (/^clip$/)             { $clip   = !($v eq 'false'); }
+      elsif (/^keepaspectratio$/)  { $aspect = !($v eq 'false'); }
+      elsif (/^width$/)            { $width  = to_bp($v); }
+      elsif (/^(?:total)?height$/) { $height = to_bp($v); }
+      elsif (/^scale$/)            { $xscale = $yscale = $v; }
+      elsif (/^xscale$/)           { $xscale = $v; }
+      elsif (/^yscale$/)           { $yscale = $v; }
+      elsif (/^angle$/) { $angle = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
+      elsif (/^origin$/)        { }              # ??
+                                                 # Non-standard option
+      elsif (/^magnification$/) { $mag = $v; }
+      else { push(@unknown, [$op, $v]); } }
+    else { } }                                   # ?
+      # --------------------------------------------------
+      # Now, compile the options into a sequence of `transformations'.
+      # Note: the order of rotation & scaling is significant,
+      # but the order of various clipping options w.r.t rotation or scaling is not.
   my @transform = ();
   # We ignore viewport & trim if clip isn't set, since in that case we shouldn't
   # actually remove anything from the image (and there's no way to have the image
   # overlap neighboring text, etc, in current HTML).
   push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
-  push(@transform, ['rotate', $a]) if ($rotfirst && $a);    # Rotate before scaling?
+  push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);    # Rotate before scaling?
   if ($width && $height) { push(@transform, ['scale-to', $mag * $width, $mag * $height, $aspect]); }
   elsif ($width)  { push(@transform, ['scale-to', $mag * $width, 999999,         1]); }
   elsif ($height) { push(@transform, ['scale-to', 999999,        $mag * $height, 1]); }
@@ -481,19 +492,22 @@ sub parseOptions {
   elsif ($xscale)   { push(@transform, ['scale', $mag * $xscale, $mag]); }
   elsif ($yscale)   { push(@transform, ['scale', $mag,           $mag * $yscale]); }
   elsif ($mag != 1) { push(@transform, ['scale', $mag,           $mag]); }
-  push(@transform, ['rotate', $a]) if (!$rotfirst && $a);    # Rotate after scaling?
-                                                             #  ----------------------
-  [@transform, @unknown]; }
+  push(@transform, ['rotate', $angle]) if (!$rotfirst && $angle);    # Rotate after scaling?
+                                                                     #  ----------------------
+  return [@transform, @unknown]; }
 
-our %BP_conversions = (pt => 72 / 72.27, pc => 12 / 72.27, in => 72, bp => 1,
+my %BP_conversions = (         # CONSTANT
+  pt => 72 / 72.27, pc => 12 / 72.27, in => 72, bp => 1,
   cm => 72 / 2.54, mm => 72 / 25.4, dd => (72 / 72.27) * (1238 / 1157),
   cc => 12 * (72 / 72.27) * (1238 / 1157), sp => 72 / 72.27 / 65536);
 
 sub to_bp {
   my ($x) = @_;
-  $x =~ /^\s*([+-]?[\d\.]+)(\w*)\s*$/;
-  my ($v, $u) = ($1, $2);
-  $v * ($u ? $BP_conversions{$u} : 1); }
+  if ($x =~ /^\s*([+-]?[\d\.]+)(\w*)\s*$/) {
+    my ($v, $u) = ($1, $2);
+    return $v * ($u ? $BP_conversions{$u} : 1); }
+  else {
+    return 1; } }
 
 #======================================================================
 1;

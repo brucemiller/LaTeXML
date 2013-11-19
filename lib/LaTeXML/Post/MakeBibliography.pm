@@ -11,14 +11,16 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Post::MakeBibliography;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
 
-our %FMT_SPEC;
-our @META_BLOCK;
+# These are really constant, but set at bottom, for readability
+our %FMT_SPEC;                  # CONSTANT
+our @META_BLOCK;                # CONSTANT
 
 # Options:
 #   bibliographies : list of xml file names containing bibliographies (from bibtex)
@@ -33,9 +35,11 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{split}          = $options{split};
   $$self{bibliographies} = $options{bibliographies};
-  $self; }
+  return $self; }
 
-sub toProcess { $_[1]->findnode('//ltx:bibliography'); }
+sub toProcess {
+  my ($self, $doc) = @_;
+  return $doc->findnode('//ltx:bibliography'); }
 
 sub process {
   my ($self, $doc, $bib) = @_;
@@ -45,14 +49,14 @@ sub process {
 
   local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
   local %LaTeXML::Post::MakeBibliography::STYLE =
-    (map(($_ => $bib->getAttribute($_)), qw(bibstyle citestyle sort)));
+    (map { ($_ => $bib->getAttribute($_)) } qw(bibstyle citestyle sort));
 
   my $entries = $self->getBibEntries($doc);
   # Remove any bibentry's (these should have been converted to bibitems)
   $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
   foreach my $biblist ($doc->findnodes('//ltx:biblist')) {
     $doc->removeNodes($biblist)
-      unless grep($_->nodeType == XML_ELEMENT_NODE, $biblist->childNodes); }
+      unless grep { $_->nodeType == XML_ELEMENT_NODE } $biblist->childNodes; }
 
   if ($$self{split}) {
     # Separate by initial.
@@ -60,14 +64,14 @@ sub process {
     foreach my $sortkey (keys %$entries) {
       my $entry = $$entries{$sortkey};
       $$split{ $$entry{initial} }{$sortkey} = $entry; }
-    @bib = map($self->rescan($_),
+    @bib = map { $self->rescan($_) }
       $self->makeSubCollectionDocuments($doc, $bib,
-        map(($_ => $self->makeBibliographyList($doc, $_, $$split{$_})),
-          keys %$split))); }
+      map { ($_ => $self->makeBibliographyList($doc, $_, $$split{$_})) }
+        keys %$split); }
   else {
     $doc->addNodes($bib, $self->makeBibliographyList($doc, undef, $entries));
     @bib = ($self->rescan($doc)); }
-  @bib; }
+  return @bib; }
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
@@ -93,8 +97,8 @@ sub getBibEntries {
       my $bibid  = $bibentry->getAttribute('xml:id');
       $entries{$bibkey}{bibkey}    = $bibkey;
       $entries{$bibkey}{bibentry}  = $bibentry;
-      $entries{$bibkey}{citations} = [grep($_, map(split(',', $_->value),
-            $bibdoc->findnodes('.//@bibrefs', $bibentry)))];
+      $entries{$bibkey}{citations} = [grep { $_ } map { split(',', $_->value) }
+          $bibdoc->findnodes('.//@bibrefs', $bibentry)];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
       $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
     } }
@@ -107,7 +111,6 @@ sub getBibEntries {
     if ($dbkey =~ /^BIBLABEL:(.*)$/) {
       my $bibkey = $1;
       if (my $referrers = $$self{db}->lookup($dbkey)->getValue('referrers')) {
-        my $e;
         foreach my $refr (keys %$referrers) {
           my ($rid, $e, $t) = ($refr, undef, undef);
           while ($rid && ($e = $$self{db}->lookup("ID:$rid")) && (($t = ($e->getValue('type') || '')) ne 'ltx:bibitem')) {
@@ -137,8 +140,8 @@ sub getBibEntries {
       if (my $n = $doc->findnode('ltx:bib-key', $bibentry)) {
         $sortnames = $names = $n->textContent; }
       elsif (scalar(@names)) {
-        $sortnames = join(' ', map(getNameText($doc, $_), @names));
-        my @ns = map($_ && $_->textContent, map($doc->findnodes('ltx:surname', $_), @names));
+        $sortnames = join(' ', map { getNameText($doc, $_) } @names);
+        my @ns = map { $_ && $_->textContent } map { $doc->findnodes('ltx:surname', $_) } @names;
         if    (@ns > 2) { $names = $ns[0] . ' et al'; }
         elsif (@ns > 1) { $names = $ns[0] . ' and ' . $ns[1]; }
         else { $names = $ns[0]; } }
@@ -160,7 +163,7 @@ sub getBibEntries {
   foreach my $sortkey (keys %$included) {
     my $entry  = $$included{$sortkey};
     my $bibkey = $$entry{bibkey};
-    map($entries{$_}{bibreferrers}{$bibkey} = 1, @{ $$entry{citations} }); }
+    map { $entries{$_}{bibreferrers}{$bibkey} = 1 } @{ $$entry{citations} }; }
 
   NoteProgress(" [" . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited]");
   Warn('expected', 'bibkeys', undef,
@@ -190,13 +193,13 @@ sub getBibEntries {
     foreach my $sortnode ($doc->findnodes('//ltx:ERROR[@class="sort"]', $$entry{bibentry})) {
       $sortnode->parentNode->removeChild($sortnode); }
   }
-  $included; }
+  return $included; }
 
 sub getNameText {
   my ($doc, $namenode) = @_;
   my $surname   = $doc->findnodes('ltx:surname',   $namenode);
   my $givenname = $doc->findnodes('ltx:givenname', $namenode);
-  ($surname && $givenname ? $surname . ' ' . $givenname : $surname || $givenname); }
+  return ($surname && $givenname ? $surname . ' ' . $givenname : $surname || $givenname); }
 
 # ================================================================================
 # Convert hash of bibentry(s) into biblist of bibitem(s)
@@ -206,8 +209,8 @@ sub makeBibliographyList {
   my $id = $doc->getDocumentElement->getAttribute('xml:id') || 'bib';
   $id .= ".L1";
   $id .= ".$initial" if $initial;
-  ['ltx:biblist', { 'xml:id' => $id },
-    map($self->formatBibEntry($doc, $$entries{$_}), sort keys %$entries)]; }
+  return ['ltx:biblist', { 'xml:id' => $id },
+    map { $self->formatBibEntry($doc, $$entries{$_}) } sort keys %$entries]; }
 
 # ================================================================================
 sub formatBibEntry {
@@ -323,7 +326,7 @@ sub formatBibEntry {
       my ($xpath, $punct, $pre, $class, $op, $post) = @$row;
       my $negated = $xpath =~ s/^!\s*//;
       my @nodes = ($xpath eq 'true' ? () : $doc->findnodes($xpath, $bibentry));
-      next unless ($xpath eq 'true') || ($negated ? !@nodes : @nodes);
+      next if ($xpath ne 'true') && ($negated ? @nodes : !@nodes);
       push(@x, $punct) if $punct && @x;
       push(@x, $pre) if $pre;
       push(@x, ['ltx:text', { class => 'ltx_bib_' . $class }, &$op($doc->cloneNodes(@nodes))]) if $op;
@@ -332,19 +335,22 @@ sub formatBibEntry {
   }
   # Add a Cited by block.
 
-  my @citedby = map(['ltx:ref', { idref => $_, show => 'rrefnum' }], sort keys %{ $$entry{referrers} });
+  my @citedby = map { ['ltx:ref', { idref => $_, show => 'rrefnum' }] }
+    sort keys %{ $$entry{referrers} };
   push(@citedby, ['ltx:bibref', { bibrefs => join(',', sort keys %{ $$entry{bibreferrers} }), show => 'refnum' }])
     if $$entry{bibreferrers};
   push(@blocks, ['ltx:bibblock', { class => 'ltx_bib_cited' },
       "Cited by: ", $doc->conjoin(",\n", @citedby), '.']) if @citedby;
 
-  ['ltx:bibitem', { 'xml:id' => $id, key => $key, type => $type, class => "ltx_bib_$type" },
+  return ['ltx:bibitem', { 'xml:id' => $id, key => $key, type => $type, class => "ltx_bib_$type" },
     @tags,
     @blocks]; }
 
 # ================================================================================
 # Formatting aids.
-sub do_any { @_; }
+sub do_any {
+  my (@stuff) = @_;
+  return @stuff; }
 
 # Stuff for Author(s) & Editor(s)
 sub do_name {
@@ -352,13 +358,13 @@ sub do_name {
   # NOTE: This should be a formatting option; use initials or full first names.
   my $first = $LaTeXML::Post::DOCUMENT->findnode('ltx:givenname', $node);
   if ($first) {    # && use initials
-    $first = join('', map((/\.$/ ? "$_ " : (/^(.)/ ? "$1. " : '')),
-        split(/\s/, $first->textContent))); }
+    $first = join('', map { (/\.$/ ? "$_ " : (/^(.)/ ? "$1. " : '')) }
+        split(/\s/, $first->textContent)); }
   else {
     $first = (); }
   my $sur = $LaTeXML::Post::DOCUMENT->findnode('ltx:surname', $node);
   # Why, oh Why do we need the _extra_ cloneNode ???
-  ($first, $sur->cloneNode(1)->childNodes); }
+  return ($first, $sur->cloneNode(1)->childNodes); }
 
 sub do_names {
   my (@names) = @_;
@@ -366,49 +372,68 @@ sub do_names {
   while (my $name = shift(@names)) {
     push(@stuff, (@names ? ', ' : ' and ')) if @stuff;
     push(@stuff, do_name($name)); }
-  @stuff; }
+  return @stuff; }
 
 sub do_names_short {
   my (@names) = @_;
   if (@names > 2) {
-    ($names[0]->childNodes, ' ', ['ltx:text', { class => 'ltx_bib_etal' }, 'et al.']); }
+    return ($names[0]->childNodes, ' ', ['ltx:text', { class => 'ltx_bib_etal' }, 'et al.']); }
   elsif (@names > 1) {
-    ($names[0]->childNodes, ' and ', $names[1]->childNodes); }
+    return ($names[0]->childNodes, ' and ', $names[1]->childNodes); }
   elsif (@names) {
-    ($names[0]->childNodes); } }
+    return ($names[0]->childNodes); } }
 
-sub do_authors { do_names(@_); }
+sub do_authors {
+  my (@stuff) = @_;
+  return do_names(@stuff); }
 
 sub do_editorsA {    # Should be used in citation tags?
-  my @n = do_names(@_);
-  if    (scalar(@_) > 1) { push(@n, " (Eds.)"); }
-  elsif (scalar(@_))     { push(@n, " (Ed.)"); }
-  @n; }
+  my (@stuff) = @_;
+  my @n = do_names(@stuff);
+  if    (scalar(@stuff) > 1) { push(@n, " (Eds.)"); }
+  elsif (scalar(@stuff))     { push(@n, " (Ed.)"); }
+  return @n; }
 
 sub do_editorsB {
-  my @x = do_names(@_);
-  if    (scalar(@_) > 1) { push(@x, " Eds."); }
-  elsif (scalar(@_))     { push(@x, " Ed."); }
-  (@x ? ("(", @x, ")") : ()); }
+  my (@stuff) = @_;
+  my @x = do_names(@stuff);
+  if    (scalar(@stuff) > 1) { push(@x, " Eds."); }
+  elsif (scalar(@stuff))     { push(@x, " Ed."); }
+  return (@x ? ("(", @x, ")") : ()); }
 
-sub do_year { ('(', @_, @LaTeXML::Post::MakeBibliography::SUFFIX, ')'); }
-sub do_type { ('(', @_, ')'); }
+sub do_year {
+  my (@stuff) = @_;
+  return ('(', @stuff, @LaTeXML::Post::MakeBibliography::SUFFIX, ')'); }
+
+sub do_type {
+  my (@stuff) = @_;
+  return ('(', @stuff, ')'); }
 
 # Other fields.
 #### sub do_title { (['ltx:text',{font=>'italic'},@_]); }
-sub do_title { (@_); }
+sub do_title {
+  my (@stuff) = @_;
+  return (@stuff); }
 ###sub do_bold  { (['ltx:text',{font=>'bold'},@_]); }
-sub do_edition { (@_, " edition"); }    # If a number, should convert to cardinal!
-sub do_thesis_type { @_; }
-sub do_pages { (" pp." . pack('U', 0xA0), @_); }    # Non breaking space
+sub do_edition {
+  my (@stuff) = @_;
+  return (@stuff, " edition"); }    # If a number, should convert to cardinal!
+
+sub do_thesis_type {
+  my (@stuff) = @_;
+  return @stuff; }
+
+sub do_pages {
+  my (@stuff) = @_;
+  return (" pp." . pack('U', 0xA0), @stuff); }    # Non breaking space
 
 sub do_crossref {
-  (['ltx:cite', {}, ['ltx:bibref', { bibrefs => $_[0]->getAttribute('bibrefs'), show => 'refnum' }]]); }
+  my ($node, @stuff) = @_;
+  return (['ltx:cite', {},
+      ['ltx:bibref', { bibrefs => $node->getAttribute('bibrefs'), show => 'refnum' }]]); }
 
-our $LINKS;
-#BEGIN{
-$LINKS = "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
-#}
+my $LINKS =                     # CONSTANT
+  "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
 
 sub do_links {
   my (@nodes) = @_;
@@ -432,8 +457,8 @@ sub do_links {
       push(@links, ['ltx:ref', { href => $href, class => 'ltx_bib_external' },
           $doc->cloneNodes($node->childNodes)]); } }
 
-  @links = map((",\n", $_), @links);    # non-string join()
-  @links[1 .. $#links]; }
+  @links = map { (",\n", $_) } @links;    # non-string join()
+  return @links[1 .. $#links]; }
 
 # ================================================================================
 # Formatting specifications.

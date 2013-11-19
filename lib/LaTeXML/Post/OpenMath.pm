@@ -24,26 +24,28 @@
 # ================================================================================
 package LaTeXML::Post::OpenMath;
 use strict;
+use warnings;
 use LaTeXML::Common::XML;
 use LaTeXML::Post::MathML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
 
-our $omURI = "http://www.openmath.org/OpenMath";
+my $omURI = "http://www.openmath.org/OpenMath"; # CONSTANT
 
 sub preprocess {
   my ($self, $doc, @nodes) = @_;
   $$self{hackplane1} = 0 unless $$self{hackplane1};
   $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
   $doc->adjust_latexml_doctype('OpenMath');    # Add OpenMath if LaTeXML dtd.
-  $doc->addNamespace($omURI, 'om'); }
+  $doc->addNamespace($omURI, 'om');
+  return; }
 
 sub outerWrapper {
   my ($self, $doc, $math, $xmath, @conversion) = @_;
   my $wrapped = ['om:OMOBJ', {}, @conversion];
   if (my $id = $xmath->getAttribute('fragid')) {
     $wrapped = $self->associateID($wrapped, $id); }
-  ($wrapped); }
+  return ($wrapped); }
 
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
@@ -51,7 +53,7 @@ sub convertNode {
   if (@rest) {    # Unparsed ???
     Warn('unexpected', 'content', undef,
       "Got extra nodes for math content:" . $xmath->toString) if @rest; }
-  Expr($item); }
+  return Expr($item); }
 
 sub combineParallel {
   my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
@@ -64,22 +66,31 @@ sub combineParallel {
     my $wrapped = ['om:OMFOREIGN', {}, $secondary];
     $wrapped = $proc->associateID($wrapped, $id) if $id;
     push(@attr, ['om:OMS', { cd => "Alternate", name => $proc->getEncodingName }], $wrapped); }
-  (['om:OMATTR', {}, @attr,
+  return (['om:OMATTR', {}, @attr,
       ($tex ? (['om:OMS', { cd => 'Alternate', name => 'TeX' }], ['om:OMFOREIGN', {}, $tex]) : ()),
       $primary]); }
 
 sub getQName {
-  $LaTeXML::Post::DOCUMENT->getQName(@_); }
+  my($node)=@_;
+  return $LaTeXML::Post::DOCUMENT->getQName($node); }
 
-sub getEncodingName { 'OpenMath'; }
-sub rawIDSuffix     { '.om'; }
+sub getEncodingName {
+  return 'OpenMath'; }
+
+sub rawIDSuffix {
+  return '.om'; }
 
 # ================================================================================
+
+# DANGER!!! Ths accumulate all the DefMathML declarations.
+# They're fixed after the module has been loaded, so are Daemon Safe,
+# but probably should be going into (post) STATE, so that they are extensible.
 our $OMTable = {};
 
 sub DefOpenMath {
   my ($key, $sub) = @_;
-  $$OMTable{$key} = $sub; }
+  $$OMTable{$key} = $sub;
+  return; }
 
 sub Expr {
   my ($node) = @_;
@@ -87,7 +98,7 @@ sub Expr {
   # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
   if (my $id = $node->getAttribute('fragid')) {
     $$result[1]{'xml:id'} = $id . $LaTeXML::Post::MATHPROCESSOR->IDSuffix; }
-  $result; }
+  return $result; }
 
 # Is it clear that we should just getAttribute('role'),
 # instead of the getOperatorRole like in MML?
@@ -99,35 +110,35 @@ sub Expr_aux {
     my ($item, @rest) = element_nodes($node);
     Warn('unexpected', 'content', undef,
       "Got extra nodes for content: " . $node->toString) if @rest;
-    Expr($item); }
+    return Expr($item); }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
-    Expr($content); }
+    return Expr($content); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     return OMError("Missing Operator") unless $op;
     my $sub = lookupConverter('Apply', $op->getAttribute('role'), $op->getAttribute('meaning'));
-    &$sub($op, @args); }
+    return &$sub($op, @args); }
   elsif ($tag eq 'ltx:XMTok') {
     my $sub = lookupConverter('Token', $node->getAttribute('role'), $node->getAttribute('meaning'));
-    &$sub($node); }
+    return &$sub($node); }
   elsif ($tag eq 'ltx:XMHint') {
-    (); }
+    return (); }
   else {
-    ['om:OMSTR', {}, $node->textContent]; } }
+    return ['om:OMSTR', {}, $node->textContent]; } }
 
 sub lookupConverter {
   my ($mode, $role, $name) = @_;
   $name = '?' unless $name;
   $role = '?' unless $role;
-  $$OMTable{"$mode:$role:$name"}  || $$OMTable{"$mode:?:$name"}
+  return $$OMTable{"$mode:$role:$name"} || $$OMTable{"$mode:?:$name"}
     || $$OMTable{"$mode:$role:?"} || $$OMTable{"$mode:?:?"}; }
 
 # ================================================================================
 # Helpers
 sub OMError {
   my ($msg) = @_;
-  ['om:OME', {},
+  return ['om:OME', {},
     ['om:OMS', { name => 'unexpected', cd => 'moreerrors' }],
     ['om:OMS', {}, $msg]]; }
 # ================================================================================
@@ -142,12 +153,12 @@ DefOpenMath('Token:?:?', sub {
     my ($token) = @_;
     if (my $meaning = $token->getAttribute('meaning')) {
       my $cd = $token->getAttribute('omcd') || 'latexml';
-      ['om:OMS', { name => $meaning, cd => $cd }]; }
+      return ['om:OMS', { name => $meaning, cd => $cd }]; }
     else {
       my ($name, %mmlattr) = LaTeXML::Post::MathML::stylizeContent($token, 1);
       if (my $mv = $mmlattr{mathvariant}) {
         $name = $mv . "-" . $name; }
-      ['om:OMV', { name => $name }]; } });
+      return ['om:OMV', { name => $name }]; } });
 
 # NOTE: Presence of '.' distinguishes float from int !?!?
 DefOpenMath('Token:NUMBER:?', sub {
@@ -155,17 +166,17 @@ DefOpenMath('Token:NUMBER:?', sub {
     my $value = $node->getAttribute('meaning');    # name attribute (may) holds actual value.
     $value = $node->textContent unless defined $value;
     if ($value =~ /\./) {
-      ['om:OMF', { dec => $value }]; }
+      return ['om:OMF', { dec => $value }]; }
     else {
-      ['om:OMI', {}, $value]; } });
+      return ['om:OMI', {}, $value]; } });
 
 DefOpenMath('Token:SUPERSCRIPTOP:?', sub {
-    ['om:OMS', { name => 'superscript', cd => 'ambiguous' }]; });
+    return ['om:OMS', { name => 'superscript', cd => 'ambiguous' }]; });
 DefOpenMath('Token:SUBSCRIPTOP:?', sub {
-    ['om:OMS', { name => 'subscript', cd => 'ambiguous' }]; });
+    return ['om:OMS', { name => 'subscript', cd => 'ambiguous' }]; });
 
 DefOpenMath("Token:?:\x{2062}", sub {
-    ['om:OMS', { name => 'times', cd => 'arith1' }]; });
+    return ['om:OMS', { name => 'times', cd => 'arith1' }]; });
 
 # ================================================================================
 # Applications.
@@ -174,7 +185,7 @@ DefOpenMath("Token:?:\x{2062}", sub {
 
 DefOpenMath('Apply:?:?', sub {
     my ($op, @args) = @_;
-    ['om:OMA', {}, map(Expr($_), $op, @args)]; });
+    return ['om:OMA', {}, map { Expr($_) } $op, @args]; });
 
 # NOTE: No support for OMATTR here...
 
@@ -182,9 +193,9 @@ DefOpenMath('Apply:?:?', sub {
 # Currently, no such construct is created in LaTeXML...
 DefOpenMath('Apply:LambdaBinding:?', sub {
     my ($op, $expr, @vars) = @_;
-    ['om:OMBIND', {},
+    return ['om:OMBIND', {},
       ['om:OMS', { name => "lambda", cd => 'fns1' },
-        ['om:OMBVAR', {}, map(Expr($_), @vars)],    # Presumably, these yield OMV
+        ['om:OMBVAR', {}, map { Expr($_) } @vars],    # Presumably, these yield OMV
         Expr($expr)]]; });
 
 # ================================================================================

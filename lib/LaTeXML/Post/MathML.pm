@@ -23,11 +23,12 @@
 
 package LaTeXML::Post::MathML;
 use strict;
+use warnings;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
 
-our $mmlURI = "http://www.w3.org/1998/Math/MathML";
+my $mmlURI = "http://www.w3.org/1998/Math/MathML"; # CONSTANT
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # See END for specific converters.
@@ -42,7 +43,8 @@ sub preprocess {
   $$self{hackplane1} = 0 unless $$self{hackplane1};
   $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
   $doc->adjust_latexml_doctype('MathML');    # Add MathML if LaTeXML dtd.
-  $doc->addNamespace($mmlURI, 'm'); }
+  $doc->addNamespace($mmlURI, 'm');
+  return; }
 
 # Works for pmml, cmml
 sub outerWrapper {
@@ -54,7 +56,7 @@ sub outerWrapper {
     @conversion];
   if (my $id = $xmath->getAttribute('fragid')) {
     $wrapped = $self->associateID($wrapped, $id); }
-  ($wrapped); }
+  return ($wrapped); }
 
 # This works for either pmml or cmml.
 sub combineParallel {
@@ -67,7 +69,7 @@ sub combineParallel {
     my $wrapped = ['m:annotation-xml', { encoding => $proc->getEncodingName }, $secondary];
     $wrapped = $proc->associateID($wrapped, $id) if $id;
     push(@wsecondaries, $wrapped); }
-  (['m:semantics', {}, $primary, @wsecondaries,
+  return (['m:semantics', {}, $primary, @wsecondaries,
       (defined $tex ? (['m:annotation', { encoding => 'application/x-tex' }, $tex]) : ())]); }
 
 # $self->convertNode($doc,$node);
@@ -83,19 +85,21 @@ sub combineParallel {
 # See END for presentation, content and parallel versions.
 
 sub getQName {
-  $LaTeXML::Post::DOCUMENT->getQName(@_); }
+  my ($node) = @_;
+  return $LaTeXML::Post::DOCUMENT->getQName($node); }
 
 # Hook for subclasses to annotate the transformation.
 sub augmentNode {
   my ($self, $node, $mathml) = @_;
-  $mathml; }
+  return $mathml; }
 
 # Add a cross-reference linkage (eg. xref) onto $node to refer to the given $id.
 # (presumably $id is the id of a node created by another Math Postprocessor
 # from the same source XMath node that generated $node)
 sub addCrossref {
   my ($self, $node, $id) = @_;
-  $node->setAttribute(xref => $id); }
+  $node->setAttribute(xref => $id);
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # General translation utilities.
@@ -103,22 +107,23 @@ sub addCrossref {
 
 sub realize {
   my ($node) = @_;
-  $LaTeXML::Post::DOCUMENT->realizeXMNode($node); }
+  return $LaTeXML::Post::DOCUMENT->realizeXMNode($node); }
 
 # For a node that is a (possibly embellished) operator,
 # find the underlying role.
-our %EMBELLISHING_ROLE = (SUPERSCRIPTOP => 1, SUBSCRIPTOP => 1, STACKED => 1,
+my %EMBELLISHING_ROLE = (      # CONSTANT
+  SUPERSCRIPTOP => 1, SUBSCRIPTOP => 1, STACKED => 1,
   OVERACCENT => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
 
 sub getOperatorRole {
   my ($node) = @_;
   if (!$node) {
-    undef; }
+    return; }
   elsif (my $role = $node->getAttribute('role')) {
-    $role; }
+    return $role; }
   elsif (getQName($node) eq 'ltx:XMApp') {
     my ($op, $base) = element_nodes($node);
-    ($EMBELLISHING_ROLE{ $op->getAttribute('role') || '' }
+    return ($EMBELLISHING_ROLE{ $op->getAttribute('role') || '' }
       ? getOperatorRole($base)
       : undef); } }
 
@@ -128,37 +133,43 @@ sub getOperatorRole {
 # All translators take XMath XML::LibXML nodes as arguments,
 # and return an intermediate form (ie. array form) of MathML to be added.
 
+# DANGER!!! These accumulate all the DefMathML declarations.
+# They're fixed after the module has been loaded, so are Daemon Safe,
+# but probably should be going into (post) STATE, so that they are extensible.
 our $MMLTable_P = {};
 our $MMLTable_C = {};
 
 sub DefMathML {
   my ($key, $presentation, $content) = @_;
   $$MMLTable_P{$key} = $presentation if $presentation;
-  $$MMLTable_C{$key} = $content      if $content; }
+  $$MMLTable_C{$key} = $content      if $content;
+  return; }
 
 sub lookupPresenter {
   my ($mode, $role, $name) = @_;
   $name = '?' unless $name;
   $role = '?' unless $role;
-  $$MMLTable_P{"$mode:$role:$name"}  || $$MMLTable_P{"$mode:?:$name"}
+  return $$MMLTable_P{"$mode:$role:$name"} || $$MMLTable_P{"$mode:?:$name"}
     || $$MMLTable_P{"$mode:$role:?"} || $$MMLTable_P{"$mode:?:?"}; }
 
 sub lookupContent {
   my ($mode, $role, $name) = @_;
   $name = '?' unless $name;
   $role = '?' unless $role;
-  $$MMLTable_C{"$mode:$role:$name"}  || $$MMLTable_C{"$mode:?:$name"}
+  return $$MMLTable_C{"$mode:$role:$name"} || $$MMLTable_C{"$mode:?:$name"}
     || $$MMLTable_C{"$mode:$role:?"} || $$MMLTable_C{"$mode:?:?"}; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Various needed maps
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-our %stylestep = (display => 'text', text => 'script',
-  script => 'scriptscript', scriptscript => 'scriptscript');
-our %style_script_step = (display => 'script', text => 'script',
-  script => 'scriptscript', scriptscript => 'scriptscript');
-our %stylemap
-  = (display => { text => [displaystyle => 'false'],
+my %stylestep = (              # CONSTANT
+  display => 'text',         text         => 'script',
+  script  => 'scriptscript', scriptscript => 'scriptscript');
+my %style_script_step = (      # CONSTANT
+  display => 'script',       text         => 'script',
+  script  => 'scriptscript', scriptscript => 'scriptscript');
+my %stylemap = (               # CONSTANT
+  display => { text => [displaystyle => 'false'],
     script       => [displaystyle => 'false', scriptlevel => '+1'],
     scriptscript => [displaystyle => 'false', scriptlevel => '+2'] },
   text => { display => [displaystyle => 'true'],
@@ -173,7 +184,8 @@ our %stylemap
 
 # Mappings between internal fonts & sizes.
 # Default math font is roman|medium|upright.
-our %mathvariants = ('upright' => 'normal',
+my %mathvariants = (           # CONSTANT
+  'upright'                => 'normal',
   'serif'                  => 'normal',
   'medium'                 => 'normal',
   'bold'                   => 'bold',
@@ -219,7 +231,8 @@ our %mathvariants = ('upright' => 'normal',
 # The font differences (from the containing context) have been deciphered
 # into font, size and color attributes.  The font should match
 # one of the above... (?)
-our %sizes = (tiny => 'small', script => 'small', footnote => 'small', small => 'small',
+my %sizes = (                  # CONSTANT
+  tiny => 'small', script => 'small', footnote => 'small', small => 'small',
   normal => 'normal',
   large => 'big', Large => 'big', LARGE => 'big', huge => 'big', Huge => 'big',
   big => '1.1em', Big => '1.5em', bigg => '2.0em', Bigg => '2.5em');
@@ -240,7 +253,7 @@ sub pmml_top {
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node, 'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
   local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node, 'opacity');
-  map(pmml($_), element_nodes($node)); }
+  return map { pmml($_) } element_nodes($node); }
 
 sub find_inherited_attribute {
   my ($node, $attribute) = @_;
@@ -255,14 +268,14 @@ sub find_inherited_attribute {
 sub pmml_smaller {
   my ($node) = @_;
   local $LaTeXML::MathML::STYLE = $stylestep{$LaTeXML::MathML::STYLE};
-  pmml($node); }
+  return pmml($node); }
 
 # Convert a node that will automatically be made scriptsize,
 # such as sub- or superscripts.
 sub pmml_scriptsize {
   my ($script) = @_;
   local $LaTeXML::MathML::STYLE = $style_script_step{$LaTeXML::MathML::STYLE};
-  ($script ? pmml($script) : ['m:none']); }
+  return ($script ? pmml($script) : ['m:none']); }
 
 sub pmml {
   my ($node) = @_;
@@ -281,7 +294,7 @@ sub pmml {
       $LaTeXML::Post::MATHPROCESSOR->augmentNode(
         $realnode, pmml_internal($realnode)));
     $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
-    pmml_dowrap($node, $result); }
+    return pmml_dowrap($node, $result); }
   else {
     local $LaTeXML::MathML::SOURCEID = $LaTeXML::MathML::SOURCEID_LOCK
       || $node->getAttribute('fragid') || $LaTeXML::MathML::SOURCEID;
@@ -290,7 +303,7 @@ sub pmml {
       $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, pmml_internal($node)));
     if (!$LaTeXML::MathML::SOURCEID_LOCK) {           # Defer associating id, if override!
       $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID); }
-    $result; } }
+    return $result; } }
 
 # Wrap the $result using the fencing, etc, attributes from $node
 # You know, there really could be some questions of ordering here.... Sigh!
@@ -321,16 +334,17 @@ sub pmml_dowrap {
   if ($cl && ((ref $result) eq 'ARRAY')) {                      # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
-  $result; }
+  return $result; }
 
 # Needs to be a utility somewhere...
 sub getXMHintSpacing {
   my ($width) = @_;
   if ($width && ($width =~ /^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)) {
-    ($2 eq 'mu' ? $1 / 1.8 : $1); }
-  else { 0; } }
+    return ($2 eq 'mu' ? $1 / 1.8 : $1); }
+  else {
+    return 0; } }
 
-our $NBSP = pack('U', 0xA0);
+my $NBSP = pack('U', 0xA0);    # CONSTANT
 
 sub pmml_internal {
   my ($node) = @_;
@@ -338,7 +352,7 @@ sub pmml_internal {
   my $tag  = getQName($node);
   my $role = $node->getAttribute('role');
   if ($tag eq 'ltx:XMath') {
-    pmml_row(map(pmml($_), element_nodes($node))); }    # Really multiple nodes???
+    return pmml_row(map { pmml($_) } element_nodes($node)); }    # Really multiple nodes???
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     my $id = $node->getAttribute('xml:id');
@@ -346,18 +360,18 @@ sub pmml_internal {
     local $LaTeXML::MathML::SOURCEID = $id || $LaTeXML::MathML::SOURCEID_LOCK
       || $LaTeXML::MathML::SOURCEID;
     local $LaTeXML::MathML::SOURCEID_LOCK = $LaTeXML::MathML::SOURCEID;
-    pmml($presentation); }
-  elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {    # Only present if parsing failed!
-    pmml_row(map(pmml($_), element_nodes($node))); }
+    return pmml($presentation); }
+  elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
+    return pmml_row(map { pmml($_) } element_nodes($node)); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     if (!$op) {
-      ['m:merror', {}, ['m:mtext', {}, "Missing Operator"]]; }
+      return ['m:merror', {}, ['m:mtext', {}, "Missing Operator"]]; }
     elsif ($role && ($role =~ /^(FLOAT|POST)(SUB|SUPER)SCRIPT$/)) {
       # (FLOAT|POST)(SUB|SUPER)SCRIPT's should NOT remain in successfully parsed math.
       # This conversion creates something "presentable", though doubtfully correct (empty mi?)
       # Really should mark & make a fake parsing pass to & group open/close pairs & attach scripts
-      [($2 eq 'SUB' ? 'm:msub' : 'm:msup'), {}, ['m:mi'],
+      return [($2 eq 'SUB' ? 'm:msub' : 'm:msup'), {}, ['m:mi'],
         pmml_scriptsize($op)]; }
     else {
       my $rop   = realize($op);                     # NOTE: Could loose open/close on XMRef ???
@@ -368,11 +382,11 @@ sub pmml_internal {
       my $result = &{ lookupPresenter('Apply', getOperatorRole($rop), $rop->getAttribute('meaning'))
       }($op, @args);
       $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
-      $result; } }
+      return $result; } }
   elsif ($tag eq 'ltx:XMTok') {
-    &{ lookupPresenter('Token', $role, $node->getAttribute('meaning')) }($node); }
+    return &{ lookupPresenter('Token', $role, $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMHint') {
-    &{ lookupPresenter('Hint', $role, $node->getAttribute('meaning')) }($node); }
+    return &{ lookupPresenter('Hint', $role, $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMArray') {
     my $style     = $node->getAttribute('mathstyle');
     my $vattach   = $node->getAttribute('vattach');
@@ -394,46 +408,46 @@ sub pmml_internal {
               ($c || $cl ? (class => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
               ($cs ? (columnspan => $cs) : ()),
               ($rs ? (rowspan    => $rs) : ()) },
-            map(pmml($_), element_nodes($col))]); }
+            map { pmml($_) } element_nodes($col)]); }
       push(@rows, ['m:mtr', {}, @cols]); }
     my $result = ['m:mtable', { rowspacing => "0.2ex", columnspacing => "0.4em", align => $vattach }, @rows];
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
-    $result; }
+    return $result; }
   elsif ($tag eq 'ltx:XMText') {
-    pmml_row(map(pmml_text_aux($_), $node->childNodes)); }
+    return pmml_row(map { pmml_text_aux($_) } $node->childNodes); }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
-    ['m:merror', { class => join(' ', grep($_, 'ltx_ERROR', $cl)) },
+    return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
       ['m:mtext', {}, $node->textContent]]; }
   else {
     my $text = $node->textContent;    #  Spaces are significant here
     $text =~ s/^\s+/$NBSP/;
     $text =~ s/\s+$/$NBSP/;
-    ['m:mtext', {}, $text]; } }
+    return ['m:mtext', {}, $text]; } }
 
 sub pmml_row {
   my (@items) = @_;
-  @items = grep($_, @items);
-  (scalar(@items) == 1 ? $items[0] : ['m:mrow', {}, @items]); }
+  @items = grep { $_ } @items;
+  return (scalar(@items) == 1 ? $items[0] : ['m:mrow', {}, @items]); }
 
 sub pmml_unrow {
   my ($mml) = @_;
   if ($mml && (ref $mml) && ($mml->[0] eq 'm:mrow') && !scalar(keys %{ $mml->[1] })) {
     my ($tag, $attr, @children) = @$mml;
-    @children; }
+    return @children; }
   else {
-    ($mml); } }
+    return ($mml); } }
 
 sub pmml_parenthesize {
   my ($item, $open, $close) = @_;
   if (!$open && !$close) {
-    $item; }
+    return $item; }
   # OR, maybe we should just use mfenced?
   # mfenced is better for CSS profile.
   # when the insides are line-broken, induces a less traditional appearance
   # (however, line-breaking inside of a mrow w/parens needs some special treatment too! scripts!!)
   elsif ($$LaTeXML::Post::MATHPROCESSOR{usemfenced}) {
-    ['m:mfenced', { open => ($open || ''), close => ($close || '') }, $item]; }
+    return ['m:mfenced', { open => ($open || ''), close => ($close || '') }, $item]; }
 ## Maybe better not open the contained mrow; seems to affect bracket size in Moz.???
   # elsif($item && (ref $item)  && ($item->[0] eq 'm:mrow')){
   #   my($tag,$attr,@children)=@$item;
@@ -442,7 +456,7 @@ sub pmml_parenthesize {
   #    @children,
   #    ($close ? (pmml_mo($close)):())]; }
   else {
-    ['m:mrow', {},
+    return ['m:mrow', {},
       ($open ? (pmml_mo($open, role => 'OPEN')) : ()),
       $item,
       ($close ? (pmml_mo($close, role => 'CLOSE')) : ())]; } }
@@ -455,10 +469,10 @@ sub pmml_punctuate {
   if (@items) {
     push(@arglist, shift(@items));
     while (@items) {
-      $separators =~ s/^(.*?)( |$)//;    # delimited by SINGLE SPACE!!
-      $lastsep = $1 if $1;
+      if ($separators =~ s/^(.*?)( |$)//) {    # delimited by SINGLE SPACE!!
+        $lastsep = $1 if $1; }
       push(@arglist, pmml_mo($lastsep, role => 'PUNCT'), shift(@items)); } }
-  pmml_row(@arglist); }
+  return pmml_row(@arglist); }
 
 # args are XMath nodes
 # This is suitable for use as an Apply handler.
@@ -484,22 +498,23 @@ sub pmml_infix {
     while (@args) {
       push(@items, (ref $op ? pmml($op) : pmml_mo($op)));
       push(@items, pmml(shift(@args))); } }
-  pmml_row(@items); }
+  return pmml_row(@items); }
 
 sub UTF {
   my ($code) = @_;
-  pack('U', $code); }
+  return pack('U', $code); }
 
 sub makePlane1Map {
   my ($latin, $GREEK, $greek, $digits) = @_;
-  (map((UTF(ord('A') + $_) => UTF($latin + $_)), 0 .. 25),
-    map((UTF(ord('a') + $_) => UTF($latin + 26 + $_)), 0 .. 25),
-    ($GREEK  ? map((UTF(0x0391 + $_)   => UTF($GREEK + $_)),  0 .. 24) : ()),
-    ($greek  ? map((UTF(0x03B1 + $_)   => UTF($greek + $_)),  0 .. 24) : ()),
-    ($digits ? map((UTF(ord('0') + $_) => UTF($digits + $_)), 0 .. 9)  : ())); }
+  return (
+    (map { (UTF(ord('A') + $_) => UTF($latin + $_)) } 0 .. 25),
+    (map { (UTF(ord('a') + $_) => UTF($latin + 26 + $_)) } 0 .. 25),
+    ($GREEK  ? (map { (UTF(0x0391 + $_)   => UTF($GREEK + $_)) } 0 .. 24) : ()),
+    ($greek  ? (map { (UTF(0x03B1 + $_)   => UTF($greek + $_)) } 0 .. 24) : ()),
+    ($digits ? (map { (UTF(ord('0') + $_) => UTF($digits + $_)) } 0 .. 9) : ())); }
 
-our %plane1map =
-  ('bold' => { makePlane1Map(0x1D400, 0x1D6A8, 0x1D6C2, 0x1D7CE) },
+my %plane1map = (              # CONSTANT
+  'bold'   => { makePlane1Map(0x1D400, 0x1D6A8, 0x1D6C2, 0x1D7CE) },
   'italic' => { makePlane1Map(0x1D434, 0x1D6E2, 0x1D6FC, undef),
     h => "\x{210E}" },
   'bold-italic'            => { makePlane1Map(0x1D468, 0x1D71C, 0x1D736, undef) },
@@ -519,9 +534,10 @@ our %plane1map =
   'double-struck' => { makePlane1Map(0x1D538, undef, undef, 0x1D7D8),
     C => "\x{2102}", H => "\x{210D}", N => "\x{2115}", P => "\x{2119}", Q => "\x{211A}",
     R => "\x{211D}", Z => "\x{2124}" }
-  );
+);
 
-our %plane1hack = (script => $plane1map{script}, 'bold-script' => $plane1map{script},
+my %plane1hack = (             # CONSTANT
+  script  => $plane1map{script},  'bold-script'  => $plane1map{script},
   fraktur => $plane1map{fraktur}, 'bold-fraktur' => $plane1map{fraktur},
   'double-struck' => $plane1map{'double-struck'});
 
@@ -573,12 +589,12 @@ sub stylizeContent {
   if ($variant
     && ($plane1 || $plane1hack)
     && ($mapping = ($plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))) {
-    my @c = map($$mapping{$_}, split(//, $text));
-    if (!grep(!defined $_, @c)) {    # Only if ALL chars in the token could be mapped... ?????
+    my @c = map { $$mapping{$_} } split(//, $text);
+    if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
 ###  ($text,$variant,$size && $sizes{$size},$color); }
-  ($text,
+  return ($text,
     ($variant  ? (mathvariant    => $variant)           : ()),
     ($size     ? (mathsize       => $sizes{$size})      : ()),
     ($color    ? (mathcolor      => $color)             : ()),
@@ -589,25 +605,26 @@ sub stylizeContent {
     ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
-our %fences = ('(' => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
+my %fences = (                 # CONSTANT
+  '(' => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
   "\`" => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
   "\x{27E8}" => 1, "\x{27E9}" => 1,                                      # angle brackets (prefered)
   "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
 
-our %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);
+my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1); # CONSTANT
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
   my ($item, %attr) = @_;
   my ($text, %mmlattr) = stylizeContent($item, 1, %attr);
-  ['m:mi', {%mmlattr}, $text]; }
+  return ['m:mi', {%mmlattr}, $text]; }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my ($item, %attr) = @_;
   my ($text, %mmlattr) = stylizeContent($item, 0, %attr);
-  ['m:mn', {%mmlattr}, $text]; }
+  return ['m:mn', {%mmlattr}, $text]; }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
@@ -621,7 +638,7 @@ sub pmml_mo {
   my $rpad = ((ref $item) && $item->getAttribute('rpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
-  ['m:mo', { %mmlattr,
+  return ['m:mo', { %mmlattr,
       ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
       ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
       ($lpad ? (lpadding => $lpad) : ()),
@@ -638,7 +655,7 @@ sub pmml_bigop {
   my $mml = pmml_mo($op);
   $mml = ['m:mstyle', { displaystyle => 'true' }, $mml]
     if ($style eq 'display') && ($LaTeXML::MathML::STYLE ne 'display');
-  $mml; }
+  return $mml; }
 
 # Since we're keeping track of display style, under/over vs. sub/super
 # We've got to keep track of MathML's desire to do it for us,
@@ -667,21 +684,21 @@ sub pmml_script {
   if ((($innerbase->getAttribute('mathstyle') || 'inline') eq 'display')
     && ($LaTeXML::MathML::STYLE ne 'display')) {
     local $LaTeXML::MathML::STYLE = 'display';
-    ['m:mstyle', { displaystyle => 'true' },
+    return ['m:mstyle', { displaystyle => 'true' },
       pmml_script_multi_layout(pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
         $prescripts, $postscripts)]; }
   else {
-    pmml_script_multi_layout(pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
+    return pmml_script_multi_layout(pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
       $prescripts, $postscripts); } }
 
 sub pmml_script_mid_layout {
   my ($base, $midscripts, $emb_left, $emb_right) = @_;
   if (scalar(@$midscripts) == 0) {
-    pmml($base); }
+    return pmml($base); }
   else {
     if (scalar(@$midscripts) > 1) {
       Error("unexpected", $base, "Multiple mid-level (limit) scripts; extras are DROPPED!",
-        map(@$_, @$midscripts)); }
+        map { @$_ } @$midscripts); }
     { local $LaTeXML::MathML::NOMOVABLELIMITS = 1;
       $base = pmml($base); }
     # Get the (possibly padded) over & under scripts (if any)
@@ -690,16 +707,19 @@ sub pmml_script_mid_layout {
     my $over = (!defined $$midscripts[0][1] ? undef
       : pmml_scriptsize_padded($$midscripts[0][1], $emb_left, $emb_right));
 
-    if    (!defined $over)  { ['m:munder', {}, $base, $under]; }
-    elsif (!defined $under) { ['m:mover',  {}, $base, $over]; }
-    else { ['m:munderover', {}, $base, $under, $over]; } } }
+    if (!defined $over) {
+      return ['m:munder', {}, $base, $under]; }
+    elsif (!defined $under) {
+      return ['m:mover', {}, $base, $over]; }
+    else {
+      return ['m:munderover', {}, $base, $under, $over]; } } }
 
 # Convert an over or under script to scriptsize,
 # but pad by phantoms of the base's embellishments, if any.
 # This is to handle primed sums, etc....
 sub pmml_scriptsize_padded {
   my ($script, $emb_left, $emb_right) = @_;
-  ($emb_left || $emb_right
+  return ($emb_left || $emb_right
     ? ['m:mrow', {},
       ($emb_left ? (['m:mphantom', {}, pmml_scriptsize($emb_left)]) : ()),
       pmml_scriptsize($script),
@@ -710,23 +730,23 @@ sub pmml_scriptsize_padded {
 sub pmml_script_multi_layout {
   my ($base, $prescripts, $postscripts) = @_;
   if (scalar(@$prescripts) > 0) {
-    ['m:mmultiscripts', {},
+    return ['m:mmultiscripts', {},
       $base,
-      map((pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])), @$postscripts),
+      (map { (pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])) } @$postscripts),
       ['m:mprescripts'],
-      map((pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])), @$prescripts)]; }
+      (map { (pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])) } @$prescripts)]; }
   elsif (scalar(@$postscripts) > 1) {
-    ['m:mmultiscripts', {},
+    return ['m:mmultiscripts', {},
       $base,
-      map((pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])), @$postscripts)]; }
+      (map { (pmml_scriptsize($_->[0]), pmml_scriptsize($_->[1])) } @$postscripts)]; }
   elsif (scalar(@$postscripts) == 0) {
-    $base; }
+    return $base; }
   elsif (!defined $$postscripts[0][1]) {
-    ['m:msub', {}, $base, pmml_scriptsize($$postscripts[0][0])]; }
+    return ['m:msub', {}, $base, pmml_scriptsize($$postscripts[0][0])]; }
   elsif (!defined $$postscripts[0][0]) {
-    ['m:msup', {}, $base, pmml_scriptsize($$postscripts[0][1])]; }
+    return ['m:msup', {}, $base, pmml_scriptsize($$postscripts[0][1])]; }
   else {
-    ['m:msubsup', {}, $base,
+    return ['m:msubsup', {}, $base,
       pmml_scriptsize($$postscripts[0][0]), pmml_scriptsize($$postscripts[0][1])]; } }
 
 # Various pre, post and even mid scripts can be wrapped around a base element.
@@ -793,7 +813,7 @@ sub pmml_script_decipher {
       $posts[0][$spos] = $xscript; $postlevel = $nl; }
     $base = $xbase;
   }
-  ($base, [@pres], [@mids], [@posts], $emb_left, $emb_right); }
+  return ($base, [@pres], [@mids], [@posts], $emb_left, $emb_right); }
 
 # Handle text contents.
 # Note that (currently) MathML doesn't allow math nested in m:mtext,
@@ -807,9 +827,9 @@ sub pmml_text_aux {
   if ($type == XML_TEXT_NODE) {
     my ($string, %mmlattr) = stylizeContent($node, 0, %attr);
     $string =~ s/^\s/$NBSP/; $string =~ s/\s$/$NBSP/;
-    ['m:mtext', {%mmlattr}, $string]; }
+    return ['m:mtext', {%mmlattr}, $string]; }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
-    map(pmml_text_aux($_, %attr), $node->childNodes); }
+    return map { pmml_text_aux($_, %attr) } $node->childNodes; }
   elsif ($type == XML_ELEMENT_NODE) {
     if (my $font    = $node->getAttribute('font'))            { $attr{font}            = $font; }
     if (my $size    = $node->getAttribute('fontsize'))        { $attr{fontsize}        = $size; }
@@ -821,14 +841,14 @@ sub pmml_text_aux {
       # [NOTE BUG!!! we're not passing through the context... (but maybe pick it up anyway)]
       # If XMath still there, convert it now.
       if (my $xmath = $LaTeXML::Post::DOCUMENT->findnode('ltx:XMath', $node)) {
-        pmml($xmath); }
+        return pmml($xmath); }
       # Otherwise, may already have gotten converted ? return that
       elsif (my $mml = $LaTeXML::Post::DOCUMENT->findnode('m:math', $node)) {
-        $mml->childNodes; }
+        return $mml->childNodes; }
       else {    # ???
-        (); } }
+        return (); } }
     elsif ($tag eq 'ltx:text') {    # ltx:text element is fine, if we can manage the attributes!
-      map(pmml_text_aux($_, %attr), $node->childNodes); }
+      return map { pmml_text_aux($_, %attr) } $node->childNodes; }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
       ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
@@ -838,9 +858,9 @@ sub pmml_text_aux {
       Warn('unexpected', 'nested-math', $node,
         "We're getting m:math nested within an m:mtext")
         if $LaTeXML::Post::DOCUMENT->findnodes('.//ltx:Math', $node);
-      ['m:mtext', {%mmlattr}, $LaTeXML::Post::DOCUMENT->cloneNode($node, 'nest')]; } }
+      return ['m:mtext', {%mmlattr}, $LaTeXML::Post::DOCUMENT->cloneNode($node, 'nest')]; } }
   else {
-    (); } }
+    return (); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Content MathML
@@ -858,16 +878,16 @@ sub cmml_top {
 
   my ($item, @rest) = element_nodes($node);
   if (@rest) {    # Unparsed ???
-    cmml_unparsed($item, @rest); }
+    return cmml_unparsed($item, @rest); }
   else {
-    cmml($item); } }
+    return cmml($item); } }
 
 sub cmml {
   my ($node) = @_;
   local $LaTeXML::MathML::SOURCEID = $node->getAttribute('fragid') || $LaTeXML::MathML::SOURCEID;
   my $result = cmml_internal($node);
   $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
-  $result; }
+  return $result; }
 
 sub cmml_internal {
   my ($node) = @_;
@@ -880,89 +900,90 @@ sub cmml_internal {
     local $LaTeXML::MathML::SOURCEID = $id || $LaTeXML::MathML::SOURCEID_LOCK
       || $LaTeXML::MathML::SOURCEID;
     local $LaTeXML::MathML::SOURCEID_LOCK = $LaTeXML::MathML::SOURCEID;
-    cmml($content); }
+    return cmml($content); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {    # Only present if parsing failed!
-    cmml_unparsed(element_nodes($node)); }
+    return cmml_unparsed(element_nodes($node)); }
   elsif ($tag eq 'ltx:XMApp') {
     # Experiment: If XMApp has role ID, we treat it as a "Decorated Symbol"
     if (($node->getAttribute('role') || '') eq 'ID') {
-      cmml_decoratedSymbol($node); }
+      return cmml_decoratedSymbol($node); }
     else {
       my ($op, @args) = element_nodes($node);
       if (!$op) {
-        ['m:merror', {}, ['m:mtext', {}, "Missing Operator"]]; }
+        return ['m:merror', {}, ['m:mtext', {}, "Missing Operator"]]; }
       else {
         my $rop = realize($op);                                # NOTE: Could loose open/close on XMRef ???
-        &{ lookupContent('Apply', $rop->getAttribute('role'), $rop->getAttribute('meaning')) }($op, @args); } } }
+        return &{ lookupContent('Apply', $rop->getAttribute('role'), $rop->getAttribute('meaning')) }($op, @args); } } }
   elsif ($tag eq 'ltx:XMTok') {
-    &{ lookupContent('Token', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
+    return &{ lookupContent('Token', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMHint') {                               # ????
-    &{ lookupContent('Hint', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
+    return &{ lookupContent('Hint', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   else {
-    ['m:mtext', {}, $node->textContent]; } }
+    return ['m:mtext', {}, $node->textContent]; } }
 
 sub cmml_unparsed {
   my (@nodes) = @_;
-  ['m:cerror', {},
+  return ['m:cerror', {},
     ['m:csymbol', { cd => 'ambiguous' }, 'fragments'],
-    map(((getQName($_) eq 'ltx:XMTok') && (($_->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
+    map { ((getQName($_) eq 'ltx:XMTok') && (($_->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
         ? ['m:csymbol', { cd => 'unknown' }, $_->textContent]
-        : cmml($_)),
-      @nodes)]; }
+        : cmml($_)) }
+      @nodes]; }
 
 # Or csymbol if there's some kind of "defining" attribute?
 sub cmml_ci {
   my ($item) = @_;
   if (my $meaning = (ref $item) && $item->getAttribute('meaning')) {
     my $cd = $item->getAttribute('omcd') || 'latexml';
-    ['m:csymbol', { cd => $cd }, $meaning]; }
+    return ['m:csymbol', { cd => $cd }, $meaning]; }
   else {
     my ($content, %mmlattr) = stylizeContent($item, 1);
     if (my $mv = $mmlattr{mathvariant}) {
       $content = $mv . "-" . $content; }
-    ['m:ci', {}, $content]; } }
+    return ['m:ci', {}, $content]; } }
 
 # Experimental; for an XMApp with role=ID, we treat it as a ci
 # or ultimately as csymbol, if it had defining attributes,
 # but we format its contents as pmml
 sub cmml_decoratedSymbol {
   my ($item) = @_;
-  ['m:ci', {}, pmml($item)]; }
+  return ['m:ci', {}, pmml($item)]; }
 
 # Return the NOT of the argument.
 sub cmml_not {
-  ['m:apply', {}, ['m:not', {}], cmml($_[0])]; }
+  my ($arg) = @_;
+  return ['m:apply', {}, ['m:not', {}], cmml($arg)]; }
 
 sub cmml_synth_not {
   my ($op, @args) = @_;
-  ['m:apply', {}, ['m:not', {}], ['m:apply', {}, [$op, {}], map(cmml($_), @args)]]; }
+  return ['m:apply', {}, ['m:not', {}], ['m:apply', {}, [$op, {}], map { cmml($_) } @args]]; }
 
 # Return the result of converting the arguments, but reversed.
 sub cmml_synth_complement {
   my ($op, @args) = @_;
-  ['m:apply', {}, [$op, {}], map(cmml($_), reverse(@args))]; }
+  return ['m:apply', {}, [$op, {}], map { cmml($_) } reverse(@args)]; }
 
 # Given an XMath node, Make sure it has an id so it can be shared, then convert to cmml
 sub cmml_shared {
   my ($node) = @_;
   $LaTeXML::Post::DOCUMENT->generateNodeID($node, 'sh');
-  cmml($node); }
+  return cmml($node); }
 
 # Given an XMath node, convert to cmml share form
 sub cmml_share {
   my ($node) = @_;
-  ['m:share', { href => '#' . $node->getAttribute('fragid') . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
+  return ['m:share', { href => '#' . $node->getAttribute('fragid') . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
 
 sub cmml_or_compose {
   my ($operators, @args) = @_;
   my @operators = @$operators;
   if (scalar(@operators) == 1) {
-    ['m:apply', {}, [shift(@operators), {}], map(cmml($_), @args)]; }
+    return ['m:apply', {}, [shift(@operators), {}], map { cmml($_) } @args]; }
   else {
-    my @parts = (['m:apply', {}, [shift(@operators), {}], map(cmml_shared($_), @args)]);
+    my @parts = (['m:apply', {}, [shift(@operators), {}], map { cmml_shared($_) } @args]);
     foreach my $op (@operators) {
-      push(@parts, ['m:apply', {}, [shift(@operators), {}], map(cmml_share($_), @args)]); }
-    ['m:or', {}, @parts]; } }
+      push(@parts, ['m:apply', {}, [shift(@operators), {}], map { cmml_share($_) } @args]); }
+    return ['m:or', {}, @parts]; } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Tranlators
@@ -989,9 +1010,9 @@ DefMathML("Token:UNDERACCENT:?", \&pmml_mo, undef);
 
 DefMathML("Token:NUMBER:?", \&pmml_mn, sub {
     my $n = $_[0]->textContent;
-    ['m:cn', { type => ($n =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $n]; });
-DefMathML("Token:?:absent", sub { ['m:mi', {}] });    # Not m:none!
-DefMathML('Hint:?:?', sub { undef; }, sub { undef; });    # Should Disappear!
+    return ['m:cn', { type => ($n =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $n]; });
+DefMathML("Token:?:absent", sub { return ['m:mi', {}] });    # Not m:none!
+DefMathML('Hint:?:?', sub { undef; }, sub { undef; });       # Should Disappear!
 
 # At presentation level, these are essentially adorned tokens.
 # args are (accent,base)
@@ -1003,7 +1024,7 @@ DefMathML('Apply:OVERACCENT:?', sub {
         && ($xaccent->getAttribute('role') eq 'UNDERACCENT')) {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($xaccent), pmml_scriptsize($accent)]; } }
-    ['m:mover', { accent => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
+    return ['m:mover', { accent => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
 
 DefMathML('Apply:UNDERACCENT:?', sub {
     my ($accent, $base) = @_;
@@ -1013,13 +1034,13 @@ DefMathML('Apply:UNDERACCENT:?', sub {
         && ($xaccent->getAttribute('role') eq 'OVERACCENT')) {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($accent), pmml_scriptsize($xaccent)]; } }
-    ['m:munder', { accentunder => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
+    return ['m:munder', { accentunder => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
 
 DefMathML('Apply:ENCLOSE:?', sub {
     my ($op, $base) = @_;
     my $enclosure = $op->getAttribute('enclose');
     my $color     = $op->getAttribute('color');
-    ['m:menclose', { notation => $enclosure, mathcolor => $color },
+    return ['m:menclose', { notation => $enclosure, mathcolor => $color },
       ($color ? ['m:mstyle', { mathcolor => $LaTeXML::MathML::COLOR || 'black' }, pmml($base)]
         : pmml($base))]; });
 
@@ -1033,30 +1054,34 @@ DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
-    ['m:mrow', {},
+    return ['m:mrow', {},
       pmml($op), pmml_mo("\x{2061}"),             # FUNCTION APPLICATION
-      pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'), map(pmml($_), @args)),
+      pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'), map { pmml($_) } @args),
         $op->getAttribute('argopen'), $op->getAttribute('argclose'))]; },
   sub {
     my ($op, @args) = @_;
-    ['m:apply', {}, cmml($op), map(cmml($_), @args)]; });
+    return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
 DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
 
-DefMathML("Token:?:open-interval",   undef, sub { ['m:interval', { closure => "open" }]; });
-DefMathML("Token:?:closed-interval", undef, sub { ['m:interval', { closure => "closed" }]; });
-DefMathML("Token:?:closed-open-interval", undef, sub { ['m:interval', { closure => "closed-open" }]; });
-DefMathML("Token:?:open-closed-interval", undef, sub { ['m:interval', { closure => "open-closed" }]; });
+DefMathML("Token:?:open-interval", undef, sub {
+    return ['m:interval', { closure => "open" }]; });
+DefMathML("Token:?:closed-interval", undef, sub {
+    return ['m:interval', { closure => "closed" }]; });
+DefMathML("Token:?:closed-open-interval", undef, sub {
+    return ['m:interval', { closure => "closed-open" }]; });
+DefMathML("Token:?:open-closed-interval", undef, sub {
+    return ['m:interval', { closure => "open-closed" }]; });
 
-DefMathML("Token:?:inverse",   undef, sub { ['m:inverse']; });
-DefMathML("Token:?:lambda",    undef, sub { ['m:lambda']; });
-DefMathML("Token:?:compose",   undef, sub { ['m:compose']; });
-DefMathML("Token:?:identity",  undef, sub { ['m:ident']; });
-DefMathML("Token:?:domain",    undef, sub { ['m:domain']; });
-DefMathML("Token:?:codomain",  undef, sub { ['m:codomain']; });
-DefMathML("Token:?:image",     undef, sub { ['m:image']; });
-DefMathML("Token:?:piecewise", undef, sub { ['m:piecewise']; });
-DefMathML("Token:?:piece",     undef, sub { ['m:piece']; });
-DefMathML("Token:?:otherwise", undef, sub { ['m:otherwise']; });
+DefMathML("Token:?:inverse",   undef, sub { return ['m:inverse']; });
+DefMathML("Token:?:lambda",    undef, sub { return ['m:lambda']; });
+DefMathML("Token:?:compose",   undef, sub { return ['m:compose']; });
+DefMathML("Token:?:identity",  undef, sub { return ['m:ident']; });
+DefMathML("Token:?:domain",    undef, sub { return ['m:domain']; });
+DefMathML("Token:?:codomain",  undef, sub { return ['m:codomain']; });
+DefMathML("Token:?:image",     undef, sub { return ['m:image']; });
+DefMathML("Token:?:piecewise", undef, sub { return ['m:piecewise']; });
+DefMathML("Token:?:piece",     undef, sub { return ['m:piece']; });
+DefMathML("Token:?:otherwise", undef, sub { return ['m:otherwise']; });
 
 #======================================================================
 # Arithmetic, Algebra and Logic:
@@ -1067,8 +1092,8 @@ DefMathML("Token:?:otherwise", undef, sub { ['m:otherwise']; });
 # BRM:
 
 DefMathML("Token:ADDOP:?", \&pmml_mo, undef);
-DefMathML("Token:ADDOP:plus",  undef, sub { ['m:plus']; });
-DefMathML("Token:ADDOP:minus", undef, sub { ['m:minus']; });
+DefMathML("Token:ADDOP:plus",  undef, sub { return ['m:plus']; });
+DefMathML("Token:ADDOP:minus", undef, sub { return ['m:minus']; });
 DefMathML('Apply:ADDOP:?', \&pmml_infix, undef);
 
 DefMathML("Token:MULOP:?", \&pmml_mo,    undef);
@@ -1085,9 +1110,9 @@ DefMathML('Apply:?:divide', sub {
       # Shouldn't end up with multiple denominators unless using an infix op w/visible content.
       # but better check, rather than have it disappear...
       $op = '/' unless (ref $op ? $op->textContent : $op);
-      pmml_infix($op, $num, $den, @more); }
+      return pmml_infix($op, $num, $den, @more); }
     else {
-      ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()) },
+      return ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()) },
         pmml_smaller($num), pmml_smaller($den)]; } });
 
 DefMathML('Apply:MODIFIEROP:?', \&pmml_infix, undef);
@@ -1098,67 +1123,71 @@ DefMathML('Apply:MIDDLE:?', \&pmml_infix, undef);
 DefMathML("Token:SUPOP:?",         \&pmml_mo,     undef);
 DefMathML('Apply:SUPERSCRIPTOP:?', \&pmml_script, undef);
 DefMathML('Apply:SUBSCRIPTOP:?',   \&pmml_script, undef);
-DefMathML('Token:SUPERSCRIPTOP:?', undef, sub { ['m:csymbol', { cd => 'ambiguous' }, 'superscript']; });
-DefMathML('Token:SUBSCRIPTOP:?', undef, sub { ['m:csymbol', { cd => 'ambiguous' }, 'subscript']; });
+DefMathML('Token:SUPERSCRIPTOP:?', undef, sub {
+    return ['m:csymbol', { cd => 'ambiguous' }, 'superscript']; });
+DefMathML('Token:SUBSCRIPTOP:?', undef, sub {
+    return ['m:csymbol', { cd => 'ambiguous' }, 'subscript']; });
 
 DefMathML('Apply:POSTFIX:?', sub {
-    ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
+    return ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
 
 DefMathML('Apply:?:square-root',
-  sub { ['m:msqrt', {}, pmml($_[1])]; },
-  sub { ['m:apply', {}, ['m:root', {}], cmml($_[1])]; });
+  sub { return ['m:msqrt', {}, pmml($_[1])]; },
+  sub { return ['m:apply', {}, ['m:root', {}], cmml($_[1])]; });
 DefMathML('Apply:?:nth-root',
-  sub { ['m:mroot', {}, pmml($_[2]), pmml_smaller($_[1])]; },
-  sub { ['m:apply', {}, ['m:root', {}], ['m:degree', {}, cmml($_[1])], cmml($_[2])]; });
+  sub { return ['m:mroot', {}, pmml($_[2]), pmml_smaller($_[1])]; },
+  sub { return ['m:apply', {}, ['m:root', {}], ['m:degree', {}, cmml($_[1])], cmml($_[2])]; });
 
 # Note MML's distinction between quotient and divide: quotient yeilds an integer
-DefMathML("Token:?:quotient",       undef, sub { ['m:quotient']; });
-DefMathML("Token:?:factorial",      undef, sub { ['m:factorial']; });
-DefMathML("Token:?:divide",         undef, sub { ['m:divide']; });
-DefMathML("Token:?:maximum",        undef, sub { ['m:max']; });
-DefMathML("Token:?:minimum",        undef, sub { ['m:min']; });
-DefMathML("Token:?:minus",          undef, sub { ['m:minus']; });
-DefMathML("Token:?:uminus",         undef, sub { ['m:uminus']; });
-DefMathML("Token:?:plus",           undef, sub { ['m:plus']; });
-DefMathML("Token:?:power",          undef, sub { ['m:power']; });
-DefMathML("Token:?:remainder",      undef, sub { ['m:rem']; });
-DefMathML("Token:?:times",          undef, sub { ['m:times']; });
-DefMathML("Token:?:gcd",            undef, sub { ['m:gcd']; });
-DefMathML("Token:?:and",            undef, sub { ['m:and']; });
-DefMathML("Token:?:or",             undef, sub { ['m:or']; });
-DefMathML("Token:?:xor",            undef, sub { ['m:xor']; });
-DefMathML("Token:?:not",            undef, sub { ['m:not']; });
-DefMathML("Token:?:implies",        undef, sub { ['m:implies']; });
-DefMathML("Token:?:forall",         undef, sub { ['m:forall']; });
-DefMathML("Token:?:exists",         undef, sub { ['m:exists']; });
-DefMathML("Token:?:absolute-value", undef, sub { ['m:abs']; });
-DefMathML("Token:?:conjugate",      undef, sub { ['m:conjugate']; });
-DefMathML("Token:?:argument",       undef, sub { ['m:arg']; });
-DefMathML("Token:?:real-part",      undef, sub { ['m:real']; });
-DefMathML("Token:?:imaginary-part", undef, sub { ['m:imaginary']; });
-DefMathML("Token:?:lcm",            undef, sub { ['m:lcm']; });
-DefMathML("Token:?:floor",          undef, sub { ['m:floor']; });
-DefMathML("Token:?:ceiling",        undef, sub { ['m:ceiling']; });
+DefMathML("Token:?:quotient",       undef, sub { return ['m:quotient']; });
+DefMathML("Token:?:factorial",      undef, sub { return ['m:factorial']; });
+DefMathML("Token:?:divide",         undef, sub { return ['m:divide']; });
+DefMathML("Token:?:maximum",        undef, sub { return ['m:max']; });
+DefMathML("Token:?:minimum",        undef, sub { return ['m:min']; });
+DefMathML("Token:?:minus",          undef, sub { return ['m:minus']; });
+DefMathML("Token:?:uminus",         undef, sub { return ['m:uminus']; });
+DefMathML("Token:?:plus",           undef, sub { return ['m:plus']; });
+DefMathML("Token:?:power",          undef, sub { return ['m:power']; });
+DefMathML("Token:?:remainder",      undef, sub { return ['m:rem']; });
+DefMathML("Token:?:times",          undef, sub { return ['m:times']; });
+DefMathML("Token:?:gcd",            undef, sub { return ['m:gcd']; });
+DefMathML("Token:?:and",            undef, sub { return ['m:and']; });
+DefMathML("Token:?:or",             undef, sub { return ['m:or']; });
+DefMathML("Token:?:xor",            undef, sub { return ['m:xor']; });
+DefMathML("Token:?:not",            undef, sub { return ['m:not']; });
+DefMathML("Token:?:implies",        undef, sub { return ['m:implies']; });
+DefMathML("Token:?:forall",         undef, sub { return ['m:forall']; });
+DefMathML("Token:?:exists",         undef, sub { return ['m:exists']; });
+DefMathML("Token:?:absolute-value", undef, sub { return ['m:abs']; });
+DefMathML("Token:?:conjugate",      undef, sub { return ['m:conjugate']; });
+DefMathML("Token:?:argument",       undef, sub { return ['m:arg']; });
+DefMathML("Token:?:real-part",      undef, sub { return ['m:real']; });
+DefMathML("Token:?:imaginary-part", undef, sub { return ['m:imaginary']; });
+DefMathML("Token:?:lcm",            undef, sub { return ['m:lcm']; });
+DefMathML("Token:?:floor",          undef, sub { return ['m:floor']; });
+DefMathML("Token:?:ceiling",        undef, sub { return ['m:ceiling']; });
 
 #======================================================================
 # Relations:
 #   eq, neq, gt, lt, geq, leq, equivalent, approx, factorof
 
 DefMathML("Token:RELOP:?",                  \&pmml_mo);
-DefMathML("Token:?:equals",                 undef, sub { ['m:eq']; });
-DefMathML("Token:?:not-equals",             undef, sub { ['m:neq']; });
-DefMathML("Token:?:greater-than",           undef, sub { ['m:gt']; });
-DefMathML("Token:?:less-than",              undef, sub { ['m:lt']; });
-DefMathML("Token:?:greater-than-or-equals", undef, sub { ['m:geq']; });
-DefMathML("Token:?:less-than-or-equals",    undef, sub { ['m:leq']; });
-DefMathML("Token:?:equivalent-to",          undef, sub { ['m:equivalent']; });
-DefMathML("Token:?:approximately-equals",   undef, sub { ['m:approx']; });
-DefMathML("Apply:?:not-approximately-equals", undef, sub { my ($op, @args) = @_;
-    cmml_synth_not('m:approx', @args); });
-DefMathML("Apply:?:less-than-or-approximately-equals", undef, sub { my ($op, @args) = @_;
-    cmml_or_compose(['m:lt', 'm:approx'], @args); });
+DefMathML("Token:?:equals",                 undef, sub { return ['m:eq']; });
+DefMathML("Token:?:not-equals",             undef, sub { return ['m:neq']; });
+DefMathML("Token:?:greater-than",           undef, sub { return ['m:gt']; });
+DefMathML("Token:?:less-than",              undef, sub { return ['m:lt']; });
+DefMathML("Token:?:greater-than-or-equals", undef, sub { return ['m:geq']; });
+DefMathML("Token:?:less-than-or-equals",    undef, sub { return ['m:leq']; });
+DefMathML("Token:?:equivalent-to",          undef, sub { return ['m:equivalent']; });
+DefMathML("Token:?:approximately-equals",   undef, sub { return ['m:approx']; });
+DefMathML("Apply:?:not-approximately-equals", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_not('m:approx', @args); });
+DefMathML("Apply:?:less-than-or-approximately-equals", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_or_compose(['m:lt', 'm:approx'], @args); });
 
-DefMathML("Token:?:factor-of", undef, sub { ['m:factorof']; });
+DefMathML("Token:?:factor-of", undef, sub { return ['m:factorof']; });
 
 DefMathML("Token:METARELOP:?", \&pmml_mo);
 DefMathML('Apply:RELOP:?',     \&pmml_infix);
@@ -1167,10 +1196,12 @@ DefMathML('Apply:METARELOP:?', \&pmml_infix);
 # Top level relations
 DefMathML('Apply:?:formulae', sub {
     my ($op, @elements) = @_;
-    pmml_punctuate($op->getAttribute('separators'), map(pmml($_), @elements)); },
+    return pmml_punctuate($op->getAttribute('separators'), map { pmml($_) } @elements); },
   sub {
     my ($op, @elements) = @_;
-    ['m:apply', {}, ['m:csymbol', { cd => 'ambiguous' }, 'formulae-sequence'], map(cmml($_), @elements)];
+    return ['m:apply', {},
+      ['m:csymbol', { cd => 'ambiguous' }, 'formulae-sequence'],
+      map { cmml($_) } @elements];
   });
 
 # TRICKY: How should this get converted to cmml ???
@@ -1198,7 +1229,7 @@ DefMathML('Apply:?:multirelation',
     my ($op, @elements) = @_;
     # This presumes that the relational operators scattered through here
     # will be recognized as such by pmml and turned into m:mo
-    pmml_row(map(pmml($_), @elements)); },
+    return pmml_row(map { pmml($_) } @elements); },
   sub {
     my ($op, @elements) = @_;
     my $a = cmml(shift(@elements));
@@ -1209,7 +1240,7 @@ DefMathML('Apply:?:multirelation',
       my $b   = shift(@elements);
       push(@relations, ['m:apply', {}, cmml($rel), $a, cmml_shared($b)]);
       $a = cmml_share($b); }
-    (scalar(@relations) > 1 ? ['m:apply', {}, ['m:and', {}], @relations] : $relations[0]); }
+    return (scalar(@relations) > 1 ? ['m:apply', {}, ['m:and', {}], @relations] : $relations[0]); }
 );
 
 #======================================================================
@@ -1221,42 +1252,47 @@ DefMathML("Token:INTOP:?",   \&pmml_bigop);
 DefMathML("Token:LIMITOP:?", \&pmml_mo);
 DefMathML('Apply:ARROW:?',   \&pmml_infix);
 
-DefMathML("Token:?:integral",             undef, sub { ['m:int']; });
-DefMathML("Token:?:differential",         undef, sub { ['m:diff']; });
-DefMathML("Token:?:partial-differential", undef, sub { ['m:partialdiff']; });
+DefMathML("Token:?:integral",             undef, sub { return ['m:int']; });
+DefMathML("Token:?:differential",         undef, sub { return ['m:diff']; });
+DefMathML("Token:?:partial-differential", undef, sub { return ['m:partialdiff']; });
 # lowlimit, uplimit, degree ?
-DefMathML("Token:?:divergence", undef, sub { ['m:divergence']; });
-DefMathML("Token:?:gradient",   undef, sub { ['m:grad']; });
-DefMathML("Token:?:curl",       undef, sub { ['m:curl']; });
-DefMathML("Token:?:laplacian",  undef, sub { ['m:laplacian']; });
+DefMathML("Token:?:divergence", undef, sub { return ['m:divergence']; });
+DefMathML("Token:?:gradient",   undef, sub { return ['m:grad']; });
+DefMathML("Token:?:curl",       undef, sub { return ['m:curl']; });
+DefMathML("Token:?:laplacian",  undef, sub { return ['m:laplacian']; });
 
 #======================================================================
 # Theory of Sets,
 #   set, list, union, intersect, in, notin, subset, prsubset, notsubset, notprsubset,
 #   setdiff, card, cartesianproduct.
 
-DefMathML("Token:?:set",            undef, sub { ['m:set']; });
-DefMathML("Token:?:list",           undef, sub { ['m:list']; });
-DefMathML("Token:?:union",          undef, sub { ['m:union']; });
-DefMathML("Token:?:intersection",   undef, sub { ['m:intersect']; });
-DefMathML("Token:?:element-of",     undef, sub { ['m:in']; });
-DefMathML("Token:?:not-element-of", undef, sub { ['m:notin']; });
-DefMathML("Apply:?:contains", undef, sub { my ($op, @args) = @_;
-    cmml_synth_complement('m:in', @args); });
-DefMathML("Apply:?:not-contains", undef, sub { my ($op, @args) = @_;
-    cmml_synth_complement('m:notin', @args); });
-DefMathML("Token:?:subset-of",                undef, sub { ['m:subset']; });
-DefMathML("Token:?:subset-of-or-equals",      undef, sub { ['m:subset']; });
-DefMathML("Token:?:subset-of-and-not-equals", undef, sub { ['m:prsubset']; });
-DefMathML("Apply:?:superset-of", undef, sub { my ($op, @args) = @_;
-    cmml_synth_complement('m:subset', @args); });
-DefMathML("Apply:?:superset-of-or-equals", undef, sub { my ($op, @args) = @_;
-    cmml_synth_complement('m:subset', @args); });
-DefMathML("Apply:?:superset-of-and-not-equals", undef, sub { my ($op, @args) = @_;
-    cmml_synth_complement('m:prsubset', @args); });
-DefMathML("Token:?:set-minus",         undef, sub { ['m:setdiff']; });
-DefMathML("Token:?:cardinality",       undef, sub { ['m:card']; });
-DefMathML("Token:?:cartesian-product", undef, sub { ['m:cartesianproduct']; });
+DefMathML("Token:?:set",            undef, sub { return ['m:set']; });
+DefMathML("Token:?:list",           undef, sub { return ['m:list']; });
+DefMathML("Token:?:union",          undef, sub { return ['m:union']; });
+DefMathML("Token:?:intersection",   undef, sub { return ['m:intersect']; });
+DefMathML("Token:?:element-of",     undef, sub { return ['m:in']; });
+DefMathML("Token:?:not-element-of", undef, sub { return ['m:notin']; });
+DefMathML("Apply:?:contains", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_complement('m:in', @args); });
+DefMathML("Apply:?:not-contains", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_complement('m:notin', @args); });
+DefMathML("Token:?:subset-of",                undef, sub { return ['m:subset']; });
+DefMathML("Token:?:subset-of-or-equals",      undef, sub { return ['m:subset']; });
+DefMathML("Token:?:subset-of-and-not-equals", undef, sub { return ['m:prsubset']; });
+DefMathML("Apply:?:superset-of", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_complement('m:subset', @args); });
+DefMathML("Apply:?:superset-of-or-equals", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_complement('m:subset', @args); });
+DefMathML("Apply:?:superset-of-and-not-equals", undef, sub {
+    my ($op, @args) = @_;
+    return cmml_synth_complement('m:prsubset', @args); });
+DefMathML("Token:?:set-minus",         undef, sub { return ['m:setdiff']; });
+DefMathML("Token:?:cardinality",       undef, sub { return ['m:card']; });
+DefMathML("Token:?:cartesian-product", undef, sub { return ['m:cartesianproduct']; });
 
 #======================================================================
 # Sequences and Series:
@@ -1269,7 +1305,7 @@ DefMathML("Token:SUMOP:?", \&pmml_bigop);
 # ?? or something....
 sub pmml_summation {
   my ($op, $body) = @_;
-  ['m:mrow', {}, pmml($op), pmml($body)]; }
+  return ['m:mrow', {}, pmml($op), pmml($body)]; }
 
 DefMathML('Apply:BIGOP:?', \&pmml_summation);
 DefMathML('Apply:INTOP:?', \&pmml_summation);
@@ -1281,23 +1317,25 @@ DefMathML('Apply:?:limit-from', sub {
 
 DefMathML('Apply:?:annotated', sub {
     my ($op, $var, $annotation) = @_;
-    ['m:mrow', {}, pmml($var), ['m:mspace', { width => 'veryverythickmathspace' }], pmml($annotation)]; });
+    return ['m:mrow', {}, pmml($var),
+      ['m:mspace', { width => 'veryverythickmathspace' }],
+      pmml($annotation)]; });
 
 DefMathML('Apply:?:evaluated-at', sub {
     my ($op, $expr, $value1, $value2) = @_;
     if ($value2) {
-      ['m:msubsup', {},
+      return ['m:msubsup', {},
         pmml_parenthesize(pmml($expr), '', '|'),
         pmml_scriptsize($value1), pmml_scriptsize($value2)]; }
     else {
-      ['m:msub', {},
+      return ['m:msub', {},
         pmml_parenthesize(pmml($expr), '', '|'),
         pmml_scriptsize($value1)]; } });
 
-DefMathML("Token:?:sum",      undef, sub { ['m:sum']; });
-DefMathML("Token:?:prod",     undef, sub { ['m:prod']; });
-DefMathML("Token:?:limit",    undef, sub { ['m:limit']; });
-DefMathML("Token:?:tends-to", undef, sub { ['m:tendsto']; });
+DefMathML("Token:?:sum",      undef, sub { return ['m:sum']; });
+DefMathML("Token:?:prod",     undef, sub { return ['m:prod']; });
+DefMathML("Token:?:limit",    undef, sub { return ['m:limit']; });
+DefMathML("Token:?:tends-to", undef, sub { return ['m:tendsto']; });
 
 #======================================================================
 # Elementary Classical Functions,
@@ -1305,44 +1343,44 @@ DefMathML("Token:?:tends-to", undef, sub { ['m:tendsto']; });
 #   arcsin, arccos, arctan, arccosh, arccot, arccoth, arccsc, arccsch, arcsec, arcsech,
 #   arcsinh, arctanh
 
-DefMathML("Token:?:exponential",                  undef, sub { ['m:exp']; });
-DefMathML("Token:?:natural-logarithm",            undef, sub { ['m:ln']; });
-DefMathML("Token:?:logarithm",                    undef, sub { ['m:log']; });
-DefMathML("Token:?:sine",                         undef, sub { ['m:sin']; });
-DefMathML("Token:?:cosine",                       undef, sub { ['m:cos']; });
-DefMathML("Token:?:tangent",                      undef, sub { ['m:tan']; });
-DefMathML("Token:?:secant",                       undef, sub { ['m:sec']; });
-DefMathML("Token:?:cosecant",                     undef, sub { ['m:csc']; });
-DefMathML("Token:?:cotangent",                    undef, sub { ['m:cot']; });
-DefMathML("Token:?:hyperbolic-sine",              undef, sub { ['m:sinh']; });
-DefMathML("Token:?:hyperbolic-cosine",            undef, sub { ['m:cosh']; });
-DefMathML("Token:?:hyperbolic-tangent",           undef, sub { ['m:tanh']; });
-DefMathML("Token:?:hyperbolic-secant",            undef, sub { ['m:sech']; });
-DefMathML("Token:?:hyperbolic-cosecant",          undef, sub { ['m:csch']; });
-DefMathML("Token:?:hyperbolic-cotantent",         undef, sub { ['m:coth']; });
-DefMathML("Token:?:inverse-sine",                 undef, sub { ['m:arcsin']; });
-DefMathML("Token:?:inverse-cosine",               undef, sub { ['m:arccos']; });
-DefMathML("Token:?:inverse-tangent",              undef, sub { ['m:arctan']; });
-DefMathML("Token:?:inverse-secant",               undef, sub { ['m:arcsec']; });
-DefMathML("Token:?:inverse-cosecant",             undef, sub { ['m:arccsc']; });
-DefMathML("Token:?:inverse-cotangent",            undef, sub { ['m:arccot']; });
-DefMathML("Token:?:inverse-hyperbolic-sine",      undef, sub { ['m:arcsinh']; });
-DefMathML("Token:?:inverse-hyperbolic-cosine",    undef, sub { ['m:arccosh']; });
-DefMathML("Token:?:inverse-hyperbolic-tangent",   undef, sub { ['m:arctanh']; });
-DefMathML("Token:?:inverse-hyperbolic-secant",    undef, sub { ['m:arcsech']; });
-DefMathML("Token:?:inverse-hyperbolic-cosecant",  undef, sub { ['m:arccsch']; });
-DefMathML("Token:?:inverse-hyperbolic-cotangent", undef, sub { ['m:arccoth']; });
+DefMathML("Token:?:exponential",                  undef, sub { return ['m:exp']; });
+DefMathML("Token:?:natural-logarithm",            undef, sub { return ['m:ln']; });
+DefMathML("Token:?:logarithm",                    undef, sub { return ['m:log']; });
+DefMathML("Token:?:sine",                         undef, sub { return ['m:sin']; });
+DefMathML("Token:?:cosine",                       undef, sub { return ['m:cos']; });
+DefMathML("Token:?:tangent",                      undef, sub { return ['m:tan']; });
+DefMathML("Token:?:secant",                       undef, sub { return ['m:sec']; });
+DefMathML("Token:?:cosecant",                     undef, sub { return ['m:csc']; });
+DefMathML("Token:?:cotangent",                    undef, sub { return ['m:cot']; });
+DefMathML("Token:?:hyperbolic-sine",              undef, sub { return ['m:sinh']; });
+DefMathML("Token:?:hyperbolic-cosine",            undef, sub { return ['m:cosh']; });
+DefMathML("Token:?:hyperbolic-tangent",           undef, sub { return ['m:tanh']; });
+DefMathML("Token:?:hyperbolic-secant",            undef, sub { return ['m:sech']; });
+DefMathML("Token:?:hyperbolic-cosecant",          undef, sub { return ['m:csch']; });
+DefMathML("Token:?:hyperbolic-cotantent",         undef, sub { return ['m:coth']; });
+DefMathML("Token:?:inverse-sine",                 undef, sub { return ['m:arcsin']; });
+DefMathML("Token:?:inverse-cosine",               undef, sub { return ['m:arccos']; });
+DefMathML("Token:?:inverse-tangent",              undef, sub { return ['m:arctan']; });
+DefMathML("Token:?:inverse-secant",               undef, sub { return ['m:arcsec']; });
+DefMathML("Token:?:inverse-cosecant",             undef, sub { return ['m:arccsc']; });
+DefMathML("Token:?:inverse-cotangent",            undef, sub { return ['m:arccot']; });
+DefMathML("Token:?:inverse-hyperbolic-sine",      undef, sub { return ['m:arcsinh']; });
+DefMathML("Token:?:inverse-hyperbolic-cosine",    undef, sub { return ['m:arccosh']; });
+DefMathML("Token:?:inverse-hyperbolic-tangent",   undef, sub { return ['m:arctanh']; });
+DefMathML("Token:?:inverse-hyperbolic-secant",    undef, sub { return ['m:arcsech']; });
+DefMathML("Token:?:inverse-hyperbolic-cosecant",  undef, sub { return ['m:arccsch']; });
+DefMathML("Token:?:inverse-hyperbolic-cotangent", undef, sub { return ['m:arccoth']; });
 
 #======================================================================
 # Statistics:
 #   mean, sdev, variance, median, mode, moment, momentabout
 
-DefMathML("Token:?:mean",               undef, sub { ['m:mean']; });
-DefMathML("Token:?:standard-deviation", undef, sub { ['m:sdev']; });
-DefMathML("Token:?:variance",           undef, sub { ['m:var']; });
-DefMathML("Token:?:median",             undef, sub { ['m:median']; });
-DefMathML("Token:?:mode",               undef, sub { ['m:mode']; });
-DefMathML("Token:?:moment",             undef, sub { ['m:moment']; });
+DefMathML("Token:?:mean",               undef, sub { return ['m:mean']; });
+DefMathML("Token:?:standard-deviation", undef, sub { return ['m:sdev']; });
+DefMathML("Token:?:variance",           undef, sub { return ['m:var']; });
+DefMathML("Token:?:median",             undef, sub { return ['m:median']; });
+DefMathML("Token:?:mode",               undef, sub { return ['m:mode']; });
+DefMathML("Token:?:moment",             undef, sub { return ['m:moment']; });
 # momentabout ???
 
 #======================================================================
@@ -1350,14 +1388,14 @@ DefMathML("Token:?:moment",             undef, sub { ['m:moment']; });
 #   vector, matrix, matrixrow, determinant, transpose, selector,
 #   vectorproduct, scalarproduct, outerproduct.
 
-DefMathML("Token:?:vector",         undef, sub { ['m:vector']; });
-DefMathML("Token:?:matrix",         undef, sub { ['m:matrix']; });
-DefMathML("Token:?:determinant",    undef, sub { ['m:determinant']; });
-DefMathML("Token:?:transpose",      undef, sub { ['m:transpose']; });
-DefMathML("Token:?:selector",       undef, sub { ['m:selector']; });
-DefMathML("Token:?:vector-product", undef, sub { ['m:vectorproduct']; });
-DefMathML("Token:?:scalar-product", undef, sub { ['m:scalarproduct']; });
-DefMathML("Token:?:outer-product",  undef, sub { ['m:outerproduct']; });
+DefMathML("Token:?:vector",         undef, sub { return ['m:vector']; });
+DefMathML("Token:?:matrix",         undef, sub { return ['m:matrix']; });
+DefMathML("Token:?:determinant",    undef, sub { return ['m:determinant']; });
+DefMathML("Token:?:transpose",      undef, sub { return ['m:transpose']; });
+DefMathML("Token:?:selector",       undef, sub { return ['m:selector']; });
+DefMathML("Token:?:vector-product", undef, sub { return ['m:vectorproduct']; });
+DefMathML("Token:?:scalar-product", undef, sub { return ['m:scalarproduct']; });
+DefMathML("Token:?:outer-product",  undef, sub { return ['m:outerproduct']; });
 
 #======================================================================
 # Semantic Mapping Elements
@@ -1368,21 +1406,21 @@ DefMathML("Token:?:outer-product",  undef, sub { ['m:outerproduct']; });
 #   exponentiale, imaginaryi, notanumber, true, false, emptyset, pi,
 #   eulergamma, infinity
 
-DefMathML("Token:ID:integers",       undef, sub { ['m:integers']; });
-DefMathML("Token:ID:reals",          undef, sub { ['m:reals']; });
-DefMathML("Token:ID:rationals",      undef, sub { ['m:rationals']; });
-DefMathML("Token:ID:numbers",        undef, sub { ['m:naturalnumbers']; });
-DefMathML("Token:ID:complexes",      undef, sub { ['m:complexes']; });
-DefMathML("Token:ID:primes",         undef, sub { ['m:primes']; });
-DefMathML("Token:ID:exponential-e",  undef, sub { ['m:exponentiale']; });
-DefMathML("Token:ID:imaginary-i",    undef, sub { ['m:imaginaryi']; });
-DefMathML("Token:ID:notanumber",     undef, sub { ['m:notanumber']; });
-DefMathML("Token:ID:true",           undef, sub { ['m:true']; });
-DefMathML("Token:ID:false",          undef, sub { ['m:false']; });
-DefMathML("Token:ID:empty-set",      undef, sub { ['m:emptyset']; });
-DefMathML("Token:ID:circular-pi",    undef, sub { ['m:pi']; });
-DefMathML("Token:ID:Euler-constant", undef, sub { ['m:eulergamma']; });
-DefMathML("Token:ID:infinity",       undef, sub { ['m:infinity']; });
+DefMathML("Token:ID:integers",       undef, sub { return ['m:integers']; });
+DefMathML("Token:ID:reals",          undef, sub { return ['m:reals']; });
+DefMathML("Token:ID:rationals",      undef, sub { return ['m:rationals']; });
+DefMathML("Token:ID:numbers",        undef, sub { return ['m:naturalnumbers']; });
+DefMathML("Token:ID:complexes",      undef, sub { return ['m:complexes']; });
+DefMathML("Token:ID:primes",         undef, sub { return ['m:primes']; });
+DefMathML("Token:ID:exponential-e",  undef, sub { return ['m:exponentiale']; });
+DefMathML("Token:ID:imaginary-i",    undef, sub { return ['m:imaginaryi']; });
+DefMathML("Token:ID:notanumber",     undef, sub { return ['m:notanumber']; });
+DefMathML("Token:ID:true",           undef, sub { return ['m:true']; });
+DefMathML("Token:ID:false",          undef, sub { return ['m:false']; });
+DefMathML("Token:ID:empty-set",      undef, sub { return ['m:emptyset']; });
+DefMathML("Token:ID:circular-pi",    undef, sub { return ['m:pi']; });
+DefMathML("Token:ID:Euler-constant", undef, sub { return ['m:eulergamma']; });
+DefMathML("Token:ID:infinity",       undef, sub { return ['m:infinity']; });
 
 #======================================================================
 # Purely presentational constructs.
@@ -1393,7 +1431,8 @@ DefMathML("Token:ID:infinity",       undef, sub { ['m:infinity']; });
 
 DefMathML('Apply:FENCED:?', sub {
     my ($op, @elements) = @_;
-    pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'), map(pmml($_), @elements)),
+    return pmml_parenthesize(pmml_punctuate($op->getAttribute('separators'),
+        map { pmml($_) } @elements),
       $op->getAttribute('argopen'), $op->getAttribute('argclose')); });
 
 # Note how annoyingly MML's arrays don't change the style the same
@@ -1409,9 +1448,9 @@ DefMathML('Apply:STACKED:?', sub {
       ['m:mtr', {}, ['m:mtd', {}, pmml($over)]],
       ['m:mtr', {}, ['m:mtd', {}, pmml($under)]]];
     if ($LaTeXML::MathML::STYLE =~ /^(text|script)$/) {
-      ['m:mstyle', { scriptlevel => '+1' }, $stack]; }
+      return ['m:mstyle', { scriptlevel => '+1' }, $stack]; }
     else {
-      $stack; } });
+      return $stack; } });
 
 # ================================================================================
 # cfrac! Ugh!
@@ -1451,20 +1490,20 @@ sub do_cfrac {
           return ($curr, $n, $d); } } } }
 ##  (['m:mfrac',{},pmml_smaller($numer),pmml_smaller($denom)]); }
   if ($LaTeXML::MathML::STYLE eq 'display') {
-    ['m:mfrac', {}, pmml_smaller($numer), pmml_smaller($denom)]; }
+    return ['m:mfrac', {}, pmml_smaller($numer), pmml_smaller($denom)]; }
   else {
     local $LaTeXML::MathML::STYLE = 'display';                 # Trick into being treated as display.
-    (['m:mstyle', { displaystyle => 'true' },
+    return (['m:mstyle', { displaystyle => 'true' },
         ['m:mfrac', {}, pmml_smaller($numer), pmml_smaller($denom)]]); } }
 
 DefMathML('Apply:?:continued-fraction', sub {
     my ($op, $numer, $denom) = @_;
     my $style = $op->getAttribute('mathstyle') || 'display';
     if ($style eq 'inline') {
-      pmml_row(do_cfrac($numer, $denom)); }
+      return pmml_row(do_cfrac($numer, $denom)); }
     else {
       local $LaTeXML::MathML::STYLE = 'text';
-      ['m:mfrac', {}, pmml($numer), pmml($denom)]; } });
+      return ['m:mfrac', {}, pmml($numer), pmml($denom)]; } });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Specific converters for Presentation, Content, or Parallel.
@@ -1485,10 +1524,13 @@ use base qw(LaTeXML::Post::MathML);
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my @trans = $self->pmml_top($xmath, $style);
-  (scalar(@trans) > 1 ? ['m:mrow', {}, @trans] : $trans[0]); }
+  return (scalar(@trans) > 1 ? ['m:mrow', {}, @trans] : $trans[0]); }
 
-sub getEncodingName { 'MathML-Presentation'; }
-sub rawIDSuffix     { '.pmml'; }
+sub getEncodingName {
+  return 'MathML-Presentation'; }
+
+sub rawIDSuffix {
+  return '.pmml'; }
 
 #================================================================================
 # Presentation MathML with Line breaking
@@ -1555,13 +1597,14 @@ sub preprocess {
     }
     elsif ($id) {
       $$doc{converted_pmml_cache}{$id} = $pmml; }
-  } }
+  }
+  return; }
 
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my $id = $xmath->parentNode->getAttribute('xml:id');
   if (my $pmml = $id && $$doc{converted_pmml_cache}{$id}) {
-    $pmml; }
+    return $pmml; }
   # A straight displayed Math will have been handled by preprocess, above,
   # and, if it needed line-breaking, will have generated a MathFork/MathBranch.
   # Other math, in the non-semantic side of a MathFork, may want to line break here as well.
@@ -1577,7 +1620,7 @@ sub convertNode {
       my $layout     = $breaker->bestFitToWidth($xmath, $pmml, $linelength, 1);
       if ($$layout{hasbreak}) {                                                # YES it did linebreak!
         $pmml = $breaker->applyLayout($pmml, $layout); } }
-    $pmml; } }
+    return $pmml; } }
 
 #================================================================================
 # Content MathML
@@ -1587,10 +1630,13 @@ use base qw(LaTeXML::Post::MathML);
 
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
-  $self->cmml_top($xmath); }
+  return $self->cmml_top($xmath); }
 
-sub getEncodingName { 'MathML-Content'; }
-sub rawIDSuffix     { '.cmml'; }
+sub getEncodingName {
+  return 'MathML-Content'; }
+
+sub rawIDSuffix {
+  return '.cmml'; }
 
 #================================================================================
 1;

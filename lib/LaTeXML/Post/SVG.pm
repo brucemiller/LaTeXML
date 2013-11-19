@@ -12,17 +12,15 @@
 package LaTeXML::Post::SVG;
 use strict;
 use warnings;
-use Exporter;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
-our $NSURI  = "http://dlmf.nist.gov/LaTeXML";
-our $svgURI = 'http://www.w3.org/2000/svg';
-
-my $NR = '[\-\+\d\.e]+';
+my $NSURI  = "http://dlmf.nist.gov/LaTeXML"; # CONSTANT
+my $svgURI = 'http://www.w3.org/2000/svg';   # CONSTANT
+my $NR = '[\-\+\d\.e]+';        # CONSTANT
 
 ####################################
 ## main function
@@ -132,7 +130,8 @@ sub simplifyGroups {
 #======================================================================
 # Converting specific tags.
 #======================================================================
-our %converters = ('ltx:picture' => \&convertPicture, 'ltx:path' => \&convertPath,
+my %converters = (              # CONSTANT
+  'ltx:picture'      => \&convertPicture, 'ltx:path'   => \&convertPath,
   'ltx:g'            => \&convertG,       'ltx:text'   => \&convertText,
   'ltx:polygon'      => \&convertPolygon, 'ltx:line'   => \&convertLine,
   'ltx:rect'         => \&convertRect,    'ltx:bezier' => \&convertBezier,

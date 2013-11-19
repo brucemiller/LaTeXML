@@ -11,6 +11,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Post::MakeIndex;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
@@ -27,9 +28,11 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{permuted} = $options{permuted};
   $$self{split}    = $options{split};
-  $self; }
+  return $self; }
 
-sub toProcess { $_[1]->findnode('//ltx:index'); }
+sub toProcess {
+  my ($self, $doc) = @_;
+  return $doc->findnode('//ltx:index'); }
 
 sub process {
   my ($self, $doc, $index) = @_;
@@ -38,14 +41,14 @@ sub process {
   my ($allkeys, $allphrases, $tree) = $self->build_tree($doc, $index);
   if ($tree) {
     if ($$self{split}) {
-      @indices = map($self->rescan($_),
+      @indices = map { $self->rescan($_) }
         $self->makeSubCollectionDocuments($doc, $index,
-          map(($_ => $self->makeIndexList($doc, $allkeys, $allphrases, $$tree{subtrees}{$_})),
-            keys %{ $$tree{subtrees} }))); }
+        map { ($_ => $self->makeIndexList($doc, $allkeys, $allphrases, $$tree{subtrees}{$_})) }
+          keys %{ $$tree{subtrees} }); }
     else {
       $doc->addNodes($index, $self->makeIndexList($doc, $allkeys, $allphrases, $tree));
       @indices = ($self->rescan($doc)); } }
-  @indices; }
+  return @indices; }
 
 # ================================================================================
 # Data generated:
@@ -56,7 +59,7 @@ sub process {
 # Extracting a tree of index entries from the database
 sub build_tree {
   my ($self, $doc, $index) = @_;
-  if (my @keys = grep(/^INDEX:/, $$self{db}->getKeys)) {
+  if (my @keys = grep { /^INDEX:/ } $$self{db}->getKeys) {
     NoteProgress(" [" . scalar(@keys) . " entries]");
 
     #    my $id = $doc->getDocumentElement->getAttribute('xml:id');
@@ -74,11 +77,13 @@ sub build_tree {
         next; }
 
       if ($$self{permuted}) {
-        map($self->add_entry($doc, $allkeys, $allphrases, $tree, $entry, @{$_}), cyclic_permute(@phrases)); }
+        map { $self->add_entry($doc, $allkeys, $allphrases, $tree, $entry, @{$_}) }
+          cyclic_permute(@phrases); }
       else {
         $self->add_entry($doc, $allkeys, $allphrases, $tree, $entry, @phrases); } }
-    ($allkeys, $allphrases, $tree); }
-  else { (undef, undef, undef); } }
+    return ($allkeys, $allphrases, $tree); }
+  else {
+    return (undef, undef, undef); } }
 
 # NOTE: We're building ID's for each entry, of the form idx.key.key...
 # I'd like to insert the initial in the case of split index: idx.A.key.key...
@@ -98,7 +103,8 @@ sub add_entry {
         = { phrase => $init, subtrees => {}, referrers => {}, id => $$tree{id}, parent => $tree }; }
     add_rec($doc, $allkeys, $allphrases, $subtree, $entry, @phrases); }
   else {
-    add_rec($doc, $allkeys, $allphrases, $tree, $entry, @phrases); } }
+    add_rec($doc, $allkeys, $allphrases, $tree, $entry, @phrases); }
+  return; }
 
 sub add_rec {
   my ($doc, $allkeys, $allphrases, $tree, $entry, @phrases) = @_;
@@ -131,41 +137,47 @@ sub add_rec {
     if (my $seealso = $entry->getValue('see_also')) {
       $$tree{see_also} = $seealso; }
     if (my $refs = $entry->getValue('referrers')) {
-      map($$tree{referrers}{$_} = $$refs{$_}, keys %$refs); } } }
+      map { $$tree{referrers}{$_} = $$refs{$_} } keys %$refs; } }
+  return; }
 
 # ================================================================================
 # Generate permutations of indexing phrases.
 sub permute {
   my (@l) = @_;
-  if (scalar(@l) > 1) { map(permute_aux($l[$_], @l[0 .. $_ - 1], @l[$_ + 1 .. $#l]), 0 .. $#l); }
-  else { [@l]; } }
+  if (scalar(@l) > 1) {
+    return map { permute_aux($l[$_], @l[0 .. $_ - 1], @l[$_ + 1 .. $#l]) } 0 .. $#l; }
+  else {
+    return [@l]; } }
 
 sub permute_aux {
   my ($first, @rest) = @_;
-  map([$first, @$_], permute(@rest)); }
+  return map { [$first, @$_] } permute(@rest); }
 
 # Or would cyclic permutations be more appropriate?
 #  We could get odd orderings, if authors aren't consistent,
 # but would avoid silly redundancies in small top-level listings.
 sub cyclic_permute {
   my (@l) = @_;
-  if (scalar(@l) > 1) { map([@l[$_ .. $#l], @l[0 .. $_ - 1]], 0 .. $#l); }
-  else { [@l]; } }
+  if (scalar(@l) > 1) {
+    return map { [@l[$_ .. $#l], @l[0 .. $_ - 1]] } 0 .. $#l; }
+  else {
+    return [@l]; } }
 
 # ================================================================================
 # Formatting the resulting index tree.
 
 # Sorting comparison that puts different cases together
 sub alphacmp {
-  (lc($a) cmp lc($b)) || ($a cmp $b); }
+  return (lc($a) cmp lc($b)) || ($a cmp $b); }
 
 sub makeIndexList {
   my ($self, $doc, $allkeys, $allphrases, $tree) = @_;
   my $subtrees = $$tree{subtrees};
   if (my @keys = sort alphacmp keys %$subtrees) {
-    ['ltx:indexlist', {}, map($self->makeIndexEntry($doc, $allkeys, $allphrases, $$subtrees{$_}), @keys)]; }
+    return ['ltx:indexlist', {},
+      map { $self->makeIndexEntry($doc, $allkeys, $allphrases, $$subtrees{$_}) } @keys]; }
   else {
-    (); } }
+    return (); } }
 
 sub makeIndexEntry {
   my ($self, $doc, $allkeys, $allphrases, $tree) = @_;
@@ -175,8 +187,8 @@ sub makeIndexEntry {
   # Note sort of keys here is questionable!
   if (keys %$refs) {
     push(@links, ['ltx:text', {}, ' '],
-      conjoin(map($self->makeIndexRefs($doc, $_, sort alphacmp keys %{ $$refs{$_} }),
-          sort alphacmp keys %$refs))); }
+      conjoin(map { $self->makeIndexRefs($doc, $_, sort alphacmp keys %{ $$refs{$_} }) }
+          sort alphacmp keys %$refs)); }
   if ($seealso) {
     my %saw = ();
     foreach my $see (@$seealso) {
@@ -200,7 +212,7 @@ sub makeIndexEntry {
           unless $doc->findnodes("descendant-or-self::ltx:ref", $see);
         push(@links, ['ltx:text', {}, $see->childNodes]); } } }
 
-  ['ltx:indexentry', { 'xml:id' => $$tree{id} },
+  return ['ltx:indexentry', { 'xml:id' => $$tree{id} },
     ['ltx:indexphrase', {}, $doc->trimChildNodes($$tree{phrase})],
     (@links ? (['ltx:indexrefs', {}, @links]) : ()),
     $self->makeIndexList($doc, $allkeys, $allphrases, $tree)]; }
@@ -219,7 +231,7 @@ sub seealsoSearch {
     ) {
     my $entry = $self->seealsoSearch_aux($doc, $allkeys, $allphrases, $tree, $key, $pnc);
     return $entry if $entry; }
-}
+  return; }
 
 sub seealsoSearch_aux {
   my ($self, $doc, $allkeys, $allphrases, $tree, $key, $phr) = @_;
@@ -230,13 +242,13 @@ sub seealsoSearch_aux {
     foreach my $k ($key, keys %{ $$allphrases{$phr} }) {
       last if $entry = $$allkeys{ $pre . $k }; }
     $t = $$t{parent}; }
-  $entry; }
+  return $entry; }
 
 # Given that sorted styles gives bold, italic, normal,
 # let's just do the first.
 sub makeIndexRefs {
   my ($self, $doc, $id, @styles) = @_;
-  ((($styles[0] || 'normal') ne 'normal')
+  return ((($styles[0] || 'normal') ne 'normal')
     ? ['ltx:text', { font => $styles[0] }, ['ltx:ref', { idref => $id }]]
     : ['ltx:ref', { idref => $id }]); }
 
@@ -248,7 +260,7 @@ sub conjoin {
     push(@result, shift(@items));
     while (@items) {
       push(@result, ", ", shift(@items)); } }
-  @result; }
+  return @result; }
 
 # ================================================================================
 1;

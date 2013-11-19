@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::CrossRef;
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use charnames qw(:full);
@@ -29,7 +30,7 @@ sub new {
   $$self{min_ref_length} = (defined $options{min_ref_length} ? $options{min_ref_length} : 1);
   $$self{ref_join} = (defined $options{ref_join} ? $options{ref_join} : " \x{2023} "); # or " in " or ... ?
   $$self{navigation_toc} = $options{navigation_toc};
-  $self; }
+  return $self; }
 
 sub process {
   my ($self, $doc, $root) = @_;
@@ -52,16 +53,17 @@ sub process {
     my @msgs   = ();
     foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING) {
       my @items = keys %{ $LaTeXML::Post::CrossRef::MISSING{$type} };
-      $tempid ||= grep($_ eq 'TEMPORARY_DOCUMENT_ID', @items);
+      $tempid ||= grep { $_ eq 'TEMPORARY_DOCUMENT_ID' } @items;
       push(@msgs, $type . ": " . join(', ', @items)); }
     Warn('expected', 'ids', undef,
       "Missing items:\n  " . join(";\n  ", @msgs),
       ($tempid ? "[Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]" : ())); }
-  $doc; }
+  return $doc; }
 
 sub note_missing {
   my ($self, $type, $key) = @_;
-  $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++; }
+  $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++;
+  return; }
 
 sub fill_in_relations {
   my ($self, $doc) = @_;
@@ -99,8 +101,8 @@ sub fill_in_relations {
           next if $sib_id eq $id;
           if ($sib->getValue('primary')) {    # If a primary page
                                               # Use the element name (w/o prefix) as the relation !!!!
-            my $rel = $sib->getValue('type'); $rel =~ s/^(\w+)://;
-            $doc->addNavigation($rel => $sib_id); }
+            my $sib_rel = $sib->getValue('type'); $sib_rel =~ s/^(\w+)://;
+            $doc->addNavigation($sib_rel => $sib_id); }
           else {                              # Else, consider it as some sort of sidebar.
             $doc->addNavigation('sidebar' => $sib_id); } } }
       # Then Look at (only?) 1st level of pages below this one.
@@ -108,11 +110,12 @@ sub fill_in_relations {
         my $child_id = $child->getValue('pageid');
         if ($child->getValue('primary')) {    # If a primary page
                                               # Use the element name (w/o prefix) as the relation !!!!
-          my $rel = $child->getValue('type'); $rel =~ s/^(\w+)://;
-          $doc->addNavigation($rel => $child_id); }
+          my $child_rel = $child->getValue('type'); $child_rel =~ s/^(\w+)://;
+          $doc->addNavigation($child_rel => $child_id); }
         else {                                # Else, consider it as some sort of sidebar.
           $doc->addNavigation('sidebar' => $child_id); } }
-    } } }
+    } }
+  return; }
 
 sub findPreviousPage {
   my ($self, $entry) = @_;
@@ -120,21 +123,22 @@ sub findPreviousPage {
   # Look at parent's entry, and get the list of our siblings
   if (my $pentry = $self->getParentPage($entry)) {
     my @sibs = $self->getChildPages($pentry);
-    while (@sibs && $sibs[$#sibs]->getValue('pageid') ne $page) {    # peel off following sibs
+    while (@sibs && $sibs[-1]->getValue('pageid') ne $page) {    # peel off following sibs
       pop(@sibs); }
-    return unless @sibs && $sibs[$#sibs]->getValue('pageid') eq $page;    # Broken database?
-    pop(@sibs);                                                           # Now skip our own entry ($id)
-    @sibs = grep($_->getValue('primary'), @sibs);
+    return unless @sibs && $sibs[-1]->getValue('pageid') eq $page;    # Broken database?
+    pop(@sibs);                                                       # Now skip our own entry ($id)
+    @sibs = grep { $_->getValue('primary') } @sibs;
     # If there IS a preceding sibling, find it's rightmost descendant
     while (@sibs) {
-      $pentry = $sibs[$#sibs];
-      @sibs = grep($_->getValue('primary'), $self->getChildPages($pentry)); }
-    $pentry; } }                                                          # Return deepest page found
+      $pentry = $sibs[-1];
+      @sibs = grep { $_->getValue('primary') } $self->getChildPages($pentry); }
+    return $pentry; }                                                 # Return deepest page found
+  return; }
 
 sub findNextPage {
   my ($self, $entry) = @_;
   # Return first child page, if any
-  my @ch = grep($_->getValue('primary'), $self->getChildPages($entry));
+  my @ch = grep { $_->getValue('primary') } $self->getChildPages($entry);
   return $ch[0] if @ch;
   my $page = $entry->getValue('pageid');
   # Look at parent's entry, and get the list of siblings
@@ -144,14 +148,15 @@ sub findNextPage {
       shift(@sibs); }
     return unless @sibs && ($sibs[0]->getValue('pageid') eq $page);    # Broken database?
     shift(@sibs);                                                      # remove our own entry ($id)
-    @sibs = grep($_->getValue('primary'), @sibs);                      # Skip uninteresting pages
+    @sibs = grep { $_->getValue('primary') } @sibs;                    # Skip uninteresting pages
     return $sibs[0] if @sibs;
-    $page = $entry->getValue('pageid'); } }
+    $page = $entry->getValue('pageid'); }
+  return; }
 
 sub getParentPage {
   my ($self, $entry) = @_;
   my $x;
-  ($x = $entry->getValue('pageid')) && ($x = $$self{db}->lookup("ID:" . $x))
+  return ($x = $entry->getValue('pageid')) && ($x = $$self{db}->lookup("ID:" . $x))
     && ($x = $x->getValue('parent')) && ($x = $$self{db}->lookup("ID:" . $x))
     && ($x = $x->getValue('pageid')) && ($x = $$self{db}->lookup("ID:" . $x))
     && $x; }
@@ -165,16 +170,16 @@ sub getChildPages {
     if (my $e = $$self{db}->lookup("ID:" . $ch)) {
       if (my $p = $e->getValue('pageid')) {    # if valid page
         push(@p, ($p ne $page ? ($e) : $self->getChildPages($e))); } } }
-  @p; }
+  return @p; }
 
 # this is probably the same as "Interesting" for the above relations.
 # To make it more extensible, it really should be integrated into the database?
 # Eg. "sectional" things might mark their entries specially?
-our $normaltoctypes = { map(($_ => 1),
-    qw (ltx:document ltx:part ltx:chapter
-      ltx:section ltx:subsection ltx:subsubsection
-      ltx:paragraph ltx:subparagraph
-      ltx:index ltx:bibliography ltx:glossary ltx:appendix)) };
+my $normaltoctypes = { map { ($_ => 1) } # CONSTANT
+  qw (ltx:document ltx:part ltx:chapter
+    ltx:section ltx:subsection ltx:subsubsection
+    ltx:paragraph ltx:subparagraph
+    ltx:index ltx:bibliography ltx:glossary ltx:appendix) };
 
 sub fill_in_tocs {
   my ($self, $doc) = @_;
@@ -183,7 +188,7 @@ sub fill_in_tocs {
     $n++;
     my $selector = $toc->getAttribute('select');
     my $types    = ($selector
-      ? { map(($_ => 1), split(/\s*\|\s*/, $selector)) }
+      ? { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }
       : $normaltoctypes);
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
@@ -195,7 +200,8 @@ sub fill_in_tocs {
     elsif ($format eq 'context') {
       @list = $self->gentoc_context($id, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
-  NoteProgressDetailed(" [Filled in $n TOCs]"); }
+  NoteProgressDetailed(" [Filled in $n TOCs]");
+  return; }
 
 # generate TOC for $id & its children,
 # providing that those objects are of appropriate type.
@@ -210,18 +216,18 @@ sub gentoc {
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map($self->gentoc($_, $types, $localto, $selfid),
-        @{ $entry->getValue('children') || [] }); }
+      @kids = map { $self->gentoc($_, $types, $localto, $selfid) }
+        @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     if ($$types{$type}) {
       my $typename = $type; $typename =~ s/^ltx://;
-      (['ltx:tocentry', (defined $selfid && ($selfid eq $id) ? { class => 'ltx_ref_self' } : {}),
+      return (['ltx:tocentry', (defined $selfid && ($selfid eq $id) ? { class => 'ltx_ref_self' } : {}),
           ['ltx:ref', { show => 'toctitle', idref => $id }],
           (@kids ? (['ltx:toclist', { class => "ltx_toc_$typename" }, @kids]) : ())]); }
     else {
-      @kids; } }
+      return @kids; } }
   else {
-    (); } }
+    return (); } }
 
 # Generate a "context" TOC, that shows what's on the current page,
 # but also shows the page in the context of it's siblings & ancestors.
@@ -234,12 +240,12 @@ sub gentoc_context {
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
-      @navtoc = map(($_ eq $id
+      @navtoc = map { ($_ eq $id
           ? @navtoc
           : ['ltx:tocentry', {},
-            ['ltx:ref', { idref => $_, show => 'toctitle' }]]),
-        grep($$normaltoctypes{ $$self{db}->lookup("ID:$_")->getValue('type') },
-          @{ $entry->getValue('children') || [] }));
+            ['ltx:ref', { idref => $_, show => 'toctitle' }]]) }
+        grep { $$normaltoctypes{ $$self{db}->lookup("ID:$_")->getValue('type') } }
+        @{ $entry->getValue('children') || [] };
       my $type = $entry->getValue('type');
       if ($$types{$type}) {
         my $typename = $type; $typename =~ s/^ltx://;
@@ -247,9 +253,9 @@ sub gentoc_context {
             ['ltx:ref', { show => 'toctitle', idref => $p_id }],
             (@navtoc ? (['ltx:toclist', { class => "ltx_toc_$typename" }, @navtoc]) : ())]); }
       $id = $p_id; }
-    @navtoc; }
+    return @navtoc; }
   else {
-    (); } }
+    return (); } }
 
 sub fill_in_frags {
   my ($self, $doc) = @_;
@@ -262,7 +268,8 @@ sub fill_in_frags {
       if (my $fragid = $entry->getValue('fragid')) {
         $n++;
         $node->parentNode->setAttribute(fragid => $fragid); } } }
-  NoteProgressDetailed(" [Filled in fragment $n ids]"); }
+  NoteProgressDetailed(" [Filled in fragment $n ids]");
+  return; }
 
 # Fill in content text for any <... @idref..>'s or @labelref
 sub fill_in_refs {
@@ -302,7 +309,8 @@ sub fill_in_refs {
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
     } }
-  NoteProgressDetailed(" [Filled in $n refs]"); }
+  NoteProgressDetailed(" [Filled in $n refs]");
+  return; }
 
 # similar sorta thing for RDF about & resource labels & ids
 sub fill_in_RDFa_refs {
@@ -330,7 +338,8 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key => '#' . $id); } }
       } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
-  NoteProgressDetailed(" [Filled in $n RDFa refs]"); }
+  NoteProgressDetailed(" [Filled in $n RDFa refs]");
+  return; }
 
 # Needs to evolve into the combined stuff that we had in DLMF.
 # (eg. concise author/year combinations for multiple bibrefs)
@@ -340,7 +349,8 @@ sub fill_in_bibrefs {
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')) {
     $n++;
     $doc->replaceNode($bibref, $self->make_bibcite($doc, $bibref)); }
-  NoteProgressDetailed(" [Filled in $n bibrefs]"); }
+  NoteProgressDetailed(" [Filled in $n bibrefs]");
+  return; }
 
 # Given a list of bibkeys, construct links to them.
 # Mostly tuned to author-year style.
@@ -348,15 +358,15 @@ sub fill_in_bibrefs {
 sub make_bibcite {
   my ($self, $doc, $bibref) = @_;
 
-  my @keys         = grep($_, split(/,/, $bibref->getAttribute('bibrefs')));
+  my @keys         = grep { $_ } split(/,/, $bibref->getAttribute('bibrefs'));
   my $show         = $bibref->getAttribute('show');
   my @preformatted = $bibref->childNodes();
   if ($show && ($show eq 'none') && !@preformatted) {
     $show = 'refnum'; }
   if (!$show) {
-    map($self->note_missing("bibref 'show' parameter", $_), @keys);
+    map { $self->note_missing("bibref 'show' parameter", $_) } @keys;
     $show = 'refnum'; }
-  if($show eq 'nothing'){       # Ad Hoc support for \nocite!t
+  if ($show eq 'nothing') {    # Ad Hoc support for \nocite!t
     return (); }
   my $sep   = $bibref->getAttribute('separator')   || ',';
   my $yysep = $bibref->getAttribute('yyseparator') || ',';
@@ -391,8 +401,8 @@ sub make_bibcite {
               refnum  => [$doc->trimChildNodes($refnum)],
               title   => [$doc->trimChildNodes($title || $keytag)],
               attr    => { idref => $id,
-                href => $self->generateURL($doc, $id),
-                ($title ? (title => $title->textContent) : ()) } }); } } }
+                href => $self->generateURL($doc, $id)//undef,
+                ($title ? (title => $title->textContent//undef) : ()) } }); } } }
     else {
       $self->note_missing('Entry for citation', $key); } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
@@ -446,7 +456,7 @@ sub make_bibcite {
     push(@refs,
       (@refs ? ($sep, ' ') : ()),
       ($didref ? @stuff : (['ltx:ref', $$datum{attr}, @stuff]))); }
-  @refs; }
+  return @refs; }
 
 sub generateURL {
   my ($self, $doc, $id) = @_;
@@ -471,13 +481,14 @@ sub generateURL {
         $url .= '#' . $fragid; }
       elsif ($location eq $doclocation) {
         $url = ''; }
-      $url; }
+      return $url; }
     else {
       $self->note_missing('File location for ID', $id); } }
   else {
-    $self->note_missing('DB Entry for ID', $id); } }
+    $self->note_missing('DB Entry for ID', $id); }
+  return; }
 
-our $NBSP = pack('U', 0xA0);
+my $NBSP = pack('U', 0xA0);     # CONSTANT
 # Generate the contents of a <ltx:ref> of the given id.
 # show is a string containing substrings 'type', 'refnum' and 'title'
 # (standing for the type prefix, refnum and title of the id'd object)
@@ -498,10 +509,10 @@ sub generateRef {
         $pending = $$self{ref_join}; } # inside/outside this brace determines if text can START with the join.
       $id = $entry->getValue('parent'); } }
   if (@stuff) {
-    @stuff; }
+    return @stuff; }
   else {
     $self->note_missing('Usable title for ID', $reqid);
-    ("?"); } }
+    return ("?"); } }
 
 # Check if the proposed content of a <ltx:ref> is "Good Enough"
 # (long enough, unique enough to give reader feedback,...)
@@ -512,20 +523,24 @@ sub checkRefContent {
   # Could compare a minum length
   # But perhaps this is better: check that there's some "text", not just symbols!
   $s =~ s/\bin\s+//g;
-  ($s =~ /\w/ ? 1 : 0); }
+  return ($s =~ /\w/ ? 1 : 0); }
 
-sub text_content { join('', map(text_content_aux($_), @_)); }
+sub text_content {
+  my (@stuff) = @_;
+  return join('', map { text_content_aux($_) } @stuff); }
 
 sub text_content_aux {
   my ($n) = @_;
   my $r = ref $n;
-  if (!$r) { $n; }
+  if (!$r) {
+    return $n; }
   elsif ($r eq 'ARRAY') {
     my ($t, $a, @c) = @$n;
-    text_content(@c); }
+    return text_content(@c); }
   elsif ($r =~ /^XML::/) {
-    $n->textContent; }
-  else { $n; } }
+    return $n->textContent; }
+  else {
+    return $n; } }
 
 # Interpret a "Show" pattern for a given DB entry.
 # The pattern can contain substrings to be substituted
@@ -562,11 +577,11 @@ sub generateRef_aux {
         push(@stuff, ['ltx:text', { class => 'ltx_ref_title' }, $self->prepRefText($doc, $title)]); } }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
-  ($OK ? @stuff : ()); }
+  return ($OK ? @stuff : ()); }
 
 sub prepRefText {
   my ($self, $doc, $title) = @_;
-  $doc->cloneNodes($doc->trimChildNodes($self->fillInTitle($doc, $title))); }
+  return $doc->cloneNodes($doc->trimChildNodes($self->fillInTitle($doc, $title))); }
 
 # Generate a title string for ltx:ref
 sub generateTitle {
@@ -586,25 +601,25 @@ sub generateTitle {
       $string .= $$self{ref_join} if $string;
       $string .= $title; }
     $id = $entry->getValue('parent'); }
-  $string || $altstring; }
+  return $string || $altstring; }
 
 sub getTextContent {
   my ($doc, $node) = @_;
   my $type = $node->nodeType;
   if ($type == XML_TEXT_NODE) {
-    $node->textContent; }
+    return $node->textContent; }
   elsif ($type == XML_ELEMENT_NODE) {
     my $tag = $doc->getQName($node);
     if ($tag eq 'ltx:tag') {
-      ($node->getAttribute('open') || '')
+      return ($node->getAttribute('open') || '')
         . $node->textContent    # assuming no nested ltx:tag
         . ($node->getAttribute('close') || ''); }
     else {
-      join('', map { getTextContent($doc, $_); } $node->childNodes); } }
+      return join('', map { getTextContent($doc, $_); } $node->childNodes); } }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
-    join('', map { getTextContent($doc, $_); } $node->childNodes); }
+    return join('', map { getTextContent($doc, $_); } $node->childNodes); }
   else {
-    ''; } }
+    return ''; } }
 
 # Fill in any embedded ltx:ref's & ltx:cite's within a title
 sub fillInTitle {
@@ -631,7 +646,7 @@ sub fillInTitle {
     $doc->replaceNode($bibref, $self->make_bibcite($doc, $bibref)); }
   foreach my $break ($doc->findnodes('descendant::ltx:break', $title)) {
     $doc->replaceNode($break, ['ltx:text', {}, " "]); }
-  $title; }
+  return $title; }
 
 sub fillInGlossaryRef {
   my ($self, $doc) = @_;
@@ -648,7 +663,8 @@ sub fillInGlossaryRef {
       if (!$ref->textContent && !element_nodes($ref)) {
         $doc->addNodes($ref, $self->generateGlossaryRefTitle($doc, $entry, $show)); }
     } }
-  NoteProgressDetailed(" [Filled in $n glossaryrefs]"); }
+  NoteProgressDetailed(" [Filled in $n glossaryrefs]");
+  return; }
 
 sub generateGlossaryRefTitle {
   my ($self, $doc, $entry, $show) = @_;
@@ -667,7 +683,7 @@ sub generateGlossaryRefTitle {
             $self->prepRefText($doc, $phrase)]); } }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
-  ($OK ? @stuff : ()); }
+  return ($OK ? @stuff : ()); }
 
 # ================================================================================
 1;

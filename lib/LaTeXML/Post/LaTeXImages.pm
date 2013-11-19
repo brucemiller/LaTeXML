@@ -12,6 +12,7 @@
 
 package LaTeXML::Post::LaTeXImages;
 use strict;
+use warnings;
 use DB_File;
 #use Image::Magick;
 #use Graphics::Magick;
@@ -28,7 +29,7 @@ use base qw(LaTeXML::Post::Processor);
 
 # Other silly constants that might want changing?
 ##our $TMP = '/tmp';
-our $LATEXCMD = 'latex';    #(or elatex)
+our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE?]
 
 # The purpose of this module is to convert TeX fragments into png (or similar),
 # typically via dvi and other intermediate formats.
@@ -44,8 +45,8 @@ our $LATEXCMD = 'latex';    #(or elatex)
 #  -E   :  crop each page close to the `ink'.
 #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
 
-our $DVIPSCMD  = 'dvips -q -S1 -i -E -j0 -o imgx';
-our $DVIPNGCMD = 'dvipng -bg Transparent -T tight -q -o imgx%03d';
+our $DVIPSCMD  = 'dvips -q -S1 -i -E -j0 -o imgx'; # [ CONFIGURABLE?]
+our $DVIPNGCMD = 'dvipng -bg Transparent -T tight -q -o imgx%03d'; # [ CONFIGURABLE?]
 
 # Options:
 #   source         : (dir)
@@ -77,7 +78,7 @@ sub new {
     if ($options{use_dvipng} || (!defined $options{use_dvipng})) && which('dvipng');
   $$self{dvicmd}             = ($$self{use_dvipng} ? $DVIPNGCMD : $DVIPSCMD);
   $$self{dvicmd_output_type} = ($$self{use_dvipng} ? 'png32'    : 'eps');
-  $self; }
+  return $self; }
 
 #**********************************************************************
 
@@ -104,8 +105,9 @@ sub new {
 #   $module =~ s/::/\//g;
 #   eval { local $$SIG{__DIE__}; require $module; $class->new(%props); }; }
 
-our $IMAGECLASS;    # cached class if we found one that works.
-our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
+# This will be set once we've found an Image processing library to use [Daemon safe]
+our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
+my @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick)); # CONSTANT
 
 sub createMagickImage {
   my ($sel, %props) = @_;
@@ -120,7 +122,7 @@ sub createMagickImage {
   Fatal('imageprocessing', 'imageclass', undef,
     "No available image processing module found",
     "Candidates: " . join(',', @MagickClasses)) unless $IMAGECLASS;
-  $IMAGECLASS->new(%props); }
+  return $IMAGECLASS->new(%props); }
 
 #**********************************************************************
 # Methods that must be defined;
@@ -128,13 +130,16 @@ sub createMagickImage {
 # This is an abstract class; concrete classes must select the nodes to process.
 # We'll still need to use $proc->extractTeX($doc,$node)
 #  to extract the actual TeX string!
-sub toProcess { (); }
+sub toProcess {
+  return (); }
 
 # $self->extractTeX($doc,$node)=>$texstring;
-sub extractTeX { ""; }
+sub extractTeX {
+  return ""; }
 
 # $self->format_tex($texstring)
-sub format_tex { ""; }
+sub format_tex {
+  return ""; }
 
 # $self->setTeXImage($doc,$node,$imagepath,$width,$height);
 # This is the default
@@ -143,7 +148,8 @@ sub setTeXImage {
   $node->setAttribute('imagesrc',    $path);
   $node->setAttribute('imagewidth',  $width);
   $node->setAttribute('imageheight', $height);
-  $node->setAttribute('imagedepth',  $depth) if defined $depth; }
+  $node->setAttribute('imagedepth',  $depth) if defined $depth;
+  return; }
 
 #======================================================================
 # Methods that could be wrapped, overridden.
@@ -153,13 +159,14 @@ sub cleanTeX {
   my ($self, $tex) = @_;
   return unless defined $tex;
   my $style = '';
-  $style = $1 if
-    $tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//; # Save any leading style
+  # Save any leading style
+  if ($tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//) {
+    $style = $1; }
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
   $tex =~ s/\%[^\n]*\n//gs;                                            # Strip comments
   $tex = $style . ' ' . $tex if $style;                                # Put back the style, if any
-  $tex; }
+  return $tex; }
 
 #**********************************************************************
 
@@ -187,7 +194,7 @@ sub process {
   my ($ntotal, $nuniq) = (0, 0);
   foreach my $node (@nodes) {
     my $tex = $self->extractTeX($doc, $node);
-    next if !(defined $tex) or ($tex =~ /^\s*$/);
+    next if !(defined $tex) || ($tex =~ /^\s*$/);
     $ntotal++;
 
     # Ideally, $dest is relative to document..
@@ -207,7 +214,7 @@ sub process {
   foreach my $key (sort keys %table) {
     my $store = $doc->cacheLookup($key);
     if ($store && ($store =~ /^(.*);(\d+);(\d+);(\d+)$/)) {
-      next if -f pathname_absolute($1,$destdir); }
+      next if -f pathname_absolute($1, $destdir); }
     push(@pending, $table{$key}); }
 
   NoteProgress(" [$nuniq unique; " . scalar(@pending) . " new]");
@@ -287,7 +294,7 @@ sub process {
         my $absdest = $doc->checkDestination($dest);
         my ($w, $h) = $self->convert_image($doc, $src, $absdest);
         next unless defined $w && defined $h;
-        my ($ww, $hh, $dd) = map($_ * $pixels_per_pt, @{ $dimensions[$index] });
+        my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
         my $d = int(0.5 + $dd + $$self{padding});
         if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
           Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
@@ -303,11 +310,11 @@ sub process {
     next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
     my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
     # Ideally, $image is already relative, but if not, make relative to document
-    my $reldest = pathname_relative($image,$doc->getDestinationDirectory);
+    my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
     foreach my $node (@{ $$entry{nodes} }) {
       $self->setTeXImage($doc, $node, $image, $width, $height, $depth); } }
   $doc->closeCache;    # If opened.
-  $doc; }
+  return $doc; }
 
 # Get a list blah, blah...
 sub find_documentclass_and_packages {
@@ -329,7 +336,7 @@ sub find_documentclass_and_packages {
     Warn('expected', 'class', undef, "No document class found; using article");
     $class = 'article'; }
 
-  ([$class, $classoptions, $oldstyle], @packages); }
+  return ([$class, $classoptions, $oldstyle], @packages); }
 
 #======================================================================
 # Generating & Processing the LaTeX source.
@@ -338,18 +345,18 @@ sub find_documentclass_and_packages {
 sub pre_preamble {
   my ($self, $doc) = @_;
   my @classdata = $self->find_documentclass_and_packages($doc);
-  my ($class, $options, $oldstyle) = @{ shift(@classdata) };
-  $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
-  $options = '' unless defined $options;
+  my ($class, $class_options, $oldstyle) = @{ shift(@classdata) };
+  $class_options = "[$class_options]" if $class_options && ($class_options !~ /^\[.*\]$/);
+  $class_options = '' unless defined $class_options;
   my $documentcommand = ($oldstyle ? "\\documentstyle" : "\\documentclass");
   my $packages        = '';
   my $dest            = $doc->getDestination;
   my $description     = ($dest ? "% Destination $dest" : "");
   my $pts_per_pixel   = 72.27 / $$self{dpi} / $$self{magnification};
   foreach my $pkgdata (@classdata) {
-    my ($package, $options) = @$pkgdata;
-    $options = "[$options]" if $options && ($options !~ /^\[.*\]$/);
-    $packages .= "\\usepackage$options\{$package\}\n"; }
+    my ($package, $package_options) = @$pkgdata;
+    $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
+    $packages .= "\\usepackage$package_options\{$package\}\n"; }
 
   my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
@@ -358,7 +365,7 @@ sub pre_preamble {
   return <<EOPreamble;
 \\batchmode
 \\def\\inlatexml{true}
-$documentcommand$options\{$class\}
+$documentcommand$class_options\{$class\}
 $description
 $packages
 \\makeatletter
@@ -461,7 +468,7 @@ sub convert_image {
     $dest = "png32:$dest"; }
 
   $image->Write(filename => $dest);
-  ($w, $h); }
+  return ($w, $h); }
 
 #======================================================================
 1;
