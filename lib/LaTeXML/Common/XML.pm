@@ -251,7 +251,7 @@ sub set_RDFa_prefixes {
         foreach my $term (split(/\s/, $v)) {
           if (($term =~ /^(\w+):/) && !$NON_RDF_PREFIXES{$1}) {
             $prefixes{$1} = 1 if $localmap{$1}; } } } } }    # A prefix is a prefix IFF there is a mapping!!
-  if (my $prefixes = join(' ', map { $_ . ": " . $localmap{$_} } keys %prefixes)) {
+  if (my $prefixes = join(' ', map { $_ . ": " . $localmap{$_} } sort keys %prefixes)) {
     $root->setAttribute(prefix => $prefixes); }
   return; }
 
