@@ -146,7 +146,7 @@ DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
       $save = $doc->floatToAttribute('property');    # pic arbitrary rdf attribute
       $node = $doc->getElement; }
     my $attr = RDFAttributes($kv);
-    foreach my $k (keys %$attr) {
+    foreach my $k (sort keys %$attr) {
       $doc->setAttribute($node, $k => ToString($$attr{$k})); }
     $doc->setNode($save); });
 
