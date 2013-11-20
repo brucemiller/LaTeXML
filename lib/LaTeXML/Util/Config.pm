@@ -175,11 +175,11 @@ sub read {
   my $opts = $self->{opts};
   local @ARGV = @$argref;
   my ($spec) = getopt_specification(options => $opts);
-  GetOptions(%{$spec}) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+  GetOptions(%{$spec}) or pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
     -input => pod_where({ -inc => 1 }, __PACKAGE__),
     -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
 
-  pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+  pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
     -input => pod_where({ -inc => 1 }, __PACKAGE__),
     -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT) if $opts->{help};
 
@@ -191,7 +191,7 @@ sub read {
   # Removed math formats are irrelevant for conversion:
   delete $opts->{removed_math_formats};
 
-  if ($opts->{showversion}) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+  if ($opts->{showversion}) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
 
   $opts->{source} = $ARGV[0] unless $opts->{source};
   if (!$opts->{type} || ($opts->{type} eq 'auto')) {
@@ -218,7 +218,7 @@ sub scan_to_keyvals {
   my ($self, $argref) = @_;
   local @ARGV = @$argref;
   my ($spec, $keyvals) = getopt_specification(type => 'keyvals');
-  GetOptions(%$spec) or pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 99,
+  GetOptions(%$spec) or pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
     -input => pod_where({ -inc => 1 }, __PACKAGE__),
     -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
   push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];

@@ -124,10 +124,10 @@ GetOptions("quiet" => sub { $verbosity--; },
   "svg!"           => \$svg,
   "pictureimages!" => \$picimages,
 
-  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+  ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
-if ($showversion) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
 
 # Get the requested XML file
 xError("Missing input xmlfile") unless @ARGV;
@@ -235,7 +235,7 @@ if ((!defined $destination) && ($mathimages || $dographics || $picimages)) {
 #======================================================================
 
 binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
 print STDERR "processing started " . localtime() unless $verbosity < 0;
 
 # Default options/parameters for each post processor
@@ -420,7 +420,7 @@ print STDERR "processing finished " . localtime() . "\n" unless $verbosity < 0;
 #======================================================================
 sub xError {
   my ($message) = @_;
-#  pod2usage(-message=>"$LaTeXML::Version::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR);
+#  pod2usage(-message=>"$LaTeXML::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR);
   die "ERROR: $message\nUse the --help option for complete details\n";
 }
 

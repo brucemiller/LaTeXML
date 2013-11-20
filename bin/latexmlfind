@@ -23,18 +23,18 @@ GetOptions("symbol=s" => \@symbols,,
   "verbose"            => sub { $verbosity++; },
   "VERSION"            => \$showversion,
   "help"               => \$help,
-  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+  ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
-if ($showversion) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
-pod2usage(-message => "$LaTeXML::Version::IDENTITY\nMissing input TeX file",
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 my $source = $ARGV[0];
 
 #**********************************************************************
 # Do the processing.
-print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
 binmode(STDOUT, ":encoding(UTF-8)");    # Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);

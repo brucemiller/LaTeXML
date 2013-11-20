@@ -122,7 +122,7 @@ sub convert {
   my $opts    = $self->{opts};
   my $runtime = $self->{runtime};
   ($runtime->{status}, $runtime->{status_code}) = (undef, undef);
-  print STDERR "\n$LaTeXML::Version::IDENTITY\n" if $opts->{verbosity} >= 0;
+  print STDERR "\n$LaTeXML::IDENTITY\n" if $opts->{verbosity} >= 0;
   print STDERR "processing started " . localtime() . "\n" if $opts->{verbosity} >= 0;
   # Handle What's IN?
   # 1. Math should get a mathdoc() wrapper
@@ -514,7 +514,7 @@ sub new_latexml {
     nomathparse     => $opts->{nomathparse});
 
   if (my @baddirs = grep { !-d $_ } @{ $opts->{paths} }) {
-    warn "\n$LaTeXML::Version::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
+    warn "\n$LaTeXML::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
   $latexml->withState(sub {
       my ($state) = @_;

@@ -54,16 +54,16 @@ GetOptions(
   "debug=s"       => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
   "documentid=s"  => \$documentid,
   "help"          => \$help,
-  ) or pod2usage(-message => $LaTeXML::Version::IDENTITY,
+  ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::Version::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
-if ($showversion) { print STDERR "$LaTeXML::Version::IDENTITY\n"; exit(1); }
-pod2usage(-message => "$LaTeXML::Version::IDENTITY\nMissing input TeX file",
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
 binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::Version::IDENTITY\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
 
 #======================================================================
 # TeX Source
@@ -114,7 +114,7 @@ EODoc
 #======================================================================
 @paths = map(pathname_canonical($_), @paths);
 if (my @baddirs = grep(!-d $_, @paths)) {
-  warn "$LaTeXML::Version::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
+  warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 my $latexml = LaTeXML->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
   verbosity => $verbosity, strict => $strict,
