@@ -37,7 +37,6 @@ install_TeXStyles();
 extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
-	      VERSION_FROM => 'lib/LaTeXML/Version.in',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
 	      ABSTRACT => "transforms TeX and LaTeX into XML",
 	      PREREQ_PM => { 
@@ -98,7 +97,10 @@ sub record_revision {
   # Get the current revision
   # This should be done SAFELY; and work even if svnversion isn't available (esp, windows, mac...)
   # (When it isn't there's an error, but REVISION ends up "" ... exactly right, I think?)
-  $$MORE_MACROS{REVISION} = '`svnversion $(REVISION_BASE)`';
+  ## This command is appropriate for svn
+  ##  $$MORE_MACROS{REVISION} = '`svnversion $(REVISION_BASE)`';
+  ## This command is appropriate for git (I think)
+  $$MORE_MACROS{REVISION} = '`git log --max-count=1 --abbrev-commit --pretty="%h"`';
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
     = '`$(PERLRUN) -ne \'chomp;if(s/.*?REVISION\\s*=\\s*\\"// && s/\\".*//){print;}\' < $(REVISION_FILE)`';
