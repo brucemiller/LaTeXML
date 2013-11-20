@@ -210,8 +210,10 @@ sub parseFields {
 # Especially "\", which BibTeX allows, but it throws us off (semiverbatim vs verbatim)
 # when we store the bibentries before digesting the key!
 
-my $BIBNAME_re  = qr/a-zA-Z0-9/x;                                   # [CONSTANT]
-my $BIBNOISE_re = qr/\.\+\-\*\/\^\_\:\;\@\`\?\!\~\|\<\>\$\[\]/x;    # [CONSTANT]
+# Use strings for these, since they're character classes
+# & inserted into qr/.../ which otherwise (sometimes) mangles them.
+my $BIBNAME_re  = q/a-zA-Z0-9/;                                   # [CONSTANT]
+my $BIBNOISE_re = q/\.\+\-\*\/\^\_\:\;\@\`\?\!\~\|\<\>\$\[\]/;    # [CONSTANT]
 
 sub parseEntryType {
   my ($self) = @_;
