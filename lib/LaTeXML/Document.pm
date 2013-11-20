@@ -518,7 +518,10 @@ sub insertComment {
 sub insertPI {
   my ($self, $op, %attrib) = @_;
   # We'll just put these on the document itself.
-  my $data = join(' ', map { $_ . "=\"" . ToString($attrib{$_}) . "\"" } keys %attrib);
+  # Put these in an attractive order, main "operator" first
+  my @keys = ((map { ($attrib{$_}?($_):()) } qw(class package options)),
+              (grep { $_ !~ /^(?:class|package|options)$/ } sort keys %attrib));
+  my $data = join(' ', map { $_ . "=\"" . ToString($attrib{$_}) . "\"" } @keys);
   my $pi = $$self{document}->createProcessingInstruction($op, $data);
   $self->closeText_internal;    # Close any open text node
   if ($$self{node}->nodeType == XML_DOCUMENT_NODE) {
@@ -894,7 +897,7 @@ sub applyMathLigature {
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
     if (scalar(@boxes) > 1) {
       $self->setNodeBox($node, LaTeXML::MathList->new(@boxes)); }
-    foreach my $key (keys %attr) {
+    foreach my $key (sort keys %attr) {
       my $value = $attr{$key};
       if (defined $value) {
         $node->setAttribute($key => $value); }
