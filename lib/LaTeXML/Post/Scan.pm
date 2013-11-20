@@ -238,10 +238,10 @@ sub anchor_handler {
       location => $doc->siteRelativeDestination // undef,
       pageid   => $self->pageID($doc)           // undef,
       fragid => $self->inPageID($doc, $id) // undef,
-      title   => $node->cloneNode(1)->childNodes // undef,    # document fragment?
-      refnum  => $node->getAttribute('refnum')   // undef,
-      frefnum => $node->getAttribute('frefnum')  // undef,
-      rrefnum => $node->getAttribute('rrefnum')  // undef);
+      title => $self->cleanNode($doc, $node) // undef,
+      refnum  => $node->getAttribute('refnum')  // undef,
+      frefnum => $node->getAttribute('frefnum') // undef,
+      rrefnum => $node->getAttribute('rrefnum') // undef);
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -249,8 +249,8 @@ sub anchor_handler {
 sub ref_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
-  if (my $label = $node->getAttribute('labelref')) {          # Only record refs of labels
-        # Don't scan refs from TOC or 'cited' bibblock
+  if (my $label = $node->getAttribute('labelref')) {    # Only record refs of labels
+                                                        # Don't scan refs from TOC or 'cited' bibblock
     if (!$doc->findnodes('ancestor::ltx:tocentry'
           . '| ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]',
         $node)) {
