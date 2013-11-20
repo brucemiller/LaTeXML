@@ -161,13 +161,14 @@ sub getVerbosity {
 # We'll want to make that one do both, or maybe let this one do stack trace or...
 sub generateMessage {
   my ($errorcode, $where, $message, $long, @extra) = @_;
-  my $docloc = ($LaTeXML::Post::PROCESSOR
-    ? "Postprocessing " . (ref $LaTeXML::Post::PROCESSOR) . ' '
-    : "")
-    . ($LaTeXML::Post::DOCUMENT
-    ? $LaTeXML::Post::DOCUMENT->siteRelativeDestination || ''
-    : "")
-    . (defined $where ? ToString($where) : '');
+  my $docloc = join(' ', grep { $_ }
+    ($LaTeXML::Post::PROCESSOR
+     ? ("Postprocessing " . (ref $LaTeXML::Post::PROCESSOR))
+     : ()),
+    ($LaTeXML::Post::DOCUMENT
+    ? ($LaTeXML::Post::DOCUMENT->siteRelativeDestination)
+    : ()),
+    (defined $where ? (ToString($where)) : ()));
   ($message, @extra) = grep($_ ne '', map(split("\n", $_), grep(defined $_, $message, @extra)));
   my @lines = ($errorcode . ' ' . $message,
     ($docloc ? ($docloc) : ()),
