@@ -27,9 +27,16 @@ use LaTeXML::Bib;
 use LaTeXML::Package;
 use LaTeXML::Version;
 use Encode;
-use vars qw($VERSION);
+use FindBin;
 use base qw(LaTeXML::Object);
-$VERSION = $LaTeXML::Version::VERSION;    # for backward compatibility
+use vars qw($VERSION);
+use vars qw($VERSION $FULLVERSION $IDENTITY);
+
+$VERSION = "0.7.9alpha";
+# Derived, more informative version numbers
+$FULLVERSION = "LaTeXML version $VERSION"
+  . ($LaTeXML::Version::REVISION ? "; revision $LaTeXML::Version::REVISION" : '');
+$IDENTITY = "$FindBin::Script ($FULLVERSION)";
 
 #**********************************************************************
 
@@ -87,7 +94,7 @@ sub getStatusMessage {
 #    preamble = names a tex file (or standard_preamble.tex)
 #    postamble = names a tex file (or standard_postamble.tex)
 
-our %MODE_EXTENSION = (          # CONFIGURATION?
+our %MODE_EXTENSION = (    # CONFIGURATION?
   TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
 
 sub digestFile {
