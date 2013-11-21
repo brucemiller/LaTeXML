@@ -489,8 +489,11 @@ sub readNumber {
   elsif (defined($n = $self->readInternalDimension)) { return Number($s * $n->valueOf); }
   elsif (defined($n = $self->readInternalGlue))      { return Number($s * $n->valueOf); }
   else {
+    my $next = $self->readToken();
+    $self->unread($next);
     Warn('expected', '<number>', $self, "Missing number, treated as zero",
-      "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
+      "while processing " . ToString($LaTeXML::CURRENT_TOKEN),
+	 "next token is ".ToString($next));
     return Number(0); } }
 
 # <normal integer> = <internal integer> | <integer constant>
