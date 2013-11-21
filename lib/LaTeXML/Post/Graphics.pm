@@ -412,8 +412,7 @@ sub ImageGet {
 
 sub ImageSet {
   my ($self, $doc, $image, @args) = @_;
-  $self->ImageOp($doc, $image, 'Set', @args);
-  return; }
+  return $self->ImageOp($doc, $image, 'Set', @args); }
 
 sub ImageOp {
   my ($self, $doc, $image, $operation, @args) = @_;
