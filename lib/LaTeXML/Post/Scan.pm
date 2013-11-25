@@ -56,6 +56,8 @@ sub new {
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
 
+  $self->registerHandler('ltx:rdf'      => \&rdf_handler);
+
   $self->registerHandler('ltx:rawhtml' => \&rawhtml_handler);
 
   return $self; }
@@ -83,6 +85,7 @@ sub process {
               . "but there's an apparent conflict with location '$loc' and previous '$prevloc'"); } } }
     $root->setAttribute('xml:id' => $id); }
 
+  $$self{db}->{document_id} = $id unless defined $$self{db}->{document_id};
   $self->scan($doc, $root, $$doc{parent_id});
   NoteProgressDetailed(" [DBStatus: " . $$self{db}->status . "]");
   return $doc; }
@@ -362,6 +365,17 @@ sub bibentry_handler {
 sub navigation_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   return; }
+
+# RDF should be recorded with its "about" designation, or its immediate parent
+sub rdf_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id = $node->getAttribute('about');
+  if (! ($id && ($id =~ s/^#//))) {
+    $id = $parent_id; }
+  my $property = $node->getAttribute('property');
+  my $value = $node->getAttribute('resource') || $node->getAttribute('content');
+  return unless ($property && $value);
+  $$self{db}->register("ID:$id", $property => $value); }
 
 # I'm thinking we shouldn't acknowledge rawhtml data at all?
 sub rawhtml_handler {
