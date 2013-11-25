@@ -2,5 +2,5 @@
 timeout = 2
 whatsin = math
 whatsout = math
-source = \def\foo{.\foo}\foo
+source = literal:\def\foo{.\foo}\foo
 noparse =
