@@ -23,6 +23,7 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
 use Data::Dumper;
 our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
+our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
 
 sub new {
   my ($class, %opts) = @_;
@@ -195,7 +196,7 @@ sub read {
 
   $opts->{source} = $ARGV[0] unless $opts->{source};
   if (!$opts->{type} || ($opts->{type} eq 'auto')) {
-    $opts->{type} = 'BibTeX' if ($opts->{source} && ($opts->{source} =~ /\.bib$/));
+    $opts->{type} = 'BibTeX' if ($opts->{source} && ($opts->{source} =~ /$is_bibtex/));
   }
   return;
 }
@@ -205,9 +206,9 @@ sub read_keyvals {
   my $cmdopts = [];
   while (my ($key, $value) = splice(@$opts, 0, 2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
-    next if (!$value) && (grep { /^$key\=/ } @GETOPT_KEYS);
+    next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
     $key = "--$key" unless $key =~ /^\-\-/;
-    $value = $value ? "=$value" : '';
+    $value = length($value) ? "=$value" : '';
     push @$cmdopts, "$key$value";
   }
   # Read into a Config object:
@@ -298,7 +299,7 @@ sub _obey_profile {
       $profile_opts = $conf_tmp->options;
     } else {
       # Throw an error, fallback to custom
-      croak("Error:unexpected:$profile Profile $profile was not recognized, reverting to 'custom'");
+      carp("Warning:unexpected:$profile Profile $profile was not recognized, reverting to 'custom'\n");
       $opts->{profile} = 'custom';
       $profile = 'custom';
     }
@@ -340,7 +341,6 @@ sub _prepare_options {
   eval "\$LaTeXML::" . $_ . "::DEBUG=1; " foreach @{ $opts->{debug} };
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
-  $opts->{dographics} = 1            unless defined $opts->{dographics}; #TODO: Careful, POST overlap!
   $opts->{mathparse}  = 'RecDescent' unless defined $opts->{mathparse};
   if ($opts->{mathparse} eq 'no') {
     $opts->{mathparse}   = 0;
@@ -360,34 +360,36 @@ sub _prepare_options {
 
   # Destination extension might indicate the format:
   if ((!defined $opts->{format}) && (defined $opts->{destination})) {
-    if ($opts->{destination} =~ /\.xhtml$/) {
-      $opts->{format} = 'xhtml';
-    } elsif ($opts->{destination} =~ /\.html$/) {
-      $opts->{format} = 'html';
-    } elsif ($opts->{destination} =~ /\.html5$/) {
-      $opts->{format} = 'html5';
-    } elsif ($opts->{destination} =~ /\.xml$/) {
-      $opts->{format} = 'xml';
-    } }
-
-  # Unset destinations unless local conversion has been requested:
-  if (!$opts->{local} && ($opts->{destination} || $opts->{log} || $opts->{postdest} || $opts->{postlog}))
-  { carp "I/O from filesystem not allowed for non-local conversion jobs!\n" .
-      " Will revert to sockets!\n";
-    undef $opts->{destination}; undef $opts->{log};
-    undef $opts->{postdest}; undef $opts->{postlog}; }
+    if ($opts->{destination} =~ /\.([^.]+)$/) {
+      $opts->{format} = $1; } }
+  if ($opts->{format}) {
+    # Lower-case for sanity's sake
+    $opts->{format} = lc($opts->{format});
+    if ($opts->{format} eq 'zip') {
+      # Not encouraged! But try to produce something sensible anyway...
+      $opts->{format}   = 'html5';
+      $opts->{whatsout} = 'archive';
+    }
+    $opts->{is_html} = ($opts->{format} =~ /^html5?$/);
+    $opts->{is_xhtml} = ($opts->{format} =~ /^(xhtml5?|epub|mobi)$/);
+    $opts->{whatsout} = 'archive' if (($opts->{format} eq 'epub') || ($opts->{format} eq 'mobi'));
+  }
   #======================================================================
   # II. Sanity check and Completion of Post options.
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  $opts->{post} = 1 if ((!defined $opts->{post}) && (scalar(@{ $opts->{math_formats} })) ||
-    ($opts->{stylesheet}) || ($opts->{format} && ($opts->{format} =~ /html/i)));
-  # || ... || ... || ...
-  $opts->{post} = 0 if (defined $opts->{mathparse} && (!$opts->{mathparse})); # No-parse overrides post-processing
+  $opts->{post} = 1 if ((!defined $opts->{post}) &&
+    (scalar(@{ $opts->{math_formats} }))
+    || ($opts->{stylesheet})
+    || $opts->{is_html}
+    || $opts->{is_xhtml}
+    || ($opts->{whatsout} && ($opts->{whatsout} ne 'document'))
+  );
+# || ... || ... || ...
+# $opts->{post}=0 if (defined $opts->{mathparse} && (! $opts->{mathparse})); # No-parse overrides post-processing
   if ($opts->{post}) {    # No need to bother if we're not post-processing
-
-    # Default: scan and crossref on, other advanced off
+                          # Default: scan and crossref on, other advanced off
     $opts->{prescan}  = undef unless defined $opts->{prescan};
     $opts->{dbfile}   = undef unless defined $opts->{dbfile};
     $opts->{scan}     = 1     unless defined $opts->{scan};
@@ -403,6 +405,7 @@ sub _prepare_options {
     $opts->{navtocstyles} = { context => 1, normal => 1, none => 1 } unless defined $opts->{navtocstyles};
     $opts->{navtoc} = lc($opts->{navtoc}) if defined $opts->{navtoc};
     delete $opts->{navtoc} if ($opts->{navtoc} && ($opts->{navtoc} eq 'none'));
+
     if ($opts->{navtoc}) {
       if (!$opts->{navtocstyles}->{ $opts->{navtoc} }) {
         croak($opts->{navtoc} . " is not a recognized style of navigation TOC"); }
@@ -414,54 +417,74 @@ sub _prepare_options {
     # Validation:
     $opts->{validate} = 1 unless defined $opts->{validate};
     # Graphics:
-    $opts->{dographics}   = 1     unless defined $opts->{dographics};
-    $opts->{mathimages}   = undef unless defined $opts->{mathimages};
     $opts->{mathimagemag} = 1.75  unless defined $opts->{mathimagemag};
-    $opts->{picimages}    = 1     unless defined $opts->{picimages};
-    # Split:
-    $opts->{split}       = undef     unless defined $opts->{split};
-    $opts->{splitat}     = 'section' unless defined $opts->{splitat};
-    $opts->{splitpath}   = undef     unless defined $opts->{splitpath};
-    $opts->{splitnaming} = 'id'      unless defined $opts->{splitnaming};
-    $opts->{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $opts->{splitback};
-    $opts->{splitpaths} =
-      { chapter => "//ltx:chapter | " . $opts->{splitback},
-      section    => "//ltx:chapter | //ltx:section | " . $opts->{splitback},
-      subsection => "//ltx:chapter | //ltx:section | //ltx:subsection | " . $opts->{splitback},
-      subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $opts->{splitback} }
-      unless defined $opts->{splitpaths};
+    if (defined $opts->{destination}) {
+      # We want the graphics enabled by default, but only when we have a destination
+      $opts->{dographics}   = 1     unless defined $opts->{dographics};
+      $opts->{picimages}    = 1     unless defined $opts->{picimages}; }
+    # Split sanity:
+    if($opts->{split}){
+      $opts->{splitat}     = 'section' unless defined $opts->{splitat};
+      $opts->{splitnaming} = 'id'      unless defined $opts->{splitnaming};
+      $opts->{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $opts->{splitback};
+      $opts->{splitpaths} =
+        { chapter => "//ltx:chapter | " . $opts->{splitback},
+        section    => "//ltx:chapter | //ltx:section | " . $opts->{splitback},
+        subsection => "//ltx:chapter | //ltx:section | //ltx:subsection | " . $opts->{splitback},
+        subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $opts->{splitback} }
+        unless defined $opts->{splitpaths};
+
+      $opts->{splitnaming} = _checkOptionValue('--splitnaming',$opts->{splitnaming},
+                     qw(id idrelative label labelrelative));
+      $opts->{splitat} = _checkOptionValue('--splitat',$opts->{splitat},CORE::keys %{$opts->{splitpaths}});
+      $opts->{splitpath} = $opts->{splitpaths}->{$opts->{splitat}} unless defined $opts->{splitpath}; }
+
+    # Check for appropriate combination of split, scan, prescan, dbfile, crossref
+    if($opts->{split} && !defined $opts->{destination}){
+      croak("Must supply --destination when using --split"); }
+    if($opts->{prescan} && !$opts->{scan}){
+      croak("Makes no sense to --prescan with scanning disabled (--noscan)"); }
+    if($opts->{prescan} && (!defined $opts->{dbfile})){
+      croak("Cannot prescan documents (--prescan) without specifying --dbfile"); }
+    if(!$opts->{prescan} && $opts->{crossref} && ! ($opts->{scan} || (defined $opts->{dbfile}))){
+      croak("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
+    if($opts->{crossref}){
+      $opts->{urlstyle} = _checkOptionValue('--urlstyle',$opts->{urlstyle},qw(server negotiated file)); }
+    if(($opts->{permutedindex} || $opts->{splitindex}) && (! defined $opts->{index})){
+      $opts->{index}=1; }
+    if(!$opts->{prescan} && $opts->{index} && ! ($opts->{scan} || defined $opts->{crossref})){
+      croak("Cannot generate index (--index) without --scan or --dbfile"); }
+    if(!$opts->{prescan} && @{$opts->{bibliographies}} && ! ($opts->{scan} || defined $opts->{crossref})){
+      croak("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
+    if((!defined $opts->{destination}) && ($opts->{mathimages} || $opts->{dographics} || $opts->{picimages})){
+      croak("Must supply --destination unless all auxilliary file writing is disabled"
+           ."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
+
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
     $opts->{format} = "xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
     $opts->{format} = "xhtml" unless defined $opts->{format};
     if (!$opts->{stylesheet}) {
-      if    ($opts->{format} eq "xhtml") { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
-      elsif ($opts->{format} eq "html")  { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
-      elsif ($opts->{format} eq "html5") { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
-      elsif ($opts->{format} eq "xml")   { delete $opts->{stylesheet}; }
-      else                               { croak("Unrecognized target format: " . $opts->{format}); }
+      if    ($opts->{format} eq 'xhtml') { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
+      elsif ($opts->{format} eq "html")              { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
+      elsif ($opts->{format} =~ /^epub|mobi$/)  { $opts->{stylesheet} = "LaTeXML-epub3.xsl"; }
+      elsif ($opts->{format} eq "html5")             { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
+      elsif ($opts->{format} eq "xml") { delete $opts->{stylesheet}; }
+      else                             { croak("Unrecognized target format: " . $opts->{format}); }
     }
     # Check format and complete math and image options
     if ($opts->{format} eq 'html') {
-      $opts->{svg} = 0 unless defined $opts->{svg};    # No SVG by default.
+      $opts->{svg} = 0 unless defined $opts->{svg};    # No SVG by default in HTML.
       croak("Default html stylesheet only supports math images, not " . join(', ', @{ $opts->{math_formats} }))
         if scalar(@{ $opts->{math_formats} });
       croak("Default html stylesheet does not support svg") if $opts->{svg};
       $opts->{mathimages}   = 1;
       $opts->{math_formats} = [];
     }
-    $opts->{dographics} = 1 unless defined $opts->{dographics};
-    $opts->{picimages}  = 1 unless defined $opts->{picimages};
-    $opts->{svg}        = 1 unless defined $opts->{svg};
-# Math Format fallbacks:
-# TODO: Reintroduce defaults?
-# $opts->{math_formats}=[@{$self->{defaults}->{math_formats}}] if (defined $self && (!
-#                                                                    ( (defined $opts->{math_formats}) &&
-#                                                                      scalar(@{$opts->{math_formats}})
-#                                                                    )));
-# PMML default if all else fails and no mathimages:
+    $opts->{svg} = 1 unless defined $opts->{svg}; # If we're not making HTML, SVG is on by default
+    # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $opts->{math_formats}) || (!scalar(@{ $opts->{math_formats} }))) &&
-      (!$opts->{mathimages}))
+      (!$opts->{mathimages}) && ($opts->{is_html} || $opts->{is_xhtml}))
     {
       push @{ $opts->{math_formats} }, 'pmml';
     }
@@ -470,41 +493,8 @@ sub _prepare_options {
   }
   # If really nothing hints to define format, then default it to XML
   $opts->{format} = 'xml' unless defined $opts->{format};
-
-  #TODO: HACK: Disable for now, causes problems...
-  $opts->{picimages} = 0;
-
   $self->{dirty} = 0;
 }
-
-# TODO: All of the below
-# Check for appropriate combination of split, scan, prescan, dbfile, crossref
-# if($split && !defined $destination){
-#   Error("Must supply --destination when using --split"); }
-# if($split){
-#   $splitnaming = checkOptionValue('--splitnaming',$splitnaming,
-#                  qw(id idrelative label labelrelative));
-#   $splitat = checkOptionValue('--splitat',$splitat,keys %splitpaths);
-#   $splitpath = $splitpaths{$splitat} unless defined $splitpath;
-# }
-# if($prescan && !$scan){
-#   Error("Makes no sense to --prescan with scanning disabled (--noscan)"); }
-# if($prescan && (!defined $dbfile)){
-#   Error("Cannot prescan documents (--prescan) without specifying --dbfile"); }
-# if(!$prescan && $crossref && ! ($scan || (defined $dbfile))){
-#   Error("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
-# if($crossref){
-#   $urlstyle = checkOptionValue('--urlstyle',$urlstyle,qw(server negotiated file)); }
-# if(($permutedindex || $splitindex) && (! defined $index)){
-#   $index=1; }
-# if(!$prescan && $index && ! ($scan || defined $crossref)){
-#   Error("Cannot generate index (--index) without --scan or --dbfile"); }
-# if(!$prescan && @bibliographies && ! ($scan || defined $crossref)){
-#   Error("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-#if((!defined $destination) && ($mathimages || $dographics || $picimages)){
-#  Error("Must supply --destination unless all auxilliary file writing is disabled"
-#          ."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
-#}
 
 ## Utilities:
 
@@ -518,6 +508,13 @@ sub _removeMathFormat {
   my ($opts, $fmt) = @_;
   @{ $opts->{math_formats} } = grep($_ ne $fmt, @{ $opts->{math_formats} });
   $opts->{removed_math_formats}->{$fmt} = 1; }
+
+sub _checkOptionValue {
+  my ($option, $value, @choices) = @_;
+  if ($value) {
+    foreach my $choice (@choices) {
+      return $choice if substr($choice, 0, length($value)) eq $value; } }
+  croak("Value for $option, $value, doesn't match " . join(', ', @choices)); }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {
@@ -744,18 +741,16 @@ latexmls/latexmlc [options]
                     package
  --help             shows this help message.
 
-In I<math> C<profile>, latexmls accepts one TeX formula on input.
-    In I<standard> and I<fragment> C<profile>, latexmls accepts one I<texfile>
-    filename per line on input, but only when the job is local.
-    If I<texfile> has an explicit extension of C<.bib>, it is processed
-    as a BibTeX bibliography.
-
     Note that the profiles come with a variety of preset options. To customize your
     own conversion setup, use --whatsin=math|fragment|document instead, respectively,
     as well as --whatsout=math|fragment|document.
 
+    If you want to provide a TeX snippet directly on input, rather than supply a filename,
+    use the C<literal:> protocol to prefix your snippet.
+
     For reliable communication and a stable conversion experience, invoke latexmls
-    only through the latexmlc client.
+    only through the latexmlc client (you need to set --expire to a positive value,
+    in order to request auto-spawning of a dedicated conversion server).
 
 =head2 DETAILS
 
