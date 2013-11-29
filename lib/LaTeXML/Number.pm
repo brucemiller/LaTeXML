@@ -131,11 +131,11 @@ sub stringify {
 # Utility for formatting scaled points sanely.
 sub pointformat {
   my ($sp) = @_;
-  my $s = sprintf("%2f", int($sp*100/65536 + ($sp > 0 ? 0.5 : -0.5))/100);
+  my $s = sprintf("%2f", int($sp * 100 / 65536 + ($sp > 0 ? 0.5 : -0.5)) / 100);
   $s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
   $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
-  return $s.'pt'; }
+  return $s . 'pt'; }
 
 #**********************************************************************
 package LaTeXML::MuDimension;
