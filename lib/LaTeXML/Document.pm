@@ -519,8 +519,8 @@ sub insertPI {
   my ($self, $op, %attrib) = @_;
   # We'll just put these on the document itself.
   # Put these in an attractive order, main "operator" first
-  my @keys = ((map { ($attrib{$_}?($_):()) } qw(class package options)),
-              (grep { $_ !~ /^(?:class|package|options)$/ } sort keys %attrib));
+  my @keys = ((map { ($attrib{$_} ? ($_) : ()) } qw(class package options)),
+    (grep { $_ !~ /^(?:class|package|options)$/ } sort keys %attrib));
   my $data = join(' ', map { $_ . "=\"" . ToString($attrib{$_}) . "\"" } @keys);
   my $pi = $$self{document}->createProcessingInstruction($op, $data);
   $self->closeText_internal;    # Close any open text node
@@ -768,7 +768,8 @@ sub find_insertion_point {
       return $self->find_insertion_point($qname); }    # Then retry, possibly w/auto open's
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
-        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here");
+        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here",
+        "Currently in " . $self->getInsertionContext);
       return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
