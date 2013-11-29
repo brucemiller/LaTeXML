@@ -1,0 +1,91 @@
+\documentclass{article}
+\usepackage{calc}
+\begin{document}
+
+\section{Counters}
+
+\newcounter{ctra}
+\newcounter{ctrb}
+\newcounter{ctrc}
+
+\setcounter{ctra}{7/2}
+Count 7/2 = \thectra.
+
+\setcounter{ctra}{3*\real{1.6}}
+Count 3*1.6 = \thectra.
+
+\setcounter{ctra}{3*\real{1.7}}
+Count 3*1.7 = \thectra.
+
+\setcounter{ctra}{3*\real{1.6}*\real{1.7}}
+Count 3*1.6*1.7  =\thectra.
+
+\setcounter{ctra}{3+(4*5)}
+Count 3+(4*5) = \thectra.
+
+\setcounter{ctra}{3*(4+5)}
+Count 3*(4+5) = \thectra.
+
+\section{Lengths}
+\newlength{\lena}
+\newlength{\lenb}
+\newlength{\lenc}
+\setlength{\lena}{0pt}
+\setlength{\lenb}{300pt}
+\setlength{\lenc}{200pt}
+
+\setlength{\lena}{200pt}
+Length 200pt = \the\lena.
+
+\setlength{\lena}{2pt+4em}
+Length 2pt+4em = \the\lena.
+
+\setlength{\lena}{2em*\real{4.5}}
+Length 2em*4.5 = \the\lena.
+
+\setlength{\lena}{2em*\ratio{3cm}{2cm}}
+Length 2em*ratio{3cm}{2cm} = \the\lena.
+
+\setlength{\lena}{3pt plus 3pt * \real{1.5}}
+Length (3pt plus 3pt)*1.5 = \the\lena.
+
+
+\setlength{\lena}{\lenc*\ratio{\lenb}{\lenc}}
+Length lenc * (lenb/lenc) = \the\lena.
+
+\section{Min \& Max}
+\setcounter{ctra}{\minof{2}{4}}
+Count min(2,4) = \thectra
+
+\setcounter{ctra}{\maxof{2}{4}}
+Count max(2,4) = \thectra
+
+\setcounter{ctra}{3*\maxof{4+5}{3*4}+\minof{2*\real{1.6}}{5-1}}
+Count 3*maxof(4+5)(3*4)+minof(2*1.6)(5-1) =\thectra.
+
+\setlength{\lena}{\minof{3pt}{\lenb}*\real{1.5}*\maxof{2*\real{1.6}}{2-1}}
+Length minof(3pt)(lenb)*1.5*maxof(2*1.6)(2-1) = \the\lena.
+
+\section{Widths, Heights of Boxes}
+\settowidth{\lena}{Some text}
+Length of ``Some text'' = \the\lena.
+
+\setlength{\lena}{\widthof{Some text}}
+Length of ``Some text'' = \the\lena.
+
+\setlength{\lena}{\widthof{Some text}*\real{0.68}}
+Length of ``Some text'' * 0.68 = \the\lena.
+
+\setlength{\lena}{3pt plus 3pt * \real{1.5}}
+Length (3pt plus 3pt)*1.5 = = \the\lena.
+
+\section{Macros?}
+\def\foo{Other text}
+\setlength{\lena}{\widthof{\foo}}
+Length of ``\foo = \the\lena.
+
+\def\four{4}
+\setcounter{ctra}{3*\maxof{\four+5}{3*\four}}
+Count 3*maxof(\four+5)(3*\four) =\thectra.
+
+\end{document}

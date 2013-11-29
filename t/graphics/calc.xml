@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="calc"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Counters</title>
+    <para xml:id="S1.p1">
+      <p>Count 7/2 = 3.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Count 3*1.6 = 4.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Count 3*1.7 = 5.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Count 3*1.6*1.7  =6.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>Count 3+(4*5) = 23.</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>Count 3*(4+5) = 27.</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>Lengths</title>
+    <para xml:id="S2.p1">
+      <p>Length 200pt = 200.0pt.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Length 2pt+4em = 42.0pt.</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Length 2em*4.5 = 90.0pt.</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>Length 2em*ratio3cm2cm = 30.0pt.</p>
+    </para>
+    <para xml:id="S2.p5">
+      <p>Length (3pt plus 3pt)*1.5 = 4.5pt plus 4.5pt.</p>
+    </para>
+    <para xml:id="S2.p6">
+      <p>Length lenc * (lenb/lenc) = 300.0pt.</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag close=" ">3</tag>Min &amp; Max</title>
+    <para xml:id="S3.p1">
+      <p>Count min(2,4) = 2</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>Count max(2,4) = 4</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>Count 3*maxof(4+5)(3*4)+minof(2*1.6)(5-1) =39.</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>Length minof(3pt)(lenb)*1.5*maxof(2*1.6)(2-1) = 13.5pt.</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag close=" ">4</tag>Widths, Heights of Boxes</title>
+    <para xml:id="S4.p1">
+      <p>Length of “Some text” = 45.0pt.</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>Length of “Some text” = 45.0pt.</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>Length of “Some text” * 0.68 = 30.6pt.</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>Length (3pt plus 3pt)*1.5 = = 4.5pt plus 4.5pt.</p>
+    </para>
+  </section>
+  <section refnum="5" xml:id="S5">
+    <title><tag close=" ">5</tag>Macros?</title>
+    <para xml:id="S5.p1">
+      <p>Length of “Other text= 50.0pt.</p>
+    </para>
+    <para xml:id="S5.p2">
+      <p>Count 3*maxof(4+5)(3*4) =36.</p>
+    </para>
+  </section>
+</document>
