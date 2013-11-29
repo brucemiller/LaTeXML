@@ -40,7 +40,7 @@ our @EXPORT = (qw(&DefExpandable
 
   # Counter support
   qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
-    &GenerateID),
+    &GenerateID &AfterAssignment),
 
   # Document Model
   qw(&Tag &DocType &RelaxNGSchema &RegisterNamespace &RegisterDocumentNamespace),
