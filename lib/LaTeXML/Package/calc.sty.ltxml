@@ -16,66 +16,55 @@ use LaTeXML::Package;
 
 # \setcounter{<ctr>}{<integer expression>}
 DefPrimitive('\setcounter{}{}', sub {
-  my($stomach,$ctr,$arg)=@_;
-#  SetCounter($ctr, readExpression($stomach->getGullet, 'Number',$arg));
-  my $c = readExpression($stomach->getGullet, 'Number',$arg);
-##  print STDERR "SetCounter ".ToString($ctr)." from ".ToString($arg)." => ".ToString($c)."\n";
-  SetCounter($ctr,$c);
-  return; });
+    my ($stomach, $ctr, $arg) = @_;
+    SetCounter($ctr, readExpression($stomach->getGullet, 'Number', $arg));
+    return; });
 
 # \addtocounter{<ctr>}{<integer expression>}
 DefPrimitive('\addtocounter{}{}', sub {
-  my($stomach,$ctr,$arg)=@_;
-  my $c = readExpression($stomach->getGullet, 'Number',$arg);
-##  print STDERR "AddToCounter ".ToString($ctr)." from ".ToString($arg)." => ".ToString($c)."\n";
-  AddToCounter($ctr,$c);
-  return; });
+    my ($stomach, $ctr, $arg) = @_;
+    AddToCounter($ctr, readExpression($stomach->getGullet, 'Number', $arg));
+    return; });
 
 DefPrimitive('\setlength{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $l = readExpression($stomach->getGullet, 'Glue',$arg);
-##  print STDERR "SetLength ".ToString($var)." from ".ToString($arg)." => ".ToString($l)."\n";
-  $defn->setValue($l, @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), @args); });
 
 DefPrimitive('\addtolength{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $l = readExpression($stomach->getGullet, 'Glue',$arg);
-#  print STDERR "AddToLength ".ToString($var)." from ".ToString($arg)." => ".ToString($l)."\n";
-  $defn->setValue($defn->valueOf(@args)->add($l), @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    $defn->setValue($defn->valueOf(@args)->add(readExpression($stomach->getGullet, 'Glue', $arg)),
+      @args); });
 
 DefPrimitive('\settowidth{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $box = Digest($arg);
-  my $l = $box->getWidth;
-  $defn->setValue($l, @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    my $box = Digest($arg);
+    $defn->setValue($box->getWidth, @args); });
 
 DefPrimitive('\settoheight{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $box = Digest($arg);
-  my $l = $box->getHeight;
-  $defn->setValue($l, @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    my $box = Digest($arg);
+    $defn->setValue($box->getHeight, @args); });
 
 DefPrimitive('\settodepth{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $box = Digest($arg);
-  my $l = $box->getDepth;
-  $defn->setValue($l, @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    my $box = Digest($arg);
+    $defn->setValue($box->getDepth, @args); });
+
 DefPrimitive('\settototalheight{Variable}{}', sub {
-  my($stomach,$var,$arg)=@_;
-  my ($defn, @args) = @$var;
-  my $box = Digest($arg);
-  my $l = $box->getHeight + $box->getDepth;
-  $defn->setValue($l, @args); });
+    my ($stomach, $var, $arg) = @_;
+    my ($defn, @args) = @$var;
+    my $box = Digest($arg);
+    $defn->setValue($box->getHeight + $box->getDepth, @args); });
 
 #======================================================================
 # Grammar as specified in calc.sty
 # type = integer | dimen | glue
-# <type expression>    -> <type term> 
+# <type expression>    -> <type term>
 #                       | <type expression><plus or minus><type term>
 # <type term>          -> <type term><type scan stop>
 #                       | <type factor>
@@ -108,155 +97,154 @@ DefPrimitive('\settototalheight{Variable}{}', sub {
 # Here, type = Number, Glue
 
 sub readExpression {
-  my($ogullet,$type, $tokens)=@_;
+  my ($ogullet, $type, $tokens) = @_;
   return $ogullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
-    my ($gullet) = @_;
-    $gullet->unread($tokens);	# Really so weird?
-    my $term = readTerm($gullet,$type);
-    while(my $op = $gullet->readKeyword('+','-')){
-      my $term2 = readTerm($gullet,$type);
-      $term = ($op eq '+' ? $term->add($term2) : $term->subtract($term2)); }
-    return $term; }); }
+      my ($gullet) = @_;
+      $gullet->unread($tokens);    # Really so weird?
+      my $term = readTerm($gullet, $type);
+      while (my $op = $gullet->readKeyword('+', '-')) {
+        my $term2 = readTerm($gullet, $type);
+        $term = ($op eq '+' ? $term->add($term2) : $term->subtract($term2)); }
+      return $term; }); }
 
 sub readTerm {
-  my($gullet,$type)=@_;
+  my ($gullet, $type) = @_;
   $gullet->skipSpaces;
   # my $factor = readTextDimenFactor($gullet) # but only if type is dimen!
   #   || readReal($gullet)                  # ? only sometimes
   #   || readMinMax($gullet,$type)
   #     || readParenthesized($gullet,$type)
   #       || $gullet->readValue($type);
-  my $factor = readValue($gullet,$type);
-  while(my $op = $gullet->readKeyword('*','/')){
+  my $factor = readValue($gullet, $type);
+  while (my $op = $gullet->readKeyword('*', '/')) {
     # my $factor2 = readReal($gullet)
     #   || readMinMax($gullet,'Number')
     #   || readParenthesized($gullet,'Number')
     #   || $gullet->readNumber();
-    my $factor2 = readValue($gullet,'Number');
+    my $factor2 = readValue($gullet, 'Number');
     $factor = ($op eq '*'
-	    ? $factor->multiply($factor2)
-#	    : $term->divide($div)); }
-	    : (ref $factor)->new(int($factor->valueOf/$factor2->valueOf))); } # ????
+      ? $factor->multiply($factor2)
+        #	    : $term->divide($div)); }
+      : (ref $factor)->new(int($factor->valueOf / $factor2->valueOf))); }    # ????
   return $factor; }
 
 sub readValue {
-  my($gullet,$type)=@_;
+  my ($gullet, $type) = @_;
   $gullet->skipSpaces;
   my $peek = $gullet->readXToken();
   # Evaluate <Text Dimen Factors>
-  if(Equals($peek,T_CS('\widthof'))){
+  if (Equals($peek, T_CS('\widthof'))) {
     my $box = Digest($gullet->readArg);
-    Error('unexpected',$peek,$gullet,"\\widthof not expected here (reading $type)")
+    Error('unexpected', $peek, $gullet, "\\widthof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getWidth; }
-  elsif(Equals($peek,T_CS('\heightof'))){
+  elsif (Equals($peek, T_CS('\heightof'))) {
     my $box = Digest($gullet->readArg);
-    Error('unexpected',$peek,$gullet,"\\heightof not expected here (reading $type)")
+    Error('unexpected', $peek, $gullet, "\\heightof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getHeight; }
-  elsif(Equals($peek,T_CS('\depthof'))){
+  elsif (Equals($peek, T_CS('\depthof'))) {
     my $box = Digest($gullet->readArg);
-    Error('unexpected',$peek,$gullet,"\\depthof not expected here (reading $type)")
+    Error('unexpected', $peek, $gullet, "\\depthof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getDepth; }
-  elsif(Equals($peek,T_CS('\totalheightof'))){
+  elsif (Equals($peek, T_CS('\totalheightof'))) {
     my $box = Digest($gullet->readArg);
-    Error('unexpected',$peek,$gullet,"\\totalheightof not expected here (reading $type)")
+    Error('unexpected', $peek, $gullet, "\\totalheightof not expected here (reading $type)")
       if $type eq 'Number';
     return $box->getHeight->add($box->getDepth); }
   # Evaluate <Real> values
-  elsif(Equals($peek,T_CS('\real'))){
+  elsif (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
     return $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
-       my ($igullet) = @_;
-       $igullet->unread($arg);	# Really so weird?
-       return $igullet->readFloat(); }); }
-  elsif(Equals($peek,T_CS('\ratio'))){
-    my $x = readExpression($gullet,'Glue', $gullet->readArg);
-    my $y = readExpression($gullet,'Glue', $gullet->readArg);
+        my ($igullet) = @_;
+        $igullet->unread($arg);    # Really so weird?
+        return $igullet->readFloat(); }); }
+  elsif (Equals($peek, T_CS('\ratio'))) {
+    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
     return Float($x->ptValue / $y->ptValue); }
   # Evaluate MinMax values
-  elsif(Equals($peek,T_CS('\minof'))){
-    my $x = readExpression($gullet,$type, $gullet->readArg);
-    my $y = readExpression($gullet,$type, $gullet->readArg);
+  elsif (Equals($peek, T_CS('\minof'))) {
+    my $x = readExpression($gullet, $type, $gullet->readArg);
+    my $y = readExpression($gullet, $type, $gullet->readArg);
     return $x->smaller($y); }
-  elsif(Equals($peek,T_CS('\maxof'))){
-    my $x = readExpression($gullet,$type, $gullet->readArg);
-    my $y = readExpression($gullet,$type, $gullet->readArg);
+  elsif (Equals($peek, T_CS('\maxof'))) {
+    my $x = readExpression($gullet, $type, $gullet->readArg);
+    my $y = readExpression($gullet, $type, $gullet->readArg);
     return $x->larger($y); }
   # Read & Evaluate parenthesized subexpressions
-  elsif(Equals($peek,T_OTHER('('))){
-    return readExpression($gullet,$type,$gullet->readUntil(T_OTHER(')'))); }
+  elsif (Equals($peek, T_OTHER('('))) {
+    return readExpression($gullet, $type, $gullet->readUntil(T_OTHER(')'))); }
   # Else read literal values.
   else {
     $gullet->unread($peek);
-    if($type eq 'Number'){
+    if ($type eq 'Number') {
       return $gullet->readNumber(); }
-    else {                        # Really should read glue, but downgrade to dimension????
-      return $gullet->readGlue(); }}}
-
+    else {    # Really should read glue, but downgrade to dimension????
+      return $gullet->readGlue(); } } }
 
 sub readMinMax {
-  my($gullet,$type)=@_;
+  my ($gullet, $type) = @_;
   $gullet->skipSpaces;
   my $peek = $gullet->readXToken();
-  if(Equals($peek,T_CS('\minof'))){
-    my $x = readExpression($gullet,$type, $gullet->readArg);
-    my $y = readExpression($gullet,$type, $gullet->readArg);
+  if (Equals($peek, T_CS('\minof'))) {
+    my $x = readExpression($gullet, $type, $gullet->readArg);
+    my $y = readExpression($gullet, $type, $gullet->readArg);
     return $x->smaller($y); }
-  elsif(Equals($peek,T_CS('\maxof'))){
-    my $x = readExpression($gullet,$type, $gullet->readArg);
-    my $y = readExpression($gullet,$type, $gullet->readArg);
+  elsif (Equals($peek, T_CS('\maxof'))) {
+    my $x = readExpression($gullet, $type, $gullet->readArg);
+    my $y = readExpression($gullet, $type, $gullet->readArg);
     return $x->larger($y); }
   else {
     $gullet->unread($peek);
-    return; }}
+    return; } }
 
 sub readTextDimenFactor {
-  my($gullet)=@_;
+  my ($gullet) = @_;
   $gullet->skipSpaces;
   my $peek = $gullet->readXToken();
-  if(Equals($peek,T_CS('\widthof'))){
+  if (Equals($peek, T_CS('\widthof'))) {
     my $box = Digest($gullet->readArg);
     return Dimension(0); }
-  elsif(Equals($peek,T_CS('\heightof'))){
+  elsif (Equals($peek, T_CS('\heightof'))) {
     my $box = Digest($gullet->readArg);
     return Dimension(0); }
-  elsif(Equals($peek,T_CS('\depthof'))){
+  elsif (Equals($peek, T_CS('\depthof'))) {
     my $box = Digest($gullet->readArg);
     return Dimension(0); }
-  elsif(Equals($peek,T_CS('\totalheightof'))){
+  elsif (Equals($peek, T_CS('\totalheightof'))) {
     my $box = Digest($gullet->readArg);
     return Dimension(0); }
   else {
     $gullet->unread($peek);
-    return; }}
+    return; } }
 
 sub readParenthesized {
-  my($gullet,$type)=@_;
+  my ($gullet, $type) = @_;
   $gullet->skipSpaces;
-  if(my $op = $gullet->readKeyword('(')){
-    return readExpression($gullet,$type,$gullet->readUntil(T_OTHER(')'))); }
+  if (my $op = $gullet->readKeyword('(')) {
+    return readExpression($gullet, $type, $gullet->readUntil(T_OTHER(')'))); }
   else {
-    return; }}
+    return; } }
 
 sub readReal {
-  my($gullet)=@_;
+  my ($gullet) = @_;
   $gullet->skipSpaces;
   my $peek = $gullet->readXToken();
-  if(Equals($peek,T_CS('\real'))){
+  if (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
     return $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
-       my ($igullet) = @_;
-       $igullet->unread($arg);	# Really so weird?
-       return $igullet->readFloat(); }); }
-  elsif(Equals($peek,T_CS('\ratio'))){
-    my $x = readExpression($gullet,'Glue', $gullet->readArg);
-    my $y = readExpression($gullet,'Glue', $gullet->readArg);
+        my ($igullet) = @_;
+        $igullet->unread($arg);    # Really so weird?
+        return $igullet->readFloat(); }); }
+  elsif (Equals($peek, T_CS('\ratio'))) {
+    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
     return Float($x->ptValue / $y->ptValue); }
   else {
     $gullet->unread($peek);
-    return; }}
+    return; } }
 
 #**********************************************************************
 1;
