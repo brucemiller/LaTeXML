@@ -25,6 +25,134 @@ my $DEFBACKGROUND = 'white';      # [CONSTANT]
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
 
+#======================================================================
+# Mappings from various forms of names or component names in TeX
+# Given a font, we'd like to map it to the "logical" names derived from LaTeX,
+# (w/ loss of fine grained control).
+# I'd like to use Karl Berry's font naming scheme
+# (See http://www.tug.org/fontname/html/)
+# but it seems to be a one-way mapping, and moreover, doesn't even fit CM fonts!
+# We'll assume a sloppier version:
+#   family + series + variant + size
+
+our %font_family = (
+  cmr  => { family => 'serif' },      cmss  => { family => 'sansserif' },
+  cmtt => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
+  cmti => { family => 'typewriter', shape => 'italic' },
+  cmfib => { family => 'serif' },      cmfr  => { family => 'serif' },
+  cmdh  => { family => 'serif' },      cm    => { family => 'serif' },
+  ptm   => { family => 'serif' },      ppl   => { family => 'serif' },
+  pnc   => { family => 'serif' },      pbk   => { family => 'serif' },
+  phv   => { family => 'sansserif' },  pag   => { family => 'serif' },
+  pcr   => { family => 'typewriter' }, pzc   => { family => 'script' },
+  put   => { family => 'serif' },      bch   => { family => 'serif' },
+  psy   => { family => 'symbol' },     pzd   => { family => 'dingbats' },
+  ccr   => { family => 'serif' },      ccy   => { family => 'symbol' },
+  cmbr  => { family => 'sansserif' },  cmtl  => { family => 'typewriter' },
+  cmbrs => { family => 'symbol' },     ul9   => { family => 'typewriter' },
+  txr   => { family => 'serif' },      txss  => { family => 'sansserif' },
+  txtt  => { family => 'typewriter' }, txms  => { family => 'symbol' },
+  txsya => { family => 'symbol' },     txsyb => { family => 'symbol' },
+  pxr   => { family => 'serif' },      pxms  => { family => 'symbol' },
+  pxsya => { family => 'symbol' },     pxsyb => { family => 'symbol' },
+  futs  => { family => 'serif' },
+  uaq   => { family => 'serif' },      ugq   => { family => 'sansserif' },
+  eur   => { family => 'serif' },      eus   => { family => 'script' },
+  euf   => { family => 'fraktur' },    euex  => { family => 'symbol' },
+  # The following are actually math fonts.
+  ms    => { family => 'symbol' },
+  ccm   => { family => 'serif', shape => 'italic' },
+  cmex  => { family => 'symbol', encoding => 'OMX' },       # Not really symbol, but...
+  cmsy  => { family => 'symbol', encoding => 'OMS' },
+  ccitt => { family => 'typewriter', shape => 'italic' },
+  cmbrm => { family => 'sansserif', shape => 'italic' },
+  futm  => { family => 'serif', shape => 'italic' },
+  futmi => { family => 'serif', shape => 'italic' },
+  txmi  => { family => 'serif', shape => 'italic' },
+  pxmi  => { family => 'serif', shape => 'italic' },
+  bbm   => { family => 'blackboard' },
+  bbold => { family => 'blackboard' },
+  bbmss => { family => 'blackboard' },
+  # some ams fonts
+  cmmib => { family => 'italic', series   => 'bold' },
+  cmbsy => { family => 'symbol', series   => 'bold' },
+  msa   => { family => 'symbol', encoding => 'AMSA' },
+  msb   => { family => 'symbol', encoding => 'AMSB' },
+  # Are these really the same?
+  msx => { family => 'symbol', encoding => 'AMSA' },
+  msy => { family => 'symbol', encoding => 'AMSB' },
+);
+
+# Maps the "series code" to an abstract font series name
+our %font_series = (
+  '' => { series => 'medium' }, m   => { series => 'medium' }, mc => { series => 'medium' },
+  b  => { series => 'bold' },   bc  => { series => 'bold' },   bx => { series => 'bold' },
+  sb => { series => 'bold' },   sbc => { series => 'bold' },   bm => { series => 'bold' });
+
+# Maps the "shape code" to an abstract font shape name.
+our %font_shape = ('' => { shape => 'upright' }, n => { shape => 'upright' }, i => { shape => 'italic' }, it => { shape => 'italic' },
+  sl => { shape => 'slanted' }, sc => { shape => 'smallcaps' }, csc => { shape => 'smallcaps' });
+
+# These could be exported...
+sub lookupFontFamily { $font_family{ ToString($_[0]) }; }
+sub lookupFontSeries { $font_series{ ToString($_[0]) }; }
+sub lookupFontShape  { $font_shape{ ToString($_[0]) }; }
+
+# Decode a font size in points into a "logical" size.
+# associate a logical size with all pt sizes (/10) below the given number.
+our @font_size_map = (0.60 => 'tiny', 0.75 => 'script', 0.85 => 'footnote', 0.95 => 'small',
+  1.10 => 'normal', 1.30 => 'large', 1.55 => 'Large', 1.85 => 'LARGE',
+  2.25 => 'huge', 1000.0 => 'Huge');
+# abstract font size in pts.
+our %font_size = (
+  tiny   => 5,  script => 7,  footnote => 8,  small => 9,
+  normal => 10, large  => 12, Large    => 14, LARGE => 17,
+  huge   => 20, Huge   => 25);
+
+sub lookupFontSize {
+  my ($size) = @_;
+  if (defined $size) {
+    my $scaled = $size / 10.0;     # ASSUMED nominal font 10pt!!! Set from doc!!!
+    my @map    = @font_size_map;
+    while (@map) {
+      return shift(@map) if ($scaled <= shift(@map));
+      shift(@map); }
+    'Huge'; }
+  else {
+    'normal'; } }
+
+our $FONTREGEXP
+  = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
+  . '(' . join('|', sort { -($a cmp $b) } keys %font_series) . ')'
+  . '(' . join('|', sort { -($a cmp $b) } keys %font_shape) . ')'
+  . '(\d*)';
+
+sub decodeFontname {
+  my ($name, $at, $scaled) = @_;
+  if ($name =~ /^$FONTREGEXP$/o) {
+    my %props;
+    my ($fam, $ser, $shp, $size) = ($1, $2, $3, $4);
+    if (my $ffam = lookupFontFamily($fam)) { map($props{$_} = $$ffam{$_}, keys %$ffam); }
+    if (my $fser = lookupFontSeries($ser)) { map($props{$_} = $$fser{$_}, keys %$fser); }
+    if (my $fsh  = lookupFontShape($shp))  { map($props{$_} = $$fsh{$_},  keys %$fsh); }
+    $size = 1 unless defined $size;
+    $size = $at if defined $at;
+    $size *= $scaled if defined $scaled;
+    $props{size} = lookupFontSize($size);
+    return %props; } }
+
+sub lookupTeXFont {
+  my ($fontname, $seriescode, $shapecode) = @_;
+  my %props;
+  if (my $ffam = lookupFontFamily($fontname)) {
+    map($props{$_} = $$ffam{$_}, keys %$ffam); }
+  if (my $fser = lookupFontSeries($seriescode)) {
+    map($props{$_} = $$fser{$_}, keys %$fser); }
+  if (my $fsh = lookupFontShape($shapecode)) {
+    map($props{$_} = $$fsh{$_}, keys %$fsh); }
+  return %props; }
+
+#======================================================================
 # NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
 sub new {
@@ -200,6 +328,15 @@ sub font_match_xpaths {
 
 # Presumably a text font is "sticky", if used in math?
 sub isSticky { return 1; }
+
+#======================================================================
+sub computeStringSize {
+  my ($self, $string) = @_;
+  my $size = $self->getSize;
+  my $u    = (defined $string
+    ? ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535 * length($string)
+    : 0);
+  return (Dimension(0.5 * $u), Dimension(1.0 * $u), Dimension(0.2 * $u)); }
 
 #**********************************************************************
 package LaTeXML::MathFont;
