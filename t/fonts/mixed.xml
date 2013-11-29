@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><text font="bold">bf</text>, <text font="italic">it</text>, <text font="bold italic">bfit</text>.</p>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" xml:id="S0.Ex1.m1" tex="a+\textbf{bf},b+\textit{it},c+\textbf{{bfit}}" text="list@(a + [bf], b + [it], c + [bfit])">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="list" role="FENCED" separators=", ,"/>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMText>
+                <text font="bold">bf</text>
+              </XMText>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              <XMText>
+                <text font="italic">it</text>
+              </XMText>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMText>
+                <text font="bold italic">bfit</text>
+              </XMText>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+\mathbf{bf},b+\mathit{it},c+\mathbf{\mathit{bfit}}" text="list@(a + bf, b + it, c + bfit)">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="list" role="FENCED" separators=", ,"/>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">a</XMTok>
+              <XMTok role="UNKNOWN" font="bold">bf</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              <XMTok role="UNKNOWN" font="italic">it</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok role="UNKNOWN" font="italic">bfit</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>
