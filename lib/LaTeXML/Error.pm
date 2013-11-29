@@ -167,9 +167,10 @@ sub generateMessage {
     @extra);
 
   # Now add a certain amount of stack trace and/or context info.
-  if (my $v = $LaTeXML::Global::STATE && $LaTeXML::Global::STATE->lookupValue('VERBOSITY')) {
-    $long = 0 if defined $v && $v < -1;
-    $long++ if defined $v && $v > +1; }
+  my $verbosity = ($LaTeXML::Global::STATE && $LaTeXML::Global::STATE->lookupValue('VERBOSITY')) || 0;
+  if ($verbosity) {
+    $long = 0 if defined $verbosity && $verbosity < -1;
+    $long++ if defined $verbosity && $verbosity > +1; }
 
   # FIRST line of stack trace information ought to look at the $where
   my $wheretype = ref $where;
@@ -180,6 +181,10 @@ sub generateMessage {
   ### "Currently in ".$doc->getInsertionContext); }
   elsif ($wheretype =~ 'LaTeXML::Gullet') {
     push(@lines, $where->showUnexpected); }    # Or better?
+  elsif ($wheretype =~ 'LaTeXML::Stomach') {
+    push(@lines,
+      "Recently digested: " . join(' ', map(Stringify($_), @LaTeXML::LIST)))
+      if $verbosity > 1; }
 
   my $nstack = ($long > 1 ? undef : ($long ? 4 : 1));
   if (my @objects = objectStack($nstack)) {
@@ -238,9 +243,8 @@ my $MAXLEN  = 40;    # Or more? [CONSTANT]
 
 sub trim {
   my ($string) = @_;
-###  $string = substr($string, $MAXLEN - 3, length($string), "...") if (length($string) > $MAXLEN);
+  return $string unless defined $string;
   substr($string, $MAXLEN - 3) = "..." if (length($string) > $MAXLEN);
-###  $string = substr($string, $MAXLEN - 3,undef, "...") if (length($string) > $MAXLEN);
   $string =~ s/\n/\x{240D}/gs;    # symbol for CR
   return $string; }
 
