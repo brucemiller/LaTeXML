@@ -17,7 +17,7 @@ use base qw(LaTeXML::Object);
 
 sub new {
   my ($class, $string, $font, $locator, $tokens) = @_;
-  return bless [$string, $font, $locator, $tokens], $class; }
+  return bless [$string, $font, $locator, $tokens, {}], $class; }
 
 # Accessors
 sub isaBox {
@@ -60,7 +60,9 @@ sub stringify {
   my ($self) = @_;
   my $type = ref $self;
   $type =~ s/^LaTeXML:://;
-  return $type . '[' . (defined $$self[0] ? $$self[0] : '') . ']'; }
+  return $type . '['
+    . (defined $$self[0] ? $$self[0]
+    : (defined $$self[3] ? '[' . ToString($$self[3]) . ']' : '')) . ']'; }
 
 # Should this compare fonts too?
 sub equals {
@@ -81,9 +83,61 @@ sub getProperty {
   else {
     return; } }
 
-sub getProperties { return (); }
-sub setProperty   { }
-sub setProperties { }
+sub getProperties {
+  my ($self) = @_;
+  return %{ $$self[4] }; }
+
+sub setProperty {
+  my ($self, $key, $value) = @_;
+  $$self[4]{$key} = $value;
+  return; }
+
+sub setProperties {
+  my ($self, %props) = @_;
+  while (my ($key, $value) = each %props) {
+    $$self{properties}{$key} = $value if defined $value; }
+  return; }
+
+sub getWidth {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self[4]{width};
+  return $$self[4]{width}; }
+
+sub getHeight {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self[4]{height};
+  return $$self[4]{height}; }
+
+sub getDepth {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self[4]{depth};
+  return $$self[4]{depth}; }
+
+sub setWidth {
+  my ($self, $width) = @_;
+  $$self[4]{width} = $width;
+  return; }
+
+sub setHeight {
+  my ($self, $height) = @_;
+  $$self[4]{height} = $height;
+  return; }
+
+sub setDepth {
+  my ($self, $depth) = @_;
+  $$self[4]{depth} = $depth;
+  return; }
+
+#omg
+# Fake computing the dimensions of strings (typically single chars).
+# Eventually, this needs to link into real font data
+sub computeSize {
+  my ($self) = @_;
+  my ($w, $h, $d) = ($$self[1] || LaTeXML::Font->default)->computeStringSize($$self[0]);
+  $$self[4]{width}  = $w;
+  $$self[4]{height} = $h;
+  $$self[4]{depth}  = $d;
+  return; }
 
 #**********************************************************************
 # LaTeXML::MathBox
@@ -95,7 +149,7 @@ use base qw(LaTeXML::Box);
 
 sub new {
   my ($class, $string, $font, $locator, $tokens, $attributes) = @_;
-  return bless [$string, $font, $locator, $tokens, $attributes], $class; }
+  return bless [$string, $font, $locator, $tokens, { attributes => $attributes }], $class; }
 
 sub isMath {
   return 1; }    # MathBoxes are math mode.
@@ -103,8 +157,9 @@ sub isMath {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self[0];
+  my $attr   = $$self[4]{attributes};
   return ((defined $string) && ($string ne '')
-    ? $document->insertMathToken($$self[0], font => $$self[1], ($$self[4] ? %{ $$self[4] } : ()))
+    ? $document->insertMathToken($$self[0], font => $$self[1], ($attr ? %$attr : ()))
     : undef); }
 
 #**********************************************************************
@@ -121,6 +176,10 @@ sub toString { return ''; }
 sub beAbsorbed {
   my ($self, $document) = @_;
   return $document->insertComment($$self[0]); }
+
+sub getWidth  { return Dimension(0); }
+sub getHeight { return Dimension(0); }
+sub getDepth  { return Dimension(0); }
 
 #**********************************************************************
 # LaTeXML::List
@@ -142,7 +201,7 @@ sub new {
   # Maybe the most representative font for a List is the font of the LAST box (that _has_ a font!) ???
   while (defined($bx = pop(@bxs)) && (!defined $font)) {
     $font = $bx->getFont unless defined $font; }
-  return bless [[@boxes], $font, $locator || ''], $class; }
+  return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
 
 sub isMath {
   return 0; }    # List's are text mode
@@ -178,6 +237,21 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   return map { $document->absorb($_) } $self->unlist; }
+
+sub computeSize {
+  my ($self) = @_;
+  my ($w, $h, $d) = (0, 0, 0);
+  foreach my $b (@{ $$self[0] }) {
+    my $xx = $b->getWidth;
+    print STDERR "Size of WHAT??? " . Stringify($b) . " ==> " . Stringify($xx) . "\n" unless ref $xx;
+
+    $w += $b->getWidth->valueOf;
+    $h = max($h, $b->getHeight->valueOf);
+    $d = max($d, $b->getDepth->valueOf); }
+  $$self[4]{width}  = Dimension($w);
+  $$self[4]{height} = Dimension($h);
+  $$self[4]{depth}  = Dimension($d);
+  return; }
 
 #**********************************************************************
 # LaTeXML::MathList
@@ -368,6 +442,53 @@ sub beAbsorbed {
   my ($self, $document) = @_;
   return $self->getDefinition->doAbsorbtion($document, $self); }
 ####  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
+
+sub getWidth {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self{properties}{width};
+  return $$self{properties}{width}; }
+
+sub getHeight {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self{properties}{height};
+  return $$self{properties}{height}; }
+
+sub getDepth {
+  my ($self) = @_;
+  $self->computeSize unless defined $$self{properties}{depth};
+  return $$self{properties}{depth}; }
+
+sub setWidth {
+  my ($self, $width) = @_;
+  $$self{properties}{width} = $width;
+  return; }
+
+sub setHeight {
+  my ($self, $height) = @_;
+  $$self{properties}{height} = $height;
+  return; }
+
+sub setDepth {
+  my ($self, $depth) = @_;
+  $$self{properties}{depth} = $depth;
+  return; }
+
+sub computeSize {
+  my ($self) = @_;
+  # Use #body, if any, else ALL args !?!?!
+  # Eventually, possibly options like sizeFrom, or computeSize or....
+  my @boxes = ($$self{properties}{body}
+    ? ($$self{properties}{body})
+    : (map { ((ref $_) && ($_->isaBox) ? $_->unlist : ()) } @{ $$self{args} }));
+  my ($w, $h, $d) = (0, 0, 0);
+  foreach my $b (@boxes) {
+    $w += $b->getWidth->valueOf;
+    $h = max($h, $b->getHeight->valueOf);
+    $d = max($d, $b->getDepth->valueOf); }
+  $$self{properties}{width}  = Dimension($w);
+  $$self{properties}{height} = Dimension($h);
+  $$self{properties}{depth}  = Dimension($d);
+  return; }
 
 #**********************************************************************
 1;
