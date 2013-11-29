@@ -57,9 +57,12 @@ lib/LaTeXML/Post/Graphics.pm
 lib/LaTeXML/Post/LaTeXImages.pm
 lib/LaTeXML/Post/MakeBibliography.pm
 lib/LaTeXML/Post/MakeIndex.pm
+lib/LaTeXML/Post/Manifest.pm
+lib/LaTeXML/Post/Manifest/Epub.pm
 lib/LaTeXML/Post/MathImages.pm
 lib/LaTeXML/Post/MathML.pm
 lib/LaTeXML/Post/OpenMath.pm
+lib/LaTeXML/Post/Pack.pm
 lib/LaTeXML/Post/PictureImages.pm
 lib/LaTeXML/Post/Scan.pm
 lib/LaTeXML/Post/Split.pm
@@ -84,6 +87,7 @@ lib/LaTeXML/Util/MathMLLinebreaker.pm
 lib/LaTeXML/Util/ObjectDB.pm
 lib/LaTeXML/Util/Pathname.pm
 lib/LaTeXML/Util/Transform.pm
+lib/LaTeXML/Util/WWW.pm
 #==================================================
 # Document Model
 #==================================================
@@ -773,6 +777,9 @@ t/graphics/mykeyval.sty
 t/graphics/picture.pdf
 t/graphics/picture.tex
 t/graphics/picture.xml
+t/graphics/simplekv.pdf
+t/graphics/simplekv.tex
+t/graphics/simplekv.xml
 t/graphics/xcolors.pdf
 t/graphics/xcolors.tex
 t/graphics/xcolors.xml
@@ -858,6 +865,9 @@ t/parse/relations.xml
 t/parse/sets.pdf
 t/parse/sets.tex
 t/parse/sets.xml
+t/parse/spacing.pdf
+t/parse/spacing.tex
+t/parse/spacing.xml
 t/parse/terms.pdf
 t/parse/terms.tex
 t/parse/terms.xml
