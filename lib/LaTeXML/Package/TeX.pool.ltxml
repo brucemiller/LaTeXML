@@ -871,118 +871,20 @@ DefMacro('\read Number SkipKeyword:to Token', sub {
     my ($gullet, $fh, $token) = @_;
     DefMacroI($token, undef, Tokens()); });
 
-# Given a font, we'd like to map it to the "logical" names derived from LaTeX,
-# (w/ loss of fine grained control).
-# I'd like to use Karl Berry's font naming scheme
-# (See http://www.tug.org/fontname/html/)
-# but it seems to be a one-way mapping, and moreover, doesn't even fit CM fonts!
-# We'll assume a sloppier version:
-#   family + series + variant + size
-
-our %font_family = (
-  cmr  => { family => 'serif' },      cmss  => { family => 'sansserif' },
-  cmtt => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
-  cmti => { family => 'typewriter', shape => 'italic' },
-  cmfib => { family => 'serif' },      cmfr  => { family => 'serif' },
-  cmdh  => { family => 'serif' },      cm    => { family => 'serif' },
-  ptm   => { family => 'serif' },      ppl   => { family => 'serif' },
-  pnc   => { family => 'serif' },      pbk   => { family => 'serif' },
-  phv   => { family => 'sansserif' },  pag   => { family => 'serif' },
-  pcr   => { family => 'typewriter' }, pzc   => { family => 'script' },
-  put   => { family => 'serif' },      bch   => { family => 'serif' },
-  psy   => { family => 'symbol' },     pzd   => { family => 'dingbats' },
-  ccr   => { family => 'serif' },      ccy   => { family => 'symbol' },
-  cmbr  => { family => 'sansserif' },  cmtl  => { family => 'typewriter' },
-  cmbrs => { family => 'symbol' },     ul9   => { family => 'typewriter' },
-  txr   => { family => 'serif' },      txss  => { family => 'sansserif' },
-  txtt  => { family => 'typewriter' }, txms  => { family => 'symbol' },
-  txsya => { family => 'symbol' },     txsyb => { family => 'symbol' },
-  pxr   => { family => 'serif' },      pxms  => { family => 'symbol' },
-  pxsya => { family => 'symbol' },     pxsyb => { family => 'symbol' },
-  futs  => { family => 'serif' },
-  uaq   => { family => 'serif' },      ugq   => { family => 'sansserif' },
-  eur   => { family => 'serif' },      eus   => { family => 'script' },
-  euf   => { family => 'fraktur' },    euex  => { family => 'symbol' },
-  # The following are actually math fonts.
-  ms    => { family => 'symbol' },
-  ccm   => { family => 'serif', shape => 'italic' },
-  cmex  => { family => 'symbol', encoding => 'OMX' },       # Not really symbol, but...
-  cmsy  => { family => 'symbol', encoding => 'OMS' },
-  ccitt => { family => 'typewriter', shape => 'italic' },
-  cmbrm => { family => 'sansserif', shape => 'italic' },
-  futm  => { family => 'serif', shape => 'italic' },
-  futmi => { family => 'serif', shape => 'italic' },
-  txmi  => { family => 'serif', shape => 'italic' },
-  pxmi  => { family => 'serif', shape => 'italic' },
-  bbm   => { family => 'blackboard' },
-  bbold => { family => 'blackboard' },
-  bbmss => { family => 'blackboard' },
-  # some ams fonts
-  cmmib => { family => 'italic', series   => 'bold' },
-  cmbsy => { family => 'symbol', series   => 'bold' },
-  msa   => { family => 'symbol', encoding => 'AMSA' },
-  msb   => { family => 'symbol', encoding => 'AMSB' },
-  # Are these really the same?
-  msx => { family => 'symbol', encoding => 'AMSA' },
-  msy => { family => 'symbol', encoding => 'AMSB' },
-);
-
-our %font_series = (
-  '' => { series => 'medium' }, m   => { series => 'medium' }, mc => { series => 'medium' },
-  b  => { series => 'bold' },   bc  => { series => 'bold' },   bx => { series => 'bold' },
-  sb => { series => 'bold' },   sbc => { series => 'bold' },   bm => { series => 'bold' });
-our %font_shape = ('' => { shape => 'upright' }, n => { shape => 'upright' }, i => { shape => 'italic' }, it => { shape => 'italic' },
-  sl => { shape => 'slanted' }, sc => { shape => 'smallcaps' }, csc => { shape => 'smallcaps' });
-
-sub lookupFontFamily { $font_family{ ToString($_[0]) }; }
-sub lookupFontSeries { $font_series{ ToString($_[0]) }; }
-sub lookupFontShape  { $font_shape{ ToString($_[0]) }; }
-
-our $FONTREGEXP
-  = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
-  . '(' . join('|', sort { -($a cmp $b) } keys %font_series) . ')'
-  . '(' . join('|', sort { -($a cmp $b) } keys %font_shape) . ')'
-  . '(\d*)';
-
-# Decode a font size in points into a "logical" size.
-our @font_size_map = (0.60 => 'tiny', 0.75 => 'script', 0.85 => 'footnote', 0.95 => 'small',
-  1.10 => 'normal', 1.30 => 'large', 1.55 => 'Large', 1.85 => 'LARGE',
-  2.25 => 'huge', 1000.0 => 'Huge');
-
-sub abstract_font_size {
-  my ($size) = @_;
-  if (defined $size) {
-    my $scaled = $size / 10.0;     # ASSUMED nominal font 10pt!!! Set from doc!!!
-    my @map    = @font_size_map;
-    while (@map) {
-      return shift(@map) if ($scaled <= shift(@map));
-      shift(@map); }
-    'Huge'; }
-  else {
-    'normal'; } }
-
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
     my $gullet = $stomach->getGullet;
     $name = ToString($name);
-    my %props = ();
-    my $size  = 1;
-    if ($name =~ /^$FONTREGEXP$/o) {
-      my ($fm, $sr, $sh) = ($1, $2, $3);
-      $size = $4;
-      if (my $ffam = lookupFontFamily($fm)) { map($props{$_} = $$ffam{$_}, keys %$ffam); }
-      if (my $fser = lookupFontSeries($sr)) { map($props{$_} = $$fser{$_}, keys %$fser); }
-      if (my $fsh  = lookupFontShape($sh))  { map($props{$_} = $$fsh{$_},  keys %$fsh); } }
-    else {
+    my %props = LaTeXML::Font::decodeFontname($name,
+      ($gullet->readKeyword('at')
+        ? $gullet->readDimension->ptValue : undef),
+      ($gullet->readKeyword('scaled')
+        ? $gullet->readNumber->valueOf / 1000 : undef));
+    if (!keys %props) {    # Failed?
       Info('unexpected', $name, $stomach, "Unrecognized font name '$name'",
         "Font switch macro " . ToString($cs) . " will have no effect"); }
 
-    if ($gullet->readKeyword('at')) {
-      $size = $gullet->readDimension->ptValue; }
-    if ($gullet->readKeyword('scaled')) {
-      $size *= ($gullet->readNumber->valueOf / 1000); }
-    $props{size} = abstract_font_size($size);
     $gullet->skipSpaces;
 ##  print STDERR "Font $name == ".join(', ',map("$_=>$props{$_}",sort keys %props))."\n";
     AssignValue('fontinfo_' . ToString($cs) => {%props});
@@ -1058,35 +960,40 @@ DefPrimitive('\countdef Token SkipMatch:= Number', sub {
     my $count = '\count' . $num->valueOf;
     DefRegisterI($cs, undef, Number(0),
       getter => sub { LookupValue($count); },
-      setter => sub { AssignValue($count => $_[0]); }); });
+      setter => sub { AssignValue($count => $_[0]); });
+    AfterAssignment(); });
 
 DefPrimitive('\dimendef Token SkipMatch:= Number', sub {
     my ($stomach, $cs, $num) = @_;
     my $dimen = '\dimen' . $num->valueOf;
     DefRegisterI($cs, undef, Dimension(0),
       getter => sub { LookupValue($dimen); },
-      setter => sub { AssignValue($dimen => $_[0]); }); });
+      setter => sub { AssignValue($dimen => $_[0]); });
+    AfterAssignment(); });
 
 DefPrimitive('\skipdef Token SkipMatch:= Number', sub {
     my ($stomach, $cs, $num) = @_;
     my $glue = '\skip' . $num->valueOf;
     DefRegisterI($cs, undef, Glue(0),
       getter => sub { LookupValue($glue); },
-      setter => sub { AssignValue($glue => $_[0]); }); });
+      setter => sub { AssignValue($glue => $_[0]); });
+    AfterAssignment(); });
 
 DefPrimitive('\muskipdef Token SkipMatch:= Number', sub {
     my ($stomach, $cs, $num) = @_;
     my $muglue = '\muskip' . $num->valueOf;
     DefRegisterI($cs, undef, MuGlue(0),
       getter => sub { LookupValue($muglue); },
-      setter => sub { AssignValue($muglue => $_[0]); }); });
+      setter => sub { AssignValue($muglue => $_[0]); });
+    AfterAssignment(); });
 
 DefPrimitive('\toksdef Token SkipMatch:= Number', sub {
     my ($stomach, $cs, $num) = @_;
     my $toks = '\toks' . $num->valueOf;
     DefRegisterI($cs, undef, Tokens(),
       getter => sub { LookupValue($toks); },
-      setter => sub { AssignValue($toks => $_[0]); }); });
+      setter => sub { AssignValue($toks => $_[0]); });
+    AfterAssignment(); });
 
 # NOTE: Get all these handled as registers
 # <internal integer> = <integer parameter> | <special integer> | \lastpenalty
@@ -1176,11 +1083,38 @@ DefMacro('\scriptscriptfont Number SkipMatch:= Token', sub {
 DefRegister('\lastkern' => Dimension(0), readonly => 1);
 
 # <box dimension> = \ht | \wd | \dp
+DefRegister('\ht Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = LookupValue('box' . $n->valueOf);
+    return ($stuff ? $stuff->getHeight : Dimension(0)); },
+  setter => sub {
+    my ($n, $value) = @_;
+    my $stuff = LookupValue('box' . $n->valueOf);
+    $stuff->setHeight($value) if $stuff;
+    return; });
+DefRegister('\wd Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = LookupValue('box' . $n->valueOf);
+    return ($stuff ? $stuff->getWidth : Dimension(0)); },
+  setter => sub {
+    my ($n, $value) = @_;
+    my $stuff = LookupValue('box' . $n->valueOf);
+    $stuff->setWidth($value) if $stuff;
+    return; });
 
-# Need some clever getter & setters!
-DefRegister('\ht Number', Dimension(0));
-DefRegister('\wd Number', Dimension(0));
-DefRegister('\dp Number', Dimension(0));
+DefRegister('\dp Number', Dimension(0),
+  getter => sub {
+    my ($n) = @_;
+    my $stuff = LookupValue('box' . $_[0]->valueOf);
+    return ($stuff ? $stuff->getDepth : Dimension(0)); },
+  setter => sub {
+    my ($n, $value) = @_;
+    my $stuff = LookupValue('box' . $n->valueOf);
+    $stuff->setDepth($value) if $stuff;
+    return; });
+
 #DefRegister('\fontdimen Number TeXFileName'=>Dimension(0));
 
 DefRegister('\fontdimen Number Token' => Dimension(0),
@@ -1408,6 +1342,7 @@ DefPrimitive('\chardef Token SkipMatch:= Number', sub {
     DefPrimitiveI($internalcs, undef, sub {
         Box(FontDecode($value->valueOf), undef, undef, Invocation(T_CS('\char'), $value)); });
     $STATE->installDefinition(LaTeXML::CharDef->new($newcs, $value, $internalcs));
+    AfterAssignment();
     return; });
 
 our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT', undef);
@@ -1445,6 +1380,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
       reversion => '\mathchar' . $value->valueOf . '\relax',
     ) if $glyph;
     $STATE->installDefinition(LaTeXML::CharDef->new($newcs, $value, $internalcs));
+    AfterAssignment();
     return; });
 
 DefConstructor('\mathaccent Number Digested',
@@ -1564,7 +1500,16 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
   mode => 'text', bounded => 1,
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
-  beforeDigest => sub { reenterTextMode(); });
+  beforeDigest => sub { reenterTextMode(); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $w = $$spec{to}) {
+      $whatsit->setWidth($w); }
+    elsif (my $s = $$spec{spread}) {
+      $whatsit->setWidth($box->getWidth->add($s)); }
+    return; });
 
 # This attempts to be a generalize vbox construction;
 # It tries to figure out whether an inline-block is needed,
@@ -2365,7 +2310,10 @@ sub afterCellUnlist {
 #----------------------------------------------------------------------
 # \halign, See Chap.22
 DefConstructor('\halign BoxSpecification', sub {
-    my ($document, $spec, $template, $body, %props) = @_;
+    my ($document, $spec, %props) = @_;
+    my $body = $props{body};
+    #print STDERR "HALIGN? ".Stringify($spec)." ".Stringify($template)." ".Stringify($body)
+    #  .join(', ',map( "$_ => ".Stringify($props{$_}), keys %props))."\n";
     constructAlignment($document, $body, attributes => { width => $$spec{to},
         'pad-width' => $$spec{spread} }); },
   reversion   => '\halign #1{#2\cr#3}',
