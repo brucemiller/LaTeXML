@@ -35,7 +35,7 @@ my $DEFENCODING   = 'OT1';        # [CONSTANT]
 # We'll assume a sloppier version:
 #   family + series + variant + size
 
-our %font_family = (
+my %font_family = (
   cmr  => { family => 'serif' },      cmss  => { family => 'sansserif' },
   cmtt => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
   cmti => { family => 'typewriter', shape => 'italic' },
@@ -84,27 +84,35 @@ our %font_family = (
 );
 
 # Maps the "series code" to an abstract font series name
-our %font_series = (
+my %font_series = (
   '' => { series => 'medium' }, m   => { series => 'medium' }, mc => { series => 'medium' },
   b  => { series => 'bold' },   bc  => { series => 'bold' },   bx => { series => 'bold' },
   sb => { series => 'bold' },   sbc => { series => 'bold' },   bm => { series => 'bold' });
 
 # Maps the "shape code" to an abstract font shape name.
-our %font_shape = ('' => { shape => 'upright' }, n => { shape => 'upright' }, i => { shape => 'italic' }, it => { shape => 'italic' },
+my %font_shape = ('' => { shape => 'upright' }, n => { shape => 'upright' }, i => { shape => 'italic' }, it => { shape => 'italic' },
   sl => { shape => 'slanted' }, sc => { shape => 'smallcaps' }, csc => { shape => 'smallcaps' });
 
 # These could be exported...
-sub lookupFontFamily { $font_family{ ToString($_[0]) }; }
-sub lookupFontSeries { $font_series{ ToString($_[0]) }; }
-sub lookupFontShape  { $font_shape{ ToString($_[0]) }; }
+sub lookupFontFamily {
+  my ($familycode) = @_;
+  return $font_family{ ToString($familycode) }; }
+
+sub lookupFontSeries {
+  my ($seriescode) = @_;
+  return $font_series{ ToString($seriescode) }; }
+
+sub lookupFontShape {
+  my ($shapecode) = @_;
+  return $font_shape{ ToString($shapecode) }; }
 
 # Decode a font size in points into a "logical" size.
 # associate a logical size with all pt sizes (/10) below the given number.
-our @font_size_map = (0.60 => 'tiny', 0.75 => 'script', 0.85 => 'footnote', 0.95 => 'small',
+my @font_size_map = (0.60 => 'tiny', 0.75 => 'script', 0.85 => 'footnote', 0.95 => 'small',
   1.10 => 'normal', 1.30 => 'large', 1.55 => 'Large', 1.85 => 'LARGE',
   2.25 => 'huge', 1000.0 => 'Huge');
 # abstract font size in pts.
-our %font_size = (
+my %font_size = (
   tiny   => 5,  script => 7,  footnote => 8,  small => 9,
   normal => 10, large  => 12, Large    => 14, LARGE => 17,
   huge   => 20, Huge   => 25);
@@ -117,11 +125,11 @@ sub lookupFontSize {
     while (@map) {
       return shift(@map) if ($scaled <= shift(@map));
       shift(@map); }
-    'Huge'; }
+    return 'Huge'; }
   else {
-    'normal'; } }
+    return 'normal'; } }
 
-our $FONTREGEXP
+my $FONTREGEXP
   = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
   . '(' . join('|', sort { -($a cmp $b) } keys %font_series) . ')'
   . '(' . join('|', sort { -($a cmp $b) } keys %font_shape) . ')'
@@ -132,9 +140,9 @@ sub decodeFontname {
   if ($name =~ /^$FONTREGEXP$/o) {
     my %props;
     my ($fam, $ser, $shp, $size) = ($1, $2, $3, $4);
-    if (my $ffam = lookupFontFamily($fam)) { map($props{$_} = $$ffam{$_}, keys %$ffam); }
-    if (my $fser = lookupFontSeries($ser)) { map($props{$_} = $$fser{$_}, keys %$fser); }
-    if (my $fsh  = lookupFontShape($shp))  { map($props{$_} = $$fsh{$_},  keys %$fsh); }
+    if (my $ffam = lookupFontFamily($fam)) { map { $props{$_} = $$ffam{$_} } keys %$ffam; }
+    if (my $fser = lookupFontSeries($ser)) { map { $props{$_} = $$fser{$_} } keys %$fser; }
+    if (my $fsh  = lookupFontShape($shp))  { map { $props{$_} = $$fsh{$_} } keys %$fsh; }
     $size = 1 unless defined $size;
     $size = $at if defined $at;
     $size *= $scaled if defined $scaled;
@@ -145,11 +153,11 @@ sub lookupTeXFont {
   my ($fontname, $seriescode, $shapecode) = @_;
   my %props;
   if (my $ffam = lookupFontFamily($fontname)) {
-    map($props{$_} = $$ffam{$_}, keys %$ffam); }
+    map { $props{$_} = $$ffam{$_} } keys %$ffam; }
   if (my $fser = lookupFontSeries($seriescode)) {
-    map($props{$_} = $$fser{$_}, keys %$fser); }
+    map { $props{$_} = $$fser{$_} } keys %$fser; }
   if (my $fsh = lookupFontShape($shapecode)) {
-    map($props{$_} = $$fsh{$_}, keys %$fsh); }
+    map { $props{$_} = $$fsh{$_} } keys %$fsh; }
   return %props; }
 
 #======================================================================
