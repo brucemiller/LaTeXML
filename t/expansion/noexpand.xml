@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Expect: NOW a LATER b MUCHLATER c.<break/>Got: NOW a LATER b MUCHLATER c.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
+  </para>
+  <para xml:id="p3">
+    <p>Expect: NOW a BETWEEN LATER b.<break/>Got: NOW a BETWEEN LATER b.</p>
+  </para>
+  <para xml:id="p4">
+    <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
+  </para>
+</document>

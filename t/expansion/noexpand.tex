@@ -1,0 +1,46 @@
+\documentclass{article}
+\begin{document}
+
+
+\def\now#1{NOW #1}
+
+\def\later#1{LATER #1}
+\edef\expanded{\now{a} \later{b} \noexpand\later{c}}
+\def\later#1{MUCHLATER #1}
+
+Expect: NOW a LATER b MUCHLATER c.\\
+Got: \expanded.
+
+\def\later#1{LATER #1}
+\newtoks\tka
+\tka={\later{b}}
+\edef\expanded{\now{a} \the\tka}
+\def\later#1{MUCHLATER #1}
+
+Expect: NOW a MUCHLATER b.\\
+Got: \expanded.
+
+
+\def\later#1{LATER #1}
+\newtoks\tka
+\tka={\later{b}}
+\def\between{BETWEEN }
+\edef\expanded{\now{a} \expandafter\between\the\tka}
+\def\later#1{MUCHLATER #1}
+
+Expect: NOW a BETWEEN LATER b.\\
+Got: \expanded.
+
+
+\def\later#1{LATER #1}
+\newtoks\tka
+\tka={\later{b}}
+\edef\expanded{\now{a} \expandafter\noexpand\the\tka}
+\def\later#1{MUCHLATER #1}
+
+Expect: NOW a MUCHLATER b.\\
+Got: \expanded.
+
+
+
+\end{document}
