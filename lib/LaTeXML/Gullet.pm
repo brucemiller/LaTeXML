@@ -493,7 +493,7 @@ sub readNumber {
     $self->unread($next);
     Warn('expected', '<number>', $self, "Missing number, treated as zero",
       "while processing " . ToString($LaTeXML::CURRENT_TOKEN),
-	 "next token is ".ToString($next));
+      "next token is " . ToString($next));
     return Number(0); } }
 
 # <normal integer> = <internal integer> | <integer constant>
