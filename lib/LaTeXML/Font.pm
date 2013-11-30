@@ -147,7 +147,9 @@ sub decodeFontname {
     $size = $at if defined $at;
     $size *= $scaled if defined $scaled;
     $props{size} = lookupFontSize($size);
-    return %props; } }
+    return %props; }
+  else {
+    return; } }
 
 sub lookupTeXFont {
   my ($fontname, $seriescode, $shapecode) = @_;
