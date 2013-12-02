@@ -206,6 +206,13 @@ table { border-collapse:collapse; }
 .ltx_rdf          { display:none; }
 
 /*======================================================================
+ SVG (pgf/tikz ?) basics */
+
+.ltx_foreignobject  { margin:0; padding:0; overflow:visible; }
+/* Possible text-align:center, line-height:50%; font-size:50%; ???? */
+.ltx_foreignobject > p { margin:0; padding:0; display:block; white-space:nowrap; }
+
+/*======================================================================
  Low-level Basics */
 /* NOTE: These should be using rems; [ie.: what happens when you nest .tiny in .tiny?????] */
 .ltx_font_TINY       { font-size:50%; }
