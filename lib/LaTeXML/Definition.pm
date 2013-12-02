@@ -121,15 +121,38 @@ sub doInvocation {
   my ($self, $gullet, @args) = @_;
   my $expansion = $self->getExpansion;
   my $r;
-  return (ref $expansion eq 'CODE'
-    ? &$expansion($gullet, @args)
-    : substituteTokens($expansion,
-      map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
+  if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
+    if (ref $expansion eq 'CODE') {
+      # Harder to emulate \tracingmacros here.
+      my @result = &$expansion($gullet, @args);
+      print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . ToString(Tokens(@result)) . "\n";
+      my $i = 1;
+      foreach my $arg (@args) {
+        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
+      return @result; }
+    else {
+      # for "real" macros, make sure all args are Tokens
+      my @targs = map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
           ? $_
           : ($r && ($r eq 'LaTeXML::Token')
             ? Tokens($_)
             : Tokens(Revert($_)))) }
-        @args)); }
+        @args;
+      print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . ToString($expansion) . "\n";
+      my $i = 1;
+      foreach my $arg (@targs) {
+        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
+      return substituteTokens($expansion, @targs); } }
+  else {
+    return (ref $expansion eq 'CODE'
+      ? &$expansion($gullet, @args)
+      : substituteTokens($expansion,
+        map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
+            ? $_
+            : ($r && ($r eq 'LaTeXML::Token')
+              ? Tokens($_)
+              : Tokens(Revert($_)))) }
+          @args)); } }
 
 # NOTE: Assumes $tokens is a Tokens list of Token's and each arg either undef or also Tokens
 # Using inline accessors on those assumptions
@@ -531,7 +554,7 @@ use Scalar::Util qw(refaddr);
 
 my $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";    # [CONSTANT]
 my $COND_RE  = "\\?$VALUE_RE";             # [CONSTANT]
-# Attempt to follow XML Spec, Appendix B
+                                           # Attempt to follow XML Spec, Appendix B
 my $QNAME_RE = "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"    # [CONSTANT]
   . "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
 my $TEXT_RE = "(.[^\\#<\\?\\)\\&\\,]*)";                             # [CONSTANT]
