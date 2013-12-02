@@ -1,0 +1,39 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  tikz                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+InputDefinitions('tikz', type => 'sty', noltxml => 1);
+
+# Not absolutely necessary to redefine this, but it makes sure
+# we load the file as definitions rather than content,
+# with some slight efficiencies
+##  \def\usetikzlibrary{\pgfutil@ifnextchar[{\use@tikzlibrary}{\use@@tikzlibrary}}%}
+##  \def\use@tikzlibrary[#1]{\use@@tikzlibrary{#1}}
+DefPrimitive('\use@@tikzlibrary{}', sub {
+    my ($gullet, $libs) = @_;
+    foreach my $lib (split(/,/, $libs = ToString(Expand($libs)))) {
+      $lib =~ s/^\s+//; $lib =~ s/\s+$//;
+      if ($lib && !LookupMeaning(T_CS('\tikz@library@' . $lib . '@loaded'))) {
+        print STDERR "\nTIKZ LIBRARY $lib\n";
+        Let(T_CS('\tikz@library@' . $lib . '@loaded'), T_CS('\pgfutil@empty'));
+        my $barcc = LookupCatcode('|');
+        AssignCatcode('|', CC_OTHER);
+        InputDefinitions('tikzlibrary' . $lib . '.code.tex');
+        AssignCatcode('|', $barcc);
+      } }
+    return; });
+
+1;

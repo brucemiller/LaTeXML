@@ -1,0 +1,46 @@
+# -*- CPERL -*-
+# /=======================================================\ #
+# |  pgf - Implementation for LaTeXML                     | #
+# |=======================================================| #
+# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
+# | Copyright (c) 2011 arXMLiv group                      | #
+# | Released under the GNU Public License                 | #
+# | Released to the Public Domain                         | #
+# |=======================================================| #
+# | Author: Silviu Vlad Oprea                             | #
+# | E-mail: s.oprea@jacobs-university.de                  | #
+# \=======================================================/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+DefMacro('\pgfsysdriver', 'pgfsys-latexml.def'); # and we'll load the .ltxml!
+
+# We're going to load the raw tex of pgf ...
+#   AND all the files it includes!
+#   (we should turn off @)#@# comments while we're at it!)
+InputDefinitions('pgf', type => 'sty', noltxml => 1)
+  || Warn(":missing:pgf.sty Couldn't find pgf.sty");
+
+# This makes this conditional always true;  Why???
+DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
+DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
+DefMacroI('\pgf@relevantforpicturesizetrue',  undef, '');
+
+# These wrap pgfpicture with lxSVG@picture
+RawTeX('\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}');
+RawTeX('\expandafter\def\expandafter\endpgfpicture\expandafter{\endpgfpicture\endlxSVG@picture}');
+
+# define "q" forms of some commands??
+DefMacro('\pgfpathqmoveto{}{}', '\pgfpathmoveto{\pgfqpoint{#1}{#2}}');
+DefMacro('\pgfpathqlineto{}{}', '\pgfpathlineto{\pgfqpoint{#1}{#2}}');
+DefMacro('\pgfpathqcircle{}',   '\pgfpathcircle{\pgfpointorigin}{#1}');
+DefMacro('\pgfpathqcurveto{}{}{}{}{}{}',
+  '\pgfpathcurveto{\pgfqpoint{#1}{#2}}{\pgfqpoint{#3}{#4}}{\pgfqpoint{#5}{#6}}');
+
+# Wrap tikzpicture?
+#RawTeX('\expandafter\def\expandafter\tikzpicture\expandafter{\expandafter\lxSVG@picture\tikzpicture}');
+#RawTeX('\expandafter\def\expandafter\endtikzpicture\expandafter{\endtikzpicture\endlxSVG@picture}');
+
+1;
