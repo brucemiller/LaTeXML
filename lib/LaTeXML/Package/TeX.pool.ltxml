@@ -641,6 +641,14 @@ DefMacro('\the Register', sub {
 
 #======================================================================
 # Integer registers; TeXBook p. 272-273
+
+DefRegister('\tracingmacros', Number(0),
+  getter => sub { Number(LookupValue('TRACINGMACROS')||0); },
+  setter => sub { AssignValue(TRACINGMACROS => $_[0]->valueOf); });
+DefRegister('\tracingcommands', Number(0),
+  getter => sub { Number(LookupValue('TRACINGCOMMANDS')); },
+  setter => sub { AssignValue(TRACINGCOMMANDS => $_[0]->valueOf); });
+
 {
   my %iparms = (
     pretolerance => 100, tolerance => 200, hbadness => 1000, vbadness => 1000,
@@ -652,11 +660,12 @@ DefMacro('\the Register', sub {
     floatingpenalty      => 0,     outputpenalty       => 0,
     doublehyphendemerits => 10000, finalhyphendemerits => 5000, adjdemerits => 10000,
     looseness            => 0,     pausing             => 0,
-    holdinginserts       => 0,     tracingonline       => 0, tracingmacros => 0, tracingstats => 0,
-    tracingparagraphs    => 0,     tracingpages        => 0, tracingoutput => 0, tracinglostchars => 1,
-    tracingcommands => 0, tracingrestores => 0, language => 0, uchyph => 1, lefthyphenmin => 0,
-    righthyphenmin => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
-    escapechar => 0, endlinechar => 0, newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
+    holdinginserts       => 0,     tracingonline       => 0, tracingstats => 0,
+    tracingparagraphs    => 0,     tracingpages        => 0, tracingoutput => 0,
+    tracinglostchars => 1,
+    tracingrestores  => 0, language => 0, uchyph => 1, lefthyphenmin => 0,
+    righthyphenmin   => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
+    escapechar       => 0, endlinechar => 0, newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
     fam  => -1, mag => 1000, magnification => 1000, delimiterfactor => 0,
     time => 0,  day => 0,    month         => 0,    year            => 0,
     showboxbreadth => 5, showboxdepth => 3, errorcontextlines => 5);
@@ -664,6 +673,13 @@ DefMacro('\the Register', sub {
   foreach my $p (keys %iparms) {
     DefRegister("\\$p", Number($iparms{$p})); }
 }
+
+# Most of these are ignored, but...
+DefMacro('\tracingall',
+  '\tracingonline=1 \tracingcommands=2 \tracingstats=2'
+    . ' \tracingpages=1 \tracingoutput=1 \tracinglostchars=1'
+    . ' \tracingmacros=2 \tracingparagraphs=1 \tracingrestores=1'
+    . ' \showboxbreadth=\maxdimen \showboxdepth=\maxdimen \errorstopmode');
 
 # This may mess up Daemon state?
 { my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
@@ -1599,18 +1615,28 @@ DefParameterType('RuleSpecification', sub {
   optional => 1, undigested => 1);
 
 DefConstructor('\vrule RuleSpecification',
-  "?#isVerticalRule()"
+  "?#invisible()(?#isVerticalRule()"
     . "(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)'"
-    . " width='&REF(#1,width)' color='#color'/>)",
+    . " width='&REF(#1,width)' color='#color'/>))",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims = $whatsit->getArg(1);
-    my ($w, $h, $d) = map(($$dims{$_} ? $$dims{$_}->ptValue : undef), qw(width height depth));
-    $h -= $d if $h && $d;
+    my $width  = $$dims{width};
+    my $height = $$dims{height};
+    my $depth  = $$dims{depth};
+    $whatsit->setProperty(width=>$width) if $width;
+    $whatsit->setProperty(height=>$height) if $height;
+    $whatsit->setProperty(depth=>$depth) if $depth;
+    my $w = ($width  ? $width->ptValue  : undef);
+    my $h = ($height ? $height->ptValue : undef);
+    my $d = ($depth  ? $depth->ptValue  : undef);
+    $h -= $d if $h && $d;       # - ??
     if (my $alignment = LookupValue('Alignment')) {
       if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $whatsit->setProperty(isVerticalRule => 1) } }
+    elsif((defined $w) && ($w == 0)){
+      $whatsit->setProperty(invisible=>1); }
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -1624,8 +1650,16 @@ DefConstructor('\hrule RuleSpecification',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims = $whatsit->getArg(1);
-    my ($w, $h, $d) = map(($$dims{$_} ? $$dims{$_}->ptValue : undef), qw(width height depth));
-    $h -= $d if $h && $d;
+    my $width  = $$dims{width};
+    my $height = $$dims{height};
+    my $depth  = $$dims{depth};
+    $whatsit->setProperty(width=>$width) if $width;
+    $whatsit->setProperty(height=>$height) if $height;
+    $whatsit->setProperty(depth=>$depth) if $depth;
+    my $w = ($width  ? $width->ptValue  : undef);
+    my $h = ($height ? $height->ptValue : undef);
+    my $d = ($depth  ? $depth->ptValue  : undef);
+    $h -= $d if $h && $d;       # - ??
     if (my $alignment = LookupValue('Alignment')) {
       if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
@@ -5187,7 +5221,6 @@ DefPrimitiveI('\endinsert',  undef, undef);
 # Let's hope nobody is messing with the output routine...
 
 DefPrimitiveI('\footnoterule', undef, undef);
-DefPrimitiveI('\tracingall',   undef, undef);
 
 #======================================================================
 # End of TeX Book definitions.
