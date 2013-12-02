@@ -240,17 +240,30 @@ sub beAbsorbed {
 
 sub computeSize {
   my ($self) = @_;
-  my ($w, $h, $d) = (0, 0, 0);
-  foreach my $b (@{ $$self[0] }) {
-    my $xx = $b->getWidth;
-    print STDERR "Size of WHAT??? " . Stringify($b) . " ==> " . Stringify($xx) . "\n" unless ref $xx;
-
-    $w += $b->getWidth->valueOf;
-    $h = max($h, $b->getHeight->valueOf);
-    $d = max($d, $b->getDepth->valueOf); }
-  $$self[4]{width}  = Dimension($w);
-  $$self[4]{height} = Dimension($h);
-  $$self[4]{depth}  = Dimension($d);
+  my ($wd, $ht, $dp) = (0, 0, 0);
+  foreach my $box (@{ $$self[0] }) {
+    my $w = $box->getWidth;
+    my $h = $box->getHeight;
+    my $d = $box->getDepth;
+    if (ref $w) {
+      $wd += $w->valueOf; }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($w)); }
+    if (ref $h) {
+      $ht = max($ht, $h->valueOf); }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Height of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($h)); }
+    if (ref $d) {
+      $dp = max($dp, $d->valueOf); }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
+  }
+  $$self[4]{width}  = Dimension($wd);
+  $$self[4]{height} = Dimension($ht);
+  $$self[4]{depth}  = Dimension($dp);
   return; }
 
 #**********************************************************************
