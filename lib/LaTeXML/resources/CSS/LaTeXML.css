@@ -85,12 +85,9 @@
 
 /*======================================================================
   Para level */
-/*.ltx_figure .ltx_subfigure,*/
-/*.ltx_table  .ltx_subtable,*/
-/*.ltx_float  .ltx_subfloat  { width:50%; } */
-.ltx_figure .ltx_figure,
-.ltx_table  .ltx_table,
-.ltx_float  .ltx_float  { width:50%; }
+td.ltx_subfigure,
+td.ltx_subtable,
+td.ltx_subfloat { width:50%; }
 /* theorems, figure, tables, floats captions.. */
 /*======================================================================
  Blocks, Lists, Floats */
