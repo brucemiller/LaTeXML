@@ -3847,7 +3847,7 @@ DefMacro('\@firstoftwo{}{}',     sub { $_[1]; });
 DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
-    ($_[1]->unlist, Expand($_[2])->unlist, Expand($_[3])->unlist); });
+    ($_[1]->unlist, T_BEGIN,Expand($_[2])->unlist,T_END,T_BEGIN, Expand($_[3])->unlist,T_END); });
 
 RawTeX('{\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
     \@gobblecr}%
