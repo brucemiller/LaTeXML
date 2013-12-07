@@ -16,7 +16,7 @@ use FindBin;
 BEGIN {
   $FindBin::RealBin =~ /^([^\0]+)\z/;    # Valid Unix path TODO: Windows, revisit regexp
   $RealBin_safe = $1;
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e $RealBin_safe . '/latexmlc'));
+  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e "$RealBin_safe/latexmlc"));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
 use lib $RealBin_safe. "/../lib";
@@ -48,7 +48,8 @@ if ($address =~ s/\/(.+)$//) {    # strip away route
 }
 # Local if peerhost is localhost:
 $local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
-$expire = -1 unless defined $expire;
+# Default is a single local conversion job, also if latexmls isn't installed.
+$expire = -1 unless ((defined $expire) && (-e "$RealBin_safe/latexmls"));
 $port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
