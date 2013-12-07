@@ -33,7 +33,7 @@ use File::Spec;
 use File::Copy;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find &pathname_findall
+our @EXPORT = qw( &pathname_find &pathname_findall &pathname_find_executable
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -42,8 +42,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
-  &pathname_cwd &pathname_mkdir &pathname_copy
-  &executable_find);
+  &pathname_cwd &pathname_mkdir &pathname_copy);
 
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
@@ -262,6 +261,11 @@ sub pathname_findall {
   my @paths = candidate_pathnames($pathname, %options);
   return grep { -f $_ } @paths; }
 
+sub pathname_find_executable {
+  my ($executable) = @_;
+  my @paths = split($Config::Config{'path_sep'},$ENV{PATH});
+  return pathname_find($executable,paths=>\@paths); }
+
 # It's presumably cheep to concatinate all the pathnames,
 # relative to the cost of testing for files,
 # and this simplifies overall.
@@ -310,11 +314,6 @@ sub candidate_pathnames {
       else {
         push(@paths, pathname_concat($dir, $name . $ext)); } } }
   return @paths; }
-
-sub executable_find {
-  my ($executable) = @_;
-  my @paths = split($Config::Config{'path_sep'},$ENV{PATH});
-  return pathname_find($executable,paths=>\@paths); }
 
 #======================================================================
 1;

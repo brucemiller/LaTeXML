@@ -34,7 +34,7 @@ binmode(STDOUT, ":encoding(UTF-8)");
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
 $latexmls = "$RealBin_safe/latexmls" if (-e "$RealBin_safe/latexmls");
-$latexmls = executable_find('latexmls') unless defined $latexmls;
+$latexmls = pathname_find_executable('latexmls') unless defined $latexmls;
 
 # Some defaults:
 my $opts = LaTeXML::Util::Config->new(input_limit => 100);
