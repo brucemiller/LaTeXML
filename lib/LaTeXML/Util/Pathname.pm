@@ -42,7 +42,8 @@ our @EXPORT = qw( &pathname_find &pathname_findall
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
-  &pathname_cwd &pathname_mkdir &pathname_copy);
+  &pathname_cwd &pathname_mkdir &pathname_copy
+  &executable_find);
 
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
@@ -309,6 +310,11 @@ sub candidate_pathnames {
       else {
         push(@paths, pathname_concat($dir, $name . $ext)); } } }
   return @paths; }
+
+sub executable_find {
+  my ($executable) = @_;
+  my @paths = split($Config::Config{'path_sep'},$ENV{PATH});
+  return pathname_find($executable,paths=>\@paths); }
 
 #======================================================================
 1;
