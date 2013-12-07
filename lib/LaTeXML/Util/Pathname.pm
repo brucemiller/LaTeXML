@@ -33,7 +33,7 @@ use File::Spec;
 use File::Copy;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find &pathname_findall
+our @EXPORT = qw( &pathname_find &pathname_findall &pathname_find_executable
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -260,6 +260,11 @@ sub pathname_findall {
   return unless $pathname;
   my @paths = candidate_pathnames($pathname, %options);
   return grep { -f $_ } @paths; }
+
+sub pathname_find_executable {
+  my ($executable) = @_;
+  my @paths = split($Config::Config{'path_sep'},$ENV{PATH});
+  return pathname_find($executable,paths=>\@paths); }
 
 # It's presumably cheep to concatinate all the pathnames,
 # relative to the cost of testing for files,
