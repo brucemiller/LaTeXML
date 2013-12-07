@@ -31,6 +31,11 @@ use JSON::XS qw(decode_json);
 binmode(STDERR, ":encoding(UTF-8)");
 binmode(STDOUT, ":encoding(UTF-8)");
 
+# Determine if a socket server is installed locally and obtain its pathname:
+my $latexmls;
+$latexmls = "$RealBin_safe/latexmls" if (-e "$RealBin_safe/latexmls");
+$latexmls = executable_find('latexmls') unless defined $latexmls;
+
 # Some defaults:
 my $opts = LaTeXML::Util::Config->new(input_limit => 100);
 
@@ -49,7 +54,7 @@ if ($address =~ s/\/(.+)$//) {    # strip away route
 # Local if peerhost is localhost:
 $local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
 # Default is a single local conversion job, also if latexmls isn't installed.
-$expire = -1 unless ((defined $expire) && (-e "$RealBin_safe/latexmls"));
+$expire = -1 unless ((defined $expire) && $latexmls);
 $port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
@@ -105,7 +110,7 @@ if ((!$sock) && $local && ($expire == -1)) {
   }
   chop $message;
   #Startup daemon and feed in args, if needed
-  system("$RealBin_safe/latexmls", "--port=$port",
+  system($latexmls, "--port=$port",
     "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) unless ($sock || !$local);
   my $http_response = $local ? process_local($address, $port, $route, $message, $sock) :
     process_remote($address, $port, $route, $message, $sock);
