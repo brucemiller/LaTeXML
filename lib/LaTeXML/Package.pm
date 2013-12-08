@@ -1370,7 +1370,7 @@ sub FindFile_aux {
   if (!$options{noltxml}
     && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
     return $path; }
-  # If we're EXCLUDING ltxml, then FIRST use pathname_find to search for file (faster, blahblah)
+  # If we're looking for TeX, look within our paths & installation first (faster than kpse)
   if (!$options{notex}
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
