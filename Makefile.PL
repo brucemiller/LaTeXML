@@ -63,7 +63,7 @@ WriteMakefile(NAME => 'LaTeXML',
 			    'JSON::XS'=>0,
 			    'Archive::Zip'=>0,
 			   },
-	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath','bin/latexmlc','bin/latexmls'],
+	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath','bin/latexmlc'],
 	      macro => $MORE_MACROS,
 	      );
 
