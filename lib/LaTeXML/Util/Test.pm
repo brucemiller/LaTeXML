@@ -7,11 +7,12 @@ use LaTeXML::Util::Pathname;
 use JSON::XS;
 use FindBin;
 use File::Copy;
+use File::Which;
 use base qw(Exporter);
 our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
     latexml_tests),
   @Test::More::EXPORT);
-my $kpsewhich = $ENV{LATEXML_KPSEWHICH} || 'kpsewhich';    # [CONFIGURATION]
+my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');    # [CONFIGURATION]
 
 # Note that this is a singlet; the same Builder is shared.
 
@@ -57,7 +58,7 @@ sub latexml_tests {
 sub check_requirements {
   my ($test, $reqmts) = @_;
   foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
-    if (`$kpsewhich $reqmt`) { }
+    if (($kpsewhich && (`$kpsewhich $reqmt`)) || (pathname_find($reqmt))) { }
     else {
       skip("Missing requirement $reqmt for $test", 1);
       return 0; } }
