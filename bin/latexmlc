@@ -12,14 +12,16 @@ use IO::Socket;
 
 my $RealBin_safe;
 use FindBin;
+use File::Spec::Functions;
+use File::Which;
 
 BEGIN {
   $FindBin::RealBin =~ /^([^\0]+)\z/;    # Valid Unix path TODO: Windows, revisit regexp
   $RealBin_safe = $1;
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e $RealBin_safe . '/latexmlc'));
+  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e catfile($RealBin_safe ,'latexmlc')));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
-use lib $RealBin_safe. "/../lib";
+use lib catdir($RealBin_safe,"..","lib");
 #TODO: Do we ever care about ENV PATH that much? Do we miss on some feature like that?
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
 use LaTeXML::Util::Config;
@@ -30,6 +32,11 @@ use JSON::XS qw(decode_json);
 
 binmode(STDERR, ":encoding(UTF-8)");
 binmode(STDOUT, ":encoding(UTF-8)");
+
+# Determine if a socket server is installed locally and obtain its pathname:
+my $latexmls;
+$latexmls = catfile($RealBin_safe,'latexmls') if (-e catfile($RealBin_safe,'latexmls'));
+$latexmls = which('latexmls') unless defined $latexmls;
 
 # Some defaults:
 my $opts = LaTeXML::Util::Config->new(input_limit => 100);
@@ -48,7 +55,7 @@ if ($address =~ s/\/(.+)$//) {    # strip away route
 }
 # Local if peerhost is localhost:
 $local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
-$expire = -1 unless defined $expire;
+$expire = -1 unless ((defined $expire) && $latexmls);
 $port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
@@ -104,7 +111,7 @@ if ((!$sock) && $local && ($expire == -1)) {
   }
   chop $message;
   #Startup daemon and feed in args, if needed
-  system("$RealBin_safe/latexmls", "--port=$port",
+  system($latexmls, "--port=$port",
     "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) unless ($sock || !$local);
   my $http_response = $local ? process_local($address, $port, $route, $message, $sock) :
     process_remote($address, $port, $route, $message, $sock);
