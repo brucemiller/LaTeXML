@@ -4,5 +4,6 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/theorem");
+latexml_tests("t/theorem",
+	      requires=>{ntheorem=>'ntheorem.std'});
 

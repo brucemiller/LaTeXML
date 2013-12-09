@@ -9,7 +9,8 @@ use LaTeXML::Util::Test;
 #  latexmlc {$triggers} $name
 #).
 
-latexml_tests('t/daemon/profiles');
+latexml_tests('t/daemon/profiles',
+	      requires=>{fragment=>'dvipsnam.def',math=>'dvipsnam.def'});
 
 #**********************************************************************
 1;
