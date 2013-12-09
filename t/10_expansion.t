@@ -4,5 +4,6 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/expansion");
+latexml_tests("t/expansion",
+	      requires=>{meaning=>'t1enc.def'});
 

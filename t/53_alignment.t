@@ -4,4 +4,5 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/alignment");
+latexml_tests("t/alignment",
+	      requires=>{listing=>'listings.cfg'});
