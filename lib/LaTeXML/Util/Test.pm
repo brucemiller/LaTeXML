@@ -8,6 +8,7 @@ use JSON::XS;
 use FindBin;
 use File::Copy;
 use File::Which;
+use File::Spec::Functions;
 use base qw(Exporter);
 our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
     latexml_tests),
@@ -60,7 +61,9 @@ sub check_requirements {
   foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
     if (($kpsewhich && (`$kpsewhich $reqmt`)) || (pathname_find($reqmt))) { }
     else {
-      skip("Missing requirement $reqmt for $test", 1);
+      my $message = "Missing requirement $reqmt for $test";
+      diag("Skip: $message");
+      skip($message, 1);
       return 0; } }
   return 1; }
 
@@ -162,7 +165,7 @@ sub daemon_ok {
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
 
-  my $invocation = "cd $dir; $FindBin::Bin/../blib/script/latexmlc ";
+  my $invocation = "cd $dir; ".catfile($FindBin::Bin,'..','blib','script','latexmlc').' ';
   my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
