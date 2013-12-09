@@ -35,6 +35,7 @@ record_revision();
 compile_MathGrammar();
 install_TeXStyles();
 extra_Tests();
+git_Hooks();
 
 WriteMakefile(NAME => 'LaTeXML',
 	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
@@ -207,5 +208,15 @@ extratest ::
 
 ExtraTests
 }
-#======================================================================
 
+#======================================================================
+# Install Git hooks if we are a Git clone
+sub git_Hooks {
+    $MORE_MAKERULES .= <<'GitHooks';
+
+pure_all :: 
+	$(PERLRUN) -MFile::Copy -e 'if (-d ".git") {File::Copy::copy("tools/pre-commit", ".git/hooks/pre-commit"); chmod 0755, ".git/hooks/pre-commit";}'
+
+GitHooks
+}
+#======================================================================

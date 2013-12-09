@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+use warnings;
+use strict;
+use File::Spec::Functions;
+
+my $bad_commit = 0;
+# Stash any changes to the working tree that are not going to be committed
+system('git','stash','-u','--keep-index','--quiet');
+
+my $changes = `git status --porcelain`;
+my @modified_files = 
+  map {$_->[1]} # select the filename
+  grep {$_->[0] =~ /^[AM]$/} # take only Modified or Added
+  map {[split(/\s+/,$_)]} # [status, name]
+  split("\n",$changes); # from all files
+
+my @modified_perl_files = grep {/(latexml(\w*))|(\.(pl|pm|ltxml))$/} @modified_files;
+
+my $perltidy_profile = catfile('tools','latexml.perltidy');
+my $perlcritic_profile = catfile('tools','latexml.perlcritic');
+foreach my $perl_file (@modified_perl_files) {
+ `perltidy --profile=$perltidy_profile $perl_file`;
+ my $tidy_status = length(`diff $perl_file $perl_file.tdy`);
+ if ($tidy_status) {
+   print STDERR "$perl_file needs tidying up! Suggested:\nperltidy --profile=$perltidy_profile -b -bext='/' $perl_file\n\n";
+   $bad_commit = 1; }
+ unlink "$perl_file.tdy";
+ # my $critic_status = `perlcritic --profile=$perlcritic_profile $perl_file`;
+ # print STDERR "Critic status: $critic_status\n";
+}
+
+# Unstash changes to the working tree that we had stashed
+system('git', 'stash', 'pop', '--quiet', '--index');
+
+exit $bad_commit;
