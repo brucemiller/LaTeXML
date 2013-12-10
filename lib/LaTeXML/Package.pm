@@ -751,31 +751,31 @@ sub DefConditionalI {
   $cs = coerceCS($cs);
   my $csname = ToString($cs);
   # Special cases...
-  if($csname eq '\fi'){
+  if ($csname eq '\fi') {
     $STATE->installDefinition(LaTeXML::Conditional::fi->new($cs, %options),
-                              $options{scope}); }
-  elsif($csname eq '\else'){
+      $options{scope}); }
+  elsif ($csname eq '\else') {
     $STATE->installDefinition(LaTeXML::Conditional::else->new($cs, %options),
-                              $options{scope}); }
-  elsif($csname eq '\or'){
+      $options{scope}); }
+  elsif ($csname eq '\or') {
     $STATE->installDefinition(LaTeXML::Conditional::or->new($cs, %options),
-                              $options{scope}); }
-  elsif($csname =~ /^\\(?:if(.*)|unless)$/) {
-      my $name = $1;
-      if((defined $name) && ($name ne 'case')
-           && (! defined $test)){ # user-defined conditional, like with \newif
-        $test = sub { LookupValue('Boolean:' . $name); };
-        DefPrimitiveI(T_CS('\\' . $name . 'true'),  undef, sub {
+      $options{scope}); }
+  elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
+    my $name = $1;
+    if ((defined $name) && ($name ne 'case')
+      && (!defined $test)) {    # user-defined conditional, like with \newif
+      $test = sub { LookupValue('Boolean:' . $name); };
+      DefPrimitiveI(T_CS('\\' . $name . 'true'), undef, sub {
           AssignValue('Boolean:' . $name => 1); });
-        DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
+      DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
           AssignValue('Boolean:' . $name => 0); }); }
-      # For \ifcase, the parameter list better be a single Number !!
-      $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-      $STATE->installDefinition(LaTeXML::Conditional->new($cs, $paramlist, $test, %options),
-                                $options{scope}); }
+    # For \ifcase, the parameter list better be a single Number !!
+    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+    $STATE->installDefinition(LaTeXML::Conditional->new($cs, $paramlist, $test, %options),
+      $options{scope}); }
   else {
     Error('misdefined', $cs, $STATE->getStomach,
-          "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
+      "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
 
@@ -1198,7 +1198,8 @@ sub DefEnvironmentI {
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
         ($mode ? (sub { $_[0]->beginMode($mode); })
           : (sub { $_[0]->bgroup; })),
-        sub { AssignValue(current_environment => $name); },
+        sub { AssignValue(current_environment => $name);
+          DefMacroI('\@currenvir', $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
       afterDigest => flatten($options{afterDigestBegin}),
