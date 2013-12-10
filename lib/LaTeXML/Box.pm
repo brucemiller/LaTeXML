@@ -134,9 +134,9 @@ sub setDepth {
 sub computeSize {
   my ($self) = @_;
   my ($w, $h, $d) = ($$self[1] || LaTeXML::Font->default)->computeStringSize($$self[0]);
-  $$self[4]{width}  = $w;
-  $$self[4]{height} = $h;
-  $$self[4]{depth}  = $d;
+  $$self[4]{width}  = $w unless defined $$self[4]{width};
+  $$self[4]{height} = $h unless defined $$self[4]{height};
+  $$self[4]{depth}  = $d unless defined $$self[4]{depth};
   return; }
 
 #**********************************************************************
@@ -261,9 +261,9 @@ sub computeSize {
       Warn('expected', 'Dimension', undef,
         "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
   }
-  $$self[4]{width}  = Dimension($wd);
-  $$self[4]{height} = Dimension($ht);
-  $$self[4]{depth}  = Dimension($dp);
+  $$self[4]{width}  = Dimension($wd) unless defined $$self[4]{width};
+  $$self[4]{height} = Dimension($ht) unless defined $$self[4]{height};
+  $$self[4]{depth}  = Dimension($dp) unless defined $$self[4]{depth};
   return; }
 
 #**********************************************************************
@@ -498,9 +498,9 @@ sub computeSize {
     $w += $b->getWidth->valueOf;
     $h = max($h, $b->getHeight->valueOf);
     $d = max($d, $b->getDepth->valueOf); }
-  $$self{properties}{width}  = Dimension($w);
-  $$self{properties}{height} = Dimension($h);
-  $$self{properties}{depth}  = Dimension($d);
+  $$self{properties}{width}  = Dimension($w) unless defined $$self{properties}{width};
+  $$self{properties}{height} = Dimension($h) unless defined $$self{properties}{height};
+  $$self{properties}{depth}  = Dimension($d) unless defined $$self{properties}{depth};
   return; }
 
 #**********************************************************************
