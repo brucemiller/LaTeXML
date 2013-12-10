@@ -749,19 +749,33 @@ sub DefConditional {
 sub DefConditionalI {
   my ($cs, $paramlist, $test, %options) = @_;
   $cs = coerceCS($cs);
-  if ((!defined $test) && (!defined $options{skipper})) {
-    # define a "user defined" conditional, like with \newif
-    if (ToString($cs) =~ /^\\if(.*)$/) {
+  my $csname = ToString($cs);
+  # Special cases...
+  if($csname eq '\fi'){
+    $STATE->installDefinition(LaTeXML::Conditional::fi->new($cs, %options),
+                              $options{scope}); }
+  elsif($csname eq '\else'){
+    $STATE->installDefinition(LaTeXML::Conditional::else->new($cs, %options),
+                              $options{scope}); }
+  elsif($csname eq '\or'){
+    $STATE->installDefinition(LaTeXML::Conditional::or->new($cs, %options),
+                              $options{scope}); }
+  elsif($csname =~ /^\\(?:if(.*)|unless)$/) {
       my $name = $1;
-      $test = sub { LookupValue('Boolean:' . $name); };
-      DefPrimitiveI(T_CS('\\' . $name . 'true'),  undef, sub { AssignValue('Boolean:' . $name => 1); });
-      DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub { AssignValue('Boolean:' . $name => 0); }); }
-    else {
-      Error('misdefined', $cs, $STATE->getStomach,
-        "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); } }
-  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  $STATE->installDefinition(LaTeXML::Conditional->new($cs, $paramlist, $test, %options),
-    $options{scope});
+      if((defined $name) && ($name ne 'case')
+           && (! defined $test)){ # user-defined conditional, like with \newif
+        $test = sub { LookupValue('Boolean:' . $name); };
+        DefPrimitiveI(T_CS('\\' . $name . 'true'),  undef, sub {
+          AssignValue('Boolean:' . $name => 1); });
+        DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
+          AssignValue('Boolean:' . $name => 0); }); }
+      # For \ifcase, the parameter list better be a single Number !!
+      $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+      $STATE->installDefinition(LaTeXML::Conditional->new($cs, $paramlist, $test, %options),
+                                $options{scope}); }
+  else {
+    Error('misdefined', $cs, $STATE->getStomach,
+          "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
 
