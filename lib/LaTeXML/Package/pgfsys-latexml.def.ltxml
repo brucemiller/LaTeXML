@@ -57,12 +57,12 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     . '</ltx:picture>',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $minx   = LookupValue('\pgf@picminx')->ptValue;
-    my $miny   = LookupValue('\pgf@picminy')->ptValue;
+    my $minx   = LookupValue('\pgf@picminx')->pxValue;
+    my $miny   = LookupValue('\pgf@picminy')->pxValue;
     my $width  = LookupValue('\pgf@picmaxx');
     my $height = LookupValue('\pgf@picmaxy');
-    my $w      = List::Util::max($width->ptValue, 1);
-    my $h      = List::Util::max($height->ptValue, 1);
+    my $w      = List::Util::max($width->pxValue, 1);
+    my $h      = List::Util::max($height->pxValue, 1);
     $whatsit->setProperty(minx      => $minx);
     $whatsit->setProperty(miny      => $miny);
     $whatsit->setProperty(width     => $width);
@@ -103,7 +103,7 @@ DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text',
-        yoffset      => $dim->multiply(-1)->ptValue . 'px',
+        yoffset      => $dim->multiply(-1)->pxValue . 'px',
         _noautoclose => '1');
       $doc->absorb($box);
       $doc->closeElement('ltx:text');
@@ -113,7 +113,7 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text',
-        yoffset      => $dim->ptValue . 'px',
+        yoffset      => $dim->pxValue . 'px',
         _noautoclose => '1');
       $doc->absorb($box);
       $doc->closeElement('ltx:text');
@@ -123,7 +123,7 @@ DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text',
-        'xoffset'      => $skip->ptValue . 'px',
+        'xoffset'      => $skip->pxValue . 'px',
         '_noautoclose' => '0'); } });
 
 # Like regular \hbox, \vbox, but we don't want any extra element around it.
@@ -171,13 +171,13 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
     my ($doc, $w, $h, $d, $box, %prop) = @_;
     $doc->openElement('svg:g',
       id        => 'fobj' . $prop{fobj_num} . 'g',
-      transform => 'matrix(1 0 0 -1 0 ' . $h->ptValue . ')');
+      transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')');
     my $node = $doc->getNode;
     while ($node && !$node->getAttribute('stroke')) { $node = $node->parentNode; }
     my $sw = $doc->openElement('svg:switch');
     $doc->openElement('svg:foreignObject',
-      width  => $w->ptValue,
-      height => $h->add($d)->ptValue, class => 'ltx_foreignobject',
+      width  => $w->pxValue,
+      height => $h->add($d)->pxValue, class => 'ltx_foreignobject',
       id     => 'fobj' . $prop{fobj_num}, color => $node->getAttribute('stroke'));
     my $p = $doc->openElement('ltx:p',
       xmlns => 'http://dlmf.nist.gov/LaTeXML',
@@ -210,6 +210,8 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
     addToCount('svg_fobjnum', 1, 'global');
     return; });
 
+# this puts an \hbox into the picture,
+# but it should set wd,ht,dp to 0!!! ???
 DefMacro('\pgfsys@hbox{Number}', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
@@ -246,7 +248,7 @@ DefMacro('\pgfsys@hbox{Number}', sub {
 # Adding an element to the current SVG path
 sub addToSVGPath {
   my ($operation, @points) = @_;
-  my $newPath = join(' ', $operation, map($_->ptValue, @points));
+  my $newPath = join(' ', $operation, map($_->pxValue, @points));
   if (my $currentPath = LookupValue('pgf_SVGpath')) {
     AssignValue(pgf_SVGpath => $currentPath . ' ' . $newPath);
   } else {
@@ -255,7 +257,7 @@ sub addToSVGPath {
   return; }
 
 # sub updateBB {
-#   my ($x, $y) = map($_->ptValue, @_);
+#   my ($x, $y) = map($_->pxValue, @_);
 #   if (LookupValue('Boolean:pgf@relevantforpicturesize') == 1) {
 #     AssignValue(picminx => List::Util::min(LookupValue('picminx'), $x), 'global');
 #     AssignValue(picminy => List::Util::min(LookupValue('picminy'), $y), 'global');
@@ -324,8 +326,8 @@ DefConstructor('\pgfsys@transformcm@{Float}{Float}{Float}{Float}{Dimension}{Dime
     c2 => sub { $_[2]->valueOf; },
     c3 => sub { $_[3]->valueOf; },
     c4 => sub { $_[4]->valueOf; },
-    x  => sub { $_[5]->ptValue; },
-    y  => sub { $_[6]->ptValue; } });
+    x  => sub { $_[5]->pxValue; },
+    y  => sub { $_[6]->pxValue; } });
 ##  beforeDigest => sub { addToCount('pgf_gcount', 1, 'global'); });
 
 #=====================================================================#
@@ -495,18 +497,7 @@ sub svgColorGray {
     ($g * 100) . '%,' .
     ($g * 100) . '%)'; }
 
-# DefMacro('\lxSVG@pgfsys@setcolor{}{}',
-#   sub {
-#     my ($gullet, $attribute, $value) = @_;
-# ## REALLY ??? Only if pgfpicture ?
-#     if ((LookupValue('Boolean:pgfpicture') || 0) == 1) {
-#       return (T_CS('\lxSVG@pgfsys@begingroup'),
-#         Invocation('\lxSVG@pgfsys@setgroupattr', $attribute, $value));
-#     }
-#     return;
-#   });
-
-DefMacro('\lxSVG@pgfsys@setcolor{}{}', '\ifpgfpicture\lxSVG@pgfsys@begingroup{#1={#2}}');
+DefMacro('\lxSVG@pgfsys@setcolor{}{}', '\ifpgfpicture\lxSVG@pgfsys@begingroup{#1={#2}}\fi');
 
 # Need to defer until after color/xcolor are loaded!
 AtBeginDocument('\def\XC@mcolor{\pgfsetcolor{.}}');
@@ -565,8 +556,8 @@ DefConstructor('\lxSVG@pgfsys@coloredpattern@{}{Dimension}{Dimension}{}',
     '#4' .
     '</svg:pattern></svg:defs>',
   properties => {
-    x_step => sub { $_[2]->ptValue; },
-    y_step => sub { $_[3]->ptValue; } });
+    x_step => sub { $_[2]->pxValue; },
+    y_step => sub { $_[3]->pxValue; } });
 
 DefConstructor('\lxSVG@pgfsys@uncoloredpattern@{}{Dimension}{Dimension}{}',
   '<svg:defs>' .
@@ -577,8 +568,8 @@ DefConstructor('\lxSVG@pgfsys@uncoloredpattern@{}{Dimension}{Dimension}{}',
     . '<svg:symbol id="pgfsym#1">#4</svg:symbol>'
     . '</svg:pattern></svg:defs>',
   properties => {
-    x_step => sub { $_[2]->ptValue; },
-    y_step => sub { $_[3]->ptValue; } });
+    x_step => sub { $_[2]->pxValue; },
+    y_step => sub { $_[3]->pxValue; } });
 
 DefConstructor('\pgfsys@setpatternuncolored@{}{}{}{}',
   '<svg:defs><svg:pattern id="pgfupat#objcount" xlink:href="#pgfpat#1">'
@@ -686,10 +677,10 @@ DefConstructor('\lxSVG@pgfsys@insertimage{}{}{}{}',
       my $prevmaxx = (LookupValue('pgf_lastForeignObjX') || 0);
       my $newmaxx = $prevmaxx + ToString($width);
       AssignValue(pgf_lastForeignObjX => $newmaxx, 'global');
-      if ($prevmaxx < LookupValue('\pgf@picminx')->ptValue) {
+      if ($prevmaxx < LookupValue('\pgf@picminx')->pxValue) {
         AssignValue('\pgf@picminx' => Dimension($prevmaxx . 'pt'), 'global');
       }
-      if ($newmaxx > LookupValue('\pgf@picmaxx')->ptValue) {
+      if ($newmaxx > LookupValue('\pgf@picmaxx')->pxValue) {
         AssignValue('\pgf@picmaxx' => Dimension($newmaxx . 'pt'), 'global');
       }
       return $prevmaxx; },
@@ -698,10 +689,10 @@ DefConstructor('\lxSVG@pgfsys@insertimage{}{}{}{}',
       my $prevmaxy = (LookupValue('pgf_lastForeignObjY') || 0);
       my $newmaxy = $prevmaxy + ToString($height);
       # AssignValue(pgf_lastForeignObjY => $newmaxy, 'global'); # if needed
-      if ($prevmaxy < LookupValue('\pgf@picminy')->ptValue) {
+      if ($prevmaxy < LookupValue('\pgf@picminy')->pxValue) {
         AssignValue('\pgf@picminy' => Dimension($prevmaxy . 'pt'), 'global');
       }
-      if ($newmaxy > LookupValue('\pgf@picmaxy')->ptValue) {
+      if ($newmaxy > LookupValue('\pgf@picmaxy')->pxValue) {
         AssignValue('\pgf@picmaxy' => Dimension($newmaxy . 'pt'), 'global');
       }
       return $prevmaxy; } });
@@ -733,11 +724,11 @@ DefPrimitive('\pgfsys@defineimage',
       my $hspec = !(xEquals(T_CS('\pgf@imageheight'), T_CS('\pgfutil@empty')));
 
       if ($wspec) {
-        $w = Dimension(ToString(Expand(T_CS('\pgf@imagewidth'))))->ptValue;
+        $w = Dimension(ToString(Expand(T_CS('\pgf@imagewidth'))))->pxValue;
         $h *= $w / $width unless $hspec;    # scale to preserve ratio
       }
       if ($hspec) {
-        $h = Dimension(ToString(Expand(T_CS('\pgf@imageheight'))))->ptValue;
+        $h = Dimension(ToString(Expand(T_CS('\pgf@imageheight'))))->pxValue;
         $w *= $h / $height unless $wspec;    # scale to preserve ratio
       }
       # DefMacro('\pgf@image',
@@ -763,7 +754,7 @@ DefConstructor('\@@foreign@image Semiverbatim {Dimension}{Dimension}', sub {
     $doc->openElement('svg:foreignObject', width => $width, height => $height)
       unless $foreign;
     $doc->insertElement('ltx:graphics', undef, graphic => $path,
-      options => "width=" . $width->ptValue . ",height=" . $height->ptValue);
+      options => "width=" . $width->pxValue . ",height=" . $height->pxValue);
     $doc->closeElement('svg:foreignObject') unless $foreign; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -795,7 +786,7 @@ DefPrimitive('\lxSVG@pgfsys@sh@color{Float}{Float}{Float}', sub {
 
 DefPrimitive('\lxSVG@pgfsys@sh@interval@{Dimension}', sub {
     my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos');
-    my $offset = $_[1]->ptValue / $endpos->ptValue;
+    my $offset = $_[1]->pxValue / $endpos->pxValue;
     AssignValue(pgf_sh => (LookupValue('pgf_sh') || '')
         . '<svg:stop offset="' . $offset . '" '
         . 'stop-color="' . LookupValue('pgf_sh_color') . '" />');
@@ -815,8 +806,8 @@ DefMacro('\lxSVG@pgfsys@sh@intervals{}', sub {
 DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
     my ($stomach, $name, $flag) = @_;
     my $stops = LookupValue('pgf_sh'); AssignValue(pgf_sh => '');
-    my $x     = LookupValue('\pgf@x')->ptValue;
-    my $y     = LookupValue('\pgf@y')->ptValue;
+    my $x     = LookupValue('\pgf@x')->pxValue;
+    my $y     = LookupValue('\pgf@y')->pxValue;
     DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
         my $objcount = (LookupValue('pgf_objcount') || 0) + 1;
         AssignValue(pgf_objcount => $objcount, 'global');
@@ -836,9 +827,9 @@ DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
 DefPrimitive('\lxSVG@pgfsys@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
     my $stops  = LookupValue('pgf_sh'); AssignValue(pgf_sh => '');
-    my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->ptValue;
-    my $x      = LookupValue('\pgf@x')->ptValue * 8 / ($endpos * 16) + 0.5;
-    my $y      = LookupValue('\pgf@y')->ptValue * 8 / ($endpos * 16) + 0.5;
+    my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
+    my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;
+    my $y      = LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5;
     DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
         my $objcount = (LookupValue('pgf_objcount') || 0) + 1;
         AssignValue(pgf_objcount => $objcount, 'global');
@@ -859,8 +850,8 @@ DefPrimitive('\lxSVG@pgfsys@sh@defcircles{}', sub {
 DefConstructor('\lxSVG@pgfsys@sh@insert{Dimension}{Dimension}{}',
   '<svg:g transform="translate(#x #y)">#3</svg:g>',
   properties => {
-    x => sub { $_[1]->ptValue; },
-    y => sub { $_[2]->ptValue; } });
+    x => sub { $_[1]->pxValue; },
+    y => sub { $_[2]->pxValue; } });
 
 DefMacro('\lxSVG@process{Dimension}{Dimension}',
   '\ifdim\pgf@picmaxx<#1\global\pgf@picmaxx=#1\fi'
