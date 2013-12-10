@@ -711,7 +711,7 @@ sub addNodes {
       LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
       my $new = $node->addNewChild($nsuri, $localname);
       if ($attributes) {
-        foreach my $key (keys %$attributes) {
+        foreach my $key (sort keys %$attributes) {
           next unless defined $$attributes{$key};
           my ($attrprefix, $attrname) = $key =~ /^(.*):(.*)$/;
           my $value = $$attributes{$key};
