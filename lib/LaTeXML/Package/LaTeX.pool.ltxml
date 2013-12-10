@@ -1212,7 +1212,7 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
   "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
   beforeDigest => [sub { $_[0]->bgroup;
       AssignValue(current_environment => 'verbatim');
-      DefMacro('\@currenv', 'verbatim');
+      DefMacroI('\@currenv', undef, 'verbatim');
       MergeFont(family => 'typewriter');
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
       }],
