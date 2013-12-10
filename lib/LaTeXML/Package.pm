@@ -1199,7 +1199,7 @@ sub DefEnvironmentI {
         ($mode ? (sub { $_[0]->beginMode($mode); })
           : (sub { $_[0]->bgroup; })),
         sub { AssignValue(current_environment => $name);
-          DefMacroI('\@currenvir', $name); },
+          DefMacroI('\@currenvir',undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
       afterDigest => flatten($options{afterDigestBegin}),
