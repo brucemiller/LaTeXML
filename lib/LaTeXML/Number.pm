@@ -34,6 +34,11 @@ sub ptValue {
   my $h = $$self[0] / 655.36;
   return int($h < 0 ? $h - 0.5 : $h + 0.5) / 100; }
 
+sub pxValue {
+  my ($self) = @_;
+  my $h = $$self[0] / 65536 * ($STATE->lookupValue('DPI') || 100 / 72.27);
+  return int($h < 0 ? $h - 0.5 : $h + 0.5); }
+
 sub unlist {
   my ($self) = @_;
   return $self; }
@@ -299,6 +304,10 @@ sub ptValue {
   my ($self) = @_;
   return $$self[0]->ptValue() . ',' . $$self[1]->ptValue(); }
 
+sub pxValue {
+  my ($self) = @_;
+  return $$self[0]->pxValue() . ',' . $$self[1]->pxValue(); }
+
 sub toString {
   my ($self) = @_;
   return $$self[0]->toString() . ',' . $$self[1]->toString(); }
@@ -339,6 +348,10 @@ sub getPairs {
 sub ptValue {
   my ($self) = @_;
   return join(' ', map { $_->ptValue } @$self); }
+
+sub pxValue {
+  my ($self) = @_;
+  return join(' ', map { $_->pxValue } @$self); }
 
 sub toString {
   my ($self) = @_;
@@ -465,6 +478,10 @@ Return a string representing C<$object>.
 Return a value representing C<$object> without the measurement unit (pt) 
 with limited decimal places.
 
+=item C<< $string = $object->pxValue; >>
+
+Return an integer value representing C<$object> in pixels.
+Uses the state variable C<DPI> (dots per inch).
 =back
 
 =head2 Numerics methods
