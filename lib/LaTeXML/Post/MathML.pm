@@ -257,7 +257,9 @@ sub pmml_top {
 
 sub find_inherited_attribute {
   my ($node, $attribute) = @_;
-  while ($node && isElementNode($node)) {
+  # Check for inherited style attributes, but stop at non-LaTeXML nodes
+  # [or at least be aware that the attribute may have totally different format or even meaning!]
+  while ($node && isElementNode($node) && ($node->namespaceURI eq 'http://dlmf.nist.gov/LaTeXML')) {
     if (my $value = $node->getAttribute($attribute)) {
       return $value; }
     $node = $node->parentNode; }
