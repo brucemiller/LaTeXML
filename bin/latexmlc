@@ -90,7 +90,7 @@ my ($result, $status, $log);
 
 # TODO: Talk to the web service via HTTP
 #Setup client and communicate
-my $sock = IO::Socket::INET->new
+my $sock = $latexmls && IO::Socket::INET->new
   (PeerAddr => $address,
   PeerPort => $port,
   Proto    => 'tcp',
