@@ -402,9 +402,12 @@ DefMacro('\@ifundefined{}{}{}', sub {
 
 #======================================================================
 # Should complain if we aren't actually evaluating an \if
-DefMacroI('\else', undef, \&LaTeXML::Conditional::elseHandler);
-DefMacroI('\or',   undef, \&LaTeXML::Conditional::elseHandler);
-DefMacroI('\fi',   undef, \&LaTeXML::Conditional::fiHandler);
+
+# The following special cases are built-in to Definition
+DefConditional('\else',          undef);
+DefConditional('\or',            undef);
+DefConditional('\fi',            undef);
+DefConditional('\ifcase Number', undef);
 
 sub compare {
   my ($a, $rel, $b) = @_;
@@ -468,15 +471,6 @@ DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 DefConditionalI('\ifeof',   undef, sub { 0; });
 DefConditionalI('\iftrue',  undef, sub { 1; });
 DefConditionalI('\iffalse', undef, sub { 0; });
-
-# SPECIAL CASE
-DefConditional('\ifcase Number', undef,
-  skipper => sub {
-    my ($gullet, $num) = @_;
-    $num = $num->valueOf;
-    if ($num > 0) {
-      LaTeXML::Conditional::skipConditionalBody($gullet, $num); }
-    return; });
 
 #======================================================================
 # This makes \relax disappear completely after digestion
@@ -642,7 +636,7 @@ DefMacro('\the Register', sub {
 # Integer registers; TeXBook p. 272-273
 
 DefRegister('\tracingmacros', Number(0),
-  getter => sub { Number(LookupValue('TRACINGMACROS')||0); },
+  getter => sub { Number(LookupValue('TRACINGMACROS') || 0); },
   setter => sub { AssignValue(TRACINGMACROS => $_[0]->valueOf); });
 DefRegister('\tracingcommands', Number(0),
   getter => sub { Number(LookupValue('TRACINGCOMMANDS')); },
@@ -748,7 +742,7 @@ sub today {
 # Glue registers; TeXBook p.274
 {
   my %gparms = (
-    baselineskip => 0, lineskip => 0,
+    baselineskip => '12pt', lineskip => '1pt',
     parskip => '0pt plus 1pt',
     abovedisplayskip      => '12pt plus 3pt minus 9pt',
     abovedisplayshortskip => '0pt plus 3pt',
@@ -1619,23 +1613,24 @@ DefConstructor('\vrule RuleSpecification',
     . " width='&REF(#1,width)' color='#color'/>))",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $dims = $whatsit->getArg(1);
+    my $dims   = $whatsit->getArg(1);
     my $width  = $$dims{width};
     my $height = $$dims{height};
     my $depth  = $$dims{depth};
-    $whatsit->setProperty(width=>$width) if $width;
-    $whatsit->setProperty(height=>$height) if $height;
-    $whatsit->setProperty(depth=>$depth) if $depth;
+    $whatsit->setProperty(width  => $width)  if $width;
+    $whatsit->setProperty(height => $height) if $height;
+    $whatsit->setProperty(depth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
-    $h -= $d if $h && $d;       # - ??
+    $h -= $d if $h && $d;    # - ??
+
     if (my $alignment = LookupValue('Alignment')) {
       if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $whatsit->setProperty(isVerticalRule => 1) } }
-    elsif((defined $w) && ($w == 0)){
-      $whatsit->setProperty(invisible=>1); }
+    elsif ((defined $w) && ($w == 0)) {
+      $whatsit->setProperty(invisible => 1); }
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -1648,17 +1643,18 @@ DefConstructor('\hrule RuleSpecification',
   #     properties=>{isHorizontalRule=>1});
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $dims = $whatsit->getArg(1);
+    my $dims   = $whatsit->getArg(1);
     my $width  = $$dims{width};
     my $height = $$dims{height};
     my $depth  = $$dims{depth};
-    $whatsit->setProperty(width=>$width) if $width;
-    $whatsit->setProperty(height=>$height) if $height;
-    $whatsit->setProperty(depth=>$depth) if $depth;
+    $whatsit->setProperty(width  => $width)  if $width;
+    $whatsit->setProperty(height => $height) if $height;
+    $whatsit->setProperty(depth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
-    $h -= $d if $h && $d;       # - ??
+    $h -= $d if $h && $d;    # - ??
+
     if (my $alignment = LookupValue('Alignment')) {
       if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
