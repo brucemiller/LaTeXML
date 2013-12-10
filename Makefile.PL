@@ -6,6 +6,7 @@
 use ExtUtils::MakeMaker;
 use strict;
 use FindBin;
+use File::Which;
 
 #======================================================================
 # Use "perl Makefile.PL <options>"
@@ -100,7 +101,8 @@ sub record_revision {
   ## This command is appropriate for svn
   ##  $$MORE_MACROS{REVISION} = '`svnversion $(REVISION_BASE)`';
   ## This command is appropriate for git (I think)
-  $$MORE_MACROS{REVISION} = '`git log --max-count=1 --abbrev-commit --pretty="%h"`';
+  my $git = which('git');
+  $$MORE_MACROS{REVISION} = $git && `git log --max-count=1 --abbrev-commit --pretty="%h"`;
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
     = '`$(PERLRUN) -ne \'chomp;if(s/.*?REVISION\\s*=\\s*\\"// && s/\\".*//){print;}\' < $(REVISION_FILE)`';
