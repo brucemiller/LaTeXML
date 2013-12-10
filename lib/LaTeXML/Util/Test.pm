@@ -14,7 +14,6 @@ our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
     latexml_tests),
   @Test::More::EXPORT);
 my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');    # [CONFIGURATION]
-
 # Note that this is a singlet; the same Builder is shared.
 
 # Test the conversion of all *.tex files in the given directory (typically t/something)
@@ -59,7 +58,7 @@ sub latexml_tests {
 sub check_requirements {
   my ($test, $reqmts) = @_;
   foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
-    if (($kpsewhich && (`$kpsewhich $reqmt`)) || (pathname_find($reqmt))) { }
+    if (($kpsewhich && (`"$kpsewhich" $reqmt`)) || (pathname_find($reqmt))) { }
     else {
       my $message = "Missing requirement $reqmt for $test";
       diag("Skip: $message");

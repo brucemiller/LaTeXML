@@ -1385,7 +1385,7 @@ sub FindFile_aux {
   my $candidates = join(' ',
     ((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
-  if ($kpsewhich && (my $result = `$kpsewhich $candidates`)) {
+  if ($kpsewhich && (my $result = `"$kpsewhich" $candidates`)) {
     if ($result =~ /^\s*(.+?)\s*\n/s) {
       return $1; } }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
