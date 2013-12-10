@@ -92,7 +92,7 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
     my ($gullet, $keyvals) = @_;
     $STATE->getStomach->bgroup;
     AssignValue(current_environment => 'lstlisting');
-    DefMacro('@currenvir', 'lstlisting');
+    DefMacroI('@currenvir', undef, 'lstlisting');
     my $text = join('', $gullet->getMouth->readRawLines("\\end{lstlisting}"));
     $text =~ s/^\s*?\n//s;
     lstActivate($keyvals);
