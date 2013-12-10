@@ -346,7 +346,7 @@ sub computeStringSize {
   my $u    = (defined $string
     ? ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535 * length($string)
     : 0);
-  return (Dimension(0.5 * $u), Dimension(1.0 * $u), Dimension(0.2 * $u)); }
+  return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 #**********************************************************************
 package LaTeXML::MathFont;
