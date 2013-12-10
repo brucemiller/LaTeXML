@@ -127,7 +127,10 @@ sub onlyPreamble {
 # '\begin{env}', '\end{env}' control sequences created by DefEnvironment.
 
 AssignValue(current_environment => '', 'global');
-DefMacro('\@currenvir', sub { Explode(LookupValue('current_environment')); });
+DefMacro('\@currenvir', '');
+DefMacro('\lx@setcurrenvir{}', sub {
+    DefMacro('\@currenvir', $_[1]);
+    AssignValue(current_environment => ToString($_[1])); });
 Let('\@currenvline', '\@empty');
 
 DefMacro('\begin{}', sub {
@@ -143,7 +146,7 @@ DefMacro('\begin{}', sub {
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
         $STATE->installDefinition(LaTeXML::Constructor->new($token, undef,
             sub { LaTeXML::Stomach::makeError($_[0], 'undefined', $undef); })); }
-      (T_CS('\begingroup'), $token); } });
+      (T_CS('\begingroup'), Invocation(T_CS('\lx@setcurrenvir'), $env), $token); } });
 
 DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
@@ -289,11 +292,16 @@ DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode => 'text');
 #======================================================================
 # \noindent, \indent, \par in TeX.pool.ltxml
 
+Let('\@@par', '\par');
 # Style parameters
 # \parindent, \baselineskip, \parskip alreadin in TeX.pool.ltxml
 
 DefPrimitive('\linespread{}', undef);
 
+# ?
+DefMacro('\@noligs', '');
+DefConditional('\if@endpe');
+DefMacro('\@doendpe', '');
 #======================================================================
 # C.3.3 Footnotes
 #======================================================================
@@ -1204,6 +1212,7 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
   "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
   beforeDigest => [sub { $_[0]->bgroup;
       AssignValue(current_environment => 'verbatim');
+      DefMacro('\@currenv', 'verbatim');
       MergeFont(family => 'typewriter');
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
       }],
@@ -1268,7 +1277,9 @@ DefPrimitiveI('\obeycr',    undef, sub { AssignValue('PRESERVE_NEWLINES' => 1); 
 DefPrimitiveI('\restorecr', undef, sub { AssignValue('PRESERVE_NEWLINES' => 0); });
 
 DefPrimitiveI('\dospecials', undef, sub {
-    map($LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local'), '^', '_', '@', '~', '&', '$', '#', '%', "'", ' ');
+    map($LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local'),
+      #        '^', '_', '@', '~', '&', '$', '#', '%', "'", ' ');
+      ' ', '\\', '{', '}', '$', '&', '#', '^', '_', '%', '~');
     return; });
 DefMacroI('\normalsfcodes', undef, Tokens());
 
@@ -3266,6 +3277,7 @@ DefConstructor('\parbox[][][]{Dimension}{}', sub {
     AssignValue('\hsize' => $_[4]);
     Let('\\\\', '\par'); });
 
+DefConditional('\if@minipage');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
@@ -3279,6 +3291,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   },
   mode         => 'text',
   beforeDigest => sub {
+    Digest(T_CS('\@minipagetrue'));
     AssignValue('\hsize' => $_[4]);
     # this conflicts (& not needed?) with insertBlock
     Let('\\\\', '\par'); });
@@ -3847,7 +3860,7 @@ DefMacro('\@firstoftwo{}{}',     sub { $_[1]; });
 DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
-    ($_[1]->unlist, T_BEGIN,Expand($_[2])->unlist,T_END,T_BEGIN, Expand($_[3])->unlist,T_END); });
+    ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
 
 RawTeX('{\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
     \@gobblecr}%
