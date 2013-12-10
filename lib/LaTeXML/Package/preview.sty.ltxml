@@ -1,0 +1,60 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  preview                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#======================================================================
+# What this should do is, when active (\ifPreview) it should ONLY output
+# the objects named by certain options or contained in {preview} environment;
+# Everything else should Disappear!
+# I don't really see how this would be that useful with LaTeXML, but...
+#
+# The only practical implementation strategy that occurs to me would
+# be to process the document as usual, possibly seeding elements with
+# an attribute that says whether to preview them, but then make a pass
+# over the resulting xml tree, removing all unwanted elements....
+# and ending up with an invalid document!
+#
+# For the meantime, this stub will hopefully allow processing without error.
+#======================================================================
+
+DefConditional('\ifPreview');
+foreach my $option (qw(
+  noconfig delayed
+  psfixbb dvips pdftex xetex auctex lyx
+  showlabels tightpage counters tracingall showbox)) {
+  DeclareOption($option, undef); }
+
+foreach my $option (qw(displaymath textmath graphics floats sections footnotes)) {
+  DeclareOption($option, sub { PushValue('preview_environments', ToString($option)); }); }
+
+DeclareOption('active', sub { Digest(T_CS('\Previewtrue')); });
+# DeclareOption(undef, sub{ input if file exists "pr" \CurrentOption .def;
+
+DefMacro('\PreviewMacro OptionalMatch:* []{}',           '');
+DefMacro('\PreviewEnvironment OptionalMatch:* []{}',     '');
+DefMacro('\PreviewSnarfEnvironment OptionalMatch:* []{}','');
+DefMacro('\PreviewOpen OptionalMatch:* []{}',            '');
+DefMacro('\PreviewClose OptionalMatch:* []{}',           '');
+
+DefEnvironment('{preview}', '#body');
+
+# should throw this away, ifPreview is active.
+DefEnvironment('{nopreview}', '#body');
+
+# ????
+DefRegister('\PreviewBorder' => Dimension(0));
+
+#**********************************************************************
+1;
