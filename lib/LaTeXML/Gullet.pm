@@ -214,6 +214,12 @@ sub unread {
       @tokens);
   return; }
 
+sub readPushback {
+  my ($self) = @_;
+  my @tokens = @{ $$self{pushback} };
+  $$self{pushback} = [];
+  return @tokens; }
+
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
 # Note that most tokens pass through here, so be Fast & Clean! readToken is folded in.
 # `Toplevel' processing, (if $toplevel is true), used at the toplevel processing by Stomach,
