@@ -122,7 +122,7 @@ sub doInvocation {
     if (ref $expansion eq 'CODE') {
       # Harder to emulate \tracingmacros here.
       my @result = &$expansion($gullet, @args);
-      print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . ToString(Tokens(@result)) . "\n";
+      print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
       my $i = 1;
       foreach my $arg (@args) {
         print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
@@ -135,7 +135,7 @@ sub doInvocation {
             ? Tokens($_)
             : Tokens(Revert($_)))) }
         @args;
-      print STDERR "\n" . ToString($self->getCSName) . ' -> ' . ToString($expansion) . "\n";
+      print STDERR "\n" . ToString($self->getCSName) . ' -> ' . tracetoString($expansion) . "\n";
       my $i = 1;
       foreach my $arg (@targs) {
         print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
@@ -150,6 +150,12 @@ sub doInvocation {
               ? Tokens($_)
               : Tokens(Revert($_)))) }
           @args)); } }
+
+# print a string of tokens like TeX would when tracing.
+sub tracetoString {
+  my ($tokens) = @_;
+  return join('', map { ($_->getCatcode == CC_CS ? $_->getString . ' ' : $_->getString) }
+      $tokens->unlist); }
 
 # NOTE: Assumes $tokens is a Tokens list of Token's and each arg either undef or also Tokens
 # Using inline accessors on those assumptions
@@ -201,29 +207,29 @@ sub getTest {
 sub invoke {
   my ($self, $gullet) = @_;
   # Keep a stack of the conditionals we are processing.
-  my $ifid = $STATE->lookupValue('if_count')||0;
-  $STATE->assignValue(if_count=>++$ifid,'global');
+  my $ifid = $STATE->lookupValue('if_count') || 0;
+  $STATE->assignValue(if_count => ++$ifid, 'global');
   local $LaTeXML::IFFRAME = { token => $LaTeXML::CURRENT_TOKEN, start => $gullet->getLocator,
-    parsing => 1, elses => 0, ifid=>$ifid };
+    parsing => 1, elses => 0, ifid => $ifid };
   $STATE->unshiftValue(if_stack => $LaTeXML::IFFRAME);
 
   my @args = $self->readArguments($gullet);
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  print STDERR '{'.ToString($LaTeXML::CURRENT_TOKEN)."} [#$ifid]\n" if $tracing;
+  print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . "} [#$ifid]\n" if $tracing;
   if (my $test = $self->getTest) {
-    my $result =  &$test($gullet, @args);
-    if($result){
+    my $result = &$test($gullet, @args);
+    if ($result) {
       print STDERR "{true}\n" if $tracing; }
     else {
       my $to = skipConditionalBody($gullet, -1);
-      print STDERR "{false} [skipped to ".ToString($to)."]\n" if $tracing; }}
+      print STDERR "{false} [skipped to " . ToString($to) . "]\n" if $tracing; } }
   # If there's no test, it must be the Special Case, \ifcase
   else {
     my $num = $args[0]->valueOf;
     if ($num > 0) {
       my $to = skipConditionalBody($gullet, $num);
-      print STDERR "{$num} [skipped to ".ToString($to)."]\n" if $tracing; }}
+      print STDERR "{$num} [skipped to " . ToString($to) . "]\n" if $tracing; } }
   return; }
 
 #======================================================================
@@ -266,8 +272,8 @@ sub skipConditionalBody {
         if ($STATE->lookupValue('if_stack')->[0] ne $LaTeXML::IFFRAME) {
           $STATE->shiftValue('if_stack'); }    # then DO pop that conditional's frame; it's DONE!
         elsif (!--$level) {                    # If no more nesting, we're done.
-          $STATE->shiftValue('if_stack');    # Done with this frame
-          return $t; } }                     # AND Return the finishing token.
+          $STATE->shiftValue('if_stack');      # Done with this frame
+          return $t; } }                       # AND Return the finishing token.
       elsif ($level > 1) {                     # Ignore \else,\or nested in the body.
       }
       elsif (($type eq 'LaTeXML::Conditional::or') && (++$n_ors == $nskips)) {
@@ -280,7 +286,7 @@ sub skipConditionalBody {
         $STATE->lookupValue('if_stack')->[0]->{elses} = 1;
         return $t; } } }
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
-        "Conditional started at $start");
+    "Conditional started at $start");
   return; }
 
 package LaTeXML::Conditional::auxilliary;
@@ -309,15 +315,15 @@ sub invoke {
     return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
-          "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
-          "already saw \\else for ".Stringify($$stack[0]{token})." [".$$stack[0]{ifid}."] at ".$$stack[0]{start});
+      "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
+"already saw \\else for " . Stringify($$stack[0]{token}) . " [" . $$stack[0]{ifid} . "] at " . $$stack[0]{start});
     return; }
   else {
     local $LaTeXML::IFFRAME = $stack->[0];
     my $t = LaTeXML::Conditional::skipConditionalBody($gullet, 0);
-    print STDERR '{'.ToString($LaTeXML::CURRENT_TOKEN).'}'
-      ." [for ".ToString($$LaTeXML::IFFRAME{token})." #".$$LaTeXML::IFFRAME{ifid}
-      ." skipping to ".ToString($t)."]\n"
+    print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
+      . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
+      . " skipping to " . ToString($t) . "]\n"
       if $STATE->lookupValue('TRACINGCOMMANDS');
     return; } }
 
@@ -344,8 +350,8 @@ sub invoke {
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $stack->[0];
     $STATE->shiftValue('if_stack');    # Done with this frame
-    print STDERR '{'.ToString($LaTeXML::CURRENT_TOKEN).'}'
-      ." [for ".Stringify($$LaTeXML::IFFRAME{token})." #".$$LaTeXML::IFFRAME{ifid}."]\n"
+    print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
+      . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]\n"
       if $STATE->lookupValue('TRACINGCOMMANDS');
     return; } }
 
@@ -389,8 +395,8 @@ sub executeAfterDigest {
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
   my ($self, $stomach) = @_;
-  if($STATE->lookupValue('TRACINGCOMMANDS')){
-    print STDERR '{'.$self->getCSName."}\n"; }
+  if ($STATE->lookupValue('TRACINGCOMMANDS')) {
+    print STDERR '{' . $self->getCSName . "}\n"; }
   return (
     $self->executeBeforeDigest($stomach),
     &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
@@ -537,8 +543,8 @@ sub invoke {
   # Call any `Before' code.
   my @pre = $self->executeBeforeDigest($stomach);
 
-  if($STATE->lookupValue('TRACINGCOMMANDS')){
-    print STDERR '{'.$self->getCSName."}\n"; }
+  if ($STATE->lookupValue('TRACINGCOMMANDS')) {
+    print STDERR '{' . $self->getCSName . "}\n"; }
   # Get some info before we process arguments...
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
@@ -671,7 +677,7 @@ sub translate_constructor {
         if ($float) {
           $code .= "\$savenode=\$document->floatToAttribute('$key');\n";
           $float = undef; }
-        $code .= "\$document->setAttribute(\$document->getElement,'$key',ToString(" . $value . "));\n"; }
+        $code .= "\$document->setAttribute(\$document->getElement,'$key'," . $value . ");\n"; }
       else {    # attr value didn't match value pattern? treat whole thing as random text!
         $code .= "\$document->absorb('" . slashify($key) . "=',\%prop);\n"; } }
     # Else random text
