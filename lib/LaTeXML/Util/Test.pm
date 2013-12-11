@@ -152,6 +152,7 @@ sub is_strings {
 
 sub daemon_ok {
   my ($base, $dir, $generate) = @_;
+  my $current_dir = pathname_cwd();
   my $localname = $base;
   $localname =~ s/$dir\///;
   my $opts = read_options("$base.spec");
@@ -164,17 +165,19 @@ sub daemon_ok {
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
 
-  my $invocation = "cd $dir; ".catfile($FindBin::Bin,'..','blib','script','latexmlc').' ';
+  my $invocation = catfile($FindBin::Bin,'..','blib','script','latexmlc').' ';
   my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }
     }
-    $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ("='" . $$opt[1] . "' ") : (' '));
+    $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="'. $$opt[1] . '" ') : (' '));
   }
-  $invocation .= " 2>$localname.test.status; cd -";
+  $invocation .= " 2>$localname.test.status ";
   if (!$generate) {
-    is(system($invocation), 0, "Progress: processed $localname...\n");
+    chdir($dir);
+    is(system($invocation), 0, "latexmlc invocation for test $localname");
+    chdir($current_dir);
     is_filecontent(get_filecontent("$base.test.xml"),    "$base.xml",    $base);
     is_filecontent(get_filecontent("$base.test.status"), "$base.status", $base);
     unlink "$base.test.xml"    if -e "$base.test.xml";
@@ -183,7 +186,9 @@ sub daemon_ok {
   else {
     #TODO: Skip 3 tests
     print STDERR "$invocation\n";
+    chdir($dir);
     system($invocation);
+    chdir($current_dir);
     move("$base.test.xml",    "$base.xml")    if -e "$base.test.xml";
     move("$base.test.status", "$base.status") if -e "$base.test.status";
   }

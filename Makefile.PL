@@ -98,9 +98,10 @@ sub record_revision {
   # This should be done SAFELY; and work even if svnversion isn't available (esp, windows, mac...)
   # (When it isn't there's an error, but REVISION ends up "" ... exactly right, I think?)
   ## This command is appropriate for svn
-  ##  $$MORE_MACROS{REVISION} = '`svnversion $(REVISION_BASE)`';
+  ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
   ## This command is appropriate for git (I think)
-  $$MORE_MACROS{REVISION} = '`git log --max-count=1 --abbrev-commit --pretty="%h"`';
+  if(system("git --version")==0){ # can run git? if so, try to determine the revision
+    $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
     = '`$(PERLRUN) -ne \'chomp;if(s/.*?REVISION\\s*=\\s*\\"// && s/\\".*//){print;}\' < $(REVISION_FILE)`';
