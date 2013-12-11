@@ -33,6 +33,10 @@ sub toString {
   my ($self) = @_;
   return $self->stringify; }
 
+sub toAttribute {
+  my ($self) = @_;
+  return $self->toString; }
+
 sub equals {
   my ($a, $b) = @_;
   return "$a" eq "$b"; }    # overload::StrVal($a) eq overload::StrVal($b); }
