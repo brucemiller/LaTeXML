@@ -800,7 +800,7 @@ DefConstructor('\bib@@mr {}{}',
     $id =~ s/^\s+//; $id =~ s/\s+$//;
     my $reviewer = $_[2];
     my $isreview = ToString($reviewer) ne '';
-    if ($id =~ /^\s*MR(\d+)\s+\(.*\)\s*$/) {    # If extra number, there's a review
+    if ($id =~ /^\s*(?:MR)?(\d+)\s+\(.*\)\s*$/) {    # If extra number, there's a review
       $id = $1; $isreview = 1; }
     my $href = "http://www.ams.org/mathscinet-getitem?mr=" . $id;
     (isreview => $isreview, id => $id, href => $href, reviewer => $reviewer); });
