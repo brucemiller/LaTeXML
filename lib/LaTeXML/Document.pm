@@ -1009,7 +1009,7 @@ sub autoCollapseChildren {
 # We _could_ check whether attribute is even allowed here? NOT YET.
 sub setAttribute {
   my ($self, $node, $key, $value) = @_;
-  $value = ToString($value) if ref $value;
+  $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
       $value = $self->recordID($value, $node);    # Do id book keeping
