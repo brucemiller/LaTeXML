@@ -302,6 +302,9 @@ DefPrimitive('\linespread{}', undef);
 DefMacro('\@noligs', '');
 DefConditional('\if@endpe');
 DefMacro('\@doendpe', '');
+DefMacro('\@bsphack','\relax'); # what else?
+DefMacro('\@esphack','\relax');
+DefMacro('\@Esphack','\relax');
 #======================================================================
 # C.3.3 Footnotes
 #======================================================================
