@@ -136,7 +136,21 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
       $whatsit->setWidth($w); }
     elsif (my $s = $$spec{spread}) {
       $whatsit->setWidth($box->getWidth->add($s)); }
+    return; },
+  mode => 'text', bounded => 1,
+  # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
+  # And also things like \centerline that will end up bumping up to block level!
+  beforeDigest => sub { reenterTextMode(); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $w = $$spec{to}) {
+      $whatsit->setWidth($w); }
+    elsif (my $s = $$spec{spread}) {
+      $whatsit->setWidth($box->getWidth->add($s)); }
     return; });
+
 
 DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
   afterDigest => sub {
@@ -147,7 +161,8 @@ DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
       $whatsit->setHeight($h); }
     elsif (my $s = $$spec{spread}) {
       $whatsit->setHeight($box->getHeight->add($s)); }
-    return; });
+    return; },
+  mode => 'text');
 
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
