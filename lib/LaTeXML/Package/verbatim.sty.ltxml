@@ -86,14 +86,14 @@ DefMacro('\verbatim@', sub {
     my $mouth    = $gullet->getMouth;
     my $env      = LookupValue('current_environment');
     # Note: This should allow a regexp, since there can be spaces between \end and { !!!
-    my $line;
     my @lines = ();
-    while (defined($line = $gullet->readRawLine)) {
+    while (defined(my $line = $gullet->readRawLine)) {
       if ($line =~ /^(.*)\\end\s*{\Q$env\E}(.*)$/) {
-        $line = $1;
+        push(@lines, $1);
         Info('unexpected', 'stuff', $gullet, "Characters dropped after '\\end{$env}'") if $2;
         last; }
-      push(@lines, $line); }
+      else {
+        push(@lines, $line); } }
     pop(@lines) if $lines[-1] eq '';
     my @tokens = ();
     foreach my $line (@lines) {
