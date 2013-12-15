@@ -157,7 +157,12 @@ sub finishDigestion {
   while ($stomach->getGullet->getMouth->hasMoreInput) {
     push(@stuff, $stomach->digestNextBody); }
   if (my $env = $state->lookupValue('current_environment')) {
-    Error('expected', "\\end{$env}", $stomach, "Input ended while environment $env was open"); }
+    Error('expected', "\\end{$env}", $stomach,
+      "Input ended while environment $env was open"); }
+  my $ifstack = $state->lookupValue('if_stack');
+  if ($ifstack && $$ifstack[0]) {
+    Error('expected', '\fi', $stomach,
+      "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete"); }
   $stomach->getGullet->flush;
   return LaTeXML::List->new(@stuff); }
 
