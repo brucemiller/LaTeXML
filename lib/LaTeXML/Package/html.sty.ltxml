@@ -64,15 +64,27 @@ DefMacro('\htmladdtonavigation{}', '');
 DefConstructorI(T_CS("\\begin{rawhtml}"), undef, '', reversion => '',
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
-      my $end = "\\end{rawhtml}";
-      my @lines = $stomach->getGullet->getMouth->readRawLines($end, 0);
-      NoteProgress("[Skip rawhtml (" . scalar(@lines) . "lines)]"); }]);
+      my $endmark = "\\end{rawhtml}";
+      my $nlines  = 0;
+      my ($line);
+      my $gullet = $stomach->getGullet;
+      $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
+      while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
+        $nlines++; }
+      NoteProgress("[Skip rawhtml ($nlines lines)]"); }]);
+
 DefConstructorI(T_CS("\\begin{htmlonly}"), undef, '', reversion => '',
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
-      my $end = "\\end{htmlonly}";
-      my @lines = $stomach->getGullet->getMouth->readRawLines($end, 0);
-      NoteProgress("[Skip htmlonly (" . scalar(@lines) . "lines)]"); }]);
+      my $endmark = "\\end{htmlonly}";
+      my $nlines  = 0;
+      my ($line);
+      my $gullet = $stomach->getGullet;
+      $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
+      while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
+        $nlines++; }
+      NoteProgress("[Skip htmlonly ($nlines lines)]"); }]);
+
 DefMacro('\html{}', '');
 # I assume we should go ahead and try to include this material?
 DefEnvironment('{latexonly}', '#body');

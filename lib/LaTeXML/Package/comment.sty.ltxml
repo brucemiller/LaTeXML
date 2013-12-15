@@ -20,11 +20,17 @@ use LaTeXML::Package;
 sub defineExcluded {
   my ($stomach, $name) = @_;
   $name = ToString($name);
+  my $endmark = '\end{' . $name . '}';
   DefConstructorI(T_CS("\\begin{$name}"), undef, '', reversion => '',
     afterDigest => [sub {
         my ($stomach, $whatsit) = @_;
-        my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{$name}\n", 1);
-        NoteProgress("[Skipped $name (" . scalar(@lines) . " lines)]"); }]);
+        my $nlines = 0;
+        my ($line);
+        my $gullet = $stomach->getGullet;
+        $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
+        while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
+          $nlines++; }
+        NoteProgress("[Skipped $name ($nlines lines)]"); }]);
   return; }
 
 sub defineIncluded {
@@ -32,8 +38,10 @@ sub defineIncluded {
   $name = ToString($name);
   # Note that we define the `magic' environment control sequences,
   # but DO NOT do any of the normal environ things, like \begingroup \endgroup!
-  DefMacroI(T_CS("\\begin{$name}"), undef,
-    Tokens(($before ? $before->unlist : ()), T_CS('\ignorespaces')));
+  DefMacroI(T_CS("\\begin{$name}"), undef, sub {
+      my ($gullet) = @_;
+      $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
+      Tokens(($before ? $before->unlist : ()), T_CS('\ignorespaces')); });
   DefMacroI(T_CS("\\end{$name}"), undef,
     Tokens(($after ? $after->unlist : ()), T_CS('\ignorespaces')));
   return; }

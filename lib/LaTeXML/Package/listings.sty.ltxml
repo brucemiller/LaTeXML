@@ -93,8 +93,12 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
     $STATE->getStomach->bgroup;
     AssignValue(current_environment => 'lstlisting');
     DefMacroI('@currenvir', undef, 'lstlisting');
-    my $text = join('', $gullet->getMouth->readRawLines("\\end{lstlisting}"));
-    $text =~ s/^\s*?\n//s;
+    my @lines = ();
+    my ($line);
+    $gullet->readRawLine;                # Ignore 1st line (following \begin{...}
+    while (defined($line = $gullet->readRawLine) && ($line ne '\end{lstlisting}')) {
+      push(@lines, $line); }
+    my $text = join("\n", @lines);
     lstActivate($keyvals);
     my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
     $STATE->getStomach->egroup;
@@ -804,13 +808,18 @@ DefKeyVal('LST', 'morefvcmdparams', '');
 DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
     my ($stomach, $name, $n, $opt, $start, $end) = @_;
     $name = ToString($name);
+    my $endmark = '\end{' . $name . '}';
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt),
       sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
         Digest(Tokens(LaTeXML::Expandable::substituteTokens($start, @args)));
-        my $text = join('', $gullet->getMouth->readRawLines("\\end{$name}"));
-        $text =~ s/^\s*?\n//s;
+        my @lines = ();
+        my ($line);
+        $gullet->readRawLine;    # Ignore 1st line (following \begin{...}
+        while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
+          push(@lines, $line); }
+        my $text = join("\n", @lines);
         my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
         push(@expansion, LaTeXML::Expandable::substituteTokens($end, @args));
         $STATE->getStomach->egroup;

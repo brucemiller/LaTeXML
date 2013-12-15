@@ -1222,10 +1222,18 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
       $stomach->egroup;
-      my $font  = $whatsit->getFont;
-      my $loc   = $whatsit->getLocator;
-      my $end   = "\\end{verbatim}";
-      my @lines = $stomach->getGullet->getMouth->readRawLines($end);
+      my $font   = $whatsit->getFont;
+      my $loc    = $whatsit->getLocator;
+      my $end    = "\\end{verbatim}";
+      my @lines  = ();
+      my $gullet = $stomach->getGullet;
+      while (defined(my $line = $gullet->readRawLine)) {
+
+        if ($line =~ /^(.*?)\\end{verbatim}(.*?)$/) {
+          push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
+          last; }
+        push(@lines, $line . "\n"); }
+      pop(@lines) if $lines[-1] eq "\n";
       # Note last line ends up as Whatsit's "trailer"
       $whatsit->setBody(map(Box($_, $font, $loc, T_OTHER($_)),
           @lines, $end));
@@ -2863,7 +2871,11 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
       my $filename = ToString($whatsit->getArg(1));
-      my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{filecontents}\n", 1);
+      my @lines    = ();
+      my $gullet   = $stomach->getGullet;
+      my $line;
+      while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents}')) {
+        push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
       NoteProgress("[Cached filecontents for $filename (" . scalar(@lines) . " lines)]"); }]);
 DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
@@ -2872,7 +2884,11 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
       my $filename = ToString($whatsit->getArg(1));
-      my @lines = $stomach->getGullet->getMouth->readRawLines("\\end{filecontents*}\n", 1);
+      my @lines    = ();
+      my $gullet   = $stomach->getGullet;
+      my $line;
+      while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents*}')) {
+        push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
       NoteProgress("[Cached filecontents* for $filename (" . scalar(@lines) . " lines)]"); }]);
 

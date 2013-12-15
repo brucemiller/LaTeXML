@@ -92,7 +92,8 @@ sub newFromGullet {
 
   my @lines = ();
   while ($gullet->getMouth->hasMoreInput) {
-    push(@lines, $gullet->getMouth->readRawLines());
+    while (defined(my $line = $gullet->readRawLine)) {
+      push(@lines, $line . "\n"); }
     $gullet->closeMouth; }
 
   $$self{file}   = $name;
