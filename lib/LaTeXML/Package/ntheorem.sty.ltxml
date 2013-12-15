@@ -182,16 +182,16 @@ DefConstructor('\lx@@snapshot@framing{}', sub {
     my ($frame, @rest) = $document->absorb($framebox);
     $document->closeElement('_Capture_');
     if (my $c = join(' ', grep($_, $theorem->getAttribute('class'), $frame->getAttribute('class')))) {
-      $theorem->setAttribute(class => $c); }
+      $document->setAttribute($theorem, class => $c); }
     if (my $c = join(';', grep($_, $theorem->getAttribute('cssstyle'),
           $frame->getAttribute('cssstyle')))) {
-      $theorem->setAttribute(cssstyle => $c); }
+      $document->setAttribute($theorem, cssstyle => $c); }
     if (my $b = $frame->getAttribute('backgroundcolor')
       || $document->getNodeFont($frame)->getBackground) {
-      $theorem->setAttribute(backgroundcolor => $b); }
+      $document->setAttribute($theorem, backgroundcolor => $b); }
     foreach my $attr (qw(framed framecolor)) {
       if (my $v = $frame->getAttribute($attr)) {
-        $theorem->setAttribute($attr => $v); } }
+        $document->setAttribute($theorem, $attr => $v); } }
     $document->removeNode($capture);
   },
   reversion => '');
