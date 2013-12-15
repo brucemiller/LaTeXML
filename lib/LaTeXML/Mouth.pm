@@ -288,45 +288,26 @@ sub readTokens {
   return Tokens(@tokens); }
 
 #**********************************************************************
-# Read raw lines, until a line matches $endline.
-# If $exact is true, the line must match $endline exactly (like comment.sty)
-# Otherwise, it $endline can be anywhere in the line (like verbatim),
-# in which case the part (if any) preceding $endline is included,
-# and any part after, remains in the input.
-sub readRawLines {
-  my ($self, $endline, $exact) = @_;
-  my @lines = ();
-  while (1) {
-    my $line;
-    if ($$self{colno} < $$self{nchars}) {
-      $line = join('', @{ $$self{chars} }[$$self{colno} .. $$self{nchars} - 1]);
-      # End lines with \n, not CR, since the result will be treated as strings
-      $line =~ s/\r$/\n/;
-      $$self{colno} = $$self{nchars}; }
-    else {
-      $line = $self->getNextLine;
-      if (!defined $line) {
-        if (defined $endline) {
-          Error('expected', $endline, $self,
-            "Fell off end trying to match a lines to '$endline'"); }
-        last; }
-      $line =~ s/\s*$/\n/s if defined $line;    # Is this right?
-      $$self{lineno}++;
+# Read a raw lines; there are so many variants of how it should end,
+# that the Mouth API is left as simple as possible.
+sub readRawLine {
+  my ($self) = @_;
+  my $line;
+  if ($$self{colno} < $$self{nchars}) {
+    $line = join('', @{ $$self{chars} }[$$self{colno} .. $$self{nchars} - 1]);
+    # End lines with \n, not CR, since the result will be treated as strings
+    $$self{colno} = $$self{nchars}; }
+  else {
+    $line = $self->getNextLine;
+    if (!defined $line) {
       $$self{chars} = []; $$self{nchars} = 0; $$self{colno} = 0; }
-    if ($exact && (defined $endline) && ($line eq $endline)) {
-      last; }
-    elsif (!$exact && (defined $endline) && ($line =~ /^(.*?)\Q$endline\E(.*)$/)) {
-      my ($pre, $post) = ($1, $2);
-      push(@lines, $pre . "\n") if $pre;
-      # Replace the \n with a \r in the line rest, since it will be tokenized
-      $line =~ s/\n$/\r/;
+    else {
+      $$self{lineno}++;
       $$self{chars}  = [splitChars($line)];
       $$self{nchars} = scalar(@{ $$self{chars} });
-      $$self{colno}  = length($pre) + length($endline);
-      last; }
-    else {
-      push(@lines, $line); } }
-  return @lines; }
+      $$self{colno}  = $$self{nchars}; } }
+  $line =~ s/\s*$//s if defined $line;    # Is this right?
+  return $line; }
 
 #**********************************************************************
 # LaTeXML::FileMouth
@@ -686,15 +667,9 @@ Return a description of current position in the source, for reporting errors.
 Reads tokens until one matches C<$until> (comparing the character, but not catcode).
 This is useful for the C<\verb> command.
 
-=item C<< $lines = $mouth->readRawLines($endline,$exact); >>
+=item C<< $lines = $mouth->readRawLine; >>
 
-Reads raw (untokenized) lines from C<$mouth> until a line matching C<$endline>
-is found.
-If C<$exact> is true, C<$endline> is matched exactly, with no leading or trailing
-data (like in the c<comment> package).
-Otherwise, the match is done like with the c<verbatim> environment;
-any text preceding C<$endline> is returned as the last line, and any characters
-after C<$endline> remains in the mouth to be tokenized.
+Reads a raw (untokenized) line from C<$mouth>, or undef if none is found.
 
 =back
 
