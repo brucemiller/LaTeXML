@@ -28,7 +28,7 @@ DefEnvironment('{framed}', sub {
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
-  properties => sub { (framecolor => Black->toHex,
+  properties => sub { (framecolor => Black,
       margin => LookupValue('\FrameSep')->ptValue); });
 
 # {oframed} "open" framed box, the top/bottom is open when it splits across pages.
@@ -43,7 +43,7 @@ DefEnvironment('{oframed}', sub {
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
-  properties => sub { (framecolor => Black->toHex,
+  properties => sub { (framecolor => Black,
       margin => LookupValue('\FrameSep')->ptValue); });
 
 # {shaded} a shaded box; uses "shadecolor" for background color; otherwise, no frame.
@@ -110,7 +110,7 @@ DefEnvironment('{leftbar}', sub {
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
-  properties => sub { (framecolor => Black->toHex); });
+  properties => sub { (framecolor => Black); });
 
 # Expects: TFFrameColor to color the frame
 # Kinda clumsy to deal with a fake title...
@@ -126,7 +126,7 @@ DefEnvironment('{titled-frame} Undigested', sub {
     Let('\\\\', '\inner@par'); },
   afterDigestBegin => sub {
     Digest(Invocation(T_CS('\@titledframe@title'), $_[1]->getArg(1))); },
-  properties => sub { (framecolor => LookupValue('color_TFFrameColor')->toHex,
+  properties => sub { (framecolor => LookupValue('color_TFFrameColor'),
       backgroundcolor => LookupValue('font')->getBackground); });
 DefMacro('\@titledframe@title{}',
   '\@@titledframe@title{{\pagecolor{TFFrameColor}\textcolor{TFTitleColor} {#1}}}');

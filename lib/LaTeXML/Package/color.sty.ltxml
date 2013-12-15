@@ -105,7 +105,7 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
-    $whatsit->setProperty(framecolor => ParseColor($model, $fspec)->toHex);
+    $whatsit->setProperty(framecolor => ParseColor($model, $fspec));
     MergeFont(background => ParseColor($model, $bspec));
     $whatsit->setProperty(text => Digest($text)); });
 

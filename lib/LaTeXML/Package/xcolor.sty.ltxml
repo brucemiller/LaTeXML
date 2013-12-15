@@ -713,7 +713,7 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
           my $bg = ($n % 2 ? $odd : $even);
           MergeFont(background => $bg);
           $whatsit->setFont(LookupValue('font'));
-          $whatsit->setProperty(background => $bg->toHex); } } }
+          $whatsit->setProperty(background => $bg); } } }
     return; });
 
 #======================================================================
