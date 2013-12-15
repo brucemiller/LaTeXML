@@ -90,7 +90,16 @@ sub toCore {
     Error('unexpected', $self->model, undef, "Color is not in valid model '$model'");
     return Black; } }
 
+sub toString {
+  my ($self) = @_;
+  my ($model, @comp) = @$self;
+  return $model . "(" . join(',', @comp) . ")"; }
+
 sub toHex {
+  my ($self) = @_;
+  return $self->rgb->toHex; }
+
+sub toAttribute {
   my ($self) = @_;
   return $self->rgb->toHex; }
 
@@ -135,11 +144,6 @@ sub multiply {
     return $self; }
   else {
     return $self->new(map { $c[$_] * $m[$_] } 0 .. $#c); } }
-
-sub toString {
-  my ($self) = @_;
-  my ($model, @comp) = @$self;
-  return $model . "(" . join(',', @comp) . ")"; }
 
 #======================================================================
 package LaTeXML::Color::CoreColor;
