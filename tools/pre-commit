@@ -29,7 +29,7 @@ foreach my $perl_file (@modified_perl_files) {
   if ($tidy_status) {
     print STDERR "$perl_file needs tidying up! Suggested:\n  perltidy --profile=$perltidy_profile -b -bext='/' $perl_file\n\n";
     $bad_commit = 1; }
-#  unlink "$perl_file.tdy";
+  unlink "$perl_file.tdy";
 
   # Check if it passes perlcritic
   # my $critic_status = `perlcritic --profile=$perlcritic_profile $perl_file`;
