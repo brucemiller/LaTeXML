@@ -10,25 +10,35 @@
       <p>Normal <text font="bold">Bold</text> stuff.</p>
     </para>
     <para xml:id="S1.p2">
+      <p>Verbatim 1:</p>
       <verbatim font="typewriter">
 AbNormal {\bf NonBold} stuff.
 </verbatim>
     </para>
     <para xml:id="S1.p3">
-      <verbatim font="typewriter"> xxx
+      <p>Verbatim 2:</p>
+      <verbatim font="typewriter">
+inside verbatim
+\end {verbatim}
+still inside verbatim
+</verbatim>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Verbatim 3:</p>
+      <verbatim font="typewriter"> keep this
 AbNormal {\bf NonBold} stuff.
-xxx    
+keep this too    
 </verbatim>
       <p>yyy
 More Normal <text font="bold">Bold</text> stuff.</p>
     </para>
-    <para xml:id="S1.p4">
+    <para xml:id="S1.p5">
       <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.</p>
     </para>
-    <para xml:id="S1.p5">
+    <para xml:id="S1.p6">
       <p>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</p>
     </para>
-    <para xml:id="S1.p6">
+    <para xml:id="S1.p7">
       <p>x<text width="144.54pt" font="bold">x<verbatim font="typewriter">\verb</verbatim>y.</text>y</p>
     </para>
   </section>

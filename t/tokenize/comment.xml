@@ -19,11 +19,25 @@ After Included.</p>
 After Excluded.</p>
   </para>
   <para xml:id="p4">
+    <p>Before Included 2.
+[before] Inside Included.
+After Included.</p>
+  </para>
+  <para xml:id="p5">
+    <p>Before Excluded 2.
+[before] After Excluded.</p>
+  </para>
+  <para xml:id="p6">
+    <p>Before Included 3.
+[before] [hidden but kept] Inside Included.
+After Included.</p>
+  </para>
+  <para xml:id="p7">
     <p>Before BoldSpecial.
 [<text font="bold">Inside BoldSpecial.
 </text>]After BoldSpecial.</p>
   </para>
-  <para xml:id="p5">
+  <para xml:id="p8">
     <p>Before Included.
 <text font="bold">Bold Inside Included.
 After Included, but still Bold.</text></p>

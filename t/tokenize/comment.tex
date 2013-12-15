@@ -22,6 +22,31 @@ Inside Excluded.
 \end{Excluded}
 After Excluded.
 
+Before Included 2.
+[before] \begin{Included} [ignored]
+Inside Included.
+% [not allowed] \end{Included}
+\end{Included}
+% \end{Included} [not allowed]
+After Included.
+
+Before Excluded 2.
+[before] \begin{Excluded} [ignored]
+Inside Excluded.
+% [not allowed]\end{Excluded}
+\end{Excluded}
+% \end{Excluded} [not allowed]
+After Excluded.
+
+\def\fakebegin{[hidden but kept] \begin{Included} [hidden and ignored]}
+Before Included 3.
+[before] \fakebegin [ignored]
+Inside Included.
+% [not allowed] \end{Included}
+\end{Included}
+% \end{Included} [not allowed]
+After Included.
+
 Before BoldSpecial.
 \begin{BoldSpecial}
 Inside BoldSpecial.
