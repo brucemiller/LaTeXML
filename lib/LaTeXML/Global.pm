@@ -283,7 +283,7 @@ sub Color {
   # Beware of clumsy invention of $class; see LaTeXML::Color
   my $class = 'LaTeXML::Color::' . $model;
   $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
-  return bless [$model, @components], $class; }
+  return bless [$model, map { ref $_ ? $_->toString : $_ } @components], $class; }
 
 use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Color::rgb';
 use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Color::rgb';
