@@ -344,7 +344,7 @@ sub finalize_rec {
       && ($node->hasChildNodes || $node->getAttribute('_force_font'))
       && scalar(keys %pending_declaration)) {
       foreach my $attr (keys %pending_declaration) {
-        $node->setAttribute($attr => $pending_declaration{$attr})
+        $self->setAttribute($node, $attr => $pending_declaration{$attr})
           if $model->canHaveAttribute($qname, $attr); }
       $declared_font       = $desired_font;
       %pending_declaration = (); } }
@@ -371,7 +371,7 @@ sub finalize_rec {
         # Too late to do wrapNodes?
         my $text = $self->wrapNodes($FONT_ELEMENT_NAME, $child);
         foreach my $attr (keys %pending_declaration) {
-          $text->setAttribute($attr => $pending_declaration{$attr}); }
+          $self->setAttribute($text, $attr => $pending_declaration{$attr}); }
         $self->finalize_rec($text);    # Now have to clean up the new node!
       }
     } }
