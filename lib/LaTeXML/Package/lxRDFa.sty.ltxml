@@ -137,18 +137,19 @@ sub RDFTriple {
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
 DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
-    my ($doc, $xpath, $kv) = @_;
+    my ($document, $xpath, $kv) = @_;
     my ($save, $node);
     if ($xpath) {
-      $save = $doc->getNode;
-      $node = $doc->findnode(ToString($xpath), $save); }
+      $save = $document->getNode;
+      $node = $document->findnode(ToString($xpath), $save); }
     else {
-      $save = $doc->floatToAttribute('property');    # pic arbitrary rdf attribute
-      $node = $doc->getElement; }
+      $save = $document->floatToAttribute('property');    # pic arbitrary rdf attribute
+      $node = $document->getElement; }
     my $attr = RDFAttributes($kv);
     foreach my $k (sort keys %$attr) {
-      $doc->setAttribute($node, $k => ToString($$attr{$k})); }
-    $doc->setNode($save); });
+      # use direct method ($doc method doesn't skips about="", which we need!)
+      $node->setAttribute($k => ToString($$attr{$k})); }
+    $document->setNode($save); });
 
 #======================================================================
 # \lxRDF{keyvals}[content]  "Add RDF triple"
@@ -180,6 +181,7 @@ DefConstructor('\lxRDF@body[] RequiredKeyVals:RDFa', sub {
       # a bit of trouble to add empty elements!
       my $attr = RDFTriple($kv, $content);
       foreach my $k (keys %$attr) {
+        # use direct method ($doc method doesn't skips about="", which we need!)
         $rdf->setAttribute($k => ToString($$attr{$k})); }
       $document->absorb($content) if $content;
       $document->closeElement('ltx:rdf');
