@@ -342,7 +342,7 @@ sub relocateFootnote {
       foreach my $note ($document->findnodes(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")) {
         $node->parentNode->removeChild($node);
         $document->appendClone($note, $node->childNodes);
-        $note->setAttribute(role => $notetype); } } } }
+        $document->setAttribute($note, role => $notetype); } } } }
 
 # Style parameters
 DefRegister('\footnotesep' => Dimension(0));
@@ -745,9 +745,9 @@ DefConstructor('\lx@author@prefix', sub {
     my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
     if ($i <= 1) { }
     elsif ($i == $nauthors) {
-      $node->setAttribute(before => ToString(Digest(T_CS('\lx@author@conj')))); }
+      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@conj')))); }
     else {
-      $node->setAttribute(before => ToString(Digest(T_CS('\lx@author@sep')))); }
+      $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@sep')))); }
 });
 
 DefMacro('\author{}', sub { andSplit(T_CS('\@author'), $_[1]); });
@@ -2278,7 +2278,7 @@ sub collapseFloat {
     if (!($ocaption && $icaption)) {    # If they don't both have captions.
       foreach my $attr (map($_->nodeName, $inner->attributes)) {
         next if $attr eq 'xml:id';
-        $float->setAttribute($attr => $inner->getAttribute($attr)); }
+        $document->setAttribute($float, $attr => $inner->getAttribute($attr)); }
       if ($icaption) {
         if (my $id = $inner->getAttribute('xml:id')) {
           $document->unRecordID($id);
@@ -3240,20 +3240,20 @@ DefConstructor('\@framebox[][]{}',
       $whatsit->setProperties(mathframe => 1, inner => $arg->getBody); }
     return; },
   afterConstruct => sub {
-    my ($doc, $whatsit) = @_;
-    my $node = $doc->getNode->lastChild;
+    my ($document, $whatsit) = @_;
+    my $node = $document->getNode->lastChild;
     # If the generated node, has only a single (non space) child
     my @c = grep(($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /[^\s\n]/),
       $node->childNodes);
-    my $model = $doc->getModel;
+    my $model = $document->getModel;
     # and that child can have the framed attribute
     if ((scalar(@c) == 1)
-      && $doc->canHaveAttribute($model->getNodeQName($c[0]), 'framed')) {
+      && $document->canHaveAttribute($model->getNodeQName($c[0]), 'framed')) {
       # unwrap, copying the attributes
-      $doc->unwrapNodes($node);
+      $document->unwrapNodes($node);
       foreach my $k (qw(width align framed)) {
         if (my $v = $node->getAttribute($k)) {
-          $c[0]->setAttribute($k => $v); } } } }
+          $document->setAttribute($c[0], $k => $v); } } } }
 );
 
 DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), LaTeXML::List->new()); });
@@ -3288,8 +3288,8 @@ DefConstructor('\parbox[][][]{Dimension}{}', sub {
     my $model   = $document->getModel;
     foreach my $node (@new) {
       my $qname = $model->getNodeQName($node);
-      $node->setAttribute(width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
-      $node->setAttribute(vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
+      $document->setAttribute($node, width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
+      $document->setAttribute($node, vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
   },
   mode => 'text', bounded => 1,
   beforeDigest => sub {
@@ -3305,8 +3305,8 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my $model = $document->getModel;
     foreach my $node (@new) {
       my $qname = $model->getNodeQName($node);
-      $node->setAttribute(width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
-      $node->setAttribute(vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
+      $document->setAttribute($node, width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
+      $document->setAttribute($node, vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
   },
   mode         => 'text',
   beforeDigest => sub {

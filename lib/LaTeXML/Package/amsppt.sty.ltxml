@@ -268,7 +268,7 @@ sub relocateFootnote {
       if (my $note = $document->findnode(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")) {
         $node->parentNode->removeChild($node);
         append_nodes($note, $node->childNodes);
-        $note->setAttribute(role => $notetype); } } } }
+        $document->setAttribute($note, role => $notetype); } } } }
 
 #======================================================================
 DefMacro('\rom{}', '{rm #1}');

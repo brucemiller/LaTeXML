@@ -106,7 +106,8 @@ DefConstructor('\@add@PDF@RDFa@triples', sub {
           my $node = $document->openElementAt($root, 'ltx:rdf',
             property => $property, $object => $value,
             ($datatype ? (datatype => $datatype) : ()));
-          $node->setAttribute(about => '');    # should we do this?, (it normally gets omitted!)
+          # Must do directly; $document->setAttribute omits empty attributes
+          $node->setAttribute(about => '');
           $document->closeElementAt($node); } } } });
 
 # Need some work here!?!?

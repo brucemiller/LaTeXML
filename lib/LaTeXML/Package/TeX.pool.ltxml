@@ -1552,16 +1552,16 @@ sub insertBlock {
   #    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
 
   # Insert the content for the block, and reduce
-  $document->getElement->setAttribute('_vertical_mode_' => 1);    # HACK!!!! (see \hbox)
+  $document->setAttribute($document->getElement, '_vertical_mode_' => 1);    # HACK!!!! (see \hbox)
   my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($contents)));
 
   # Scan the inserted nodes, wrapping sequences of Inline items with a ltx:p
   my @newnodes = ();
   while (@nodes) {
-    if ($model->getNodeQName($nodes[0]) eq 'ltx:break') {         # ltx:break are superflous, now.
+    if ($model->getNodeQName($nodes[0]) eq 'ltx:break') {    # ltx:break are superflous, now.
       $document->removeNode(shift(@nodes));
       next; }
-    my @n;                                                        # Collect up sequences of Inline
+    my @n;                                                   # Collect up sequences of Inline
     while (@nodes && ($model->isInSchemaClass('Inline', $nodes[0]))) {
       push(@n, shift(@nodes)); }
     if (@n) {
@@ -1581,7 +1581,7 @@ sub insertBlock {
       ((scalar(@rows) == 1)                  # Else only 1 item inside, then flatten
         && $document->canContain($newblock->parentNode, $rows[0])    # if allowed.
         && (!$hasattr || grep($document->canHaveAttribute($rows[0], $_), keys %blockattr)))) {
-      map($rows[0]->setAttribute($_ => $blockattr{$_}), keys %blockattr);
+      map($document->setAttribute($rows[0], $_ => $blockattr{$_}), keys %blockattr);
       $document->unwrapNodes($newblock); } }
 
   # And return the list of "rows" in the box (in case they need attributes....)
@@ -2851,9 +2851,9 @@ sub addColumnToMathFork {
   my ($document, $main, $inbranch, $cell) = @_;
   my $td = $document->openElementAt($inbranch, 'ltx:td');
   if (my $align = $cell->getAttribute('align')) {
-    $td->setAttribute(align => $align); }
+    $document->setAttribute($td, align => $align); }
   if (my $colspan = $cell->getAttribute('colspan')) {
-    $td->setAttribute(colspan => $colspan); }
+    $document->setAttribute($td, colspan => $colspan); }
   # Usually, we will have captured a single ltx:Math node, but occasionally text?
   foreach my $node ($cell->childNodes) {
     # We MOVE the node from the _Capture_ ($cell) to the td
@@ -2950,13 +2950,13 @@ sub equationgroupJoinRows {
     $frefnum = $eq->getAttribute('frefnum')        if $eq->hasAttribute('frefnum');
     $rrefnum = $eq->getAttribute('rrefnum')        if $eq->hasAttribute('rrefnum');
     $idctr   = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
-
-  $equation->setAttribute(labels           => $labels)  if $labels;
-  $equation->setAttribute('xml:id'         => $id)      if $id;
-  $equation->setAttribute(refnum           => $refnum)  if $refnum;
-  $equation->setAttribute(frefnum          => $frefnum) if $frefnum;
-  $equation->setAttribute(rrefnum          => $rrefnum) if $rrefnum;
-  $equation->setAttribute('_ID_counter_m_' => $idctr)   if $idctr;
+  $document->unRecordID($id) if $id;
+  $document->setAttribute($equation, labels           => $labels)  if $labels;
+  $document->setAttribute($equation, 'xml:id'         => $id)      if $id;
+  $document->setAttribute($equation, refnum           => $refnum)  if $refnum;
+  $document->setAttribute($equation, frefnum          => $frefnum) if $frefnum;
+  $document->setAttribute($equation, rrefnum          => $rrefnum) if $rrefnum;
+  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)   if $idctr;
 
   # Scan equations to see which ones likely are continuations of previous
   my ($main, $branch) = openMathFork($document, $equation);
@@ -2964,7 +2964,7 @@ sub equationgroupJoinRows {
     $eq->unbindNode;
     my $tr = $document->openElementAt($branch, 'ltx:tr');
     my @cells = $document->findnodes('ltx:_Capture_', $eq);
-    $tr->setAttribute(class => 'ltx_eqn_lefteqn')
+    $document->setAttribute($tr, class => 'ltx_eqn_lefteqn')
       if ($cells[0]->getAttribute('class') || '') =~ /\blefteqn\b/;
     foreach my $cell (@cells) {
       addColumnToMathFork($document, $main, $tr, $cell); }
@@ -4479,7 +4479,7 @@ DefConstructorI('\displaylimits', undef, sub {
     my $node = $_[0]->getElement;
     $node = $_[0]->getLastChildElement($node) || $node;
     if (($props{mathstyle} || 'text') eq 'display') {
-      $node->setAttribute(scriptpos => 'mid'); }
+      $document->setAttribute($node, scriptpos => 'mid'); }
     else {
       $node->removeAttribute('scriptpos'); } },
   properties => sub { (mathstyle => LookupValue('mathstyle')); });
@@ -4626,9 +4626,9 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
       my $new = defined $NOTS{$text} ? $NOTS{$text} : $text . "\x{0338}";
       $thing->appendText($new);
       if (my $meaning = $thing->getAttribute('meaning')) {
-        $thing->setAttribute(meaning => "not-$meaning"); }
+        $doc->setAttribute($thing, meaning => "not-$meaning"); }
       if (my $name = $thing->getAttribute('name') || $text) {
-        $thing->setAttribute(name => "not-$name"); }
+        $doc->setAttribute($thing, name => "not-$name"); }
       # and put the node back in
       $doc->getNode->appendChild($thing); } });
 
@@ -5445,7 +5445,7 @@ Tag('ltx:XMRef', 'afterOpen:late' => sub {
         Warn('malformed', 'idref', $document,
           "ID $id referenced by XMRef not found in any XMArg (via key $key)")
           unless $id;
-        $node->setAttribute(idref => $id) if $id; } } });
+        $document->setAttribute($node, idref => $id) if $id; } } });
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 

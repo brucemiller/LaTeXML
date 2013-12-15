@@ -43,7 +43,7 @@ DefConstructor('\scalebox{}[]{}', sub {
             ($scale  ? ("scale=" . ToString($scale))   : undef),
             ($xscale ? ("xscale=" . ToString($xscale)) : undef),
             ($yscale ? ("yscale=" . ToString($yscale)) : undef)));
-        $node->setAttribute(options => $options); } } },
+        $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
 DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}', sub {
@@ -58,7 +58,7 @@ DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{
             ($width  ? ("width=" . ToString($width))   : undef),
             ($height ? ("height=" . ToString($height)) : undef),
             ($width && $height ? undef : "keepaspectratio")));
-        $node->setAttribute(options => $options); } } },
+        $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
 DefConstructor('\rotatebox{Float}{}', sub {
@@ -68,7 +68,7 @@ DefConstructor('\rotatebox{Float}{}', sub {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
         my $options = join(',', grep($_, $node->getAttribute('options'), "angle=" . ToString($angle)));
-        $node->setAttribute(options => $options); } } },
+        $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
 DefConstructor('\reflectbox{}', sub {
@@ -78,7 +78,7 @@ DefConstructor('\reflectbox{}', sub {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
         my $options = join(',', grep($_, $node->getAttribute('options'), "reflect"));
-        $node->setAttribute(options => $options); } } },
+        $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
 DefConstructor('\graphicspath DirectoryList', sub {
