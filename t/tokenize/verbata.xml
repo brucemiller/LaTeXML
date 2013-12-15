@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="verbatim"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>verbatim</title>
+    <para xml:id="S1.p1">
+      <p>Before</p>
+      <verbatim font="typewriter">
+Inside
+\amacro
+More Inside
+</verbatim>
+      <p>After</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Before</p>
+      <verbatim font="typewriter"> Inside1
+Inside2
+Inside3 
+</verbatim>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Before</p>
+      <verbatim font="typewriter"> Inside1
+Inside2
+% comment Inside 
+</verbatim>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Before</p>
+      <verbatim font="typewriter"> Inside1
+Inside2
+</verbatim>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>comment</title>
+    <para xml:id="S2.p1">
+      <p>Before
+After</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Before
+After</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Before After</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag close=" ">3</tag>myverbatim</title>
+    <para xml:id="S3.p1">
+      <p>Before
+before</p>
+      <verbatim font="typewriter">inside
+Inside
+inside </verbatim>
+      <p>afterAfter</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>Before before</p>
+      <verbatim font="typewriter">insideInside1
+Inside2
+Inside3 
+inside </verbatim>
+      <p>afterAfter</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag close=" ">4</tag>Defining</title>
+  </section>
+  <section refnum="5" xml:id="S5">
+    <title><tag close=" ">5</tag>From File</title>
+    <para xml:id="S5.p1">
+      <verbatim font="typewriter">\documentclass{article}
+\usepackage{verbatim}
+\newenvironment{myverbatim}{%
+before \verbatim inside}{%
+inside \endverbatim after}
+
+\begin{document}
+\section{verbatim}
+Before
+\begin{verbatim}
+Inside
+\amacro
+More Inside
+\end{verbatim}
+After
+
+Before \begin{verbatim} Inside1
+Inside2
+Inside3 \end{verbatim} [ignored after]
+
+Before \begin{verbatim} Inside1
+Inside2
+% comment Inside \end{verbatim}
+
+
+Before \begin{verbatim} Inside1
+Inside2
+\end {verbatim}
+
+\section{comment}
+Before
+\begin{comment}
+Inside
+\end{comment}
+After
+
+Before
+\begin{comment}
+Inside
+\end {comment}
+After
+
+Before \begin{comment}Inside1
+Inside2
+Inside3 \end{comment} [ignored after]
+After
+
+\section{myverbatim}
+Before
+\begin{myverbatim}
+Inside
+\end{myverbatim}
+After
+
+Before \begin{myverbatim}Inside1
+Inside2
+Inside3 \end{myverbatim} [ignored after]
+After
+
+\section{Defining}
+%\newverbtext{\silly}"^%{ &amp;~_\}}@ #"
+
+%\section{Weird \silly}
+
+\section{From File}
+\verbatiminput{verbata.tex}
+
+\end{document}
+</verbatim>
+    </para>
+  </section>
+</document>

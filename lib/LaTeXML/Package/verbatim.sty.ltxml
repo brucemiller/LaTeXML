@@ -1,0 +1,147 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  verbatim                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+#======================================================================
+# Note that we CAN process the verbatim.sty file and that works,
+# although the xml it generates is pretty pointless
+### InputDefinitions('verbatim', type => 'sty', noltxml => 1);
+#======================================================================
+# Thus, we set out to define the essentials, but keep as close
+# to verbatim's internals as we can
+
+# Since LaTeX.pool has already defined {verbatim} as an environment,
+# (so that \begin{verbatim} takes precedence over \verbatim!)
+# we have to be more forceful so that \verbatim & \endverbatim
+# are even seen!
+$STATE->assignMeaning(T_CS('\begin{verbatim}'),  undef);
+$STATE->assignMeaning(T_CS('\begin{verbatim*}'), undef);
+$STATE->assignMeaning(T_CS('\end{verbatim}'),    undef);
+$STATE->assignMeaning(T_CS('\end{verbatim*}'),   undef);
+
+DefRegister('\every@verbatim' => Tokens());
+DefRegister('\verbatim@line'  => Tokens());
+
+#======================================================================
+# Mostly simplified versions of what's in verbatim....
+DefMacro('\verbatim@startline',   '\verbatim@line{}');
+DefMacro('\verbatim@addtoline{}', '\verbatim@line\expandafter{\the\verbatim@line#1}');
+DefMacro('\verbatim@processline', '\the\verbatim@line\par');
+
+DefMacro('\verbatim@font', '\normalfont\ttfamily\hyphenchar\font\m@ne\@noligs');
+
+DefMacro('\@verbatim',
+  '\the\every@verbatim'
+    . '\obeylines'
+    . '\let\do\@makeatother\dospecials'
+    . '\verbatim@font');
+
+DefConstructor('\lx@verbatim@',
+  "<ltx:verbatim font='#font'>",
+  beforeDigest => sub { Let('\par', T_CR); },
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });
+
+# We HAVE to get this guy in, to close the <ltx:verbatim>"
+DefConstructor('\lx@end@verbatim@{}',
+  "</ltx:verbatim>");
+
+DefMacroI('\verbatim', undef,
+  '\begingroup\@verbatim\frenchspacing\@vobeyspaces\verbatim@start');
+DefMacroI('\verbatim*', undef,
+  '\begingroup\@verbatim\verbatim@start');
+DefMacroI('\endverbatim',  undef, '\lx@end@verbatim@\endgroup');
+DefMacroI('\endverbatim*', undef, '\lx@end@verbatim@\endgroup');
+
+DefMacroI('\comment', undef,
+  '\let\do\@makeother\dospecials\catcode`\^^M\active'
+    . '\let\verbatim@startline\relax'
+    . '\let\verbatim@addtoline\@gobble'
+    . '\let\verbatim@processline\relax'
+    . '\verbatim@');
+DefMacroI('\endcomment', undef, '');
+
+DefMacro('\verbatim@start', '\lx@verbatim@\verbatim@');
+
+#======================================================================
+# Here's the interesting bit.
+# Why do things the hard way, when we can pull lines out of the Mouth
+# and match them as text ?
+# Well, we have to dance a bit...
+
+# NOTE: the part AFTER the \end{whatever}, should be lost (and message about it!)
+DefMacro('\verbatim@', sub {
+    my ($gullet) = @_;
+    my $mouth    = $gullet->getMouth;
+    my $env      = LookupValue('current_environment');
+    # Note: This should allow a regexp, since there can be spaces between \end and { !!!
+    my $line;
+    my @lines = ();
+    while (defined($line = $gullet->readRawLine)) {
+      if ($line =~ /^(.*)\\end\s*{\Q$env\E}(.*)$/) {
+        $line = $1;
+        Info('unexpected', 'stuff', $gullet, "Characters dropped after '\\end{$env}'") if $2;
+        last; }
+      push(@lines, $line); }
+    pop(@lines) if $lines[-1] eq '';
+    my @tokens = ();
+    foreach my $line (@lines) {
+      push(@tokens,
+        T_CS('\verbatim@startline'),
+        Invocation(T_CS('\verbatim@addtoline'), Tokens(ExplodeText($line))),
+        T_CS('\verbatim@processline')); }
+    (@tokens, Invocation(T_CS('\end'), $env)); });
+
+#======================================================================
+# Read verbatim material from file.
+DefMacro('\verbatiminput {}', sub {
+    my ($gullet, $file) = @_;
+    my $path = FindFile($file);
+    $gullet->readingFromMouth(LaTeXML::Mouth->create(ToString($path)), sub {
+        my ($igullet) = @_;
+        my @tokens;
+        while (defined(my $line = $igullet->getMouth->readRawLine)) {
+          push(@tokens,
+            T_CS('\verbatim@startline'),
+            Invocation(T_CS('\verbatim@addtoline'), Tokens(ExplodeText($line))),
+            T_CS('\verbatim@processline')); }
+        (T_CS('\begingroup'), T_CS('\@verbatim'), T_CS('\frenchspacing'), T_CS('\@vobeyspaces'),
+          T_CS('\lx@verbatim@'), @tokens, T_CS('\lx@end@verbatim@'), T_CS('\endgroup')); }); });
+
+#======================================================================
+# Getting verbatim text into arguments
+DefPrimitive('\newverbtext DefToken', sub {
+    my ($stomach, $cs) = @_;
+    my $mouth = $stomach->getGullet->getMouth;
+    my ($init, $body);
+    StartSemiverbatim();
+    AssignCatcode('\\', CC_OTHER);
+    AssignCatcode('{',  CC_OTHER);
+    AssignCatcode('}',  CC_OTHER);
+    $init = $mouth->readToken;
+    $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+
+    if (!$init) {    # typically read too far, got \verb and the content is somewhere else..?
+      Error('expected', 'delimiter', $stomach,
+        "Verbatim argument lost", "Bindings for preceding code is probably broken");
+      EndSemiverbatim();
+      return (); }
+    $body = $mouth->readTokens($init);
+
+    EndSemiverbatim();
+    DefMacroI($cs, undef, $body);
+    return; });
+
+#**********************************************************************
+1;

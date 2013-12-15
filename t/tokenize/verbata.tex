@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage{verbatim}
+\newenvironment{myverbatim}{%
+before \verbatim inside}{%
+inside \endverbatim after}
+
+\begin{document}
+\section{verbatim}
+Before
+\begin{verbatim}
+Inside
+\amacro
+More Inside
+\end{verbatim}
+After
+
+Before \begin{verbatim} Inside1
+Inside2
+Inside3 \end{verbatim} [ignored after]
+
+Before \begin{verbatim} Inside1
+Inside2
+% comment Inside \end{verbatim}
+
+
+Before \begin{verbatim} Inside1
+Inside2
+\end {verbatim}
+
+\section{comment}
+Before
+\begin{comment}
+Inside
+\end{comment}
+After
+
+Before
+\begin{comment}
+Inside
+\end {comment}
+After
+
+Before \begin{comment}Inside1
+Inside2
+Inside3 \end{comment} [ignored after]
+After
+
+\section{myverbatim}
+Before
+\begin{myverbatim}
+Inside
+\end{myverbatim}
+After
+
+Before \begin{myverbatim}Inside1
+Inside2
+Inside3 \end{myverbatim} [ignored after]
+After
+
+\section{Defining}
+%\newverbtext{\silly}"^%{ &~_\}}@ #"
+
+%\section{Weird \silly}
+
+\section{From File}
+\verbatiminput{verbata.tex}
+
+\end{document}
