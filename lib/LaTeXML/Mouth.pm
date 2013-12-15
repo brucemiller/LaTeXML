@@ -376,7 +376,7 @@ sub getNextLine {
   $line .= "\r";                        # put line ending back!
 
   if (!($$self{lineno} % 25)) {
-    NoteProgress("[#$$self{lineno}]"); }
+    NoteProgressDetailed("[#$$self{lineno}]"); }
   return $line; }
 
 sub stringify {
