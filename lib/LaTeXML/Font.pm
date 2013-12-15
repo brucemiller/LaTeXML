@@ -171,8 +171,8 @@ sub new {
   my $series   = $options{series};
   my $shape    = $options{shape};
   my $size     = $options{size};
-  my $color    = $options{color}; $color = $color->toHex if ref $color;
-  my $bg       = $options{background}; $bg = $bg->toHex if ref $bg;
+  my $color    = $options{color};
+  my $bg       = $options{background};
   my $opacity  = $options{opacity};
   my $encoding = $options{encoding};
   return $class->new_internal($family, $series, $shape, $size, $color, $bg, $opacity, $encoding); }
@@ -243,8 +243,6 @@ sub merge {
   my $bg       = $options{background} // $$self[5];
   my $opacity  = $options{opacity}    // $$self[6];
   my $encoding = $options{encoding}   // $$self[7];
-  $color = $color->toHex if ref $color;
-  $bg    = $bg->toHex    if ref $bg;
   return (ref $self)->new_internal($family, $series, $shape, $size, $color, $bg, $opacity, $encoding); }
 
 # Really only applies to Math Fonts, but that should be handled elsewhere; We punt here.
@@ -368,8 +366,8 @@ sub new {
   my $series   = $options{series};
   my $shape    = $options{shape};
   my $size     = $options{size};
-  my $color    = $options{color}; $color = $color->toHex if ref $color;
-  my $bg       = $options{background}; $bg = $bg->toHex if ref $bg;
+  my $color    = $options{color};
+  my $bg       = $options{background};
   my $opacity  = $options{opacity};
   my $encoding = $options{encoding};
 ##  my $forcebold  = $options{forcebold} || 0;
@@ -403,8 +401,6 @@ sub merge {
   my $encoding   = $options{encoding}   // $$self[7];
   my $forcebold  = $options{forcebold}  // $$self[8];
   my $forceshape = $options{forceshape} // $$self[9];
-  $color = $color->toHex if ref $color;
-  $bg    = $bg->toHex    if ref $bg;
   # In math, setting any one of these, resets the others to default.
   $family = $MDEFFAMILY if !$options{family} && ($options{series} || $options{shape});
   $series = $MDEFSERIES if !$options{series} && ($options{family} || $options{shape});
