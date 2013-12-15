@@ -214,12 +214,6 @@ sub unread {
       @tokens);
   return; }
 
-sub readPushback {
-  my ($self) = @_;
-  my @tokens = @{ $$self{pushback} };
-  $$self{pushback} = [];
-  return @tokens; }
-
 # Read the next non-expandable token (expanding tokens until there's a non-expandable one).
 # Note that most tokens pass through here, so be Fast & Clean! readToken is folded in.
 # `Toplevel' processing, (if $toplevel is true), used at the toplevel processing by Stomach,
@@ -256,6 +250,17 @@ sub readXToken {
       return $token; }                         # just return it
   }
   return; }                                    # never get here.
+
+# Read the next raw line (string);
+# primarily to read from the Mouth, but keep any unread input!
+sub readRawLine {
+  my ($self) = @_;
+  # If we've got unread tokens, they presumably should come before the Mouth's raw data
+  # but we'll convert them back to string.
+  my @tokens = @{ $$self{pushback} };
+  $$self{pushback} = [];
+  my $line = $$self{mouth}->readRawLine;
+  return (@tokens ? ToString(Tokens(@tokens)) . ($line || '') : $line); }
 
 #**********************************************************************
 # Mid-level readers: checking and matching tokens, strings etc.
