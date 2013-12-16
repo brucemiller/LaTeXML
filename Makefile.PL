@@ -20,61 +20,66 @@ use FindBin;
 #     rather than where kpsewhich says TEXMFLOCAL is (useful for spec files?)
 #======================================================================
 
-our $OLD_LIBXML = grep(/OLD_LIBXML/,@ARGV);
+our $OLD_LIBXML = grep(/OLD_LIBXML/, @ARGV);
 our $TEXMF;
-my ($texmfspec) = grep(/^TEXMF/,@ARGV);
-if($texmfspec &&  $texmfspec =~ /^TEXMF\s*=(.*)$/){
-  $TEXMF=$1;
-  @ARGV = grep($_ ne $texmfspec,@ARGV); # Remove so MakeMaker doesn't fret.
+my ($texmfspec) = grep(/^TEXMF/, @ARGV);
+if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
+  $TEXMF = $1;
+  @ARGV = grep($_ ne $texmfspec, @ARGV);    # Remove so MakeMaker doesn't fret.
 }
-our @EXCLUSIONS=();
-our $MORE_MACROS = {};
-our $MORE_MAKERULES='';
+our @EXCLUSIONS     = ();
+our $MORE_MACROS    = {};
+our $MORE_MAKERULES = '';
 
 record_revision();
 compile_MathGrammar();
 install_TeXStyles();
 extra_Tests();
-git_Hooks();
 
 WriteMakefile(NAME => 'LaTeXML',
-	      AUTHOR => 'Bruce Miller <bruce.miller@nist.gov>',
-	      ABSTRACT => "transforms TeX and LaTeX into XML",
-	      PREREQ_PM => { 
-			    'Test::Simple'=>0,
-			    'DB_File'=>0,
-			    # If we have an "old" version of XML::LibXML,
-			    # we also need XPathContext.
-			    # But we can't determine that additional dependence
-			    # after we've already started resolving dependences!
-			    ($OLD_LIBXML
-			     ? ( 'XML::LibXML'  => 1.58,
-				  'XML::LibXML::XPathContext' => 0)
-			     : ( 'XML::LibXML'  => 1.61)), # But > 1.62 is better
-			    'XML::LibXSLT' => 1.58,
-			    'Parse::RecDescent' => 0,
-			    'Image::Magick'=> 0,
-			    'File::Which'=>0,
-			    'URI'=>0,
-			    'LWP'=>0,
-			    'LWP::Simple'=>0,
-			    'IO::Socket'=>0,
-			    'IO::Socket::SSL'=>0,
-			    'IO::String'=>0,
-			    'JSON::XS'=>0,
-			    'Archive::Zip'=>0,
-			   },
-	      EXE_FILES => [ 'bin/latexml','bin/latexmlpost','bin/latexmlfind','bin/latexmlmath','bin/latexmlc'],
-	      macro => $MORE_MACROS,
-	      );
+  AUTHOR    => 'Bruce Miller <bruce.miller@nist.gov>',
+  ABSTRACT  => "transforms TeX and LaTeX into XML",
+  PREREQ_PM => {
+    'Test::Simple' => 0,
+    'DB_File'      => 0,
+    # If we have an "old" version of XML::LibXML,
+    # we also need XPathContext.
+    # But we can't determine that additional dependence
+    # after we've already started resolving dependences!
+    ($OLD_LIBXML
+      ? ('XML::LibXML' => 1.58,
+        'XML::LibXML::XPathContext' => 0)
+      : ('XML::LibXML' => 1.61)),    # But > 1.62 is better
+    'XML::LibXSLT'      => 1.58,
+    'Parse::RecDescent' => 0,
+    'Image::Magick'     => 0,
+    'File::Which'       => 0,
+    'URI'               => 0,
+    'LWP'               => 0,
+    'LWP::Simple'       => 0,
+    'IO::Socket'        => 0,
+    'IO::Socket::SSL'   => 0,
+    'IO::String'        => 0,
+    'JSON::XS'          => 0,
+    'Archive::Zip'      => 0,
+  },
+  EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
+  macro => $MORE_MACROS,
+);
 
+print STDERR ('=' x 55), "\n",
+  "| If you plan on developing code, please consider using\n",
+  "| the git pre-commit hook to assure style compliant code.\n",
+  "| To install:\n",
+  "|    ln -s ../../tools/pre-commit .git/hooks\n",
+  ('=' x 55), "\n";
 #**********************************************************************
 # Overriding ExtUtils::MM methods
 #**********************************************************************
 # Exclude the sources used to generate others from the build (See below).
 sub MY::libscan {
-  my($self,$path)=@_;
-  if(($path =~ /~$/) || grep($path eq $_, @EXCLUSIONS)){
+  my ($self, $path) = @_;
+  if (($path =~ /~$/) || grep($path eq $_, @EXCLUSIONS)) {
     return ""; }
   $self->MY::SUPER::libscan($path); }
 
@@ -90,7 +95,7 @@ sub MY::postamble {
 # Record the current (svn) repository revision number
 sub record_revision {
   # Don't copy the Version template to the installation; it's not needed
-  push(@EXCLUSIONS,'blib/lib/LaTeXML/Version.in');
+  push(@EXCLUSIONS, 'blib/lib/LaTeXML/Version.in');
   # This should be the top-level directory, so it's revision should represent the whole project
   $$MORE_MACROS{REVISION_BASE} = $FindBin::RealBin;
   # This is where the REVISION gets stored (along with VERSION, etc)
@@ -130,7 +135,7 @@ RecordRevision
 #======================================================================
 # We'll compile the RecDescent grammar during make; don't need to install grammar.
 sub compile_MathGrammar {
-  push(@EXCLUSIONS,'blib/lib/LaTeXML/MathGrammar');
+  push(@EXCLUSIONS, 'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
 
 # Precompile the (Recursive Descent) MathGrammar
@@ -153,15 +158,15 @@ MakeGrammar
 # to install.PL so that it can "install" to staging directories
 # but for manual $(DESTDIR) is empty, so install.PL complains...
 sub install_TeXStyles {
-  if(! $TEXMF){
-    if(system("kpsewhich --expand-var='\$TEXMFLOCAL'")==0){ # can run kpsewhich?
-      $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`; 
+  if (!$TEXMF) {
+    if (system("kpsewhich --expand-var='\$TEXMFLOCAL'") == 0) {    # can run kpsewhich?
+      $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`;
       # Strip the quotes (they appear in windows, when spaces in pathnames(?))
       # These quotes inhibit pasting pathnames togheter,
       # but we DO need to wrap quotes around all completed paths!!
-      chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF=~ s/'$//; }}
-  if(! $TEXMF){
-    warn "Warning: no TeX installation found.\n", 
+      chomp($TEXMF); $TEXMF =~ s/^'//; $TEXMF =~ s/'$//; } }
+  if (!$TEXMF) {
+    warn "Warning: no TeX installation found.\n",
       "  TeX is NOT required, but LaTeXML will have limited functionality.\n";
     return; }
 
@@ -197,7 +202,7 @@ InstallTeXStyles
 #======================================================================
 # Extra tests for Tikz; too slow for everyday tests.
 sub extra_Tests {
-    $MORE_MAKERULES .= <<'ExtraTests';
+  $MORE_MAKERULES .= <<'ExtraTests';
 
 EXTRA_TEST_FILES = t/*.tt
 
@@ -209,14 +214,4 @@ extratest ::
 ExtraTests
 }
 
-#======================================================================
-# Install Git hooks if we are a Git clone
-sub git_Hooks {
-    $MORE_MAKERULES .= <<'GitHooks';
-
-pure_all :: 
-	$(PERLRUN) -MFile::Copy -e 'if (-d ".git") {File::Copy::copy("tools/pre-commit", ".git/hooks/pre-commit"); chmod 0755, ".git/hooks/pre-commit";}'
-
-GitHooks
-}
 #======================================================================
