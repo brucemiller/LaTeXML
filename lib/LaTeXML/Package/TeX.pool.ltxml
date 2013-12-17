@@ -842,7 +842,8 @@ sub do_def {
   if ($expanded) {
     local $LaTeXML::NOEXPAND_THE = 1;
     $body = Expand($body); }
-  DefMacroI($cs, $params, $body, ($globally ? (scope => 'global') : ()));
+  $STATE->installDefinition(LaTeXML::Expandable->new($cs, $params, $body),
+    ($globally ? 'global' : undef));
   return; }
 
 DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0, 0, @_); }, locked => 1);
