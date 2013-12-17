@@ -1876,13 +1876,6 @@ DefPrimitive('\UndeclareTextCommand{}{}', undef);
 DefMacro('\UseTextSymbol{}{}', '{\fontencoding{#1}#2}');
 DefMacro('\UseTextAccent{}{}', '{\fontencoding{#1}#2{#3}}');
 
-# Re-Hack the fontinfo that TeX started with (\itfam,\slfam,\bffam,\ttfam ???)
-# AT least until we've sorted out DeclareSymbolFont....
-AssignValue('fontinfo_0_text' => { encoding => 'OT1' });
-AssignValue('fontinfo_1_text' => { encoding => 'OML' });
-AssignValue('fontinfo_2_text' => { encoding => 'OMS', family => 'symbol' });
-AssignValue('fontinfo_3_text' => { encoding => 'OMX', family => 'symbol', shape => 'upright' });
-
 DefPrimitive('\DeclareMathAccent{}{}{}{}',
   sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
 DefPrimitive('\DeclareMathDelimiter{}{}{}{}',
