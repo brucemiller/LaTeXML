@@ -195,11 +195,21 @@ sub readToken {
   my ($self) = @_;
   #  my $token = shift(@{$$self{pushback}});
   my $token;
-  while (defined($token = shift(@{ $$self{pushback} })) && ($$token[1] == CC_COMMENT)) { # NOTE: Inlined ->getCatcode
-    push(@{ $$self{pending_comments} }, $token); }
+  # Check in pushback first....
+  while (defined($token = shift(@{ $$self{pushback} }))
+    && (($$token[1] == CC_COMMENT) || ($$token[1] == CC_MARKER))) {    # NOTE: Inlined
+
+    if ($$token[1] == CC_COMMENT) {
+      push(@{ $$self{pending_comments} }, $token); }
+    elsif ($$token[1] == CC_MARKER) {
+      LaTeXML::Definition::stopProfiling($token); } }
   return $token if defined $token;
-  while (defined($token = $$self{mouth}->readToken()) && ($$token[1] == CC_COMMENT)) { # NOTE: Inlined ->getCatcode
-    push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
+  while (defined($token = $$self{mouth}->readToken())
+    && (($$token[1] == CC_COMMENT) || ($$token[1] == CC_MARKER))) {    # NOTE: Inlined
+    if ($$token[1] == CC_COMMENT) {
+      push(@{ $$self{pending_comments} }, $token); }                   # What to do with comments???
+    elsif ($$token[1] == CC_MARKER) {
+      LaTeXML::Definition::stopProfiling($token); } }
   return $token; }
 
 # Unread tokens are assumed to be not-yet expanded.
@@ -235,6 +245,8 @@ sub readXToken {
     elsif ($cc == CC_COMMENT) {
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
+    elsif ($cc == CC_MARKER) {
+      LaTeXML::Definition::stopProfiling($token); }
     elsif (defined($defn = $STATE->lookupDefinition($token)) && $defn->isExpandable
       && ($toplevel || !$defn->isProtected)) { # is this the right logic here? don't expand unless digesting?
       local $LaTeXML::CURRENT_TOKEN = $token;
