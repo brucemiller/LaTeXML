@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Global;
 use Exporter;
 use LaTeXML::Parameters;
+use Time::HiRes;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
@@ -73,6 +74,58 @@ sub invocation {
   my ($self, @args) = @_;
   return ($$self{cs}, ($$self{parameters} ? $$self{parameters}->revertArguments(@args) : ())); }
 
+#======================================================================
+# Profiling support
+#======================================================================
+# If the value PROFILING is true, we'll collect some primitive profiling info.
+
+# Start profiling $CS (typically $LaTeXML::CURRENT_TOKEN)
+# Call from within ->invoke.
+sub startProfiling {
+  my ($cs) = @_;
+  my $name = $cs->getCSName;
+  my $entry = $STATE->lookupMapping('runtime_profile', $name);
+  # [#calls, total time, starts of pending calls...]
+  if (!defined $entry) {
+    $entry = [0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
+  $$entry[0]++;    # One more call.
+  push(@$entry, [Time::HiRes::gettimeofday]);    # started new call
+  return; }
+
+# Stop profiling $CS, if it was being profiled.
+sub stopProfiling {
+  my ($cs) = @_;
+  $cs = $cs->getString if $cs->getCatcode == CC_MARKER;    # Special case for macros!!
+  my $name = $cs->getCSName;
+  if (my $entry = $STATE->lookupMapping('runtime_profile', $name)) {
+    if (scalar(@$entry) > 2) {
+      # Hopefully we're the pop gets the corresponding start time!?!?!
+      $$entry[1] += Time::HiRes::tv_interval(pop(@$entry), [Time::HiRes::gettimeofday]); } }
+  return; }
+
+our $MAX_PROFILE_ENTRIES = 50;                             # [CONSTANT]
+# Print out profiling information, if any was collected
+sub showProfile {
+  if (my $profile = $STATE->lookupValue('runtime_profile')) {
+    my @cs         = keys %$profile;
+    my @unfinished = ();
+    foreach my $cs (@cs) {
+      push(@unfinished, $cs) if scalar(@{ $$profile{$cs} }) > 2; }
+
+    my @frequent = sort { $$profile{$b}[0] <=> $$profile{$a}[0] } @cs;
+    @frequent = @frequent[0 .. $MAX_PROFILE_ENTRIES];
+    my @expensive = sort { $$profile{$b}[1] <=> $$profile{$a}[1] } @cs;
+    @expensive = @expensive[0 .. $MAX_PROFILE_ENTRIES];
+    print STDERR "\nProfiling results:\n";
+    print STDERR "Most frequent:\n   "
+      . join(', ', map { $_ . ':' . $$profile{$_}[0] } @frequent) . "\n";
+    print STDERR "Most expensive (inclusive):\n   "
+      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[1]) } @expensive) . "\n";
+
+    if (@unfinished) {
+      print STDERR "The following were never marked as done:\n  " . join(', ', @unfinished) . "\n"; }
+  } }
+
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.
 #**********************************************************************
@@ -118,6 +171,9 @@ sub doInvocation {
   my ($self, $gullet, @args) = @_;
   my $expansion = $self->getExpansion;
   my $r;
+  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  LaTeXML::Definition::startProfiling($profiled) if $profiled;
+  my @result;
   if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
     if (ref $expansion eq 'CODE') {
       # Harder to emulate \tracingmacros here.
@@ -125,8 +181,7 @@ sub doInvocation {
       print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
       my $i = 1;
       foreach my $arg (@args) {
-        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
-      return @result; }
+        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; } }
     else {
       # for "real" macros, make sure all args are Tokens
       my @targs = map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
@@ -139,9 +194,9 @@ sub doInvocation {
       my $i = 1;
       foreach my $arg (@targs) {
         print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
-      return substituteTokens($expansion, @targs); } }
+      @result = substituteTokens($expansion, @targs); } }
   else {
-    return (ref $expansion eq 'CODE'
+    @result = (ref $expansion eq 'CODE'
       ? &$expansion($gullet, @args)
       : substituteTokens($expansion,
         map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Tokens')
@@ -149,7 +204,13 @@ sub doInvocation {
             : ($r && ($r eq 'LaTeXML::Token')
               ? Tokens($_)
               : Tokens(Revert($_)))) }
-          @args)); } }
+          @args)); }
+  # This would give (something like) "inclusive time"
+  #  LaTeXML::Definition::stopProfiling($profiled) if $profiled;
+  # This gives (something like) "exclusive time"
+  # but requires dubious Gullet support!
+  push(@result, T_MARKER($profiled)) if $profiled;
+  return @result; }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
@@ -395,12 +456,18 @@ sub executeAfterDigest {
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
   my ($self, $stomach) = @_;
+  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  LaTeXML::Definition::startProfiling($profiled) if $profiled;
+
   if ($STATE->lookupValue('TRACINGCOMMANDS')) {
     print STDERR '{' . $self->getCSName . "}\n"; }
-  return (
+  my @result = (
     $self->executeBeforeDigest($stomach),
     &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
-    $self->executeAfterDigest($stomach)); }
+    $self->executeAfterDigest($stomach));
+
+  LaTeXML::Definition::stopProfiling($profiled) if $profiled;
+  return @result; }
 
 sub equals {
   my ($self, $other) = @_;
@@ -453,6 +520,9 @@ sub setValue {
 # (other than afterassign)
 sub invoke {
   my ($self, $stomach) = @_;
+  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  LaTeXML::Definition::startProfiling($profiled) if $profiled;
+
   my $gullet = $stomach->getGullet;
   my @args   = $self->readArguments($gullet);
   $gullet->readKeyword('=');    # Ignore
@@ -463,6 +533,7 @@ sub invoke {
   if (my $after = $STATE->lookupValue('afterAssignment')) {
     $STATE->assignValue(afterAssignment => undef, 'global');
     $gullet->unread($after); }    # primitive returns boxes, so these need to be digested!
+  LaTeXML::Definition::stopProfiling($profiled) if $profiled;
   return; }
 
 #**********************************************************************
@@ -541,6 +612,9 @@ sub getAlias {
 sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
+  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  LaTeXML::Definition::startProfiling($profiled) if $profiled;
+
   my @pre = $self->executeBeforeDigest($stomach);
 
   if ($STATE->lookupValue('TRACINGCOMMANDS')) {
@@ -574,6 +648,8 @@ sub invoke {
   my @post = $self->executeAfterDigest($stomach, $whatsit);
   if (my $cap = $$self{captureBody}) {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
+
+  LaTeXML::Definition::stopProfiling($profiled) if $profiled;
   return (@pre, $whatsit, @post); }
 
 sub doAbsorbtion {
