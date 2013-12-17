@@ -62,6 +62,7 @@ my %font_family = (
   # The following are actually math fonts.
   ms    => { family => 'symbol' },
   ccm   => { family => 'serif', shape => 'italic' },
+  cmm   => { family => 'italic', encoding => 'OML' },
   cmex  => { family => 'symbol', encoding => 'OMX' },       # Not really symbol, but...
   cmsy  => { family => 'symbol', encoding => 'OMS' },
   ccitt => { family => 'typewriter', shape => 'italic' },
@@ -147,6 +148,8 @@ sub decodeFontname {
     $size = $at if defined $at;
     $size *= $scaled if defined $scaled;
     $props{size} = lookupFontSize($size);
+    # Experimental Hack !?!?!?
+    $props{encoding} = 'OT1' unless defined $props{encoding};
     return %props; }
   else {
     return; } }
