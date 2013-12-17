@@ -453,8 +453,15 @@ sub equals {
 
 sub beAbsorbed {
   my ($self, $document) = @_;
-  return $self->getDefinition->doAbsorbtion($document, $self); }
-####  &{$self->getDefinition->getConstructor}($document,@{$$self{args}},$$self{properties});}
+  # Significant time is consumed here, and associated with a specific CS,
+  # so we should be profiling as well!
+  # Hopefully the csname is the same that was charged in the digestioned phase!
+  my $defn = $self->getDefinition;
+  my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
+  LaTeXML::Definition::startProfiling($profiled) if $profiled;
+  my @result = $defn->doAbsorbtion($document, $self);
+  LaTeXML::Definition::stopProfiling($profiled) if $profiled;
+  return @result; }
 
 sub getWidth {
   my ($self) = @_;
