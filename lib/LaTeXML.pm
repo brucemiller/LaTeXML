@@ -89,6 +89,14 @@ sub getStatusCode {
   my ($self) = @_;
   return $$self{state}->getStatusCode; }
 
+# You'd typically do this after both digestion AND conversion...
+sub showProfile {
+  my ($self, $digested) = @_;
+  return
+    $self->withState(sub {
+      LaTeXML::Definition::showProfile();    # Show profile (if any)
+      }); }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mid-level API.
 
