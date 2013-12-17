@@ -177,7 +177,7 @@ sub doInvocation {
   if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
     if (ref $expansion eq 'CODE') {
       # Harder to emulate \tracingmacros here.
-      my @result = &$expansion($gullet, @args);
+      @result = &$expansion($gullet, @args);
       print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
       my $i = 1;
       foreach my $arg (@args) {
