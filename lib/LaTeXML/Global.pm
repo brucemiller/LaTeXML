@@ -34,11 +34,11 @@ our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_NOTEXPANDED ),
+    CC_CS      CC_NOTEXPANDED CC_MARKER),
   # Token constructors
   qw( &T_BEGIN &T_END &T_MATH &T_ALIGN &T_PARAM &T_SUB &T_SUPER &T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    &T_CR
+    &T_CR &T_MARKER
     &Token &Tokens
     &Tokenize &TokenizeInternal &Explode &ExplodeText &UnTeX
     &StartSemiverbatim &EndSemiverbatim),
@@ -85,6 +85,7 @@ use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
 use constant CC_CS          => 16;
 use constant CC_NOTEXPANDED => 17;
+use constant CC_MARKER      => 18;    # non TeX extension!
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -103,6 +104,9 @@ sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Token'; }
 sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Token'; }
 sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Token'; }
+
+# Illegal: don't use unless you know...
+sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
