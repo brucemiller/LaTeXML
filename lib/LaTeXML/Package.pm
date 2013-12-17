@@ -835,6 +835,7 @@ my %register_types = (      # [CONSTANT]
   'LaTeXML::Glue'      => 'Glue',
   'LaTeXML::MuGlue'    => 'MuGlue',
   'LaTeXML::Tokens'    => 'Tokens',
+  'LaTeXML::Token'     => 'Token',
 );
 
 sub DefRegister {
