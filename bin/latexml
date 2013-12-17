@@ -98,6 +98,8 @@ if ($digested) {
     my $dom = $latexml->convertDocument($digested);
     $serialized = $dom->toString(1);
   } }
+$latexml->showProfile();    # Show profile (if any)
+
 print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
 print STDERR "processing finished " . localtime() . "\n" unless $verbosity < 0;
 
