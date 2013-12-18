@@ -56,7 +56,7 @@ sub new {
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
 
-  $self->registerHandler('ltx:rdf'      => \&rdf_handler);
+  $self->registerHandler('ltx:rdf' => \&rdf_handler);
 
   $self->registerHandler('ltx:rawhtml' => \&rawhtml_handler);
 
@@ -142,7 +142,7 @@ sub noteLabels {
       foreach my $label (@labels) {
         $$self{db}->register($label, id => $id); }
       return [@labels]; } }
-  return undef; }
+  return; }
 
 # Clean up a node before insertion into database.
 sub cleanNode {
@@ -370,12 +370,13 @@ sub navigation_handler {
 sub rdf_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('about');
-  if (! ($id && ($id =~ s/^#//))) {
+  if (!($id && ($id =~ s/^#//))) {
     $id = $parent_id; }
   my $property = $node->getAttribute('property');
   my $value = $node->getAttribute('resource') || $node->getAttribute('content');
   return unless ($property && $value);
-  $$self{db}->register("ID:$id", $property => $value); }
+  $$self{db}->register("ID:$id", $property => $value);
+  return; }
 
 # I'm thinking we shouldn't acknowledge rawhtml data at all?
 sub rawhtml_handler {
