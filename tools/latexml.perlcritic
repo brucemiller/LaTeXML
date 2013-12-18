@@ -1,40 +1,135 @@
 #======================================================================
 # perlcritic profile for LaTeXML
 #
-# See /usr/share/doc/perl-perlCritic-1.118/examples/perlcriticrc-conway
-# for a guide to the naming conventions of the modules.
+# This profile contains the a rearrangement of Perl::Critic Modules
+# that seem useful for LaTeXML style. We'll reinterpret perlcritic
+# severity for the following purposes:
+#    5 = critical : must fix
+#    4 = required : must fix before committing (used in git pre-commit)
+#    3 = desirable: try to fix, eventually.
+#    2 = hints    : useful hints to improve code
+#    1 = useless  : don't bother; dumping ground for unwanted policies
+#
+# In this profile, I've moved policies up or down in severity to
+# match the above usage model, and according to my own coding style.
+#
+# See "perlcritic --profile-proto" for an annotated list of all policies.
 #======================================================================
 # Let's aim for passing level 3, by default
-
+# use 4 for pre-commit, 2 for code review
 severity=3
 
 #======================================================================
+# Downgrade some 4 & 5 level Policies that I either don't agree with
+# or have already used a bit too much (maybe will clear these gradually)
 
-# I can see why this is discouraged, but I use it very much
-[-Perl::Critic::Policy::Modules::ProhibitMultiplePackages]
-# Probably not a bad idea, but bindings need a special treatment!
-[-Perl::Critic::Policy::Modules::RequireFilenameMatchesPackage]
+[BuiltinFunctions::ProhibitStringyEval]
+severity=3
+# was 5; Well, we need it! (alternatives?)
 
-# requiring /x on all regexps !?!?!?  (see p 236)
-[-Perl::Critic::Policy::RegularExpressions::RequireExtendedFormatting]
+[InputOutput::RequireBriefOpen]
+severity=2
+# was 4; Sensible policy but triggers on ALL opens!!!
 
-# don't use map in void context????
-[-Perl::Critic::Policy::BuiltinFunctions::ProhibitVoidMap]
+[Modules::ProhibitAutomaticExportation]
+severity=2
+# was 4; Well, if I explicitly exported them, I meant it...
 
-# This could be useful except that it seems to trigger
-# any time there's an open!!
-[-Perl::Critic::Policy::InputOutput::RequireBriefOpen]
+[Modules::RequireBarewordIncludes]
+severity=3
+# was 5; Well, we need it! (alternatives?)
 
-# The names very often are not ambiguous in their context
-[-Perl::Critic::Policy::NamingConventions::ProhibitAmbiguousNames]
+[Modules::RequireFilenameMatchesPackage]
+severity=3
+# was 5; (used in bindings)
 
-# This one can be a good clue to confusingly written subs.
-# But it's also rather annoying about subs that have to do confusing stuff.
-[-Perl::Critic::Policy::ControlStructures::ProhibitCascadingIfElse]
+[Modules::ProhibitMultiplePackages]
+severity=2
+# was 4; Seemingly good policy, but I use it extensively!
 
-# Could be a another useful warning, but such vars often ARE useful or necessary
-[-Perl::Critic::Policy::Variables::ProhibitPackageVars]
+[Subroutines::ProhibitBuiltinHomonyms]
+severity=2
+# was 4; too late now (for now)
 
-# Well, if I exported them, I meant it; OK?
-[-Perl::Critic::Policy::Modules::ProhibitAutomaticExportation]
+[Subroutines::RequireArgUnpacking]
+severity=3
+# was 4; good policy but needs a slow cleaning out.
+
+[TestingAndDebugging::ProhibitNoWarnings]
+severity=3
+# was 4; Well, if I only do it sometimes?
+
+[ValuesAndExpressions::ProhibitConstantPragma]
+severity=2
+# was 4; too late now (for now)
+
+#======================================================================
+# Adjust some level 3 Policies up or down into required or hints,
+# according to my dubious personal taste.
+
+[BuiltinFunctions::ProhibitLvalueSubstr]
+severity=4
+# was 3; good policy
+
+[BuiltinFunctions::ProhibitVoidMap]
+severity=1
+# was 3; can't use map for side-effects?!?!
+
+[CodeLayout::ProhibitHardTabs]
+severity=4
+# was 3; portability mess
+
+[ControlStructures::ProhibitCascadingIfElse]
+severity=2
+# was 3; a good hint, but too restrictive
+
+[ControlStructures::ProhibitDeepNests]
+severity=2
+# was 3; a good hint, but too restricive
+
+[NamingConventions::ProhibitAmbiguousNames]
+severity=1
+# was 3; names are often not ambiguous in context
+
+[Subroutines::ProhibitManyArgs]
+severity=2
+# was 3
+
+[RegularExpressions::RequireExtendedFormatting]
+severity=2
+# was 3; requiring /x on ALL regexps!!!?
+
+[RegularExpressions::ProhibitComplexRegexes]
+severity=2
+# was 3
+
+[Variables::ProhibitPackageVars]
+severity=2
+# was 3; would be severity=4 if it was selective enough!!!
+
+#======================================================================
+# [Probably will want to]
+# Adjust some level 2 Policies up or down into required or hints,
+# according to my dubious personal taste.
+
+# Look into this later, it might be useful to aim for level 2....
+
+# #
+# # Some of these might be worth re-examining ?
+
+# [References::ProhibitDoubleSigils]
+# severity=1
+# # or even 0; was 2; I like double sigils.
+
+# [Documentation::RequirePodSections]
+# severity=1
+# # was 2; possibly useful, but not yet...
+
+# [Documentation::RequirePodLinksIncludeText]
+# severity=1
+# # was 2; possibly useful, but not yet...
+
+#======================================================================
+
+
 
