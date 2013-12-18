@@ -28,7 +28,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
 
-my $mmlURI = "http://www.w3.org/1998/Math/MathML"; # CONSTANT
+my $mmlURI = "http://www.w3.org/1998/Math/MathML";    # CONSTANT
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # See END for specific converters.
@@ -111,7 +111,7 @@ sub realize {
 
 # For a node that is a (possibly embellished) operator,
 # find the underlying role.
-my %EMBELLISHING_ROLE = (      # CONSTANT
+my %EMBELLISHING_ROLE = (    # CONSTANT
   SUPERSCRIPTOP => 1, SUBSCRIPTOP => 1, STACKED => 1,
   OVERACCENT => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
 
@@ -162,13 +162,13 @@ sub lookupContent {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Various needed maps
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-my %stylestep = (              # CONSTANT
+my %stylestep = (    # CONSTANT
   display => 'text',         text         => 'script',
   script  => 'scriptscript', scriptscript => 'scriptscript');
-my %style_script_step = (      # CONSTANT
+my %style_script_step = (    # CONSTANT
   display => 'script',       text         => 'script',
   script  => 'scriptscript', scriptscript => 'scriptscript');
-my %stylemap = (               # CONSTANT
+my %stylemap = (             # CONSTANT
   display => { text => [displaystyle => 'false'],
     script       => [displaystyle => 'false', scriptlevel => '+1'],
     scriptscript => [displaystyle => 'false', scriptlevel => '+2'] },
@@ -184,7 +184,7 @@ my %stylemap = (               # CONSTANT
 
 # Mappings between internal fonts & sizes.
 # Default math font is roman|medium|upright.
-my %mathvariants = (           # CONSTANT
+my %mathvariants = (    # CONSTANT
   'upright'                => 'normal',
   'serif'                  => 'normal',
   'medium'                 => 'normal',
@@ -231,7 +231,7 @@ my %mathvariants = (           # CONSTANT
 # The font differences (from the containing context) have been deciphered
 # into font, size and color attributes.  The font should match
 # one of the above... (?)
-my %sizes = (                  # CONSTANT
+my %sizes = (    # CONSTANT
   tiny => 'small', script => 'small', footnote => 'small', small => 'small',
   normal => 'normal',
   large => 'big', Large => 'big', LARGE => 'big', huge => 'big', Huge => 'big',
@@ -515,7 +515,7 @@ sub makePlane1Map {
     ($greek  ? (map { (UTF(0x03B1 + $_)   => UTF($greek + $_)) } 0 .. 24) : ()),
     ($digits ? (map { (UTF(ord('0') + $_) => UTF($digits + $_)) } 0 .. 9) : ())); }
 
-my %plane1map = (              # CONSTANT
+my %plane1map = (    # CONSTANT
   'bold'   => { makePlane1Map(0x1D400, 0x1D6A8, 0x1D6C2, 0x1D7CE) },
   'italic' => { makePlane1Map(0x1D434, 0x1D6E2, 0x1D6FC, undef),
     h => "\x{210E}" },
@@ -538,7 +538,7 @@ my %plane1map = (              # CONSTANT
     R => "\x{211D}", Z => "\x{2124}" }
 );
 
-my %plane1hack = (             # CONSTANT
+my %plane1hack = (    # CONSTANT
   script  => $plane1map{script},  'bold-script'  => $plane1map{script},
   fraktur => $plane1map{fraktur}, 'bold-fraktur' => $plane1map{fraktur},
   'double-struck' => $plane1map{'double-struck'});
@@ -607,14 +607,14 @@ sub stylizeContent {
     ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
-my %fences = (                 # CONSTANT
+my %fences = (                                                    # CONSTANT
   '(' => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
   "\`" => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
   "\x{27E8}" => 1, "\x{27E9}" => 1,                                      # angle brackets (prefered)
   "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
 
-my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1); # CONSTANT
+my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);                 # CONSTANT
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
@@ -1234,14 +1234,14 @@ DefMathML('Apply:?:multirelation',
     return pmml_row(map { pmml($_) } @elements); },
   sub {
     my ($op, @elements) = @_;
-    my $a = cmml(shift(@elements));
-    return $a unless @elements;
+    my $lhs = cmml(shift(@elements));
+    return $lhs unless @elements;
     my @relations = ();
     while (@elements) {
       my $rel = shift(@elements);
-      my $b   = shift(@elements);
-      push(@relations, ['m:apply', {}, cmml($rel), $a, cmml_shared($b)]);
-      $a = cmml_share($b); }
+      my $rhs = shift(@elements);
+      push(@relations, ['m:apply', {}, cmml($rel), $lhs, cmml_shared($rhs)]);
+      $lhs = cmml_share($rhs); }
     return (scalar(@relations) > 1 ? ['m:apply', {}, ['m:and', {}], @relations] : $relations[0]); }
 );
 
