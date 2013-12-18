@@ -183,7 +183,7 @@ sub generateMessage {
     push(@lines, $where->showUnexpected); }    # Or better?
   elsif ($wheretype =~ 'LaTeXML::Stomach') {
     push(@lines,
-      "Recently digested: " . join(' ', map(Stringify($_), @LaTeXML::LIST)))
+      "Recently digested: " . join(' ', map { Stringify($_) } @LaTeXML::LIST))
       if $verbosity > 1; }
 
   my $nstack = ($long > 1 ? undef : ($long ? 4 : 1));
