@@ -203,7 +203,8 @@ sub convertDocument {
           $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
       foreach my $preload (@{ $$self{preload} }) {
         next if $preload =~ /\.pool$/;
-        my $options = ($preload =~ s/^\[([^\]]*)\]//) && $1;
+        my $options = undef;                           # Stupid perlcritic policy
+        if ($preload =~ s/^\[([^\]]*)\]//) { $options = $1; }
         if ($preload =~ s/\.cls$//) {
           $document->insertPI('latexml', class => $preload, ($options ? (options => $options) : ())); }
         else {
