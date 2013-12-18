@@ -1,3 +1,14 @@
+#======================================================================
+# LaTeXML Coding style; Formatting
+#
+# I prefer compact code, especially vertically
+# indent 2 (not 4 or 8)
+# open and close braces do NOT go on own lines,
+# and view "cuddled else" with extreme distaste.
+#
+# The following settings produce relatively nice output with perltidy.
+#======================================================================
+# 
 # Code Indentation Control
 --indent-columns=2
 --maximum-line-length=100
@@ -21,3 +32,22 @@
 # shorthand equivalent:
 # perltidy -i=2 -l=100 -vmll -pt=2 -sbt=2 -nbbc -blbs=1 -ndnl -nanl
 
+
+#======================================================================
+# I cannot find emacs settings that simulate the above,
+# but the following settings are similar and a good start.
+#
+# ;;; Use cperl-mode, not perl-mode
+# ;(add-to-list 'auto-mode-alist '("\\.\\([pP][Llm]\\|al\\|perl\\)\\'" . cperl-mode))
+# ;(add-to-list 'interpreter-mode-alist '("perl" . cperl-mode))
+# (defalias 'perl-mode 'cperl-mode)       ; Always use cperl
+# (setq-default indent-tabs-mode nil)     ; don't use tabs when indenting
+# (custom-set-variables
+#  '(cperl-indent-level 2)                ; Only indent 2 spaces per step
+#  '(cperl-continued-statement-offset 2)  ; indentation for continued lines
+#  '(cperl-indent-parens-as-block t)      ; Indent lines after ( as normally indented block
+#  '(cperl-fix-hanging-brace-when-indent nil) ; Don't force } to separate lines
+#  '(cperl-merge-trailing-else nil)           ; Don't keep } in front of else
+#  '(cperl-tab-always-indent t)           ; TAB char always re-indents current line
+#  '(cperl-close-paren-offset -4)
+# )
