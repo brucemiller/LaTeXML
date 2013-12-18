@@ -17,7 +17,7 @@ my @modified_files =
   map  { [split(/\s+/, $_)] }     # [status, name]
   split("\n", $changes);          # from all files
 
-my @modified_perl_files = grep { /(latexml(\w*))|(\.(pl|pm|ltxml))$/i } @modified_files;
+my @modified_perl_files = grep { /(latexml(|c|find|math|post)$)|(\.(pl|pm|ltxml))$/i } @modified_files;
 
 my $perltidy_profile   = catfile('tools', 'latexml.perltidy');
 my $perlcritic_profile = catfile('tools', 'latexml.perlcritic');
