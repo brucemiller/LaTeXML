@@ -43,7 +43,7 @@ sub extractTeX {
 # Definitions needed for processing inline & display picture images
 sub preamble {
   my ($self, $doc) = @_;
-  return <<EOPreamble;
+  return <<'EOPreamble';
 \\def\\beginPICTURE{\\lxBeginImage}
 \\def\\endPICTURE{\\lxEndImage\\lxShowImage}
 EOPreamble
