@@ -30,13 +30,13 @@ use LaTeXML::Post::MathML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
 
-my $omURI = "http://www.openmath.org/OpenMath"; # CONSTANT
+my $omURI = "http://www.openmath.org/OpenMath";    # CONSTANT
 
 sub preprocess {
   my ($self, $doc, @nodes) = @_;
   $$self{hackplane1} = 0 unless $$self{hackplane1};
   $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
-  $doc->adjust_latexml_doctype('OpenMath');    # Add OpenMath if LaTeXML dtd.
+  $doc->adjust_latexml_doctype('OpenMath');        # Add OpenMath if LaTeXML dtd.
   $doc->addNamespace($omURI, 'om');
   return; }
 
@@ -71,7 +71,7 @@ sub combineParallel {
       $primary]); }
 
 sub getQName {
-  my($node)=@_;
+  my ($node) = @_;
   return $LaTeXML::Post::DOCUMENT->getQName($node); }
 
 sub getEncodingName {
