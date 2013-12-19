@@ -30,8 +30,7 @@ sub new {
   #TODO: How about defaults in the daemon server use case? Should we support those here?
   #      or are defaults always bad/confusing to allow?
   %opts = () unless %opts;
-  bless { dirty => 1, opts => \%opts }, $class;
-}
+  return bless { dirty => 1, opts => \%opts }, $class; }
 
 ###########################################
 #### Command-line reader              #####
@@ -212,8 +211,7 @@ sub read_keyvals {
     push @$cmdopts, "$key$value";
   }
   # Read into a Config object:
-  $self->read($cmdopts);
-}
+  return $self->read($cmdopts); }
 
 sub scan_to_keyvals {
   my ($self, $argref) = @_;
@@ -231,42 +229,37 @@ sub scan_to_keyvals {
 ###########################################
 sub get {
   my ($self, $key, $value) = @_;
-  $self->{opts}->{$key};
-}
+  return $self->{opts}->{$key}; }
 
 sub set {
   my ($self, $key, $value) = @_;
   $self->{dirty} = 1;
   $self->{opts}->{$key} = $value;
-}
+  return; }
 
 sub delete {
   my ($self, $key) = @_;
   $self->{dirty} = 1;
   delete $self->{opts}->{$key};
-}
+  return; }
 
 sub exists {
   my ($self, $key) = @_;
-  exists $self->{opts}->{$key};
-}
+  return exists $self->{opts}->{$key}; }
 
 sub keys {
   my ($self) = @_;
-  keys %{ $self->{opts} };
-}
+  return keys %{ $self->{opts} }; }
 
 sub options {
   my ($self) = @_;
-  $self->{opts};
-}
+  return $self->{opts}; }
 
 sub clone {
   my ($self) = @_;
   my $clone = LaTeXML::Util::Config->new(%{ $self->options });
   $clone->{dirty} = $self->{dirty};
-  $clone;
-}
+  return $clone; }
 
 ###########################################
 #### Option Sanity Checking           #####
@@ -279,8 +272,7 @@ sub check {
   # 1. Resolve profile
   $self->_obey_profile;
   # 2. Place sane defaults where needed
-  $self->_prepare_options;
-}
+  return $self->_prepare_options; }
 
 sub _obey_profile {
   my ($self) = @_;
@@ -326,7 +318,7 @@ sub _obey_profile {
     }
     %$opts = %$profile_opts;             # Move back into the user options
   }
-}
+  return; }
 
 # TODO: Best way to throw errors when options don't work out?
 #       How about in the case of Extras::ReadOptions?
@@ -341,10 +333,10 @@ sub _prepare_options {
   eval "\$LaTeXML::" . $_ . "::DEBUG=1; " foreach @{ $opts->{debug} };
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
-  $opts->{mathparse}  = 'RecDescent' unless defined $opts->{mathparse};
+  $opts->{mathparse} = 'RecDescent' unless defined $opts->{mathparse};
   if ($opts->{mathparse} eq 'no') {
     $opts->{mathparse}   = 0;
-    $opts->{nomathparse} = 1; }                                          #Backwards compatible
+    $opts->{nomathparse} = 1; }    #Backwards compatible
   $opts->{verbosity} = 10    unless defined $opts->{verbosity};
   $opts->{preload}   = []    unless defined $opts->{preload};
   $opts->{paths}     = ['.'] unless defined $opts->{paths};
@@ -370,7 +362,7 @@ sub _prepare_options {
       $opts->{format}   = 'html5';
       $opts->{whatsout} = 'archive';
     }
-    $opts->{is_html} = ($opts->{format} =~ /^html5?$/);
+    $opts->{is_html}  = ($opts->{format} =~ /^html5?$/);
     $opts->{is_xhtml} = ($opts->{format} =~ /^(xhtml5?|epub|mobi)$/);
     $opts->{whatsout} = 'archive' if (($opts->{format} eq 'epub') || ($opts->{format} eq 'mobi'));
   }
@@ -417,13 +409,13 @@ sub _prepare_options {
     # Validation:
     $opts->{validate} = 1 unless defined $opts->{validate};
     # Graphics:
-    $opts->{mathimagemag} = 1.75  unless defined $opts->{mathimagemag};
+    $opts->{mathimagemag} = 1.75 unless defined $opts->{mathimagemag};
     if (defined $opts->{destination}) {
       # We want the graphics enabled by default, but only when we have a destination
-      $opts->{dographics}   = 1     unless defined $opts->{dographics};
-      $opts->{picimages}    = 1     unless defined $opts->{picimages}; }
+      $opts->{dographics} = 1 unless defined $opts->{dographics};
+      $opts->{picimages}  = 1 unless defined $opts->{picimages}; }
     # Split sanity:
-    if($opts->{split}){
+    if ($opts->{split}) {
       $opts->{splitat}     = 'section' unless defined $opts->{splitat};
       $opts->{splitnaming} = 'id'      unless defined $opts->{splitnaming};
       $opts->{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $opts->{splitback};
@@ -434,43 +426,43 @@ sub _prepare_options {
         subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $opts->{splitback} }
         unless defined $opts->{splitpaths};
 
-      $opts->{splitnaming} = _checkOptionValue('--splitnaming',$opts->{splitnaming},
-                     qw(id idrelative label labelrelative));
-      $opts->{splitat} = _checkOptionValue('--splitat',$opts->{splitat},CORE::keys %{$opts->{splitpaths}});
-      $opts->{splitpath} = $opts->{splitpaths}->{$opts->{splitat}} unless defined $opts->{splitpath}; }
+      $opts->{splitnaming} = _checkOptionValue('--splitnaming', $opts->{splitnaming},
+        qw(id idrelative label labelrelative));
+      $opts->{splitat} = _checkOptionValue('--splitat', $opts->{splitat}, CORE::keys %{ $opts->{splitpaths} });
+      $opts->{splitpath} = $opts->{splitpaths}->{ $opts->{splitat} } unless defined $opts->{splitpath}; }
 
     # Check for appropriate combination of split, scan, prescan, dbfile, crossref
-    if($opts->{split} && !defined $opts->{destination}){
+    if ($opts->{split} && !defined $opts->{destination}) {
       croak("Must supply --destination when using --split"); }
-    if($opts->{prescan} && !$opts->{scan}){
+    if ($opts->{prescan} && !$opts->{scan}) {
       croak("Makes no sense to --prescan with scanning disabled (--noscan)"); }
-    if($opts->{prescan} && (!defined $opts->{dbfile})){
+    if ($opts->{prescan} && (!defined $opts->{dbfile})) {
       croak("Cannot prescan documents (--prescan) without specifying --dbfile"); }
-    if(!$opts->{prescan} && $opts->{crossref} && ! ($opts->{scan} || (defined $opts->{dbfile}))){
+    if (!$opts->{prescan} && $opts->{crossref} && !($opts->{scan} || (defined $opts->{dbfile}))) {
       croak("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
-    if($opts->{crossref}){
-      $opts->{urlstyle} = _checkOptionValue('--urlstyle',$opts->{urlstyle},qw(server negotiated file)); }
-    if(($opts->{permutedindex} || $opts->{splitindex}) && (! defined $opts->{index})){
-      $opts->{index}=1; }
-    if(!$opts->{prescan} && $opts->{index} && ! ($opts->{scan} || defined $opts->{crossref})){
+    if ($opts->{crossref}) {
+      $opts->{urlstyle} = _checkOptionValue('--urlstyle', $opts->{urlstyle}, qw(server negotiated file)); }
+    if (($opts->{permutedindex} || $opts->{splitindex}) && (!defined $opts->{index})) {
+      $opts->{index} = 1; }
+    if (!$opts->{prescan} && $opts->{index} && !($opts->{scan} || defined $opts->{crossref})) {
       croak("Cannot generate index (--index) without --scan or --dbfile"); }
-    if(!$opts->{prescan} && @{$opts->{bibliographies}} && ! ($opts->{scan} || defined $opts->{crossref})){
+    if (!$opts->{prescan} && @{ $opts->{bibliographies} } && !($opts->{scan} || defined $opts->{crossref})) {
       croak("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-    if((!defined $opts->{destination}) && ($opts->{mathimages} || $opts->{dographics} || $opts->{picimages})){
+    if ((!defined $opts->{destination}) && ($opts->{mathimages} || $opts->{dographics} || $opts->{picimages})) {
       croak("Must supply --destination unless all auxilliary file writing is disabled"
-           ."(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
+          . "(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
 
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
     $opts->{format} = "xml" if ($opts->{stylesheet}) && (!defined $opts->{format});
     $opts->{format} = "xhtml" unless defined $opts->{format};
     if (!$opts->{stylesheet}) {
-      if    ($opts->{format} eq 'xhtml') { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
-      elsif ($opts->{format} eq "html")              { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
-      elsif ($opts->{format} =~ /^epub|mobi$/)  { $opts->{stylesheet} = "LaTeXML-epub3.xsl"; }
-      elsif ($opts->{format} eq "html5")             { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
-      elsif ($opts->{format} eq "xml") { delete $opts->{stylesheet}; }
-      else                             { croak("Unrecognized target format: " . $opts->{format}); }
+      if    ($opts->{format} eq 'xhtml')       { $opts->{stylesheet} = "LaTeXML-xhtml.xsl"; }
+      elsif ($opts->{format} eq "html")        { $opts->{stylesheet} = "LaTeXML-html.xsl"; }
+      elsif ($opts->{format} =~ /^epub|mobi$/) { $opts->{stylesheet} = "LaTeXML-epub3.xsl"; }
+      elsif ($opts->{format} eq "html5")       { $opts->{stylesheet} = "LaTeXML-html5.xsl"; }
+      elsif ($opts->{format} eq "xml")         { delete $opts->{stylesheet}; }
+      else { croak("Unrecognized target format: " . $opts->{format}); }
     }
     # Check format and complete math and image options
     if ($opts->{format} eq 'html') {
@@ -481,8 +473,8 @@ sub _prepare_options {
       $opts->{mathimages}   = 1;
       $opts->{math_formats} = [];
     }
-    $opts->{svg} = 1 unless defined $opts->{svg}; # If we're not making HTML, SVG is on by default
-    # PMML default if we're HTMLy and all else fails and no mathimages:
+    $opts->{svg} = 1 unless defined $opts->{svg};      # If we're not making HTML, SVG is on by default
+          # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $opts->{math_formats}) || (!scalar(@{ $opts->{math_formats} }))) &&
       (!$opts->{mathimages}) && ($opts->{is_html} || $opts->{is_xhtml}))
     {
@@ -494,7 +486,7 @@ sub _prepare_options {
   # If really nothing hints to define format, then default it to XML
   $opts->{format} = 'xml' unless defined $opts->{format};
   $self->{dirty} = 0;
-}
+  return; }
 
 ## Utilities:
 
@@ -502,28 +494,33 @@ sub _addMathFormat {
   my ($opts, $fmt) = @_;
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
   push(@{ $opts->{math_formats} }, $fmt)
-    unless grep($_ eq $fmt, @{ $opts->{math_formats} }) || $opts->{removed_math_formats}->{$fmt}; }
+    unless (grep { $_ eq $fmt } @{ $opts->{math_formats} }) || $opts->{removed_math_formats}->{$fmt};
+  return; }
 
 sub _removeMathFormat {
   my ($opts, $fmt) = @_;
-  @{ $opts->{math_formats} } = grep($_ ne $fmt, @{ $opts->{math_formats} });
-  $opts->{removed_math_formats}->{$fmt} = 1; }
+  @{ $opts->{math_formats} } = grep { $_ ne $fmt } @{ $opts->{math_formats} };
+  $opts->{removed_math_formats}->{$fmt} = 1;
+  return; }
 
 sub _checkOptionValue {
   my ($option, $value, @choices) = @_;
   if ($value) {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
-  croak("Value for $option, $value, doesn't match " . join(', ', @choices)); }
+  croak("Value for $option, $value, doesn't match " . join(', ', @choices));
+  return; }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {
+  my ($file) = @_;
   my $opts = [];
-  unless (open(OPT, "<", shift)) {
-    Error("unexpected:IO:$_ Could not open $_");
+  my $OPT;
+  unless (open($OPT, "<", $file)) {
+    Error('expected', $file, "Could not open options file '$file'");
     return;
   }
-  while (<OPT>) {
+  while (<$OPT>) {
     next if /^#/;
     chomp;
     /(\S+)\s*=\s*(.*)/;
@@ -545,7 +542,7 @@ sub _read_options_file {
         # But also the standard behaviour, where the $env is an array of paths
         $env_value = $ENV{$env_name};
         next unless $env_value;
-        @values = grep(-d $_, reverse(split(':', $env_value)));
+        @values = grep { -d $_ } reverse(split(':', $env_value));
         next unless @values;
       }
       push(@$opts, "--$key=$_") foreach (@values);
@@ -554,9 +551,8 @@ sub _read_options_file {
       push @$opts, "--$key" . $value;
     }
   }
-  close OPT;
-  $opts;
-}
+  close $OPT;
+  return $opts; }
 
 1;
 
