@@ -7,35 +7,16 @@
 use warnings;
 use strict;
 use File::Spec::Functions;
-
-my $bad_commit = 0;
+use Term::ANSIColor;
 
 my $changes = `git status --porcelain`;
-my @modified_files =
+if (my @modified_files =
   map  { $_->[1] }                # select the filename
   grep { $_->[0] =~ /^[AM]$/ }    # take only Modified or Added
   map  { [split(/\s+/, $_)] }     # [status, name]
-  split("\n", $changes);          # from all files
+  split("\n", $changes)) {        # from all files
+  my $status = system(catfile('tools', 'latexmllint'), "--precommit", @modified_files);
+  my $code = $status >> 8;
 
-my @modified_perl_files = grep { /(latexml(|c|find|math|post)$)|(\.(pl|pm|ltxml))$/i } @modified_files;
-
-my $perltidy_profile   = catfile('tools', 'latexml.perltidy');
-my $perlcritic_profile = catfile('tools', 'latexml.perlcritic');
-foreach my $perl_file (@modified_perl_files) {
-  # check if perltidy leaves the file constant
-  `perltidy --profile=$perltidy_profile $perl_file`;
-  my $tidy_status = length(`diff $perl_file $perl_file.tdy`);
-
-  if ($tidy_status) {
-    print STDERR "$perl_file needs tidying up! Suggested:\n  perltidy --profile=$perltidy_profile -b -bext='/' $perl_file\n\n";
-    $bad_commit = 1; }
-  unlink "$perl_file.tdy";
-
-  # Check if it passes perlcritic
-  # my $critic_status = `perlcritic --profile=$perlcritic_profile $perl_file`;
-  # print STDERR "Critic status: $critic_status\n";
-
-}
-
-print STDERR "commit aborted\n" if $bad_commit;
-exit $bad_commit;
+  print STDERR color('red'), "COMMIT ABORTED", color('reset'), "\n" if $code;
+  exit $code; }
