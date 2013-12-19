@@ -55,7 +55,7 @@ sub setTeXImage {
 # Definitions needed for processing inline & display math images
 sub preamble {
   my ($self, $doc) = @_;
-  return <<EOPreamble;
+  return <<'EOPreamble';
 \\def\\beginINLINE{\\lxBeginImage\\(}
 \\def\\endINLINE{\\)\\lxEndImage\\lxShowImage}
 % For Display, same as inline, but set displaystyle.
