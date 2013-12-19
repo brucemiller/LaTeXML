@@ -310,7 +310,7 @@ sub convert_post {
     map { $opts->{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
   $verbosity = $verbosity || 0;
   my %PostOPS = (verbosity => $verbosity,
-    validate => $opts->{validate},
+    validate           => $opts->{validate},
     sourceDirectory    => $opts->{sourcedirectory},
     siteDirectory      => $opts->{sitedirectory},
     resource_directory => $opts->{resource_directory},
@@ -370,9 +370,9 @@ sub convert_post {
       require LaTeXML::Post::Graphics;
       my @g_options = ();
       if ($opts->{graphicsmaps} && scalar(@{ $opts->{graphicsmaps} })) {
-        my @maps = map([split(/\./, $_)], @{ $opts->{graphicsmaps} });
-        push(@g_options, (graphics_types => [map($$_[0], @maps)],
-            type_properties => { map(($$_[0] => { destination_type => ($$_[1] || $$_[0]) }), @maps) })); }
+        my @maps = map { [split(/\./, $_)] } @{ $opts->{graphicsmaps} };
+        push(@g_options, (graphics_types => [map { $$_[0] } @maps],
+            type_properties => { map { ($$_[0] => { destination_type => ($$_[1] || $$_[0]) }) } @maps })); }
       push(@procs, LaTeXML::Post::Graphics->new(@g_options, %PostOPS));
     }
     if ($opts->{svg}) {
@@ -510,7 +510,7 @@ sub convert_post {
   # If our format requires a manifest, create one
   if (($opts->{whatsout} eq 'archive') && ($format !~ /^x?html|xml/)) {
     require LaTeXML::Post::Manifest;
-    my $manifest_maker = LaTeXML::Post::Manifest->new(db=>$DB, format => $format, %PostOPS);
+    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Handle the output packaging
   require LaTeXML::Post::Pack;
@@ -554,8 +554,9 @@ sub new_latexml {
     inputencoding   => $opts->{inputencoding},
     includeStyles   => $opts->{includestyles},
     documentid      => $opts->{documentid},
-    nomathparse     => $opts->{nomathparse}, # Backwards compatibility
+    nomathparse     => $opts->{nomathparse},                            # Backwards compatibility
     mathparse       => $opts->{mathparse});
+
   if (my @baddirs = grep { !-d $_ } @{ $opts->{paths} }) {
     warn "\n$LaTeXML::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
@@ -582,8 +583,7 @@ sub bind_log {
     binmode(STDERR, ':encoding(UTF-8)');
     $self->{log_handle} = $log_handle;
   }
-  return;
-}
+  return; }
 
 sub flush_log {
   my ($self) = @_;
@@ -595,8 +595,7 @@ sub flush_log {
   }
   my $log = $self->{log};
   $self->{log} = q{};
-  return $log;
-}
+  return $log; }
 
 sub sanitize {
   my ($self, $log) = @_;
@@ -607,9 +606,8 @@ sub sanitize {
         my $stomach = $state->getStomach;
         undef $stomach;
     });
-    $self->{ready} = 0;
-  }
-}
+    $self->{ready} = 0; }
+  return; }
 
 sub getStatusMessage {
   my ($status) = @_;
@@ -617,21 +615,20 @@ sub getStatusMessage {
   push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '')) if $$status{warning};
   push(@report, "$$status{error} error" .       ($$status{error} > 1 ? 's' : '')) if $$status{error};
   push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '')) if $$status{fatal};
-  join('; ', @report) || 'No obvious problems'; }
+  return join('; ', @report) || 'No obvious problems'; }
 
 sub getStatusCode {
   my ($status) = @_;
   my $code;
   if ($$status{fatal} && $$status{fatal} > 0) {
-    $code = 3;
-  } elsif ($$status{error} && $$status{error} > 0) {
-    $code = 2;
-  } elsif ($$status{warning} && $$status{warning} > 0) {
-    $code = 1;
-  } else {
-    $code = 0;
-  }
-  $code; }
+    $code = 3; }
+  elsif ($$status{error} && $$status{error} > 0) {
+    $code = 2; }
+  elsif ($$status{warning} && $$status{warning} > 0) {
+    $code = 1; }
+  else {
+    $code = 0; }
+  return $code; }
 
 1;
 
