@@ -495,7 +495,7 @@ sub parseOptions {
                                                                      #  ----------------------
   return [@transform, @unknown]; }
 
-my %BP_conversions = (         # CONSTANT
+my %BP_conversions = (                                               # CONSTANT
   pt => 72 / 72.27, pc => 12 / 72.27, in => 72, bp => 1,
   cm => 72 / 2.54, mm => 72 / 25.4, dd => (72 / 72.27) * (1238 / 1157),
   cc => 12 * (72 / 72.27) * (1238 / 1157), sp => 72 / 72.27 / 65536);
