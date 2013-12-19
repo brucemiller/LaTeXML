@@ -175,8 +175,8 @@ sub getChildPages {
 # this is probably the same as "Interesting" for the above relations.
 # To make it more extensible, it really should be integrated into the database?
 # Eg. "sectional" things might mark their entries specially?
-my $normaltoctypes = { map { ($_ => 1) } # CONSTANT
-  qw (ltx:document ltx:part ltx:chapter
+my $normaltoctypes = { map { ($_ => 1) }    # CONSTANT
+    qw (ltx:document ltx:part ltx:chapter
     ltx:section ltx:subsection ltx:subsubsection
     ltx:paragraph ltx:subparagraph
     ltx:index ltx:bibliography ltx:glossary ltx:appendix) };
@@ -401,8 +401,8 @@ sub make_bibcite {
               refnum  => [$doc->trimChildNodes($refnum)],
               title   => [$doc->trimChildNodes($title || $keytag)],
               attr    => { idref => $id,
-                href => $self->generateURL($doc, $id)//undef,
-                ($title ? (title => $title->textContent//undef) : ()) } }); } } }
+                href => $self->generateURL($doc, $id) // undef,
+                ($title ? (title => $title->textContent // undef) : ()) } }); } } }
     else {
       $self->note_missing('Entry for citation', $key); } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
@@ -488,7 +488,7 @@ sub generateURL {
     $self->note_missing('DB Entry for ID', $id); }
   return; }
 
-my $NBSP = pack('U', 0xA0);     # CONSTANT
+my $NBSP = pack('U', 0xA0);    # CONSTANT
 # Generate the contents of a <ltx:ref> of the given id.
 # show is a string containing substrings 'type', 'refnum' and 'title'
 # (standing for the type prefix, refnum and title of the id'd object)
