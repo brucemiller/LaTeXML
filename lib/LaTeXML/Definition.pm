@@ -124,7 +124,8 @@ sub showProfile {
 
     if (@unfinished) {
       print STDERR "The following were never marked as done:\n  " . join(', ', @unfinished) . "\n"; }
-  } }
+  }
+  return; }
 
 #**********************************************************************
 # Expandable control sequences (& Macros);  Expanded in the Gullet.
