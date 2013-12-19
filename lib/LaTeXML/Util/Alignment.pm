@@ -835,9 +835,10 @@ sub alignment_skip_data {
   print STDERR "Scanning for data\n   " if $LaTeXML::Alignment::DEBUG;
   my $n = 1;
   while ($i + $n < scalar(@::TABLINES)) {
-    last unless (alignment_compare($::TAB_AXIS, 1, 0, $i + $n - 1, $i + $n) < $::TAB_THRESHOLD)
+    last if (alignment_compare($::TAB_AXIS, 1, 0, $i + $n - 1, $i + $n) >= $::TAB_THRESHOLD)
       # Accept an outlying `continuation line' as data, if mostly empty
-      || (($n > 1) && (scalar(grep { $$_{content_class} eq '_' } @{ $::TABLINES[$i + $n] }) > 0.4 * scalar($::TABLINES[0])));
+      && (($n < 2)
+      || (scalar(grep { $$_{content_class} eq '_' } @{ $::TABLINES[$i + $n] }) <= 0.4 * scalar($::TABLINES[0])));
     $n++; }
   print STDERR "\nFound $n data lines at $i\n" if $LaTeXML::Alignment::DEBUG;
   return ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
