@@ -34,7 +34,7 @@ sub auth_get {
       $realm = $1; }
     # Prompt for username pass for this location:
     my $req; my $tries = 2;
-    my ($uname, $pass) = ($$authlist{$realm} ? @{ $$authlist{$realm} } :(undef,undef));
+    my ($uname, $pass) = ($$authlist{$realm} ? @{ $$authlist{$realm} } : (undef, undef));
     while (!($response && $response->is_success) && $tries > 0) {    # 2 tries
       $tries--;
       if (!$uname) {
@@ -72,7 +72,7 @@ sub url_find {
 
 sub url_split {
   my ($url) = @_;
-  return ($url =~ /^(.+)\/([^\/]+)$/ ? ($1, $2) : ($url, 'index.tex')); } # Well, what????
+  return ($url =~ /^(.+)\/([^\/]+)$/ ? ($1, $2) : ($url, 'index.tex')); }    # Well, what????
 
 #======================================================================
 1;
