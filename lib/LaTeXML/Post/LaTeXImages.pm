@@ -45,8 +45,8 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE?]
 #  -E   :  crop each page close to the `ink'.
 #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
 
-our $DVIPSCMD  = 'dvips -q -S1 -i -E -j0 -o imgx'; # [ CONFIGURABLE?]
-our $DVIPNGCMD = 'dvipng -bg Transparent -T tight -q -o imgx%03d'; # [ CONFIGURABLE?]
+our $DVIPSCMD  = 'dvips -q -S1 -i -E -j0 -o imgx';                    # [ CONFIGURABLE?]
+our $DVIPNGCMD = 'dvipng -bg Transparent -T tight -q -o imgx%03d';    # [ CONFIGURABLE?]
 
 # Options:
 #   source         : (dir)
@@ -107,7 +107,7 @@ sub new {
 
 # This will be set once we've found an Image processing library to use [Daemon safe]
 our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
-my @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick)); # CONSTANT
+my @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));    # CONSTANT
 
 sub createMagickImage {
   my ($sel, %props) = @_;
@@ -362,7 +362,7 @@ sub pre_preamble {
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
   my $th = $$self{clippingrule} * $pts_per_pixel;   # clipping box thickness in points.
                                                     #  print STDERR "w=$w, gap=$gap, thickness=$th\n";
-  return <<EOPreamble;
+  return <<'EOPreamble';
 \\batchmode
 \\def\\inlatexml{true}
 $documentcommand$class_options\{$class\}
