@@ -427,9 +427,9 @@ sub readValue {
   elsif ($type eq 'Token')     { return $self->readToken; }
   elsif ($type eq 'any')       { return $self->readArg; }
   else {
-      Error('unexpected',$type,$self,
-	    "Gullet->readValue Didn't expect this type: $type");
-      return; }
+    Error('unexpected', $type, $self,
+      "Gullet->readValue Didn't expect this type: $type");
+    return; }
 }
 
 sub readRegisterValue {
