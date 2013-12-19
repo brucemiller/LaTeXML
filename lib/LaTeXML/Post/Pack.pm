@@ -32,7 +32,7 @@ sub new {
   $$self{whatsout}      = $options{whatsout};
   $$self{format}        = $options{format};
   $$self{finished}      = 0;
-  $self; }
+  return $self; }
 
 sub process {
   my ($self, @docs) = @_;
@@ -99,11 +99,11 @@ sub GetMath {
       $math = $math->parentNode if ($math_found != $math_count);
     }
     $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$');
-    $math; }
+    return $math; }
   elsif ($math_count == 0) {
-    GetEmbeddable($doc); }
+    return GetEmbeddable($doc); }
   else {
-    $math; } }
+    return $math; } }
 
 sub GetEmbeddable {
   my ($doc) = @_;
