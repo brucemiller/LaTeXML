@@ -164,8 +164,8 @@ sub daemon_ok {
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
 
-  my $invocation = "cd $dir; ".catfile($FindBin::Bin,'..','blib','script','latexmlc').' ';
-  my $timed      = undef;
+  my $invocation = "cd $dir; " . catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc') . ' ';
+  my $timed = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }
