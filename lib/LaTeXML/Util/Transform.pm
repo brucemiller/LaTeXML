@@ -52,48 +52,48 @@ sub new {
 
 sub isIdentity {
   my ($self) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
-  ($b, $c, $e, $f) = map { abs($_) } $b, $c, $e, $f;
-  return ($a < 1 + $eps
-      && $a > 1 - $eps
-      && $b < $eps
-      && $c < $eps
-      && $d < 1 + $eps
-      && $d > 1 - $eps
-      && $e < $eps
-      && $f < $eps); }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
+  ($Tb, $Tc, $Te, $Tf) = map { abs($_) } $Tb, $Tc, $Te, $Tf;
+  return ($Ta < 1 + $eps
+      && $Ta > 1 - $eps
+      && $Tb < $eps
+      && $Tc < $eps
+      && $Td < 1 + $eps
+      && $Td > 1 - $eps
+      && $Te < $eps
+      && $Tf < $eps); }
 
 sub isTranslation {
   my ($self) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
-  ($b, $c, $e, $f) = map { abs($_) } $b, $c, $e, $f;
-  return ($a < 1 + $eps
-      && $a > 1 - $eps
-      && $b < $eps
-      && $c < $eps
-      && $d < 1 + $eps
-      && $d > 1 - $eps
-      && ($e > $eps || $f > $eps)); }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
+  ($Tb, $Tc, $Te, $Tf) = map { abs($_) } $Tb, $Tc, $Te, $Tf;
+  return ($Ta < 1 + $eps
+      && $Ta > 1 - $eps
+      && $Tb < $eps
+      && $Tc < $eps
+      && $Td < 1 + $eps
+      && $Td > 1 - $eps
+      && ($Te > $eps || $Tf > $eps)); }
 
 sub isRotation {
   my ($self) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
-  return (abs($a - $d) < $eps
-      && abs($b + $c) < $eps
-      && abs($a**2 + $b**2 - 1) < $eps
-      && abs($e) < $eps
-      && abs($f) < $eps); }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
+  return (abs($Ta - $Td) < $eps
+      && abs($Tb + $Tc) < $eps
+      && abs($Ta**2 + $Tb**2 - 1) < $eps
+      && abs($Te) < $eps
+      && abs($Tf) < $eps); }
 
 sub isScaling {
   my ($self) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
-  ($b, $c, $e, $f) = map { abs($_) } $b, $c, $e, $f;
-  return (($a > 1 + $eps || $a < 1 - $eps)
-      && $b < $eps
-      && $c < $eps
-      && ($d > 1 + $eps || $d < 1 - $eps)
-      && $e < $eps
-      && $f < $eps); }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
+  ($Tb, $Tc, $Te, $Tf) = map { abs($_) } $Tb, $Tc, $Te, $Tf;
+  return (($Ta > 1 + $eps || $Ta < 1 - $eps)
+      && $Tb < $eps
+      && $Tc < $eps
+      && ($Td > 1 + $eps || $Td < 1 - $eps)
+      && $Te < $eps
+      && $Tf < $eps); }
 
 sub inverse {
   my ($self) = @_;
@@ -126,68 +126,67 @@ sub removePost {
 
 sub apply {
   my ($self, $x, $y) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
   my $pair = 0;
   if (!defined $y) { $y = $x->getY->valueOf; $x = $x->getX->valueOf; $pair = 1; }
-  my ($ax, $ay) = ($a * $x + $c * $y + $e, $b * $x + $d * $y + $f);
+  my ($ax, $ay) = ($Ta * $x + $Tc * $y + $Te, $Tb * $x + $Td * $y + $Tf);
   return $pair ? Pair(Dimension($ax), Dimension($ay)) : ($ax, $ay); }
 
 sub unapply {
   my ($self, $x, $y) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
   my $pair = 0;
   if (!defined $y) { $y = $x->getY->valueOf; $x = $x->getX->valueOf; $pair = 1; }
-  my $dt = $a * $d - $b * $c; return unless $dt;
-  my ($ax, $ay) = (($c * $f - $d * $e) / $dt + $d * $x / $dt - $c * $y / $dt,
-    ($b * $e - $a * $f) / $dt - $b * $x / $dt + $a * $y / $dt);
+  my $dt = $Ta * $Td - $Tb * $Tc; return unless $dt;
+  my ($ax, $ay) = (($Tc * $Tf - $Td * $Te) / $dt + $Td * $x / $dt - $Tc * $y / $dt,
+    ($Tb * $Te - $Ta * $Tf) / $dt - $Tb * $x / $dt + $Ta * $y / $dt);
   return $pair ? Pair(Dimension($ax), Dimension($ay)) : ($ax, $ay); }
 
 sub equals {
   my ($self, $other) = @_;
-  my ($a1, $b1, $c1, $d1, $e1, $f1) = @$self;
-  my ($a2, $b2, $c2, $d2, $e2, $f2) = @$other;
-  my @diff = grep { abs($_) > $eps } $a1 - $a2, $b1 - $b2, $c1 - $c2, $d1 - $d2, $e1 - $e2, $f1 - $f2;
+  my ($Ta1, $Tb1, $Tc1, $Td1, $Te1, $Tf1) = @$self;
+  my ($Ta2, $Tb2, $Tc2, $Td2, $Te2, $Tf2) = @$other;
+  my @diff = grep { abs($_) > $eps } $Ta1 - $Ta2, $Tb1 - $Tb2, $Tc1 - $Tc2, $Td1 - $Td2, $Te1 - $Te2, $Tf1 - $Tf2;
   return $#diff == -1; }
 
 sub toString {
   my ($self, $ptValue) = @_;
   return '' if $self->isIdentity();
-  my ($a, $b, $c, $d, $e, $f) = @{$self};
-  if ($ptValue) { $e = Dimension($e)->ptValue(); $f = Dimension($f)->ptValue(); }
-  return 'rotate(' . (trunc(3, _aCS($a, $b))) . ')' if $self->isRotation();
-  ($e, $f) = trunc(3, ($e, $f));
-  return "translate($e,$f)" if $self->isTranslation();
-  ($a, $d) = trunc(3, ($a, $d));
-  return "scale($a,$d)" if $self->isScaling();
-  ($b, $c) = trunc(3, ($b, $c));
-  return "matrix($a,$b,$c,$d,$e,$f)"; }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @{$self};
+  if ($ptValue) {
+    $Te = Dimension($Te)->ptValue();
+    $Tf = Dimension($Tf)->ptValue(); }
+  return 'rotate(' . (trunc(3, _aCS($Ta, $Tb))) . ')' if $self->isRotation();
+  ($Te, $Tf) = trunc(3, ($Te, $Tf));
+  return "translate($Te,$Tf)" if $self->isTranslation();
+  ($Ta, $Td) = trunc(3, ($Ta, $Td));
+  return "scale($Ta,$Td)" if $self->isScaling();
+  ($Tb, $Tc) = trunc(3, ($Tb, $Tc));
+  return "matrix($Ta,$Tb,$Tc,$Td,$Te,$Tf)"; }
 
 sub ptValue {
   my ($self) = @_;
   return $self->toString(1); }
 
 sub _aCS {
-  my ($c, $s) = @_;
-  my $r = rad2deg(acos($c));
+  my ($Tc, $s) = @_;
+  my $r = rad2deg(acos($Tc));
   $r = 360 - $r if $s < 0;
   return $r; }
 
 sub _multiply {
   my ($self, $other) = @_;
-  my ($a1, $b1, $c1, $d1, $e1, $f1) = @$self;
-  my ($a2, $b2, $c2, $d2, $e2, $f2) = @$other;
-  return [$a1 * $a2 + $b2 * $c1,
-    $a2 * $b1 + $b2 * $d1,
-    $a1 * $c2 + $c1 * $d2,
-    $b1 * $c2 + $d1 * $d2,
-    $e1 + $a1 * $e2 + $c1 * $f2,
-    $b1 * $e2 + $f1 + $d1 * $f2]; }
+  my ($Ta1, $Tb1, $Tc1, $Td1, $Te1, $Tf1) = @$self;
+  my ($Ta2, $Tb2, $Tc2, $Td2, $Te2, $Tf2) = @$other;
+  return [
+    $Ta1 * $Ta2 + $Tb2 * $Tc1, $Ta2 * $Tb1 + $Tb2 * $Td1, $Ta1 * $Tc2 + $Tc1 * $Td2,
+    $Tb1 * $Tc2 + $Td1 * $Td2, $Te1 + $Ta1 * $Te2 + $Tc1 * $Tf2, $Tb1 * $Te2 + $Tf1 + $Td1 * $Tf2]; }
 
 sub _inverse {
   my ($self) = @_;
-  my ($a, $b, $c, $d, $e, $f) = @$self;
-  my $dt = $a * $d - $b * $c; return unless $dt;
-  return [$d / $dt, -$b / $dt, -$c / $dt,
-    $a / $dt, ($c * $f - $d * $e) / $dt, ($b * $e - $a * $f) / $dt]; }
+  my ($Ta, $Tb, $Tc, $Td, $Te, $Tf) = @$self;
+  my $dt = $Ta * $Td - $Tb * $Tc; return unless $dt;
+  return [$Td / $dt, -$Tb / $dt, -$Tc / $dt,
+    $Ta / $dt, ($Tc * $Tf - $Td * $Te) / $dt, ($Tb * $Te - $Ta * $Tf) / $dt]; }
 
 1;
