@@ -56,7 +56,7 @@ severity=3
 # was 4; good policy but needs a slow cleaning out.
 
 [TestingAndDebugging::ProhibitNoWarnings]
-severity=3
+severity=2
 # was 4; Well, if I only do it sometimes?
 
 [ValuesAndExpressions::ProhibitConstantPragma]
@@ -87,9 +87,21 @@ severity=2
 severity=2
 # was 3; a good hint, but too restricive
 
+[ErrorHandling::RequireCarping]
+severity=1
+# was 3; We've got our own exotic error reporting; don't need Carp.
+
+[Modules::ProhibitExcessMainComplexity]
+max_mccabe = 30
+# was 20
+
 [NamingConventions::ProhibitAmbiguousNames]
 severity=1
 # was 3; names are often not ambiguous in context
+
+[Subroutines::ProhibitExcessComplexity]
+max_mccabe = 30
+# was 20
 
 [Subroutines::ProhibitManyArgs]
 severity=2
