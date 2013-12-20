@@ -26,33 +26,35 @@ sub latexml_tests {
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
   else {
     my @dir_contents = sort readdir($DIR);
-    my @core_tests   = grep { s/\.tex$// } @dir_contents;
-    my @daemon_tests = grep { s/\.spec$// } @dir_contents;
+    my $t;
+    my @core_tests   = map { (($t = $_) =~ s/\.tex$//  ? ($t) : ()); } @dir_contents;
+    my @daemon_tests = map { (($t = $_) =~ s/\.spec$// ? ($t) : ()); } @dir_contents;
     closedir($DIR);
-    eval { use_ok("LaTeXML"); };    # || skip_all("Couldn't load LaTeXML"); }
+    if (eval { use_ok("LaTeXML"); }) {
+    SKIP: {
+        my $requires = $options{requires} || {};    # normally a hash: test=>[files...]
+        if (!ref $requires) {                       # scalar== filename required by ALL
+          check_requirements("$directory/", $requires);    # may SKIP:
+          $requires = {}; }                                # but turn to normal, empty set
+        elsif ($$requires{'*'}) {
+          check_requirements("$directory/", $$requires{'*'}); }
 
-  SKIP: {
-      my $requires = $options{requires} || {};    # normally a hash: test=>[files...]
-      if (!ref $requires) {                       # scalar== filename required by ALL
-        check_requirements("$directory/", $requires);    # may SKIP:
-        $requires = {}; }                                # but turn to normal, empty set
-      elsif ($$requires{'*'}) {
-        check_requirements("$directory/", $$requires{'*'}); }
-
-      foreach my $name (@core_tests) {
-        my $test = "$directory/$name";
-      SKIP: {
-          skip("No file $test.xml", 1) unless (-f "$test.xml");
-          next unless check_requirements($test, $$requires{$name});
-          latexml_ok("$test.tex", "$test.xml", $test); } }
-      foreach my $name (@daemon_tests) {
-        my $test = "$directory/$name";
-      SKIP: {
-          skip("No file $test.xml and/or $$test.status", 1)
-            unless ((-f "$test.xml") && (-f "$test.status"));
-          next unless check_requirements($test, $$requires{$name});
-          daemon_ok($test, $directory, $options{generate});
-        } } } }
+        foreach my $name (@core_tests) {
+          my $test = "$directory/$name";
+        SKIP: {
+            skip("No file $test.xml", 1) unless (-f "$test.xml");
+            next unless check_requirements($test, $$requires{$name});
+            latexml_ok("$test.tex", "$test.xml", $test); } }
+        foreach my $name (@daemon_tests) {
+          my $test = "$directory/$name";
+        SKIP: {
+            skip("No file $test.xml and/or $$test.status", 1)
+              unless ((-f "$test.xml") && (-f "$test.status"));
+            next unless check_requirements($test, $$requires{$name});
+            daemon_ok($test, $directory, $options{generate});
+          } } } }
+    else {
+      skip_all("Couldn't load LaTeXML"); } }
   return done_testing(); }
 
 sub check_requirements {
@@ -78,30 +80,29 @@ sub do_fail {
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
   my ($texpath, $xmlpath, $name) = @_;
-  my ($latexml, $dom, $domstring);
   my @paths = ($texpath =~ m|^(.+)/\w+\.tex$| ? ($1) : ());
-  eval { $latexml = LaTeXML->new(preload => [], searchpaths => [], includeComments => 0,
+  my $latexml = eval { LaTeXML->new(preload => [], searchpaths => [], includeComments => 0,
       verbosity => -2); };
   return do_fail($name, "Couldn't instanciate LaTeXML: " . @!) unless $latexml;
 
-  eval { $dom = $latexml->convertFile($texpath); };
+  my $dom = eval { $latexml->convertFile($texpath); };
   return do_fail($name, "Couldn't convert $texpath: " . @!) unless $dom;
   return is_xmlcontent($latexml, $dom, $xmlpath, $name); }
 
 sub is_xmlcontent {
   my ($latexml, $xmldom, $path, $name) = @_;
-  my ($domstring);
   if (!defined $xmldom) {
     return do_fail($name, "The XML DOM was undefined for $name"); }
   else {
 ###    eval { $domstring = $xmldom->toString(1); };
 ####    eval { $domstring = $xmldom->toStringC14N(0); };
     # We want the DOM to be BOTH indented AND canonical!!
-    eval { my $string = $xmldom->toString(1);
+    my $domstring =
+      eval { my $string = $xmldom->toString(1);
       my $parser = XML::LibXML->new();
       $parser->validation(0);
       $parser->keep_blanks(1);
-      $domstring = $parser->parse_string($string)->toStringC14N(0); };
+      $parser->parse_string($string)->toStringC14N(0); };
     return do_fail($name, "Couldn't convert dom to string: " . @!) unless $domstring;
     return is_xmlfilecontent([split('\n', $domstring)], $path, $name); } }
 
@@ -120,11 +121,11 @@ sub is_filecontent {
 
 sub is_xmlfilecontent {
   my ($strings, $path, $name) = @_;
-  my ($domstring);
-  eval { my $parser = XML::LibXML->new();
+  my $domstring =
+    eval { my $parser = XML::LibXML->new();
     $parser->validation(0);
     $parser->keep_blanks(1);
-    $domstring = $parser->parse_file($path)->toStringC14N(0); };
+    $parser->parse_file($path)->toStringC14N(0); };
   return do_fail($name, "Could not open $path") unless $domstring;
   return is_strings($strings, [split('\n', $domstring)], $name); }
 
@@ -154,7 +155,7 @@ sub daemon_ok {
   my ($base, $dir, $generate) = @_;
   my $localname = $base;
   $localname =~ s/$dir\///;
-  my $opts = read_options("$base.spec");
+  my $opts = read_options("$base.spec", $base);
   push @$opts, (['destination', "$localname.test.xml"],
     ['log',                "/dev/null"],
     ['timeout',            5],
@@ -190,27 +191,29 @@ sub daemon_ok {
   return; }
 
 sub read_options {
+  my ($optionfile, $testname) = @_;
   my $opts = [];
   my $OPT;
-  open($OPT, "<", shift);
-  while (<$OPT>) {
-    next if /^#/;
-    chomp;
-    /(\S+)\s*=\s*(.*)/;
-    my ($key, $value) = ($1, $2 || '');
-    $value =~ s/\s+$//;
-    push @$opts, [$key, $value];
-  }
-  close $OPT;
+  if (open($OPT, "<", $optionfile)) {
+    while (my $line = <$OPT>) {
+      next if $line =~ /^#/;
+      chomp($line);
+      if ($line =~ /(\S+)\s*=\s*(.*)/) {
+        my ($key, $value) = ($1, $2 || '');
+        $value =~ s/\s+$//;
+        push @$opts, [$key, $value]; } }
+    close $OPT; }
+  else {
+    do_fail($testname, "Could not open $optionfile"); }
   return $opts; }
 
 sub get_filecontent {
-  my ($path, $name) = @_;
+  my ($path, $testname) = @_;
   my $IN;
   my @lines;
   if (-e $path) {
     if (!open($IN, "<", $path)) {
-      do_fail($name, "Could not open $path"); }
+      do_fail($testname, "Could not open $path"); }
     else {
       { local $\ = undef;
         @lines = <$IN>; }
