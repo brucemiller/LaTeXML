@@ -1973,13 +1973,12 @@ my $ligature_options = {    # [CONSTANT]
   fontTest => 1 };
 
 sub DefLigature {
-  my ($regexp, %options) = @_;
+  my ($regexp, $replacement, %options) = @_;
   CheckOptions("DefLigature", $ligature_options, %options);
-  my $code = "sub { \$_[0] =~ s${regexp}g; }";
-  my $fcn  = eval $code;
-  Error('misdefined', $regexp, undef,
-    "Failed to compile regexp pattern '$regexp' into \"$code\"", $!) if $@;
-  UnshiftValue('TEXT_LIGATURES', { regexp => $regexp, code => $fcn, %options });
+  UnshiftValue('TEXT_LIGATURES',
+    { regexp => $regexp,
+      code => sub { $_[0] =~ s/$regexp/$replacement/g; $_[0]; },
+      %options });
   return; }
 
 my $math_ligature_options = {};    # [CONSTANT]

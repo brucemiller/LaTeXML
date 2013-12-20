@@ -111,7 +111,7 @@ foreach my $acc (@greek_accents) {
 }
 
 foreach my $lhs (sort { (length($a) <=> length($b)) || ($a cmp $b) } keys %x) {
-  DefLigature("/$lhs/$x{$lhs}/"); }
+  DefLigature($lhs, $x{$lhs}); }
 
 1;
 

@@ -1081,28 +1081,28 @@ DefMacro('\hyphenation{}', Tokens());             # Well, what ?
 
 # Doubtful that we can do anything useful with these.
 # These look essentially like Registers, although Knuth doesn't call them that.
-DefRegister('\textfont Number'=>T_CS('\tenrm'),
-  getter=>sub {
-    my($fam)=@_;
+DefRegister('\textfont Number' => T_CS('\tenrm'),
+  getter => sub {
+    my ($fam) = @_;
     LookupValue('fontinfo_' . $fam->valueOf . '_text'); },
-  setter=>sub {
-    my($font,$fam)=@_;
+  setter => sub {
+    my ($font, $fam) = @_;
     AssignValue('fontinfo_' . $fam->valueOf . '_text' => $font, 'global'); });
 
-DefRegister('\scriptfont Number'=>T_CS('\sevenrm'),
-  getter=>sub {
-    my($fam)=@_;
+DefRegister('\scriptfont Number' => T_CS('\sevenrm'),
+  getter => sub {
+    my ($fam) = @_;
     LookupValue('fontinfo_' . $fam->valueOf . '_script'); },
-  setter=>sub {
-    my($font,$fam)=@_;
+  setter => sub {
+    my ($font, $fam) = @_;
     AssignValue('fontinfo_' . $fam->valueOf . '_script' => $font, 'global'); });
 
-DefRegister('\scriptscriptfont Number'=>T_CS('\fiverm'),
-  getter=>sub {
-    my($fam)=@_;
+DefRegister('\scriptscriptfont Number' => T_CS('\fiverm'),
+  getter => sub {
+    my ($fam) = @_;
     LookupValue('fontinfo_' . $fam->valueOf . '_scriptscript'); },
-  setter=>sub {
-    my($font,$fam)=@_;
+  setter => sub {
+    my ($font, $fam) = @_;
     AssignValue('fontinfo_' . $fam->valueOf . '_scriptscript' => $font, 'global'); });
 
 # <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
@@ -1379,8 +1379,8 @@ our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT'
 sub decodeMathChar {
   my ($n) = @_;
   my $class = int($n / (16 * 256)); $n = $n % (16 * 256);
-  my $fam = int($n / 256); $n = $n % 256;
-  my $font = LookupValue('fontinfo_' . $fam . '_text')
+  my $fam   = int($n / 256);        $n = $n % 256;
+  my $font  = LookupValue('fontinfo_' . $fam . '_text')
     || LookupValue('fontinfo_' . $fam . '_script')
     || LookupValue('fontinfo_' . $fam . '_scriptscript');
   my $fontinfo = LookupValue('fontinfo_' . ToString($font));
@@ -4242,7 +4242,7 @@ foreach my $accent (keys %accents) {
 DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
-    my $fam      = 0;                                           # ?
+    my $fam      = 0;                                            # ?
     my $font     = LookupValue('fontinfo_' . $fam . '_text');
     my $fontinfo = LookupValue('fontinfo_' . ToString($font));
     my $acc = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
@@ -4780,8 +4780,7 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
       && !grep(($document->getModel->getNodeQName($_) ne 'ltx:XMTok') || ($_->textContent ne "\x{22C5}"),
         @nodes[$#nodes - 2 .. $#nodes])) {
       (3, "\x{22EF}", name => 'cdots', role => 'ID'); } });
-##DefRewrite(regexp=>"/\\.\\.\\./\x{2026}/"); # ldots
-DefLigature("/\\.\\.\\./\x{2026}/", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
+DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
 
 #DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'...',replace=>'\ldots');
 
@@ -5321,13 +5320,17 @@ DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit
 DefPrimitive('\@@endash', sub { Box("\x{2013}", undef, undef, T_CS('\@@endash')); });
 DefPrimitive('\@@emdash', sub { Box("\x{2014}", undef, undef, T_CS('\@@emdash')); });
 
-DefLigature("/--/\x{2013}/", fontTest => sub { $_[0]->getFamily ne 'typewriter'; }); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
-DefLigature("/---/\x{2014}/", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });    # EM DASH
+DefLigature(qr{--}, "\x{2013}",
+  fontTest => sub { $_[0]->getFamily ne 'typewriter'; }); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
+DefLigature(qr{---}, "\x{2014}",
+  fontTest => sub { $_[0]->getFamily ne 'typewriter'; });    # EM DASH
 
 # Ligatures for doubled single left & right quotes to convert to double quotes
 # [should ligatures be part of a font, in the first place? (it is in TeX!)
-DefLigature("/\x{2018}\x{2018}/\x{201C}/", fontTest => sub { ($_[0]->getFamily ne 'typewriter') && (($_[0]->getEncoding || 'OT1') eq 'OT1'); });
-DefLigature("/\x{2019}\x{2019}/\x{201D}/", fontTest => sub { ($_[0]->getFamily ne 'typewriter') && (($_[0]->getEncoding || 'OT1') eq 'OT1'); });
+DefLigature(qr{\x{2018}\x{2018}}, "\x{201C}",
+  fontTest => sub { ($_[0]->getFamily ne 'typewriter') && (($_[0]->getEncoding || 'OT1') eq 'OT1'); });
+DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}",
+  fontTest => sub { ($_[0]->getFamily ne 'typewriter') && (($_[0]->getEncoding || 'OT1') eq 'OT1'); });
 
 DefPrimitiveI('\TeX', undef, 'TeX');
 DefPrimitiveI('\i',   undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
