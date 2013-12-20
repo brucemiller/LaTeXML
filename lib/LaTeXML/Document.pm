@@ -921,7 +921,7 @@ sub closeText_internal {
     if (my $ligatures = $STATE->lookupValue('TEXT_LIGATURES')) {
       foreach my $ligature (@$ligatures) {
         next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
-        $string =~ &{ $$ligature{code} }($string); } }
+        $string = &{ $$ligature{code} }($string); } }
     $node->setData($string) unless $string eq $ostring;
     $$self{node} = $parent;                  # Now, effectively Closed
     return $parent; }
