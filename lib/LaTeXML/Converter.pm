@@ -32,7 +32,7 @@ use LaTeXML::Post::Scan;
 
 # Switching to white-listing options that are important for new_latexml:
 our @COMPARABLE = qw(preload paths verbosity strict comments inputencoding includestyles documentid mathparse);
-our %DAEMON_DB = () unless keys %DAEMON_DB;
+our %DAEMON_DB = ();
 
 sub new {
   my ($class, $config) = @_;
@@ -41,7 +41,7 @@ sub new {
   my $self = bless { opts => $config->options, ready => 0, log => q{}, runtime => {},
     latexml => undef }, $class;
   $self->bind_log;
-  eval { $config->check; };
+  my $rv = eval { $config->check; };
   $self->{log} .= $self->flush_log;
   return $self;
 }
@@ -56,7 +56,7 @@ sub prepare_session {
   #}
   # 1. Ensure option "sanity"
   $self->bind_log;
-  eval { $config->check; };
+  my $rv = eval { $config->check; };
   $self->{log} .= $self->flush_log;
 
   my $opts                 = $config->options;
@@ -216,7 +216,7 @@ sub convert {
     print STDERR "\nConversion complete: " . $runtime->{status} . ".\n";
     print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . "\n";
     # Close and restore STDERR to original condition.
-    my $log .= $self->flush_log;
+    my $log = $self->flush_log;
     # Hope to clear some memory:
     $self->sanitize($log);
     $serialized = $dom if ($opts->{format} eq 'dom');
@@ -230,7 +230,7 @@ sub convert {
 
   if ($serialized) {
     # If serialized has been set, we are done with the job
-    my $log .= $self->flush_log;
+    my $log = $self->flush_log;
     return { result => $serialized, log => $log, status => $runtime->{status}, status_code => $runtime->{status_code} };
   }
   # Continue with the regular XML workflow...
@@ -281,7 +281,7 @@ sub convert {
   else { $serialized = $result; }                              # Compressed case
 
   print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . " \n";
-  my $log .= $self->flush_log;
+  my $log = $self->flush_log;
   $self->sanitize($log) if ($runtime->{status_code} == 3);
   return { result => $serialized, log => $log, status => $runtime->{status}, 'status_code' => $runtime->{status_code} };
 }
