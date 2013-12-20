@@ -283,8 +283,9 @@ sub process {
   $self->preprocess($doc, @maths);
   if ($$self{parallel}) {
     my @secondaries = @{ $$self{secondary_processors} };
+    my $f;
     LaTeXML::Post::NoteProgressDetailed(" [parallel " .
-        join(',', map { s/^LaTeXML::Post::// && $_ || $_ } map { ref $_ } @secondaries) . "]");
+        join(',', map { (($f = $_) =~ s/^LaTeXML::Post::// ? $f : $f) } map { ref $_ } @secondaries) . "]");
     foreach my $proc (@secondaries) {
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       $proc->preprocess($doc, @maths); } }
