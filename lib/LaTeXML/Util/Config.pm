@@ -508,8 +508,7 @@ sub _checkOptionValue {
   if ($value) {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
-  croak("Value for $option, $value, doesn't match " . join(', ', @choices));
-  return; }
+  croak("Value for $option, $value, doesn't match " . join(', ', @choices)); }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {
@@ -518,38 +517,37 @@ sub _read_options_file {
   my $OPT;
   unless (open($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
-    return;
-  }
-  while (<$OPT>) {
-    next if /^#/;
-    chomp;
-    /(\S+)\s*=\s*(.*)/;
-    my ($key, $value) = ($1, $2 || '');
-    $value =~ s/\s+$//;
-    # Special treatment for --path=$env:
-    if ($value =~ /^\$(.+)$/) {
-      my @values   = ();
-      my $env_name = $1;
-      my $env_value;
-      # Allow $env/foo paths, starting with $env prefixes
-      if ($env_name =~ /^([^\/]+)(\/+)(.+)$/) {
-        my $trailer = $3;
-        if (my $env_path = $ENV{$1}) {
-          $env_path .= '/' unless $env_path =~ /\/$/;
-          push @values, $env_path . $trailer;
-        }
-      } else {
-        # But also the standard behaviour, where the $env is an array of paths
-        $env_value = $ENV{$env_name};
-        next unless $env_value;
-        @values = grep { -d $_ } reverse(split(':', $env_value));
-        next unless @values;
-      }
-      push(@$opts, "--$key=$_") foreach (@values);
-    } else {
-      $value = $value ? "=$value" : '';
-      push @$opts, "--$key" . $value;
-    }
+    return; }
+  while (my $line = <$OPT>) {
+    next if $line =~ /^#/;
+    chomp($line);
+    if ($line =~ /(\S+)\s*=\s*(.*)/) {
+      my ($key, $value) = ($1, $2 || '');
+      $value =~ s/\s+$//;
+      # Special treatment for --path=$env:
+      if ($value =~ /^\$(.+)$/) {
+        my @values   = ();
+        my $env_name = $1;
+        my $env_value;
+        # Allow $env/foo paths, starting with $env prefixes
+        if ($env_name =~ /^([^\/]+)(\/+)(.+)$/) {
+          my $trailer = $3;
+          if (my $env_path = $ENV{$1}) {
+            $env_path .= '/' unless $env_path =~ /\/$/;
+            push @values, $env_path . $trailer; } }
+        else {
+          # But also the standard behaviour, where the $env is an array of paths
+          $env_value = $ENV{$env_name};
+          next unless $env_value;
+          @values = grep { -d $_ } reverse(split(':', $env_value));
+          next unless @values; }
+        push(@$opts, "--$key=$_") foreach (@values); }
+      else {
+        $value = $value ? "=$value" : '';
+        push @$opts, "--$key" . $value; } }
+    else {
+      Warning('unexpected', $line, undef,
+        "Unrecognized configuration data '$line'"); }
   }
   close $OPT;
   return $opts; }
