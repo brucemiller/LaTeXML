@@ -1,5 +1,17 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  latexmlmath                                                        | #
+# | math conversion program                                             | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
@@ -29,7 +41,7 @@ my $xmath = undef;
 my $cmml  = undef;
 my $om    = undef;
 my @paths = ('.');
-my (@preload, @debugs);
+my @preload;
 GetOptions(
   # No provision for parallel output (yet)
   "mathimage=s"               => \$mathimage,
@@ -51,7 +63,7 @@ GetOptions(
   "verbose"       => sub { $verbosity++; },
   "strict"        => \$strict,
   "VERSION"       => \$showversion,
-  "debug=s"       => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
+  "debug=s"       => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
   "documentid=s"  => \$documentid,
   "help"          => \$help,
   ) or pod2usage(-message => $LaTeXML::IDENTITY,
@@ -63,7 +75,7 @@ pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
 binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
 
 #======================================================================
 # TeX Source
@@ -71,7 +83,6 @@ print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
 # First read and digest whatever we're given.
 my $tex = join(' ', @ARGV);
 if ($tex eq '-') {
-  my $content;
   { local $/ = undef; $tex = <>; } }
 
 # We need to determine whether the TeX we're given needs to be wrapped in \[...\]
@@ -91,7 +102,7 @@ elsif (($tex =~ /^\\begin\{($MATHENVS)\}/) && ($tex =~ /\\end\{$1\}$/)) { }
 else {
   $tex = '\[ ' . $tex . ' \]'; }
 
-my $texdoc = <<EODoc;
+my $texdoc = <<"EODoc";
 literal:
 \\documentclass{article}
 \\begin{document}
@@ -112,8 +123,8 @@ EODoc
 #======================================================================
 # Digest the TeX
 #======================================================================
-@paths = map(pathname_canonical($_), @paths);
-if (my @baddirs = grep(!-d $_, @paths)) {
+@paths = map { pathname_canonical($_) } @paths;
+if (my @baddirs = grep { !-d $_ } @paths) {
   warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 my $latexml = LaTeXML->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
@@ -131,10 +142,11 @@ my $digested = $latexml->digestFile($texdoc);
 # especially within automation, where latexmlmath might be used.
 my $model = $$latexml{state}->getModel;
 $$model{tagprop}{'ltx:Math'}{afterClose}
-  = [grep($_ ne \&LaTeXML::Package::Pool::cleanup_Math, @{ $$model{tagprop}{'ltx:Math'}{afterClose} })];
+  = [grep { $_ ne \&LaTeXML::Package::Pool::cleanup_Math }
+    @{ $$model{tagprop}{'ltx:Math'}{afterClose} }];
 
 my $converted = $digested && $latexml->convertDocument($digested);
-my $doc = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
+my $document = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
 
 #======================================================================
 # Postprocess to convert the math to whatever desired forms.
@@ -154,16 +166,17 @@ our %OPTIONS = ();
 # once fragid is sorted out?
 my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
 my $post = LaTeXML::Post->new(verbosity => $verbosity || 0);
-($doc) = $post->ProcessChain($doc,
+($document) = $post->ProcessChain($document,
   LaTeXML::Post::Scan->new(db => $DB, %OPTIONS),
   LaTeXML::Post::CrossRef->new(db => $DB, %OPTIONS));
 
 if ($mathimage) {
   if ($mathimage eq '-') {
     die "I dont really want to write the image to STDOUT, sorry!"; }
-  $mathimage =~ s/\.(png|gif|jpg|jpeg)$//;
-  my $imagetype = $1 || 'png';
-  my ($result) = $post->ProcessChain($doc,
+  my $imagetype = 'png';
+  if ($mathimage =~ s/\.(png|gif|jpg|jpeg)$//) {
+    $imagetype = $1; }
+  my ($result) = $post->ProcessChain($document,
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
       %OPTIONS));
@@ -171,7 +184,7 @@ if ($mathimage) {
 
 if ($pmml) {
   require LaTeXML::Post::MathML;
-  my ($result) = $post->ProcessChain($doc,
+  my ($result) = $post->ProcessChain($document,
     LaTeXML::Post::MathML::Presentation->new(
       (defined $linelength ? (linelength => $linelength) : ()),
       (defined $plane1     ? (plane1     => $plane1)     : ()),
@@ -181,45 +194,46 @@ if ($pmml) {
 
 if ($cmml) {
   require LaTeXML::Post::MathML;
-  my ($result) = $post->ProcessChain($doc,
+  my ($result) = $post->ProcessChain($document,
     LaTeXML::Post::MathML::Content->new(%OPTIONS));
   outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
 
 if ($om) {
   require LaTeXML::Post::OpenMath;
-  my ($result) = $post->ProcessChain($doc,
+  my ($result) = $post->ProcessChain($document,
     LaTeXML::Post::OpenMath->new(%OPTIONS));
   outputXML($result->findnode('//om:OMOBJ'), $om, $omURI); }
 
 if ($xmath) {
   # extract the xmath
-  my ($result) = $post->ProcessChain($doc);
+  my ($result) = $post->ProcessChain($document);
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
-print STDERR "\nConversion complete\n" unless $verbosity < 0;
+print STDERR "\nConversion complete\n" if $verbosity > -1;
 
 #======================================================================
 # Helpers
 #======================================================================
 
 sub outputXML {
-  my ($xml, $destination, $defaulturi) = @_;
+  my ($xml, $xmldestination, $defaulturi) = @_;
   # Need to move the node to a new document to set up namespaces
   my $newdoc = XML::LibXML::Document->new("1.0", "UTF-8");
   $newdoc->setDocumentElement($xml);
   if (my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)) {
     $xml->setNamespaceDeclPrefix($oldprefix, undef); }
   my $serialized = $newdoc->toString(1);
-  if ($destination eq '-') {
+  if ($xmldestination eq '-') {
     print $serialized; }
   else {
-    $destination = pathname_canonical($destination);
-    if (my $dir = pathname_directory($destination)) {
+    $xmldestination = pathname_canonical($xmldestination);
+    if (my $dir = pathname_directory($xmldestination)) {
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
     my $OUT;
-    open($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
+    open($OUT, '>', $xmldestination) or die "Couldn't open output file $xmldestination: $!";
     print $OUT $serialized;
-    close($OUT); } }
+    close($OUT); }
+  return; }
 
 #======================================================================
 # Variant of MathImages to write directly to destination
@@ -233,10 +247,10 @@ sub desiredResourcePathname {
   my ($self, $doc, $node, $source, $type) = @_;
   my $name = $$self{imagename};
   if ($counter) {    # Shouldn't get multiple images, but just in case...
-    $name . $counter++ . '.' . $type; }
+    return $name . $counter++ . '.' . $type; }
   else {
     $counter++;
-    $name . '.' . $type; } }
+    return $name . '.' . $type; } }
 
 #**********************************************************************
 __END__

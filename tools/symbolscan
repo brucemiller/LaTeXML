@@ -1,6 +1,18 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  symbolscan                                                         | #
+# | scan & analyze style files for math symbols                         | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 
 use strict;
+use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use FindBin;
@@ -38,30 +50,31 @@ pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDO
 # [Should get this from LaTeXML?]
 our $LTXPACKAGEDIR = "$FindBin::RealBin/../blib/lib/LaTeXML/Package/";
 
-@SEARCHPATHS = map((s|^~/|$ENV{HOME}/| ? $_ : $_), @SEARCHPATHS);
+my $x;
+@SEARCHPATHS = map { (($x = $_) =~ s|^~/|$ENV{HOME}/| ? $x : $x) } @SEARCHPATHS;
 $INTERNAL   = 1 if $THESAURUS || $UNICODETHESAURUS;
 $CUMULATIVE = 1 if $THESAURUS || $UNICODETHESAURUS;
 
 # See what package files we're going to analyze
-my $pkgs = [($DO_ALL ? allPackages() : ()), @ARGV];
+my $Packages = [($DO_ALL ? allPackages() : ()), @ARGV];
 
 # Load the packages, extract the symbols
-my $state = loadPackages($pkgs);
-my $symbols = sortSymbols(extractSymbols($state, $pkgs));
+my $State = loadPackages($Packages);
+my $Symbols = sortSymbols(extractSymbols($State, $Packages));
 
 # and format the result.
 if ($UNICODETHESAURUS) {
-  my $thesaurus = completeUnicodeThesaurus($symbols);
+  my $Thesaurus = completeUnicodeThesaurus($Symbols);
   binmode(STDOUT, ":encoding(UTF-8)");
-  printThesaurus($thesaurus); }
+  printThesaurus($Thesaurus); }
 elsif ($THESAURUS) {
-  my $thesaurus = completeThesaurus($symbols);
-  printThesaurus($thesaurus); }
+  my $Thesaurus = completeThesaurus($Symbols);
+  printThesaurus($Thesaurus); }
 elsif ($FORMATTED) {
-  formatSymbols($symbols); }
+  formatSymbols($Symbols); }
 # Or just list the symbols
 else {
-  foreach my $entry (@$symbols) {
+  foreach my $entry (@$Symbols) {
     print join(', ', $$entry{cs},
       ($$entry{role}         || ''),
       ($$entry{meaning}      || ''),
@@ -82,9 +95,10 @@ sub allPackages {
     foreach my $file (sort readdir(DIR)) {
       next if $file =~ /pxfonts.sty.ltxml$/;    # This duplicates txfonts!
       ## ONLY include style files (cls files generally don't define math?)
-      push(@pkgs, $1) if $file =~ /^(.*?\.sty)\.ltxml$/; }
+      if ($file =~ /^(.*?\.sty)\.ltxml$/) {
+        push(@pkgs, $1); } }
     closedir(DIR); }
-  @pkgs; }
+  return @pkgs; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Create a LaTeXML parser, Load all of the requested packages into it,
@@ -95,9 +109,9 @@ sub loadPackages {
 
   my @pkgs = @$pkgs;
   # Require LaTeX & TeX if needed and not present.
-  if (grep(/\.(cls|sty)$/, @pkgs) && !grep(/^(.*\/)?LaTeX\.pool$/, @pkgs)) {
+  if ((grep { /\.(cls|sty)$/ } @pkgs) && !(grep { /^(.*\/)?LaTeX\.pool$/ } @pkgs)) {
     unshift(@pkgs, "LaTeX.pool"); }
-  if (grep(/^(.*\/)?LaTeX.pool$/, @pkgs) && !grep(/^(.*\/)?TeX\.pool$/, @pkgs)) {
+  if ((grep { /^(.*\/)?LaTeX.pool$/ } @pkgs) && !(grep { /^(.*\/)?TeX\.pool$/ } @pkgs)) {
     unshift(@pkgs, "TeX.pool"); }
 
   # Create and initialize the LaTeXML parser
@@ -113,7 +127,7 @@ sub loadPackages {
     my $loadpath = pathname_find($pkg, types => ['ltxml', ''],
       paths => $paths, installation_subdir => 'Package');
     if (!$loadpath) {
-      print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return undef; }
+      print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return; }
     if    ($pkg =~ /(.*)\.sty$/) { LaTeXML::Package::RequirePackage($1); }
     elsif ($pkg =~ /(.*)\.cls$/) { LaTeXML::Package::LoadClass($1); }
     else { LaTeXML::Package::InputDefinitions($loadpath); } }
@@ -121,7 +135,7 @@ sub loadPackages {
   # And, digest in case there is any pending plain TeX.
   $stomach->digestNextBody;
 
-  $LaTeXML::STATE; }
+  return $LaTeXML::STATE; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Given the LaTeXML STATE, and the desired packages,
@@ -145,14 +159,16 @@ sub extractSymbols {
       my ($ignore, $cs, $nargs, $role, $name, $meaning, $source, $pres) = split('##', $key);
       next if !$INTERNAL && $cs =~ /@/;
       $role = '' if $role eq 'UNKNOWN';
-      my $pkg = $2 if $source =~ m/^(.*?)\/([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/;
+      my $pkg;
+      if ($source =~ m/^(.*?)\/([^\/]*?)\.(cls|sty|pool)(\.ltxml)?$/) {
+        $pkg = $2; }
       next if $pkg && !$CUMULATIVE && !$includes{$pkg};
       push(@symbols,
         { cs => $cs, nargs => $nargs,
           role => $role, name => $name, meaning => $meaning,
           presentation => $pres,
           package => $pkg || 'unknown' }); } }
-  [@symbols]; }
+  return [@symbols]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Sort the symbols and collapse duplicates from different packages.
@@ -179,7 +195,7 @@ sub sortSymbols {
       else {
         push(@filtered, $current = $next); } }
     @symbols = @filtered; }
-  [@symbols]; }
+  return [@symbols]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Format the symbols in a table (in a TeX document)
@@ -206,8 +222,9 @@ sub formatSymbols {
     my $meaning = $$entry{meaning};
     $meaning = ($meaning ne '' ? "\\texttt{$meaning}" : '');
     my $nargs = $$entry{nargs};
-    my $invocation = ($nargs ? join("", $cs, map("{" . chr(ord('a') + $_ - 1) . "}", 1 .. $nargs)) : $cs);
-    my $presentation = (defined $$entry{presentation}) && ($$entry{presentation} !~ /(\\|\#|\^)/)
+    my $invocation = ($nargs ? join("", $cs, map { "{" . chr(ord('a') + $_ - 1) . "}" } 1 .. $nargs) : $cs);
+    my $presentation = (defined $$entry{presentation})
+      && ($$entry{presentation} !~ /(?:\\|\#|\^)/)
       ? $$entry{presentation} : '';
     my $ucname = '';
     $presentation =~ s/(\#|\^)/\\$1/g;
@@ -227,7 +244,7 @@ sub formatSymbols {
   print "\\end{supertabular}\n";                                       #}\n";
   print "\\end{landscape}\n";
   print "\\end{document}\n";
-}
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Convert the list of symbols into a thesaurus
@@ -244,16 +261,17 @@ sub completeUnicodeThesaurus {
   my ($symbols) = @_;
   my $thesaurus = {};
   foreach my $entry (@$symbols) {
-    my $presentation = (defined $$entry{presentation}) && ($$entry{presentation} !~ /(\\|\#|\^)/)
+    my $presentation = (defined $$entry{presentation})
+      && ($$entry{presentation} !~ /(?:\\|\#|\^)/)
       ? $$entry{presentation} : '';
     if ($presentation
       && ($presentation !~ /^\d+$/)         # omit pure numbers
       && ($presentation !~ /^[a-zA-Z]$/)    #  or single latin letters
       && ($presentation !~ /[\s_^]/)) {     # or stuff with markup in them.
-      my @keywords = grep($_ ne $presentation,
-        generateThesaurusKeywords($presentation, $$entry{name}, $$entry{meaning}));
-      map($$thesaurus{$presentation}{$_} = 1, @keywords); } }
-  $thesaurus; }
+      my @keywords = grep { $_ ne $presentation }
+        generateThesaurusKeywords($presentation, $$entry{name}, $$entry{meaning});
+      map { $$thesaurus{$presentation}{$_} = 1 } @keywords; } }
+  return $thesaurus; }
 
 sub completeThesaurus {
   my ($symbols) = @_;
@@ -261,39 +279,37 @@ sub completeThesaurus {
   foreach my $entry (@$symbols) {
     my $meaning = $$entry{meaning};
     if ($meaning ne '') {
-      my @keywords = grep($_ ne $meaning,
-        generateThesaurusKeywords(undef, $$entry{name}, $meaning));
-      map($$thesaurus{$meaning}{$_} = 1, @keywords); } }
-  $thesaurus; }
+      my @keywords = grep { $_ ne $meaning }
+        generateThesaurusKeywords(undef, $$entry{name}, $meaning);
+      map { $$thesaurus{$meaning}{$_} = 1 } @keywords; } }
+  return $thesaurus; }
 
 sub generateThesaurusKeywords {
   my ($presentation, $name, $meaning) = @_;
   my %keywords = ();
   if ($presentation) {
     if (my $p_alia = $unicode_map{$presentation}) {
-      map($keywords{$_} = 1, split(/\s/, $p_alia)); } }
+      map { $keywords{$_} = 1 } split(/\s/, $p_alia); } }
   if ($name && ($name !~ /@/)) {
     $keywords{$name} = 1;
     if (my $n_alia = $name_map{$name}) {
-      map($keywords{$_} = 1, split(/\s/, $n_alia)); }
+      map { $keywords{$_} = 1 } split(/\s/, $n_alia); }
     # Strip non-significant pre/postfixes from some command names.
-    #    if($name =~ /^(?:up|varup|var)(..+)$/){ $keywords{$1}=1; }
     if ($name =~ /^(?:varup|var)(..+)$/) { $keywords{$1} = 1; }
-    #    if($name =~ /^(..+?)(?:up)$/){ $keywords{$1}=1; }
     if ($name =~ /^n([^ew].+?)$/) {
       my $n = $1;
       if ($n =~ /arrow/) { $keywords{not} = 1; $keywords{$n} = 1; } }
   }
+  # Add meaning and words from meaning
   if ($meaning) {
     $keywords{$meaning} = 1;
-    my @splits = split(/-/, $meaning);
-    if (scalar(@splits) > 1) {
-      map($keywords{$_} = 1, grep(!$split_stopwords{$_}, @splits)); } }
+    map { $keywords{$_} = 1 } grep { !$split_stopwords{$_} } split(/-/, $meaning); }
 
+  # Add in known aliases
   foreach my $k (keys %keywords) {
     if (my $alia = $alias_map{$k}) {
-      map($keywords{$_} = 1, split(/\s/, $alia)); }
-  }
+      map { $keywords{$_} = 1 } split(/\s/, $alia); } }
+
   # Special cases for arrows, since they typically have no meaning assigned, but need aliases!
   if ($name =~ /arrow/) {
     $keywords{arrow} = 1;
@@ -316,17 +332,20 @@ sub generateThesaurusKeywords {
         if ($k =~ /^(.*?)arrowright(.*)$/) { $keywords{ $1 . 'rightarrow' . $2 } = 1; }
     } } while (scalar(keys %keywords) > $n);
   }
+  # Deal with case.
   foreach my $k (keys %keywords) {
-    my $lc = lc($k);
-    if (($k ne $lc) && (length($k) <= 2)) {
-      $keywords{$lc} = 1;
-      $keywords{"big$lc"} = 1; } }
-  keys %keywords; }
+    if (length($k) <= 2) {
+      my $lc = lc($k);
+      if ($k ne $lc) {
+        $keywords{$lc} = 1;
+        $keywords{"big$lc"} = 1; } } }
+  return keys %keywords; }
 
 sub printThesaurus {
   my ($thesaurus) = @_;
   foreach my $key (sort keys %$thesaurus) {
-    print join(' ', $key, sort keys %{ $$thesaurus{$key} }) . "\n"; } }
+    print join(' ', $key, sort keys %{ $$thesaurus{$key} }) . "\n"; }
+  return; }
 
 # Compute a set of aliases from the macro name (w/o \) and meaning
 our %searchform;
@@ -369,12 +388,12 @@ sub computeAliases {
   # Use the macro name as an alias,
   # split the meaning at hypens to get separate words
   my %aliases = ();
-  foreach my $a (grep($_, $name, $meaning, split('-', $meaning))) {
+  foreach my $a (grep { $_ } $name, $meaning, split('-', $meaning)) {
     next if $a eq '';
     $aliases{$a} = 1;
     if (my $aa = $searchform{$a}) {
       $aliases{$aa} = 1; } }
-  [sort keys %aliases]; }
+  return [sort keys %aliases]; }
 
 BEGIN {
   # Maps unicode characters to thesaurus words
@@ -509,7 +528,7 @@ BEGIN {
     'square-root'            => 'sqrt',
     );
 
-  %split_stopwords = map(($_ => 1), qw(and or than of by as to very much));
+  %split_stopwords = map { ($_ => 1) } qw(and or than of by as to very much);
 }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -518,13 +537,15 @@ BEGIN {
 # Could use more of the data?
 sub readUnicodeNames {
   my $unicodefile = '/usr/share/perl5/unicore/UnicodeData.txt';
-  open(UC, $unicodefile) or die "Couldn't read $unicodefile: $!";
+  my $UC_FH;
+  open($UC_FH, '<', $unicodefile) or die "Couldn't read $unicodefile: $!";
   my $names = {};
-  while (<UC>) {
+  while (<$UC_FH>) {
     my ($code, $name, $category, $combining, $bidi, $decomp, $decimal, $digit, $numeric,
       $mirrored, $oldname, $comment, $uppercase, $lowercase, $titlecase) = split(';', $_);
     $$names{ lc($code) } = $name; }
-  $names; }
+  close($UC_FH);
+  return $names; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

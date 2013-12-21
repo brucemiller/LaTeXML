@@ -1,8 +1,15 @@
 #!/usr/bin/perl -w
-
-#######################
-# A Client for LaTeXML
-#######################
+# /=====================================================================\ #
+# |  latexmlc                                                           | #
+# | client/server conversion program                                    | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
 use warnings;
 
@@ -16,12 +23,13 @@ use File::Spec::Functions;
 use File::Which;
 
 BEGIN {
-  $FindBin::RealBin =~ /^([^\0]+)\z/;    # Valid Unix path TODO: Windows, revisit regexp
-  $RealBin_safe = $1;
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...' unless ($RealBin_safe && (-e catfile($RealBin_safe ,'latexmlc')));
+  if ($FindBin::RealBin =~ /^([^\0]+)\z/) {    # Valid Unix path TODO: Windows, revisit regexp
+    $RealBin_safe = $1; }
+  die 'Fatal:IO:tainted RealBin was tainted! Failing...'
+    unless ($RealBin_safe && (-e catfile($RealBin_safe, 'latexmlc')));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
-use lib catdir($RealBin_safe,"..","lib");
+use lib catdir($RealBin_safe, "..", "lib");
 #TODO: Do we ever care about ENV PATH that much? Do we miss on some feature like that?
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
 use LaTeXML::Util::Config;
@@ -35,7 +43,7 @@ binmode(STDOUT, ":encoding(UTF-8)");
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
-$latexmls = catfile($RealBin_safe,'latexmls') if (-e catfile($RealBin_safe,'latexmls'));
+$latexmls = catfile($RealBin_safe, 'latexmls') if (-e catfile($RealBin_safe, 'latexmls'));
 $latexmls = which('latexmls') unless defined $latexmls;
 
 # Some defaults:
@@ -47,7 +55,7 @@ my $keyvals = $opts->scan_to_keyvals(\@ARGV);
 
 # Client-side options:
 my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
-$address = '127.0.0.1' unless ($address && ($address ne 'localhost'));
+$address = '127.0.0.1' if !$address || ($address eq 'localhost');
 $address =~ s/^(\w+)\:\/\///;    # strip away any protocol
 my $route = q{};
 if ($address =~ s/\/(.+)$//) {    # strip away route
@@ -90,11 +98,11 @@ my ($result, $status, $log);
 
 # TODO: Talk to the web service via HTTP
 #Setup client and communicate
-my $sock = $latexmls && IO::Socket::INET->new
-  (PeerAddr => $address,
+my $sock = $latexmls && IO::Socket::INET->new(
+  PeerAddr => $address,
   PeerPort => $port,
   Proto    => 'tcp',
-  );    #Attempt connecting to a service
+);    #Attempt connecting to a service
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML::Converter;
@@ -112,9 +120,10 @@ if ((!$sock) && $local && ($expire == -1)) {
   chop $message;
   #Startup daemon and feed in args, if needed
   system($latexmls, "--port=$port",
-    "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) unless ($sock || !$local);
-  my $http_response = $local ? process_local($address, $port, $route, $message, $sock) :
-    process_remote($address, $port, $route, $message, $sock);
+    "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) if !$sock && $local;
+  my $http_response = ($local
+    ? process_local($address, $port, $route, $message, $sock)
+    : process_remote($address, $port, $route, $message, $sock));
   if ($http_response->is_success) {
     my $response = decode_json($http_response->content);
     ($result, $status, $log) = map { $response->{$_} } qw(result status log) if defined $response;
@@ -167,46 +176,47 @@ sub summary {
 }
 
 sub process_local {
-  my ($address, $port, $route, $message, $sock) = @_;
+  my ($req_address, $req_port, $req_route, $req_message, $req_sock) = @_;
   #daemon is running, reconnect and feed in request
-  $sock = IO::Socket::INET->new
-    (PeerAddr => $address,
-    PeerPort => $port,
+  $req_sock = IO::Socket::INET->new(
+    PeerAddr => $req_address,
+    PeerPort => $req_port,
     Proto    => 'tcp',
-    ) unless $sock;
-  if (!$sock) { print STDERR "Fatal:perl:socket-create Could not create socket: $!\n"; exit 1; }
-  my $message_length = length($message);
-  $route = "$address:$port" unless $route;
-  my $payload = <<PAYLOADEND;
+  ) unless $req_sock;
+  if (!$req_sock) {
+    print STDERR "Fatal:perl:socket-create Could not create socket: $!\n";
+    exit 1; }
+  my $req_message_length = length($req_message);
+  $req_route = "$req_address:$req_port" unless $req_route;
+  my $payload = <<"PAYLOADEND";
 POST $route HTTP/1.0
-Host: $address:$port
+Host: $address:$req_port
 User-Agent: latexmlc
 Content-Type: application/x-www-form-urlencoded
-Content-Length: $message_length
+Content-Length: $req_message_length
 
-$message
+$req_message
 PAYLOADEND
-  $sock->send($payload);
+  $req_sock->send($payload);
   my $response_string = q{};
   { local $/ = undef;
     $response_string = <$sock>; }
-  close($sock);
-  $response_string ? HTTP::Response->parse($response_string) :
-    HTTP::Response->new(500, 'Internal Server Error');
-}
+  close($req_sock);
+  return ($response_string
+    ? HTTP::Response->parse($response_string)
+    : HTTP::Response->new(500, 'Internal Server Error')); }
 
 sub process_remote {
-  my ($address, $port, $route, $message, $sock) = @_;
-  $sock->close if $sock;    # No need of the socket here, using LWP instead
-  my $payload = HTTP::Request->new(POST => "http://$address:$port$route");
+  my ($req_address, $req_port, $req_route, $req_message, $req_sock) = @_;
+  $req_sock->close if $req_sock;    # No need of the socket here, using LWP instead
+  my $payload = HTTP::Request->new(POST => "http://$req_address:$req_port$req_route");
   $payload->header('User-Agent',   'latexmlc');
   $payload->header('Content-Type', 'application/x-www-form-urlencoded');
-  $payload->content($message);
+  $payload->content($req_message);
   require LWP::UserAgent;
   my $ua = LWP::UserAgent->new;
   $ua->timeout(10);
-  $ua->request($payload);
-}
+  return $ua->request($payload); }
 
 #**********************************************************************
 __END__

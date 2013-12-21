@@ -1,5 +1,17 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  latexml                                                            | #
+# | main conversion program                                             | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
@@ -17,7 +29,7 @@ my ($documentid);
 my $inputencoding;
 my $mode  = undef;
 my @paths = ();
-my (@preload, @debugs);
+my (@preload);
 GetOptions("destination=s" => \$destination,
   "output=s"        => \$destination,
   "preload=s"       => \@preload,
@@ -36,9 +48,9 @@ GetOptions("destination=s" => \$destination,
   "inputencoding=s" => \$inputencoding,
   "comments!"       => \$comments,
   "VERSION"         => \$showversion,
-  "debug=s" => sub { eval "\$LaTeXML::$_[1]::DEBUG=1; "; },
-  "documentid=s" => \$documentid,
-  "help"         => \$help,
+  "debug=s"         => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
+  "documentid=s"    => \$documentid,
+  "help"            => \$help,
   ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
@@ -50,16 +62,19 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
-print STDERR "processing started " . localtime() . "\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
+print STDERR "processing started " . localtime() . "\n" if $verbosity > -1;
 
-@paths = map(pathname_canonical($_), @paths);
-if (my @baddirs = grep(!-d $_, @paths)) {
+@paths = map { pathname_canonical($_) } @paths;
+if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-my $latexml = LaTeXML->new(preload => [@preload], searchpaths => [grep(-d $_, reverse(@paths))], graphicspaths => ['.'],
-  verbosity       => $verbosity, strict        => $strict,
-  includeComments => $comments,  inputencoding => $inputencoding,
+my $latexml = LaTeXML->new(
+  preload         => [@preload],
+  searchpaths     => [grep { -d $_ } reverse(@paths)],
+  graphicspaths   => ['.'],
+  verbosity       => $verbosity, strict => $strict,
+  includeComments => $comments, inputencoding => $inputencoding,
   includeStyles   => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
@@ -101,7 +116,7 @@ if ($digested) {
 $latexml->showProfile();    # Show profile (if any)
 
 print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
-print STDERR "processing finished " . localtime() . "\n" unless $verbosity < 0;
+print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
 
 if (!$serialized) { }
 elsif ($destination) {

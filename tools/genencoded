@@ -1,50 +1,102 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  genencoded                                                         | #
+# | generate an input encoding test case                                | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 
 use strict;
+use warnings;
 use FindBin;
-our $ENCODINGSDIR = "/usr/share/texmf/tex/latex/base";
-our $TESTDEST     = "$FindBin::RealBin/../t/encoding";
+use Pod::Usage;
 
-my $encoding = $ARGV[0];
+pod2usage(1) unless @ARGV;
+
+our $TESTDEST = "$FindBin::RealBin/../t/encoding";
+
 for my $encoding (@ARGV) {
-  my $defs = `kpsewhich $encoding.def`; chomp($defs);
-  my $dest = "$TESTDEST/$encoding.tex";
+  #----------------------------------------
+  # Find & Scan the TeX encoding file
+  my $defpath = `kpsewhich $encoding.def`;
+  chomp($defpath);
+  die "Could not find encoding file for '$encoding'" unless $defpath;
   my @defn = ();
-  open(ENC, $defs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
-  while (<ENC>) {
+  my $ENC;
+  open($ENC, '<', $defpath) or die "Could not open encoding file '$defpath': $!";
+  while (<$ENC>) {
     chomp;
     s/\s*%.*//;
-    if (/\s*\\DeclareInputText\{(\d+)\}\{(.*)\}$/) { $defn[$1] = pack('C', $1); }
-    elsif (/\s*\\DeclareInputMath\{(\d+)\}\{(.*)\}$/) { $defn[$1] = '$' . pack('C', $1) . '$'; }
+    if (/\s*\\DeclareInputText\{(\d+)\}\{(?:.*)\}$/) { $defn[$1] = pack('C', $1); }
+    elsif (/\s*\\DeclareInputMath\{(\d+)\}\{(?:.*)\}$/) { $defn[$1] = '$' . pack('C', $1) . '$'; }
     elsif (/Declare/) { print STDERR "Misunderstood line \"$_\"\n"; } }
-  close(ENC);
+  close($ENC);
 
-  open(TEX, ">$dest") or die "Couldn't open $dest for writing; $!";
-  binmode(TEX);
-  print TEX "\\documentclass{article}\n";
-  if ($defs =~ /cyrill/) {
-    print TEX "\\usepackage[T2A]{fontenc}\n"; }
-  else {
-    print TEX "\\usepackage[T1]{fontenc}\n"; }
-  print TEX "\\usepackage{textcomp}\n";
-  print TEX "\\usepackage[$encoding]{inputenc}\n";
-  print TEX "\\begin{document}\n";
-  print TEX "\\section{Input encoding $encoding}\n";
-  print TEX "\\begin{tabular}{l|cccccccccccccccc}\n";
-  for (my $c = 0 ; $c < 16 ; $c++) {
-    print TEX " & " . uc(sprintf("%x", $c)); }
-  print TEX "\\\\ \\hline\n";
+  #----------------------------------------
+  # Generate the TeX sample.
+  # Note that we are writing a Non-ASCII TeX file!
+  my $dest = "$TESTDEST/$encoding.tex";
+  my $fontenc = ($encoding =~ /cyrill/ ? 'T2A' : 'T1');
+  my $TEX;
+  open($TEX, '>', $dest) or die "Couldn't open '$dest' for writing; $!";
+  binmode($TEX);
+  print $TEX "\\documentclass{article}\n";
+  print $TEX "\\usepackage[$fontenc]{fontenc}\n";
+  print $TEX "\\usepackage{textcomp}\n";
+  print $TEX "\\usepackage[$encoding]{inputenc}\n";
+  print $TEX "\\begin{document}\n";
+  print $TEX "\\section{Input encoding $encoding}\n";
+  print $TEX "\\begin{tabular}{l|cccccccccccccccc}\n";
+
+  for (my $c = 0 ; $c < 16 ; $c++) {    # Print heading
+    print $TEX " & " . uc(sprintf("%x", $c)); }
+  print $TEX "\\\\ \\hline\n";
   for (my $r = 0 ; $r < 16 ; $r++) {
-    print TEX uc(sprintf("%x", $r)) . "x";
+    my $empty = 1;
     for (my $c = 0 ; $c < 16 ; $c++) {
       my $p = $r * 16 + $c;
       my $e = $defn[$p];
-      print TEX " & ";
-      print TEX $e if defined $e; }
-    print TEX "\\\\\n"; }
-  print TEX "\\end{tabular}\n";
-  print TEX "\\end{document}\n";
-  close(TEX);
+      $empty = 0 if defined $e; }
+    if (!$empty) {
+      print $TEX uc(sprintf("%x", $r)) . "x";
+      for (my $c = 0 ; $c < 16 ; $c++) {
+        my $p = $r * 16 + $c;
+        my $e = $defn[$p];
+        print $TEX " & ";
+        print $TEX $e if defined $e; }
+      print $TEX "\\\\\n"; } }
+  print $TEX "\\end{tabular}\n";
+  print $TEX "\\end{document}\n";
+  close($TEX);
 
   print "Wrote $dest for encoding $encoding\n";
 }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+genencoding - generate encoding test samples
+
+=head1 SYNOPSIS
+
+C<genencoded> I<encoding> ...
+
+Generate test (or sample) documents that demonstrate and test
+the given encodings, in the LaTeXML t/encoding directory.
+
+Since the coverage, completeness or even correctness of the
+encoding definitions changes from one TeX release to another,
+you may occasionally find it necessary to manually delete some cells
+from the generated table to make the test case more portable.
+
+=cut
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

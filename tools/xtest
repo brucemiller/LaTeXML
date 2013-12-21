@@ -1,10 +1,18 @@
 #!/usr/bin/perl -w
-#======================================================================
-# xtest:
-#    convert all test cases to xhtml
-#    generate a page of links to ease visual comparison of pdf to xml.
-#======================================================================
+# /=====================================================================\ #
+# |  compileschema                                                      | #
+# | Convert test cases to (x)html(5) for visual comparisons             | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
 use strict;
+use warnings;
 use FindBin;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -13,7 +21,7 @@ our $htmldest = '/local/www/site/htdocs/latexmltest';
 our $testdir  = "$FindBin::RealBin/../t";
 our $bindir   = "$FindBin::RealBin/../blib/script";
 our @TYPES    = ("html", "xhtml", "html5");
-
+our %TYPE_EXT = (html => 'html', xhtml => 'xhtml', html5 => 'html');
 #**********************************************************************
 # Parse command line
 
@@ -38,7 +46,7 @@ if (@ARGV) {
 else {
   $makeindex = 1;
   opendir(DIR, $testdir) or die "Couldn't read test directory $testdir: $!";
-  @testsets = sort grep(!/^\./ && -d "$testdir/$_", readdir(DIR));
+  @testsets = sort grep { !/^\./ && -d "$testdir/$_" } readdir(DIR);
   closedir(DIR); }
 
 #**********************************************************************
@@ -47,63 +55,68 @@ if (!-d $htmldest) {
 
 our $htmldata = '';
 
-foreach my $dir (@testsets) {
-  print STDERR "Looking at directory $testdir/$dir\n" if $verbosity >= 0;
-  opendir(DIR, "$testdir/$dir") or die "Couldn't read test directory $testdir/$dir: $!";
-  my @tests = sort grep(-f "$testdir/$dir/$_.xml", map(s/\.pdf$// && $_, grep(/\.pdf$/, readdir(DIR))));
+foreach my $set (@testsets) {
+  print STDERR "Looking at directory $testdir/$set\n" if $verbosity >= 0;
+  opendir(DIR, "$testdir/$set") or die "Couldn't read test directory $testdir/$set: $!";
+  my $p;
+  my @tests = sort grep { -f "$testdir/$set/$_.xml" }
+    map { (($p = $_) =~ s/\.pdf$// ? ($p) : ()) } readdir(DIR);
   closedir(DIR);
 
   next unless @tests;
 
-  if (!-d "$htmldest/$dir") {
-    print STDERR "Creating $htmldest/$dir\n" if $verbosity >= 0;
-    mkdir("$htmldest/$dir") or die "Couldn't create destination directory $htmldest: $!"; }
+  if (!-d "$htmldest/$set") {
+    print STDERR "Creating $htmldest/$set\n" if $verbosity >= 0;
+    mkdir("$htmldest/$set") or die "Couldn't create destination directory $htmldest: $!"; }
 
-  $htmldata .= "<tr><th colspan='5' class='testgroup'>$dir</th></tr>\n";
+  $htmldata .= "<tr><th colspan='5' class='testgroup'>$set</th></tr>\n";
 
   foreach my $test (@tests) {
-    my $srcxml = "$testdir/$dir/$test.xml";
-    my $srcpdf = "$testdir/$dir/$test.pdf";
-    my @links  = ("<td class='pdf'><a href='$dir/$test.pdf'>pdf</a></td>",
-      "<td class='xml'><a href='$dir/$test.xml'>xml</a></td>");
+    my $srcxml = "$testdir/$set/$test.xml";
+    my $srcpdf = "$testdir/$set/$test.pdf";
+    my @links  = ("<td class='pdf'><a href='$set/$test.pdf'>pdf</a></td>",
+      "<td class='xml'><a href='$set/$test.xml'>xml</a></td>");
     my $usesdtd = system('grep', '--quiet', 'DOCTYPE', $srcxml) == 0;
-    copy($srcxml, "$htmldest/$dir/$test.xml");
-    copy($srcpdf, "$htmldest/$dir/$test.pdf");
+    copy($srcxml, "$htmldest/$set/$test.xml");
+    copy($srcpdf, "$htmldest/$set/$test.pdf");
     foreach my $type (@TYPES) {
-      my $ext = ($type eq 'xhtml' ? 'xhtml' : 'html');
-      my $dstxml = "$htmldest/$dir/$type/$test.$ext";
-      push(@links, "<td class='$type'><a href='$dir/$type/$test.$ext'>$type</a></td>");
-      if ($force || (!-f $dstxml) || ((-M $srcxml) < (-M $dstxml))) {
-        print STDERR "\nConverting test case $dir/$test ($type)" . ($usesdtd ? " [dtd]" : "")
-          #if $verbosity >= 0
-          ;
+      my $ext  = $TYPE_EXT{$type};
+      my $dest = "$htmldest/$set/$type/$test.$ext";
+      push(@links, "<td class='$type'><a href='$set/$type/$test.$ext'>$type</a></td>");
+      if ($force || (!-f $dest) || ((-M $srcxml) < (-M $dest))) {
+        print STDERR "\nConverting test case $set/$test ($type)" . ($usesdtd ? " [dtd]" : "");
         system("$bindir/latexmlpost",
           ($usesdtd ? ("--novalidate") : ()),
-          "--dest=$dstxml",
+          "--dest=$dest",
           "--format=$type",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
-          ($verbosity > 0 ? map("--verbose", 1 .. $verbosity)
-            : ($verbosity < 0 ? map("--quiet", 1 .. -$verbosity)
+          ($verbosity > 0 ? map { "--verbose" } 1 .. $verbosity
+            : ($verbosity < 0 ? map { "--quiet" } 1 .. -$verbosity
               : ())),
           $srcxml)
-          == 0 or die "Couldn't transform test case $testdir/$dir/$type/$test: $!"; } }
+          == 0 or die "Couldn't transform test case $testdir/$set/$type/$test: $!"; } }
     $htmldata .= "<tr><td class='testcase'>$test</td> " . join('', @links) . ".</tr>\n"; }
 }
 
 if ($makeindex) {
-  open(DIR, ">$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
-  print DIR $HEADER . $htmldata . $FOOTER;
-  close(DIR); }
+  my $DIR;
+  open($DIR, '>', "$htmldest/index.html") or die "Couldn't create $htmldest/index.html: $!";
+  print $DIR $HEADER . $htmldata . $FOOTER;
+  close($DIR); }
+
+#======================================================================
 
 sub copy {
   my ($src, $dst) = @_;
   if ($force || (!-f $dst) || ((-M $src) < (-M $dst))) {
     print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
-    system('cp', $src, $dst) == 0 or die "Couldn't copy $src to $dst: $!"; } }
+    return system('cp', $src, $dst) == 0 or die "Couldn't copy $src to $dst: $!"; }
+  else {
+    return; } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 BEGIN {
-  $HEADER = <<EOHead;
+  $HEADER = <<'EOHead';
 <html>
 <head><title>LaTeXML Tests</title>
 <style>
@@ -123,7 +136,7 @@ th { font-weight:bold; }
     <th colspan='3'>Generated</th></tr>
 EOHead
 
-  $FOOTER = <<EOFoot;
+  $FOOTER = <<'EOFoot';
 </table>;
 </body>
 EOFoot

@@ -1,5 +1,17 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  latexmlpost                                                        | #
+# | post processing conversion program                                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use File::Spec;
@@ -206,7 +218,7 @@ elsif ($format eq 'html5') {
   # In principle, should only have pMML and possibly MathImages (for altimg);
   # but I guess we can allow people to try...
   unshift(@math_formats, 'pmml')
-    unless grep($_ eq 'pmml', @math_formats) || $removed_math_formats{pmml};
+    unless (grep { $_ eq 'pmml' } @math_formats) || $removed_math_formats{pmml};
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html    = 1;
@@ -215,7 +227,7 @@ elsif ($format eq 'xhtml') {
   # Add pMML FIRST, unless already there, or was disabled.
   # note that MathImages can supply altimg attributes
   unshift(@math_formats, 'pmml')
-    unless grep($_ eq 'pmml', @math_formats) || $removed_math_formats{pmml};
+    unless (grep { $_ eq 'pmml' } @math_formats) || $removed_math_formats{pmml};
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html    = 0;
@@ -235,8 +247,8 @@ if ((!defined $destination) && ($mathimages || $dographics || $picimages)) {
 #======================================================================
 
 binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
-print STDERR "processing started " . localtime() unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
+print STDERR "processing started " . localtime() if $verbosity > -1;
 
 # Default options/parameters for each post processor
 our %OPTIONS = ();
@@ -296,9 +308,9 @@ if (!$prescan) {
     require LaTeXML::Post::Graphics;
     my @g_options = ();
     if (@graphicsmaps) {
-      my @maps = map([split(/\./, $_)], @graphicsmaps);
-      push(@g_options, (graphics_types => [map($$_[0], @maps)],
-          type_properties => { map(($$_[0] => { destination_type => ($$_[1] || $$_[0]) }), @maps) })); }
+      my @maps = map { [split(/\./, $_)] } @graphicsmaps;
+      push(@g_options, (graphics_types => [map { $$_[0] } @maps],
+          type_properties => { map { ($$_[0] => { destination_type => ($$_[1] || $$_[0]) }) } @maps })); }
     push(@procs, LaTeXML::Post::Graphics->new(@g_options, %OPTIONS)); }
   if ($svg) {
     require LaTeXML::Post::SVG;
@@ -413,33 +425,36 @@ my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
 $latexmlpost->ProcessChain($DOCUMENT, @procs);
 $DB->finish;
 print STDERR "\nPostprocessing complete: " . $latexmlpost->getStatusMessage . "\n";
-print STDERR "processing finished " . localtime() . "\n" unless $verbosity < 0;
+print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
 
 #======================================================================
 # helpers
 #======================================================================
 sub xError {
   my ($message) = @_;
-#  pod2usage(-message=>"$LaTeXML::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR);
+  #  pod2usage(-message=>"$LaTeXML::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR);
   die "ERROR: $message\nUse the --help option for complete details\n";
 }
 
 sub addMathFormat {
   my ($fmt) = @_;
   push(@math_formats, $fmt)
-    unless grep($_ eq $fmt, @math_formats) || $removed_math_formats{$fmt}; }
+    unless (grep { $_ eq $fmt } @math_formats) || $removed_math_formats{$fmt};
+  return; }
 
 sub removeMathFormat {
   my ($fmt) = @_;
-  @math_formats = grep($_ ne $fmt, @math_formats);
-  $removed_math_formats{$fmt} = 1; }
+  @math_formats = grep { $_ ne $fmt } @math_formats;
+  $removed_math_formats{$fmt} = 1;
+  return; }
 
 sub checkOptionValue {
   my ($option, $value, @choices) = @_;
   if ($value) {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
-  xError("Value for $option, $value, doesn't match " . join(', ', @choices)); }
+  xError("Value for $option, $value, doesn't match " . join(', ', @choices));
+  return; }
 
 #**********************************************************************
 __END__

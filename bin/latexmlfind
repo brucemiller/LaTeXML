@@ -1,5 +1,17 @@
 #!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  latexmlfind                                                        | #
+# | xml search utility program                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
@@ -34,7 +46,7 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Do the processing.
-print STDERR "$LaTeXML::IDENTITY\n" unless $verbosity < 0;
+print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
 binmode(STDOUT, ":encoding(UTF-8)");    # Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
@@ -84,10 +96,12 @@ sub match_font {
   my ($font1, $font2) = @_;
   #print STDERR "Match font \"".($font1 || 'none')."\" to \"".($font2||'none')."\"\n";
   return 0 unless $font1 && $font2;
-  $font1 =~ /^Font\[(.*)\]$/;
-  my @comp1 = split(',', $1);
-  $font2 =~ /^Font\[(.*)\]$/;
-  my @comp2 = split(',', $1);
+  my @comp1;
+  my @comp2;
+  if ($font1 =~ /^Font\[(.*)\]$/) {
+    @comp1 = split(',', $1); }
+  if ($font2 =~ /^Font\[(.*)\]$/) {
+    @comp2 = split(',', $1); }
   while (@comp1) {
     my $c1 = shift @comp1;
     my $c2 = shift @comp2;
@@ -102,7 +116,8 @@ sub collect_matches {
   print "  [XPath = \"$xpath\"]\n" if $verbosity > 0;
   foreach my $node (@nodes) {
     my $object = id_object($node);
-    push(@{ $$object{items} }, $node); } }
+    push(@{ $$object{items} }, $node); }
+  return; }
 
 sub id_object {
   my ($node) = @_;
@@ -125,7 +140,7 @@ sub id_object {
     $OBJECTS{$id} = $object
       = { id => $id, labels => $labels, type => $type, description => $desc, children => [], items => [] };
     push(@{ $$parent_object{children} }, $object);
-    $object; } }
+    return $object; } }
 
 sub show_matches {
   my ($object, $indent) = @_;
@@ -139,7 +154,7 @@ sub show_matches {
       show_node($item, $indent . ' | '); } }
   foreach my $child (@{ $$object{children} }) {
     show_matches($child, $indent . ' | '); }
-}
+  return; }
 
 sub show_node {
   my ($node, $indent) = @_;
@@ -152,7 +167,7 @@ sub show_node {
       print wrap($indent, $indent, $ctex || $ptex) . "\n"; } }
   else {
     print $indent. $node->toString . "\n"; }
-}
+  return; }
 
 #**********************************************************************
 __END__

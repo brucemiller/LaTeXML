@@ -18,5 +18,6 @@ if (my @modified_files =
   my $status = system(catfile('tools', 'latexmllint'), "--precommit", @modified_files);
   my $code = $status >> 8;
 
-  print STDERR color('red'), "COMMIT ABORTED", color('reset'), "\n" if $code;
+  print STDERR "Some files had issues; To correct these, run:\n   tools/latexmllint <files>."
+    . colored("COMMIT ABORTED", 'red') . "\n" if $code;
   exit $code; }
