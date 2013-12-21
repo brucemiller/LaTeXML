@@ -56,11 +56,11 @@ sub setTeXImage {
 sub preamble {
   my ($self, $doc) = @_;
   return <<'EOPreamble';
-\\def\\beginINLINE{\\lxBeginImage\\(}
-\\def\\endINLINE{\\)\\lxEndImage\\lxShowImage}
+\def\beginINLINE{\lxBeginImage\(}
+\def\endINLINE{\)\lxEndImage\lxShowImage}
 % For Display, same as inline, but set displaystyle.
-\\def\\beginDISPLAY{\\lxBeginImage\\(\\displaystyle\\the\\everydisplay}
-\\def\\endDISPLAY{\\)\\lxEndImage\\lxShowImage}
+\def\beginDISPLAY{\lxBeginImage\(\displaystyle\the\everydisplay}
+\def\endDISPLAY{\)\lxEndImage\lxShowImage}
 EOPreamble
 }
 #======================================================================
