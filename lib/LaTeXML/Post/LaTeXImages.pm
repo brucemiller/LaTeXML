@@ -362,7 +362,7 @@ sub pre_preamble {
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
   my $th = $$self{clippingrule} * $pts_per_pixel;   # clipping box thickness in points.
                                                     #  print STDERR "w=$w, gap=$gap, thickness=$th\n";
-  return <<'EOPreamble';
+  return <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
 $documentcommand$class_options\{$class\}
