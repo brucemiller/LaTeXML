@@ -1,7 +1,14 @@
 #!/usr/bin/perl -w
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# latexmllint
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# /=====================================================================\ #
+# |  latexmllint                                                        | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
@@ -9,102 +16,84 @@ use Pod::Usage;
 use FindBin;
 use File::Which qw(which);
 use File::Spec::Functions;
+use Term::ANSIColor;
 use Carp;
-# Assume we're in the tools directory of a development version of latexml
-#### use lib "$FindBin::RealBin/../blib/lib";
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
 my $identity  = 'latexmllint';
 my ($help)    = (0);
 my $VERBOSITY = 0;
-my ($doprecommit, $dotidy, $docritic) = (0, 1, 1);
-my $severity = undef;
+my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC) = (0, 1, 1);
+my %exclude = ();    # excluded features
+my %include = ();
+my ($DOMODIFY, $SEVERITY);
 GetOptions(
   "help"       => \$help,
-  "precommit!" => \$doprecommit,
-  "tidy!"      => \$dotidy,
-  "critic!"    => \$docritic,
-  "severity=s" => \$severity,
-  "verbose"    => sub { $VERBOSITY++; },
-  "quiet"      => sub { $VERBOSITY--; },
+  "precommit!" => \$DOPRECOMMIT,
+  "modify!"    => \$DOMODIFY,
+  "tidy!"      => \$DOTIDY,
+  "critic!"    => \$DOCRITIC,
+  "severity=s" => \$SEVERITY,
+  "programs!"  => sub { if ($_[1]) { $include{program} = 1; } else { $exclude{program} = 1; } },
+  "modules!"   => sub { if ($_[1]) { $include{module} = 1; } else { $exclude{module} = 1; } },
+  "bindings!"  => sub { if ($_[1]) { $include{binding} = 1; } else { $exclude{binding} = 1; } },
+  "verbose" => sub { $VERBOSITY++; },
+  "quiet"   => sub { $VERBOSITY--; },
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-my $REQ_SEVERITY = 4;                 # Critic conformance required for commit
-my $DEF_SEVERITY = 3;                 # preferred level of conformance
-my @LINTPATHS    = (qw(lib tools));
+#======================================================================
+my $REQ_SEVERITY = 4;    # Critic conformance required for commit
+my $DEF_SEVERITY = 3;    # preferred level of conformance
+my @SCOLORS   = (undef, undef, undef, undef, "magenta", "red");
+my @LINTPATHS = (qw(bin lib tools));
 
 my $LATEXMLDIR = catfile($FindBin::RealBin, updir());    # Assumes we're in tools subdir
 my $TOOLDIR = $FindBin::RealBin;
 my @FILES = expand_files((@ARGV ? @ARGV : map { catfile($LATEXMLDIR, $_) } @LINTPATHS));
 
-if (!defined $severity) {                                # Default severity, if none requested
-  $severity = ($doprecommit ? $REQ_SEVERITY : $DEF_SEVERITY); }
+if (!defined $SEVERITY) {                                # Default severity, if none requested
+  $SEVERITY = ($DOPRECOMMIT ? $REQ_SEVERITY : $DEF_SEVERITY); }
+if (!defined $DOMODIFY) {
+  $DOMODIFY = ($DOPRECOMMIT ? 0 : 1); }
+$VERBOSITY-- if $DOPRECOMMIT;
 
 my $PERLTIDY;
 my $PERLCRITIC;
-my $perltidy_profile   = '--profile=' . catfile($TOOLDIR, 'latexml.perltidy');
-my $perlcritic_profile = '--profile=' . catfile($TOOLDIR, 'latexml.perlcritic');
-
-my $exitstatus = 0;
-my ($ntotal, $ntidy, $ncritic) = (0, 0, 0);
+my $EXITSTATUS = 0;
+my ($NTOTAL, $NTIDY, $NCRITIC, $NFAIL) = (0, 0, 0, 0);
 
 foreach my $file (@FILES) {
-  $ntotal++;
   my %class = classify($file);
-  if ($class{perl} && $dotidy) {
+  next if grep { $class{$_} } keys %exclude;
+  next if (keys %include) && (!grep { $class{$_} } keys %include);
+  $NTOTAL++;
+  my $failed = 0;
+  if ($class{perl} && $DOTIDY) {
     if (!$PERLTIDY && !($PERLTIDY = which('perltidy'))) {    # Look for perltidy exec.
-      $dotidy = 0;                                           # Disable
+      $DOTIDY = 0;                                           # Disable
       print STDERR "No perltidy was found; skipping tidy phase.\n"; }
     else {
-      print "Checking $file formatting..." if $VERBOSITY > 0;
-      system($PERLTIDY, $perltidy_profile, "-o=$file.tdy", $file) == 0
-        or croak "Couldn't run $PERLTIDY on $file: $!";
-      my $diffs = length(`diff $file $file.tdy`);
-      if (!$diffs) {    # No diffs after formatting? No formatting needed.
-        print " formatting is OK.\n" if $VERBOSITY > 0;
-        unlink "$file.tdy"; }
-      elsif ($doprecommit) {    # Else have differences; Are we just reporting it?
-        $exitstatus = 1;
-        $ntidy++;
-        print "\n" . $file . ' ' if $VERBOSITY == 0;
-        print " needs reformatting.\n" if $VERBOSITY > -1;
-        unlink "$file.tdy"; }
-      else {                    # Or are we going to apply the reformatting?
-        $ntidy++;
-        rename $file, $file . ".bak";
-        rename $file . ".tdy", $file;
-        print "Reformatted $file.\n" if $VERBOSITY > -1; } } }
-  if ($class{perl} && $docritic) {
+      $failed ||= doPerltidy($file); } }
+  if ($class{perl} && $DOCRITIC) {
     if (!$PERLCRITIC && !($PERLCRITIC = which('perlcritic'))) {
-      $docritic = 0;            # Disable
+      $DOCRITIC = 0;                                         # Disable
       print STDERR "No perlcritic was found; skipping critic phase.\n"; }
     else {
-      print "Checking $file policy..." if $VERBOSITY > 0;
-      # Use backticks, since otherwise can't manage the output...
-      my $critique = `$PERLCRITIC $perlcritic_profile --severity=$severity --quiet $file`;
-      if ($critique eq "") {    # No errors and no policy violations
-        print " conformance is OK.\n" if $VERBOSITY > 0; }
-      elsif ($critique) {       # Policy violations
-        $ncritic++;
-        print "\n" . $file . ' ' if $VERBOSITY == 0;
-        print " has policy issues\n" if $VERBOSITY > -1;
-        print $critique if !$doprecommit && $VERBOSITY > -1; }
-      else {                    # Run error
-        croak "Couldn't run $PERLCRITIC on $file: $!"; } } }
+      $failed ||= doPerlcritic($file); } }
+  $NFAIL++ if $failed;                                       # Did this file fail some validation?
 }
 
-print "Examined $ntotal file(s): $ntidy "
-  . ($doprecommit ? "need reformatting" : "were reformatted")
-  . "; $ncritic files need code revision."
-  . ($doprecommit && ($ncritic || $ntidy) ? " Run tools/latexmllint on offending files." : '')
-  . "\n"
+print "\nExamined $NTOTAL file(s): "
+  . ($DOMODIFY ? plural($NTIDY, 'was', 'were') . ' reformatted'
+  : plural($NTIDY, 'needs', 'need') . ' reformatting') . '; '
+  . plural($NCRITIC, 'needs', 'need') . ' code revision; '
+  . plural($NFAIL,   'fails', 'fail') . " requirements for commit.\n"
   if ($VERBOSITY > -1);
-print "Note: only policies with severity >= $REQ_SEVERITY inhibit a commit.\n"
-  if !$doprecommit && $ncritic && ($severity < $REQ_SEVERITY) && ($VERBOSITY > -1);
-exit($exitstatus);
+print "[Note: only policies with severity >= $REQ_SEVERITY inhibit a commit.]\n"
+  if $NFAIL && $NCRITIC && ($VERBOSITY > -1);
+exit($EXITSTATUS);
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
 # Possibilities here:
 #   language: perl,css, xslt, javascript
 #   program, module, binding...
@@ -126,36 +115,111 @@ sub classify {
     return (xslt => 1); }
   elsif (my $type = `file -b $file`) {
     if ($type =~ /^Perl script/) {
-      return (perl => 1, program => 1); } }
+      return (perl => 1, program => 1); }
+    elsif ($type =~ /ASCII text/) {    # Desperation due to flakey file command!
+      my $TEST;
+      open($TEST, '<', $file) or return {};
+      my $firstline = <$TEST>;
+      close($TEST);
+      if ($firstline =~ m|^\#\!\s*(.*?)/bin/perl\s+\-w\s*$|) {
+        return (perl => 1, program => 1); }
+    } }
   return (); }
 
-my @perlfiles = grep { /(latexml[a-zA-Z]*$)|(\.(pl|pm|ltxml))$/i } @FILES;
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Particular handlers.
+# These should return 1 upon "failure", that is the file they test doesn't meet standards.
+
+sub doPerltidy {
+  my ($file) = @_;
+  print "Checking '$file' formatting..." if $VERBOSITY > 0;
+  my $failed = 0;
+  system($PERLTIDY,
+    '--profile=' . catfile($TOOLDIR, 'latexml.perltidy'),
+    "-o=$file.tdy",
+    $file) == 0
+    or croak "Couldn't run $PERLTIDY on '$file': $!";
+  my $diffs = length(`diff $file $file.tdy`);
+  if (!$diffs) {    # No diffs after formatting? No formatting needed.
+    print " formatting is OK.\n" if $VERBOSITY > 0;
+    unlink "$file.tdy"; }
+  elsif (!$DOMODIFY) {    # Else have differences; Are we just reporting it?
+    $EXITSTATUS = 1;
+    $NTIDY++;             # perltidy wasn't happy
+    $failed = 1;          # and it fails
+    print "\n" . $file . ' ' if $VERBOSITY == 0;
+    print " needs reformatting.\n" if $VERBOSITY > -1;
+    unlink "$file.tdy"; }
+  else {                  # Or are we going to apply the reformatting?
+    $NTIDY++;             # perltidy wasn't happy, but since rewrote, doesn't fail
+    rename $file, $file . ".bak";
+    rename $file . ".tdy", $file;
+    print "Reformatted $file.\n" if $VERBOSITY > -1; }
+  return $failed; }
+
+sub doPerlcritic {
+  my ($file) = @_;
+  my $failed = 0;
+  print "Checking '$file' policy..." if $VERBOSITY > 0;
+  # Use backticks, since otherwise can't manage the output...
+  my $profile = catfile($TOOLDIR, 'latexml.perlcritic');
+  my $critique = `$PERLCRITIC  --profile=$profile --severity=$SEVERITY --quiet $file`;
+  if ($critique eq "") {    # No errors and no policy violations
+    print " conformance is OK.\n" if $VERBOSITY > 0; }
+  elsif ($critique) {       # Policy violations
+    $EXITSTATUS = 1;
+    $NCRITIC++;             # perlcritic wasn't happy.
+    print color('bold');
+    print "\n" . $file . ' ' if $VERBOSITY == 0;
+    print " has policy issues\n" if $VERBOSITY > -1;
+    print color('reset');
+    if ($VERBOSITY > -1) {    # We'll RE-PRINT the output so we can RE color it!
+      foreach my $line (split("\n", $critique)) {
+        my ($s) = ($line =~ /\(Severity:\s+(\d+)\)$/);
+        $failed = 1 if $s >= $REQ_SEVERITY;
+        if ($s && $SCOLORS[$s]) {
+          print colored($line, $SCOLORS[$s]) . "\n"; }
+        else {
+          print $line, "\n"; } } } }
+  else {                      # Run error
+    croak "Couldn't run $PERLCRITIC on '$file': $!"; }
+  return $failed; }
+
+#======================================================================
+# Low-level utilities
 sub expand_files {
   my (@stuff) = @_;
   return map { expand_file($_) } @stuff; }
 
 sub expand_file {
   my ($file) = @_;
-  if (-d $file) {
+  if ($file =~ /(?:^#|~$|\.bak$|\.tdy$)/) {
+    return (); }
+  elsif (-d $file) {
     my $DIR;
     opendir($DIR, $file);
-    my @files = grep { /^[^\.]/ } readdir($DIR);
+    my @files = grep { /^[^\.#]/ } readdir($DIR);
     closedir($DIR);
-    return map { expand_file(catfile($file, $_)) } @files; }
+    return map { expand_file(catfile($file, $_)) } sort @files; }
+  elsif (-f $file) {
+    return ($file); }
   else {
-    return ($file); } }
+    print STDERR "Skipping $file; not normal file.\n";
+    return (); } }
+
+sub plural {
+  my ($n, $single, $multi) = @_;
+  return $n . ' ' . ($n == 1 ? $single : $multi); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 __END__
 
-=head NAME
+=head1 NAME
 
 C<latexmllint> I<options> I<files> ...
 
 =head1 SYNOPSIS
-
 
 A tool for establish consistent coding standards for LaTeXML.
 Code formatting is implemented by C<perltidy>,  using a prefered set of formatting rules.
@@ -164,7 +228,34 @@ a prefered set of Policies.
 
 Options:
 
-  --precommit checks for minimal conformance, but doesn't modify the file.
+  --precommit  Checks for minimal conformance required for committing,
+               but doesn't allow reformatting of files.
+  --noprecommit Default level checking, allows reformatting (default)
+  --modify     Allows modifying (typically reformatting) files
+              (default unless --precommit)
+  --nomodify   Do not allow modifying files (default with --precommit)
+  --tidy       Do run perltidy (default for perl files)
+  --notidy     Do not run perltidy
+  --critic     Do run perlcritic (default for perl files)
+  --nocritic   Do not run perlcritic
+  --severity   The severity level for perlcritic
+               (default 3; or 4 when --precommit)
+  --programs   Process programs only (see below)
+  --noprograms Exclude programs
+  --modules    Include perl modules only (.pm) (see below)
+  --nomodules  Exclude perl modules
+  --bindings   Include LaTeXML bindings only (.ltxml, .latexml)
+  --nobindings Exclude LaTeXML bindings
+  --verbose    Show more output
+  --quiet      Show less output
+  --help       Show this help message
+
+Note that when I<any> of the file class inclusion options
+(--programs, --modules, --bindings) is used, then only files in
+one of the explicitly mentioned classes will be processed.
+When one of the exclusion options are used, then all classes
+except for the excluded ones will be processed.
 
 =cut
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
