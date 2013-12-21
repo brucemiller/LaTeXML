@@ -55,6 +55,11 @@ severity=2
 severity=3
 # was 4; good policy but needs a slow cleaning out.
 
+[TestingAndDebugging::ProhibitNoStrict]
+severity=2
+# was 5; If we're doing it explicitly
+# it's prbobably because of some other overzealous policy, right?
+
 [TestingAndDebugging::ProhibitNoWarnings]
 severity=2
 # was 4; Well, if I only do it sometimes?
