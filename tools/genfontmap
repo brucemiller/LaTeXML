@@ -1,0 +1,189 @@
+#!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  genfontmap                                                         | #
+# | generate a font map declaration                                     | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use warnings;
+use Pod::Usage;
+
+pod2usage(1) unless @ARGV;
+
+our $ENCODINGSDIR = "/usr/share/texmf/tex/latex/base";
+
+our @static = (qw(a b c d e f g h i j k l m n o p q r s t u v w x y z
+    A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+    0 1 2 3 4 5 6 7 8 9));
+
+for my $fontencoding (@ARGV) {
+  $fontencoding = lc($fontencoding);
+  #----------------------------------------
+  # Find the font encoding file.
+  my $defpath = finddefn($fontencoding . 'enc.def');
+  if (!$defpath) {
+    print STDERR "No definitions found for font encoding '$fontencoding...skipping\n";
+    next; }
+  #----------------------------------------
+  # Read the font encoding, noting which characters need to be mapped.
+  my $expression_sought = {};
+  my $map = [map { undef } 0 .. 255];
+
+  foreach my $c (@static) {
+    $$map[ord($c)] = "\"$c\""; }
+
+  my $ENC;
+  open($ENC, '<', $defpath) or die "Cannot open encoding defintion '$defpath': $!";
+  print STDERR "Reading font encoding definition from '$defpath'\n";
+  while (<$ENC>) {
+    chomp;
+    s/\s*%.*//;
+    if    (/\s*\\DeclareFontEncoding/)     { }
+    elsif (/\s*\\DeclareFontSubstitution/) { }
+    elsif (/\s*\\DeclareTextAccent/)       { }
+    elsif (/\s*\\DeclareTextSymbol\s*\{(.*?)\}\s*\{.*?\}\s*\{(.+)\}\s*$/) {
+      my ($e, $p) = ($1, $2);
+      if ($p =~ /^\`\\(.)$/) { $p = ord($1); }
+      $$expression_sought{$e} = $p; }
+    elsif (/\s*\\DeclareTextComposite\s*\{(.*?)\}\s*\{.*?\}\s*\{(.*?)\}\s*\{(.*?)\}\s*$/) {
+      my ($a, $c, $p) = ($1, $2, $3);
+      if ($p =~ /^\`\\(.)$/) { $p = ord($1); }
+      my $e = ($a =~ /[a-zA-Z]$/ ? "$a $c" : "$a$c");
+      $$expression_sought{$e} = $p; }
+    elsif (/Declare/) { print STDERR "Misunderstood def line \"$_\"\n"; } }
+  close($ENC);
+
+  #----------------------------------------
+  # Search through various of LaTeX's encoding tables to find
+  # good definitions for each character.  From "best" to "Worst"
+  readUnicode('utf8', $expression_sought, $map);
+  readUnicode('t1',   $expression_sought, $map);
+  readUnicode('ts1',  $expression_sought, $map);
+  readAscii('t1',  $expression_sought, $map);
+  readAscii('ts1', $expression_sought, $map);
+  readUnicode($fontencoding, $expression_sought, $map);
+
+  print "Unhandled expressions "
+    . join(', ', map { "$_ ($$expression_sought{$_})" } sort keys %$expression_sought) . "\n";
+  map { $$map[$$expression_sought{$_}] = "\"$_\"" } keys %$expression_sought;
+
+  #----------------------------------------
+  # Print the encoding table we've constructed.
+  print "\nDeclareFontMap('" . uc($fontencoding) . "',\n";
+  for (my $r = 0 ; $r < 32 ; $r++) {
+    my $line = "    ";
+    for (my $c = 0 ; $c < 8 ; $c++) {
+      my $p = $r * 8 + $c;
+      my $e = $$map[$p] || 'undef';
+      $line .= $e . "," . (' ' x (10 - length($e))); }
+    print "$line\n"; }
+  print ");\n";
+}
+
+#======================================================================
+
+sub finddefn {
+  my ($defn) = @_;
+  my $defpath = `kpsewhich $defn`;
+  chomp($defpath);
+  return $defpath; }
+
+#======================================================================
+# Get the "handlers" as a unicode codepoint for those expressions covered by a particular encoding
+# This reads the DeclareUnicodeCharacter in the "*enc.dfu" file
+sub readUnicode {
+  my ($encoding, $expression_sought, $map) = @_;
+  my $udefs = finddefn($encoding . 'enc.dfu');
+  return unless $udefs;
+  my $UENC;
+  open($UENC, '<', $udefs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  print STDERR "Reading unicode for $encoding from $udefs\n";
+  while (<$UENC>) {
+    chomp;
+    s/\s*%.*//;
+    if (/\s*\\DeclareUnicodeCharacter\{(.+?)\}\{(.*?)\}$/) {
+      my ($u, $e) = ($1, $2);
+      $e =~ s/\\\@tabacckludge/\\/;
+      if (my $p = $$expression_sought{$e}) {
+        delete $$expression_sought{$e};
+        $$map[$p] = ($u =~ s/^00// ? "UTF(0x$u)" : "\"\\x{" . $u . "}\""); } }
+    elsif (/Declare/) { print STDERR "Misunderstood dfu line \"$_\"\n"; } }
+  close($UENC);
+
+  foreach my $e (keys %$expression_sought) {
+    delete $$expression_sought{$e} if $$map[$$expression_sought{$e}]; }
+  return; }
+
+# Get the "handlers" as ascii chars for those expressions covered by a particular encoding
+# This reads the DeclareTextSymbol in the "*enc.def" file
+sub readAscii {
+  my ($encoding, $expression_sought, $map) = @_;
+  my $defs = finddefn($encoding . 'enc.def');
+  return unless $defs;
+  my $ENC;
+  open($ENC, '<', $defs) or die "Cannot open encoding $ENCODINGSDIR/$encoding: $!";
+  print STDERR "Reading ascii for $encoding from $defs\n";
+  while (<$ENC>) {
+    chomp;
+    s/\s*%.*//;
+    if    (/\s*\\DeclareFontEncoding/)     { }
+    elsif (/\s*\\DeclareFontSubstitution/) { }
+    elsif (/\s*\\DeclareTextAccent/)       { }
+    elsif (/\s*\\DeclareTextSymbol\s*\{(.*?)\}\s*\{.*?\}\s*\{(.+)\}\s*$/) {
+      my ($e, $m) = ($1, $2);
+      if ($m =~ /^\`\\(.)$/) {
+        if (my $p = $$expression_sought{$e}) {
+          delete $$expression_sought{$e};
+          $$map[$p] = "\"$1\""; } } }
+    elsif (/\s*\\DeclareTextCommand/) { }
+    elsif (/\s*\\DeclareTextComposite\s*\{(.*?)\}\s*\{.*?\}\s*\{(.*?)\}\s*\{(.*?)\}\s*$/) {
+      my ($a, $c, $m) = ($1, $2, $3);
+      my $e = ($a =~ /[a-zA-Z]$/ ? "$a $c" : "$a$c");
+      if ($m =~ /^\`\\(.)$/) {
+        if (my $p = $$expression_sought{$e}) {
+          delete $$expression_sought{$e};
+          $$map[$p] = "\"$1\""; } } }
+    elsif (/\s*\\DeclareTextCompositeCommand\s*\{(?:.*?)\}\s*\{.*?\}\s*\{(?:.*?)\}\s*\{.*?\}\s*$/) { }
+    elsif (/Declare/) { print STDERR "Misunderstood def line \"$_\"\n"; } }
+  close($ENC);
+
+  foreach my $e (keys %$expression_sought) {
+    delete $$expression_sought{$e} if $$map[$$expression_sought{$e}]; }
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+genfontmap - generate a fontmap for a font encoding
+
+=head1 SYNOPSIS
+
+C<genfontmap> I<fontencoding> ...
+
+Generate a draft font map declaration, as a C<DeclareFontMap()>  table;
+prints to STDOUT for insertion into an appropriate binding file.
+This involves reading the font encoding definitions file from the
+TeX distribution to obtain an 'expression' for each entry in the font.
+Then, each such expression is sought in unicode font mapping,
+or in other definition files to attempt to find a plausible Unicode
+codepoint for each entry in the font.
+
+Note that we do not recognize all forms of declarations found in
+LaTeX's font encoding defintions files (the misunderstood lines are printed out).
+And also, that we may not find all the needed expressions in the Unicode
+encoding.  Thus, the resulting table may need to be completed by hand
+comparing a printed table of the font to Unicode tables.
+
+=cut
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
