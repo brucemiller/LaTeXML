@@ -330,7 +330,9 @@ sub _prepare_options {
   #======================================================================
   # I. Sanity check and Completion of Core options.
   #======================================================================
-  eval "\$LaTeXML::" . $_ . "::DEBUG=1; " foreach @{ $opts->{debug} };
+  # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
+  { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; }
+
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
   $opts->{mathparse} = 'RecDescent' unless defined $opts->{mathparse};
