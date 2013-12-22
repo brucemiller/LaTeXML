@@ -64,23 +64,23 @@ my $EXITSTATUS = 0;
 my ($NTOTAL, $NTIDY, $NCRITIC, $NFAIL) = (0, 0, 0, 0);
 
 foreach my $file (@FILES) {
-  my %class = classify($file);
-  next if grep { $class{$_} } keys %exclude;
-  next if (keys %include) && (!grep { $class{$_} } keys %include);
+  my $classification = classify($file);
+  next if grep { $$classification{$_} } keys %exclude;
+  next if (keys %include) && (!grep { $$classification{$_} } keys %include);
   $NTOTAL++;
   my $failed = 0;
-  if ($class{perl} && $DOTIDY) {
+  if ($$classification{perl} && $DOTIDY) {
     if (!$PERLTIDY && !($PERLTIDY = which('perltidy'))) {    # Look for perltidy exec.
       $DOTIDY = 0;                                           # Disable
       print STDERR "No perltidy was found; skipping tidy phase.\n"; }
     else {
-      $failed ||= doPerltidy($file); } }
-  if ($class{perl} && $DOCRITIC) {
+      $failed ||= doPerltidy($file, $classification); } }
+  if ($$classification{perl} && $DOCRITIC) {
     if (!$PERLCRITIC && !($PERLCRITIC = which('perlcritic'))) {
       $DOCRITIC = 0;                                         # Disable
       print STDERR "No perlcritic was found; skipping critic phase.\n"; }
     else {
-      $failed ||= doPerlcritic($file); } }
+      $failed ||= doPerlcritic($file, $classification); } }
   $NFAIL++ if $failed;                                       # Did this file fail some validation?
 }
 
@@ -101,38 +101,38 @@ exit($EXITSTATUS);
 sub classify {
   my ($file) = @_;
   if ($file =~ /^latexml[a-zA-Z]*$/) {    # No /i
-    return (perl => 1, program => 1); }
+    return { perl => 1, program => 1 }; }
   elsif ($file =~ /\.(?:pl)$/i) {
-    return (perl => 1, program => 1); }
+    return { perl => 1, program => 1 }; }
   elsif ($file =~ /\.(?:pm)$/i) {
-    return (perl => 1, module => 1); }
+    return { perl => 1, module => 1 }; }
   elsif ($file =~ /\.(?:ltxml|latexml)$/i) {
-    return (perl => 1, binding => 1); }
+    return { perl => 1, binding => 1 }; }
   elsif ($file =~ /\.(?:css)$/i) {
-    return (css => 1); }
+    return { css => 1 }; }
   elsif ($file =~ /\.(?:js)$/i) {
-    return (javascript => 1); }
+    return { javascript => 1 }; }
   elsif ($file =~ /\.(?:xsl)$/i) {
-    return (xslt => 1); }
+    return { xslt => 1 }; }
   elsif (my $type = `file -b $file`) {
     if ($type =~ /^Perl script/) {
-      return (perl => 1, program => 1); }
+      return { perl => 1, program => 1 }; }
     elsif ($type =~ /ASCII text/) {    # Desperation due to flakey file command!
       my $TEST;
       open($TEST, '<', $file) or return {};
       my $firstline = <$TEST>;
       close($TEST);
       if ($firstline =~ m|^\#\!\s*(.*?)/bin/perl\s+\-w\s*$|) {
-        return (perl => 1, program => 1); }
+        return { perl => 1, program => 1 }; }
     } }
-  return (); }
+  return {}; }
 
 #======================================================================
 # Particular handlers.
 # These should return 1 upon "failure", that is the file they test doesn't meet standards.
 
 sub doPerltidy {
-  my ($file) = @_;
+  my ($file, $classes) = @_;
   print "Checking '$file' formatting..." if $VERBOSITY > 0;
   my $failed = 0;
   system($PERLTIDY,
@@ -159,12 +159,13 @@ sub doPerltidy {
   return $failed; }
 
 sub doPerlcritic {
-  my ($file) = @_;
+  my ($file, $classes) = @_;
   my $failed = 0;
   print "Checking '$file' policy..." if $VERBOSITY > 0;
   # Use backticks, since otherwise can't manage the output...
   my $profile = catfile($TOOLDIR, 'latexml.perlcritic');
-  my $critique = `$PERLCRITIC  --profile=$profile --severity=$SEVERITY --quiet $file`;
+  my $themes = join(' and ', map { 'not non_' . $_ } keys %$classes);
+  my $critique = `$PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
   if ($critique eq "") {    # No errors and no policy violations
     print " conformance is OK.\n" if $VERBOSITY > 0; }
   elsif ($critique) {       # Policy violations
@@ -227,6 +228,18 @@ Code formatting is implemented by C<perltidy>,  using a prefered set of formatti
 Coding standards is checked by C<perlcritic>, again, using
 a prefered set of Policies.
 
+The files processed are given on the command line; directories given
+there are processed recursively.  If no files are specified, then
+all files in the C<bin>, C<lib> and C<tools> directories are processed.
+
+Files may be excluded from this list according to the options that
+include or exclude classes of files. Files are classified according
+to type (perl, css, javascript, ...) and role (program, module, binding,...).
+If you exclude certain classes (eg. C<--noprogram>) then all other classes
+in the file list will be processed.  If you include certain classes
+(eg. C<--binding>) explicitly, then only the explicitly named classes will
+be processed.
+
 Options:
 
   --precommit  Checks for minimal conformance required for committing,
@@ -241,7 +254,7 @@ Options:
   --nocritic   Do not run perlcritic
   --severity   The severity level for perlcritic
                (default 3; or 4 when --precommit)
-  --programs   Process programs only (see below)
+  --programs   Process programs only
   --noprograms Exclude programs
   --modules    Include perl modules only (.pm) (see below)
   --nomodules  Exclude perl modules
@@ -250,12 +263,6 @@ Options:
   --verbose    Show more output
   --quiet      Show less output
   --help       Show this help message
-
-Note that when I<any> of the file class inclusion options
-(--programs, --modules, --bindings) is used, then only files in
-one of the explicitly mentioned classes will be processed.
-When one of the exclusion options are used, then all classes
-except for the excluded ones will be processed.
 
 =cut
 
