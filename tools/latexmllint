@@ -264,6 +264,9 @@ Options:
   --quiet      Show less output
   --help       Show this help message
 
+Note that you can override the precommit hook by using the git option
+C<--no-verify>, but please use only in extreme cases.
+
 =cut
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
