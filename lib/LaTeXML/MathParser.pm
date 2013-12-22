@@ -107,7 +107,7 @@ sub token_prettyname {
   elsif ($name = $node->textContent) {
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
     my %attr = $font->relativeTo($DEFAULT_FONT);
-    my $desc = join(' ', values %attr);
+    my $desc = join(' ', map { ToString($_) } values %attr);
     $name .= "{$desc}" if $desc; }
   else {
     $name = Stringify($node); }    # what else ????
