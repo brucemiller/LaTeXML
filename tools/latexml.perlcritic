@@ -50,8 +50,8 @@ severity=3
 # was 5; Well, we need it! (alternatives?)
 
 [Modules::RequireFilenameMatchesPackage]
-severity=3
-# was 5; (used in bindings)
+add_themes = non_binding
+# use theme='not non_binding' for bindings to disable!
 
 [Modules::ProhibitMultiplePackages]
 severity=2
@@ -107,6 +107,8 @@ severity=1
 # was 3; We've got our own exotic error reporting; don't need Carp.
 
 [Modules::ProhibitExcessMainComplexity]
+add_themes = non_binding
+# Seems not useful for binding files (use theme='not non_binding')
 max_mccabe = 30
 # was 20
 
