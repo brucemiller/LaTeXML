@@ -10,12 +10,14 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
 
 #**********************************************************************
 # See amsldoc
 #**********************************************************************
-use strict;
-use LaTeXML::Package;
 
 DefConstructor('\boldsymbol{}', '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
 

@@ -11,8 +11,9 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
-use LaTeXML::Package;
 use strict;
+use warnings;
+use LaTeXML::Package;
 
 RequirePackage('array');
 
@@ -22,9 +23,9 @@ sub absorbedString {
   my $capture = $capdocument->openElement('ltx:_Capture_', font => LaTeXML::Font->new());
   $capdocument->absorb(Digest($tokens));
   if (my @nodes = $capdocument->findnodes("//ltx:XMath/*", $capture)) {
-    $nodes[0]->textContent; }
+    return $nodes[0]->textContent; }
   else {
-    $capture->textContent; } }    # ???
+    return $capture->textContent; } }    # ???
 
 DefMacro('\DC@{}{}{}', sub {
     my ($gullet, $delim, $todelim, $ndec) = @_;

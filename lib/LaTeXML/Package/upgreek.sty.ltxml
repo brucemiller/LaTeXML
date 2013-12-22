@@ -12,6 +12,8 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
+use LaTeXML::Package;
 
 DefMathI('\upalpha',   undef, "\x{03B1}", font => { shape => 'upright', forceshape => 1 });
 DefMathI('\upbeta',    undef, "\x{03B2}", font => { shape => 'upright', forceshape => 1 });

@@ -12,8 +12,9 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
-#
+
 # Not much to do for LaTeXML.
 
 DefPrimitiveI('\frakfamily', undef, undef, font => { family => 'fraktur' });

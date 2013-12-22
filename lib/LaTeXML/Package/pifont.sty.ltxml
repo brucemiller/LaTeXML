@@ -10,14 +10,14 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-use strict;
-use LaTeXML::Package;
-
 package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
 
 sub dingbat_map {
   my ($code) = @_;
-  pack('U', $code + 0x2700); }
+  return pack('U', $code + 0x2700); }
 
 our %PIFONT_MAP = (pzd => \&dingbat_map);
 
@@ -26,10 +26,10 @@ sub pichar {
   $pifont = ToString($pifont);
   $number = $number->valueOf if ref $number;
   if (my $mapper = $PIFONT_MAP{$pifont}) {
-    &$mapper($number); }
+    return &$mapper($number); }
   else {
     Error('undefined', $pifont, undef, "Unknown pi font '$pifont'");
-    "?"; } }
+    return "?"; } }
 
 DefConstructor('\Pisymbol{}{Number}', sub {
     my ($document, $pifont, $code, %props) = @_;

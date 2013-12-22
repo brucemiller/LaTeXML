@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # Additional Text Symbols
@@ -37,7 +38,7 @@ our %textcomp_accents
   capitaltie          => '\t',
   caitaltilde         => '\~',
   newtie              => '\t');
-map(Let('\\' . $_ => $textcomp_accents{$_}), keys %textcomp_accents);
+map { Let('\\' . $_ => $textcomp_accents{$_}) } keys %textcomp_accents;
 
 ## \t
 
@@ -50,7 +51,8 @@ our %textcomp_numerals
   textonequarter    => UTF(0xBC),
   textonehalf       => UTF(0xBD),
   textthreequarters => UTF(0xBE));
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_numerals{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_numerals);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_numerals{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_numerals;
 
 # Hmm, perhaps should be a font variant?
 our %textcomp_oldstyle
@@ -64,7 +66,7 @@ our %textcomp_oldstyle
   textsevenoldstyle => 7,
   texteightoldstyle => 8,
   textnineoldstyle  => 9);
-map(Let('\\' . $_ => $textcomp_oldstyle{$_}), keys %textcomp_oldstyle);
+map { Let('\\' . $_ => $textcomp_oldstyle{$_}) } keys %textcomp_oldstyle;
 
 #======================================================================
 # Pair symbols
@@ -81,7 +83,8 @@ our %textcomp_pairs
   textlquill     => "\x{2045}",
   textrquill     => "\x{2046}",
   );
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_pairs{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_pairs);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_pairs{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_pairs;
 
 #======================================================================
 # Monetary and Commercial symbols
@@ -115,7 +118,8 @@ our %textcomp_money
   textregistered     => UTF(0xAE),
   textservicemark    => "\x{2120}",
   texttrademark      => "\x{2122}");
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_money{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_money);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_money{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_money;
 
 #======================================================================
 # Footnote symbols
@@ -132,7 +136,8 @@ our %textcomp_footnote
   textperiodcentered => UTF(0xB7),
   textpilcrow        => UTF(0xB6),
   textsection        => UTF(0xA7));
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_footnote{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_footnote);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_footnote{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_footnote;
 
 #======================================================================
 # Scientific symbols
@@ -151,7 +156,8 @@ our %textcomp_scientific
   textpm           => UTF(0xB1),
   textsurd         => "\x{212A}",
   texttimes        => UTF(0xD7));
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_scientific{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_scientific);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_scientific{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_scientific;
 
 #======================================================================
 # Various
@@ -186,7 +192,8 @@ our %textcomp_various
   textthreequartersemdash  => "\x{2014}",     # whole em dash, actually
   texttildelow             => "~",            # ??
   texttwelveudash          => "\x{2014}");    # whole em dash, actually.
-map(DefPrimitiveI('\\' . $_, undef, $textcomp_various{$_}, bounded => 1, font => { encoding => 'TS1' }), keys %textcomp_various);
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_various{$_},
+    bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_various;
 
 #======================================================================
 RawTeX('\DeclareFontEncoding{TS1}{}{}');

@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 use Text::Balanced qw(extract_bracketed extract_delimited);
@@ -123,10 +124,10 @@ DefPrimitive('\bibentry@prepare Semiverbatim', sub {
     # invoke ALL entry preparers
     $stomach->bgroup;
     AssignValue('CURRENT@BIBKEY' => $key);
-    Digest(Tokens(grep(LookupDefinition($_),
+    Digest(Tokens(grep { LookupDefinition($_) }
           T_CS('\bib@entry@' . $type . '@prepare'),
-          ($origtype ne $type ? (T_CS('\bib@entry@' . $origtype . '@prepare')) : ()),
-          T_CS('\bib@entry@default@prepare'))));
+        ($origtype ne $type ? (T_CS('\bib@entry@' . $origtype . '@prepare')) : ()),
+        T_CS('\bib@entry@default@prepare')));
     $stomach->egroup;
     return; });
 
@@ -144,21 +145,21 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
     # Add the most specific handler for each field
     foreach my $pair ($entry->getFields) {
       my ($field, $value) = @$pair;
-      my ($handler) = grep(LookupDefinition(T_CS('\\' . $_)),
+      my ($handler) = grep { LookupDefinition(T_CS('\\' . $_)) }
         'bib@field@' . $type . '@' . $field,
         ($origtype ne $type
-          ? ('bib@field@' . $origtype . '@' . $field) : ()),
-        'bib@field@default@' . $field);
+        ? ('bib@field@' . $origtype . '@' . $field) : ()),
+        'bib@field@default@' . $field;
       if ($handler) {
         push(@tex, join('', '\csname ', $handler, '\endcsname{', $value, '}')); }
       else {
         push(@tex, join('', '\csname bib@field@default@default\endcsname{', $field, '}{', $value, '}')); } }
     # Add ALL entry completers
-    foreach my $completer (grep(LookupDefinition(T_CS('\\' . $_)),
-        'bib@entry@' . $type . '@complete',
-        ($origtype ne $type
-          ? ('bib@entry@' . $origtype . '@complete') : ()),
-        'bib@entry@default@complete')) {
+    foreach my $completer (grep { LookupDefinition(T_CS('\\' . $_)) }
+      'bib@entry@' . $type . '@complete',
+      ($origtype ne $type
+        ? ('bib@entry@' . $origtype . '@complete') : ()),
+      'bib@entry@default@complete') {
       push(@tex, join('', '\csname ', $completer, '\endcsname')); }
     my $tex = join("\n", @tex, '\end{bib@entry}');
 
@@ -188,10 +189,19 @@ DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
     AssignValue('CURRENT@BIBKEY' => $key);
     $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); });
 
-sub currentBibKey           { LookupValue('CURRENT@BIBKEY'); }
-sub currentBibEntry         { LookupValue('BIBENTRY@' . currentBibKey()); }
-sub currentBibEntryField    { currentBibEntry()->getField($_[0]); }
-sub currentBibEntryRawField { currentBibEntry()->getRawField($_[0]); }
+sub currentBibKey {
+  return LookupValue('CURRENT@BIBKEY'); }
+
+sub currentBibEntry {
+  return LookupValue('BIBENTRY@' . currentBibKey()); }
+
+sub currentBibEntryField {
+  my ($field) = @_;
+  return currentBibEntry()->getField($field); }
+
+sub currentBibEntryRawField {
+  my ($field) = @_;
+  return currentBibEntry()->getRawField($field); }
 
 #======================================================================
 DefMacro('\bib@entry@default@prepare', sub {
@@ -236,14 +246,15 @@ sub bibAddToContainer {
     $currentnode);
 
   my $xpath = $tag;
-  $xpath .= '[' . join(' and ', map("\@$_='" . ToString($attr{$_}) . "'", keys %attr)) . ']'
+  $xpath .= '[' . join(' and ', map { "\@$_='" . ToString($attr{$_}) . "'" } keys %attr) . ']'
     if keys %attr;
   if (my $rel = $document->findnode($xpath, $entry)) {
     $document->setNode($rel);
     $document->absorb($data) if $data;
     $document->setNode($currentnode); }
   else {
-    $document->insertElement($tag, $data, %attr); } }
+    $document->insertElement($tag, $data, %attr); }
+  return; }
 
 # Insert the argument into the bib-related node in the current bibentry.
 # \bib@addtorelated{type}{role}
@@ -256,8 +267,8 @@ DefConstructor('\bib@@@name{}{}',
   "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
 DefMacro('\bib@@names{}{}', sub {
     my ($gullet, $field, $ignore) = @_;
-    map(Invocation(T_CS('\bib@@@name'), $field, $_),
-      processBibNameList(currentBibEntryField(ToString($field)))); });
+    map { Invocation(T_CS('\bib@@@name'), $field, $_) }
+      processBibNameList(currentBibEntryField(ToString($field))); });
 
 # Now, we define
 # \bib@@title
@@ -766,7 +777,7 @@ sub processIdentifier {
   $string = ToString($string) if ref $string;
   $string =~ s/^\s+//;
   $string =~ s/\s+$//;
-  $string; }
+  return $string; }
 
 #======================================================================
 # Reviews.
@@ -855,7 +866,7 @@ sub processBibNameList {
   my @words    = splitWords($string);
   my $etal     = 0;
   # NOTE: Should formally represent the etal???
-  if (($words[$#words - 1] =~ /^and$/i) && ($words[$#words] =~ /^(others|et\s*al\.?)$/i)) {
+  if (($words[-2] =~ /^and$/i) && ($words[-1] =~ /^(others|et\s*al\.?)$/i)) {
     pop(@words); pop(@words); $etal = 1; }
   while (@words) {
     my @phrases = ();
@@ -882,18 +893,18 @@ sub processBibNameList {
       $surname = join(' ', @{ $phrases[0] });
       $given   = join(' ', @{ $phrases[1] }); }
     else {                             # First von Last
-      my @words = @{ $phrases[0] };
+      my @pwords = @{ $phrases[0] };
       my @first;
-      while (@words && ($words[0] !~ /^[a-z]/)) {    # This case test is not correct!!!
-        push(@first, shift(@words)); }
-      push(@words, pop(@first)) unless @words;
+      while (@pwords && ($pwords[0] !~ /^[a-z]/)) {    # This case test is not correct!!!
+        push(@first, shift(@pwords)); }
+      push(@pwords, pop(@first)) unless @pwords;
       $given   = join(' ', @first);
-      $surname = join(' ', @words); }
+      $surname = join(' ', @pwords); }
     push(@names, Tokens(($surname ? Invocation(T_CS('\bib@surname'), Tokenize($surname)) : ()),
         ($given ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
         ($jr    ? Invocation(T_CS('\bib@lineage'), Tokenize($jr))    : ())));
   }
-  @names; }
+  return @names; }
 
 # Split into space separated words, but ignore spaces within {}
 sub splitWords {
@@ -921,8 +932,9 @@ sub splitWords {
     elsif ($string =~ s/^(.)//) {
       $word .= $1; } }
   push(@words, $word) if $word;
-  @words = map(((s/####/\\~/g || 1) && $_), @words);    # Put any \~ back
-  @words; }
+  my $w;
+  @words = map { (($w = $_) =~ s/####/\\~/g ? $w : $w) } @words;    # Put any \~ back
+  return @words; }
 
 DefConstructor('\bib@surname{}', "<ltx:surname>#1</ltx:surname>");
 DefConstructor('\bib@given{}',   "<ltx:givenname>#1</ltx:givenname>");

@@ -10,11 +10,12 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-#
-# See amsfndoc
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
+#
+# See amsfndoc
 #
 DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1, font => { family => 'blackboard' });
 DefMacro('\Bbb{}',  '\mathbb{#1}');

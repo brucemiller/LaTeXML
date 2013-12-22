@@ -10,14 +10,15 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 #**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 
 #**********************************************************************
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Package options: draft, final, hiderotate, hidescale, hiresbb
 
 DefParameterType('GraphixDimension', sub {
@@ -39,10 +40,10 @@ DefConstructor('\scalebox{}[]{}', sub {
     foreach my $node (@new) {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'),
-            ($scale  ? ("scale=" . ToString($scale))   : undef),
-            ($xscale ? ("xscale=" . ToString($xscale)) : undef),
-            ($yscale ? ("yscale=" . ToString($yscale)) : undef)));
+        my $options = join(',', grep { $_ } $node->getAttribute('options'),
+          ($scale  ? ("scale=" . ToString($scale))   : undef),
+          ($xscale ? ("xscale=" . ToString($xscale)) : undef),
+          ($yscale ? ("yscale=" . ToString($yscale)) : undef));
         $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
@@ -54,10 +55,10 @@ DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{
     foreach my $node (@new) {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'),
-            ($width  ? ("width=" . ToString($width))   : undef),
-            ($height ? ("height=" . ToString($height)) : undef),
-            ($width && $height ? undef : "keepaspectratio")));
+        my $options = join(',', grep { $_ } $node->getAttribute('options'),
+          ($width  ? ("width=" . ToString($width))   : undef),
+          ($height ? ("height=" . ToString($height)) : undef),
+          ($width && $height ? undef : "keepaspectratio"));
         $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
@@ -67,7 +68,7 @@ DefConstructor('\rotatebox{Float}{}', sub {
     foreach my $node (@new) {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'), "angle=" . ToString($angle)));
+        my $options = join(',', grep { $_ } $node->getAttribute('options'), "angle=" . ToString($angle));
         $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
@@ -77,7 +78,7 @@ DefConstructor('\reflectbox{}', sub {
     foreach my $node (@new) {
       # is there anything we might do to other kinds of nodes?
       if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep($_, $node->getAttribute('options'), "reflect"));
+        my $options = join(',', grep { $_ } $node->getAttribute('options'), "reflect");
         $document->setAttribute($node, options => $options); } } },
   mode => 'text');
 
@@ -100,7 +101,7 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
     $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
     my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
     $document->insertElement('ltx:graphics', undef, graphic => $graphic, options => $options,
       candidates => join(',', @candidates)); },
   alias => '\includegraphics');

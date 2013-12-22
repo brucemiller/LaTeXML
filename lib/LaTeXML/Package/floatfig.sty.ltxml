@@ -8,13 +8,15 @@
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -37,7 +39,7 @@ DefEnvironment('{floatingfigure}[]{Dimension}',
 
 sub toPercent {
   my ($dimen) = @_;
-  int(100 * $dimen->valueOf / LookupValue('\textwidth')->valueOf) . '%'; }
+  return int(100 * $dimen->valueOf / LookupValue('\textwidth')->valueOf) . '%'; }
 
 DefMacro('\fltitem[]{}',    '\item {#2}');
 DefMacro('\fltditem[]{}{}', '\item[#2] {#3}');
@@ -68,14 +70,14 @@ DefRegister('\floatfltwidth' => Dimension('0pt'));
 DefRegister('\fltitemwidth'  => Dimension('0pt'));
 DefRegister('\outputpretest' => Tokens());
 
-RawTeX('
+RawTeX(<<'EoTeX');
 \newif\iftryingfig     \tryingfigfalse
 \newif\ifdoingfig      \doingfigfalse
 \newif\iffigprocessing \figprocessingfalse
 \newif\ifpageafterfig  \pageafterfigfalse
 \newif\ifoddpages
 \newif\ifoutput
-');
+EoTeX
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

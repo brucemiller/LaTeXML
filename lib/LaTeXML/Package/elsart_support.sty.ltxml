@@ -1,18 +1,23 @@
 # -*- CPERL -*-
-#  /====================================================================\
-# | elsart_support.sty for LaTeXML                                       |
-# | support for elsart and elsarticle classes.                           |
-# | Adapted from texscan --stub --base=article.cls elsart.cls            |
-#  >====================================================================<
-# | Released to public domain.                                           |
-# | Bruce Miller <bruce.miller@nist.gov>                                 |
-# | http://dlmf.nist.gov/LaTeXML/                                        |
-# | This code was derived from work by                                   |
-# |   the arXMLiv group; http://arxmliv.kwarc.org/                       |
-# | and enhnacements for elsarticle by Lee Worden                        |
-#  \====================================================================/
+# /=====================================================================\ #
+# |  elsart_support                                                     | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# | enhancements by Lee Worden                                          | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 if (LookupValue('@amsthm')) {

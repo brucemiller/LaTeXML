@@ -10,6 +10,10 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
 
 #**********************************************************************
 # See amsldoc
@@ -17,9 +21,6 @@
 # Currently only a random collection of things I need for DLMF chapters.
 # Eventually, go through the doc and implement it all.
 #**********************************************************************
-package LaTeXML::Package::Pool;
-use strict;
-use LaTeXML::Package;
 
 # TODO:
 #   Interesting options for limits placement
@@ -237,7 +238,8 @@ sub rearrangeAMSGather {
     elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
     else {
-      map($document->unwrapNodes($_), $document->getChildElements($equation)); } } }
+      map { $document->unwrapNodes($_) } $document->getChildElements($equation); } }
+  return; }
 
 # Note that some people use align or gather inside equation, which seems to "work"
 # So, we'll treat align as aligned in such cases.
@@ -293,7 +295,9 @@ sub rearrangeAMSAlign {
     elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
     else {
-      equationgroupJoinCols($document, 2, $equation); } } }
+      equationgroupJoinCols($document, 2, $equation); } }
+  return; }
+
 #[Or should empty rows be removed? Numbered ones still show in print out!!!]
 
 # Note that some people use align or gather inside equation, which seems to "work"
@@ -426,7 +430,7 @@ sub rearrangeLoneAMSAligned {
           $document->setAttribute($eqn, 'xml:id' => $document->modifyID($id . "X")); }
         my @mtds = $document->findnodes('ltx:XMCell', $mtr);
         while (@mtds) {
-          my ($math, $branch) = openMathFork($document, $eqn);
+          my ($main, $branch) = openMathFork($document, $eqn);
           my @cells;
           foreach (0, 1) {    # Add the lhs & rhs, separately.
             my $cell = shift(@mtds);
@@ -435,21 +439,22 @@ sub rearrangeLoneAMSAligned {
               align => $cell->getAttribute('align'));
             if (my $stuff = $cell->firstChild) {
               push(@cells, $stuff);
-              my $math = $document->openElementAt($td, 'ltx:Math',
+              my $imath = $document->openElementAt($td, 'ltx:Math',
                 _box => MathWhatsit(Digest(T_CS('\displaystyle')),
                   $document->getNodeBox($stuff)));
-              my $xmath = $document->openElementAt($math, 'ltx:XMath');
+              my $xmath = $document->openElementAt($imath, 'ltx:XMath');
               { local $LaTeXML::Document::ID_SUFFIX = '.mf';
                 $document->appendClone($xmath, $stuff->childNodes); }
               $document->closeElementAt($xmath);
-              $document->closeElementAt($math); }
+              $document->closeElementAt($imath); }
             $document->closeElementAt($td); }
           # Finally, move the contents of the cells into the main branch!!!
-          map($math->firstChild->appendChild($_), map($_->childNodes, @cells));
+          map { $main->firstChild->appendChild($_) } map { $_->childNodes } @cells;
           # and synthesize a box from the lhs & rhs.
-          $document->setNodeBox($math, MathWhatsit(map($document->getNodeBox($_), @cells)));
-          closeMathFork($document, $eqn, $math, $branch);
-        } } } } }
+          $document->setNodeBox($main, MathWhatsit(map { $document->getNodeBox($_) } @cells));
+          closeMathFork($document, $eqn, $main, $branch);
+        } } } }
+  return; }
 
 DefMacro('\cases',    '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');
@@ -638,7 +643,7 @@ DefMacroI('\DOTSX', undef, Tokens());
 Let('\hdots', '\ldots');
 
 DefMacro('\hdotsfor Number', sub {
-    (map(T_CS('\hdots'), 1 .. $_[1]->valueOf)); });
+    (map { T_CS('\hdots') } 1 .. $_[1]->valueOf); });
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes

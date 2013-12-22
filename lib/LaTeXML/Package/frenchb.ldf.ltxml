@@ -1,5 +1,4 @@
 # -*- CPERL -*-
-use LaTeXML::Package;
 # /=====================================================================\ #
 # |  frenchb.ldf                                                        | #
 # | Implementation for LaTeXML                                          | #
@@ -11,7 +10,10 @@ use LaTeXML::Package;
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
 use strict;
+use warnings;
+use LaTeXML::Package;
 
 # frenchb doesn't normally require this package,
 # but behaves better if it's loaded
@@ -25,8 +27,8 @@ DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
 Let('\ltx@orig@nombre', '\nombre');
 DefMacro('\nombre{}', '\@ifpackageloaded{numprint}{\numprint{#1}}{\ltx@orig@nombre{#1}}');
 AtBeginDocument(sub {
-  Let('\degre','\textdegree');
-  DefMacro('\degres','\hbox to 0.3em{\degre}');
+    Let('\degre', '\textdegree');
+    DefMacro('\degres', '\hbox to 0.3em{\degre}');
 });
 
 1;

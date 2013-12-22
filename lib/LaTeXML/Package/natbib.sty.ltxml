@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 
@@ -130,7 +131,7 @@ ProcessOptions();
 DefMacro('\cite[] Semiverbatim', sub {
     my ($gullet, $post, $keys) = @_;
     my ($style, $open, $close, $ns)
-      = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+      = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
     $post = undef unless $post && $post->unlist;
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
@@ -157,7 +158,7 @@ DefMacro('\cite[] Semiverbatim', sub {
 DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
     my ($gullet, $star, $pre, $post, $keys) = @_;
     my ($style, $open, $close, $ns)
-      = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR));
+      = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
     $pre  = undef unless $pre  && $pre->unlist;
     $post = undef unless $post && $post->unlist;
@@ -191,12 +192,14 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
 
 DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
     my ($gullet, $star, $pre, $post, $keys) = @_;
-    my ($style, $open, $close, $ns, $ay) = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE
-        CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR));
+    my ($style, $open, $close, $ns, $ay)
+      = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE
+      CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
     $pre  = undef unless $pre  && $pre->unlist;
     $post = undef unless $post && $post->unlist;
     my $author = ($star ? "FullAuthors" : "Authors");
+
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
         Tokens($open, ($pre ? ($pre, T_SPACE) : ()),
@@ -264,7 +267,7 @@ DefMacro('\citeyear Semiverbatim', sub {
 
 DefMacro('\citeyearpar Semiverbatim', sub {
     my ($gullet, $keys) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
+    my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
       Tokens($open,
         Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef),
@@ -296,7 +299,7 @@ DefPrimitive('\defcitealias Semiverbatim {}', sub {
 # (which will still be a link to the bibitem!)
 DefMacro('\citetalias Semiverbatim', sub {
     my ($gullet, $key) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
+    my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
       Invocation(T_CS('\@@bibref'),
         Tokens(Explode("Phrase1")),
@@ -305,7 +308,7 @@ DefMacro('\citetalias Semiverbatim', sub {
 
 DefMacro('\citepalias Semiverbatim', sub {
     my ($gullet, $key) = @_;
-    my ($open, $close) = map(LookupValue($_), qw(CITE_OPEN CITE_CLOSE));
+    my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
       Tokens($open,
         Invocation(T_CS('\@@bibref'),
@@ -481,7 +484,7 @@ DefPrimitiveI('\reset@natbib@cites', undef, sub {
 # So, we'll do one extra step, and format the refnum form
 DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
     my ($gullet, $number, $year, $authors, $fullauthors, $key) = @_;
-    my ($style, $open, $close) = map(LookupValue($_), qw(CITE_STYLE CITE_OPEN CITE_CLOSE));
+    my ($style, $open, $close) = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE);
     $style = 'number' unless $authors->unlist && $year->unlist;
     if ($style eq 'number') {
       Invocation(T_CS('\NAT@@wrout'), $number, $year, $authors, $fullauthors,

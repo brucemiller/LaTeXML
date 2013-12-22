@@ -10,13 +10,14 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
 
 #**********************************************************************
 # See amsldoc
 #**********************************************************************
-package LaTeXML::Package::Pool;
-use strict;
-use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     my ($stomach, $star, $cs, $text) = @_;

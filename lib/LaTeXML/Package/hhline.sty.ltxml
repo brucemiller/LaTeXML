@@ -10,7 +10,11 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-#
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
 # hhline defines some rather interesting, but complicated table rules
 # with options for joining corders in various ways.
 # Some of this could possibly be integrated with the model for table rules,

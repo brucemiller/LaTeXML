@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #======================================================================
@@ -35,7 +36,7 @@ sub cancelColorProperties {
     $props{cancelfont} = LookupValue('font');
     $props{forcefont}  = 1; }
   $STATE->getStomach->egroup;
-  %props; }
+  return %props; }
 
 #======================================================================
 # Basic macros

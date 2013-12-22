@@ -3,14 +3,16 @@
 # | multido.sty                                                         | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
-# | Part of LaTeXML                                                     | #
-# |                                                                     | #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 ###########################################################################
@@ -54,34 +56,35 @@ DefMacro('\multidostop', '\multidocount=\multido@count');
 #   Number are fixed point (and print that way!)
 # concievably variables can be redefined in middle of loop?
 DefMacro('\multido@@initvars@@{}', sub {
-    my ($gullet, $variables) = @_;
-    $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+    my ($ogullet, $variables) = @_;
+    $ogullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
         my ($gullet) = @_;
         $gullet->unread($variables);
         my @inits = ();
         my @steps = ();
         while (my $var = $gullet->readToken) {
-          $var->getCSName =~ /^\\(d|n|i|r)/i;
-          my $type = $1;
-          Error('unexpected', $var, $gullet, "Wrong format for multido variable '" . ToString($var) . "'")
-            unless $type;
-          $gullet->readKeyword("=")
-            or Error('expected', '=', $gullet, "Missing = in multido variables");
-          my ($init, $step);
-          if    ($type eq 'd') { $init = Tokens(Explode($gullet->readDimension->valueOf . "sp")); }
-          elsif ($type eq 'n') { $init = Tokens($gullet->readFloat->revert); }
-          elsif ($type eq 'i') { $init = Tokens($gullet->readNumber->revert); }
-          elsif ($type eq 'r') { $init = Tokens($gullet->readFloat->revert); }
-          push(@inits, T_CS('\def'), $var, T_BEGIN, $init, T_END);
-          $gullet->readKeyword("+")
-            or Error('expected', '+', $gullet, "Missing + in multido variables");
-          if    ($type eq 'd') { $step = $gullet->readDimension; }
-          elsif ($type eq 'n') { $step = $gullet->readFloat; }
-          elsif ($type eq 'i') { $step = $gullet->readNumber; }
-          elsif ($type eq 'r') { $step = $gullet->readFloat; }
-          $step = $step->negate if LookupValue('\multido@count')->valueOf < 0;
-          push(@steps, T_CS('\multido@step@' . $type), $var, T_BEGIN, $step->revert, T_END);
-          last unless $gullet->readKeyword(","); }
+          if ($var->getCSName =~ /^\\(d|n|i|r)/i) {
+            my $type = $1;
+            $gullet->readKeyword("=")
+              or Error('expected', '=', $gullet, "Missing = in multido variables");
+            my ($init, $step);
+            if    ($type eq 'd') { $init = Tokens(Explode($gullet->readDimension->valueOf . "sp")); }
+            elsif ($type eq 'n') { $init = Tokens($gullet->readFloat->revert); }
+            elsif ($type eq 'i') { $init = Tokens($gullet->readNumber->revert); }
+            elsif ($type eq 'r') { $init = Tokens($gullet->readFloat->revert); }
+            push(@inits, T_CS('\def'), $var, T_BEGIN, $init, T_END);
+            $gullet->readKeyword("+")
+              or Error('expected', '+', $gullet, "Missing + in multido variables");
+            if    ($type eq 'd') { $step = $gullet->readDimension; }
+            elsif ($type eq 'n') { $step = $gullet->readFloat; }
+            elsif ($type eq 'i') { $step = $gullet->readNumber; }
+            elsif ($type eq 'r') { $step = $gullet->readFloat; }
+            $step = $step->negate if LookupValue('\multido@count')->valueOf < 0;
+            push(@steps, T_CS('\multido@step@' . $type), $var, T_BEGIN, $step->revert, T_END);
+            last unless $gullet->readKeyword(","); }
+          else {
+            Error('unexpected', $var, $gullet,
+              "Wrong format for multido variable '" . ToString($var) . "'"); } }
         DefMacroI('\multido@stepvar', undef, Tokens(@steps));
         # Return the tokens to initialize the vars
         @inits; }); });

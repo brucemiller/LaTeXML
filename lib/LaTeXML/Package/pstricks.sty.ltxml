@@ -1,31 +1,37 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# | pstricks.tex                                                        | #
+# | pst-grad.sty                                                        | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML                                                     | #
-# |                                                                     | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Implementation of the pstricks package. (incomplete)                | #
-# | missing: \psgrid is missing most attributes                         | #
-# |          shadow, doubleline and border support                      | #
-# |          some special attributes for arrows                         | #
-# |          fillstyle is assumed solid or none                         | #
-# |          \pscustom and its special commands (chapters 20, 21, 22)   | #
-# |          \SpecialCoor is not supported                              | #
-# |          overlays are not supported                                 | #
-# |          special box commands (Help part A, ...)                    | #
-# |                                                                     | #
+# | Thanks to Ioan Alexandru Sucan <i.sucan@iu-bremen.de>               | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
-# | Ioan Alexandru Sucan <i.sucan@iu-bremen.de>                 #_#     | #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
 use LaTeXML::Util::KeyVal;
+
+#  Implementation of the pstricks package. (incomplete)
+#  missing: \psgrid is missing most attributes
+#           shadow, doubleline and border support
+#           some special attributes for arrows
+#           fillstyle is assumed solid or none
+#           \pscustom and its special commands (chapters 20, 21, 22)
+#           \SpecialCoor is not supported
+#           overlays are not supported
+#           special box commands (Help part A, ...)
 
 RequirePackage('xcolor');
 ##############################################################
@@ -38,17 +44,22 @@ sub ReadPSDimension {
   my ($gullet, $scale) = @_;
   $scale = LookupValue('\psunit') unless $scale;
   my $s = $gullet->readOptionalSigns;
-  if (defined(my $d = $gullet->readInternalDimension)) { ($s < 0 ? $d->negate : $d); }
-  elsif (defined($d = $gullet->readInternalGlue)) { Dimension($s * $d->valueOf); }
-  elsif (defined($d = $gullet->readFloat)) { if (my $unit = $gullet->readUnit)
-    { Dimension($s * $d->valueOf * $unit); }
-    else
-    { $scale->multiply($s * $d->valueOf); } }
+  if (defined(my $d = $gullet->readInternalDimension)) {
+    return ($s < 0 ? $d->negate : $d); }
+  elsif (defined($d = $gullet->readInternalGlue)) {
+    return Dimension($s * $d->valueOf); }
+  elsif (defined($d = $gullet->readFloat)) {
+    if (my $unit = $gullet->readUnit) {
+      return Dimension($s * $d->valueOf * $unit); }
+    else {
+      return $scale->multiply($s * $d->valueOf); } }
   else {
     Warn('expected', '<number>', $gullet, "Missing number, treated as zero.");
-    Dimension(0); } }
+    return Dimension(0); } }
 
-sub b_reversion { $_[0] ? (T_BEGIN, Revert($_[0]), T_END) : (); }
+sub b_reversion {
+  my ($box) = @_;
+  return $box ? (T_BEGIN, Revert($box), T_END) : (); }
 
 # reads {PSDimension} and does not complain if argument is missing
 sub ReadBracketedPSDimension {
@@ -56,10 +67,12 @@ sub ReadBracketedPSDimension {
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_BEGIN)) {
     $gullet->readToken; $gullet->skipSpaces;
-    my $r = ReadPSDimension(@_);
+    my $r = ReadPSDimension($gullet);
     $gullet->skipSpaces; $gullet->readToken;
-    $r; }
-  else { return; } }
+    return $r; }
+  else {
+    return; } }
+
 DefParameterType('BracketedPSDimension', \&ReadBracketedPSDimension,
   reversion => \&b_reversion, optional => 1);
 
@@ -78,13 +91,17 @@ sub ReadOptionalBracketed {
     my $item = &$itemreader($gullet);
     $gullet->skipSpaces;
     $gullet->readToken if $gullet->ifNext(T_END);
-    $item; }
-  else { return; } }
+    return $item; }
+  else {
+    return; } }
+
 DefParameterType('OptionalBracketed', \&ReadOptionalBracketed,
   reversion => \&b_reversion, optional => 1);
 
 # read a Dimension scaled to 1cm insetad of \psunit
-sub ReadPSRegisterDimension { ReadPSDimension($_[0], Dimension('1cm')); }
+sub ReadPSRegisterDimension {
+  my ($gullet) = @_;
+  return ReadPSDimension($gullet, Dimension('1cm')); }
 
 # when redefining the origin, a coordinate is given as {x,y}
 sub ReadPSOrigin {
@@ -96,35 +113,42 @@ sub ReadPSOrigin {
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
     my $y = ReadPSDimension($gullet, LookupValue('\psyunit'));
     $gullet->skipSpaces; $gullet->readUntil(T_END);
-    ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
-  else { return; } }
+    return ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
+  else {
+    return; } }
 
 DefParameterType('PSOrigin', \&ReadPSOrigin,
   reversion => sub { ($_[0] ? (T_BEGIN, Revert($_[0]->getX->negate), T_OTHER(','),
         Revert($_[0]->getY->negate), T_END) : ()); });
 
 sub ReadPSCoord {
-  ReadPair($_[0], 'PSDimension', LookupValue('\psxunit'), LookupValue('\psyunit')); }
+  my ($gullet) = @_;
+  return ReadPair($gullet, 'PSDimension', LookupValue('\psxunit'), LookupValue('\psyunit')); }
 
-sub ReadZeroPSCoord { ReadPSCoord(@_) || ZeroPair(); }
+sub ReadZeroPSCoord {
+  my ($gullet) = @_;
+  return ReadPSCoord($gullet) || ZeroPair(); }
 
 sub ReadPSCoordList {
   my ($gullet) = @_;
   my @coord = ();
   while (my $c = ReadPSCoord($gullet)) { push(@coord, $c); }
-  PairList(@coord); }
+  return PairList(@coord); }
 
-sub ZeroPair { Pair(Dimension(0), Dimension(0)); }
+sub ZeroPair {
+  return Pair(Dimension(0), Dimension(0)); }
 
 # if read the next {} argument only if it encloses arrow characters
 # also return the default arrows ('\psarrows') if no argument found
 sub ReadArrows {
   my ($gullet) = @_;
-  my $a = ReadOptionalBracketed($gullet); my $st = ToString($a) if $a;
-  if ($a && ($st =~ /[^\(\)\s\-\>\<\|cCo\*\[\]]/ || $st !~ /\-/)) {
-    $gullet->unread(T_BEGIN, $a->unlist, T_END);
-    $a = undef; }
-  $a || LookupValue('\psarrows'); }
+  my $ar = ReadOptionalBracketed($gullet);
+  my $st = $ar && ToString($ar);
+  if ($ar && ($st =~ /[^\(\)\s\-\>\<\|cCo\*\[\]]/ || $st !~ /\-/)) {
+    $gullet->unread(T_BEGIN, $ar->unlist, T_END);
+    $ar = undef; }
+  return $ar || LookupValue('\psarrows'); }
+
 DefParameterType('Arrows', \&ReadArrows,
   reversion => \&b_reversion, optional => 1);
 
@@ -161,16 +185,27 @@ DefParameterType('Arrows', \&ReadArrows,
     if ($starred) {
       $value = $value->subtract(Float(LookupValue('_psActiveSRotation')));
       LaTeXML::Package::Pool::t_undoSRotation(); }
-    bless([$value, $number, $pre], $class); }
+    return bless [$value, $number, $pre], $class; }
 
-  sub starred    { $_[0][2] =~ /\*/; }
-  sub labelRight { $_[0][2] =~ /\:/; }
+  sub starred {
+    my ($self) = @_;
+    return $$self[2] =~ /\*/; }
 
-  sub valueOf { $_[0][0]->valueOf; }
-  sub ptValue { $_[0][0]->ptValue; }
+  sub labelRight {
+    my ($self) = @_;
+    return $$self[2] =~ /\:/; }
 
-  sub revert { (Explode($_[0][2]), Revert($_[0][1])); }
+  sub valueOf {
+    my ($self) = @_;
+    return $$self[0]->valueOf; }
 
+  sub ptValue {
+    my ($self) = @_;
+    return $$self[0]->ptValue; }
+
+  sub revert {
+    my ($self) = @_;
+    return (Explode($$self[2]), Revert($$self[1])); }
   1;
 }
 
@@ -186,21 +221,31 @@ sub ReadPSAngle {
     if ($gullet->ifNext(T_LETTER($letter))) {
       $gullet->readToken; $gullet->skipSpaces; $angle .= $letter;
     } }
-  if ($angle) { LaTeXML::PSAngle->new($angle, $pre); }
-  elsif ($angle = ReadFloat($gullet)) { LaTeXML::PSAngle->new($angle, $pre); }
-  else { return; } }
+  if ($angle) {
+    return LaTeXML::PSAngle->new($angle, $pre); }
+  elsif ($angle = ReadFloat($gullet)) {
+    return LaTeXML::PSAngle->new($angle, $pre); }
+  else {
+    return; } }
 
 # reads a PSAngle that is between curly brackets
-sub ReadBracketedPSAngle { ReadOptionalBracketed($_[0], 'PSAngle'); }
+sub ReadBracketedPSAngle {
+  my ($gullet) = @_;
+  return ReadOptionalBracketed($gullet, 'PSAngle'); }
+
 DefParameterType('BracketedPSAngle', \&ReadBracketedPSAngle,
   reversion => \&b_reversion, optional => 1);
 
 # read a pair of a dimension followed by a float, separated by space
 sub ReadPSDimFloat {
   my ($gullet) = @_;
-  $gullet->skipSpaces; my $dim = ReadPSDimension($gullet);
-  $gullet->skipSpaces; my $f   = ReadFloat($gullet);
-  $gullet->skipSpaces; ($dim && $f) ? Pair($dim, $f) : undef; }
+  $gullet->skipSpaces;
+  my $dim = ReadPSDimension($gullet);
+  $gullet->skipSpaces;
+  my $f = ReadFloat($gullet);
+  $gullet->skipSpaces;
+  return ($dim && $f) ? Pair($dim, $f) : undef; }
+
 DefParameterType('PSDimFloat', \&ReadPSDimFloat,
   reversion => sub { ($_[0] ? (Revert($_[0]->getX), T_SPACE, Revert($_[0]->getY)) : ()); });
 
@@ -208,9 +253,13 @@ DefParameterType('PSDimFloat', \&ReadPSDimFloat,
 # returns a pair where both members are the same
 sub ReadPSDimDim {
   my ($gullet) = @_;
-  $gullet->skipSpaces; my $dim1 = ReadPSDimension($gullet);
-  $gullet->skipSpaces; my $dim2 = ReadPSDimension($gullet);
-  $gullet->skipSpaces; $dim1 ? Pair($dim1, $dim2 || $dim1) : undef; }
+  $gullet->skipSpaces;
+  my $dim1 = ReadPSDimension($gullet);
+  $gullet->skipSpaces;
+  my $dim2 = ReadPSDimension($gullet);
+  $gullet->skipSpaces;
+  return $dim1 ? Pair($dim1, $dim2 || $dim1) : undef; }
+
 DefParameterType('PSDimDim', \&ReadPSDimDim,
   reversion => sub { ($_[0] ? (Revert($_[0]->getX), T_SPACE, Revert($_[0]->getY)) : ()); });
 
@@ -218,7 +267,8 @@ DefParameterType('PSDimDim', \&ReadPSDimDim,
 ##  Internal variables used in coordinate transforms
 ##############################################################################
 
-sub ActiveTransform { LookupValue('_psActiveTransform'); }
+sub ActiveTransform {
+  return LookupValue('_psActiveTransform'); }
 
 # this holds the current nested transformations
 AssignValue('_psActiveTransform', Transform());
@@ -228,24 +278,35 @@ AssignValue('_psActiveCCTransform', Transform());
 AssignValue('_psActiveSRotation', 0);
 
 # functions for keeping internal variables up to date
-sub ackTransform { AssignValue('_psActiveTransform', LookupValue('_psActiveTransform')->addPost(Transform($_[0]))); }
-sub ackStarRotation { AssignValue('_psActiveSRotation', LookupValue('_psActiveSRotation') + $_[0] || 0); }
+sub ackTransform {
+  my ($trans) = @_;
+  AssignValue('_psActiveTransform',
+    LookupValue('_psActiveTransform')->addPost(Transform($trans)));
+  return; }
+
+sub ackStarRotation {
+  AssignValue('_psActiveSRotation',
+    LookupValue('_psActiveSRotation') + $trans || 0);
+  return; }
 
 sub t_Rotation {
-  my ($r, $star) = @_; $r = $r->valueOf if ref $r;
-  if ($r) { ackStarRotation($r) if $star;
+  my ($r, $star) = @_;
+  $r = $r->valueOf if ref $r;
+  if ($r) {
+    ackStarRotation($r) if $star;
     ackTransform("rotate($r)"); }
   return; }
 
 sub t_undoSRotation {
   my $r = LookupValue('_psActiveSRotation'); t_Rotation(-$r, 1);
-  AssignValue('_psUndoneSRotation', (LookupValue('_psUndoneSRotation') || 0) + $r); }
+  AssignValue('_psUndoneSRotation', (LookupValue('_psUndoneSRotation') || 0) + $r);
+  return; }
 
 sub t_Translation {
   my ($t) = @_;
   if (my $r = LookupValue('_psUndoneSRotation')) {
     $t = Transform("rotate($r)")->apply($t) if $t; }
-  my ($x, $y) = ($t->getX->valueOf, $t->getY->valueOf) if $t;
+  my ($x, $y) = ($t && $t->getX->valueOf, $t && $t->getY->valueOf);
   ackTransform('translate(' . ($x || 0) . ',' . ($y || 0) . ')') if ($x || $y);
   return; }
 
@@ -289,19 +350,27 @@ sub setGraphParams {
         AssignValue('\ps' . $key, LookupColor($strval)->toHex); }
       else {
         AssignValue('\ps' . $key, $KeyAsValue{$key} ? $value : $strval); } }
-  } }
+  }
+  return; }
 
 sub psGetDash {
   my ($whatsit, $used) = @_; my $d;
-  if (my $dash = LookupValue('\psdash')) { $d = $dash; }
+  if (my $dash = LookupValue('\psdash')) {
+    $d = $dash; }
   elsif (my $linestyle = LookupValue('\pslinestyle')) {
-    if ($linestyle eq 'dashed') { $d = Pair(Dimension('5pt'), Dimension('3pt')); }
-    elsif ($linestyle eq 'dotted') { $d = Pair(Dimension('1pt'), (LookupValue('\psdotsep') || Dimension('3pt'))); } }
-  $whatsit->setProperty(dash => $d) if $d; $$used{dash} = 1; }
+    if ($linestyle eq 'dashed') {
+      $d = Pair(Dimension('5pt'), Dimension('3pt')); }
+    elsif ($linestyle eq 'dotted') {
+      $d = Pair(Dimension('1pt'), (LookupValue('\psdotsep') || Dimension('3pt'))); } }
+  $whatsit->setProperty(dash => $d) if $d;
+  $$used{dash} = 1;
+  return; }
 
 sub psGetLinecolor {
-  $_[0]->setProperty(linecolor => (LookupValue('\pslinestyle') || '') eq 'none' ? 'none' : LookupValue('\pslinecolor'));
-  $_[1]->{linecolor} = 1; }
+  my ($whatsit, $used) = @_;
+  $whatsit->setProperty(linecolor => (LookupValue('\pslinestyle') || '') eq 'none' ? 'none' : LookupValue('\pslinecolor'));
+  $$used{linecolor} = 1;
+  return; }
 
 sub psGetFill {
   my ($whatsit, $used) = @_;
@@ -312,7 +381,8 @@ sub psGetFill {
     $whatsit->setProperties(fill => ((LookupValue('\psfillstyle') || '') eq 'none') ? 'none' :
         LookupValue('\psfillcolor'), linewidth => LookupValue('\pslinewidth'));
     psGetLinecolor($whatsit, $used); }
-  map($$used{$_} = 1, qw(fill linecolor linewidth fillstyle fillcolor)); }
+  map { $$used{$_} = 1 } qw(fill linecolor linewidth fillstyle fillcolor);
+  return; }
 
 sub psDefaultParameters {
   my ($whatsit) = @_;
@@ -364,27 +434,34 @@ DefRegister('\psrunit' => Dimension('1cm'));
 ## Helper functions for setting specific parameters
 ##############################################################################
 
-sub trunc2 { $_[0] ? trunc(2, ref $_[0] ? $_[0]->valueOf : $_[0]) : undef; }
+sub trunc2 {
+  my ($v) = @_;
+  return $v ? trunc(2, ref $v ? $v->valueOf : $v) : undef; }
 
 # computes the value of the arc if framearc is to be used
 sub arcValue {
-  my ($cs, $fa, $la) = map(LookupValue($_), qw(\pscornersize \psframearc \pslinearc));
-  ($cs && $fa) ? ptValue(($cs eq 'relative') ? ($_[0]->getX->smaller($_[0]->getY)->
-        multiply($fa->multiply(0.5))) : $la) : undef; }
+  my ($cs, $fa, $la) = map { LookupValue($_) } qw(\pscornersize \psframearc \pslinearc);
+  return ($cs && $fa)
+    ? ptValue(($cs eq 'relative')
+    ? ($cs->getX->smaller($cs->getY)->multiply($fa->multiply(0.5)))
+    : $la)
+    : undef; }
 
 sub arrowLength {
-  my ($asz, $lw, $al) = map(LookupValue($_), qw(\psarrowsize \pslinewidth \psarrowlength));
-  ($asz && $lw && $al) ? ptValue($lw->multiply($asz->getY)->add($asz->getX)->multiply($al)) : undef; }
+  my ($asz, $lw, $al) = map { LookupValue($_) } qw(\psarrowsize \pslinewidth \psarrowlength);
+  return ($asz && $lw && $al)
+    ? ptValue($lw->multiply($asz->getY)->add($asz->getX)->multiply($al))
+    : undef; }
 
 # example: "{->}" becomes "{<-}"
 our %arrow_reverse = ('>' => '<', '<' => '>', '[' => ']', ']' => '[', '(' => ')', ')' => '(');
 
 sub reverseArrow {
-  my ($a) = @_;
-  $a = ToString($a);
-  return unless $a;
-  if ($a =~ /([^\-]+)-([^\-]+)/) { $a = "$2-$1"; }
-  join('', map($arrow_reverse{$_} || $_, split(//, $a))); }
+  my ($ar) = @_;
+  $ar = ToString($ar);
+  return unless $ar;
+  if ($ar =~ /([^\-]+)-([^\-]+)/) { $ar = "$2-$1"; }
+  return join('', map { $arrow_reverse{$_} || $_ } split(//, $ar)); }
 
 sub psTerminators {
   my ($whatsit, $term) = @_;
@@ -401,7 +478,10 @@ sub psTerminators {
 
 # Note: this odd thing MUST digest the "}" and return the box,
 # so that it appears in the UnTeX, so that image generation works!
-sub afterPSObject { psDefaultParameters($_[1]); Digest(T_END); }
+sub afterPSObject {
+  my ($stomach, $whatsit) = @_;
+  psDefaultParameters($whatsit);
+  return Digest(T_END); }
 
 # NOTE: This defines a macro with 2 additional leading args: OptionalMatch:* []
 # AND it defines a constructor with 1 addtional leading arg: OptionalMatch:*
@@ -428,13 +508,15 @@ sub DefPSConstructor {
       push(@exp, T_OTHER('*')) if $_[1];
       @exp; });
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructor($cmd . '@ OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options); }
+  DefConstructor($cmd . '@ OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
+  return; }
 
 sub DefSimplePSConstructor {
   my ($cmd, $arg, $replacement, %options) = @_;
   my @after = $options{afterDigest} ? ($options{afterDigest}, \&psDefaultParameters) : (\&psDefaultParameters);
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructor($cmd . ' ' . $arg, $replacement, %options); }
+  DefConstructor($cmd . ' ' . $arg, $replacement, %options);
+  return; }
 
 ####################################################################################
 ## PS Tricks environment
@@ -462,6 +544,7 @@ DefEnvironment('{pspicture} [Float] PSCoord PSCoord',
 
     Let('\par', '\relax');
     return; });
+
 DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
   "<ltx:picture baseline='#1' clip='true' %&SimplePairAttr(#c1,width,height)>"
     . "#body"
@@ -537,7 +620,7 @@ sub getNecessaryTransform {
   $transf .= "translate($x,$y) " if ($x || $y);
   $value = LookupValue('\psswapaxes');
   $transf .= 'rotate(-90) scale(-1,1) ' if ($value eq 'true');
-  Transform($transf); }
+  return Transform($transf); }
 
 DefConstructor('\psset RequiredKeyVals:pstricks',
   "?#need(<ltx:g transform='#transform'>)",
@@ -729,7 +812,7 @@ DefMacro('\newpsobject {} {} {}', sub {
     my ($newname, $oldName, $keyval) = ("\\" . ToString($_[1]), "\\" . ToString($_[2]), ToString($_[3]));
     DefMacro($newname . ' OptionalMatch:* []', sub {
         my ($name, $thiskey) = ($newname, $_[2]);
-        my ($old, $key) = map(LookupValue('psobject_' . $name . $_), qw(old key));
+        my ($old, $key) = map { LookupValue('psobject_' . $name . $_) } qw(old key);
         $thiskey = $thiskey ? ToString($thiskey) : '';
         $key .= ',' if $key && $thiskey; $key .= $thiskey;
         my @exp = (T_CS($old)); push(@exp, T_OTHER('*')) if $_[1];
@@ -751,7 +834,9 @@ sub finishLabelPut {
   my ($whatsit, $angle, $p) = @_;
   my $t = Transform('translate(' . ($p->getX->valueOf) . ' ' . ($p->getY->valueOf) . ')' . ($angle ? ' rotate(' . $angle->valueOf . ')' : ''));
   $whatsit->setProperties(transform => $t, fillcolor => LookupValue('\psfillcolor'));
-  t_Translation($p); t_Rotation($angle, 1); }
+  t_Translation($p);
+  t_Rotation($angle, 1);
+  return; }
 
 DefMacro('\rput OptionalMatch:* [] OptionalBracketed ZeroPSCoord', sub {
     (
@@ -806,7 +891,7 @@ sub getPutExp {
   for (my $i = 0 ; $i < $no ; $i++) {
     push(@exp, @rp, T_OTHER('('), Explode(ToString($st)), T_OTHER(')'), T_BEGIN, $body->unlist, T_END);
     $st = Pair($st->getX->add($dt->getX), $st->getY->add($dt->getY)); }
-  @exp; }
+  return @exp; }
 
 DefMacro('\multirput OptionalMatch:* [] OptionalBracketed PSCoord PSCoord {Number} {}', sub {
     my @rp = (T_CS('\rput'));
@@ -915,7 +1000,7 @@ DefMacro('\PSTricksOff', '');
 
 ##########################################################################################
 # Some macros for colors
-RawTeX('
+RawTeX(<<'EoTeX');
 \renewcommand*\black{\color{black}}
 \renewcommand*\darkgray{\color{darkgray}}
 \renewcommand*\gray{\color{gray}}
@@ -927,6 +1012,6 @@ RawTeX('
 \renewcommand*\yellow{\color{yellow}}
 \renewcommand*\magenta{\color{magenta}}
 \renewcommand*\cyan{\color{cyan}}
-');
+EoTeX
 
 1;

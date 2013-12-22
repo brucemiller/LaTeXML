@@ -10,6 +10,12 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::KeyVal;
+no warnings 'redefine';    # ????
 
 #======================================================================
 # LaTeXML Implementation of latexml customization bindings
@@ -18,10 +24,6 @@
 #  * semantic enhancement macros
 #  * exposing internal functionality
 #======================================================================
-package LaTeXML::Package::Pool;
-use LaTeXML::Package;
-use LaTeXML::Util::KeyVal;
-no warnings 'redefine';
 
 DefConditional('\iflatexml', sub { 1; });
 
@@ -112,7 +114,8 @@ sub insertNavigation {
   my ($document) = @_;
   if (my @items = @{ LookupValue('navigation') }) {
     $document->appendTree($document->getDocument->documentElement,
-      ['ltx:navigation', {}, @items]); } }
+      ['ltx:navigation', {}, @items]); }
+  return; }
 
 Tag('ltx:document', 'afterClose' => \&insertNavigation);
 
@@ -170,8 +173,7 @@ DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 DefPrimitive('\lxDefMath{}[][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
     my ($name, $meaning, $cd, $role) =
-      $params && map($_ && ToString($_), map($params->getValue($_),
-        qw(name meaning cd role)));
+      $params && map { $_ && ToString($_) } map { $params->getValue($_) } qw(name meaning cd role);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
       name => $name, meaning => $meaning, omcd => $cd, role => $role);
 });
@@ -230,7 +232,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     foreach my $key (qw(role tag name meaning replace)) {
       if (my $value = $keys->getValue($key)) {
         Warn('unexpected', $key, $stomach,
-          "Repeated $key: " . join('; ', map(Stringify($_), @$value)))
+          "Repeated $key: " . join('; ', map { Stringify($_) } @$value))
           if ref $value eq 'ARRAY'; } }
     my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
     if ($id && LookupValue('InPreamble')) {
@@ -265,8 +267,7 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
     my $scope = $whatsit->getProperty('scope');
     foreach my $label (@{ $whatsit->getProperty('labels') }) {
       if (my $declaration = LookupValue("Declaration_$label")) {
-        map(createDeclarationRewrite($document, $scope, $_),
-          @$declaration); }
+        map { createDeclarationRewrite($document, $scope, $_) } @$declaration; }
       else {
         Warn('unexpected', $label, $document,
           "No Declaration with label=$label was found"); } } },
@@ -278,7 +279,7 @@ sub next_declaration_id {
   DefMacroI(T_CS('\@@XMDECL@ID'), undef,
     Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
     scope => 'global');
-  ToString(Expand(T_CS('\the@XMDECL@ID'))); }
+  return ToString(Expand(T_CS('\the@XMDECL@ID'))); }
 
 sub getDeclarationScope {
   my ($keys) = @_;
@@ -287,13 +288,13 @@ sub getDeclarationScope {
   $scope = ($scope ? ToString($scope) : LookupValue('current_counter'));
   if ($scope && LookupValue("\\c\@$scope")) {    # Scope is some counter.
     $scope = "id:" . ToString(Digest(Expand(T_CS("\\the$scope\@ID")))); }
-  $scope; }
+  return $scope; }
 
 sub createDeclarationRewrite {
   my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
   my ($id, $match, $wrap, $role, $name, $meaning, $ref, $trace, $replace)
-    = map($props{$_}, qw(id match wrap role name meaning ref trace replace));
+    = map { $props{$_} } qw(id match wrap role name meaning ref trace replace);
 ###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',

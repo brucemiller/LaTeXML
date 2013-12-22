@@ -1,16 +1,22 @@
 # -*- CPERL -*-
-# /=======================================================\ #
-# |  revtex.ltxml - Implementation for LaTeXML            | #
-# |                                                       | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Originally developed by the 2006 arXMLiv group        | #
-# |    http://arxmliv.kwarc.info/                         | #
-# | Released to the Public Domain                         | #
-# \=======================================================/ #
-
+# /=====================================================================\ #
+# |  revtex.cls                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 foreach my $option (qw(manuscript eqsecnum preprint tighten floats)) {
@@ -24,7 +30,9 @@ foreach my $substyle (qw(aps osa aip pra prb prc prd prl rmp seg)) {
 my @revtex_toload = ();
 foreach my $pkg (qw(amsfonts amssymb)) {
   DeclareOption($pkg, sub { push(@revtex_toload, $pkg); return; });
-  DeclareOption("no$pkg", sub { @revtex_toload = grep($_ ne $pkg, @revtex_toload); return; }); }
+  DeclareOption("no$pkg", sub {
+      @revtex_toload = grep { $_ ne $pkg } @revtex_toload;
+      return; }); }
 
 # Anything else is for article.
 DeclareOption(undef, sub {
@@ -33,6 +41,6 @@ DeclareOption(undef, sub {
 ProcessOptions();
 LoadClass('article');
 RequirePackage('revtex3_support');
-map(RequirePackage($_), @revtex_toload);
+map { RequirePackage($_) } @revtex_toload;
 
 1;

@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  JHEP                                                               | #
+# |  JHEP.cls                                                           | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -8,13 +8,15 @@
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # JHEP.cls
@@ -257,7 +259,7 @@ DefMacro('\Math{}{}', '\href{http://xxx.lanl.gov/abs/math.#1/#2}{\tt math.#1/#2}
 
 #======================================================================
 
-RawTeX('
+RawTeX(<<'EoTeX');
 \newif\if@preprint\@preprinttrue                % DEFAULT IS PREPRINT!
 \newif\if@draft   \@draftfalse                  % DEFAULT IS NOT DRAFT
 \newif\if@hyper   \@hypertrue                   % DEFAULT IS HYPER
@@ -281,8 +283,7 @@ RawTeX('
 
 \newif\if@twothms\@twothmsfalse
 \newtoks\outputpretest
-
-');
+EoTeX
 
 DefMacro('\contentsname',   'Contents');
 DefMacro('\listfigurename', 'List of figures');

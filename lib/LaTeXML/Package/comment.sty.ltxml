@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
@@ -23,10 +24,10 @@ sub defineExcluded {
   my $endmark = '\end{' . $name . '}';
   DefConstructorI(T_CS("\\begin{$name}"), undef, '', reversion => '',
     afterDigest => [sub {
-        my ($stomach, $whatsit) = @_;
+        my ($istomach, $whatsit) = @_;
         my $nlines = 0;
         my ($line);
-        my $gullet = $stomach->getGullet;
+        my $gullet = $istomach->getGullet;
         $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
         while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
           $nlines++; }

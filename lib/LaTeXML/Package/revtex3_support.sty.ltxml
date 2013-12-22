@@ -1,16 +1,23 @@
 # -*- CPERL -*-
-# /======================================================= #
-# |  revtex3_support.sty - Implementation for LaTeXML     | #
-# |                                                       | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Copyright (c) 2008 arXMLiv group                      | #
-# | Catalin David <c.david@jacobs-university.de>          | #
-# | Released to Public Domain                             | #
-# =======================================================/ #
-
+# /=====================================================================\ #
+# |  revtex3 support                                                    | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Catalin David <c.david@jacobs-university.de>              | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 DeclareOption('amsfonts', sub { RequirePackage('amsfonts'); });

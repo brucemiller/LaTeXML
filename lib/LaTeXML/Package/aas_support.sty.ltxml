@@ -7,13 +7,16 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -96,7 +99,7 @@ DefMacro('\authoremail', '\email');    # Obsolete form
 # Ideally, we'd like these comma separated!
 DefMacro('\altaffilmark{}', sub {
     my ($gullet, $marks) = @_;
-    map((T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END), SplitTokens($marks, T_OTHER(','))); });
+    map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
 DefConstructor('\@altaffilmark{}',
   "<ltx:note role='affiliationmark' mark='#1'/> ");
 DefConstructor('\altaffiltext{}{}',
@@ -395,7 +398,7 @@ DefMacro('\colhead{}',   '#1');
 DefPrimitive('\@mark@tableheader', sub {
     my $alignment = LookupValue('Alignment');
     foreach my $row ($alignment->rows) {
-      map($$_{head} = 1, $row->columns); }
+      map { $$_{head} = 1 } $row->columns; }
     return; });
 
 DefMacro('\nl',          '\\\\[0pt]');    # Obsolete form

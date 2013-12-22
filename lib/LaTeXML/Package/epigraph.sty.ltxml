@@ -10,12 +10,9 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-#**********************************************************************
-# NOTE: This will be loaded after TeX.pool.ltxml, so it inherits.
-#**********************************************************************
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 RawTeX(<<'EoTeX');

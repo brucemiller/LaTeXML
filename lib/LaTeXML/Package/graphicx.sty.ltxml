@@ -10,13 +10,14 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::KeyVal;
 
 #**********************************************************************
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Provides alternative argument syntax.
 RequirePackage('graphics');
 
@@ -39,7 +40,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     my $path = ToString($_[3]); $path =~ s/^\s+//; $path =~ s/\s+$//;
     my @candidates = pathname_findall($path, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
     (path => $path,
       candidates => join(',', @candidates)) });
 

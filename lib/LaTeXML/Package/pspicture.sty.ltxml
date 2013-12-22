@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  Dummy package for pspicture                                        | #
+# |  pspicture                                                          | #
 # | Actual implementation in LaTeXML.ltxml                              | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,9 +10,9 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 DefConstructor('\Line Pair',

@@ -1,15 +1,23 @@
 # -*- CPERL -*-
-# /======================================================= #
-# |  revtex4.cls - Implementation for LaTeXML             | #
-# |                                                       | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Copyright (c) 2008 arXMLiv group                      | #
-# | Catalin David <c.david@jacobs-university.de>          | #
-# | Released to Public Domain                             | #
-# ========================================================/ #
+# /=====================================================================\ #
+# |  revtex4.cls                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Catalin David <c.david@jacobs-university.de>              | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # Generally ignorable options
@@ -32,7 +40,9 @@ foreach my $substyle (qw(aps pra prb prc prd pre prl prstab rmp osa osameet opex
 my @revtex_toload = ();
 foreach my $pkg (qw(amsfonts amssymb amsmath)) {
   DeclareOption($pkg, sub { push(@revtex_toload, $pkg); return; });
-  DeclareOption("no$pkg", sub { @revtex_toload = grep($_ ne $pkg, @revtex_toload); return; }); }
+  DeclareOption("no$pkg", sub {
+      @revtex_toload = grep { $_ ne $pkg } @revtex_toload;
+      return; }); }
 
 DeclareOption("osajnl", sub {
     push(@revtex_toload, 'graphics');
@@ -45,6 +55,6 @@ DeclareOption(undef, sub {
 ProcessOptions();
 LoadClass('article');
 RequirePackage('revtex4_support');
-map(RequirePackage($_), @revtex_toload);
+map { RequirePackage($_) } @revtex_toload;
 
 1;

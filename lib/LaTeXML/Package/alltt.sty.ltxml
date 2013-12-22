@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
@@ -19,7 +20,7 @@ use LaTeXML::Package;
 DefEnvironment('{alltt}', "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
   font => { family => 'typewriter', series => 'medium', shape => 'upright' },
   beforeDigest => sub {
-    map(AssignCatcode($_ => CC_OTHER), '$', '&', '#', '^', '_', '%', '~');
+    map { AssignCatcode($_ => CC_OTHER) } '$', '&', '#', '^', '_', '%', '~';
     AssignCatcode(" " => 13);
     Let(T_ACTIVE(" "), '\space');
     AssignValue(PRESERVE_NEWLINES => 1);

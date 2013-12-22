@@ -1,18 +1,24 @@
 # -*- CPERL -*-
-# /=======================================================\ #
-# |  pgf to svg driver - Implementation for LaTeXML       | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Copyright (c) 2011 arXMLiv group                      | #
-# | Released under the GNU Public License                 | #
-# | Released to the Public Domain                         | #
-# |=======================================================| #
-# | Author: Silviu Vlad Oprea                             | #
-# | E-mail: s.oprea@jacobs-university.de                  | #
-# \=======================================================/ #
-
+# /=====================================================================\ #
+# |  pgfsys latexml driver                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Silviu Vlad Oprea <s.oprea@jacobs-university.de>          | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released under the Gnu Public License                               | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 use Image::Magick;
 
@@ -21,7 +27,8 @@ use Image::Magick;
 sub addToCount {
   my ($reg, $value, $option) = @_;
   $option = 'local' if !$option;
-  AssignValue($reg => (LookupValue($reg) || 0) + $value, $option); }
+  AssignValue($reg => (LookupValue($reg) || 0) + $value, $option);
+  return; }
 
 #====================================================================#
 #= 0. Environment specific stuff ====================================#
@@ -95,9 +102,10 @@ sub foreignObjectCheck {
   my $node = $doc->getNode;
   while ($node) {
     my $n = $doc->getNodeQName($node);
-    return undef if $n eq 'svg:svg';
+    return if $n eq 'svg:svg';
     return $node if $n eq 'svg:foreignObject';
-    $node = $node->parentNode; } }
+    $node = $node->parentNode; }
+  return; }
 
 DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
@@ -157,14 +165,15 @@ DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
 #=====================================================================#
-DefMacro('\pgfsys@typesetpicturebox{}',
-  '\advance\pgf@picmaxy by-\pgf@picminy\relax%
+DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
+\advance\pgf@picmaxy by-\pgf@picminy\relax%
    \advance\pgf@picmaxx by-\pgf@picminx\relax%
    \ht#1=\pgf@picmaxy%
    \wd#1=\pgf@picmaxx%
    \dp#1=0pt%
    \leavevmode%\message{width: \the\pgf@picmaxx, height:\the\pgf@picmaxy}%%
-   \lxSVG@pgfsys@insertpicture{\box#1}%');
+   \lxSVG@pgfsys@insertpicture{\box#1}%
+EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
 DefMacro('\pgfsys@endpicture',   '');
@@ -244,7 +253,7 @@ DefMacro('\pgfsys@hbox{Number}', sub {
 # Adding an element to the current SVG path
 sub addToSVGPath {
   my ($operation, @points) = @_;
-  my $newPath = join(' ', $operation, map($_->pxValue, @points));
+  my $newPath = join(' ', $operation, map { $_->pxValue } @points);
   if (my $currentPath = LookupValue('pgf_SVGpath')) {
     AssignValue(pgf_SVGpath => $currentPath . ' ' . $newPath); }
   else {
@@ -701,16 +710,16 @@ DefConstructor('\@@foreign@image Semiverbatim {Dimension}{Dimension}', sub {
 # Helpers
 
 DefMacro('\lxSVG@pgfsys@sh@create', sub {
-    T_CS('\lxSVG@pgfsys@sh@intervals'), Expand(T_CS('\pgf@sys@shading@ranges')),
+    (T_CS('\lxSVG@pgfsys@sh@intervals'), Expand(T_CS('\pgf@sys@shading@ranges')),
       T_BEGIN,
       T_BEGIN, T_CS('\pgf@sys@shading@end@pos'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@pos'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
-      T_END, T_BEGIN, T_END });
+      T_END, T_BEGIN, T_END); });
 
 DefPrimitive('\lxSVG@pgfsys@sh@color{Float}{Float}{Float}', sub {
-    AssignValue(pgf_sh_color => Color('rgb', map($_->valueOf, @_[1 .. $#_])));
+    AssignValue(pgf_sh_color => Color('rgb', map { $_->valueOf } @_[1 .. $#_]));
     return; });
 
 DefMacro('\lxSVG@pgfsys@sh@interval@{Dimension}',
@@ -809,20 +818,21 @@ DefMacro('\lxSVG@process{Dimension}{Dimension}',
 #=====================================================================
 # Implementation
 
-DefMacro('\pgfsys@shadinginsidepgfpicture{}',
-  '\message{Using shading \string#1}' .
-    '#1\lxSVG@pgfsys@sh@defs%
+DefMacro('\pgfsys@shadinginsidepgfpicture{}', <<'EoTeX');
+\message{Using shading \string#1}
+ #1\lxSVG@pgfsys@sh@defs%
   \pgf@process{\lxSVG@pgfsys@pos}%
   \pgf@x=-.5\pgf@x\relax\pgf@y=-.5\pgf@y\relax%
 %  \lxSVG@process{\pgf@x}{\pgf@y}%
 %  \pgf@x=-1\pgf@x\relax\pgf@y=-1\pgf@y\relax%
 %  \lxSVG@process{\pgf@x}{\pgf@y}%
-  \lxSVG@pgfsys@sh@insert{\pgf@x}{\pgf@y}{\lxSVG@pgfsys@sh}');
+  \lxSVG@pgfsys@sh@insert{\pgf@x}{\pgf@y}{\lxSVG@pgfsys@sh}
+EoTeX
 
-DefMacro('\pgfsys@shadingoutsidepgfpicture{}',
-  '\begingroup\lxSVG@installcommands%
-    #1%
-    \setbox\pgfpic=\hbox to0pt{%
+DefMacro('\pgfsys@shadingoutsidepgfpicture{}', <<'EoTeX');
+\begingroup\lxSVG@installcommands%
+  #1%
+  \setbox\pgfpic=\hbox to0pt{%
       \lxSVG@pgfsys@sh@defs%
       \lxSVG@pgfsys@sh%
     }%
@@ -832,8 +842,8 @@ DefMacro('\pgfsys@shadingoutsidepgfpicture{}',
     \pgf@picmaxx=\pgf@x%
     \pgf@picmaxy=\pgf@y%
     \pgfsys@typesetpicturebox{\pgfpic}%
-  \endgroup'
-);
+  \endgroup
+EoTeX
 
 DefMacro('\pgfsys@horishading{}{Dimension}{}', sub {
     my ($gullet, $name, $height, $specs) = @_;

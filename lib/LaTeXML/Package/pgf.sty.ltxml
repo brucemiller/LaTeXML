@@ -1,21 +1,27 @@
 # -*- CPERL -*-
-# /=======================================================\ #
-# |  pgf - Implementation for LaTeXML                     | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Copyright (c) 2011 arXMLiv group                      | #
-# | Released under the GNU Public License                 | #
-# | Released to the Public Domain                         | #
-# |=======================================================| #
-# | Author: Silviu Vlad Oprea                             | #
-# | E-mail: s.oprea@jacobs-university.de                  | #
-# \=======================================================/ #
-
+# /=====================================================================\ #
+# |  pgf.sty                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Silviu Vlad Oprea <s.oprea@jacobs-university.de>          | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released under the Gnu Public License                               | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
-DefMacro('\pgfsysdriver', 'pgfsys-latexml.def'); # and we'll load the .ltxml!
+DefMacro('\pgfsysdriver', 'pgfsys-latexml.def');    # and we'll load the .ltxml!
 
 # We're going to load the raw tex of pgf ...
 #   AND all the files it includes!

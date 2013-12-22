@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #======================================================================
@@ -42,11 +43,11 @@ foreach my $option (qw(displaymath textmath graphics floats sections footnotes))
 DeclareOption('active', sub { Digest(T_CS('\Previewtrue')); });
 # DeclareOption(undef, sub{ input if file exists "pr" \CurrentOption .def;
 
-DefMacro('\PreviewMacro OptionalMatch:* []{}',           '');
-DefMacro('\PreviewEnvironment OptionalMatch:* []{}',     '');
-DefMacro('\PreviewSnarfEnvironment OptionalMatch:* []{}','');
-DefMacro('\PreviewOpen OptionalMatch:* []{}',            '');
-DefMacro('\PreviewClose OptionalMatch:* []{}',           '');
+DefMacro('\PreviewMacro OptionalMatch:* []{}',            '');
+DefMacro('\PreviewEnvironment OptionalMatch:* []{}',      '');
+DefMacro('\PreviewSnarfEnvironment OptionalMatch:* []{}', '');
+DefMacro('\PreviewOpen OptionalMatch:* []{}',             '');
+DefMacro('\PreviewClose OptionalMatch:* []{}',            '');
 
 DefEnvironment('{preview}', '#body');
 

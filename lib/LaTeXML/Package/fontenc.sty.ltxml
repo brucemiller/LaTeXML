@@ -8,13 +8,15 @@
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -63,7 +65,8 @@ our %cyrillic_map =
 sub setupCyrillic {
   foreach my $cmd (keys %cyrillic_map) {
     DefMacroI('\\' . $cmd, undef, $cyrillic_map{$cmd}); }
-  AddToMacro(T_CS('\@uclclist'), Tokenize(
+  AddToMacro(T_CS('\@uclclist'),
+    Tokenize(<<'EoTeX'));
       '\cyra\CYRA\cyrabhch\CYRABHCH\cyrabhchdsc\CYRABHCHDSC\cyrabhdze
   \CYRABHDZE\cyrabhha\CYRABHHA\cyrae\CYRAE\cyrb\CYRB\cyrbyus
   \CYRBYUS\cyrc\CYRC\cyrch\CYRCH\cyrchldsc\CYRCHLDSC\cyrchrdsc
@@ -88,8 +91,9 @@ sub setupCyrillic {
   \cyru\CYRU\cyrushrt\CYRUSHRT\cyrv\CYRV\cyrw\CYRW\cyry\CYRY
   \cyrya\CYRYA\cyryat\CYRYAT\cyryhcrs\CYRYHCRS\cyryi\CYRYI\cyryo
   \CYRYO\cyryu\CYRYU\cyrz\CYRZ\cyrzdsc\CYRZDSC\cyrzh\CYRZH
-  \cyrzhdsc\CYRZHDSC'));
-}
+  \cyrzhdsc\CYRZHDSC
+EoTeX
+  return; }
 
 ProcessOptions();
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,7 +104,7 @@ sub loadFontEncoding {
   InputDefinitions($encfile, type => 'def');
   if (LoadFontMap($encoding)) {
     MergeFont(encoding => $encoding); }
-}
+  return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 1;

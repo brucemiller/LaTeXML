@@ -7,12 +7,16 @@
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# / Thanks to the arXMLiv group for
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -100,8 +104,8 @@ NewCounter('section',       'chapter',    idprefix => 'S',   nested => ['subsect
 NewCounter('subsection',    'section',    idprefix => 'SS',  nested => ['subsubsection']);
 NewCounter('subsubsection', 'subsection', idprefix => 'SSS', nested => ['paragraph']);
 
-map(Tag("ltx:$_", autoClose => 1),
-  qw(chapter section subsection subsubsection));
+map { Tag("ltx:$_", autoClose => 1) }
+  qw(chapter section subsection subsubsection);
 
 # Should also add any missing: \endroster, \enddefinition, \enddemo, \endexample,\endproclaim !!
 DefConstructor('\specialhead Until:\endspecialhead',
@@ -268,7 +272,8 @@ sub relocateFootnote {
       if (my $note = $document->findnode(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")) {
         $node->parentNode->removeChild($node);
         append_nodes($note, $node->childNodes);
-        $document->setAttribute($note, role => $notetype); } } } }
+        $document->setAttribute($note, role => $notetype); } } }
+  return; }
 
 #======================================================================
 DefMacro('\rom{}', '{rm #1}');
@@ -380,16 +385,17 @@ sub ppunbox {
   my ($punct, $pre, $field, $post) = @_;
   my $value = LookupValue('amsbibitem@' . $field);
   if ($value && $value->unlist) {
-    ((defined $punct ? Tokenize($punct)->unlist : ()),
+    return ((defined $punct ? Tokenize($punct)->unlist : ()),
       (defined $pre ? Tokenize($pre)->unlist : (T_SPACE)),
       # Wrap this in text with field as a class or something?
       Invocation(T_CS('\@bibitem@field'), T_OTHER($field), $value),
       (defined $post ? Tokenize($post)->unlist : ())); }
   else {
-    (); } }
+    return (); } }
 
 sub commaunbox {
-  ppunbox(',', '\space', $_[0], undef); }
+  my ($field) = @_;
+  return ppunbox(',', '\space', $field, undef); }
 
 DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#class' _noautoclose='1'>#2</ltx:text>",
   properties => { class => sub { 'ltx_bib_' . ToString($_[1]); } });

@@ -10,7 +10,9 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
@@ -181,10 +183,10 @@ DefConstructor('\lx@@snapshot@framing{}', sub {
     my $capture = $document->openElement('_Capture_');
     my ($frame, @rest) = $document->absorb($framebox);
     $document->closeElement('_Capture_');
-    if (my $c = join(' ', grep($_, $theorem->getAttribute('class'), $frame->getAttribute('class')))) {
+    if (my $c = join(' ', grep { $_ } $theorem->getAttribute('class'), $frame->getAttribute('class'))) {
       $document->setAttribute($theorem, class => $c); }
-    if (my $c = join(';', grep($_, $theorem->getAttribute('cssstyle'),
-          $frame->getAttribute('cssstyle')))) {
+    if (my $c = join(';', grep { $_ } $theorem->getAttribute('cssstyle'),
+        $frame->getAttribute('cssstyle'))) {
       $document->setAttribute($theorem, cssstyle => $c); }
     if (my $b = $frame->getAttribute('backgroundcolor')
       || $document->getNodeFont($frame)->getBackground) {

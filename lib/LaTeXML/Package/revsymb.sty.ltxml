@@ -1,16 +1,22 @@
 # -*- CPERL -*-
-# /=======================================================\ #
-# |  revsymb.sty - Implementation for LaTeXML             | #
-# |                                                       | #
-# |=======================================================| #
-# | Part of LaTeXML : http://dlmf.nist.gov/LaTeXML/       | #
-# | Originally developed by the 2006 arXMLiv group        | #
-# |    http://arxmliv.kwarc.info/                         | #
-# | Released to the Public Domain                         | #
-# \=======================================================/ #
-
+# /=====================================================================\ #
+# |  revsymb.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 DefMath('\lambdabar', "\x{03BB}\x{0304}");

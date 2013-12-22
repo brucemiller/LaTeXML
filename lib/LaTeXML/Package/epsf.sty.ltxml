@@ -10,12 +10,13 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Provides alternative argument syntax.
 RawTeX(<<'EOTeX');
 \newif\ifepsfatend
@@ -46,7 +47,7 @@ DefConstructor('\epsfbox[] Semiverbatim', sub {
     $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
     my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
     $document->insertElement('ltx:graphics', undef, graphic => $graphic,
       candidates => join(',', @candidates), options => $options); });
 

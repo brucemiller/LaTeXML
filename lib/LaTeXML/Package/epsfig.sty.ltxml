@@ -10,11 +10,13 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
+
 #**********************************************************************
+# (See  LaTeXML::Post::Graphics for suggested postprocessing)
 
 RequirePackage('graphicx');
 AssignValue(epsfclip => 0);
@@ -42,7 +44,7 @@ DefConstructor('\psfig RequiredKeyVals:epsGin',
     my @candidates = pathname_findall($file, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
 
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map(pathname_relative($_, $base), @candidates); }
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
     $_[1]->setProperty(candidates => join(',', @candidates));
   });
 

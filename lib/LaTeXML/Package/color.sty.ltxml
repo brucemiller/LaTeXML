@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #======================================================================
@@ -32,7 +33,10 @@ sub ParseColor {
   my ($model, $spec) = @_;
   $model = ToString($model) if ref $model;
   $spec  = ToString($spec)  if ref $spec;
-  $spec =~ s/^\s+//; $spec =~ s/\s+$//; $spec = $1 if $spec =~ /^\{\s*(.*?)\s*\}$/;    # Trim
+  $spec =~ s/^\s+//;
+  $spec =~ s/\s+$//;
+  if ($spec =~ /^\{\s*(.*?)\s*\}$/) {    # Trim
+    $spec = $1; }
   my $color;
   if ($model && $model eq 'named') {
     $spec = 'named_' . $spec; $model = undef; }
@@ -46,14 +50,14 @@ sub ParseColor {
       AssignValue('color_' . $spec => Black);
       Error('unexpected', $spec, $STATE->getStomach,
         "Can't find color named '$spec'; assuming Black"); } }
-  $color || Black; }
+  return $color || Black; }
 
 #======================================================================
 # are there default named colors that we should be loading?
 
 DefPrimitive('\definecolor{}{}{}', sub {
     my ($stomach, $name, $model, $spec) = @_;
-    ($name, $model, $spec) = map($_ && Expand($_), $name, $model, $spec);
+    ($name, $model, $spec) = map { $_ && Expand($_) } $name, $model, $spec;
     DefColor(ToString($name), ParseColor($model, $spec));
     Box(undef, undef, undef, Invocation(T_CS('\definecolor'), $name, $model, $spec)); });
 
@@ -63,14 +67,14 @@ DefPrimitive('\definecolor{}{}{}', sub {
 # What are we supposed to do with $dmodel???
 DefPrimitive('\DefineNamedColor{}{}{}{}', sub {
     my ($stomach, $dmodel, $name, $model, $spec) = @_;
-    ($dmodel, $name, $model, $spec) = map($_ && Expand($_), $dmodel, $name, $model, $spec);
+    ($dmodel, $name, $model, $spec) = map { $_ && Expand($_) } $dmodel, $name, $model, $spec;
     DefColor('named_' . ToString($name), ParseColor($model, $spec));
     Box(undef, undef, undef, Invocation(T_CS('\DefineNamedColor'), $dmodel, $name, $model, $spec)); });
 
 # \color{name} or \color[model]{spec}
 DefPrimitive('\color[]{}', sub {
     my ($stomach, $model, $spec) = @_;
-    ($model, $spec) = map($_ && Expand($_), $model, $spec);
+    ($model, $spec) = map { $_ && Expand($_) } $model, $spec;
     my $color = ParseColor($model, $spec);
     AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
     MergeFont(color => $color);
@@ -79,7 +83,7 @@ DefPrimitive('\color[]{}', sub {
 #\pagecolor{name} or \pagecolor[model]{spec}
 DefPrimitive('\pagecolor[]{}', sub {
     my ($stomach, $model, $spec) = @_;
-    ($model, $spec) = map($_ && Expand($_), $model, $spec);
+    ($model, $spec) = map { $_ && Expand($_) } $model, $spec;
     my $color = ParseColor($model, $spec);
     MergeFont(background => $color);
     Box(undef, undef, undef, Invocation(T_CS('\pagecolor'), $model, $spec)); });

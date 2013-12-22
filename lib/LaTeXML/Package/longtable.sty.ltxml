@@ -11,6 +11,8 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
+use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Alignment;
 
@@ -105,7 +107,7 @@ DefPrimitive('\@longtable@grab{}', sub {
     # Remove all preceding rows.
     my @rows = ();
     while (my $row = $alignment->removeRow) {
-      map($$_{head} = 1, $row->columns);
+      map { $$_{head} = 1 } $row->columns;
       unshift(@rows, $row); }
     if (($name eq 'FIRSTHEAD') || (($name eq 'HEAD') && !LookupValue('LONGTABLE_HEAD'))) {
       AssignValue(LONGTABLE_HEAD => [@rows], 'global'); }

@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # See http://tex.loria.fr/moteurs/etex_ref.html
@@ -138,7 +139,7 @@ DefConditional('\unless Token', sub {
     my ($gullet, $if) = @_;
     my ($defn, $test);
     if (($defn = LookupMeaning($if)) && ((ref $defn) eq 'LaTeXML::Conditional')
-          && ($test = $defn->getTest)) {
+      && ($test = $defn->getTest)) {
       # Invert the if's test!
       !&$test($gullet, $defn->readArguments($gullet)); }
     else {

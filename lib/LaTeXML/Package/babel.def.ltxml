@@ -8,13 +8,15 @@
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # \foreignlanguage{language}{phrase}
@@ -186,11 +188,11 @@ DefMacro('\languageshorthands{}', '\def\language@group{#1}');
 #\shorthandon{chars}
 DefMacro('\shorthandon{}', sub {
     #print STDERR "SHORTHANDON :".ToString($_[1])." at ".$_[0]->getLocator."\n";
-    map(AssignCatcode($_, CC_ACTIVE), map($_->getCSName, $_[1]->unlist)); });
+    map { AssignCatcode($_, CC_ACTIVE) } map { $_->getCSName } $_[1]->unlist; });
 #\shorthandoff{chars}
 DefMacro('\shorthandoff{}', sub {
     #print STDERR "SHORTHANDOFF :".ToString($_[1])." at ".$_[0]->getLocator."\n";
-    map(AssignCatcode($_, CC_OTHER), map($_->getCSName, $_[1]->unlist)); });
+    map { AssignCatcode($_, CC_OTHER) } map { $_->getCSName } $_[1]->unlist; });
 
 #======================================================================
 # internal
@@ -348,7 +350,7 @@ DefPrimitive('\languageattribute{}{}', sub {
     my @attributes = split(/\s*,\s*/, ToString(Expand($attributes)));
     #    print STDERR "ATTRIBUTES $language: ".join(', ',@attributes)."\n";
 
-    foreach my $t (map(T_CS('\\' . $language . '@attr@' . $_), @attributes)) {
+    foreach my $t (map { T_CS('\\' . $language . '@attr@' . $_) } @attributes) {
       Digest($t); }
     return; });
 #======================================================================

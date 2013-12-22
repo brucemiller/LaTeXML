@@ -8,13 +8,15 @@
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
 # | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # This bit of code supports the \inst style institution markup
@@ -38,14 +40,14 @@ use LaTeXML::Package;
 # as an ltx:contact(with @role='institute').
 
 DefMacro('\author{}', sub {
-    map((T_CS('\@author'), T_BEGIN, @$_, T_END), SplitTokens($_[1], T_CS('\and'), T_OTHER(','))); });
+    map { (T_CS('\@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
 
 DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' mark='#1'/>");
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
 DefConstructor('\@inst{}', "^<ltx:contact role='institutemark' mark='#1'/>");
 DefMacro('\inst{}', sub {
-    map((T_CS('\@inst'), T_BEGIN, @$_, T_END), SplitTokens($_[1], T_OTHER(','))); });
+    map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
 
 NewCounter('inst', 'document');
 DefMacro('\institute{}',
@@ -80,7 +82,8 @@ sub relocateInstitute {
         foreach my $author (@authors) {
           $document->appendTree($author, ['ltx:contact', { role => 'institute' }, $instnode->childNodes]);
           $instnode->parentNode->removeChild($instnode); } }
-    } } }
+    } }
+  return; }
 
 1;
 

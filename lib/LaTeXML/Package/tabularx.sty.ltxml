@@ -11,6 +11,8 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
+use strict;
+use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Alignment;
 

@@ -12,9 +12,9 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 # support for aa.cls, aa.sty, ...
@@ -65,9 +65,9 @@ DefConstructor('\abstract@new{}{}{}{}{}',
 DefMacro('\abstract{}', sub {
     my ($gullet, $arg1) = @_;
     $gullet->skipSpaces;    # I think?
-    (T_CS($gullet->ifNext(T_BEGIN)
-        ? '\abstract@new' : '\abstract@old')),
-      T_BEGIN, $arg1->unlist, T_END; });
+    ((T_CS($gullet->ifNext(T_BEGIN)
+          ? '\abstract@new' : '\abstract@old')),
+      T_BEGIN, $arg1->unlist, T_END); });
 
 # Keywords
 DefMacroI('\keywordname', undef, '\sffamily\bfseries Key Words.');
@@ -206,7 +206,7 @@ sub wrapIsotope {
   $new->appendChild($node);
   $document->insertElement('ltx:XMWrap', $script);
   $document->closeElement('ltx:XMApp');
-  $node = $new; }
+  return $new; }
 
 DefPrimitiveI('\sun',      undef, "\x{2609}");
 DefPrimitiveI('\diameter', undef, "\x{2300}");

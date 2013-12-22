@@ -11,8 +11,9 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
-use LaTeXML::Package;
 use strict;
+use warnings;
+use LaTeXML::Package;
 
 #======================================================================
 # What an interesting package! A bit complex to rewrite in Perl

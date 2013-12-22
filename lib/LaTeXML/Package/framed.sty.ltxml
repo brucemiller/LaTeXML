@@ -10,11 +10,11 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-use strict;
-use LaTeXML::Package;
-use LaTeXML::Color;
-
 package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
 #======================================================================
 # {framed} Normal framed block-level box,
 # Actually, is potentially higher than block-level; It can contain structure-level markup!
