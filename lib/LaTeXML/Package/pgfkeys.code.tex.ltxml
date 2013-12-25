@@ -1,0 +1,726 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  pgfkeys.code.tex                                                   | #
+# | Implementation for LaTeXML                                          | #
+# |---------------------------------------------------------------------| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Profiling suggests that the single costliest component when
+# running tikz under LaTeXML (not necessarily LaTeX!) is pgfkeys processing.
+# Thus, it's worth the trouble to develop a LaTeXML-specific binding.
+#
+# The code below seems to capture the essence of pgfkeys.code.tex.
+# We ignore all the filtering stuff which seems not to be used??
+#
+# If you want to revert to texlive's version, uncomment the following:
+#  InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
+#   || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
+#
+# __END__
+#
+# OR you may want to turn on locking & uncomment similar code in the middle.
+# That would read in a more complete version of pgfkeys but our binding
+# code will override it.  This may be necessary if the "key bindings"
+# included in the texlive distributed pgfkeys evolves too much.
+# (see the stuff at the very end)
+my $dolocking = 0;
+
+#======================================================================
+# Basic accessors to keys
+sub pgfkeyCS {
+  my ($key) = @_;
+  return T_CS('\pgfk@' . ToString($key)); }
+
+sub pgfkeyLookup {
+  my ($key) = @_;
+  my $kcs = pgfkeyCS($key);
+  return (LookupMeaning($kcs) ? $kcs : ()); }
+
+DefPrimitive('\pgfkeyssetvalue{}{}', sub {
+    my ($stomach, $key, $value) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    DefMacroI($kcs, undef, $value); },
+  locked => $dolocking);
+
+DefPrimitive('\pgfkeysaddvalue{}{}{}', sub {
+    my ($stomach, $key, $before, $after) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    DefMacroI($kcs, undef,
+      Tokens($before->unlist,
+        (LookupDefinition($kcs) ? $kcs : ()),
+        $after->unlist)); },
+  locked => $dolocking);
+
+DefPrimitive('\pgfkeyslet{} DefToken', sub {
+    my ($stomach, $key, $value) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    Let($kcs, $value); },
+  locked => $dolocking);
+
+DefPrimitive('\pgfkeysgetvalue{} DefToken', sub {
+    my ($stomach, $key, $cmd) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    Let($cmd, $kcs); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysvalueof{}', sub {
+    my ($gullet, $key) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    return ($kcs); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysifdefined{}{}{}', sub {
+    my ($gullet, $key, $if, $else) = @_;
+    my $kcs = pgfkeyCS(Expand($key));
+    (LookupDefinition($kcs) ? $if->unlist : $else->unlist); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysifassignable{}{}{}', sub {
+    my ($gullet, $key, $if, $else) = @_;
+    $key = ToString(Expand($key));
+    (LookupDefinition(pgfkeyCS($key)) || LookupDefinition(pgfkeyCS($key . '/.@cmd'))
+      ? $if->unlist : $else->unlist); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeys@error{}', sub {
+    my ($gullet, $msg) = @_;
+    Warn('unexpected', 'pgfkeys', $gullet,
+      "In package pgfkeys: " . ToString(Expand($msg))); },
+  locked => $dolocking);
+
+#======================================================================
+# Now, here's where it gets interesting!!!!
+
+DefPrimitive('\pgfkeys{}', sub {
+    my ($stomach, $keyvals) = @_;
+    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
+    Let('\pgfkeysdefaultpath', '\pgfkeys@root');
+    my @results = parsePGFKeys($stomach, $keyvals);
+    DefMacro('\pgfkeysdefaultpath', $savedpath);
+    return @results; },
+  locked => $dolocking);
+
+DefPrimitive('\pgfqkeys{}{}', sub {
+    my ($stomach, $path, $keyvals) = @_;
+    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
+    DefMacro('\pgfkeysdefaultpath', Tokens(Expand($path)->unlist, T_OTHER('/')));
+    my @results = parsePGFKeys($stomach, $keyvals);
+    DefMacro('\pgfkeysdefaultpath', $savedpath);
+    return @results; },
+  locked => $dolocking);
+
+DefPrimitive('\pgfkeysalso{}', sub {
+    my ($stomach, $keyvals) = @_;
+    my @results = parsePGFKeys($stomach, $keyvals);
+    return @results; },
+  locked => $dolocking);
+
+DefPrimitive('\pgfqkeysalso{}{}', sub {
+    my ($stomach, $path, $keyvals) = @_;
+    DefMacro('\pgfkeysdefaultpath', Tokens(Expand($path)->unlist, T_OTHER('/')));
+    my @results = parsePGFKeys($stomach, $stomach, $keyvals);
+    return @results; },
+  locked => $dolocking);
+
+DefMacro('\pgfkeys@root',         '/');
+DefMacro('\pgfkeysdefaultpath',   '\pgfkeys@root');
+DefMacro('\pgfkeyscurrentkey',    '');
+DefMacro('\pgfkeyscurrentkeyRAW', '');
+DefMacro('\pgfkeyscurrentpath',   '/');
+DefMacro('\pgfkeyscurrentname',   '');
+
+DefConditional('\ifpgfkeysaddeddefaultpath', undef,
+  locked => $dolocking);
+DefConditional('\ifpgfkeyssuccess', undef,
+  locked => $dolocking);
+
+# Stub things that are only supposed to equal themselves...
+DefMacro('\pgfkeys@mainstop', '\pgfkeys@mainstop',
+  locked => $dolocking);
+DefMacro('\pgfkeys@novalue', '',
+  locked => $dolocking);
+DefMacro('\pgfkeysnovalue', '\pgfkeys@novalue',
+  locked => $dolocking);
+DefMacro('\pgfkeysnovalue@text', '\pgfkeysnovalue',
+  locked => $dolocking);
+DefMacro('\pgfkeysvaluerequired', '\pgfkeysvaluerequired',
+  locked => $dolocking);
+
+sub parsePGFKeys {
+  my ($stomach, $keyvals) = @_;
+  my @tokens  = $keyvals->unlist;
+  my @results = ();
+  while (@tokens) {
+    while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip whitespace
+      shift(@tokens); }
+    last unless @tokens;
+
+    #----------------------------------------
+    # First, pull off tokens like <key>=<value>,
+    my @k = ();
+    # pull tokens until '=' or ',' ==> key
+    while (@tokens && !Equals($tokens[0], T_OTHER('=')) && !Equals($tokens[0], T_OTHER(','))) {
+      push(@k, shift(@tokens)); }
+    while (@k && ($k[-1]->getCatcode == CC_SPACE)) {    # Skip whitespace
+      pop(@k); }
+    my @v = ();
+    # Then if '=', pull tokens until end or , ==> value
+    if (@tokens && Equals($tokens[0], T_OTHER('='))) {    # If '=', explicit value
+      shift(@tokens);                                     # Skip '='
+      while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip whitespace
+        shift(@tokens); }
+      # Balanced tokens until ','
+      while (@tokens && !Equals($tokens[0], T_OTHER(','))) {
+        if (Equals($tokens[0], T_BEGIN)) {
+          my ($level, $t) = (0, undef);
+          while (defined($t = shift(@tokens))) {
+            my $cc = $t->getCatcode;
+            $level++ if $cc == CC_BEGIN;
+            $level-- if $cc == CC_END;
+            push(@v, $t);
+            last unless $level; } }
+        else {
+          push(@v, shift(@tokens)); } }
+      while (@v && ($v[-1]->getCatcode == CC_SPACE)) {    # pop spaces off of value????
+        pop(@v); } }
+    if (@tokens && Equals($tokens[0], T_OTHER(','))) {    # And skip the comma, if we're not at end.
+      shift(@tokens); }                                   # Remove the comma
+
+    #----------------------------------------
+    # Now, get the current key, expanded, and @add@path@as@needed
+    my $key = Expand(Tokens(@k));
+    @k = $key->unlist;
+    DefMacroI(T_CS('\pgfkeyscurrentkeyRAW'), undef, $key);
+    # Separate  the key into the path & name, default the path
+    # Note that this isn't consistently described in pgfkeys.code.tex
+    if (@k && !Equals($k[0], T_OTHER('/'))) {    # If doesn't start with /, add default path
+      Digest(T_CS('\pgfkeysaddeddefaultpathtrue'));
+      unshift(@k, Expand(T_CS('\pgfkeysdefaultpath'))->unlist);
+      $key = Tokens(@k); }
+    else {
+      Digest(T_CS('\pgfkeysaddeddefaultpathfalse')); }
+    DefMacroI(T_CS('\pgfkeyscurrentkey'), undef, $key);
+
+    #----------------------------------------
+    # Finally, start working with the value
+    pgfAssignKey($stomach, ToString($key), Tokens(@v));
+  }
+  return @results; }
+
+sub pgfAssignKey {
+  my ($stomach, $key, $value) = @_;
+  #  print STDERR "ASSIGN '$key' => '".ToString($value)."'\n";
+  my $cmdkey;
+  # Double # to simulate what \pgfkeys@spdef does
+  DefMacroI(T_CS('\pgfkeyscurrentvalue'), undef,
+    Tokens(map { ($_->getCatcode == CC_PARAM ? ($_, $_) : $_) } $value->unlist));
+  if ($value && $value->unlist) { }    # Got value? ok.
+  elsif (my $def = pgfkeyLookup($key . '/.@def')) {    # else if a default, let to it
+    Let(T_CS('\pgfkeyscurrentvalue'), pgfkeyCS($key . '/.@def')); }
+
+  if (xEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysvaluerequired'))) {    # value REQUIRED!
+    Digest(Tokens(pgfkeyCS('/errors/value required/.@def'), T_CS('\pgfcurrentkey'),
+        T_CS('\pgfkeyscurrentkey'), T_CS('\pgfkeyscurrentvalue'))); }
+  elsif (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {                              # Case 1
+    pgfHandleValue($cmdkey, $value); }
+  elsif (my $cs = pgfkeyLookup($key)) {                                          # Case 2
+    if (xEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysnovalue@text'))) {    # value empty?
+      Digest(pgfkeyCS($key)); }    # Just execute the STORED value!
+    else {
+      Let(pgfkeyCS($key), T_CS('\pgfkeyscurrentvalue')); } }
+  else {                           # Case 3
+    my ($path, $name) = pgfSplitPath($key);
+    # There is a bizzare arrangement that swaps out case 3 handling
+    # for 'all' or 'only existing' or ... I can't tell if it's actually used?
+    # I'll pretend I only need to deal with 'all' for now...
+    if (pgfkeyLookup($cmdkey = '/handlers/' . $name . '/.@cmd')) {    # a command bound?
+      pgfHandleValue($cmdkey, $value); }
+    # Else various handlers for unknown
+    elsif (pgfkeyLookup($cmdkey = $path . '/.unknown/.@cmd')) {
+      pgfHandleValue($cmdkey, $value); }
+    elsif ($cmdkey = '/handlers/.unknown/.@cmd') {
+      pgfHandleValue($cmdkey, $value); } }
+  return; }
+
+sub pgfSplitPath {
+  my ($key) = @_;
+  my ($path, $name) = ('', $key);
+  if ($key =~ m|^(.*?)/([^/]*)$|) {
+    ($path, $name) = ($1, $2); }
+  DefMacroI(T_CS('\pgfkeyscurrentpath'), undef, TokenizeInternal($path));
+  DefMacroI(T_CS('\pgfkeyscurrentname'), undef, TokenizeInternal($name));
+  return ($path, $name); }
+
+sub pgfHandleValue {
+  my ($key, $value) = @_;
+  #print STDERR "HANDLE ".ToString($key)." = ".ToString($value)."\n";
+  Let(T_CS('\pgfkeys@code'), pgfkeyCS(ToString($key)));
+  return Digest(Tokens(T_CS('\expandafter'), T_CS('\pgfkeys@code'),
+      T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfeov'))); }
+
+#======================================================================
+
+DefMacro('\pgfkeysdef{}{}', sub {
+    my ($gullet, $key, $body) = @_;
+    $key = ToString(Expand($key));
+    my $cs = pgfkeyCS($key . '/.@cmd');
+    my $p = LaTeXML::Parameters->new(LaTeXML::Parameters::newParameter('Until', 'Until:\pgfeov',
+        extra => [T_CS('\pgfeov')]));
+    #  print STDERR "\nDEF '$key' args ".ToString($p)."; body is ".ToString($body)."\n";
+    DefMacroI($cs, $p, $body); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysedef{}{}', sub {
+    my ($gullet, $key, $body) = @_;
+    $key = ToString(Expand($key));
+    my $cs = pgfkeyCS($key . '/.@cmd');
+    my $p = LaTeXML::Parameters->new(LaTeXML::Parameters::newParameter('Until', 'Until:\pgfeov',
+        extra => [T_CS('\pgfeov')]));
+    { local $LaTeXML::NOEXPAND_THE = 1;
+      $body = Expand($body); }
+    #  print STDERR "\nEDEF '$key' args ".ToString($p)."; body is ".ToString($body)."\n";
+    DefMacroI($cs, $p, $body); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysdefargs{}{}{}', sub {
+    my ($gullet, $key, $args, $body) = @_;
+    $key = ToString(Expand($key));
+    my $cs    = pgfkeyCS($key . '/.@cmd');
+    my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
+    my $p     = parseDefParameters($cs, $vargs);
+    #  print STDERR "\nDEF '$key' args '".ToString($p)."'; body is ".ToString($body)."\n";
+    DefMacroI($cs,                        $p,    $body);
+    DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
+    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysedefargs{}{}{}', sub {
+    my ($gullet, $key, $args, $body) = @_;
+    $key = ToString(Expand($key));
+    my $cs    = pgfkeyCS($key . '/.@cmd');
+    my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
+    my $p     = parseDefParameters($cs, $vargs);
+    { local $LaTeXML::NOEXPAND_THE = 1;
+      $body = Expand($body); }
+    #  print STDERR "\nEDEF '$key' args '".ToString($p)."'; body is ".ToString($body)."\n";
+    DefMacroI($cs,                        $p,    $body);
+    DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
+    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+  locked => $dolocking);
+
+DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
+    my ($gullet, $key, $n, $body, $def) = @_;
+    $key = ToString(Expand($key));
+    my $cs = pgfkeyCS($key . '/.@cmd');
+    $n = ToString($n);
+    $n =~ s/^#//;
+    my $p = LaTeXML::Parameters->new(LaTeXML::Parameters::newParameter('Until', 'Until:\pgfeov',
+        extra => [T_CS('\pgfeov')]));
+   #  print STDERR "\nDEFNARGS '$key' args ".ToString($p)." ('$n' args); body is ".ToString($body)."\n";
+    my $argsbody = $body;
+    if (ToString($def) eq '\edef') {
+      local $LaTeXML::NOEXPAND_THE = 1;
+      $argsbody = Expand($body); }
+
+    # Define $key/.@args to pretty print the args (?)
+    DefMacroI(pgfkeyCS($key . '/.@args'), undef, Tokens(map { (T_PARAM, T_OTHER($_)) } 1 .. $n));
+
+    # (e-)Define $key/.@@body as if it were the normal macro with $n args
+    DefMacroI(pgfkeyCS($key . '/.@@body'),
+####            undef,
+      LaTeXML::Parameters->new(map { LaTeXML::Parameters::newParameter('Plain', '{}') } 1 .. $n),
+      $argsbody);
+    # Define $key/.@cmd itself
+    DefMacroI($cs, $p, sub { Tokens(pgfkeyCS($key . '/.@@body'), $_[1]); });
+    # Store the body
+    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+  locked => $dolocking);
+
+#DefMacro('\pgfkeys@error{}','PackageWarning{pgfkeys}{#1}{}',
+
+#======================================================================
+# Another testing alternative:
+#   turn locking on and uncomment the code here
+# This will use a few local binding definitions, but get any missing ones
+# AND get whatever the current key-definitions from the distribution!!!
+# InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
+#   || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
+
+# __END__
+
+#======================================================================
+DefPrimitive('\pgfkeys@spdef DefToken{}', sub {
+    my ($stomach, $cs, $tokens) = @_;
+    DefMacroI($cs, undef,
+      Tokens(map { ($_->getCatcode == CC_PARAM ? ($_, $_) : $_) } $tokens->unlist)); });
+
+DefPrimitive('\pgfkeys@split@path', sub {
+    pgfSplitPath(ToString(Expand(T_CS('\pgfkeyscurrentkey'))));
+    return; });
+
+DefMacro('\pgfkeys@ifexecutehandler{}{}', '#1');
+
+DefPrimitive('\pgfkeysaddhandlyonlyexistingexception{}', sub {
+    my ($stomach, $key) = @_;
+    DefMacroI('\pgfk@excpt@' . ToString($key), undef, '1'); });
+
+Let('\pgfkeys@ifcsname', '\ifcsname');    # eTeX!
+#======================================================================
+
+# \pgfkeysaddhandlyonlyexistingexception
+# \pgfutilnext
+
+print STDERR "\nRAW 0\n";
+RawTeX(<<'EOTeX');
+\long\def\pgfkeysdefnargs#1#2#3{\pgfkeysdefnargs@{#1}{#2}{#3}{\def}}%
+\long\def\pgfkeysedefnargs#1#2#3{\pgfkeysdefnargs@{#1}{#2}{#3}{\edef}}%
+EOTeX
+
+# And this section copied from pgfkeys.code.tex
+# defines a bunch of internal support for key manipulation.
+RawTeX(<<'EOTeX');
+% Defining a key command
+
+\pgfkeysdef{/handlers/.code}{\pgfkeysdef{\pgfkeyscurrentpath}{#1}}
+\pgfkeysdef{/handlers/.code 2 args}{\pgfkeysdefargs{\pgfkeyscurrentpath}{##1##2}{#1}}
+\pgfkeysdef{/handlers/.ecode}{\pgfkeysedef{\pgfkeyscurrentpath}{#1}}
+\pgfkeysdef{/handlers/.ecode 2 args}{\pgfkeysedefargs{\pgfkeyscurrentpath}{##1##2}{#1}}
+\pgfkeysdefnargs{/handlers/.code args}{2}{\pgfkeysdefargs{\pgfkeyscurrentpath}{#1}{#2}}
+\pgfkeysdefnargs{/handlers/.ecode args}{2}{\pgfkeysedefargs{\pgfkeyscurrentpath}{#1}{#2}}
+\pgfkeysdefnargs{/handlers/.code n args}{2}{\pgfkeysdefnargs{\pgfkeyscurrentpath}{#1}{#2}}
+\pgfkeysdefnargs{/handlers/.ecode n args}{2}{\pgfkeysedefnargs{\pgfkeyscurrentpath}{#1}{#2}}
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Adding to a key command
+
+\pgfkeys{/handlers/.add code/.code 2 args=%
+  % Find out, whether with args or not.
+  \pgfkeysifdefined{\pgfkeyscurrentpath/.@args}%
+  {% Yes, so add to body and reuse args
+	\pgfkeysaddvalue{\pgfkeyscurrentpath/.@body}{#1}{#2}%
+	% Redefine code
+	{%
+	  \pgfkeysgetvalue{\pgfkeyscurrentpath/.@args}{\pgfkeys@tempargs}%
+	  \pgfkeysgetvalue{\pgfkeyscurrentpath/.@body}{\pgfkeys@tempbody}%
+	  \def\pgfkeys@marshal{\expandafter\gdef\expandafter\pgfkeys@global@temp\pgfkeys@tempargs}%
+	  \expandafter\pgfkeys@marshal\expandafter{\pgfkeys@tempbody}%
+	}%
+    \pgfkeysifdefined{\pgfkeyscurrentpath/.@@body}{%
+	  % support for \pgfkeysndefargs:
+	  \pgfkeyslet{\pgfkeyscurrentpath/.@@body}{\pgfkeys@global@temp}%
+	}{%
+	  % support for \pgfkeysdefargs:
+      \pgfkeyslet{\pgfkeyscurrentpath/.@cmd}{\pgfkeys@global@temp}%
+	}%
+  }%
+  {%
+    % No, so single argument (simple \pgfkeysdef). Redefine accordingly.
+    {%
+      \toks0{#1}%
+      \pgfkeysifdefined{\pgfkeyscurrentpath/.@cmd}%
+      {\pgfkeys@temptoks\expandafter\expandafter\expandafter{\csname pgfk@\pgfkeyscurrentpath/.@cmd\endcsname##1\pgfeov}}%
+      {\pgfkeys@temptoks{}}%
+      \toks1{#2}%
+      \xdef\pgfkeys@global@temp{\the\toks0 \the\pgfkeys@temptoks \the\toks1 }%
+    }%
+    \expandafter\def\expandafter\pgfkeys@temp\expandafter##\expandafter1\expandafter\pgfeov\expandafter{\pgfkeys@global@temp}%
+    \pgfkeyslet{\pgfkeyscurrentpath/.@cmd}\pgfkeys@temp%
+  }%
+}
+\pgfkeys{/handlers/.prefix code/.code=\pgfkeys{\pgfkeyscurrentpath/.add code={#1}{}}}%
+\pgfkeys{/handlers/.append code/.code=\pgfkeys{\pgfkeyscurrentpath/.add code={}{#1}}}%
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Defining a style
+
+\pgfkeys{/handlers/.style/.code=\pgfkeys{\pgfkeyscurrentpath/.code=\pgfkeysalso{#1}}}
+\pgfkeys{/handlers/.estyle/.code=\pgfkeys{\pgfkeyscurrentpath/.ecode=\noexpand\pgfkeysalso{#1}}}
+\pgfkeys{/handlers/.style args/.code 2 args=\pgfkeys{\pgfkeyscurrentpath/.code args={#1}{\pgfkeysalso{#2}}}}
+\pgfkeys{/handlers/.estyle args/.code 2 args=\pgfkeys{\pgfkeyscurrentpath/.ecode args={#1}{\noexpand\pgfkeysalso{#2}}}}
+\pgfkeys{/handlers/.style 2 args/.code=\pgfkeys{\pgfkeyscurrentpath/.code 2 args=\pgfkeysalso{#1}}}
+\pgfkeys{/handlers/.style n args/.code 2 args=\pgfkeys{\pgfkeyscurrentpath/.code n args={#1}{\pgfkeysalso{#2}}}}
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Adding to a style
+
+\pgfkeys{/handlers/.add style/.code 2 args=\pgfkeys{\pgfkeyscurrentpath/.add code={\pgfkeysalso{#1}}{\pgfkeysalso{#2}}}}%
+\pgfkeys{/handlers/.prefix style/.code=\pgfkeys{\pgfkeyscurrentpath/.add code={\pgfkeysalso{#1}}{}}}%
+\pgfkeys{/handlers/.append style/.code=\pgfkeys{\pgfkeyscurrentpath/.add code={}{\pgfkeysalso{#1}}}}%
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Defining a value
+
+\pgfkeys{/handlers/.initial/.code=\pgfkeyssetvalue{\pgfkeyscurrentpath}{#1}}
+\pgfkeys{/handlers/.add/.code 2 args=\pgfkeysaddvalue{\pgfkeyscurrentpath}{#1}{#2}}
+\pgfkeys{/handlers/.prefix/.code=\pgfkeysaddvalue{\pgfkeyscurrentpath}{#1}{}}
+\pgfkeys{/handlers/.append/.code=\pgfkeysaddvalue{\pgfkeyscurrentpath}{}{#1}}
+\pgfkeys{/handlers/.get/.code=\pgfkeysgetvalue{\pgfkeyscurrentpath}{#1}}
+\pgfkeys{/handlers/.link/.code=\pgfkeyssetvalue{\pgfkeyscurrentpath}{\pgfkeysvalueof{#1}}}
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Defining a default
+
+\pgfkeys{/handlers/.default/.code=\pgfkeyssetvalue{\pgfkeyscurrentpath/.@def}{#1}}
+\pgfkeys{/handlers/.value required/.code=\pgfkeyssetvalue{\pgfkeyscurrentpath/.@def}{\pgfkeysvaluerequired}}
+\pgfkeys{/handlers/.value forbidden/.code=\pgfkeys{\pgfkeyscurrentpath/.add code=%
+{%
+  \ifx\pgfkeyscurrentvalue\pgfkeysnovalue@text%
+  \else%
+    \pgfkeysvalueof{/errors/value forbidden/.@cmd}\pgfkeyscurrentkey\pgfkeyscurrentvalue\pgfeov%
+  \fi%
+}{}}}
+EOTeX
+
+RawTeX(<<'EOTeX');
+% High-level cmds
+
+\pgfkeys{/handlers/.store in/.code=\pgfkeysalso{\pgfkeyscurrentpath/.code=\def#1{##1}}}
+\pgfkeys{/handlers/.estore in/.code=\pgfkeysalso{\pgfkeyscurrentpath/.code=\edef#1{##1}}}
+
+\pgfkeys{/handlers/.is if/.code=\pgfkeysalso{%
+    \pgfkeyscurrentpath/.code=\pgfkeys@handle@boolean{#1}{##1},
+    \pgfkeyscurrentpath/.default=true%
+  }%
+}
+\def\pgfkeys@handle@boolean#1#2{%
+  \pgfkeys@ifcsname#1#2\endcsname%
+    \csname#1#2\endcsname%
+  \else%
+    \pgfkeysvalueof{/errors/boolean expected/.@cmd}\pgfkeyscurrentkey{#2}\pgfeov%
+  \fi
+}
+
+\pgfkeys{/handlers/.is choice/.code=%
+  \pgfkeys{%
+    \pgfkeyscurrentpath/.cd,%
+    .code=\expandafter\pgfkeysalso\expandafter{\pgfkeyscurrentkey/##1},
+    .unknown/.style={/errors/unknown choice value=\pgfkeyscurrentkey\pgfkeyscurrentvalue}}}
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Repeatedly setting a key
+
+\pgfkeys{/handlers/.list/.code=%
+  {%
+    % Use foreach to unfold the list
+    \let\pgf@keys@temp=\pgfutil@empty%
+    \foreach \pgf@keys@key in{#1}%
+    {\expandafter\expandafter\expandafter\gdef%
+      \expandafter\expandafter\expandafter\pgf@keys@temp%
+      \expandafter\expandafter\expandafter{\expandafter\pgf@keys@temp\expandafter{\pgf@keys@key}}}%
+    \edef\pgf@keys@list@path{\pgfkeyscurrentpath}%
+    \expandafter\expandafter\expandafter\pgf@keys@do@list%
+    \expandafter\expandafter\expandafter{\expandafter\pgf@keys@list@path\expandafter}\pgf@keys@temp\pgf@stop%
+  }% 
+}
+\def\pgf@keys@do@list#1{\pgfutil@ifnextchar\bgroup{\pgf@keys@do@list@item{#1}}\pgfutil@gobble}
+\def\pgf@keys@do@list@item#1#2{\pgfkeysalso{#1={#2}}\pgf@keys@do@list{#1}}
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Inspection handlers
+
+\pgfkeys{/handlers/.show value/.code=\pgfkeysgetvalue{\pgfkeyscurrentpath}{\pgfkeysshower}\show\pgfkeysshower} % inspect the value 
+\pgfkeys{/handlers/.show code/.code=\pgfkeysgetvalue{\pgfkeyscurrentpath/.@cmd}{\pgfkeysshower}\show\pgfkeysshower} % inspect the body of the command
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Path handling
+
+% Prepares the .unknown handler used by '.search also'.
+% It will be stored into \pgfkeys@global@temp.
+\def\pgfkeys@searchalso@prepare@unknown@handler#1{%
+  \global\def\pgfkeys@global@temp##1\pgfeov{}%
+  \pgfkeys@searchalso@parse#1,\pgfkeys@mainstop
+  {%
+  	\toks0=\expandafter{\pgfkeys@global@temp##1\pgfeov}%
+	\toks1={\def\pgfutilnext{\pgfkeysvalueof{/handlers/.unknown/.@cmd}##1\pgfeov}\pgfutilnext}%
+	\xdef\pgfkeys@global@temp{%
+		\noexpand\ifpgfkeysaddeddefaultpath
+			\noexpand\pgfkeyssuccessfalse
+			\noexpand\let\noexpand\pgfkeys@searchalso@name=\noexpand\pgfkeyscurrentkeyRAW
+			\the\toks0 % one or more /.try things; one for each path. The last element won't have a /.try
+			%\noexpand\ifpgfkeyssuccess
+			%\noexpand\else
+			%	\the\toks1 % invoke /handlers/.unknown handler
+			%\noexpand\fi
+		\noexpand\else
+			\the\toks1 % invoke /handlers/.unknown handler
+		\noexpand\fi
+	}%
+	\expandafter\gdef\expandafter\pgfkeys@global@temp\expandafter##\expandafter1\expandafter\pgfeov\expandafter{\pgfkeys@global@temp}%
+  }%
+}%
+
+\def\pgfkeys@searchalso@parse{\futurelet\pgfkeys@possiblerelax\pgfkeys@searchalso@parse@main}
+\def\pgfkeys@searchalso@parse@main{%
+  \ifx\pgfkeys@possiblerelax\pgfkeys@mainstop%
+    \expandafter\pgfkeys@cleanup%
+  \else%
+    \expandafter\pgfkeys@searchalso@appendentry%
+  \fi%
+}
+\def\pgfkeys@searchalso@appendentry#1,#2{%
+  \def\pgfkeys@searchalso@nexttok{#2}%
+  \pgfkeys@spdef\pgfkeys@temp{#1}%
+  {%
+    \toks0=\expandafter{\pgfkeys@global@temp##1\pgfeov}%
+	\toks1=\expandafter{\pgfkeys@temp}%
+	\toks2={##1}%
+	\xdef\pgfkeys@global@temp{%
+		\the\toks0 % the space is important!
+		\noexpand\ifpgfkeyssuccess\noexpand\else
+			\noexpand\pgfqkeys{\the\toks1 }{\noexpand\pgfkeys@searchalso@name
+               \ifx\pgfkeys@searchalso@nexttok\pgfkeys@mainstop\else/.try\fi={\the\toks2 }}%
+		\noexpand\fi}%
+	\expandafter\gdef\expandafter\pgfkeys@global@temp\expandafter##\expandafter1\expandafter\pgfeov\expandafter{\pgfkeys@global@temp}%
+  }%
+  \pgfkeys@searchalso@parse#2%
+}
+\pgfkeys{%
+	/handlers/.is family/.code=\pgfkeys{\pgfkeyscurrentpath/.ecode=\edef\noexpand\pgfkeysdefaultpath{\pgfkeyscurrentpath/}},%
+	/handlers/.cd/.code=\edef\pgfkeysdefaultpath{\pgfkeyscurrentpath/},%
+	/handlers/.search also/.code={%
+		\pgfkeys@searchalso@prepare@unknown@handler{#1}%
+%\message{I prepared the '\pgfkeyscurrentpath/.unknown' handler \meaning\pgfkeys@global@temp\space for '#1'.}%
+		\pgfkeyslet{\pgfkeyscurrentpath/.unknown/.@cmd}{\pgfkeys@global@temp}%
+	}
+}%
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Value expansion
+
+\pgfkeys{/handlers/.expand once/.code=\expandafter\pgfkeys@exp@call\expandafter{#1}}
+\pgfkeys{/handlers/.expand twice/.code=\expandafter\expandafter\expandafter\pgfkeys@exp@call\expandafter\expandafter\expandafter{#1}}
+\pgfkeys{/handlers/.expanded/.code=\edef\pgfkeys@temp{#1}\expandafter\pgfkeys@exp@call\expandafter{\pgfkeys@temp}}
+
+\def\pgfkeys@exp@call#1{\pgfkeysalso{\pgfkeyscurrentpath={#1}}}
+
+% Try to set a key and do nothing if not define
+
+\newif\ifpgfkeyssuccess
+\pgfkeys{/handlers/.try/.code=\pgfkeys@try}
+\pgfkeys{/handlers/.retry/.code=\ifpgfkeyssuccess\else\pgfkeys@try\fi}
+\def\pgfkeys@try{%
+  \edef\pgfkeyscurrentkey{\pgfkeyscurrentpath}% make sure that \pgfkeys@code doesn't know about 'try'. Important for .is choice
+  \ifx\pgfkeyscurrentvalue\pgfkeysnovalue@text% Hmm... no value
+    \pgfkeysifdefined{\pgfkeyscurrentpath/.@def}%
+    {\pgfkeysgetvalue{\pgfkeyscurrentpath/.@def}{\pgfkeyscurrentvalue}}
+    {}% no default, so leave it
+  \fi%
+  \pgfkeysifdefined{\pgfkeyscurrentpath/.@cmd}%
+  {%
+    \pgfkeysgetvalue{\pgfkeyscurrentpath/.@cmd}{\pgfkeys@code}%
+    \expandafter\pgfkeys@code\pgfkeyscurrentvalue\pgfeov%
+    \pgfkeyssuccesstrue%
+  }%
+  {%
+    \pgfkeysifdefined{\pgfkeyscurrentpath}%
+    {%
+      \ifx\pgfkeyscurrentvalue\pgfkeysnovalue@text%
+        \pgfkeysvalueof{\pgfkeyscurrentpath}%
+      \else%
+        \pgfkeyslet{\pgfkeyscurrentpath}\pgfkeyscurrentvalue%
+      \fi%
+      \pgfkeyssuccesstrue%
+    }%
+    {%
+      \pgfkeys@split@path%
+      \pgfkeysifdefined{/handlers/\pgfkeyscurrentname/.@cmd}{%
+	    % in the standard configuration, this check here is redundand
+	    % because pgfkeys@ifexecutehandler === true.
+		% It is only interesting for 'handle only existing'.
+        \pgfkeys@ifexecutehandler{%
+	      \pgfkeysgetvalue{/handlers/\pgfkeyscurrentname/.@cmd}{\pgfkeys@code}%
+          \expandafter\pgfkeys@code\pgfkeyscurrentvalue\pgfeov
+          \pgfkeyssuccesstrue%
+    	}{%
+	      \pgfkeyssuccessfalse
+    	}%
+      }{%
+	    \pgfkeyssuccessfalse
+      }%
+	}%
+  }%
+}
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Utilities
+
+\pgfkeys{/utils/exec/.code=#1} % simply execute the given code directly.
+
+EOTeX
+
+RawTeX(<<'EOTeX');
+% Errors
+
+\pgfkeys{/errors/boolean expected/.code 2 args=\pgfkeys@error{%
+    Boolean parameter of key '#1' must be 'true' or 'false', not
+    '#2'. I am going to ignore it}}  
+\pgfkeys{/errors/value required/.code 2 args=\pgfkeys@error{%
+    The key '#1' requires a value. I am going to ignore this key}{}}  
+\pgfkeys{/errors/value forbidden/.code 2 args=\pgfkeys@error{%
+    You may not specify a value for the key '#1'. I am going to ignore
+    the value '#2' that you provided}}
+\pgfkeys{/errors/unknown choice value/.code 2 args=\pgfkeys@error{%
+    Choice '\pgfkeyscurrentname' unknown in key
+    '\pgfkeyscurrentpath'. I am going to ignore this key}}
+\pgfkeys{/errors/unknown key/.code 2 args=\pgfkeys@error{%
+    I do not know the key '#1' and I am going to ignore it. Perhaps
+    you misspelled it}}
+
+\pgfkeys{/handlers/.unknown/.code=%
+  {%
+    \let\pgfkeys@orig@key=\pgfkeyscurrentkey%
+    \pgfkeysalso{/errors/unknown key=\pgfkeys@orig@key{}}%
+  }
+}
+
+\pgfkeys{
+	/handler config/.is choice,
+	/handler config/all/.code={%
+		\let\pgfkeys@case@three=\pgfkeys@case@three@handleall
+		\let\pgfkeys@ifexecutehandler=\pgfkeys@ifexecutehandler@handleall
+	},
+	/handler config/only existing/.code={%
+		\let\pgfkeys@case@three=\pgfkeys@case@three@handle@restricted
+		\let\pgfkeys@ifexecutehandler=\pgfkeys@ifexecutehandler@handleonlyexisting
+	},
+	/handler config/full or existing/.code={%
+		\let\pgfkeys@case@three=\pgfkeys@case@three@handle@restricted
+		\let\pgfkeys@ifexecutehandler=\pgfkeys@ifexecutehandler@handlefullorexisting
+	},
+	/handler config/only existing/add exception/.code={\pgfkeysaddhandlyonlyexistingexception{#1}},
+}%
+\pgfkeysaddhandlyonlyexistingexception{.cd}%
+\pgfkeysaddhandlyonlyexistingexception{.try}%
+\pgfkeysaddhandlyonlyexistingexception{.retry}%
+\pgfkeysaddhandlyonlyexistingexception{.lastretry}%
+\pgfkeysaddhandlyonlyexistingexception{.unknown}%
+EOTeX
+
+#======================================================================
+1;
