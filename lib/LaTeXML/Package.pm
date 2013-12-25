@@ -1536,6 +1536,11 @@ sub loadTeXDefinitions {
   # If we're reading in these definitions, probaly will accept included ones?
   # (but not forbid ltxml ?)
   AssignValue('INCLUDE_STYLES' => 1);
+  # When set, this variable allows redefinitions of locked defns.
+  # It is set in before/after methods to allow local rebinding of commands
+  # but loading of sources & bindings is typically done in before/after methods of constructors!
+  # This re-locks defns during reading of TeX packages.
+  local $LaTeXML::State::UNLOCKED = 0;
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
