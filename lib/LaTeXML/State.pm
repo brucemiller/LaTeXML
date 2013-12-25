@@ -329,9 +329,11 @@ sub installDefinition {
   my $cs = $definition->getCS->getCSName;
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED) {
     if (my $s = $self->getStomach->getGullet->getSource) {
-      if (($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/)) {
-        Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs");
-        return; } } }
+      # report if the redefinition seems to come from document source
+      if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
+        && ($s !~ /\.code\.tex$/)) {
+        Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
+      return; } }
   assign_internal($self, 'meaning', $cs => $definition, $scope);
   return; }
 
