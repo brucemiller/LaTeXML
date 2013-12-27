@@ -156,12 +156,12 @@ sub getopt_specification {
   foreach my $key (keys %$spec) {
     if ($key =~ /^(.+)=\w$/) {
       my $name = $1;
-      $rep_spec->{$key} = sub { push @$keyvals, [$name, $_[1]] };
+      $rep_spec->{$key} = sub { CORE::push @$keyvals, [$name, $_[1]] };
     } else {
       $rep_spec->{$key} = sub {
         my $ctl = $_[0]->{ctl};
         my $used = ($ctl->[0] ? 'no' : '') . $ctl->[1];
-        push @$keyvals, [$used, undef] };
+        CORE::push @$keyvals, [$used, undef] };
     }
   }
   return ($rep_spec, $keyvals);
@@ -208,7 +208,7 @@ sub read_keyvals {
     next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
     $key = "--$key" unless $key =~ /^\-\-/;
     $value = length($value) ? "=$value" : '';
-    push @$cmdopts, "$key$value";
+    CORE::push @$cmdopts, "$key$value";
   }
   # Read into a Config object:
   return $self->read($cmdopts); }
@@ -220,7 +220,7 @@ sub scan_to_keyvals {
   GetOptions(%$spec) or pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
     -input => pod_where({ -inc => 1 }, __PACKAGE__),
     -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
-  push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
+  CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
   return $keyvals;
 }
 
@@ -235,6 +235,13 @@ sub set {
   my ($self, $key, $value) = @_;
   $self->{dirty} = 1;
   $self->{opts}->{$key} = $value;
+  return; }
+
+sub push {
+  my ($self, $key, $value) = @_;
+  $self->{dirty} = 1;
+  $self->{opts}->{$key} = [] unless ref $self->{opts}->{$key};
+  CORE::push @{$self->{opts}->{$key}}, $value; 
   return; }
 
 sub delete {
@@ -310,7 +317,7 @@ sub _obey_profile {
             if ($entry eq $_) { $new = 0; last; }
           }
           # If new to the array, push:
-          push(@{ $profile_opts->{$key} }, $entry) if ($new);
+          CORE::push(@{ $profile_opts->{$key} }, $entry) if ($new);
         }
       } else {                           # The other options get overwritten
         $profile_opts->{$key} = $opts->{$key};
@@ -331,7 +338,9 @@ sub _prepare_options {
   # I. Sanity check and Completion of Core options.
   #======================================================================
   # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
-  { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; }
+  { no strict 'refs';
+    foreach my $ltx_class (@{$opts->{debug}||[]}) {
+      ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; }}
 
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
@@ -480,7 +489,7 @@ sub _prepare_options {
     if (((!defined $opts->{math_formats}) || (!scalar(@{ $opts->{math_formats} }))) &&
       (!$opts->{mathimages}) && ($opts->{is_html} || $opts->{is_xhtml}))
     {
-      push @{ $opts->{math_formats} }, 'pmml';
+      CORE::push @{ $opts->{math_formats} }, 'pmml';
     }
     # use parallel markup if there are multiple formats requested.
     $opts->{parallelmath} = 1 if ($opts->{math_formats} && (@{ $opts->{math_formats} } > 1));
@@ -495,7 +504,7 @@ sub _prepare_options {
 sub _addMathFormat {
   my ($opts, $fmt) = @_;
   $opts->{math_formats} = [] unless defined $opts->{math_formats};
-  push(@{ $opts->{math_formats} }, $fmt)
+  CORE::push(@{ $opts->{math_formats} }, $fmt)
     unless (grep { $_ eq $fmt } @{ $opts->{math_formats} }) || $opts->{removed_math_formats}->{$fmt};
   return; }
 
@@ -536,17 +545,17 @@ sub _read_options_file {
           my $trailer = $3;
           if (my $env_path = $ENV{$1}) {
             $env_path .= '/' unless $env_path =~ /\/$/;
-            push @values, $env_path . $trailer; } }
+            CORE::push @values, $env_path . $trailer; } }
         else {
           # But also the standard behaviour, where the $env is an array of paths
           $env_value = $ENV{$env_name};
           next unless $env_value;
           @values = grep { -d $_ } reverse(split(':', $env_value));
           next unless @values; }
-        push(@$opts, "--$key=$_") foreach (@values); }
+        CORE::push(@$opts, "--$key=$_") foreach (@values); }
       else {
         $value = $value ? "=$value" : '';
-        push @$opts, "--$key" . $value; } }
+        CORE::push @$opts, "--$key" . $value; } }
     else {
       Warning('unexpected', $line, undef,
         "Unrecognized configuration data '$line'"); }

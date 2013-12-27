@@ -40,11 +40,13 @@ sub new {
   # The daemon should be setting the identity:
   my $self = bless { opts => $config->options, ready => 0, log => q{}, runtime => {},
     latexml => undef }, $class;
+  # Special check if the debug directive is on, just to neutralize the bind_log
+  my $debug_directives = $self->{opts}->{debug};
+  $LaTeXML::Converter::DEBUG = 1 if (ref $debug_directives eq 'ARRAY') && (grep {/converter/i} @$debug_directives);
   $self->bind_log;
   my $rv = eval { $config->check; };
   $self->{log} .= $self->flush_log;
-  return $self;
-}
+  return $self; }
 
 sub prepare_session {
   my ($self, $config) = @_;

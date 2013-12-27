@@ -15,7 +15,6 @@ use warnings;
 
 use Cwd qw(cwd abs_path);
 use IO::Socket;
-#use Data::Dumper;
 
 my $RealBin_safe;
 use FindBin;
@@ -107,6 +106,7 @@ if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML::Converter;
   $opts->set('local', 1);
+  $opts->push('debug','Converter');
   my $converter = LaTeXML::Converter->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
