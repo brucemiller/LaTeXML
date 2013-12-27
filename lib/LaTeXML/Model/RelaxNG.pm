@@ -54,16 +54,16 @@ sub loadSchema {
   # Scan the schema file(s), and extract the info
   my @schema = $self->scanExternal($$self{name});
   if ($LaTeXML::Model::RelaxNG::DEBUG) {
-    print "========================\nRaw Schema\n";
+    print STDERR "========================\nRaw Schema\n";
     map { showSchema($_) } @schema; }
   @schema = map { $self->simplify($_) } @schema;
   if ($LaTeXML::Model::RelaxNG::DEBUG) {
-    print "========================\nSimplified Schema\n";
+    print STDERR "========================\nSimplified Schema\n";
     map { showSchema($_) } @schema;
-    print "========================\nElements\n";
+    print STDERR "========================\nElements\n";
     foreach my $tag (sort keys %{ $$self{elements} }) {
       showSchema(['element', $tag, @{ $$self{elements}{$tag} }]); }
-    print "========================\nModules\n";
+    print STDERR "========================\nModules\n";
     foreach my $mod (@{ $$self{modules} }) {
       showSchema($mod); } }
 
@@ -71,7 +71,7 @@ sub loadSchema {
   my ($startcontent) = $self->extractContent('#Document', @schema);
   $$self{model}->addTagContent('#Document', keys %$startcontent);
   if ($LaTeXML::Model::RelaxNG::DEBUG) {
-    print "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
+    print STDERR "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
 
   # NOTE: Do something automatic about this too!?!
   # We'll need to generate namespace prefixes for all namespaces found in the doc!
@@ -504,12 +504,12 @@ sub showSchema {
   if (ref $item eq 'ARRAY') {
     my ($op, $name, @args) = @$item;
     if ($op eq 'doc') { $name = "..."; @args = (); }
-    print "" . (' ' x (2 * $level)) . $op . ($name ? " " . $name : '') . "\n";
+    print STDERR "" . (' ' x (2 * $level)) . $op . ($name ? " " . $name : '') . "\n";
 
     foreach my $arg (@args) {
       showSchema($arg, $level + 1); } }
   else {
-    print "" . (' ' x (2 * $level)) . $item . "\n"; }
+    print STDERR "" . (' ' x (2 * $level)) . $item . "\n"; }
   return; }
 
 #======================================================================
