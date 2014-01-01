@@ -46,7 +46,10 @@ if (@ARGV) {
 else {
   $makeindex = 1;
   opendir(DIR, $testdir) or die "Couldn't read test directory $testdir: $!";
-  @testsets = sort grep { !/^\./ && -d "$testdir/$_" } readdir(DIR);
+  # Heuristic: tests worth displaying in html are in own directories whose name
+  # corresponds to a test case like 10_expansion.t.
+  # Process in order of the number!
+  @testsets = map { (/^(?:\d+)_(\w+)\.t$/ && -d "$testdir/$1" ? $1 : ()) } sort readdir(DIR);
   closedir(DIR); }
 
 #**********************************************************************
@@ -125,10 +128,10 @@ th { font-weight:bold; }
 .testcase { padding-left:2em; font-weight:bold; }
 .pdf { text-align:center; }
 .xml { text-align:center; }
-
 </style>
 </head>
-<body>\n<h1>LaTeXML Tests</h1>
+<body>
+<h1>LaTeXML Tests</h1>
 <table>
 <tr><th class='testcase'>Testcase</th>
     <th class='pdf'>PDF</th>
