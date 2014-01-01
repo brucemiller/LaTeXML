@@ -10,8 +10,8 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib";
 use Getopt::Long qw(:config no_ignore_case);
@@ -22,52 +22,53 @@ use Algorithm::Diff;
 
 #======================================================================
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
-my ($doxml,$dopdf,$docompare)=();
-my ($verbosity,$help,$showversion)=(0);
-GetOptions("xml!"     => \$doxml,
-	   "pdf!"     => \$dopdf,
-	   "compare!" =>\$docompare,
-	   "quiet"    => sub { $verbosity--; },
-	   "verbose"  => sub { $verbosity++; },
-	   "VERSION"  => \$showversion,
-	   "help"     => \$help,
-	   "dvi"      => \$help,	# Obsolete!
-	   "nodvi"    => \$help,
-	  ) or pod2usage(-message => $identity, -exitval=>1, -verbose=>0, -output=>\*STDERR);
-pod2usage(-message=>$identity, -exitval=>1, -verbose=>2, -output=>\*STDOUT) if $help;
-if($showversion){ print STDERR "$identity\n"; exit(1); }
-pod2usage(-message=>"$identity\nMissing test TeX file", 
-	  -exitval=>1, -verbose=>0,-output=>\*STDERR) unless @ARGV;
+my ($doxml,     $dopdf, $docompare)   = ();
+my ($verbosity, $help,  $showversion) = (0);
+GetOptions("xml!" => \$doxml,
+  "pdf!"     => \$dopdf,
+  "compare!" => \$docompare,
+  "quiet"    => sub { $verbosity--; },
+  "verbose"  => sub { $verbosity++; },
+  "VERSION"  => \$showversion,
+  "help"     => \$help,
+  "dvi"      => \$help,                  # Obsolete!
+  "nodvi"    => \$help,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+if ($showversion) { print STDERR "$identity\n"; exit(1); }
+pod2usage(-message => "$identity\nMissing test TeX file",
+  -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
-binmode(STDERR,":encoding(UTF-8)");
+binmode(STDOUT, ":encoding(UTF-8)");
+binmode(STDERR, ":encoding(UTF-8)");
 #======================================================================
 # hmm... could be even more helpful
 #  copy xml to a backup and compare ?
 # or compare option
-# What about if $ARG is a directory? Do all tests in that directory? 
-foreach my $src_file (@ARGV){
+# What about if $ARG is a directory? Do all tests in that directory?
+foreach my $src_file (@ARGV) {
   $src_file =~ s/(\.pdf|\.dvi|\.xml)$//;
   $src_file .= ".tex" unless $src_file =~ /\.tex$/;
-  if(! -f $src_file){
+  if (!-f $src_file) {
     die "There seems to be no test case $src_file"; }
-  my($dir,$name,$ext)=pathname_split($src_file);
-  my $xml_file = pathname_concat($dir,"$name.xml");
-  my $pdf_file = pathname_concat($dir,"$name.pdf");
+  my ($dir, $name, $ext) = pathname_split($src_file);
+  my $xml_file = pathname_concat($dir, "$name.xml");
+  my $pdf_file = pathname_concat($dir, "$name.pdf");
   my $src_time = pathname_timestamp($src_file);
   my $xml_time = pathname_timestamp($xml_file);
   my $pdf_time = pathname_timestamp($pdf_file);
-  if($docompare){
-    compare_xml($dir,$name);  }
+  if ($docompare) {
+    compare_xml($dir, $name); }
   else {
     # Possibly remake xml
-    if(defined $doxml ? $doxml : !(-f $xml_file) || ($src_time > $xml_time)){
-      gen_xml($dir,$name); }
-    elsif(! defined $doxml){
+    if (defined $doxml ? $doxml : !(-f $xml_file) || ($src_time > $xml_time)) {
+      gen_xml($dir, $name); }
+    elsif (!defined $doxml) {
       print STDERR "Test case $xml_file seems uptodate\n"; }
     # Possibly remake pdf
-    if( (defined $dopdf ? $dopdf : !(-f $xml_file) || ($src_time > $pdf_time))){
-      gen_pdf($dir,$name); }
-    elsif(! defined $dopdf){
+    if ((defined $dopdf ? $dopdf : !(-f $xml_file) || ($src_time > $pdf_time))) {
+      gen_pdf($dir, $name); }
+    elsif (!defined $dopdf) {
       print STDERR "Test case $pdf_file seems uptodate\n"; }
   }
 }
@@ -89,89 +90,94 @@ foreach my $src_file (@ARGV){
 # but the literal form is most expected(?) for test!!
 # (else, we're ignoring whitespace changes in test)
 sub compare_xml {
-  my($dir,$name)=@_;
+  my ($dir, $name) = @_;
   #========================================
   # Generate the XML from the current latexml
-  local ($^W)=0;		# NASTY way to turn off redefinitions!
-  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,verbosity=>$verbosity);
-  my $file = pathname_concat($dir,$name);
-  my $newdom = $latexml->convertFile(pathname_concat($dir,$name))
+  local ($^W) = 0;    # NASTY way to turn off redefinitions!
+  my $latexml = LaTeXML->new(preload => [], searchpath => [], includeComments => 0, verbosity => $verbosity);
+  my $file = pathname_concat($dir, $name);
+  my $newdom = $latexml->convertFile(pathname_concat($dir, $name))
     or die "Failed to convert $file.tex: $!";
   my $newlines = stringifyDom($newdom);
 
   #========================================
   # Read in the expected xml.
-  my $parser = XML::LibXML->new();
-  my $olddom = $parser->parse_file("$file.xml");
+  my $parser   = XML::LibXML->new();
+  my $olddom   = $parser->parse_file("$file.xml");
   my $oldlines = stringifyDom($olddom);
 
   #========================================
   # Do the comparison
-  print "\n".("="x40)."\nCompare Expected $dir/$name to current output XML:\n";
-  my $diff = Algorithm::Diff->new($oldlines,$newlines);
-  while(  $diff->Next()  ) {
-    next   if  $diff->Same();
+  print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
+  my $diff = Algorithm::Diff->new($oldlines, $newlines);
+  while ($diff->Next()) {
+    next if $diff->Same();
     my $sep = '';
-    if(  ! $diff->Items(2)  ) {
+    if (!$diff->Items(2)) {
       printf "Missing: %d,%dd%d\n", $diff->Get(qw( Min1 Max1 Max2 )); }
-    elsif(  ! $diff->Items(1)  ) {
+    elsif (!$diff->Items(1)) {
       printf "Added: %da%d,%d\n", $diff->Get(qw( Max1 Min2 Max2 )); }
     else {
       $sep = "---\n";
       printf "Changed: %d,%dc%d,%d\n", $diff->Get(qw( Min1 Max1 Min2 Max2 )); }
-    print "< $_\n"   for  $diff->Items(1);
+    print "< $_\n" for $diff->Items(1);
     print $sep;
-    print "> $_\n"   for  $diff->Items(2);
+    print "> $_\n" for $diff->Items(2);
   }
-}
+  return; }
 
 sub stringifyDom {
-  my($dom)=@_;
+  my ($dom) = @_;
 ###  my $string = $dom->toString(2);
   my $string = $dom->toString(1);
   my $parser = XML::LibXML->new();
   $parser->validation(0);
   $parser->keep_blanks(1);
   $string = $parser->parse_string($string)->toStringC14N(0);
-  [grep(/\S/,split("\n",$string))]; }
+  return [grep { /\S/ } split("\n", $string)]; }
 
 sub gen_xml {
-  my($dir,$name)=@_;
-  local ($^W)=0;		# NASTY way to turn off redefinitions!
-  my $file = pathname_concat($dir,$name);
-  my $latexml= LaTeXML->new(preload=>[], searchpath=>[], includeComments=>0,verbosity=>$verbosity);
-  if(-f "$file.xml"){
+  my ($dir, $name) = @_;
+  local ($^W) = 0;    # NASTY way to turn off redefinitions!
+  my $file = pathname_concat($dir, $name);
+  my $latexml = LaTeXML->new(preload => [], searchpath => [],
+    includeComments => 0, verbosity => $verbosity);
+  if (-f "$file.xml") {
     rename("$file.xml", "$file.xml.bak"); }
   $latexml->convertAndWriteFile($file)
-    or die "Failed to create $file.xml: $!"
-  }
+    or die "Failed to create $file.xml: $!";
+  return; }
 
 sub gen_pdf {
-  my($dir,$name)=@_;
+  my ($dir, $name) = @_;
   my $cwd = pathname_cwd();
   chdir($dir) if $dir;
   # Get list of files currently in directory.
-  opendir(DIR,".") or die "Cannot read directory $dir: $!";
-  my @files_before = readdir(DIR);
-  closedir(DIR);
+  my $DIR;
+  opendir($DIR, ".") or die "Cannot read directory $dir: $!";
+  my @files_before = readdir($DIR);
+  closedir($DIR);
   my $program = 'pdftex';
-  open(IN,"$name.tex") or die "Cannot scanTeX file $name.tex: $!";
-  while(<IN>){ 
+  my $IN;
+  open($IN, '<', "$name.tex") or die "Cannot scanTeX file $name.tex: $!";
+
+  while (<$IN>) {
     $program = 'pdflatex' if /documentclass/; }
-  close(IN);
-  $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::".($ENV{TEXINPUTS}||'');
-  system($program,$name) == 0 or die "Couldn't run $program $name: $!";
-  system($program,$name) == 0 or die "Couldn't run $program $name: $!";
+  close($IN);
+  local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');
+  system($program, $name) == 0 or die "Couldn't run $program $name: $!";
+  system($program, $name) == 0 or die "Couldn't run $program $name: $!";
 
   # Now delete an new files except $name.pdf
-  opendir(DIR,".") or die "Cannot read directory $dir: $!";
-  my @files_now = readdir(DIR);
-  closedir(DIR);
-  foreach my $f (@files_now){
-    if(($f ne "$name.pdf") && !grep($f eq $_, @files_before)){
-      unlink($f); }}
+  opendir($DIR, ".") or die "Cannot read directory $dir: $!";
+  my @files_now = readdir($DIR);
+  closedir($DIR);
+  foreach my $f (@files_now) {
+    if (($f ne "$name.pdf") && !grep { $f eq $_ } @files_before) {
+      unlink($f); } }
   chdir($cwd) if $dir;
-}
+  return; }
+
 #======================================================================
 __END__
 
