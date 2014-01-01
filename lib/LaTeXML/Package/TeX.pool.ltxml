@@ -4234,29 +4234,7 @@ DefPrimitiveI('\pounds',    undef, UTF(0xA3));     # POUND SIGN
 
 # Since people sometimes try to get fancy by using an empty argument,
 # for each, I'm providing the combining code and an equivalent(?) spacing one.
-our %accents
-  = ('\`' => ["\x{0300}", UTF(0x60)],    # COMBINING GRAVE ACCENT & GRAVE ACCENT
-  "\\'"          => ["\x{0301}", UTF(0xB4)],     # COMBINING ACUTE ACCENT & ACUTE ACCENT
-  '\^'           => ["\x{0302}", UTF(0x5E)],     # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
-  '\"'           => ["\x{0308}", UTF(0xA8)],     # COMBINING DIAERESIS & DIAERESIS
-  '\~'           => ["\x{0303}", "~"],           # COMBINING TILDE
-  '\='           => ["\x{0304}", UTF(0xAF)],     # COMBINING MACRON & MACRON
-  '\.'           => ["\x{0307}", "\x{02D9}"],    # COMBINING DOT ABOVE & DOT ABOVE
-  '\u'           => ["\x{0306}", "\x{02D8}"],    # COMBINING BREVE & BREVE
-  '\v'           => ["\x{030C}", "\x{02C7}"],    # COMBINING CARON & CARON
-  '\@ringaccent' => ["\x{030A}", "o"],           # COMBINING RING ABOVE & non-combining
-  '\r'           => ["\x{030A}", "o"],           # COMBINING RING ABOVE & non-combining
-  '\H'           => ["\x{030B}", "\x{02DD}"],    # COMBINING DOUBLE ACUTE ACCENT & non-combining
-  '\c'           => ["\x{0327}", UTF(0xB8)],     # COMBINING CEDILLA & CEDILLA
-        # NOTE: The next two get define for math, as well; See below
-  '\@text@daccent' => ["\x{0323}", '.'],          # COMBINING DOT BELOW & DOT (?)
-  '\@text@baccent' => ["\x{0331}", UTF(0xAF)],    # COMBINING MACRON BELOW  & MACRON
-  '\t'             => ["\x{0361}", "-"],          # COMBINING DOUBLE INVERTED BREVE & ???? What????
-        # this one's actually defined in mathscinet.sty, but just stick it here!
-  '\lfhook' => ["\x{0326}", ","],    # COMBINING COMMA BELOW
-                                     # I doubt that latter covers multiple chars...?
-        # '\bar'=>"\x{0304}", # COMBINING MACRON or is this the longer overbar?
-  );
+# (doesn't look quite the same to use a combining char after a space)
 
 # Create a box applying an accent to a letter
 # Hopefully, we'll get a Box from digestion with a plain string.
@@ -4278,17 +4256,43 @@ sub applyAccent {
 # Defines an accent command using a combining char that follows the
 # 1st char of the argument.  In cases where there is no argument, $standalonechar is used.
 sub DefAccent {
-  my ($accent, $combiningchar, $standalonechar) = @_;
+  my ($accent, $combiningchar, $standalonechar, %options) = @_;
+  $options{above} = 1 if !(defined $options{above}) && !$options{below};
+  # Used for converting a char used as an above-accent to a combining char (See \accent)
+  AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
+  AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
   DefPrimitive($accent . "{}", sub {
       my ($stomach, $letter) = @_;
       applyAccent($stomach, $letter, $combiningchar, $standalonechar, Invocation($accent, $letter)); },
     mode => 'text');
   return; }
 
-foreach my $accent (keys %accents) {
-  DefAccent($accent, @{ $accents{$accent} }); }
+DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
+DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
+DefAccent('\^',           "\x{0302}", UTF(0x5E));  # COMBINING CIRCUMFLEX ACCENT & CIRCUMFLEX ACCENT
+DefAccent('\"',           "\x{0308}", UTF(0xA8));  # COMBINING DIAERESIS & DIAERESIS
+DefAccent('\~',           "\x{0303}", "~");        # COMBINING TILDE
+DefAccent('\=',           "\x{0304}", UTF(0xAF));  # COMBINING MACRON & MACRON
+DefAccent('\.',           "\x{0307}", "\x{02D9}"); # COMBINING DOT ABOVE & DOT ABOVE
+DefAccent('\u',           "\x{0306}", "\x{02D8}"); # COMBINING BREVE & BREVE
+DefAccent('\v',           "\x{030C}", "\x{02C7}"); # COMBINING CARON & CARON
+DefAccent('\@ringaccent', "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
+DefAccent('\r',           "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
+DefAccent('\H',           "\x{030B}", "\x{02DD}"); # COMBINING DOUBLE ACUTE ACCENT & non-combining
+DefAccent('\c', "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CEDILLA & CEDILLA
+      # NOTE: The next two get define for math, as well; See below
+DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
+DefAccent('\@text@baccent', "\x{0331}", UTF(0xAF), below => 1);   # COMBINING MACRON BELOW  & MACRON
+DefAccent('\t', "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? What????
+      # this one's actually defined in mathscinet.sty, but just stick it here!
+DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
+                                                     # I doubt that latter covers multiple chars...?
+#DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
 
 # This will fail if there really are "assignments" after the number!
+# We're given a number pointing into the font, from which we can derive the standalone char.
+# From that, we want to figure out the combining character, but there could be one for
+# both the above & below cases!  We'll prefer the above case.
 DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
@@ -4298,9 +4302,10 @@ DefPrimitive('\accent Number {}', sub {
     my $acc = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
     my $reversion = Invocation(T_CS('\accent'), $num, $letter);
     # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
-    my ($entry) = $acc && grep { $acc eq $$_[1] } values %accents;
-    if ($entry) {
-      applyAccent($stomach, $letter, @$entry, $reversion); }
+    # BUT, \accent always (?) makes an above type accent... doesn't it?
+    if (my $combiner = LookupMapping('accent_combiner_above', $acc)
+      || LookupMapping('accent_combiner_below', $acc)) {
+      applyAccent($stomach, $letter, $combiner, $acc, $reversion); }
     else {
       Warn('unexpected', "accent$n", $stomach, "Accent '$n' not recognized");
       Box(ToString($letter), undef, undef, $reversion); } });
