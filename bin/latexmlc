@@ -106,7 +106,7 @@ if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML::Converter;
   $opts->set('local', 1);
-  $opts->push('debug','Converter');
+  $opts->push('debug', 'Converter') unless $opts->get('log'); # If we don't request log, print to STDERR
   my $converter = LaTeXML::Converter->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
