@@ -147,7 +147,7 @@ DefMacro('\abstract Until:\endabstract', '\@add@frontmatter{ltx:abstract}{#1}');
 DefMacro('\nofrills', '');
 
 DefPrimitive('\comment', sub {
-    my ($line);
+    my ($stomach, $line);
     my $gullet = $stomach->getGullet;
     $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
     while (defined($line = $gullet->readRawLine) && ($line ne '\endcomment')) {
