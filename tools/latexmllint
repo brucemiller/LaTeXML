@@ -48,11 +48,13 @@ my $DEF_SEVERITY = 3;    # preferred level of conformance
 my @SCOLORS   = (undef, undef, undef, undef, "magenta", "red");
 my @LINTPATHS = (qw(bin lib tools));
 
-my $LATEXMLDIR = catfile($FindBin::RealBin, updir());    # Assumes we're in tools subdir
-my $TOOLDIR = $FindBin::RealBin;
+my $TOOLDIR    = $FindBin::RealBin;
+my $LATEXMLDIR = catfile($TOOLDIR, updir());            # Assumes we're in tools subdir
+my $LIBDIR     = catfile($LATEXMLDIR, 'blib', 'lib');
+
 my @FILES = expand_files((@ARGV ? @ARGV : map { catfile($LATEXMLDIR, $_) } @LINTPATHS));
 
-if (!defined $SEVERITY) {                                # Default severity, if none requested
+if (!defined $SEVERITY) {                               # Default severity, if none requested
   $SEVERITY = ($DOPRECOMMIT ? $REQ_SEVERITY : $DEF_SEVERITY); }
 if (!defined $DOMODIFY) {
   $DOMODIFY = ($DOPRECOMMIT ? 0 : 1); }
@@ -69,6 +71,12 @@ foreach my $file (@FILES) {
   next if (keys %include) && (!grep { $$classification{$_} } keys %include);
   $NTOTAL++;
   my $failed = 0;
+  # Various Perl code tests...
+  if ($$classification{perl}) {
+    if (system('perl', '-c', '-I' . $LIBDIR, $file) == 0) {
+      print STDERR "Perl syntax OK for '$file'\n" if $VERBOSITY > 0; }
+    else {
+      $failed = 1; } }
   if ($$classification{perl} && $DOTIDY) {
     if (!$PERLTIDY && !($PERLTIDY = which('perltidy'))) {    # Look for perltidy exec.
       $DOTIDY = 0;                                           # Disable
