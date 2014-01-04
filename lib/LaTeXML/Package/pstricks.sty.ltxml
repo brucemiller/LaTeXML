@@ -285,6 +285,7 @@ sub ackTransform {
   return; }
 
 sub ackStarRotation {
+  my ($trans) = @_;
   AssignValue('_psActiveSRotation',
     LookupValue('_psActiveSRotation') + $trans || 0);
   return; }
