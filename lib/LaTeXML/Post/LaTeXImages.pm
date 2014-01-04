@@ -295,7 +295,7 @@ sub process {
         my ($w, $h) = $self->convert_image($doc, $src, $absdest);
         next unless defined $w && defined $h;
         my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
-        my $d = int(0.5 + $dd + $$self{padding});
+        my $d = int(0.5 + ($dd || 0) + $$self{padding});
         if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
           Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
         # print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
