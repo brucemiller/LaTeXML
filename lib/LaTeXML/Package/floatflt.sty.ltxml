@@ -31,24 +31,24 @@ DeclareOption('pflt', sub { AssignValue(floatfltpos => 'p'); });
 DeclareOption('vflt', sub { AssignValue(floatfltpos => 'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#pctwidth'>"
     . "#body"
     . "</ltx:figure>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
   properties => sub {
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
-      width => toPercent($_[2])); });
+      pctwidth => toPercent($_[2])); });
 
 DefEnvironment('{floatingtable}[]{Dimension}',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#pctwidth'>"
     . "#body"
     . "</ltx:table>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
   properties => sub {
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
-      width => toPercent($_[2])); });
+      pctwidth => toPercent($_[2])); });
 
 sub toPercent {
   my ($dimen) = @_;
