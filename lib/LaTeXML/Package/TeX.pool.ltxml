@@ -1400,6 +1400,7 @@ sub decodeMathChar {
 
 DefConstructor('\mathchar Number',
   "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
+  properties => { sizer => '#1' },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1416,7 +1417,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
     my ($role, $glyph) = decodeMathChar($value->valueOf);
     my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      properties => { role => $role, glyph => $glyph,
+      properties => { role => $role, glyph => $glyph, sizer => '#1',
         font => sub { LookupValue('font')->specialize($glyph); } },
       reversion => '\mathchar' . $value->valueOf . '\relax',
     ) if $glyph;
@@ -1426,6 +1427,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
 
 DefConstructor('\mathaccent Number Digested',
   "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+  properties => { sizer => '#1' },    # Close enough?
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1536,15 +1538,17 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $vmode  = $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
     my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width       => $spec && CleanDimension($$spec{to}),
-      'pad-width' => $spec && CleanDimension($$spec{spread}));
+      width       => $spec && $$spec{to},
+      'pad-width' => $spec && $$spec{spread});
     $document->absorb($contents);
     $document->closeNode($node); },
 
   mode => 'text', bounded => 1,
+  properties => { sizer => '#2' },
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   beforeDigest => sub { reenterTextMode(); },
+
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -1623,12 +1627,14 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'bottom',
       height => $spec && $$spec{to}, 'pad-height' => $spec && $$spec{spread}); },
+  properties => { sizer => '#2' },
   mode => 'text');
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top',
       height => $spec && $$spec{to}, 'pad-height' => $spec && $$spec{spread}); },
+  properties => { sizer => '#2' },
   mode => 'text');
 
 DefParameterType('RuleSpecification', sub {
@@ -2576,7 +2582,7 @@ DefMacro('\mskip MuGlue', '\ifmmode\@math@hskip{#1}\else\@text@hskip{#1}\fi');
 DefConstructor('\@math@hskip {Dimension}',
   "<ltx:XMHint width='#1'/>",
   alias => '\hskip',
-  properties => sub { (width => CleanDimension($_[1]), isSpace => 1); }
+  properties => sub { (width => $_[1], isSpace => 1); }
 );
 DefPrimitive('\@text@hskip {Dimension}', sub {
     my ($stomach, $length) = @_;
@@ -3151,6 +3157,7 @@ sub scriptHandler {
   my $nscripts = 0;
   if (defined $style) {
     my $cs = '\@@FLOATING' . $op;
+    my ($prevscript, $base);
     # Check preceding boxes to determine possible attachment (floating vs post),
     # and whether there are conflicting preceding scripts, which is an error
     # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
@@ -3167,11 +3174,13 @@ sub scriptHandler {
           Error('unexpected', "double-" . lc($pop), $stomach, "Double " . lc($pop));
           $cs = '\@@FLOATING' . $op;
           last; }
-        else {
-          $cs = '\@@POST' . $op; }    # Else, is OK (so far) assume POST (or same as previous?)
+        else {                       # Else, is OK (so far) assume POST (or same as previous?)
+          $prevscript = $prev;               # we'll overlap the width of the previous.
+          $cs         = '\@@POST' . $op; }
         last if ++$nscripts > 1; }
       else {
         # We found something "normal", so assume we'll attach to it, and we're done.
+        $base = $prev;
         unshift(@putback, $prev);
         $cs = '\@@POST' . $op;
         last; } }
@@ -3191,7 +3200,8 @@ sub scriptHandler {
       LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator => $gullet->getLocator,
         font    => $script->getFont, isMath => 1,
-        level   => $level))
+        level   => $level,
+        scriptSizer($script, $base, $prevscript, $op)))
       unless IsEmpty($script);
     AssignValue(mathstyle => $style);        # revert
     return @stuff; }
@@ -3223,6 +3233,49 @@ sub revertScript {
     if    (Equals($t, T_BEGIN)) { $l++; }
     elsif (Equals($t, T_END))   { $l--; } }
   return (@tokens && !@t ? @tokens : (T_BEGIN, @tokens, T_END)); }
+
+# Compute the 'advance' of this script.
+# can we do this before parsing? we can do the advance or something.... Hmmmm.
+# * Need to know scriptpos (mid or post) to determine position.
+# * need to know sub/super
+sub scriptSizer {
+  my ($script, $base, $prev, $op, $pos) = @_;
+
+  # NOTE: Currently, the mathstyle is NOT reflected in the font of the script!!!!
+  # [unless it's different from the 'expected' style!!!]
+  my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
+  $ws *= 0.8; $hs *= 0.8; $ds *= 0.8;    # HACK!@!!
+  my ($wb, $hb, $db) = map { $_->valueOf } ($base ? $base->getSize
+    : LookupValue('font')->getNominalSize);
+  my ($w, $h, $d) = (0, 0, 0);
+  # Fishing for the scriptpos on the base (if any)
+  # Why 'attributes' on MathBox instead of just plain properties???
+  my $attr;
+  $pos = $$attr{scriptpos} if !defined $pos && defined $base
+    && defined($attr = $base->getProperty('attributes'));
+  $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
+  $pos = 'post' if !defined $pos;
+# print STDERR "$op/$pos ".ToString($script).' '.$script->showSize
+#   .' font='.ToString($script->getFont)."\n"
+#   ."   on ".ToString($base).' '.($base ? $base->showSize.' font='.ToString($base->getFont): '')."\n"
+
+  #   ."   with ".ToString($prev)."\n";
+  if ($pos eq 'mid') {
+    $w = max(0, $ws - $wb);    # as if max width of base & script
+    if ($op eq 'SUPERSCRIPT') {
+      $h = $hb + $ds + $hs; }
+    else {
+      $d = $db + $hs + $ds; } }
+  else {
+    my $wp = ($prev && $prev->getWidth) || 0;    # as if max of width & prev script's width
+    $w = max(0, $ws - $wp);
+    if ($op eq 'SUPERSCRIPT') {
+      $h = $hb + $hs / 2; }
+    else {
+      $d = $hs / 2 + $ds; } }
+  $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
+  #  print STDERR " ==> ".ToString($w).' x '.ToString($h).' + '.ToString($d)."\n";
+  return (width => $w, height => $h, depth => $d); }
 
 # NOTE: The When reverting these, the
 DefConstructor('\@@POSTSUPERSCRIPT{}',
@@ -3262,7 +3315,10 @@ DefConstructor('\@SUPERSCRIPT{}{}',
     ($sup && $sup->unlist
       ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
       : Revert($base)); },
-  properties => { scriptpos => sub { "post" . $_[0]->getBoxingLevel; } });
+  properties => sub {
+    (scriptpos => "post" . $_[0]->getBoxingLevel,
+      scriptSizer($_[2], $_[1], undef, 'SUPERSCRIPT', 'post')); });
+
 DefConstructor('\@SUBSCRIPT{}{}',
   "?#2(<ltx:XMApp>"
     . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>"
@@ -3275,7 +3331,9 @@ DefConstructor('\@SUBSCRIPT{}{}',
     ($sub && $sub->unlist
       ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
       : Revert($base)); },
-  properties => { scriptpos => sub { "post" . $_[0]->getBoxingLevel; } });
+  properties => sub {
+    (scriptpos => "post" . $_[0]->getBoxingLevel,
+      scriptSizer($_[2], $_[1], undef, 'SUBSCRIPT', 'post')); });
 
 DefMacroI('\'', undef, sub {
     my ($gullet) = @_;
@@ -3316,6 +3374,16 @@ sub chooseArgHandler {
   AssignValue(mathstyle => $style);
   return $closing; }          # leave the closing bit
 
+sub computeFracSize {
+  my ($whatsit) = @_;
+  my $top       = $whatsit->getProperty('top');
+  my $bot       = $whatsit->getProperty('bottom');
+  my $w         = $top->getWidth->larger($bot->getWidth);
+  my $d         = $bot->getTotalHeight->multiply(0.5);
+  my $h         = $top->getTotalHeight->add($d);
+  $whatsit->setProperties(width => $w, height => $h, depth => $d);
+  return; }
+
 # Support here: Used by LaTeX, amsmath, but also amstex
 sub beforeFrac {
   my ($stomach) = @_;
@@ -3325,6 +3393,9 @@ sub beforeFrac {
 
 sub afterFrac {
   my ($stomach, $whatsit) = @_;
+  $whatsit->setProperty(top    => $whatsit->getArg(1));
+  $whatsit->setProperty(bottom => $whatsit->getArg(2));
+  computeFracSize($whatsit);
   $stomach->egroup;
   $whatsit->setProperty(mathstyle => LookupValue('mathstyle'));
   return; }
@@ -3905,21 +3976,21 @@ DefMacroI('\enskip', undef, '\ifmmode\@math@enskip\else\@text@enskip\fi');
 DefConstructorI('\@math@enskip', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enskip',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.5em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enskip', undef, "\x{2000}", alias => '\enskip');
 
 DefMacroI('\enspace', undef, '\ifmmode\@math@espace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enspace',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.5em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enspace', undef, "\x{2000}", alias => '\enspace');
 
 DefMacroI('\quad', undef, '\ifmmode\@math@quad\else\@text@quad\fi');
 DefConstructorI('\@math@quad', undef,
   "<ltx:XMHint name='quad' width='#width'/>",
   alias => '\quad',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('1em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('1em'); } });
 DefPrimitiveI('\@text@quad', undef, "\x{2001}", alias => '\quad');
 
 # Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
@@ -3927,25 +3998,25 @@ DefMacroI('\qquad', undef, '\ifmmode\@math@qquad\else\@text@qquad\fi');
 DefConstructorI('\@math@qquad', undef,
   "<ltx:XMHint name='qquad' width='#width'/>",
   alias => '\qquad',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('2em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('2em'); } });
 DefPrimitiveI('\@text@qquad', undef, "\x{2001}\x{2001}", alias => '\qquad');
 
 DefMacroI('\thinspace', undef, '\ifmmode\@math@thinspace\else\@text@thinspace\fi');
 DefConstructorI('\@math@thinspace', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
   alias => '\thinspace',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.16667em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('0.16667em'); } });
 DefPrimitiveI('\@text@thinspace', undef, "\x{2009}", alias => '\thinspace');
 
 DefMacroI('\negthinspace', undef, '\ifmmode\@math@negthinspace\else\@text@negthinspace\fi');
 DefConstructorI('\@math@negthinspace', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
   alias => '\negthinspace',
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('-0.16667em')); } });
+  properties => { isSpace => 1, width => sub { Dimension('-0.16667em'); } });
 DefPrimitiveI('\@text@negthinspace', undef, "", alias => '\negthinspace');
 
 DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#width'/>)(\x{2001})",
-  properties => sub { (isSpace => 1, width => CleanDimension($_[1])); });
+  properties => sub { (isSpace => 1, width => $_[1]); });
 DefPrimitive('\vglue Glue', undef);
 DefPrimitiveI('\topglue',          undef, undef);
 DefPrimitiveI('\nointerlineskip',  undef, undef);
@@ -3966,7 +4037,7 @@ DefMacroI('\nobreakspace', undef, '\ifmmode\math@nobreakspace\else\text@nobreaks
 DefPrimitiveI('\text@nobreakspace', undef, UTF(0xA0), alias => '~');
 DefConstructorI('\math@nobreakspace', undef,
   "<ltx:XMHint name='nobreakspace' width='#width'/>",
-  properties => { isSpace => 1, width => sub { CleanDimension(Dimension('0.333em')); } },
+  properties => { isSpace => 1, width => sub { Dimension('0.333em'); } },
   alias => '~');
 DefMacro("~", '\nobreakspace{}');
 
@@ -4358,7 +4429,7 @@ DefMacroI('\,', undef, '\ifmmode\@math@thinmuskip\else\@text@thinmuskip\fi');
 DefConstructorI('\@math@thinmuskip', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
   alias => '\,',
-  properties => { isSpace => 1, width => sub { CleanDimension(LookupValue('\thinmuskip')); } });
+  properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip'); } });
 DefPrimitiveI('\@text@thinmuskip', undef, "\x{2009}", alias => '\,');
 
 DefMacroI('\!', undef, '\ifmmode\@math@negthinmuskip\else\@text@negthinmuskip\fi');
@@ -4366,7 +4437,7 @@ DefConstructorI('\@math@negthinmuskip', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
   alias => '\!',
   properties => { isSpace => 1,
-    width => sub { CleanDimension(LookupValue('\thinmuskip')->negate); } });
+    width => sub { LookupValue('\thinmuskip')->negate; } });
 DefPrimitiveI('\@text@negthinmuskip', undef, "", alias => '\!');
 
 DefMacroI('\>', undef, '\ifmmode\@math@medmuskip\else\@text@medmuskip\fi');
@@ -4374,7 +4445,7 @@ DefConstructorI('\@math@medmuskip', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => '\>',
   properties => { isSpace => 1,
-    width => sub { CleanDimension(LookupValue('\medmuskip')); } });
+    width => sub { LookupValue('\medmuskip'); } });
 DefPrimitiveI('\@text@medmuskip', undef, "", alias => '\>');
 
 DefMacroI('\;', undef, '\ifmmode\@math@thickmuskip\else\@text@thickmuskip\fi');
@@ -4382,7 +4453,7 @@ DefConstructorI('\@math@thickmuskip', undef,
   "<ltx:XMHint name='thickspace' width='#width'/>",
   alias => '\;',
   properties => { isSpace => 1,
-    width => sub { CleanDimension(LookupValue('\thickmuskip')); } });
+    width => sub { LookupValue('\thickmuskip'); } });
 DefPrimitiveI('\@text@thickmuskip', undef, "\x{2004}", alias => '\;');
 
 Let('\:', '\>');
@@ -4391,7 +4462,7 @@ DefConstructorI('\@math@nbspace', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => '\ ',
   properties => { isSpace => 1,
-    width => sub { CleanDimension(Dimension('1em')); } });
+    width => sub { Dimension('1em'); } });
 DefPrimitiveI('\@text@nbspace', undef, UTF(0xA0), alias => '\ ');
 
 DefMacroI("\\\t", undef, '\ifmmode\@math@tab\else\@text@tab\fi');
@@ -4399,7 +4470,7 @@ DefConstructorI('\@math@tab', undef,    # Tab!!
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => "\\\t",                      # TAB
   properties => { isSpace => 1,
-    width => sub { CleanDimension(Dimension('1em')); } });
+    width => sub { Dimension('1em'); } });
 DefPrimitiveI('\@text@tab', undef, UTF(0xA0), alias => "\\\t");    # TAB!!! What else?
 
 DefMacroI('\/', undef, '\ifmmode\@math@italiccorr\else\@text@italiccorr\fi');
