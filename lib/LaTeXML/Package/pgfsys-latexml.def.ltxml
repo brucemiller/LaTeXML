@@ -139,6 +139,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
   mode => 'text', bounded => 1,
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
+  properties => { sizer => '#2' },
   beforeDigest => sub { reenterTextMode(); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -151,6 +152,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
     return; });
 
 DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
+  properties => { sizer => '#2' },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -185,7 +187,7 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
     my ($doc, $w, $h, $d, $box, %prop) = @_;
     $doc->openElement('svg:g',
       id        => 'fobj' . $prop{fobj_num} . 'g',
-      transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')');
+      transform => 'matrix(1 0 0 -1 0 ' . $h->add($d)->pxValue . ')');
     my $node = $doc->getNode;
     while ($node && !$node->getAttribute('stroke')) { $node = $node->parentNode; }
     my $sw = $doc->openElement('svg:switch');
