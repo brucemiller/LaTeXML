@@ -23,7 +23,7 @@ use Carp;
 my $identity  = 'latexmllint';
 my ($help)    = (0);
 my $VERBOSITY = 0;
-my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC) = (0, 1, 1);
+my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC, $DOSYNTAX) = (0, 1, 1, 1);
 my %exclude = ();    # excluded features
 my %include = ();
 my ($DOMODIFY, $SEVERITY);
@@ -59,6 +59,7 @@ if (!defined $SEVERITY) {                               # Default severity, if n
 if (!defined $DOMODIFY) {
   $DOMODIFY = ($DOPRECOMMIT ? 0 : 1); }
 $VERBOSITY-- if $DOPRECOMMIT;
+$DOSYNTAX = 0 if $DOPRECOMMIT;
 
 my $PERLTIDY;
 my $PERLCRITIC;
@@ -72,7 +73,7 @@ foreach my $file (@FILES) {
   $NTOTAL++;
   my $failed = 0;
   # Various Perl code tests...
-  if ($$classification{perl}) {
+  if ($$classification{perl} && $DOSYNTAX) {
     if (system('perl', '-c', '-I' . $LIBDIR, $file) == 0) {
       print STDERR "Perl syntax OK for '$file'\n" if $VERBOSITY > 0; }
     else {
@@ -98,7 +99,13 @@ print "\nExamined $NTOTAL file(s): "
   . plural($NCRITIC, 'needs', 'need') . ' code revision; '
   . plural($NFAIL,   'fails', 'fail') . " requirements for commit.\n"
   if ($VERBOSITY > -1);
+print "\nExamined $NTOTAL file(s): "
+  . ($NTIDY   ? plural($NTIDY,   'needs', 'need') . ' reformatting '  : ' ')
+  . ($NCRITIC ? plural($NCRITIC, 'needs', 'need') . ' code revision ' : ' ')
+  . "\n"
+  if $NFAIL && ($VERBOSITY == -1);
 print "[Note: only policies with severity >= $REQ_SEVERITY inhibit a commit.]\n"
+
   if $NFAIL && $NCRITIC && ($VERBOSITY > -1);
 exit($EXITSTATUS);
 
