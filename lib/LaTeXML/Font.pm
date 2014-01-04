@@ -349,6 +349,13 @@ sub computeStringSize {
     : 0);
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
+# Get nominal width, height base ?
+sub getNominalSize {
+  my ($self) = @_;
+  my $size = $self->getSize;
+  my $u = ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535;
+  return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
+
 #**********************************************************************
 package LaTeXML::MathFont;
 use strict;
