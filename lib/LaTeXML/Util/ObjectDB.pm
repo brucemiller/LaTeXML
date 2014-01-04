@@ -141,7 +141,7 @@ sub getKeys {
   my %keys = ();
   map { $keys{$_} = 1 } keys %{ $$self{objects} };
   map { $keys{ Encode::decode('utf8', $_) } = 1 } keys %{ $$self{externaldb} };
-  return keys %keys; }
+  return (sort keys %keys); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Lookup of various kinds of things in the DB.
