@@ -44,8 +44,8 @@ sub extractTeX {
 sub preamble {
   my ($self, $doc) = @_;
   return <<'EOPreamble';
-\\def\\beginPICTURE{\\lxBeginImage}
-\\def\\endPICTURE{\\lxEndImage\\lxShowImage}
+\def\beginPICTURE{\lxBeginImage}
+\def\endPICTURE{\lxEndImage\lxShowImage}
 EOPreamble
 }
 #======================================================================
