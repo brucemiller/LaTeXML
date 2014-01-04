@@ -102,7 +102,7 @@ print "\nExamined $NTOTAL file(s): "
 print "\nExamined $NTOTAL file(s): "
   . ($NTIDY   ? plural($NTIDY,   'needs', 'need') . ' reformatting '  : ' ')
   . ($NCRITIC ? plural($NCRITIC, 'needs', 'need') . ' code revision ' : ' ')
-  . "\n"
+  . plural($NFAIL, 'fails', 'fail') . " requirements for commit.\n"
   if $NFAIL && ($VERBOSITY == -1);
 print "[Note: only policies with severity >= $REQ_SEVERITY inhibit a commit.]\n"
 
@@ -190,15 +190,14 @@ sub doPerlcritic {
     print "\n" . $file . ' ' if $VERBOSITY == 0;
     print " has policy issues\n" if $VERBOSITY > -1;
     print color('reset');
-    if ($VERBOSITY > -1) {    # We'll RE-PRINT the output so we can RE color it!
-      foreach my $line (split("\n", $critique)) {
-        my ($s) = ($line =~ /\(Severity:\s+(\d+)\)$/);
-        $failed = 1 if $s >= $REQ_SEVERITY;
-        if ($s && $SCOLORS[$s]) {
-          print colored($line, $SCOLORS[$s]) . "\n"; }
-        else {
-          print $line, "\n"; } } } }
-  else {                      # Run error
+    foreach my $line (split("\n", $critique)) {    # Scan the output of perlcritic
+      my ($s) = ($line =~ /\(Severity:\s+(\d+)\)$/);
+      $failed = 1 if $s >= $REQ_SEVERITY;
+      # We'll RE-PRINT the output so we can RE color it!
+      print '' . ($s && $SCOLORS[$s] ? colored($line, $SCOLORS[$s]) : $line) . "\n"
+        if $VERBOSITY > -1;
+    } }
+  else {                                           # Run error
     croak "Couldn't run $PERLCRITIC on '$file': $!"; }
   return $failed; }
 
