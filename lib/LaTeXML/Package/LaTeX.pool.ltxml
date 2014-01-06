@@ -4209,10 +4209,12 @@ EoTeX
 
 DefMacro('\IfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
+    $file = ToString(Expand($file));
     (FindFile($file) ? $if->unlist : $else->unlist); });
 
 DefMacro('\InputIfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
+    $file = ToString(Expand($file));
     if (FindFile($file)) {
       Input($file);
       $if->unlist; }
