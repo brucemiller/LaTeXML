@@ -221,7 +221,7 @@ sub toString {
     if $minus != 0;
   return $string; }
 
-sub toAttributre {
+sub toAttribute {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
   my $string = LaTeXML::Dimension::attributeformat($sp);
