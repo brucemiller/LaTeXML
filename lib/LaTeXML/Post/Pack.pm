@@ -68,7 +68,7 @@ sub GetArchive {
     "Expected a directory to archive '$directory':", $@);
   my @entries = grep { /^[^.]/ } readdir($dirhandle);
   closedir $dirhandle;
-  my @files = grep { (!/zip|gz|epub|tex|mobi|~$/) && -f pathname_concat($directory, $_) } @entries;
+  my @files = grep { (!/zip|gz|epub|tex|bib|mobi|~$/) && -f pathname_concat($directory, $_) } @entries;
   my @subdirs = grep { -d File::Spec->catdir($directory, $_) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,
@@ -81,11 +81,15 @@ sub GetArchive {
       or Fatal('I/O', $pathname, undef, "File $pathname is not readable.");
     my $file_contents = <$FH>;
     close($FH);
-    $archive->addString($file_contents, $file); }
+    # Only compress the textual files
+    my $compression_level = ($file =~ /css|js|xml|html$/) ?
+      COMPRESSION_DEFLATED
+      : COMPRESSION_STORED;
+    $archive->addString($file_contents, $file, )->desiredCompressionMethod( $compression_level ); }
 
   foreach my $subdir (sort @subdirs) {
     my $current_dir = File::Spec->catdir($directory, $subdir);
-    $archive->addTree($current_dir, $subdir, sub { /^[^.]/ && (!/\.(?:zip|gz|epub|mobi|~)$/) }); }
+    $archive->addTree($current_dir, $subdir, sub { /^[^.]/ && (!/\.(?:zip|gz|epub|mobi|~)$/) }, COMPRESSION_STORED); }
 
   my $content_handle = IO::String->new($payload);
   undef $payload unless ($archive->writeToFileHandle($content_handle) == AZ_OK);
