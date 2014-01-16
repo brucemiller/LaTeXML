@@ -39,6 +39,12 @@ use XML::LibXML::XPathContext;
 use LaTeXML::Util::Pathname;
 use Encode;
 use Carp;
+# ?
+require LaTeXML::Common::XML::Parser;
+require LaTeXML::Common::XML::XPath;
+require LaTeXML::Common::XML::XSLT;
+require LaTeXML::Common::XML::RelaxNG;
+
 # we're too low-level to use LaTeXML's error handling, but at least use Carp....(?)
 
 use base qw(Exporter);
@@ -321,160 +327,6 @@ BEGIN {
     *XML::LibXML::Element::hasAttribute = *xmlns_XML_LibXML_Element_hasAttribute;
     *XML::LibXML::Element::setAttribute = *xmlns_XML_LibXML_Element_setAttribute; }
 }
-######################################################################
-# Subclasses
-######################################################################
-package LaTeXML::Common::XML::Parser;
 
-sub new {
-  my ($class) = @_;
-  my $parser = XML::LibXML->new();
-###  $parser->clean_namespaces(1);
-  $parser->validation(0);
-  $parser->keep_blanks(0);    # This allows formatting the output.
-  return bless { parser => $parser }, $class; }
-
-sub parseFile {
-  my ($self, $file) = @_;
-  LaTeXML::Common::XML::initialize_catalogs();
-  return $$self{parser}->parse_file($file); }
-
-sub parseString {
-  my ($self, $string) = @_;
-  return $$self{parser}->parse_string($string); }
-
-sub parseChunk {
-  my ($self, $string) = @_;
-  my $hasxmlns = $string =~ /\Wxml:id\W/;
-  # print STDERR "\nFISHY!!\n" if $hasxmlns;
-  my $xml = $$self{parser}->parse_xml_chunk($string);
-  # Simplify, if we get a single node Document Fragment.
-  #[which we, apparently, always do]
-  if ($xml && (ref $xml eq 'XML::LibXML::DocumentFragment')) {
-    my @k = $xml->childNodes;
-    $xml = $k[0] if (scalar(@k) == 1); }
-  #  $xml = $xml->cloneNode(1);
-  ####
-  # In 1.58, the prefix for the XML_NS, which should be DEFINED to be "xml"
-  # is sometimes unbound, leading to mysterious segfaults!!!
-###  if (($xml_libxml_version < 1.59) && $hasxmlns) {
-  if (($LaTeXML::Common::XML::xml_libxml_version < 1.59) && $hasxmlns) {
-    #print STDERR "Patchup...\n";
-    # Re-create all xml:id entrys, hopefully with correct NS!
-    # We assume all id are, in fact, xml:id,
-    # because we seemingly can't probe the namespace!
-    foreach my $attr ($xml->findnodes("descendant-or-self::*/attribute::*[local-name()='id']")) {
-      my $element = $attr->parentNode;
-      my $id      = $attr->getValue();
-      #print STDERR "RESET ID: $id\n";
-      $attr->unbindNode();
-      $element->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $id); }
-    #    print STDERR "\nXML: ".$xml->toString."\n";
-  }
-  return $xml; }
-
-######################################################################
-package LaTeXML::Common::XML::XPath;
-use XML::LibXML::XPathContext;
-
-sub new {
-  my ($class, %mappings) = @_;
-  my $context = XML::LibXML::XPathContext->new();
-  foreach my $prefix (keys %mappings) {
-    $context->registerNs($prefix => $mappings{$prefix}); }
-  return bless { context => $context }, $class; }
-
-sub registerNS {
-  my ($self, $prefix, $url) = @_;
-  $$self{context}->registerNs($prefix => $url);
-  return; }
-
-sub registerFunction {
-  my ($self, $name, $function) = @_;
-  $$self{context}->registerFunction($name => $function);
-  return; }
-
-sub findnodes {
-  my ($self, $xpath, $node) = @_;
-  return $$self{context}->findnodes($xpath, $node); }
-
-sub findvalue {
-  my ($self, $xpath, $node) = @_;
-  return $$self{context}->findvalue($xpath, $node); }
-
-######################################################################
-package LaTeXML::Common::XML::XSLT;
-use XML::LibXSLT;
-
-sub new {
-  my ($class, $stylesheet) = @_;
-  LaTeXML::Common::XML::initialize_catalogs();
-  if (!ref $stylesheet) {
-    $stylesheet = LaTeXML::Common::XML::Parser->new()->parseFile($stylesheet); }
-  if (ref $stylesheet eq 'XML::LibXML::Document') {
-    $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
-  return bless { stylesheet => $stylesheet }, $class; }
-
-sub transform {
-  my ($self, $document, %params) = @_;
-  return $$self{stylesheet}->transform($document, %params); }
-
-######################################################################
-package LaTeXML::Common::XML::RelaxNG;
-use XML::LibXML;
-use LaTeXML::Util::Pathname;
-
-# Note: XML::LibXML::RelaxNG->new(...) takes
-#  location=>$filename_or_url;
-#  string=>$schemastring
-#  DOM=>$doc
-
-# options: nocatalogs, searchpaths
-
-# Create a Wrapper for a RelaxNG,
-# containing the XML document representing the schema
-# defering converting it to an actual RelaxNG object.
-sub new {
-  my ($class, $name, %options) = @_;
-  LaTeXML::Common::XML::initialize_catalogs();
-  my $xmlparser = LaTeXML::Common::XML::Parser->new();
-  my $schemadoc;
-  $name .= ".rng" unless $name =~ /\.rng$/;
-  # First, try to load directly, in case it's found via libxml's catalogs...
-  # But be careful calling C library; its failures are harder to trap w/eval
-  if (!$options{nocatalogs}) {
-    $schemadoc = eval {
-      no warnings 'all';
-      local $SIG{'__DIE__'} = undef;
-      $xmlparser->parseFile($name); }; }
-
-  if (!$schemadoc) {
-    if (my $path = pathname_find($name, paths => $options{searchpaths} || ['.'],
-        types               => ['rng'],                  # Eventually, rnc?
-        installation_subdir => 'resources/RelaxNG')) {
-      #  Hopefully, just a file, not a URL?
-      $schemadoc = $xmlparser->parseFile($path); }
-    else {
-###      Error('missing_file',$name,"Can't find RelaxNG schema module $name");
-      return;                                            # ???
-    } }
-  return bless { schemadoc => $schemadoc }, $class; }
-
-sub validate {
-  my ($self, $document) = @_;
-  # Lazy conversion of the Schema's XML doc into an actual RelaxNG object.
-  if (!$$self{schema} && $$self{schemadoc}) {
-    $$self{schema} = XML::LibXML::RelaxNG->new(DOM => $$self{schemadoc}); }
-  return $$self{schema}->validate($document); }
-
-# This returns the root element of the XML document representing the schema!
-sub documentElement {
-  my ($self) = @_;
-  return $$self{schemadoc}->documentElement; }
-
-sub URI {
-  my ($self) = @_;
-  return $$self{schemadoc}->URI; }
-
-#**********************************************************************
+#======================================================================
 1;
