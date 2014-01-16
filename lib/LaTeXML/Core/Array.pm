@@ -1,6 +1,6 @@
 # -*- CPERL -*-
 # /=====================================================================\ #
-# |  Array                                                              | #
+# |  LaTeXML::Core::Array                                               | #
 # | Support for Lists or Arrays of digestable stuff for LaTeXML         | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,11 +10,11 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Array;
+package LaTeXML::Core::Array;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Package;
+#use LaTeXML::Package;
 use base qw(LaTeXML::Object);
 
 # The following tokens (individual Token's or Tokens') describe how to revert the Array
@@ -44,7 +44,7 @@ sub beDigested {
   my @v = ();
   foreach my $item (@{ $$self{values} }) {
     # Yuck
-    my $typedef = $$self{type} && $LaTeXML::Parameters::PARAMETER_TABLE{ $$self{type} };
+    my $typedef = $$self{type} && $STATE->lookupMapping('PARAMETER_TYPE', $$self{type});
     my $dodigest = (ref $item) && (!$typedef || !$$typedef{undigested});
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
     StartSemiverbatim() if $semiverb;
@@ -88,18 +88,17 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Array> - support for Arrays of objects
+C<LaTeXML::Core::Array> - support for Arrays of objects
 
 =head1 DESCRIPTION
 
-Provides a parser and representation of keyval pairs
-C<LaTeXML::KeyVal> represents parameters handled by LaTeX's keyval package.
+Provides a representation of arrays  of digested objects.
 
 =head2 Methods
 
 =over 4
 
-=item C<< LaTeXML::Array->new(%options); >>
+=item C<< LaTeXML::Core::Array->new(%options); >>
 
 Creates an Array object
 Options are
@@ -136,7 +135,7 @@ Return the list of values.
 
 =item C<< $keyval->beDigested; >>
 
-Return a new C<LaTeXML::Array> object with all values digested as appropriate.
+Return a new C<LaTeXML::Core::Array> object with all values digested as appropriate.
 
 =back
 
