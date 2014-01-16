@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Document                                                 | #
+# |  LaTeXML::Core::Document                                            | #
 # | Constructs the Document from digested material                      | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,7 +10,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 
-package LaTeXML::Document;
+package LaTeXML::Core::Document;
 use strict;
 use warnings;
 use LaTeXML::Global;
@@ -554,7 +554,7 @@ sub openText {
     || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
   print STDERR "Insert text \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
-    if $LaTeXML::Document::DEBUG;
+    if $LaTeXML::Core::Document::DEBUG;
 
   if (($t != XML_DOCUMENT_NODE)    # If not at document begin
     && !(($t == XML_TEXT_NODE) &&    # And not appending text in same font.
@@ -588,7 +588,7 @@ sub openText {
 sub openElement {
   my ($self, $qname, %attributes) = @_;
   NoteProgress('.') if ($$self{progress}++ % 25) == 0;
-  print STDERR "Open element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Document::DEBUG;
+  print STDERR "Open element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point, $qname,
@@ -603,7 +603,7 @@ sub openElement {
 # This is kinda risky! Maybe we should try to request closing of specific nodes.
 sub closeElement {
   my ($self, $qname) = @_;
-  print STDERR "Close element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Document::DEBUG;
+  print STDERR "Close element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   $self->closeText_internal();
   my ($node, @cant_close) = ($$self{node});
   while ($node->nodeType != XML_DOCUMENT_NODE) {
@@ -813,7 +813,7 @@ sub floatToElement {
     my $savenode = $$self{node};
     $$self{node} = $n;
     print STDERR "Floating from " . Stringify($savenode) . " to " . Stringify($n) . " for $qname\n"
-      if ($$savenode ne $$n) && $LaTeXML::Document::DEBUG;
+      if ($$savenode ne $$n) && $LaTeXML::Core::Document::DEBUG;
     return $savenode; }
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
@@ -840,14 +840,14 @@ sub openText_internal {
   my ($self, $text) = @_;
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
-    print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Document::DEBUG;
+    print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
     $$self{node}->appendData($text); }
   elsif (($text =~ /\S/)                            # If non space
     || $self->canContain($$self{node}, '#PCDATA')) {    # or text allowed here
     my $point = $self->find_insertion_point('#PCDATA');
     my $node  = $$self{document}->createTextNode($text);
     print STDERR "Inserting text node for \"$text\" into " . Stringify($point) . "\n"
-      if $LaTeXML::Document::DEBUG;
+      if $LaTeXML::Core::Document::DEBUG;
     $point->appendChild($node);
     $$self{node} = $node; }
   return $$self{node}; }                                # return the text node (current)
@@ -897,7 +897,7 @@ sub applyMathLigature {
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
     if (scalar(@boxes) > 1) {
-      $self->setNodeBox($node, LaTeXML::MathList->new(@boxes)); }
+      $self->setNodeBox($node, LaTeXML::Core::MathList->new(@boxes)); }
     foreach my $key (sort keys %attr) {
       my $value = $attr{$key};
       if (defined $value) {
@@ -1066,14 +1066,14 @@ sub unRecordNodeIDs {
   return; }
 
 # Get a new, related, but unique id
-# Sneaky option: try $LaTeXML::Document::ID_SUFFIX as a suffix for id, first.
+# Sneaky option: try $LaTeXML::Core::Document::ID_SUFFIX as a suffix for id, first.
 sub modifyID {
   my ($self, $id) = @_;
   if (my $prev = $$self{idstore}{$id}) {    # Whoops! Already assigned!!!
                                             # Can we recover?
     my $badid = $id;
-    if (!$LaTeXML::Document::ID_SUFFIX
-      || $$self{idstore}{ $id = $badid . $LaTeXML::Document::ID_SUFFIX }) {
+    if (!$LaTeXML::Core::Document::ID_SUFFIX
+      || $$self{idstore}{ $id = $badid . $LaTeXML::Core::Document::ID_SUFFIX }) {
       foreach my $s1 (ord('a') .. ord('z')) {
         return $id unless $$self{idstore}{ $id = $badid . chr($s1) }; }
       foreach my $s1 (ord('a') .. ord('z')) {
@@ -1122,11 +1122,11 @@ sub getNodeFont {
   my ($self, $node) = @_;
   my $t = $node->nodeType;
   return (($t == XML_ELEMENT_NODE) && $$self{node_fonts}{ $node->getAttribute('_font') })
-    || LaTeXML::Font->default(); }
+    || LaTeXML::Common::Font->textDefault(); }
 
 sub decodeFont {
   my ($self, $fontid) = @_;
-  return $$self{node_fonts}{$fontid} || LaTeXML::Font->default(); }
+  return $$self{node_fonts}{$fontid} || LaTeXML::Common::Font->textDefault(); }
 
 # Remove a node from the document (from it's parent)
 sub removeNode {
@@ -1210,7 +1210,7 @@ sub openElementAt {
     $self->setAttribute($newnode, $key, $attributes{$key}); }
   $self->setNodeFont($newnode, $font) if $font;
   $self->setNodeBox($newnode, $box) if $box;
-  print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Document::DEBUG;
+  print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
   $self->afterOpen($newnode);
@@ -1274,12 +1274,12 @@ sub appendClone {
   # Expand any document fragments
   @newchildren = map { ($_->nodeType == XML_DOCUMENT_FRAG_NODE ? $_->childNodes : $_) } @newchildren;
   # Now find all xml:id's in the newchildren and record replacement id's for them
-  local %LaTeXML::Document::IDMAP = ();
+  local %LaTeXML::Core::Document::IDMAP = ();
   # Find all id's defined in the copy and change the id.
   foreach my $child (@newchildren) {
     foreach my $idnode ($self->findnodes('.//@xml:id', $child)) {
       my $id = $idnode->getValue;
-      $LaTeXML::Document::IDMAP{$id} = $self->modifyID($id); } }
+      $LaTeXML::Core::Document::IDMAP{$id} = $self->modifyID($id); } }
   # Now do the cloning (actually copying) and insertion.
   $self->appendClone_aux($node, @newchildren);
   return $node; }
@@ -1294,12 +1294,12 @@ sub appendClone_aux {
         if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
           my $key = $attr->nodeName;
           if ($key eq 'xml:id') {    # Use the replacement id
-            my $newid = $LaTeXML::Document::IDMAP{ $attr->getValue };
+            my $newid = $LaTeXML::Core::Document::IDMAP{ $attr->getValue };
             $new->setAttribute($key, $newid);
             $self->recordID($newid, $new); }
           elsif ($key eq 'idref') {    # Refer to the replacement id if it was replaced
             my $id = $attr->getValue;
-            $new->setAttribute($key, $LaTeXML::Document::IDMAP{$id} || $id); }
+            $new->setAttribute($key, $LaTeXML::Core::Document::IDMAP{$id} || $id); }
           elsif (my $ns = $attr->namespaceURI) {
             $new->setAttributeNS($ns, $attr->name, $attr->getValue); }
           else {
@@ -1448,18 +1448,18 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Document> - represents an XML document under construction.
+C<LaTeXML::Core::Document> - represents an XML document under construction.
 
 =head1 DESCRIPTION
 
-A C<LaTeXML::Document> represents an XML document being constructed by LaTeXML,
+A C<LaTeXML::Core::Document> represents an XML document being constructed by LaTeXML,
 and also provides the methods for constructing it.  LaTeXML will have
-digested the source material resulting in a L<LaTeXML::List> (from a L<LaTeXML::Stomach>)
-of  L<LaTeXML::Box>s, L<LaTeXML::Whatsit>s and sublists.  At this stage, a document is created
+digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
+of  L<LaTeXML::Core::Box>s, L<LaTeXML::Core::Whatsit>s and sublists.  At this stage, a document is created
 and it is responsible for `absorbing' the digested material.
-Generally, the L<LaTeXML::Box>s and L<LaTeXML::List>s create text nodes,
-whereas the L<LaTeXML::Whatsit>s create C<XML> document fragments, elements
-and attributes according to the defining L<LaTeXML::Constructor>.
+Generally, the L<LaTeXML::Core::Box>s and L<LaTeXML::Core::List>s create text nodes,
+whereas the L<LaTeXML::Core::Whatsit>s create C<XML> document fragments, elements
+and attributes according to the defining L<LaTeXML::Core::Definition::Constructor>.
 
 Most document construction occurs at a I<current insertion point> where material will
 be added, and which moves along with the inserted material.
