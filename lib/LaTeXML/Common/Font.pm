@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Font                                                      | #
+# |  LaTeXML::Common::Font                                              | #
 # | Representaion of Fonts                                              | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,12 +9,13 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Font;
+package LaTeXML::Common::Font;
 use strict;
 use warnings;
 use LaTeXML::Global;
 use base qw(LaTeXML::Object);
+
+# NOTE: This is now in Common that it may evolve to be useful in Post processing...
 
 my $DEFFAMILY     = 'serif';      # [CONSTANT]
 my $DEFSERIES     = 'medium';     # [CONSTANT]
@@ -34,6 +35,7 @@ my $DEFENCODING   = 'OT1';        # [CONSTANT]
 # but it seems to be a one-way mapping, and moreover, doesn't even fit CM fonts!
 # We'll assume a sloppier version:
 #   family + series + variant + size
+# NOTE: This probably doesn't really belong in here...
 
 my %font_family = (
   cmr  => { family => 'serif' },      cmss  => { family => 'sansserif' },
@@ -168,27 +170,37 @@ sub lookupTeXFont {
 #======================================================================
 # NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
+# Note: forcebold, forceshape are only useful for fonts in math
 sub new {
   my ($class, %options) = @_;
-  my $family   = $options{family};
-  my $series   = $options{series};
-  my $shape    = $options{shape};
-  my $size     = $options{size};
-  my $color    = $options{color};
-  my $bg       = $options{background};
-  my $opacity  = $options{opacity};
-  my $encoding = $options{encoding};
-  return $class->new_internal($family, $series, $shape, $size, $color, $bg, $opacity, $encoding); }
+  my $family     = $options{family};
+  my $series     = $options{series};
+  my $shape      = $options{shape};
+  my $size       = $options{size};
+  my $color      = $options{color};
+  my $bg         = $options{background};
+  my $opacity    = $options{opacity};
+  my $encoding   = $options{encoding};
+  my $forcebold  = $options{forcebold};
+  my $forceshape = $options{forceshape};
+  return $class->new_internal(
+    $family, $series, $shape, $size,
+    $color, $bg, $opacity,
+    $encoding, $forcebold, $forceshape); }
 
 sub new_internal {
   my ($class, @components) = @_;
   return bless [@components], $class; }
 
-sub default {
+sub textDefault {
   my ($self) = @_;
   return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, $DEFSIZE,
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY,
-    $DEFENCODING); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef); }
+
+sub mathDefault {
+  my ($self) = @_;
+  return $self->new_internal('math', $DEFSERIES, 'italic', $DEFSIZE,
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef); }
 
 # Accessors
 sub getFamily     { my ($self) = @_; return $$self[0]; }
@@ -235,23 +247,6 @@ sub makeConcrete {
     $family || $ofamily, $series || $oseries, $shape || $oshape, $size || $osize,
     $color || $ocolor, $bg || $obg, (defined $opacity ? $opacity : $oopacity),
     $encoding || $oencoding); }
-
-sub merge {
-  my ($self, %options) = @_;
-  my $family   = $options{family}     // $$self[0];
-  my $series   = $options{series}     // $$self[1];
-  my $shape    = $options{shape}      // $$self[2];
-  my $size     = $options{size}       // $$self[3];
-  my $color    = $options{color}      // $$self[4];
-  my $bg       = $options{background} // $$self[5];
-  my $opacity  = $options{opacity}    // $$self[6];
-  my $encoding = $options{encoding}   // $$self[7];
-  return (ref $self)->new_internal($family, $series, $shape, $size, $color, $bg, $opacity, $encoding); }
-
-# Really only applies to Math Fonts, but that should be handled elsewhere; We punt here.
-sub specialize {
-  my ($self, $string) = @_;
-  return $self; }
 
 sub isDiff {
   my ($x, $y) = @_;
@@ -337,8 +332,8 @@ sub font_match_xpaths {
     return join(' and ', '@_font',
       map { "contains(\@_font,'$_')" } @frags); } }
 
-# Presumably a text font is "sticky", if used in math?
-sub isSticky { return 1; }
+# # Presumably a text font is "sticky", if used in math?
+# sub isSticky { return 1; }
 
 #======================================================================
 sub computeStringSize {
@@ -356,49 +351,20 @@ sub getNominalSize {
   my $u = ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
-#**********************************************************************
-package LaTeXML::MathFont;
-use strict;
-use LaTeXML::Global;
-use base qw(LaTeXML::Font);
-
-my $MDEFFAMILY     = 'serif';      # [CONSTANT]
-my $MDEFSERIES     = 'medium';     # [CONSTANT]
-my $MDEFSHAPE      = 'upright';    # [CONSTANT]
-my $MDEFSIZE       = 'normal';     # [CONSTANT]
-my $MDEFCOLOR      = 'black';      # [CONSTANT]
-my $MDEFBACKGROUND = 'white';      # [CONSTANT]
-my $MDEFOPACITY    = '1';          # [CONSTANT]
-
-sub new {
-  my ($class, %options) = @_;
-  my $family   = $options{family};
-  my $series   = $options{series};
-  my $shape    = $options{shape};
-  my $size     = $options{size};
-  my $color    = $options{color};
-  my $bg       = $options{background};
-  my $opacity  = $options{opacity};
-  my $encoding = $options{encoding};
-##  my $forcebold  = $options{forcebold} || 0;
-##  my $forceshape = $options{forceshape} || 0;
-  my $forcebold  = $options{forcebold};
-  my $forceshape = $options{forceshape};
-  return $class->new_internal(
-    $family, $series, $shape, $size,
-    $color, $bg, $opacity,
-    $encoding, $forcebold, $forceshape); }
-
-sub default {
-  my ($self) = @_;
-  return $self->new_internal('math', $MDEFSERIES, 'italic', $MDEFSIZE,
-    $MDEFCOLOR, $MDEFBACKGROUND, $MDEFOPACITY,
-    undef, undef, undef); }
+# sub default {
+#   my ($self) = @_;
+#   return $self->new_internal('math', $MDEFSERIES, 'italic', $MDEFSIZE,
+#     $MDEFCOLOR, $MDEFBACKGROUND, $MDEFOPACITY,
+#     undef, undef, undef); }
 
 sub isSticky {
   my ($self) = @_;
   return $$self[0] && ($$self[0] =~ /^(?:serif|sansserif|typewriter)$/); }
 
+# NOTE: In math, NORMALLY, setting any one of
+#    family, series or shape
+# will, usually, automatically reset the others to thier defaults!
+# You must arrange this in the calls....
 sub merge {
   my ($self, %options) = @_;
   my $family     = $options{family}     // $$self[0];
@@ -411,10 +377,6 @@ sub merge {
   my $encoding   = $options{encoding}   // $$self[7];
   my $forcebold  = $options{forcebold}  // $$self[8];
   my $forceshape = $options{forceshape} // $$self[9];
-  # In math, setting any one of these, resets the others to default.
-  $family = $MDEFFAMILY if !$options{family} && ($options{series} || $options{shape});
-  $series = $MDEFSERIES if !$options{series} && ($options{family} || $options{shape});
-  $shape  = $MDEFSHAPE  if !$options{shape}  && ($options{family} || $options{series});
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,
     $encoding, $forcebold, $forceshape); }
@@ -434,31 +396,26 @@ sub specialize {
     $encoding, $forcebold, $forceshape) = @$self;
   $series = 'bold' if $forcebold;
   if (($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)) {    # Latin Letter
-##    print STDERR "Letter" if $LaTeXML::Font::DEBUG;
     $shape = 'italic' if !$shape && !$family; }
   elsif ($string =~ /^\p{Greek}$/) {                             # Single Greek character?
     if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
-##      print STDERR "Greek Upper" if $LaTeXML::Font::DEBUG;
       if (!$family || ($family eq 'math')) {
-        $family = $MDEFFAMILY;
-        $shape = $MDEFSHAPE if $shape && ($shape ne $MDEFSHAPE); } }    # if ANY shape, must be default
+        $family = $DEFFAMILY;
+        $shape = $DEFSHAPE if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
     else {    # Lowercase
-##      print STDERR "Greek Lower" if $LaTeXML::Font::DEBUG;
-      $family = $MDEFFAMILY if !$family || ($family ne $MDEFFAMILY);
-      $shape  = 'italic'    if !$shape  || !$forceshape;               # always ?
+      $family = $DEFFAMILY if !$family || ($family ne $DEFFAMILY);
+      $shape  = 'italic'   if !$shape  || !$forceshape;              # always ?
       if ($forcebold) { $series = 'bold'; }
-      elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } } }
-  elsif ($string =~ /^\p{N}$/) {                                       # Digit
-##    print STDERR "Digit" if $LaTeXML::Font::DEBUG;
+      elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } } }
+  elsif ($string =~ /^\p{N}$/) {                                     # Digit
     if (!$family || ($family eq 'math')) {
-      $family = $MDEFFAMILY;
-      $shape  = $MDEFSHAPE; } }                                        # defaults, always.
-  else {                                                               # Other Symbol
-##    print STDERR "Symbol" if $LaTeXML::Font::DEBUG;
-    $family = $MDEFFAMILY;
-    $shape  = $MDEFSHAPE;                                              # defaults, always.
+      $family = $DEFFAMILY;
+      $shape  = $DEFSHAPE; } }                                       # defaults, always.
+  else {                                                             # Other Symbol
+    $family = $DEFFAMILY;
+    $shape  = $DEFSHAPE;                                             # defaults, always.
     if ($forcebold) { $series = 'bold'; }
-    elsif ($series && ($series ne $MDEFSERIES)) { $series = $MDEFSERIES; } }
+    elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } }
 
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,
@@ -473,8 +430,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Font> - representation of fonts,
-along with the specialization C<LaTeXML::MathFont>.
+C<LaTeXML::Common::Font> - representation of fonts
 
 =head1 DESCRIPTION
 
@@ -482,8 +438,7 @@ This module defines Font objects.
 I'm not completely happy with the arrangement, or
 maybe just the use of it, so I'm not going to document extensively at this point.
 
-C<LaTeXML::Font> and C<LaTeXML::MathFont> represent fonts 
-(the latter, fonts in math-mode, obviously) in LaTeXML. 
+C<LaTeXML::Common::Font> represent fonts in LaTeXML. 
 
 The attributes are
 
@@ -498,15 +453,7 @@ The attributes are
 They are usually merged against the current font, attempting to mimic the,
 sometimes counter-intuitive, way that TeX does it,  particularly for math
 
-=head2 C<LaTeXML::MathFont>
-
-=begin latex
-
-\label{LaTeXML::MathFont}
-
-=end latex
-
-C<LaTeXML::MathFont> supports C<$font->specialize($string);> for
+For math mode, C<LaTeXML::Common::Font> supports C<$font->specialize($string);> for
 computing a font reflecting how the specific C<$string> would be printed when
 C<$font> is active; This (attempts to) handle the curious ways that lower case
 greek often doesn't get a different font.  In particular, it recognizes the
