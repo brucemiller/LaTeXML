@@ -1,281 +1,638 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML                                                            | #
-# | Main Module                                                         | #
+# | Overall LaTeXML Converter                                           | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | Deyan Ginev <d.ginev@jacobs-university.de>                  #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 
 package LaTeXML;
 use strict;
 use warnings;
-use LaTeXML::Global;
-use LaTeXML::Error;
-use LaTeXML::State;
-use LaTeXML::Stomach;
-use LaTeXML::Document;
-use LaTeXML::Model;
-use LaTeXML::Object;
-use LaTeXML::MathParser;
-use LaTeXML::Util::Pathname;
-use LaTeXML::Bib;
-use LaTeXML::Package;
-use LaTeXML::Version;
-use Encode;
-use FindBin;
-use base qw(LaTeXML::Object);
-use vars qw($VERSION);
-use vars qw($VERSION $FULLVERSION $IDENTITY);
 
-$VERSION = "0.7.9alpha";
-# Derived, more informative version numbers
-$FULLVERSION = "LaTeXML version $VERSION"
-  . ($LaTeXML::Version::REVISION ? "; revision $LaTeXML::Version::REVISION" : '');
-$IDENTITY = "$FindBin::Script ($FULLVERSION)";
+use Carp;
+use Encode;
+use Data::Dumper;
+use File::Temp qw(tempdir);
+use File::Path qw(remove_tree);
+use File::Spec;
+
+use LaTeXML::Core;
+use LaTeXML::Util::Pathname;
+use LaTeXML::Util::WWW;
+use LaTeXML::Util::ObjectDB;
+use LaTeXML::Util::Config;
+use LaTeXML::Post::Scan;
 
 #**********************************************************************
+#our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimages mathimagemag );
+
+# Switching to white-listing options that are important for new_latexml:
+our @COMPARABLE = qw(preload paths verbosity strict comments inputencoding includestyles documentid mathparse);
+our %DAEMON_DB = ();
 
 sub new {
-  my ($class, %options) = @_;
-  my $state = LaTeXML::State->new(catcodes => 'standard',
-    stomach => LaTeXML::Stomach->new(),
-    model => $options{model} || LaTeXML::Model->new());
-  $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
-    'global');
-  $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
-    'global');
-  $state->assignValue(INCLUDE_COMMENTS => (defined $options{includeComments} ? $options{includeComments} : 1),
-    'global');
-  $state->assignValue(DOCUMENTID => (defined $options{documentid} ? $options{documentid} : ''),
-    'global');
-  $state->assignValue(SEARCHPATHS => [map { pathname_absolute(pathname_canonical($_)) }
-        @{ $options{searchpaths} || [] }],
-    'global');
-  $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
-        @{ $options{graphicspaths} || [] }], 'global');
-  $state->assignValue(INCLUDE_STYLES => $options{includeStyles} || 0, 'global');
-  $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding}) if $options{inputencoding};
-  return bless { state => $state,
-    nomathparse => $options{nomathparse} || 0,
-    preload => $options{preload},
-    }, $class; }
+  my ($class, $config) = @_;
+  $config = LaTeXML::Util::Config->new() unless (defined $config);
+  # The daemon should be setting the identity:
+  my $self = bless { opts => $config->options, ready => 0, log => q{}, runtime => {},
+    latexml => undef }, $class;
+  # Special check if the debug directive is on, just to neutralize the bind_log
+  my $debug_directives = $self->{opts}->{debug};
+  $LaTeXML::DEBUG = 1 if (ref $debug_directives eq 'ARRAY') && (grep { /converter/i } @$debug_directives);
+  $self->bind_log;
+  my $rv = eval { $config->check; };
+  $self->{log} .= $self->flush_log;
+  return $self; }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# High-level API.
+sub prepare_session {
+  my ($self, $config) = @_;
+  # TODO: The defaults feature was never used, do we really want it??
+  #0. Ensure all default keys are present:
+  # (always, as users can specify partial options that build on the defaults)
+  #foreach (keys %{$self->{defaults}}) {
+  #  $config->{$_} = $self->{defaults}->{$_} unless exists $config->{$_};
+  #}
+  # 1. Ensure option "sanity"
+  $self->bind_log;
+  my $rv = eval { $config->check; };
+  $self->{log} .= $self->flush_log;
 
-sub convertAndWriteFile {
-  my ($self, $file) = @_;
-  $file =~ s/\.tex$//;
-  my $dom = $self->convertFile($file);
-  $dom->toFile("$file.xml", 1) if $dom;
-  return $dom; }
+  my $opts                 = $config->options;
+  my $opts_comparable      = { map { $_ => $opts->{$_} } @COMPARABLE };
+  my $self_opts_comparable = { map { $_ => $self->{opts}->{$_} } @COMPARABLE };
+  #TODO: Some options like paths and includes are additive, we need special treatment there
+  #2.2. Compare old and new $opts hash
+  my $something_to_do;
+  $something_to_do = LaTeXML::Util::ObjectDB::compare($opts_comparable, $self_opts_comparable) ? 0 : 1;
+  #2.3. Set new options in converter:
+  $self->{opts} = $opts;
 
-sub convertFile {
-  my ($self, $file) = @_;
-  my $digested = $self->digestFile($file);
-  return unless $digested;
-  return $self->convertDocument($digested); }
+  #3. If there is something to do, initialize a session:
+  $self->initialize_session if ($something_to_do || (!$self->{ready}));
 
-sub getStatusMessage {
-  my ($self) = @_;
-  return $$self{state}->getStatusMessage; }
-
-sub getStatusCode {
-  my ($self) = @_;
-  return $$self{state}->getStatusCode; }
-
-# You'd typically do this after both digestion AND conversion...
-sub showProfile {
-  my ($self, $digested) = @_;
-  return
-    $self->withState(sub {
-      LaTeXML::Definition::showProfile();    # Show profile (if any)
-      }); }
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Mid-level API.
-
-# options are currently being evolved to accomodate the Daemon:
-#    mode  : the processing mode, ie the pool to preload: TeX or BibTeX
-#    noinitialize : if defined, it does not initialize State.
-#    preamble = names a tex file (or standard_preamble.tex)
-#    postamble = names a tex file (or standard_postamble.tex)
-
-our %MODE_EXTENSION = (    # CONFIGURATION?
-  TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
-
-sub digestFile {
-  my ($self, $request, %options) = @_;
-  my ($dir, $name, $ext);
-  my $mode = $options{mode} || 'TeX';
-  if (pathname_is_literaldata($request)) {
-    $dir = undef; $ext = $MODE_EXTENSION{$mode};
-    $name = "Anonymous String"; }
-  elsif (pathname_is_url($request)) {
-    $dir = undef; $ext = $MODE_EXTENSION{$mode};
-    $name = $request;
-  }
-  else {
-    $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$//;
-    if (my $pathname = pathname_find($request, types => [$MODE_EXTENSION{$mode}, ''])) {
-      $request = $pathname;
-      ($dir, $name, $ext) = pathname_split($request); }
-    else {
-      $self->withState(sub {
-          Fatal('missing_file', $request, undef, "Can't find $mode file $request"); }); } }
-  return
-    $self->withState(sub {
-      my ($state) = @_;
-      NoteBegin("Digesting $mode $name");
-      $self->initializeState($mode . ".pool", @{ $$self{preload} || [] }) unless $options{noinitialize};
-      $state->assignValue(SOURCEFILE      => $request) if (!pathname_is_literaldata($request));
-      $state->assignValue(SOURCEDIRECTORY => $dir)     if defined $dir;
-      $state->unshiftValue(SEARCHPATHS => $dir)
-        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('SEARCHPATHS') };
-      $state->unshiftValue(GRAPHICSPATHS => $dir)
-
-        if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('GRAPHICSPATHS') };
-
-      $state->installDefinition(LaTeXML::Expandable->new(T_CS('\jobname'), undef,
-          Tokens(Explode($name))));
-      # Reverse order, since last opened is first read!
-      $self->loadPostamble($options{postamble}) if $options{postamble};
-      LaTeXML::Package::InputContent($request);
-      $self->loadPreamble($options{preamble}) if $options{preamble};
-
-      # Now for the Hacky part for BibTeX!!!
-      if ($mode eq 'BibTeX') {
-        my $bib = LaTeXML::Bib->newFromGullet($name, $state->getStomach->getGullet);
-        LaTeXML::Package::InputContent("literal:" . $bib->toTeX); }
-      my $list = $self->finishDigestion;
-      NoteEnd("Digesting $mode $name");
-      return $list; });
+  return;
 }
 
-sub finishDigestion {
-  my ($self)  = @_;
-  my $state   = $$self{state};
-  my $stomach = $state->getStomach;
-  my @stuff   = ();
-  while ($stomach->getGullet->getMouth->hasMoreInput) {
-    push(@stuff, $stomach->digestNextBody); }
-  if (my $env = $state->lookupValue('current_environment')) {
-    Error('expected', "\\end{$env}", $stomach,
-      "Input ended while environment $env was open"); }
-  my $ifstack = $state->lookupValue('if_stack');
-  if ($ifstack && $$ifstack[0]) {
-    Error('expected', '\fi', $stomach,
-      "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete"); }
-  $stomach->getGullet->flush;
-  return LaTeXML::List->new(@stuff); }
+sub initialize_session {
+  my ($self) = @_;
+  $self->{runtime} = {};
+  $self->bind_log;
+  # Empty the package namespace
+  foreach my $subname (keys %LaTeXML::Package::Pool::) {
+    delete $LaTeXML::Package::Pool::{$subname};
+  }
 
-sub loadPreamble {
-  my ($self, $preamble) = @_;
-  my $gullet = $$self{state}->getStomach->getGullet;
-  if ($preamble eq 'standard_preamble.tex') {
-    $preamble = 'literal:\documentclass{article}\begin{document}'; }
-  return LaTeXML::Package::InputContent($preamble); }
-
-sub loadPostamble {
-  my ($self, $postamble) = @_;
-  my $gullet = $$self{state}->getStomach->getGullet;
-  if ($postamble eq 'standard_postamble.tex') {
-    $postamble = 'literal:\end{document}'; }
-  return LaTeXML::Package::InputContent($postamble); }
-
-sub convertDocument {
-  my ($self, $digested) = @_;
-  return
-    $self->withState(sub {
-      my ($state)  = @_;
-      my $model    = $state->getModel;                 # The document model.
-      my $document = LaTeXML::Document->new($model);
-      local $LaTeXML::DOCUMENT = $document;
-      NoteBegin("Building");
-      $model->loadSchema();                            # If needed?
-      if (my $paths = $state->lookupValue('SEARCHPATHS')) {
-        if ($state->lookupValue('INCLUDE_COMMENTS')) {
-          $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
-      foreach my $preload (@{ $$self{preload} }) {
-        next if $preload =~ /\.pool$/;
-        my $options = undef;                           # Stupid perlcritic policy
-        if ($preload =~ s/^\[([^\]]*)\]//) { $options = $1; }
-        if ($preload =~ s/\.cls$//) {
-          $document->insertPI('latexml', class => $preload, ($options ? (options => $options) : ())); }
-        else {
-          $preload =~ s/\.sty$//;
-          $document->insertPI('latexml', package => $preload, ($options ? (options => $options) : ())); } }
-      $document->absorb($digested);
-      NoteEnd("Building");
-
-      if (my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES')) {
-        NoteBegin("Rewriting");
-        foreach my $rule (@$rules) {
-          $rule->rewrite($document, $document->getDocument->documentElement); }
-        NoteEnd("Rewriting"); }
-
-      LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
-      NoteBegin("Finalizing");
-      my $xmldoc = $document->finalize();
-      NoteEnd("Finalizing");
-      return $xmldoc; }); }
-
-sub withState {
-  my ($self, $closure) = @_;
-  local $STATE = $$self{state};
-  # And, set fancy error handler for ANY die!
-  # Could be useful to distill the more common messages so they provide useful build statistics?
-  local $SIG{__DIE__} = sub { LaTeXML::Error::perl_die_handler(@_); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
-  local $SIG{__WARN__} = sub { LaTeXML::Error::perl_warn_handler(@_); };
-  local $LaTeXML::DUAL_BRANCH = '';
-
-  return &$closure($STATE); }
-
-sub initializeState {
-  my ($self, @files) = @_;
-  my $state   = $$self{state};
-  my $stomach = $state->getStomach;    # The current Stomach;
-  my $gullet  = $stomach->getGullet;
-  $stomach->initialize;
-  my $paths = $state->lookupValue('SEARCHPATHS');
-  foreach my $preload (@files) {
-    my ($options, $type);
-    $options = $1 if $preload =~ s/^\[([^\]]*)\]//;
-    $type = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
-    my $handleoptions = ($type eq 'sty') || ($type eq 'cls');
-    if ($options) {
-      if ($handleoptions) {
-        $options = [split(/,/, $options)]; }
-      else {
-        Warn('unexpected', 'options',
-          "Attempting to pass options to $preload.$type (not style or class)",
-          "The options were  [$options]"); } }
-    # Attach extension back if HTTP protocol:
-    if (pathname_is_url($preload)) {
-      $preload .= '.' . $type;
+  my $latexml;
+  my $init_eval_return = eval {
+    # Prepare LaTeXML object
+    $latexml = new_latexml($self->{opts});
+    1;
+  };
+  local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
+  if ($@) {    #Fatal occured!
+    print STDERR "$@\n";
+    print STDERR "\nInitialization complete: " . $latexml->getStatusMessage . ". Aborting.\n" if defined $latexml;
+    # Close and restore STDERR to original condition.
+    $self->{log} .= $self->flush_log;
+    $self->{ready} = 0;
+    return;
+  } else {
+    # Demand errorless initialization
+    my $init_status = $latexml->getStatusMessage;
+    if ($init_status =~ /error/i) {
+      print STDERR "\nInitialization complete: " . $init_status . ". Aborting.\n";
+      $self->{log} .= $self->flush_log;
+      $self->{ready} = 0;
+      return;
     }
-    LaTeXML::Package::InputDefinitions($preload, type => $type,
-      handleoptions => $handleoptions, options => $options);
+  }
+
+  # Save latexml in object:
+  $self->{log} .= $self->flush_log;
+  $self->{latexml} = $latexml;
+  $self->{ready}   = 1;
+  return;
+}
+
+sub convert {
+  my ($self, $source) = @_;
+  # Initialize session if needed:
+  $self->{runtime} = {};
+  $self->initialize_session unless $self->{ready};
+  if (!$self->{ready}) {    # We can't initialize, return error:
+    return { result => undef, log => $self->{log}, status => "Initialization failed.", status_code => 3 };
+  }
+
+  $self->bind_log;
+  # Inform of identity, increase conversion counter
+  my $opts    = $self->{opts};
+  my $runtime = $self->{runtime};
+  ($runtime->{status}, $runtime->{status_code}) = (undef, undef);
+  print STDERR "\n$LaTeXML::IDENTITY\n" if $opts->{verbosity} >= 0;
+  print STDERR "processing started " . localtime() . "\n" if $opts->{verbosity} >= 0;
+  # Handle What's IN:
+  # We use a new temporary variable to avoid confusion with daemon caching
+  my ($current_preamble, $current_postamble);
+  # 1. Math needs to magically trigger math mode if needed
+  if ($opts->{whatsin} eq "math") {
+    $current_preamble  = 'literal:\begin{document}\ensuremathfollows';
+    $current_postamble = 'literal:\ensuremathpreceeds\end{document}'; }
+  # 2. Fragments need to have a default pre- and postamble, if none provided
+  elsif ($opts->{whatsin} eq 'fragment') {
+    $current_preamble  = $opts->{preamble}  || 'standard_preamble.tex';
+    $current_postamble = $opts->{postamble} || 'standard_postamble.tex'; }
+  # Handle Whats OUT (if we need a sandbox)
+  if ($opts->{whatsout} eq 'archive') {
+    $opts->{archive_sitedirectory} = $opts->{sitedirectory};
+    $opts->{archive_destination}   = $opts->{destination};
+    my $destination_name  = pathname_name($opts->{destination});
+    my $sandbox_directory = tempdir();
+    my $extension         = $opts->{format};
+    $extension =~ s/\d//g;
+    $extension =~ s/^epub|mobi$/xhtml/;
+    my $sandbox_destination = "$destination_name.$extension";
+    $opts->{sitedirectory} = $sandbox_directory;
+
+    if ($opts->{format} eq 'epub') {
+      $opts->{resource_directory} = File::Spec->catdir($sandbox_directory, 'OPS');
+      $opts->{destination} = pathname_concat(File::Spec->catdir($sandbox_directory, 'OPS'), $sandbox_destination); }
+    else {
+      $opts->{destination} = pathname_concat($sandbox_directory, $sandbox_destination); }
+  }
+
+  # Prepare daemon frame
+  my $latexml = $self->{latexml};
+  $latexml->withState(sub {
+      my ($state) = @_;    # Sandbox state
+      $state->pushDaemonFrame;
+      $state->assignValue('_authlist', $opts->{authlist}, 'global');
+      $state->assignValue('REMOTE_REQUEST', (!$opts->{local}), 'global');
+  });
+
+  # First read and digest whatever we're given.
+  my ($digested, $dom, $serialized) = (undef, undef, undef);
+
+  # Digest source:
+  my $convert_eval_return = eval {
+    local $SIG{'ALRM'} = sub { die "Fatal:conversion:timeout Conversion timed out after " . $opts->{timeout} . " seconds!\n"; };
+    alarm($opts->{timeout});
+    my $mode = ($opts->{type} eq 'auto') ? 'TeX' : $opts->{type};
+    $digested = $latexml->digestFile($source, preamble => $current_preamble,
+      postamble    => $current_postamble,
+      mode         => $mode,
+      noinitialize => 1);
+    # Now, convert to DOM and output, if desired.
+    if ($digested) {
+      require LaTeXML::Global;
+      local $LaTeXML::Global::STATE = $latexml->{state};
+      if ($opts->{format} eq 'tex') {
+        $serialized = LaTeXML::Global::UnTeX($digested);
+      } elsif ($opts->{format} eq 'box') {
+        $serialized = $digested->toString;
+      } else {    # Default is XML
+        $dom = $latexml->convertDocument($digested);
+      }
+    }
+    alarm(0);
+    1;
+  };
+  local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
+  my $eval_report = $@;
+  $runtime->{status}      = $latexml->getStatusMessage;
+  $runtime->{status_code} = $latexml->getStatusCode;
+  $runtime->{status_data}->{$_} = $latexml->{state}->{status}->{$_} foreach (qw(warning error fatal));
+  # End daemon run, by popping frame:
+  $latexml->withState(sub {
+      my ($state) = @_;    # Remove current state frame
+      $state->popDaemonFrame;
+      $state->{status} = {};
+  });
+  if ($eval_report || ($runtime->{status_code} == 3)) {
+    # Terminate immediately on Fatal errors
+    $runtime->{status_code} = 3;
+    print STDERR $eval_report . "\n" if $eval_report;
+    print STDERR "\nConversion complete: " . $runtime->{status} . ".\n";
+    print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . "\n";
+    # Close and restore STDERR to original condition.
+    my $log = $self->flush_log;
+    # Hope to clear some memory:
+    $self->sanitize($log);
+    $serialized = $dom if ($opts->{format} eq 'dom');
+    $serialized = $dom->toString if ($dom && (!defined $serialized));
+    $self->sanitize($log);
+
+    return { result => $serialized, log => $log, status => $runtime->{status}, status_code => $runtime->{status_code} }; }
+  else {
+    # Standard report, if we're not in a Fatal case
+    print STDERR "\nConversion complete: " . $runtime->{status} . ".\n"; }
+
+  if ($serialized) {
+    # If serialized has been set, we are done with the job
+    my $log = $self->flush_log;
+    return { result => $serialized, log => $log, status => $runtime->{status}, status_code => $runtime->{status_code} };
+  }
+  # Continue with the regular XML workflow...
+  my $result = $dom;
+  if ($opts->{post} && $dom) {
+    my $post_eval_return = eval {
+      local $SIG{'ALRM'} = sub { die "alarm\n" };
+      alarm($opts->{timeout});
+      $result = $self->convert_post($dom);
+      alarm(0);
+      1;
+    };
+    local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
+      if ((!$post_eval_return) && (!$@));
+    if ($@) {    #Fatal occured!
+      $runtime->{status_code} = 3;
+      if ($@ =~ "Fatal:perl:die alarm") {    #Alarm handler: (treat timeouts as fatals)
+        print STDERR "Fatal:post:timeout Postprocessing timeout after "
+          . $opts->{timeout} . " seconds!\n"; }
+      else {
+        print STDERR "Fatal:post:generic Post-processor crashed! $@\n"; }
+      #Since this is postprocessing, we don't need to do anything
+      #   just avoid crashing...
+      $result = undef; } }
+
+  # Clean-up anything we sandboxed
+  if ($opts->{whatsout} eq 'archive') {
+    remove_tree($opts->{sitedirectory});
+    $opts->{sitedirectory} = $opts->{archive_sitedirectory};
+    $opts->{destination}   = $opts->{archive_destination};
+  }
+
+  # Serialize result for direct use:
+  undef $serialized;
+  if ((defined $result) && (ref $result)) {
+    if ($opts->{format} =~ 'x(ht)?ml') {
+      $serialized = $result->toString(1); }
+    elsif ($opts->{format} =~ /^html/) {
+      if (ref($result) =~ '^LaTeXML::(Post::)?Document$') {    # Special for documents
+        $serialized = $result->getDocument->toStringHTML; }
+      else {                                                   # Regular for fragments
+        do {
+          local $XML::LibXML::setTagCompression = 1;
+          $serialized = $result->toString(1);
+          } } }
+    elsif ($opts->{format} eq 'dom') {
+      $serialized = $result; } }
+  else { $serialized = $result; }                              # Compressed case
+
+  print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . " \n";
+  my $log = $self->flush_log;
+  $self->sanitize($log) if ($runtime->{status_code} == 3);
+  return { result => $serialized, log => $log, status => $runtime->{status}, 'status_code' => $runtime->{status_code} };
+}
+
+###########################################
+####       Converter Management       #####
+###########################################
+sub get_converter {
+  my ($self, $config) = @_;
+  # TODO: Make this more flexible via an admin interface later
+  my $key = $config->get('cache_key') || $config->get('profile') || 'custom';
+  my $d = $DAEMON_DB{$key};
+  if (!defined $d) {
+    $d = LaTeXML->new($config->clone);
+    $DAEMON_DB{$key} = $d; }
+  return $d; }
+
+###########################################
+####       Helper routines            #####
+###########################################
+sub convert_post {
+  my ($self, $dom) = @_;
+  my $opts    = $self->{opts};
+  my $runtime = $self->{runtime};
+  my ($xslt, $parallel, $math_formats, $format, $verbosity, $defaultresources, $embed) =
+    map { $opts->{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
+  $verbosity = $verbosity || 0;
+  my %PostOPS = (verbosity => $verbosity,
+    validate           => $opts->{validate},
+    sourceDirectory    => $opts->{sourcedirectory},
+    siteDirectory      => $opts->{sitedirectory},
+    resource_directory => $opts->{resource_directory},
+    nocache            => 1,
+    destination        => $opts->{destination},
+    is_html            => $opts->{is_html});
+  #Postprocess
+  $parallel = $parallel || 0;
+
+  my $DOCUMENT = LaTeXML::Post::Document->new($dom, %PostOPS);
+  my @procs = ();
+  #TODO: Add support for the following:
+  my $dbfile = $opts->{dbfile};
+  if (defined $dbfile && !-f $dbfile) {
+    if (my $dbdir = pathname_directory($dbfile)) {
+      pathname_mkdir($dbdir); } }
+  my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %PostOPS);
+  ### Advanced Processors:
+  if ($opts->{split}) {
+    require LaTeXML::Post::Split;
+    push(@procs, LaTeXML::Post::Split->new(split_xpath => $opts->{splitpath}, splitnaming => $opts->{splitnaming},
+        db => $DB, %PostOPS)); }
+  my $scanner = ($opts->{scan} || $DB) && (LaTeXML::Post::Scan->new(db => $DB, %PostOPS));
+  push(@procs, $scanner) if $opts->{scan};
+  if (!($opts->{prescan})) {
+    if ($opts->{index}) {
+      require LaTeXML::Post::MakeIndex;
+      push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $opts->{permutedindex},
+          split => $opts->{splitindex}, scanner => $scanner,
+          %PostOPS)); }
+    if (@{ $opts->{bibliographies} }) {
+      if (grep { /$LaTeXML::Util::Config::is_bibtex/ } @{ $opts->{bibliographies} }) {
+        my $bib_converter =
+          $self->get_converter(LaTeXML::Util::Config->new(
+            type => "BibTeX", post => 0, format => 'dom', whatsout => 'document', whatsin => 'document'));
+        $self->{log} .= $self->flush_log;
+        @{ $opts->{bibliographies} } = map { /$LaTeXML::Util::Config::is_bibtex/ ?
+            $bib_converter->convert($_)->{result} : $_ } @{ $opts->{bibliographies} };
+        $self->bind_log;
+      }
+      require LaTeXML::Post::MakeBibliography;
+      push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => $opts->{bibliographies},
+          split => $opts->{splitbibliography}, scanner => $scanner,
+          %PostOPS)); }
+    if ($opts->{crossref}) {
+      require LaTeXML::Post::CrossRef;
+      push(@procs, LaTeXML::Post::CrossRef->new(db => $DB, urlstyle => $opts->{urlstyle}, format => $format,
+          ($opts->{numbersections} ? (number_sections => 1) : ()),
+          ($opts->{navtoc} ? (navigation_toc => $opts->{navtoc}) : ()),
+          %PostOPS)); }
+    if ($opts->{picimages}) {
+      require LaTeXML::Post::PictureImages;
+      push(@procs, LaTeXML::Post::PictureImages->new(%PostOPS));
+    }
+    if ($opts->{dographics}) {
+      # TODO: Rethink full-fledged graphics support
+      require LaTeXML::Post::Graphics;
+      my @g_options = ();
+      if ($opts->{graphicsmaps} && scalar(@{ $opts->{graphicsmaps} })) {
+        my @maps = map { [split(/\./, $_)] } @{ $opts->{graphicsmaps} };
+        push(@g_options, (graphics_types => [map { $$_[0] } @maps],
+            type_properties => { map { ($$_[0] => { destination_type => ($$_[1] || $$_[0]) }) } @maps })); }
+      push(@procs, LaTeXML::Post::Graphics->new(@g_options, %PostOPS));
+    }
+    if ($opts->{svg}) {
+      require LaTeXML::Post::SVG;
+      push(@procs, LaTeXML::Post::SVG->new(%PostOPS)); }
+    if (@$math_formats) {
+      my @mprocs = ();
+      ###    # If XMath is not first, it must be at END!  Or... ???
+      foreach my $fmt (@$math_formats) {
+        if ($fmt eq 'xmath') {
+          require LaTeXML::Post::XMath;
+          push(@mprocs, LaTeXML::Post::XMath->new(%PostOPS)); }
+        elsif ($fmt eq 'pmml') {
+          require LaTeXML::Post::MathML;
+          if (defined $opts->{linelength}) {
+            push(@mprocs, LaTeXML::Post::MathML::PresentationLineBreak->new(
+                linelength => $opts->{linelength},
+                (defined $opts->{plane1} ? (plane1 => $opts->{plane1}) : (plane1 => 1)),
+                ($opts->{hackplane1} ? (hackplane1 => 1) : ()),
+                %PostOPS)); }
+          else {
+            push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
+                (defined $opts->{plane1} ? (plane1 => $opts->{plane1}) : (plane1 => 1)),
+                ($opts->{hackplane1} ? (hackplane1 => 1) : ()),
+                %PostOPS)); } }
+        elsif ($fmt eq 'cmml') {
+          require LaTeXML::Post::MathML;
+          push(@mprocs, LaTeXML::Post::MathML::Content->new(
+              (defined $opts->{plane1} ? (plane1 => $opts->{plane1}) : (plane1 => 1)),
+              ($opts->{hackplane1} ? (hackplane1 => 1) : ()),
+              %PostOPS)); }
+        elsif ($fmt eq 'om') {
+          require LaTeXML::Post::OpenMath;
+          push(@mprocs, LaTeXML::Post::OpenMath->new(
+              (defined $opts->{plane1} ? (plane1 => $opts->{plane1}) : (plane1 => 1)),
+              ($opts->{hackplane1} ? (hackplane1 => 1) : ()),
+              %PostOPS)); }
+      }
+      ###    $keepXMath  = 0 unless defined $keepXMath;
+      ### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
+      if ($parallel) {
+        my $main = shift(@mprocs);
+        $main->setParallel(@mprocs);
+        push(@procs, $main); }
+      else {
+        push(@procs, @mprocs); }
+    }
+    if ($opts->{mathimages}) {
+      require LaTeXML::Post::MathImages;
+      push(@procs, LaTeXML::Post::MathImages->new(magnification => $opts->{mathimagemag}, %PostOPS));
+    }
+    if ($xslt) {
+      require LaTeXML::Post::XSLT;
+      my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
+      my @searchpaths = ('.', $DOCUMENT->getSearchPaths);
+      foreach my $css (@{ $opts->{css} }) {
+        if (pathname_is_url($css)) {    # external url ? no need to copy
+          print STDERR "Using CSS=$css\n" if $verbosity > 0;
+          push(@{ $parameters->{CSS} }, $css); }
+        elsif (my $csssource = pathname_find($css, types => ['css'], paths => [@searchpaths],
+            installation_subdir => 'style')) {
+          print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
+          my $cssdest = pathname_absolute($css, pathname_directory($opts->{destination}));
+          $cssdest .= '.css' unless $cssdest =~ /\.css$/;
+          warn "CSS source $csssource is same as destination!" if $csssource eq $cssdest;
+          pathname_copy($csssource, $cssdest) if ($opts->{local} || ($opts->{whatsout} eq 'archive')); # TODO: Look into local copying carefully
+          push(@{ $$parameters{CSS} }, $cssdest); }
+        else {
+          warn "Couldn't find CSS file $css in paths " . join(',', @searchpaths) . "\n";
+          push(@{ $$parameters{CSS} }, $css); } }    # but still put the link in!
+
+      foreach my $js (@{ $opts->{javascript} }) {
+        if (pathname_is_url($js)) {                  # external url ? no need to copy
+          print STDERR "Using JAVASCRIPT=$js\n" if $verbosity > 0;
+          push(@{ $$parameters{JAVASCRIPT} }, $js); }
+        elsif (my $jssource = pathname_find($js, types => ['js'], paths => [@searchpaths],
+            installation_subdir => 'style')) {
+          print STDERR "Using JAVASCRIPT=$jssource\n" if $verbosity > 0;
+          my $jsdest = pathname_absolute($js, pathname_directory($opts->{destination}));
+          $jsdest .= '.js' unless $jsdest =~ /\.js$/;
+          warn "Javascript source $jssource is same as destination!" if $jssource eq $jsdest;
+          pathname_copy($jssource, $jsdest) if ($opts->{local} || ($opts->{whatsout} eq 'archive')); #TODO: Local handling
+          push(@{ $$parameters{JAVASCRIPT} }, $jsdest); }
+        else {
+          warn "Couldn't find Javascript file $js in paths " . join(',', @searchpaths) . "\n";
+          push(@{ $$parameters{JAVASCRIPT} }, $js);
+        }
+      }    # but still put the link in!
+      if ($opts->{icon}) {
+        if (my $iconsrc = pathname_find($opts->{icon}, paths => [$DOCUMENT->getSearchPaths])) {
+          print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
+          my $icondest = pathname_absolute($opts->{icon}, pathname_directory($opts->{destination}));
+          pathname_copy($iconsrc, $icondest) if ($opts->{local} || ($opts->{whatsout} eq 'archive'));
+          $$parameters{ICON} = $icondest; }
+        else {
+          warn "Couldn't find ICON " . $opts->{icon} . " in paths " . join(',', @searchpaths) . "\n";
+          $$parameters{ICON} = $opts->{icon};
+        }
+      }
+      if (!defined $opts->{timestamp}) { $opts->{timestamp} = localtime(); }
+      if ($opts->{timestamp}) { $$parameters{TIMESTAMP} = "'" . $opts->{timestamp} . "'"; }
+      # Now add in the explicitly given XSLT parameters
+      foreach my $parm (@{ $opts->{xsltparameters} }) {
+        if ($parm =~ /^\s*(\w+)\s*:\s*(.*)$/) {
+          $$parameters{$1} = "'" . $2 . "'"; }
+        else {
+          warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; }
+      }
+
+      push(@procs, LaTeXML::Post::XSLT->new(stylesheet => $xslt,
+          parameters => $parameters,
+          noresources => (defined $opts->{defaultresources}) && !$opts->{defaultresources},
+          %PostOPS));
+    }
+  }
+
+  # If we are doing a local conversion OR
+  # we are going to package into an archive
+  # write all the files to disk during post-processing
+  if ($opts->{destination} &&
+    (($opts->{local} && ($opts->{whatsout} eq 'document'))
+      || ($opts->{whatsout} eq 'archive'))) {
+    require LaTeXML::Post::Writer;
+    push(@procs, LaTeXML::Post::Writer->new(
+        format => $format, omit_doctype => $opts->{omit_doctype},
+        %PostOPS));
+  }
+
+  # Do the actual post-processing:
+  my @postdocs;
+  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
+  @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+
+  # Finalize by arranging any manifests and packaging the output.
+  # If our format requires a manifest, create one
+  if (($opts->{whatsout} eq 'archive') && ($format !~ /^x?html|xml/)) {
+    require LaTeXML::Post::Manifest;
+    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, %PostOPS);
+    $manifest_maker->process(@postdocs); }
+  # Handle the output packaging
+  require LaTeXML::Post::Pack;
+  my $packer = LaTeXML::Post::Pack->new(whatsout => $opts->{whatsout}, format => $format, %PostOPS);
+  my ($postdoc) = $packer->process(@postdocs);
+
+  $DB->finish;
+
+  # TODO: Refactor once we know how to merge the core and post State objects
+  # Merge postprocessing and main processing reports
+  foreach my $message_type (qw(warning error fatal)) {
+    my $count = $latexmlpost->{status}->{$message_type} || 0;
+    $runtime->{status_data}->{$message_type} += $count; }
+  $runtime->{status}      = getStatusMessage($runtime->{status_data});
+  $runtime->{status_code} = getStatusCode($runtime->{status_data});
+
+  print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
+  print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
+  return $postdoc;
+}
+
+sub new_latexml {
+  my ($opts) = @_;
+
+  # TODO: Do this in a GOOD way to support filepath/URL/string snippets
+  # If we are given string preloads, load them and remove them from the preload list:
+  my $preloads = $opts->{preload};
+  my (@pre, @str_pre);
+  foreach my $pre (@$preloads) {
+    if (pathname_is_literaldata($pre)) {
+      push @str_pre, $pre;
+    } else {
+      push @pre, $pre;
+    }
+  }
+  require LaTeXML;
+  my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $opts->{paths} }],
+    graphicspaths   => ['.'],
+    verbosity       => $opts->{verbosity}, strict => $opts->{strict},
+    includeComments => $opts->{comments},
+    inputencoding   => $opts->{inputencoding},
+    includeStyles   => $opts->{includestyles},
+    documentid      => $opts->{documentid},
+    nomathparse     => $opts->{nomathparse},                            # Backwards compatibility
+    mathparse       => $opts->{mathparse});
+
+  if (my @baddirs = grep { !-d $_ } @{ $opts->{paths} }) {
+    warn "\n$LaTeXML::IDENTITY : these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
+
+  $latexml->withState(sub {
+      my ($state) = @_;
+      $latexml->initializeState('TeX.pool', @{ $latexml->{preload} || [] });
+  });
+
+  # TODO: Do again, need to do this in a GOOD way as well:
+  $latexml->digestFile($_, noinitialize => 1) foreach (@str_pre);
+
+  return $latexml;
+}
+
+sub bind_log {
+  # TODO: Move away from global file handles, they will inevitably end up causing problems..
+  my ($self) = @_;
+  if (!$LaTeXML::DEBUG) {    # Debug will use STDERR for logs
+                             # Tie STDERR to log:
+    my $log_handle;
+    open($log_handle, ">>", \$self->{log}) or croak "Can't redirect STDERR to log! Dying...";
+    *STDERR_SAVED = *STDERR;
+    *STDERR       = *$log_handle;
+    binmode(STDERR, ':encoding(UTF-8)');
+    $self->{log_handle} = $log_handle;
   }
   return; }
 
-sub writeDOM {
-  my ($self, $dom, $name) = @_;
-  $dom->toFile("$name.xml", 1);
-  return 1; }
+sub flush_log {
+  my ($self) = @_;
+  # Close and restore STDERR to original condition.
+  if (!$LaTeXML::DEBUG) {
+    close $self->{log_handle};
+    delete $self->{log_handle};
+    *STDERR = *STDERR_SAVED;
+  }
+  my $log = $self->{log};
+  $self->{log} = q{};
+  return $log; }
 
-#**********************************************************************
-# Should post processing be managed from here too?
-# Problem: with current DOM setup, I pretty much have to write the
-# file and reread it anyway...
-# Also, want to inhibit loading an extreme number of classes if not needed.
-#**********************************************************************
+sub sanitize {
+  my ($self, $log) = @_;
+  if ($log =~ m/^Fatal:internal/m) {
+    # TODO : Anything else? Clean up the whole stomach etc?
+    $self->{latexml}->withState(sub {
+        my ($state) = @_;                   # Remove current state frame
+        my $stomach = $state->getStomach;
+        undef $stomach;
+    });
+    $self->{ready} = 0; }
+  return; }
+
+sub getStatusMessage {
+  my ($status) = @_;
+  my @report = ();
+  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '')) if $$status{warning};
+  push(@report, "$$status{error} error" .       ($$status{error} > 1 ? 's' : '')) if $$status{error};
+  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '')) if $$status{fatal};
+  return join('; ', @report) || 'No obvious problems'; }
+
+sub getStatusCode {
+  my ($status) = @_;
+  my $code;
+  if ($$status{fatal} && $$status{fatal} > 0) {
+    $code = 3; }
+  elsif ($$status{error} && $$status{error} > 0) {
+    $code = 2; }
+  elsif ($$status{warning} && $$status{warning} > 0) {
+    $code = 1; }
+  else {
+    $code = 0; }
+  return $code; }
+
 1;
 
 __END__
@@ -284,131 +641,90 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML> - transforms TeX into XML.
+C<LaTeXML> - Converter object and API for LaTeXML and LaTeXMLPost conversion.
 
 =head1 SYNOPSIS
 
     use LaTeXML;
-    my $latexml = LaTeXML->new();
-    $latexml->convertAndWrite("adocument");
-
-But also see the convenient command line script L<latexml> which suffices for most purposes.
+    my $converter = LaTeXML->get_converter($config);
+    my $converter = LaTeXML->new($config);
+    $converter->prepare_session($opts);
+    $converter->initialize_session; # TODO: should be internal only
+    $hashref = $converter->convert($tex);
+    my ($result,$log,$status) = map {$hashref->{$_}} qw(result log status);
 
 =head1 DESCRIPTION
+
+A Converter object represents a converter instance and can convert files on demand, until dismissed.
 
 =head2 METHODS
 
 =over 4
 
-=item C<< my $latexml = LaTeXML->new(%options); >>
+=item C<< my $converter = LaTeXML->new($config); >>
 
-Creates a new LaTeXML object for transforming TeX files into XML. 
+Creates a new converter object for a given LaTeXML::Util::Config object, $config.
 
- verbosity  : Controls verbosity; higher is more verbose,
-              smaller is quieter. 0 is the default.
- strict     : If true, undefined control sequences and 
-              invalid document constructs give fatal
-              errors, instead of warnings.
- includeComments : If false, comments will be excluded
-              from the result document.
- preload    : an array of modules to preload
- searchpath : an array of paths to be searched for Packages
-              and style files.
+=item C<< my $converter = LaTeXML->get_converter($config); >>
 
-(these generally set config variables in the L<LaTeXML::State> object)
+Either creates, or looks up a cached converter for the $config configuration object.
 
-=item C<< $latexml->convertAndWriteFile($file); >>
+=item C<< $converter->prepare_session($opts); >>
 
-Reads the TeX file C<$file>.tex, digests and converts it to XML, and saves it in C<$file>.xml.
+Top-level preparation routine that prepares both a correct options object
+    and an initialized LaTeXML object,
+    using the "initialize_options" and "initialize_session" routines, when needed.
 
-=item C<< $doc = $latexml->convertFile($file); >>
+Contains optimization checks that skip initializations unless necessary.
 
-Reads the TeX file C<$file>, digests and converts it to XML and returns the
-resulting L<XML::LibXML::Document>.
+Also adds support for partial option specifications during daemon runtime,
+     falling back on the option defaults given when converter object was created.
 
-=item C<< $doc = $latexml->convertString($string); >>
+=item C<< my ($result,$status,$log) = $converter->convert($tex); >>
 
-B<OBSOLETE> Use C<$latexml->convertFile("literal:$string");> instead.
+Converts a TeX input string $tex into the LaTeXML::Core::Document object $result.
 
-=item C<< $latexml->writeDOM($doc,$name); >>
-
-Writes the XML document to $name.xml. 
-
-=item C<< $box = $latexml->digestFile($file); >>
-
-Reads the TeX file C<$file>, and digests it returning the L<LaTeXML::Box> representation.
-
-=item C<< $box = $latexml->digestString($string); >>
-
-B<OBSOLETE> Use C<$latexml->digestFile("literal:$string");> instead.
-
-=item C<< $doc = $latexml->convertDocument($digested); >>
-
-Converts C<$digested> (the L<LaTeXML::Box> reprentation) into XML,
-returning the L<XML::LibXML::Document>.
-
+Supplies detailed information of the conversion log ($log),
+         as well as a brief conversion status summary ($status).
 =back
 
-=head2 Customization
+=head2 INTERNAL ROUTINES
 
-In the simplest case, LaTeXML will understand your source file and convert it
-automatically.  With more complicated (realistic) documents, you will likely
-need to make document specific declarations for it to understand local macros, 
-your mathematical notations, and so forth.  Before processing a file
-I<doc.tex>, LaTeXML reads the file I<doc.latexml>, if present.
-Likewise, the LaTeXML implementation of a TeX style file, say
-I<style.sty> is provided by a file I<style.ltxml>.
+=over 4
 
-See L<LaTeXML::Package> for documentation of these customization and
-implementation files.
+=item C<< $converter->initialize_session($opts); >>
 
-=head1 SEE ALSO
+Given an options hash reference $opts, initializes a session by creating a new LaTeXML object 
+      with initialized state and loading a daemonized preamble (if any).
 
-See L<latexml> for a simple command line script.
+Sets the "ready" flag to true, making a subsequent "convert" call immediately possible.
 
-See L<LaTeXML::Package> for documentation of these customization and
-implementation files.
+=item C<< my $latexml = new_latexml($opts); >>
 
-For cases when the high-level declarations described in L<LaTeXML::Package>
-are not enough, or for understanding more of LaTeXML's internals, see
+Creates a new LaTeXML object and initializes its state.
 
-=over 2
+=item C<< my $postdoc = $converter->convert_post($dom); >>
 
-=item  L<LaTeXML::State>
+Post-processes a LaTeXML::Core::Document object $dom into a final format,
+               based on the preferences specified in $self->{opts}.
 
-maintains the current state of processing, bindings or
-variables, definitions, etc.
+Typically used only internally by C<convert>.
 
-=item  L<LaTeXML::Token>, L<LaTeXML::Mouth> and L<LaTeXML::Gullet>
+=item C<< $converter->bind_log; >>
 
-deal with tokens, tokenization of strings and files, and 
-basic TeX sequences such as arguments, dimensions and so forth.
+Binds STDERR to a "log" field in the $converter object
 
-=item L<LaTeXML::Box> and  L<LaTeXML::Stomach>
+=item C<< my $log = $converter->flush_log; >>
 
-deal with digestion of tokens into boxes.
-
-=item  L<LaTeXML::Document>, L<LaTeXML::Model>, L<LaTeXML::Rewrite>
-
-dealing with conversion of the digested boxes into XML.
-
-=item L<LaTeXML::Definition> and L<LaTeXML::Parameters>
-
-representation of LaTeX macros, primitives, registers and constructors.
-
-=item L<LaTeXML::MathParser>
-
-the math parser.
-
-=item L<LaTeXML::Global>, L<LaTeXML::Error>, L<LaTeXML::Object>
-
-other random modules.
+Flushes out the accumulated conversion log into $log,
+         reseting STDERR to its usual stream.
 
 =back
 
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>
+Deyan Ginev <deyan.ginev@nist.gov>
 
 =head1 COPYRIGHT
 
