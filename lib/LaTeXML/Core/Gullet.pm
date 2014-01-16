@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Gullet                                                    | #
+# |  LaTeXML::Core::Gullet                                              | #
 # | Analog of TeX's Gullet; deals with expansion and arg parsing        | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,11 +10,11 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 
-package LaTeXML::Gullet;
+package LaTeXML::Core::Gullet;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Mouth;
+use LaTeXML::Core::Mouth;
 use LaTeXML::Number;
 use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
@@ -52,7 +52,7 @@ sub closeMouth {
   else {
     $$self{pushback} = [];
 ##    $$self{mouth}=Tokens();
-    $$self{mouth} = LaTeXML::Mouth->new();
+    $$self{mouth} = LaTeXML::Core::Mouth->new();
 ####    $$self{mouth}=undef;
     $$self{autoclose} = 1; }
   return; }
@@ -85,7 +85,7 @@ sub flush {
     $entry->[0]->finish; }
   $$self{pushback} = [];
 ##  $$self{mouth}=Tokens();
-  $$self{mouth} = LaTeXML::Mouth->new();
+  $$self{mouth} = LaTeXML::Core::Mouth->new();
 ####    $$self{mouth}=undef;
   $$self{autoclose}  = 1;
   $$self{mouthstack} = [];
@@ -202,14 +202,14 @@ sub readToken {
     if ($$token[1] == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($$token[1] == CC_MARKER) {
-      LaTeXML::Definition::stopProfiling($token); } }
+      LaTeXML::Core::Definition::stopProfiling($token); } }
   return $token if defined $token;
   while (defined($token = $$self{mouth}->readToken())
     && (($$token[1] == CC_COMMENT) || ($$token[1] == CC_MARKER))) {    # NOTE: Inlined
     if ($$token[1] == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }                   # What to do with comments???
     elsif ($$token[1] == CC_MARKER) {
-      LaTeXML::Definition::stopProfiling($token); } }
+      LaTeXML::Core::Definition::stopProfiling($token); } }
   return $token; }
 
 # Unread tokens are assumed to be not-yet expanded.
@@ -218,8 +218,8 @@ sub unread {
   my $r;
   unshift(@{ $$self{pushback} },
     map { (!defined $_ ? ()
-        : (($r = ref $_) eq 'LaTeXML::Token' ? $_
-          : ($r eq 'LaTeXML::Tokens' ? @$_
+        : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
             : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
       @tokens);
   return; }
@@ -246,13 +246,13 @@ sub readXToken {
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
-      LaTeXML::Definition::stopProfiling($token); }
+      LaTeXML::Core::Definition::stopProfiling($token); }
     elsif (defined($defn = $STATE->lookupDefinition($token)) && $defn->isExpandable
       && ($toplevel || !$defn->isProtected)) { # is this the right logic here? don't expand unless digesting?
       local $LaTeXML::CURRENT_TOKEN = $token;
       my $t;
-      my @expansion = map { (($t = ref $_) eq 'LaTeXML::Token' ? $_
-          : ($t eq 'LaTeXML::Tokens' ? @$_
+      my @expansion = map { (($t = ref $_) eq 'LaTeXML::Core::Token' ? $_
+          : ($t eq 'LaTeXML::Core::Tokens' ? @$_
             : (Error('misdefined', $token, undef,
                 "Expected a Token in expansion of " . ToString($token),
                 "got " . Stringify($_)), ()))) }
@@ -757,14 +757,14 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Gullet> - expands expandable tokens and parses common token sequences.
+C<LaTeXML::Core::Gullet> - expands expandable tokens and parses common token sequences.
 
 =head1 DESCRIPTION
 
-A C<LaTeXML::Gullet> reads tokens (L<LaTeXML::Token>) from a L<LaTeXML::Mouth>.
+A C<LaTeXML::Core::Gullet> reads tokens (L<LaTeXML::Core::Token>) from a L<LaTeXML::Core::Mouth>.
 It is responsible for expanding macros and expandable control sequences,
 if the current definition associated with the token in the L<LaTeXML::State>
-is an L<LaTeXML::Expandable> definition. The C<LaTeXML::Gullet> also provides a
+is an L<LaTeXML::Core::Definition::Expandable> definition. The C<LaTeXML::Core::Gullet> also provides a
 variety of methods for reading  various types of input such as arguments, optional arguments,
 as well as for parsing L<LaTeXML::Number>, L<LaTeXML::Dimension>, etc, according
 to TeX's rules.
@@ -800,7 +800,7 @@ Returns a string describing the current location in the input stream.
 
 =item C<< $tokens = $gullet->expandTokens($tokens); >>
 
-Return the L<LaTeXML::Tokens> resulting from expanding all the tokens in C<$tokens>.
+Return the L<LaTeXML::Core::Tokens> resulting from expanding all the tokens in C<$tokens>.
 This is actually only used in a few circumstances where the arguments to
 an expandable need explicit expansion; usually expansion happens at the right time.
 
@@ -844,7 +844,7 @@ Skip the next token from the input if it is a space.
 =item C<< $tokens = $gullet->readBalanced; >>
 
 Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
-already been read). Returns a L<LaTeXML::Tokens>.
+already been read). Returns a L<LaTeXML::Core::Tokens>.
 
 =item C<< $boole = $gullet->ifNext($token); >>
 
@@ -853,7 +853,7 @@ the possibly matching token remains in the input.
 
 =item C<< $tokens = $gullet->readMatch(@choices); >>
 
-Read and return whichever of C<@choices> (each are L<LaTeXML::Tokens>)
+Read and return whichever of C<@choices> (each are L<LaTeXML::Core::Tokens>)
 matches the input, or undef if none do.
 
 =item C<< $keyword = $gullet->readKeyword(@keywords); >>
@@ -864,7 +864,7 @@ Also, leading spaces are skipped.
 
 =item C<< $tokens = $gullet->readUntil(@delims); >>
 
-Read and return a (balanced) sequence of L<LaTeXML::Tokens> until  matching one of the tokens
+Read and return a (balanced) sequence of L<LaTeXML::Core::Tokens> until  matching one of the tokens
 in C<@delims>.  In a list context, it also returns which of the delimiters ended the sequence.
 
 =back
