@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Stomach                                                   | #
+# |  LaTeXML::Core::Stomach                                                   | #
 # | Analog of TeX's Stomach: digests tokens, stores state               | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,22 +10,26 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 
-package LaTeXML::Stomach;
+package LaTeXML::Core::Stomach;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Gullet;
-use LaTeXML::Box;
-use LaTeXML::Mouth;
-use LaTeXML::Font;
-use LaTeXML::Color;
-use LaTeXML::Definition;
+use LaTeXML::Core::Gullet;
+use LaTeXML::Core::Box;
+use LaTeXML::Core::MathBox;
+use LaTeXML::Core::Comment;
+use LaTeXML::Core::List;
+use LaTeXML::Core::Mouth;
+use LaTeXML::Common::Font;
+# Silly place to import these....?
+use LaTeXML::Common::Color;
+use LaTeXML::Core::Definition;
 use base qw(LaTeXML::Object);
 
 #**********************************************************************
 sub new {
   my ($class, %options) = @_;
-  return bless { gullet => LaTeXML::Gullet->new(),
+  return bless { gullet => LaTeXML::Core::Gullet->new(),
     boxing => [], token_stack => [] }, $class; }
 
 #**********************************************************************
@@ -41,8 +45,8 @@ sub initialize {
   $STATE->assignValue(afterAssignment   => undef,            'global');
   $STATE->assignValue(groupInitiator    => 'Initialization', 'global');
   # Setup default fonts.
-  $STATE->assignValue(font     => LaTeXML::Font->default(),     'global');
-  $STATE->assignValue(mathfont => LaTeXML::MathFont->default(), 'global');
+  $STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
+  $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
   return; }
 
 #**********************************************************************
@@ -77,7 +81,7 @@ sub digestNextBody {
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc))
     if $terminal && !Equals($token, $terminal);
-  push(@LaTeXML::LIST, LaTeXML::List->new()) unless $token;       # Dummy `trailer' if none explicit.
+  push(@LaTeXML::LIST, LaTeXML::Core::List->new()) unless $token;  # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
 
 # Digest a list of tokens independent from any current Gullet.
@@ -87,7 +91,7 @@ sub digest {
   my ($self, $tokens) = @_;
   return unless defined $tokens;
   return
-    $$self{gullet}->readingFromMouth(LaTeXML::Mouth->new(), sub {
+    $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
       $STATE->clearPrefixes;    # prefixes shouldn't apply here.
@@ -107,7 +111,7 @@ sub digest {
 
       (scalar(@LaTeXML::LIST) == 1
         ? $LaTeXML::LIST[0]
-        : ($ismath ? LaTeXML::MathList->new(@LaTeXML::LIST) : LaTeXML::List->new(@LaTeXML::LIST))); }); }
+        : ($ismath ? LaTeXML::Core::MathList->new(@LaTeXML::LIST) : LaTeXML::Core::List->new(@LaTeXML::LIST))); }); }
 
 # Invoke a token;
 # If it is a primitive or constructor, the definition will be invoked,
@@ -171,7 +175,7 @@ sub invokeToken_undefined {
   $STATE->noteStatus(undefined => $cs);
   Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.");
   # To minimize chatter, go ahead and define it...
-  $STATE->installDefinition(LaTeXML::Constructor->new($token, undef,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
       sub { makeError($_[0], 'undefined', $cs); }),
     'global');
   # and then invoke it.
@@ -192,7 +196,7 @@ sub invokeToken_simple {
     # However, spaces normally would have be digested away as positioning...
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
     $comment =~ s/\Q$badspace\E/ /g;
-    return LaTeXML::Comment->new($comment); }
+    return LaTeXML::Core::Comment->new($comment); }
   elsif ($forbidden_cc[$cc]) {
     Fatal('misdefined', $token, $self,
       "The token " . Stringify($token) . " should never reach Stomach!");
@@ -355,37 +359,37 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Stomach> - digests tokens into boxes, lists, etc.
+C<LaTeXML::Core::Stomach> - digests tokens into boxes, lists, etc.
 
 =head1 DESCRIPTION
 
-C<LaTeXML::Stomach> digests tokens read from a L<LaTeXML::Gullet>
+C<LaTeXML::Core::Stomach> digests tokens read from a L<LaTeXML::Core::Gullet>
 (they will have already been expanded).  
 
-There are basically four cases when digesting a L<LaTeXML::Token>:
+There are basically four cases when digesting a L<LaTeXML::Core::Token>:
 
 =over 4
 
 =item A plain character
 
-is simply converted to a L<LaTeXML::Box> (or L<LaTeXML::MathBox> in math mode),
-recording the current L<LaTeXML::Font>.
+is simply converted to a L<LaTeXML::Core::Box> (or L<LaTeXML::Core::MathBox> in math mode),
+recording the current L<LaTeXML::Common::Font>.
 
 =item A primitive
 
-If a control sequence represents L<LaTeXML::Primitive>, the primitive is invoked, executing its
+If a control sequence represents L<LaTeXML::Core::Definition::Primitive>, the primitive is invoked, executing its
 stored subroutine.  This is typically done for side effect (changing the state in the L<LaTeXML::State>),
 although they may also contribute digested material.
-As with macros, any arguments to the primitive are read from the L<LaTeXML::Gullet>.
+As with macros, any arguments to the primitive are read from the L<LaTeXML::Core::Gullet>.
 
 =item Grouping (or environment bodies)
 
-are collected into a L<LaTeXML::List>.
+are collected into a L<LaTeXML::Core::List>.
 
 =item Constructors
 
-A special class of control sequence, called a L<LaTeXML::Constructor> produces a 
-L<LaTeXML::Whatsit> which remembers the control sequence and arguments that
+A special class of control sequence, called a L<LaTeXML::Core::Definition::Constructor> produces a 
+L<LaTeXML::Core::Whatsit> which remembers the control sequence and arguments that
 created it, and defines its own translation into C<XML> elements, attributes and data.
 Arguments to a constructor are read from the gullet and also digested.
 
@@ -397,13 +401,13 @@ Arguments to a constructor are read from the gullet and also digested.
 
 =item C<< $list = $stomach->digestNextBody; >>
 
-Return the digested L<LaTeXML::List> after reading and digesting a `body'
+Return the digested L<LaTeXML::Core::List> after reading and digesting a `body'
 from the its Gullet.  The body extends until the current
 level of boxing or environment is closed.  
 
 =item C<< $list = $stomach->digest($tokens); >>
 
-Return the L<LaTeXML::List> resuting from digesting the given tokens.
+Return the L<LaTeXML::Core::List> resuting from digesting the given tokens.
 This is typically used to digest arguments to primitives or
 constructors.
 
