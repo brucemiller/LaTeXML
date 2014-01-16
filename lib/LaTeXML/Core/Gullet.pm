@@ -275,6 +275,10 @@ sub readRawLine {
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
   my @tokens = @{ $$self{pushback} };
+  my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
+  if (@markers){ # Whoops, profiling markers!
+      @tokens = grep { $_->getCatcode != CC_MARKER } @tokens; # Remove
+      map { LaTeXML::Core::Definition::stopProfiling($_) } @markers; }
   $$self{pushback} = [];
   my $line = $$self{mouth}->readRawLine;
   return (@tokens ? ToString(Tokens(@tokens)) . ($line || '') : $line); }
