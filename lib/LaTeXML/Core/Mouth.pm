@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Mouth                                                     | #
+# |  LaTeXML::Core::Mouth                                               | #
 # | Analog of TeX's Mouth: Tokenizes strings & files                    | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,16 +9,12 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-#**********************************************************************
-# LaTeXML::Mouth
-#    Read TeX Tokens from a String.
-#**********************************************************************
-package LaTeXML::Mouth;
+package LaTeXML::Core::Mouth;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Token;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Object);
 
@@ -27,19 +23,30 @@ use base qw(LaTeXML::Object);
 # options are quiet, atletter, content
 sub create {
   my ($class, $source, %options) = @_;
-  my $type;
-  if    ($options{content}) { $type = 'cached'; }
-  elsif (!defined $source)  { $type = 'empty'; }
-  else                      { $type = pathname_protocol($source); }
-  my $newclass = "LaTeXML::Mouth::$type";
-  if (!$class->can('new')) {    # not already defined somewhere?
-    require "LaTeXML/Mouth/$type.pm"; }
-  return $newclass->new($source, %options); }
+  if ($options{content}) {    # we've cached the content of this source
+    my ($dir, $name, $ext) = pathname_split($source);
+    $options{source}      = $source;
+    $options{shortsource} = "$name.$ext";
+    return $class->new($options{content}, %options); }
+  elsif ($source =~ s/^literal://) {    # we've supplied literal data
+    return $class->new($source, %options); }
+  elsif (!defined $source) {
+    return $class->new('', %options); }
+  else {
+    my $type     = pathname_protocol($source);
+    my $newclass = "LaTeXML::Core::Mouth::$type";
+    if (!$newclass->can('new')) {       # not already defined somewhere?
+      require "LaTeXML/Core/Mouth/$type.pm"; }    # Load it!
+    return $newclass->new($source, %options); } }
 
 sub new {
-  my ($class, $string) = @_;
+  my ($class, $string, %options) = @_;
   $string = q{} unless defined $string;
-  my $self = bless { source => "Anonymous String", shortsource => "String" }, $class;
+  my $self = bless { source => ($options{source} // "Anonymous String"),
+    shortsource => ($options{shortsource} // "String"),
+    fordefinitions => ($options{fordefinitions} ? 1 : 0),
+    notes          => ($options{notes}          ? 1 : 0),
+  }, $class;
   $self->openString($string);
   $self->initialize;
   return $self; }
@@ -240,7 +247,7 @@ my @DISPATCH = (    # [CONSTANT]
 # Read the next token, or undef if exhausted.
 # Note that this also returns COMMENT tokens containing source comments,
 # and also locator comments (file, line# info).
-# LaTeXML::Gullet intercepts them and passes them on at appropriate times.
+# LaTeXML::Core::Gullet intercepts them and passes them on at appropriate times.
 sub readToken {
   my ($self) = @_;
   while (1) {    # Iterate till we find a token, or run out. (use return)
@@ -309,273 +316,7 @@ sub readRawLine {
   $line =~ s/\s*$//s if defined $line;    # Is this right?
   return $line; }
 
-#**********************************************************************
-# LaTeXML::FileMouth
-#    Read TeX Tokens from a file.
-#**********************************************************************
-package LaTeXML::FileMouth;
-use strict;
-use LaTeXML::Global;
-use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::Mouth);
-use Encode;
-
-sub new {
-  my ($class, $pathname) = @_;
-  #  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  #  $$self{fordefinitions}=1;
-  $$self{notes} = 1;
-  $self->openFile($pathname);
-  $self->initialize;
-  return $self; }
-
-sub openFile {
-  my ($self, $pathname) = @_;
-  my $IN;
-  if (!-r $pathname) { Fatal('I/O', $pathname, $self, "File $pathname is not readable."); }
-  elsif ((!-z $pathname) && (-B $pathname)) { Fatal('I/O', $pathname, $self, "Input file $pathname appears to be binary."); }
-  open($IN, '<', $pathname) || Fatal('I/O', $pathname, $self, "Can't open $pathname for reading", $!);
-  $$self{IN}     = $IN;
-  $$self{buffer} = [];
-  return; }
-
-sub finish {
-  my ($self) = @_;
-  $self->SUPER::finish;
-  if ($$self{IN}) {
-    close(\*{ $$self{IN} }); $$self{IN} = undef; }
-  return; }
-
-sub hasMoreInput {
-  my ($self) = @_;
-  #  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
-  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }) || $$self{IN}; }
-
-sub getNextLine {
-  my ($self) = @_;
-  if (!scalar(@{ $$self{buffer} })) {
-    return unless $$self{IN};
-    my $fh   = \*{ $$self{IN} };
-    my $line = <$fh>;
-    if (!defined $line) {
-      close($fh); $$self{IN} = undef;
-      return; }
-    else {
-      push(@{ $$self{buffer} }, LaTeXML::Mouth::splitLines($line)); } }
-
-  my $line = (shift(@{ $$self{buffer} }) || '');
-  if ($line) {
-    if (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
-     # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
-     # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
-      $line = decode($encoding, $line, Encode::FB_DEFAULT);
-      if ($line =~ s/\x{FFFD}/ /g) {    # Just remove the replacement chars, and warn (or Info?)
-        Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
-  $line .= "\r";                        # put line ending back!
-
-  if (!($$self{lineno} % 25)) {
-    NoteProgressDetailed("[#$$self{lineno}]"); }
-  return $line; }
-
-sub stringify {
-  my ($self) = @_;
-  return "FileMouth[$$self{source}\@$$self{lineno}x$$self{colno}]"; }
-
-#**********************************************************************
-# LaTeXML::StyleMixin
-#    Mixin for Mouth's that serve as source for style/package/class/whatever
-#**********************************************************************
-# package LaTeXML::StyleMixin;
-# use strict;
-# use LaTeXML::Global;
-
-# sub postInitialize {
-#   my($self)=@_;
-#   NoteBegin("Style $$self{source}");
-#   $$self{saved_at_cc} = $STATE->lookupCatcode('@');
-#   $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
-#   $STATE->assignCatcode('@'=>CC_LETTER);
-#   $STATE->assignValue(INCLUDE_COMMENTS=>0);
-#   $self;  }
-
-# sub preFinish {
-#   my($self)=@_;
-#   $STATE->assignCatcode('@'=> $$self{saved_at_cc});
-#   $STATE->assignValue(INCLUDE_COMMENTS=>$$self{SAVED_INCLUDE_COMMENTS});
-#   NoteEnd("Style $$self{source}"); }
-
-#**********************************************************************
-# LaTeXML::StyleMouth
-#    Read TeX Tokens from a style file.
-#**********************************************************************
-
-package LaTeXML::StyleMouth;
-use strict;
-use LaTeXML::Global;
-use LaTeXML::Util::Pathname;
-##use base qw(LaTeXML::FileMouth LaTeXML::StyleMixin);
-use base qw(LaTeXML::FileMouth);
-
-sub new {
-  my ($class, $pathname) = @_;
-##  my $self = bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  $$self{fordefinitions} = 1;
-  $$self{notes}          = 1;
-  $self->openFile($pathname);
-  $self->initialize;
-  #  $self->postInitialize;
-  return $self; }
-
-# sub finish {
-#   my($self)=@_;
-#   $self->preFinish; $self->SUPER::finish; }
-#**********************************************************************
-# LaTeXML::StyleMouth
-#    Read TeX Tokens from a style file.
-#**********************************************************************
-
-package LaTeXML::StyleStringMouth;
-use strict;
-use LaTeXML::Global;
-#use base qw(LaTeXML::Mouth LaTeXML::StyleMixin);
-use base qw(LaTeXML::Mouth);
-
-sub new {
-  my ($class, $pathname, $string) = @_;
-##  my $self = bless {source=>$pathname}, $class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  $$self{fordefinitions} = 1;
-  $$self{notes}          = 1;
-  $self->openString($string);
-  $self->initialize;
-  #  $self->postInitialize;
-  return $self; }
-
-# sub finish {
-#   my($self)=@_;
-#   $self->preFinish; $self->SUPER::finish; }
-
-#**********************************************************************
-package LaTeXML::Mouth::literal;
-use base qw(LaTeXML::Mouth);
-
-sub new {
-  my ($class, $data, %options) = @_;
-  $data =~ s/^literal://;
-  my $self = bless { source => "Anonymous String", shortsource => "String" }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
-  $self->openString($data);
-  $self->initialize;
-  return $self; }
-
-#**********************************************************************
-package LaTeXML::Mouth::cached;
-use base qw(LaTeXML::Mouth);
-use LaTeXML::Util::Pathname;
-
-sub new {
-  my ($class, $pathname, %options) = @_;
-  #  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
-  $self->openString($options{content});
-  $self->initialize;
-  return $self; }
-
-#**********************************************************************
-package LaTeXML::Mouth::file;
-use base qw(LaTeXML::FileMouth);
-use LaTeXML::Util::Pathname;
-
-sub new {
-  my ($class, $pathname, %options) = @_;
-  #  my $self =  bless {source=>pathname_relative($pathname,pathname_cwd)}, $class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
-  $self->openFile($pathname);
-  $self->initialize;
-  return $self; }
-
-#**********************************************************************
-package LaTeXML::Mouth::http;
-use base qw(LaTeXML::Mouth);
-use LaTeXML::Util::WWW;
-use LaTeXML::Global;
-
-sub new {
-  my ($class,   $url,  %options) = @_;
-  my ($urlbase, $name, $ext)     = url_split($url);
-  $STATE->assignValue(URLBASE => $urlbase) if defined $urlbase;
-  my $self = bless { source => $url, shortsource => $name }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
-  my $content = auth_get($url);
-  $self->openString($content);
-  $self->initialize;
-  return $self; }
-
-#**********************************************************************
-package LaTeXML::Mouth::https;
-use base qw(LaTeXML::Mouth::http);
-
-#**********************************************************************
-# A fake mouth provides a hook for getting the Locator of anything
-# defined in a perl module (*.pm, *.ltxml, *.latexml...)
-package LaTeXML::PerlMouth;
-use strict;
-use LaTeXML::Global;
-use LaTeXML::Util::Pathname;
-
-sub new {
-  my ($class, $pathname) = @_;
-##  my $shortpath=pathname_relative($pathname,pathname_cwd);
-##  my $self = bless {source=>(length($pathname) < length($shortpath) ? $pathname : $shortpath)},$class;
-  my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  NoteBegin("Loading $$self{source}");
-  return $self; }
-
-sub finish {
-  my ($self) = @_;
-  NoteEnd("Loading $$self{source}");
-  return; }
-
-# Evolve to figure out if this gets dynamic location!
-sub getLocator {
-  my ($self, $length) = @_;
-  my $path  = $$self{source};
-  my $loc   = ($length && $length < 0 ? $$self{shortsource} : $$self{source});
-  my $frame = 2;
-  my ($pkg, $file, $line);
-  while (($pkg, $file, $line) = caller($frame++)) {
-    last if $file eq $path; }
-  return $loc . ($line ? " line $line" : ''); }
-
-sub getSource {
-  my ($self) = @_;
-  return $$self{source}; }
-
-sub hasMoreInput {
-  return 0; }
-
-sub readToken {
-  return; }
-
-sub stringify {
-  my ($self) = @_;
-  return "PerlMouth[$$self{source}]"; }
-
-#**********************************************************************
+#======================================================================
 1;
 
 __END__
@@ -584,47 +325,13 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Mouth> - tokenize the input.
+C<LaTeXML::Core::Mouth> - tokenize the input.
 
 =head1 DESCRIPTION
 
-A C<LaTeXML::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
-converting plain text and strings into L<LaTeXML::Token>s according to the
+A C<LaTeXML::Core::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
+converting plain text and strings into L<LaTeXML::Core::Token>s according to the
 current category codes (catcodes) stored in the C<LaTeXML::State>.
-
-=over 4
-
-=item C<LaTeXML::FileMouth>
-
-=begin latex
-
-\label{LaTeXML::FileMouth}
-
-=end latex
-
-specializes C<LaTeXML::Mouth> to tokenize from a file.
-
-=item C<LaTeXML::StyleMouth>
-
-=begin latex
-
-\label{LaTeXML::StyleMouth}
-
-=end latex
-
-further specializes C<LaTeXML::FileMouth> for processing
-style files, setting the catcode for C<@> and ignoring comments.
-
-=item C<LaTeXML::PerlMouth>
-
-=begin latex
-
-\label{LaTeXML::PerlMouth}
-
-=end latex
-
-is not really a Mouth in the above sense, but is used
-to definitions from perl modules with exensions C<.ltxml> and C<.latexml>.
 
 =back
 
@@ -632,17 +339,13 @@ to definitions from perl modules with exensions C<.ltxml> and C<.latexml>.
 
 =over 4
 
-=item C<< $mouth = LaTeXML::Mouth->new($string); >>
+=item C<< $mouth = LaTeXML::Core::Mouth->create($source, %options); >>
+
+Creates a new Mouth of the appropriate class for reading from C<$source>.
+
+=item C<< $mouth = LaTeXML::Core::Mouth->new($string, %options); >>
 
 Creates a new Mouth reading from C<$string>.
-
-=item C<< $mouth = LaTeXML::FileMouth->new($pathname); >>
-
-Creates a new FileMouth to read from the given file.
-
-=item C<< $mouth = LaTeXML::StyleMouth->new($pathname); >>
-
-Creates a new StyleMouth to read from the given style file.
 
 =back
 
@@ -652,7 +355,7 @@ Creates a new StyleMouth to read from the given style file.
 
 =item C<< $token = $mouth->readToken; >>
 
-Returns the next L<LaTeXML::Token> from the source.
+Returns the next L<LaTeXML::Core::Token> from the source.
 
 =item C<< $boole = $mouth->hasMoreInput; >>
 
