@@ -51,6 +51,7 @@ my @LINTPATHS = (qw(bin lib tools));
 my $TOOLDIR    = $FindBin::RealBin;
 my $LATEXMLDIR = catfile($TOOLDIR, updir());            # Assumes we're in tools subdir
 my $LIBDIR     = catfile($LATEXMLDIR, 'blib', 'lib');
+##my $LIBDIR     = catfile($LATEXMLDIR,'lib'); # Just use source dir, not blib! (don't assume "make")
 
 my @FILES = expand_files((@ARGV ? @ARGV : map { catfile($LATEXMLDIR, $_) } @LINTPATHS));
 
@@ -59,13 +60,13 @@ if (!defined $SEVERITY) {                               # Default severity, if n
 if (!defined $DOMODIFY) {
   $DOMODIFY = ($DOPRECOMMIT ? 0 : 1); }
 $VERBOSITY-- if $DOPRECOMMIT;
-$DOSYNTAX = 0 if $DOPRECOMMIT;
 
+my $PERL = 'perl';
 my $PERLTIDY;
 my $PERLCRITIC;
 my $EXITSTATUS = 0;
 my ($NTOTAL, $NTIDY, $NCRITIC, $NFAIL) = (0, 0, 0, 0);
-
+my @fails = ();
 foreach my $file (@FILES) {
   my $classification = classify($file);
   next if grep { $$classification{$_} } keys %exclude;
@@ -74,10 +75,7 @@ foreach my $file (@FILES) {
   my $failed = 0;
   # Various Perl code tests...
   if ($$classification{perl} && $DOSYNTAX) {
-    if (system('perl', '-c', '-I' . $LIBDIR, $file) == 0) {
-      print STDERR "Perl syntax OK for '$file'\n" if $VERBOSITY > 0; }
-    else {
-      $failed = 1; } }
+    $failed ||= doPerlSyntax($file, $classification); }
   if ($$classification{perl} && $DOTIDY) {
     if (!$PERLTIDY && !($PERLTIDY = which('perltidy'))) {    # Look for perltidy exec.
       $DOTIDY = 0;                                           # Disable
@@ -90,7 +88,8 @@ foreach my $file (@FILES) {
       print STDERR "No perlcritic was found; skipping critic phase.\n"; }
     else {
       $failed ||= doPerlcritic($file, $classification); } }
-  $NFAIL++ if $failed;                                       # Did this file fail some validation?
+  if ($failed) {
+    $NFAIL++; push(@fails, $file); }
 }
 
 print "\nExamined $NTOTAL file(s): "
@@ -102,7 +101,10 @@ print "\nExamined $NTOTAL file(s): "
 print "\nExamined $NTOTAL file(s): "
   . ($NTIDY   ? plural($NTIDY,   'needs', 'need') . ' reformatting '  : ' ')
   . ($NCRITIC ? plural($NCRITIC, 'needs', 'need') . ' code revision ' : ' ')
-  . plural($NFAIL, 'fails', 'fail') . " requirements for commit.\n"
+  . plural($NFAIL, 'fails', 'fail') . " requirements for commit"
+  . ($NFAIL ? ': ' . join(', ', @fails) : '')
+  . ".\n"
+
   if $NFAIL && ($VERBOSITY == -1);
 print "[Note: only policies with severity >= $REQ_SEVERITY inhibit a commit.]\n"
 
@@ -146,6 +148,36 @@ sub classify {
 # Particular handlers.
 # These should return 1 upon "failure", that is the file they test doesn't meet standards.
 
+sub doPerlSyntax {
+  my ($file, $classes) = @_;
+  my $failed = 0;
+  print "Checking '$file' syntax..." if $VERBOSITY > 0;
+  # Use backticks, since otherwise can't manage the output (actually stderr, here!)...
+  # Output doesn't distinguish errors from warnings?
+  my $critique = `$PERL -I $LIBDIR -c $file 2>&1`;
+  if ($critique) {    # file has issues
+    my @filtered = ();
+    $failed = 1;      # Assume failed, unless we find "OK"
+    foreach my $line (split("\n", $critique)) {    # Scan the output of perl
+      next if $line =~ /^Subroutine\s.*?\sredefined\sat\s\Q$file\E\sline\s\d+\.$/;    # IGNORE!
+      if ($line =~ /^\Q$file\E\ssyntax\sOK$/) {
+        $failed = 0; next; }
+      push(@filtered, $line); }
+    $EXITSTATUS = 1 if $failed;
+    if (@filtered) {
+      print color('bold');
+      print "\n" . $file . ' ' if $VERBOSITY == 0;
+      print " has syntax issues\n" if $VERBOSITY > -1;
+      print color('reset');
+      if ($VERBOSITY > -1) {
+        foreach my $line (@filtered) {
+          print $line. "\n"; } } }
+    else {
+      print "syntax is OK\n" if $VERBOSITY > 0; } }
+  else {    # Run error
+    croak "Couldn't run $PERL on '$file': $!"; }
+  return $failed; }
+
 sub doPerltidy {
   my ($file, $classes) = @_;
   print "Checking '$file' formatting..." if $VERBOSITY > 0;
@@ -184,7 +216,6 @@ sub doPerlcritic {
   if ($critique eq "") {    # No errors and no policy violations
     print " conformance is OK.\n" if $VERBOSITY > 0; }
   elsif ($critique) {       # Policy violations
-    $EXITSTATUS = 1;
     $NCRITIC++;             # perlcritic wasn't happy.
     print color('bold');
     print "\n" . $file . ' ' if $VERBOSITY == 0;
@@ -195,8 +226,8 @@ sub doPerlcritic {
       $failed = 1 if $s >= $REQ_SEVERITY;
       # We'll RE-PRINT the output so we can RE color it!
       print '' . ($s && $SCOLORS[$s] ? colored($line, $SCOLORS[$s]) : $line) . "\n"
-        if $VERBOSITY > -1;
-    } }
+        if $VERBOSITY > -1; }
+    $EXITSTATUS = 1 if $failed; }
   else {                                           # Run error
     croak "Couldn't run $PERLCRITIC on '$file': $!"; }
   return $failed; }
