@@ -15,8 +15,13 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Core::Mouth;
-use LaTeXML::Number;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Number;
+use LaTeXML::Common::Float;
+use LaTeXML::Common::Dimension;
+use LaTeXML::Common::Glue;
+use LaTeXML::Core::MuDimension;
+use LaTeXML::Core::MuGlue;
 use base qw(LaTeXML::Object);
 #**********************************************************************
 sub new {
@@ -766,7 +771,7 @@ It is responsible for expanding macros and expandable control sequences,
 if the current definition associated with the token in the L<LaTeXML::State>
 is an L<LaTeXML::Core::Definition::Expandable> definition. The C<LaTeXML::Core::Gullet> also provides a
 variety of methods for reading  various types of input such as arguments, optional arguments,
-as well as for parsing L<LaTeXML::Number>, L<LaTeXML::Dimension>, etc, according
+as well as for parsing L<LaTeXML::Common::Number>, L<LaTeXML::Common::Dimension>, etc, according
 to TeX's rules.
 
 =head2 Managing Input
@@ -893,12 +898,12 @@ and return the value.  Returns undef if the next token isn't such a register.
 
 =item C<< $number = $gullet->readNumber; >>
 
-Read a L<LaTeXML::Number> according to TeX's rules of the various things that
+Read a L<LaTeXML::Common::Number> according to TeX's rules of the various things that
 can be used as a numerical value. 
 
 =item C<< $dimension = $gullet->readDimension; >>
 
-Read a L<LaTeXML::Dimension> according to TeX's rules of the various things that
+Read a L<LaTeXML::Common::Dimension> according to TeX's rules of the various things that
 can be used as a dimension value.
 
 =item C<< $mudimension = $gullet->readMuDimension; >>
@@ -908,12 +913,12 @@ can be used as a mudimension value.
 
 =item C<< $glue = $gullet->readGlue; >>
 
-Read a  L<LaTeXML::Glue> according to TeX's rules of the various things that
+Read a  L<LaTeXML::Common::Glue> according to TeX's rules of the various things that
 can be used as a glue value.
 
 =item C<< $muglue = $gullet->readMuGlue; >>
 
-Read a L<LaTeXML::MuGlue> according to TeX's rules of the various things that
+Read a L<LaTeXML::Core::MuGlue> according to TeX's rules of the various things that
 can be used as a muglue value.
 
 =back

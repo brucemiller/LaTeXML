@@ -235,8 +235,8 @@ sub compile_match {
 sub compile_match1 {
   my ($self, $document, $patternbox) = @_;
   # Create a temporary document
-  my $capdocument = LaTeXML::Document->new($document->getModel);
-  my $capture = $capdocument->openElement('_Capture_', font => LaTeXML::Font->new());
+  my $capdocument = LaTeXML::Core::Document->new($document->getModel);
+  my $capture = $capdocument->openElement('_Capture_', font => LaTeXML::Common::Font->new());
   $capdocument->absorb($patternbox);
   my @nodes = ($$self{mode} eq 'math'
     ? $capdocument->findnodes("//ltx:XMath/*", $capture)
@@ -267,8 +267,8 @@ sub compile_replacement {
     return sub {
       my $stomach = $STATE->getStomach;
       $stomach->bgroup;
-      $STATE->assignValue(font     => LaTeXML::Font->new(),     'local');
-      $STATE->assignValue(mathfont => LaTeXML::MathFont->new(), 'local');
+      $STATE->assignValue(font     => LaTeXML::Common::Font->new(), 'local');
+      $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
       my $box = $stomach->digest($pattern, 0);
       $stomach->egroup;
       $box = $box->getBody if $$self{math};
@@ -289,8 +289,8 @@ sub digest_rewrite {
   my ($string) = @_;
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
-  $STATE->assignValue(font => LaTeXML::Font->new(), 'local'); # Use empty font, so eventual insertion merges.
-  $STATE->assignValue(mathfont => LaTeXML::MathFont->new(), 'local');
+  $STATE->assignValue(font => LaTeXML::Common::Font->new(), 'local'); # Use empty font, so eventual insertion merges.
+  $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
   my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
   $stomach->egroup;
   return $box; }
@@ -301,7 +301,7 @@ sub domToXPath {
   return "descendant-or-self::" . domToXPath_rec($document, $node); }
 
 # May need some work here;
-my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);    # [CONSTANT]
+my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);      # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, @extra_predicates) = @_;
@@ -331,7 +331,7 @@ sub domToXPath_rec {
           "Can't generate XPath for mixed content"); } }
     if ($document->canHaveAttribute($qname, 'font')) {
       if (my $font = $node->getAttribute('_font')) {
-        my $pred = LaTeXML::Font::font_match_xpaths($font);
+        my $pred = LaTeXML::Common::Font::font_match_xpaths($font);
         push(@predicates, $pred); } }
 
     return $qname . "[" . join(' and ', grep { $_ } @predicates, @extra_predicates) . "]"; }

@@ -18,7 +18,7 @@ use strict;
 use warnings;
 use Parse::RecDescent;
 use LaTeXML::Global;
-use LaTeXML::Font;
+use LaTeXML::Common::Font;
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
@@ -39,7 +39,7 @@ our %EXPORT_TAGS = (constructors
       &SawNotation &IsNotationAllowed
       &isMatchingClose &Fence)]);
 
-my $DEFAULT_FONT = LaTeXML::MathFont->new(    # [CONSTANT]
+my $DEFAULT_FONT = LaTeXML::Common::Font->new(    # [CONSTANT]
   family => 'serif',   series     => 'medium',
   shape  => 'upright', size       => 'normal',
   color  => 'black',   background => 'white', opacity => 1);
@@ -281,7 +281,7 @@ sub filter_hints {
 # Given a width attribute on an XMHint, return the pts, if any
 sub getXMHintSpacing {
   my ($width) = @_;
-  if ($width && ($width =~ /^$LaTeXML::Glue::GLUE_re$/)) {
+  if ($width && ($width =~ /^$LaTeXML::Common::Glue::GLUE_re$/)) {
     return ($2 eq 'mu' ? $1 / 1.8 : $1); }
   else {
     return 0; } }
@@ -760,7 +760,7 @@ sub New {
     my $value = p_getValue($attributes{$key});
     $attr{$key} = $value if defined $value; }
   if (!$attr{font}) {
-    $attr{font} = ($content && $content =~ /\S/ ? $DEFAULT_FONT->specialize($content) : LaTeXML::MathFont->new()); }
+    $attr{font} = ($content && $content =~ /\S/ ? $DEFAULT_FONT->specialize($content) : LaTeXML::Common::Font->new()); }
   return ['ltx:XMTok', {%attr}, ($content ? ($content) : ())]; }
 
 # Some handy shorthands.
@@ -768,10 +768,10 @@ sub Absent {
   return New('absent'); }
 
 sub InvisibleTimes {
-  return New('times', "\x{2062}", role => 'MULOP', font => LaTeXML::MathFont->new()); }
+  return New('times', "\x{2062}", role => 'MULOP', font => LaTeXML::Common::Font->new()); }
 
 sub InvisibleComma {
-  return New(undef, "\x{2063}", role => 'PUNCT', font => LaTeXML::MathFont->new()); }
+  return New(undef, "\x{2063}", role => 'PUNCT', font => LaTeXML::Common::Font->new()); }
 
 # Get n-th arg of an XMApp.
 # However, this is really only used to get the script out of a sub/super script

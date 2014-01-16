@@ -145,9 +145,9 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
-    if (my $w = $$spec{to}) {
+    if (my $w = GetKeyVal($spec, 'to')) {
       $whatsit->setWidth($w); }
-    elsif (my $s = $$spec{spread}) {
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
     return; });
 
@@ -157,9 +157,9 @@ DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
-    if (my $h = $$spec{to}) {
+    if (my $h = GetKeyVal($spec, 'to')) {
       $whatsit->setHeight($h); }
-    elsif (my $s = $$spec{spread}) {
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setHeight($box->getHeight->add($s)); }
     return; },
   mode => 'text');

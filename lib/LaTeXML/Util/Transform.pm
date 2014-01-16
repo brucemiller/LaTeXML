@@ -2,7 +2,7 @@ package LaTeXML::Util::Transform;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Number;
+use LaTeXML::Common::Number;
 use LaTeXML::Util::Geometry;
 use Math::Trig;
 use base qw(Exporter);

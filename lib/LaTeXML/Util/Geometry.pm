@@ -2,7 +2,7 @@ package LaTeXML::Util::Geometry;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Number;
+use LaTeXML::Common::Number;
 use Math::Trig;
 use base qw(Exporter);
 our @EXPORT = (qw(&coordList &explodeCoord &radians &trunc &round &lineParams &pointPointDist

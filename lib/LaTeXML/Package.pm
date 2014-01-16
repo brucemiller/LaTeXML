@@ -16,8 +16,15 @@ use strict;
 use warnings;
 use Exporter;
 use LaTeXML::Global;
-use LaTeXML::Definition;
-use LaTeXML::Parameters;
+use LaTeXML::Core::Mouth::Binding;
+use LaTeXML::Core::Definition;
+use LaTeXML::Core::Parameters;
+# Extra objects typically used in Bindings
+use LaTeXML::Core::Array;
+use LaTeXML::Core::KeyVals;
+use LaTeXML::Core::Pair;
+use LaTeXML::Core::PairList;
+# Utitlities
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use File::Which;
@@ -61,7 +68,8 @@ our @EXPORT = (qw(&DefExpandable
   qw(&DefColor &DefColorModel &LookupColor),
 
   # Support for structured/argument readers
-  qw(&ReadParameters &DefParameterType  &DefColumnType),
+  qw(&ReadParameters &DefParameterType  &DefColumnType
+    &DefKeyVal &GetKeyVal &GetKeyVals),
 
   # Access to State
   qw(&LookupValue &AssignValue
@@ -108,7 +116,7 @@ sub UTF {
 sub coerceCS {
   my ($cs) = @_;
   $cs = T_CS($cs)           unless ref $cs;
-  $cs = T_CS(ToString($cs)) unless ref $cs eq 'LaTeXML::Token';
+  $cs = T_CS(ToString($cs)) unless ref $cs eq 'LaTeXML::Core::Token';
   return $cs; }
 
 sub parsePrototype {
@@ -138,12 +146,12 @@ sub convertLaTeXArgs {
   $nargs = 0 unless $nargs;
   my @params = ();
   if ($optional) {
-    push(@params, LaTeXML::Parameters::newParameter('Optional',
+    push(@params, LaTeXML::Core::Parameters::newParameter('Optional',
         "[Default:" . UnTeX($optional) . "]",
         extra => [$optional, undef]));
     $nargs--; }
-  push(@params, map { LaTeXML::Parameters::newParameter('Plain', '{}') } 1 .. $nargs);
-  return (@params ? LaTeXML::Parameters->new(@params) : undef); }
+  push(@params, map { LaTeXML::Core::Parameters::newParameter('Plain', '{}') } 1 .. $nargs);
+  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 #======================================================================
 # Convenience functions for writing definitions.
@@ -291,6 +299,29 @@ sub ReadParameters {
   my $parm = parseParameters($spec, $for);
   return ($parm ? $parm->readArguments($gullet, $for) : ()); }
 
+# This new declaration allows you to define the type associated with
+# the value for specific keys.
+sub DefKeyVal {
+  my ($keyset, $key, $type, $default) = @_;
+  my $paramlist = LaTeXML::Package::parseParameters($type, "KeyVal $key in set $keyset");
+  AssignValue('KEYVAL@' . $keyset . '@' . $key              => $paramlist);
+  AssignValue('KEYVAL@' . $keyset . '@' . $key . '@default' => Tokenize($default))
+    if defined $default;
+  return; }
+
+# These functions allow convenient access to KeyVal objects within constructors.
+# Access the value associated with a given key.
+# Can use in constructor: eg. <foo attrib='&GetKeyVal(#1,'key')'>
+sub GetKeyVal {
+  my ($keyval, $key) = @_;
+  return (defined $keyval) && $keyval->getValue($key); }
+
+# Access the entire hash.
+# Can use in constructor: <foo %&GetKeyVals(#1)/>
+sub GetKeyVals {
+  my ($keyval) = @_;
+  return (defined $keyval ? $keyval->getKeyVals : {}); }
+
 # Merge the current font with the style specifications
 sub MergeFont {
   my (@kv) = @_;
@@ -315,11 +346,11 @@ sub roman_aux {
     $p -= 2; }
   return $s; }
 
-# Convert the number to lower case roman numerals, returning a list of LaTeXML::Token
+# Convert the number to lower case roman numerals, returning a list of LaTeXML::Core::Token
 sub roman {
   my (@stuff) = @_;
   return ExplodeText(roman_aux(@stuff)); }
-# Convert the number to upper case roman numerals, returning a list of LaTeXML::Token
+# Convert the number to upper case roman numerals, returning a list of LaTeXML::Core::Token
 sub Roman {
   my (@stuff) = @_;
   return ExplodeText(uc(roman_aux(@stuff))); }
@@ -380,9 +411,8 @@ my $parameter_options = {    # [CONSTANT]
 sub DefParameterType {
   my ($type, $reader, %options) = @_;
   CheckOptions("DefParameterType $type", $parameter_options, %options);
-  $LaTeXML::Parameters::PARAMETER_TABLE{$type} = { reader => $reader, %options };
-  return;
-}
+  AssignMapping('PARAMETER_TYPES', $type, { reader => $reader, %options });
+  return; }
 
 sub DefColumnType {
   my ($proto, $expansion) = @_;
@@ -607,7 +637,7 @@ sub GenerateID {
 sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
-  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread(@tokens);
       my @expanded = ();
@@ -632,7 +662,7 @@ sub RawTeX {
   my $savedcc = $STATE->lookupCatcode('@');
   $STATE->assignCatcode('@' => CC_LETTER);
 
-  $stomach->getGullet->readingFromMouth(LaTeXML::Mouth->new($text), sub {
+  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new($text), sub {
       my ($gullet) = @_;
       my $token;
       while ($token = $gullet->readXToken(0)) {
@@ -674,7 +704,7 @@ sub forbidMath {
 # Defining Expandable Control Sequences.
 #======================================================================
 # Define an expandable control sequence. It will be expanded in the Gullet.
-# The $replacement should be a LaTeXML::Tokens (the arguments will be
+# The $replacement should be a LaTeXML::Core::Tokens (the arguments will be
 # substituted for any #1,...), or a sub which returns a list of tokens (or just return;).
 # Those tokens, if any, will be reinserted into the input.
 # There are no options to these definitions.
@@ -706,7 +736,7 @@ sub DefMacroI {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
   $cs = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  $STATE->installDefinition(LaTeXML::Expandable->new($cs, $paramlist, $expansion, %options),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
   return; }
@@ -739,13 +769,13 @@ sub DefConditionalI {
   my $csname = ToString($cs);
   # Special cases...
   if ($csname eq '\fi') {
-    $STATE->installDefinition(LaTeXML::Conditional::fi->new($cs, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_fi => 1, %options),
       $options{scope}); }
   elsif ($csname eq '\else') {
-    $STATE->installDefinition(LaTeXML::Conditional::else->new($cs, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_else => 1, %options),
       $options{scope}); }
   elsif ($csname eq '\or') {
-    $STATE->installDefinition(LaTeXML::Conditional::or->new($cs, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_or => 1, %options),
       $options{scope}); }
   elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
     my $name = $1;
@@ -758,7 +788,8 @@ sub DefConditionalI {
           AssignValue('Boolean:' . $name => 0); }); }
     # For \ifcase, the parameter list better be a single Number !!
     $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-    $STATE->installDefinition(LaTeXML::Conditional->new($cs, $paramlist, $test, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
+        is_conditional => 1, %options),
       $options{scope}); }
   else {
     Error('misdefined', $cs, $STATE->getStomach,
@@ -797,7 +828,7 @@ sub DefPrimitiveI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  $STATE->installDefinition(LaTeXML::Primitive
+  $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($cs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
@@ -817,12 +848,12 @@ sub DefPrimitiveI {
 my $register_options = {    # [CONSTANT]
   readonly => 1, getter => 1, setter => 1 };
 my %register_types = (      # [CONSTANT]
-  'LaTeXML::Number'    => 'Number',
-  'LaTeXML::Dimension' => 'Dimension',
-  'LaTeXML::Glue'      => 'Glue',
-  'LaTeXML::MuGlue'    => 'MuGlue',
-  'LaTeXML::Tokens'    => 'Tokens',
-  'LaTeXML::Token'     => 'Token',
+  'LaTeXML::Common::Number'    => 'Number',
+  'LaTeXML::Common::Dimension' => 'Dimension',
+  'LaTeXML::Common::Glue'      => 'Glue',
+  'LaTeXML::Core::MuGlue'      => 'MuGlue',
+  'LaTeXML::Core::Tokens'      => 'Tokens',
+  'LaTeXML::Core::Token'       => 'Token',
 );
 
 sub DefRegister {
@@ -848,7 +879,7 @@ sub DefRegisterI {
       AssignValue(join('', $name, map { ToString($_) } @args) => $v); });
   # Not really right to set the value!
   AssignValue(ToString($cs) => $value) if defined $value;
-  $STATE->installDefinition(LaTeXML::Register->new($cs, $paramlist,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
       registerType => $type,
       getter       => $getter, setter => $setter,
       readonly     => $options{readonly}),
@@ -897,7 +928,7 @@ sub DefConstructorI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
-  $STATE->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($cs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
@@ -1076,7 +1107,7 @@ sub defmath_dual {
   my $cont_cs = T_CS($csname . "\@content");
   my $pres_cs = T_CS($csname . "\@presentation");
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
-  $STATE->installDefinition(LaTeXML::Expandable->new($cs, $paramlist, sub {
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
         my ($self,  @args)  = @_;
         my ($cargs, $pargs) = dualize_arglist(@args);
         Invocation(T_CS('\DUAL'),
@@ -1088,12 +1119,12 @@ sub defmath_dual {
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
   $presentation = Invocation(T_CS('\@ASSERT@MEANING'), T_OTHER($options{meaning}), $presentation)
     if $options{meaning};
-  $STATE->installDefinition(LaTeXML::Expandable->new($pres_cs, $paramlist, $presentation),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
 
-  $STATE->installDefinition(LaTeXML::Constructor->new($cont_cs, $paramlist,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
       ($nargs == 0
         ? "<ltx:XMTok $cons_attr role='#role' scriptpos='#scriptpos'/>"
         : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
@@ -1114,7 +1145,7 @@ sub defmath_prim {
   delete $attributes{font};
   ## Whoops???
 ###  $attributes{name} = $name if (defined $name) && !(defined $options{name});
-  $STATE->installDefinition(LaTeXML::Primitive->new($cs, undef, sub {
+  $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($cs, undef, sub {
         my ($stomach) = @_;
         my $locator   = $stomach->getGullet->getLocator;
         my $font      = LookupValue('font')->merge(%$reqfont)->specialize($string);
@@ -1125,7 +1156,7 @@ sub defmath_prim {
             $$attr{$key} = &$value(); }
           else {
             $$attr{$key} = $value; } }
-        LaTeXML::MathBox->new($string, $font, $locator, $cs, $attr); }));
+        LaTeXML::Core::MathBox->new($string, $font, $locator, $cs, $attr); }));
   return; }
 
 sub defmath_cons {
@@ -1134,7 +1165,7 @@ sub defmath_cons {
   my $end_tok   = (defined $presentation ? '>' . ToString($presentation) . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
   my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  $STATE->installDefinition(LaTeXML::Constructor->new($cs, $paramlist,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
       ($nargs == 0
           # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
@@ -1180,7 +1211,7 @@ sub DefEnvironmentI {
   $name = ToString($name) if ref $name;
   $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
-  $STATE->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
@@ -1200,7 +1231,7 @@ sub DefEnvironmentI {
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
 
       ), $options{scope});
-  $STATE->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
       beforeDigest => flatten($options{beforeDigestEnd}),
       afterDigest  => flatten($options{afterDigest},
@@ -1215,7 +1246,7 @@ sub DefEnvironmentI {
           : (sub { $_[0]->egroup; }))),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
-  $STATE->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\$name"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); })              : ()),
@@ -1231,7 +1262,7 @@ sub DefEnvironmentI {
       properties => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
       ), $options{scope});
-  $STATE->installDefinition(LaTeXML::Constructor
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end$name"), "", "",
       beforeDigest => flatten($options{beforeDigestEnd}),
       afterDigest  => flatten($options{afterDigest},
@@ -1492,7 +1523,7 @@ sub loadLTXML {
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
 
-  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::PerlMouth->new($pathname), sub {
+  $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,
         "File $pathname had an error:\n  $@") if $@;
@@ -1529,7 +1560,7 @@ sub loadTeXDefinitions {
   # This re-locks defns during reading of TeX packages.
   local $LaTeXML::State::UNLOCKED = 0;
   $stomach->getGullet->readingFromMouth(
-    LaTeXML::Mouth->create($pathname,
+    LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
       content => LookupValue($pathname . '_contents')),
     sub {
@@ -1551,7 +1582,7 @@ sub loadTeXContent {
   if (my $conf = !pathname_is_literaldata($pathname)
     && pathname_find("$file.latexml", paths => LookupValue('SEARCHPATHS'))) {
     loadLTXML($conf, $conf); }
-  $gullet->openMouth(LaTeXML::Mouth->create($pathname, notes => 1,
+  $gullet->openMouth(LaTeXML::Core::Mouth->create($pathname, notes => 1,
       content => LookupValue($pathname . '_contents')), 0);
   return; }
 
@@ -2244,13 +2275,13 @@ and will be deactivated when the section ends.
 
 X<DefMacro>
 Defines the macro expansion for C<$prototype>; a macro control sequence that is
-expanded during macro expansion time (in the  L<LaTeXML::Gullet>).  If a C<$string> is supplied, it will be
+expanded during macro expansion time (in the  L<LaTeXML::Core::Gullet>).  If a C<$string> is supplied, it will be
 tokenized at definition time. Any macro arguments will be substituted for parameter
 indicators (eg #1) at expansion time; the result is used as the expansion of
 the control sequence. 
 
 If defined by C<$code>, the form is C<CODE($gullet,@args)> and it
-must return a list of L<LaTeXML::Token>'s.
+must return a list of L<LaTeXML::Core::Token>'s.
 
 
 DefMacro options are
@@ -2291,7 +2322,7 @@ as a Macro.
 
 X<DefConditional>
 Defines a conditional for C<$prototype>; a control sequence that is
-processed during macro expansion time (in the  L<LaTeXML::Gullet>).
+processed during macro expansion time (in the  L<LaTeXML::Core::Gullet>).
 A conditional corresponds to a TeX C<\if>.
 It evaluates C<$test>, which should be CODE that is applied to the arguments, if any.
 Depending on whether the result of that evaluation returns a true or false value
@@ -2334,7 +2365,7 @@ C<$paramlist>).
 
 X<DefPrimitive>
 Define a primitive control sequence; a primitive is processed during
-digestion (in the  L<LaTeXML::Stomach>), after macro expansion but before Construction time.
+digestion (in the  L<LaTeXML::Core::Stomach>), after macro expansion but before Construction time.
 Primitive control sequences generate Boxes or Lists, generally
 containing basic Unicode content, rather than structured XML.
 Primitive control sequences are also executed for side effect during digestion,
@@ -2461,8 +2492,8 @@ X<DefConstructor>
 The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
-will be read and digested, creating a L<LaTeXML::Whatsit> to represent the object. During
-absorbtion by the L<LaTeXML::Document>, the C<Whatsit> will generate the XML fragment according
+will be read and digested, creating a L<LaTeXML::Core::Whatsit> to represent the object. During
+absorbtion by the L<LaTeXML::Core::Document>, the C<Whatsit> will generate the XML fragment according
 to the replacement C<$xmlpattern>, or by executing C<CODE>.
 
 The C<$xmlpattern> is simply a bit of XML as a string with certain substitutions to be made.

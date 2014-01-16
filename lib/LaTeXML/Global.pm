@@ -66,6 +66,8 @@ our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
 #  T_whatever creates a token with the corresponding catcode,
 #   some take a string argument, if they don't have a `standard' character.
 
+#local $LaTeXML::STATE;
+
 use constant CC_ESCAPE  => 0;
 use constant CC_BEGIN   => 1;
 use constant CC_END     => 2;
@@ -90,27 +92,27 @@ use constant CC_MARKER      => 18;    # non TeX extension!
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
 # These are immutable
-use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Token';
-use constant T_END   => bless ['}',  2],  'LaTeXML::Token';
-use constant T_MATH  => bless ['$',  3],  'LaTeXML::Token';
-use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Token';
-use constant T_PARAM => bless ['#',  6],  'LaTeXML::Token';
-use constant T_SUPER => bless ['^',  7],  'LaTeXML::Token';
-use constant T_SUB   => bless ['_',  8],  'LaTeXML::Token';
-use constant T_SPACE => bless [' ',  10], 'LaTeXML::Token';
-use constant T_CR    => bless ["\n", 10], 'LaTeXML::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Token'; }
-sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Token'; }
+use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Core::Token';
+use constant T_END   => bless ['}',  2],  'LaTeXML::Core::Token';
+use constant T_MATH  => bless ['$',  3],  'LaTeXML::Core::Token';
+use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Core::Token';
+use constant T_PARAM => bless ['#',  6],  'LaTeXML::Core::Token';
+use constant T_SUPER => bless ['^',  7],  'LaTeXML::Core::Token';
+use constant T_SUB   => bless ['_',  8],  'LaTeXML::Core::Token';
+use constant T_SPACE => bless [' ',  10], 'LaTeXML::Core::Token';
+use constant T_CR    => bless ["\n", 10], 'LaTeXML::Core::Token';
+sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Core::Token'; }
+sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Core::Token'; }
+sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
+sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
+sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
 
 # Illegal: don't use unless you know...
-sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Token'; }
+sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Core::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
-  return bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Token'; }
+  return bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Core::Token'; }
 
 #======================================================================
 # These belong to Mouth, but make more sense here.
@@ -123,41 +125,42 @@ sub Token {
 our $STD_CATTABLE;
 our $STY_CATTABLE;
 
-# Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Tokens
+# Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Core::Tokens
 sub Tokenize {
   my ($string) = @_;
   $STD_CATTABLE = LaTeXML::State->new(catcodes => 'standard') unless $STD_CATTABLE;
-  local $LaTeXML::STATE = $STD_CATTABLE;
-  return LaTeXML::Mouth->new($string)->readTokens; }
+  local $LaTeXML::Global::STATE = $STD_CATTABLE;
+  return LaTeXML::Core::Mouth->new($string)->readTokens; }
 
-# TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Tokens
+# TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Core::Tokens
 sub TokenizeInternal {
   my ($string) = @_;
   $STY_CATTABLE = LaTeXML::State->new(catcodes => 'style') unless $STY_CATTABLE;
-  local $LaTeXML::STATE = $STY_CATTABLE;
-  return LaTeXML::Mouth->new($string)->readTokens; }
+  local $LaTeXML::Global::STATE = $STY_CATTABLE;
+  return LaTeXML::Core::Mouth->new($string)->readTokens; }
 
 sub StartSemiverbatim {
-  $LaTeXML::STATE->pushFrame;
-  $LaTeXML::STATE->assignValue(MODE => 'text'); # only text mode makes sense here... BUT is this shorthand safe???
-  $LaTeXML::STATE->assignValue(IN_MATH => 0);
-  map { $LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local') }
-    @{ $LaTeXML::STATE->lookupValue('SPECIALS') };
-  $LaTeXML::STATE->assignMathcode('\'' => 0x8000, 'local');
-  $LaTeXML::STATE->assignValue(font => $LaTeXML::STATE->lookupValue('font')->merge(encoding => 'ASCII'), 'local'); # try to stay as ASCII as possible
+  my $state = $LaTeXML::Global::STATE;
+  $state->pushFrame;
+  $state->assignValue(MODE => 'text'); # only text mode makes sense here... BUT is this shorthand safe???
+  $state->assignValue(IN_MATH => 0);
+  map { $state->assignCatcode($_ => CC_OTHER, 'local') }
+    @{ $state->lookupValue('SPECIALS') };
+  $state->assignMathcode('\'' => 0x8000, 'local');
+  $state->assignValue(font => $state->lookupValue('font')->merge(encoding => 'ASCII'), 'local'); # try to stay as ASCII as possible
   return; }
 
 sub EndSemiverbatim {
-  $LaTeXML::STATE->popFrame;
+  $LaTeXML::Global::STATE->popFrame;
   return; }
 
 #======================================================================
 # Token List constructors.
 
-# Return a LaTeXML::Tokens made from the arguments (tokens)
+# Return a LaTeXML::Core::Tokens made from the arguments (tokens)
 sub Tokens {
   my (@tokens) = @_;
-  return LaTeXML::Tokens->new(@tokens); }
+  return LaTeXML::Core::Tokens->new(@tokens); }
 
 # Explode a string into a list of tokens w/catcode OTHER (except space).
 sub Explode {
@@ -228,35 +231,35 @@ sub UnTeX {
 
 sub Number {
   my ($number) = @_;
-  return LaTeXML::Number->new($number); }
+  return LaTeXML::Common::Number->new($number); }
 
 sub Float {
   my ($number) = @_;
-  return LaTeXML::Float->new($number); }
+  return LaTeXML::Common::Float->new($number); }
 
 sub Dimension {
   my ($scaledpoints) = @_;
-  return LaTeXML::Dimension->new($scaledpoints); }
+  return LaTeXML::Common::Dimension->new($scaledpoints); }
 
 sub MuDimension {
   my ($scaledpoints) = @_;
-  return LaTeXML::MuDimension->new($scaledpoints); }
+  return LaTeXML::Core::MuDimension->new($scaledpoints); }
 
 sub Glue {
   my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
-  return LaTeXML::Glue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+  return LaTeXML::Common::Glue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
 
 sub MuGlue {
   my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
-  return LaTeXML::MuGlue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+  return LaTeXML::Core::MuGlue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
 
 sub Pair {
   my ($x, $y) = @_;
-  return LaTeXML::Pair->new($x, $y); }
+  return LaTeXML::Core::Pair->new($x, $y); }
 
 sub PairList {
   my (@pairs) = @_;
-  return LaTeXML::PairList->new(@pairs); }
+  return LaTeXML::Core::PairList->new(@pairs); }
 
 #======================================================================
 # Constructors for Boxes and Lists.
@@ -269,28 +272,25 @@ sub Box {
   my $state = $LaTeXML::Global::STATE;
   if ($state->lookupValue('IN_MATH')) {
     my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
-    return LaTeXML::MathBox->new($string, $font->specialize($string), $locator, $tokens, $attr); }
+    return LaTeXML::Core::MathBox->new($string, $font->specialize($string), $locator, $tokens, $attr); }
   else {
-    return LaTeXML::Box->new($string, $font, $locator, $tokens); } }
+    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens); } }
 
 #
 # sub List {
 #   my(@boxes)=@_;
 # $ismath is NOT correct here!!!
 # we need to know whether we were in math BEFORE digesting the boxes!
-#   ( $ismath ? LaTeXML::MathList->new(@boxes) : LaTeXML::List->new(@boxes)); }
+#   ( $ismath ? LaTeXML::Core::MathList->new(@boxes) : LaTeXML::Core::List->new(@boxes)); }
 
 #======================================================================
 # Colors
 sub Color {
   my ($model, @components) = @_;
-  # Beware of clumsy invention of $class; see LaTeXML::Color
-  my $class = 'LaTeXML::Color::' . $model;
-  $class = 'LaTeXML::Color::DerivedColor' unless $class->can('isCore');
-  return bless [$model, map { ref $_ ? $_->toString : $_ } @components], $class; }
+  return LaTeXML::Common::Color->new(ToString($model), map { ToString($_) } @components); }
 
-use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Color::rgb';
-use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Color::rgb';
+use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Common::Color::rgb';
+use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Common::Color::rgb';
 
 #**********************************************************************
 # Progress reporting.
@@ -368,7 +368,7 @@ sub Equals {
   return 1 if $a->equals($b);                                     # semi-shallow comparison?
        # Special cases? (should be methods, but that embeds State knowledge too low)
 
-  if ($refa eq 'LaTeXML::Token') {    # Check if they've been \let to the same defn.
+  if ($refa eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
     my $defa = $LaTeXML::Global::STATE->lookupDefinition($a);
     my $defb = $LaTeXML::Global::STATE->lookupDefinition($b);
     return $defa && $defb && ($defa eq $defb); }
@@ -432,7 +432,7 @@ with catcodes 16 and 17, respectively].
 
 =item C<< $token = Token($string,$cc); >>
 
-Creates a L<LaTeXML::Token> with the given content and catcode.
+Creates a L<LaTeXML::Core::Token> with the given content and catcode.
 The following shorthand versions are also exported for convenience:
 
   T_BEGIN, T_END, T_MATH, T_ALIGN, T_PARAM,
@@ -442,16 +442,16 @@ The following shorthand versions are also exported for convenience:
 
 =item C<< $tokens = Tokens(@token); >>
 
-Creates a L<LaTeXML::Tokens> from a list of L<LaTeXML::Token>'s
+Creates a L<LaTeXML::Core::Tokens> from a list of L<LaTeXML::Core::Token>'s
 
 =item C<< $tokens = Tokenize($string); >>
 
-Tokenizes the C<$string> according to the standard cattable, returning a L<LaTeXML::Tokens>.
+Tokenizes the C<$string> according to the standard cattable, returning a L<LaTeXML::Core::Tokens>.
 
 =item C<< $tokens = TokenizeInternal($string); >>
 
 Tokenizes the C<$string> according to the internal cattable (where @ is a letter),
-returning a L<LaTeXML::Tokens>.
+returning a L<LaTeXML::Core::Tokens>.
 
 =item C<< @tokens = Explode($string); >>
 

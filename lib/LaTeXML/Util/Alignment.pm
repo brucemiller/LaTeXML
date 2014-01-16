@@ -321,7 +321,7 @@ sub ReadAlignmentTemplate {
 
 sub parseAlignmentTemplate {
   my ($spec) = @_;
-  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Mouth->new("{" . $spec . "}"), sub {
+  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new("{" . $spec . "}"), sub {
       ReadAlignmentTemplate($_[0]); }); }
 
 sub MatrixTemplate {
