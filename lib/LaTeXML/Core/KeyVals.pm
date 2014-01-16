@@ -39,19 +39,22 @@ use base qw(LaTeXML::Object);
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
 # This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
 # after the fact), since some values may have special catcode needs.
-my $T_EQ    = T_OTHER('=');    # [CONSTANT]
-my $T_COMMA = T_OTHER(',');    # [CONSTANT]
+##my $T_EQ    = T_OTHER('=');    # [CONSTANT]
+##my $T_COMMA = T_OTHER(',');    # [CONSTANT]
 
 sub readKeyVals {
   my ($gullet, $keyset, $close) = @_;
   my $startloc = $gullet->getLocator();
   my $open     = $gullet->readToken;
+  my $assign   = T_OTHER('=');
+  my $punct    = T_OTHER(',');
+
   $keyset = ($keyset ? ToString($keyset) : '_anonymous_');
   my @kv = ();
   while (1) {
     $gullet->skipSpaces;
     # Read the keyword.
-    my ($ktoks, $delim) = $gullet->readUntil($T_EQ, $T_COMMA, $close);
+    my ($ktoks, $delim) = $gullet->readUntil($assign, $punct, $close);
     Error('expected', $close, $gullet,
       "Fell off end expecting " . Stringify($close) . " while reading KeyVal key",
       "key started at $startloc")
@@ -60,16 +63,16 @@ sub readKeyVals {
     if ($key) {
       my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
       my $value;
-      if ($delim->equals($T_EQ)) {    # Got =, so read the value
-                                      # WHOA!!! Secret knowledge!!!
+      if ($delim->equals($assign)) {    # Got =, so read the value
+                                        # WHOA!!! Secret knowledge!!!
         my $type = ($keydef && (scalar(@$keydef) == 1) && $keydef->[0]->{type}) || 'Plain';
         my $typedef = $STATE->lookupMapping('PARAMETER_TYPES', $type);
         StartSemiverbatim() if $typedef && $$typedef{semiverbatim};
 
-        ## ($value,$delim)=$gullet->readUntil($T_COMMA,$close);
+        ## ($value,$delim)=$gullet->readUntil($punct,$close);
         # This is the core of $gullet->readUntil, but preserves braces needed by rare key types
         my ($tok, @toks) = ();
-        while ((!defined($delim = $gullet->readMatch($T_COMMA, $close)))
+        while ((!defined($delim = $gullet->readMatch($punct, $close)))
           && (defined($tok = $gullet->readToken()))) {    # Copy next token to args
           push(@toks, $tok,
             ($tok->getCatcode == CC_BEGIN ? ($gullet->readBalanced->unlist, T_END) : ())); }
@@ -90,7 +93,10 @@ sub readKeyVals {
       "key started at $startloc")
       unless $delim;
     last if $delim->equals($close); }
-  return LaTeXML::Core::KeyVals->new($keyset, $open, $close, @kv); }
+  #  return LaTeXML::Core::KeyVals->new($keyset, $open, $close, @kv); }
+  return LaTeXML::Core::KeyVals->new($keyset, [@kv],
+    open  => $open,  close  => $close,
+    punct => $punct, assign => $assign); }
 
 #======================================================================
 # The Data object representing the KeyVals
@@ -111,11 +117,11 @@ sub readKeyVals {
 # Should it convert to simple text? Or structure?
 # If latter, there needs to be a key => tag mapping.
 
-# Spec??
+# Options can be tokens for open, close, punct (between pairs), assign (typically =)
 sub new {
-  my ($class, $keyset, $open, $close, @pairs) = @_;
+  my ($class, $keyset, $pairs, %options) = @_;
   my %hash = ();
-  my @pp   = @pairs;
+  my @pp   = @$pairs;
   while (@pp) {
     my ($k, $v) = (shift(@pp), shift(@pp));
     if (!defined $hash{$k}) { $hash{$k} = $v; }
@@ -124,7 +130,9 @@ sub new {
     elsif (ref $hash{$k} eq 'ARRAY') { push(@{ $hash{$k} }, $v); }
     else { $hash{$k} = [$hash{$k}, $v]; } }
   return bless {
-    keyset => $keyset, open => $open, close => $close, keyvals => [@pairs], hash => {%hash} },
+    keyset => $keyset, keyvals => $pairs, hash => {%hash},
+    open  => $options{open},  close  => $options{close},
+    punct => $options{punct}, assign => $options{assign} },
     $class; }
 
 sub getValue {
@@ -168,7 +176,9 @@ sub beDigested {
     push(@dkv, $key, ($dodigest ? $value->beDigested($stomach) : $value));
     EndSemiverbatim() if $semiverb;
   }
-  return (ref $self)->new($$self{keyset}, $$self{open}, $$self{close}, @dkv); }
+  return LaTeXML::Core::KeyVals->new($keyset, [@dkv],
+    open  => $$self{open},  close  => $$self{close},
+    punct => $$self{punct}, assign => $$self{assign}); }
 
 sub revert {
   my ($self) = @_;
@@ -178,10 +188,11 @@ sub revert {
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
     my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
-    push(@tokens, T_OTHER(','), T_SPACE) if @tokens;
+    push(@tokens, $$self{punct})  if $$self{punct}  && @tokens;
+    push(@tokens, T_SPACE)        if @tokens;
     push(@tokens, Explode($key));
-    push(@tokens, T_OTHER('='),
-      ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
+    push(@tokens, $$self{assign}) if $$self{assign} && $value;
+    push(@tokens, ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
   unshift(@tokens, $$self{open}) if $$self{open};
   push(@tokens, $$self{close}) if $$self{close};
   return @tokens; }
@@ -196,8 +207,8 @@ sub toString {
   my @kv     = @{ $$self{keyvals} };
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
-    $string .= ', ' if $string;
-    $string .= $key . '=' . ToString($value); }
+    $string .= ToString($$self{punct} || '') . ' ' if $string;
+    $string .= $key . ToString($$self{assign} || ' ') . ToString($value); }
   return $string; }
 
 #======================================================================
