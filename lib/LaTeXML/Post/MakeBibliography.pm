@@ -67,7 +67,7 @@ sub process {
     @bib = map { $self->rescan($_) }
       $self->makeSubCollectionDocuments($doc, $bib,
       map { ($_ => $self->makeBibliographyList($doc, $_, $$split{$_})) }
-        keys %$split); }
+        sort keys %$split); }
   else {
     $doc->addNodes($bib, $self->makeBibliographyList($doc, undef, $entries));
     @bib = ($self->rescan($doc)); }
