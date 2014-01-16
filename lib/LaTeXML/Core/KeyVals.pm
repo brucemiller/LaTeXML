@@ -17,25 +17,6 @@ use LaTeXML::Global;
 use base qw(LaTeXML::Object);
 
 #======================================================================
-# Exported reader functions
-#======================================================================
-# New Readers for required and optional KeyVal sets.
-# These can also be used as parameter types.
-# They create a new data KeyVals object
-
-# sub ReadRequiredKeyVals {
-#   my ($gullet, $keyset) = @_;
-#   if ($gullet->ifNext(T_BEGIN)) {
-#     return (readKeyVals($gullet, $keyset, T_END)); }
-#   else {
-#     Error('expected', '{', $gullet, "Missing keyval arguments");
-#     return (LaTeXML::Core::KeyVals->new($keyset, T_BEGIN, T_END,)); } }
-
-# sub ReadOptionalKeyVals {
-#   my ($gullet, $keyset) = @_;
-#   return ($gullet->ifNext(T_OTHER('[')) ? (readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); }
-
-#======================================================================
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
 # This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
 # after the fact), since some values may have special catcode needs.
@@ -93,7 +74,6 @@ sub readKeyVals {
       "key started at $startloc")
       unless $delim;
     last if $delim->equals($close); }
-  #  return LaTeXML::Core::KeyVals->new($keyset, $open, $close, @kv); }
   return LaTeXML::Core::KeyVals->new($keyset, [@kv],
     open  => $open,  close  => $close,
     punct => $punct, assign => $assign); }
@@ -120,6 +100,7 @@ sub readKeyVals {
 # Options can be tokens for open, close, punct (between pairs), assign (typically =)
 sub new {
   my ($class, $keyset, $pairs, %options) = @_;
+  $keyset = ($keyset ? ToString($keyset) : '_anonymous_');
   my %hash = ();
   my @pp   = @$pairs;
   while (@pp) {
@@ -188,10 +169,10 @@ sub revert {
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
     my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
-    push(@tokens, $$self{punct})  if $$self{punct}  && @tokens;
-    push(@tokens, T_SPACE)        if @tokens;
+    push(@tokens, $$self{punct}) if $$self{punct} && @tokens;
+    push(@tokens, T_SPACE)       if @tokens;
     push(@tokens, Explode($key));
-    push(@tokens, $$self{assign}) if $$self{assign} && $value;
+    push(@tokens, ($$self{assign} || T_SPACE)) if $value;
     push(@tokens, ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
   unshift(@tokens, $$self{open}) if $$self{open};
   push(@tokens, $$self{close}) if $$self{close};
