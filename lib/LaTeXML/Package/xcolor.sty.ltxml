@@ -82,7 +82,7 @@ DefMacroI('\rangeRGB', undef, '255');
 DefColorModel('RGB', 'rgb',
   sub {    # RGB ==> rgb
     my $L = ToString(Expand(T_CS '\rangeRGB'));
-    LaTeXML::Color::rgb->new(map { delta($_, $L) } $_[0]->components); },
+    Color('rgb', map { delta($_, $L) } $_[0]->components); },
   sub {    # rgb ==> RGB
     my $L = ToString(Expand(T_CS '\rangeRGB'));
     Color('RGB', map { int($_ * $L + 0.5) } $_[0]->components); });
@@ -92,7 +92,7 @@ DefColorModel('RGB', 'rgb',
 DefColorModel('HTML', 'rgb',
   sub {    # HTML ==> rgb
     if ($_[0][1] =~ m/(..)(..)(..)/) {
-      LaTeXML::Color::rgb->new(map { delta(hex($_), 255) } $1, $2, $3); } },
+      Color('rgb', map { delta(hex($_), 255) } $1, $2, $3); } },
   sub {
     my $hex = $_[0]->toHex; $hex =~ s/^#//;
     Color('HTML', $hex); });
@@ -103,7 +103,7 @@ DefMacroI('\rangeHsb', undef, '360');
 DefColorModel('Hsb', 'hsb',
   sub {    # Hsb ==> hsb
     my $H = ToString(Expand(T_CS '\rangeHsb'));
-    LaTeXML::Color::hsb->new($_[0][1] / $H, $_[0][2], $_[0][3]); },
+    Color('hsb', $_[0][1] / $H, $_[0][2], $_[0][3]); },
   sub {    # hsb ==> Hsb
     my $H = ToString(Expand(T_CS '\rangeHsb'));
     Color('Hsb', $H * $_[0][1], $_[0][2], $_[0][3]); });
@@ -115,7 +115,7 @@ DefMacroI('\rangeHSB', undef, '240');
 DefColorModel('HSB', 'hsb',
   sub {    # HSB ==> hsb
     my $M = ToString(Expand(T_CS '\rangeHSB'));
-    LaTeXML::Color::hsb->(delta($_[0][1], $M), delta($_[0][2], $M), delta($_[0][3], $M)); },
+    Color('hsb', delta($_[0][1], $M), delta($_[0][2], $M), delta($_[0][3], $M)); },
   sub {    # hsb ==> HSB
     my $M = ToString(Expand(T_CS '\rangeHSB'));
     Color('HSB', map { int(0.5 + $M * $_) } $_[0][1], $_[0][2], $_[0][3]); });
@@ -136,7 +136,7 @@ DefColorModel('tHsb', 'hsb',
       ($xn_1, $yn_1) = ($xn, $yn);
       ($xn, $yn) = split(',', $_);
       last if $h <= $xn; }
-    LaTeXML::Color::hsb->new(($yn_1 + (($yn - $yn_1) / ($xn - $xn_1)) * ($h - $xn_1)) / $H, $s, $b); },
+    Color('hsb', ($yn_1 + (($yn - $yn_1) / ($xn - $xn_1)) * ($h - $xn_1)) / $H, $s, $b); },
   sub {    # hsb ==> tHsb
     my ($model, $h, $s, $b) = @{ $_[0] };
     # First scale Hue.
@@ -156,7 +156,7 @@ DefMacroI('\rangeGray', undef, '15');
 DefColorModel('Gray', 'gray',
   sub {    # Gray ==> gray
     my $N = ToString(Expand(T_CS '\rangeGray'));
-    LaTeXML::Color::gray->new(delta($_[0][1], $N)); },
+    Color('gray', delta($_[0][1], $N)); },
   sub {    # gray ==> Gray
     my $N = ToString(Expand(T_CS '\rangeGray'));
     Color('Gray', int(0.5 + $N * $_[0][1])); });
@@ -180,7 +180,7 @@ DefColorModel('wave', 'hsb',
     if ($lambda < 420) { $bb = eta(0.3 + 0.7 * ($lambda - 380) / 40); }
     elsif ($lambda < 700) { $bb = 1; }
     else                  { $bb = eta(0.3 + 0.7 * ($lambda - 780) / (-80)); }
-    LaTeXML::Color::hsb->new($h / 6, 1, $bb); },
+    Color('hsb', $h / 6, 1, $bb); },
   sub {
     Error(); });
 

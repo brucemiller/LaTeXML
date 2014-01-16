@@ -251,7 +251,8 @@ DefMacro('\farcm',        '\aas@fstack{\prime}');
 DefMacro('\farcs',        '\aas@fstack{\prime\prime}');
 DefMacro('\fp',           '\aas@fstack{p}');
 
-DefConstructor('\mathsc{}', '#1', bounded => 1, requireMath => 1, font => { family => 'smallcaps' });
+DefConstructor('\mathsc{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'smallcaps', series => 'medium', shape => 'upright' });
 
 # NOTE: Would like to see this used; do these put a \sim or \approx underneath something?
 #DefMacro('\udtw','');

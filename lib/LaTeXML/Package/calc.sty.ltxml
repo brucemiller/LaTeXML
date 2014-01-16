@@ -99,7 +99,7 @@ DefPrimitive('\settototalheight{Variable}{}', sub {
 
 sub readExpression {
   my ($ogullet, $type, $tokens) = @_;
-  return $ogullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+  return $ogullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);    # Really so weird?
       my $term = readTerm($gullet, $type);
@@ -157,7 +157,7 @@ sub readValue {
   # Evaluate <Real> values
   elsif (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
-    return $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
         my ($igullet) = @_;
         $igullet->unread($arg);    # Really so weird?
         return $igullet->readFloat(); }); }
@@ -235,7 +235,7 @@ sub readReal {
   my $peek = $gullet->readXToken();
   if (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
-    return $gullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
         my ($igullet) = @_;
         $igullet->unread($arg);    # Really so weird?
         return $igullet->readFloat(); }); }

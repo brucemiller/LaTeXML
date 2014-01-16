@@ -162,8 +162,10 @@ RawTeX('\newbox\tocbox@');
 
 DefMacro('\newline', "\n");
 
-DefPrimitiveI('\textfonti', undef, '', font => { family => 'serif', series => 'medium', shape => 'upright' });
-DefPrimitiveI('\textfontii', undef, '', font => { family => 'serif', series => 'medium', shape => 'upright', size => 'small' });
+DefPrimitiveI('\textfonti', undef, '',
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\textfontii', undef, '',
+  font => { family => 'serif', series => 'medium', shape => 'upright', size => 'small' });
 
 DefConstructor('\spreadlines Dimension', '');
 
@@ -255,13 +257,18 @@ DefConstructor('\frac{}{}',
     . "</ltx:XMApp>",
 );
 
-DefConstructor('\Cal{}', '#1', bounded => 1, requireMath => 1, font => { family => 'caligraphic' });
+DefConstructor('\Cal{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
 
 # \bold in amsfonts
-DefConstructor('\roman{}',   '#1', bounded => 1, requireMath => 1, font => { family => 'serif' });
-DefConstructor('\italic{}',  '#1', bounded => 1, requireMath => 1, font => { shape  => 'italic' });
-DefConstructor('\slanted{}', '#1', bounded => 1, requireMath => 1, font => { shape  => 'slanted' });
-DefConstructor('\boldkey{}', '#1', bounded => 1, requireMath => 1, font => { series => 'bold', family => 'typewriter' });
+DefConstructor('\roman{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
+DefConstructor('\italic{}', '#1', bounded => 1, requireMath => 1,
+  font => { shape => 'italic', series => 'medium', shape => 'upright' });
+DefConstructor('\slanted{}', '#1', bounded => 1, requireMath => 1,
+  font => { shape => 'slanted', series => 'medium', shape => 'upright' });
+DefConstructor('\boldkey{}', '#1', bounded => 1, requireMath => 1,
+  font => { series => 'bold', family => 'typewriter', series => 'medium', shape => 'upright' });
 
 # holy cow...
 DefMacro('\thickfrac', sub {

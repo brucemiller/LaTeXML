@@ -16,8 +16,6 @@ use warnings;
 use LaTeXML::Package;
 use Unicode::Normalize;
 use LaTeXML::Util::Alignment;
-use LaTeXML::Util::KeyVal;
-use LaTeXML::Array;
 use LaTeXML::Util::Pathname;
 
 RegisterNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
@@ -112,6 +110,42 @@ RequireResource('LaTeXML.css');
 
 #======================================================================
 # Define parsers for standard parameter types.
+
+DefParameterType('Plain', sub {
+    my ($gullet, $inner) = @_;
+    my $value = $gullet->readArg;
+    if ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN,
+      ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+      T_END); });
+
+DefParameterType('Optional', sub {
+    my ($gullet, $default, $inner) = @_;
+    my $value = $gullet->readOptional;
+    if (!$value && $default) {
+      $value = $default; }
+    elsif ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  optional  => 1,
+  reversion => sub {
+    my ($arg, $default, $inner) = @_;
+    if ($arg) {
+      (T_OTHER('['),
+        ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+        T_OTHER(']')); }
+    else { (); } });
+
+DefParameterType('Until', sub {
+    my ($gullet, $until) = @_;
+    $gullet->readUntil($until); },
+  reversion => sub {
+    my ($arg, $until) = @_;
+    (Revert($arg), Revert($until)); });
 
 # Skip any spaces, but don't contribute an argument.
 DefParameterType('SkipSpaces', sub { $_[0]->skipSpaces; 1; }, novalue => 1);
@@ -257,7 +291,7 @@ DefParameterType('DirectoryList', sub {
         $gullet->readToken; }
       else {
         Error('expected', '}', $gullet, "A closing } was supposed to be here"); }
-      LaTeXML::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
+      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
         type   => 'Semiverbatim',
         values => [@dirs]); }
     else {
@@ -272,7 +306,7 @@ DefParameterType('MoveableBox', sub {
     my ($box, @stuff) = $STATE->getStomach->invokeToken($gullet->readXToken);
     Error('expected', '<box>', $gullet,
       "A <box> was supposed to be here", "Got " . Stringify($box))
-      unless $box && $box->isa('LaTeXML::Whatsit')
+      unless $box && $box->isa('LaTeXML::Core::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
     $box; });
 
@@ -311,11 +345,11 @@ DefParameterType('Digested', sub {
     else {
       @list = $STATE->getStomach->invokeToken($token); }
     # In most (all?) cases, we're really looking for a single Whatsit here...
-    @list = grep { ref $_ ne 'LaTeXML::Comment' } @list;
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     #  while(scalar(@list) && IsEmpty($list[0])){
     #    shift(@list); }
     (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
+      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
   undigested => 1,                                          # since _already_ digested.
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -326,9 +360,9 @@ DefParameterType('DigestUntil', sub {
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = $STATE->getStomach->digestNextBody($until);
-    @list = grep { ref $_ ne 'LaTeXML::Comment' } @list;
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
+      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
   undigested => 1,                                          # since _already_ digested.
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -342,9 +376,9 @@ DefParameterType('DigestedBody', sub {
     my $ismath   = $STATE->lookupValue('IN_MATH');
     my @list     = $STATE->getStomach->digestNextBody();
     # In most (all?) cases, we're really looking for a single Whatsit here...
-    @list = grep { ref $_ ne 'LaTeXML::Comment' } @list;
+    @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::MathList->new(@list) : LaTeXML::List->new(@list))); },
+      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
   undigested => 1);
 
 # In addition to the standard TeX Dimension, there are various LaTeX constructs
@@ -366,7 +400,7 @@ DefParameterType('DigestedBody', sub {
 # [Note that this should act like Semiverbatim if the supplied type does! Ugh]
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
-    my $typedef = $type && LaTeXML::Parameters::parseParameters(ToString($type), "CommaList");
+    my $typedef = $type && LaTeXML::Core::Parameters::parseParameters(ToString($type), "CommaList");
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
       my @items = ();
@@ -376,10 +410,26 @@ DefParameterType('CommaList', sub {
           ($item) = $typedef->reparseArgument($gullet, $item); }
         push(@items, $item);
         last if Equals($delim, T_END); }
-      LaTeXML::Array->new(open => T_BEGIN, close => T_END, type => $type, values => [@items]); }
+      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type, values => [@items]); }
     else {    # If no brace, just read one item or token, but still make Array!
       my ($item) = ($typedef ? $typedef->readArguments($gullet, "CommaList") : ($gullet->readToken));
-      LaTeXML::Array->new(type => $type, values => [$item]); } });
+      LaTeXML::Core::Array->new(type => $type, values => [$item]); } });
+
+DefParameterType('RequiredKeyVals', sub {
+    my ($gullet, $keyset) = @_;
+    $keyset = ToString($keyset);
+    if ($gullet->ifNext(T_BEGIN)) {
+      return (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_END)); }
+    else {
+      Error('expected', '{', $gullet, "Missing keyval arguments");
+      return (LaTeXML::Core::KeyVals->new($keyset, T_BEGIN, T_END,)); } });
+
+DefParameterType('OptionalKeyVals', sub {
+    my ($gullet, $keyset) = @_;
+    $keyset = ToString($keyset);
+    return ($gullet->ifNext(T_OTHER('['))
+      ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); },
+  optional => 1);
 
 #**********************************************************************
 # LaTeX has a very particular notion of "Undefined",
@@ -469,7 +519,7 @@ sub classify_box {
   my $box = LookupValue('box' . $boxnum->valueOf);
   if (!$box) {
     return; }
-  elsif ($box->isa('LaTeXML::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
+  elsif ($box->isa('LaTeXML::Core::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
     return 'vbox'; }
   else {
     return 'hbox'; } }
@@ -527,9 +577,9 @@ DefMacro('\meaning Token', sub {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
 
-      #LaTeXML::Expandable and LaTeXML::Constructor = macro [What?!?!?!?!]
-      #LaTeXML::Primitive and LaTeXML::Token = letter/character [Um... No...]
-      # I don't understand what this is about
+  #LaTeXML::Core::Definition::Expandable and LaTeXML::Core::Definition::Constructor = macro [What?!?!?!?!]
+  #LaTeXML::Core::Definition::Primitive and LaTeXML::Core::Token = letter/character [Um... No...]
+  # I don't understand what this is about
       if (lc($type) =~ /primitive/) {
         $definition = $definition->getCS;
         $type       = ref $definition;
@@ -818,29 +868,29 @@ sub parseDefParameters {
       # Found text that marks the end of the parameter
       if (@delim) {
         my $expected = Tokens(@delim);
-        push(@params, LaTeXML::Parameters::newParameter('Until',
+        push(@params, LaTeXML::Core::Parameters::newParameter('Until',
             'Until:' . ToString($expected),
             extra => [$expected])); }
 
       # Special case: trailing sole # => delimited by next opening brace.
       elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
         shift(@tokens);
-        push(@params, LaTeXML::Parameters::newParameter('UntilBrace', 'UntilBrace')); }
+        push(@params, LaTeXML::Core::Parameters::newParameter('UntilBrace', 'UntilBrace')); }
       # Nothing? Just a plain parameter.
       else {
-        push(@params, LaTeXML::Parameters::newParameter('Plain', '{}')); } }
+        push(@params, LaTeXML::Core::Parameters::newParameter('Plain', '{}')); } }
     else {
       # Initial delimiting text is required.
       my @lit = ($t);
       while (@tokens && ($tokens[0]->getCatcode != CC_PARAM)) {
         push(@lit, shift(@tokens)); }
       my $expected = Tokens(@lit);
-      push(@params, LaTeXML::Parameters::newParameter('Match',
+      push(@params, LaTeXML::Core::Parameters::newParameter('Match',
           'Match:' . ToString($expected),
           extra   => [$expected],
           novalue => 1)); }
   }
-  return (@params ? LaTeXML::Parameters->new(@params) : undef); }
+  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 sub do_def {
   my ($globally, $expanded, $gullet, $cs, $params, $body) = @_;
@@ -854,7 +904,7 @@ sub do_def {
   if ($expanded) {
     local $LaTeXML::NOEXPAND_THE = 1;
     $body = Expand($body); }
-  $STATE->installDefinition(LaTeXML::Expandable->new($cs, $params, $body),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
   return; }
 
@@ -901,7 +951,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
     my $gullet = $stomach->getGullet;
     $name = ToString($name);
-    my %props = LaTeXML::Font::decodeFontname($name,
+    my %props = LaTeXML::Common::Font::decodeFontname($name,
       ($gullet->readKeyword('at')
         ? $gullet->readDimension->ptValue : undef),
       ($gullet->readKeyword('scaled')
@@ -1380,7 +1430,7 @@ DefPrimitive('\chardef Token SkipMatch:= Number', sub {
     my $internalcs = T_CS('\@chardef@' . $csname);
     DefPrimitiveI($internalcs, undef, sub {
         Box(FontDecode($value->valueOf), undef, undef, Invocation(T_CS('\char'), $value)); });
-    $STATE->installDefinition(LaTeXML::CharDef->new($newcs, $value, $internalcs));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
     AfterAssignment();
     return; });
 
@@ -1421,7 +1471,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
         font => sub { LookupValue('font')->specialize($glyph); } },
       reversion => '\mathchar' . $value->valueOf . '\relax',
     ) if $glyph;
-    $STATE->installDefinition(LaTeXML::CharDef->new($newcs, $value, $internalcs));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
     AfterAssignment();
     return; });
 
@@ -1724,9 +1774,9 @@ DefPrimitive('{', sub {
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
     if ($ismath) {
-      LaTeXML::MathList->new($open, @body); }
+      LaTeXML::Core::MathList->new($open, @body); }
     else {
-      LaTeXML::List->new($open, @body); } });
+      LaTeXML::Core::List->new($open, @body); } });
 
 #DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
 DefPrimitive('}', sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef, $f, undef, T_END); });
@@ -2082,7 +2132,7 @@ DefConstructor('\@@LTX@noalign{}', sub {
       elsif ($box->getProperty('isVerticalRule'))     { }
       elsif ($box->getProperty('isHorizontalRule'))   { }    # we need to put this somewhere?
       elsif ($box->getProperty('alignmentSkippable')) { }
-      elsif (ref $box eq 'LaTeXML::Comment')          { }
+      elsif (ref $box eq 'LaTeXML::Core::Comment')    { }
       elsif ($box->getProperty('isSpace'))            { }
       elsif (IsEmpty($box))                           { }
       else {
@@ -2234,7 +2284,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
         push(@saveleft, shift(@boxes)); }
       elsif ($boxes[0]->getProperty('alignmentSkippable')) {
         push(@saveleft, shift(@boxes)); }
-      elsif (ref $boxes[0] eq 'LaTeXML::Comment') {
+      elsif (ref $boxes[0] eq 'LaTeXML::Core::Comment') {
         push(@saveleft, shift(@boxes)); }
       elsif ($boxes[0]->getProperty('isSpace')) {
         push(@saveleft, shift(@boxes)); }
@@ -2252,7 +2302,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
         unshift(@saveright, pop(@boxes)); }
       elsif ($boxes[-1]->getProperty('alignmentSkippable')) {
         unshift(@saveright, pop(@boxes)); }
-      elsif (ref $boxes[-1] eq 'LaTeXML::Comment') {
+      elsif (ref $boxes[-1] eq 'LaTeXML::Core::Comment') {
         unshift(@saveright, pop(@boxes)); }
       elsif ($boxes[-1]->getProperty('isSpace')) {
         unshift(@saveright, pop(@boxes)); }
@@ -2265,7 +2315,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
     $align = undef if $empty;
     @boxes = (@saveleft, @boxes, @saveright);
     $boxes = (scalar(@boxes) == 1 ? $boxes[0]
-      : ($boxes->isMath ? LaTeXML::MathList->new(@boxes) : LaTeXML::List->new(@boxes)));
+      : ($boxes->isMath ? LaTeXML::Core::MathList->new(@boxes) : LaTeXML::Core::List->new(@boxes)));
 
     # record relevant info in the Alignment.
     $$colspec{align}  = $align;
@@ -2683,7 +2733,7 @@ DefConstructorI('\@@ENDINLINEMATH', undef, "", alias => '$',
 # unless it has already been recorded on another node.
 sub add_TeX {
   my ($document, $node, $thing) = @_;
-  if ($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')) {
+  if ($thing && (ref $thing eq 'LaTeXML::Core::Whatsit') && !$thing->getProperty('_added_tex')) {
     local $LaTeXML::DUAL_BRANCH = 'presentation';
     my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
@@ -2864,7 +2914,7 @@ sub closeMathFork {
 sub MathWhatsit {
   my (@items) = @_;
   my $hbgd = LookupDefinition(T_CS('\@hidden@bgroup'));
-  @items = map { ((ref $_ eq 'LaTeXML::Whatsit') && ($_->getDefinition eq $hbgd)
+  @items = map { ((ref $_ eq 'LaTeXML::Core::Whatsit') && ($_->getDefinition eq $hbgd)
       ? $_->getBody->unlist : ($_)) }
     map { $_->unlist } grep { $_ } @items;
   my $locator = undef;
@@ -2874,8 +2924,8 @@ sub MathWhatsit {
   my @styles = grep { UnTeX($_) eq '\displaystyle' } @items;
   if (@styles) {
     @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
-  return LaTeXML::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
-    body    => LaTeXML::MathList->new(@items),
+  return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
+    body    => LaTeXML::Core::MathList->new(@items),
     trailer => T_CS('\@@ENDINLINEMATH'),
     # locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
     locator => $locator, isMath => 1); }
@@ -2919,7 +2969,7 @@ sub addColumnToMathFork {
       if (my $xmath = $document->getFirstChildElement($node)) {
         # But we CLONE the contents of it's ltx:XMath onto the end of
         # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
-        { local $LaTeXML::Document::ID_SUFFIX = '.mf';
+        { local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
           $document->appendClone($document->getFirstChildElement($main),
             $document->getChildElements($xmath)); }
         # Add the boxes from this cell to the previously collected ones in the main branch.
@@ -3104,13 +3154,13 @@ sub IsEmpty {
   my ($box) = @_;
   my $ref = ref $box;
   if (!$box) { return 1; }
-  elsif ($ref eq 'LaTeXML::Comment') { return 1; }
-  elsif (($ref eq 'LaTeXML::Box') || ($ref eq 'LaTeXML::MathBox')) {
+  elsif ($ref eq 'LaTeXML::Core::Comment') { return 1; }
+  elsif (($ref eq 'LaTeXML::Core::Box') || ($ref eq 'LaTeXML::Core::MathBox')) {
     my $s = $box->getString;
     return (!defined $s) || ($s =~ /^\s*$/); }
-  elsif (($ref eq 'LaTeXML::List') || ($ref eq 'LaTeXML::MathList')) {
+  elsif (($ref eq 'LaTeXML::Core::List') || ($ref eq 'LaTeXML::Core::MathList')) {
     return !grep { !IsEmpty($_) } $box->unlist; }
-  elsif ($ref eq 'LaTeXML::Whatsit') {
+  elsif ($ref eq 'LaTeXML::Core::Whatsit') {
     return 1 if $box->getProperty('isSpace');    # A space-like Whatsit
     if (($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
       && !grep { !IsEmpty($_) } $box->getBody->unlist) {
@@ -3123,15 +3173,15 @@ sub IsEmpty {
 # sub isRelax {
 #   my($box)=@_;
 #   my $ref = ref $box;
-#   $box && (($ref eq 'LaTeXML::Box') || ($ref eq 'LaTeXML::MathBox'))
+#   $box && (($ref eq 'LaTeXML::Core::Box') || ($ref eq 'LaTeXML::Core::MathBox'))
 #     && Equals(T_CS('\relax'),$box->revert); }
 
 # my $is=
 #   (!$box
-#    || ($ref eq 'LaTeXML::Comment')
+#    || ($ref eq 'LaTeXML::Core::Comment')
 #    || $box->getProperty('isSpace') # A space-like Whatsit
 #    || (($ref =~ /^LaTeXML::(Math)?Box$/) && ($box->getString =~ /^\s*$/)) # Space plain box
-#    || (($ref eq 'LaTeXML::Whatsit') # Whatsit with nothing in it.
+#    || (($ref eq 'LaTeXML::Core::Whatsit') # Whatsit with nothing in it.
 #        && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
 #        && !grep(!IsEmpty($_), $box->getBody->unlist)));
 
@@ -3143,7 +3193,7 @@ sub IsEmpty {
 # Returns (SUBSCRIPT|SUPERSCRIPT)
 sub IsScript {
   my ($object) = @_;
-  if ((ref $object eq 'LaTeXML::Whatsit')    # careful w/alias in getCSName!
+  if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
     return $2; }
   return; }
@@ -3152,7 +3202,7 @@ sub scriptHandler {
   my ($stomach, $op) = @_;
   my $gullet = $stomach->getGullet;
   $gullet->skipSpaces;
-  my $style    = LookupValue('mathstyle');    # Bump the math style smaller.
+  my $style    = LookupValue('mathstyle');         # Bump the math style smaller.
   my @putback  = ();
   my $nscripts = 0;
   if (defined $style) {
@@ -3163,7 +3213,7 @@ sub scriptHandler {
     # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
-      if ((ref $prev eq 'LaTeXML::Whatsit') && $prev->getProperty('isSpace')) {
+      if ((ref $prev eq 'LaTeXML::Core::Whatsit') && $prev->getProperty('isSpace')) {
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
@@ -3197,7 +3247,7 @@ sub scriptHandler {
     my $script = shift(@stuff);              # ONLY the first box is the script!
     my $level  = $stomach->getBoxingLevel;
     unshift(@stuff,
-      LaTeXML::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
+      LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator => $gullet->getLocator,
         font    => $script->getFont, isMath => 1,
         level   => $level,
@@ -3367,8 +3417,8 @@ sub chooseArgHandler {
   my @top = $stomach->regurgitate;
   my @bot = $stomach->digestNextBody();
   my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
-  $whatsit->setProperty(top       => LaTeXML::MathList->new(@top));
-  $whatsit->setProperty(bottom    => LaTeXML::MathList->new(@bot));
+  $whatsit->setProperty(top       => LaTeXML::Core::MathList->new(@top));
+  $whatsit->setProperty(bottom    => LaTeXML::Core::MathList->new(@bot));
   $whatsit->setProperty(mathstyle => $style);
 
   AssignValue(mathstyle => $style);
@@ -3548,7 +3598,8 @@ DefConstructor('\abovewithdelims Token Token Dimension',
       Revert($whatsit->getProperty('bottom'))); });
 
 #======================================================================
-DefConstructorI('\cal', undef, '', font => { family => 'caligraphic' });
+DefConstructorI('\cal', undef, '',
+  font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
 
 # In principle, <ltx:emph> is a nice markup for emphasized.
 # Unfortunately, TeX really just treats it as a font switch.
@@ -3800,7 +3851,7 @@ AssignValue(allocated_boxes => 0);
 DefPrimitive('\newbox    Token', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
-    AssignValue("box$n", LaTeXML::List->new());
+    AssignValue("box$n", LaTeXML::Core::List->new());
     DefRegisterI($_[1], undef, Number($n)); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
 DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
@@ -3904,14 +3955,21 @@ EoTeX
 Tag('ltx:text', autoOpen => 1, autoClose => 1);
 
 # Note that these, unlike \rmfamily, should set the other attributes to the defaults!
-DefPrimitiveI('\rm', undef, undef, font => { family => 'serif', series => 'medium', shape => 'upright' });
-DefPrimitiveI('\sf', undef, undef, font => { family => 'sansserif', series => 'medium', shape => 'upright' });
-DefPrimitiveI('\bf', undef, undef, font => { series => 'bold', family => 'serif', shape => 'upright' });
-DefPrimitiveI('\it', undef, undef, font => { shape => 'italic', family => 'serif', series => 'medium' });
-DefPrimitiveI('\tt', undef, undef, font => { family => 'typewriter', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\rm', undef, undef,
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\sf', undef, undef,
+  font => { family => 'sansserif', series => 'medium', shape => 'upright' });
+DefPrimitiveI('\bf', undef, undef,
+  font => { series => 'bold', family => 'serif', shape => 'upright' });
+DefPrimitiveI('\it', undef, undef,
+  font => { shape => 'italic', family => 'serif', series => 'medium' });
+DefPrimitiveI('\tt', undef, undef,
+  font => { family => 'typewriter', series => 'medium', shape => 'upright' });
 # No effect in math for the following 2 ?
-DefPrimitiveI('\sl', undef, undef, font => { shape => 'slanted', family => 'serif', series => 'medium' });
-DefPrimitiveI('\sc', undef, undef, font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
+DefPrimitiveI('\sl', undef, undef,
+  font => { shape => 'slanted', family => 'serif', series => 'medium' });
+DefPrimitiveI('\sc', undef, undef,
+  font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
 
 DefPrimitiveI('\tiny',         undef, undef, font => { size => 'tiny' });
 DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 'script' });
@@ -4806,7 +4864,7 @@ DefPrimitiveI('\joinrel', undef, sub {
       return () unless @stuff;    # no-op ????
       my $right = shift(@stuff);
       (@stuff,
-        LaTeXML::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
+        LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
           locator => $gullet->getLocator,
           font => $right->getFont, isMath => 1)); } });
 
@@ -4879,16 +4937,23 @@ DefMathI('\rhook',      undef, "\x{2E27}");    # TeX 312D
 #======================================================================
 # TeX Book, Appendix B. p. 359
 
-#DefMath('\ldots',"\x{2026}", role=>'ID'); # HORIZONTAL ELLIPSIS
-# Ah, since \ldots can appear in text....
+# Ah, since \ldots can appear in text and math....
 DefConstructorI('\ldots', undef,
   "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } }); # Since not DefMath!
+  properties => sub {
+    (LookupValue('IN_MATH')
+      ? (font => LookupValue('font')->merge(family => 'serif',
+          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
+      : ()); });    # Since not DefMath!
 # And so can \vdots
 # DefMathI('\vdots',undef,"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
-  properties => { font => sub { LookupValue('font')->specialize("\x{22EE}"); } });    # Since not
+  properties => sub {
+    (LookupValue('IN_MATH')
+      ? (font => LookupValue('font')->merge(family => 'serif',
+          series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
+      : ()); });    # Since not DefMath!
 # But not these!
 DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');    # MIDLINE HORIZONTAL ELLIPSIS
 
@@ -4898,7 +4963,12 @@ DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good
 # Aha, also can be in text...
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
-  properties => { font => sub { LookupValue('font')->merge(family => 'serif'); } }); # Since not DefMath!
+  properties => sub {
+    (LookupValue('IN_MATH')
+      ? (font => LookupValue('font')->merge(family => 'serif',
+          series => 'medium', shape => 'upright')->specialize("\x{2026}"))
+      : ()); });    # Since not DefMath!
+
 # And while we're at it...
 
 # Pretest for XMath to keep from interpreting math that the DOM may not allow!!

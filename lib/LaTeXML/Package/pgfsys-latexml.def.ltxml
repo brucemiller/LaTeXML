@@ -90,7 +90,7 @@ DefParameterType('SVGMoveableBox', sub {
     my ($box, @stuff) = $STATE->getStomach->invokeToken($gullet->readXToken(1));
     Error(":expected:<box>  A <svghbox> was supposed to be here, got "
         . Stringify($box))
-      unless $box && $box->isa('LaTeXML::Whatsit')
+      unless $box && $box->isa('LaTeXML::Core::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\lxSVG\@hbox||)$/);
     $box; });
 
@@ -432,7 +432,7 @@ DefMacro('\lxSVG@pgfsys@begingroup{}', sub {
       T_CS('\lxSVG@pgfsys@begingroup@'), T_BEGIN, $_[1]->unlist, T_END, T_END); });
 
 DefConstructor('\lxSVG@pgfsys@begingroup@ RequiredKeyVals',
-  '<svg:g %&KeyVals(#1)>');
+  '<svg:g %&GetKeyVals(#1)>');
 
 DefMacro('\lxSVG@pgfsys@endgroup', sub {
     addToCount('pgf_gcount', -1, 'global');
@@ -752,7 +752,7 @@ DefMacro('\lxSVG@pgfsys@sh@intervals{}', sub {
 # These should avoid creating so many constructors at run time
 DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
     my ($stomach, $name, $flag) = @_;
-    my $stops = LaTeXML::List->new(@{ LookupValue('pgf_sh_stops') });
+    my $stops = LaTeXML::Core::List->new(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => []);
     my $x = LookupValue('\pgf@x')->pxValue;
     my $y = LookupValue('\pgf@y')->pxValue;
@@ -777,7 +777,7 @@ DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
 
 DefPrimitive('\lxSVG@pgfsys@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
-    my $stops = LaTeXML::List->new(@{ LookupValue('pgf_sh_stops') });
+    my $stops = LaTeXML::Core::List->new(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => []);
     my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
     my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;

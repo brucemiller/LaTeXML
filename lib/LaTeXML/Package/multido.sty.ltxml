@@ -57,7 +57,7 @@ DefMacro('\multidostop', '\multidocount=\multido@count');
 # concievably variables can be redefined in middle of loop?
 DefMacro('\multido@@initvars@@{}', sub {
     my ($ogullet, $variables) = @_;
-    $ogullet->readingFromMouth(LaTeXML::Mouth->new(), sub {
+    $ogullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
         my ($gullet) = @_;
         $gullet->unread($variables);
         my @inits = ();

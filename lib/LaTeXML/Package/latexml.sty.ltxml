@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use LaTeXML::Util::KeyVal;
 no warnings 'redefine';    # ????
 
 #======================================================================
@@ -211,7 +210,6 @@ DefKeyVal('Declare', 'replace', 'UndigestedKey');
 our $declare_keys = { scope => 1, role => 1, tag => 1, name => 1, meaning => 1,
   trace => 1, wrap => 1, replace => 1, label => 1 };
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
-## "^<ltx:declare id='#id'>?&KeyVal(#2,tag)(<ltx:tag>&KeyVal(#2,tag)</ltx:tag>)</ltx:declare>",
   sub { my ($document, $flag, $kv, $pattern, %props) = @_;
     if (my $id = $props{id}) {
       my $save = $document->floatToElement('ltx:declare');
@@ -222,8 +220,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
       $document->setNode($save); } },
   mode => 'text',
   # Screwy bit to `neutralize' the font in the matches.
-  beforeDigest => sub { AssignValue(font => LaTeXML::Font->default(), 'local');
-    AssignValue(mathfont => LaTeXML::MathFont->default(), 'local');
+  beforeDigest => sub { AssignValue(font => LaTeXML::Common::Font->textDefault(), 'local');
+    AssignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'local');
     return; },
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my ($star, $keys, $pattern) = $whatsit->getArgs;

@@ -20,7 +20,8 @@ use warnings;
 use LaTeXML::Package;
 
 DefMath('\lambdabar', "\x{03BB}\x{0304}");
-DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1, font => { family => 'blackboard' });
+DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
 DefMacro('\Bbb{}', '\mathbb{#1}');
 
 # NOTE: The following markup creates open & close delimiters in bold and various big sizes.
@@ -81,7 +82,8 @@ DefMath('\loarrow{}', "\x{20D6}", operator_role => 'OVERACCENT');
 DefMath('\roarrow{}', "\x{20D7}", operator_role => 'OVERACCENT');
 
 # \mathfrak
-DefConstructor('\openone', '1', font => { family => 'blackboard' });
+DefConstructor('\openone', '1',
+  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
 
 #DefAccent('\overstar', "\x{0359}", UTF(0x002A)); # COMBINNING ASTERISK BELOW (should be ABOVE, but no code available)
 #DefAccent('\tensor',   "\x{20E1}", UTF(0x2194)); # COMBINING LEFT RIGHT ARROW ABOVE

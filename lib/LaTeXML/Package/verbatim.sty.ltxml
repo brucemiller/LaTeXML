@@ -109,7 +109,7 @@ DefMacro('\verbatim@', sub {
 DefMacro('\verbatiminput {}', sub {
     my ($gullet, $file) = @_;
     my $path = FindFile($file);
-    $gullet->readingFromMouth(LaTeXML::Mouth->create(ToString($path)), sub {
+    $gullet->readingFromMouth(LaTeXML::Core::Mouth->create(ToString($path)), sub {
         my ($igullet) = @_;
         my @tokens;
         while (defined(my $line = $igullet->getMouth->readRawLine)) {

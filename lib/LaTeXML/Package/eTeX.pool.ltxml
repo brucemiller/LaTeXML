@@ -44,7 +44,7 @@ DefMacro('\read Number SkipKeyword:to Token', sub {
     DefMacroI($token, undef, Tokens()); });
 
 DefMacro('\scantokens {}', sub {
-    LaTeXML::Mouth->new(UnTeX($_[1]))->readTokens; });
+    LaTeXML::Core::Mouth->new(UnTeX($_[1]))->readTokens; });
 
 #======================================================================
 # 3.3 Environmental enquiries
@@ -138,8 +138,7 @@ DefConstructor('\middle Token ', "<ltx:XMWrap fontsize='stretchy'>#1</ltx:XMWrap
 DefConditional('\unless Token', sub {
     my ($gullet, $if) = @_;
     my ($defn, $test);
-    if (($defn = LookupMeaning($if)) && ((ref $defn) eq 'LaTeXML::Conditional')
-      && ($test = $defn->getTest)) {
+    if (($defn = LookupMeaning($if)) && $$defn{is_conditional} && ($test = $defn->getTest)) {
       # Invert the if's test!
       !&$test($gullet, $defn->readArguments($gullet)); }
     else {

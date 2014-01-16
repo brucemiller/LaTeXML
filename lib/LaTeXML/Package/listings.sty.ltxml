@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use LaTeXML::Util::KeyVal;
 
 #======================================================================
 # To the extent we succeed in doing all the pretty-printing...
@@ -830,7 +829,7 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
       sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
-        Digest(Tokens(LaTeXML::Expandable::substituteTokens($start, @args)));
+        Digest(Tokens(LaTeXML::Core::Definition::Expandable::substituteTokens($start, @args)));
         my @lines = ();
         my ($line);
         $gullet->readRawLine;    # Ignore 1st line (following \begin{...}
@@ -838,7 +837,7 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
           push(@lines, $line); }
         my $text = join("\n", @lines);
         my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
-        push(@expansion, LaTeXML::Expandable::substituteTokens($end, @args));
+        push(@expansion, LaTeXML::Core::Definition::Expandable::substituteTokens($end, @args));
         $STATE->getStomach->egroup;
         @expansion; });
 });
@@ -852,6 +851,8 @@ DefMacro('\lstdefinelanguage []{}',
   '\@ifnextchar[{\@lstdefinelanguage[#1]{#2}}{\@lstdefinelanguage[#1]{#2}[]{}}');
 Let('\lst@definelanguage', '\lstdefinelanguage');
 
+use Data::Dumper;
+
 DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', sub {
     my ($stomach, $dialect, $language, $base_dialect, $base_language, $keyvals, $aspects) = @_;
     my @base = ();
@@ -863,8 +864,8 @@ DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', s
     if ($dialect && $dialect->unlist) {
       $dialect = uc(ToString($dialect)); $dialect =~ s/\s+//g;
       $name .= '$' . $dialect; }
-    AssignValue($name
-        => LaTeXML::KeyVals->new('LST', '[', ']', (@base ? (language => Tokens(@base)) : ()), $keyvals->getPairs),
+    AssignValue($name => LaTeXML::Core::KeyVals->new('LST', '[', ']',
+        (@base ? (language => Tokens(@base)) : ()), $keyvals->getPairs),
       'global'); });
 
 # Seems to use <language>$<dialect> as the naming scheme.

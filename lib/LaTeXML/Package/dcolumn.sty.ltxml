@@ -19,8 +19,8 @@ RequirePackage('array');
 
 sub absorbedString {
   my ($tokens) = @_;
-  my $capdocument = LaTeXML::Document->new($STATE->getModel);
-  my $capture = $capdocument->openElement('ltx:_Capture_', font => LaTeXML::Font->new());
+  my $capdocument = LaTeXML::Core::Document->new($STATE->getModel);
+  my $capture = $capdocument->openElement('ltx:_Capture_', font => LaTeXML::Common::Font->new());
   $capdocument->absorb(Digest($tokens));
   if (my @nodes = $capdocument->findnodes("//ltx:XMath/*", $capture)) {
     return $nodes[0]->textContent; }

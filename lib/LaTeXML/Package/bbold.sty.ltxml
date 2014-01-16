@@ -16,11 +16,14 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1, font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
+  font => { encoding => 'U', family => 'blackboard', series => 'medium', shape => 'upright' });
 
-DefConstructor('\textbb{}', '#1', bounded => 1, forbidMath => 1, font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\textbb{}', '#1', bounded => 1, forbidMath => 1,
+  font => { encoding => 'U', family => 'blackboard' });
 
-DefConstructor('\bbfamily', '', font => { encoding => 'U', family => 'blackboard' });
+DefConstructor('\bbfamily', '',
+  font => { encoding => 'U', family => 'blackboard', series => 'medium', shape => 'upright' });
 
 # Note that there aren't blackboard bold symbols/glyphs in Unicode for many of these characters!
 DeclareFontMap('U',

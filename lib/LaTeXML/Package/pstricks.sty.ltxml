@@ -21,7 +21,6 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
-use LaTeXML::Util::KeyVal;
 
 #  Implementation of the pstricks package. (incomplete)
 #  missing: \psgrid is missing most attributes
@@ -627,7 +626,7 @@ DefConstructor('\psset RequiredKeyVals:pstricks',
   "?#need(<ltx:g transform='#transform'>)",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    setGraphParams(%{ KeyVals($whatsit->getArg(1)) });
+    setGraphParams(%{ GetKeyVals($whatsit->getArg(1)) });
     my ($need, $have) = (getNecessaryTransform(), LookupValue('_psActiveCCTransform'));
     if (!$need->equals($have)) {
       AssignValue('_psActiveCCTransform', $need);
@@ -824,7 +823,7 @@ DefMacro('\newpsobject {} {} {}', sub {
     return; });
 
 DefMacro('\newpsstyle {} RequiredKeyVals:pstricks', sub {
-    AssignValue('psstyle_' . ToString($_[1]), KeyVals($_[2]));
+    AssignValue('psstyle_' . ToString($_[1]), GetKeyVals($_[2]));
     return; });
 
 ##########################################################################################

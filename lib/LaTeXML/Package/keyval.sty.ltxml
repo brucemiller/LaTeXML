@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use LaTeXML::Util::KeyVal;
 
 # Should define some macros that connect to KeyVal ?
 
@@ -26,7 +25,7 @@ DefPrimitive('\define@key{}{}[]{}', sub {
     DefKeyVal($keyset, $key, '', ToString($default));
     # And define macros, just incase..
     DefMacroI('\KV@' . $keyset . '@' . $key,
-      LaTeXML::Parameters->new(LaTeXML::Parameters::newParameter('Plain', '{}')),
+      LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameters::newParameter('Plain', '{}')),
       $code,
       scope => 'global');
     DefMacroI('\KV@' . $keyset . '@' . $key . '@default', undef,
@@ -38,8 +37,7 @@ DefPrimitive('\define@key{}{}[]{}', sub {
 # \setkeys{keyset}{keyvals}
 DefMacro('\setkeys{}', sub {
     my ($gullet, $keyset) = @_;
-    $keyset = ToString(Expand($keyset));
-    my $values = ReadRequiredKeyVals($gullet, $keyset);
+    my ($values) = ReadParameters($gullet, 'RequiredKeyVals:' . ToString($keyset));
     $values->revert; });    # and it will be expanded/digested as needed(?)
 
 #======================================================================

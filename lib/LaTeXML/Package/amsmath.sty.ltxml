@@ -443,7 +443,7 @@ sub rearrangeLoneAMSAligned {
                 _box => MathWhatsit(Digest(T_CS('\displaystyle')),
                   $document->getNodeBox($stuff)));
               my $xmath = $document->openElementAt($imath, 'ltx:XMath');
-              { local $LaTeXML::Document::ID_SUFFIX = '.mf';
+              { local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
                 $document->appendClone($xmath, $stuff->childNodes); }
               $document->closeElementAt($xmath);
               $document->closeElementAt($imath); }

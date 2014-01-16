@@ -15,7 +15,6 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
-use LaTeXML::Array;
 
 #**********************************************************************
 # Organized following
@@ -145,8 +144,8 @@ DefMacro('\begin{}', sub {
         my $undef = '{' . $name . '}';
         $STATE->noteStatus(undefined => $undef);
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
-        $STATE->installDefinition(LaTeXML::Constructor->new($token, undef,
-            sub { LaTeXML::Stomach::makeError($_[0], 'undefined', $undef); })); }
+        $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
+            sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $undef); })); }
       (T_CS('\begingroup'), Invocation(T_CS('\lx@setcurrenvir'), $env), $token); } });
 
 DefMacro('\end{}', sub {
@@ -1296,7 +1295,7 @@ DefPrimitiveI('\obeycr',    undef, sub { AssignValue('PRESERVE_NEWLINES' => 1); 
 DefPrimitiveI('\restorecr', undef, sub { AssignValue('PRESERVE_NEWLINES' => 0); });
 
 DefPrimitiveI('\dospecials', undef, sub {
-    map { $LaTeXML::STATE->assignCatcode($_ => CC_OTHER, 'local') }
+    map { $STATE->assignCatcode($_ => CC_OTHER, 'local') }
       #        '^', '_', '@', '~', '&', '$', '#', '%', "'", ' ');
       ' ', '\\', '{', '}', '$', '&', '#', '^', '_', '%', '~';
     return; });
@@ -1748,20 +1747,28 @@ DefMacro('\skew{}{}{}', '');    # ? just some subtle spacing, right????
 # the type of letter, greek, symbol, etc.
 # Apparently, with the normal TeX setup, these fonts don't really merge,
 # rather they override all of family, series and shape.
-
-DefConstructor('\mathrm{}', '#1', bounded => 1, requireMath => 1, font => { family => 'serif' });
-DefConstructor('\mathit{}', '#1', bounded => 1, requireMath => 1, font => { shape  => 'italic' });
-DefConstructor('\mathbf{}', '#1', bounded => 1, requireMath => 1, font => { series => 'bold' });
-DefConstructor('\mathsf{}', '#1', bounded => 1, requireMath => 1, font => { family => 'sansserif' });
-DefConstructor('\mathtt{}', '#1', bounded => 1, requireMath => 1, font => { family => 'typewriter' });
-DefConstructor('\mathcal{}', '#1', bounded => 1, requireMath => 1, font => { family => 'caligraphic' });
-DefConstructor('\mathscr{}', '#1', bounded => 1, requireMath => 1, font => { family => 'script' });
+DefConstructor('\mathrm{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
+DefConstructor('\mathit{}', '#1', bounded => 1, requireMath => 1,
+  font => { shape => 'italic', family => 'serif', series => 'medium' });
+DefConstructor('\mathbf{}', '#1', bounded => 1, requireMath => 1,
+  font => { series => 'bold', family => 'serif', shape => 'upright' });
+DefConstructor('\mathsf{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'sansserif', series => 'medium', shape => 'upright' });
+DefConstructor('\mathtt{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'typewriter', series => 'medium', shape => 'upright' });
+DefConstructor('\mathcal{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
+DefConstructor('\mathscr{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'script', series => 'medium', shape => 'upright' });
 DefConstructor('\mathnormal{}', '#1', bounded => 1, requireMath => 1,
-  font => { family => 'math', shape => 'italic' });
+  font => { family => 'math', shape => 'italic', series => 'medium' });
+
 DefMacroI('\fontsubfuzz',  undef, '.4pt');
 DefMacroI('\oldstylenums', undef, Tokens());
 
-DefPrimitiveI('\operator@font', undef, undef, font => { family => 'serif' });
+DefPrimitiveI('\operator@font', undef, undef,
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
 
 #**********************************************************************
 # C.8 Definitions, Numbering and Programming
@@ -1909,7 +1916,7 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
 DefPrimitive('\DeclareMathSizes{}{}{}{}', undef);
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
     my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-    my %font = LaTeXML::Font::lookupTeXFont($family, $series, $shape);
+    my %font = LaTeXML::Common::Font::lookupTeXFont($family, $series, $shape);
     DefPrimitiveI(T_CS(ToString($cs)), undef, undef, font => {%font}); });
 
 DefMacro('\newmathalphabet{}{}{}', Tokens());    # or expand int DeclareMathAlphabet?
@@ -3260,7 +3267,7 @@ DefConstructor('\@framebox[][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
-DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), LaTeXML::List->new()); });
+DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), LaTeXML::Core::List->new()); });
 DefPrimitive('\sbox DefToken{}', sub {
     AssignValue('box' . ToString($_[1]), Digest($_[2])); return; });
 
@@ -3276,8 +3283,8 @@ DefPrimitive('\@begin@lrbox Token', sub {
     $stomach->bgroup;
     #  my $font = $STATE->lookupValue('font');
     #  my $loc  = $stomach->getGullet->getLocator;
-    #  my $box = LaTeXML::Box->new($stomach->digestNextBody(),$font,$loc);
-    my $box = LaTeXML::List->new($stomach->digestNextBody());
+    #  my $box = LaTeXML::Core::Box->new($stomach->digestNextBody(),$font,$loc);
+    my $box = LaTeXML::Core::List->new($stomach->digestNextBody());
     AssignValue('box' . ToString($token), $box); });
 
 DefPrimitive('\usebox DefToken', sub {
@@ -3352,11 +3359,11 @@ sub ResolveReader {
   my ($type) = @_;
   return $type if ref $type eq 'CODE';    # It's already a reader (hopefully).
   $type = ToString($type);
-  if (my $descriptor = $LaTeXML::Parameters::PARAMETER_TABLE{$type}) {
+  if (my $descriptor = LookupMapping('PARAMETER_TYPES', $type)) {
     return $$descriptor{reader}; }
   # Otherwise, try to find a function named Read<Type>
   else {
-    return LaTeXML::Parameters::checkReaderFunction('Read' . $type); } }
+    return LaTeXML::Core::Parameters::checkReaderFunction('Read' . $type); } }
 
 # This defines a Pair parameter type,
 # that reads a parenthesized, comma separated pair of subtype.
@@ -3594,7 +3601,7 @@ DefMacro('\multiput Pair Pair {}{}', sub {
 Tag('ltx:picture',
   afterOpen => sub {
     my ($document, $node, $thing) = @_;
-    if ($thing && (ref $thing eq 'LaTeXML::Whatsit') && !$thing->getProperty('_added_tex')) {
+    if ($thing && (ref $thing eq 'LaTeXML::Core::Whatsit') && !$thing->getProperty('_added_tex')) {
       my $tex = UnTeX($thing);
       $document->setAttribute($node, tex => $tex);
       $thing->setProperty('_added_tex', 1); } });
@@ -3671,11 +3678,11 @@ DefPrimitive('\selectfont', sub {
     my $family = ToString(Expand(T_CS('\f@family')));
     my $series = ToString(Expand(T_CS('\f@series')));
     my $shape  = ToString(Expand(T_CS('\f@shape')));
-    if (my $sh = LaTeXML::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
+    if (my $sh = LaTeXML::Common::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
     else { Info('unexpected', $family, $_[0], "Unrecognized font family '$family'."); }
-    if (my $sh = LaTeXML::Font::lookupFontSeries($series)) { MergeFont(%$sh); }
+    if (my $sh = LaTeXML::Common::Font::lookupFontSeries($series)) { MergeFont(%$sh); }
     else { Info('unexpected', $series, $_[0], "Unrecognized font series '$series'."); }
-    if (my $sh = LaTeXML::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
+    if (my $sh = LaTeXML::Common::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
     else { Info('unexpected', $shape, $_[0], "Unrecognized font shape '$shape'."); }
 });
 
@@ -4173,7 +4180,7 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
     my ($gullet, $token, $if, $else) = @_;
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
-    (LaTeXML::Expandable::substituteTokens(xEquals($token, $next) ? $if : $else), $next); });
+    (LaTeXML::Core::Definition::Expandable::substituteTokens(xEquals($token, $next) ? $if : $else), $next); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
 Let('\@ifnext',           '\@ifnextchar');    # ????
 
@@ -4182,9 +4189,9 @@ DefMacro('\@ifstar {}{}', sub {
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
     if (T_OTHER('*')->equals($next)) {
-      LaTeXML::Expandable::substituteTokens($if); }
+      LaTeXML::Core::Definition::Expandable::substituteTokens($if); }
     else {
-      (LaTeXML::Expandable::substituteTokens($else), $next); } });
+      (LaTeXML::Core::Definition::Expandable::substituteTokens($else), $next); } });
 
 DefMacro('\@dblarg {}',    '\kernel@ifnextchar[{#1}{\@xdblarg{#1}}');
 DefMacro('\@xdblarg {}{}', '#1[{#2}]{#2}');

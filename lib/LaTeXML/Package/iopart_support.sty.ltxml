@@ -112,8 +112,12 @@ DefMath('\rme', "\x{2147}", role => 'ID',     meaning => 'exponential-e');
 DefMath('\rmi', "\x{2148}", role => 'ID',     meaning => 'imaginary-i');
 Let('\e', '\rme');
 
-DefPrimitiveI('\bcal', undef, '', font => { family => 'caligraphic', series => 'bold', forcebold => 1 });
-DefPrimitiveI('\bi', undef, '', font => { family => 'italic', series => 'bold', forcebold => 1 });
+DefPrimitiveI('\bcal', undef, '',
+  font => { family => 'caligraphic', series => 'bold', shape => 'upright',
+    forcebold => 1 });
+DefPrimitiveI('\bi', undef, '',
+  font => { family => 'italic', series => 'bold', shape => 'upright',
+    forcebold => 1 });
 
 DefMacro('\fl',       Tokens());                      # ?
 DefMacro('\case{}{}', '{\textstyle\frac{#1}{#2}}');

@@ -17,11 +17,13 @@ use LaTeXML::Package;
 #
 # See amsfndoc
 #
-DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1, font => { family => 'blackboard' });
+DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
 DefMacro('\Bbb{}',  '\mathbb{#1}');
 DefMacro('\bold{}', '\mathbb{#1}');
 # Also defined in eufrak
-DefConstructor('\mathfrak{}', '#1', bounded => 1, requireMath => 1, font => { family => 'fraktur' });
+DefConstructor('\mathfrak{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'fraktur', series => 'medium', shape => 'upright' });
 DefMacro('\frak{}', '\mathfrak{#1}');
 
 # Not necessarily math

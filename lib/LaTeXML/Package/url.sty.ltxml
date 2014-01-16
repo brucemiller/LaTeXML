@@ -89,7 +89,7 @@ DefPrimitive('\urldef{}', sub {
     my ($stomach, $cmd) = @_;
     my $gullet    = $stomach->getGullet;
     my @expansion = $stomach->digestNextBody(T_CS('\endgroup'));
-    my $expansion = LaTeXML::List->new(@expansion);
+    my $expansion = LaTeXML::Core::List->new(@expansion);
     DefPrimitiveI($cmd, undef, sub { @expansion; });
     (); });
 
