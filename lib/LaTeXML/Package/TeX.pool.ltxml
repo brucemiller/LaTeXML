@@ -422,7 +422,7 @@ DefParameterType('RequiredKeyVals', sub {
       return (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_END)); }
     else {
       Error('expected', '{', $gullet, "Missing keyval arguments");
-      return (LaTeXML::Core::KeyVals->new($keyset, T_BEGIN, T_END,)); } });
+      return (LaTeXML::Core::KeyVals->new($keyset, [], open => T_BEGIN, close => T_END)); } });
 
 DefParameterType('OptionalKeyVals', sub {
     my ($gullet, $keyset) = @_;
@@ -1528,7 +1528,7 @@ sub revert_spec {
 DefParameterType('BoxSpecification', sub {
     my ($gullet) = @_;
     if (my $key = $gullet->readKeyword('to', 'spread')) {
-      LaTeXML::BoxDimensions->new($key => $gullet->readDimension); } },
+      LaTeXML::Core::KeyVals->new(undef, [$key, $gullet->readDimension]); } },
   optional => 1, undigested => 1);
 
 # Risky: I think this needs to be digested as a body to work like TeX (?)
@@ -1588,8 +1588,8 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $vmode  = $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
     my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width       => $spec && $$spec{to},
-      'pad-width' => $spec && $$spec{spread});
+      width       => GetKeyVal($spec, 'to')     // undef,
+      'pad-width' => GetKeyVal($spec, 'spread') // undef);
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -1603,9 +1603,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
-    if (my $w = $$spec{to}) {
+    if (my $w = GetKeyVal($spec, 'to')) {
       $whatsit->setWidth($w); }
-    elsif (my $s = $$spec{spread}) {
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
     return; });
 
@@ -1676,14 +1676,16 @@ sub insertBlock {
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'bottom',
-      height => $spec && $$spec{to}, 'pad-height' => $spec && $$spec{spread}); },
+      height       => GetKeyVal($spec, 'to')     // undef,
+      'pad-height' => GetKeyVal($spec, 'spread') // undef); },
   properties => { sizer => '#2' },
   mode => 'text');
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top',
-      height => $spec && $$spec{to}, 'pad-height' => $spec && $$spec{spread}); },
+      height       => GetKeyVal($spec, 'to')     // undef,
+      'pad-height' => GetKeyVal($spec, 'spread') // undef); },
   properties => { sizer => '#2' },
   mode => 'text');
 
@@ -1692,19 +1694,19 @@ DefParameterType('RuleSpecification', sub {
     my %spec = ();
     while (my $key = $gullet->readKeyword('width', 'height', 'depth')) {
       $spec{$key} = $gullet->readDimension; }
-    LaTeXML::BoxDimensions->new(%spec); },
+    LaTeXML::Core::KeyVals->new(undef, [%spec]); },
   optional => 1, undigested => 1);
 
 DefConstructor('\vrule RuleSpecification',
   "?#invisible()(?#isVerticalRule()"
-    . "(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)'"
-    . " width='&REF(#1,width)' color='#color'/>))",
+    . "(<ltx:rule height='&GetKeyVal(#1,height)' depth='&GetKeyVal(#1,depth)'"
+    . " width='&GetKeyVal(#1,width)' color='#color'/>))",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);
-    my $width  = $$dims{width};
-    my $height = $$dims{height};
-    my $depth  = $$dims{depth};
+    my $width  = GetKeyVal($dims, 'width');
+    my $height = GetKeyVal($dims, 'height');
+    my $depth  = GetKeyVal($dims, 'depth');
     $whatsit->setProperty(width  => $width)  if $width;
     $whatsit->setProperty(height => $height) if $height;
     $whatsit->setProperty(depth  => $depth)  if $depth;
@@ -1726,15 +1728,15 @@ DefConstructor('\vrule RuleSpecification',
 
 DefConstructor('\hrule RuleSpecification',
   "?#isHorizontalRule()"
-    . "(<ltx:rule height='&REF(#1,height)' depth='&REF(#1,depth)'"
-    . " width='&REF(#1,width)' color='#color'/>)",
+    . "(<ltx:rule height='&GetKeyVal(#1,height)' depth='&GetKeyVal(#1,depth)'"
+    . " width='&GetKeyVal(#1,width)' color='#color'/>)",
   #     properties=>{isHorizontalRule=>1});
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);
-    my $width  = $$dims{width};
-    my $height = $$dims{height};
-    my $depth  = $$dims{depth};
+    my $width  = GetKeyVal($dims, 'width');
+    my $height = GetKeyVal($dims, 'height');
+    my $depth  = GetKeyVal($dims, 'depth');
     $whatsit->setProperty(width  => $width)  if $width;
     $whatsit->setProperty(height => $height) if $height;
     $whatsit->setProperty(depth  => $depth)  if $depth;
@@ -1749,8 +1751,8 @@ DefConstructor('\hrule RuleSpecification',
         $alignment->addLine('t');
         $whatsit->setProperty(isHorizontalRule => 1) } }
     else {
-      $$dims{width}  = '100%' unless defined $w;
-      $$dims{height} = '1px'  unless defined $h; }
+      $dims->setValue(width  => '100%') unless defined $w;
+      $dims->setValue(height => '1px')  unless defined $h; }
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -2433,8 +2435,9 @@ sub afterCellUnlist {
 DefConstructor('\halign BoxSpecification', sub {
     my ($document, $spec, %props) = @_;
     my $body = $props{body};
-    constructAlignment($document, $body, attributes => { width => $$spec{to},
-        'pad-width' => $$spec{spread} }); },
+    constructAlignment($document, $body, attributes => {
+        width       => GetKeyVal($spec, 'to')     // undef,
+        'pad-width' => GetKeyVal($spec, 'spread') // undef }); },
   reversion   => '\halign #1{#2\cr#3}',
   bounded     => 1,
   afterDigest => sub {
@@ -2516,8 +2519,11 @@ sub stripDupMath {
 DefConstructor('\@halign BoxSpecification Undigested {}',
   sub {
     my ($document, $spec, $template, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { width => $$spec{to},
-        'pad-width' => $$spec{spread} }); },
+    constructAlignment($document, $body,
+      attributes => {
+        width       => GetKeyVal($spec, 'to')     // undef,
+        'pad-width' => GetKeyVal($spec, 'spread') // undef }); },
+
   reversion => '\halign #1{#2\cr#3}',
   bounded   => 1);
 
