@@ -208,7 +208,8 @@ sub UnTeX {
     if (($cc == CC_SPACE) && ($s eq "\n")) {    # preserve newlines already present
       if ($length > 0) {
         $string .= $s; $length = 0; } }
-    elsif ((($cc == CC_LETTER) || (($cc == CC_OTHER) && ($s =~ /^\d+$/)))    # Letter(s) or digit(s)
+    # If this token is a letter (or otherwise starts with a letter or digit): space or linebreak
+    elsif ((($cc == CC_LETTER) || (($cc == CC_OTHER) && ($s =~ /^(?:\p{IsAlpha}|\p{IsDigit})/)))
       && ($prevcc == CC_CS) && ($prevs =~ /(.)$/)
       && (($LaTeXML::Global::STATE->lookupCatcode($1) || CC_COMMENT) == CC_LETTER)) {
       # Insert a (virtual) space before a letter if previous token was a CS w/letters
