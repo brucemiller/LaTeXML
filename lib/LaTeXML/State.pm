@@ -597,12 +597,12 @@ the value will be assigned within the current grouping.
 =item C<< $STATE->pushFrame; >>
 
 Starts a new level of grouping.
-Note that this is lower level than C<\bgroup>; See L<LaTeXML::Stomach>.
+Note that this is lower level than C<\bgroup>; See L<LaTeXML::Core::Stomach>.
 
 =item C<< $STATE->popFrame; >>
 
 Ends the current level of grouping.
-Note that this is lower level than C<\egroup>; See L<LaTeXML::Stomach>.
+Note that this is lower level than C<\egroup>; See L<LaTeXML::Core::Stomach>.
 
 =item C<< $STATE->setPrefix($prefix); >>
 
@@ -685,14 +685,14 @@ and using a value of 1 to specify that it is active.
 Get the "meaning" currently associated with C<$token>,
 either the definition (if it is a control sequence or active character)
  or the token itself if it shouldn't be executable.
-(See L<LaTeXML::Definition>)
+(See L<LaTeXML::Core::Definition>)
 
 =item C<< $STATE->assignMeaning($token,$defn,$scope); >>
 
 Set the definition associated with C<$token> to C<$defn>.
 If C<$globally> is true, it makes this the global definition
 rather than bound within the current group.
-(See L<LaTeXML::Definition>, and L<LaTeXML::Package>)
+(See L<LaTeXML::Core::Definition>, and L<LaTeXML::Package>)
 
 =item C<< $STATE->installDefinition($definition, $scope); >>
 

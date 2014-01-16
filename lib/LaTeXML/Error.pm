@@ -179,9 +179,9 @@ sub generateMessage {
     push(@lines, "Node is " . Stringify($where)); }
   ## Hmm... if we're being verbose or level is high, we might do this:
   ### "Currently in ".$doc->getInsertionContext); }
-  elsif ($wheretype =~ 'LaTeXML::Gullet') {
+  elsif ($wheretype =~ 'LaTeXML::Core::Gullet') {
     push(@lines, $where->showUnexpected); }    # Or better?
-  elsif ($wheretype =~ 'LaTeXML::Stomach') {
+  elsif ($wheretype =~ 'LaTeXML::Core::Stomach') {
     push(@lines,
       "Recently digested: " . join(' ', map { Stringify($_) } @LaTeXML::LIST))
       if $verbosity > 1; }

@@ -109,15 +109,15 @@ for object identity.
 
 =item C<< $boole = $object->isaToken; >>
 
-Returns whether C<$object> is an L<LaTeXML::Token>.
+Returns whether C<$object> is an L<LaTeXML::Core::Token>.
 
 =item C<< $boole = $object->isaBox; >>
 
-Returns whether C<$object> is an L<LaTeXML::Box>.
+Returns whether C<$object> is an L<LaTeXML::Core::Box>.
 
 =item C<< $boole = $object->isaDefinition; >>
 
-Returns whether C<$object> is an L<LaTeXML::Definition>.
+Returns whether C<$object> is an L<LaTeXML::Core::Definition>.
 
 =item C<< $digested = $object->beDigested; >>
 

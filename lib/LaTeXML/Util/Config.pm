@@ -241,7 +241,7 @@ sub push {
   my ($self, $key, $value) = @_;
   $self->{dirty} = 1;
   $self->{opts}->{$key} = [] unless ref $self->{opts}->{$key};
-  CORE::push @{$self->{opts}->{$key}}, $value; 
+  CORE::push @{ $self->{opts}->{$key} }, $value;
   return; }
 
 sub delete {
@@ -339,8 +339,8 @@ sub _prepare_options {
   #======================================================================
   # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
   { no strict 'refs';
-    foreach my $ltx_class (@{$opts->{debug}||[]}) {
-      ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; }}
+    foreach my $ltx_class (@{ $opts->{debug} || [] }) {
+      ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } }
 
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default

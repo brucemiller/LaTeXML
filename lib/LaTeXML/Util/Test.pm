@@ -81,7 +81,7 @@ sub do_fail {
 sub latexml_ok {
   my ($texpath, $xmlpath, $name) = @_;
   my @paths = ($texpath =~ m|^(.+)/\w+\.tex$| ? ($1) : ());
-  my $latexml = eval { LaTeXML->new(preload => [], searchpaths => [], includeComments => 0,
+  my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includeComments => 0,
       verbosity => -2); };
   return do_fail($name, "Couldn't instanciate LaTeXML: " . @!) unless $latexml;
 
