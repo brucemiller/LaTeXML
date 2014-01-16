@@ -14,7 +14,7 @@ package LaTeXML::Model;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Font;
+use LaTeXML::Common::Font;
 use LaTeXML::Rewrite;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
@@ -30,7 +30,7 @@ sub new {
     doctype_namespaces      => {},
     namespace_errors        => 0,
     %options }, $class;
-  $$self{xpath}->registerFunction('match-font', \&LaTeXML::Font::match_font);
+  $$self{xpath}->registerFunction('match-font', \&LaTeXML::Common::Font::match_font);
   $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
   return $self; }
 
@@ -409,7 +409,7 @@ C<LaTeXML::Model> - represents the Document Model
 =head1 DESCRIPTION
 
 C<LaTeXML::Model> encapsulates information about the document model to be used
-in converting a digested document into XML by the L<LaTeXML::Document>.
+in converting a digested document into XML by the L<LaTeXML::Core::Document>.
 This information is based on the document schema (eg, DTD, RelaxNG),
 but is also modified by package modules; thus the model may not be
 complete until digestion is completed.

@@ -85,7 +85,7 @@ sub GetArchive {
     my $compression_level = ($file =~ /css|js|xml|html$/) ?
       COMPRESSION_DEFLATED
       : COMPRESSION_STORED;
-    $archive->addString($file_contents, $file, )->desiredCompressionMethod( $compression_level ); }
+    $archive->addString($file_contents, $file,)->desiredCompressionMethod($compression_level); }
 
   foreach my $subdir (sort @subdirs) {
     my $current_dir = File::Spec->catdir($directory, $subdir);
