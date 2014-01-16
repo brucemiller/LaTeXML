@@ -16,7 +16,7 @@ use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
-use LaTeXML;
+use LaTeXML::Core;
 use LaTeXML::Version;
 use LaTeXML::Util::Pathname;
 
@@ -69,7 +69,7 @@ print STDERR "processing started " . localtime() . "\n" if $verbosity > -1;
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-my $latexml = LaTeXML->new(
+my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
   searchpaths     => [grep { -d $_ } reverse(@paths)],
   graphicspaths   => ['.'],

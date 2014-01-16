@@ -51,7 +51,7 @@ binmode(STDOUT, ":encoding(UTF-8)");    # Make sure output can handle UTF8
 
 my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
 my $XPATH = LaTeXML::Common::XML::XPath->new(ltx => "http://dlmf.nist.gov/LaTeXML");
-$XPATH->registerFunction('match-font', \&LaTeXML::Font::match_font);
+$XPATH->registerFunction('match-font', \&LaTeXML::Common::Font::match_font);
 
 # Objects being labelled sections, equations, etc.
 our %OBJECTS = ();

@@ -16,7 +16,7 @@ use FindBin;
 use lib "$FindBin::RealBin/../lib";
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
-use LaTeXML;
+use LaTeXML::Core;
 use LaTeXML::Version;
 use LaTeXML::Util::Pathname;
 
@@ -127,7 +127,7 @@ EODoc
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-my $latexml = LaTeXML->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
+my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
   verbosity => $verbosity, strict => $strict,
   includeComments => 0, includeStyles => $includestyles,
   documentid      => $documentid,
