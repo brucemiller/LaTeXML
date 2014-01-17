@@ -5,6 +5,7 @@
 #======================================================================
 use ExtUtils::MakeMaker;
 use strict;
+use warnings;
 use FindBin;
 
 #======================================================================
@@ -20,12 +21,12 @@ use FindBin;
 #     rather than where kpsewhich says TEXMFLOCAL is (useful for spec files?)
 #======================================================================
 
-our $OLD_LIBXML = grep(/OLD_LIBXML/, @ARGV);
+our $OLD_LIBXML = grep { /OLD_LIBXML/ } @ARGV;
 our $TEXMF;
-my ($texmfspec) = grep(/^TEXMF/, @ARGV);
+my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
   $TEXMF = $1;
-  @ARGV = grep($_ ne $texmfspec, @ARGV);    # Remove so MakeMaker doesn't fret.
+  @ARGV = grep { $_ ne $texmfspec } @ARGV;    # Remove so MakeMaker doesn't fret.
 }
 our @EXCLUSIONS     = ();
 our $MORE_MACROS    = {};
@@ -37,9 +38,10 @@ install_TeXStyles();
 extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
-  AUTHOR    => 'Bruce Miller <bruce.miller@nist.gov>',
-  ABSTRACT  => "transforms TeX and LaTeX into XML",
-  PREREQ_PM => {
+  AUTHOR       => 'Bruce Miller <bruce.miller@nist.gov>',
+  ABSTRACT     => "transforms TeX and LaTeX into XML",
+  VERSION_FROM => 'lib/LaTeXML/Version.in',
+  PREREQ_PM    => {
     'Test::Simple' => 0,
     'DB_File'      => 0,
     # If we have an "old" version of XML::LibXML,
@@ -72,20 +74,21 @@ print STDERR ('=' x 55), "\n",
   "| the git pre-commit hook to assure style compliant code.\n",
   "| To install:\n",
   "|    ln -s ../../tools/pre-commit .git/hooks\n",
-  ('=' x 55), "\n";
+  ('=' x 55), "\n" unless -x '.git/hooks/pre-commit';
 #**********************************************************************
 # Overriding ExtUtils::MM methods
 #**********************************************************************
 # Exclude the sources used to generate others from the build (See below).
 sub MY::libscan {
   my ($self, $path) = @_;
-  if (($path =~ /~$/) || grep($path eq $_, @EXCLUSIONS)) {
+  if (($path =~ /~$/) || grep { $path eq $_ } @EXCLUSIONS) {
     return ""; }
-  $self->MY::SUPER::libscan($path); }
+  return $self->MY::SUPER::libscan($path); }
 
 # Append any additional Makefile rules added by the following.
 sub MY::postamble {
-  shift->MY::SUPER::postamble(@_) . $MORE_MAKERULES; }
+  my ($self, @rules) = @_;
+  return $self->MY::SUPER::postamble(@rules) . $MORE_MAKERULES; }
 
 #**********************************************************************
 # Special Cases
@@ -106,7 +109,7 @@ sub record_revision {
   ## This command is appropriate for svn
   ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
   ## This command is appropriate for git (I think)
-  if(system("git --version")==0){ # can run git? if so, try to determine the revision
+  if (system("git --version") == 0) {    # can run git? if so, try to determine the revision
     $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
@@ -132,7 +135,7 @@ update_revision:
 	|| $(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
 RecordRevision
-}
+  return; }
 #======================================================================
 # We'll compile the RecDescent grammar during make; don't need to install grammar.
 sub compile_MathGrammar {
@@ -148,7 +151,7 @@ $(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 	$(MV) MathGrammar.pm blib/lib/LaTeXML/MathGrammar.pm
 
 MakeGrammar
-}
+  return; }
 
 #======================================================================
 # Install included TeX style file(s) into the standard TEXMFLOCAL,
@@ -198,7 +201,7 @@ uninstall ::
 	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
 
 InstallTeXStyles
-}
+  return; }
 
 #======================================================================
 # Extra tests for Tikz; too slow for everyday tests.
@@ -213,6 +216,6 @@ extratest ::
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-MExtUtils::Command::MM" "-e" "test_harness($(TEST_VERBOSE), '$(INST_LIB)', '$(INST_ARCHLIB)')" $(EXTRA_TEST_FILES)
 
 ExtraTests
-}
+  return; }
 
 #======================================================================
