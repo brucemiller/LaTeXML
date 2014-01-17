@@ -462,8 +462,14 @@ sub convert_post {
     if (@{ $opts->{bibliographies} }) {
       if (grep { /$LaTeXML::Util::Config::is_bibtex/ } @{ $opts->{bibliographies} }) {
         my $bib_converter =
-          $self->get_converter(LaTeXML::Util::Config->new(cache_key => 'BibTeX',
-            type => "BibTeX", post => 0, format => 'dom', whatsout => 'document', whatsin => 'document'));
+          $self->get_converter(LaTeXML::Util::Config->new(
+            cache_key => 'BibTeX',
+            type => "BibTeX", 
+            post => 0,
+            format => 'dom',
+            whatsin=>'document',
+            whatsout => 'document',
+            bibliographies => []));
         $self->{log} .= $self->flush_log;
         @{ $opts->{bibliographies} } = map { /$LaTeXML::Util::Config::is_bibtex/ ?
             $bib_converter->convert($_)->{result} : $_ } @{ $opts->{bibliographies} };
