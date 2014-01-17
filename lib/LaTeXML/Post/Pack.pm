@@ -40,8 +40,8 @@ sub process {
   my $whatsout = $self->{whatsout};
 
   # Archive once if requested
-  if ($whatsout eq 'archive') {
-    my $archive = GetArchive($self->{siteDirectory});
+  if ($whatsout =~ /^archive/) {
+    my $archive = GetArchive($self->{siteDirectory},$whatsout);
     Fatal("I/O", $self, $docs[0], "Writing archive to IO::String handle failed") unless defined $archive;
     return ($archive); }
   # Otherwise pack each document passed
@@ -59,10 +59,9 @@ sub process {
   return @packed_docs; }
 
 sub GetArchive {
-  my ($directory) = @_;
+  my ($directory,$whatsout) = @_;
   # Zip and send back
   my $archive = Archive::Zip->new();
-  my $payload = '';
   opendir(my $dirhandle, $directory)
     or Fatal('expected', 'directory', undef,
     "Expected a directory to archive '$directory':", $@);
@@ -91,8 +90,12 @@ sub GetArchive {
     my $current_dir = File::Spec->catdir($directory, $subdir);
     $archive->addTree($current_dir, $subdir, sub { /^[^.]/ && (!/\.(?:zip|gz|epub|mobi|~)$/) }, COMPRESSION_STORED); }
 
-  my $content_handle = IO::String->new($payload);
-  undef $payload unless ($archive->writeToFileHandle($content_handle) == AZ_OK);
+  my $payload;
+  if ($whatsout =~ /^archive(::zip)?$/) {
+    my $content_handle = IO::String->new($payload);
+    undef $payload unless ($archive->writeToFileHandle($content_handle) == AZ_OK); }
+  elsif ($whatsout eq 'archive::zip::perl') {
+    $payload = $archive; }
   return $payload; }
 
 sub GetMath {
