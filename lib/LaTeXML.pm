@@ -145,7 +145,7 @@ sub convert {
   elsif ($opts->{whatsin} eq 'fragment') {
     $current_preamble  = $opts->{preamble}  || 'standard_preamble.tex';
     $current_postamble = $opts->{postamble} || 'standard_postamble.tex'; }
-  elsif ($opts->{whatsin} eq 'archive') {
+  elsif ($opts->{whatsin} =~ /^archive/) {
     # Sandbox the input
     $opts->{archive_sourcedirectory} = $opts->{sourcedirectory};
     my $sandbox_directory = tempdir();
@@ -251,7 +251,7 @@ sub convert {
   }
 
   # Handle Whats OUT (if we need a sandbox)
-  if ($opts->{whatsout} eq 'archive') {
+  if ($opts->{whatsout} =~ /^archive/) {
     $opts->{archive_sitedirectory} = $opts->{sitedirectory};
     $opts->{archive_destination}   = $opts->{destination};
     my $destination_name  = pathname_name($opts->{destination});
@@ -323,13 +323,12 @@ sub convert {
     print STDERR "\nConversion complete: " . $runtime->{status} . ".\n";
     print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . "\n";
     # If we just processed an archive, clean up sandbox directory.
-    if ($opts->{whatsin} eq 'archive') {
+    if ($opts->{whatsin} =~ /^archive/) {
       remove_tree($opts->{sourcedirectory});
       $opts->{sourcedirectory} = $opts->{archive_sourcedirectory}; }
 
     # Close and restore STDERR to original condition.
     my $log = $self->flush_log;
-    # Hope to clear some memory:
     $serialized = $dom if ($opts->{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     $self->sanitize($log);
@@ -342,7 +341,7 @@ sub convert {
   if ($serialized) {
     # If serialized has been set, we are done with the job
     # If we just processed an archive, clean up sandbox directory.
-    if ($opts->{whatsin} eq 'archive') {
+    if ($opts->{whatsin} =~ /^archive/) {
       remove_tree($opts->{sourcedirectory});
       $opts->{sourcedirectory} = $opts->{archive_sourcedirectory}; }
     my $log = $self->flush_log;
@@ -372,10 +371,10 @@ sub convert {
       $result = undef; } }
 
   # Clean-up everything we sandboxed
-  if ($opts->{whatsin} eq 'archive') {
+  if ($opts->{whatsin} =~ /^archive/) {
     remove_tree($opts->{sourcedirectory});
     $opts->{sourcedirectory} = $opts->{archive_sourcedirectory}; }
-  if ($opts->{whatsout} eq 'archive') {
+  if ($opts->{whatsout} =~ /^archive/) {
     remove_tree($opts->{sitedirectory});
     $opts->{sitedirectory} = $opts->{archive_sitedirectory};
     $opts->{destination}   = $opts->{archive_destination};
@@ -556,7 +555,7 @@ sub convert_post {
           my $cssdest = pathname_absolute($css, pathname_directory($opts->{destination}));
           $cssdest .= '.css' unless $cssdest =~ /\.css$/;
           warn "CSS source $csssource is same as destination!" if $csssource eq $cssdest;
-          pathname_copy($csssource, $cssdest) if ($opts->{local} || ($opts->{whatsout} eq 'archive')); # TODO: Look into local copying carefully
+          pathname_copy($csssource, $cssdest) if ($opts->{local} || ($opts->{whatsout} =~ /^archive/)); # TODO: Look into local copying carefully
           push(@{ $$parameters{CSS} }, $cssdest); }
         else {
           warn "Couldn't find CSS file $css in paths " . join(',', @searchpaths) . "\n";
@@ -572,7 +571,7 @@ sub convert_post {
           my $jsdest = pathname_absolute($js, pathname_directory($opts->{destination}));
           $jsdest .= '.js' unless $jsdest =~ /\.js$/;
           warn "Javascript source $jssource is same as destination!" if $jssource eq $jsdest;
-          pathname_copy($jssource, $jsdest) if ($opts->{local} || ($opts->{whatsout} eq 'archive')); #TODO: Local handling
+          pathname_copy($jssource, $jsdest) if ($opts->{local} || ($opts->{whatsout} =~ /^archive/)); #TODO: Local handling
           push(@{ $$parameters{JAVASCRIPT} }, $jsdest); }
         else {
           warn "Couldn't find Javascript file $js in paths " . join(',', @searchpaths) . "\n";
@@ -583,7 +582,7 @@ sub convert_post {
         if (my $iconsrc = pathname_find($opts->{icon}, paths => [$DOCUMENT->getSearchPaths])) {
           print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
           my $icondest = pathname_absolute($opts->{icon}, pathname_directory($opts->{destination}));
-          pathname_copy($iconsrc, $icondest) if ($opts->{local} || ($opts->{whatsout} eq 'archive'));
+          pathname_copy($iconsrc, $icondest) if ($opts->{local} || ($opts->{whatsout} =~ /^archive/));
           $$parameters{ICON} = $icondest; }
         else {
           warn "Couldn't find ICON " . $opts->{icon} . " in paths " . join(',', @searchpaths) . "\n";
@@ -612,7 +611,7 @@ sub convert_post {
   # write all the files to disk during post-processing
   if ($opts->{destination} &&
     (($opts->{local} && ($opts->{whatsout} eq 'document'))
-      || ($opts->{whatsout} eq 'archive'))) {
+      || ($opts->{whatsout} =~ /^archive/))) {
     require LaTeXML::Post::Writer;
     push(@procs, LaTeXML::Post::Writer->new(
         format => $format, omit_doctype => $opts->{omit_doctype},
@@ -626,12 +625,12 @@ sub convert_post {
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
-  if (($opts->{whatsout} eq 'archive') && ($format !~ /^x?html|xml/)) {
+  if (($opts->{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml/)) {
     require LaTeXML::Post::Manifest;
     my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
-  if ($opts->{log} && ($opts->{whatsout} eq 'archive') && (!pathname_is_absolute($opts->{log}))) {
+  if ($opts->{log} && ($opts->{whatsout} =~ /^archive/) && (!pathname_is_absolute($opts->{log}))) {
     my $destination_directory = $postdocs[0]->getDestinationDirectory();
     my $log_file = pathname_absolute($opts->{log}, $destination_directory);
     if (pathname_is_contained($log_file, $destination_directory)) {
@@ -662,7 +661,7 @@ sub convert_post {
   print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
   # Avoid writing the main file twice (non-archive documents):
   if ($opts->{destination} && $opts->{local} && ($opts->{whatsout} eq 'document')
-    && ($opts->{whatsout} ne 'archive')) {
+    && ($opts->{whatsout} !~ /^archive/)) {
     undef $postdoc; }
   return $postdoc; }
 
