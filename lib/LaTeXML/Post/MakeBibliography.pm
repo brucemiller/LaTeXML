@@ -91,7 +91,12 @@ sub getBibEntries {
   # Also, record the citations from each bibentry to others.
   my %entries = ();
   foreach my $bibfile (@{ $$self{bibliographies} }) {
-    my $bibdoc = $doc->newFromFile($bibfile);
+    my $bibdoc;
+    if (!ref($bibfile)) {
+      $bibdoc = $doc->newFromFile($bibfile); }
+    else {
+      $bibdoc = $doc->new($bibfile, sourceDirectory => '.'); }
+
     foreach my $bibentry ($bibdoc->findnodes('//ltx:bibentry')) {
       my $bibkey = $bibentry->getAttribute('key');
       my $bibid  = $bibentry->getAttribute('xml:id');
