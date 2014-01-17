@@ -29,20 +29,6 @@ use LaTeXML::Version;
 use Encode;
 use FindBin;
 use base qw(LaTeXML::Object);
-##use vars qw($VERSION);
-use vars qw($VERSION $FULLVERSION $IDENTITY);
-
-$LaTeXML::Core::VERSION = "0.7.9alpha";
-# Derived, more informative version numbers
-$LaTeXML::Core::FULLVERSION = "LaTeXML version $VERSION"
-  . ($LaTeXML::Core::Version::REVISION ? "; revision $LaTeXML::Core::Version::REVISION" : '');
-$LaTeXML::Core::IDENTITY = "$FindBin::Script ($FULLVERSION)";
-
-local $LaTeXML::VERSION  = $LaTeXML::Core::VERSION;
-local $LaTeXML::IDENTITY = $LaTeXML::Core::IDENTITY;
-our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
-  qw( $LaTeXML::IDENTITY),
-);
 
 #**********************************************************************
 
