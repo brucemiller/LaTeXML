@@ -41,7 +41,7 @@ sub process {
 
   # Archive once if requested
   if ($whatsout =~ /^archive/) {
-    my $archive = GetArchive($self->{siteDirectory},$whatsout);
+    my $archive = GetArchive($self->{siteDirectory}, $whatsout);
     Fatal("I/O", $self, $docs[0], "Writing archive to IO::String handle failed") unless defined $archive;
     return ($archive); }
   # Otherwise pack each document passed
@@ -59,7 +59,7 @@ sub process {
   return @packed_docs; }
 
 sub GetArchive {
-  my ($directory,$whatsout) = @_;
+  my ($directory, $whatsout) = @_;
   # Zip and send back
   my $archive = Archive::Zip->new();
   opendir(my $dirhandle, $directory)
