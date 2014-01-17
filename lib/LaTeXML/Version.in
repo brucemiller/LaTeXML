@@ -13,10 +13,36 @@
 package LaTeXML::Version;
 use strict;
 use warnings;
+use FindBin;
 
-use vars qw($REVISION);
-# The following should be filled in by make
-$REVISION = "__REVISION__";
+#======================================================================
+# This puts versioning in one place so that all components of LaTeXML
+# can easily see it with only a minimal import.
+# However, we still must contrive that $VERSION is visible
+# DIRECTLY in LaTeXML.pm, otherwise MakeMaker won't see it
+# and modules that depend on LaTeXML won't see the version number!
+# This formulation:
+###   $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
+# seems to work around ExtUtils::MakeMaker's get_version.
+# Keep this as $LaTeXML::Version::VERSION, since get_version clears $VERSION!!!
+#======================================================================
+
+use vars qw($VERSION);
+
+# This is the main version of LaTeXML being claimed.
+$VERSION = '0.7.99';
+
+$LaTeXML::VERSION = $VERSION;   # "export" it...
+
+# This is the git/svn/whatever revision; it should be filled in by make.
+$LaTeXML::REVISION = "__REVISION__";
+
+# Derived, more informative version numbers
+$LaTeXML::FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
+  . ($LaTeXML::REVISION ? "; revision $LaTeXML::REVISION" : '');
+
+# Handy identifier string for any executable.
+$LaTeXML::IDENTITY = "$FindBin::Script ($LaTeXML::FULLVERSION)";
 
 1;
 
