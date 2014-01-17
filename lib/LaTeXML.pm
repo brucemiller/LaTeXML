@@ -26,6 +26,8 @@ use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
 use LaTeXML::Util::Config;
 use LaTeXML::Post::Scan;
+# Contrived!!! See LaTeXML::Version
+$LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
 
 #**********************************************************************
 #our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimages mathimagemag );
