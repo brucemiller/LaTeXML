@@ -21,6 +21,7 @@ use File::Path qw(remove_tree);
 use File::Spec;
 
 use LaTeXML::Core;
+use LaTeXML::Core::Unpack;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
@@ -122,7 +123,8 @@ sub initialize_session {
 
 sub convert {
   my ($self, $source) = @_;
-  # Initialize session if needed:
+  # 1 Prepare for conversion
+  # 1.1 Initialize session if needed:
   $self->{runtime} = {};
   $self->initialize_session unless $self->{ready};
   if (!$self->{ready}) {    # We can't initialize, return error:
@@ -130,129 +132,38 @@ sub convert {
   }
 
   $self->bind_log;
-  # Inform of identity, increase conversion counter
+  # 1.2 Inform of identity, increase conversion counter
   my $opts    = $self->{opts};
   my $runtime = $self->{runtime};
   ($runtime->{status}, $runtime->{status_code}) = (undef, undef);
   print STDERR "\n$LaTeXML::IDENTITY\n" if $opts->{verbosity} >= 0;
   print STDERR "processing started " . localtime() . "\n" if $opts->{verbosity} >= 0;
-  # Handle What's IN:
+
+  # 1.3 Prepare for What's IN:
   # We use a new temporary variable to avoid confusion with daemon caching
   my ($current_preamble, $current_postamble);
-  # 1. Math needs to magically trigger math mode if needed
+  # 1.3.1 Math needs to magically trigger math mode if needed
   if ($opts->{whatsin} eq "math") {
     $current_preamble  = 'literal:\begin{document}\ensuremathfollows';
     $current_postamble = 'literal:\ensuremathpreceeds\end{document}'; }
-  # 2. Fragments need to have a default pre- and postamble, if none provided
+  # 1.3.2 Fragments need to have a default pre- and postamble, if none provided
   elsif ($opts->{whatsin} eq 'fragment') {
     $current_preamble  = $opts->{preamble}  || 'standard_preamble.tex';
     $current_postamble = $opts->{postamble} || 'standard_postamble.tex'; }
+  # 1.3.3 Archives need to get unpacked in a sandbox (with sufficient bookkeeping)
   elsif ($opts->{whatsin} =~ /^archive/) {
     # Sandbox the input
     $opts->{archive_sourcedirectory} = $opts->{sourcedirectory};
     my $sandbox_directory = tempdir();
     $opts->{sourcedirectory} = $sandbox_directory;
     # Extract the archive in the sandbox
-    use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
-    use File::Spec::Functions qw(catfile);
-    my $zip_handle = Archive::Zip->new();
-    if (pathname_is_literaldata($source)) {
-      # Literal, just use the data
-      use IO::String;
-      my $content_handle = IO::String->new($source);
-      unless ($zip_handle->readFromFileHandle($content_handle) == AZ_OK) {
-        print STDERR "Fatal:IO:Archive Can't read in literal archive:\n $source\n"; } }
-    else {    # Otherwise, read in from file
-      unless ($zip_handle->read($source) == AZ_OK) {
-        print STDERR "Fatal:IO:Archive Can't read in source archive: $source\n"; } }
-    # Extract the Perl zip datastructure to the temporary directory
-    foreach my $member ($zip_handle->memberNames()) {
-      $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
-    # Set $source to point to the main TeX file in that directory
-    my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.tex$');
-    if (scalar(@TeX_file_members) == 1) {
-      # One file, that's the input!
-      $source = catfile($sandbox_directory, $TeX_file_members[0]); }
-    else {
-      # Heuristically determine the input (borrowed from arXiv::FileGuess)
-      my %Main_TeX_likelihood;
-      foreach my $tex_file (@TeX_file_members) {
-        # Read in the content
-        $tex_file = catfile($sandbox_directory, $tex_file);
-        # Open file and read first few bytes to do magic sequence identification
-        # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
-        open(my $FILE_TO_GUESS, '<', $tex_file) ||
-          (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
-        local $/ = "\n";
-        my ($maybe_tex, $maybe_tex_priority, $maybe_tex_priority2);
-      TEX_FILE_TRAVERSAL:
-        while (<$FILE_TO_GUESS>) {
-          if ((/\%auto-ignore/ && $. <= 10) ||    # Ignore
-            ($. <= 10 && /\\input texinfo/) ||    # TeXInfo
-            ($. <= 10 && /\%auto-include/))       # Auto-include
-          { $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }    # Not primary
-          if ($. <= 12 && /^\r?%\&([^\s\n]+)/) {
-            if ($1 eq 'latex209' || $1 eq 'biglatex' || $1 eq 'latex' || $1 eq 'LaTeX') {
-              $Main_TeX_likelihood{$tex_file} = 3; last TEX_FILE_TRAVERSAL; }    # LaTeX
-            else {
-              $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; } }    # Mac TeX
-              # All subsequent checks have lines with '%' in them chopped.
-              #  if we need to look for a % then do it earlier!
-          s/\%[^\r]*//;
-          if (/(^|\r)\s*\\document(style|class)/) {
-            $Main_TeX_likelihood{$tex_file} = 3; last TEX_FILE_TRAVERSAL; }    # LaTeX
-          if (/(^|\r)\s*(\\font|\\magnification|\\input|\\def|\\special|\\baselineskip|\\begin)/) {
-            $maybe_tex = 1;
-            if (/\\input\s+amstex/) {
-              $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; } }    # TeX Priority
-          if (/(^|\r)\s*\\(end|bye)(\s|$)/) {
-            $maybe_tex_priority = 1; }
-          if (/\\(end|bye)(\s|$)/) {
-            $maybe_tex_priority2 = 1; }
-          if (/\\input *(harv|lanl)mac/ || /\\input\s+phyzzx/) {
-            $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }        # Mac TeX
-          if (/beginchar\(/) {
-            $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # MetaFont
-          if (/(^|\r)\@(book|article|inbook|unpublished)\{/i) {
-            $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # BibTeX
-          if (/^begin \d{1,4}\s+[^\s]+\r?$/) {
-            if ($maybe_tex_priority) {
-              $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }      # TeX Priority
-            if ($maybe_tex) {
-              $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }      # TeX
-            $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # UUEncoded or PC
-          if (m/paper deliberately replaced by what little/) {
-            $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }
-        }
-        close $FILE_TO_GUESS || warn "couldn't close file: $!";
-        if (!defined $Main_TeX_likelihood{$tex_file}) {
-          if ($maybe_tex_priority) {
-            $Main_TeX_likelihood{$tex_file} = 2; }
-          elsif ($maybe_tex_priority2) {
-            $Main_TeX_likelihood{$tex_file} = 1.5; }
-          elsif ($maybe_tex) {
-            $Main_TeX_likelihood{$tex_file} = 1; }
-          else {
-            $Main_TeX_likelihood{$tex_file} = 0; }
-        }
-      }
-      # The highest likelihood (>0) file gets to be the main source.
-      my @files_by_likelihood = sort { $Main_TeX_likelihood{$a} <=> $Main_TeX_likelihood{$b} } grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
-      if (@files_by_likelihood) {
-       # If we have a tie for max score, grab the alphanumerically first file (to ensure deterministic runs)
-        my $max_likelihood = $Main_TeX_likelihood{ $files_by_likelihood[0] };
-        @files_by_likelihood = sort { $a cmp $b } grep { $Main_TeX_likelihood{$_} = $max_likelihood } @files_by_likelihood;
-        $source = shift @files_by_likelihood; }
-      else {    # If none, return an error.
-                # Clean up sandbox directory.
-        remove_tree($opts->{sourcedirectory});
-        $opts->{sourcedirectory} = $opts->{archive_sourcedirectory};
-        my $log = $self->flush_log;
-        return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }
-    }
-  }
+    $source = unpack_source($source,$sandbox_directory);
+    if (! defined $source) { # Unpacking failed to find a source
+      $opts->{sourcedirectory} = $opts->{archive_sourcedirectory};
+      my $log = $self->flush_log;
+      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }}
 
-  # Handle Whats OUT (if we need a sandbox)
+  # 1.4 Prepare for What's OUT (if we need a sandbox)
   if ($opts->{whatsout} =~ /^archive/) {
     $opts->{archive_sitedirectory} = $opts->{sitedirectory};
     $opts->{archive_destination}   = $opts->{destination};
@@ -271,7 +182,7 @@ sub convert {
       $opts->{destination} = pathname_concat($sandbox_directory, $sandbox_destination); }
   }
 
-  # Prepare daemon frame
+  # 1.5 Prepare a daemon frame
   my $latexml = $self->{latexml};
   $latexml->withState(sub {
       my ($state) = @_;    # Sandbox state
@@ -280,10 +191,8 @@ sub convert {
       $state->assignValue('REMOTE_REQUEST', (!$opts->{local}), 'global');
   });
 
-  # First read and digest whatever we're given.
+  # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
-
-  # Digest source:
   my $convert_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:timeout Conversion timed out after " . $opts->{timeout} . " seconds!\n"; };
     alarm($opts->{timeout});
@@ -292,7 +201,7 @@ sub convert {
       postamble    => $current_postamble,
       mode         => $mode,
       noinitialize => 1);
-    # Now, convert to DOM and output, if desired.
+    # 2.1 Now, convert to DOM and output, if desired.
     if ($digested) {
       require LaTeXML::Global;
       local $LaTeXML::Global::STATE = $latexml->{state};
@@ -307,6 +216,7 @@ sub convert {
     alarm(0);
     1;
   };
+  # 2.2 Bookkeeping in case fatal errors occurred
   local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
   my $eval_report = $@;
   $runtime->{status}      = $latexml->getStatusMessage;
@@ -340,6 +250,7 @@ sub convert {
     # Standard report, if we're not in a Fatal case
     print STDERR "\nConversion complete: " . $runtime->{status} . ".\n"; }
 
+  # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
     # If serialized has been set, we are done with the job
     # If we just processed an archive, clean up sandbox directory.
@@ -349,7 +260,8 @@ sub convert {
     my $log = $self->flush_log;
     return { result => $serialized, log => $log, status => $runtime->{status}, status_code => $runtime->{status_code} };
   }
-  # Continue with the regular XML workflow...
+
+  # 3 If desired, post-process
   my $result = $dom;
   if ($opts->{post} && $dom) {
     my $post_eval_return = eval {
@@ -359,6 +271,7 @@ sub convert {
       alarm(0);
       1;
     };
+    # 3.1 Bookkeeping if a post-processing Fatal error occurred
     local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
       if ((!$post_eval_return) && (!$@));
     if ($@) {    #Fatal occured!
@@ -372,7 +285,7 @@ sub convert {
       #   just avoid crashing...
       $result = undef; } }
 
-  # Clean-up everything we sandboxed
+  # 4 Clean-up: undo everything we sandboxed
   if ($opts->{whatsin} =~ /^archive/) {
     remove_tree($opts->{sourcedirectory});
     $opts->{sourcedirectory} = $opts->{archive_sourcedirectory}; }
@@ -382,7 +295,8 @@ sub convert {
     $opts->{destination}   = $opts->{archive_destination};
   }
 
-  # Serialize result for direct use:
+  # 5 Output
+  # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
   undef $serialized;
   if ((defined $result) && (ref $result)) {
     if ($opts->{format} =~ 'x(ht)?ml') {
@@ -399,6 +313,7 @@ sub convert {
       $serialized = $result; } }
   else { $serialized = $result; }                              # Compressed case
 
+  # 5.2 Finalize logging and return a response containing the document result, log and status
   print STDERR "Status:conversion:" . ($runtime->{status_code} || '0') . " \n";
   my $log = $self->flush_log;
   $self->sanitize($log) if ($runtime->{status_code} == 3);
