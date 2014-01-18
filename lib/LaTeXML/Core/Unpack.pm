@@ -10,20 +10,22 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Core::Unpack;
+use strict;
+use warnings;
+use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 use File::Spec::Functions qw(catfile);
 use LaTeXML::Util::Pathname;
+
 use base qw(Exporter);
 our @EXPORT = qw(&unpack_source);
-use Data::Dumper;
 
 sub unpack_source {
-  my ($source,$sandbox_directory) = @_;
+  my ($source, $sandbox_directory) = @_;
   my $main_source;
   my $zip_handle = Archive::Zip->new();
   if (pathname_is_literaldata($source)) {
     # If literal, just use the data
-    use IO::String;
     my $content_handle = IO::String->new($source);
     unless ($zip_handle->readFromFileHandle($content_handle) == AZ_OK) {
       print STDERR "Fatal:IO:Archive Can't read in literal archive:\n $source\n"; } }
@@ -50,7 +52,7 @@ sub unpack_source {
         (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
       local $/ = "\n";
       my ($maybe_tex, $maybe_tex_priority, $maybe_tex_priority2);
-      TEX_FILE_TRAVERSAL:
+    TEX_FILE_TRAVERSAL:
       while (<$FILE_TO_GUESS>) {
         if ((/\%auto-ignore/ && $. <= 10) ||    # Ignore
           ($. <= 10 && /\\input texinfo/) ||    # TeXInfo
@@ -64,21 +66,21 @@ sub unpack_source {
             # All subsequent checks have lines with '%' in them chopped.
             #  if we need to look for a % then do it earlier!
         s/\%[^\r]*//;
-        if (/(^|\r)\s*\\document(style|class)/) {
+        if (/(?:^|\r)\s*\\document(?:style|class)/) {
           $Main_TeX_likelihood{$tex_file} = 3; last TEX_FILE_TRAVERSAL; }    # LaTeX
-        if (/(^|\r)\s*(\\font|\\magnification|\\input|\\def|\\special|\\baselineskip|\\begin)/) {
+        if (/(?:^|\r)\s*(?:\\font|\\magnification|\\input|\\def|\\special|\\baselineskip|\\begin)/) {
           $maybe_tex = 1;
           if (/\\input\s+amstex/) {
             $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; } }    # TeX Priority
-        if (/(^|\r)\s*\\(end|bye)(\s|$)/) {
+        if (/(?:^|\r)\s*\\(?:end|bye)(?:\s|$)/) {
           $maybe_tex_priority = 1; }
-        if (/\\(end|bye)(\s|$)/) {
+        if (/\\(?:end|bye)(?:\s|$)/) {
           $maybe_tex_priority2 = 1; }
-        if (/\\input *(harv|lanl)mac/ || /\\input\s+phyzzx/) {
+        if (/\\input *(?:harv|lanl)mac/ || /\\input\s+phyzzx/) {
           $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }        # Mac TeX
         if (/beginchar\(/) {
           $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # MetaFont
-        if (/(^|\r)\@(book|article|inbook|unpublished)\{/i) {
+        if (/(?:^|\r)\@(?:book|article|inbook|unpublished)\{/i) {
           $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # BibTeX
         if (/^begin \d{1,4}\s+[^\s]+\r?$/) {
           if ($maybe_tex_priority) {
