@@ -12,12 +12,22 @@ use Term::ANSIColor;
 my $changes = `git status --porcelain`;
 if (my @modified_files =
   map  { $_->[1] }                # select the filename
-  grep { $_->[0] =~ /^[AM]$/ }    # take only Modified or Added
+  grep { $_->[0] =~ /^[AM]/ }    # take only Modified or Added (with possible additional unstaged changes)
   map  { [split(/\s+/, $_)] }     # [status, name]
   split("\n", $changes)) {        # from all files
-  my $status = system(catfile('tools', 'latexmllint'), "--precommit", @modified_files);
-  my $code = $status >> 8;
+  my @dirty_files=();
+  my $exit_code=0;
+  foreach my $modified_file(@modified_files) {
+    my $temp_file = $modified_file;
+    $temp_file =~ s/\.([^.]+)$/.lint.$1/; # add .lint.pm to .pm , etc.
+    system("git show ':$modified_file' > $temp_file");
+    my $status = system(catfile('tools', 'latexmllint'), "--precommit", $temp_file);
+    unlink($temp_file);
+    my $code = $status >> 8;
+    if ($code) {
+      push(@dirty_files,$modified_file);
+      $exit_code = $code; }}
 
-  print STDERR "Some files had issues; To correct these, run:\n   tools/latexmllint <files>."
-    . colored("COMMIT ABORTED", 'red') . "\n" if $code;
-  exit $code; }
+  print STDERR "Some files had issues; To correct these, run:\n tools/latexmllint <files>.\n"
+    . colored("COMMIT ABORTED", 'red') . "\n" if @dirty_files;
+  exit $exit_code; }
