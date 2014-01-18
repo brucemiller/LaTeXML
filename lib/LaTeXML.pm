@@ -157,11 +157,11 @@ sub convert {
     my $sandbox_directory = tempdir();
     $opts->{sourcedirectory} = $sandbox_directory;
     # Extract the archive in the sandbox
-    $source = unpack_source($source,$sandbox_directory);
-    if (! defined $source) { # Unpacking failed to find a source
+    $source = unpack_source($source, $sandbox_directory);
+    if (!defined $source) {    # Unpacking failed to find a source
       $opts->{sourcedirectory} = $opts->{archive_sourcedirectory};
       my $log = $self->flush_log;
-      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }}
+      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; } }
 
   # 1.4 Prepare for What's OUT (if we need a sandbox)
   if ($opts->{whatsout} =~ /^archive/) {
@@ -379,12 +379,12 @@ sub convert_post {
       if (grep { /$LaTeXML::Util::Config::is_bibtex/ } @{ $opts->{bibliographies} }) {
         my $bib_converter =
           $self->get_converter(LaTeXML::Util::Config->new(
-            cache_key => 'BibTeX',
-            type => "BibTeX", 
-            post => 0,
-            format => 'dom',
-            whatsin=>'document',
-            whatsout => 'document',
+            cache_key      => 'BibTeX',
+            type           => "BibTeX",
+            post           => 0,
+            format         => 'dom',
+            whatsin        => 'document',
+            whatsout       => 'document',
             bibliographies => []));
         $self->{log} .= $self->flush_log;
         @{ $opts->{bibliographies} } = map { /$LaTeXML::Util::Config::is_bibtex/ ?
