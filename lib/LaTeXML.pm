@@ -21,7 +21,7 @@ use File::Path qw(remove_tree);
 use File::Spec;
 
 use LaTeXML::Core;
-use LaTeXML::Util::Unpack;
+use LaTeXML::Util::Pack;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
@@ -572,9 +572,8 @@ sub convert_post {
       $self->bind_log; }
     else { print STDERR "Error:IO:log The target log file isn't contained in the destination directory!\n"; } }
   # Handle the output packaging
-  require LaTeXML::Post::Pack;
-  my $packer = LaTeXML::Post::Pack->new(whatsout => $opts->{whatsout}, format => $format, %PostOPS);
-  my ($postdoc) = $packer->process(@postdocs);
+
+  my ($postdoc) = pack_collection(collection => [@postdocs], whatsout => $opts->{whatsout}, format => $format, %PostOPS);
 
   $DB->finish;
 
