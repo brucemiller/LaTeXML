@@ -421,7 +421,7 @@ sub _prepare_options {
     $opts->{validate} = 1 unless defined $opts->{validate};
     # Graphics:
     $opts->{mathimagemag} = 1.75 unless defined $opts->{mathimagemag};
-    if (defined $opts->{destination}) {
+    if ((defined $opts->{destination}) || ($opts->{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $opts->{dographics} = 1 unless defined $opts->{dographics};
       $opts->{picimages}  = 1 unless defined $opts->{picimages}; }
@@ -443,7 +443,7 @@ sub _prepare_options {
       $opts->{splitpath} = $opts->{splitpaths}->{ $opts->{splitat} } unless defined $opts->{splitpath}; }
 
     # Check for appropriate combination of split, scan, prescan, dbfile, crossref
-    if ($opts->{split} && !defined $opts->{destination}) {
+    if ($opts->{split} && (!defined $opts->{destination}) && ($opts->{whatsout} !~ /^archive/)) {
       croak("Must supply --destination when using --split"); }
     if ($opts->{prescan} && !$opts->{scan}) {
       croak("Makes no sense to --prescan with scanning disabled (--noscan)"); }
@@ -459,7 +459,7 @@ sub _prepare_options {
       croak("Cannot generate index (--index) without --scan or --dbfile"); }
     if (!$opts->{prescan} && @{ $opts->{bibliographies} } && !($opts->{scan} || defined $opts->{crossref})) {
       croak("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-    if ((!defined $opts->{destination}) && ($opts->{mathimages} || $opts->{dographics} || $opts->{picimages})) {
+    if ((!defined $opts->{destination}) && ($opts->{whatsout} !~ /^archive/) && ($opts->{mathimages} || $opts->{dographics} || $opts->{picimages})) {
       croak("Must supply --destination unless all auxilliary file writing is disabled"
           . "(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
 
