@@ -15,6 +15,7 @@ use warnings;
 
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catfile);
+use File::Path qw(remove_tree);
 use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
