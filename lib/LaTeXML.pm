@@ -172,7 +172,7 @@ sub convert {
   if ($opts->{whatsout} =~ /^archive/) {
     $opts->{archive_sitedirectory} = $opts->{sitedirectory};
     $opts->{archive_destination}   = $opts->{destination};
-    my $destination_name  = pathname_name($opts->{destination});
+    my $destination_name  = $opts->{destination} ? pathname_name($opts->{destination}) : 'document';
     my $sandbox_directory = tempdir();
     my $extension         = $opts->{format};
     $extension =~ s/\d+$//;
@@ -589,7 +589,7 @@ sub convert_post {
   print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
   print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
   # Avoid writing the main file twice (non-archive documents):
-  if ($opts->{destination} && $opts->{local} && ($opts->{whatsout} !~ /^archive/)) {
+  if ($opts->{destination} && $opts->{local} && ($opts->{whatsout} eq 'document')) {
     undef $postdoc; }
   return $postdoc; }
 
