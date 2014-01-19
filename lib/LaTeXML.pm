@@ -589,8 +589,7 @@ sub convert_post {
   print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
   print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
   # Avoid writing the main file twice (non-archive documents):
-  if ($opts->{destination} && $opts->{local} && ($opts->{whatsout} eq 'document')
-    && ($opts->{whatsout} !~ /^archive/)) {
+  if ($opts->{destination} && $opts->{local} && ($opts->{whatsout} !~ /^archive/)) {
     undef $postdoc; }
   return $postdoc; }
 
