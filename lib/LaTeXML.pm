@@ -161,7 +161,12 @@ sub convert {
     if (!defined $source) {    # Unpacking failed to find a source
       $opts->{sourcedirectory} = $opts->{archive_sourcedirectory};
       my $log = $self->flush_log;
-      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; } }
+      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }
+# Destination magic: If we expect an archive on output, we need to invent the appropriate destination ourselves when not given.
+# Since the LaTeXML API never writes the final archive file to disk, we just use a pretend sourcename.zip:
+    if (($opts->{whatsout} =~ /^archive/) && (!$opts->{destination})) {
+      $opts->{placeholder_destination} = 1;
+      $opts->{destination}             = pathname_name($source) . ".zip"; } }
 
   # 1.4 Prepare for What's OUT (if we need a sandbox)
   if ($opts->{whatsout} =~ /^archive/) {
@@ -170,7 +175,7 @@ sub convert {
     my $destination_name  = pathname_name($opts->{destination});
     my $sandbox_directory = tempdir();
     my $extension         = $opts->{format};
-    $extension =~ s/\d//g;
+    $extension =~ s/\d+$//;
     $extension =~ s/^epub|mobi$/xhtml/;
     my $sandbox_destination = "$destination_name.$extension";
     $opts->{sitedirectory} = $sandbox_directory;
@@ -293,12 +298,13 @@ sub convert {
     remove_tree($opts->{sitedirectory});
     $opts->{sitedirectory} = $opts->{archive_sitedirectory};
     $opts->{destination}   = $opts->{archive_destination};
-  }
+    if (delete $opts->{placeholder_destination}) {
+      delete $opts->{destination}; } }
 
   # 5 Output
   # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
   undef $serialized;
-  if ((defined $result) && (ref $result)) {
+  if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
     if ($opts->{format} =~ 'x(ht)?ml') {
       $serialized = $result->toString(1); }
     elsif ($opts->{format} =~ /^html/) {
