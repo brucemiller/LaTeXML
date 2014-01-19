@@ -21,7 +21,7 @@ use File::Path qw(remove_tree);
 use File::Spec;
 
 use LaTeXML::Core;
-use LaTeXML::Core::Unpack;
+use LaTeXML::Util::Unpack;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;

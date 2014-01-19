@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Core::Unpack                                              | #
+# |  LaTeXML::Util::Unpack                                              | #
 # | Unpacks an archive provided on input                                | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,7 +9,7 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-package LaTeXML::Core::Unpack;
+package LaTeXML::Util::Unpack;
 use strict;
 use warnings;
 use IO::String;
@@ -126,7 +126,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Unpack> - smart unpacking of TeX archives
+C<LaTeXML::Util::Unpack> - smart unpacking of TeX archives
 
 =head1 DESCRIPTION
 
