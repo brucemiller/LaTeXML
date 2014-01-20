@@ -21,6 +21,7 @@ use Pod::Usage;
 use Pod::Find qw(pod_where);
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use Data::Dumper;
 our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
 our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
@@ -338,9 +339,13 @@ sub _prepare_options {
   # I. Sanity check and Completion of Core options.
   #======================================================================
   # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
+  # Note: 'LaTeXML' refers to the top-level class
   { no strict 'refs';
     foreach my $ltx_class (@{ $opts->{debug} || [] }) {
-      ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } }
+      if ($ltx_class eq 'LaTeXML') {
+        ${'LaTeXML::DEBUG'} = 1; }
+      else {
+        ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
 
   $opts->{timeout} = 600 if ((!defined $opts->{timeout}) || ($opts->{timeout} !~ /\d+/)); # 10 minute timeout default
   $opts->{expire} = 600 if ((!defined $opts->{expire}) || ($opts->{expire} !~ /\d+/)); # 10 minute timeout default
