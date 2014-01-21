@@ -6,28 +6,40 @@
 #======================================================================
 use warnings;
 use strict;
-use File::Spec::Functions;
+use File::Spec::Functions qw(catfile splitpath splitdir);
+use File::Temp qw(tempdir);
 use Term::ANSIColor;
 
 my $changes = `git status --porcelain`;
 if (my @modified_files =
-  map  { $_->[1] }                # select the filename
-  grep { $_->[0] =~ /^[AM]/ }    # take only Modified or Added (with possible additional unstaged changes)
-  map  { [split(/\s+/, $_)] }     # [status, name]
-  split("\n", $changes)) {        # from all files
-  my @dirty_files=();
-  my $exit_code=0;
-  foreach my $modified_file(@modified_files) {
-    my $temp_file = $modified_file;
-    $temp_file =~ s/\.([^.]+)$/.lint.$1/; # add .lint.pm to .pm , etc.
+  map { $_->[1] }    # select the filename
+  grep { $_->[0] =~ /^[AM]/ } # take only Modified or Added (with possible additional unstaged changes)
+  map { [split(/\s+/, $_)] }  # [status, name]
+  split("\n", $changes)) {    # from all files
+  my @failed_files = ();
+  my $exit_code    = 0;
+  my $workdir      = tempdir("latexmllintXXXXXX", CLEANUP => 1, TMPDIR => 1);
+  # Run latexmllint on each STAGED file
+  foreach my $modified_file (@modified_files) {
+    # First,
+    #  Create a portion of the repo tree in the temporary working directory
+    my ($volume, $directories, $file) = splitpath($modified_file);
+    my @dirs = splitdir($directories);
+    my $wd   = $workdir;
+    foreach my $dir (@dirs) {
+      $wd = catfile($wd, $dir);
+      mkdir $wd unless -d $wd; }
+    # Now create the file with the STAGED content in the temporary space.
+    my $temp_file = catfile($workdir, $modified_file);
     system("git show ':$modified_file' > $temp_file");
-    my $status = system(catfile('tools', 'latexmllint'), "--precommit", $temp_file);
-    unlink($temp_file);
+    # Finally run latexmllint on it.
+    my $status = system(catfile('tools', 'latexmllint'), "--precommit", "--verb", $temp_file);
     my $code = $status >> 8;
     if ($code) {
-      push(@dirty_files,$modified_file);
-      $exit_code = $code; }}
+      push(@failed_files, $modified_file);    # Note the original file name
+      $exit_code = $code; } }
 
-  print STDERR "Some files had issues; To correct these, run:\n tools/latexmllint <files>.\n"
-    . colored("COMMIT ABORTED", 'red') . "\n" if @dirty_files;
+  print STDERR "Some files had issues: " . join(',', @failed_files)
+    . "; To correct these, run:\n tools/latexmllint <files>.\n"
+    . colored("COMMIT ABORTED", 'red') . "\n" if @failed_files;
   exit $exit_code; }
