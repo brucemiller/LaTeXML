@@ -21,7 +21,7 @@ use Pod::Usage;
 use Pod::Find qw(pod_where);
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
-use LaTeXML::Common::Error;
+#use LaTeXML::Common::Error;
 use Data::Dumper;
 our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
 our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
