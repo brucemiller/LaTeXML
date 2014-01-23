@@ -15,6 +15,17 @@ use strict;
 use warnings;
 use LaTeXML::Common::Float;
 use base qw(LaTeXML::Common::Glue);
+use base qw(Exporter);
+our @EXPORT = (qw(&MuGlue));
+
+#======================================================================
+# Exported constructor.
+
+sub MuGlue {
+  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::Core::MuGlue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+
+#======================================================================
 
 # 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
 sub toString {
@@ -59,6 +70,18 @@ C<LaTeXML::Core::MuGlue> - representation of math glue.
 =head1 DESCRIPTION
 
 represents math glue
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $glue = MuGlue($gluespec); >>
+
+=item C<< $glue = MuGlue($sp,$plus,$pfill,$minus,$mfill); >>
+
+Creates a MuGlue object, similar to Glue.
+
+=back
 
 =head1 AUTHOR
 

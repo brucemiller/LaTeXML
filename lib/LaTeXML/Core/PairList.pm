@@ -10,10 +10,22 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Core::PairList;
-use LaTeXML::Global;
 use strict;
 use warnings;
-use base qw(LaTeXML::Object);
+use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (qw(&PairList));
+
+#======================================================================
+# Exported constructor.
+
+sub PairList {
+  my (@pairs) = @_;
+  return LaTeXML::Core::PairList->new(@pairs); }
+
+#======================================================================
 
 # Note: This is candiate to be absorbed into Array perhaps...
 
@@ -74,6 +86,17 @@ C<LaTeXML::Core::PairList> - representation of lists of pairs of numerical thing
 
 represents lists of pairs of numerical things, coordinates or such.
 Candidate for removal!
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $pair = PairList(@pairs); >>
+
+Creates an object representing a list of pairs of numbers;
+Not a part of TeX, but useful for graphical objects.
+
+=back
 
 =head1 AUTHOR
 

@@ -13,7 +13,23 @@ package LaTeXML::Core::Tokens;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
+  qw(&Tokens)
+);
+
+#======================================================================
+# Token List constructors.
+
+# Return a LaTeXML::Core::Tokens made from the arguments (tokens)
+sub Tokens {
+  my (@tokens) = @_;
+  return LaTeXML::Core::Tokens->new(@tokens); }
+
+#======================================================================
 
 # Form a Tokens list of Token's
 # Flatten the arguments Token's and Tokens's into plain Token's
@@ -86,17 +102,13 @@ C<LaTeXML::Core::Tokens>, representing lists of tokens.
 This module defines Tokens (C<LaTeXML::Core::Tokens>)
 that get created during tokenization and  expansion.
 
-=head2 Methods common with C<LaTeXML::Core::Token>
+=head2 Exported functions
 
 =over 4
 
-=item C<< @tokens = $object->unlist; >>
+=item C<< $tokens = Tokens(@token); >>
 
-Return a list of the tokens making up this C<$object>.
-
-=item C<< $string = $object->toString; >>
-
-Return a string representing C<$object>.
+Creates a L<LaTeXML::Core::Tokens> from a list of L<LaTeXML::Core::Token>'s
 
 =back
 

@@ -9,16 +9,38 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-#**********************************************************************
-# A list of boxes or Whatsits
-# (possibly evolve into HList, VList, MList)
-#**********************************************************************
 package LaTeXML::Core::List;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Core::Box);
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Common::Dimension;
+use List::Util qw(min max);
+use base qw(Exporter LaTeXML::Core::Box);
+our @EXPORT = (qw(&List));
+
+# Tricky; don't really want a separate constructor for a Math List,
+# but you really have to specify it in the arguments
+# BUT you can't infer the mode from the current state ($STATE may have already switched
+#  back to text) or from the modes of the boxes (may be mixed)
+# So, it has to be specified along with the boxes;
+# Here we simply allow
+#    List($box,.... mode=>'math')
+# Also, if there's only 1 box, we just return it!
+sub List {
+  my (@boxes) = @_;
+  my $mode = 'text';
+  # Hacky special case!!!
+  if ((scalar(@boxes) >= 2) && ($boxes[-2] eq 'mode')
+    && (($boxes[-1] eq 'math') || ($boxes[-1] eq 'text'))) {
+    $mode = pop(@boxes); pop(@boxes); }
+  if (scalar(@boxes) == 1) {
+    return $boxes[0]; }    # Simplify!
+  else {
+    my $list = LaTeXML::Core::List->new(@boxes);
+    $list->setProperty(mode => $mode) if $mode eq 'math';
+    return $list; } }
 
 sub new {
   my ($class, @boxes) = @_;
@@ -33,7 +55,8 @@ sub new {
   return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
 
 sub isMath {
-  return 0; }    # List's are text mode
+  my ($self) = @_;
+  return ($$self[4]{mode} || 'text') eq 'math'; }
 
 sub unlist {
   my ($self) = @_;

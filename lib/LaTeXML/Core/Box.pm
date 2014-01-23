@@ -13,11 +13,35 @@ package LaTeXML::Core::Box;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &Box ),
+);
+
+#======================================================================
+# Exported constructors
+
+sub Box {
+  my ($string, $font, $locator, $tokens) = @_;
+  $font = $STATE->lookupValue('font') unless defined $font;
+  $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
+  $tokens = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
+  my $state = $STATE;
+  if ($state->lookupValue('IN_MATH')) {
+    my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
+    return LaTeXML::Core::Box->new($string, $font->specialize($string), $locator, $tokens,
+      mode => 'math', attributes => $attr); }
+  else {
+    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens); } }
+
+#======================================================================
+# Box Object
 
 sub new {
-  my ($class, $string, $font, $locator, $tokens) = @_;
-  return bless [$string, $font, $locator, $tokens, {}], $class; }
+  my ($class, $string, $font, $locator, $tokens, %properties) = @_;
+  return bless [$string, $font, $locator, $tokens, {%properties}], $class; }
 
 # Accessors
 sub isaBox {
@@ -32,7 +56,8 @@ sub getFont {
   return $$self[1]; }    # Return the font this box uses.
 
 sub isMath {
-  return 0; }            # Box is text mode.
+  my ($self) = @_;
+  return ($$self[4]{mode} || 'text') eq 'math'; }
 
 sub getLocator {
   my ($self) = @_;
@@ -72,14 +97,19 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self[0];
+  my $mode   = $$self[4]{mode} || 'text';
+  my $attr   = $$self[4]{attributes};
   return ((defined $string) && ($string ne '')
-    ? $document->openText($$self[0], $$self[1]) : undef); }
+    ? ($mode eq 'math'
+      ? $document->insertMathToken($string, font => $$self[1], ($attr ? %$attr : ()))
+      : $document->openText($string, $$self[1]))
+    : undef); }
 
 sub getProperty {
   my ($self, $key) = @_;
   if ($key eq 'isSpace') {
-    my $tex = UnTeX($$self[3]);
-    return (defined $tex) && ($tex =~ /^\s*$/); }    # Check the TeX code, not (just) the string!
+    my $tex = LaTeXML::Core::Token::UnTeX($$self[3]);    # !
+    return (defined $tex) && ($tex =~ /^\s*$/); }        # Check the TeX code, not (just) the string!
   else {
     return $$self[4]{$key}; } }
 
@@ -170,6 +200,22 @@ C<LaTeXML::Core::Box> - Representations of digested objects.
 
 A Box represents a digested object, text in a particular font;
 
+=head2 Exported Functions
+
+=over 4
+
+=item C<< $box = Box($string,$font,$locator,$tokens); >>
+
+Creates a Box representing the C<$string> in the given C<$font>.
+The C<$locator> records the document source position.
+The C<$tokens> is a Tokens list containing the TeX that created
+(or could have) the Box.
+If C<$font> or C<$locator> are undef, they are obtained from the
+currently active L<LaTeXML::Core::State>.  Note that $string can
+be undef which contributes nothing to the generated document,
+but does record the TeX code (in C<$tokens>).
+
+=back
 
 =head2 METHODS
 

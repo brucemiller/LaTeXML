@@ -16,17 +16,33 @@ use strict;
 use warnings;
 use Exporter;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
+use LaTeXML::Core::Box;
+use LaTeXML::Core::List;
 use LaTeXML::Core::Mouth::Binding;
 use LaTeXML::Core::Definition;
 use LaTeXML::Core::Parameters;
+use LaTeXML::Common::Number;
+use LaTeXML::Common::Float;
+use LaTeXML::Common::Dimension;
+use LaTeXML::Common::Glue;
+use LaTeXML::Core::MuDimension;
+use LaTeXML::Core::MuGlue;
 # Extra objects typically used in Bindings
+use LaTeXML::Core::Alignment;
 use LaTeXML::Core::Array;
 use LaTeXML::Core::KeyVals;
 use LaTeXML::Core::Pair;
 use LaTeXML::Core::PairList;
+use LaTeXML::Common::Color;
 # Utitlities
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
+use LaTeXML::Common::XML;
+use LaTeXML::Core::Rewrite;
 use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
@@ -59,7 +75,8 @@ our @EXPORT = (qw(&DefExpandable
 
   # Mid-level support for writing definitions.
   qw(&Expand &Invocation &Digest &DigestIf &DigestLiteral
-    &RawTeX &Let),
+    &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
+    &Tokenize &TokenizeInternal),
 
   # Font encoding
   qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
@@ -95,7 +112,26 @@ our @EXPORT = (qw(&DefExpandable
   # Resources
   qw(&RequireResource &ProcessPendingResources),
 
-  @LaTeXML::Global::EXPORT);
+  @LaTeXML::Global::EXPORT,
+  # And export those things exported by these Core & Common packages.
+  @LaTeXML::Common::Object::EXPORT,
+  @LaTeXML::Common::Error::EXPORT,
+  @LaTeXML::Core::Token::EXPORT,
+  @LaTeXML::Core::Tokens::EXPORT,
+  @LaTeXML::Core::Box::EXPORT,
+  @LaTeXML::Core::List::EXPORT,
+  @LaTeXML::Common::Number::EXPORT,
+  @LaTeXML::Common::Float::EXPORT,
+  @LaTeXML::Common::Dimension::EXPORT,
+  @LaTeXML::Common::Glue::EXPORT,
+  @LaTeXML::Core::MuDimension::EXPORT,
+  @LaTeXML::Core::MuGlue::EXPORT,
+  @LaTeXML::Core::Pair::EXPORT,
+  @LaTeXML::Core::PairList::EXPORT,
+  @LaTeXML::Common::Color::EXPORT,
+  @LaTeXML::Core::Alignment::EXPORT,
+  @LaTeXML::Common::XML::EXPORT,
+);
 
 #**********************************************************************
 #   Initially, I thought LaTeXML Packages should try to be like perl modules:
@@ -135,7 +171,47 @@ sub parsePrototype {
     Fatal('misdefined', $proto, $STATE->getStomach,
       "Definition prototype doesn't have proper control sequence: \"$proto\""); }
   $proto =~ s/^\s*//;
-  return ($cs, parseParameters($proto, $cs)); }
+####  return ($cs, parseParameters($proto, $cs)); }
+  return ($cs, $proto); }
+
+# If a ReadFoo function exists (accessible from LaTeXML::Package::Pool),
+# then the parameter spec:
+#     Foo         : will invoke it and use the result for the corresponding argument.
+#                   it will complain if ReadFoo returns undef.
+#     SkipFoo     : will invoke SkipFoo, if it is defined, else ReadFoo,
+#                   but in either case, will ignore the result
+#     OptionalFoo : will invoke ReadOptionalFoo if defined, else ReadFoo
+#                   but will not complain if the reader returns undef.
+# In all cases, there is the provision to supply an additional parameter to the reader:
+#    "Foo:stuff"   effectively invokes ReadFoo(Tokenize('stuff'))
+# similarly for the other variants. What the 'stuff" means depends on the type.
+sub parseParameters {
+  my ($proto, $for) = @_;
+  my $p      = $proto;
+  my @params = ();
+  while ($p) {
+    # Handle possibly nested cases, such as {Number}
+    if ($p =~ s/^(\{([^\}]*)\})\s*//) {
+      my ($spec, $inner_spec) = ($1, $2);
+      my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
+      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, extra => [$inner])); }
+    elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
+      my ($spec, $inner_spec) = ($1, $2);
+      if ($inner_spec =~ /^Default:(.*)$/) {
+        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
+            extra => [TokenizeInternal($1), undef])); }
+      elsif ($inner_spec) {
+        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec,
+            extra => [undef, parseParameters($inner_spec, $for)])); }
+      else {
+        push(@params, LaTeXML::Core::Parameter->new('Optional', $spec)); } }
+    elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
+      my ($spec, $type, $extra) = ($1, $2, $4);
+      my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
+      push(@params, LaTeXML::Core::Parameter->new($type, $spec, extra => [@extra])); }
+    else {
+      Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
+  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 # Convert a LaTeX-style argument spec to our Package form.
 # Ie. given $nargs and $optional, being the two optional arguments to
@@ -146,11 +222,11 @@ sub convertLaTeXArgs {
   $nargs = 0 unless $nargs;
   my @params = ();
   if ($optional) {
-    push(@params, LaTeXML::Core::Parameters::newParameter('Optional',
+    push(@params, LaTeXML::Core::Parameter->new('Optional',
         "[Default:" . UnTeX($optional) . "]",
         extra => [$optional, undef]));
     $nargs--; }
-  push(@params, map { LaTeXML::Core::Parameters::newParameter('Plain', '{}') } 1 .. $nargs);
+  push(@params, map { LaTeXML::Core::Parameter->new('Plain', '{}') } 1 .. $nargs);
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 #======================================================================
@@ -419,9 +495,10 @@ sub DefColumnType {
   if ($proto =~ s/^(.)//) {
     my $char = $1;
     $proto =~ s/^\s*//;
-    my $params = parseParameters($proto, $char);
-    $expansion = TokenizeInternal($expansion) unless ref $expansion;
-    DefMacroI(T_CS('\NC@rewrite@' . $char), $params, $expansion); }
+    # Defer
+    #    $proto = parseParameters($proto, $char);
+    #    $expansion = TokenizeInternal($expansion) unless ref $expansion;
+    DefMacroI(T_CS('\NC@rewrite@' . $char), $proto, $expansion); }
   else {
     Warn('expected', 'character', undef, "Expected Column specifier"); }
   return; }
@@ -672,6 +749,35 @@ sub RawTeX {
   $STATE->assignCatcode('@' => $savedcc);
   return; }
 
+sub StartSemiverbatim {
+  $STATE->beginSemiverbatim;
+  return; }
+
+sub EndSemiverbatim {
+  $STATE->endSemiverbatim;
+  return; }
+
+# WARNING: These two utilities bind $STATE to simple State objects with known fixed catcodes.
+# The State normally contains ALL the bindings, etc and links to other important objects.
+# We CAN do that here, since we are ONLY tokenizing from a new Mouth, bypassing stomach & gullet.
+# However, be careful with any changes.
+our $STD_CATTABLE;
+our $STY_CATTABLE;
+
+# Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Core::Tokens
+sub Tokenize {
+  my ($string) = @_;
+  $STD_CATTABLE = LaTeXML::Core::State->new(catcodes => 'standard') unless $STD_CATTABLE;
+  local $STATE = $STD_CATTABLE;
+  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+
+# TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Core::Tokens
+sub TokenizeInternal {
+  my ($string) = @_;
+  $STY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'style') unless $STY_CATTABLE;
+  local $STATE = $STY_CATTABLE;
+  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+
 #======================================================================
 # Non-exported support for defining forms.
 #======================================================================
@@ -732,10 +838,12 @@ sub DefMacro {
 sub DefMacroI {
   my ($cs, $paramlist, $expansion, %options) = @_;
   if (!defined $expansion) { $expansion = Tokens(); }
+  # Optimization: Defer till macro actually used
+  #  elsif (!ref $expansion)     { $expansion = TokenizeInternal($expansion); }
   if ((length($cs) == 1) && $options{mathactive}) {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
   $cs = coerceCS($cs);
-  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
@@ -787,7 +895,7 @@ sub DefConditionalI {
       DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
           AssignValue('Boolean:' . $name => 0); }); }
     # For \ifcase, the parameter list better be a single Number !!
-    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+###    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
     $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
         is_conditional => 1, %options),
       $options{scope}); }
@@ -825,7 +933,7 @@ sub DefPrimitiveI {
   $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
     unless ref $replacement;
   $cs = coerceCS($cs);
-  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
@@ -865,7 +973,7 @@ sub DefRegister {
 sub DefRegisterI {
   my ($cs, $paramlist, $value, %options) = @_;
   $cs = coerceCS($cs);
-  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type   = $register_types{ ref $value };
   my $name   = ToString($cs);
   my $getter = $options{getter}
@@ -925,7 +1033,7 @@ sub DefConstructor {
 sub DefConstructorI {
   my ($cs, $paramlist, $replacement, %options) = @_;
   $cs = coerceCS($cs);
-  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -1002,6 +1110,7 @@ sub DefMath {
 sub DefMathI {
   my ($cs, $paramlist, $presentation, %options) = @_;
   $cs = coerceCS($cs);
+  # Can't defer parsing parameters since we need to know number of args!
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $nargs   = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $csname  = $cs->getString;
@@ -1034,7 +1143,7 @@ sub DefMathI {
     defmath_dual($cs, $paramlist, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
-  # Define a primitive that will create a MathBox with the appropriate set of XMTok attributes.
+  # Define a primitive that will create a Box with the appropriate set of XMTok attributes.
   elsif (($nargs == 0) && !grep { !$$simpletoken_options{$_} } keys %options) {
     defmath_prim($cs, $paramlist, $presentation, %options); }
 
@@ -1156,7 +1265,8 @@ sub defmath_prim {
             $$attr{$key} = &$value(); }
           else {
             $$attr{$key} = $value; } }
-        LaTeXML::Core::MathBox->new($string, $font, $locator, $cs, $attr); }));
+        LaTeXML::Core::Box->new($string, $font, $locator, $cs,
+          mode => 'math', attributes => $attr); }));
   return; }
 
 sub defmath_cons {
@@ -1198,10 +1308,10 @@ sub DefEnvironment {
 ##  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
 ##  my $paramlist=parseParameters($proto,"Environment $name");
 ##  my $name = $1;
-  my ($name, $paramspec) = Text::Balanced::extract_bracketed($proto, '{}');
+  my ($name, $paramlist) = Text::Balanced::extract_bracketed($proto, '{}');
   $name =~ s/[\{\}]//g;
-  $paramspec =~ s/^\s*//;
-  my $paramlist = parseParameters($paramspec, "Environment $name");
+  $paramlist =~ s/^\s*//;
+##  $paramlist = parseParameters($paramlist, "Environment $name");
   DefEnvironmentI($name, $paramlist, $replacement, %options);
   return; }
 
@@ -1209,7 +1319,7 @@ sub DefEnvironmentI {
   my ($name, $paramlist, $replacement, %options) = @_;
   my $mode = $options{mode};
   $name = ToString($name) if ref $name;
-  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
+##  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
@@ -1558,7 +1668,7 @@ sub loadTeXDefinitions {
   # It is set in before/after methods to allow local rebinding of commands
   # but loading of sources & bindings is typically done in before/after methods of constructors!
   # This re-locks defns during reading of TeX packages.
-  local $LaTeXML::State::UNLOCKED = 0;
+  local $LaTeXML::Core::State::UNLOCKED = 0;
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
@@ -1978,14 +2088,32 @@ my $rewrite_options = {    # [CONSTANT]
 sub DefRewrite {
   my (@specs) = @_;
   CheckOptions("DefRewrite", $rewrite_options, @specs);
-  PushValue('DOCUMENT_REWRITE_RULES', LaTeXML::Rewrite->new('text', @specs));
+  PushValue('DOCUMENT_REWRITE_RULES',
+    LaTeXML::Core::Rewrite->new('text', processRewriteSpecs(0, @specs)));
   return; }
 
 sub DefMathRewrite {
   my (@specs) = @_;
   CheckOptions("DefMathRewrite", $rewrite_options, @specs);
-  PushValue('DOCUMENT_REWRITE_RULES', LaTeXML::Rewrite->new('math', @specs));
+  PushValue('DOCUMENT_REWRITE_RULES',
+    LaTeXML::Core::Rewrite->new('math', processRewriteSpecs(1, @specs)));
   return; }
+
+sub processRewriteSpecs {
+  my ($math, @specs) = @_;
+  my @procspecs = ();
+  my $delimiter = ($math ? '$' : '');
+  while (@specs) {
+    my $k = shift(@specs);
+    my $v = shift(@specs);
+    # Make sure match & replace are (at least) tokenized
+    if (($k eq 'match') || ($k eq 'replace')) {
+      if (ref $v eq 'ARRAY') {
+        $v = [map { (ref $_ ? $_ : Tokenize($delimiter . $_ . $delimiter)) } @$v]; }
+      elsif (!ref $v) {
+        $v = Tokenize($delimiter . $v . $delimiter); } }
+    push(@procspecs, $k, $v); }
+  return @procspecs; }
 
 #======================================================================
 # Defining "Ligatures" rules that act on the DOM
@@ -2071,8 +2199,8 @@ C<LaTeXML::Package> - Support for package implementations and document customiza
 =head1 SYNOPSIS
 
 This package defines and exports most of the procedures users will need
-to customize or extend LaTeXML. The LaTeXML implementation of some
-package might look something like the following, but see the
+to customize or extend LaTeXML. The LaTeXML implementation of some package
+might look something like the following, but see the
 installed C<LaTeXML/Package> directory for realistic examples.
 
   use LaTeXML::Package;
@@ -2177,6 +2305,28 @@ be optional. For C<Skip>, no argument is contributed to the argument list.
 
 The shorthands {} and [] default the type to C<Plain> and reads a normal
 TeX argument or LaTeX default argument with no special parsing.
+
+The general syntax for parameter specification is
+
+ {}     reads a regular TeX argument, a sequence of
+        tokens delimited by braces, or a single token.
+ {spec} reads a regular TeX argument, then reparses it
+        to match the given spec. The spec is parsed
+        recursively, but usually should correspond to
+        a single argument.
+ [spec] reads an LaTeX-style optional argument. If the
+        spec is of the form Default:stuff, then stuff
+        would be the default value.
+ Type   Reads an argument of the given type, where either
+        Type has been declared, or there exists a ReadType
+        function accessible from LaTeXML::Package::Pool.
+ Type:value, or Type:value1:value2...    These forms
+        pass additional Tokens to the reader function.
+ OptionalType  Similar to Type, but it is not considered
+        an error if the reader returns undef.
+ SkipType  Similar to OptionalType, but the value returned
+        from the reader is ignored, and does not occupy a
+        position in the arguments list.
 
 The predefined argument types are as follows.
 
@@ -2369,7 +2519,7 @@ digestion (in the  L<LaTeXML::Core::Stomach>), after macro expansion but before 
 Primitive control sequences generate Boxes or Lists, generally
 containing basic Unicode content, rather than structured XML.
 Primitive control sequences are also executed for side effect during digestion,
-effecting changes to the L<LaTeXML::State>.
+effecting changes to the L<LaTeXML::Core::State>.
 
 The C<$replacement> is either a string, used as the Boxes text content
 (the box gets the current font), or C<CODE($stomach,@args)>, which is
@@ -2956,8 +3106,8 @@ with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 =item C<< PassOptions($name,$ext,@options); >>
 
 X<PassOptions>
-Causes the given C<@options> (strings) to be passed to the
-package (if C<$ext> is C<sty>) or class (if C<$ext> is C<cls>)
+Causes the given C<@options> (strings) to be passed to the package
+(if C<$ext> is C<sty>) or class (if C<$ext> is C<cls>)
 named by C<$name>.
 
 =item C<< ProcessOptions(); >>
@@ -3341,6 +3491,19 @@ implementation that can be handled simply using macros and primitives.
 
 X<Let>
 Gives C<$token1> the same `meaning' (definition) as C<$token2>; like TeX's \let.
+
+=item C<< StartSemiVerbatim(); ... ; EndSemiVerbatim(); >>
+
+Disable disable most TeX catcodes.
+
+=item C<< $tokens = Tokenize($string); >>
+
+Tokenizes the C<$string> according to the standard cattable, returning a L<LaTeXML::Core::Tokens>.
+
+=item C<< $tokens = TokenizeInternal($string); >>
+
+Tokenizes the C<$string> according to the internal cattable (where @ is a letter),
+returning a L<LaTeXML::Core::Tokens>.
 
 =back
 

@@ -14,6 +14,17 @@ use LaTeXML::Global;
 use strict;
 use warnings;
 use base qw(LaTeXML::Common::Dimension);
+use base qw(Exporter);
+our @EXPORT = (qw(&Glue));
+
+#======================================================================
+# Exported constructor.
+
+sub Glue {
+  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::Common::Glue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+
+#======================================================================
 
 my %fillcode = (fil => 1, fill => 2, filll => 3);    # [CONSTANT]
 my @FILL = ('', 'fil', 'fill', 'filll');             # [CONSTANT]
@@ -115,6 +126,22 @@ C<LaTeXML::Common::Glue> - representation of glue
 =head1 DESCRIPTION
 
 represents glue or skips; stretchy dimensions.
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $glue = Glue($gluespec); >>
+
+=item C<< $glue = Glue($sp,$plus,$pfill,$minus,$mfill); >>
+
+Creates a Glue object.  C<$gluespec> can be a string in the
+form that TeX recognizes (number units optional plus and minus parts).
+Alternatively, the dimension, plus and minus parts can be given separately:
+C<$pfill> and C<$mfill> are 0 (when the C<$plus> or C<$minus> part is in sp)
+or 1,2,3 for fil, fill or filll.
+
+=back
 
 =head1 AUTHOR
 

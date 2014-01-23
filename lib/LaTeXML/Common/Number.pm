@@ -13,7 +13,20 @@ package LaTeXML::Common::Number;
 use LaTeXML::Global;
 use strict;
 use warnings;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use LaTeXML::Core::Token;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (qw(&Number));
+
+#======================================================================
+# Exported constructor.
+
+sub Number {
+  my ($number) = @_;
+  return LaTeXML::Common::Number->new($number); }
+
+#======================================================================
 
 sub new {
   my ($class, $number) = @_;
@@ -96,6 +109,16 @@ C<LaTeXML::Common::Number> - representation of numbers
 =head1 DESCRIPTION
 
 This module defines number data objects
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $number = Number($num); >>
+
+Creates a Number object representing C<$num>.
+
+=back
 
 =head2 Methods
 

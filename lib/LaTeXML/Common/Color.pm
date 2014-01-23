@@ -13,7 +13,22 @@ package LaTeXML::Common::Color;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
+  qw( &Color &Black &White),
+);
+
+#======================================================================
+# Exported constructors
+sub Color {
+  my ($model, @components) = @_;
+  return LaTeXML::Common::Color->new(ToString($model), map { ToString($_) } @components); }
+
+use constant Black => bless ['rgb', 0, 0, 0], 'LaTeXML::Common::Color::rgb';
+use constant White => bless ['rgb', 1, 1, 1], 'LaTeXML::Common::Color::rgb';
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color objects; objects representing color in "arbitrary" color models
@@ -42,7 +57,7 @@ sub new {
     my $type  = ($core_color_models{$model} ? $model : 'Derived');
     my $class = 'LaTeXML::Common::Color::' . $type;
     if (($type eq 'Derived')
-      && !$LaTeXML::Global::STATE->lookupValue('derived_color_model_' . $model)) {
+      && !$STATE->lookupValue('derived_color_model_' . $model)) {
       Error('unexpected', $model, undef, "Unrecognized color model '$model'"); }
     my $module = $class . '.pm';
     $module =~ s|::|/|g;
@@ -65,7 +80,7 @@ sub convert {
     return $self; }
   elsif ($core_color_models{$tomodel}) {    # target must be core model
     return $self->toCore->$tomodel; }
-  elsif (my $data = $LaTeXML::Global::STATE->lookupValue('derived_color_model_' . $tomodel)) { # Ah, target is a derived color
+  elsif (my $data = $STATE->lookupValue('derived_color_model_' . $tomodel)) { # Ah, target is a derived color
     my $coremodel   = $$data[0];
     my $convertfrom = $$data[2];
     return &{$convertfrom}($self->$coremodel); }

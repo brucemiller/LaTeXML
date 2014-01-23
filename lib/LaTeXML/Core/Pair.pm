@@ -10,10 +10,23 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Core::Pair;
-use LaTeXML::Global;
 use strict;
 use warnings;
-use base qw(LaTeXML::Object);
+use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Core::Token;
+use base qw(LaTeXML::Common::Object);
+use base qw(Exporter);
+our @EXPORT = (qw(&Pair));
+
+#======================================================================
+# Exported constructor.
+
+sub Pair {
+  my ($x, $y) = @_;
+  return LaTeXML::Core::Pair->new($x, $y); }
+
+#======================================================================
 
 # NOTE: This is candiate to be absorbed into Array (perhaps)
 
@@ -88,6 +101,18 @@ C<LaTeXML::Core::Pair> - representation of pairs of numerical things
 
 represents pairs of numerical things, coordinates or such.
 Candidate for removal!
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $pair = Pair($num1,$num2); >>
+
+Creates an object representing a pair of numbers;
+Not a part of TeX, but useful for graphical objects.
+The two components can be any numerical object.
+
+=back
 
 =head1 AUTHOR
 

@@ -10,10 +10,22 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Common::Dimension;
-use LaTeXML::Global;
 use strict;
 use warnings;
+use LaTeXML::Global;
+use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Number);
+use base qw(Exporter);
+our @EXPORT = (qw(&Dimension));
+
+#======================================================================
+# Exported constructor.
+
+sub Dimension {
+  my ($scaledpoints) = @_;
+  return LaTeXML::Common::Dimension->new($scaledpoints); }
+
+#======================================================================
 
 sub new {
   my ($class, $sp) = @_;
@@ -72,6 +84,18 @@ C<LaTeXML::Common::Dimension> - representation of dimensions.
 =head1 DESCRIPTION
 
 represents dimensions,
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $dimension = Dimension($dim); >>
+
+Creates a Dimension object.  C<$num> can be a string with the number and units
+(with any of the usual TeX recognized units), or just a number standing for
+scaled points (sp).
+
+=back
 
 =head1 AUTHOR
 
