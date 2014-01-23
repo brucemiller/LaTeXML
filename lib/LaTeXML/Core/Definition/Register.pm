@@ -85,7 +85,7 @@ to access and store values in the Stomach.
 See L<LaTeXML::Package> for the most convenient means to create them.
 
 
-Registers generally store some value in the current C<LaTeXML::State>, but are not
+Registers generally store some value in the current C<LaTeXML::Core::State>, but are not
 required to. Like TeX's registers, when they are digested, they expect an optional
 C<=>, and then a value of the appropriate type. Register definitions support these
 additional methods:

@@ -13,6 +13,8 @@ package LaTeXML::Core::Definition::Constructor;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use LaTeXML::Core::Whatsit;
 use base qw(LaTeXML::Core::Definition::Primitive);
 use LaTeXML::Core::Definition::Constructor::Compiler;
@@ -41,8 +43,10 @@ sub new {
     if !(defined $replacement) || ((ref $replacement) && !(ref $replacement eq 'CODE'));
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
     locator => "from " . $source->getLocator(-1), %traits,
-    nargs => (defined $traits{nargs} ? $traits{nargs}
-      : ($parameters ? $parameters->getNumArgs : 0)) }, $class; }
+##    nargs => (defined $traits{nargs} ? $traits{nargs}
+    ##  : ($parameters ? $parameters->getNumArgs : 0))
+    nargs => $traits{nargs}
+    }, $class; }
 
 sub getReversionSpec {
   my ($self) = @_;
@@ -51,6 +55,13 @@ sub getReversionSpec {
 sub getAlias {
   my ($self) = @_;
   return $$self{alias}; }
+
+sub getNumArgs {
+  my ($self) = @_;
+  return $$self{nargs} if defined $$self{nargs};
+  my $params = $self->getParameters;
+  $$self{nargs} = ($params ? $params->getNumArgs : 0);
+  return $$self{nargs}; }
 
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
 # The whatsit which will be further processed to create the document.
@@ -68,9 +79,10 @@ sub invoke {
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
-  my $params = $$self{parameters};
-  my @args = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
-  @args = @args[0 .. $$self{nargs} - 1];
+  my $params = $self->getParameters;
+  my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
+  my $nargs  = $self->getNumArgs;
+  @args = @args[0 .. $nargs - 1];
 
   # Compute any extra Whatsit properties (many end up as element attributes)
   my $properties = $$self{properties};

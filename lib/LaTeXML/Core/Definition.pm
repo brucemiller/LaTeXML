@@ -13,9 +13,11 @@ package LaTeXML::Core::Definition;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Parameters;
 use Time::HiRes;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 # Make these present, but do not import.
 require LaTeXML::Core::Definition::Expandable;
 require LaTeXML::Core::Definition::Conditional;
@@ -52,11 +54,15 @@ sub getLocator {
 
 sub readArguments {
   my ($self, $gullet) = @_;
-  my $params = $$self{parameters};
+  my $params = $self->getParameters;
   return ($params ? $params->readArguments($gullet, $self) : ()); }
 
 sub getParameters {
   my ($self) = @_;
+  # Allow defering these until the Definition is actually used.
+  if ((defined $$self{parameters}) && !ref $$self{parameters}) {
+    require LaTeXML::Package;
+    $$self{parameters} = LaTeXML::Package::parseParameters($$self{parameters}, $$self{cs}); }
   return $$self{parameters}; }
 
 #======================================================================
@@ -77,7 +83,8 @@ sub toString {
 # Return the Tokens that would invoke the given definition with arguments.
 sub invocation {
   my ($self, @args) = @_;
-  return ($$self{cs}, ($$self{parameters} ? $$self{parameters}->revertArguments(@args) : ())); }
+  my $params = $self->getParameters;
+  return ($$self{cs}, ($params ? $params->revertArguments(@args) : ())); }
 
 #======================================================================
 # Profiling support

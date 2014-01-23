@@ -13,6 +13,8 @@ package LaTeXML::Core::Definition::Primitive;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition);
 
 # Known traits:
@@ -34,13 +36,13 @@ sub isPrefix {
 
 sub executeBeforeDigest {
   my ($self, $stomach) = @_;
-  local $LaTeXML::State::UNLOCKED = 1;
+  local $LaTeXML::Core::State::UNLOCKED = 1;
   my $pre = $$self{beforeDigest};
   return ($pre ? map { &$_($stomach) } @$pre : ()); }
 
 sub executeAfterDigest {
   my ($self, $stomach, @whatever) = @_;
-  local $LaTeXML::State::UNLOCKED = 1;
+  local $LaTeXML::Core::State::UNLOCKED = 1;
   my $post = $$self{afterDigest};
   return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
 
@@ -63,7 +65,7 @@ sub invoke {
 sub equals {
   my ($self, $other) = @_;
   return (defined $other
-      && (ref $self) eq (ref $other)) && Equals($$self{parameters}, $$other{parameters})
+      && (ref $self) eq (ref $other)) && Equals($self->getParameters, $other->getParameters)
     && Equals($$self{replacement}, $$other{replacement}); }
 
 #===============================================================================
@@ -82,7 +84,7 @@ C<LaTeXML::Core::Definition::Primitive>  - Primitive Control sequence definition
 These represent primitive control sequences that are converted directly to
 Boxes or Lists containing basic Unicode content, rather than structured XML,
 or those executed for side effect during digestion in the L<LaTeXML::Core::Stomach>,
-changing the L<LaTeXML::State>.  The results of invoking a C<LaTeXML::Core::Definition::Primitive>,
+changing the L<LaTeXML::Core::State>.  The results of invoking a C<LaTeXML::Core::Definition::Primitive>,
 if any, should be a list of digested items (C<LaTeXML::Core::Box>, C<LaTeXML::Core::List>
 or C<LaTeXML::Core::Whatsit>).
 

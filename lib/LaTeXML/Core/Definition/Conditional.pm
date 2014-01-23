@@ -13,6 +13,9 @@ package LaTeXML::Core::Definition::Conditional;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
 use base qw(LaTeXML::Core::Definition::Expandable);
 
 # Conditional control sequences; Expandable
@@ -150,7 +153,7 @@ sub invoke_else {
 "already saw \\else for " . Stringify($$stack[0]{token}) . " [" . $$stack[0]{ifid} . "] at " . $$stack[0]{start});
     return; }
   else {
-    local $LaTeXML::IFFRAME = $stack->[0];
+    local $LaTeXML::IFFRAME = $$stack[0];
     my $t = skipConditionalBody($gullet, 0);
     print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
       . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
@@ -169,7 +172,7 @@ sub invoke_fi {
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
     return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   else {                            # "expand" by removing the stack entry for this level
-    local $LaTeXML::IFFRAME = $stack->[0];
+    local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame
     print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
       . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]\n"

@@ -14,6 +14,10 @@ package LaTeXML::Core::Definition::Expandable;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Parameters;
 use base qw(LaTeXML::Core::Definition);
 
@@ -42,8 +46,9 @@ sub isProtected {
 
 sub getExpansion {
   my ($self) = @_;
-  if (!ref $$self{expansion}) {
-    $$self{expansion} = TokenizeInternal($$self{expansion}); }
+  if (!ref $$self{expansion}) {    # Tokenization DEFERRED till actually used (shaves > 5%)
+    require LaTeXML::Package;      # make sure present, but no imports
+    $$self{expansion} = LaTeXML::Package::TokenizeInternal($$self{expansion}); }
   return $$self{expansion}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
@@ -113,7 +118,7 @@ sub substituteTokens {
     if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
       push(@result, $token); }
     elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($token->[0]) - ord('0') - 1]) {
+      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
         push(@result, @$arg); } }                       # ->unlist, assuming it's a Tokens() !!!
     else {                                              # Duplicated '#', copy 2nd '#'
       push(@result, $token); } }
@@ -122,8 +127,8 @@ sub substituteTokens {
 sub equals {
   my ($self, $other) = @_;
   return (defined $other && (ref $self) eq (ref $other))
-    && Equals($$self{parameters},  $$other{parameters})
-    && Equals($self->getExpansion, $other->getExpansion); }
+    && Equals($self->getParameters, $other->getParameters)
+    && Equals($self->getExpansion,  $other->getExpansion); }
 
 #======================================================================
 1;

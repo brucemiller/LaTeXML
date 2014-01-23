@@ -13,6 +13,9 @@ package LaTeXML::Core::Definition::Constructor::Compiler;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Common::XML;
 use Scalar::Util qw(refaddr);
 
 my $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";    # [CONSTANT]
@@ -28,7 +31,7 @@ sub compileConstructor {
   return sub { } unless $replacement;
   my $cs    = $constructor->getCS;
   my $name  = $cs->getCSName;
-  my $nargs = $$constructor{nargs};
+  my $nargs = $constructor->getNumArgs;
   local $LaTeXML::Core::Definition::Constructor::CONSTRUCTOR = $constructor;
   local $LaTeXML::Core::Definition::Constructor::NAME        = $name;
   local $LaTeXML::Core::Definition::Constructor::NARGS       = $nargs;

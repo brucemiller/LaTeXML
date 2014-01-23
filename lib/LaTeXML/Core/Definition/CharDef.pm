@@ -13,6 +13,7 @@ package LaTeXML::Core::Definition::CharDef;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition::Register);
 
 # A CharDef is a specialized register;
