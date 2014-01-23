@@ -163,7 +163,7 @@ DefParameterType('Arrows', \&ReadArrows,
 { package LaTeXML::PSAngle;
   use LaTeXML::Global;
   use LaTeXML::Package;
-  use base qw(LaTeXML::Object);
+  use base qw(LaTeXML::Common::Object);
 
   our %angleVals = (N => 0, W => 90, S => 180, E => 270, U => 0, L => 90, D => 180, R => 270,
     r => 0, u => 90, l => 180, d => 270, ur => 45, ul => 135, dl => 225, dr => 315,

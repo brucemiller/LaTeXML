@@ -59,7 +59,7 @@ sub lstRescan {
 # Set various Listings keys
 DefPrimitive('\lstset RequiredKeyVals:LST', sub { lstActivate($_[1]); return; });
 
-our $EMPTY_CATTABLE = LaTeXML::State->new(catcodes => 'none');
+our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
 DefMacro('\lstinline OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;

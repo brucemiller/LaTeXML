@@ -21,7 +21,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use Image::Magick;
-
+use List::Util qw(min max);
 #=====================================================================
 # Utilities
 sub addToCount {
@@ -68,8 +68,8 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     my $miny   = LookupValue('\pgf@picminy')->pxValue;
     my $width  = LookupValue('\pgf@picmaxx');
     my $height = LookupValue('\pgf@picmaxy');
-    my $w      = List::Util::max($width->pxValue, 1);
-    my $h      = List::Util::max($height->pxValue, 1);
+    my $w      = max($width->pxValue, 1);
+    my $h      = max($height->pxValue, 1);
     $whatsit->setProperty(minx      => $minx);
     $whatsit->setProperty(miny      => $miny);
     $whatsit->setProperty(width     => $width);
@@ -752,7 +752,7 @@ DefMacro('\lxSVG@pgfsys@sh@intervals{}', sub {
 # These should avoid creating so many constructors at run time
 DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
     my ($stomach, $name, $flag) = @_;
-    my $stops = LaTeXML::Core::List->new(@{ LookupValue('pgf_sh_stops') });
+    my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => []);
     my $x = LookupValue('\pgf@x')->pxValue;
     my $y = LookupValue('\pgf@y')->pxValue;
@@ -777,7 +777,7 @@ DefPrimitive('\lxSVG@pgfsys@sh@defstripes{}{Number}', sub {
 
 DefPrimitive('\lxSVG@pgfsys@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
-    my $stops = LaTeXML::Core::List->new(@{ LookupValue('pgf_sh_stops') });
+    my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => []);
     my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
     my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;

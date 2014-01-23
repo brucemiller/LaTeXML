@@ -25,7 +25,7 @@ DefPrimitive('\define@key{}{}[]{}', sub {
     DefKeyVal($keyset, $key, '', ToString($default));
     # And define macros, just incase..
     DefMacroI('\KV@' . $keyset . '@' . $key,
-      LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameters::newParameter('Plain', '{}')),
+      LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Plain', '{}')),
       $code,
       scope => 'global');
     DefMacroI('\KV@' . $keyset . '@' . $key . '@default', undef,

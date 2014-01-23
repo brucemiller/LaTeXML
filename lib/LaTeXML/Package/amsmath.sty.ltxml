@@ -90,7 +90,7 @@ DefMacroI('\@ams@newline', undef, sub {
 
 sub amsalignBindings {
   my ($template) = @_;
-  my $alignment = LaTeXML::Util::Alignment
+  my $alignment = LaTeXML::Core::Alignment
     ->new(openContainer => sub { my %attr = RefStepID('@equationgroup');
       $attr{'xml:id'} = $attr{id}; delete $attr{id};
       $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
@@ -219,7 +219,7 @@ DefPrimitive('\end@amsgather', sub { $_[0]->egroup; });
 DefPrimitive('\@amsgather@bindings', sub {
     my $col = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::AlignmentTemplate->new(columns => [$col]));
+    amsalignBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col]));
 });
 
 # Each equation row (except intertext) consists of single equation.
@@ -279,7 +279,7 @@ DefPrimitive('\@amsalign@bindings', sub {
       after => Tokens(T_MATH) };
     my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::AlignmentTemplate->new(repeated => [$col1, $col2]));
+    amsalignBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]));
 });
 
 # Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
@@ -403,7 +403,7 @@ DefConstructor('\@@amsaligned DigestedBody',
     my $col2 = { before => Tokens(T_CS('\displaystyle')),
       after => Tokens(T_CS('\hfil')) };
     my $template
-      = LaTeXML::AlignmentTemplate->new(repeated => [$col1, $col2]);
+      = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
     alignmentBindings($template);
     Let("\\\\", '\@alignment@newline@noskip');
   },

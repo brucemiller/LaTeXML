@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use LaTeXML::Util::Alignment;
 
 # Environment \begin{supertabular}{pattern} ... \end{supertabular}
 DefMacro('\supertabular{}',

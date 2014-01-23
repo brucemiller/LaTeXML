@@ -296,7 +296,7 @@ sub createDeclarationRewrite {
 ###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',
-    LaTeXML::Rewrite->new('math',
+    LaTeXML::Core::Rewrite->new('math',
       ($trace ? (trace => $trace) : ()),
       ($scope ? (scope => $scope) : ()),
       ($match ? (match => $match) : ()),

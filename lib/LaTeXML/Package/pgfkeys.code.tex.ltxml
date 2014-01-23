@@ -275,7 +275,7 @@ DefMacro('\pgfkeysdef{}{}', sub {
     my ($gullet, $key, $body) = @_;
     $key = ToString(Expand($key));
     my $cs = pgfkeyCS($key . '/.@cmd');
-    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameters::newParameter('Until', 'Until:\pgfeov',
+    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Until', 'Until:\pgfeov',
         extra => [T_CS('\pgfeov')]));
     #  print STDERR "\nDEF '$key' args ".ToString($p)."; body is ".ToString($body)."\n";
     DefMacroI($cs, $p, $body); },
@@ -285,7 +285,7 @@ DefMacro('\pgfkeysedef{}{}', sub {
     my ($gullet, $key, $body) = @_;
     $key = ToString(Expand($key));
     my $cs = pgfkeyCS($key . '/.@cmd');
-    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameters::newParameter('Until', 'Until:\pgfeov',
+    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Until', 'Until:\pgfeov',
         extra => [T_CS('\pgfeov')]));
     { local $LaTeXML::NOEXPAND_THE = 1;
       $body = Expand($body); }
@@ -325,7 +325,7 @@ DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
     my $cs = pgfkeyCS($key . '/.@cmd');
     $n = ToString($n);
     $n =~ s/^#//;
-    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameters::newParameter('Until', 'Until:\pgfeov',
+    my $p = LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Until', 'Until:\pgfeov',
         extra => [T_CS('\pgfeov')]));
    #  print STDERR "\nDEFNARGS '$key' args ".ToString($p)." ('$n' args); body is ".ToString($body)."\n";
     my $argsbody = $body;
@@ -339,7 +339,7 @@ DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
     # (e-)Define $key/.@@body as if it were the normal macro with $n args
     DefMacroI(pgfkeyCS($key . '/.@@body'),
 ####            undef,
-      LaTeXML::Core::Parameters->new(map { LaTeXML::Core::Parameters::newParameter('Plain', '{}') } 1 .. $n),
+      LaTeXML::Core::Parameters->new(map { LaTeXML::Core::Parameter->new('Plain', '{}') } 1 .. $n),
       $argsbody);
     # Define $key/.@cmd itself
     DefMacroI($cs, $p, sub { Tokens(pgfkeyCS($key . '/.@@body'), $_[1]); });
