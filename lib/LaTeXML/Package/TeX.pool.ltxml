@@ -15,8 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use Unicode::Normalize;
-use LaTeXML::Util::Alignment;
 use LaTeXML::Util::Pathname;
+use List::Util qw(min max);
 
 RegisterNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
 RegisterNamespace(svg   => "http://www.w3.org/2000/svg");
@@ -346,10 +346,7 @@ DefParameterType('Digested', sub {
       @list = $STATE->getStomach->invokeToken($token); }
     # In most (all?) cases, we're really looking for a single Whatsit here...
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    #  while(scalar(@list) && IsEmpty($list[0])){
-    #    shift(@list); }
-    (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1,                                          # since _already_ digested.
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -361,8 +358,7 @@ DefParameterType('DigestUntil', sub {
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = $STATE->getStomach->digestNextBody($until);
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1,                                          # since _already_ digested.
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -377,8 +373,7 @@ DefParameterType('DigestedBody', sub {
     my @list     = $STATE->getStomach->digestNextBody();
     # In most (all?) cases, we're really looking for a single Whatsit here...
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
-    (scalar(@list) == 1 ? $list[0]
-      : ($ismath ? LaTeXML::Core::MathList->new(@list) : LaTeXML::Core::List->new(@list))); },
+    List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1);
 
 # In addition to the standard TeX Dimension, there are various LaTeX constructs
@@ -400,7 +395,7 @@ DefParameterType('DigestedBody', sub {
 # [Note that this should act like Semiverbatim if the supplied type does! Ugh]
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
-    my $typedef = $type && LaTeXML::Core::Parameters::parseParameters(ToString($type), "CommaList");
+    my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList");
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
       my @items = ();
@@ -595,7 +590,7 @@ DefMacro('\meaning Token', sub {
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . $char; }
       elsif (lc($type) =~ /expandable/) {
         my $expansion = $definition->getExpansion;
-        my $ltxps     = $$definition{parameters};
+        my $ltxps     = $definition->getParameters;
         my @params;
         my $argcount = 0;
         if (defined $ltxps) {
@@ -868,24 +863,24 @@ sub parseDefParameters {
       # Found text that marks the end of the parameter
       if (@delim) {
         my $expected = Tokens(@delim);
-        push(@params, LaTeXML::Core::Parameters::newParameter('Until',
+        push(@params, LaTeXML::Core::Parameter->new('Until',
             'Until:' . ToString($expected),
             extra => [$expected])); }
 
       # Special case: trailing sole # => delimited by next opening brace.
       elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
         shift(@tokens);
-        push(@params, LaTeXML::Core::Parameters::newParameter('UntilBrace', 'UntilBrace')); }
+        push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
       # Nothing? Just a plain parameter.
       else {
-        push(@params, LaTeXML::Core::Parameters::newParameter('Plain', '{}')); } }
+        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
     else {
       # Initial delimiting text is required.
       my @lit = ($t);
       while (@tokens && ($tokens[0]->getCatcode != CC_PARAM)) {
         push(@lit, shift(@tokens)); }
       my $expected = Tokens(@lit);
-      push(@params, LaTeXML::Core::Parameters::newParameter('Match',
+      push(@params, LaTeXML::Core::Parameter->new('Match',
           'Match:' . ToString($expected),
           extra   => [$expected],
           novalue => 1)); }
@@ -1775,11 +1770,7 @@ DefPrimitive('{', sub {
     my $open   = Box(undef, undef, undef, T_BEGIN);
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
-    if ($ismath) {
-      LaTeXML::Core::MathList->new($open, @body); }
-    else {
-      LaTeXML::Core::List->new($open, @body); } });
-
+    List($open, @body, mode => ($ismath ? 'math' : 'text')); });
 #DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
 DefPrimitive('}', sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef, $f, undef, T_END); });
 
@@ -2184,7 +2175,7 @@ sub alignmentBindings {
   my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
   my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
-  my $alignment = LaTeXML::Util::Alignment
+  my $alignment = LaTeXML::Core::Alignment
     ->new(openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
     closeContainer => sub { $_[0]->closeElement($container); },
     openRow        => sub { $_[0]->openElement($rowtype, @_[1 .. $#_]); },
@@ -2316,8 +2307,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
     my $empty = scalar(@boxes) == 0;
     $align = undef if $empty;
     @boxes = (@saveleft, @boxes, @saveright);
-    $boxes = (scalar(@boxes) == 1 ? $boxes[0]
-      : ($boxes->isMath ? LaTeXML::Core::MathList->new(@boxes) : LaTeXML::Core::List->new(@boxes)));
+    $boxes = List(@boxes, mode => ($boxes->isMath ? 'math' : 'text'));
 
     # record relevant info in the Alignment.
     $$colspec{align}  = $align;
@@ -2328,7 +2318,7 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
     $$colspec{head}   = LookupValue('IN_TABULAR_HEAD');
     for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {
       my $c = $alignment->getColumn($i);
-      $c->{skipped} = 1 if $c; }
+      $$c{skipped} = 1 if $c; }
     #  $stomach->egroup;
     $boxes; },
   beforeDigest => sub {
@@ -2483,7 +2473,7 @@ DefConstructor('\halign BoxSpecification', sub {
       else {
         push(@post, $t) if @post || !$t->equals(T_SPACE); } }
 
-    my $template = LaTeXML::AlignmentTemplate->new((@nonreps ?
+    my $template = LaTeXML::Core::Alignment::Template->new((@nonreps ?
           (columns => [@nonreps], repeated => [@cols])
         : (columns => [@cols])));
     #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
@@ -2913,7 +2903,7 @@ sub closeMathFork {
   $document->closeElementAt($mfs[-1]);
   return; }
 
-# Create an inline math Whatsit from a list of MathBoxes, MathLists or Whatsits.
+# Create an inline math Whatsit from a list of math Boxes, Lists or Whatsits.
 # Note that we unwrap @hidden@bgroup's (!) and normalize \displaystyle (!)
 # This is primarily useful for synthesizing the Box for a newly created ltx:Math
 # that is synthesized from other math content within a ltx:MathFork.
@@ -2931,7 +2921,7 @@ sub MathWhatsit {
   if (@styles) {
     @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
   return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
-    body    => LaTeXML::Core::MathList->new(@items),
+    body => List(@items, mode => 'math'),
     trailer => T_CS('\@@ENDINLINEMATH'),
     # locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
     locator => $locator, isMath => 1); }
@@ -3159,12 +3149,12 @@ our %scriptstylemap = (display => 'script', text => 'script',
 sub IsEmpty {
   my ($box) = @_;
   my $ref = ref $box;
-  if (!$box) { return 1; }
+  if    (!$box)                            { return 1; }
   elsif ($ref eq 'LaTeXML::Core::Comment') { return 1; }
-  elsif (($ref eq 'LaTeXML::Core::Box') || ($ref eq 'LaTeXML::Core::MathBox')) {
+  elsif ($ref eq 'LaTeXML::Core::Box') {
     my $s = $box->getString;
     return (!defined $s) || ($s =~ /^\s*$/); }
-  elsif (($ref eq 'LaTeXML::Core::List') || ($ref eq 'LaTeXML::Core::MathList')) {
+  elsif ($ref eq 'LaTeXML::Core::List') {
     return !grep { !IsEmpty($_) } $box->unlist; }
   elsif ($ref eq 'LaTeXML::Core::Whatsit') {
     return 1 if $box->getProperty('isSpace');    # A space-like Whatsit
@@ -3179,7 +3169,7 @@ sub IsEmpty {
 # sub isRelax {
 #   my($box)=@_;
 #   my $ref = ref $box;
-#   $box && (($ref eq 'LaTeXML::Core::Box') || ($ref eq 'LaTeXML::Core::MathBox'))
+#   $box && ($ref eq 'LaTeXML::Core::Box')
 #     && Equals(T_CS('\relax'),$box->revert); }
 
 # my $is=
@@ -3305,19 +3295,13 @@ sub scriptSizer {
     : LookupValue('font')->getNominalSize);
   my ($w, $h, $d) = (0, 0, 0);
   # Fishing for the scriptpos on the base (if any)
-  # Why 'attributes' on MathBox instead of just plain properties???
   my $attr;
   $pos = $$attr{scriptpos} if !defined $pos && defined $base
     && defined($attr = $base->getProperty('attributes'));
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
   $pos = 'post' if !defined $pos;
-# print STDERR "$op/$pos ".ToString($script).' '.$script->showSize
-#   .' font='.ToString($script->getFont)."\n"
-#   ."   on ".ToString($base).' '.($base ? $base->showSize.' font='.ToString($base->getFont): '')."\n"
-
-  #   ."   with ".ToString($prev)."\n";
   if ($pos eq 'mid') {
-    $w = max(0, $ws - $wb);    # as if max width of base & script
+    $w = max(0, $ws - $wb);              # as if max width of base & script
     if ($op eq 'SUPERSCRIPT') {
       $h = $hb + $ds + $hs; }
     else {
@@ -3423,8 +3407,8 @@ sub chooseArgHandler {
   my @top = $stomach->regurgitate;
   my @bot = $stomach->digestNextBody();
   my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
-  $whatsit->setProperty(top       => LaTeXML::Core::MathList->new(@top));
-  $whatsit->setProperty(bottom    => LaTeXML::Core::MathList->new(@bot));
+  $whatsit->setProperty(top    => List(@top, mode => 'math'));
+  $whatsit->setProperty(bottom => List(@bot, mode => 'math'));
   $whatsit->setProperty(mathstyle => $style);
 
   AssignValue(mathstyle => $style);
@@ -3857,7 +3841,7 @@ AssignValue(allocated_boxes => 0);
 DefPrimitive('\newbox    Token', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
-    AssignValue("box$n", LaTeXML::Core::List->new());
+    AssignValue("box$n", List());
     DefRegisterI($_[1], undef, Number($n)); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
 DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
@@ -5103,7 +5087,7 @@ our %DELIMITER_MAP =
   '\Updownarrow' => { char => "\x{21D5}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Updownarrow' }, # ??
   );
 
-# With new treatment of Simple Symbols as just MathBox's with assigned attributes,
+# With new treatment of Simple Symbols as just Box's with assigned attributes,
 # we're not getting whatsits, and so we're not looking them up the same way!!!
 # TEMPORARILY (?) hack the Delimiter map
 foreach my $entry (values %DELIMITER_MAP) {
@@ -5370,7 +5354,7 @@ DefConstructor('\@@cases{}',
     my $col1 = { before => Tokens(), after => Tokens(T_CS('\hfil')) };
     my $col2 = { before => Tokens(T_CS('\hbox'), T_BEGIN),
       after => Tokens(T_END, T_CS('\hfil')) };
-    alignmentBindings(LaTeXML::AlignmentTemplate->new(columns => [$col1, $col2])); });
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2])); });
 
 DefPrimitive('\openup Dimension', undef);
 

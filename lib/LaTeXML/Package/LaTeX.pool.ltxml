@@ -1553,8 +1553,8 @@ sub eqnarrayBindings {
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
   my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
-  my $template = LaTeXML::AlignmentTemplate->new(columns => [$col1, $col2, $col3]);
-  my $alignment = LaTeXML::Util::Alignment
+  my $template = LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]);
+  my $alignment = LaTeXML::Core::Alignment
     ->new(openContainer => sub { my %attr = RefStepID('@equationgroup');
       $attr{'xml:id'} = $attr{id}; delete $attr{id};
       $attr{class} = 'ltx_eqn_eqnarray';
@@ -2407,7 +2407,7 @@ DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
 sub tabbingBindings {
-  my $alignment = LaTeXML::Util::Alignment
+  my $alignment = LaTeXML::Core::Alignment
     ->new(openContainer => sub { $_[0]->openElement('ltx:tabular', @_[1 .. $#_]); },
     closeContainer => sub { $_[0]->closeElement('ltx:tabular'); },
     openRow        => sub { $_[0]->openElement('ltx:tr', @_[1 .. $#_]); },
@@ -2415,7 +2415,8 @@ sub tabbingBindings {
     openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
     closeColumn    => sub { $_[0]->closeElement('ltx:td'); });
 
-  my $template = LaTeXML::AlignmentTemplate->new(repeated => [{ after => Tokens(T_CS('\hfil')) }]);
+  my $template = LaTeXML::Core::Alignment::Template->new(
+    repeated => [{ after => Tokens(T_CS('\hfil')) }]);
   $alignment->setTemplate($template);
   AssignValue(Alignment => $alignment);
   Let("\\=",       '\@tabbing@tabset');
@@ -2477,7 +2478,7 @@ DefMacroI('\@tabular@row@after',     undef, '');
 DefMacroI('\@tabular@column@before', undef, '');
 DefMacroI('\@tabular@column@after',  undef, '');
 
-# The Core alignment support is in LaTeXML::Util::Alignment and in TeX.ltxml
+# The Core alignment support is in LaTeXML::Core::Alignment and in TeX.ltxml
 DefMacro('\tabular[]{}', '\@tabular@bindings{#2}[text]\@@tabular[#1]{#2}\@start@alignment');
 DefMacroI('\endtabular', undef, '\@finish@alignment\@end@tabular');
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
@@ -3267,7 +3268,7 @@ DefConstructor('\@framebox[][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
-DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), LaTeXML::Core::List->new()); });
+DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), List()); });
 DefPrimitive('\sbox DefToken{}', sub {
     AssignValue('box' . ToString($_[1]), Digest($_[2])); return; });
 
@@ -3284,7 +3285,7 @@ DefPrimitive('\@begin@lrbox Token', sub {
     #  my $font = $STATE->lookupValue('font');
     #  my $loc  = $stomach->getGullet->getLocator;
     #  my $box = LaTeXML::Core::Box->new($stomach->digestNextBody(),$font,$loc);
-    my $box = LaTeXML::Core::List->new($stomach->digestNextBody());
+    my $box = List($stomach->digestNextBody());
     AssignValue('box' . ToString($token), $box); });
 
 DefPrimitive('\usebox DefToken', sub {
@@ -3363,7 +3364,7 @@ sub ResolveReader {
     return $$descriptor{reader}; }
   # Otherwise, try to find a function named Read<Type>
   else {
-    return LaTeXML::Core::Parameters::checkReaderFunction('Read' . $type); } }
+    return LaTeXML::Core::Parameter::checkReaderFunction('Read' . $type); } }
 
 # This defines a Pair parameter type,
 # that reads a parenthesized, comma separated pair of subtype.
