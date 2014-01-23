@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::State                                                     | #
+# |  LaTeXML::Core::State                                               | #
 # | Maintains state: bindings, values, grouping                         | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,11 +9,12 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::State;
+package LaTeXML::Core::State;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;    # To get CatCodes
 
 # Naming scheme for keys (such as it is)
 #    binding:<cs>  : the definition associated with <cs>
@@ -327,7 +328,7 @@ sub installDefinition {
   # Locked definitions!!! (or should this test be in assignMeaning?)
   # Ignore attempts to (re)define $cs from tex sources
   my $cs = $definition->getCS->getCSName;
-  if ($self->lookupValue("$cs:locked") && !$LaTeXML::State::UNLOCKED) {
+  if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     if (my $s = $self->getStomach->getGullet->getSource) {
       # report if the redefinition seems to come from document source
       if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
@@ -338,6 +339,7 @@ sub installDefinition {
   return; }
 
 #======================================================================
+
 sub pushFrame {
   my ($self, $nobox) = @_;
   # Easy: just push a new undo hash.
@@ -356,6 +358,27 @@ sub popFrame {
       my $undosubtable = $$undo{$subtable};
       foreach my $name (keys %$undosubtable) {
         map { shift(@{ $$table{$subtable}{$name} }) } 1 .. $$undosubtable{$name}; } } }
+  return; }
+
+#======================================================================
+# This is primarily about catcodes, but a bit more...
+
+sub beginSemiverbatim {
+  my ($self) = @_;
+  # Is this a good/safe enough shorthand, or should we really be doing beginMode?
+  $self->pushFrame;
+  $self->assignValue(MODE    => 'text');
+  $self->assignValue(IN_MATH => 0);
+  map { $self->assignCatcode($_ => CC_OTHER, 'local') }
+    @{ $self->lookupValue('SPECIALS') };
+  $self->assignMathcode('\'' => 0x8000, 'local');
+  # try to stay as ASCII as possible
+  $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local');
+  return; }
+
+sub endSemiverbatim {
+  my ($self) = @_;
+  $self->popFrame;
   return; }
 
 #======================================================================
@@ -402,7 +425,7 @@ sub popDaemonFrame {
     my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
     $self->assignValue('_PRELOADED_POOL_', undef, 'global');
     foreach my $subname (keys %LaTeXML::Package::Pool::) {
-      unless (exists $pool_preloaded_hash->{$subname}) {
+      unless (exists $$pool_preloaded_hash{$subname}) {
         undef $LaTeXML::Package::Pool::{$subname};
         delete $LaTeXML::Package::Pool::{$subname};
       } }
@@ -555,11 +578,11 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::State> - stores the current state of processing.
+C<LaTeXML::Core::State> - stores the current state of processing.
 
 =head1 DESCRIPTION
 
-A C<LaTeXML::State> object stores the current state of processing.
+A C<LaTeXML::Core::State> object stores the current state of processing.
 It recording catcodes, variables values, definitions and so forth,
 as well as mimicing TeX's scoping rules.
 
