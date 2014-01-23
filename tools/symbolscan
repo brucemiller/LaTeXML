@@ -152,7 +152,7 @@ sub extractSymbols {
 
   # Pick out all the defined Math Symbols
   #  print STDERR "Scanning defined symbols in $name\n"  if $::VERBOSITY;
-  my $table   = $state->{table}{value};
+  my $table   = $$state{table}{value};
   my @symbols = ();
   foreach my $key (keys %{$table}) {
     if ($key =~ /^math_definition##/) {

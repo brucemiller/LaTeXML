@@ -557,7 +557,7 @@ sub scan {
     else { LaTeXML::Package::InputDefinitions($loadpath); } }
 
   print "Scanning defined symbols\n" if $::VERBOSITY >= 1;
-  my $table = $LaTeXML::STATE->{table}{meaning};
+  my $table = $$LaTeXML::STATE{table}{meaning};
   foreach my $entry (keys %{$table}) {
     if ($entry =~ /^\\begin\{(.*?)\}$/) {
       $$self{symbols}{ "\\" . $1 } = 1; }
