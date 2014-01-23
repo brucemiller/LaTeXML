@@ -14,7 +14,11 @@ package LaTeXML::Core::KeyVals;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
+use base qw(LaTeXML::Common::Object);
 
 #======================================================================
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
@@ -46,9 +50,9 @@ sub readKeyVals {
       my $value;
       if ($delim->equals($assign)) {    # Got =, so read the value
                                         # WHOA!!! Secret knowledge!!!
-        my $type = ($keydef && (scalar(@$keydef) == 1) && $keydef->[0]->{type}) || 'Plain';
+        my $type = ($keydef && (scalar(@$keydef) == 1) && $$keydef[0]{type}) || 'Plain';
         my $typedef = $STATE->lookupMapping('PARAMETER_TYPES', $type);
-        StartSemiverbatim() if $typedef && $$typedef{semiverbatim};
+        $STATE->beginSemiverbatim() if $typedef && $$typedef{semiverbatim};
 
         ## ($value,$delim)=$gullet->readUntil($punct,$close);
         # This is the core of $gullet->readUntil, but preserves braces needed by rare key types
@@ -63,7 +67,7 @@ sub readKeyVals {
           $value = $value->neutralize; }
         else {
           ($value) = $keydef->reparseArgument($gullet, $value) }
-        EndSemiverbatim() if $typedef && $$typedef{semiverbatim};
+        $STATE->endSemiverbatim() if $typedef && $$typedef{semiverbatim};
       }
       else {                                                                  # Else, get default value.
         $value = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key . '@default'); }
@@ -150,12 +154,12 @@ sub beDigested {
     my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
     my $dodigest = (ref $value) && (!$keydef || !$$keydef[0]{undigested});
     # Yuck
-    my $type = ($keydef && (scalar(@$keydef) == 1) && $keydef->[0]->{type}) || 'Plain';
+    my $type = ($keydef && (scalar(@$keydef) == 1) && $$keydef[0]{type}) || 'Plain';
     my $typedef = $STATE->lookupMapping('PARAMETER_TYPES', $type);
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    StartSemiverbatim() if $semiverb;
+    $STATE->beginSemiverbatim() if $semiverb;
     push(@dkv, $key, ($dodigest ? $value->beDigested($stomach) : $value));
-    EndSemiverbatim() if $semiverb;
+    $STATE->endSemiverbatim() if $semiverb;
   }
   return LaTeXML::Core::KeyVals->new($keyset, [@dkv],
     open  => $$self{open},  close  => $$self{close},
