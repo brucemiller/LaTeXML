@@ -13,7 +13,9 @@ package LaTeXML::Common::Font;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Dimension;
+use base qw(LaTeXML::Common::Object);
 
 # NOTE: This is now in Common that it may evolve to be useful in Post processing...
 
