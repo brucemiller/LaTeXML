@@ -46,7 +46,6 @@ sub new {
       #  Hopefully, just a file, not a URL?
       $schemadoc = $xmlparser->parseFile($path); }
     else {
-###      Error('missing_file',$name,"Can't find RelaxNG schema module $name");
       return;                                            # ???
     } }
   return bless { schemadoc => $schemadoc }, $class; }
