@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Bib                                                       | #
+# |  LaTeXML::Pre::BibTeX                                               | #
 # | Implements BibTeX for LaTeXML                                       | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,16 +9,17 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Bib;
+package LaTeXML::Pre::BibTeX;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Pre::BibTeX::Entry;
 use Text::Balanced qw(extract_delimited extract_bracketed);
 
 #**********************************************************************
-# LaTeXML::Bib is responsible for the lowest level parsing of
+# LaTeXML::Pre::BibTeX is responsible for the lowest level parsing of
 # BibTeX files, collecting and storing a set of entries
 # (along with any TeX code in @PREAMBLE).
 # It doesn't analyze the entries or fields.
@@ -184,7 +185,7 @@ sub parseEntry {
   $self->parseMatch(',');
   # NOTE: actually, the entry should be ignored if there already is one for $key!
   my ($fields, $rawfields) = $self->parseFields('@string', $open);
-  push(@{ $$self{entries} }, LaTeXML::Bib::BibEntry->new($type, $key, $fields, $rawfields));
+  push(@{ $$self{entries} }, LaTeXML::Pre::BibTeX::Entry->new($type, $key, $fields, $rawfields));
   return; }
 
 sub parseFields {
@@ -326,59 +327,7 @@ sub skipJunk {
     return unless defined $nextline; }
   return; }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-package LaTeXML::Bib::BibEntry;
-
-sub new {
-  my ($class, $type, $key, $fields, $rawfields) = @_;
-  my $self = { type => $type, key => $key,
-    fieldlist => $fields, rawfieldlist => $rawfields,
-    fieldmap    => { map { ($$_[0] => $$_[1]) } @$fields },
-    rawfieldmap => { map { ($$_[0] => $$_[1]) } @$rawfields } };
-  bless $self, $class;
-  return $self; }
-
-sub getType {
-  my ($self) = @_;
-  return $$self{type}; }
-
-sub getKey {
-  my ($self) = @_;
-  return $$self{key}; }
-
-sub getFields {
-  my ($self) = @_;
-  return @{ $$self{fieldlist} }; }
-
-sub getField {
-  my ($self, $key) = @_;
-  return $$self{fieldmap}{$key}; }
-
-sub getRawField {
-  my ($self, $key) = @_;
-  return $$self{rawfieldmap}{$key}; }
-
-sub addField {
-  my ($self, $field, $value) = @_;
-  push(@{ $$self{fieldlist} }, [$field, $value]);
-  $$self{fieldmap}{$field} = $value;
-  return; }
-
-sub addRawField {
-  my ($self, $field, $value) = @_;
-  push(@{ $$self{rawfieldlist} }, [$field, $value]);
-  $$self{rawfieldmap}{$field} = $value;
-  return; }
-
-sub prettyPrint {
-  my ($self) = @_;
-  return join(",\n",
-    "@" . $$self{type} . "{" . $$self{key},
-    (map { (" " x (10 - length($$_[0]))) . $$_[0] . " = {" . $$_[1] . "}" }
-        @{ $$self{fieldlist} })
-    ) . "}\n"; }
-
-#**********************************************************************
+#======================================================================
 1;
 
 __END__
