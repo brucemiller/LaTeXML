@@ -14,8 +14,12 @@ package LaTeXML::Core::Document;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Core::List;
+use LaTeXML::Common::Error;
+use LaTeXML::Common::XML;
 use Unicode::Normalize;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 # These two element names are `leaks' of the document structure into
@@ -897,7 +901,7 @@ sub applyMathLigature {
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
     if (scalar(@boxes) > 1) {
-      $self->setNodeBox($node, LaTeXML::Core::MathList->new(@boxes)); }
+      $self->setNodeBox($node, List(@boxes, mode => 'math')); }
     foreach my $key (sort keys %attr) {
       my $value = $attr{$key};
       if (defined $value) {
@@ -1463,7 +1467,7 @@ and attributes according to the defining L<LaTeXML::Core::Definition::Constructo
 
 Most document construction occurs at a I<current insertion point> where material will
 be added, and which moves along with the inserted material.
-The L<LaTeXML::Model>, derived from various declarations and document type,
+The L<LaTeXML::Common::Model>, derived from various declarations and document type,
 is consulted to determine whether an insertion is allowed and when elements may need
 to be automatically opened or closed in order to carry out a given insertion.
 For example, a C<subsection> element will typically be closed automatically when it
@@ -1491,7 +1495,7 @@ Returns the C<XML::LibXML::Document> currently being constructed.
 
 =item C<< $doc = $document->getModel; >>
 
-Returns the C<XML::LibXML::Model> that represents the document model used for this document.
+Returns the C<LaTeXML::Common::Model> that represents the document model used for this document.
 
 =item C<< $node = $document->getNode; >>
 
