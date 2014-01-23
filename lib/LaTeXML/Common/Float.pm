@@ -14,6 +14,17 @@ use LaTeXML::Global;
 use strict;
 use warnings;
 use base qw(LaTeXML::Common::Number);
+use base qw(Exporter);
+our @EXPORT = (qw(&Float));
+
+#======================================================================
+# Exported constructor.
+
+sub Float {
+  my ($number) = @_;
+  return LaTeXML::Common::Float->new($number); }
+
+#======================================================================
 
 # Strictly speaking, Float isn't part of TeX, but it's handy.
 
@@ -52,6 +63,17 @@ C<LaTeXML::Common::Float> - representation of floating point numbers
 =head1 DESCRIPTION
 
 represents floating-point numbers,
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $number = Float($num); >>
+
+Creates a floating point object representing C<$num>;
+This is not part of TeX, but useful.
+
+=back
 
 =head1 AUTHOR
 
