@@ -14,6 +14,7 @@ package LaTeXML::Core::Comment;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Dimension;
 use base qw(LaTeXML::Core::Box);
 
 sub revert   { return (); }
