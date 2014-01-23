@@ -22,8 +22,13 @@ package LaTeXML::Core::Whatsit;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
+use LaTeXML::Common::Dimension;
+use List::Util qw(min max);
 use LaTeXML::Core::List;
-use LaTeXML::Core::MathList;
 use base qw(LaTeXML::Core::Box);
 
 # Specially recognized (some required?) properties:
@@ -97,7 +102,9 @@ sub getBody {
 sub setBody {
   my ($self, @body) = @_;
   my $trailer = pop(@body);
-  $$self{properties}{body} = ($self->isMath ? LaTeXML::Core::MathList->new(@body) : LaTeXML::Core::List->new(@body));
+##  $$self{properties}{body} = List(@body, mode => $self->isMath ? 'math' : 'text');
+  $$self{properties}{body} = LaTeXML::Core::List->new(@body);    # Don't want collapse if singlet!
+  $$self{properties}{body}->setProperty(mode => 'math') if $self->isMath;
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
   if ($trailer) {
@@ -319,7 +326,7 @@ Returns the list of arguments for this C<$whatsit>.
 =item C<< $whatsit->setArgs(@args); >>
 
 Sets the list of arguments for this C<$whatsit> to C<@args> (each arg should be
-a C<LaTeXML::Core::List> or C<LaTeXML::Core::MathList>).
+a C<LaTeXML::Core::List>).
 
 =item C<< $list = $whatsit->getBody; >>
 
