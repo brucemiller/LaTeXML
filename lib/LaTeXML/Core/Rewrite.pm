@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Rewrite                                                   | #
+# |  LaTeXML::Core::Rewrite                                             | #
 # | Rewrite Rules that modify the Constructed Document                  | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,12 +9,13 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-#======================================================================
-package LaTeXML::Rewrite;
+package LaTeXML::Core::Rewrite;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Common::XML;
 
 sub new {
   my ($class, $mode, @specs) = @_;
@@ -77,14 +78,15 @@ sub applyClause {
     $self->compileClause($document, $clause); }
   my ($ignore, $op, $pattern) = @$clause;
   if ($op eq 'trace') {
-    local $LaTeXML::Rewrite::DEBUG = 1;
+    local $LaTeXML::Core::Rewrite::DEBUG = 1;
     $self->applyClause($document, $tree, $n_to_replace, @more_clauses); }
   elsif ($op eq 'ignore') {
     $self->applyClause($document, $tree, $n_to_replace, @more_clauses); }
   elsif ($op eq 'select') {
     my ($xpath, $nnodes) = @$pattern;
     my @matches = $document->findnodes($xpath, $tree);
-    print STDERR "Rewrite selecting \"$xpath\" => " . scalar(@matches) . " matches\n" if $LaTeXML::Rewrite::DEBUG;
+    print STDERR "Rewrite selecting \"$xpath\" => " . scalar(@matches) . " matches\n"
+      if $LaTeXML::Core::Rewrite::DEBUG;
     foreach my $node (@matches) {
       next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
       $self->applyClause($document, $node, $nnodes, @more_clauses); } }
@@ -92,14 +94,15 @@ sub applyClause {
     foreach my $subpattern (@$pattern) {
       my ($xpath, $nnodes) = @$subpattern;
       my @matches = $document->findnodes($xpath, $tree);
-      print STDERR "Rewrite selecting \"$xpath\" => " . scalar(@matches) . " matches\n" if $LaTeXML::Rewrite::DEBUG;
+      print STDERR "Rewrite selecting \"$xpath\" => " . scalar(@matches) . " matches\n"
+        if $LaTeXML::Core::Rewrite::DEBUG;
       foreach my $node (@matches) {
         next unless $node->ownerDocument->isSameNode($tree->ownerDocument); # If still attached to original document!
         $self->applyClause($document, $node, $nnodes, @more_clauses); } } }
   elsif ($op eq 'test') {
     my $nnodes = &$pattern($document, $tree);
     print STDERR "Rewrite test at " . $tree->toString . ": " . ($nnodes ? $nnodes . " to replace" : "failed") . "\n"
-      if $LaTeXML::Rewrite::DEBUG;
+      if $LaTeXML::Core::Rewrite::DEBUG;
     $self->applyClause($document, $tree, $nnodes, @more_clauses) if $nnodes; }
   elsif ($op eq 'wrap') {
     if ($n_to_replace > 1) {
@@ -113,13 +116,15 @@ sub applyClause {
       my @replaced = map { shift(@following) } 1 .. $n_to_replace;    # Remove the nodes to be replaced
       $document->setNode($parent);
       $tree = $document->openElement('ltx:XMWrap', font => $document->getNodeFont($parent));
-      print STDERR "Wrapping " . join(' ', map { Stringify($_) } @replaced) . "\n" if $LaTeXML::Rewrite::DEBUG;
+      print STDERR "Wrapping " . join(' ', map { Stringify($_) } @replaced) . "\n"
+        if $LaTeXML::Core::Rewrite::DEBUG;
       map { $tree->appendChild($_) } @replaced;                       # Add matched nodes to XMWrap
       map { $parent->appendChild($_) } @following;                    # Add back the following nodes.
     }
     $self->applyClause($document, $tree, 1, @more_clauses); }
   elsif ($op eq 'replace') {
-    print STDERR "Rewrite replace at " . $tree->toString . " using $pattern\n" if $LaTeXML::Rewrite::DEBUG;
+    print STDERR "Rewrite replace at " . $tree->toString . " using $pattern\n"
+      if $LaTeXML::Core::Rewrite::DEBUG;
     my $parent = $tree->parentNode;
 
     # Remove & separate nodes to be replaced, and sibling nodes following them.
@@ -153,15 +158,18 @@ sub applyClause {
     map { $parent->appendChild($_) } @inserted, @following;
   }
   elsif ($op eq 'action') {
-    print STDERR "Rewrite action at " . $tree->toString . " using $pattern\n" if $LaTeXML::Rewrite::DEBUG;
+    print STDERR "Rewrite action at " . $tree->toString . " using $pattern\n"
+      if $LaTeXML::Core::Rewrite::DEBUG;
     &$pattern($tree); }
   elsif ($op eq 'attributes') {
     map { $tree->setAttribute($_, $$pattern{$_}) } keys %$pattern;
-    print STDERR "Rewrite attributes for " . Stringify($tree) . "\n" if $LaTeXML::Rewrite::DEBUG;
+    print STDERR "Rewrite attributes for " . Stringify($tree) . "\n"
+      if $LaTeXML::Core::Rewrite::DEBUG;
   }
   elsif ($op eq 'regexp') {
     my @matches = $document->findnodes('descendant-or-self::text()', $tree);
-    print STDERR "Rewrite regexp => " . scalar(@matches) . " matches\n" if $LaTeXML::Rewrite::DEBUG;
+    print STDERR "Rewrite regexp => " . scalar(@matches) . " matches\n"
+      if $LaTeXML::Core::Rewrite::DEBUG;
     foreach my $text (@matches) {
       my $string = $text->textContent;
       if (&$pattern($string)) {
@@ -215,18 +223,21 @@ sub compileClause {
   elsif ($op eq 'regexp') {
     $pattern = $self->compile_regexp($pattern); }
   print STDERR "Compiled clause $oop=>" . ToString($opattern) . "  ==> $op=>" . ToString($pattern) . "\n"
-    if $LaTeXML::Rewrite::DEBUG;
+    if $LaTeXML::Core::Rewrite::DEBUG;
   $$clause[0] = 'compiled'; $$clause[1] = $op; $$clause[2] = $pattern;
   return; }
 
 #**********************************************************************
 sub compile_match {
   my ($self, $document, $pattern) = @_;
-  if (!ref $pattern) {
-    return $self->compile_match1($document,
-      digest_rewrite(($$self{math} ? '$' . $pattern . '$' : $pattern))); }
-  elsif ($pattern->isaBox) {
+###  if (!ref $pattern) {
+###    return $self->compile_match1($document,
+###      digest_rewrite(($$self{math} ? '$' . $pattern . '$' : $pattern))); }
+###  els
+  if ($pattern->isaBox) {
     return $self->compile_match1($document, $pattern); }
+  elsif (ref $pattern) {    # Is tokens????
+    return $self->compile_match1($document, digest_rewrite($pattern)); }
   else {
     Error('misdefined', '<rewrite>', undef,
       "Don't know what to do with match=>\"" . Stringify($pattern) . "\"");
@@ -252,7 +263,8 @@ sub compile_match1 {
   $xpath .= "[not(ancestor-or-self::*[parent::ltx:XMDual and not(following-sibling::*)])]"
     if $$self{math};
 
-  print STDERR "Converting \"" . ToString($patternbox) . "\"\n  => xpath= \"$xpath\"\n" if $LaTeXML::Rewrite::DEBUG;
+  print STDERR "Converting \"" . ToString($patternbox) . "\"\n  => xpath= \"$xpath\"\n"
+    if $LaTeXML::Core::Rewrite::DEBUG;
   return [$xpath, scalar(@nodes)]; }
 
 # Reworked to do digestion at replacement time.
@@ -263,7 +275,7 @@ sub compile_replacement {
     $pattern = $pattern->getBody if $$self{math};
     return sub { $_[0]->absorb($pattern); } }
   else {
-    $pattern = Tokenize($$self{math} ? '$' . $pattern . '$' : $pattern) unless ref $pattern;
+#####    $pattern = Tokenize($$self{math} ? '$' . $pattern . '$' : $pattern) unless ref $pattern;
     return sub {
       my $stomach = $STATE->getStomach;
       $stomach->bgroup;
@@ -291,7 +303,8 @@ sub digest_rewrite {
   $stomach->bgroup;
   $STATE->assignValue(font => LaTeXML::Common::Font->new(), 'local'); # Use empty font, so eventual insertion merges.
   $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
-  my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
+###  my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
+  my $box = $stomach->digest($string, 0);
   $stomach->egroup;
   return $box; }
 
@@ -301,7 +314,7 @@ sub domToXPath {
   return "descendant-or-self::" . domToXPath_rec($document, $node); }
 
 # May need some work here;
-my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);      # [CONSTANT]
+my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);    # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, @extra_predicates) = @_;
@@ -358,11 +371,11 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Rewrite> - rewrite rules for modifying the XML document.
+C<LaTeXML::Core::Rewrite> - rewrite rules for modifying the XML document.
 
 =head1 DESCRIPTION
 
-C<LaTeXML::Rewrite> implements rewrite rules for modifying the XML document.
+C<LaTeXML::Core::Rewrite> implements rewrite rules for modifying the XML document.
 
 =head2 Methods
 
