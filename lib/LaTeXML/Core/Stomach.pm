@@ -14,9 +14,11 @@ package LaTeXML::Core::Stomach;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Gullet;
 use LaTeXML::Core::Box;
-use LaTeXML::Core::MathBox;
 use LaTeXML::Core::Comment;
 use LaTeXML::Core::List;
 use LaTeXML::Core::Mouth;
@@ -24,7 +26,7 @@ use LaTeXML::Common::Font;
 # Silly place to import these....?
 use LaTeXML::Common::Color;
 use LaTeXML::Core::Definition;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 sub new {
@@ -86,7 +88,7 @@ sub digestNextBody {
 
 # Digest a list of tokens independent from any current Gullet.
 # Typically used to digest arguments to primitives or constructors.
-# Returns a List or MathList containing the digested material.
+# Returns a List containing the digested material.
 sub digest {
   my ($self, $tokens) = @_;
   return unless defined $tokens;
@@ -109,9 +111,8 @@ sub digest {
           . join(', ', map { ToString($_) } @{ $$self{boxing} }))
         if $initdepth < $depth;
 
-      (scalar(@LaTeXML::LIST) == 1
-        ? $LaTeXML::LIST[0]
-        : ($ismath ? LaTeXML::Core::MathList->new(@LaTeXML::LIST) : LaTeXML::Core::List->new(@LaTeXML::LIST))); }); }
+      List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
+      }); }
 
 # Invoke a token;
 # If it is a primitive or constructor, the definition will be invoked,
@@ -372,13 +373,13 @@ There are basically four cases when digesting a L<LaTeXML::Core::Token>:
 
 =item A plain character
 
-is simply converted to a L<LaTeXML::Core::Box> (or L<LaTeXML::Core::MathBox> in math mode),
+is simply converted to a L<LaTeXML::Core::Box>
 recording the current L<LaTeXML::Common::Font>.
 
 =item A primitive
 
 If a control sequence represents L<LaTeXML::Core::Definition::Primitive>, the primitive is invoked, executing its
-stored subroutine.  This is typically done for side effect (changing the state in the L<LaTeXML::State>),
+stored subroutine.  This is typically done for side effect (changing the state in the L<LaTeXML::Core::State>),
 although they may also contribute digested material.
 As with macros, any arguments to the primitive are read from the L<LaTeXML::Core::Gullet>.
 
