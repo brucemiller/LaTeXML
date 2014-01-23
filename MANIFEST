@@ -22,15 +22,14 @@ bin/latexmlc
 #==================================================
 lib/LaTeXML.pm
 lib/LaTeXML/Version.in
-lib/LaTeXML/Error.pm
-lib/LaTeXML/State.pm
-lib/LaTeXML/Object.pm
 lib/LaTeXML/Global.pm
 
 #==================================================
 # Core Modules
 #==================================================
 lib/LaTeXML/Core.pm
+lib/LaTeXML/Core/State.pm
+
 lib/LaTeXML/Core/Mouth.pm
 lib/LaTeXML/Core/Mouth/file.pm
 lib/LaTeXML/Core/Mouth/http.pm
@@ -38,14 +37,14 @@ lib/LaTeXML/Core/Mouth/https.pm
 lib/LaTeXML/Core/Mouth/Binding.pm
 lib/LaTeXML/Core/Gullet.pm
 lib/LaTeXML/Core/Stomach.pm
+lib/LaTeXML/Core/Document.pm
+lib/LaTeXML/Core/Rewrite.pm
 
 lib/LaTeXML/Core/Token.pm
 lib/LaTeXML/Core/Tokens.pm
 lib/LaTeXML/Core/Box.pm
-lib/LaTeXML/Core/MathBox.pm
 lib/LaTeXML/Core/Comment.pm
 lib/LaTeXML/Core/List.pm
-lib/LaTeXML/Core/MathList.pm
 lib/LaTeXML/Core/Whatsit.pm
 
 lib/LaTeXML/Core/Definition.pm
@@ -59,8 +58,8 @@ lib/LaTeXML/Core/Definition/Constructor/Compiler.pm
 lib/LaTeXML/Core/Parameter.pm
 lib/LaTeXML/Core/Parameters.pm
 
-lib/LaTeXML/Core/Document.pm
-
+lib/LaTeXML/Core/Alignment.pm
+lib/LaTeXML/Core/Alignment/Template.pm
 lib/LaTeXML/Core/Array.pm
 lib/LaTeXML/Core/KeyVals.pm
 lib/LaTeXML/Core/MuDimension.pm
@@ -69,14 +68,14 @@ lib/LaTeXML/Core/Pair.pm
 lib/LaTeXML/Core/PairList.pm
 
 # ....
-lib/LaTeXML/Rewrite.pm
 lib/LaTeXML/MathGrammar
 lib/LaTeXML/MathParser.pm
 
-lib/LaTeXML/Model.pm
-lib/LaTeXML/Model/DTD.pm
-lib/LaTeXML/Model/RelaxNG.pm
-lib/LaTeXML/Bib.pm
+#==================================================
+# Preprocessing Modules
+#==================================================
+lib/LaTeXML/Pre/BibTeX.pm
+lib/LaTeXML/Pre/BibTeX/Entry.pm
 
 #==================================================
 # Postprocessing Modules
@@ -93,7 +92,6 @@ lib/LaTeXML/Post/Manifest/Epub.pm
 lib/LaTeXML/Post/MathImages.pm
 lib/LaTeXML/Post/MathML.pm
 lib/LaTeXML/Post/OpenMath.pm
-lib/LaTeXML/Post/Pack.pm
 lib/LaTeXML/Post/PictureImages.pm
 lib/LaTeXML/Post/Scan.pm
 lib/LaTeXML/Post/Split.pm
@@ -106,11 +104,8 @@ lib/LaTeXML/LaTeXML.catalog
 #==================================================
 # Common Modules
 #==================================================
-lib/LaTeXML/Common/XML.pm
-lib/LaTeXML/Common/XML/Parser.pm
-lib/LaTeXML/Common/XML/XPath.pm
-lib/LaTeXML/Common/XML/XSLT.pm
-lib/LaTeXML/Common/XML/RelaxNG.pm
+lib/LaTeXML/Common/Object.pm
+lib/LaTeXML/Common/Config.pm
 lib/LaTeXML/Common/Color.pm
 lib/LaTeXML/Common/Color/rgb.pm
 lib/LaTeXML/Common/Color/cmy.pm
@@ -118,24 +113,33 @@ lib/LaTeXML/Common/Color/cmyk.pm
 lib/LaTeXML/Common/Color/hsb.pm
 lib/LaTeXML/Common/Color/gray.pm
 lib/LaTeXML/Common/Color/Derived.pm
+lib/LaTeXML/Common/Error.pm
 lib/LaTeXML/Common/Font.pm
 lib/LaTeXML/Common/Number.pm
 lib/LaTeXML/Common/Float.pm
 lib/LaTeXML/Common/Dimension.pm
 lib/LaTeXML/Common/Glue.pm
+lib/LaTeXML/Common/Model.pm
+lib/LaTeXML/Common/Model/DTD.pm
+lib/LaTeXML/Common/Model/RelaxNG.pm
+lib/LaTeXML/Common/XML.pm
+lib/LaTeXML/Common/XML/Parser.pm
+lib/LaTeXML/Common/XML/XPath.pm
+lib/LaTeXML/Common/XML/XSLT.pm
+lib/LaTeXML/Common/XML/RelaxNG.pm
 
 #==================================================
 # Utility Modules
 #==================================================
 lib/LaTeXML/Util/Test.pm
-lib/LaTeXML/Util/Alignment.pm
-lib/LaTeXML/Util/Config.pm
-lib/LaTeXML/Util/Geometry.pm
 lib/LaTeXML/Util/MathMLLinebreaker.pm
 lib/LaTeXML/Util/ObjectDB.pm
+lib/LaTeXML/Util/ObjectDB/Entry.pm
 lib/LaTeXML/Util/Pathname.pm
-lib/LaTeXML/Util/Transform.pm
+lib/LaTeXML/Util/Pack.pm
 lib/LaTeXML/Util/WWW.pm
+lib/LaTeXML/Util/Geometry.pm
+lib/LaTeXML/Util/Transform.pm
 
 #==================================================
 # Document Model
