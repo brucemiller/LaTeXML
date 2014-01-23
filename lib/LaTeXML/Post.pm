@@ -112,7 +112,7 @@ sub NoteEnd {
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
   my $verbosity = getVerbosity();
-  if (!$LaTeXML::Error::InHandler && defined($^S)) {    # Careful about recursive call!
+  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {    # Careful about recursive call!
     $LaTeXML::POST && $$LaTeXML::POST{status}{fatal}++;
     $message
       = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
@@ -120,7 +120,7 @@ sub Fatal {
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
-  local $LaTeXML::Error::InHandler = 1;
+  local $LaTeXML::Common::Error::InHandler = 1;
   if ($verbosity > 1) {
     require Carp;
     Carp::croak $message; }
