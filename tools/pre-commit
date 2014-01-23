@@ -33,7 +33,7 @@ if (my @modified_files =
     my $temp_file = catfile($workdir, $modified_file);
     system("git show ':$modified_file' > $temp_file");
     # Finally run latexmllint on it.
-    my $status = system(catfile('tools', 'latexmllint'), "--precommit", "--verb", $temp_file);
+    my $status = system(catfile('tools', 'latexmllint'), "--precommit", $temp_file);
     my $code = $status >> 8;
     if ($code) {
       push(@failed_files, $modified_file);    # Note the original file name
