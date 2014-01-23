@@ -29,6 +29,13 @@
 # use 4 for pre-commit, 2 for code review
 severity=3
 
+[LaTeXML::RequireDoubleSigils]
+
+## [Miscellanea::ProhibitUnrestrictedNoCritic]
+## severity=2
+## # was 3; Really?
+## # What's the point of using "## no critic" if you just different complaints?
+
 #======================================================================
 # Downgrade some 4 & 5 level Policies that I either don't agree with
 # or have already used a bit too much (maybe will clear these gradually)

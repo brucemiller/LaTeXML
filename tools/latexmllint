@@ -55,6 +55,8 @@ my $LIBDIR     = catfile($LATEXMLDIR, 'blib', 'lib');
 
 my @FILES = expand_files((@ARGV ? @ARGV : map { catfile($LATEXMLDIR, $_) } @LINTPATHS));
 
+local $ENV{ANSI_COLORS_DISABLED} = 1 unless -t STDOUT;  ## no critic # Disable colors unless to TTY.
+
 if (!defined $SEVERITY) {                               # Default severity, if none requested
   $SEVERITY = ($DOPRECOMMIT ? $REQ_SEVERITY : $DEF_SEVERITY); }
 if (!defined $DOMODIFY) {
@@ -89,7 +91,9 @@ foreach my $file (@FILES) {
     else {
       $failed ||= doPerlcritic($file, $classification); } }
   if ($failed) {
-    $NFAIL++; push(@fails, $file); }
+    $NFAIL++; push(@fails, $file);
+    print color('bold') . "$file fails" . color('reset') . " commit criterion\n" if $VERBOSITY >= 0;
+  }
 }
 
 print "\nExamined $NTOTAL file(s): "
@@ -212,7 +216,8 @@ sub doPerlcritic {
   # Use backticks, since otherwise can't manage the output...
   my $profile = catfile($TOOLDIR, 'latexml.perlcritic');
   my $themes = join(' and ', map { 'not non_' . $_ } keys %$classes);
-  my $critique = `$PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
+#  my $critique = `$PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
+  my $critique = `$PERL -I $TOOLDIR $PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
   if ($critique eq "") {    # No errors and no policy violations
     print " conformance is OK.\n" if $VERBOSITY > 0; }
   elsif ($critique) {       # Policy violations
