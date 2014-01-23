@@ -14,8 +14,8 @@ package LaTeXML::Core::Array;
 use strict;
 use warnings;
 use LaTeXML::Global;
-#use LaTeXML::Package;
-use base qw(LaTeXML::Object);
+use LaTeXML::Common::Object;
+use base qw(LaTeXML::Common::Object);
 
 # The following tokens (individual Token's or Tokens') describe how to revert the Array
 #   open,close and separator are the outermost delimiter and separator between items
@@ -47,9 +47,9 @@ sub beDigested {
     my $typedef = $$self{type} && $STATE->lookupMapping('PARAMETER_TYPE', $$self{type});
     my $dodigest = (ref $item) && (!$typedef || !$$typedef{undigested});
     my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    StartSemiverbatim() if $semiverb;
+    $STATE->beginSemiverbatim() if $semiverb;
     push(@v, ($dodigest ? $item->beDigested($stomach) : $item));
-    EndSemiverbatim() if $semiverb;
+    $STATE->endSemiverbatim() if $semiverb;
   }
   return (ref $self)->new(open => $$self{open}, close => $$self{close}, separator => $$self{separator},
     itemopen => $$self{itemopen}, itemclose => $$self{itemclose},
