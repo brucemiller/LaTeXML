@@ -12,20 +12,18 @@
 package LaTeXML;
 use strict;
 use warnings;
-
 use Carp;
 use Encode;
 use Data::Dumper;
 use File::Temp qw(tempdir);
 use File::Path qw(remove_tree);
 use File::Spec;
-
+use LaTeXML::Common::Config;
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
-use LaTeXML::Util::Config;
 use LaTeXML::Post::Scan;
 # Contrived!!! See LaTeXML::Version
 $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
@@ -39,7 +37,7 @@ our %DAEMON_DB = ();
 
 sub new {
   my ($class, $config) = @_;
-  $config = LaTeXML::Util::Config->new() unless (defined $config);
+  $config = LaTeXML::Common::Config->new() unless (defined $config);
   # The daemon should be setting the identity:
   my $self = bless { opts => $config->options, ready => 0, log => q{}, runtime => {},
     latexml => undef }, $class;
@@ -211,7 +209,7 @@ sub convert {
       require LaTeXML::Global;
       local $LaTeXML::Global::STATE = $latexml->{state};
       if ($opts->{format} eq 'tex') {
-        $serialized = LaTeXML::Global::UnTeX($digested);
+        $serialized = LaTeXML::Core::Token::UnTeX($digested);
       } elsif ($opts->{format} eq 'box') {
         $serialized = $digested->toString;
       } else {    # Default is XML
@@ -382,9 +380,9 @@ sub convert_post {
           split => $opts->{splitindex}, scanner => $scanner,
           %PostOPS)); }
     if (@{ $opts->{bibliographies} }) {
-      if (grep { /$LaTeXML::Util::Config::is_bibtex/ } @{ $opts->{bibliographies} }) {
+      if (grep { /$LaTeXML::Common::Config::is_bibtex/ } @{ $opts->{bibliographies} }) {
         my $bib_converter =
-          $self->get_converter(LaTeXML::Util::Config->new(
+          $self->get_converter(LaTeXML::Common::Config->new(
             cache_key      => 'BibTeX',
             type           => "BibTeX",
             post           => 0,
@@ -393,7 +391,7 @@ sub convert_post {
             whatsout       => 'document',
             bibliographies => []));
         $self->{log} .= $self->flush_log;
-        @{ $opts->{bibliographies} } = map { /$LaTeXML::Util::Config::is_bibtex/ ?
+        @{ $opts->{bibliographies} } = map { /$LaTeXML::Common::Config::is_bibtex/ ?
             $bib_converter->convert($_)->{result} : $_ } @{ $opts->{bibliographies} };
         $self->bind_log;
       }
@@ -720,7 +718,7 @@ A Converter object represents a converter instance and can convert files on dema
 
 =item C<< my $converter = LaTeXML->new($config); >>
 
-Creates a new converter object for a given LaTeXML::Util::Config object, $config.
+Creates a new converter object for a given LaTeXML::Common::Config object, $config.
 
 =item C<< my $converter = LaTeXML->get_converter($config); >>
 
