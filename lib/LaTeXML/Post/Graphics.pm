@@ -16,6 +16,7 @@ package LaTeXML::Post::Graphics;
 use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
+use List::Util qw(min max);
 use POSIX;
 use Image::Magick;
 use LaTeXML::Post;
@@ -376,14 +377,6 @@ sub complex_transform {
 
   NoteProgressDetailed(" [Transformed : $notes]") if $notes;
   return ($image, $w, $h); }
-
-sub min {
-  my ($x, $y) = @-;
-  return ($x < $y ? $x : $y); }
-
-sub max {
-  my ($x, $y) = @-;
-  return ($x > $y ? $x : $y); }
 
 # Wrap up ImageMagick's methods to give more useful & consistent error handling.
 # These all return non-zero on success!

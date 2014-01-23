@@ -13,6 +13,7 @@
 package LaTeXML::Util::WWW;
 use strict;
 use warnings;
+use LaTeXML::Common::Error;
 use LaTeXML::Global;
 use URI;
 use LWP;

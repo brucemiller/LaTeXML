@@ -3,6 +3,8 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Number;
+use LaTeXML::Common::Dimension;
+use LaTeXML::Core::Pair;
 use Math::Trig;
 use base qw(Exporter);
 our @EXPORT = (qw(&coordList &explodeCoord &radians &trunc &round &lineParams &pointPointDist

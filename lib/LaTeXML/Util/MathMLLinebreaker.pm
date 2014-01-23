@@ -13,6 +13,8 @@
 package LaTeXML::Util::MathMLLinebreaker;
 use strict;
 use warnings;
+use LaTeXML::Common::XML;
+use List::Util qw(min max);
 
 #======================================================================
 # General MathML Line-Breaking Strategy.
@@ -43,9 +45,6 @@ use warnings;
 #======================================================================
 # NOTE This takes the array form for the MathML, before it has been
 # converted to a proper DOM tree.
-
-use strict;
-use LaTeXML::Common::XML;
 
 #######################################################################
 # Parameters
@@ -366,14 +365,6 @@ sub textContent {
       return ''; } }
   else {
     return ''; } }
-
-sub min {
-  my ($a, $b) = @_;
-  return (!defined $a ? $b : (!defined $b ? $a : ($a < $b ? $a : $b))); }
-
-sub max {
-  my ($a, $b) = @_;
-  return (!defined $a ? $b : (!defined $b ? $a : ($a > $b ? $a : $b))); }
 
 sub isFence {
   my ($node) = @_;
