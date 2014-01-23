@@ -13,92 +13,14 @@ package LaTeXML::Core::Parameters;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use LaTeXML::Core::Parameter;
-use base qw(Exporter LaTeXML::Object);
-our @EXPORT = qw(parseParameters);
+use base qw(LaTeXML::Common::Object);
 
 sub new {
   my ($class, @paramspecs) = @_;
   return bless [@paramspecs], $class; }
-
-#**********************************************************************
-# Parameter List & Arguments
-#**********************************************************************
-#**********************************************************************
-
-# If a ReadFoo function exists (accessible from LaTeXML::Package::Pool),
-# then the parameter spec:
-#     Foo         : will invoke it and use the result for the corresponding argument.
-#                   it will complain if ReadFoo returns undef.
-#     SkipFoo     : will invoke SkipFoo, if it is defined, else ReadFoo,
-#                   but in either case, will ignore the result
-#     OptionalFoo : will invoke ReadOptionalFoo if defined, else ReadFoo
-#                   but will not complain if the reader returns undef.
-# In all cases, there is the provision to supply an additional parameter to the reader:
-#    "Foo:stuff"   effectively invokes ReadFoo(Tokenize('stuff'))
-# similarly for the other variants. What the 'stuff" means depends on the type.
-
-# Parsing a parameter list spec.
-sub parseParameters {
-  my ($proto, $for) = @_;
-  my $p      = $proto;
-  my @params = ();
-  while ($p) {
-    # Handle possibly nested cases, such as {Number}
-    if ($p =~ s/^(\{([^\}]*)\})\s*//) {
-      my ($spec, $inner_spec) = ($1, $2);
-      my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      push(@params, newParameter('Plain', $spec, extra => [$inner])); }
-    elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
-      my ($spec, $inner_spec) = ($1, $2);
-      if ($inner_spec =~ /^Default:(.*)$/) {
-        push(@params, newParameter('Optional', $spec, extra => [TokenizeInternal($1), undef])); }
-      elsif ($inner_spec) {
-        push(@params, newParameter('Optional', $spec, extra => [undef, parseParameters($inner_spec, $for)])); }
-      else {
-        push(@params, newParameter('Optional', $spec)); } }
-    elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
-      my ($spec, $type, $extra) = ($1, $2, $4);
-      my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
-      push(@params, newParameter($type, $spec, extra => [@extra])); }
-    else {
-      Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
-  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
-
-# Create a parameter reading object for a specific type.
-# If either a declared entry or a function Read<Type> accessible from LaTeXML::Package::Pool
-# is defined.
-sub newParameter {
-  my ($type, $spec, %options) = @_;
-  my $descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $type);
-  if (!defined $descriptor) {
-    if ($type =~ /^Optional(.+)$/) {
-      my $basetype = $1;
-      if ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
-      elsif (my $reader = checkReaderFunction("Read$type") || checkReaderFunction("Read$basetype")) {
-        $descriptor = { reader => $reader }; }
-      $descriptor = { %$descriptor, optional => 1 } if $descriptor; }
-    elsif ($type =~ /^Skip(.+)$/) {
-      my $basetype = $1;
-      if ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
-      elsif (my $reader = checkReaderFunction($type) || checkReaderFunction("Read$basetype")) {
-        $descriptor = { reader => $reader }; }
-      $descriptor = { %$descriptor, novalue => 1, optional => 1 } if $descriptor; }
-    else {
-      my $reader = checkReaderFunction("Read$type");
-      $descriptor = { reader => $reader } if $reader; } }
-  Fatal('misdefined', $type, undef, "Unrecognized parameter type in \"$spec\"") unless $descriptor;
-  return LaTeXML::Core::Parameter->new($spec, type => $type, %{$descriptor}, %options); }
-
-# Check whether a reader function is accessible within LaTeXML::Package::Pool
-sub checkReaderFunction {
-  my ($function) = @_;
-  if (defined $LaTeXML::Package::Pool::{$function}) {
-    local *reader = $LaTeXML::Package::Pool::{$function};
-    if (defined &reader) {
-      return \&reader; } } }
-
-#======================================================================
 
 sub getParameters {
   my ($self) = @_;
@@ -162,9 +84,9 @@ sub readArgumentsAndDigest {
         "Missing argument " . Stringify($parameter) . " for " . Stringify($fordefn),
         $gullet->showUnexpected); }
     if (!$$parameter{novalue}) {
-      StartSemiverbatim() if $$parameter{semiverbatim};    # Corner case?
+      $STATE->beginSemiverbatim() if $$parameter{semiverbatim};    # Corner case?
       $value = $value->beDigested($stomach) if (ref $value) && !$$parameter{undigested};
-      EndSemiverbatim() if $$parameter{semiverbatim};      # Corner case?
+      $STATE->endSemiverbatim() if $$parameter{semiverbatim};      # Corner case?
       push(@args, $value); } }
   return @args; }
 
@@ -200,31 +122,6 @@ Provides a representation for the formal parameters of L<LaTeXML::Core::Definiti
 =head2 METHODS
 
 =over 4
-
-=item C<< $parameters = parseParameters($prototype,$for); >>
-
-Parses a string for a sequence of parameter specifications.
-Each specification should be of the form 
-
- {}     reads a regular TeX argument, a sequence of
-        tokens delimited by braces, or a single token.
- {spec} reads a regular TeX argument, then reparses it
-        to match the given spec. The spec is parsed
-        recursively, but usually should correspond to
-        a single argument.
- [spec] reads an LaTeX-style optional argument. If the
-        spec is of the form Default:stuff, then stuff
-        would be the default value.
- Type   Reads an argument of the given type, where either
-        Type has been declared, or there exists a ReadType
-        function accessible from LaTeXML::Package::Pool.
- Type:value, or Type:value1:value2...    These forms
-        pass additional Tokens to the reader function.
- OptionalType  Similar to Type, but it is not considered
-        an error if the reader returns undef.
- SkipType  Similar to OptionalType, but the value returned
-        from the reader is ignored, and does not occupy a
-        position in the arguments list.
 
 =item C<< @parameters = $parameters->getParameters; >>
 
