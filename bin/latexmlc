@@ -33,7 +33,7 @@ use lib catdir($RealBin_safe, "..", "lib");
 #TODO: Do we ever care about ENV PATH that much? Do we miss on some feature like that?
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
 use LaTeXML::Version;
-use LaTeXML::Util::Config;
+use LaTeXML::Common::Config;
 use URI::Escape;
 use HTTP::Response;
 use HTTP::Request;
@@ -48,7 +48,7 @@ $latexmls = catfile($RealBin_safe, 'latexmls') if (-e catfile($RealBin_safe, 'la
 $latexmls = which('latexmls') unless defined $latexmls;
 
 # Some defaults:
-my $opts = LaTeXML::Util::Config->new(input_limit => 100);
+my $opts = LaTeXML::Common::Config->new(input_limit => 100);
 
 # Parse and load command-line options
 $opts->read(\@ARGV);
@@ -112,11 +112,11 @@ if ((!$sock) && $local && ($expire == -1)) {
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
-  ($result, $status, $log) = map { $response->{$_} } qw(result status log) if defined $response;
+  ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
 } else {
   my $message = q{};
   foreach my $entry (@$keyvals) {
-    my ($key, $value) = ($entry->[0], $entry->[1]);
+    my ($key, $value) = ($$entry[0], $$entry[1]);
     $message .= uri_escape($key) . ($value ? '=' . uri_escape($value) : '') . '&';
   }
   chop $message;
@@ -128,7 +128,7 @@ if ((!$sock) && $local && ($expire == -1)) {
     : process_remote($address, $port, $route, $message, $sock));
   if ($http_response->is_success) {
     my $response = decode_json($http_response->content);
-    ($result, $status, $log) = map { $response->{$_} } qw(result status log) if defined $response;
+    ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
   } else {
     print STDERR "Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n"; exit 1;
   }
@@ -230,7 +230,7 @@ C<latexmlc> - A omni-executable for LaTeXML, capable of
 
 =head1 SYNOPSYS
 
-See the OPTIONS section in L<LaTeXML::Util::Config> for usage information.
+See the OPTIONS section in L<LaTeXML::Common::Config> for usage information.
   Also consult latexmlc --help
 
 =head1 DESCRIPTION
@@ -244,7 +244,7 @@ L<latexmlc> provides a client which automatically sets up a LaTeXML local server
 
 =head1 SEE ALSO
 
-L<latexmls>, L<ltxmojo>, L<LaTeXML::Util::Config>
+L<latexmls>, L<ltxmojo>, L<LaTeXML::Common::Config>
 
 =cut
 #**********************************************************************

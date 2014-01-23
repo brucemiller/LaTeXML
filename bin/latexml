@@ -106,7 +106,7 @@ my $serialized;
 if ($digested) {
   local $LaTeXML::Global::STATE = $$latexml{state};
   if ($format eq 'tex') {
-    $serialized = LaTeXML::Global::UnTeX($digested); }
+    $serialized = LaTeXML::Core::Token::UnTeX($digested); }
   elsif ($format eq 'box') {
     $serialized = $digested->toString; }
   else {
