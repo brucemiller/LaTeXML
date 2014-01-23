@@ -13,6 +13,7 @@ package LaTeXML::Core::Mouth::Binding;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 
 # This is a fake mouth, used for processing *.ltxml, *.latexml files

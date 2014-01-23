@@ -13,6 +13,7 @@ package LaTeXML::Core::Mouth::file;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 use Encode;
 use base qw(LaTeXML::Core::Mouth);
@@ -97,7 +98,7 @@ C<LaTeXML::Core::Mouth::file> - tokenize the input from a file
 
 A C<LaTeXML::Core::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
 converting plain text and strings into L<LaTeXML::Core::Token>s according to the
-current category codes (catcodes) stored in the C<LaTeXML::State>.
+current category codes (catcodes) stored in the C<LaTeXML::Core::State>.
 
 =head1 AUTHOR
 

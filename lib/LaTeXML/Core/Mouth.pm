@@ -13,10 +13,12 @@ package LaTeXML::Core::Mouth;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 
 # Factory method;
 # Create an appropriate Mouth
@@ -123,19 +125,19 @@ sub hasMoreInput {
 sub getNextChar {
   my ($self) = @_;
   if ($$self{colno} < $$self{nchars}) {
-    my $ch = $$self{chars}->[$$self{colno}++];
+    my $ch = $$self{chars}[$$self{colno}++];
     my $cc = $$STATE{table}{catcode}{$ch}[0];    # $STATE->lookupCatcode($ch); OPEN CODED!
     if ((defined $cc) && ($cc == CC_SUPER)       # Possible convert ^^x
-      && ($$self{colno} + 1 < $$self{nchars}) && ($ch eq $$self{chars}->[$$self{colno}])) {
+      && ($$self{colno} + 1 < $$self{nchars}) && ($ch eq $$self{chars}[$$self{colno}])) {
       my ($c1, $c2);
       if (($$self{colno} + 2 < $$self{nchars})    # ^^ followed by TWO LOWERCASE Hex digits???
-        && (($c1 = $$self{chars}->[$$self{colno} + 1]) =~ /^[0-9a-f]$/)
-        && (($c2 = $$self{chars}->[$$self{colno} + 2]) =~ /^[0-9a-f]$/)) {
+        && (($c1 = $$self{chars}[$$self{colno} + 1]) =~ /^[0-9a-f]$/)
+        && (($c2 = $$self{chars}[$$self{colno} + 2]) =~ /^[0-9a-f]$/)) {
         $ch = chr(hex($c1 . $c2));
         splice(@{ $$self{chars} }, $$self{colno} - 1, 4, $ch);
         $$self{nchars} -= 3; }
       else {                                      # OR ^^ followed by a SINGLE Control char type code???
-        my $c  = $$self{chars}->[$$self{colno} + 1];
+        my $c  = $$self{chars}[$$self{colno} + 1];
         my $cn = ord($c);
         $ch = chr($cn + ($cn > 64 ? -64 : 64));
         splice(@{ $$self{chars} }, $$self{colno} - 1, 3, $ch);
@@ -265,7 +267,7 @@ sub readToken {
       $$self{chars}  = [splitChars($line)];
       $$self{nchars} = scalar(@{ $$self{chars} });
       while (($$self{colno} < $$self{nchars})
-        && (($$STATE{table}{catcode}{ $$self{chars}->[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
+        && (($$STATE{table}{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
         $$self{colno}++; }
 
       # Sneak a comment out, every so often.
@@ -331,7 +333,7 @@ C<LaTeXML::Core::Mouth> - tokenize the input.
 
 A C<LaTeXML::Core::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
 converting plain text and strings into L<LaTeXML::Core::Token>s according to the
-current category codes (catcodes) stored in the C<LaTeXML::State>.
+current category codes (catcodes) stored in the C<LaTeXML::Core::State>.
 
 =back
 

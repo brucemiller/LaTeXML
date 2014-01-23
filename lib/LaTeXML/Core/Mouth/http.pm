@@ -43,7 +43,7 @@ C<LaTeXML::Core::Mouth::http> - tokenize the input from http
 
 A C<LaTeXML::Core::Mouth> (and subclasses) is responsible for I<tokenizing>, ie.
 converting plain text and strings into L<LaTeXML::Core::Token>s according to the
-current category codes (catcodes) stored in the C<LaTeXML::State>.
+current category codes (catcodes) stored in the C<LaTeXML::Core::State>.
 
 =head1 AUTHOR
 
