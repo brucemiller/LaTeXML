@@ -18,7 +18,11 @@ use strict;
 use warnings;
 use Parse::RecDescent;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
 use LaTeXML::Common::Font;
+use LaTeXML::Common::XML;
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply

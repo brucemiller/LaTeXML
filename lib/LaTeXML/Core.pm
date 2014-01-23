@@ -15,28 +15,30 @@ package LaTeXML::Core;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Error;
-use LaTeXML::State;
+#use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::State;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Stomach;
 use LaTeXML::Core::Document;
-use LaTeXML::Model;
-use LaTeXML::Object;
+use LaTeXML::Common::Model;
 use LaTeXML::MathParser;
 use LaTeXML::Util::Pathname;
-use LaTeXML::Bib;
-use LaTeXML::Package;
+use LaTeXML::Pre::BibTeX;
+use LaTeXML::Package;    # !!!!
 use LaTeXML::Version;
 use Encode;
 use FindBin;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 
 sub new {
   my ($class, %options) = @_;
-  my $state = LaTeXML::State->new(catcodes => 'standard',
+  my $state = LaTeXML::Core::State->new(catcodes => 'standard',
     stomach => LaTeXML::Core::Stomach->new(),
-    model => $options{model} || LaTeXML::Model->new());
+    model => $options{model} || LaTeXML::Common::Model->new());
   $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
     'global');
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
@@ -142,7 +144,7 @@ sub digestFile {
 
       # Now for the Hacky part for BibTeX!!!
       if ($mode eq 'BibTeX') {
-        my $bib = LaTeXML::Bib->newFromGullet($name, $state->getStomach->getGullet);
+        my $bib = LaTeXML::Pre::BibTeX->newFromGullet($name, $state->getStomach->getGullet);
         LaTeXML::Package::InputContent("literal:" . $bib->toTeX); }
       my $list = $self->finishDigestion;
       NoteEnd("Digesting $mode $name");
@@ -164,7 +166,7 @@ sub finishDigestion {
     Error('expected', '\fi', $stomach,
       "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete"); }
   $stomach->getGullet->flush;
-  return LaTeXML::Core::List->new(@stuff); }
+  return List(@stuff); }
 
 sub loadPreamble {
   my ($self, $preamble) = @_;
@@ -222,9 +224,9 @@ sub withState {
   local $STATE = $$self{state};
   # And, set fancy error handler for ANY die!
   # Could be useful to distill the more common messages so they provide useful build statistics?
-  local $SIG{__DIE__} = sub { LaTeXML::Error::perl_die_handler(@_); };
-  local $SIG{INT} = sub { LaTeXML::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
-  local $SIG{__WARN__} = sub { LaTeXML::Error::perl_warn_handler(@_); };
+  local $SIG{__DIE__} = sub { LaTeXML::Common::Error::perl_die_handler(@_); };
+  local $SIG{INT} = sub { LaTeXML::Common::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
+  local $SIG{__WARN__} = sub { LaTeXML::Common::Error::perl_warn_handler(@_); };
   local $LaTeXML::DUAL_BRANCH = '';
 
   return &$closure($STATE); }
@@ -307,7 +309,7 @@ Creates a new LaTeXML object for transforming TeX files into XML.
  searchpath : an array of paths to be searched for Packages
               and style files.
 
-(these generally set config variables in the L<LaTeXML::State> object)
+(these generally set config variables in the L<LaTeXML::Core::State> object)
 
 =item C<< $latexml->convertAndWriteFile($file); >>
 
@@ -366,7 +368,7 @@ are not enough, or for understanding more of LaTeXML's internals, see
 
 =over 2
 
-=item  L<LaTeXML::State>
+=item  L<LaTeXML::Core::State>
 
 maintains the current state of processing, bindings or
 variables, definitions, etc.
@@ -380,7 +382,7 @@ basic TeX sequences such as arguments, dimensions and so forth.
 
 deal with digestion of tokens into boxes.
 
-=item  L<LaTeXML::Core::Document>, L<LaTeXML::Model>, L<LaTeXML::Rewrite>
+=item  L<LaTeXML::Core::Document>, L<LaTeXML::Common::Model>, L<LaTeXML::Core::Rewrite>
 
 dealing with conversion of the digested boxes into XML.
 
@@ -392,7 +394,7 @@ representation of LaTeX macros, primitives, registers and constructors.
 
 the math parser.
 
-=item L<LaTeXML::Global>, L<LaTeXML::Error>, L<LaTeXML::Object>
+=item L<LaTeXML::Global>, L<LaTeXML::Common::Error>, L<LaTeXML::Common::Object>
 
 other random modules.
 
