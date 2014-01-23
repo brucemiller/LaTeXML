@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use base qw(LaTeXML::Common::Color);
 use LaTeXML::Global;
+use List::Util qw(min max);
 
 sub cmyk {
   my ($self) = @_;

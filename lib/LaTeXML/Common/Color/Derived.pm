@@ -12,8 +12,10 @@
 package LaTeXML::Common::Color::Derived;
 use strict;
 use warnings;
+use LaTeXML::Common::Color;
 use base qw(LaTeXML::Common::Color);
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 
 # Convert this derived color to one of the Core colors
 # Subclasses of this color need to set the variable:
