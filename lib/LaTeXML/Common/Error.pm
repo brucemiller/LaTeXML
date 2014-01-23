@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Error                                                     | #
+# |  LaTeXML::Common::Error                                             | #
 # | Error handler                                                       | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,12 +9,19 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Error;
+package LaTeXML::Common::Error;
 use strict;
 use warnings;
+use LaTeXML::Global;
+##use LaTeXML::Common::Object;
+use Time::HiRes;
 use base qw(Exporter);
-our @EXPORT = (qw(&Fatal &Error &Warn &Info));
+our @EXPORT = (
+  # Error Reporting
+  qw(&Fatal &Error &Warn &Info),
+  # Progress reporting
+  qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
@@ -25,11 +32,11 @@ our @EXPORT = (qw(&Fatal &Error &Warn &Info));
 # but we also want to use some of it's low-level functions.
 sub ToString {
   my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Global::ToString($item, @more)); }
+  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::ToString($item, @more)); }
 
 sub Stringify {
   my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Global::Stringify($item, @more)); }
+  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::Stringify($item, @more)); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
@@ -37,9 +44,9 @@ sub Stringify {
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
-  my $state = $LaTeXML::Global::STATE;
+  my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if (!$LaTeXML::Error::InHandler && defined($^S)) {
+  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
       $LaTeXML::BAILOUT = 1;
@@ -50,14 +57,13 @@ sub Fatal {
       # ?!?!?!?!?!
       # or just verbosity code >>>1 ???
       @details,
-      ($state && $state->lookupValue('VERBOSITY') > 0
-        ? ("Stack Trace:", LaTeXML::Error::stacktrace()) : ()));
+      ($verbosity > 0 ? ("Stack Trace:", stacktrace()) : ()));
     # We're about to DIE, which will bypass the usual status message, so add it here.
     $message .= $state->getStatusMessage if $state;
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
-  local $LaTeXML::Error::InHandler = 1;
+  local $LaTeXML::Common::Error::InHandler = 1;
   die $message; }
 
 sub checkRecursiveError {
@@ -74,12 +80,12 @@ my $MAXERRORS = 100;    # [CONSTANT]
 # Should be fatal if strict is set, else warn.
 sub Error {
   my ($category, $object, $where, $message, @details) = @_;
-  my $state = $LaTeXML::Global::STATE;
+  my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if ($LaTeXML::Global::STATE->lookupValue('STRICT')) {
+  if ($state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
-    $LaTeXML::Global::STATE->noteStatus('error');
+    $state->noteStatus('error');
     print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
@@ -90,7 +96,7 @@ sub Error {
 # Warning message; results may be OK, but somewhat unlikely
 sub Warn {
   my ($category, $object, $where, $message, @details) = @_;
-  my $state = $LaTeXML::Global::STATE;
+  my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
   print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
@@ -102,12 +108,51 @@ sub Warn {
 # but the message may give clues about subsequent warnings or errors
 sub Info {
   my ($category, $object, $where, $message, @details) = @_;
-  my $state = $LaTeXML::Global::STATE;
+  my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage("Info:" . $category . ":" . LaTeXML::Global::ToString($object),
-    $where, $message, 0, @details)
+  print STDERR generateMessage("Info:" . $category . ":" . ToString($object),
+    $where, $message, -1, @details)
     if $verbosity >= 0;
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Progress Reporting
+#**********************************************************************
+# Progress reporting.
+
+sub NoteProgress {
+  my (@stuff) = @_;
+  my $state = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  print STDERR @stuff if $verbosity >= 0;
+  return; }
+
+sub NoteProgressDetailed {
+  my (@stuff) = @_;
+  my $state = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  print STDERR @stuff if $verbosity >= 1;
+  return; }
+
+sub NoteBegin {
+  my ($stage) = @_;
+  my $state = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  if ($state && ($verbosity >= 0)) {
+    $state->assignMapping('NOTE_TIMERS', $stage, [Time::HiRes::gettimeofday]);
+    print STDERR "\n($stage..."; }
+  return; }
+
+sub NoteEnd {
+  my ($stage) = @_;
+  my $state = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  if (my $start = $state && $state->lookupMapping('NOTE_TIMERS', $stage)) {
+    $state->assignMapping('NOTE_TIMERS', $stage, undef);
+    if ($verbosity >= 0) {
+      my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
+      print STDERR sprintf(" %.2f sec)", $elapsed); } }
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -151,30 +196,46 @@ sub perl_warn_handler {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
 # Synthesize an error message describing what happened, and where.
-# NOTE: Possibly $long should be descrete levels
+# $detail specifies the level of detail
+#   $detail == -1 : no context or stack
+#   $detail == 0  : context, no stack
+#   $detail == +1 : context & stack
 # including a level requesting full stack trace?
 
 sub generateMessage {
-  my ($errorcode, $where, $message, $long, @extra) = @_;
+  my ($errorcode, $where, $message, $detail, @extra) = @_;
+  #----------------------------------------
   # Generate location information; basic and for stack trace.
   # If we've been given an object $where, where the error occurred, use it.
   my $docloc = getLocation($where);
 
   # $message and each of @extra should be single lines
-  ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } $message, @extra;
-  my @lines = ($errorcode . ' ' . $message,
+  ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
+  # The initial portion of the message will consist of:
+  my @lines = (
+    # Start with the error code & primary error message
+    $errorcode . ' ' . ($message // ''),
+    # Followed by single line location of where the message occurred (if we know)
     ($docloc ? ($docloc) : ()),
+    # and then any additional message lines supplied
     @extra);
 
-  # Now add a certain amount of stack trace and/or context info.
-  my $verbosity = ($LaTeXML::Global::STATE && $LaTeXML::Global::STATE->lookupValue('VERBOSITY')) || 0;
-  if ($verbosity) {
-    $long = 0 if defined $verbosity && $verbosity < -1;
-    $long++ if defined $verbosity && $verbosity > +1; }
+  #----------------------------------------
+  # Now add some additional context
+  # NOTE: Should skip this for INFO
+  # NOTE: Need to pass more of this onto the objects themselves....
+  # What should it be called?
+  #   showErrorContext() ?????
+  $detail = 0 unless defined $detail;
+  # Increment $detail if $verbosity > 0, unless $detail = -1,
+  my $verbosity = ($STATE && $STATE->lookupValue('VERBOSITY')) || 0;
+  if (($detail > -1) && ($verbosity > 0)) {
+    $detail = 0 if defined $verbosity && $verbosity < -1;
+    $detail++ if defined $verbosity && $verbosity > +1; }
 
   # FIRST line of stack trace information ought to look at the $where
   my $wheretype = ref $where;
-  if (!$long) { }
+  if ($detail <= 0) { }    # No extra context
   elsif ($wheretype =~ /^XML::LibXML/) {
     push(@lines, "Node is " . Stringify($where)); }
   ## Hmm... if we're being verbose or level is high, we might do this:
@@ -186,13 +247,17 @@ sub generateMessage {
       "Recently digested: " . join(' ', map { Stringify($_) } @LaTeXML::LIST))
       if $verbosity > 1; }
 
-  my $nstack = ($long > 1 ? undef : ($long ? 4 : 1));
-  if (my @objects = objectStack($nstack)) {
-    my $top = shift(@objects);
-    push(@lines,   "In " . trim(ToString($top)) . ' ' . ToString(Locator($top)));
-    push(@objects, '...') if @objects && defined $nstack;
-    push(@lines,   join('', (map { ' <= ' . trim(ToString($_)) } @objects))) if @objects; }
+  #----------------------------------------
+  # Add Stack Trace, if that seems worthwhile.
+  if ($detail > -1) {
+    my $nstack = ($detail > 1 ? undef : ($detail > 0 ? 4 : 1));
+    if (my @objects = objectStack($nstack)) {
+      my $top = shift(@objects);
+      push(@lines,   "In " . trim(ToString($top)) . ' ' . ToString(Locator($top)));
+      push(@objects, '...') if @objects && defined $nstack;
+      push(@lines,   join('', (map { ' <= ' . trim(ToString($_)) } @objects))) if @objects; } }
 
+  # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
 
 sub Locator {
@@ -216,8 +281,8 @@ sub getLocation {
     return Locator($box) if $box; }
   if ($LaTeXML::BOX) {            # In constructor?
     return Locator($LaTeXML::BOX); }
-  if ($LaTeXML::Global::STATE && $LaTeXML::Global::STATE->getStomach) {
-    my $gullet = $LaTeXML::Global::STATE->getStomach->getGullet;
+  if ($STATE && $STATE->getStomach) {
+    my $gullet = $STATE->getStomach->getGullet;
     # NOTE: Problems here.
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
     # (2) If gullet is the source, we probably want to include next token, etc or
@@ -302,8 +367,8 @@ sub stacktrace {
   my $frame = 0;
   my $trace = "";
   while (my %info = caller_info($frame++)) {
-    next if $info{sub} =~ /^LaTeXML::Error/;
-    $info{call} = '' if $info{sub} =~ /^LaTeXML::Error::Error/;
+    next if $info{sub} =~ /^LaTeXML::Common::Error/;
+##    $info{call} = '' if $info{sub} =~ /^LaTeXML::Common::Error::(?:Fatal|Error|Warn|Info)/;
     $trace .= "\t$info{call} @ $info{file} line $info{line}\n"; }
   return $trace; }
 
@@ -342,21 +407,79 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Error> - Internal Error reporting code.
+C<LaTeXML::Common::Error> - Error and Progress Reporting and Logging support.
 
 =head1 DESCRIPTION
 
-C<LaTeXML::Error> does some simple stack analysis to generate more informative, readable,
+C<LaTeXML::Common::Error> does some simple stack analysis to generate more informative, readable,
 error messages for LaTeXML.  Its routines are used by the error reporting methods
 from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 
-No user serviceable parts inside.  No symbols are exported.
+=head2 Error Reporting
 
-=head2 Functions
+The Error reporting functions all take a similar set of arguments,
+the differences are in the implied severity of the situation,
+and in the amount of detail that will be reported.
+
+The C<$category> is a string naming a broad category of errors,
+such as "undefined". The set is open-ended, but see the manual
+for a list of recognized categories.  C<$object> is the object
+whose presence or lack caused the problem.
+
+C<$where> indicates where the problem occurred; passs in
+the C<$gullet> or C<$stomach> if the problem occurred during
+expansion or digestion; pass in a document node if it occurred there.
+A string will be used as is; if an undefined value is used,
+the error handler will try to guess.
+
+The C<$message> should be a somewhat concise, but readable,
+explanation of the problem, but ought to not refer to the
+document or any "incident specific" information, so as to
+support indexing in build systems.  C<@details> provides
+additional lines of information that may be indident specific.
 
 =over 4
 
-=item C<< $string = LaTeXML::Error::generateMessage($typ,$msg,$lng,@more); >>
+=item C<< Fatal($category,$object,$where,$message,@details); >>
+
+Signals an fatal error, printing C<$message> along with some context.
+In verbose mode a stack trace is printed.
+
+=item C<< Error($category,$object,$where,$message,@details); >>
+
+Signals an error, printing C<$message> along with some context.
+If in strict mode, this is the same as Fatal().
+Otherwise, it attempts to continue processing..
+
+=item C<< Warn($category,$object,$where,$message,@details); >>
+
+Prints a warning message along with a short indicator of
+the input context, unless verbosity is quiet.
+
+=item C<< Info($category,$object,$where,$message,@details); >>
+
+Prints an informational message along with a short indicator of
+the input context, unless verbosity is quiet.
+
+=item C<< NoteProgress($message); >>
+
+Prints C<$message> unless the verbosity level below 0.
+Typically just a short mark to indicate motion, but can be longer;
+provide your own newlines, if needed.
+
+=item C<< NoteProgressDetailed($message); >>
+
+Like C<NoteProgress>, but for noiser progress, only prints when verbosity >= 1.
+
+=back
+
+=head2 Internal Functions
+
+No user serviceable parts inside.  These symbols are not exported.
+
+=over 4
+
+=item C<< $string = LaTeXML::Common::Error::generateMessage($typ,$msg,$lng,@more); >>
 
 Constructs an error or warning message based on the current stack and
 the current location in the document.
@@ -366,12 +489,12 @@ more verbose message; this also uses the VERBOSITY set in the C<$STATE>.
 Longer messages will show a trace of the objects invoked on the stack,
 C<@more> are additional strings to include in the message.
 
-=item C<< $string = LaTeXML::Error::stacktrace; >>
+=item C<< $string = LaTeXML::Common::Error::stacktrace; >>
 
 Return a formatted string showing a trace of the stackframes up until this
 function was invoked.
 
-=item C<< @objects = LaTeXML::Error::objectStack; >>
+=item C<< @objects = LaTeXML::Common::Error::objectStack; >>
 
 Return a list of objects invoked on the stack.  This procedure only
 considers those stackframes which involve methods, and the objects are
