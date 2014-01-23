@@ -14,6 +14,10 @@ package LaTeXML::Core::Gullet;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Mouth;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::Number;
@@ -22,7 +26,7 @@ use LaTeXML::Common::Dimension;
 use LaTeXML::Common::Glue;
 use LaTeXML::Core::MuDimension;
 use LaTeXML::Core::MuGlue;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 #**********************************************************************
 sub new {
   my ($class) = @_;
@@ -87,7 +91,7 @@ sub flush {
   $$self{mouth}->finish;
   while (@{ $$self{mouthstack} }) {
     my $entry = shift @{ $$self{mouthstack} };
-    $entry->[0]->finish; }
+    $$entry[0]->finish; }
   $$self{pushback} = [];
 ##  $$self{mouth}=Tokens();
   $$self{mouth} = LaTeXML::Core::Mouth->new();
@@ -276,9 +280,9 @@ sub readRawLine {
   # but we'll convert them back to string.
   my @tokens = @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
-  if (@markers){ # Whoops, profiling markers!
-      @tokens = grep { $_->getCatcode != CC_MARKER } @tokens; # Remove
-      map { LaTeXML::Core::Definition::stopProfiling($_) } @markers; }
+  if (@markers) {    # Whoops, profiling markers!
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;            # Remove
+    map { LaTeXML::Core::Definition::stopProfiling($_) } @markers; }
   $$self{pushback} = [];
   my $line = $$self{mouth}->readRawLine;
   return (@tokens ? ToString(Tokens(@tokens)) . ($line || '') : $line); }
@@ -772,7 +776,7 @@ C<LaTeXML::Core::Gullet> - expands expandable tokens and parses common token seq
 
 A C<LaTeXML::Core::Gullet> reads tokens (L<LaTeXML::Core::Token>) from a L<LaTeXML::Core::Mouth>.
 It is responsible for expanding macros and expandable control sequences,
-if the current definition associated with the token in the L<LaTeXML::State>
+if the current definition associated with the token in the L<LaTeXML::Core::State>
 is an L<LaTeXML::Core::Definition::Expandable> definition. The C<LaTeXML::Core::Gullet> also provides a
 variety of methods for reading  various types of input such as arguments, optional arguments,
 as well as for parsing L<LaTeXML::Common::Number>, L<LaTeXML::Common::Dimension>, etc, according
