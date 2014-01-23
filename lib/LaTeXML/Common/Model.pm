@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Model                                                     | #
+# |  LaTeXML::Common::Model                                             | #
 # | Stores representation of Document Type for use by Document          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,16 +9,16 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Model;
+package LaTeXML::Common::Model;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::Font;
-use LaTeXML::Rewrite;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
-use base qw(LaTeXML::Object);
+use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 my $LTX_NAMESPACE = "http://dlmf.nist.gov/LaTeXML";    # [CONSTANT]
@@ -63,13 +63,13 @@ sub loadSchema {
   my ($type, @data) = @{ $$self{schemadata} };
   if ($type eq 'DTD') {
     my ($roottag, $publicid, $systemid) = @data;
-    require LaTeXML::Model::DTD;
+    require LaTeXML::Common::Model::DTD;
     $name = $systemid;
-    $$self{schema} = LaTeXML::Model::DTD->new($self, $roottag, $publicid, $systemid); }
+    $$self{schema} = LaTeXML::Common::Model::DTD->new($self, $roottag, $publicid, $systemid); }
   elsif ($type eq 'RelaxNG') {
     ($name) = @data;
-    require LaTeXML::Model::RelaxNG;
-    $$self{schema} = LaTeXML::Model::RelaxNG->new($self, $name); }
+    require LaTeXML::Common::Model::RelaxNG;
+    $$self{schema} = LaTeXML::Common::Model::RelaxNG->new($self, $name); }
 
   if (my $compiled = !$$self{no_compiled}
     && pathname_find($name, paths => $STATE->lookupValue('SEARCHPATHS'),
@@ -77,7 +77,7 @@ sub loadSchema {
     $self->loadCompiledSchema($compiled); }
   else {
     $$self{schema}->loadSchema; }
-  $self->describeModel if $LaTeXML::Model::DEBUG;
+  $self->describeModel if $LaTeXML::Common::Model::DEBUG;
   $$self{schema_loaded} = 1;
   return $$self{schema}; }
 
@@ -384,18 +384,6 @@ sub describeModel {
   return; }
 
 #**********************************************************************
-# Abstract schema
-package LaTeXML::Model::Schema;
-
-sub new {
-  my ($class) = @_;
-  return bless {}, $class; }
-
-sub addSchemaDeclaration {
-  my ($self, $xmldocument, $tag) = @_;
-  return; }
-
-#**********************************************************************
 1;
 
 __END__
@@ -404,11 +392,11 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Model> - represents the Document Model
+C<LaTeXML::Common::Model> - represents the Document Model
 
 =head1 DESCRIPTION
 
-C<LaTeXML::Model> encapsulates information about the document model to be used
+C<LaTeXML::Common::Model> encapsulates information about the document model to be used
 in converting a digested document into XML by the L<LaTeXML::Core::Document>.
 This information is based on the document schema (eg, DTD, RelaxNG),
 but is also modified by package modules; thus the model may not be
@@ -427,7 +415,7 @@ we don't preserve any information about required order or number of instances.
 
 =over 4
 
-=item C<< $model = LaTeXML::Model->new(%options); >>
+=item C<< $model = LaTeXML::Common::Model->new(%options); >>
 
 Creates a new model.  The only useful option is
 C<< permissive=>1 >> which ignores any DTD and allows the

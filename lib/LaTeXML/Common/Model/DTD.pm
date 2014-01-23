@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Model::DTD                                                | #
+# |  LaTeXML::Common::Model::DTD                                        | #
 # | Extract Model information from a DTD                                | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,13 +9,13 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Model::DTD;
+package LaTeXML::Common::Model::DTD;
 use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Global;
-use base qw(LaTeXML::Model::Schema);
+use LaTeXML::Common::Error;
+use LaTeXML::Common::XML;
 
 #**********************************************************************
 # NOTE: Arglist is DTD specific.

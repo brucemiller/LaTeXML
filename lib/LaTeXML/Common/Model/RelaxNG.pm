@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Model::RelaxNG                                            | #
+# |  LaTeXML::Common::Model::RelaxNG                                    | #
 # | Extract Model information from a RelaxNG schema                     | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,15 +9,15 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Model::RelaxNG;
+package LaTeXML::Common::Model::RelaxNG;
 use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
+use LaTeXML::Common::Error;
 use Scalar::Util qw(weaken);
-use base qw(LaTeXML::Model::Schema);
 
 my $XMLPARSER = LaTeXML::Common::XML::Parser->new();    # [CONSTANT]
 
@@ -53,11 +53,11 @@ sub loadSchema {
   NoteBegin("Loading RelaxNG $$self{name}");
   # Scan the schema file(s), and extract the info
   my @schema = $self->scanExternal($$self{name});
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
+  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
     print STDERR "========================\nRaw Schema\n";
     map { showSchema($_) } @schema; }
   @schema = map { $self->simplify($_) } @schema;
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
+  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
     print STDERR "========================\nSimplified Schema\n";
     map { showSchema($_) } @schema;
     print STDERR "========================\nElements\n";
@@ -70,7 +70,7 @@ sub loadSchema {
   # The resulting @schema should contain the "start" of the grammar.
   my ($startcontent) = $self->extractContent('#Document', @schema);
   $$self{model}->addTagContent('#Document', keys %$startcontent);
-  if ($LaTeXML::Model::RelaxNG::DEBUG) {
+  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
     print STDERR "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
 
   # NOTE: Do something automatic about this too!?!
@@ -176,17 +176,17 @@ my %RNGNSMAP = (    # [CONSTANT]
   "http://relaxng.org/ns/structure/1.0"                 => 'rng',
   "http://relaxng.org/ns/compatibility/annotations/1.0" => 'rnga');
 
-local @LaTeXML::Model::RelaxNG::PATHS = ();
+local @LaTeXML::Common::Model::RelaxNG::PATHS = ();
 
 sub scanExternal {
   my ($self, $name, $inherit_ns) = @_;
   my $modname = $name; $modname =~ s/\.rn(g|c)$//;
-  my $paths = [@LaTeXML::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
+  my $paths = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
   if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
     my $uri = $schemadoc->URI;
     NoteBegin("Loading RelaxNG schema from $uri");
-    local @LaTeXML::Model::RelaxNG::PATHS
-      = (pathname_directory($schemadoc->URI), @LaTeXML::Model::RelaxNG::PATHS);
+    local @LaTeXML::Common::Model::RelaxNG::PATHS
+      = (pathname_directory($schemadoc->URI), @LaTeXML::Common::Model::RelaxNG::PATHS);
     my $node = $schemadoc->documentElement;
     # Fetch any additional namespaces
     foreach my $ns ($node->getNamespaces) {
@@ -305,10 +305,10 @@ sub scanGrammarItem {
       return $self->scanGrammarContent($ns, @children); }
     elsif ($relaxop eq 'rng:include') {
       my $name = $node->getAttribute('href');
-      my $paths = [@LaTeXML::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
+      my $paths = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
       if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
-        local @LaTeXML::Model::RelaxNG::PATHS
-          = (pathname_directory($schemadoc->URI), @LaTeXML::Model::RelaxNG::PATHS);
+        local @LaTeXML::Common::Model::RelaxNG::PATHS
+          = (pathname_directory($schemadoc->URI), @LaTeXML::Common::Model::RelaxNG::PATHS);
         my @patterns;
         #  Hopefully, just a file, not a URL?
         my $doc = $schemadoc->documentElement;
