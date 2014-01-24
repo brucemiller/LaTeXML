@@ -37,7 +37,7 @@ use Data::Dumper;
 
 sub initialize {
   my ($self, $doc) = @_;
-  my $directory = $self->{siteDirectory};
+  my $directory = $$self{siteDirectory};
   # 1. Create mimetype declaration
   my $EPUB_FH;
   my $mime_path = pathname_concat($directory, 'mimetype');
@@ -66,7 +66,7 @@ sub initialize {
   $package->setAttribute('version',           '3.0');
 
   # Metadata
-  my $document_metadata = $self->{db}->lookup("ID:" . $self->{db}->{document_id});
+  my $document_metadata = $$self{db}->lookup("ID:" . $$self{db}{document_id});
   my $document_title    = $document_metadata->getValue('title');
   $document_title = $document_title->textContent if $document_title;
   my $document_authors = $document_metadata->getValue('authors') || [];
@@ -85,7 +85,7 @@ sub initialize {
       $type = 'doi'; }
     $uid = "urn:$type:$uid"; }                             # Set the guessed qualified name
                                                            # Save the identifier
-  $self->{'unique-identifier'} = $uid;
+  $$self{'unique-identifier'} = $uid;
 
   my $metadata = $package->addNewChild(undef, 'metadata');
   $metadata->setNamespace("http://purl.org/dc/elements/1.1/", "dc",  0);
@@ -103,7 +103,7 @@ sub initialize {
   $modified->appendText($now_string);
   my $identifier = $metadata->addNewChild("http://purl.org/dc/elements/1.1/", "identifier");
   $identifier->setAttribute('id', 'pub-id');
-  $identifier->appendText($self->{'unique-identifier'});
+  $identifier->appendText($$self{'unique-identifier'});
   # Manifest
   my $manifest = $package->addNewChild(undef, 'manifest');
   my $nav_item = $manifest->addNewChild(undef, 'item');
@@ -127,12 +127,12 @@ sub initialize {
   $nav_nav->setAttribute('id',        'toc');
   my $nav_map = $nav_nav->addNewChild(undef, 'ol');
 
-  $self->{OPS_directory} = $OPS_directory;
-  $self->{opf}           = $opf;
-  $self->{opf_spine}     = $spine;
-  $self->{opf_manifest}  = $manifest;
-  $self->{nav}           = $nav;
-  $self->{nav_map}       = $nav_map;
+  $$self{OPS_directory} = $OPS_directory;
+  $$self{opf}           = $opf;
+  $$self{opf_spine}     = $spine;
+  $$self{opf_manifest}  = $manifest;
+  $$self{nav}           = $nav;
+  $$self{nav_map}       = $nav_map;
   return; }
 
 sub process {
@@ -143,10 +143,10 @@ sub process {
     if (my $destination = $doc->getDestination) {
       my (undef, $name, $ext) = pathname_split($destination);
       my $file = "$name.$ext";
-      my $relative_destination = pathname_relative($destination, $self->{OPS_directory});
+      my $relative_destination = pathname_relative($destination, $$self{OPS_directory});
 
       # Add to manifest
-      my $manifest = $self->{opf_manifest};
+      my $manifest = $$self{opf_manifest};
       my $item = $manifest->addNewChild(undef, 'item');
       $item->setAttribute('id',         $file);
       $item->setAttribute('href',       $relative_destination);
@@ -158,12 +158,12 @@ sub process {
       $item->setAttribute('properties', $properties) if $properties;
 
       # Add to spine
-      my $spine = $self->{opf_spine};
+      my $spine = $$self{opf_spine};
       my $itemref = $spine->addNewChild(undef, 'itemref');
       $itemref->setAttribute('idref', $file);
 
       # Add to navigation
-      my $nav_map = $self->{nav_map};
+      my $nav_map = $$self{nav_map};
       my $nav_li  = $nav_map->addNewChild(undef, 'li');
       my $nav_a   = $nav_li->addNewChild(undef, 'a');
       $nav_a->setAttribute('href', $file);
@@ -174,7 +174,7 @@ sub process {
 sub finalize {
   my ($self) = @_;
   #Index all CSS files (written already)
-  my $OPS_directory = $self->{OPS_directory};
+  my $OPS_directory = $$self{OPS_directory};
   my $OPS_FH;
   opendir($OPS_FH, $OPS_directory)
     or Fatal('I/O', $OPS_directory, undef, "Couldn't open '$OPS_directory' for reading: $_");
@@ -182,7 +182,7 @@ sub finalize {
   closedir $OPS_FH;
   my @styles = grep { /\.css$/ && -f pathname_concat($OPS_directory, $_) } @files;
   my @images = grep { /\.png$/ && -f pathname_concat($OPS_directory, $_) } @files;
-  my $manifest = $self->{opf_manifest};
+  my $manifest = $$self{opf_manifest};
   # TODO: Other externals are future work
   foreach my $style (@styles) {
     my $style_item = $manifest->addNewChild(undef, 'item');
@@ -196,12 +196,12 @@ sub finalize {
     $image_item->setAttribute('media-type', 'image/png'); }
 
   # Write the content.opf file to disk
-  my $directory = $self->{siteDirectory};
+  my $directory = $$self{siteDirectory};
   my $OPF_FH;
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
   open($OPF_FH, ">", $content_path)
     or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
-  print $OPF_FH $self->{opf}->toString(1);
+  print $OPF_FH $$self{opf}->toString(1);
   close $OPF_FH;
 
   # Write toc.ncx file to disk
@@ -209,7 +209,7 @@ sub finalize {
   my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
   open($NAV_FH, ">", $nav_path)
     or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-  print $NAV_FH $self->{nav}->toString(1);
+  print $NAV_FH $$self{nav}->toString(1);
   close $NAV_FH;
 
   return (); }
