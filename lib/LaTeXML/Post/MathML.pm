@@ -434,7 +434,7 @@ sub pmml_row {
 
 sub pmml_unrow {
   my ($mml) = @_;
-  if ($mml && (ref $mml) && ($mml->[0] eq 'm:mrow') && !scalar(keys %{ $mml->[1] })) {
+  if ($mml && (ref $mml) && ($$mml[0] eq 'm:mrow') && !scalar(keys %{ $$mml[1] })) {
     my ($tag, $attr, @children) = @$mml;
     return @children; }
   else {
