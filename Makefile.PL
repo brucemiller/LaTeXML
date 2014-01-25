@@ -189,16 +189,24 @@ sub install_TeXStyles {
 
 # Install LaTeXML's LaTeX style files into the standard texmf location
 pure_install ::
-	$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"
-	$(NOECHO) $(MOD_INSTALL) \
-		read "$(INSTALLTEXMFDIR)/.packlist" \
-		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
-		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"
-	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+	@if [ -w "$(DESTINSTALLTEXMFDIR)" ]; then \
+		$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"; \
+		$(NOECHO) $(MOD_INSTALL) \
+			read "$(INSTALLTEXMFDIR)/.packlist" \
+			write "$(DESTINSTALLTEXMFDIR)/.packlist" \
+			"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"; \
+		- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
+	else \
+		echo "No write permission for TeXMF, skipping installing LaTeXML TeX packages"; \
+	fi
 
 uninstall ::
-	$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"
-	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+	@if [ -w "$(DESTINSTALLTEXMFDIR)" ]; then \
+		$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"; \
+		- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
+	else
+		echo "No write permission for TeXMF, skipping uninstalling LaTeXML TeX packages"; \
+	fi
 
 InstallTeXStyles
   return; }
