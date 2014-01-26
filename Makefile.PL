@@ -190,20 +190,20 @@ sub install_TeXStyles {
 # Install LaTeXML's LaTeX style files into the standard texmf location
 pure_install ::
 	@if [ -w "$(DESTINSTALLTEXMFDIR)" ]; then \
-		$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"; \
-		$(NOECHO) $(MOD_INSTALL) \
+		$(MKPATH) "$(DESTINSTALLTEXMFDIR)"; \
+		$(MOD_INSTALL) \
 			read "$(INSTALLTEXMFDIR)/.packlist" \
 			write "$(DESTINSTALLTEXMFDIR)/.packlist" \
 			"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"; \
-		- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
+		$(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
 	else \
 		echo "No write permission for TeXMF, skipping installing LaTeXML TeX packages"; \
 	fi
 
 uninstall ::
 	@if [ -w "$(DESTINSTALLTEXMFDIR)" ]; then \
-		$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"; \
-		- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
+		$(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"; \
+		$(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr; \
 	else
 		echo "No write permission for TeXMF, skipping uninstalling LaTeXML TeX packages"; \
 	fi
