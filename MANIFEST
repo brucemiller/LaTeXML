@@ -91,6 +91,9 @@ lib/LaTeXML/Post/Manifest.pm
 lib/LaTeXML/Post/Manifest/Epub.pm
 lib/LaTeXML/Post/MathImages.pm
 lib/LaTeXML/Post/MathML.pm
+lib/LaTeXML/Post/MathML/Linebreaker.pm
+lib/LaTeXML/Post/MathML/Presentation.pm
+lib/LaTeXML/Post/MathML/Content.pm
 lib/LaTeXML/Post/OpenMath.pm
 lib/LaTeXML/Post/PictureImages.pm
 lib/LaTeXML/Post/Scan.pm
@@ -132,7 +135,6 @@ lib/LaTeXML/Common/XML/RelaxNG.pm
 # Utility Modules
 #==================================================
 lib/LaTeXML/Util/Test.pm
-lib/LaTeXML/Util/MathMLLinebreaker.pm
 lib/LaTeXML/Util/ObjectDB.pm
 lib/LaTeXML/Util/ObjectDB/Entry.pm
 lib/LaTeXML/Util/Pathname.pm
