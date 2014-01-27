@@ -206,16 +206,15 @@ sub convert {
       noinitialize => 1);
     # 2.1 Now, convert to DOM and output, if desired.
     if ($digested) {
-      require LaTeXML::Global;
-      local $LaTeXML::Global::STATE = $$latexml{state};
-      if ($$opts{format} eq 'tex') {
-        $serialized = LaTeXML::Core::Token::UnTeX($digested);
-      } elsif ($$opts{format} eq 'box') {
-        $serialized = $digested->toString;
-      } else {    # Default is XML
-        $dom = $latexml->convertDocument($digested);
-      }
-    }
+      $latexml->withState(sub {
+          if ($$opts{format} eq 'tex') {
+            $serialized = LaTeXML::Core::Token::UnTeX($digested);
+          } elsif ($$opts{format} eq 'box') {
+            $serialized = $digested->toString;
+          } else {    # Default is XML
+            $dom = $latexml->convertDocument($digested);
+          }
+          }); }
     alarm(0);
     1;
   };
@@ -430,20 +429,14 @@ sub convert_post {
           require LaTeXML::Post::XMath;
           push(@mprocs, LaTeXML::Post::XMath->new(%PostOPS)); }
         elsif ($fmt eq 'pmml') {
-          require LaTeXML::Post::MathML;
-          if (defined $$opts{linelength}) {
-            push(@mprocs, LaTeXML::Post::MathML::PresentationLineBreak->new(
-                linelength => $$opts{linelength},
-                (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-                ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
-                %PostOPS)); }
-          else {
-            push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
-                (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-                ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
-                %PostOPS)); } }
+          require LaTeXML::Post::MathML::Presentation;
+          push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
+              linelength => $$opts{linelength},
+              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              %PostOPS)); }
         elsif ($fmt eq 'cmml') {
-          require LaTeXML::Post::MathML;
+          require LaTeXML::Post::MathML::Content;
           push(@mprocs, LaTeXML::Post::MathML::Content->new(
               (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
               ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
