@@ -161,6 +161,18 @@ MakeGrammar
 #      --prefix=$(DESTDIR)
 # to install.PL so that it can "install" to staging directories
 # but for manual $(DESTDIR) is empty, so install.PL complains...
+#
+# CURRENTLY: We want to attempt to install the TeX files
+# IF there appears to be a TeX installation
+# BUT still fail gracefully if we are unable to install there.
+# This accommodates NOT making TeX a dependency
+# AND in case we're doing a local install (like from CPAN)
+# where we don't have permission to install into the TeX installation.
+# Whew!!
+#
+# AND NOTE: That the tests involved are painful & contrived
+# since they need to accomodate featureful gnu-make as well as
+# fairly lame dmake on windows....
 sub install_TeXStyles {
   if (!$TEXMF) {
     if (system("kpsewhich --expand-var='\$TEXMFLOCAL'") == 0) {    # can run kpsewhich?
@@ -174,10 +186,10 @@ sub install_TeXStyles {
       "  TeX is NOT required, but LaTeXML will have limited functionality.\n";
     return; }
 
-  $$MORE_MACROS{INST_TEXMFDIR}       = '$(INST_LIB)/LaTeXML/texmf';
-  $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
-  $$MORE_MACROS{DESTINSTALLTEXMFDIR} = '$(DESTDIR)$(INSTALLTEXMFDIR)';
-  $$MORE_MACROS{INSTALLTEXMFBASEDIR} = "$TEXMF";
+  $$MORE_MACROS{INST_TEXMFDIR}           = '$(INST_LIB)/LaTeXML/texmf';
+  $$MORE_MACROS{INSTALLTEXMFDIR}         = "$TEXMF/tex/latex/latexml";
+  $$MORE_MACROS{DESTINSTALLTEXMFDIR}     = '$(DESTDIR)$(INSTALLTEXMFDIR)';
+  $$MORE_MACROS{INSTALLTEXMFBASEDIR}     = "$TEXMF";
   $$MORE_MACROS{DESTINSTALLTEXMFBASEDIR} = '$(DESTDIR)$(INSTALLTEXMFBASEDIR)';
   # The installation directory of TeX may well have spaces which screws up Make.
   # we need to wrap any pathname that includes TEXMF with quotes in case of embedded spaces
