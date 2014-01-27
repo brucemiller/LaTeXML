@@ -66,7 +66,7 @@ sub getopt_specification {
     "mode=s"      => \$$opts{profile},
     "source=s"    => \$$opts{source},
     # Output framing
-    "embed" => sub { $$opts{whatsin} = 'fragment'; },
+    "embed" => sub { $$opts{whatsout} = 'fragment'; },
     "whatsin=s"  => \$$opts{whatsin},
     "whatsout=s" => \$$opts{whatsout},
     # Daemon options
