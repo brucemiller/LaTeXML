@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Util::MathMLLinebreaker                                   | #
+# |  LaTeXML::Post::MathML::Linebreaker                                 | #
 # | MathML generator for LaTeXML                                        | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -9,8 +9,7 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
-package LaTeXML::Util::MathMLLinebreaker;
+package LaTeXML::Post::MathML::Linebreaker;
 use strict;
 use warnings;
 use LaTeXML::Common::XML;
@@ -103,14 +102,14 @@ sub fitToWidth {
   my ($self, $math, $mml, $width, $displaystyle) = @_;
   # Check for end punctuation; Remove it, if found.
   my @n;
-  local $LaTeXML::MathMLLineBreaker::MATH  = $math;
-  local $LaTeXML::MathMLLineBreaker::PUNCT = undef;
-  local $LaTeXML::DISPLAYSTYLE             = $displaystyle || 0;
-  local $LaTeXML::SCRIPTLEVEL              = 0;
+  local $LaTeXML::Post::MathML::Linebreaker::MATH  = $math;
+  local $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef;
+  local $LaTeXML::DISPLAYSTYLE                     = $displaystyle || 0;
+  local $LaTeXML::SCRIPTLEVEL                      = 0;
 
   if ((nodeName($mml) eq 'm:mrow') && (scalar(@n = nodeChildren($mml)) == 2) && isSeparator($n[1])) {
-    $mml                               = $n[0];
-    $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
+    $mml                                       = $n[0];
+    $LaTeXML::Post::MathML::Linebreaker::PUNCT = $n[1]; }
 
   # Compute the possible layouts
   print STDERR "Starting layout of $mml\n" if $DEBUG;
@@ -125,8 +124,8 @@ sub fitToWidth {
   # Is there a case where $best is so bad we shouldn't even apply it?
   applyLayout_rec($best);
   # If nobody has yet eaten the punctuation, add it back on.
-  if ($LaTeXML::MathMLLineBreaker::PUNCT) {
-    $mml = ['m:mrow', {}, $mml, $LaTeXML::MathMLLineBreaker::PUNCT]; }
+  if ($LaTeXML::Post::MathML::Linebreaker::PUNCT) {
+    $mml = ['m:mrow', {}, $mml, $LaTeXML::Post::MathML::Linebreaker::PUNCT]; }
 
   Warn("Got width $$best{width} > $width") if $$best{width} > $width + 1;
   return $mml; }
@@ -135,9 +134,9 @@ sub bestFitToWidth {
   my ($self, $math, $mml, $width, $displaystyle) = @_;
   # Check for end punctuation; Remove it, if found.
   my @n;
-  local $LaTeXML::MathMLLineBreaker::MATH = $math;
-  local $LaTeXML::DISPLAYSTYLE            = $displaystyle || 0;
-  local $LaTeXML::SCRIPTLEVEL             = 0;
+  local $LaTeXML::Post::MathML::Linebreaker::MATH = $math;
+  local $LaTeXML::DISPLAYSTYLE                    = $displaystyle || 0;
+  local $LaTeXML::SCRIPTLEVEL                     = 0;
 
   # Extract math without trailing punctuation (if any).
   if ((nodeName($mml) eq 'm:mrow') && (scalar(@n = nodeChildren($mml)) == 2) && isSeparator($n[1])) {
@@ -191,28 +190,28 @@ sub applyLayout {
   my ($self, $mml, $layout) = @_;
   my @n;
   # Extract trailing punctuation which might be placed during layout
-  local $LaTeXML::MathMLLineBreaker::PUNCT = undef;
+  local $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef;
   if ((nodeName($mml) eq 'm:mrow') && (scalar(@n = nodeChildren($mml)) == 2) && isSeparator($n[1])) {
-    $mml                               = $n[0];
-    $LaTeXML::MathMLLineBreaker::PUNCT = $n[1]; }
+    $mml                                       = $n[0];
+    $LaTeXML::Post::MathML::Linebreaker::PUNCT = $n[1]; }
 
   # Is there a case where $best is so bad we shouldn't even apply it?
   applyLayout_rec($layout);
   # If nobody has yet eaten the punctuation, add it back on.
-  if ($LaTeXML::MathMLLineBreaker::PUNCT) {
-    $mml = ['m:mrow', {}, $mml, $LaTeXML::MathMLLineBreaker::PUNCT]; }
+  if ($LaTeXML::Post::MathML::Linebreaker::PUNCT) {
+    $mml = ['m:mrow', {}, $mml, $LaTeXML::Post::MathML::Linebreaker::PUNCT]; }
 
   return $mml; }
 
 # (only called during layout; not applying layout)
 sub Warn {
   my ($message) = @_;
-  my $p = $LaTeXML::MathMLLineBreaker::MATH;
+  my $p = $LaTeXML::Post::MathML::Linebreaker::MATH;
   while ($p && !$p->hasAttribute('xml:id')) {
     $p = $p->parentNode; }
   my $id = $p && $p->getAttribute('xml:id') || '?';
   my $nm = $p && $p->getAttribute('refnum') || '';
-##  print STDERR "Warning in MathMLLinebreaker for math in $nm (id=$id):\n  $message\n"; }
+##  print STDERR "Warning in MathML::Linebreaker for math in $nm (id=$id):\n  $message\n"; }
   LaTeXML::Post::Info('unexpected', 'toowide', "id=$id", $message);
   return; }
 
@@ -236,7 +235,7 @@ sub applyLayout_rec {
   if ($$layout{children}) {
     my @children_layout = @{ $$layout{children} };
     my $lastchild       = pop(@children_layout);
-    { local $LaTeXML::MathMLLineBreaker::PUNCT = undef;    # Hide from all but last child
+    { local $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef;    # Hide from all but last child
       map { applyLayout_rec($_) } @children_layout; }
     # Now, do last child; Maybe it will absorb the punctuation!
     applyLayout_rec($lastchild); }
@@ -283,9 +282,9 @@ sub applyLayout_break {
     my $newop;
     if ((nodeName($op) eq 'm:mo') && ($newop = $CONVERTOPS{ textContent($op) })) {
       splice(@$op, 2, scalar(@$op) - 2, $newop); } }
-  if ($LaTeXML::MathMLLineBreaker::PUNCT) {
-    $rows[-1] = [@{ $rows[-1] }, $LaTeXML::MathMLLineBreaker::PUNCT];
-    $LaTeXML::MathMLLineBreaker::PUNCT = undef; }
+  if ($LaTeXML::Post::MathML::Linebreaker::PUNCT) {
+    $rows[-1] = [@{ $rows[-1] }, $LaTeXML::Post::MathML::Linebreaker::PUNCT];
+    $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef; }
 
   my @firstrow = @{ shift(@rows) };
   splice(@$node, 2, scalar(@children),
