@@ -29,6 +29,11 @@ use LaTeXML::Common::XML;
 use LaTeXML::Post::MathML;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::MathProcessor);
+use base qw(Exporter);
+our @EXPORT = (
+  qw( &DefOpenMath ),
+  qw( &om_expr ),
+);
 
 my $omURI = "http://www.openmath.org/OpenMath";    # CONSTANT
 
@@ -53,7 +58,7 @@ sub convertNode {
   if (@rest) {    # Unparsed ???
     Warn('unexpected', 'content', undef,
       "Got extra nodes for math content:" . $xmath->toString) if @rest; }
-  return Expr($item); }
+  return om_expr($item); }
 
 sub combineParallel {
   my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
@@ -92,9 +97,9 @@ sub DefOpenMath {
   $$OMTable{$key} = $sub;
   return; }
 
-sub Expr {
+sub om_expr {
   my ($node) = @_;
-  my $result = Expr_aux($node);
+  my $result = om_expr_aux($node);
   # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
   if (my $id = $node->getAttribute('fragid')) {
     $$result[1]{'xml:id'} = $id . $LaTeXML::Post::MATHPROCESSOR->IDSuffix; }
@@ -102,7 +107,7 @@ sub Expr {
 
 # Is it clear that we should just getAttribute('role'),
 # instead of the getOperatorRole like in MML?
-sub Expr_aux {
+sub om_expr_aux {
   my ($node) = @_;
   return OMError("Missing Subexpression") unless $node;
   my $tag = getQName($node);
@@ -110,10 +115,10 @@ sub Expr_aux {
     my ($item, @rest) = element_nodes($node);
     Warn('unexpected', 'content', undef,
       "Got extra nodes for content: " . $node->toString) if @rest;
-    return Expr($item); }
+    return om_expr($item); }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
-    return Expr($content); }
+    return om_expr($content); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     return OMError("Missing Operator") unless $op;
@@ -185,7 +190,7 @@ DefOpenMath("Token:?:\x{2062}", sub {
 
 DefOpenMath('Apply:?:?', sub {
     my ($op, @args) = @_;
-    return ['om:OMA', {}, map { Expr($_) } $op, @args]; });
+    return ['om:OMA', {}, map { om_expr($_) } $op, @args]; });
 
 # NOTE: No support for OMATTR here...
 
@@ -195,8 +200,8 @@ DefOpenMath('Apply:LambdaBinding:?', sub {
     my ($op, $expr, @vars) = @_;
     return ['om:OMBIND', {},
       ['om:OMS', { name => "lambda", cd => 'fns1' },
-        ['om:OMBVAR', {}, map { Expr($_) } @vars],    # Presumably, these yield OMV
-        Expr($expr)]]; });
+        ['om:OMBVAR', {}, map { om_expr($_) } @vars],    # Presumably, these yield OMV
+        om_expr($expr)]]; });
 
 # ================================================================================
 1;
