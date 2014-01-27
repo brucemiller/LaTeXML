@@ -183,7 +183,7 @@ if ($mathimage) {
 }
 
 if ($pmml) {
-  require LaTeXML::Post::MathML;
+  require LaTeXML::Post::MathML::Presentation;
   my ($result) = $post->ProcessChain($document,
     LaTeXML::Post::MathML::Presentation->new(
       (defined $linelength ? (linelength => $linelength) : ()),
@@ -193,7 +193,7 @@ if ($pmml) {
   outputXML($result->findnode('//m:math'), $pmml, $mmlURI); }
 
 if ($cmml) {
-  require LaTeXML::Post::MathML;
+  require LaTeXML::Post::MathML::Content;
   my ($result) = $post->ProcessChain($document,
     LaTeXML::Post::MathML::Content->new(%OPTIONS));
   outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
