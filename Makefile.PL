@@ -177,7 +177,8 @@ sub install_TeXStyles {
   $$MORE_MACROS{INST_TEXMFDIR}       = '$(INST_LIB)/LaTeXML/texmf';
   $$MORE_MACROS{INSTALLTEXMFDIR}     = "$TEXMF/tex/latex/latexml";
   $$MORE_MACROS{DESTINSTALLTEXMFDIR} = '$(DESTDIR)$(INSTALLTEXMFDIR)';
-
+  $$MORE_MACROS{INSTALLTEXMFBASEDIR} = "$TEXMF";
+  $$MORE_MACROS{DESTINSTALLTEXMFBASEDIR} = '$(DESTDIR)$(INSTALLTEXMFBASEDIR)';
   # The installation directory of TeX may well have spaces which screws up Make.
   # we need to wrap any pathname that includes TEXMF with quotes in case of embedded spaces
   # The quotes apparently don't hurt, when they completely enclose the path.
@@ -189,16 +190,20 @@ sub install_TeXStyles {
 
 # Install LaTeXML's LaTeX style files into the standard texmf location
 pure_install ::
-	$(NOECHO) $(MKPATH) "$(DESTINSTALLTEXMFDIR)"
-	$(NOECHO) $(MOD_INSTALL) \
+	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
+	$(MKPATH) "$(DESTINSTALLTEXMFDIR)" && \
+	$(MOD_INSTALL) \
 		read "$(INSTALLTEXMFDIR)/.packlist" \
 		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
-		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)"
-	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)" && \
+	($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFDIR)" || mktexlsr)) \
+	|| echo "No write permission for $(DESTINSTALLTEXMFBASEDIR), skipping installing LaTeXML TeX packages"
 
 uninstall ::
-	$(NOECHO) $(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist"
-	- $(PERLRUN) -e "exit(1) unless -w shift;" "$(INSTALLTEXMFDIR)" && mktexlsr
+	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
+		$(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist" && \
+		($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFDIR)" || mktexlsr)) \
+	|| echo "No write permission for $(DESTINSTALLTEXMFBASEDIR), skipping uninstalling LaTeXML TeX packages"
 
 InstallTeXStyles
   return; }
