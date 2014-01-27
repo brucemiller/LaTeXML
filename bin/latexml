@@ -104,15 +104,15 @@ $digested = $latexml->digestFile($source, mode => $mode,
 
 my $serialized;
 if ($digested) {
-  local $LaTeXML::Global::STATE = $$latexml{state};
-  if ($format eq 'tex') {
-    $serialized = LaTeXML::Core::Token::UnTeX($digested); }
-  elsif ($format eq 'box') {
-    $serialized = $digested->toString; }
-  else {
-    my $dom = $latexml->convertDocument($digested);
-    $serialized = $dom->toString(1);
-  } }
+  $latexml->withState(sub {
+      if ($format eq 'tex') {
+        $serialized = LaTeXML::Core::Token::UnTeX($digested); }
+      elsif ($format eq 'box') {
+        $serialized = $digested->toString; }
+      else {
+        my $dom = $latexml->convertDocument($digested);
+        $serialized = $dom->toString(1);
+      } }); }
 $latexml->showProfile();    # Show profile (if any)
 
 print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
