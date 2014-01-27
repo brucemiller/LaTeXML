@@ -6,7 +6,7 @@ use Test;
 BEGIN { plan tests => 1; }
 
 use LaTeXML::Post;
-use LaTeXML::Post::MathML;
+use LaTeXML::Post::MathML::Presentation;
 use LaTeXML::Post::XMath;
 
 # For each test $name there should be $name.xml and $name-post.xml
