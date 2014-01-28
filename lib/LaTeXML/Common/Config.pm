@@ -533,7 +533,7 @@ sub _read_options_file {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
   while (my $line = <$OPT>) {
-    next if $line =~ /^#/;
+    next if ($line =~ /^#/) || ($line !~ /\w/);
     chomp($line);
     if ($line =~ /(\S+)\s*=\s*(.*)/) {
       my ($key, $value) = ($1, $2 || '');
