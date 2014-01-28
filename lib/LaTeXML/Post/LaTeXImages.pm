@@ -312,7 +312,7 @@ sub process {
     # Ideally, $image is already relative, but if not, make relative to document
     my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
     foreach my $node (@{ $$entry{nodes} }) {
-      $self->setTeXImage($doc, $node, $image, $width, $height, $depth); } }
+      $self->setTeXImage($doc, $node, $reldest, $width, $height, $depth); } }
   $doc->closeCache;    # If opened.
   return $doc; }
 
