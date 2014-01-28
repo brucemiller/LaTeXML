@@ -533,7 +533,12 @@ sub _read_options_file {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
   while (my $line = <$OPT>) {
-    next if ($line =~ /^#/) || ($line !~ /\w/);
+    # Cleanup comments, padding on the input line.
+    $line =~ s/(?<!\\)#.*$//;    # Strip trailing comments starting w/ # (but \# is quoted)
+    $line =~ s/\\#/#/g;          # unslashify any \#
+    $line =~ s/^\s+//;           # Trim leading & trailing whitespace
+    $line =~ s/\s+$//;
+    next unless $line;           # if line isn't empty, after that.....
     chomp($line);
     if ($line =~ /(\S+)\s*=\s*(.*)/) {
       my ($key, $value) = ($1, $2 || '');
