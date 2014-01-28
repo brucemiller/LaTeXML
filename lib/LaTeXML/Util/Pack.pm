@@ -168,7 +168,11 @@ sub get_archive {
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,
  # since EPUB is VERY picky about the first entry in the archive starting at byte 38 (file 'mimetype')
-  foreach my $file (sort @files) {
+  @files = sort @files;
+  my @nomime_files = grep { !/^mimetype$/ } @files;
+  if (scalar(@nomime_files) != scalar(@files)) {
+    @files = ('mimetype', @nomime_files); }
+  foreach my $file (@files) {
     local $/ = undef;
     my $FH;
     my $pathname = pathname_concat($directory, $file);
