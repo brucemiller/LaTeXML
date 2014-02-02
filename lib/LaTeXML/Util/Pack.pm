@@ -28,6 +28,7 @@ sub unpack_source {
   my $zip_handle = Archive::Zip->new();
   if (pathname_is_literaldata($source)) {
     # If literal, just use the data
+    $source =~ s/^literal\://;
     my $content_handle = IO::String->new($source);
     unless ($zip_handle->readFromFileHandle($content_handle) == AZ_OK) {
       print STDERR "Fatal:IO:Archive Can't read in literal archive:\n $source\n"; } }
