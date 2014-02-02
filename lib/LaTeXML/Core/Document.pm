@@ -1457,8 +1457,10 @@ C<LaTeXML::Core::Document> - represents an XML document under construction.
 =head1 DESCRIPTION
 
 A C<LaTeXML::Core::Document> represents an XML document being constructed by LaTeXML,
-and also provides the methods for constructing it.  LaTeXML will have
-digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
+and also provides the methods for constructing it.  
+It extends L<LaTeXML::Common::Object>.
+
+LaTeXML will have digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
 of  L<LaTeXML::Core::Box>s, L<LaTeXML::Core::Whatsit>s and sublists.  At this stage, a document is created
 and it is responsible for `absorbing' the digested material.
 Generally, the L<LaTeXML::Core::Box>s and L<LaTeXML::Core::List>s create text nodes,

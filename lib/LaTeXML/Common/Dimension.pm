@@ -79,11 +79,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Common::Dimension> - representation of dimensions.
-
-=head1 DESCRIPTION
-
-represents dimensions,
+C<LaTeXML::Common::Dimension> - representation of dimensions;
+extends L<LaTeXML::Common::Number>.
 
 =head2 Exported functions
 

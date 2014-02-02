@@ -93,6 +93,7 @@ C<LaTeXML::Core::Array> - support for Arrays of objects
 =head1 DESCRIPTION
 
 Provides a representation of arrays  of digested objects.
+It extends L<LaTeXML::Common::Object>.
 
 =head2 Methods
 

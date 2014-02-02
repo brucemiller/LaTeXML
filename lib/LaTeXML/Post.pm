@@ -1135,14 +1135,26 @@ sub closeCache {
   return; }
 
 1;
+#======================================================================
 
 __END__
 
-=head1 LaTeXML::Post
+=head1 NAME
 
-LaTeXML::Post is the driver for various postprocessing operations.
+C<LaTeXML::Post> - Postprocessing driver.
+
+=head1 DESCRIPTION
+
+C<LaTeXML::Post> is the driver for various postprocessing operations.
 It has a complicated set of options that I'll document shortly.
 
-=cut
-#**********************************************************************
+=head1 AUTHOR
 
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

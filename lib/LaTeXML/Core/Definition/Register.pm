@@ -76,7 +76,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Register>  - Control sequence definitions for Registers.
+C<LaTeXML::Core::Definition::Register>  - Control sequence definitions for Registers.
 
 =head1 DESCRIPTION
 
@@ -84,6 +84,7 @@ These are set up as a speciallized primitive with a getter and setter
 to access and store values in the Stomach.
 See L<LaTeXML::Package> for the most convenient means to create them.
 
+It extends L<LaTeXML::Core::Definition::Primitive>.
 
 Registers generally store some value in the current C<LaTeXML::Core::State>, but are not
 required to. Like TeX's registers, when they are digested, they expect an optional

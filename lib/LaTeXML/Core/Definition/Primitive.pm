@@ -88,6 +88,8 @@ changing the L<LaTeXML::Core::State>.  The results of invoking a C<LaTeXML::Core
 if any, should be a list of digested items (C<LaTeXML::Core::Box>, C<LaTeXML::Core::List>
 or C<LaTeXML::Core::Whatsit>).
 
+It extends L<LaTeXML::Core::Definition>.
+
 Primitive definitions may have lists of daemon subroutines, C<beforeDigest> and C<afterDigest>,
 that are executed before (and before the arguments are read) and after digestion.
 These should either end with C<return;>, C<()>, or return a list of digested 

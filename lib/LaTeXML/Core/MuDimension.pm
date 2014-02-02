@@ -45,11 +45,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::MuDimension> - representation of math dimensions
-
-=head1 DESCRIPTION
-
-represents math dimensions,
+C<LaTeXML::Core::MuDimension> - representation of math dimensions;
+extends L<LaTeXML::Common::Dimension>.
 
 =head2 Exported functions
 

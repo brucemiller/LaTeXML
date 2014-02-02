@@ -782,6 +782,8 @@ variety of methods for reading  various types of input such as arguments, option
 as well as for parsing L<LaTeXML::Common::Number>, L<LaTeXML::Common::Dimension>, etc, according
 to TeX's rules.
 
+It extends L<LaTeXML::Common::Object>.
+
 =head2 Managing Input
 
 =over 4
@@ -866,8 +868,9 @@ the possibly matching token remains in the input.
 
 =item C<< $tokens = $gullet->readMatch(@choices); >>
 
-Read and return whichever of C<@choices> (each are L<LaTeXML::Core::Tokens>)
+Read and return whichever of C<@choices>
 matches the input, or undef if none do.
+Each of the choices is an L<LaTeXML::Core::Tokens>.
 
 =item C<< $keyword = $gullet->readKeyword(@keywords); >>
 
@@ -916,7 +919,7 @@ can be used as a dimension value.
 
 =item C<< $mudimension = $gullet->readMuDimension; >>
 
-Read a L<LaTeXML::MuDimension> according to TeX's rules of the various things that
+Read a L<LaTeXML::Core::MuDimension> according to TeX's rules of the various things that
 can be used as a mudimension value.
 
 =item C<< $glue = $gullet->readGlue; >>

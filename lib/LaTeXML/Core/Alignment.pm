@@ -854,3 +854,30 @@ sub summarize_alignment {
 
 #======================================================================
 1;
+
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<LaTeXML::Core::Alignment> - representation of aligned structures
+
+=head1 DESCRIPTION
+
+This module defines aligned structures.  It needs more documentation.
+It extends L<LaTeXML::Common::Object>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
+
+
+

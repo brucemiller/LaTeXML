@@ -411,6 +411,8 @@ Currently, only an approximation to the schema is understood and used.
 For example, we only record that certain elements can appear within another;
 we don't preserve any information about required order or number of instances.
 
+It extends L<LaTeXML::Common::Object>.
+
 =head2 Model Creation
 
 =over 4
@@ -489,6 +491,11 @@ Returns whether an element with qualified name C<$tag> is allowed to have an att
 with the given name.
 
 =back
+
+=head1 SEE ALSO
+
+L<LaTeXML::Common::Model::DTD>,
+L<LaTeXML::Common::Model::RelaxNG>.
 
 =head1 AUTHOR
 

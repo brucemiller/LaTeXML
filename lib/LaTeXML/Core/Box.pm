@@ -194,11 +194,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Box> - Representations of digested objects.
-
-=head1 DESCRIPTION
-
-A Box represents a digested object, text in a particular font;
+C<LaTeXML::Core::Box> - Representations of digested objects;
+extends L<LaTeXML::Common::Object>.
 
 =head2 Exported Functions
 

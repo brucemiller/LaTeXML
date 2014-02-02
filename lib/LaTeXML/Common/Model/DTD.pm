@@ -128,5 +128,23 @@ sub readDTD {
         "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
   return $dtd; }
 
-#**********************************************************************
+#======================================================================
 1;
+
+__END__
+
+=head1 NAME
+
+C<LaTeXML::Common::Model::DTD> - represents DTD document models;
+extends L<LaTeXML::Common::Model>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

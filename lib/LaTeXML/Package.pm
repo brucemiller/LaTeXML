@@ -2287,7 +2287,7 @@ familiar TeX or LaTeX control sequences are:
 
    DefConstructor('\usepackage[]{}',...
    DefPrimitive('\multiply Variable SkipKeyword:by Number',..
-   DefPrimitive('\newcommand OptionalMatch:* {Token}[][]{}', ...
+   DefPrimitive('\newcommand OptionalMatch:* {Token}[]{}', ...
 
 =head3 Control Sequence Parameters
 
@@ -2495,7 +2495,8 @@ Whether this definition is locked out of changes in the TeX sources.
 
 Example:
 
-  DefConditional('\ifmmode',sub { LookupValue('IN_MATH'); });
+  DefConditional('\ifmmode',sub {
+     LookupValue('IN_MATH'); });
 
 =item C<< DefConditionalI($cs,$paramlist,$test,%options); >>
 
@@ -2548,8 +2549,7 @@ or cannot appear, in math mode.
 
 =item  font=>{fontspec...}
 
-Specifies the font to be set by this invocation.
-See L</"MergeFont(%style);">
+Specifies the font to use (see L</"MergeFont(%style);">).
 If the font change is to only apply to material generated within this command,
 you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
 as for a font switching command.
@@ -2705,8 +2705,7 @@ or cannot appear, in math mode.
 
 =item  font=>{fontspec...}
 
-Specifies the font to be set by this invocation.
-See L</"MergeFont(%style);">
+Specifies the font to use (see L</"MergeFont(%style);">).
 If the font change is to only apply to material generated within this command,
 you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
 as for a font switching command.
@@ -2819,8 +2818,7 @@ This direly needs documentation!
 
 =item  font=>{fontspec}
 
-Specifies the font to be used for when creating this object.
-See L</"MergeFont(%style);">.
+Specifies the font to use (see L</"MergeFont(%style);">).
 
 =item mathstyle=(display|text|inline)
 
@@ -2845,11 +2843,12 @@ in the content branch.
 =item  nogroup=>boolean
 
 Normally, these commands are digested with an implicit grouping around them,
-so that changes to fonts, etc, are local.  Providing C<<noggroup=>1>> inhibits this.
+localizing changes to fonts, etc; C<< noggroup=>1 >> inhibits this.
 
 Example:
 
-  DefMath('\infty',"\x{221E}", role=>'ID', meaning=>'infinity');
+  DefMath('\infty',"\x{221E}",
+     role=>'ID', meaning=>'infinity');
 
 =back
 
@@ -2862,8 +2861,8 @@ have already been separated; useful for definitions from within code.
 =item C<< DefEnvironment($prototype,$replacement,%options); >>
 
 X<DefEnvironment>
-Defines an Environment that generates a specific XML fragment.  The C<$replacement> is
-of the same form as that for DefConstructor, but will generally include reference to
+Defines an Environment that generates a specific XML fragment.  C<$replacement> is
+of the same form as for DefConstructor, but will generally include reference to
 the C<#body> property. Upon encountering a C<\begin{env}>:  the mode is switched, if needed,
 else a new group is opened; then the environment name is noted; the beforeDigest daemon is run.
 Then the Whatsit representing the begin command (but ultimately the whole environment) is created
@@ -2883,10 +2882,10 @@ It shares options with C<DefConstructor>:
 Additionally, C<afterDigestBegin> is effectively an C<afterDigest>
 for the C<\begin{env}> control sequence.
 
-
 Example:
 
-  DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph", mode=>'text');
+  DefConstructor('\emph{}',
+     "<ltx:emph>#1</ltx:emph", mode=>'text');
 
 =item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
 
@@ -2922,8 +2921,8 @@ both C<$name.tex> and C<$name>.
 
 =item noltxml=>1
 
-inhibits searching for the LaTeXML binding for the file
-(ie. C<$name.$type.ltxml>
+inhibits searching for a LaTeXML binding to use instead
+of the file itself (C<$name.$type.ltxml>)
 
 =item notex=>1
 
@@ -2949,7 +2948,7 @@ In this case, the C<literal> pseudo-protocal may be used:
   InputContent('literal:\textit{Hey}');
 
 If a file named C<$request.latexml> exists, it will be read
-in as if it were a latexml binding file (ie. perl), before processing.
+in as if it were a latexml binding file, before processing.
 This can be used for adhoc customization of the conversion of specific files,
 without modifying the source, or creating more elaborate bindings.
 
@@ -3225,7 +3224,7 @@ or the end of the document.
 
 The C<$tag> can be specified in one of three forms:
 
-   prefix:name matches a specific name in a specific namespace
+   prefix:name matches specific name in specific namespace
    prefix:*    matches any tag in the specific namespace;
    *           matches any tag in any namespace.
 
@@ -3284,7 +3283,7 @@ The recognized code properties are:
 
 =over
 
-=item afterOpen=>CODE($document,$box), afterOpen:early=>CODE($document,$box), afterOpen:late=>CODE($document,$box)
+=item C<< afterOpen=>CODE($document,$box) >>
 
 Provides CODE to be run whenever a node with this $tag
 is opened.  It is called with the document being constructed,
@@ -3293,11 +3292,19 @@ It is called after the node has been created, and after
 any initial attributes due to the constructor (passed to openElement)
 are added.
 
-=item afterClose=>CODE($document,$box), afterClose:early=>CODE($document,$box), afterClose:late=>CODE($document,$box)
+C<afterOpen:early> or C<afterOpen:late> can be used in
+place of C<afterOpen>; these will be run as a group
+bfore, or after (respectively) the unmodified blocks.
+
+=item C<< afterClose=>CODE($document,$box) >>
 
 Provides CODE to be run whenever a node with this $tag
 is closed.  It is called with the document being constructed,
 and the initiating digested object as arguments.
+
+C<afterClose:early> or C<afterClose:late> can be used in
+place of C<afterClose>; these will be run as a group
+bfore, or after (respectively) the unmodified blocks.
 
 =back
 
@@ -3353,13 +3360,13 @@ and end of the document
 
 =item C<< AtBeginDocument($tokens,...) >>
 
-adds the C<$tokens> to the list of tokens to be processed a just after C<\\begin{document}>.
+adds the C<$tokens> to a list to be processed just after C<\\begin{document}>.
 These tokens can be used for side effect, or any content they generate will appear as the
 first children of the document (but probably after titles and frontmatter).
 
 =item C<< AtEndDocument($tokens,...) >>
 
-adds the C<$tokens> to the list of tokens to be processed a just before C<\\end{document}>.
+adds the C<$tokens> to the list to be processed just before C<\\end{document}>.
 These tokens can be used for side effect, or any content they generate will appear as the
 last children of the document.
 
@@ -3498,7 +3505,7 @@ Disable disable most TeX catcodes.
 
 =item C<< $tokens = Tokenize($string); >>
 
-Tokenizes the C<$string> according to the standard cattable, returning a L<LaTeXML::Core::Tokens>.
+Tokenizes the C<$string> using the standard catcodes, returning a L<LaTeXML::Core::Tokens>.
 
 =item C<< $tokens = TokenizeInternal($string); >>
 
@@ -3742,8 +3749,8 @@ Cleans an C<$id> of disallowed characters, trimming space.
 =item C<< CleanLabel($label,$prefix); >>
 
 X<CleanLabel>
-Cleans a C<$label> of disallowed characters, trimming space,
-prepending C<$prefix> (or C<LABEL>, if none given).
+Cleans a C<$label> of disallowed characters, trimming space.
+The prefix C<$prefix> is prepended (or C<LABEL>, if none given).
 
 =item C<< CleanIndexKey($key); >>
 

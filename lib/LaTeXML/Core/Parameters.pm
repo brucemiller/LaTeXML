@@ -116,8 +116,7 @@ C<LaTeXML::Core::Parameters> - formal parameters.
 =head1 DESCRIPTION
 
 Provides a representation for the formal parameters of L<LaTeXML::Core::Definition>s:
-
-=over 4
+It extends L<LaTeXML::Common::Object>.
 
 =head2 METHODS
 
@@ -144,6 +143,10 @@ Reads and digests the arguments according to this C<$parameters>, in sequence.
 this method is used by Constructors.
 
 =back
+
+=head1 SEE ALSO
+
+L<LaTeXML::Core::Parameter>.
 
 =head1 AUTHOR
 

@@ -336,29 +336,29 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Bib> - implements a BibTeX parser for LaTeXML.
+C<LaTeXML::Pre::BibTeX> - implements a BibTeX parser for LaTeXML.
 
 =head1 DESCRIPTION
 
-C<LaTeXML::Bib> serves as a low-level parser of BibTeX database files.
-It parses and stores a C<LaTeXML::Bib::BibEntry> for each entry into the current STATE.
+C<LaTeXML::Pre::BibTeX> serves as a low-level parser of BibTeX database files.
+It parses and stores a C<LaTeXML::Pre::BibTeX::Entry> for each entry into the current STATE.
 BibTeX C<string> macros are substituted into the field values, but no other
 processing of the data is done.
 See C<LaTeXML::Package::BibTeX.pool.ltxml> for how further processing
 is carried out, and can be customized.
 
-=head2 Creating a Bib
+=head2 Creating a BibTeX
 
 =over 4
 
-=item C<< my $bib = LaTeXML::Bib->newFromFile($bibname); >>
+=item C<< my $bib = LaTeXML::Pre::BibTeX->newFromFile($bibname); >>
 
-Creates a C<LaTeXML::Bib> object representing a bibliography
+Creates a C<LaTeXML::Pre::BibTeX> object representing a bibliography
 from a BibTeX database file.
 
-=item C<< my $bib = LaTeXML::Bib->newFromString($string); >>
+=item C<< my $bib = LaTeXML::Pre::BibTeX->newFromString($string); >>
 
-Creates a C<LaTeXML::Bib> object representing a bibliography
+Creates a C<LaTeXML::Pre::BibTeX> object representing a bibliography
 from a string containing the BibTeX data.
 
 =back

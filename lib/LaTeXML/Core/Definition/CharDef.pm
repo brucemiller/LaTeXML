@@ -58,6 +58,8 @@ C<LaTeXML::Core::Definition::CharDef>  - Control sequence definitions for charde
 
 Representation as a further specialized Register for chardef.
 See L<LaTeXML::Package> for the most convenient means to create them.
+It extends L<LaTeXML::Core::Definition::Register>.
+
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>

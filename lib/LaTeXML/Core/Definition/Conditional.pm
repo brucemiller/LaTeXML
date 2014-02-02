@@ -196,6 +196,8 @@ These represent the control sequences for conditionals, as well as
 C<\else>, C<\or> and C<\fi>.
 See L<LaTeXML::Package> for the most convenient means to create them.
 
+It extends L<LaTeXML::Core::Definition::Expandable>.
+
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>

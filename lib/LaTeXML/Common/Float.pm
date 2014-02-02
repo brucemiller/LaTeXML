@@ -58,11 +58,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Common::Float> - representation of floating point numbers
-
-=head1 DESCRIPTION
-
-represents floating-point numbers,
+C<LaTeXML::Common::Float> - representation of floating point numbers;
+extends L<LaTeXML::Common::Number>.
 
 =head2 Exported functions
 

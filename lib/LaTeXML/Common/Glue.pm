@@ -121,11 +121,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Common::Glue> - representation of glue
-
-=head1 DESCRIPTION
-
-represents glue or skips; stretchy dimensions.
+C<LaTeXML::Common::Glue> - representation of glue, skips, stretchy dimensions;
+extends L<LaTeXML::Common::Dimension>.
 
 =head2 Exported functions
 

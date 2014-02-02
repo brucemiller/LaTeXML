@@ -697,9 +697,10 @@ C<LaTeXML> - Converter object and API for LaTeXML and LaTeXMLPost conversion.
     my $converter = LaTeXML->get_converter($config);
     my $converter = LaTeXML->new($config);
     $converter->prepare_session($opts);
-    $converter->initialize_session; # TODO: should be internal only
+    $converter->initialize_session; # SHOULD BE INTERNAL
     $hashref = $converter->convert($tex);
-    my ($result,$log,$status) = map {$hashref->{$_}} qw(result log status);
+    my ($result,$log,$status)
+         = map {$hashref->{$_}} qw(result log status);
 
 =head1 DESCRIPTION
 
@@ -734,6 +735,7 @@ Converts a TeX input string $tex into the LaTeXML::Core::Document object $result
 
 Supplies detailed information of the conversion log ($log),
          as well as a brief conversion status summary ($status).
+
 =back
 
 =head2 INTERNAL ROUTINES

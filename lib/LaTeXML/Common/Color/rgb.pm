@@ -64,3 +64,22 @@ sub toHex {
 
 #======================================================================
 1;
+
+__END__
+
+=head1 NAME
+
+C<LaTeXML::Common::Color::rgb> - represents colors in the rgb color model:
+red, green and blue in [0..1];
+extends L<LaTeXML::Common::Color>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

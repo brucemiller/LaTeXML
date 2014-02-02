@@ -436,11 +436,12 @@ C<LaTeXML::Common::Font> - representation of fonts
 
 =head1 DESCRIPTION
 
+C<LaTeXML::Common::Font> represent fonts in LaTeXML.
+It extends L<LaTeXML::Common::Object>.
+
 This module defines Font objects.
 I'm not completely happy with the arrangement, or
 maybe just the use of it, so I'm not going to document extensively at this point.
-
-C<LaTeXML::Common::Font> represent fonts in LaTeXML. 
 
 The attributes are
 
@@ -455,13 +456,20 @@ The attributes are
 They are usually merged against the current font, attempting to mimic the,
 sometimes counter-intuitive, way that TeX does it,  particularly for math
 
-For math mode, C<LaTeXML::Common::Font> supports C<$font->specialize($string);> for
-computing a font reflecting how the specific C<$string> would be printed when
+=head1 Methods
+
+=over 4
+
+=item  C<< $font->specialize($string); >>
+
+In math mode, C<LaTeXML::Common::Font> supports computing a font reflecting
+how the specific C<$string> would be printed when
 C<$font> is active; This (attempts to) handle the curious ways that lower case
 greek often doesn't get a different font.  In particular, it recognizes the
 following classes of strings: single latin letter, single uppercase greek character,
 single lowercase greek character, digits, and others.
 
+=back
 
 =head1 AUTHOR
 

@@ -581,6 +581,7 @@ sub toTeX {
 ##      join("\n",'\item[\textit{Grammar}:] '.$name,
       return join("\n", map { $self->toTeX($_) } @data); }
     elsif ($op eq 'module') {
+      $name =~ s/^urn:x-LaTeXML:RelaxNG://;    # Remove the urn part.
       if (($name =~ /^svg/) && $SKIP_SVG) {
         return '\item[\textit{Module }' . cleanTeX($name) . '] included.'; }
       else {
@@ -736,6 +737,22 @@ sub toTeXBody {
     join(', ', @content)); }
 
 #======================================================================
-
-#**********************************************************************
 1;
+
+__END__
+
+=head1 NAME
+
+C<LaTeXML::Common::Model::RelaxNG> - represents RelaxNG document models;
+extends L<LaTeXML::Common::Model>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

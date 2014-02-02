@@ -97,7 +97,7 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
     my @lines = ();
     my ($line);
     $gullet->readRawLine;                # Ignore 1st line (following \begin{...}
-    while (defined($line = $gullet->readRawLine) && ($line ne '\end{lstlisting}')) {
+    while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\\end{lstlisting}\s*$/)) {
       push(@lines, $line); }
     my $text = join("\n", @lines);
     lstActivate($keyvals);
@@ -833,7 +833,7 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
         my @lines = ();
         my ($line);
         $gullet->readRawLine;    # Ignore 1st line (following \begin{...}
-        while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
+        while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\Q$endmark\E\s*$/)) {
           push(@lines, $line); }
         my $text = join("\n", @lines);
         my @expansion = lstProcessBlock(lstGetTokens('name'), $text);

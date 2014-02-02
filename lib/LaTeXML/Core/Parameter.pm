@@ -91,7 +91,11 @@ C<LaTeXML::Core::Parameter> - a formal parameter
 =head1 DESCRIPTION
 
 Provides a representation for a single formal parameter of L<LaTeXML::Core::Definition>s:
+It extends L<LaTeXML::Common::Object>.
 
+=head1 SEE ALSO
+
+L<LaTeXML::Core::Parameters>.
 
 =head1 AUTHOR
 

@@ -95,12 +95,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Tokens>, representing lists of tokens.
-
-=head1 DESCRIPTION
-
-This module defines Tokens (C<LaTeXML::Core::Tokens>)
-that get created during tokenization and  expansion.
+C<LaTeXML::Core::Tokens> - represents lists of L<LaTeXML::Core::Token>'s;
+extends L<LaTeXML::Common::Object>.
 
 =head2 Exported functions
 

@@ -46,3 +46,22 @@ sub cmyk {
 
 #======================================================================
 1;
+
+__END__
+
+=head1 NAME
+
+C<LaTeXML::Common::Color::cmy> - represents colors in the cmy color model:
+cyan, magenta and yellow [0..1];
+extends L<LaTeXML::Common::Color>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

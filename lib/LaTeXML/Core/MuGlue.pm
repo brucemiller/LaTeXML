@@ -65,11 +65,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::MuGlue> - representation of math glue.
-
-=head1 DESCRIPTION
-
-represents math glue
+C<LaTeXML::Core::MuGlue> - representation of math glue;
+extends L<LaTeXML::Common::Glue>.
 
 =head2 Exported functions
 

@@ -305,15 +305,9 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Token> - representation of a token.
-
-=head1 DESCRIPTION
-
-This module defines Token (C<LaTeXML::Core::Token>)
-that get created during tokenization and  expansion.
-
-A C<LaTeXML::Core::Token> represents a TeX token which is a pair of a character or string and
-a category code.
+C<LaTeXML::Core::Token> - representation of a Token:
+a pair of character and category code (catcode);
+It extends L<LaTeXML::Common::Object>.
 
 =head2 Exported functions
 

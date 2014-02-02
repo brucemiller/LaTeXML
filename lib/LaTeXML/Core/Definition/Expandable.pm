@@ -148,6 +148,8 @@ that are carried out in the Gullet during expansion. The results of invoking an
 C<LaTeXML::Core::Definition::Expandable> should be a list of C<LaTeXML::Core::Token>s.
 See L<LaTeXML::Package> for the most convenient means to create Expandables.
 
+It extends L<LaTeXML::Core::Definition>.
+
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>

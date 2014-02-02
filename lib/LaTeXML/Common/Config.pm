@@ -624,7 +624,6 @@ This is the main method for parsing in LaTeXML options.
     The input array should either be @ARGV, e.g. when the
     options were provided from the command line using the
     classic Getopt::Long syntax,
-    
     or any other array reference that conforms to that setup.
 
 =item C<< $config->check; >>
@@ -676,30 +675,32 @@ latexmls/latexmlc [options]
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
- --preamble=file    loads a tex file containing document frontmatter.
-                    MUST! include \begin{document} or equivalent
- --postamble=file   loads a tex file containing document backmatter.
-                    MUST! include \end{document} or equivalent
+ --preamble=file    loads a tex file containing document
+                    frontmatter. MUST include \begin{document}
+                    or equivalent
+ --postamble=file   loads a tex file containing document
+                    backmatter. MUST include \end{document}
+                    or equivalent
  --includestyles    allows latexml to load raw *.sty file;
                     by default it avoids this.
- --base=dir         Specifies the base directory that the server
-                    operates in. Useful when converting documents
-                    that employ relative paths.
+ --base=dir         sets the base directory that the server
+                    operates in. Useful when converting
+                    documents that employ relative paths.
  --path=dir         adds dir to the paths searched for files,
                     modules, etc; 
  --log=file         specifies log file (default: STDERR)
- --autoflush=count  Automatically restart the daemon after 
-                    "count" inputs. Good practice for vast batch 
-                    jobs. (default: 100)
- --timeout=secs     Time cap for conversion jobs (default 600)
- --expire=secs      Time cap for server inactivity (default 600)
+ --autoflush=count  Automatically restart the daemon after
+                    "count" inputs. Good practice for vast
+                    batch jobs. (default: 100)
+ --timeout=secs     Timecap for conversions (default 600)
+ --expire=secs      Timecap for server inactivity (default 600)
  --address=URL      Specify server address (default: localhost)
  --port=number      Specify server port (default: 3354)
  --documentid=id    assign an id to the document root.
  --quiet            suppress messages (can repeat)
  --verbose          more informative output (can repeat)
  --strict           makes latexml less forgiving of errors
- --bibtex           processes the file as a BibTeX bibliography.
+ --bibtex           processes a BibTeX bibliography.
  --xml              requests xml output (default).
  --tex              requests TeX output after expansion.
  --box              requests box output after expansion
@@ -708,17 +709,19 @@ latexmls/latexmlc [options]
                     Supported: tex,box,xml,html,html5,xhtml
  --noparse          suppresses parsing math (default: off)
  --parse=name       enables parsing math (default: on)
-                    and selects parser framework "name"
-                      supported: Marpa, RecDescent
- --profile=name     specify profile as defined in LaTeXML::Common::Config
+                    and selects parser framework "name".
+                    Supported: Marpa, RecDescent
+ --profile=name     specify profile as defined in
+                    LaTeXML::Common::Config
                     Supported: standard|math|fragment|...
                     (default: standard)
  --mode=name        Alias for profile
- --whatsin=chunk    Defines the provided input chunk, choose from
-                    document (default), fragment and formula
- --whatsout=chunk   Defines the expected output chunk, choose from
-                    document (default), fragment and formula
-
+ --whatsin=chunk    Defines the provided input chunk,
+                    choose from document (default), fragment
+                    and formula
+ --whatsout=chunk   Defines the expected output chunk,
+                    choose from document (default), fragment
+                    and formula
  --post             requests a followup post-processing
  --embed            requests an embeddable XHTML snippet
                     (requires: --post,--profile=fragment)
@@ -726,20 +729,21 @@ latexmls/latexmlc [options]
                     TODO: Remove completely
  --stylesheet       specifies a stylesheet,
                     to be used by the post-processor.
- --css=cssfile           adds a css stylesheet to html/xhtml
-                         (can be repeated)
+ --css=cssfile      adds a css stylesheet to html/xhtml
+                    (can be repeated)
  --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
- --xsltparameter=name:value passes parameters to the XSLT stylesheet.
- --sitedirectory=dir     specifies the base directory of the site
- --sourcedirectory=dir   specifies the base directory of the
-                           original TeX source
+ --xsltparameter=name:value passes parameters to the XSLT.
+ --sitedirectory=dir     sets the base directory of the site
+ --sourcedirectory=dir   sets the base directory of the
+                         original TeX source
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
  --mathimagemagnification=mag specifies magnification factor
- --plane1           use plane-1 unicode for styled symbols (default)
+ --plane1           use plane-1 unicode for symbols
+                    (default, if needed)
  --noplane1         do not use plane-1 unicode
  --pmml             converts math to Presentation MathML
                     (default for xhtml format)
@@ -754,16 +758,16 @@ latexmls/latexmlc [options]
                     package
  --help             shows this help message.
 
-    Note that the profiles come with a variety of preset options. To customize your
-    own conversion setup, use --whatsin=math|fragment|document instead, respectively,
-    as well as --whatsout=math|fragment|document.
+Note that the profiles come with a variety of preset options. To customize your
+own conversion setup, use --whatsin=math|fragment|document instead, respectively,
+as well as --whatsout=math|fragment|document.
 
-    If you want to provide a TeX snippet directly on input, rather than supply a filename,
-    use the C<literal:> protocol to prefix your snippet.
+If you want to provide a TeX snippet directly on input, rather than supply a filename,
+use the C<literal:> protocol to prefix your snippet.
 
-    For reliable communication and a stable conversion experience, invoke latexmls
-    only through the latexmlc client (you need to set --expire to a positive value,
-    in order to request auto-spawning of a dedicated conversion server).
+For reliable communication and a stable conversion experience, invoke latexmls
+only through the latexmlc client (you need to set --expire to a positive value,
+in order to request auto-spawning of a dedicated conversion server).
 
 =head2 DETAILS
 
@@ -824,7 +828,7 @@ Specifies the log file; be default any conversion messages are printed to STDERR
 
 Automatically restart the daemon after converting "count" inputs.
     Good practice for vast batch jobs. (default: 100)
-    
+
 =item C<--expire>=I<secs>
 
 Set an inactivity timeout value in seconds. If the daemon is not given any input
@@ -908,7 +912,7 @@ Requests an explicitly provided "name" as the output format of the conversion.
 
 Suppresses parsing math (default: parsing is on)
 
-=item <C--parse=name>
+=item C<--parse=name>
 
 Enables parsing math (default: parsing is on)
     and selects parser framework "name".
@@ -917,7 +921,8 @@ Enables parsing math (default: parsing is on)
 
 =item C<--profile>
 
-Variety of shorthand profiles, described in detail at LaTeXML::Common::Config.
+Variety of shorthand profiles, described at C<LaTeXML::Common::Config>.
+
 Example: C<latexmlc --profile=math '1+2=3'>
 
 =item C<--post>

@@ -285,8 +285,7 @@ C<LaTeXML::Core::Whatsit> - Representations of digested objects.
 =head1 DESCRIPTION
 
 represents a digested object that can generate arbitrary elements in the XML Document.
-
-=back
+It extends L<LaTeXML::Core::Box>.
 
 =head2 METHODS
 

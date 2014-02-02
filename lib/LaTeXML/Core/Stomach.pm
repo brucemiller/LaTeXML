@@ -365,7 +365,9 @@ C<LaTeXML::Core::Stomach> - digests tokens into boxes, lists, etc.
 =head1 DESCRIPTION
 
 C<LaTeXML::Core::Stomach> digests tokens read from a L<LaTeXML::Core::Gullet>
-(they will have already been expanded).  
+(they will have already been expanded).
+
+It extends L<LaTeXML::Common::Object>.
 
 There are basically four cases when digesting a L<LaTeXML::Core::Token>:
 

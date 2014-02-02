@@ -155,6 +155,8 @@ C<LaTeXML::Core::Definition>  - Control sequence definitions.
 This abstract class represents the various executables corresponding to control sequences.
 See L<LaTeXML::Package> for the most convenient means to create them.
 
+It extends L<LaTeXML::Common::Object>.
+
 =head2 Methods
 
 =over 4
@@ -197,6 +199,15 @@ Primitives and Constructors also support before and after daemons, lists of subr
 that are executed before and after digestion.  These can be useful for changing modes, etc.
 
 =back
+
+=head1 SEE ALSO
+
+L<LaTeXML::Core::Definition::Expandable>,
+L<LaTeXML::Core::Definition::Conditional>,
+L<LaTeXML::Core::Definition::Primitive>,
+L<LaTeXML::Core::Definition::Register>,
+L<LaTeXML::Core::Definition::CharDef> and
+L<LaTeXML::Core::Definition::Constructor>.
 
 =head1 AUTHOR
 

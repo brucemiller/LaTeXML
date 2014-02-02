@@ -104,11 +104,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Common::Number> - representation of numbers
-
-=head1 DESCRIPTION
-
-This module defines number data objects
+C<LaTeXML::Common::Number> - representation of numbers;
+extends L<LaTeXML::Common::Object>.
 
 =head2 Exported functions
 

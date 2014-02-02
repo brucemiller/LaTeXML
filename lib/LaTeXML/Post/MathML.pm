@@ -1537,8 +1537,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Post::MathML>, C<LaTeXML::Post::MathML::Presentation>, C<LaTeXML::Post::MathML::Content>
-- Post-Processing modules for converting math to MathML.
+C<LaTeXML::Post::MathML> - Post-Processing modules for converting math to MathML.
 
 =head1 SYNOPSIS
 

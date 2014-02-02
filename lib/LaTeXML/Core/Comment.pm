@@ -41,11 +41,8 @@ C<LaTeXML::Core::Comment> - Representations of digested objects.
 
 =head1 DESCRIPTION
 
-=begin latex
-
-\label{LaTeXML::Core::Comment}
-
-=end latex
+C<LaTeXML::Core::Comment> is a representation of digested objects.
+It extends L<LaTeXML::Common::Object>.
 
 =head1 AUTHOR
 

@@ -211,6 +211,7 @@ C<LaTeXML::Core::KeyVals> - support for keyvals
 
 Provides a parser and representation of keyval pairs
 C<LaTeXML::Core::KeyVals> represents parameters handled by LaTeX's keyval package.
+It extends L<LaTeXML::Common::Object>.
 
 =head2 Declarations
 

@@ -41,3 +41,27 @@ sub gray { my ($self) = @_; return $self->convert('gray'); }
 
 #======================================================================
 1;
+
+__END__
+
+=head1 NAME
+
+C<LaTeXML::Common::Color::Derived> - represents colors in derived color models
+
+=head1 SYNOPSIS
+
+C<LaTeXML::Common::Color::Derived> represents colors in derived color models.
+These are used to support various color models defined and definable via
+the C<xcolor> package, such as colors where the components are in different ranges.
+It extends L<LaTeXML::Common::Color>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

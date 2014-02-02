@@ -132,7 +132,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Definition::Core::Definition::Constructor>  - Control sequence definitions.
+C<LaTeXML::Core::Definition::Constructor>  - Control sequence definitions.
 
 =head1 DESCRIPTION
 
@@ -144,6 +144,7 @@ used in the invokation to produce a L<LaTeXML::Core::Whatsit>.  The resulting L<
 Additionally, a C<LaTeXML::Core::Definition::Constructor> may have beforeDigest and afterDigest daemons
 defined which are executed for side effect, or for adding additional boxes to the output.
 
+It extends L<LaTeXML::Core::Definition>.
 
 More documentation needed, but see LaTeXML::Package for the main user access to these.
 

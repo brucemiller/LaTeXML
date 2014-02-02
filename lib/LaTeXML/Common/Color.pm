@@ -149,3 +149,101 @@ sub multiply {
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
+
+__END__
+
+=pod 
+
+=head1 NAME
+
+C<LaTeXML::Common::Color> - abstract class representating colors using various color models;
+extends L<LaTeXML::Common::Object>.
+
+=head2 Exported functions
+
+=over 4
+
+=item C<< $color = Color($model,@components); >>
+
+Creates a Color object using the given color model, and with the given components.
+The core color models are C<rgb>, C<hsv>, C<cmy>, C<cmyk> and C<gray>.
+The components of colors using core color models are between 0 and 1 (inclusive)
+
+=item C<< Black >>, C<< White >>
+
+Constant color objects representing black and white, respectively.
+
+=back
+
+=head2 Methods
+
+=over 4
+
+=item C<< $model = $color->model; >>
+
+Return the name of the color model.
+
+=item C<< @components = $color->components; >>
+
+Return the components of the color.
+
+=item C<< $other = $color->convert($tomodel); >>
+
+Converts the color to another color model.
+
+=item C<< $string = $color->toString; >>
+
+Returns a printed representation of the color.
+
+=item C<< $hex = $color->toHex; >>
+
+Returns a string representing the color as RGB in hexadecimal (6 digits).
+
+=item C<< $other = $color->toCore(); >>
+
+Converts the color to one of the core colors.
+
+=item C<< $complement = $color->complement(); >>
+
+Returns the complement color (works for colors in C<rgb>, C<cmy> and C<gray> color models).
+
+=item C<< $new = $color->mix($other,$fraction); >>
+
+Returns a new color which results from mixing a C<$fraction> of C<$color>
+with C<(1-$fraction)> of color C<$other>.
+
+=item C<< $new = $color->add($other); >>
+
+Returns a new color made by adding the components of the two colors.
+
+=item C<< $new = $color->scale($m); >>
+
+Returns a new color made by mulitiplying the components by C<$n>.
+
+=item C<< $new = $color->multiply(@m); >>
+
+Returns a new color made by mulitiplying the components by the corresponding component from C<@n>.
+
+=back
+
+=head1 SEE ALSO
+
+Supported color models:
+L<LaTeXML::Common::Color::rgb>,
+L<LaTeXML::Common::Color::hsb>,
+L<LaTeXML::Common::Color::cmy>,
+L<LaTeXML::Common::Color::cmyk>,
+L<LaTeXML::Common::Color::gray> and
+L<LaTeXML::Common::Color::Derived>.
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut
+

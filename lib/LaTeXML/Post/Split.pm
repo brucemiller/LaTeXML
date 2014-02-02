@@ -153,12 +153,12 @@ sub getPageName {
   $name =~ s/^LABEL:// if $name;
   if (!$name) {
     if (($attr eq 'labels') && ($name = $page->getAttribute('xml:id'))) {
-      Warn('expected', $attr, $doc->getQName($page),
+      Info('expected', $attr, $doc->getQName($page),
         "Expected attribute '$attr' to create page pathname", "using id=$name");
       $attr = 'xml:id'; }
     else {
       $name = $self->generateUnnamedPageName;
-      Warn('expected', $attr, $doc->getQName($page),
+      Info('expected', $attr, $doc->getQName($page),
         "Expected attribute '$attr' to create page pathname", "using id=$name"); } }
   if ($naming =~ /relative$/) {
     my $pname = $parent->getAttribute($attr);

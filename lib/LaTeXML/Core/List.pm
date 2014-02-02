@@ -127,13 +127,8 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::List> - Representations of digested objects.
-
-=head1 DESCRIPTION
-
-represents a sequence of digested things in text;
-
-=back
+C<LaTeXML::Core::List> - represents lists of digested objects;
+extends L<LaTeXML::Core::Box>.
 
 =head1 AUTHOR
 
