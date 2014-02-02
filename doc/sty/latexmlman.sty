@@ -67,7 +67,7 @@
 % Containers for advanced material, examples, ...
 
 % Sort of a "double bend" thing?
-\newenvironment{advanced}{\textcolor{red}{\large !!}}{}
+\newenvironment{advanced}{\vskip 2ex\textcolor{red}{\LARGE !!}}{\vskip 1ex}
 
 %======================================================================
 % Phrase-level markup semantic or otherwise
@@ -100,7 +100,25 @@
 
 
 \newcommand{\ltxcmd}[1]{\htmlref{{\latexfont #1}}{#1}}
-\newcommand{\ltxpod}[1]{\htmlref{{\perlfont #1}}{LaTeXML::#1}}
+% The idea here is that since the class names are so long, LaTeXML::Core::Definition::Expandable;
+% Show the long form first, but then abbreviate to just the last name.
+% Of course, there are eventually, potential ambiguities;  We COULD adapt to that,
+% abbreviating only to the most recent usage?
+\newcommand{\ltxpod}[1]{%
+\@ifundefined{podseen@#1}{%
+  \ltxpod@long{#1}%
+  \expandafter\def\csname podseen@#1\endcsname{seen}%
+}{%
+  \ltxpod@short{#1}%
+}}
+
+\def\ltxpod@long#1{%
+   \ltxpod@ref{(\ltxpod@@pre LaTeXML::#1::\end)\allowbreak\ltxpod@@short#1::\end}{#1}}
+\def\ltxpod@short#1{%
+   \ltxpod@ref{\ltxpod@@short#1::\end}{#1}}
+\def\ltxpod@@short#1::#2\end{\ifx.#2.#1\else\ltxpod@@short#2\end\fi}
+\def\ltxpod@@pre#1::#2\end{\ifx.#2.\else#1::\allowbreak\ltxpod@@pre#2\end\fi}
+\def\ltxpod@ref#1#2{\htmlref{\perlfont #1}{LaTeXML::#2}}
 
 \newcommand{\cmd}[1]{{\shellfont #1}}
 \newcommand{\code}[1]{{\perlfont #1}}
@@ -126,8 +144,19 @@
    \raggedright
   \begin{moduledescription}}{\end{moduledescription}}
 
+%\def\cleanhypername#1{{\def\_{\string_}\@cleanhypername#1:\end}}
+%\def\cleanhypername#1{\@cleanhypername#1:\end}
+% \def\cleanhypername#1{\expandafter\@@cleanhypername\@cleanhypername#1:\end\_\end}
+% \def\@cleanhypername#1:#2\end{\ifx.#2.#1\else#1..\@cleanhypername#2\end\fi}
+% %%%\def\@@cleanhypername#1\_#2\end{\ifx.#2.#1\else#1\string_\@@cleanhypername#2\end\fi}
+% \def\@@cleanhypername#1\_#2\end{\ifx.#2.#1\else#1-\@@cleanhypername#2\end\fi}
+
+
 \def\cleanhypername#1{\@cleanhypername#1:\end}
-\def\@cleanhypername#1:#2\end{\ifx.#2.#1\else#1..\@cleanhypername#2\end\fi}
+\def\@cleanhypername#1:#2\end{%
+\ifx.#2.\@@cleanhypername#1\_\end
+\else\@@cleanhypername#1\_\end..\@cleanhypername#2\end\fi}
+\def\@@cleanhypername#1\_#2\end{\ifx.#2.#1\else#1\string_\@@cleanhypername#2\end\fi}
 
 % \elementdef{name}{doc}{body}
 \newcommand{\elementdef}[3]{
@@ -157,7 +186,7 @@
 % \patterndef{name}{doc}{body}
 \newcommand{\patterndef}[3]{
    \item[\textit{Pattern }%
-         \hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+         \hypertarget{\cleanhypername{schema.pattern.#1}}{{\bfseries\patternfont #1}}%
          \test@elpattern{#1}\if@elpattern\else
              \index{#1@{\patternfont #1}!schema pattern}\fi
         ] \hspace{1em} #2
@@ -175,13 +204,13 @@
 
 \newcommand{\patterndefadd}[3]{
   \item[\textit{Add to }%
-       \hypertarget{schema.pattern.#1}{{\bfseries\patternfont #1}}%
+       \hypertarget{\cleanhypername{schema.pattern.#1}}{{\bfseries\patternfont #1}}%
        ] \hspace{1em} #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
-\newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{schema.module.#1}}
-\newcommand{\patternref}[1]{\hyperlink{schema.pattern.#1}{{\patternfont #1}}}
+\newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{\cleanhypername{schema.module.#1}}}
+\newcommand{\patternref}[1]{\hyperlink{\cleanhypername{schema.pattern.#1}}{{\patternfont #1}}}
 \newcommand{\elementref}[1]{\hyperlink{\cleanhypername{schema.element.#1}}{{\schemafont #1}}}
 
 %======================================================================

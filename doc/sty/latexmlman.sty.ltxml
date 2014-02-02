@@ -3,6 +3,8 @@
 # Collected separately so I can override for LaTeXML
 #======================================================================
 package LaTeXML::Package::Pool;
+use strict;
+use warnings;
 use LaTeXML::Package;
 
 Let('\orig@maketitle', '\maketitle');    # Save!!!
@@ -21,10 +23,15 @@ DefMacro('\BibTeX',     'BibTeX');
 DefConstructor('\ltxcmd{}',
   "<ltx:ref labelref='#label'>#1</ltx:ref>",
   properties => sub { (label => CleanLabel($_[1])); });
-DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
+#DefConstructor('\ltxpod{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
+#  afterDigest => sub {
+#    my $name = $_[1]->getArg(1)->toString;
+#    $_[1]->setProperty(ref => CleanLabel("LaTeXML::" . $name)); });
+
+DefConstructor('\ltxpod@ref{}{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
   afterDigest => sub {
-    my $name = $_[1]->getArg(1)->toString;
-    $_[1]->setProperty(ref => CleanLabel("LaTeXML::" . $name)); });
+    my $name = $_[1]->getArg(2)->toString;
+    $_[1]->setProperty(ref => CleanLabel('LaTeXML::' . $name)); });
 
 DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
   afterDigest => sub {
@@ -37,7 +44,7 @@ DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
       $_[1]->setProperty(href => $url); } });
 
 #======================================================================
-DefEnvironment('{advanced}', "<ltx:paragraph class='advanced'>#body</ltx:paragraph>");
+DefEnvironment('{advanced}', "<ltx:paragraph class='ltx_advanced'>#body</ltx:paragraph>");
 
 #======================================================================
 DefEnvironment('{moduledescription}',
