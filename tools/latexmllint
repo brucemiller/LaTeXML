@@ -18,12 +18,13 @@ use FindBin;
 use File::Which qw(which);
 use File::Spec::Functions;
 use Term::ANSIColor;
+use Pod::Checker;
 use Carp;
 #======================================================================
 my $identity  = 'latexmllint';
 my ($help)    = (0);
 my $VERBOSITY = 0;
-my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC, $DOSYNTAX) = (0, 1, 1, 1);
+my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC, $DOSYNTAX, $DOPOD) = (0, 1, 1, 1, 1);
 my %exclude = ();    # excluded features
 my %include = ();
 my ($DOMODIFY, $SEVERITY);
@@ -33,6 +34,7 @@ GetOptions(
   "modify!"    => \$DOMODIFY,
   "tidy!"      => \$DOTIDY,
   "critic!"    => \$DOCRITIC,
+  "pod!"       => \$DOPOD,
   "severity=s" => \$SEVERITY,
   "programs!"  => sub { if ($_[1]) { $include{program} = 1; } else { $exclude{program} = 1; } },
   "modules!"   => sub { if ($_[1]) { $include{module} = 1; } else { $exclude{module} = 1; } },
@@ -77,19 +79,21 @@ foreach my $file (@FILES) {
   my $failed = 0;
   # Various Perl code tests...
   if ($$classification{perl} && $DOSYNTAX) {
-    $failed ||= doPerlSyntax($file, $classification); }
+    $failed = 1 if doPerlSyntax($file, $classification); }
+  if ($$classification{perl} && !$$classification{binding} && $DOPOD) {
+    $failed = 1 if doPodChecker($file, $classification); }
   if ($$classification{perl} && $DOTIDY) {
     if (!$PERLTIDY && !($PERLTIDY = which('perltidy'))) {    # Look for perltidy exec.
       $DOTIDY = 0;                                           # Disable
       print STDERR "No perltidy was found; skipping tidy phase.\n"; }
     else {
-      $failed ||= doPerltidy($file, $classification); } }
+      $failed = 1 if doPerltidy($file, $classification); } }
   if ($$classification{perl} && $DOCRITIC) {
     if (!$PERLCRITIC && !($PERLCRITIC = which('perlcritic'))) {
       $DOCRITIC = 0;                                         # Disable
       print STDERR "No perlcritic was found; skipping critic phase.\n"; }
     else {
-      $failed ||= doPerlcritic($file, $classification); } }
+      $failed = 1 if doPerlcritic($file, $classification); } }
   if ($failed) {
     $NFAIL++; push(@fails, $file);
     print color('bold') . "$file fails" . color('reset') . " commit criterion\n" if $VERBOSITY >= 0;
@@ -175,12 +179,42 @@ sub doPerlSyntax {
       print color('reset');
       if ($VERBOSITY > -1) {
         foreach my $line (@filtered) {
-          print $line. "\n"; } } }
+          print '  ' . $line . "\n"; } } }
     else {
       print "syntax is OK\n" if $VERBOSITY > 0; } }
   else {    # Run error
     croak "Couldn't run $PERL on '$file': $!"; }
   return $failed; }
+
+sub doPodChecker {
+  my ($file, $classification) = @_;
+  my $messages;
+  my $messages_fh;
+  open($messages_fh, '>', \$messages) or die "Can't capture output: $!";
+  my $checker = Pod::Checker->new();
+  print "Checking '$file' PODs..." if $VERBOSITY > 0;
+  $checker->parse_from_file($file, $messages_fh);
+  my $nerrors   = $checker->num_errors();
+  my $nwarnings = $checker->num_warnings();
+
+  if ($nerrors || $nwarnings) {
+    print color('bold');
+    print "\n" . $file . ' ' if $VERBOSITY == 0;
+    print '' . ($nerrors == -1
+      ? "has NO PODs!"
+      : "had " . join(' & ', ($nerrors ? ("$nerrors POD errors") : ()),
+        ($nwarnings ? ("$nwarnings POD warnings") : ()))) . "\n"
+      if $VERBOSITY > -1;
+    print color('reset');
+    if ($messages && ($VERBOSITY > -1)) {
+      # reformat the messages to be more palatable...
+      foreach my $msg (split(/\n/, $messages)) {
+        my $iserror = $msg =~ s/^\s*\*\*\*\s+ERROR/Error/;
+        $msg =~ s/^\s*\*\*\*\s+WARNING/Warning/;
+        print '  ' . ($iserror ? color('red') : '') . $msg . ($iserror ? color('reset') : '') . "\n"; } } }
+  else {
+    print " conformance is OK.\n" if $VERBOSITY > 0; }
+  return ($nerrors > 0); }
 
 sub doPerltidy {
   my ($file, $classes) = @_;
@@ -230,7 +264,7 @@ sub doPerlcritic {
       my ($s) = ($line =~ /\(Severity:\s+(\d+)\)$/);
       $failed = 1 if $s >= $REQ_SEVERITY;
       # We'll RE-PRINT the output so we can RE color it!
-      print '' . ($s && $SCOLORS[$s] ? colored($line, $SCOLORS[$s]) : $line) . "\n"
+      print '  ' . ($s && $SCOLORS[$s] ? colored($line, $SCOLORS[$s]) : $line) . "\n"
         if $VERBOSITY > -1; }
     $EXITSTATUS = 1 if $failed; }
   else {                                           # Run error
