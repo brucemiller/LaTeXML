@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
+use warnings;
 use FindBin;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
@@ -28,9 +29,10 @@ $SCHEMADOC = "$WORKDIR/schema.tex" unless $SCHEMADOC;
 #my $schemadoc = "$WORKDIR/schema.tex";
 if ($force || (!-f $SCHEMADOC) || (-M $SCHEMADIR < -M $SCHEMADOC)) {
   print "Converting Schema in $SCHEMADIR to LaTeX\n";
-  open(SCHEMAOUT, ">$SCHEMADOC") or die "Couldn't open $SCHEMADOC for output:$!";
-  print SCHEMAOUT RelaxNGDocumenter::documentSchema($SCHEMA);
-  close(SCHEMAOUT);
+  my $SCHEMAOUT;
+  open($SCHEMAOUT, '>', $SCHEMADOC) or die "Couldn't open $SCHEMADOC for output:$!";
+  print $SCHEMAOUT RelaxNGDocumenter::documentSchema($SCHEMA);
+  close($SCHEMAOUT);
 }
 
 #======================================================================
@@ -38,28 +40,28 @@ package RelaxNGDocumenter;
 # Leverage the extracted Schema structure to create documentation.
 use strict;
 use lib "$FindBin::RealBin/../../blib/lib";
-use LaTeXML;
-use LaTeXML::Model;
-use LaTeXML::Model::RelaxNG;
+use LaTeXML::Global;
+use LaTeXML::Core;
+use LaTeXML::Common::Model;
+use LaTeXML::Common::Model::RelaxNG;
 
 sub documentSchema {
   my ($name) = @_;
-  my $latexml = LaTeXML->new(searchpaths => ['.'], verbosity => 1);
-  local $LaTeXML::STATE = $$latexml{state};
-  my $model = $LaTeXML::STATE->getModel();
-  $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
-  $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
-  $model->registerNamespace(svg   => "http://www.w3.org/2000/svg");
-  $model->registerNamespace(xev   => "http://www.w3.org/2001/xml-events");
-  $model->registerNamespace(xlink => "http://www.w3.org/1999/xlink");
+  my $latexml = LaTeXML::Core->new(searchpaths => ['.'], verbosity => 1);
+  return $latexml->withState(sub {
+      my $model = $STATE->getModel();
+      $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
+      $model->registerNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
+      $model->registerNamespace(svg   => "http://www.w3.org/2000/svg");
+      $model->registerNamespace(xev   => "http://www.w3.org/2001/xml-events");
+      $model->registerNamespace(xlink => "http://www.w3.org/1999/xlink");
 
-  my $relaxng = $$model{schema} = LaTeXML::Model::RelaxNG->new($model, $name);
+      my $relaxng = $$model{schema} = LaTeXML::Common::Model::RelaxNG->new($model, $name);
+      ##  my @schema = $relaxng->scanExternal($name);
+      ##  @schema = map { $relaxng->simplify($_) } @schema;
+      $relaxng->loadSchema;
 
-##  my @schema = $relaxng->scanExternal($name);
-##  @schema = map($relaxng->simplify($_),@schema);
-  $relaxng->loadSchema;
-
-  $relaxng->documentModules; }
+      return $relaxng->documentModules; }); }
 
 #======================================================================
 __END__
@@ -78,4 +80,3 @@ genschema [options]
   --help      Shows this help.
 
 =cut
-#**********************************************************************

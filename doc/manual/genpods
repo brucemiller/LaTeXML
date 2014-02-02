@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib";
 use Getopt::Long qw(:config no_ignore_case);
@@ -25,41 +26,82 @@ pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDO
 my @exes = (qw(latexml latexmlpost latexmlmath));
 # would be nice to automatically discover documentable modules
 # Actually, we Can, by looking in ../blib/man1 and ../blib/man3
-# However, we'd still need to manually add them to the appropriate Appendx!
+# However, we'd still need to manually add them (in desired order) to the appropriate Appendx!
 my @modules = (
   # Core modules
   qw(LaTeXML
-    LaTeXML::Object
-    LaTeXML::Definition
     LaTeXML::Global
-    LaTeXML::Error
+
+    LaTeXML::Common::Config
+    LaTeXML::Common::Object
+    LaTeXML::Common::Color
+    LaTeXML::Common::Color::rgb
+    LaTeXML::Common::Color::hsb
+    LaTeXML::Common::Color::cmy
+    LaTeXML::Common::Color::cmyk
+    LaTeXML::Common::Color::gray
+    LaTeXML::Common::Color::Derived
+    LaTeXML::Common::Number
+    LaTeXML::Common::Float
+    LaTeXML::Common::Dimension
+    LaTeXML::Common::Glue
+    LaTeXML::Common::Font
+    LaTeXML::Common::Model
+    LaTeXML::Common::Model::DTD
+    LaTeXML::Common::Model::RelaxNG
+    LaTeXML::Common::XML
+    LaTeXML::Common::Error
+
     LaTeXML::Package
-    LaTeXML::Parameters
-    LaTeXML::State
+    LaTeXML::Core::State
 
-    LaTeXML::Token
-    LaTeXML::Box
-    LaTeXML::Number
-    LaTeXML::Font
-    LaTeXML::Mouth
-    LaTeXML::Gullet
-    LaTeXML::Stomach
+    LaTeXML::Core::Mouth
+    LaTeXML::Core::Gullet
+    LaTeXML::Core::Stomach
+    LaTeXML::Core::Document
+    LaTeXML::Core::Rewrite
 
-    LaTeXML::Document
-    LaTeXML::Model
-    LaTeXML::Rewrite
+    LaTeXML::Core::Token
+    LaTeXML::Core::Tokens
+    LaTeXML::Core::Box
+    LaTeXML::Core::List
+    LaTeXML::Core::Comment
+    LaTeXML::Core::Whatsit
+
+    LaTeXML::Core::Alignment
+    LaTeXML::Core::KeyVals
+    LaTeXML::Core::MuDimension
+    LaTeXML::Core::MuGlue
+    LaTeXML::Core::Pair
+    LaTeXML::Core::PairList
+
+    LaTeXML::Core::Rewrite
+
+    LaTeXML::Core::Definition
+    LaTeXML::Core::Definition::Expandable
+    LaTeXML::Core::Definition::Conditional
+    LaTeXML::Core::Definition::Primitive
+    LaTeXML::Core::Definition::Register
+    LaTeXML::Core::Definition::CharDef
+    LaTeXML::Core::Definition::Constructor
+
+    LaTeXML::Core::Parameter
+    LaTeXML::Core::Parameters
 
     LaTeXML::MathParser
-    LaTeXML::Bib
+    LaTeXML::Pre::BibTeX
     ),
 
   # Utility
   qw(LaTeXML::Util::Pathname
-    LaTeXML::Util::KeyVal
+    LaTeXML::Util::WWW
+    LaTeXML::Util::ObjectDB
+    LaTeXML::Util::Pack
     ),
   # Postprocessing
   qw(LaTeXML::Post
     LaTeXML::Post::MathML
+    LaTeXML::Post::OpenMath
     ),
 );
 
@@ -94,13 +136,13 @@ sub new {
   my ($class, @args) = @_;
   my $self = $class->SUPER::new(@args);
   $self->Head1Level(1);
-  $self->LevelNoNum(3);
+  $self->LevelNoNum(2);
   #  $self->LevelNoNum(1);
   $self->ReplaceNAMEwithSection(1);
   $self->AddPreamble(0);
   $self->AddPostamble(0);
   $self->select('!AUTHOR|COPYRIGHT');
-  $self; }
+  return $self; }
 
 our %titles;
 our %ignore;
@@ -118,17 +160,17 @@ BEGIN {
 sub head {
   my ($self, $level, $title, $parobj) = @_;
   my $newtitle = $titles{$title} || $title;
-  $self->SUPER::head($level, $newtitle, $parobj); }
+  return $self->SUPER::head($level, $newtitle, $parobj); }
 
 # Redefined to translate links to our PODs
 sub interior_sequence {
   my ($self, $seq_command, $seq_argument, $pod_seq) = @_;
   if ($seq_command eq 'L') {
-    "\\pod{$seq_argument}"; }
+    return "\\pod{$seq_argument}"; }
   elsif ($seq_command eq 'X') {
-    "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
+    return "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
   else {
-    $self->SUPER::interior_sequence($seq_command, $seq_argument, $pod_seq); } }
+    return $self->SUPER::interior_sequence($seq_command, $seq_argument, $pod_seq); } }
 
 # Redefine to better sort indices.
 # ALL packages start with LaTeXML:: !!!
@@ -139,9 +181,9 @@ sub _create_index {
   if ($name =~ /^LaTeXML/) {
     $reftype = "module";
     my @comp = split('::', $name);
-    $name = $comp[$#comp]
+    $name = $comp[-1]
       . (@comp > 1 ? '(' . join('::', @comp[0 .. $#comp - 1]) . '::)' : ''); }
-  join('!', "$name\@{\\ttfamily $name}", $reftype, @rest); }
+  return join('!', "$name\@{\\ttfamily $name}", $reftype, @rest); }
 
 # Redefined to avoid unnecessary math.
 sub _replace_special_chars_late {
@@ -149,7 +191,7 @@ sub _replace_special_chars_late {
   $paragraph =~ s/</\\textless /g;
   $paragraph =~ s/>/\\textgreater /g;
   $paragraph =~ s/\|/\\textbar /g;
-  $paragraph; }
+  return $paragraph; }
 
 #======================================================================
 __END__
@@ -168,4 +210,3 @@ genpods [options]
   --help            Shows this help.
 
 =cut
-#**********************************************************************
