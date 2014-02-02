@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
 use Carp;
@@ -49,11 +50,15 @@ getReleases();
 if ($dosite) {
   latexml("$DOCDIR/site/index.tex", "$WEBDIR/index.html",
     dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", $RELEASEDOC],
-    postoptions => ["--split",
+    postoptions => [
+      "--format=html5",
+      "--split",
       "--css=latexmldoc.css",
       "--nonumbersections",
       "--splitnaming=label",
-      "--icon=favicon.ico"],
+      "--icon=favicon.ico",
+      "--javascript=LaTeXML-maybeMathjax.js",
+    ],
     force => $force);
 }
 
@@ -76,8 +81,8 @@ if ($domanual) {
     ($force ? ("--force") : ()),
     ($verbosity == 0 ? ()
       : ($verbosity > 0
-        ? map(("--verbose"), 1 .. $verbosity)
-        : (map(("--quiet"), 1 .. (-$verbosity)))))
+        ? (map { ("--verbose") } 1 .. $verbosity)
+        : (map { ("--quiet") } 1 .. (-$verbosity))))
   ) == 0 or die "Failed to make manual";
 }
 # How much of "Making a new Release" should be incorporated? Where?
@@ -146,8 +151,9 @@ sub getReleases {
     . "\\def\\AllReleases{" . join(";\n", @releases) . "}\n";
   foreach my $os (keys %osrel) {
     my $osvers = $links{ $osrel{$os} }{$os};
-    $macros .= "\\def\\Current" . $os . "{" . join(",\n", map($$osvers{$_}{link}, reverse sort keys %$osvers)) . "}\n"; }
-  saveData($RELEASEDOC, $macros); }
+    $macros .= "\\def\\Current" . $os . "{" . join(",\n", map { $$osvers{$_}{link} } reverse sort keys %$osvers) . "}\n"; }
+  saveData($RELEASEDOC, $macros);
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 __END__
@@ -168,4 +174,3 @@ Options:
   --verbose Runs more noisily
 
 =cut
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

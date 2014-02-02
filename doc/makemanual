@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 use strict;
+use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
 use Carp;
@@ -21,11 +22,12 @@ my $WEBDEST = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
 my ($force, $help, $validate, $verbosity) = (0, 0, 1, 0);
-my ($dopdf, $doxhtml) = (undef, undef);
+my ($dopdf, $dohtml) = (undef, undef);
 GetOptions("force!" => \$force,
   "help"      => \$help,
   "pdf!"      => \$dopdf,
-  "xhtml!"    => \$doxhtml,
+  "html!"     => \$dohtml,
+  "xhtml!"    => \$dohtml,
   "validate!" => \$validate,
   verbose     => sub { $verbosity++; },
   quiet       => sub { $verbosity--; },
@@ -34,12 +36,12 @@ pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDO
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
-if ((!defined $dopdf) && (!defined $doxhtml)) {
-  $dopdf = $doxhtml = 1; }
+if ((!defined $dopdf) && (!defined $dohtml)) {
+  $dopdf = $dohtml = 1; }
 elsif (!defined $dopdf) {
-  $dopdf = 1 if defined $doxhtml && !$doxhtml; }
-elsif (!defined $doxhtml) {
-  $doxhtml = 1 if defined $dopdf && !$dopdf; }
+  $dopdf = 1 if defined $dohtml && !$dohtml; }
+elsif (!defined $dohtml) {
+  $dohtml = 1 if defined $dopdf && !$dopdf; }
 
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
@@ -55,12 +57,14 @@ my $version;
 { use LaTeXML;
   $version = $LaTeXML::VERSION; }
 
-opendir(DIR, "$LATEXMLDIR/lib/LaTeXML/Package") or die "Couldn't read Packages: $!";
-my @bindings = sort grep(!/(_support\.|_core\.|\#)/, grep($_, map(s/.ltxml$// && $_, readdir(DIR))));
-closedir(DIR);
+my $DIR;
+opendir($DIR, "$LATEXMLDIR/lib/LaTeXML/Package") or die "Couldn't read Packages: $!";
+my @bindings = sort grep { !/(?:_support\.|_core\.|\#)/ } grep { $_ }
+  map { s/.ltxml$// && $_ } readdir($DIR);
+closedir($DIR);
 
-my $classes  = join(', ', grep($_, map(s/\.cls$// && $_, @bindings)));
-my $packages = join(', ', grep($_, map(s/\.sty$// && $_, @bindings)));
+my $classes  = join(', ', grep { $_ } map { s/\.cls$// && $_ } @bindings);
+my $packages = join(', ', grep { $_ } map { s/\.sty$// && $_ } @bindings);
 
 saveData("$MANDIR/release.tex",
   "\\def\\CurrentVersion{$version}\n"
@@ -81,21 +85,27 @@ if ($dopdf) {
   copy("$MANDIR/manual.pdf", "$WEBDEST/manual.pdf");
 }
 
-if ($doxhtml) {
-  heading("Generating xhtml of manual");
-  latexml("$MANDIR/manual.tex" => "$WEBDEST/manual/index.xhtml",
+if ($dohtml) {
+  heading("Generating html of manual");
+  latexml("$MANDIR/manual.tex" => "$WEBDEST/manual/index.html",
     dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
       "$MANDIR/schema.tex", "$MANDIR/pods"],
-    postoptions => ["--split", "--splitnaming=labelrelative",
+    postoptions => [
+      "--format=html5",
+      "--split", "--splitnaming=labelrelative",
       "--sourcedir=$MANDIR",
       "--urlstyle=server",
       "--sitedirectory=$WEBDEST",
       "--css=../latexmldoc.css",
+      "--javascript=../LaTeXML-maybeMathjax.js",
       ($validate ? () : ("--novalidate")),
       "--icon=../favicon.ico"],
     force => $force);
+  # but if only css needs updating...
+  copy("$MANDIR/../latexmldoc.css", "$WEBDEST/latexmldoc.css");
 }
 #======================================================================
+
 __END__
 
 =head1 NAME
@@ -111,4 +121,3 @@ makemanual [options]
   --help            Shows this help.
 
 =cut
-#**********************************************************************

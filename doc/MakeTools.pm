@@ -3,6 +3,7 @@ package MakeTools;
 # Some handy tools for building pages, pdf, etc.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 use strict;
+use warnings;
 use LaTeXML::Util::Pathname;
 use FindBin;
 use base qw(Exporter);
@@ -17,20 +18,25 @@ our $DOCDIR = $FindBin::RealBin;
 
 our $VERBOSITY = 0;
 
-sub setVerbosity { $VERBOSITY = $_[0]; }
+sub setVerbosity {
+  my ($v) = @_;
+  $VERBOSITY = $v;
+  return; }
 
 sub message {
   my ($message) = @_;
-  print $message, "\n" unless $VERBOSITY < 0;
-}
+  print $message, "\n" if $VERBOSITY > -1;
+  return; }
 
 sub heading {
   my ($message) = @_;
-  print "" . ("=" x 50) . "\n" . $message, "\n" unless $VERBOSITY < 0; }
+  print "\n" . ("=" x 50) . "\n" . $message, "\n" if $VERBOSITY > -1;
+  return; }
 
 sub subheading {
   my ($message) = @_;
-  print "" . ("-" x 50) . "\n" . $message, "\n" unless $VERBOSITY < 0; }
+  print "" . ("-" x 50) . "\n" . $message, "\n" if $VERBOSITY > -1;
+  return; }
 
 #======================================================================
 # Copy, if needed.
@@ -39,7 +45,8 @@ sub copy {
   if ((!-f $destination) || (pathname_timestamp($source) > pathname_timestamp($destination))) {
     message("Copying $source to $destination");
     pathname_copy($source, $destination)
-      or die "Failed to copy $source to $destination: $!"; } }
+      or die "Failed to copy $source to $destination: $!"; }
+  return; }
 
 # Run latexml and latexmlpost, if needed
 # Options are:
@@ -68,7 +75,7 @@ sub latexml {
         "--dest=$xmlfile",
         "--path=$DOCDIR/sty",
         ($options{options} ? @{ $options{options} } : ()),
-        map("--verbose", 1 .. $VERBOSITY),
+        (map { "--verbose" } 1 .. $VERBOSITY),
         $source) == 0
         or die "Failed to convert $source to $xmlfile"; }
     # Does latexmlpost need to be run to (re)generate the html?
@@ -79,10 +86,10 @@ sub latexml {
       System("latexmlpost",
         "--dest=$destination",
         ($options{postoptions} ? @{ $options{postoptions} } : ()),
-        map("--verbose", 1 .. $VERBOSITY),
+        (map { "--verbose" } 1 .. $VERBOSITY),
         $xmlfile) == 0
         or die "Failed to convert $xmlfile to $destination"; } }
-}
+  return; }
 
 #======================================================================
 our $MAXPASS = 3;
@@ -108,10 +115,9 @@ sub pdflatex {
     my $cwd = pathname_cwd();
     chdir($srcdir);
     my ($pass, $changed, $error) = (0, 0, 0);
-    subheading("Generating pdf for $name");
     do {
       $pass++; $changed = 0;
-      message("Running pdflatex on $name");
+      subheading("Running pdflatex for $name (pass $pass)");
       monitor_command("pdflatex $name",
         qr{! Undefined control sequence.} => sub { $error = 1; },
         qr{<to be read again>}            => sub { $error = 1; },
@@ -135,40 +141,46 @@ sub pdflatex {
           or die "Failed to run bibtex for $name";
         $changed = 1 if $pass < 2; }
     } while ($pass <= $MAXPASS) && $changed;
-    chdir($cwd); } }
+    chdir($cwd); }
+  return; }
 
 sub monitor_command {
   my ($command, %watches) = @_;
   # Now, run the command, watching for certain kinds of messages
-  open(MSG, "$command 2>&1 |") or die "Cannot execute $command: $!\n";
-  while (<MSG>) {
+  my $MSG;
+  open($MSG, "$command 2>&1 |") or die "Cannot execute $command: $!\n";
+  while (<$MSG>) {
     foreach my $pattern (keys %watches) {
       &{ $watches{$pattern} } if /$pattern/; }
     print "$_"; }
-  close(MSG); }
+  close($MSG);
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub slurpfile {
   my ($datafile) = @_;
-  open(OLD, $datafile) or die "Couldn't read file $datafile: $!";
+  my $FH;
+  open($FH, '<', $datafile) or die "Couldn't read file $datafile: $!";
   local $/ = undef;
-  my $data = <OLD>;
-  close(OLD);
-  $data; }
+  my $data = <$FH>;
+  close($FH);
+  return $data; }
 
 # Save $data to $datafile if it is different from what's already there.
 sub saveData {
   my ($datafile, $data) = @_;
   if ((!-f $datafile) || ($data ne slurpfile($datafile))) {
+    my $FH;
     message("Writing datafile $datafile");
-    open(OUT, ">$datafile") or die "Couldn't write datafile: $!";
-    print OUT $data;
-    close(OUT); } }
+    open($FH, '>', $datafile) or die "Couldn't write datafile: $!";
+    print $FH $data;
+    close($FH); }
+  return; }
 
 sub System {
   my ($command, @args) = @_;
   print "\$  " . join(' ', $command, @args) . "\n" if $VERBOSITY;
-  system($command, @args); }
+  return system($command, @args); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
