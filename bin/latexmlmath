@@ -273,15 +273,15 @@ latexmlmath [options] I<texmath>
  --cmml=file                alias for --contentmathml
  --openmath=file            convert to OpenMath
  --om=file                  alias for --openmath
- --XMath=file               convert to LaTeXML's internal format
+ --XMath=file               output LaTeXML's internal format
  --noparse                  disables parsing of math
                             (not useful for cMML or openmath)
  --preload=file             loads a style file.
  --includestyles            allows processing raw *.sty files
                             (normally it avoids this)
  --path=dir                 adds a search path for style files.
- --quiet                    reduces verbosity (can be repeated)
- --verbose                  increases verbosity (can be repeated)
+ --quiet                    reduces verbosity (can repeat)
+ --verbose                  increases verbosity (can repeat)
  --strict                   be more strict about errors.
  --documentid=id            assign an id to the document root.
  --debug=package            enables debugging output for the
@@ -310,8 +310,9 @@ as an option, probably an unrecognized one). Alternatively,
 wrapping the I<texmath> with {} will hide the minus.
 
 Simple examples:
+
   latexmlmath \\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}
-  echo "\\frac{-b\\pm\\sqrt{b^2-4ac}}{2a}" | latexmlmath --pmml=quad.mml -
+  echo "\\sqrt{b^2-4ac}" | latexmlmath --pmml=quad.mml -
 
 =head1 OPTIONS AND ARGUMENTS
 
@@ -452,5 +453,3 @@ whereas, in this case, we're processing a single math expression.
 L<latexml>, L<latexmlpost>, L<LaTeXML>
 
 =cut
-#**********************************************************************
-

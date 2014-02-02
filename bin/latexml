@@ -145,23 +145,23 @@ C<latexml> - transforms a TeX/LaTeX file into XML.
 latexml [options] I<texfile>
 
  Options:
- --destination=file specifies destination file (default stdout).
+ --destination=file sets destination file (default stdout).
  --output=file      [obsolete synonym for --destination]
  --preload=module   requests loading of an optional module;
                     can be repeated
- --preamble=file    specifies a preamble file which will
+ --preamble=file    sets a preamble file which will
                     effectively be prepended to the main file.
- --postamble=file   specifies a postamble file which will
+ --postamble=file   sets a postamble file which will
                     effectively be appended to the main file.
  --includestyles    allows latexml to load raw *.sty file;
                     by default it avoids this.
- --path=dir         adds dir to the paths searched for files,
+ --path=dir         adds to the paths searched for files,
                     modules, etc; 
  --documentid=id    assign an id to the document root.
  --quiet            suppress messages (can repeat)
  --verbose          more informative output (can repeat)
  --strict           makes latexml less forgiving of errors
- --bibtex           processes the file as a BibTeX bibliography.
+ --bibtex           processes as a BibTeX bibliography.
  --xml              requests xml output (default).
  --tex              requests TeX output after expansion.
  --box              requests box output after expansion
@@ -301,5 +301,3 @@ Shows this help message.
 L<latexmlpost>, L<latexmlmath>, L<LaTeXML>
 
 =cut
-#**********************************************************************
-

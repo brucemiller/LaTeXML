@@ -466,60 +466,63 @@ latexmlpost [options] I<xmlfile>
  --verbose               shows progress during processing.
  --VERSION               show version number.
  --help                  shows help message.
- --sourcedirectory=sourcedir specifies directory of the original
+ --sourcedirectory=sourcedir sets directory of the original
                          source TeX file.
  --validate, --novalidate Enables (the default) or disables
                          validation of the source xml.
  --format=html|html5|xhtml|xml requests the output format.
- --destination=file      specifies output file (and directory).
+ --destination=file      sets output file (and directory).
  --omitdoctype           omits the Doctype declaration,
  --noomitdoctype         disables the omission (the default)
  --numbersections        enables (the default) the inclusion of
-                         section numbers in titles and crossrefs.
+                         section numbers in titles, crossrefs.
  --nonumbersections      disables the above
  --stylesheet=xslfile    requests the XSL transform using the
                          given xslfile as stylesheet.
- --css=cssfile           adds a css stylesheet to html/html5/xhtml
+ --css=cssfile           adds css stylesheet to (x)html(5)
                          (can be repeated)
  --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
- --xsltparameter=name:value passes parameters to the XSLT stylesheet.
+ --xsltparameter=name:value passes parameters to the XSLT.
  --split                 requests splitting each document
  --nosplit               disables the above (default)
- --splitat               specifies level to split the document
- --splitpath=xpath       specifies xpath expression for splitting
-                         (default is section-like, if splitting)
- --splitnaming=(id|idrelative|label|labelrelative) specifies how
-                         to name split files (def. idrelative).
- --scan                  scans documents to extract ids, labels, 
+ --splitat               sets level to split the document
+ --splitpath=xpath       sets xpath expression to use for
+                         splitting (default splits at
+                         sections, if splitting is enabled)
+ --splitnaming=(id|idrelative|label|labelrelative) specifies
+                         how to name split files (idrelative).
+ --scan                  scans documents to extract ids,
+                         labels, etc.
                          section titles, etc. (default)
  --noscan                disables the above
  --crossref              fills in crossreferences (default)
  --nocrossref            disables the above
  --urlstyle=(server|negotiated|file) format to use for urls
                          (default server).
- --navigationtoc=(context|none) generates a table of contents innavbar
- --index                 requests filling in the index (default)
+ --navigationtoc=(context|none) generates a table of contents
+                         in navigation bar
+ --index                 requests creating an index (default)
  --noindex               disables the above
- --splitindex            Splits the index into pages per initial.
+ --splitindex            Splits index into pages per initial.
  --nosplitindex          disables the above (default)
  --permutedindex         permutes index phrases in the index
  --nopermutedindex       disables the above (default)
- --bibliography=file     specifies a bibliography file
+ --bibliography=file     sets a bibliography file
  --splitbibliography     splits the bibliography into pages per
                          initial.
  --nosplitbibliography   disables the above (default)
- --prescan               carries out only the split (if enabled)
-                         and scan, storing cross-referencing data
-                         in dbfile
+ --prescan               carries out only the split (if
+                         enabled) and scan, storing
+                         cross-referencing data in dbfile
                          (default is complete processing)
- --dbfile=dbfile         specifies file to store crossreferences
- --sitedirectory=dir     specifies the base directory of the site
+ --dbfile=dbfile         sets file to store crossreferences
+ --sitedirectory=dir     sets the base directory of the site
  --mathimages            converts math to images
                          (default for html format)
  --nomathimages          disables the above
- --mathimagemagnification=mag specifies magnification factor
+ --mathimagemagnification=mag sets magnification factor
  --presentationmathml    converts math to Presentation MathML
                          (default for xhtml & html5 formats)
  --pmml                  alias for --presentationmathml
@@ -534,7 +537,8 @@ latexmlpost [options] I<xmlfile>
  --om                    alias for --openmath
  --keepXMath             preserves the intermediate XMath
                          representation (default is to remove)
- --plane1                use plane-1 unicode for styled symbols (default)
+ --plane1                use plane-1 unicode for symbols
+                         (default, if needed)
  --noplane1              do not use plane-1 unicode
  --graphicimages         converts graphics to images (default)
  --nographicimages       disables the above
@@ -692,8 +696,9 @@ pages. The default splitpath is
   //ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index
 
 Specifying
-  --splitpath="//ltx:section | //ltx:subsection | //ltx:bibliography
-              | //ltx:appendix | //ltx:index"
+
+  --splitpath="//ltx:section | //ltx:subsection
+         | //ltx:bibliography | //ltx:appendix | //ltx:index"
 
 would split the document at subsections as well as sections.
 
@@ -752,10 +757,10 @@ into separate pages per initial letter.
 
 =item C<--bibliography=>I<pathname>
 
-Specifies a bibliography file generated from a BibTeX file
-and used to fill in a bibliography element.
+Specifies a bibliography generated from a BibTeX file
+to be used to fill in a bibliography element.
 Hand-written bibliographies placed in a C<thebibliography> environment
-do not need this processing.  Enabling this has no effect unless
+do not need this.  The option has no effect unless
 there is an bibliography element in the document (generated by \bibliography).
 
 Note that this option provides the bibliography to be used to
@@ -904,5 +909,3 @@ and pstricks material to SVG.
 L<latexml>, L<latexmlmath>, L<LaTeXML>
 
 =cut
-#**********************************************************************
-
