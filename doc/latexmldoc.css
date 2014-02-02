@@ -70,7 +70,7 @@ body { margin:0; background:#cfd2e6; color:#000000; }
 
 .ltx_listing > .ltx_tabular {
    background:#f8fAff;
-   margin:25px; padding:5px 10px;
+   margin:15px; padding:5px 10px;
    border: 2px solid #B0B0B0;
    min-width:35em; 
 }
@@ -103,15 +103,20 @@ dl.ltx_description dd dl.ltx_description { clear:both; }
 .ltx_advanced:before {
     position:absolute;
     color:red;
-    font-size:150%;
+    font-size:200%;
     content:"!!" }
 
 /*
-.advanced {
+.ltx_advanced {
    border: 3px double #B0B0B0; }
 */
-.ltx_advanced .para {
+.ltx_advanced .ltx_para {
    margin-left:2em;
-   margin-right:2em; 
-   border: 1px solid #FF0000;
+   margin-right:1em; 
+   border-left: 1px solid #FF0000;
+   border-right: 1px solid #FF0000;
+   padding-left: 0.5em;
+   padding-right: 0.5em;
 }
+
+.ltx_keywords { display:none; }

@@ -12,11 +12,15 @@
 \newcommand{\PDFIcon}{\includegraphics{pdf}}
 
 \title{\LaTeXML\ \emph{A \LaTeX\ to XML Converter}}
+\lxKeywords{LaTeXML, LaTeX to XML, LaTeX to HTML, LaTeX to MathML, LaTeX to ePub, converter}
 %============================================================
 \begin{lxNavbar}
 \lxRef{top}{\includegraphics{../graphics/latexml}}\\
 \includegraphics{../graphics/mascot}\\
-\lxContextTOC
+\lxContextTOC\\
+% Direct link to manual from navbar
+\vspace{1cm}
+\URL[\hspace{4em}\LARGE The\ Manual]{./manual/}
 \end{lxNavbar}
 %============================================================
 
@@ -25,7 +29,10 @@
 \maketitle
 
 %============================================================
-The \emph{Current release} is \htmlref{\CurrentVersion}{get}.
+The \emph{Current release} is \htmlref{\CurrentVersion}{get},
+but it is \emph{terribly} out of date!
+Please consider alpha versions 0.7.9 (see \ref{source.git}).
+Release 0.8.0 is on it's way!
 
 In the process of developing the
 \href{http://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
@@ -55,173 +62,172 @@ are invited to try it out, give feedback and even to help out.
 
 
 %============================================================
-\section{Examples}\label{examples}
+\section{Examples}\label{examples}\index{examples}
 At the moment, the best example of \LaTeXML's output is 
-the \href{http://dlmf.nist.gov/}{DLMF} itself
---- the preview  will soon contain several chapters.
-It is perhaps not a fair example, in that there is much
-special-purpose processing to generate cross-referencing and metadata that is not
-part of LaTeXML by default. Nevertheless, it gives an indication of the
-math conversion and other features possible.
+the \href{http://dlmf.nist.gov/}{DLMF} itself.
+There is, of course, a fair amount of insider, special case,
+code, but it shows what can be done.
 
+Some highlights:
+\begin{description}
+\item[\href{examples/tabular/tabular.html}{LaTeX tabular}]
+    from the \LaTeX\ manual, p.205.
+    (\href{examples/tabular/tabular.tex}{\TeX},
+     \href{examples/tabular/tabular.pdf}{\PDFIcon})
+\item[\url{http://latexml.mathweb.org/editor}] an online editor/showcase
+  of things that \LaTeXML\ can do.
+\item[\url{http://arxmliv.kwarc.info}] An experiment processing
+  the entire \url{http://arXiv.org}.
+\end{description}
+And, of course
 \begin{description}
 \item[\href{http://dlmf.nist.gov/}{DLMF}]
    The Digital Library of Mathematical Functions was the
    primary instigator for this project.
 \item[\href{manual/}{LaTeXML Manual}]
    The \LaTeXML\ User's manual (\href{manual.pdf}{\PDFIcon}).
-\item[\href{examples/tabular/tabular.html}{LaTeX tabular}]
-    from the \LaTeX\ manual, p.205.
-    (\href{examples/tabular/tabular.tex}{\TeX},
-     \href{examples/tabular/tabular.pdf}{\PDFIcon})
-\item[These pages] were produced using \LaTeXML, as well.
+\item[And these pages] were produced using \LaTeXML, as well.
 \end{description}
 
-
 %============================================================
-\section{Get \LaTeXML}\label{get}
+\section{Get \LaTeXML}\label{get}\index{get}
 \paragraph{Current Release:}\label{download.current}
-The current release is \textbf{\CurrentVersion}
-(also see the \href{Changes}{Change Log}).
+The current release is \htmlref{\CurrentVersion}{get},
+but it is \emph{terribly} out of date!
+Release 0.8.0 is on it's way!
 
-\LaTeXML\ itself is written in `pure' Perl, but requires \TeX,
-and several perl modules, some of which depend on C libraries --- the \ref{prerequisites}.
-It should always be possible to install \LaTeXML\ on any platform
-with a sufficiently recent \href{http://www.perl.org/}{Perl},
+\emph{Normally}, it is preferable to install a platform-specific, prebuilt release.
+By using the appropriate, system-specific, \textit{magiccommand}
+both \LaTeXML\ and any prerequisites
+(additional perl modules that it needs, some of which themselves depend on C libraries)
+will be installed automatically.
+\begin{lstlisting}[style=shell]
+  %magiccommand% LaTeXML
+\end{lstlisting}
+See instructions for specific systems, below.
+
+But as the currrent release is so out-of-date,
+please consider alpha versions 0.7.9 (see \ref{source.git}),
+in which case you'll need to pre-install the prerequisites
 by following the instructions at \ref{install.general}.
 
-%In most cases, however, it will be preferable to install
-%a platform-specific, pre-built, release, as this often
-%takes care of installing dependencies and updates,
-%and allows cleaner uninstall.  
+Also see the \href{Changes}{Change Log}.
 
-%%%
-\emph{Normally}, it would be preferable to install a platform-specific, prebuilt release.
-But frankly, the released version is rather old;
-so out-of-date, in fact, that we are inclined to wait until we
-have a really dramatic replacement before we make a new formal release.
-Until then, you will probably be best served by \ref{install.svn}.
-A new release is intended by late Spring or Summer!
-%%%
-
-In any case, it is usually preferable to use a platform-specific procedure
-for installing the prerequisites, and there may be platform-specific
-instructions regarding SVN.
-Thus, please consult \ref{install.osnotes}, first,
-for platform-specific releases and instructions.
-
-As a rule of thumb, any `recent' version of any prerequisite software will
-work with \LaTeXML, something released within the last few years;
-Perl should be at least version 5.8.
-Of course for security reasons, you should update all software on your system
-regularly to install patches and fix any bugs.
-When maintaining your system using a platform specific software
-updating tool, such as \texttt{yum}, \texttt{apt} or \texttt{port},
-you should regularly use the appropriate `update' command.
-
-\subsection{General Installation Procedures}\label{install.general}
-The following sections outline the general procedures for installing
-\LaTeXML\ and the supporting libraries and modules that it needs.
-
+\subsection{General Installation Procedures}\label{install.general}\index{install}
 \subsubsection{Installing Prerequisites}\label{install.prerequisites}
+If you cannot install a prebuilt package, or want to use the current
+pre-release version from the repository, you will need to pre-install some or
+all of the prerequisites.
+
+The easiest route is using the appropriate, system-specific,
+\textit{magiccommand} to install the prerequisites
+\begin{lstlisting}[style=shell]
+  %magiccommand% %prerequisite% ...
+\end{lstlisting}
+See instructions for specific systems, below.
+
+To install the prerequisites by hand, the following instructions may help:
 \begin{itemize}
 \item If \texttt{libxml2} and \texttt{libxslt} are are not already installed:\\
   Follow the instructions at \href{http://www.xmlsoft.org}{XMLSoft} to
   download and install the most recent versions of \texttt{libxml2} and \texttt{libxslt}.
-\item If the Perl modules \texttt{Parse::RecDesent}, \texttt{File::Which},
-  \texttt{XML::LibXML} and  \texttt{XML::LibXSLT} are not already installed:\\
- Use CPAN to install the required perl modules (typically as root):
+\item Use CPAN to install the required perl modules (typically as root), something like this
+\end{itemize}
 \begin{lstlisting}[style=shell]
    perl -MCPAN -e shell
-   cpan> install DB_File, Parse::RecDescent, File::Which
-   cpan> install XML::LibXML, XML::LibXSLT
-
-% URI
-% LWP
-% LWP::Simple
-
-% IO::Socket
-% IO::Socket::SSL
-% IO::String
-
-% At least:
-%   JSON::XS
-%   Archive::Zip
-
+   cpan> install XML::LibXML, XML::LibXSLT, Parse::RecDescent, File::Which,
+   cpan> install URI, IO::String, libwww, JSON::XS, Archive::Zip
    cpan> quit
 \end{lstlisting}
-\item If \texttt{ImageMagick} and its Perl binding are not already installed:\\
-  Follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
-  to download and install the latest version of ImageMagick being sure to enable
-  and build the Perl binding along with it.
-\end{itemize}
 
-\subsubsection{Installing from Source}\label{install.source}
+\subsubsection{Installing Optional Prerequisites}\label{install.optional}
+The following packages are usually desirable, but aren't required to run \LaTeXML.
+\begin{description}
+\item[\TeX] Most users of \LaTeXML\ will want to install \TeX, as well.  \LaTeXML\ will
+use \TeX's style files directly in some cases, providing broader coverage.
+Moreover, if \TeX\ is present when \LaTeXML\ is being installed, it will install a couple of
+its own for use with regular \TeX, or \LaTeX\ runs.
+
+\item[ImageMagick] provides a handy library of image manipulation routines.
+When they are present \LaTeXML\ is able to carry out more image processessing,
+such as transformations by the \texttt{graphicx} package, and conversion of math to images.
+When the package is not present, some such operations will not be supported.
+
+Unfortunately, it is sometimes a difficult package to install.
+Follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
+to download and install the latest version of ImageMagick being sure to enable
+and build the Perl binding along with it.
+\end{description}
+
+\subsubsection{Getting the source}\label{getting.source}
+\paragraph{Source tarball}\label{source.tarball}
+You can either download a tar file containing the source:
 \begin{itemize}
 \item Download \CurrentTarball
 \item Unpack and Build \LaTeXML, following the usual Perl module incantations:
 \begin{lstlisting}[style=shell]
-   tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
-   cd LaTeXML-@\CurrentVersion@
-   perl Makefile.PL
-   make
-   make test
-\end{lstlisting}
-\item Install, as root:
-\begin{lstlisting}[style=shell]
-   make install
+  tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
+  cd LaTeXML-@\CurrentVersion@
 \end{lstlisting}
 \end{itemize}
-(See \texttt{perl perlmodinstall} for more details, if needed.)
 
-\paragraph{Installation Options}\label{install.options}
-You can specify nonstandard place to install files (and avoid the need to install as root!)
+\paragraph{git checkout}\label{source.git}
+Or you can fetch the most current code from github by using the \texttt{git} command:
+\begin{lstlisting}[style=shell]
+  git clone https://github.com/brucemiller/LaTeXML.git
+\end{lstlisting}
+You can also browser the current code at \url{https://github.com/brucemiller/LaTeXML/}.
+
+[Once you've fetched the code from you github, you can easily keep up-to-date
+by ocassionally running the command:
+\begin{lstlisting}[style=shell]
+  git pull
+\end{lstlisting}
+in the source directory, and then repeating the following building and install commands.]
+
+\subsubsection{Building}\label{build.source}
+Whether you've downloaded using a tar file, or from git,
+you build the system using the standard Perl procedure:
+\begin{lstlisting}[style=shell]
+  cd LaTeXML  [@or@  LaTeXML-@\CurrentVersion@]
+  perl Makefile.PL
+  make
+  make test
+\end{lstlisting}
+The last step runs the system through some basic tests,
+which should complete without error (although some tests may be `skipped'
+under certain circumstances).
+[On windows systems, use \texttt{dmake} instead of \texttt{make}.]
+
+\emph{Note:} You can specify nonstandard place to install files
+--- and possibly avoid the need to install as root! ---
 by modifying the Makefile creating command above to
 \begin{lstlisting}[style=shell]
    perl Makefile.PL PREFIX=%perldir% TEXMF=%texdir%
 \end{lstlisting}
 where \emph{perldir} is where you want the perl related files to go and
 \emph{texdir} is where you want the \TeX\ style files to go.
-Similarly, you can specify a special place to install only the
-executable scripts by specifying both \texttt{INSTALLSITEBIN} and \texttt{INSTALLSITESCRIPT}
-to refer to the same directory.
+(See \texttt{perl perlmodinstall} for more details and options.)
 
-\subsubsection{Installing from SVN}\label{install.svn}
-The most current code can be obtained from the svn repository.
-It is browsable at \url{https://svn.mathweb.org/repos/LaTeXML/}.
-Anonymous checkout is available using the command:
+\subsubsection{Installing}\label{install.source}
+After building, you will finally want to install \LaTeXML\
+where the OS can find the files.  You'll typically need to be root:
 \begin{lstlisting}[style=shell]
-  svn co https://svn.mathweb.org/repos/LaTeXML/trunk/ LaTeXML
+  su
+  make install
 \end{lstlisting}
-After checkout, the installation is similar to \ref{install.source}:
+or perhaps
 \begin{lstlisting}[style=shell]
-   cd LaTeXML
-   perl Makefile.PL
-   make
-   make test
-   make install
-\end{lstlisting}
-where the last command would typically be execuded as root.
-
-\emph{Note} that if you have already checked out a copy of \LaTeXML, you can update
-and rebuild your copy by using the following
-\begin{lstlisting}[style=shell]
-   cd LaTeXML
-   svn update
-   make
-   make test
-   make install
+  sudo make install
 \end{lstlisting}
 
 \subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
 With \emph{no} implied endorsement of any of these systems.
 
-\subsubsection[RPM-based systems]{RPM-based systems}\label{install.fedora}
+\subsubsection[RPM-based systems]{RPM-based systems}\label{install.fedora}\index{fedora}
 For Fedora and recent RedHat-based Enterprise distributions
 (Redhat 6, Centos 6, Scientific Linux 6 and similar),
 most software is obtained and installed via the yum repository.
-Use one of the following procedures depending on which version
-of \LaTeXML\ you wish to install:
 
 \paragraph{Installing prebuilt}\\
 \begin{itemize}
@@ -231,85 +237,83 @@ of \LaTeXML\ you wish to install:
    yum --nogpgcheck localinstall LaTeXML-@\CurrentVersion@-*.ltxml.noarch.rpm
 \end{lstlisting}
 \end{itemize}
-% If you had previously installed \LaTeXML\ rpm, you may want to explicitly
-% uninstall it \emph{first}, since the name has changed:
-% \begin{lstlisting}[style=shell]
-%    yum remove perl-LaTeXML
-% \end{lstlisting}
+Adding \texttt{ImageMagick ImageMagick-perl} will include the optional ImageMagick.
 
-\paragraph{Installing from Source or SVN}
+\paragraph{Installing only prerequisites}
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
-yum install perl-Parse-RecDescent perl-File-Which \
-    perl-XML-LibXML perl-XML-LibXSLT \
+yum install perl-XML-LibXML perl-XML-LibXSLT \
+    perl-Parse-RecDescent perl-File-Which \
+    perl-URI perl-IO-string perl-libwww-perl \
+    perl-JSON-XS perl-Archive-Zip \
     ImageMagick ImageMagick-perl
 \end{lstlisting}
-Afterwards, you may use the general procedure for
-\ref{install.source} or \ref{install.svn}.
-Note that if the command to make the Makefile fails with
-``Can't locate ExtUtils/MakeMaker.pm\ldots'' or warns that Test::Simple is missing,
-you will need to install them as follows:
-\begin{lstlisting}[style=shell]
-yum install perl-ExtUtils-MakeMaker perl-Test-Simple
-\end{lstlisting}
+Then continue by using the general procedure from \ref{build.source}.
+
+% Note that if the command to make the Makefile fails with
+% ``Can't locate ExtUtils/MakeMaker.pm\ldots'' or warns that Test::Simple is missing,
+% you will need to install them as follows:
+% \begin{lstlisting}[style=shell]
+% yum install perl-ExtUtils-MakeMaker perl-Test-Simple
+% \end{lstlisting}
 
 
-\subsubsection[Older Enterprise systems]{Older Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}
-For older Red Hat Enterprise Linux 5 and derivatives (Centos, Scientific Linux),
-we provide two additional packages which are needed.
+% \subsubsection[Older Enterprise systems]{Older Enterprise-style RPM-based systems (RedHat, Centos)}\label{install.enterprise}\index{redhat}\index{centos}
+% For older Red Hat Enterprise Linux 5 and derivatives (Centos, Scientific Linux),
+% we provide two additional packages which are needed.
 
-\paragraph{Installing prebuilt}\\
-\begin{itemize}
-\item Choose and download the following according to your architecture:
-\begin{description}
-\item[32bit]
-   \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.i386.rpm}{perl-XML-LibXML-XPathContext},
-   \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.i386.rpm}{perl-XML-LibXSLT}
-\item[64bit]
-   \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXML-XPathContext},
-   \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXSLT}
-\item[Source RPM]
-    \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.src.rpm}{perl-XML-LibXML-XPathContext},
-    \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.src.rpm}{perl-XML-LibXSLT}
-\end{description}
-\item Download \CurrentCentos
-\item Install using the command:
-\begin{lstlisting}[style=shell]
-   yum --nogpgcheck localinstall LaTeXML-@\CurrentVersion@-*.ltxml.noarch.rpm \
-       perl-XML-LibXML-XPathContext-0.07-1.*   \
-       perl-XML-LibXSLT-1.58-1.*
-\end{lstlisting}
-\end{itemize}
+% \paragraph{Installing prebuilt}\\
+% \begin{itemize}
+% \item Choose and download the following according to your architecture:
+% \begin{description}
+% \item[32bit]
+%    \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.i386.rpm}{perl-XML-LibXML-XPathContext},
+%    \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.i386.rpm}{perl-XML-LibXSLT}
+% \item[64bit]
+%    \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXML-XPathContext},
+%    \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.x86_64.rpm}{perl-XML-LibXSLT}
+% \item[Source RPM]
+%     \href{releases/perl-XML-LibXML-XPathContext-0.07-1.c5.ltxml.src.rpm}{perl-XML-LibXML-XPathContext},
+%     \href{releases/perl-XML-LibXSLT-1.58-1.c5.ltxml.src.rpm}{perl-XML-LibXSLT}
+% \end{description}
+% \item Download \CurrentCentos
+% \item Install using the command:
+% \begin{lstlisting}[style=shell]
+%    yum --nogpgcheck localinstall LaTeXML-@\CurrentVersion@-*.ltxml.noarch.rpm \
+%        perl-XML-LibXML-XPathContext-0.07-1.*   \
+%        perl-XML-LibXSLT-1.58-1.*
+% \end{lstlisting}
+% \end{itemize}
 
-\subsubsection{Debian-based systems}\label{install.debian}
+\subsubsection{Debian-based systems}\label{install.debian}\index{debian}
 For Debian-based systems (including Ubuntu), the deb repositories
 are generally used for software installation.
-Use one of the following procedures depending on which version
-of \LaTeXML\ you wish to install:
+
 \paragraph{Installing prebuilt}
 LaTeXML has been included in the Debian repositories (thanks Atsuhito Kohda);
-it should be installable using
+it, along with dependencies, should be installable using
 \begin{lstlisting}[style=shell]
   sudo apt-get install latexml
 \end{lstlisting}
-This will automatically include any needed dependencies.
+Adding \texttt{imagemagick perlmagick} will include the optional ImageMagick.
 
-\paragraph{Installing from Source or SVN}
+\paragraph{Installing only prerequisites}
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
    sudo apt-get install   \
-      libparse-recdescent-perl libfile-which-perl \
       libxml2 libxml-libxml-perl \
       libxslt1.1 libxml-libxslt-perl  \
+      libparse-recdescent-perl libfile-which-perl \
+      liburi-perl libio-string-perl libwww-perl \
+      libjson-xs-perl libarchive-zip-perl \
       imagemagick perlmagick
 \end{lstlisting}
-Afterwards, you may use the general procedure for
-\ref{install.source} or \ref{install.svn}.
+Then continue by using the general procedure from \ref{build.source}.
 
 %Some \href{http://rhaptos.org/devblog/reedstrm/latexml}{notes} on installation on Debian
 %based systems are also available.
 
-\subsubsection{MacOS}\label{install.macos}
+\subsubsection{MacOS}\label{install.macos}\index{macintosh}
 The \href{http://www.macports.org}{MacPorts} tool provides a handy
 repository for software installation on Mac computers;
 download and install macports from that site.
@@ -323,6 +327,7 @@ it should be installable, along with its prerequisites, using the command
 \begin{lstlisting}[style=shell]
   sudo port install LaTeXML
 \end{lstlisting}
+Adding \texttt{p5-perlmagick} will include the optional ImageMagick.
 
 % \paragraph{For the Adventurous}  As an easy alternative --- if it works ---
 % download \CurrentMacOS, save in it's own directory as \texttt{Portfile}
@@ -333,28 +338,30 @@ it should be installable, along with its prerequisites, using the command
 % This should install \LaTeXML\ and it's all dependencies;
 % Otherwise, continue as below.
 
-\paragraph{Installing from Source or SVN}
+\paragraph{Installing only prerequisites}
 The prerequisites can be installed by running this command as root: 
 \begin{lstlisting}[style=shell]
   sudo port install    \
       p5-xml-libxml p5-xml-libxslt  \
-      p5-parse-recdescent p5-file-which p5-perlmagick
+      p5-parse-recdescent p5-file-which \
+      p5-uri p5-io-string p5-libwww-perl \
+      p5-json-xs p5-archive-zip \
+      p5-perlmagick
 \end{lstlisting}
-Afterwards, you may use the general procedure for
-\ref{install.source} or \ref{install.svn}.
+Then continue by using the general procedure from \ref{build.source}.
 
-\emph{Note:} There have been issues reported regarding \verb|DB_File|
-not being installed;  Apparently you must install the 
-the db `variant' of perl, rather than the gdbm variant;
-that is, you must run \verb|sudo port install perl +db|
-(possibly after uninstalling perl first?).
+% \emph{Note:} There have been issues reported regarding \verb|DB_File|
+% not being installed;  Apparently you must install the 
+% the db `variant' of perl, rather than the gdbm variant;
+% that is, you must run \verb|sudo port install perl +db|
+% (possibly after uninstalling perl first?).
 
-\emph{Note:} There have also been issues reported with recent
+\emph{Note:} There have been issues reported with recent
 installations of Perl with MacPorts:  it will install LaTeXML's
 executables in a directory specific to the current version of Perl
 (eg. \texttt{/opt/local/libexec/perl5.12/sitebin},
 instead of \texttt{/opt/local/bin} which would be in your \texttt{PATH} environment variable).
-Apparently this is a feature, not a bug; it only happens when installing from source or svn;
+Apparently this is a feature, not a bug; it only happens when installing from source or git;
 not when installing the MacPorts port.  There are three workarounds, each with disadvantages:
 \begin{itemize}
 \item Watch for where the scripts get installed and that directory to your \texttt{PATH}
@@ -367,13 +374,13 @@ not when installing the MacPorts port.  There are three workarounds, each with d
 \end{lstlisting}
 \end{itemize}
 
-\subsubsection{Windows}\label{install.windows}
+\subsubsection{Windows}\label{install.windows}\index{windows}
 There is currently no prebuilt \LaTeXML\ for Windows,
 but it does run under \href{http://strawberryperl.com}{Strawberry Perl}
 which comes with some of our prerequisites pre-installed,
 and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}).
 You may install \LaTeXML\ either by \ref{install.windows.source}
-or \ref{install.windows.svn} after \ref{install.windows.prerequisites}.
+or \ref{install.windows.git} after \ref{install.windows.prerequisites}.
 
 \paragraph{Installing prerequisites}\label{install.windows.prerequisites}\\
 \begin{itemize}
@@ -406,94 +413,8 @@ proceed to force the install
   cpan> force install Image::Magick
 \end{lstlisting}
 \end{itemize}
-
-\paragraph{Installing from Source}\label{install.windows.source}\\
-After \ref{install.windows.prerequisites},
-you my install the released source of \LaTeXML,
-by following the general procedure but using Strawberry Perl's \texttt{dmake} command:
-\begin{itemize}
-\item Download \CurrentTarball\\
-\item Unpack and build \LaTeXML:
-\begin{lstlisting}[style=shell]
- tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
- cd LaTeXML-@\CurrentVersion@
- perl Makefile.PL
- dmake
- dmake test
- dmake install
-\end{lstlisting}
-\end{itemize}
-
-\paragraph{Installing from SVN}\label{install.windows.svn}\\
-Alternatively, after \ref{install.windows.prerequisites},
-you may install a very current version of \LaTeXML\ from SVN:
-\begin{itemize}
-\item If you don't already have an SVN client,
-   follow the instructions at \href{http://tortoisesvn.net/}{TortoiseSVN}
-   to download and install the most recent version.
-\item Fetch \LaTeXML\ from the repository and build:
-\begin{lstlisting}[style=shell]
- svn co https://svn.mathweb.org/repos/LaTeXML
- cd LaTeXML
- perl Makefile.PL
- dmake
- dmake test
- dmake install
-\end{lstlisting}
-\end{itemize}
-
-\emph{Note} that if you have already checked out a copy of \LaTeXML, you can update
-and rebuild your copy by using the following
-\begin{lstlisting}[style=shell]
-   cd LaTeXML
-   svn update
-   dmake
-   dmake test
-   dmake install
-\end{lstlisting}
-
-% Many of the prerequisite packages are available in
-% ppm form (for \href{http://activestate.com/}{ActivePerl} (I think).
-% I will attempt to generate a ppm for LaTeXML in the near
-% future, depending on user interest --- and assistance!
-
-\subsection{Prerequisites}\label{prerequisites}
-The following list gives an overview of the Perl modules required by LaTeXML;
-As a general rule, \LaTeXML\ will run with any version released within
-the last several years.
-% %3A%3A for :: ???
-\begin{description}
-\item[\href{http://search.cpan.org/search?query=Parse::RecDescent&mode=module}{Parse::RecDescent}]
-    a useful grammar based parser module.
-\item[\href{http://search.cpan.org/search?query=File::Which&mode=module}{File::Which}]
-    a handy, portable \texttt{which} command for finding executables.
-\item[\href{http://search.cpan.org/search?query=Image::Magick&mode=module}{Image::Magick}]
-    provides bindings to the \href{http://www.imagemagick.org/}{ImageMagick} library.
-\item[\href{http://search.cpan.org/search?query=XML::LibXML&mode=module}{XML::LibXML}]
-    provides bindings to the C library libxml2
-    (available from \href{http://www.xmlsoft.org}{xmlsoft}).
-    Versions before 1.61 will require the additional \texttt{XML::LibXML::XPathContext} module.
-\item[\href{http://search.cpan.org/search?query=XML::LibXSLT&mode=module}{XML::LibXSLT}]
-    provides bindings to the C library libxslt
-    (from \href{http://www.xmlsoft.org}{xmlsoft},
-%  <li><tt><a href="http://search.cpan.org/search?query=XML::LibXML::XPathContext&mode=module">XML::LibXML::XPathContext</a></tt>
-%      Depends on the XML::LibXML module.
-\item[\href{http://search.cpan.org/search?query=DB_File&mode=module}{DB\_File}]
-    usually part of a standard Perl installation, provided
-    \href{http://www.sleepycat.com}{BerkeleyDB} is installed.
-% The abovec now redirects to Oracle !!!! with no mention of BerkeleyDB !!
-%    \href{http://www.oracle.com/us/products/database/overview/index.html}{BerkeleyDB}
-\item[\href{http://search.cpan.org/search?query=Test::Simple&mode=module}{Test::Simple}]
-    usually part of a standard Perl installation.
-\end{description}
-
-\subsection{License}\label{license}
-As this software was developed as part of work done by the
-United States Government, it is not subject to copyright,
-and is in the public domain.
-Note that according to
-\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
-public domain is compatible with GPL.
+Then continue by using the general procedure from \ref{build.source},
+but note that the \texttt{dmake} command should be used in place of \texttt{make}.
 
 \subsection{Archived Releases:}\label{archive}
 \AllReleases.
@@ -512,11 +433,11 @@ give the destination extension with html, it will generate HTML+images.
 
 If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 \begin{description}
-\item[\href{manual/index.xhtml}{LaTeXML Manual}]
+\item[\href{manual/}{LaTeXML Manual}]
     Overview of LaTeXML (\href{manual.pdf}{\PDFIcon}).
-\item[\href{manual/commands/latexml.xhtml}{\texttt{latexml}}]
+\item[\href{manual/commands/latexml.html}{\texttt{latexml}}]
     describes the \texttt{latexml} command.
-\item[\href{manual/commands/latexmlpost.xhtml}{\texttt{latexmlpost} command}]
+\item[\href{manual/commands/latexmlpost.html}{\texttt{latexmlpost} command}]
    describes the \texttt{latexmlpost} command for postprocessing.
 \end{description}
 
@@ -533,23 +454,34 @@ See \href{http://lists.jacobs-university.de/mailman/listinfo/project-latexml}{\t
 
 
 \paragraph{Bug-Tracker}
-  There is a Trac bug-tracking system for reporting bugs, or checking the
-  status of previously reported bugs at
- \href{https://trac.mathweb.org/LaTeXML/}{Bug-Tracker}.
+\emph{The Bug Tracker is temporarily closed! }
+We are in the middle of transitioning our bug tracking system
+from the Trac system originally hosted at Jacobs University
+to the Issues system hosted at github.com.  Once the data from the old
+system is ported to the new one, we will update this site with
+information about how to reporting at github.
 
-To report bugs, please:
-\begin{itemize}
-\item \href{http://trac.mathweb.org/register/register}{Register} a Trac account
-  (preferably give an email so that you'll get notifications about activity regarding the bug).
-\item \href{http://trac.mathweb.org/LaTeXML/newticket}{Create a ticket}
-\end{itemize} 
+\emph{Please} do \emph{not} post issues to the github Issues database
+while we are in this transition period.
+
+%  There is a Trac bug-tracking system for reporting bugs, or checking the
+%  status of previously reported bugs at
+%  \href{https://trac.mathweb.org/LaTeXML/}{Bug-Tracker}.
+
+% To report bugs, please:
+% \begin{itemize}
+% \item \href{http://trac.mathweb.org/register/register}{Register} a Trac account
+%   (preferably give an email so that you'll get notifications about activity regarding the bug).
+% \item \href{http://trac.mathweb.org/LaTeXML/newticket}{Create a ticket}
+% \end{itemize} 
 
 \paragraph{Thanks} to our friends at
 the \href{http://kwarc.info}{KWARC Research Group}
-for hosting the mailing list, Trac system and svn repository,
+for hosting the mailing list, the original Trac system and svn repository,
 as well as general moral support.
-Thanks also to \href{http://www.nist.gov/el/msid/sima/}{Systems Integration for Manufacturing Applications}
-for funding portions of the research and development.
+
+%%Thanks also to \href{http://www.nist.gov/el/msid/sima/}{Systems Integration for Manufacturing Applications}
+%%for funding portions of the research and development.
 
 \paragraph{Author} \href{mailto:bruce.miller@nist.gov}{Bruce Miller}.
 %============================================================
@@ -572,6 +504,10 @@ contributions are not subject to copyright protection within the
 United States.
 
 The software is thus released into the Public Domain.
+
+Note that according to
+\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org}
+public domain is compatible with GPL.
 
 \paragraph{Disclaimer}
 The software is expressly provided ``AS IS.'' NIST MAKES NO WARRANTY OF
