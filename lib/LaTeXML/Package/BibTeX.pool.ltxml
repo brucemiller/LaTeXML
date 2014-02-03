@@ -111,7 +111,7 @@ DefMacro('\ProcessBibTeXEntry Semiverbatim',
 
 DefPrimitive('\bibentry@prepare Semiverbatim', sub {
     my ($stomach, $key) = @_;
-    $key = ToString($key);
+    $key = NormalizeBibKey($key);
     my $entry = LookupValue('BIBENTRY@' . $key);
 
     my $origtype   = $entry->getType;
@@ -132,7 +132,7 @@ DefPrimitive('\bibentry@prepare Semiverbatim', sub {
 
 DefPrimitive('\bibentry@create Semiverbatim', sub {
     my ($stomach, $key) = @_;
-    $key = ToString($key);
+    $key = NormalizeBibKey($key);
     my $entry      = LookupValue('BIBENTRY@' . $key);
     my $origtype   = $entry->getType;
     my $type       = $origtype;
@@ -184,9 +184,9 @@ DefEnvironment('{bibtex@bibliography}',
 DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
   "<ltx:bibentry type='#1' key='#key' xml:id='#id'>#body</ltx:bibentry>",
   afterDigestBegin => sub {
-    my $key = CleanBibKey($_[1]->getArg(2));
-    AssignValue('CURRENT@BIBKEY' => $key);
-    $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); });
+    AssignValue('CURRENT@BIBKEY' => NormalizeBibKey($_[1]->getArg(2)));
+    my $entry = currentBibEntry();
+    $_[1]->setProperties(key => $entry->getKey, RefStepCounter('@bibitem')); });
 
 sub currentBibKey {
   return LookupValue('CURRENT@BIBKEY'); }
@@ -213,7 +213,7 @@ sub copyCrossrefFields {
   my (@fields) = @_;
   my $entry = currentBibEntry();
   if (my $xref = $entry->getField('crossref')) {
-    if (my $xentry = LookupValue('BIBENTRY@' . CleanBibKey($xref))) {
+    if (my $xentry = LookupValue('BIBENTRY@' . NormalizeBibKey($xref))) {
       foreach my $field (@fields) {
         if (!defined $entry->getField($field)) {
           if (my $value = $xentry->getField($field)) {
