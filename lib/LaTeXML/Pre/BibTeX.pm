@@ -111,8 +111,9 @@ sub toTeX {
   my ($self) = @_;
   $self->parseTopLevel unless $$self{parsed};
   # Store all entries into $STATE under BIBKEY@$key.
+  # NOTE: The case in the key has been preserved, but we'll store it under the lowercase!
   foreach my $entry (@{ $$self{entries} }) {
-    $STATE->assignValue('BIBENTRY@' . $entry->getKey => $entry); }
+    $STATE->assignValue('BIBENTRY@' . lc($entry->getKey) => $entry); }
 
   return join("\n",
     @{ $$self{preamble} },
@@ -225,8 +226,8 @@ sub parseEntryType {
 sub parseEntryName {
   my ($self) = @_;
   $self->skipWhite;
-  return (
-    $$self{line} =~ s/^([\"\#\%\&\'\(\)\=\{$BIBNAME_re$BIBNOISE_re]*)//x ? lc($1) : undef); }
+  return (                                                        # Preserve case (at this point!)
+    $$self{line} =~ s/^([\"\#\%\&\'\(\)\=\{$BIBNAME_re$BIBNOISE_re]*)//x ? $1 : undef); }
 
 sub parseFieldName {
   my ($self) = @_;
