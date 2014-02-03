@@ -73,6 +73,12 @@ sub process {
     @bib = ($self->rescan($doc)); }
   return @bib; }
 
+# Try to preserve the original form & case of the provided Bibkeys
+# HOWEVER, we downcase them before indexing & looking them up!!!!
+sub normalizeBibKey {
+  my ($key) = @_;
+  return lc($key); }
+
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
 # Sort (cited) bibentries on author+year+title, [NOT on the key!!!]
@@ -98,11 +104,11 @@ sub getBibEntries {
       $bibdoc = $doc->new($bibfile, sourceDirectory => '.'); }
 
     foreach my $bibentry ($bibdoc->findnodes('//ltx:bibentry')) {
-      my $bibkey = $bibentry->getAttribute('key');
+      my $bibkey = normalizeBibKey($bibentry->getAttribute('key'));
       my $bibid  = $bibentry->getAttribute('xml:id');
-      $entries{$bibkey}{bibkey}    = $bibkey;
-      $entries{$bibkey}{bibentry}  = $bibentry;
-      $entries{$bibkey}{citations} = [grep { $_ } map { split(',', $_->value) }
+      $entries{$bibkey}{bibkey}   = $bibkey;
+      $entries{$bibkey}{bibentry} = $bibentry;
+      $entries{$bibkey}{citations} = [map { normalizeBibKey($_) } grep { $_ } map { split(',', $_->value) }
           $bibdoc->findnodes('.//@bibrefs', $bibentry)];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
       $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
@@ -168,7 +174,7 @@ sub getBibEntries {
   foreach my $sortkey (keys %$included) {
     my $entry  = $$included{$sortkey};
     my $bibkey = $$entry{bibkey};
-    map { $entries{$_}{bibreferrers}{$bibkey} = 1 } @{ $$entry{citations} }; }
+    map { $entries{ normalizeBibKey($_) }{bibreferrers}{$bibkey} = 1 } @{ $$entry{citations} }; }
 
   NoteProgress(" [" . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited]");
   Warn('expected', 'bibkeys', undef,

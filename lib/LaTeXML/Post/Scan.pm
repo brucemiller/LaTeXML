@@ -271,6 +271,7 @@ sub bibref_handler {
     my $keys = $node->getAttribute('bibrefs');
     foreach my $bibkey (split(',', $keys)) {
       if ($bibkey) {
+        $bibkey = lc($bibkey);    # NOW we downcase!
         my $entry = $$self{db}->register("BIBLABEL:$bibkey");
         $entry->noteAssociation(referrers => $parent_id); } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
@@ -329,7 +330,10 @@ sub bibitem_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
+    # NOTE: We didn't downcase the key when we created the bib file
+    # BUT, we're going to index it in the ObjectDB by the downcased name!!!
     my $key = $node->getAttribute('key');
+    $key = lc($key) if $key;
     $$self{db}->register("BIBLABEL:$key", id => $id) if $key;
     $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id, bibkey => $key,
       location    => $doc->siteRelativeDestination,
@@ -352,7 +356,7 @@ sub bibentry_handler {
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     if (my $key = $node->getAttribute('key')) {
-      $$self{db}->register("BIBLABEL:$key", id => $id); } }
+      $$self{db}->register('BIBLABEL:' . lc($key), id => $id); } }
 ## No, let's not scan the content of the bibentry
 ## until it gets formatted and re-scanned by MakeBibliography.
 ##  $self->scanChildren($doc,$node,$id || $parent_id);
