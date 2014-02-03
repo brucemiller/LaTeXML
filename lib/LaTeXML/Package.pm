@@ -102,7 +102,7 @@ our @EXPORT = (qw(&DefExpandable
     ),
 
   # Random low-level token or string operations.
-  qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &CleanURL
+  qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &NormalizeBibKey &CleanURL
     &UTF
     &roman &Roman),
   # Math & font state.
@@ -464,10 +464,16 @@ sub CleanIndexKey {
 
 sub CleanBibKey {
   my ($key) = @_;
-  $key = lc(ToString($key));    # Case insensitive
+  $key = ToString($key);    # Originally lc() here, but let's preserve case till Postproc.
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $key =~ s/\s//sg;
   return $key; }
+
+# Return the bibkey in a form to ACTUALLY lookup.
+# Usually use CleanBibKey to preserve key in the original form (case)
+sub NormalizeBibKey {
+  my ($key) = @_;
+  return ($key ? lc(CleanBibKey($key)) : undef); }
 
 sub CleanURL {
   my ($url) = @_;
