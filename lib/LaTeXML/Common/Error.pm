@@ -212,9 +212,10 @@ sub generateMessage {
   # $message and each of @extra should be single lines
   ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
   # The initial portion of the message will consist of:
+  $message = '' unless defined $message;
   my @lines = (
     # Start with the error code & primary error message
-    $errorcode . ' ' . ($message // ''),
+    $errorcode . ' ' . $message,
     # Followed by single line location of where the message occurred (if we know)
     ($docloc ? ($docloc) : ()),
     # and then any additional message lines supplied

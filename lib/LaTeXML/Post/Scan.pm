@@ -140,7 +140,7 @@ sub noteLabels {
     if (my $labels = $node->getAttribute('labels')) {
       my @labels = split(' ', $node->getAttribute('labels'));
       foreach my $label (@labels) {
-        $$self{db}->register($label, id => $id); }
+        $$self{db}->register($label, id => nonempty($id)); }
       return [@labels]; } }
   return; }
 
@@ -157,11 +157,11 @@ sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef);
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id)));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -170,19 +170,19 @@ sub section_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
       primary  => 1,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef,
-      refnum  => $node->getAttribute('refnum')  // undef,
-      frefnum => $node->getAttribute('frefnum') // undef,
-      rrefnum => $node->getAttribute('rrefnum') // undef,
-      title    => $self->cleanNode($doc, $doc->findnode('ltx:title',    $node)) // undef,
-      toctitle => $self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node)) // undef,
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id)),
+      refnum   => nonempty($node->getAttribute('refnum')),
+      frefnum  => nonempty($node->getAttribute('frefnum')),
+      rrefnum  => nonempty($node->getAttribute('rrefnum')),
+      title    => nonempty($self->cleanNode($doc, $doc->findnode('ltx:title', $node))),
+      toctitle => nonempty($self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node))),
       children => [],
-      stub     => $node->getAttribute('stub'));
+      stub     => nonempty($node->getAttribute('stub')));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -191,18 +191,18 @@ sub captioned_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef,
-      refnum  => $node->getAttribute('refnum')  // undef,
-      frefnum => $node->getAttribute('frefnum') // undef,
-      rrefnum => $node->getAttribute('rrefnum') // undef,
-      caption => $self->cleanNode($doc,
-        $doc->findnode('descendant::ltx:caption', $node)) // undef,
-      toccaption => $self->cleanNode($doc,
-        $doc->findnode('descendant::ltx:toccaption', $node)) // undef);
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id)),
+      refnum   => nonempty($node->getAttribute('refnum')),
+      frefnum  => nonempty($node->getAttribute('frefnum')),
+      rrefnum  => nonempty($node->getAttribute('rrefnum')),
+      caption  => nonempty($self->cleanNode($doc,
+          $doc->findnode('descendant::ltx:caption', $node))),
+      toccaption => nonempty($self->cleanNode($doc,
+          $doc->findnode('descendant::ltx:toccaption', $node))));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -220,14 +220,14 @@ sub labelled_handler {
     # doesn't make sense to use when referring to the object.
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef,
-      refnum => $refnum,
-      frefnum => ($refnum && $reftag ? $reftag : $frefnum),
-      rrefnum => ($refnum && $reftag ? $reftag : $rrefnum));
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id)),
+      refnum   => nonempty($refnum),
+      frefnum  => nonempty(($refnum && $reftag ? $reftag : $frefnum)),
+      rrefnum  => nonempty(($refnum && $reftag ? $reftag : $rrefnum)));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -236,15 +236,15 @@ sub anchor_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef,
-      title => $self->cleanNode($doc, $node) // undef,
-      refnum  => $node->getAttribute('refnum')  // undef,
-      frefnum => $node->getAttribute('frefnum') // undef,
-      rrefnum => $node->getAttribute('rrefnum') // undef);
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id)),
+      title    => nonempty($self->cleanNode($doc, $node)),
+      refnum   => nonempty($node->getAttribute('refnum')),
+      frefnum  => nonempty($node->getAttribute('frefnum')),
+      rrefnum  => nonempty($node->getAttribute('rrefnum')));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -307,14 +307,14 @@ sub glossarymark_handler {
   if (my $glosskey = $phrase->getAttribute('key')) {
     my $key = join(':', 'GLOSSARY', $role, $glosskey);
     my $entry = $$self{db}->lookup($key)
-      || $$self{db}->register($key, phrase => $phrase, expansion => $expansion, definition => $definition);
+      || $$self{db}->register($key, phrase => nonempty($phrase), expansion => nonempty($expansion), definition => nonempty($definition));
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
   if ($id) {
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id,
-      labels   => $self->noteLabels($node)      // undef,
-      location => $doc->siteRelativeDestination // undef,
-      pageid   => $self->pageID($doc)           // undef,
-      fragid => $self->inPageID($doc, $id) // undef); }
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id),
+      labels   => nonempty($self->noteLabels($node)),
+      location => nonempty($doc->siteRelativeDestination),
+      pageid   => nonempty($self->pageID($doc)),
+      fragid   => nonempty($self->inPageID($doc, $id))); }
   # Scan content, since could contain other interesting stuff...
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -334,19 +334,19 @@ sub bibitem_handler {
     # BUT, we're going to index it in the ObjectDB by the downcased name!!!
     my $key = $node->getAttribute('key');
     $key = lc($key) if $key;
-    $$self{db}->register("BIBLABEL:$key", id => $id) if $key;
-    $$self{db}->register("ID:$id", id => $id, type => $tag, parent => $parent_id, bibkey => $key,
-      location    => $doc->siteRelativeDestination,
-      pageid      => $self->pageID($doc) // undef,
-      fragid      => $self->inPageID($doc, $id) // undef,
-      authors     => $doc->findnode('ltx:bibtag[@role="authors"]', $node) // undef,
-      fullauthors => $doc->findnode('ltx:bibtag[@role="fullauthors"]', $node) // undef,
-      year        => $doc->findnode('ltx:bibtag[@role="year"]', $node) // undef,
-      number      => $doc->findnode('ltx:bibtag[@role="number"]', $node) // undef,
-      refnum      => $doc->findnode('ltx:bibtag[@role="refnum"]', $node) // undef,
-      title       => $doc->findnode('ltx:bibtag[@role="title"]', $node) // undef,
-      keytag      => $doc->findnode('ltx:bibtag[@role="key"]', $node) // undef,
-      typetag     => $doc->findnode('ltx:bibtag[@role="bibtype"]', $node) // undef); }
+    $$self{db}->register("BIBLABEL:$key", id => nonempty($id)) if $key;
+    $$self{db}->register("ID:$id", id => nonempty($id), type => nonempty($tag), parent => nonempty($parent_id), bibkey => nonempty($key),
+      location    => nonempty($doc->siteRelativeDestination),
+      pageid      => nonempty($self->pageID($doc)),
+      fragid      => nonempty($self->inPageID($doc, $id)),
+      authors     => nonempty($doc->findnode('ltx:bibtag[@role="authors"]', $node)),
+      fullauthors => nonempty($doc->findnode('ltx:bibtag[@role="fullauthors"]', $node)),
+      year        => nonempty($doc->findnode('ltx:bibtag[@role="year"]', $node)),
+      number      => nonempty($doc->findnode('ltx:bibtag[@role="number"]', $node)),
+      refnum      => nonempty($doc->findnode('ltx:bibtag[@role="refnum"]', $node)),
+      title       => nonempty($doc->findnode('ltx:bibtag[@role="title"]', $node)),
+      keytag      => nonempty($doc->findnode('ltx:bibtag[@role="key"]', $node)),
+      typetag     => nonempty($doc->findnode('ltx:bibtag[@role="bibtype"]', $node))); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
 
@@ -356,7 +356,7 @@ sub bibentry_handler {
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     if (my $key = $node->getAttribute('key')) {
-      $$self{db}->register('BIBLABEL:' . lc($key), id => $id); } }
+      $$self{db}->register('BIBLABEL:' . lc($key), id => nonempty($id)); } }
 ## No, let's not scan the content of the bibentry
 ## until it gets formatted and re-scanned by MakeBibliography.
 ##  $self->scanChildren($doc,$node,$id || $parent_id);
@@ -379,13 +379,16 @@ sub rdf_handler {
   my $property = $node->getAttribute('property');
   my $value = $node->getAttribute('resource') || $node->getAttribute('content');
   return unless ($property && $value);
-  $$self{db}->register("ID:$id", $property => $value);
+  $$self{db}->register("ID:$id", $property => nonempty($value));
   return; }
 
 # I'm thinking we shouldn't acknowledge rawhtml data at all?
 sub rawhtml_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   return; }
+
+sub nonempty {
+  return (grep { defined } @_) ? @_ : undef; }
 
 # ================================================================================
 1;
