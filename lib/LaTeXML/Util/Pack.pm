@@ -15,7 +15,7 @@ use warnings;
 
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catfile);
-use File::Path qw(remove_tree);
+use File::Path qw(rmtree);
 use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
@@ -116,7 +116,7 @@ sub unpack_source {
   }
 
   # If failed, clean up sandbox directory.
-  remove_tree($sandbox_directory) unless $main_source;
+  rmtree($sandbox_directory) unless $main_source;
   # Return the main source from the unpacked files in the sandbox directory (or undef if failed)
   return $main_source;
 }
