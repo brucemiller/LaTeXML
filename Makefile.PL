@@ -52,6 +52,7 @@ WriteMakefile(NAME => 'LaTeXML',
       : ('XML::LibXML' => 1.61)),    # But > 1.62 is better
     'XML::LibXSLT'      => 1.58,
     'Parse::RecDescent' => 0,
+    'File::Path'        => 2.07,
     'File::Which'       => 0,
     'LWP'               => 0,
     'LWP::Simple'       => 0,
