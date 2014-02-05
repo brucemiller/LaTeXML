@@ -285,27 +285,19 @@ sub DecodeColor {
   my $func_expr_re = qr/>$function_re,(?:$arg_re|$arg_re,$arg_re)/;
   # <color>        : <color_expr><func_expr1>...<func_expri>
   my $color_re = qr/($color_expr_re)(($func_expr_re)*)/;
-  # 1: color_expr_re
-  # 2|10: prefix_re*
-  # 3|11: ne_name_re
-  # 4|12: mix_expr_ne
-  # 5|13: postfix_re
-  # 6: core_model_re
-  # 7: leftover...
-  # 8: div_re
-  # 9: exprs
-  # 14: func_expr
+
   my $color;
   if ($expression =~ /^$color_re$/) {
-    my $func_expr  = $20;
-    my $prefix     = $2 || $10;
-    my $name       = $3 || $11;
-    my $mix_expr   = $4 || $12;
-    my $postfix    = $5 || $13;
+    #DG: Dear reader, I present to you: maintenance hell:
+    my $prefix   = $2 || $10;
+    my $name     = $3 || $11;
+    my $mix_expr = $4 || $12;
+    my $postfix  = $5 || $13;
     my $core_model = $6;
-    my @pallete    = ();
     my $div        = $8;
     my $exprs      = $9;
+    my $func_expr  = $20;
+    my @pallete    = ();
 
     if (defined $core_model) {    # Extended color expression: combine colors as on a pallete
       $color = Black->convert($core_model);
