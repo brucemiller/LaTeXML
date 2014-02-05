@@ -21,7 +21,6 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use List::Util qw(min max);
-
 RequirePackage('color');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -258,55 +257,68 @@ sub DecodeColor {
   $expression = ToString($expression);
   my $prefix_re = qr/-/;    #
                             # [ <name> = . ==> current color; <name> = '' ==> white]
-  my $name_re    = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
-  my $ne_name_re = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
-  my $pct_re     = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
+  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
+  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
+  my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
+  my $pct_capture_re = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   # <mix_expr>     : !<pct1>!<name1>!...<pctn>!(<namen>)?
-  my $mix_expr_re = qr/!$pct_re(!$name_re!$pct_re)*(!$name_re)?/;
+  my $mix_expr_re = qr/!$pct_re(?:!$name_re!$pct_re)*(?:!$name_re)?/;
   # <postfix>  -> |!!<plus>|!![<num>]
-  my $postfix_re = qr/!!(\++|\[\d+\])/;
+  my $postfix_re = qr/!!(?:\++|\[\d+\])/;
   # <expr>         : <prefix><ne_name><mix_expr><postfix>
-  my $expr_re = qr/(?<prefix>$prefix_re*)(?<ne_name>$ne_name_re)
-                        (?<mix_expr>$mix_expr_re)?(?<postfix>$postfix_re)?/x;
+  my $expr_re = qr/($prefix_re*)($ne_name_re)
+                        ($mix_expr_re)?($postfix_re)?/x;    # 4 inner groups
   my $core_model_re = qr/rgb|cmy|cmyk|hsb|gray/;
   # PGF flaw here; don't allow div to be empty
-  my $div_re = qr/[+-]*(\d*[1-9]+\d*(\.\d*)?|\d*\.\d*[1-9]+\d*)/;
-  my $dec_re = qr/[+-]*(\d*\.?\d*)/;
+  my $div_re         = qr/[+-]*(?:\d*[1-9]+\d*(?:\.\d*)?|\d*\.\d*[1-9]+\d*)/;
+  my $div_capture_re = qr/[+-]*(\d*[1-9]+\d*(\.\d*)?|\d*\.\d*[1-9]+\d*)/;
+  my $dec_re         = qr/[+-]*(?:\d*\.?\d*)/;
   # <ext_expr>     : <core_model>,<div>:<expr1><dec1>;...;<exprk><deck>
   #                     | <core_model>:<expr1><dec1>;...;<exprk><deck>
-  my $ext_expr_re = qr/(?<core_model>$core_model_re)(,(?<div>$div_re))?:
-                       (?<exprs>($expr_re|$name_re),$dec_re(;($expr_re|$name_re),$dec_re)*)/x;
+  my $ext_expr_re = qr/($core_model_re)(,($div_re))?:
+                       (($expr_re|$name_re),$dec_re(?:;(?:$expr_re|$name_re),$dec_re)*)/x;
   # <color_expr>   : <name> | <expr> | <ext_expt>
   my $color_expr_re = qr/$expr_re|$ext_expr_re/;
   my $function_re   = qr/wheel|twheel/;
   my $arg_re        = $div_re;
   # <func_expr>    : ><function>,<arg1>,...,<argj>
-  my $func_expr_re = qr/(?<func_expr>>$function_re,($arg_re|$arg_re,$arg_re))/;
+  my $func_expr_re = qr/>$function_re,(?:$arg_re|$arg_re,$arg_re)/;
   # <color>        : <color_expr><func_expr1>...<func_expri>
-  my $color_re = qr/(?<color_expr>$color_expr_re)(?<func_expr>($func_expr_re)*)/;
-
+  my $color_re = qr/($color_expr_re)(($func_expr_re)*)/;
+  # 1: color_expr_re
+  # 2|10: prefix_re*
+  # 3|11: ne_name_re
+  # 4|12: mix_expr_ne
+  # 5|13: postfix_re
+  # 6: core_model_re
+  # 7: leftover...
+  # 8: div_re
+  # 9: exprs
+  # 14: func_expr
   my $color;
   if ($expression =~ /^$color_re$/) {
-    my $func_expr = $+{func_expr};
-    if (defined $+{core_model}) {    # Extended color expression: combine colors as on a pallete
-      my @pallete = ();
-      my $div     = $+{div};
-      my $exprs   = $+{exprs};
-      $color = Black->convert($+{core_model});
+    my $func_expr  = $20;
+    my $prefix     = $2 || $10;
+    my $name       = $3 || $11;
+    my $mix_expr   = $4 || $12;
+    my $postfix    = $5 || $13;
+    my $core_model = $6;
+    my @pallete    = ();
+    my $div        = $8;
+    my $exprs      = $9;
+
+    if (defined $core_model) {    # Extended color expression: combine colors as on a pallete
+      $color = Black->convert($core_model);
       my $dectot = 0;
-      while ($exprs =~ s/(?<EXPR>$expr_re),(?<DEC>$dec_re)//) {
-        my $dec = $+{DEC}; $dec =~ s/--//g;
+      while ($exprs =~ s/($expr_re),($dec_re)//) {
+        my $dec = $6; $dec =~ s/--//g;
         next if !$dec || $dec eq '.';    # the contribution is 0!
         $dectot += $dec;
-        push(@pallete, [DecodeColor($+{EXPR}), $dec]); }
+        push(@pallete, [DecodeColor($1), $dec]); }
       $div = $dectot unless $div;
       foreach my $cp (@pallete) {
         $color = $color->add($$cp[0]->scale($$cp[1] / $div)); } }
     else {                               # Standard Color Expression: <prefix><name><mix_expr><postfix>
-      my $prefix   = $+{prefix};
-      my $name     = $+{ne_name};
-      my $mix_expr = $+{mix_expr};
-      my $postfix  = $+{postfix};
       $color = ($postfix && ($postfix =~ /!!\[(\d+)\]/)    # Note "out-of-order" effect!
         ? indexColorSeries($name, $1)
         : LookupXColor($name));
@@ -322,7 +334,7 @@ sub DecodeColor {
         stepColorSeries($name, length($1)); } }            # Step the series, but no effect on color
         # Now apply any function expressions to the result.
     if ($func_expr) {
-      while ($func_expr =~ s/>(wheel|twheel),$pct_re(,$div_re)?//) {
+      while ($func_expr =~ s/>(wheel|twheel),$pct_capture_re(,$div_capture_re)?//) {
         my ($func, $angle, $full) = ($1, $2, $4);
         my $model = ($func eq 'wheel' ? 'Hsb' : 'tHsb');
         my ($h, $s, $b) = $color->convert($model)->components;
