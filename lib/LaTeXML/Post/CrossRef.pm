@@ -402,8 +402,8 @@ sub make_bibcite {
               refnum  => [$doc->trimChildNodes($refnum)],
               title   => [$doc->trimChildNodes($title || $keytag)],
               attr    => { idref => $id,
-                href => nonempty($self->generateURL($doc, $id)),
-                ($title ? (title => nonempty($title->textContent)) : ()) } }); } } }
+                href => orNull($self->generateURL($doc, $id)),
+                ($title ? (title => orNull($title->textContent)) : ()) } }); } } }
     else {
       $self->note_missing('Entry for citation', $key); } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
@@ -686,7 +686,7 @@ sub generateGlossaryRefTitle {
       push(@stuff, $1); } }
   return ($OK ? @stuff : ()); }
 
-sub nonempty {
+sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
 # ================================================================================
 1;

@@ -1583,8 +1583,8 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $vmode  = $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
     my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width       => nonempty(GetKeyVal($spec, 'to')),
-      'pad-width' => nonempty(GetKeyVal($spec, 'spread')));
+      width       => orNull(GetKeyVal($spec, 'to')),
+      'pad-width' => orNull(GetKeyVal($spec, 'spread')));
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -1671,16 +1671,16 @@ sub insertBlock {
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'bottom',
-      height       => nonempty(GetKeyVal($spec, 'to')),
-      'pad-height' => nonempty(GetKeyVal($spec, 'spread'))); },
+      height       => orNull(GetKeyVal($spec, 'to')),
+      'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
   properties => { sizer => '#2' },
   mode => 'text');
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top',
-      height       => nonempty(GetKeyVal($spec, 'to')),
-      'pad-height' => nonempty(GetKeyVal($spec, 'spread'))); },
+      height       => orNull(GetKeyVal($spec, 'to')),
+      'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
   properties => { sizer => '#2' },
   mode => 'text');
 
@@ -2426,8 +2426,8 @@ DefConstructor('\halign BoxSpecification', sub {
     my ($document, $spec, %props) = @_;
     my $body = $props{body};
     constructAlignment($document, $body, attributes => {
-        width       => nonempty(GetKeyVal($spec, 'to')),
-        'pad-width' => nonempty(GetKeyVal($spec, 'spread')) }); },
+        width       => orNull(GetKeyVal($spec, 'to')),
+        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
   reversion   => '\halign #1{#2\cr#3}',
   bounded     => 1,
   afterDigest => sub {
@@ -2511,8 +2511,8 @@ DefConstructor('\@halign BoxSpecification Undigested {}',
     my ($document, $spec, $template, $body, %props) = @_;
     constructAlignment($document, $body,
       attributes => {
-        width       => nonempty(GetKeyVal($spec, 'to')),
-        'pad-width' => nonempty(GetKeyVal($spec, 'spread')) }); },
+        width       => orNull(GetKeyVal($spec, 'to')),
+        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
 
   reversion => '\halign #1{#2\cr#3}',
   bounded   => 1);
@@ -5751,7 +5751,7 @@ sub andSplit {
   my ($cs, $tokens) = @_;
   return map { ($cs, T_BEGIN, @$_, T_END) } SplitTokens($tokens, T_CS('\and')); }
 
-sub nonempty {
+sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
 
 #**********************************************************************
