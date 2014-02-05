@@ -43,11 +43,13 @@ sub create {
 
 sub new {
   my ($class, $string, %options) = @_;
-  $string = q{} unless defined $string;
-  my $self = bless { source => ($options{source} // "Anonymous String"),
-    shortsource => ($options{shortsource} // "String"),
+  $string               = q{}                unless defined $string;
+  $options{source}      = "Anonymous String" unless defined $options{source};
+  $options{shortsource} = "String"           unless defined $options{shortsource};
+  my $self = bless { source => $options{source},
+    shortsource    => $options{shortsource},
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
-    notes          => ($options{notes}          ? 1 : 0),
+    notes          => ($options{notes} ? 1 : 0),
   }, $class;
   $self->openString($string);
   $self->initialize;

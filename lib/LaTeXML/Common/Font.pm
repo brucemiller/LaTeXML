@@ -369,16 +369,29 @@ sub isSticky {
 # You must arrange this in the calls....
 sub merge {
   my ($self, %options) = @_;
-  my $family     = $options{family}     // $$self[0];
-  my $series     = $options{series}     // $$self[1];
-  my $shape      = $options{shape}      // $$self[2];
-  my $size       = $options{size}       // $$self[3];
-  my $color      = $options{color}      // $$self[4];
-  my $bg         = $options{background} // $$self[5];
-  my $opacity    = $options{opacity}    // $$self[6];
-  my $encoding   = $options{encoding}   // $$self[7];
-  my $forcebold  = $options{forcebold}  // $$self[8];
-  my $forceshape = $options{forceshape} // $$self[9];
+  my $family     = $options{family};
+  my $series     = $options{series};
+  my $shape      = $options{shape};
+  my $size       = $options{size};
+  my $color      = $options{color};
+  my $bg         = $options{background};
+  my $opacity    = $options{opacity};
+  my $encoding   = $options{encoding};
+  my $forcebold  = $options{forcebold};
+  my $forceshape = $options{forceshape};
+
+  # Fallback to positional invocation:
+  $family     = $$self[0] unless defined $family;
+  $series     = $$self[1] unless defined $series;
+  $shape      = $$self[2] unless defined $shape;
+  $size       = $$self[3] unless defined $size;
+  $color      = $$self[4] unless defined $color;
+  $bg         = $$self[5] unless defined $bg;
+  $opacity    = $$self[6] unless defined $opacity;
+  $encoding   = $$self[7] unless defined $encoding;
+  $forcebold  = $$self[8] unless defined $forcebold;
+  $forceshape = $$self[9] unless defined $forceshape;
+
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,
     $encoding, $forcebold, $forceshape); }
