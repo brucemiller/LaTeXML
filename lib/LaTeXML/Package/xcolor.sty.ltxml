@@ -296,7 +296,7 @@ sub DecodeColor {
     my $core_model = $6;
     my $div        = $8;
     my $exprs      = $9;
-    my $func_expr  = $20;
+    my $func_expr  = $19;
     my @pallete    = ();
 
     if (defined $core_model) {    # Extended color expression: combine colors as on a pallete
