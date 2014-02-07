@@ -136,7 +136,7 @@ To install the prerequisites by hand, the following instructions may help:
 \begin{lstlisting}[style=shell]
    perl -MCPAN -e shell
    cpan> install XML::LibXML, XML::LibXSLT, Parse::RecDescent, File::Which,
-   cpan> install URI, IO::String, libwww, JSON::XS, Archive::Zip
+   cpan> install URI, IO::String, libwww, JSON::XS, Archive::Zip, Image::Size
    cpan> quit
 \end{lstlisting}
 
@@ -145,8 +145,10 @@ The following packages are usually desirable, but aren't required to run \LaTeXM
 \begin{description}
 \item[\TeX] Most users of \LaTeXML\ will want to install \TeX, as well.  \LaTeXML\ will
 use \TeX's style files directly in some cases, providing broader coverage.
+
 Moreover, if \TeX\ is present when \LaTeXML\ is being installed, it will install a couple of
-its own for use with regular \TeX, or \LaTeX\ runs.
+its own for use with regular \TeX, or \LaTeX\ runs;
+So if you are going to install \TeX, install it first!
 
 \item[ImageMagick] provides a handy library of image manipulation routines.
 When they are present \LaTeXML\ is able to carry out more image processessing,
@@ -158,6 +160,9 @@ Follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
 to download and install the latest version of ImageMagick being sure to enable
 and build the Perl binding along with it.
 \end{description}
+\emph{Note to packagers:} If you are preparing a compiled installation package (such as rpm or deb) for
+\LaTeXML, and the above packages are easily installable in your distribution,
+you probably should include them as dependencies of \LaTeXML.
 
 \subsubsection{Getting the source}\label{getting.source}
 \paragraph{Source tarball}\label{source.tarball}
@@ -246,7 +251,7 @@ yum install perl-XML-LibXML perl-XML-LibXSLT \
     perl-Parse-RecDescent perl-File-Which \
     perl-URI perl-IO-string perl-libwww-perl \
     perl-JSON-XS perl-Archive-Zip \
-    ImageMagick ImageMagick-perl
+    ImageMagick ImageMagick-perl perl-Image-Size
 \end{lstlisting}
 Then continue by using the general procedure from \ref{build.source}.
 
@@ -306,7 +311,7 @@ The prerequisites can be installed (or updated) by running this command as root:
       libparse-recdescent-perl libfile-which-perl \
       liburi-perl libio-string-perl libwww-perl \
       libjson-xs-perl libarchive-zip-perl \
-      imagemagick perlmagick
+      imagemagick perlmagick libimage-size-perl
 \end{lstlisting}
 Then continue by using the general procedure from \ref{build.source}.
 
@@ -346,7 +351,7 @@ The prerequisites can be installed by running this command as root:
       p5-parse-recdescent p5-file-which \
       p5-uri p5-io-string p5-libwww-perl \
       p5-json-xs p5-archive-zip \
-      p5-perlmagick
+      p5-perlmagick p5-image-size
 \end{lstlisting}
 Then continue by using the general procedure from \ref{build.source}.
 
