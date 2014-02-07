@@ -16,6 +16,7 @@ use warnings;
 use DB_File;
 #use Image::Magick;
 #use Graphics::Magick;
+use LaTeXML::Util::Image;
 use POSIX;
 use LaTeXML::Util::Pathname;
 use File::Temp qw(tempdir);
@@ -29,7 +30,7 @@ use base qw(LaTeXML::Post::Processor);
 
 # Other silly constants that might want changing?
 ##our $TMP = '/tmp';
-our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE?]
+our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 
 # The purpose of this module is to convert TeX fragments into png (or similar),
 # typically via dvi and other intermediate formats.
@@ -81,48 +82,31 @@ sub new {
   return $self; }
 
 #**********************************************************************
-
-# NOTE that Image::Magick version 6.6.5.10 is erratic about making png's transparent!
-# version 5.6.1.2 seems to work....
-# Graphics::Magick seems to be working;
-# #our @MagickClasses = (qw(Foo::Bar  Image::Magick Graphics::Magick));
-# # We could _prefer_ Graphics::Magick over Image::Magick, if available...
-# #our @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));
-
-# # Is this a big slowdown? Maybe should do only once??
-# #our @MagickClasses = (qw(Image::Magick));
-
-# sub createMagickImage {
-#   my($sel,%props)=@_;
-#   foreach my $class (@MagickClasses){
-#     my $object = createMagickObject($class,%props);
-# #    print STDERR "Magick class $class ".($object ? "succeeded" : "failed")."\n";
-#     return $object if $object; }}
-
-# sub createMagickObject {
-#   my($class,%props)=@_;
-#   my $module = $class.".pm";
-#   $module =~ s/::/\//g;
-#   eval { local $$SIG{__DIE__}; require $module; $class->new(%props); }; }
-
-# This will be set once we've found an Image processing library to use [Daemon safe]
-our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
-my @MagickClasses = (qw(Foo::Bar  Graphics::Magick Image::Magick));    # CONSTANT
-
-sub createMagickImage {
-  my ($sel, %props) = @_;
-  if (!$IMAGECLASS) {
-    foreach my $class (@MagickClasses) {
-      my $module = $class . ".pm";
-      $module =~ s/::/\//g;
-      my $object = eval { local $SIG{__DIE__} = undef; require $module; $class->new(%props); };
-      if ($object) {
-        $IMAGECLASS = $class;
-        last; } } }
-  Fatal('imageprocessing', 'imageclass', undef,
-    "No available image processing module found",
-    "Candidates: " . join(',', @MagickClasses)) unless $IMAGECLASS;
-  return $IMAGECLASS->new(%props); }
+# Check whether this processor actually has the resources it needs to process.
+# I don't know if there's a general API implied here;
+# It could, conceivably be use in planning post processing?
+# But generally, before signalling an error, you'd want to know that the processor
+# is even needed.
+# This test is called once we know that, from within
+#
+# At any rate: To process LaTeX snippets into images, we will need
+#  * latex (or related) from a TeX installation
+#  * Image::Magick (or similar) [see LaTeXML::Util::Image]
+sub canProcess {
+  my ($self) = @_;
+  # Check if we have Image::Magick (or similar)
+  if (!image_can_image()) {
+    Error('expected', 'Image::Magick', undef,
+      "No available image processing module found; Skipping.",
+      "Please install one of: " . join(',', image_classes()));
+    return; }
+  # AND check if we have an approriprate latex!!!
+  if (($LATEXCMD =~ /^(\S+)/) && !which($1)) {    # does the command seem to be available?
+    Error('expected', $LATEXCMD, undef,
+      "No latex command ($LATEXCMD) found; Skipping.",
+      "Please install TeX to generate images from LaTeX");
+    return; }
+  return 1; }
 
 #**********************************************************************
 # Methods that must be defined;
@@ -208,6 +192,8 @@ sub process {
 
   return $doc unless $nuniq;    # No strings to process!
 
+  return unless $self->canProcess;
+
   # === Check which objects still need processing.
   my $destdir = $doc->getDestinationDirectory;
   my @pending = ();
@@ -218,7 +204,7 @@ sub process {
     push(@pending, $table{$key}); }
 
   NoteProgress(" [$nuniq unique; " . scalar(@pending) . " new]");
-  if (@pending) {               # if any images need processing
+  if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
     my $workdir = tempdir("LaTeXMLXXXXXX", CLEANUP => 0, TMPDIR => 1);
@@ -429,7 +415,7 @@ sub convert_image {
   my ($self, $doc, $src, $dest) = @_;
   my ($bg, $fg) = ($$self{background}, 'black');
 
-  my $image = $self->createMagickImage(antialias => 'True', background => $bg, density => $$self{dpi});
+  my $image = image_object(antialias => 'True', background => $bg, density => $$self{dpi});
   my $err = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,

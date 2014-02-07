@@ -18,7 +18,8 @@ use warnings;
 use LaTeXML::Util::Pathname;
 use List::Util qw(min max);
 use POSIX;
-use Image::Magick;
+#use Image::Magick;
+use LaTeXML::Util::Image;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
@@ -153,10 +154,8 @@ sub getTypeProperties {
   my ($dir,  $name,   $ext)     = pathname_split($source);
   my $props = $$self{type_properties}{$ext};
   if (!$props) {
-    # If we don't have a known file type, load the image and see if we can extract it there.
-    # This is probably grossly inefficient, maybe there's a better way to get image types...
-    my ($image, $type);
-    if (($image = $self->ImageRead(undef, $source)) && (($type) = $image->Get('magick'))) {
+    # If we don't have a known file type, try a bit harder (maybe less efficient)
+    if (my $type = image_type($source)) {
       $props = $$self{type_properties}{ lc($type) }; } }
   return ($props ? %$props : ()); }
 
@@ -211,12 +210,28 @@ sub transformGraphic {
   # Trivial scaling case: Use original image with (at most) different width & height.
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
     && !grep { !($_->[0] =~ /^scale/) } @$transform;
+  # But first check if we have the capabilities to do complex scaling!
   if (!$triv_scaling && (defined $properties{raster}) && !$properties{raster}) {
     Warn("limitation", $source, undef,
       "Cannot (yet) apply complex transforms to non-raster images",
       join(',', map { join(' ', @$_) } grep { !($_->[0] =~ /^scale/) } @$transform));
     $triv_scaling = 1;
     $transform = [grep { ($_->[0] =~ /^scale/) } @$transform]; }
+  if (!image_can_image()) {
+    if ($type ne $srctype) {
+      Error('imageprocessing', 'imageclass', undef,
+        "No image processing module found to convert types",
+        "Skipping $source=>$type.",
+        "Please install one of: " . join(',', image_classes()));
+      return; }
+    elsif (!$triv_scaling) {
+      Error('imageprocessing', 'imageclass', undef,
+        "No image processing module found for complex transformations",
+        "Simplifying transformation of $source.",
+        "Please install one of: " . join(',', image_classes()));
+      $triv_scaling = 1;
+      $transform = [grep { ($_->[0] =~ /^scale/) } @$transform]; }
+  }
   my ($image, $width, $height);
   if ($triv_scaling) {
     # With a simple scaling transformation we can preserve path & file-names
@@ -256,8 +271,7 @@ sub transformGraphic {
 # Compute the desired image size (width,height)
 sub trivial_scaling {
   my ($self, $doc, $source, $transform) = @_;
-  my $image = $self->ImageRead($doc, $source) or return;
-  my ($w, $h) = $self->ImageGet($doc, $image, 'width', 'height');
+  my ($w, $h) = image_size($source);
   return unless $w && $h;
   foreach my $trans (@$transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
