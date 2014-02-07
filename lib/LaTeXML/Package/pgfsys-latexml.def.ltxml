@@ -20,7 +20,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use Image::Magick;
+use LaTeXML::Util::Image;
 use List::Util qw(min max);
 #=====================================================================
 # Utilities
@@ -661,24 +661,19 @@ DefPrimitive('\pgfsys@defineimage', sub {
       paths => LookupValue('GRAPHICSPATHS'));
     my $title = $path;
     if (defined $path) {
-      my $magick = Image::Magick->new;
-      if (my $retval = $magick->Read($path)) {
-        Error('I/O' . $path . " Failed to read image $path: $retval"); }
-      my $width  = $magick->Get('width')  || 1;    # real width
-      my $height = $magick->Get('height') || 1;    # read height
-      my $w = $width;     # specified width
-      my $h = $height;    # specified height
-                          #my $x = (LookupValue('pgf_lastForeignObjX') || 0); # x of tl corner
-                          #my $y = 0; # y coordinate of top left corner
+      my $px = 72.27 / ($STATE->lookupValue('DPI') || 90);
+      my ($width, $height) = map { $_ * $px } image_size($path);    # PIXELS => pts!!!!!
+      my $w     = $width;                                                         # specified width
+      my $h     = $height;                                                        # specified height
       my $wspec = !(xEquals(T_CS('\pgf@imagewidth'), T_CS('\pgfutil@empty')));
       my $hspec = !(xEquals(T_CS('\pgf@imageheight'), T_CS('\pgfutil@empty')));
 
       if ($wspec) {
-        $w = Dimension(ToString(Expand(T_CS('\pgf@imagewidth'))))->pxValue;
-        $h *= $w / $width unless $hspec; }    # scale to preserve ratio
+        $w = Dimension(ToString(Expand(T_CS('\pgf@imagewidth'))))->ptValue;
+        $h *= $w / $width unless $hspec; }                                        # scale to preserve ratio
       if ($hspec) {
-        $h = Dimension(ToString(Expand(T_CS('\pgf@imageheight'))))->pxValue;
-        $w *= $h / $height unless $wspec; }    # scale to preserve ratio
+        $h = Dimension(ToString(Expand(T_CS('\pgf@imageheight'))))->ptValue;
+        $w *= $h / $height unless $wspec; }                                       # scale to preserve ratio
       DefMacro('\pgf@image',
         Invocation(T_CS('\@@foreign@image'), $path,
           Dimension($w . 'pt'), Dimension($h . 'pt'))); }
@@ -687,14 +682,13 @@ DefPrimitive('\pgfsys@defineimage', sub {
       DefMacro('\pgf@image', ''); }
     return; });
 
-##DefConstructor('\@@foreign@image Semiverbatim {}{}', sub {
 DefConstructor('\@@foreign@image Semiverbatim {Dimension}{Dimension}', sub {
     my ($doc, $path, $width, $height) = @_;
     my $foreign = foreignObjectCheck($doc);
     $doc->openElement('svg:foreignObject', width => $width, height => $height)
       unless $foreign;
     $doc->insertElement('ltx:graphics', undef, graphic => $path,
-      options => "width=" . $width->pxValue . ",height=" . $height->pxValue);
+      options => "width=" . $width->ptValue . "pt ,height=" . $height->ptValue . "pt");
     $doc->closeElement('svg:foreignObject') unless $foreign; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
