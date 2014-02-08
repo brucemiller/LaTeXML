@@ -1460,16 +1460,16 @@ DefMathML('Apply:FENCED:?', sub {
 
 # Note how annoyingly MML's arrays don't change the style the same
 # way TeX does!
+# This stacks any number of items, one per row.
 DefMathML('Apply:STACKED:?', sub {
-    my ($op, $over, $under) = @_;
+    my ($op, @items) = @_;
     my $c = $op->getAttribute('class');
     my $align = $c && ($c eq 'alignl' ? 'left'
       : ($c eq 'alignc' ? 'center'
         : ($c eq 'alignl' ? 'right' : undef)));
     my $stack = ['m:mtable', { rowspacing => "0.2ex", columnspacing => "0.4em",
         ($align ? (columnalign => $align) : ()) },
-      ['m:mtr', {}, ['m:mtd', {}, pmml($over)]],
-      ['m:mtr', {}, ['m:mtd', {}, pmml($under)]]];
+      map { ['m:mtr', {}, ['m:mtd', {}, pmml($_)]] } @items];
     if ($LaTeXML::MathML::STYLE =~ /^(text|script)$/) {
       return ['m:mstyle', { scriptlevel => '+1' }, $stack]; }
     else {
