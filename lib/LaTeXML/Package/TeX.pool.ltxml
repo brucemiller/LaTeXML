@@ -2106,8 +2106,12 @@ DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0
 # OR (more commonly) it might be  more or less empty, \vspace,\hline etc.
 # In the latter case, we DON'T want the tr/td even with colspan!!!
 # Unfortunately, the timing is wrong to remove them (until ALignment is processing)
+# MOREOVER, there're odd cases (\displaylines) where we apparently should be in an alignment,
+# but aren't, so more punting is in order!
 DefMacro('\noalign{}',
-  '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline');
+  '\if@in@alignment'
+    . '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline'
+    . '\else#1\fi');
 # This just processes the argument in text mode, but notices whether it is "empty" or not.
 # If so, tell the current row that it can safely be collapsed later on.
 DefConstructor('\@@LTX@noalign{}', sub {
@@ -2131,7 +2135,8 @@ DefConstructor('\@@LTX@noalign{}', sub {
       else {
         print STDERR "Got Box: " . Stringify($box) . "\n";
         $empty = 0; last; } }
-    LookupValue('Alignment')->currentRow->{empty} = $empty;
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->currentRow->{empty} = $empty; }
     $whatsit->setProperty(alignmentSkippable => $empty);
     return; });
 
@@ -2146,12 +2151,12 @@ DefRegisterI('\@alignment@ncolumns', undef, Dimension(0),
   getter => sub {
     if (my $alignment = LookupValue('Alignment')) {
       Number(scalar($alignment->getTemplate->columns)); }
-    else { 0; } });
+    else { Number(0); } });
 DefRegisterI('\@alignment@column', undef, Dimension(0),
   getter => sub {
     if (my $alignment = LookupValue('Alignment')) {
       Number($alignment->currentColumnNumber); }
-    else { 0; } });
+    else { Number(0); } });
 
 DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
     my ($gullet, $span, $template, $tokens) = @_;
@@ -5365,7 +5370,7 @@ DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
   sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
   reversion => '\eqalign{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rl'); });
 
@@ -5373,7 +5378,7 @@ DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
   sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
   reversion => '\eqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll'); });
 
@@ -5381,7 +5386,7 @@ DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
   sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
   reversion => '\leqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll'); });
 
