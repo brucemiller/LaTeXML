@@ -31,25 +31,25 @@ sub MuGlue {
 sub toString {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::format($sp / 65536 * 1.8) . "mu";
+  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . "mu";
   $string .= ' plus ' . ($pfill
     ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::format($plus / 65536 * 1.8) . 'mu') if $plus != 0;
+    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu') if $plus != 0;
   $string .= ' minus ' . ($mfill
     ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::format($minus / 65536 * 1.8) . 'mu') if $minus != 0;
+    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu') if $minus != 0;
   return $string; }
 
 sub toAttribute {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::format($sp / 65536 * 1.8) . "mu";
+  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . "mu";
   $string .= ' plus ' . ($pfill
     ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::format($plus / 65536 * 1.8) . 'mu') if $plus != 0;
+    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu') if $plus != 0;
   $string .= ' minus ' . ($mfill
     ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::format($minus / 65536 * 1.8) . 'mu') if $minus != 0;
+    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu') if $minus != 0;
   return $string; }
 
 sub stringify {
