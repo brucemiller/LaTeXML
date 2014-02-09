@@ -19,6 +19,11 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+RequirePackage('keyval');
+RequirePackage('ifpdf');
+RequirePackage('ifvtex');
+RequirePackage('ifxetex');
+
 # Do I need to mess with options, since they are somewhat complex,
 # many take values, including lists of values
 # AND, in the end, they're all ignored!
