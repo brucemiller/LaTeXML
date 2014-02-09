@@ -14,6 +14,7 @@ package LaTeXML::Post;
 use strict;
 use warnings;
 use Time::HiRes;
+use LaTeXML::Util::Radix;
 use Encode;
 use base qw(Exporter);
 our @EXPORT = (qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd
@@ -193,11 +194,7 @@ sub generateMessage {
 # create a (hopefully) unique id
 sub uniquifyID {
   my ($baseid, $counter, $suffix) = @_;
-  my $uniq = '';
-  while ($counter > 0) {
-    $uniq = chr(ord('a') + (($counter - 1) % 26)) . $uniq;
-    $counter = int(($counter - 1) / 26); }
-  return $baseid . $uniq . ($suffix || ''); }
+  return $baseid . radix_alpha($counter) . ($suffix || ''); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::Processor;

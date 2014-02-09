@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
+use LaTeXML::Util::Radix;
 use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
@@ -196,8 +197,10 @@ sub getBibEntries {
     if (defined $suffixes{$ay}) {
       my $prev = $suffixes{$ay};
       if (!$$prev{suffix}) {
-        $$prev{suffix} = 'a'; }
-      $$entry{suffix} = chr(ord($$prev{suffix}) + 1); }
+        $$prev{suffix_counter} = 1;
+        $$prev{suffix}         = radix_alpha($$prev{suffix_counter}); }
+      $$entry{suffix_counter} = $$prev{suffix_counter} + 1;
+      $$entry{suffix}         = radix_alpha($$entry{suffix_counter}); }
     $suffixes{$ay} = $entry;
     # HACKERY: AFTER all the sorting have been done, remove <ERROR role="sort"> nodes.
     # These may have been inserted to alter sorting, eg \NOOP{a}...

@@ -318,9 +318,9 @@ DefMacro('\theoremlistalloptname',  '');
 #======================================================================
 # Add capability for greek numbering
 DefMacro('\greek{}', sub {
-    T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf + 0x03B1 - 1)); });
+    ExplodeText(radix_greek(CounterValue(ToString(Expand($_[1])))->valueOf)); });
 DefMacro('\Greek{}', sub {
-    T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf + 0x0391 - 1)); });
+    ExplodeText(radix_Greek(CounterValue(ToString(Expand($_[1])))->valueOf)); });
 #======================================================================
 
 1;

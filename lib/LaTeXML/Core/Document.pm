@@ -18,6 +18,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Core::List;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
+use LaTeXML::Util::Radix;
 use Unicode::Normalize;
 use base qw(LaTeXML::Common::Object);
 
@@ -1078,15 +1079,8 @@ sub modifyID {
     my $badid = $id;
     if (!$LaTeXML::Core::Document::ID_SUFFIX
       || $$self{idstore}{ $id = $badid . $LaTeXML::Core::Document::ID_SUFFIX }) {
-      foreach my $s1 (ord('a') .. ord('z')) {
-        return $id unless $$self{idstore}{ $id = $badid . chr($s1) }; }
-      foreach my $s1 (ord('a') .. ord('z')) {
-        foreach my $s2 (ord('a') .. ord('z')) {
-          return $id unless $$self{idstore}{ $id = $badid . chr($s1) . chr($s2) }; } }
-      foreach my $s1 (ord('a') .. ord('z')) {
-        foreach my $s2 (ord('a') .. ord('z')) {
-          foreach my $s3 (ord('a') .. ord('z')) {
-            return $id unless $$self{idstore}{ $id = $badid . chr($s1) . chr($s2) . chr($s3) }; } } }
+      foreach my $s1 (1 .. 26 * 26 * 26) {    # Gotta give up, eventually; is 3 letters enough?
+        return $id unless $$self{idstore}{ $id = $badid . radix_alpha($s1) }; }
       Fatal('malformed', 'id', $self, "Automatic incrementing of ID counters failed",
         "Last alternative for '$id' is '$badid'"); } }
   return $id; }

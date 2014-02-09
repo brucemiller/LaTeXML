@@ -2140,27 +2140,28 @@ DefMacro('\@arabic{Number}', sub {
 DefMacro('\arabic{}', sub {
     ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf); });
 DefMacro('\@roman{Number}', sub {
-    roman(ToString($_[1]->valueOf)); });
+    ExplodeText(radix_roman(ToString($_[1]->valueOf))); });
 DefMacro('\roman{}', sub {
-    roman(CounterValue(ToString(Expand($_[1])))->valueOf); });
+    ExplodeText(radix_roman(CounterValue(ToString(Expand($_[1])))->valueOf)); });
 DefMacro('\@Roman{Number}', sub {
-    Roman(ToString($_[1]->valueOf)); });
+    ExplodeText(radix_Roman(ToString($_[1]->valueOf))); });
 DefMacro('\Roman{}', sub {
-    Roman(CounterValue(ToString(Expand($_[1])))->valueOf); });
+    ExplodeText(radix_Roman(CounterValue(ToString(Expand($_[1])))->valueOf)); });
 DefMacro('\@alph{Number}', sub {
-    T_OTHER(chr($_[1]->valueOf + ord('a') - 1)); });
+    ExplodeText(radix_alpha($_[1]->valueOf)); });
 DefMacro('\alph{}', sub {
-    T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf + ord('a') - 1)); });
+    ExplodeText(radix_alpha(CounterValue(ToString(Expand($_[1])))->valueOf)); });
 DefMacro('\@Alph{Number}', sub {
-    T_OTHER(chr($_[1]->valueOf + ord('A') - 1)); });
+    ExplodeText(radix_Alpha($_[1]->valueOf)); });
 DefMacro('\Alph{}', sub {
-    T_OTHER(chr(CounterValue(ToString(Expand($_[1])))->valueOf + ord('A') - 1)); });
+    ExplodeText(radix_Alpha(CounterValue(ToString(Expand($_[1])))->valueOf)); });
+
 our @fnsymbols = ("*", "\x{2020}", "\x{2021}", UTF(0xA7), UTF(0xB6),
   "\x{2225}", "**", "\x{2020}\x{2020}", "\x{2021}\x{2021}");
 DefMacro('\@fnsymbol{Number}', sub {
-    T_OTHER($fnsymbols[$_[1]->valueOf - 1]); });
+    ExplodeText(radix_format($_[1]->valueOf, @fnsymbols)); });
 DefMacro('\fnsymbol{}', sub {
-    T_OTHER($fnsymbols[CounterValue(ToString(Expand($_[1])))->valueOf - 1]); });
+    ExplodeText(radix_format(CounterValue(ToString(Expand($_[1])))->valueOf, @fnsymbols)); });
 
 #======================================================================
 # C.8.5 The ifthen Package.
@@ -2623,15 +2624,10 @@ sub beginBibliography {
   # Try to compute a reasonable, but unique ID;
   # relative to the document's ID, if any.
   # But also, if there are multiple bibliographies,
-  my $bibid = LookupValue('bibliography_ID');    # previous bibliographic ID?
-  if ($bibid) {
-    if (($bibid =~ /(.*?bib\w*?)(\w)$/) && (lc($2) ne 'z')) { $bibid = $1 . chr(ord($2) + 1); }
-    else { $bibid .= 'a'; } }
-  elsif (my $docid = ToString(Expand(T_CS('\thedocument@ID')))) {
-    $bibid = $docid . ".bib"; }
-  else {
-    $bibid = 'bib'; }
-  AssignValue('bibliography_ID' => $bibid, 'global');
+  my $bibnumber = LookupValue('n_bibliographies') || 0;
+  AssignValue(n_bibliographies => ++$bibnumber, 'global');
+  my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+  my $bibid = ($docid ? $docid . '.' : '') . 'bib' . radix_alpha($bibnumber - 1);
   DefMacroI(T_CS('\thebibliography@ID'), undef, T_OTHER($bibid));
   #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
   $whatsit->setProperty(id => $bibid);
