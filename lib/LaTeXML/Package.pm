@@ -43,6 +43,7 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Common::XML;
 use LaTeXML::Core::Rewrite;
+use LaTeXML::Util::Radix;
 use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
@@ -131,6 +132,7 @@ our @EXPORT = (qw(&DefExpandable
   @LaTeXML::Common::Color::EXPORT,
   @LaTeXML::Core::Alignment::EXPORT,
   @LaTeXML::Common::XML::EXPORT,
+  @LaTeXML::Util::Radix::EXPORT,
 );
 
 #**********************************************************************
