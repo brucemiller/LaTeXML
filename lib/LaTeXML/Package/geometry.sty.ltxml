@@ -1,0 +1,58 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  geometry                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Do I need to mess with options, since they are somewhat complex,
+# many take values, including lists of values
+# AND, in the end, they're all ignored!
+# foreach my $option (qw(
+#   paper papername
+#   a0paper a1paper a2paper a3paper a4paper a5paper a6paper
+#   b0paper b1paper b2paper b3paper b4paper b5paper b6paper
+#   letterpaper executivepaper legalpaper
+#   screen
+#   paperwidth paperheight papersize
+#   landscape portrait
+#
+# ... ETC, ETC
+#   twosideshift includemp
+#   nohead nofoot noheadfoot
+# )){
+#   DeclareOption($option, undef); }
+# Note that probably the options should be put into Gm keyval set.
+
+# \geometry{geometry keyvals}
+DefMacro('\geometry{}', '');
+
+# \newgeometry{geometry keyvals}
+DefMacro('\newgeometry{}', '');
+
+# \restoregeometry
+DefMacro('\restoregeometry', '');
+
+# \savegeometry{geometryname}  ; saves current geometry under the given name
+DefMacro('\savegeometry{}', '');
+
+# \loadgeometry{geometryname}  ; restores the geometry to the named one.
+DefMacro('\loadgeometry{}', '');
+
+#======================================================================
+
+1;
