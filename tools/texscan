@@ -544,16 +544,23 @@ sub scan {
         push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;
       }
       push(@pkgs, $name) unless $name eq 'latex.ltx';
-      no warnings;
-      ## Since we're mucking with STATE, we'll reload, and get redefinitions;
-      ## but we'd really rather not get all the warnings!!
-      local $^W = 0;
+      ## Since we're mucking with STATE, we'll reload, BUT we'll get redefinitions;
+      ## We'd really rather not get all the warnings, though!!
+      #### These didn't work;
+      #### no warnings;
+      #### local $^W = 0;
+      # Try Deyan's heavier hammer!
+      foreach my $subname (keys %LaTeXML::Package::Pool::) {
+        undef $LaTeXML::Package::Pool::{$subname};
+        delete $LaTeXML::Package::Pool::{$subname}; }
+
       foreach my $pkg (@pkgs) {
         my $loadpath = pathname_find("$pkg.ltxml", paths => $paths, installation_subdir => 'Package');
         if (!$loadpath) {
           print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return; }
-        if    ($pkg =~ /(.*)\.sty$/) { LaTeXML::Package::RequirePackage($1); }
-        elsif ($pkg =~ /(.*)\.cls$/) { LaTeXML::Package::LoadClass($1); }
+        if    ($pkg =~ /(.*)\.pool$/) { LaTeXML::Package::LoadPool($1); }
+        elsif ($pkg =~ /(.*)\.sty$/)  { LaTeXML::Package::RequirePackage($1); }
+        elsif ($pkg =~ /(.*)\.cls$/)  { LaTeXML::Package::LoadClass($1); }
         else { LaTeXML::Package::InputDefinitions($loadpath); } }
 
       print "Scanning defined symbols\n" if $::VERBOSITY >= 1;
