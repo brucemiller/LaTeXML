@@ -1,0 +1,40 @@
+# /=====================================================================\ #
+# |  nicefrac                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#RequirePackage('ifthen');
+
+DefMacro('\@UnitsNiceFrac[]{}{}',
+  '\ensuremath{\ltx@nicefrac@ifrac{#1{#2}}{#1{#3}}}');
+# copy of \ifrac from amsmath
+DefConstructor('\ltx@nicefrac@ifrac{}{}',
+  "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
+    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac,
+  alias => '\nicefrac');
+
+DefMacro('\@UnitsUglyFrac[]{}{}',
+  '\ifmmode\frac{#1{#2}}{#1{#2}}\else#1{#2}/#1{#2}\fi');
+
+DeclareOption('nice', sub { Let('\nicefrac', '\@UnitsNiceFrac'); });
+DeclareOption('ugly', sub { Let('\nicefrac', '\@UnitsUglyFrac'); });
+
+ExecuteOptions('nice');
+ProcessOptions();
+
+#======================================================================
+1;

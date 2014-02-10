@@ -1,0 +1,34 @@
+# /=====================================================================\ #
+# |  units                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# RequirePackage('ifthen');
+RequirePackage('nicefrac');
+
+# Would be VERY nice to force some semantics of unit-ness down to the math tokens!
+DefMacro('\unit[]{}',
+  '\ifx.#1.\else#1\ltx@units@spacing\fi\ifmmode\mathrm{#2}\else#2\fi');
+
+DefMacro('\unitfrac[]{}{}',
+  '\ifx.#1.\else#1\ltx@units@spacing\fi\nicefrac[\mathrm]{#2}{#3}');
+
+DeclareOption('tight', sub { Let('\ltx@units@spacing', '\,'); });
+DeclareOption('loose', sub { Let('\ltx@units@spacing', '~'); });
+
+ExecuteOptions('tight');
+ProcessOptions();
+
+#======================================================================
+1;
