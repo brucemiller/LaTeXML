@@ -820,9 +820,11 @@ DefEnvironment('{abstract}', '',
     return; },
   locked => 1, mode => 'text');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
+AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
     my ($gullet) = @_;
-    ($gullet->ifNext(T_BEGIN) ? T_CS('\abstract@onearg') : T_CS('\begin{abstract}')); });
+    ($gullet->ifNext(T_BEGIN) ? T_CS('\abstract@onearg') : T_CS('\begin{abstract}')); },
+  locked => 1);
 DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}');
 
 DefMacroI('\maybe@end@abstract', undef, '\endabstract');
