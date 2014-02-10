@@ -1,0 +1,36 @@
+# /=====================================================================\ #
+# |  ulem                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequireResource('ltx-ulem.css');
+
+#======================================================================
+DefConstructor('\uline{}',
+  "<ltx:text class='ltx_ulem_uline'>#1</ltx:text>");
+DefConstructor('\uuline{}',
+  "<ltx:text class='ltx_ulem_uuline'>#1</ltx:text>");
+DefConstructor('\uwave{}',
+  "<ltx:text class='ltx_ulem_uwave'>#1</ltx:text>");
+DefConstructor('\sout{}',
+  "<ltx:text class='ltx_ulem_sout'>#1</ltx:text>");
+DefConstructor('\xout{}',
+  "<ltx:text class='ltx_ulem_xout'>#1</ltx:text>");
+DefConstructor('\dashuline{}',
+  "<ltx:text class='ltx_ulem_dashuline'>#1</ltx:text>");
+DefConstructor('\dotuline{}',
+  "<ltx:text class='ltx_ulem_dotuline'>#1</ltx:text>");
+
+#======================================================================
+1;

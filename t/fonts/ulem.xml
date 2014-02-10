@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="ulem"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-ulem.css" type="text/css"/>
+  <para xml:id="p1">
+    <tabular>
+      <tbody>
+        <tr>
+          <td align="left" thead="true">uline</td>
+          <td align="left">underlined text like <text class="ltx_ulem_uline">important</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">uuline</td>
+          <td align="left">double-underlined text like <text class="ltx_ulem_uuline">urgent</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">uwave</td>
+          <td align="left">wavy underline like <text class="ltx_ulem_uwave">boat</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">sout</td>
+          <td align="left">line struck through word like <text class="ltx_ulem_sout">wrong</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">xout</td>
+          <td align="left">marked over like <text class="ltx_ulem_xout">removed</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">dashuline</td>
+          <td align="left">dashed underline like <text class="ltx_ulem_dashuline">dashing</text>.</td>
+        </tr>
+        <tr>
+          <td align="left" thead="true">dotuline</td>
+          <td align="left">dotted underline like <text class="ltx_ulem_dotuline">dotty</text>.</td>
+        </tr>
+      </tbody>
+    </tabular>
+  </para>
+</document>
