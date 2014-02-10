@@ -255,7 +255,11 @@ DefParameterType('Variable', sub {
     else {
       Error('expected', '<variable>', $gullet,
         "A <variable> was supposed to be here", "Got " . Stringify($token));
-      undef; } });
+      undef; } },
+  reversion => sub {
+    my ($var) = @_;
+    my ($defn, @args) = @$var;
+    $defn->invocation(@args); });
 
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
@@ -267,7 +271,11 @@ DefParameterType('Register', sub {
     else {
       Error('expected', '<register>', $gullet,
         "A <register> was supposed to be here", "Got " . Stringify($token));
-      undef; } });
+      undef; } },
+  reversion => sub {
+    my ($var) = @_;
+    my ($defn, @args) = @$var;
+    $defn->invocation(@args); });
 
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
