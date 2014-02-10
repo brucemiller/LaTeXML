@@ -1,0 +1,24 @@
+# /=====================================================================\ #
+# |  dsfont                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+DefConstructor('\mathds{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
+
+# [do I need a full fontmap, like bbold?]
+
+#======================================================================
+1;
