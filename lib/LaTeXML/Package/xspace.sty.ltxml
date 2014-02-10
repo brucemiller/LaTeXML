@@ -1,4 +1,3 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  xspace                                                             | #
 # | Implementation for LaTeXML                                          | #
@@ -23,8 +22,15 @@ our @XSPACES = (
   (map { T_OTHER($_) } '.', '!', ',', ':', ';', '?', '/', "'", ")", '-'),
   T_CS('\@xobeysp'), T_CS('\space'), T_CS('\@sptoken'));
 
-DefMacro('\xspace Token', sub {
-    my ($gullet, $token) = @_;
-    (grep { Equals($token, $_) } @XSPACES ? ($token) : (T_SPACE, $token)); });
+# Signature is actually \xpace Token
+# but be more defensive if we're in an argument {...\xspace}
+# ie. LaTeXML's structured arguments are processed differently than in TeX!
+DefMacro('\xspace', sub {
+    my ($gullet) = @_;
+    if (my $token = $gullet->readToken) {
+      (grep { Equals($token, $_) } @XSPACES ? ($token) : (T_SPACE, $token)); }
+    else {
+      (); } });
 
+#======================================================================
 1;
