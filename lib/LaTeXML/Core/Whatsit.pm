@@ -258,6 +258,7 @@ sub computeSize {
     my ($wd, $ht, $dp) = (0, 0, 0);
     foreach my $box (@boxes) {
       next unless defined $box;
+      next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
       my ($w, $h, $d) = (ref $box ? $box->getSize : $font->computeStringSize($box));
       $wd += $w->valueOf;
       $ht = max($ht, $h->valueOf);
