@@ -1162,7 +1162,7 @@ DefEnvironment('{list}{}{}',
   "<ltx:itemize>#body</ltx:itemize>",
   properties => sub { beginItemize('list'); });
 
-DefConstructor('\list@item[]',
+DefConstructor('\list@item OptionalUndigested',
   "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
