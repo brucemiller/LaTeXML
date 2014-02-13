@@ -58,7 +58,7 @@ my $keyvals = $opts->scan_to_keyvals(\@ARGV);
 my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
 $address = '127.0.0.1' if !$address || ($address eq 'localhost');
 $address =~ s/^(\w+)\:\/\///;    # strip away any protocol
-my $route = q{};
+my $route = '/';
 if ($address =~ s/\/(.+)$//) {    # strip away route
   $route = '/' . $1;
 }
