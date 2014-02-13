@@ -1,0 +1,46 @@
+# /=====================================================================\ #
+# |  booktabs                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Adjust thickness of rules?
+# Except for the encodings of hline as t (normal) or T (thin)
+# there's currently no support for variable thickness.
+
+# \toprule[thickness]  doubled
+DefMacro('\toprule[Dimension]', '\hline\hline');
+# \midrule[thickness]
+DefMacro('\midrule[Dimension]', '\hline');
+# \bottomrule[thickness] doubled
+DefMacro('\bottomrule[Dimension]', '\hline\hline');
+
+# \cmidrule[thickness](trim){col-col}
+DefMacro('\cmidrule[]',
+  '\@ifnextchar({\ifx.#1.\ltx@@cmidrule\else\ltx@@cmidrule[#1]fi}'
+    . '{\ifx.#1.\ltx@cmidrule\else\ltx@cmidrule[#1]fi}');
+
+DefMacro('\ltx@@cmidrule[Dimension] Match:( Until:){}', '\cline{#3}');
+DefMacro('\ltx@cmidrule[Dimension]{}',                  '\cline{#2}');
+
+# add vspace
+DefMacro('\addlinespace[Dimension]', '');
+
+# adjust spacing to make double line
+DefMacro('\morecmidrules', '');
+
+# \specialrule{thickness}{above}{below}
+DefMacro('\specialrule{Dimension}{Dimension}{Dimension}', '\hline');
+
+#======================================================================
+1;
