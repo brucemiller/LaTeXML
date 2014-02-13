@@ -33,7 +33,9 @@ foreach my $option (qw(natural rgb cmy cmyk hsb gray RGB HTML HSB Gray monochrom
 
 # Ignorable options
 foreach my $option (qw(showerrors hideerrors fixpdftex prologue
-  kernelfbox xcdraw noxcdraw fixinclude)) {
+  kernelfbox xcdraw noxcdraw fixinclude
+  dviwindo oztex xdvi
+  usenames)) {    # which does... what?
   DeclareOption($option, sub { }); }
 
 # Loading sets of names
