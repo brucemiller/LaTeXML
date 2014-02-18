@@ -376,14 +376,8 @@ C<LaTeXML::Core::Rewrite> - rewrite rules for modifying the XML document.
 =head1 DESCRIPTION
 
 C<LaTeXML::Core::Rewrite> implements rewrite rules for modifying the XML document.
-
-=head2 Methods
-
-=over 4
-
-=item C<< $rule->rewrite($document,$node); >>
-
-=back
+See L<LaTeXML::Package> for declarations which create the rewrite rules.
+Further documentation needed.
 
 =head1 AUTHOR
 
