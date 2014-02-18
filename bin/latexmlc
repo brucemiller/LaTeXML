@@ -202,7 +202,7 @@ PAYLOADEND
   $req_sock->send($payload);
   my $response_string = q{};
   { local $/ = undef;
-    $response_string = <$sock>; }
+    $response_string = <$req_sock>; }
   close($req_sock);
   return ($response_string
     ? HTTP::Response->parse($response_string)
