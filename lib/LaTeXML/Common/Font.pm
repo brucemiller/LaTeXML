@@ -218,9 +218,19 @@ sub toString {
   my ($self) = @_;
   return "Font[" . join(',', map { (defined $_ ? $_ : '*') } @{$self}) . "]"; }
 
+# Perhaps it is more useful to list only the non-default components?
 sub stringify {
   my ($self) = @_;
-  return $self->toString; }
+  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc) = @$self;
+  $fam = 'serif' if $fam && ($fam eq 'math');
+  return 'Font[' . join(',', grep { $_ }
+      (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
+    (isDiff($ser, $DEFSERIES)     ? ($ser) : ()),
+    (isDiff($shp, $DEFSHAPE)      ? ($shp) : ()),
+    (isDiff($siz, $DEFSIZE)       ? ($siz) : ()),
+    (isDiff($col, $DEFCOLOR)      ? ($col) : ()),
+    (isDiff($bkg, $DEFBACKGROUND) ? ($bkg) : ()),
+    (isDiff($opa, $DEFOPACITY)    ? ($opa) : ())) . ']'; }
 
 sub equals {
   my ($self, $other) = @_;
