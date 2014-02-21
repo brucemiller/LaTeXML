@@ -380,6 +380,7 @@ sub finalize_rec {
         $self->finalize_rec($text);    # Now have to clean up the new node!
       }
     } }
+
   # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
   # Remove them now.
   foreach my $attr ($node->attributes) {
@@ -578,7 +579,7 @@ sub openText {
         last if ($d == 0); }
       last if ($$self{model}->getNodeQName($n) ne $FONT_ELEMENT_NAME) || $n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
-    $self->closeNode_internal($node) if $closeto ne $node;  # Move to best starting point for this text.
+    $self->closeToNode($closeto) if $closeto ne $node;    # Move to best starting point for this text.
     $self->openElement($FONT_ELEMENT_NAME, font => $font, _fontswitch => 1) if $bestdiff > 0; # Open if needed.
   }
   # Finally, insert the darned text.
