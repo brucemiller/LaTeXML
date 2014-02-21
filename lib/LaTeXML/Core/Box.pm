@@ -84,10 +84,13 @@ sub toString {
 sub stringify {
   my ($self) = @_;
   my $type = ref $self;
-  $type =~ s/^LaTeXML:://;
+  $type =~ s/^LaTeXML::Core:://;
+  my $font = (defined $$self[1]) && $$self[1]->stringify;    # show font, too, if interesting
   return $type . '['
     . (defined $$self[0] ? $$self[0]
-    : (defined $$self[3] ? '[' . ToString($$self[3]) . ']' : '')) . ']'; }
+    : (defined $$self[3] ? '[' . ToString($$self[3]) . ']' : ''))
+    . ($font && ($font ne 'Font[]') ? ' ' . $font : '')
+    . ']'; }
 
 # Should this compare fonts too?
 sub equals {
