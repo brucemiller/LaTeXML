@@ -108,7 +108,7 @@ if ($digested) {
       if ($format eq 'tex') {
         $serialized = LaTeXML::Core::Token::UnTeX($digested); }
       elsif ($format eq 'box') {
-        $serialized = $digested->toString; }
+        $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
       else {
         my $dom = $latexml->convertDocument($digested);
         $serialized = $dom->toString(1);
