@@ -24,11 +24,17 @@ use LaTeXML::Package;
 # We ignore all the filtering stuff which seems not to be used??
 #
 # If you want to revert to texlive's version, uncomment the following:
-#  InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
-#   || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
+InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
+  || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
+
+Info('latexml', 'pgfkeys', undef, "Skipping LaTeXML binding for pgfkeys");
+
+1;
+
+ __END__
+
 #
-# __END__
-#
+
 # OR you may want to turn on locking & uncomment similar code in the middle.
 # That would read in a more complete version of pgfkeys but our binding
 # code will override it.  This may be necessary if the "key bindings"
@@ -721,6 +727,8 @@ RawTeX(<<'EOTeX');
 \pgfkeysaddhandlyonlyexistingexception{.lastretry}%
 \pgfkeysaddhandlyonlyexistingexception{.unknown}%
 EOTeX
+
+### Info('latexml','pgfkeys',undef,"Using LaTeXML binding for pgfkeys");
 
 #======================================================================
 1;
