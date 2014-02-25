@@ -568,7 +568,7 @@ our @CATCODE_MEANING = (
   "alignment tab character",   "end-of-line character",
   "macro parameter character", "superscript character",
   "subscript character",       "ignored character",
-  "space character",           "the letter",
+  "blank space",               "the letter",
   "the character",             "active character",
   "comment character",         "invalid character");
 
@@ -595,7 +595,7 @@ DefMacro('\meaning Token', sub {
       if (lc($type) =~ /token/) {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
-        $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . $char; }
+        $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
       elsif (lc($type) =~ /expandable/) {
         my $expansion = $definition->getExpansion;
         my $ltxps     = $definition->getParameters;
