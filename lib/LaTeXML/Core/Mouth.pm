@@ -211,6 +211,14 @@ sub handle_EOL {
   $$self{colno} = $$self{nchars};    # Ignore any remaining characters after EOL
   return $token; }
 
+sub handle_space {
+  my ($self) = @_;
+  my ($ch, $cc);
+  # Skip any following spaces!
+  while ((($ch, $cc) = $self->getNextChar) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) { }
+  $$self{colno}-- if ($$self{colno} < $$self{nchars});
+  return T_SPACE; }
+
 sub handle_comment {
   my ($self) = @_;
   my $n = $$self{colno};
@@ -240,7 +248,7 @@ my @DISPATCH = (    # [CONSTANT]
   T_SUPER,            # T_SUPER
   T_SUB,              # T_SUB
   sub { undef; },     # T_IGNORE (we'll read next token)
-  T_SPACE,            # T_SPACE
+  \&handle_space,     # T_SPACE
   sub { $LETTER{ $_[1] } || ($LETTER{ $_[1] } = T_LETTER($_[1])); },    # T_LETTER
   sub { $OTHER{ $_[1] }  || ($OTHER{ $_[1] }  = T_OTHER($_[1])); },     # T_OTHER
   sub { $ACTIVE{ $_[1] } || ($ACTIVE{ $_[1] } = T_ACTIVE($_[1])); },    # T_ACTIVE
