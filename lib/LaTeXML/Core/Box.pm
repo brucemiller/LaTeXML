@@ -120,6 +120,10 @@ sub getProperties {
   my ($self) = @_;
   return %{ $$self[4] }; }
 
+sub getPropertiesRef {
+  my ($self) = @_;
+  return $$self[4]; }
+
 sub setProperty {
   my ($self, $key, $value) = @_;
   $$self[4]{$key} = $value;
@@ -132,42 +136,53 @@ sub setProperties {
   return; }
 
 sub getWidth {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self[4]{width};
-  return $$self[4]{width}; }
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $self->computeSize(%options) unless defined $$props{width};
+  return $$props{width}; }
 
 sub getHeight {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self[4]{height};
-  return $$self[4]{height}; }
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $self->computeSize(%options) unless defined $$props{height};
+  return $$props{height}; }
 
 sub getDepth {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self[4]{depth};
-  return $$self[4]{depth}; }
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $self->computeSize(%options) unless defined $$props{depth};
+  return $$props{depth}; }
 
 sub getTotalHeight {
-  my ($self) = @_;
-  return $self->getHeight->add($self->getDepth); }
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $self->computeSize(%options) unless defined $$props{height} && defined $$props{depth};
+  return $$props{height}->add($$props{depth}); }
 
 sub setWidth {
   my ($self, $width) = @_;
-  $$self[4]{width} = $width;
+  my $props = $self->getPropertiesRef;
+  $$props{width} = $width;
   return; }
 
 sub setHeight {
   my ($self, $height) = @_;
-  $$self[4]{height} = $height;
+  my $props = $self->getPropertiesRef;
+  $$props{height} = $height;
   return; }
 
 sub setDepth {
   my ($self, $depth) = @_;
-  $$self[4]{depth} = $depth;
+  my $props = $self->getPropertiesRef;
+  $$props{depth} = $depth;
   return; }
 
 sub getSize {
-  my ($self) = @_;
-  return ($self->getWidth, $self->getHeight, $self->getDepth); }
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $self->computeSize(%options)
+    unless (defined $$props{width}) && (defined $$props{height}) && (defined $$props{depth});
+  return ($$props{width}, $$props{height}, $$props{depth}); }
 
 # for debugging....
 sub showSize {
@@ -178,11 +193,16 @@ sub showSize {
 # Fake computing the dimensions of strings (typically single chars).
 # Eventually, this needs to link into real font data
 sub computeSize {
-  my ($self) = @_;
-  my ($w, $h, $d) = ($$self[1] || LaTeXML::Common::Font->textDefault)->computeStringSize($$self[0]);
-  $$self[4]{width}  = $w unless defined $$self[4]{width};
-  $$self[4]{height} = $h unless defined $$self[4]{height};
-  $$self[4]{depth}  = $d unless defined $$self[4]{depth};
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $options{width}  = $$props{width}  if $$props{width};
+  $options{height} = $$props{height} if $$props{height};
+  $options{depth}  = $$props{depth}  if $$props{depth};
+  my ($w, $h, $d) = ($$self[1]
+      || LaTeXML::Common::Font->textDefault)->computeStringSize($$self[0], %options);
+  $$props{width}  = $w unless defined $$props{width};
+  $$props{height} = $h unless defined $$props{height};
+  $$props{depth}  = $d unless defined $$props{depth};
   return; }
 
 #**********************************************************************
