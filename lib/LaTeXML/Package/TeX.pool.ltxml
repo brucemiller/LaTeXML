@@ -623,6 +623,7 @@ DefMacro('\meaning Token', sub {
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
     my ($token, @toks) = ();
+    # keep newlines from having \n inside!
     while (($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')) {
       if ($token->getCatcode == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
@@ -630,7 +631,8 @@ DefParameterType('CSName', sub {
             "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
-      push(@toks, $token); }
+      # Keep newlines from having \n!
+      push(@toks, (Equals($token, T_SPACE) ? T_SPACE : $token)); }
     T_CS("\\" . ToString(Tokens(@toks))); });
 
 DefMacro('\csname CSName', sub {
