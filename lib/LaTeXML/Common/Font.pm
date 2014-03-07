@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Dimension;
+use List::Util qw(min max sum);
 use base qw(LaTeXML::Common::Object);
 
 # NOTE: This is now in Common that it may evolve to be useful in Post processing...
@@ -362,6 +363,88 @@ sub getNominalSize {
   my $size = $self->getSize;
   my $u = ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
+
+# Here's where I avoid trying to emulate Knuth's line-breaking...
+# Mostly for List & Whatsit: compute the size of a list of boxes.
+# Options _SHOULD_ include:
+#   width:  if given, pretend to simulate line breaking to that width
+#   height,depth : ?
+#   vattach : top, bottom (...?) affects how the height & depth are
+#      allocated when there are multiple lines.
+#   mode : horizontal or vertical !!!
+# Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
+#
+# The big problem with width is to have it propogate down from where
+# it may have been specified to the actual nested box that will get wrapped!
+# Try to mask this (temporarily) by unlisting, and (pretending to ) breaking up too wide items
+#
+# Another issue; SVG needs (sometimes) real sizes, even if the programmer
+# set some dimensions to 0 (eg.)   We may need to distinguish & store
+# requested vs real sizes?
+sub computeBoxesSize {
+  my ($self, $boxes, %options) = @_;
+  my $font = (ref $self ? $self : $STATE->lookupValue('font'));
+  my $maxwidth = $options{width} && $options{width}->valueOf;
+  my @lines = ();
+  my ($wd, $ht, $dp) = (0, 0, 0);
+  foreach my $box (@$boxes) {
+    next unless defined $box;
+    next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
+    my ($w, $h, $d) = (ref $box ? $box->getSize(%options) : $font->computeStringSize($box));
+    if (ref $w) {
+      $wd += $w->valueOf; }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($w)); }
+    if (ref $h) {
+      $ht = max($ht, $h->valueOf); }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Height of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($h)); }
+    if (ref $d) {
+      $dp = max($dp, $d->valueOf); }
+    else {
+      Warn('expected', 'Dimension', undef,
+        "Depth of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
+    if ((($options{mode} || '') eq 'vertical')    # EVERY box is a row?
+                                                  # || $box is a <ltx:break> (or similar)!!!!
+      ) {
+      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
+    elsif ($maxwidth && ($wd >= $maxwidth)) {     # or we've reached the requested width
+          # Compounding errors with wild abandon.
+          # If an underlying box is too wide, we'll split it up into multiple rows
+          # [Rather than correctly break it?]
+      while ($wd >= $maxwidth) {
+        push(@lines, [$maxwidth, $ht, $dp]); $wd = $wd - $maxwidth; }
+      $ht = $h->valueOf; $dp = $d->valueOf; }    # continue with the leftover
+  }
+  if ($wd) {                                     # be sure to get last line
+    push(@lines, [$wd, $ht, $dp]); }
+  # Deal with multiple lines
+  my $nlines = scalar(@lines);
+  if ($nlines == 0) {
+    $wd = $ht = $dp = 0; }
+  elsif ($nlines == 1) {
+    ($wd, $ht, $dp) = @{ $lines[0] }; }
+  elsif ($nlines > 1) {
+    $wd = max(map { $$_[0] } @lines);
+    $ht = sum(map { $$_[1] } @lines);
+    $dp = sum(map { $$_[2] } @lines);
+    if (($options{vattach} || '') eq 'bottom') {
+      my $d = $lines[-1][2];
+      $ht = $ht + $dp - $d; $dp = $d; }
+    else {
+      my $h = $lines[0][1];
+      $dp = $ht + $dp - $h; $ht = $h; } }
+#  print STDERR "Lines"
+#    . (%options ? '[' . join(',', map { "$_=" . ToString($options{$_}) } grep { defined $options{$_} } sort keys %options) . ']' : '')
+#    . ": " . join(',', map { fmt(@$_) } @lines) . " => " . fmt($wd, $ht, $dp) . "\n";
+
+  return (Dimension($wd), Dimension($ht), Dimension($dp)); }
+
+#sub fmt {
+#  my @pp = map { LaTeXML::Common::Dimension::pointformat($_) } @_;
+#  $pp[0] . ' x ' . $pp[1] . ' + ' . $pp[2]; }
 
 # sub default {
 #   my ($self) = @_;
