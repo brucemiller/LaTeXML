@@ -277,8 +277,8 @@ sub currentFrameMessage {
   return "current frame is "
     . ($STATE->isValueBound('MODE', 0)                                 # SET mode in CURRENT frame ?
     ? "mode-switch to " . $STATE->lookupValue('MODE')
-    : ($STATE->lookupValue('groupNonBoxing')    # Current frame is a boxing group?
-      ? "boxing" : "non-boxing") . " group")
+    : ($STATE->lookupValue('groupNonBoxing')    # Current frame is a non-boxing group?
+      ? "non-boxing" : "boxing") . " group")
     . " due to " . Stringify($STATE->lookupValue('groupInitiator'))
     . " " . ToString($STATE->lookupValue('groupInitiatorLocator')); }
 
