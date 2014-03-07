@@ -217,6 +217,12 @@ DefConstructor("\\\\ OptionalMatch:* [Glue]",
 Let('\@normalcr', "\\\\");
 PushValue(TEXT_MODE_BINDINGS => [T_CS("\\\\"), T_CS('\@normalcr')]);
 
+DefMacro('\@nolnerr', '');
+DefMacro('\@centercr', '\ifhmode\unskip\else\@nolnerr\fi'
+    . '\par\@ifstar{\nobreak\@xcentercr}\@xcentercr');
+DefMacro('\@xcentercr',   '\addvspace{-\parskip}\@ifnextchar[\@icentercr\ignorespaces');
+DefMacro('\@icentercr[]', '\vskip #1\ignorespaces');
+
 #**********************************************************************
 # C.2. The Structure of the Document
 #**********************************************************************
@@ -3927,6 +3933,30 @@ RawTeX(<<'EoTeX');
            \meaning #1}%
 }
 EoTeX
+
+DefMacroI('\nfss@catcodes', undef, <<'EOMacro');
+    \makeatletter
+    \catcode`\ 9%
+     \catcode`\^^I9%
+     \catcode`\^^M9%
+     \catcode`\\\z@
+     \catcode`\{\@ne
+     \catcode`\}\tw@
+     \catcode`\#6%
+     \catcode`\^7%
+     \catcode`\%14%
+   \@makeother\<%
+   \@makeother\>%
+   \@makeother\*%
+   \@makeother\.%
+   \@makeother\-%
+   \@makeother\/%
+   \@makeother\[%
+   \@makeother\]%
+   \@makeother\`%
+   \@makeother\'%
+   \@makeother\"%
+EOMacro
 
 sub make_message {
   my ($cmd, @args) = @_;
