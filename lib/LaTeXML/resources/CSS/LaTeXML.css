@@ -205,9 +205,10 @@ table { border-collapse:collapse; }
 /*======================================================================
  SVG (pgf/tikz ?) basics */
 
-.ltx_foreignobject  { margin:0; padding:0; overflow:visible; }
-/* Possible text-align:center, line-height:50%; font-size:50%; ???? */
-.ltx_foreignobject > p { margin:0; padding:0; display:block; white-space:nowrap; }
+/* Stuff appearing in svg:foreignObject */
+.ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
+.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
+/*.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; white-space:nowrap; }*/
 
 /*======================================================================
  Low-level Basics */
