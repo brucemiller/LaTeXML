@@ -20,6 +20,7 @@ use LaTeXML::Core::Tokens;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::XML;
 use LaTeXML::Core::Alignment::Template;
+use List::Util qw(max);
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
 our @EXPORT = (qw(
@@ -194,10 +195,12 @@ sub constructAlignment {
 
   my %attr = ($props{attributes} ? %{ $props{attributes} } : ());
   my $node = $alignment->beAbsorbed($document, %attr);
-  # If requested to guess headers (unless cells are already marked)
+  # If requested to guess headers & we're not nested inside another tabular
   if ($props{guess_headers} && !$document->findnodes("ancestor::ltx:tabular", $node)) {
+    # If no cells are already marked as being thead, apply heuristic
     if (!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node)) {
       guess_alignment_headers($document, $node, $alignment); }
+    # Otherwise, if not a math array, group thead & tbody rows
     elsif (!$body->isMath) {    # in case already marked w/thead|tbody
       alignment_regroup_rows($document, $node); } }
   return $node; }
@@ -247,7 +250,17 @@ sub beAbsorbed {
           if (my $rrow = $rows[$ii]) {
             for (my $jj = $j ; $jj < $j + $nc ; $jj++) {
               if (my $ccol = $$rrow{columns}[$jj]) {
-                $$ccol{skipped} = 1; } } } } } } }
+                $$ccol{skipped} = 1; } } } }
+        # And, if the last (skipped) columns have a bottom border, copy that to the rowspanned col
+        if (my $rrow = $rows[$i + $nr - 1]) {
+          my $sborder = '';
+          for (my $jj = $j ; $jj < $j + $nc ; $jj++) {
+            if (my $ccol = $$rrow{columns}[$jj]) {
+              my $border = $$ccol{border} || '';
+              $border =~ s/[^bB]//g;    # mask all but bottom border
+              $sborder = $border unless $sborder; } }
+          $$col{border} .= $sborder if $sborder; }
+      } } }
 
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
@@ -398,31 +411,27 @@ sub guess_alignment_headers {
 
 #======================================================================
 # Regroup the rows into thead & tbody
-sub alignment_regroup {
-  my ($document, $table, @rows) = @_;
-  my ($group, $grouptype) = (undef, 0);
-  foreach my $xrow ($document->findnodes("ltx:tr", $table)) {
-    my $rowtype = (scalar(grep { $$_{cell_type} ne 'h' } @{ shift(@rows) }) ? 'tbody' : 'thead');
-    if ($grouptype ne $rowtype) {
-      $group = $table->addNewChild($xrow->getNamespaceURI, $grouptype = $rowtype);
-      $table->insertBefore($group, $xrow); }
-    $group->appendChild($xrow); }
-  return; }
-
-# this version works w/o the row data
+# (not messing with tfoot, ATM; HTML4 wants it ONLY after the thead; HTML5 also allows at end!)
+# Any leading rows, all of whose cells have attribute thead should be in thead.
+# UNLESS any of them have a rowspan that extends PAST the end of the thead!!!!
 sub alignment_regroup_rows {
   my ($document, $table) = @_;
-  my ($group, $grouptype) = (undef, 0);
-  foreach my $xrow ($document->findnodes("ltx:tr", $table)) {
-    # if any non thead cells, we'll consider it tbody...
-    my $rowtype = (scalar(grep { (!$_->getAttribute('thead'))
-            && (($_->getAttribute('class') || '') !~ /\bthead\b/) }
-          $document->findnodes('ltx:td', $xrow))
-      ? 'tbody' : 'thead');
-    if ($grouptype ne $rowtype) {
-      $group = $table->addNewChild($xrow->getNamespaceURI, $grouptype = $rowtype);
-      $table->insertBefore($group, $xrow); }
-    $group->appendChild($xrow); }
+  my @rows     = $document->findnodes("ltx:tr", $table);
+  my @heads    = ();
+  my $maxreach = 0;
+  while (@rows) {
+    my @cells = $document->findnodes('ltx:td', $rows[0]);
+    # Non header cells, done.
+    last if scalar(grep { (!$_->getAttribute('thead'))
+          && (($_->getAttribute('class') || '') !~ /\bthead\b/) }
+        @cells);
+    push(@heads, shift(@rows));
+    my $line = scalar(@heads);
+    $maxreach = max($maxreach, map { ($_->getAttribute('rowspan') || 0) + $line } @cells); }
+  if ($maxreach > scalar(@heads)) {    # rowspan crossed over thead boundary!
+    unshift(@rows, @heads); @heads = (); }
+  $document->wrapNodes('ltx:thead', @heads) if @heads;
+  $document->wrapNodes('ltx:tbody', @rows)  if @rows;
   return; }
 
 #======================================================================
