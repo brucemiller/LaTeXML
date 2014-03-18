@@ -1,0 +1,38 @@
+\documentclass{article}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{graphicx}
+
+\begin{document}
+\begin{table}[htb]
+\scalebox{0.95}[0.8]{
+\centering
+  \begin{tabular}{|c|c|c|c|c|} \hline
+   \multicolumn{1}{|c|}{\multirow{5}{5pt}{\begin{rotatebox}{90}{{\footnotesize \textbf{Original pairs}}}\end{rotatebox}}} &
+     \multicolumn{1}{|c|}{ } & \multicolumn{3}{|c|}{\textbf{Monothematic pairs}}\\ \cline{2-5}
+     & & Y & N & Total \\ \cline{2-5}
+     & Y (32) & 116 & \ -- &  116  \\ \cline{2-5}
+     & N (29) & \ \ 96 & 29 & 125  \\ \cline{2-5}
+     & Total (61) & 212 & 29 & 241  \\ \hline
+  \end{tabular}
+  }
+   \caption{Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab4}
+\end{table}
+
+\begin{table}[htb]
+\reflectbox{
+\centering
+  \begin{tabular}{|c|c|c|c|c|} \hline
+   \multicolumn{1}{|c|}{\multirow{5}{5pt}{\begin{rotatebox}{90}{{\footnotesize \textbf{Original pairs}}}\end{rotatebox}}} &
+     \multicolumn{1}{|c|}{ } & \multicolumn{3}{|c|}{\textbf{Monothematic pairs}}\\ \cline{2-5}
+     & & Y & N & Total \\ \cline{2-5}
+     & Y (32) & 116 & \ -- &  116  \\ \cline{2-5}
+     & N (29) & \ \ 96 & 29 & 125  \\ \cline{2-5}
+     & Total (61) & 212 & 29 & 241  \\ \hline
+  \end{tabular}
+  }
+   \caption{Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab4}
+\end{table}
+\end{document}
