@@ -92,12 +92,12 @@ sub compileSchema {
   my ($self) = @_;
   $$self{no_compiled} = 1;
   $self->loadSchema;
-  foreach my $prefix (keys %{ $$self{document_namespaces} }) {
+  foreach my $prefix (sort keys %{ $$self{document_namespaces} }) {
     print $prefix. '=' . $$self{document_namespaces}{$prefix} . "\n"; }
   if (my $defs = $$self{schemaclass}) {
-    foreach my $classname (keys %$defs) {
+    foreach my $classname (sort keys %$defs) {
       print $classname. ':=(' . join(',', sort keys %{ $$self{schemaclass}{$classname} }) . ')' . "\n"; } }
-  foreach my $tag (keys %{ $$self{tagprop} }) {
+  foreach my $tag (sort keys %{ $$self{tagprop} }) {
     print $tag
       . '{' . join(',', sort keys %{ $$self{tagprop}{$tag}{attributes} }) . '}'
       . '(' . join(',', sort keys %{ $$self{tagprop}{$tag}{model} }) . ')' . "\n"; }
