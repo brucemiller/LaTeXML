@@ -3300,13 +3300,10 @@ DefPrimitive('\usebox DefToken', sub {
 DefConstructor('\parbox[][][]{Dimension}{}', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     my $vattach = translateAttachment($attachment);
-    my @new     = insertBlock($document, $body);
-    my $model   = $document->getModel;
-    foreach my $node (@new) {
-      my $qname = $model->getNodeQName($node);
-      $document->setAttribute($node, width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
-      $document->setAttribute($node, vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
-  },
+    insertBlock($document, $body,
+      ($width   ? (width   => $width)   : ()),
+      ($vattach ? (vattach => $vattach) : ()));
+    return; },
   properties => sub { (width => $_[4], sizer => '#5'); },
   mode => 'text', bounded => 1,
   beforeDigest => sub {
@@ -3317,14 +3314,10 @@ DefConditional('\if@minipage');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
-
-    my @new = insertBlock($document, $props{body});
-    my $model = $document->getModel;
-    foreach my $node (@new) {
-      my $qname = $model->getNodeQName($node);
-      $document->setAttribute($node, width => ToString($width)) if $width && $document->canHaveAttribute($qname, 'width');
-      $document->setAttribute($node, vattach => $vattach) if $vattach && $document->canHaveAttribute($qname, 'vattach'); }
-  },
+    insertBlock($document, $props{body},
+      ($width   ? (width   => $width)   : ()),
+      ($vattach ? (vattach => $vattach) : ()));
+    return; },
   mode         => 'text',
   properties   => sub { (width => $_[4]); },
   beforeDigest => sub {
