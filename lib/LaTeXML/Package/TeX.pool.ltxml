@@ -1615,9 +1615,11 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     return; });
 
 # This attempts to be a generalize vbox construction;
-# It tries to figure out whether an inline-block is needed,
+# It tries to figure out whether an ltx:inline-block is needed,
 # and attempts to figure out whether sequences of the inserted content
 # need to be explicitly wrapped in some kind of block element (presumably ltx:p).
+# It returns the inserted inner blocks,
+# whether or not they got wrapped by that ltx:inline-block; which it DOESN'T TELL YOU ABOUT!
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
   # Create something like:
@@ -1626,7 +1628,8 @@ sub insertBlock {
   my $context = $document->getElement;    # Where we originally start inserting.
 
   # If we're "explicitly" asking for a vbox, or can't currently put an ltx:p in
-  # (which would be a typical block mode item), then we'd better open an inline-blokc
+  # (which would be a typical block mode item), or if the current point accepts raw text,
+  # then we'd better open an inline-block.
   # [A thought is to close any open ltx:p, or create & delete one, just to "prime" it.
   # but those seem a bad idea, because we may want a vbox inside a p, or....]
   my $newblock = undef;
