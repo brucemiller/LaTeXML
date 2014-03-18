@@ -70,7 +70,7 @@ done
 #======================================================================
 echo "Precompiling $SCHEMA.rng schema to $SCHEMA.model"
  perl -I $LATEXMLDIR/blib/lib -MLaTeXML \
-       -e "LaTeXML->new(searchpaths=>['$RELAXNGDIR'])       \
+       -e "LaTeXML::Core->new(searchpaths=>['$RELAXNGDIR'])       \
               ->withState( sub{                             \
               my \$latexml = \$_[0];                        \
               my \$model = \$latexml->getModel;             \
