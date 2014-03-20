@@ -29,57 +29,88 @@ DefParameterType('GraphixDimension', sub {
     else {
       $gullet->readDimension; } });
 
-# Unimplemented, for now: What should be the result?
-# Would seem to require different treatment if the content was ONLY \includegraphic,
-# or more general text.
-DefConstructor('\scalebox{}[]{}', sub {
-    my ($document, $xscale, $yscale, $box) = @_;
-    my @new = insertBlock($document, $box);
+# Use CSS transforms to achieve these
+DefConstructor('\scalebox{}[] Digested', sub {
+    my ($document, $xscale, $yscale, $box, %props) = @_;
     my $scale;
-    if (!$yscale) { $scale = $xscale; $xscale = undef; }
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep { $_ } $node->getAttribute('options'),
-          ($scale  ? ("scale=" . ToString($scale))   : undef),
-          ($xscale ? ("xscale=" . ToString($xscale)) : undef),
-          ($yscale ? ("yscale=" . ToString($yscale)) : undef));
-        $document->setAttribute($node, options => $options); } } },
+    insertBlock($document, $box,
+      cssstyle => $props{transform},
+      # Should we put the dimensions on attributes?
+      # width=>$props{width},
+      # height=>$props{height},
+      # depth=>$props{depth}
+      ); },
+  properties => sub {
+    my ($stomach, $xscale, $yscale, $box) = @_;
+    $xscale = ToString($xscale);
+    $yscale = ($yscale ? ToString($yscale) : $xscale);
+    my $transform = 'transform:scale(' . $xscale . ',' . $yscale . ');';
+    my ($w, $h, $d) = $box->getSize;
+    (($w ? (width => $w->multiply($xscale)) : ()),
+      ($h      ? (height => $h->multiply($yscale)) : ()),
+      ($d      ? (depth  => $d->multiply($yscale)) : ()),
+      ($xscale ? (xscale => $xscale)               : ()),
+      ($yscale ? (yscale => $yscale)               : ()),
+      transform => $transform); },
   mode => 'text');
 
-DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension}{}', sub {
-    my ($document, $star, $width, $height, $box) = @_;
-    $width  = undef unless $width->valueOf;
-    $height = undef unless $height->valueOf;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep { $_ } $node->getAttribute('options'),
-          ($width  ? ("width=" . ToString($width))   : undef),
-          ($height ? ("height=" . ToString($height)) : undef),
-          ($width && $height ? undef : "keepaspectratio"));
-        $document->setAttribute($node, options => $options); } } },
+DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension} Digested', sub {
+    my ($document, $star, $width, $height, $box, %props) = @_;
+    insertBlock($document, $box,
+      width  => $props{width},
+      height => $props{height},
+      depth  => $props{depth}); },    # ?
+  properties => sub {
+    my ($stomach, $star, $width, $height, $box) = @_;
+    (($width ? (width => $width) : ()),
+      ($height ? (height => $height) : ()),
+      depth => Dimension(0)); },      # ?
   mode => 'text');
 
-DefConstructor('\rotatebox{Float}{}', sub {
-    my ($document, $angle, $box) = @_;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep { $_ } $node->getAttribute('options'), "angle=" . ToString($angle));
-        $document->setAttribute($node, options => $options); } } },
+DefConstructor('\rotatebox{Float} Digested', sub {
+    my ($document, $angle, $box, %props) = @_;
+    insertBlock($document, $box,
+      cssstyle => $props{transform},
+      width    => $props{width},
+      #                height=>$props{height},
+      #                depth=>$props{depth}
+      ); },    # ?
+  properties => sub {
+    my ($stomach, $angle, $box) = @_;
+    my ($w, $h, $d) = map { $_->valueOf } $box->getSize;
+    $h += $d;
+    $angle = -$angle->valueOf;
+    my $rad    = $angle * 3.1415926 / 180;      # close enough
+    my $s      = sin($rad);
+    my $c      = cos($rad);
+    my $ww     = abs($w * $c) + abs($h * $s);
+    my $hh     = abs($h * $c) + abs($w * $s);
+    my $width  = Dimension($ww);
+    my $height = Dimension($hh);
+#                 my $transform = 'transform:translate('.2*$width->pxValue.'px,0) rotate('.$angle.'deg) ;';
+    my $transform = 'transform:rotate(' . $angle . 'deg) ;';
+    (width => $width,
+      height    => $height,
+      depth     => Dimension(0),
+      angle     => $angle,
+      transform => $transform); },
+
   mode => 'text');
 
-DefConstructor('\reflectbox{}', sub {
-    my ($document, $box) = @_;
-    my @new = insertBlock($document, $box);
-    foreach my $node (@new) {
-      # is there anything we might do to other kinds of nodes?
-      if ($document->getModel->getNodeQName($node) eq 'ltx:graphics') {
-        my $options = join(',', grep { $_ } $node->getAttribute('options'), "reflect");
-        $document->setAttribute($node, options => $options); } } },
+DefConstructor('\reflectbox Digested', sub {
+    my ($document, $box, %props) = @_;
+    insertBlock($document, $box,
+      cssstyle => $props{transform},
+      # Should we put the dimensions on attributes?
+      # width=>$props{width},
+      # height=>$props{height},
+      # depth=>$props{depth}
+      ); },
+  properties => sub {
+    my ($stomach, $box) = @_;
+    my $transform = 'transform:scale(-1,1);';
+    my ($w, $h, $d) = $box->getSize;
+    (transform => $transform); },
   mode => 'text');
 
 DefConstructor('\graphicspath DirectoryList', sub {

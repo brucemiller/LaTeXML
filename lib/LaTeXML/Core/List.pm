@@ -91,31 +91,16 @@ sub beAbsorbed {
   return map { $document->absorb($_) } $self->unlist; }
 
 sub computeSize {
-  my ($self) = @_;
-  my ($wd, $ht, $dp) = (0, 0, 0);
-  foreach my $box (@{ $$self[0] }) {
-    my $w = $box->getWidth;
-    my $h = $box->getHeight;
-    my $d = $box->getDepth;
-    if (ref $w) {
-      $wd += $w->valueOf; }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($w)); }
-    if (ref $h) {
-      $ht = max($ht, $h->valueOf); }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Height of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($h)); }
-    if (ref $d) {
-      $dp = max($dp, $d->valueOf); }
-    else {
-      Warn('expected', 'Dimension', undef,
-        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
-  }
-  $$self[4]{width}  = Dimension($wd) unless defined $$self[4]{width};
-  $$self[4]{height} = Dimension($ht) unless defined $$self[4]{height};
-  $$self[4]{depth}  = Dimension($dp) unless defined $$self[4]{depth};
+  my ($self, %options) = @_;
+  my $props = $self->getPropertiesRef;
+  $options{width}  = $$props{width}  if $$props{width};
+  $options{height} = $$props{height} if $$props{height};
+  $options{depth}  = $$props{depth}  if $$props{depth};
+  my ($w, $h, $d) = ($$self[1] || LaTeXML::Common::Font->textDefault)
+    ->computeBoxesSize($$self[0], %options);
+  $$props{width}  = $w unless defined $$props{width};
+  $$props{height} = $h unless defined $$props{height};
+  $$props{depth}  = $d unless defined $$props{depth};
   return; }
 
 #======================================================================

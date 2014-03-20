@@ -47,6 +47,8 @@ sub Stringify {
       return "XMLText[" . $object->data . "]"; }
     elsif ($object->nodeType == XML_DOCUMENT_NODE) {
       return "XMLDocument[" . $$object . "]"; }
+    elsif ($object->nodeType == XML_DOCUMENT_FRAG_NODE) {
+      return "XMLFragment[" . join('', map { Stringify($_) } $object->childNodes) . "]"; }
     else { return "$object"; } }
   else { return "$object"; } }
 

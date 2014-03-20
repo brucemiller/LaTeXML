@@ -205,9 +205,10 @@ table { border-collapse:collapse; }
 /*======================================================================
  SVG (pgf/tikz ?) basics */
 
-.ltx_foreignobject  { margin:0; padding:0; overflow:visible; }
-/* Possible text-align:center, line-height:50%; font-size:50%; ???? */
-.ltx_foreignobject > p { margin:0; padding:0; display:block; white-space:nowrap; }
+/* Stuff appearing in svg:foreignObject */
+.ltx_svg_fog foreignObject  { margin:0; padding:0; overflow:visible; }
+.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; }
+/*.ltx_svg_fog foreignObject > p { margin:0; padding:0; display:block; white-space:nowrap; }*/
 
 /*======================================================================
  Low-level Basics */
@@ -234,7 +235,11 @@ table { border-collapse:collapse; }
 .ltx_font_upright    { font-style: normal; }
 .ltx_font_slanted    { font-style: oblique; }
 .ltx_font_smallcaps  { font-variant: small-caps; }
-
+.ltx_font_oldstyle   { font-variant: oldstyle-nums;  /* experimental css3 ? Doesn't seem to work!*/
+                       -moz-font-feature-settings: "onum";
+                       -ms-font-feature-settings: "onum";
+                       -webkit-font-feature-settings: "onum";
+                       font-variant-numeric: oldstyle-nums; }
 cite                 { font-style: normal; }
 
 .ltx_red        { color:red; }

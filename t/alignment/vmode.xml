@@ -42,37 +42,41 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>parbox and minipage</title>
     <para xml:id="S2.p1">
-      <p width="144.54pt">hbox1</p>
-      <p vattach="bottom" width="144.54pt">vbox1</p>
-      <p width="144.54pt">hbox2</p>
-      <p width="144.54pt">hbox3</p>
-      <p vattach="bottom" width="144.54pt">vbox2</p>
+      <inline-block width="144.54pt">
+        <p>hbox1</p>
+        <p vattach="bottom">vbox1</p>
+        <p>hbox2</p>
+        <p>hbox3</p>
+        <p vattach="bottom">vbox2</p>
+      </inline-block>
     </para>
     <para xml:id="S2.p2">
-      <p width="144.54pt">This is random text. This is random text.
+      <inline-block width="144.54pt">
+        <p>This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
-      <itemize xml:id="I1">
-        <item xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
-            <p>One</p>
-          </para>
-        </item>
-        <item xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
-            <p>Two</p>
-          </para>
-        </item>
-        <item xml:id="I1.i3">
-          <tag>•</tag>
-          <para xml:id="I1.i3.p1">
-            <p>Three</p>
-          </para>
-        </item>
-      </itemize>
-      <p width="144.54pt">This is random text. This is random text.
+        <itemize xml:id="I1">
+          <item xml:id="I1.i1">
+            <tag>•</tag>
+            <para xml:id="I1.i1.p1">
+              <p>One</p>
+            </para>
+          </item>
+          <item xml:id="I1.i2">
+            <tag>•</tag>
+            <para xml:id="I1.i2.p1">
+              <p>Two</p>
+            </para>
+          </item>
+          <item xml:id="I1.i3">
+            <tag>•</tag>
+            <para xml:id="I1.i3.p1">
+              <p>Three</p>
+            </para>
+          </item>
+        </itemize>
+        <p>This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
+      </inline-block>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
@@ -114,7 +118,7 @@ This is random text. This is random text. This is random text.</p>
       <graphics candidates="foo.png" graphic="foo" xml:id="S4.p1.g1"/>
     </para>
     <para xml:id="S4.p2">
-      <graphics candidates="foo.png" graphic="foo" xml:id="S4.p2.g1" options="xscale=3,yscale=2"/>
+      <graphics candidates="foo.png" graphic="foo" xml:id="S4.p2.g1" cssstyle="transform:scale(3,2);"/>
     </para>
   </section>
 </document>

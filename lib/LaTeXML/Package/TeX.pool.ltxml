@@ -623,6 +623,7 @@ DefMacro('\meaning Token', sub {
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
     my ($token, @toks) = ();
+    # keep newlines from having \n inside!
     while (($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')) {
       if ($token->getCatcode == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
@@ -630,7 +631,8 @@ DefParameterType('CSName', sub {
             "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
-      push(@toks, $token); }
+      # Keep newlines from having \n!
+      push(@toks, (Equals($token, T_SPACE) ? T_SPACE : $token)); }
     T_CS("\\" . ToString(Tokens(@toks))); });
 
 DefMacro('\csname CSName', sub {
@@ -1613,9 +1615,11 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     return; });
 
 # This attempts to be a generalize vbox construction;
-# It tries to figure out whether an inline-block is needed,
+# It tries to figure out whether an ltx:inline-block is needed,
 # and attempts to figure out whether sequences of the inserted content
 # need to be explicitly wrapped in some kind of block element (presumably ltx:p).
+# It returns the inserted inner blocks,
+# whether or not they got wrapped by that ltx:inline-block; which it DOESN'T TELL YOU ABOUT!
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
   # Create something like:
@@ -1624,7 +1628,8 @@ sub insertBlock {
   my $context = $document->getElement;    # Where we originally start inserting.
 
   # If we're "explicitly" asking for a vbox, or can't currently put an ltx:p in
-  # (which would be a typical block mode item), then we'd better open an inline-blokc
+  # (which would be a typical block mode item), or if the current point accepts raw text,
+  # then we'd better open an inline-block.
   # [A thought is to close any open ltx:p, or create & delete one, just to "prime" it.
   # but those seem a bad idea, because we may want a vbox inside a p, or....]
   my $newblock = undef;
@@ -2770,13 +2775,20 @@ Tag('ltx:Math', afterClose => \&add_body_TeX);
 Tag('ltx:Math', afterClose => \&cleanup_Math);
 
 # Cleanup ltx:Math elements; particularly if they aren't "really" math.
+# But note the oddity with class=ltx_markedasmath
 sub cleanup_Math {
   my ($document, $mathnode) = @_;
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
   if (!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText"]', $mathnode)) {
-    # So pull up the contents of the XMText's.
-    my @xmtexts = map { $_->childNodes } $mathnode->childNodes;
-    $document->replaceNode($mathnode, map { $_->childNodes } @xmtexts); }
+    # So unwrap down to the contents of the XMText's.
+    my @xmtexts = map { $_->childNodes } map { $_->childNodes } $mathnode->childNodes;
+    my @texts = ();
+    foreach my $text (@xmtexts) {
+      if ($text->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
+        $text = $document->wrapNodes('ltx:text', $text); }
+      addClass($text, 'ltx_markedasmath');          # Now record that it originally was marked as math
+      push(@texts, $text); }
+    $document->replaceNode($mathnode, @texts); }    # and replace the whole Math with the pieces
   return; }
 
 # Here's for an inverse case: when an XMText isn't "really" just text

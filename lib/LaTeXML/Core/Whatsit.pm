@@ -71,6 +71,10 @@ sub getProperties {
   my ($self) = @_;
   return %{ $$self{properties} }; }
 
+sub getPropertiesRef {
+  my ($self) = @_;
+  return $$self{properties}; }
+
 sub setProperty {
   my ($self, $key, $value) = @_;
   $$self{properties}{$key} = $value;
@@ -201,41 +205,12 @@ sub beAbsorbed {
   LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
   return @result; }
 
-sub getWidth {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self{properties}{width};
-  return $$self{properties}{width}; }
-
-sub getHeight {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self{properties}{height};
-  return $$self{properties}{height}; }
-
-sub getDepth {
-  my ($self) = @_;
-  $self->computeSize unless defined $$self{properties}{depth};
-  return $$self{properties}{depth}; }
-
-sub setWidth {
-  my ($self, $width) = @_;
-  $$self{properties}{width} = $width;
-  return; }
-
-sub setHeight {
-  my ($self, $height) = @_;
-  $$self{properties}{height} = $height;
-  return; }
-
-sub setDepth {
-  my ($self, $depth) = @_;
-  $$self{properties}{depth} = $depth;
-  return; }
-
 sub computeSize {
-  my ($self) = @_;
+  my ($self, %options) = @_;
   # Use #body, if any, else ALL args !?!?!
   # Eventually, possibly options like sizeFrom, or computeSize or....
-  my $sizer = $$self{properties}{sizer};
+  my $props = $self->getPropertiesRef;
+  my $sizer = $$props{sizer};
   my ($width, $height, $depth);
   # If sizer is a function, call it
   if (ref $sizer) {
@@ -254,22 +229,16 @@ sub computeSize {
     else {
       Warn('unexpected', $sizer, undef,
         "Expected sizer to be a function, or arg or property specification, not '$sizer'"); }
-    my $font = $$self{properties}{font};
-    my ($wd, $ht, $dp) = (0, 0, 0);
-    foreach my $box (@boxes) {
-      next unless defined $box;
-      next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
-      my ($w, $h, $d) = (ref $box ? $box->getSize : $font->computeStringSize($box));
-      $wd += $w->valueOf;
-      $ht = max($ht, $h->valueOf);
-      $dp = max($dp, $d->valueOf); }
-    $width  = Dimension($wd);
-    $height = Dimension($ht);
-    $depth  = Dimension($dp); }
+    my $font = $$props{font};
+    $options{width}   = $$props{width}   if $$props{width};
+    $options{height}  = $$props{height}  if $$props{height};
+    $options{depth}   = $$props{depth}   if $$props{depth};
+    $options{vattach} = $$props{vattach} if $$props{vattach};
+    ($width, $height, $depth) = $font->computeBoxesSize([@boxes], %options); }
   # Now, only set the dimensions that weren't already set.
-  $$self{properties}{width}  = $width  unless defined $$self{properties}{width};
-  $$self{properties}{height} = $height unless defined $$self{properties}{height};
-  $$self{properties}{depth}  = $depth  unless defined $$self{properties}{depth};
+  $$props{width}  = $width  unless defined $$props{width};
+  $$props{height} = $height unless defined $$props{height};
+  $$props{depth}  = $depth  unless defined $$props{depth};
   return; }
 
 #======================================================================

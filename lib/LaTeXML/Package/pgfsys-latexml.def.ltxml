@@ -36,11 +36,13 @@ sub addToCount {
 
 DefPrimitive('\lxSVG@installcommands', sub {
     # Local definitions.
-    Let(T_CS('\hbox'),  T_CS('\lxSVG@hbox'));
-    Let(T_CS('\vbox'),  T_CS('\lxSVG@vbox'));
-    Let(T_CS('\lower'), T_CS('\lxSVG@lower'));
-    Let(T_CS('\raise'), T_CS('\lxSVG@raise'));
-    Let(T_CS('\hskip'), T_CS('\lxSVG@hskip'));
+    Let(T_CS('\hbox'),   T_CS('\lxSVG@hbox'));
+    Let(T_CS('\vbox'),   T_CS('\lxSVG@vbox'));
+    Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
+    Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
+    Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
+    Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
+    AssignValue(TEXT_MODE_BINDINGS => []);
     return; });
 
 # Redefine to disappear from UnTeX, since it appears a zillion times...
@@ -56,7 +58,7 @@ DefMacro('\endlxSVG@picture', sub { T_CS('\endgroup'); });
 DefConstructor('\lxSVG@pgfsys@insertpicture{}',
   '<ltx:picture>' .
     '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
-    . 'viewBox="#minx #miny #pxwidth #pxheight" id="#id">'
+    . 'viewBox="#minx #miny #pxwidth #pxheight">'
     . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
     . '#1'
     . '</svg:g>'
@@ -79,9 +81,6 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     $whatsit->setProperty(pxheight  => $h);
     $whatsit->setProperty(flipnmove => $h + 2 * $miny);
     # or tikz macro (see corescopes)
-## Careful about ids... do we even need them set from here?
-##    $whatsit->setProperty(id =>
-##        'svgpic' . (LookupValue('\pgf@picture@serial@count')->valueOf));
     return; });
 
 DefParameterType('SVGMoveableBox', sub {
@@ -94,7 +93,6 @@ DefParameterType('SVGMoveableBox', sub {
       && ($box->getDefinition->getCSName =~ /^(\\lxSVG\@hbox||)$/);
     $box; });
 
-# BRM: added this
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
 sub foreignObjectCheck {
@@ -186,45 +184,48 @@ DefMacro('\pgfsys@endpicture',   '');
 DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}', sub {
     my ($doc, $w, $h, $d, $box, %prop) = @_;
     $doc->openElement('svg:g',
-      id        => 'fobj' . $prop{fobj_num} . 'g',
-      transform => 'matrix(1 0 0 -1 0 ' . $h->add($d)->pxValue . ')');
+      # transform => 'matrix(1 0 0 -1 0 ' . $h->add($d)->pxValue . ')',
+      # Sometimes, this SEEMS it would be the more correct vertical translation (w/o the depth!)??
+      # but maybe that's just the bad size info we have?
+      transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')',
+      class     => 'ltx_svg_fog');
     my $node = $doc->getNode;
     while ($node && !$node->getAttribute('stroke')) { $node = $node->parentNode; }
     my $sw = $doc->openElement('svg:switch');
-    $doc->openElement('svg:foreignObject',
-      width  => $w->pxValue,
-      height => $h->add($d)->pxValue, class => 'ltx_foreignobject',
-      id     => 'fobj' . $prop{fobj_num}, color => $node->getAttribute('stroke'));
-    my $p = $doc->openElement('ltx:p',
-      xmlns => 'http://dlmf.nist.gov/LaTeXML',
-      #		      class=>'fobjc',
-      'xml:id' => 'fobj' . $prop{fobj_num} . 'c');
+    my $fo = $doc->openElement('svg:foreignObject',
+      width    => $w->pxValue,
+      height   => $h->add($d)->pxValue,
+      overflow => 'visible',
+      color    => $node->getAttribute('stroke'));
+    my $p = $doc->openElement('ltx:p');
     $doc->absorb($box);
     $doc->maybeCloseElement('ltx:text');
-    $doc->closeElement('ltx:p');
-    $doc->closeElement('svg:foreignObject');
-    $doc->closeElement('svg:switch');
-    $doc->closeElement('svg:g');
-    # Check the children of the inserted ltx:p
-    # We should at least try to denest svg ?
-    # If svg:switch/svg:foreignObject/ltx:p/ltx:picture/svg:svg/svg:g
-    # should be replaced by just the final svg:g !!! (?)
-
-    my @ch = element_nodes($p);
-    if ((scalar(@ch) == 1) && ($doc->getNodeQName($ch[0]) eq 'ltx:picture')) {
-      my @gch = element_nodes($ch[0]);
-      if ((scalar(@gch) == 1) && ($doc->getNodeQName($gch[0]) eq 'svg:svg')) {
-        my ($g) = element_nodes($gch[0]);
-        $doc->replaceNode($sw, $g);
-      } }
+    # $doc->closeElement('ltx:p');
+    # $doc->closeElement('svg:foreignObject');
+    # $doc->closeElement('svg:switch');
+    # $doc->closeElement('svg:g');
+    # If the nodes we just created are still there & open (see halign)
+    # then close them now.
+    $doc->maybeCloseElement('ltx:p');
+    if (my $n = $doc->isCloseable('svg:foreignObject')) {
+      if ($n->isSameNode($fo)) {
+        $doc->closeElement('svg:foreignObject');
+        $doc->closeElement('svg:switch');
+        $doc->closeElement('svg:g');
+        # Check the children of the inserted ltx:p
+        # We should at least try to denest svg ?
+        # If svg:switch/svg:foreignObject/ltx:p/ltx:picture/svg:svg/svg:g
+        # should be replaced by just the final svg:g !!! (?)
+        my @ch = element_nodes($p);
+        if ((scalar(@ch) == 1) && ($doc->getNodeQName($ch[0]) eq 'ltx:picture')) {
+          my @gch = element_nodes($ch[0]);
+          if ((scalar(@gch) == 1) && ($doc->getNodeQName($gch[0]) eq 'svg:svg')) {
+            my ($g) = element_nodes($gch[0]);
+            $doc->replaceNode($sw, $g);
+          } } } }
     # Could conceivably be simplifying ltx:text ???
   },
-  afterDigest => sub {
-    my ($doc, $whatsit) = @_;
-    $whatsit->setProperty(fobj_num => LookupValue('svg_fobjnum') || 0); },
-  beforeDigest => sub {
-    addToCount('svg_fobjnum', 1, 'global');
-    return; });
+);
 
 # this puts an \hbox into the picture,
 # but it should set wd,ht,dp to 0!!! ???
@@ -232,11 +233,29 @@ DefMacro('\pgfsys@hbox{Number}', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
     return if !$stuff;
-    my $w = $stuff->getWidth;
-    my $h = $stuff->getHeight;
-    my $d = $stuff->getDepth;
+    my ($w, $h, $d) = $stuff->getSize();
     Invocation(T_CS('\lxSVG@pgfsys@foreignObject'), $w, $h, $d,
       Invocation(T_CS('\box'), $_[1])); });
+
+# # Can we do it this way? More latexmly
+# # We're going to have to come back and add the size, however,
+# Tag('svg:switch',autoOpen=>1,autoClose=>1);
+# Tag('svg:foreignObject',autoOpen=>1,autoClose=>1,
+# ##  afterOpen=>sub {
+# ##    $_[0]->openElement('ltx:p'); }, # inf recursion w/o this???
+#   afterClose=>sub {
+#     my($doc,$fo)=@_;
+#     if(my $box = $doc->getNodeBox($fo)){
+#       my($w,$h,$d)=$box->getSize;
+#       $doc->setAttribute($fo, width=>$w->pxValue) if $w;
+#       $doc->setAttribute($fo, height=>$h->pxValue) if $h; }}
+# );
+
+# DefMacro('\pgfsys@hbox{Number}', sub {
+#   Invocation(T_CS('\box'), $_[1]); });
+
+# DefMacro('\pgfsys@hbox{Number}', '\pgfsys@@hbox{\box #1}');
+# DefConstructor('\pgfsys@@hbox{}', '<ltx:p>#1</ltx:p>');
 
 #DefConstructor('\maybepicture', sub {
 #  my ($doc) = @_;
@@ -360,7 +379,8 @@ DefMacro('\lxSVG@pgfsys@drawclippedpath{}', sub {
 #----------------------------------------------------------------------
 
 DefConstructor('\lxSVG@pgfsys@drawunclippedpath@{}{}',
-  '<svg:path d="#1" style="#2" />');
+  # Seemingly can get called with no path, which is invalid
+  '?#1(<svg:path d="#1" style="#2" />)()');
 
 DefConstructor('\lxSVG@pgfsys@drawclippedpath@{}{}',
   '<svg:clipPath id="pgfcp#objcount">'
@@ -815,7 +835,7 @@ DefMacro('\lxSVG@process{Dimension}{Dimension}',
 # Implementation
 
 DefMacro('\pgfsys@shadinginsidepgfpicture{}', <<'EoTeX');
-\message{Using shading \string#1}
+%\message{Using shading \string#1}
  #1\lxSVG@pgfsys@sh@defs%
   \pgf@process{\lxSVG@pgfsys@pos}%
   \pgf@x=-.5\pgf@x\relax\pgf@y=-.5\pgf@y\relax%
@@ -925,6 +945,177 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 #=====================================================================#
 #= 15. Overflowing ===================================================#
 #=====================================================================#
+
+#=====================================================================#
+#= XX. Matrix ========================================================#
+#=====================================================================#
+# Here we're basically groping to figure out how to adapt
+# LaTeXML's Alignment structures to the tikz code.
+# Note that svg doesn't have a table/array structure.
+#
+# I guess we should just be putting <svg:g> in, but with appropriate class?
+# For this to work, we'll have to come in after the fact, sum up things & specify cell sizes.
+# Also, it seems that we've already ended up with a foreign object box?
+#
+# But there are still some major problems:
+# On top of that, we're somehow getting out-of-sync with the
+# bgroup/egroup & begingroup/endgroup pairs that tikz/pgf is adding
+# and the ones embedded in our alignment machinery.
+# I _THINK_ we're running afoul of when the last item of \matrix ends with \\ ???
+#
+# It also appears that in order to align the cells,
+# tikz makes their width 0; unfortunately this makes them
+# disappear in the svg (overflow=visible doesn't seem to help)
+
+DefConstructor('\lxSVG@halign BoxSpecification', sub {
+    my ($document, $spec, %props) = @_;
+    my $body = $props{body};
+    constructAlignment($document, $body, attributes => {
+        width       => orNull(GetKeyVal($spec, 'to')),
+        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
+  reversion => '\halign #1{#2\cr#3}',
+  #  bounded     => 1,
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $gullet = $stomach->getGullet;
+    my $t      = $gullet->readNonSpace;
+    Error('expected', '\bgroup', $stomach, "Missing \\halign box") unless Equals($t, T_BEGIN);
+    print STDERR "\nHALIGN IN PGF!\n";
+    # Read the template up till something equivalent to \cr
+    my @template = ();
+    # Only expand certain things; See TeX book p.238
+    while (($t = $gullet->readToken(0)) && !Equals($t, T_CS('\cr'))) {
+      if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
+        $gullet->readKeyword('=');
+        my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!
+      elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
+        $gullet->unread($gullet->readXToken(0)); }
+      else {
+        push(@template, $t); } }
+    # Convert the template
+    my $ismath  = $STATE->lookupValue('IN_MATH');
+    my $before  = 1;                                # true if we're before a # in current column
+    my @pre     = ();
+    my @post    = ();
+    my @cols    = ();
+    my @nonreps = ();
+    foreach my $t (@template, T_ALIGN) {            # put & at end, to save column!
+
+      if ($t->equals(T_PARAM)) {
+        $before = 0; }
+      elsif ($t->equals(T_ALIGN)) {
+        if ($before) { @nonreps = @cols; @cols = (); } # A & while we're before a column means Repeated columns
+        else {                                         # Finished column spec; add it
+              # Try some magic for math, so we can create a valid math matrix (maybe!)
+              # DAMN \halign can't be in math, anyway.
+              # So, to get a matrix, we'll have to rewrite the alignment!
+          if ($ismath) {
+            push(@pre, T_MATH); unshift(@post, T_MATH); }
+          push(@cols, { before => Tokens(stripDupMath(beforeCellUnlist(Tokens(@pre)))),
+              after => Tokens(stripDupMath(afterCellUnlist(Tokens(@post)))) });
+          @pre = @post = (); $before = 1; } }
+      elsif ($before) {
+        push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
+      else {
+        push(@post, $t) if @post || !$t->equals(T_SPACE); } }
+
+    my $template = LaTeXML::Core::Alignment::Template->new((@nonreps ?
+          (columns => [@nonreps], repeated => [@cols])
+        : (columns => [@cols])));
+    #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
+    # Now read & digest the body.
+    # Note that the body MUST end with a \cr, and that we've made Special Arrangments
+    # with \alignment@cr to recognize the end of the \halign
+    # and sneak a \@finish@alignment in!!!!!
+    # (otherwise none of the row/column/alignment constructors know when to end, as written)
+    tikzAlignmentBindings($template);
+    $stomach->bgroup;    # This will be closed by the \halign's closing }
+                         # but tikz is sticking in an extra \begingroup ????
+                         #    $stomach->begingroup;
+    $gullet->unread(T_CS('\@start@alignment'));
+    $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
+  });
+
+sub tikzAlignmentBindings {
+  my ($template, $mode) = @_;
+  if ($template && !ref $template) {
+    $template = parseAlignmentTemplate($template); }
+  $mode = LookupValue('MODE') unless $mode;
+  #  my $ismath    = $mode =~ /math$/;
+  #  my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
+  #  my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
+  #  my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
+  my $container = 'svg:g';
+  my $rowtype   = 'svg:g';
+  my $coltype   = 'svg:g';
+  my $alignment = LaTeXML::Core::Alignment
+    #    ->new(openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
+    ->new(openContainer => \&openTikzAlignment,
+    closeContainer => sub { $_[0]->closeElement($container); },
+    openRow        => \&openTikzAlignmentRow,
+    closeRow       => sub { $_[0]->closeElement($rowtype); },
+    openColumn     => \&openTikzAlignmentCol,
+    closeColumn    => sub { $_[0]->closeElement($coltype); });
+  AssignValue(Alignment => $alignment);
+  $alignment->setTemplate($template) if $template;
+  # These would MASK tikz own new bindings
+  # BUT it only seems sensible that we'll want to get tikz to call OUR bindings at some level!
+  Let(T_ALIGN,           '\lxSVG@alignment@align');
+  Let("\\\\",            '\lxSVG@alignment@newline');
+  Let('\tabularnewline', '\lxSVG@alignment@newline');
+  Let('\cr',             '\@alignment@cr');
+  Let('\crcr',           '\@alignment@cr');
+  Let('\hline',          '\@alignment@hline');
+  #  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
+  Let('\@open@row',  '\default@open@row');
+  Let('\@close@row', '\default@close@row');
+
+  return; }
+
+sub openTikzAlignment {
+  my ($doc, %props) = @_;
+  # If we've already got a foreignObject opened, close it.
+  if (my $fo = foreignObjectCheck($doc)) {
+    $doc->removeNode($fo);
+    my $x;
+    # SHOULD be wrapped in an svg:switch inside an svg:g; remove them both!
+    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:switch')) {
+      $doc->removeNode($x); }
+    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:g')
+      && (($x->getAttribute('class') || '') eq 'ltx_svg_fog')) {
+      $doc->removeNode($x); } }
+  #    $doc->closeNode($fo); }
+  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+
+sub openTikzAlignmentRow {
+  my ($doc, %props) = @_;
+  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_row';
+  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+
+sub openTikzAlignmentCol {
+  my ($doc, %props) = @_;
+  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_col';
+  if (my $align = $props{align}) {
+    delete $props{align};
+    $props{class} .= ' ltx_align_' . $align; }
+  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+
+# These may need to sneak in tikz' code somewhere?
+DefMacroI('\lxSVG@alignment@align', undef,
+  '\@close@inner@column\@close@column'
+    # nextcell will end up attached to inner@column@after
+    #    . '\pgfmatrixnextcell'
+    . '\@alignment@align@marker'
+    . '\@open@column\@open@inner@column');
+
+DefMacro('\lxSVG@alignment@newline OptionalMatch:* [Dimension]',
+  # almost works; except at the END of the \matrix !!!
+  '\pgfmatrixendrow'
+    . '\@close@inner@column\@close@column\@close@row'
+    . '\@alignment@newline@marker'
+    . '\@open@row\@open@column\@open@inner@column');
+#    .'\pgfutil@ifnextchar\egroup{}{\@open@row\@open@column\@open@inner@column}');
+#    .'\pgfutil@ifnextchar\egroup{\begingroup}{\@open@row\@open@column\@open@inner@column}');
 
 #=====================================================================
 # Dealing with quick commands

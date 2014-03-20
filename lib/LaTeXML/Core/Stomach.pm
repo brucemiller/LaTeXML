@@ -262,23 +262,24 @@ sub pushStackFrame {
 sub popStackFrame {
   my ($self, $nobox) = @_;
   if (my $beforeafter = $STATE->lookupValue('beforeAfterGroup')) {
-    my @result = map { $_->beDigested($self) } @$beforeafter;
-    if (my ($x) = grep { !$_->isaBox } @result) {
-      Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
-    push(@LaTeXML::LIST, @result); }
+    if (@$beforeafter) {
+      my @result = map { $_->beDigested($self) } @$beforeafter;
+      if (my ($x) = grep { !$_->isaBox } @result) {
+        Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
+      push(@LaTeXML::LIST, @result); } }
   my $after = $STATE->lookupValue('afterGroup');
   $STATE->popFrame;
-  pop(@{ $$self{boxing} }) unless $nobox;                              # For begingroup/endgroup
+  pop(@{ $$self{boxing} }) unless $nobox;    # For begingroup/endgroup
   $$self{gullet}->unread(@$after) if $after;
   return; }
 
 sub currentFrameMessage {
   my ($self) = @_;
   return "current frame is "
-    . ($STATE->isValueBound('MODE', 0)                                 # SET mode in CURRENT frame ?
+    . ($STATE->isValueBound('MODE', 0)       # SET mode in CURRENT frame ?
     ? "mode-switch to " . $STATE->lookupValue('MODE')
-    : ($STATE->lookupValue('groupNonBoxing')    # Current frame is a boxing group?
-      ? "boxing" : "non-boxing") . " group")
+    : ($STATE->lookupValue('groupNonBoxing')    # Current frame is a non-boxing group?
+      ? "non-boxing" : "boxing") . " group")
     . " due to " . Stringify($STATE->lookupValue('groupInitiator'))
     . " " . ToString($STATE->lookupValue('groupInitiatorLocator')); }
 

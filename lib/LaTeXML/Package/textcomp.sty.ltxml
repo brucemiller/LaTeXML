@@ -21,31 +21,27 @@ use LaTeXML::Package;
 # Accent Symbols
 
 # Since we're using Unicode, we don't need these capital distinctions.
-our %textcomp_accents
-  = (capitalacute => '\'',
-  capitalbreve        => '\u',
-  capitalcaron        => '\v',
-  capitalcedilla      => '\c',
-  capitalcircumflex   => '\^',
-  capitaldieresis     => '\"',
-  capitaldotaccent    => '\.',
-  capitalgrave        => '\`',
-  capitalhungarumlaut => '\H',
-  capitalmacron       => '\=',
-  caitalnewtie        => '\t',
-  capitalogonek       => '\lfhook',
-  capitalring         => '\@ringaccent',
-  capitaltie          => '\t',
-  caitaltilde         => '\~',
-  newtie              => '\t');
-map { Let('\\' . $_ => $textcomp_accents{$_}) } keys %textcomp_accents;
-
-## \t
+DefAccent('\capitalacute',        "\x{0301}", UTF(0xB4));                # \'
+DefAccent('\capitalbreve',        "\x{0306}", "\x{02D8}");               # \u
+DefAccent('\capitalcaron',        "\x{030C}", "\x{02C7}");               # \v
+DefAccent('\capitalcedilla',      "\x{0327}", UTF(0xB8), below => 1);    # \c
+DefAccent('\capitalcircumflex',   "\x{0302}", UTF(0x5E));                # \^
+DefAccent('\capitaldieresis',     "\x{0308}", UTF(0xA8));                # \"
+DefAccent('\capitaldotaccent',    "\x{0307}", "\x{02D9}");               # \.
+DefAccent('\capitalgrave',        "\x{0300}", UTF(0x60));                # \`
+DefAccent('\capitalhungarumlaut', "\x{030B}", "\x{02DD}");               # \H
+DefAccent('\capitalmacron',       "\x{0304}", UTF(0xAF));                # \=
+DefAccent('\capitalnewtie',       "\x{0361}", "-");                      # \t
+DefAccent('\capitalogonek',       "\x{0328}", "\x{02DB}");               #
+DefAccent('\capitalring',         "\x{030A}", "o");                      # \r
+DefAccent('\capitaltie',          "\x{0361}", "-");                      # \t
+DefAccent('\capitaltilde',        "\x{0303}", "~");                      # \~
+DefAccent('\newtie',              "\x{0361}", "-");                      # \t
 
 #======================================================================
 # Numerals
-our %textcomp_numerals
-  = (textonesuperior => UTF(0xB9),
+our %textcomp_numerals = (
+  textonesuperior   => UTF(0xB9),
   texttwosuperior   => UTF(0xB2),
   textthreesuperior => UTF(0xB3),
   textonequarter    => UTF(0xBC),
@@ -55,8 +51,11 @@ map { DefPrimitiveI('\\' . $_, undef, $textcomp_numerals{$_},
     bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_numerals;
 
 # Hmm, perhaps should be a font variant?
-our %textcomp_oldstyle
-  = (textzerooldstyle => 0,
+# There's a CSS3 module that defines font-variant-numeric that could indicate old-style
+# but appears not-yet supported anywhere.
+# ORR, supposedly you can use:   font-feature-settings: 'onum'
+our %textcomp_oldstyle = (
+  textzerooldstyle  => 0,
   textoneoldstyle   => 1,
   texttwooldstyle   => 2,
   textthreeoldstyle => 3,
@@ -66,31 +65,32 @@ our %textcomp_oldstyle
   textsevenoldstyle => 7,
   texteightoldstyle => 8,
   textnineoldstyle  => 9);
-map { Let('\\' . $_ => $textcomp_oldstyle{$_}) } keys %textcomp_oldstyle;
+map { DefPrimitiveI('\\' . $_, undef, $textcomp_oldstyle{$_},
+    font => { family => 'oldstyle' }) } keys %textcomp_oldstyle;
 
 #======================================================================
 # Pair symbols
 
-our %textcomp_pairs
-  = (textlangle => "\x{27E8}",
+our %textcomp_pairs = (
+  textlangle     => "\x{27E8}",
   textrangle     => "\x{27E9}",
   textlbrackdbl  => "\x{27E6}",
-  textrbrakdbl   => "\x{27E7}",
+  textrbrackdbl  => "\x{27E7}",
   textuparrow    => "\x{2191}",
   textdownarrow  => "\x{2193}",
   textleftarrow  => "\x{2190}",
   textrightarrow => "\x{2192}",
   textlquill     => "\x{2045}",
   textrquill     => "\x{2046}",
-  );
+);
 map { DefPrimitiveI('\\' . $_, undef, $textcomp_pairs{$_},
     bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_pairs;
 
 #======================================================================
 # Monetary and Commercial symbols
 
-our %textcomp_money
-  = (textbaht => "\x{0E3F}",
+our %textcomp_money = (
+  textbaht           => "\x{0E3F}",
   textcent           => UTF(0xA2),
   textcentoldstyle   => UTF(0xA2),
   textcolonmonetary  => "\x{20A1}",
@@ -99,7 +99,7 @@ our %textcomp_money
   textdollaroldstyle => '$',
   textdong           => "\x{20AB}",
   texteuro           => "\x{20AC}",
-  textflorin         => "f",           # ???
+  textflorin         => "f",                  # ???
   textguarani        => "\x{20B2}",
   textlira           => "\x{20A4}",
   textnaira          => "\x{20A6}",
@@ -108,7 +108,7 @@ our %textcomp_money
   textwon            => "\x{20A9}",
   textyen            => UTF(0xA5),
   textcircledP       => "\x{2117}",
-  textcopyleft       => "copyleft",    # You gotta be kidding
+  textcopyleft       => "\x{2184}\x{20DD}",
   textcopyright      => UTF(0xA9),
   textdiscount       => "\x{2052}",
   textestimated      => "\x{212E}",
@@ -124,26 +124,26 @@ map { DefPrimitiveI('\\' . $_, undef, $textcomp_money{$_},
 #======================================================================
 # Footnote symbols
 
-our %textcomp_footnote
-  = (textasteriskcentered => '*',
-  textbardbl         => "\x{2016}",
-  textbrokenbar      => UTF(0xA6),
-  textbullet         => "\x{2022}",
-  textdagger         => "\x{2020}",
-  textdaggerdbl      => "\x{2021}",
-  textopenbullet     => "\x{25E6}",
-  textparagraph      => UTF(0xB6),
-  textperiodcentered => UTF(0xB7),
-  textpilcrow        => UTF(0xB6),
-  textsection        => UTF(0xA7));
+our %textcomp_footnote = (
+  textasteriskcentered => '*',
+  textbardbl           => "\x{2016}",
+  textbrokenbar        => UTF(0xA6),
+  textbullet           => "\x{2022}",
+  textdagger           => "\x{2020}",
+  textdaggerdbl        => "\x{2021}",
+  textopenbullet       => "\x{25E6}",
+  textparagraph        => UTF(0xB6),
+  textperiodcentered   => UTF(0xB7),
+  textpilcrow          => UTF(0xB6),
+  textsection          => UTF(0xA7));
 map { DefPrimitiveI('\\' . $_, undef, $textcomp_footnote{$_},
     bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_footnote;
 
 #======================================================================
 # Scientific symbols
 
-our %textcomp_scientific
-  = (textcelsius => "\x{210C}",
+our %textcomp_scientific = (
+  textcelsius      => "\x{2103}",
   textdegree       => UTF(0xB0),
   textdiv          => UTF(0xF7),
   textlnot         => UTF(0xAC),
@@ -154,7 +154,7 @@ our %textcomp_scientific
   textordfeminine  => UTF(0xAA),
   textordmasculine => UTF(0xBA),
   textpm           => UTF(0xB1),
-  textsurd         => "\x{212A}",
+  textsurd         => "\x{221A}",
   texttimes        => UTF(0xD7));
 map { DefPrimitiveI('\\' . $_, undef, $textcomp_scientific{$_},
     bounded => 1, font => { encoding => 'TS1' }) } keys %textcomp_scientific;
@@ -162,32 +162,32 @@ map { DefPrimitiveI('\\' . $_, undef, $textcomp_scientific{$_},
 #======================================================================
 # Various
 
-our %textcomp_various
-  = (textacutedbl => "\x{02DD}",
-  textasciiacute      => UTF(0xB4),
-  textasciibreve      => "\x{02DB}",
-  textasciicaron      => "\x{02C7}",
-  textasciidieresis   => UTF(0xA8),
-  textasciigrave      => UTF(0x60),
-  textasciimacron     => UTF(0xAF),
-  textbigcircle       => "\x{25CB}",
-  textblank           => "\x{2422}",
-  textborn            => "\x{2605}",
-  textdblhyphen       => "=",           # ?
-  textdblhyphenchar   => "=",           # ?
-  textdied            => "\x{271D}",
-  textdivorced        => "\x{26AE}",
-  textfractionsolidus => UTF(0x2F),
-  textgravedbl        => "\x{201C}",    # ?? quotes
-  textinterrobang     => "\x{203D}",
-  #    textinterrobangdown     =>"\x{}",
-  textleaf                 => "\x{2EDA}",     # ?? chinese?
+our %textcomp_various = (
+  textacutedbl             => "\x{02DD}",
+  textasciiacute           => UTF(0xB4),
+  textasciibreve           => "\x{02D8}",
+  textasciicaron           => "\x{02C7}",
+  textasciidieresis        => UTF(0xA8),
+  textasciigrave           => UTF(0x60),
+  textasciimacron          => UTF(0xAF),
+  textbigcircle            => "\x{25CB}",
+  textblank                => "\x{2422}",
+  textborn                 => "\x{2605}",
+  textdblhyphen            => "=",            # ?
+  textdblhyphenchar        => "=",            # ?
+  textdied                 => "\x{271D}",
+  textdivorced             => "\x{26AE}",
+  textfractionsolidus      => UTF(0x2F),
+  textgravedbl             => "\x{201F}",
+  textinterrobang          => "\x{203D}",
+  textinterrobangdown      => "\x{2E18}",
+  textleaf                 => "\x{1F342}",    # FALLEN LEAF (close, but plane 1)
   textmarried              => "\x{26AD}",
   textmusicalnote          => "\x{266A}",
   textnumero               => "\x{2116}",
   textquotesingle          => "'",
-  textquotestraightbase    => "'",            # ??? Not base?
-  textquotestraightdblbase => "\"",           # Not base?
+  textquotestraightbase    => "\x{201A}",
+  textquotestraightdblbase => "\x{201E}",
   textrecipe               => "\x{211E}",
   textthreequartersemdash  => "\x{2014}",     # whole em dash, actually
   texttildelow             => "~",            # ??
