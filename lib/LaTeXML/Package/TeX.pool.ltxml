@@ -4523,7 +4523,7 @@ DefConstructorI('\@math@nbspace', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
   alias => '\ ',
   properties => { isSpace => 1,
-    width => sub { Dimension('1em'); } });
+    width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@nbspace', undef, UTF(0xA0), alias => '\ ');
 
 DefMacroI("\\\t", undef, '\ifmmode\@math@tab\else\@text@tab\fi');
@@ -4650,35 +4650,82 @@ sub doScriptpos {
 sub doVariablesizeOp {
   return (LookupValue('mathstyle') eq 'display' ? 'display' : undef); }
 
-DefMathI('\sum', undef, "\x{2211}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'sum', mathstyle => \&doVariablesizeOp);
-DefMathI('\prod', undef, "\x{220F}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'product', mathstyle => \&doVariablesizeOp);
-DefMathI('\coprod', undef, "\x{2210}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'coproduct', mathstyle => \&doVariablesizeOp);
-DefMathI('\int', undef, "\x{222B}", role => 'INTOP',
-  meaning => 'integral',, mathstyle => \&doVariablesizeOp);
-DefMathI('\oint', undef, "\x{222E}", role => 'INTOP',
-  meaning => 'contour-integral', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigcap', undef, "\x{22C2}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'intersection', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigcup', undef, "\x{22C3}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'union', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigsqcup', undef, "\x{2294}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'square-union', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigvee', undef, "\x{22C1}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'or', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigwedge', undef, "\x{22C0}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'and', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigodot', undef, "\x{2299}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, mathstyle => \&doVariablesizeOp);    #meaning=> ?
-DefMathI('\bigotimes', undef, "\x{2297}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'tensor-product', mathstyle => \&doVariablesizeOp);
-DefMathI('\bigoplus', undef, "\x{2295}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'direct-sum', mathstyle => \&doVariablesizeOp);
-DefMathI('\biguplus', undef, "\x{228C}", role => 'SUMOP',
-  scriptpos => \&doScriptpos, meaning => 'symmetric-difference', mathstyle => \&doVariablesizeOp);
-
+DefMathI('\sum', undef, "\x{2211}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'sum',
+   mathstyle => \&doVariablesizeOp);
+DefMathI('\prod', undef, "\x{220F}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'product',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\coprod', undef, "\x{2210}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'coproduct',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\int', undef, "\x{222B}",
+  role => 'INTOP',
+  meaning => 'integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oint', undef, "\x{222E}",
+  role => 'INTOP',
+  meaning => 'contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigcap', undef, "\x{22C2}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'intersection',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigcup', undef, "\x{22C3}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'union',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigsqcup', undef, "\x{2294}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'square-union',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigvee', undef, "\x{22C1}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'or',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigwedge', undef, "\x{22C0}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'and',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigodot', undef, "\x{2299}",
+  role => 'SUMOP',    #meaning=> ?
+  scriptpos => \&doScriptpos, 
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigotimes', undef, "\x{2297}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'tensor-product',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\bigoplus', undef, "\x{2295}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'direct-sum',
+  mathstyle => \&doVariablesizeOp,
+  font=>{size=>'Big'});
+DefMathI('\biguplus', undef, "\x{228E}",
+  role => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  meaning => 'symmetric-difference',
+  mathstyle => \&doVariablesizeOp,
+ font=>{size=>'Big'});
 DefConstructorI('\limits', undef, sub {
     my $node = $_[0]->getElement;
     $_[0]->setAttribute($_[0]->getLastChildElement($node) || $node, scriptpos => 'mid'); });
@@ -4712,7 +4759,7 @@ DefMathI('\cdot',   undef, "\x{22C5}", role => 'MULOP');
 # Need to classify set operations more carefully....
 DefMathI('\cap', undef, "\x{2229}", role => 'ADDOP', meaning => 'intersection');
 DefMathI('\cup', undef, "\x{222A}", role => 'ADDOP', meaning => 'union');
-DefMathI('\uplus',    undef, "\x{228C}", role => 'ADDOP');
+DefMathI('\uplus',    undef, "\x{228E}", role => 'ADDOP');
 DefMathI('\sqcap',    undef, "\x{2293}", role => 'ADDOP', meaning => 'square-intersection');
 DefMathI('\sqcup',    undef, "\x{2294}", role => 'ADDOP', meaning => 'square-union');
 DefMathI('\vee',      undef, "\x{2228}", role => 'ADDOP', meaning => 'or');
