@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Common::XML;
 use LaTeXML::Post;
+use List::Util qw(max);
 use base qw(LaTeXML::Post::MathProcessor);
 use base qw(Exporter);
 our @EXPORT = (
@@ -422,9 +423,10 @@ sub pmml_internal {
       foreach my $col (element_nodes($row)) {
         my $a  = $col->getAttribute('align');
         my $b  = $col->getAttribute('border');
+        my $bc = ($b ? join(' ',map { 'ltx_border_'.$_ } split(/\s/, $b)) : $b);
         my $h  = (($col->getAttribute('thead') || '') eq 'true') && 'thead';
         my $cl = $col->getAttribute('class');
-        my $c  = ($b ? ($h ? "$b $h" : $b) : $h);
+        my $c  = ($bc ? ($h ? "$bc $h" : $bc) : $h);
         my $cs = $col->getAttribute('colspan');
         my $rs = $col->getAttribute('rowspan');
         push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
@@ -584,11 +586,11 @@ sub stylizeContent {
   my $class   = ($iselement ? $item->getAttribute('class') : $attr{class});
   my $text    = (ref $item  ? $item->textContent           : $item);
   my $variant = ($font      ? $mathvariants{$font}         : '');
-  my $stretchy = $size && ($size eq 'stretchy');    # sort-of a size... (but only for operators?)
+  my $stretchy = $size && ($size eq 'stretchy') && 'true'; # sort-of a size... (but only for operators?)
   $size = undef if $stretchy;                                  # but then don't need regular sizing.
                                                                # Hack to neutralize unnecessary sizing
   $size = undef if $size && ($size eq $LaTeXML::MathML::STYLE);
-
+  $stretchy = 'false' if $size;	# Conversely, if size was specifically set, we shouldn't stretch it!
   # Failsafe for empty tokens?
   if ((!defined $text) || ($text eq '')) {
     $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
@@ -623,7 +625,7 @@ sub stylizeContent {
     ($color    ? (mathcolor      => $color)             : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
     ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
-    ($stretchy ? (stretchy       => 'true')             : ()),
+    ($stretchy ? (stretchy       => $stretchy)          : ()),
     ($class    ? (class          => $class)             : ())
     ); }
 
@@ -656,6 +658,7 @@ sub pmml_mo {
   my $role = (ref $item ? $item->getAttribute('role') : $attr{role});
   my $isfence = $role && ($role =~ /^(OPEN|CLOSE)$/);
   my $ispunct = $role && ($role eq 'PUNCT');
+  my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
   my $lpad = ((ref $item) && $item->getAttribute('lpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $rpad = ((ref $item) && $item->getAttribute('rpadding'))
@@ -664,8 +667,14 @@ sub pmml_mo {
   return ['m:mo', { %mmlattr,
       ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
       ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-      ($lpad ? (lpadding => $lpad) : ()),
-      ($rpad ? (rpadding => $rpad) : ()),
+      ($islargeop  ? (largeop => 'true') : ()),
+      ($islargeop  ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
+      # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
+      # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
+      # Just assume something between mediummathspace = 4/18em = 2.222pt
+      # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
+      ($lpad ? (lspace => max(0,(2.5+getXMHintSpacing($lpad))).'pt') : ()),
+      ($rpad ? (rspace => max(0,(2.5+getXMHintSpacing($rpad))).'pt') : ()),
       # If an operator has specifically located it's scripts,
       # don't let mathml move them.
       (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
