@@ -282,7 +282,7 @@ Factor  :
         | OPEN factorOpen[$item[1]]
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
-          VERTBAR VERTBAR absExpression VERTBAR VERTBAR # || exp || ==> norm
+          SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
               addScripts[Fence('||',$item[4],'||')]
         | { ($forbidVertBar ? undef : 1); }
           VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
@@ -716,6 +716,7 @@ SCRIPTOPEN      : /OPEN:\{:\d+/                 { Lookup($item[1]); }
 CLOSE           : /CLOSE:\S*:\d+/               { Lookup($item[1]); }
 MIDDLE          : /MIDDLE:\S*:\d+/              { Lookup($item[1]); }
 VERTBAR         : /VERTBAR:\S*:\d+/             { Lookup($item[1]); }
+SINGLEVERTBAR   : /VERTBAR:\|:\d+/              { Lookup($item[1]); }
 BIGOP           : /BIGOP:\S*:\d+/               { Lookup($item[1]); }
 SUMOP           : /SUMOP:\S*:\d+/               { Lookup($item[1]); }
 INTOP           : /INTOP:\S*:\d+/               { Lookup($item[1]); }
