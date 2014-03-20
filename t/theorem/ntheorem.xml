@@ -130,7 +130,7 @@ displaymath, a single equation and both types of eqnarrays.
 Also for displayed arrays of this form, it looks good:</text>
           </p>
           <equation xml:id="S1.Ex2">
-            <Math mode="display" xml:id="S1.Ex2.m1" tex="\begin{array}[]{l}a=\begin{array}[t]{l}first\ line\\&#10;second\ line\end{array}\mbox{try to put this text in the lowest line}\end{array}" text="Array[[a = Array[[list@(f * i * r * s * t, l * i * n * e)], [list@(s * e * c * o * n * d, l * i * n * e)]] * [try to put this text in the lowest line]]]">
+            <Math mode="display" xml:id="S1.Ex2.m1" tex="\begin{array}[]{l}a=\begin{array}[t]{l}first\ line\\&#10;second\ line\end{array}\mbox{try to put this text in the lowest line}\end{array}" text="Array[[a = Array[[f * i * r * s * t * l * i * n * e], [s * e * c * o * n * d * l * i * n * e]] * [try to put this text in the lowest line]]]">
               <XMath>
                 <XMArray role="ARRAY">
                   <XMRow>
@@ -144,45 +144,33 @@ Also for displayed arrays of this form, it looks good:</text>
                             <XMRow>
                               <XMCell align="left">
                                 <XMApp>
-                                  <XMTok meaning="list" role="FENCED" separators=" "/>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">r</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">s</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">t</XMTok>
-                                  </XMApp>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                                  </XMApp>
+                                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">r</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">s</XMTok>
+                                  <XMTok role="UNKNOWN" rpadding="5.0pt" font="italic">t</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
                                 </XMApp>
                               </XMCell>
                             </XMRow>
                             <XMRow>
                               <XMCell align="left">
                                 <XMApp>
-                                  <XMTok meaning="list" role="FENCED" separators=" "/>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">s</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">o</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
-                                  </XMApp>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">l</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">n</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">e</XMTok>
-                                  </XMApp>
+                                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">s</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">o</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                                  <XMTok role="UNKNOWN" rpadding="5.0pt" font="italic">d</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">l</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">n</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
                                 </XMApp>
                               </XMCell>
                             </XMRow>
