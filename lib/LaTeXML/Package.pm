@@ -1086,6 +1086,7 @@ my $math_options = {    # [CONSTANT]
   role => 1, operator_role => 1, reorder => 1, dual => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
+  stretchy     => 1, operator_stretchy  => 1,
   beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1 };
 my $simpletoken_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
@@ -1205,6 +1206,8 @@ sub defmath_common_constructor_options {
       mathstyle          => $options{mathstyle},
       scriptpos          => $options{scriptpos},
       operator_scriptpos => $options{operator_scriptpos},
+      stretchy           => $options{stretchy},
+      operator_stretchy  => $options{operator_stretchy},
       font               => sub { LookupValue('font')->specialize($presentation); } },
     scope => $options{scope}); }
 
@@ -1243,10 +1246,10 @@ sub defmath_dual {
 
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
       ($nargs == 0
-        ? "<ltx:XMTok $cons_attr role='#role' scriptpos='#scriptpos'/>"
+        ? "<ltx:XMTok $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'/>"
         : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
           . "<ltx:XMTok $cons_attr role='#operator_role'"
-          . " scriptpos='#operator_scriptpos'/>"
+          . " scriptpos='#operator_scriptpos' stretchy='#operator_stretchy'/>"
           . join('', map { "#$_" }
             ($options{reorder} ? @{ $options{reorder} } : (1 .. $nargs)))
           . "</ltx:XMApp>"),
@@ -1287,14 +1290,14 @@ sub defmath_cons {
       ($nargs == 0
           # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
-          ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos'"
+          ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
             . "($presentation)"
-          : "<ltx:XMTok role='#role' scriptpos='#scriptpos'"
+          : "<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok")
-        : "<ltx:XMApp role='#role' scriptpos='#scriptpos'>"
+        : "<ltx:XMApp role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
           . "<ltx:XMTok $cons_attr font='#font' role='#operator_role'"
-          . " scriptpos='#operator_scriptpos' $end_tok"
+          . " scriptpos='#operator_scriptpos' stretchy='#operator_stretchy' $end_tok"
           . join('', map { "<ltx:XMArg>#$_</ltx:XMArg>" } 1 .. $nargs)
           . "</ltx:XMApp>"),
       defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
@@ -2840,11 +2843,17 @@ whether they be stacked over or under it, or whether they will appear in the usu
 TeX.pool defines a function C<doScriptpos()> which is useful for operators
 like C<\sum> in that it sets to C<mid> position when in displaystyle, otherwise C<post>.
 
+=item stretchy=>boolean
+
+Whether or not the object is stretchy when displayed.
+
 =item operator_role=>grammatical_role
 
 =item operator_scriptpos=>boolean
 
-These two are similar to C<role> and C<scriptpos>, but are used in
+=item operator_stretchy=>boolean
+
+These three are similar to C<role>, C<scriptpos> and C<stretchy>, but are used in
 unusual cases.  These apply to the given attributes to the operator token
 in the content branch.
 
