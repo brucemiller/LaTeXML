@@ -1,13 +1,32 @@
 \documentclass{article}
 \usepackage{amsmath}
 \begin{document}
+\paragraph{Sideset}
 \[ \sideset{}{'}\sum_{i=1}^\infty S_i \]
-\[  \sideset{}{}{\sum} x\]
+\[  \sideset{_a}{_c}{\sum} x\]
+\[  \sideset{^b}{^d}{\sum} x\]
+\[  \sideset{_a}{^d}{\sum} x\]
+\[  \sideset{^b}{_c}{\sum} x\]
 \[  \sideset{_a^b}{_c^d}{\sum} x\]
-\[  \sideset{^a_b}{^c_d}{\sum} x\]
+\[  \sideset{^b_a}{^d_c}{\sum} x\]
+\[  \sideset{{}_a{}^b}{{}_c{}^d}{\sum} x\]
+\[  \sideset{{}^b{}_a}{{}^d{}_c}{\sum} x\]
+
+\paragraph{Classic}
+\[  {}_a^b\sum_c^d x\]
+\[  {}^b_a\sum^d_c x\]
+\[  {}_a^b\sum\nolimits_c^d x\]
+\[  {}^b_a\sum\nolimits^d_c x\]
+\[  {}_a{}^b\sum{}_c{}^d x\]
+\[  {}^b{}_a\sum{}^d{}_c x\]
+
+\paragraph{Multi}
 % Cannot use multiple sub/supers!
 %\[  \sideset{_a^b_c^d}{_e^f_g^h}{\sum} \]
 %\[  \sideset{_a_c}{_e}{\sum} \]
+
+\[  {}_a^b{}_c{}_d^e\sum\nolimits_f^g x\]
+\[  {}_a^b{}_c{}_d^e\sum\nolimits_f^g{}_i{}_j^k x\]
 
 % However, NOTE that the following `works'
 % BUT, LaTeXML WILL WARN!!!!
