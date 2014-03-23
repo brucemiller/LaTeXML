@@ -399,11 +399,18 @@ addScripts :
 
 # ================================================================================
 # preScripted['RULE']; match a RULE possibly preceded by sub/super prescripts,
-#  possibly followed by sub/superscripts
+#  possibly followed by sub/superscripts.  The initial prescript can only be FLOAT
+#  but the following ones can be either POST (which combine) or FLOAT (which don't)
 
 preScripted :
-          FLOATSUPERSCRIPT preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
-        | FLOATSUBSCRIPT   preScripted[$arg[0]] { NewScript($item[2],$item[1]);}
+          FLOATSUPERSCRIPT inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
+        | FLOATSUBSCRIPT   inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
+        | <matchrule:$arg[0]> addScripts[$item[1]]
+inpreScripted :
+          POSTSUPERSCRIPT inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
+        | POSTSUBSCRIPT   inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
+        | FLOATSUPERSCRIPT inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
+        | FLOATSUBSCRIPT   inpreScripted[$arg[0]] { NewScript($item[2],$item[1], 'pre');}
         | <matchrule:$arg[0]> addScripts[$item[1]]
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

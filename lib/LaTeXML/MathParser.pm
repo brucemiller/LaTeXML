@@ -123,6 +123,21 @@ sub note_unknown {
   $$self{unknowns}{$name}++;
   return; }
 
+# debugging utility, should be somewhere handy.
+sub printNode {
+  my ($node) = @_;
+  if (ref $node eq 'ARRAY') {
+    my ($tag, $attr, @children) = @$node;
+    my @keys = sort keys %$attr;
+    return "<$tag"
+      . (@keys ? ' ' . join(' ', map { "$_='$$attr{$_}'" } @keys) : '')
+      . (@children
+      ? ">\n" . join('', map { printNode($_) } @children) . "</$tag>"
+      : '/>')
+      . "\n"; }
+  else {
+    return ToString($node); } }
+
 # ================================================================================
 # Some more XML utilities, but math specific (?)
 
@@ -1032,25 +1047,35 @@ sub ApplyNary {
 # or follows (normal case), along with whether sub/super.
 #   the alignment of multiple sub/superscripts derived from the binding level when created.
 # scriptpos = (pre|mod|post) number; where number is the binding-level.
+# If $pos is given (pre|mid|post), it overrides the position implied by the script
 sub NewScript {
-  my ($base, $script) = @_;
+  my ($base, $script, $pos) = @_;
   my $role;
   my ($bx, $bl) = (p_getAttribute($base,   'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($script, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
-  my ($x, $y) = p_getAttribute($script, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
-  $x = ($x eq 'FLOAT' ? 'pre' : $bx || 'post');
+  my ($mode, $y) = p_getAttribute($script, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
+  my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
   my $lpad = ($x eq 'pre') && p_getAttribute($script, 'lpadding');
   my $rpad = ($x ne 'pre') && p_getAttribute($script, 'rpadding');
-
   my $t;
   my $l = $sl || $bl ||
     (($t = $LaTeXML::MathParser::DOCUMENT->getNodeBox($script))
     && ($t->getProperty('level'))) || 0;
+  # If the INNER script was a floating script (ie. {}^{x})
+  # we'll NOT want this one to stack over it so bump the level.
+  my $bumped;
+  if (p_getAttribute($base, '_wasfloat')) {
+    $l++; $bumped = 1 }
+  elsif (my $innerl = p_getAttribute($base, '_bumplevel')) {
+    $l = $innerl; }
   my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l"),
     $base, Arg($script, 0));
-  $$app[1]{scriptpos} = $bx   if $bx ne 'post';
-  $$app[1]{lpadding}  = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
-  $$app[1]{rpadding}  = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
+  # Record whether this script was a floating one
+  $$app[1]{_wasfloat}  = 1   if $mode eq 'FLOAT';
+  $$app[1]{_bumplevel} = $l  if $bumped;
+  $$app[1]{scriptpos}  = $bx if $bx ne 'post';
+  $$app[1]{lpadding} = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
+  $$app[1]{rpadding} = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
   return $app; }
 
 # Basically, like NewScript, but decorates an operator with sub/superscripts
