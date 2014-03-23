@@ -157,6 +157,11 @@ XMTok_attributes =
   ## such as the fraction line for the fraction operator.
   attribute thickness { text }?,
 
+  ## Whether or not the symbol should be stretchy.
+  ## This shares MathML's ambiguity about horizontal versus vertical stretchiness.
+  ## When not set, defaults to whatever MathML's operator dictionary says.
+  attribute stretchy { xsd:boolean }?,
+
   ## The math style used for displaying the application of this token
   ## when it represents some sort of fraction, variable-sized operator or stack of expressions
   ## (note that this applies to binomials or other stacks of expressions as well as fractions).
