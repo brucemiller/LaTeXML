@@ -3211,12 +3211,12 @@ sub IsEmpty {
 # }
 
 # Remember a "safe" way to test a script Whatsit.
-# Returns (SUBSCRIPT|SUPERSCRIPT)
+# Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
 sub IsScript {
   my ($object) = @_;
   if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
-    return $2; }
+    return [$1, $2]; }
   return; }
 
 sub scriptHandler {
@@ -3239,13 +3239,13 @@ sub scriptHandler {
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
         last; }
-      elsif (my $pop = IsScript($prev)) {
+      elsif (my $prevop = IsScript($prev)) {
         unshift(@putback, $prev);
-        if ($pop eq $op) {           # Whoops, duplicated; better use FLOATING
-          Error('unexpected', "double-" . lc($pop), $stomach, "Double " . lc($pop));
+        if ($$prevop[1] eq $op) {    # Whoops, duplicated; better use FLOATING
+          Error('unexpected', "double-" . lc($$prevop[1]), $stomach, "Double " . lc($$prevop[1]));
           $cs = '\@@FLOATING' . $op;
           last; }
-        else {                       # Else, is OK (so far) assume POST (or same as previous?)
+        else {                       # Else, is OK (so far) assume POST (it will stack previous script)
           $prevscript = $prev;               # we'll overlap the width of the previous.
           $cs         = '\@@POST' . $op; }
         last if ++$nscripts > 1; }
@@ -4663,81 +4663,81 @@ sub doVariablesizeOp {
   return (LookupValue('mathstyle') eq 'display' ? 'display' : undef); }
 
 DefMathI('\sum', undef, "\x{2211}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'sum',
-   mathstyle => \&doVariablesizeOp);
+  meaning   => 'sum',
+  mathstyle => \&doVariablesizeOp);
 DefMathI('\prod', undef, "\x{220F}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'product',
+  meaning   => 'product',
   mathstyle => \&doVariablesizeOp);
 DefMathI('\coprod', undef, "\x{2210}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'coproduct',
+  meaning   => 'coproduct',
   mathstyle => \&doVariablesizeOp);
 DefMathI('\int', undef, "\x{222B}",
-  role => 'INTOP',
-  meaning => 'integral',
+  role      => 'INTOP',
+  meaning   => 'integral',
   mathstyle => \&doVariablesizeOp);
 DefMathI('\oint', undef, "\x{222E}",
-  role => 'INTOP',
-  meaning => 'contour-integral',
+  role      => 'INTOP',
+  meaning   => 'contour-integral',
   mathstyle => \&doVariablesizeOp);
 DefMathI('\bigcap', undef, "\x{22C2}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'intersection',
+  meaning   => 'intersection',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigcup', undef, "\x{22C3}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'union',
+  meaning   => 'union',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigsqcup', undef, "\x{2294}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'square-union',
+  meaning   => 'square-union',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigvee', undef, "\x{22C1}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'or',
+  meaning   => 'or',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigwedge', undef, "\x{22C0}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'and',
+  meaning   => 'and',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigodot', undef, "\x{2299}",
-  role => 'SUMOP',    #meaning=> ?
-  scriptpos => \&doScriptpos, 
+  role      => 'SUMOP',              #meaning=> ?
+  scriptpos => \&doScriptpos,
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigotimes', undef, "\x{2297}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'tensor-product',
+  meaning   => 'tensor-product',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\bigoplus', undef, "\x{2295}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'direct-sum',
+  meaning   => 'direct-sum',
   mathstyle => \&doVariablesizeOp,
-  font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefMathI('\biguplus', undef, "\x{228E}",
-  role => 'SUMOP',
+  role      => 'SUMOP',
   scriptpos => \&doScriptpos,
-  meaning => 'symmetric-difference',
+  meaning   => 'symmetric-difference',
   mathstyle => \&doVariablesizeOp,
- font=>{size=>'Big'});
+  font      => { size => 'Big' });
 DefConstructorI('\limits', undef, sub {
     my $node = $_[0]->getElement;
     $_[0]->setAttribute($_[0]->getLastChildElement($node) || $node, scriptpos => 'mid'); });
@@ -5057,14 +5057,19 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
 # LaTeX; Table 3.11. Math Mode Accents, p.50.
 # Are these all TeX (or LaTeX)?
 
-DefMath('\hat Digested',      UTF(0x5E),  operator_role => 'OVERACCENT');
-DefMath('\check Digested',    "\x{02C7}", operator_role => 'OVERACCENT');    # CARON
-DefMath('\breve Digested',    "\x{02D8}", operator_role => 'OVERACCENT');    # BREVE
-DefMath('\acute Digested',    UTF(0xB4),  operator_role => 'OVERACCENT');    # ACUTE ACCENT
-DefMath('\grave Digested',    UTF(0x60),  operator_role => 'OVERACCENT');    # GRAVE ACCENT
-DefMath('\tilde Digested',    UTF(0x7E),  operator_role => 'OVERACCENT');    # TILDE
-DefMath('\bar Digested',      UTF(0xAF),  operator_role => 'OVERACCENT');    # MACRON
-DefMath('\vec Digested',      "\x{2192}", operator_role => 'OVERACCENT');    # RIGHTWARDS ARROW
+DefMath('\hat Digested', UTF(0x5E),
+  operator_role => 'OVERACCENT', operator_stretchy => 'false');
+DefMath('\check Digested', "\x{02C7}",
+  operator_role => 'OVERACCENT', operator_stretchy => 'false');    # CARON
+DefMath('\breve Digested', "\x{02D8}", operator_role => 'OVERACCENT');    # BREVE
+DefMath('\acute Digested', UTF(0xB4),  operator_role => 'OVERACCENT');    # ACUTE ACCENT
+DefMath('\grave Digested', UTF(0x60),  operator_role => 'OVERACCENT');    # GRAVE ACCENT
+DefMath('\tilde Digested', UTF(0x7E),
+  operator_role => 'OVERACCENT', operator_stretchy => 'false');           # TILDE
+DefMath('\bar Digested', UTF(0xAF),
+  operator_role => 'OVERACCENT', operator_stretchy => 'false');           # MACRON
+DefMath('\vec Digested', "\x{2192}",
+  operator_role => 'OVERACCENT', operator_stretchy => 'false');           # RIGHTWARDS ARROW
 DefMath('\dot Digested',      "\x{02D9}", operator_role => 'OVERACCENT');    # DOT ABOVE
 DefMath('\ddot Digested',     UTF(0xA8),  operator_role => 'OVERACCENT');    # DIAERESIS
 DefMath('\overline Digested', UTF(0xAF),  operator_role => 'OVERACCENT');    # MACRON
