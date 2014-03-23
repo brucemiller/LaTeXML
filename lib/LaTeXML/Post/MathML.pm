@@ -204,51 +204,35 @@ my %stylemap = (             # CONSTANT
     text   => [scriptlevel => '-2'],
     script => [scriptlevel => '-1'] });
 
-# Mappings between internal fonts & sizes.
+# Mappings between (normalized) internal fonts & sizes.
 # Default math font is roman|medium|upright.
 my %mathvariants = (    # CONSTANT
-  'upright'                => 'normal',
-  'serif'                  => 'normal',
-  'medium'                 => 'normal',
-  'bold'                   => 'bold',
-  'bold upright'           => 'bold',
-  'serif bold'             => 'bold',
-  'serif bold upright'     => 'bold',
-  'italic'                 => 'italic',
-  'slanted'                => 'italic',
-  'serif italic'           => 'italic',
-  'serif slanted'          => 'italic',
-  'medium italic'          => 'italic',
-  'medium slanted'         => 'italic',
-  'bold italic'            => 'bold-italic',
-  'bold slanted'           => 'bold-italic',
-  'serif bold italic'      => 'bold-italic',
-  'serif bold slanted'     => 'bold-italic',
-  'doublestruck'           => 'double-struck',
-  'doublestruck upright'   => 'double-struck',
-  'blackboard'             => 'double-struck',
-  'blackboard upright'     => 'double-struck',
-  'fraktur'                => 'fraktur',
-  'fraktur italic'         => 'fraktur',                  # ?
-  'fraktur slanted'        => 'fraktur',                  # ?
-  'fraktur upright'        => 'fraktur',
-  'fraktur bold'           => 'bold-fraktur',
-  'script'                 => 'script',
-  'script italic'          => 'script',
-  'script slanted'         => 'script',
-  'script upright'         => 'script',
-  'script bold'            => 'bold-script',
-  'caligraphic'            => 'script',
-  'caligraphic upright'    => 'script',
-  'caligraphic bold'       => 'bold-script',
-  'sansserif'              => 'sans-serif',
-  'sansserif upright'      => 'sans-serif',
-  'sansserif bold'         => 'bold-sans-serif',
-  'sansserif italic'       => 'sans-serif-italic',
-  'sansserif slanted'      => 'sans-serif-italic',
+  'upright'          => 'normal',
+  'serif'            => 'normal',
+  'medium'           => 'normal',
+  'bold'             => 'bold',
+  'italic'           => 'italic',
+  'medium italic'    => 'italic',
+  'bold italic'      => 'bold-italic',
+  'doublestruck'     => 'double-struck',
+  'blackboard'       => 'double-struck',
+  'fraktur'          => 'fraktur',
+  'fraktur italic'   => 'fraktur',             # all collapse
+  'fraktur bold'     => 'bold-fraktur',
+  'script'           => 'script',
+  'script italic'    => 'script',              # all collapse
+  'script bold'      => 'bold-script',
+  'caligraphic'      => 'script',              # all collapse; NOTE: In TeX caligraphic is NOT script!
+  'caligraphic bold' => 'bold-script',
+  'sansserif'        => 'sans-serif',
+  'sansserif bold'   => 'bold-sans-serif',
+  'sansserif italic' => 'sans-serif-italic',
   'sansserif bold italic'  => 'sans-serif-bold-italic',
-  'sansserif bold slanted' => 'sans-serif-bold-italic',
-  'typewriter'             => 'monospace');
+  'typewriter'             => 'monospace',
+  'typewriter bold'        => 'monospace',
+  'typewriter italic'      => 'monospace',
+  'typewriter bold italic' => 'monospace',
+);
 
 # The font differences (from the containing context) have been deciphered
 # into font, size and color attributes.  The font should match
@@ -258,6 +242,25 @@ my %sizes = (    # CONSTANT
   normal => 'normal',
   large => 'big', Large => 'big', LARGE => 'big', huge => 'big', Huge => 'big',
   big => '1.1em', Big => '1.5em', bigg => '2.0em', Bigg => '2.5em');
+
+# Given a font string (joining the components)
+# reduce it to a "sane" font.  Note that MathML uses a single mathvariant
+# to name the font, and doesn't inherit font components like italic or bold.
+# Thus the font should be "complete", but also we can ignore components with
+#  default values like medium or upright (unless that is the only component).
+sub mathvariantForFont {
+  my ($font) = @_;
+  $font =~ s/slanted/italic/;    # equivalent in math
+  $font =~ s/serif\s//;          # Not needed (unless alone)
+  $font =~ s/\supright//;        # Not needed (unless 1st element)
+  $font =~ s/\smedium//;         # Not needed (unless 1st element)
+  my $variant;
+  return $variant if $variant = $mathvariants{$font};
+  #  $font =~ s/\sitalic//;          # try w/o italic ?
+  #  return $variant if $variant = $mathvariants{$font};
+  #  $font =~ s/\sbold//;          # try w/o bold ?
+  #  return $variant if $variant = $mathvariants{$font};
+  return 'normal'; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Presentation MathML
@@ -269,8 +272,8 @@ sub pmml_top {
   # Ie. if you want to draw in that size & color, you'll get it automatically.
   local $LaTeXML::MathML::STYLE = $style || 'text';
   local $LaTeXML::MathML::FONT = find_inherited_attribute($node, 'font');
-  $LaTeXML::MathML::FONT = undef
-    if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT};    # verify sane font
+  #  $LaTeXML::MathML::FONT = undef
+  #    if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT};    # verify sane font
   local $LaTeXML::MathML::SIZE    = find_inherited_attribute($node, 'fontsize');
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node, 'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
@@ -423,7 +426,7 @@ sub pmml_internal {
       foreach my $col (element_nodes($row)) {
         my $a  = $col->getAttribute('align');
         my $b  = $col->getAttribute('border');
-        my $bc = ($b ? join(' ',map { 'ltx_border_'.$_ } split(/\s/, $b)) : $b);
+        my $bc = ($b ? join(' ', map { 'ltx_border_' . $_ } split(/\s/, $b)) : $b);
         my $h  = (($col->getAttribute('thead') || '') eq 'true') && 'thead';
         my $cl = $col->getAttribute('class');
         my $c  = ($bc ? ($h ? "$bc $h" : $bc) : $h);
@@ -583,15 +586,15 @@ sub stylizeContent {
     || $LaTeXML::MathML::BGCOLOR;
   my $opacity = ($iselement ? $item->getAttribute('opacity') : $attr{opacity})
     || $LaTeXML::MathML::OPACITY;
-  my $class   = ($iselement ? $item->getAttribute('class') : $attr{class});
-  my $text    = (ref $item  ? $item->textContent           : $item);
-  my $variant = ($font      ? $mathvariants{$font}         : '');
-  my $stretchy = $size && ($size eq 'stretchy') && 'true'; # sort-of a size... (but only for operators?)
-  $size = undef if $stretchy;                                  # but then don't need regular sizing.
-                                                               # Hack to neutralize unnecessary sizing
+  my $class    = ($iselement ? $item->getAttribute('class')    : $attr{class});
+  my $text     = (ref $item  ? $item->textContent              : $item);
+  my $variant  = ($font      ? mathvariantForFont($font)       : '');
+  my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
+  $size = undef if ($stretchy || 'false') eq 'true';    # Ignore size, if we're stretching.
   $size = undef if $size && ($size eq $LaTeXML::MathML::STYLE);
-  $stretchy = 'false' if $size;	# Conversely, if size was specifically set, we shouldn't stretch it!
-  # Failsafe for empty tokens?
+  $stretchy = 'false' if $size;   # Conversely, if size was specifically set, we shouldn't stretch it!
+                                  # Failsafe for empty tokens?
+
   if ((!defined $text) || ($text eq '')) {
     $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
     $color = 'red'; }
@@ -599,9 +602,19 @@ sub stylizeContent {
   if ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
   # Special case for single char identifiers?
-  if ($mihack && ($text =~ /^.$/)) {                           # Single char in mi?
+  if ($mihack && ($text =~ /^.$/)) {    # Single char in mi?
     if    ($variant eq 'italic') { $variant = undef; }         # Defaults to italic
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
+
+  # Use class (css) to patchup some weak translations
+  if (!$font) { }
+  elsif ($font =~ /caligraphic/) {
+    # Note that this is unlikely to have effect when plane1 chars are used!
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
+  elsif ($font =~ /script/) {
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathscript'; }
+  elsif (($font =~ /fraktur/) && ($text =~ /^[\+\-\d\.]*$/)) {    # fraktur number?
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
 
   # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
   # Only upper & lower case latin & greek, and also numerals can be mapped.
@@ -656,8 +669,8 @@ sub pmml_mo {
   my ($item, %attr) = @_;
   my ($text, %mmlattr) = stylizeContent($item, 0, %attr);
   my $role = (ref $item ? $item->getAttribute('role') : $attr{role});
-  my $isfence = $role && ($role =~ /^(OPEN|CLOSE)$/);
-  my $ispunct = $role && ($role eq 'PUNCT');
+  my $isfence   = $role && ($role =~ /^(OPEN|CLOSE)$/);
+  my $ispunct   = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
   my $lpad = ((ref $item) && $item->getAttribute('lpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
@@ -667,14 +680,14 @@ sub pmml_mo {
   return ['m:mo', { %mmlattr,
       ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
       ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-      ($islargeop  ? (largeop => 'true') : ()),
-      ($islargeop  ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
-      # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
-      # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
-      # Just assume something between mediummathspace = 4/18em = 2.222pt
-      # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
-      ($lpad ? (lspace => max(0,(2.5+getXMHintSpacing($lpad))).'pt') : ()),
-      ($rpad ? (rspace => max(0,(2.5+getXMHintSpacing($rpad))).'pt') : ()),
+      ($islargeop ? (largeop   => 'true') : ()),
+      ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
+             # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
+             # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
+             # Just assume something between mediummathspace = 4/18em = 2.222pt
+             # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
+      ($lpad ? (lspace => max(0, (2.5 + getXMHintSpacing($lpad))) . 'pt') : ()),
+      ($rpad ? (rspace => max(0, (2.5 + getXMHintSpacing($rpad))) . 'pt') : ()),
       # If an operator has specifically located it's scripts,
       # don't let mathml move them.
       (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
@@ -900,9 +913,8 @@ sub pmml_text_aux {
 
 sub cmml_top {
   my ($self, $node) = @_;
-  local $LaTeXML::MathML::STYLE = 'text';
-  local $LaTeXML::MathML::FONT = find_inherited_attribute($node, 'font');
-#  $LaTeXML::MathML::FONT = undef unless $mathvariants{$LaTeXML::MathML::FONT}; # Make sure it's a sane font
+  local $LaTeXML::MathML::STYLE   = 'text';
+  local $LaTeXML::MathML::FONT    = find_inherited_attribute($node, 'font');
   local $LaTeXML::MathML::SIZE    = find_inherited_attribute($node, 'fontsize');
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node, 'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
