@@ -937,35 +937,47 @@ DefConstructor('\sideset{}{}{}', sub {
     foreach my $script ($pre->unlist) {
       if (!IsScript($script)) {
         Warn('expected', '<sub/supserscript>', $document,
-          "Expected a sub/superscript in the prescripts of \\sideset", "Got " . Stringify($script));
-        $document->insertElement('ltx:XMWrap', $script); } }    # Stick it in front!
+          "Expected a sub/superscript in the prescripts of \\sideset",
+          "Got " . Stringify($script));
+        $document->insertElement('ltx:XMWrap', $script); } }    # Stick any non-scripts FRONT!
 
     my $node = $document->insertElement('ltx:XMArg', $base);
     my $ch = $document->getFirstChildElement($node);
     my ($opx, $ignore)
       = ($ch && $ch->getAttribute('scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
     my $level = $props{level} || 0;
-    my $x = 'pre';
-    foreach my $group ($pre, $post) {                           # Best order?
-      foreach my $script ($group->unlist) {
-        # If it's a script, handle it (non-scripts dealt with above & below)
-        if (my $y = IsScript($script)) {
-          my $new = $document->openElement('ltx:XMApp');
-          $document->insertElement('ltx:XMTok', undef, role => $y . 'OP', scriptpos => "$x$level");
-          $new->appendChild($node);
-          $document->insertElement('ltx:XMWrap', $script->getArg(1));
-          $document->closeElement('ltx:XMApp');
-          $node = $new; } }
-      $x = 'post'; }
+    foreach my $script (reverse $pre->unlist) {
+      # If it's a script, handle it (non-scripts dealt with above & below)
+      if (my $scriptop = IsScript($script)) {
+        $node = sidesetWrap($document, $node, 'pre', $$scriptop[1], $level, $script);
+        $level++ if $$scriptop[0] eq 'FLOATING';                # After node is seen!
+      } }
+    my @after = ();
+    foreach my $script ($post->unlist) {
+      # If it's a script, handle it (non-scripts dealt with above & below)
+      if (my $scriptop = IsScript($script)) {
+        $level++ if $$scriptop[0] eq 'FLOATING';                # Before node is seen!
+        $node = sidesetWrap($document, $node, 'post', $$scriptop[1], $level, $script); }
+      else {
+        push(@after, $script); } }                              # Save non-scripts
     $document->setAttribute($node, scriptpos => $opx) if $opx;
 
-    # Do the same scan for any garbage in the post-scripts
-    foreach my $script ($post->unlist) {
-      if (!IsScript($script)) {
-        Warn('expected', '<sub/supserscript>', $document,
-          "Expected a sub/superscript in the postscripts of \\sideset", "Got " . Stringify($script));
-        $document->insertElement('ltx:XMWrap', $script); } }    # Append, afterwards
+    # Put any garbage in the post-scripts AFTER
+    foreach my $nonscript (@after) {
+      Warn('expected', '<sub/supserscript>', $document,
+        "Expected a sub/superscript in the postscripts of \\sideset",
+        "Got " . Stringify($nonscript));
+      $document->insertElement('ltx:XMWrap', $nonscript); }     # Append, afterwards
 });
+
+sub sidesetWrap {
+  my ($document, $node, $x, $y, $level, $script) = @_;
+  my $new = $document->openElement('ltx:XMApp');
+  $document->insertElement('ltx:XMTok', undef, role => $y . 'OP', scriptpos => "$x$level");
+  $new->appendChild($node);
+  $document->insertElement('ltx:XMWrap', $script->getArg(1));
+  $document->closeElement('ltx:XMApp');
+  return $new; }
 
 #======================================================================
 # Section 7.3 Placement of subscripts and limits
