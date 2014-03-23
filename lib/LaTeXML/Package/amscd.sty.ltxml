@@ -78,7 +78,7 @@ DefMacroI(T_CS('@.'), undef,
   '&&');
 
 # Horizontal
-DefMath('\@cd@equals@', "=", role => 'ARROW', font => { size => 'stretchy' }, reversion => '@=');
+DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');
 # Vertical
 DefMath('\@cd@bar@', "|", role => 'ARROW', font => { size => 'Big' }, reversion => '@|');
 DefMath('\@cd@vert@', "\x{2225}", role => 'ARROW', font => { size => 'Big' }, reversion => '@\vert');
@@ -129,8 +129,8 @@ DefConstructor('\cd@adjacent Undigested {}{}{}', sub {
 
 # This isn't really having the desired effect when transformed to MathML and
 # displayed in Firefox.... have I got it right; has Firefox???
-DefMath('\leftarrowfill@',  "\x{2190}", role => 'ARROW', font => { size => 'stretchy' });
-DefMath('\rightarrowfill@', "\x{2192}", role => 'ARROW', font => { size => 'stretchy' });
+DefMath('\leftarrowfill@',  "\x{2190}", role => 'ARROW', stretchy => 'true');
+DefMath('\rightarrowfill@', "\x{2192}", role => 'ARROW', stretchy => 'true');
 
 DefRegister('\minCDarrowwidth' => Dimension('2.5pc'));
 
