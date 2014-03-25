@@ -210,7 +210,7 @@ sub convert {
           if ($$opts{format} eq 'tex') {
             $serialized = LaTeXML::Core::Token::UnTeX($digested);
           } elsif ($$opts{format} eq 'box') {
-            $serialized = $digested->toString;
+            $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString);
           } else {    # Default is XML
             $dom = $latexml->convertDocument($digested);
           }
