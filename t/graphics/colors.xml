@@ -74,13 +74,13 @@ vs. <text color="#E6E6E6">Light</text></p>
   <section refnum="5" xml:id="S5">
     <title><tag close=" ">5</tag>Boxes</title>
     <para xml:id="S5.p1">
-      <p><text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
+      <p><text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p2">
       <p>vs. <text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p3">
-      <p><text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">Green in Red surrounded by Blue</text></p>
+      <p><text framecolor="#0000FF" framed="rectangle" backgroundcolor="#FF0000" color="#00FF00">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S5.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" color="#FFFF00" backgroundcolor="#00FFFF">Yellow in Cyan surrounded by Magenta</text></p>
@@ -94,8 +94,8 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" color="#FF0000" font="italic">R</XMTok>
-              <XMTok role="UNKNOWN" color="#00FF00" font="italic">G</XMTok>
+              <XMTok role="UNKNOWN" font="italic" color="#FF0000">R</XMTok>
+              <XMTok role="UNKNOWN" font="italic" color="#00FF00">G</XMTok>
               <XMTok role="UNKNOWN" color="#0000FF" font="italic">B</XMTok>
             </XMApp>
           </XMath>
@@ -108,9 +108,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="#FF0000" font="italic">R</XMTok>
+              <XMTok role="UNKNOWN" font="italic" backgroundcolor="#FF0000">R</XMTok>
               <XMTok role="UNKNOWN" backgroundcolor="#00FF00" font="italic">G</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="#0000FF" font="italic">B</XMTok>
+              <XMTok role="UNKNOWN" font="italic" backgroundcolor="#0000FF">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -145,7 +145,7 @@ vs. <text color="#03FF7A">JungleGreen</text>
 vs. <text color="#03FF7A">JungleGreen</text></p>
     </para>
     <para xml:id="S7.p2">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" thead="true">

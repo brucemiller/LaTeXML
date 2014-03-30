@@ -9,7 +9,7 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basics</title>
     <para xml:id="S1.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" thead="true">one</td>
@@ -23,7 +23,7 @@
       </tabular>
     </para>
     <para xml:id="S1.p2">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
@@ -38,7 +38,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
             </td>
           </tr>
         </tbody>
@@ -48,7 +48,7 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Complex</title>
     <para xml:id="S2.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" backgroundcolor="#CCCCCC" thead="true">
@@ -63,7 +63,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
             </td>
           </tr>
         </tbody>
@@ -73,12 +73,12 @@
       <tabular>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text backgroundcolor="#00FFFF" fontsize="large" font="bold">A long table example</text>
+            <text backgroundcolor="#00FFFF" font="bold" fontsize="large">A long table example</text>
           </td>
         </tr>
         <tr>
           <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
-            <text color="#FFFFFF" backgroundcolor="#FF00FF">First two columns</text>
+            <text backgroundcolor="#FF00FF" color="#FFFFFF">First two columns</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">Third column</text>
@@ -89,7 +89,7 @@
             <text color="#FFFFFF" backgroundcolor="#FF00FF">p-type</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
-            <text color="#FFFFFF" backgroundcolor="#FF00FF">D-type (<text font="sansserif">dcolumn</text>)</text>
+            <text backgroundcolor="#FF00FF" color="#FFFFFF">D-type (<text font="sansserif">dcolumn</text>)</text>
           </td>
         </tr>
         <tr>
@@ -97,7 +97,7 @@
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">P-column</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">and another one</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and another one</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m1" tex="\pagecolor{yellow}12\cdot 34" text="12.34">
@@ -124,10 +124,10 @@
         </tr>
         <tr>
           <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Some long text in the first column</text>
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">Some long text in the first column</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m3" tex="\pagecolor{yellow}1\cdot 2" text="1.2">
@@ -169,7 +169,7 @@
         </tr>
         <tr>
           <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
@@ -184,11 +184,11 @@
         </tr>
         <tr>
           <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">Note that the coloured rules in all columns stretch to accomodate
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Note that the coloured rules in all columns stretch to accomodate
 large entries in one column.</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m7" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -215,7 +215,7 @@ large entries in one column.</text>
         </tr>
         <tr>
           <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">Depending on your driver you may get unsightly gaps or lines
@@ -234,7 +234,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
         </tr>
         <tr>
           <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
           <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
@@ -254,7 +254,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
         </tr>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text backgroundcolor="#00FFFF" fontsize="large" font="bold">The End</text>
+            <text fontsize="large" font="bold" backgroundcolor="#00FFFF">The End</text>
           </td>
         </tr>
       </tabular>
@@ -263,7 +263,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Row &amp; Cell Colors</title>
     <para xml:id="S3.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" thead="true">one</td>
@@ -282,7 +282,7 @@ three</text>
       </tabular>
     </para>
     <para xml:id="S3.p2">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" thead="true">one</td>
@@ -300,7 +300,7 @@ three</text>
       </tabular>
     </para>
     <para xml:id="S3.p3">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" thead="true">one</td>
@@ -321,7 +321,7 @@ three</text>
       </tabular>
     </para>
     <para xml:id="S3.p4">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r" thead="true">one</td>
@@ -345,7 +345,7 @@ three</text>
   <section refnum="4" xml:id="S4">
     <title><tag close=" ">4</tag>Gaudy</title>
     <para xml:id="S4.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="center" border="ll t" backgroundcolor="#E6E6E6">

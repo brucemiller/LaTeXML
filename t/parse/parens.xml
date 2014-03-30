@@ -97,7 +97,7 @@
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMArray close="}" meaning="cases" role="ARRAY">
+              <XMArray close="}" meaning="cases" role="ARRAY" vattach="middle">
                 <XMRow>
                   <XMCell align="left">
                     <XMTok role="ID" font="italic">a</XMTok>
@@ -109,7 +109,7 @@
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMArray meaning="cases" open="{" role="ARRAY">
+              <XMArray meaning="cases" open="{" role="ARRAY" vattach="middle">
                 <XMRow>
                   <XMCell align="left">
                     <XMTok role="ID" font="italic">c</XMTok>
@@ -130,7 +130,7 @@
       <equation xml:id="S3.Ex8">
         <Math mode="display" xml:id="S3.Ex8.m1" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" text="Array[[c], [d]]">
           <XMath>
-            <XMArray close=")" open="(" role="ARRAY">
+            <XMArray close=")" open="(" role="ARRAY" vattach="middle">
               <XMRow>
                 <XMCell align="left">
                   <XMTok role="ID" font="italic">c</XMTok>
@@ -151,7 +151,7 @@
             <XMApp close=")" open="(">
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMArray close=")" open="(" role="ARRAY">
+              <XMArray close=")" open="(" role="ARRAY" vattach="middle">
                 <XMRow>
                   <XMCell align="left">
                     <XMTok role="ID" font="italic">c</XMTok>

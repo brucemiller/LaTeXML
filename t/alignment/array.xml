@@ -8,7 +8,7 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>New Column types</title>
     <para xml:id="S1.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="justify" border="l r t" width="72.27pt">Lorem ipsum dolor sit amet, consectetur adipisicing elit</td>
@@ -24,7 +24,7 @@
       </tabular>
     </para>
     <para xml:id="S1.p2">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="left" border="l r">[left]</td>
@@ -38,7 +38,7 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Math columns</title>
     <para xml:id="S2.p1">
-      <tabular>
+      <tabular vattach="middle">
         <tbody>
           <tr>
             <td align="center" thead="true">word</td>
@@ -78,7 +78,7 @@
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
               <XMTok role="UNKNOWN" font="italic">z</XMTok>
-              <XMArray role="ARRAY">
+              <XMArray role="ARRAY" vattach="middle">
                 <XMRow>
                   <XMCell align="center">
                     <XMText>word</XMText>

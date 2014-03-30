@@ -42,7 +42,7 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>parbox and minipage</title>
     <para xml:id="S2.p1">
-      <inline-block width="144.54pt">
+      <inline-block class="ltx_parbox" vattach="middle" width="144.54pt">
         <p>hbox1</p>
         <p vattach="bottom">vbox1</p>
         <p>hbox2</p>
@@ -51,7 +51,7 @@
       </inline-block>
     </para>
     <para xml:id="S2.p2">
-      <inline-block width="144.54pt">
+      <inline-block class="ltx_minipage" vattach="middle" width="144.54pt">
         <p>This is random text. This is random text.
 This is random text. This is random text. This is random text.</p>
         <itemize xml:id="I1">
@@ -118,7 +118,9 @@ This is random text. This is random text. This is random text.</p>
       <graphics candidates="foo.png" graphic="foo" xml:id="S4.p1.g1"/>
     </para>
     <para xml:id="S4.p2">
-      <graphics candidates="foo.png" graphic="foo" xml:id="S4.p2.g1" cssstyle="transform:scale(3,2);"/>
+      <inline-block depth="4.0pt" height="14.0pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="22.5pt" width="67.5pt" xscale="3" yscale="2">
+        <graphics candidates="foo.png" graphic="foo" xml:id="S4.p2.g1"/>
+      </inline-block>
     </para>
   </section>
 </document>

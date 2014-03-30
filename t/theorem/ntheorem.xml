@@ -132,7 +132,7 @@ Also for displayed arrays of this form, it looks good:</text>
           <equation xml:id="S1.Ex2">
             <Math mode="display" xml:id="S1.Ex2.m1" tex="\begin{array}[]{l}a=\begin{array}[t]{l}first\ line\\&#10;second\ line\end{array}\mbox{try to put this text in the lowest line}\end{array}" text="Array[[a = Array[[f * i * r * s * t * l * i * n * e], [s * e * c * o * n * d * l * i * n * e]] * [try to put this text in the lowest line]]]">
               <XMath>
-                <XMArray role="ARRAY">
+                <XMArray role="ARRAY" vattach="middle">
                   <XMRow>
                     <XMCell align="left">
                       <XMApp>

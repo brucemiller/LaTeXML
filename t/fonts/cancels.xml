@@ -7,7 +7,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular>
+    <tabular vattach="middle">
       <thead>
         <tr>
           <td border="r" thead="true"/>
@@ -130,7 +130,7 @@
         <tr>
           <td align="left" border="r" thead="true">green cancelto</td>
           <td/>
-          <td align="center"><Math mode="inline" xml:id="p1.m8" tex="a+\cancelto{\phi}{b-c}+d" text="a + (cancel@(b - c)) ^ phi + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok role="SUPERSCRIPTOP"/><XMApp><XMTok enclose="updiagonalstrike updiagonalarrow" meaning="cancel" role="ENCLOSE" color="#00FF00" font="italic"/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp><XMTok name="phi" role="UNKNOWN" font="italic">ϕ</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m8" tex="a+\cancelto{\phi}{b-c}+d" text="a + (cancel@(b - c)) ^ phi + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok role="SUPERSCRIPTOP"/><XMApp><XMTok enclose="updiagonalstrike updiagonalarrow" meaning="cancel" role="ENCLOSE" font="italic" color="#00FF00"/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMApp><XMTok name="phi" role="UNKNOWN" font="italic">ϕ</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></td>
         </tr>
       </tbody>
     </tabular>
