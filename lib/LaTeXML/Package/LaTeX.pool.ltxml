@@ -1173,8 +1173,10 @@ DefConstructor('\list@item OptionalUndigested',
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 
+DefMacro('\trivlist@item[]', '');
 DefEnvironment('{trivlist}',
-  '<ltx:itemize><ltx:item>#body</ltx:itemize>');
+  '<ltx:p>#body</ltx:p>',
+  beforeDigest => sub { Let('\item', '\trivlist@item'); });
 
 DefRegister('\topsep'           => Glue(0));
 DefRegister('\partopsep'        => Glue(0));
@@ -2494,10 +2496,13 @@ DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
 # so make it Undigested here!
 
+# Convert a vertical positioning, optional argument.
+#  t = "top", b = "bottom"; default is "middle".
+# Note that the default for vattach attribute is "baseline".
 sub translateAttachment {
   my ($pos) = @_;
   $pos = ($pos ? ToString($pos) : '');
-  return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : undef)); }    # undef meaning 'middle'
+  return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
 DefConstructor('\@@tabular[] Undigested DigestedBody',
   sub { my ($document, $pos, $pat, $body, %props) = @_;
@@ -3272,13 +3277,30 @@ DefConstructor('\@framebox[][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
-DefPrimitive('\newsavebox DefToken', sub { AssignValue('box' . ToString($_[1]), List()); });
-DefPrimitive('\sbox DefToken{}', sub {
-    AssignValue('box' . ToString($_[1]), Digest($_[2])); return; });
+AssignValue(SAVEBOX => 100);
+DefPrimitive('\newsavebox DefToken', sub {
+    my $n = LookupValue('SAVEBOX') + 1;
+    AssignValue(SAVEBOX => $n, 'global');
+    DefRegister(ToString($_[1]) => Number($n));
+    AssignValue('box' . $n, List()); });
+
+DefPrimitive('\sbox Register {}', sub {
+    my ($defn)   = @{ $_[1] };
+    my $value    = $defn->valueOf()->valueOf;
+    my $contents = Digest($_[2]);
+    AssignValue('box' . $value, $contents); return; });
 
 DefMacro('\savebox{}', '\@ifnextchar({\pic@savebox#1}{\@savebox#1}');
 DefPrimitive('\@savebox DefToken[][]{}', sub {
-    AssignValue('box' . ToString($_[1]), Digest($_[4])); return; });
+    my ($defn, @args) = @{ LookupDefinition($_[1]) };
+    my $value = $defn->valueOf(@args);
+    AssignValue('box' . $value, Digest($_[4])); return; });
+DefPrimitive('\@savebox Register [][]{}', sub {
+    my ($defn)   = @{ $_[1] };
+    my $value    = $defn->valueOf()->valueOf;
+    my $contents = Digest($_[4]);
+    #    AssignValue('box' . $value, Digest($_[4])); return; });
+    AssignValue('box' . $value, $contents); return; });
 
 DefMacroI('\begin{lrbox}', '{Token}',
   '\@begin@lrbox #1');
@@ -3292,19 +3314,25 @@ DefPrimitive('\@begin@lrbox Token', sub {
     my $box = List($stomach->digestNextBody());
     AssignValue('box' . ToString($token), $box); });
 
-DefPrimitive('\usebox DefToken', sub {
-    LookupValue('box' . ToString($_[1])) || Box(); });
+DefPrimitive('\usebox {Register}', sub {
+    my ($defn) = @{ $_[1] };
+    my $value = $defn->valueOf()->valueOf;
+    LookupValue('box' . $value) || Box(); });
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
-DefConstructor('\parbox[][][]{Dimension}{}', sub {
+DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
-    my $vattach = translateAttachment($attachment);
     insertBlock($document, $body,
-      ($width   ? (width   => $width)   : ()),
-      ($vattach ? (vattach => $vattach) : ()));
+      width   => $width,
+      vattach => $props{vattach},
+      class   => 'ltx_parbox');
     return; },
-  properties => sub { (width => $_[4], sizer => '#5'); },
+  properties => sub {
+    (width => $_[4],
+      vattach => translateAttachment($_[1]),
+      height  => $_[2],
+      sizer   => '#5'); },
   mode => 'text', bounded => 1,
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
@@ -3315,11 +3343,14 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
     insertBlock($document, $props{body},
-      ($width   ? (width   => $width)   : ()),
-      ($vattach ? (vattach => $vattach) : ()));
+      width   => $width,
+      vattach => $vattach,
+      class   => 'ltx_minipage');
     return; },
-  mode         => 'text',
-  properties   => sub { (width => $_[4]); },
+  mode => 'text',
+  properties => sub { (
+      width   => $_[4],
+      vattach => translateAttachment($_[1])); },
   beforeDigest => sub {
     Digest(T_CS('\@minipagetrue'));
     AssignValue('\hsize' => $_[4]);
