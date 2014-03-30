@@ -974,7 +974,7 @@ my %register_types = (      # [CONSTANT]
 
 sub DefRegister {
   my ($proto, $value, %options) = @_;
-  CheckOptions("DefRegsiter ($proto)", $register_options, %options);
+  CheckOptions("DefRegister ($proto)", $register_options, %options);
   DefRegisterI(parsePrototype($proto), $value, %options);
   return; }
 
@@ -1309,9 +1309,10 @@ sub defmath_cons {
 my $environment_options = {    # [CONSTANT]
   mode       => 1, requireMath => 1, forbidMath => 1,
   properties => 1, nargs       => 1, font       => 1,
-  beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
-  afterDigestBegin => 1, beforeDigestEnd => 1, reversion => 1,
-  scope => 1, locked => 1 };
+  beforeDigest     => 1, afterDigest     => 1,
+  afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
+  beforeConstruct  => 1, afterConstruct  => 1,
+  reversion        => 1, scope           => 1, locked => 1 };
 
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
@@ -1342,7 +1343,8 @@ sub DefEnvironmentI {
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
-      afterDigest => flatten($options{afterDigestBegin}),
+      afterDigest     => flatten($options{afterDigestBegin}),
+      afterDigestBody => flatten($options{afterDigestBody}),
       beforeConstruct => flatten(sub { $STATE->pushFrame; }, $options{beforeConstruct}),
       # Curiously, it's the \begin whose afterConstruct gets called.
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
@@ -1374,7 +1376,8 @@ sub DefEnvironmentI {
         ($mode                ? (sub { $_[0]->beginMode($mode); })        : ()),
         ($options{font}       ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
-      afterDigest => flatten($options{afterDigestBegin}),
+      afterDigest     => flatten($options{afterDigestBegin}),
+      afterDigestBody => flatten($options{afterDigestBody}),
       beforeConstruct => flatten(sub { $STATE->pushFrame; }, $options{beforeConstruct}),
       # Curiously, it's the \begin whose afterConstruct gets called.
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
@@ -2341,7 +2344,7 @@ The general syntax for parameter specification is
 
 The predefined argument types are as follows.
 
-=over
+=over 4
 
 =item C<Plain>, C<Semiverbatim>
 
@@ -2430,7 +2433,7 @@ and will be deactivated when the section ends.
 
 =head3 Macros
 
-=over
+=over 4
 
 =item C<< DefMacro($prototype,$string | $tokens | $code,%options); >>
 
@@ -2447,7 +2450,7 @@ must return a list of L<LaTeXML::Core::Token>'s.
 
 DefMacro options are
 
-=over
+=over 4
 
 =item scope=>$scope
 
@@ -2477,7 +2480,7 @@ as a Macro.
 
 =head3 Conditionals
 
-=over
+=over 4
 
 =item C<< DefConditional($prototype,$test,%options); >>
 
@@ -2492,7 +2495,7 @@ first or else code following, in the usual TeX sense.
 
 DefConditional options are
 
-=over
+=over 4
 
 =item scope=>$scope
 
@@ -2521,7 +2524,7 @@ C<$paramlist>).
 
 =head3 Primitives
 
-=over
+=over 4
 
 =item C<< DefPrimitive($prototype,$replacement,%options); >>
 
@@ -2541,7 +2544,7 @@ but does record the TeX code that created it.
 
 DefPrimitive options are
 
-=over
+=over 4
 
 =item  mode=>(text|display_math|inline_math)
 
@@ -2615,7 +2618,7 @@ and also defines the control sequence for assignment.
 
 Options are
 
-=over
+=over 4
 
 =item C<readonly>
 
@@ -2645,7 +2648,7 @@ have already been parsed; useful for definitions from within code.
 
 =head3 Constructors
 
-=over
+=over 4
 
 =item C<< DefConstructor($prototype,$xmlpattern | $code,%options); >>
 
@@ -2662,7 +2665,7 @@ The substitutions are of the following forms:
 
 If code is supplied,  the form is C<CODE($document,@args,%properties)>
 
-=over
+=over 4
 
 =item  #1, #2 ... #name
 
@@ -2697,7 +2700,7 @@ or by using the C<properties> option, other properties can be added.
 
 DefConstructor options are
 
-=over
+=over 4
 
 =item  mode=>(text|display_math|inline_math)
 
@@ -2734,12 +2737,13 @@ and must return a list of Token's.
 This option supplies additional properties to be set on the
 generated Whatsit.  In the first form, the values can
 be of any type, but if a value is a code references, it takes
-the same args ($stomach,#1,#2,...) and should return the value.
+the same args ($stomach,#1,#2,...) and should return the value;
+it is executed before creating the Whatsit.
 In the second form, the code should return a hash of properties.
 
 =item  beforeDigest=>CODE($stomach)
 
-This option supplies a Daemon to be executed during digestion 
+This option supplies a Daemon to be executed during digestion
 just before the Whatsit is created.  The CODE should either
 return nothing (return;) or a list of digested items (Box's,List,Whatsit).
 It can thus change the State and/or add to the digested output.
@@ -2747,7 +2751,8 @@ It can thus change the State and/or add to the digested output.
 =item  afterDigest=>CODE($stomach,$whatsit)
 
 This option supplies a Daemon to be executed during digestion
-just after the Whatsit is created. it should either return
+just after the Whatsit is created (and so the Whatsit already
+has its arguments and properties). It should either return
 nothing (return;) or digested items.  It can thus change the State,
 modify the Whatsit, and/or add to the digested output.
 
@@ -2807,7 +2812,7 @@ These C<DefConstructor> options also apply:
 
 Additionally, it accepts
 
-=over
+=over 4
 
 =item  style=>astyle
 
@@ -2904,6 +2909,49 @@ Example:
   DefConstructor('\emph{}',
      "<ltx:emph>#1</ltx:emph", mode=>'text');
 
+DefEnvironment gives slightly different interpretation to some of
+C<DefConstructor>'s options and adds some new ones:
+
+=over 4
+
+=item  beforeDigest=>CODE($stomach)
+
+This option is the same as for C<DefConstructor>,
+but it applies to the C<\begin{environment}> control sequence.
+
+=item  afterDigestBegin=>CODE($stomach,$whatsit)
+
+This option is the same as C<DefConstructor>'s C<afterDigest>
+but it applies to the C<\begin{environment}> control sequence.
+The Whatsit is the one for the begining control sequence,
+but represents the environment as a whole.
+Note that although the arguments and properties are present in
+the Whatsit, the body of the environment is I<not>.
+
+=item  beforeDigestEnd=>CODE($stomach)
+
+This option is the same as C<DefConstructor>'s C<beforeDigest>
+but it applies to the C<\end{environment}> control sequence.
+
+=item  afterDigest=>CODE($stomach,$whatsit)
+
+This option is the same as C<DefConstructor>'s C<afterDigest>
+but it applies to the C<\end{environment}> control sequence.
+Note, however that the Whatsit is only for the ending control sequence,
+I<not> the Whatsit for the environment as a whole.
+
+=item  afterDigestBody=>CODE($stomach,$whatsit)
+
+This option supplies a Daemon to be executed during digestion
+after the ending control sequence has been digested (and all the 4
+other digestion Daemons have executed) and after
+the body of the environment has been obtained.
+The Whatsit is the (usefull) one representing the whole
+environment, and it now does have the body and trailer available,
+stored as a properties.
+
+=back;
+
 =item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
 
 X<DefEnvironmentI>
@@ -2914,7 +2962,7 @@ have already been separated; useful for definitions from within code.
 
 =head2 Inputing Content and Definitions
 
-=over
+=over 4
 
 =item C<< FindFile($name,%options); >>
 
@@ -2929,7 +2977,7 @@ the name is returned, as is, and no search for files is carried out.
 
 The options are:
 
-=over
+=over 4
 
 =item type=>type
 
@@ -2971,7 +3019,7 @@ without modifying the source, or creating more elaborate bindings.
 
 The only option to C<InputContent> is:
 
-=over
+=over 4
 
 =item noerror=>boolean
 
