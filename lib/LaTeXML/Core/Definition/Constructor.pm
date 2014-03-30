@@ -29,6 +29,7 @@ use LaTeXML::Core::Definition::Constructor::Compiler;
 
 # Known traits:
 #    beforeDigest, afterDigest : code for before/after digestion daemons
+#    afterDigestBody : similar, but applies only the \begin{environment} commands.
 #    reversion : CODE or TOKENS for reverting to TeX form
 #    captureBody : whether to capture the following List as a `body`
 #        (for environments, math modes)
@@ -106,8 +107,16 @@ sub invoke {
   if (my $cap = $$self{captureBody}) {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
 
+  my @postpost = $self->executeAfterDigestBody($stomach, $whatsit);
   LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
-  return (@pre, $whatsit, @post); }
+  return (@pre, $whatsit, @post, @postpost); }
+
+# Similar to executeAfterDigest
+sub executeAfterDigestBody {
+  my ($self, $stomach, @whatever) = @_;
+  local $LaTeXML::Core::State::UNLOCKED = 1;
+  my $post = $$self{afterDigestBody};
+  return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
 
 sub doAbsorbtion {
   my ($self, $document, $whatsit) = @_;
