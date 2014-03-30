@@ -189,6 +189,59 @@
   </func:function>
 
   <!-- ======================================================================
+       Dimension utilities
+       [hopefully only see units of px or pt?
+  -->
+  
+  <func:function name="f:adddim">
+    <xsl:param name="value1"/>
+    <xsl:param name="value2"/>
+    <func:result>
+      <xsl:value-of select="concat(f:dimpx($value1)+f:dimpx($value2),'px')"/>
+      </func:result>
+  </func:function>
+
+  <func:function name="f:halfdiff">
+    <xsl:param name="value1"/>
+    <xsl:param name="value2"/>
+    <func:result>
+      <xsl:value-of select="concat((f:dimpx($value1)-f:dimpx($value2)) div 2,'px')"/>
+      </func:result>
+  </func:function>
+
+  <func:function name="f:dimpx">
+    <xsl:param name="value"/>
+    <func:result>
+      <xsl:choose>
+        <xsl:when test="contains($value,'px')">
+          <xsl:value-of select="number(substring-before($value,'px'))"/>
+        </xsl:when>
+        <xsl:when test="contains($value,'pt')">
+          <xsl:value-of select="number(substring-before($value,'pt'))*100 div 72"/>
+        </xsl:when>
+        <!-- other units? -->
+        <xsl:otherwise>
+          <xsl:value-of select="0"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </func:result>
+  </func:function>
+
+  <func:function name="f:negate">
+    <xsl:param name="value"/>
+    <func:result>
+      <xsl:choose>
+        <xsl:when test="starts-with($value,'-')">
+          <xsl:value-of select="substring-after($value,'-')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat('-',$value)"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </func:result>
+  </func:function>
+
+  <!-- ======================================================================
        Utility Templates
   -->
 
@@ -381,8 +434,19 @@
 
   <xsl:template match="*" mode="styling">
     <xsl:if test="@width"  ><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
-    <xsl:if test="@height" ><xsl:value-of select="concat('height:',@height,';')"/></xsl:if>
-    <xsl:if test="@depth"  ><xsl:value-of select="concat('vertical-align:',@depth,';')"/></xsl:if>
+    <xsl:if test="@height" >
+      <xsl:choose>
+        <xsl:when test="@depth">
+          <xsl:value-of select="concat('height:',f:adddim(@height,@depth),';')"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat('height:',@height,';')"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:if>
+    <xsl:if test="@depth"  >
+      <xsl:value-of select="concat('vertical-align:',f:negate(@depth),';')"/>
+    </xsl:if>
     <xsl:if test="@pad-width" ><xsl:value-of select="concat('height:',@pad-width,';')"/></xsl:if>
     <xsl:if test="@pad-height"><xsl:value-of select="concat('height:',@pad-height,';')"/></xsl:if>
     <xsl:if test="@xoffset">
@@ -436,6 +500,42 @@
       <xsl:value-of select="'text-decoration:underline;'"/>
     </xsl:if>
     <xsl:if test="@cssstyle"><xsl:value-of select="concat(@cssstyle,';')"/></xsl:if>
+  </xsl:template>
+
+  <xsl:template name="add_transformable_attributes">
+    <xsl:call-template name="add_attribute">
+      <xsl:with-param name="name" select="'style'"/>
+      <xsl:with-param name="value">
+        <xsl:if test="@innerwidth"  >
+          <xsl:value-of select="concat('width:',@innerwidth,';')"/>
+        </xsl:if>
+        <!-- apparently we shouldn't put the innerheigth & innerdepth into the style;
+         seems to mess up the positioning? -->
+        <xsl:text>transform:</xsl:text>
+        <xsl:apply-templates select='.' mode="transformable-transform"/>
+        <xsl:text>;</xsl:text>
+        <xsl:text>-webkit-transform:</xsl:text>
+        <xsl:apply-templates select='.' mode="transformable-transform"/>
+        <xsl:text>;</xsl:text>
+        <xsl:text>-ms-transform:</xsl:text>
+        <xsl:apply-templates select='.' mode="transformable-transform"/>
+        <xsl:text>;</xsl:text>
+      </xsl:with-param>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template match="*" mode="transformable-transform">
+    <xsl:if test="@xtranslate | @ytranslate">
+      <xsl:value-of select="concat('translate(',f:if(@xtranslate,@xtranslate,0),',',
+                                                f:if(@ytranslate,@ytranslate,0),') ')"/>
+    </xsl:if>
+    <xsl:if test="@xscale | @yscale">
+      <xsl:value-of select="concat('scale(',f:if(@xscale,@xscale,1),',',
+                                            f:if(@yscale,@yscale,1),') ')"/>
+    </xsl:if>
+    <xsl:if test="@angle">
+      <xsl:value-of select="concat('rotate(',f:negate(@angle),'deg) ')"/>
+    </xsl:if>
   </xsl:template>
 
   <!-- Add an RDFa attributes from the context element to the current one.

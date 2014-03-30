@@ -70,39 +70,65 @@
 
   <xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:if($USE_HTML5,'figure','div')}" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:choose>
-        <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics) > 1">
-          <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="table" namespace="{$html_ns}">
-            <!-- maybe even more, like display:table ? or some class ? -->
-            <xsl:attribute name="style">width:100%;</xsl:attribute>
-            <xsl:text>&#x0A;</xsl:text>
-            <xsl:element name="tr" namespace="{$html_ns}">
-              <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics">
-                <xsl:text>&#x0A;</xsl:text>
-                <xsl:element name="td" namespace="{$html_ns}">
-                  <xsl:attribute name="class">
-                    <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
-                  </xsl:attribute>
-                  <xsl:apply-templates select="."/>
-                </xsl:element>
-              </xsl:for-each>
+    <xsl:choose>
+      <xsl:when test="@angle | @xtranslate | @ytranslate | @xscale | @yscale ">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes">
+            <xsl:with-param name="extra_classes" select="'ltx_transformed_outer'"/>
+          </xsl:call-template>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_transformed_inner</xsl:attribute>
+            <xsl:call-template name="add_transformable_attributes"/>
+            <xsl:apply-templates select="." mode="begin"/>
+            <xsl:element name="{f:if($USE_HTML5,'figure','div')}" namespace="{$html_ns}">
+              <xsl:call-template name="add_id"/>
+              <xsl:call-template name="add_attributes"/>
+              <xsl:apply-templates select="." mode="inner"/>
             </xsl:element>
-            <xsl:text>&#x0A;</xsl:text>
           </xsl:element>
-          <xsl:apply-templates select="ltx:caption"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates/>
-        </xsl:otherwise>
-      </xsl:choose>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="{f:if($USE_HTML5,'figure','div')}" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes"/>
+          <xsl:apply-templates select="." mode="inner"/>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing" mode="inner">
+    <xsl:apply-templates select="." mode="begin"/>
+    <xsl:choose>
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics) > 1">
+        <xsl:text>&#x0A;</xsl:text>
+        <xsl:element name="table" namespace="{$html_ns}">
+          <!-- maybe even more, like display:table ? or some class ? -->
+          <xsl:attribute name="style">width:100%;</xsl:attribute>
+          <xsl:text>&#x0A;</xsl:text>
+          <xsl:element name="tr" namespace="{$html_ns}">
+            <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics">
+              <xsl:text>&#x0A;</xsl:text>
+              <xsl:element name="td" namespace="{$html_ns}">
+                <xsl:attribute name="class">
+                  <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
+                </xsl:attribute>
+                <xsl:apply-templates select="."/>
+              </xsl:element>
+            </xsl:for-each>
+          </xsl:element>
+          <xsl:text>&#x0A;</xsl:text>
+        </xsl:element>
+        <xsl:apply-templates select="ltx:caption"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates/>
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:apply-templates select="." mode="end"/>
+    <xsl:text>&#x0A;</xsl:text>
   </xsl:template>
 
   <xsl:template match="ltx:caption">

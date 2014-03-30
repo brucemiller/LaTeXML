@@ -26,17 +26,36 @@
        ltx:inline-block, ltx:verbatim, ltx:break, ltx:graphics, ltx:svg, ltx:rawhtml
        ====================================================================== -->
 
-  <!-- Need to handle attributes! -->
   <xsl:template match="ltx:inline-block">
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
+    <xsl:choose>
+      <xsl:when test="@angle | @xtranslate | @ytranslate | @xscale | @yscale ">
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes">
+            <xsl:with-param name="extra_classes" select="'ltx_transformed_outer'"/>
+          </xsl:call-template>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_transformed_inner</xsl:attribute>
+            <xsl:call-template name="add_transformable_attributes"/>
+            <xsl:apply-templates select="." mode="begin"/>
+            <xsl:apply-templates/>
+            <xsl:apply-templates select="." mode="end"/>
+            <xsl:text>&#x0A;</xsl:text>
+          </xsl:element>
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes"/>
+          <xsl:apply-templates select="." mode="begin"/>
+          <xsl:apply-templates/>
+          <xsl:apply-templates select="." mode="end"/>
+          <xsl:text>&#x0A;</xsl:text>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:verbatim">
