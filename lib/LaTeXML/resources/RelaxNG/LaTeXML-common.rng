@@ -286,11 +286,13 @@ that can be sized or shifted.</a:documentation>
     </optional>
     <optional>
       <attribute name="vattach">
-        <a:documentation>specifies which line of the box is aligned to the baseline of the containing object.</a:documentation>
+        <a:documentation>specifies which line of the box is aligned to the baseline of the containing object.
+The default is baseline. </a:documentation>
         <choice>
           <value>top</value>
           <value>middle</value>
           <value>bottom</value>
+          <value>baseline</value>
         </choice>
       </attribute>
     </optional>
@@ -317,6 +319,60 @@ that can be sized or shifted.</a:documentation>
     <optional>
       <attribute name="framecolor">
         <a:documentation>the color of the frame or outlie for the box.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="Transformable.attributes">
+    <a:documentation>Attributes shared by (hopefully few) elements that can be transformed.
+Such elements should also have Positionable.attributes.
+Transformation order of an individual element is assumed to be
+translate, scale, rotate; wrap elements to achieve different orders.
+Attributes \attr{innerwidth}, \attr{innerheight} and \attr{innerdepth} describe
+the size of the contents of the element before transformation;
+The result size would be encoded in Positional.attributes.</a:documentation>
+    <optional>
+      <attribute name="xtranslate">
+        <a:documentation>horizontal shift the position of the inner element.</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="ytranslate">
+        <a:documentation>vertical shift the position of the inner element.</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="xscale">
+        <a:documentation>horizontal scaling of the inner element.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="yscale">
+        <a:documentation>vertical scalign of the inner element.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="angle">
+        <a:documentation>the rotation angle, counter-clockwise, in degrees.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="innerwidth">
+        <a:documentation>the expected width of the contents of the inner element</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="innerheight">
+        <a:documentation>the expected height of the contents of the inner element</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="innerdepth">
+        <a:documentation>the expected depth of the contents of the inner element</a:documentation>
+        <ref name="Length.type"/>
       </attribute>
     </optional>
   </define>

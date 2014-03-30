@@ -202,7 +202,8 @@ Positionable.attributes =
   attribute align { "left" | "center" | "right" | "justified" }?,
 
   ## specifies which line of the box is aligned to the baseline of the containing object.
-  attribute vattach { "top" | "middle" | "bottom" }?,
+  ## The default is baseline. 
+  attribute vattach { "top" | "middle" | "bottom" | "baseline" }?,
 
   ## the horizontal floating placement parameter that determines where the object is displayed.
   attribute float { ( "right" | "left" | text) }?,
@@ -212,6 +213,39 @@ Positionable.attributes =
 
   ## the color of the frame or outlie for the box.
   attribute framecolor { text }?
+
+## Attributes shared by (hopefully few) elements that can be transformed.
+## Such elements should also have Positionable.attributes.
+## Transformation order of an individual element is assumed to be
+## translate, scale, rotate; wrap elements to achieve different orders.
+## Attributes \attr{innerwidth}, \attr{innerheight} and \attr{innerdepth} describe
+## the size of the contents of the element before transformation;
+## The result size would be encoded in Positional.attributes.
+Transformable.attributes =
+  ## horizontal shift the position of the inner element.
+  attribute xtranslate { Length.type }?,
+
+  ## vertical shift the position of the inner element.
+  attribute ytranslate { Length.type }?,
+
+  ## horizontal scaling of the inner element.
+  attribute xscale { text }?,
+
+  ## vertical scalign of the inner element.
+  attribute yscale { text }?,
+
+  ## the rotation angle, counter-clockwise, in degrees.
+  attribute angle { text }?,
+
+  ## the expected width of the contents of the inner element
+  attribute innerwidth { Length.type }?,
+
+  ## the expected height of the contents of the inner element
+  attribute innerheight { Length.type }?,
+
+  ## the expected depth of the contents of the inner element
+  attribute innerdepth { Length.type }?
+
 
 ## Attributes for elements that may be converted to image form
 ## during postprocessing, such as math, graphics, pictures, etc.

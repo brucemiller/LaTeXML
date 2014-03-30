@@ -36,7 +36,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
@@ -268,7 +268,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
@@ -457,7 +457,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
@@ -651,7 +651,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
@@ -972,10 +972,18 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
+  xtranslate CDATA #IMPLIED
+  ytranslate CDATA #IMPLIED
+  xscale CDATA #IMPLIED
+  yscale CDATA #IMPLIED
+  angle CDATA #IMPLIED
+  innerwidth CDATA #IMPLIED
+  innerheight CDATA #IMPLIED
+  innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:verbatim (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -1467,7 +1475,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
@@ -1577,10 +1585,18 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
+  xtranslate CDATA #IMPLIED
+  ytranslate CDATA #IMPLIED
+  xscale CDATA #IMPLIED
+  yscale CDATA #IMPLIED
+  angle CDATA #IMPLIED
+  innerwidth CDATA #IMPLIED
+  innerheight CDATA #IMPLIED
+  innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
@@ -1627,10 +1643,18 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
+  xtranslate CDATA #IMPLIED
+  ytranslate CDATA #IMPLIED
+  xscale CDATA #IMPLIED
+  yscale CDATA #IMPLIED
+  angle CDATA #IMPLIED
+  innerwidth CDATA #IMPLIED
+  innerheight CDATA #IMPLIED
+  innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
@@ -1677,10 +1701,18 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
+  xtranslate CDATA #IMPLIED
+  ytranslate CDATA #IMPLIED
+  xscale CDATA #IMPLIED
+  yscale CDATA #IMPLIED
+  angle CDATA #IMPLIED
+  innerwidth CDATA #IMPLIED
+  innerheight CDATA #IMPLIED
+  innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   placement CDATA #IMPLIED>
 
@@ -1726,7 +1758,7 @@
   xoffset CDATA #IMPLIED
   yoffset CDATA #IMPLIED
   align (left|center|right|justified) #IMPLIED
-  vattach (top|middle|bottom) #IMPLIED
+  vattach (top|middle|bottom|baseline) #IMPLIED
   float CDATA #IMPLIED
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
