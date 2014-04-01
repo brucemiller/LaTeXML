@@ -89,19 +89,18 @@ DefMacroI('\@ams@newline', undef, sub {
       (T_CS('\@alignment@newline@noskip'), $next); } });
 
 sub amsalignBindings {
-  my ($template) = @_;
-  my $alignment = LaTeXML::Core::Alignment
-    ->new(openContainer => sub { my %attr = RefStepID('@equationgroup');
-      $attr{'xml:id'} = $attr{id}; delete $attr{id};
-      $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
-    closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-    openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
-    closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
-    openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
-    closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); });
-
-  AssignValue(Alignment => $alignment);
-  $alignment->setTemplate($template);
+  my ($template, %properties) = @_;
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template => $template,
+      openContainer => sub { my %attr = RefStepID('@equationgroup');
+        $attr{'xml:id'} = $attr{id}; delete $attr{id};
+        $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
+      closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
+      openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
+      closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
+      openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
+      closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      properties => {%properties}));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
   Let('\cr',         '\@alignment@cr');
@@ -207,20 +206,18 @@ DefEnvironment('{split}',
 # [or see dlmf code for equationgroup (but with optional implicit alignment)]
 # NOTE: Does this need provision to deal with metadata?
 DefConstructor('\@@amsgather SkipSpaces DigestedBody',
-  sub {
-    my ($document, $body, %props) = @_;
-    rearrangeAMSGather($document,
-      constructAlignment($document, $body,
-        attributes => { class => 'ltx_eqn_gather' })); },
-  beforeDigest => sub { $_[0]->bgroup; });
+  '#1',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterConstruct => sub { rearrangeAMSGather($_[0], $_[0]->getNode->lastChild); });
+
 DefPrimitive('\end@amsgather', sub { $_[0]->egroup; });
 
 # Set up single centered column.
 DefPrimitive('\@amsgather@bindings', sub {
     my $col = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col]));
-});
+    amsalignBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col]),
+      attributes => { class => 'ltx_eqn_gather' }); });
 
 # Each equation row (except intertext) consists of single equation.
 # Since each equation is single column, w/ no alignment, we'll skip the MathFork stuff,
@@ -263,14 +260,10 @@ DefMacro('\csname endgather*\endcsname',
 # where each lhs is right aligned, and rhs is left aligned.
 # We'll use the equationgroup/equation/MathFork mechanism
 # similar to eqnarray.
-
 DefConstructor('\@@amsalign SkipSpaces DigestedBody',
-  sub {
-    my ($document, $body, %props) = @_;
-    rearrangeAMSAlign($document,
-      constructAlignment($document, $body,
-        attributes => { class => 'ltx_eqn_align' })); },
-  beforeDigest => sub { $_[0]->bgroup; });
+  '#1',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterConstruct => sub { rearrangeAMSAlign($_[0], $_[0]->getNode->lastChild); });
 DefPrimitive('\end@amsalign', sub { $_[0]->egroup; });
 
 # Set up repeated pairs of columns.
@@ -279,7 +272,8 @@ DefPrimitive('\@amsalign@bindings', sub {
       after => Tokens(T_MATH) };
     my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]));
+    amsalignBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]),
+      attributes => { class => 'ltx_eqn_align' });
 });
 
 # Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
@@ -395,16 +389,14 @@ DefMacro('\endalignedat',  '\@finish@alignment\@end@amsaligned');
 
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'aligned' }); },
+  '#1',
   beforeDigest => sub { $_[0]->bgroup;
     my $col1 = { before => Tokens(T_CS('\hfil'),
         T_CS('\displaystyle')) };
     my $col2 = { before => Tokens(T_CS('\displaystyle')),
       after => Tokens(T_CS('\hfil')) };
-    my $template
-      = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
-    alignmentBindings($template);
+    my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
+    alignmentBindings($template, undef, attributes => { name => 'aligned' });
     Let("\\\\", '\@alignment@newline@noskip');
   },
   reversion => '\begin{aligned}#1\end{aligned}');
@@ -460,11 +452,10 @@ DefMacro('\cases',    '\@@cases\@start@alignment');
 DefMacro('\endcases', '\@finish@alignment\@end@cases');
 DefPrimitive('\@end@cases', sub { $_[0]->egroup; });
 DefConstructor('\@@cases DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { meaning => 'cases', open => '{' }); },
+  '#1',
   beforeDigest => sub {
     $_[0]->bgroup;
-    alignmentBindings('ll');
+    alignmentBindings('ll', 'math', attributes => { meaning => 'cases', open => '{' });
     Let("\\\\", '\@alignment@newline@noskip'); },
   reversion => '\begin{cases}#1\end{cases}');
 
@@ -528,69 +519,76 @@ DefMacro('\matrix',    '\@@matrix\@start@alignment');
 DefMacro('\endmatrix', '\@finish@alignment\@end@matrix');
 DefPrimitive('\@end@matrix', sub { $_[0]->egroup; });
 DefConstructor('\@@matrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' }); },
   reversion => '\begin{matrix}#1\end{matrix}');
 
 DefMacro('\pmatrix',    '\@@pmatrix\@start@alignment');
 DefMacro('\endpmatrix', '\@finish@alignment\@end@pmatrix');
 DefPrimitive('\@end@pmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@pmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
         open => '(', close => ')' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
   reversion => '\begin{pmatrix}#1\end{pmatrix}');
 
 DefMacro('\bmatrix',    '\@@bmatrix\@start@alignment');
 DefMacro('\endbmatrix', '\@finish@alignment\@end@bmatrix');
 DefPrimitive('\@end@bmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@bmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
         open => '[', close => ']' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
   reversion => '\begin{bmatrix}#1\end{bmatrix}');
 
 DefMacro('\Bmatrix',    '\@@Bmatrix\@start@alignment');
 DefMacro('\endBmatrix', '\@finish@alignment\@end@Bmatrix');
 DefPrimitive('\@end@Bmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@Bmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
         open => '{', close => '}' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
   reversion => '\begin{Bmatrix}#1\end{Bmatrix}');
 
 DefMacro('\vmatrix',    '\@@vmatrix\@start@alignment');
 DefMacro('\endvmatrix', '\@finish@alignment\@end@vmatrix');
 DefPrimitive('\@end@vmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@vmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
         open => '|', close => '|' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
   reversion => '\begin{vmatrix}#1\end{vmatrix}');
 
 DefMacro('\Vmatrix',    '\@@Vmatrix\@start@alignment');
 DefMacro('\endVmatrix', '\@finish@alignment\@end@Vmatrix');
 DefPrimitive('\@end@Vmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@Vmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
         open  => "\x{2225}",
         close => "\x{2225}" }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
   reversion => '\begin{Vmatrix}#1\end{Vmatrix}');
 
 DefMacro('\smallmatrix',    '\@hidden{\scriptsize}\@@smallmatrix\@start@alignment');
 DefMacro('\endsmallmatrix', '\@finish@alignment\@end@smallmatrix');
 DefPrimitive('\@end@smallmatrix', sub { $_[0]->egroup; });
 DefConstructor('\@@smallmatrix DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
-  beforeDigest => sub { $_[0]->bgroup; alignmentBindings(MatrixTemplate()); },
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' }); },
   reversion => '\begin{smallmatrix}#1\end{smallmatrix}');
 
 #======================================================================

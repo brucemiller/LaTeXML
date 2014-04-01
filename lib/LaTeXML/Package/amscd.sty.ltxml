@@ -33,14 +33,12 @@ DefMacro('\CD',    '\@@CD\@start@alignment');
 DefMacro('\endCD', '\@finish@alignment\@end@CD');
 DefPrimitive('\@end@CD', sub { $_[0]->egroup; });
 DefConstructor('\@@CD DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
+  '#1',
   beforeDigest => sub {
     $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate());
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' });
     Let(T_ALIGN, '\@cd@invisible@align');
-
-    Let("\\\\", '\@alignment@newline@noskip');
+    Let("\\\\",  '\@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
     Let('@', '\cd@'); },
   reversion => '\begin{CD}#1\end{CD}');

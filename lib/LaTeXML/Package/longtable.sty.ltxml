@@ -37,6 +37,7 @@ DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
       refnum   => $$props{refnum},
       frefnum  => $$props{frefnum},
       rrefnum  => $$props{rrefnum});
+    # blech...
     my $alignment = $body->getProperty('alignment');
     # Insert caption and toccaption, if any were encountered.
     if (my $caption = LookupValue('LONGTABLE_CAPTION')) {
@@ -49,7 +50,7 @@ DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
     if (my $foot = LookupValue('LONGTABLE_FOOT')) {
       $alignment->appendRows(@{$foot}); }
     # Now do the construction.
-    constructAlignment($document, $body, guess_headers => 0);
+    $document->absorb($body);
     $document->closeElement('ltx:table'); },
   reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
   beforeDigest => sub { $_[0]->bgroup; },
@@ -59,7 +60,7 @@ DefPrimitive('\@longtable@bindings AlignmentTemplate', sub { longtableBindings($
 
 sub longtableBindings {
   my ($template) = @_;
-  tabularBindings($template, 'text');
+  tabularBindings($template, guess_headers => 0);
   Let('\endfirsthead', '\@longtable@endfirsthead');
   Let('\endhead',      '\@longtable@endhead');
   Let('\endfoot',      '\@longtable@endfoot');

@@ -1570,7 +1570,7 @@ DefParameterType('VBoxContents', sub {
 # This is useful within common boxing or footnote macros that can appear within
 # alignments or special environments that have redefined many of these.
 PushValue(TEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@textmode')]);
-PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
+###PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
 
 sub reenterTextMode {
   map { Let($$_[0], $$_[1]) } @{ LookupValue('TEXT_MODE_BINDINGS') };
@@ -1674,7 +1674,7 @@ sub insertBlock {
     elsif ($unwrap ||
       ((scalar(@rows) == 1)                  # Else only 1 item inside, then flatten
         && $document->canContain($newblock->parentNode, $rows[0])    # if allowed.
-        && (!$hasattr || grep { $document->canHaveAttribute($rows[0], $_) } keys %blockattr))) {
+        && (!$hasattr || !grep { !$document->canHaveAttribute($rows[0], $_) } keys %blockattr))) {
       map { $document->setAttribute($rows[0], $_ => $blockattr{$_}) } keys %blockattr;
       $document->unwrapNodes($newblock); } }
 
@@ -1980,6 +1980,8 @@ DefColumnType('@{}', sub {
     $LaTeXML::BUILD_TEMPLATE->addBetweenColumn($filler->unlist); return; });
 
 #----------------------------------------------------------------------
+# This is where ALL(?) alignments start & finish
+# \@open@alignment will be the object representing the entire alignment!
 DefMacroI('\@start@alignment', undef,
   '\@open@alignment\@open@row\@open@column\@open@inner@column');
 DefMacroI('\@finish@alignment', undef,
@@ -2184,24 +2186,39 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
 
 DefConditionalI('\if@in@alignment', undef, sub { LookupValue('Alignment'); });
 
+# This is the primary idiom for creating Alignment structures
+# (\halign, tabular, matrix, even eqnarray)
+# Along with Let bindings that redefine various things inside the body,
+# the important thing is to create an Alignment object (a specialized Whatsit).
+# Unlike other Whatsits, we need to bind it in STATE as Alignment
+# so that we can get access to it, setting rows, columns, borders, ...
+# Also, it holds bits of code which are Constructor analogs,
+# responsible for opening & closing the elements for container, rows & columns.
+#
+# A typical alignment would be defined as a macro like:
+#   \foo{} ==> \@@foo{\@start@alignment#1\@finish@alignment}
+# where \@@foo is a constructor with '#1' as the pattern.
+# To create the actual Alignment object, \@@foo should invokes
+# alignmentBindings in beforeDigest, or perhaps put
+# a CS similar to \@alignment@bindings before \@start@alignment.
+# Obviously a bit more involved for environments, but similar.
 sub alignmentBindings {
-  my ($template, $mode) = @_;
-  if ($template && !ref $template) {
-    $template = parseAlignmentTemplate($template); }
+  my ($template, $mode, %properties) = @_;
   $mode = LookupValue('MODE') unless $mode;
   my $ismath    = $mode =~ /math$/;
   my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
   my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
-  my $alignment = LaTeXML::Core::Alignment
-    ->new(openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
-    closeContainer => sub { $_[0]->closeElement($container); },
-    openRow        => sub { $_[0]->openElement($rowtype, @_[1 .. $#_]); },
-    closeRow       => sub { $_[0]->closeElement($rowtype); },
-    openColumn     => sub { $_[0]->openElement($coltype, @_[1 .. $#_]); },
-    closeColumn    => sub { $_[0]->closeElement($coltype); });
-  AssignValue(Alignment => $alignment);
-  $alignment->setTemplate($template) if $template;
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template => $template,
+      openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
+      closeContainer => sub { $_[0]->closeElement($container); },
+      openRow        => sub { $_[0]->openElement($rowtype, @_[1 .. $#_]); },
+      closeRow       => sub { $_[0]->closeElement($rowtype); },
+      openColumn     => sub { $_[0]->openElement($coltype, @_[1 .. $#_]); },
+      closeColumn    => sub { $_[0]->closeElement($coltype); },
+      isMath     => $ismath,
+      properties => {%properties}));
   Let(T_ALIGN,           '\@alignment@align');
   Let("\\\\",            '\@alignment@newline');
   Let('\tabularnewline', '\@alignment@newline');
@@ -2226,11 +2243,19 @@ DefPrimitive('\@alignment@bindings AlignmentTemplate []', sub {
 #----------------------------------------------------------------------
 # Overall Alignment;
 DefPrimitive('\@close@alignment', sub { $_[0]->egroup; });
+# This makes the Alignment object act as if it were the Whatsit.
+# ie. the alignment gets absorbed into the document, is sized, etc.
+# But it still reverts to whatever stuff was digested.
 DefConstructor('\@open@alignment SkipSpaces DigestedBody',
-  "#1",
+  "#alignment",
   reversion    => '#1',
+  properties   => { sizer => '#alignment' },
   beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest  => sub { $_[1]->setProperty(alignment => LookupValue('Alignment')); });
+  afterDigest  => sub {
+    my ($stomach, $whatsit) = @_;
+    my $alignment = LookupValue('Alignment');
+    $whatsit->setProperty(alignment => $alignment);
+    $alignment->setBody($whatsit); });
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
@@ -2440,14 +2465,11 @@ sub afterCellUnlist {
 
 #----------------------------------------------------------------------
 # \halign, See Chap.22
-DefConstructor('\halign BoxSpecification', sub {
-    my ($document, $spec, %props) = @_;
-    my $body = $props{body};
-    constructAlignment($document, $body, attributes => {
-        width       => orNull(GetKeyVal($spec, 'to')),
-        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
+DefConstructor('\halign BoxSpecification',
+  '#body',
   reversion   => '\halign #1{#2\cr#3}',
   bounded     => 1,
+  properties  => { sizer => '#1' },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $gullet = $stomach->getGullet;
@@ -2500,16 +2522,15 @@ DefConstructor('\halign BoxSpecification', sub {
     # with \alignment@cr to recognize the end of the \halign
     # and sneak a \@finish@alignment in!!!!!
     # (otherwise none of the row/column/alignment constructors know when to end, as written)
-    alignmentBindings($template);
+    my $spec = $whatsit->getArg(1);
+    alignmentBindings($template, undef,
+      attributes => {
+        width       => orNull(GetKeyVal($spec, 'to')),
+        'pad-width' => orNull(GetKeyVal($spec, 'spread')) });
     $stomach->bgroup;    # This will be closed by the \halign's closing }
     $gullet->unread(T_CS('\@start@alignment'));
     $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
   });
-
-DefMacroI('\@start@alignment', undef,
-  '\@open@alignment\@open@row\@open@column\@open@inner@column');
-DefMacroI('\@finish@alignment', undef,
-  '\@close@inner@column\@close@column\@close@row\@close@alignment');
 
 # Cleanup the pre & post tokens for halign columns in math mode.
 # If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
@@ -2524,17 +2545,6 @@ sub stripDupMath {
     splice(@tokens, $p1, 2) if $p2 == $p1 + 1; }
   return @tokens; }
 
-DefConstructor('\@halign BoxSpecification Undigested {}',
-  sub {
-    my ($document, $spec, $template, $body, %props) = @_;
-    constructAlignment($document, $body,
-      attributes => {
-        width       => orNull(GetKeyVal($spec, 'to')),
-        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
-
-  reversion => '\halign #1{#2\cr#3}',
-  bounded   => 1);
-
 # "Initialized" alignment; presets spacing, but since we're ignoring it anyway...
 Let('\ialign', '\halign');
 
@@ -2542,17 +2552,16 @@ Let('\ialign', '\halign');
 DefMacro('\oalign{}',
   '\@@oalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@oalign{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+  '#1',
   reversion => '\oalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
+
 # This is actually different; the lines should lie ontop of each other.
 # How should this be represented?
 DefMacro('\ooalign{}',
   '\@@ooalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@ooalign{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+  '#1',
   reversion => '\ooalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
@@ -4149,8 +4158,9 @@ sub alignLine {
     $document->absorb($line); }
   return; }
 
-DefMacro('\llap{}', '\hbox{#1}');
-DefMacro('\rlap{}', '\hbox{#1}');
+# These should be 0 width, but perhaps also shifted?
+DefMacro('\llap{}', '\hbox to 0pt{#1}');
+DefMacro('\rlap{}', '\hbox to 0pt{#1}');
 DefMacroI('\m@th', undef, '\mathsurround=0pt ');
 
 # \strutbox
@@ -5396,42 +5406,41 @@ DefMath('\bmod', 'mod', role => 'MODIFIEROP', meaning => 'modulo');
 DefMacro('\matrix{}',
   '\@@matrix{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@matrix{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
+  '#1',
   reversion => '\matrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate()); });
+  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
+      attributes => { name => 'Matrix' }); });
 
 # TODO: This is wrong; I'm not even clear how this differs from \matrix
 DefMacro('\bordermatrix{}',
   '\@@bordermatrix{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@bordermatrix{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix' }); },
+  '#1',
   reversion => '\bordermatrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate()); });
+  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
+      attributes => { name => 'Matrix' }); });
 
 DefMacro('\pmatrix{}',
   '\@@pmatrix{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@pmatrix{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { name => 'Matrix',
-        open => '(', close => ')' }); },
+  '#1',
   reversion => '\pmatrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate()); });
+  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
+      attributes => { name => 'Matrix',
+        open => '(', close => ')' }); });
 
 # Note that 2nd column in \cases is in text mode!
 DefMacro('\cases{}',
   '\@@cases{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@cases{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body,
-      attributes => { meaning => 'cases', open => '{' }); },
+  '#1',
   reversion => '\cases{#1}', bounded => 1,
   beforeDigest => sub {
     my $col1 = { before => Tokens(), after => Tokens(T_CS('\hfil')) };
     my $col2 = { before => Tokens(T_CS('\hbox'), T_BEGIN),
       after => Tokens(T_END, T_CS('\hfil')) };
-    alignmentBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2])); });
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2]), 'math',
+      attributes => { meaning => 'cases', open => '{' }); });
 
 DefPrimitive('\openup Dimension', undef);
 
@@ -5441,26 +5450,26 @@ DefMacro('\displaylines{}', '#1');
 DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
+  '#1',
   reversion => '\eqalign{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings('rl'); });
+  beforeDigest => sub { alignmentBindings('rl', 'math',
+      attributes => { vattach => 'baseline' }); });
 
 DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
+  '#1',
   reversion => '\eqalignno{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings('rll'); });
+  beforeDigest => sub { alignmentBindings('rll', 'math',
+      attributes => { vattach => 'baseline' }); });
 
 DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body, attributes => { vattach => 'baseline' }); },
+  '#1',
   reversion => '\leqalignno{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings('rll'); });
+  beforeDigest => sub { alignmentBindings('rll', 'math',
+      attributes => { vattach => 'baseline' }); });
 
 DefRegister('\pageno'   => Number(0));
 DefRegister('\headline' => Tokens());

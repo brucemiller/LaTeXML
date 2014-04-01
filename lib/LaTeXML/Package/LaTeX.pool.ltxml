@@ -1563,20 +1563,19 @@ sub eqnarrayBindings {
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
   my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]);
-  my $alignment = LaTeXML::Core::Alignment
-    ->new(openContainer => sub { my %attr = RefStepID('@equationgroup');
-      $attr{'xml:id'} = $attr{id}; delete $attr{id};
-      $attr{class} = 'ltx_eqn_eqnarray';
-      $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
-    closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-    openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
-    closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
-    openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
-    closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); });
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
+      openContainer => sub { my %attr = RefStepID('@equationgroup');
+        $attr{'xml:id'} = $attr{id}; delete $attr{id};
+        $attr{class} = 'ltx_eqn_eqnarray';
+        $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
+      closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
+      openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
+      closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
+      openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
+      closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      attributes => { class => 'ltx_eqn_eqnarray' }));
 
-  AssignValue(Alignment => $alignment);
-  $alignment->setTemplate($template);
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
   Let('\cr',         '\@alignment@cr');
@@ -1585,12 +1584,9 @@ sub eqnarrayBindings {
   return; }
 
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
-  sub {
-    my ($document, $body, %props) = @_;
-    rearrangeEqnarray($document,
-      constructAlignment($document, $body,
-        attributes => { class => 'ltx_eqn_eqnarray' })); },
-  beforeDigest => sub { $_[0]->bgroup; });
+  '#1',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterConstruct => sub { rearrangeEqnarray($_[0], $_[0]->getNode->lastChild); });
 DefPrimitiveI('\end@eqnarray', undef, sub { $_[0]->egroup; });
 
 # ========================================
@@ -2244,31 +2240,36 @@ Tag('ltx:figure', afterClose => sub { GenerateID(@_, 'fig'); });
 Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
 Tag('ltx:float',  afterClose => sub { GenerateID(@_, 'tab'); });
 
-DefConstructor('\@@caption{}',    "<ltx:caption>#1</ltx:caption>");
-DefConstructor('\@@toccaption{}', "<ltx:toccaption>#1</ltx:toccaption>");
+DefConstructor('\@@caption{}', "<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@toccaption{}', "<ltx:toccaption>#1</ltx:toccaption>",
+  properties => { sizer => '0' });
 
 DefEnvironment('{figure}[]',
 "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
     . "#body"
     . "</ltx:figure>",
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{figure*}[]',
 "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
     . "#body"
     . "</ltx:figure>",
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{table}[]',
 "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
     . "#body"
     . "</ltx:table>",
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 DefEnvironment('{table*}[]',
 "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
     . "#body"
     . "</ltx:table>",
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 
@@ -2368,8 +2369,7 @@ DefMacroI('\endtabbing', undef,
   '\@finish@alignment\@end@tabbing');
 DefPrimitiveI('\@end@tabbing', undef, sub { $_[0]->egroup; });
 DefConstructor('\@@tabbing SkipSpaces DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+  '#1',
   reversion    => '\begin{tabbing}#1\end{tabbing}',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
@@ -2418,18 +2418,16 @@ DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
 sub tabbingBindings {
-  my $alignment = LaTeXML::Core::Alignment
-    ->new(openContainer => sub { $_[0]->openElement('ltx:tabular', @_[1 .. $#_]); },
-    closeContainer => sub { $_[0]->closeElement('ltx:tabular'); },
-    openRow        => sub { $_[0]->openElement('ltx:tr', @_[1 .. $#_]); },
-    closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
-    openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
-    closeColumn    => sub { $_[0]->closeElement('ltx:td'); });
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template => LaTeXML::Core::Alignment::Template->new(
+        repeated => [{ after => Tokens(T_CS('\hfil')) }]),
+      openContainer => sub { $_[0]->openElement('ltx:tabular', @_[1 .. $#_]); },
+      closeContainer => sub { $_[0]->closeElement('ltx:tabular'); },
+      openRow        => sub { $_[0]->openElement('ltx:tr', @_[1 .. $#_]); },
+      closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
+      openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
+      closeColumn    => sub { $_[0]->closeElement('ltx:td'); }));
 
-  my $template = LaTeXML::Core::Alignment::Template->new(
-    repeated => [{ after => Tokens(T_CS('\hfil')) }]);
-  $alignment->setTemplate($template);
-  AssignValue(Alignment => $alignment);
   Let("\\=",       '\@tabbing@tabset');
   Let("\\>",       '\@tabbing@nexttab');
   Let("\\\\",      '\@tabbing@newline');
@@ -2469,8 +2467,9 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
 sub tabularBindings {
-  my ($template, $mode) = @_;
-  alignmentBindings($template, $mode);
+  my ($template, %properties) = @_;
+  $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
+  alignmentBindings($template, 'text', %properties);
   # Do like AddToMacro, but NOT global!
   foreach my $name ('@row@before', '@row@after', '@column@before', '@column@after') {
     my $cs = '\\' . $name;
@@ -2479,9 +2478,14 @@ sub tabularBindings {
         T_CS('\@tabular' . $name))); }
   return; }
 
-DefPrimitive('\@tabular@bindings AlignmentTemplate []', sub {
-    my ($stomach, $template, $mode) = @_;
-    tabularBindings($template, $mode);
+# Keyvals are for attributes for the alignment.
+# Typical keys are width, vattach,...
+DefPrimitive('\@tabular@bindings AlignmentTemplate OptionalKeyVals', sub {
+    my ($stomach, $template, $attributes) = @_;
+    my %attr = ($attributes ? $attributes->getPairs : ());
+    if (my $va = $attr{vattach}) {
+      $attr{vattach} = translateAttachment($va) || ToString($va); }
+    tabularBindings($template, attributes => {%attr});
     return; });
 
 DefMacroI('\@tabular@row@before',    undef, '');
@@ -2490,7 +2494,8 @@ DefMacroI('\@tabular@column@before', undef, '');
 DefMacroI('\@tabular@column@after',  undef, '');
 
 # The Core alignment support is in LaTeXML::Core::Alignment and in TeX.ltxml
-DefMacro('\tabular[]{}', '\@tabular@bindings{#2}[text]\@@tabular[#1]{#2}\@start@alignment');
+##DefMacro('\tabular[]{}', '\@tabular@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
+DefMacro('\tabular[]{}', '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment');
 DefMacroI('\endtabular', undef, '\@finish@alignment\@end@tabular');
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
@@ -2505,23 +2510,29 @@ sub translateAttachment {
   return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
 DefConstructor('\@@tabular[] Undigested DigestedBody',
-  sub { my ($document, $pos, $pat, $body, %props) = @_;
-    constructAlignment($document, $body,
-      attributes => { vattach => translateAttachment($pos) },
-      guess_headers => 1); },
+  '#2',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
+
+DefConstructor('\@@tabular[] Undigested DigestedBody',
+  '#3',
+  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
+  beforeDigest => sub { $_[0]->bgroup; },
+  properties   => { sizer => '#3' },
+  afterDigest  => sub {
+    my ($stomach, $whatsit) = @_;
+    LookupValue('Alignment')->setProperties(
+      attributes => { vattach => translateAttachment($whatsit->getArg(1)) }); },
+  mode => 'text');
+
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
-  '\@tabular@bindings{#3}[text]\@@tabular@{#1}[#2]{#3}\@start@alignment');
+###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
+  '\@tabular@bindings{#3}[width=#1,vattach=#2]\@@tabular@{#1}[#2]{#3}\@start@alignment');
 DefMacro('\csname endtabular*\endcsname',
   '\@finish@alignment\@end@tabular@');
 DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
-  sub { my ($document, $width, $pos, $pat, $body, %props) = @_;
-    constructAlignment($document, $body,
-      attributes => { vattach => translateAttachment($pos),
-        width => $width },
-      guess_headers => 1); },
+  '#4',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{tabular*}{#1}[#2]{#3}#4\end{tabular*}',
   mode         => 'text');
@@ -2545,10 +2556,10 @@ DefConstructor('\cline{}', '',
 
 DefConstructorI('\vline', undef, "",    # ???
   properties => { isVerticalRule => 1 },);
-DefRegister('\arraycolsep',    Dimension(0));
-DefRegister('\tabcolsep',      Dimension(0));
-DefRegister('\arrayrulewidth', Dimension(0));
-DefRegister('\doublerulesep',  Dimension(0));
+DefRegister('\arraycolsep',    Dimension('5pt'));
+DefRegister('\tabcolsep',      Dimension('6pt'));
+DefRegister('\arrayrulewidth', Dimension('0.4pt'));
+DefRegister('\doublerulesep',  Dimension('2pt'));
 DefMacro('\extracolsep{}', Tokens());
 DefMacroI('\arraystretch',   undef, "1");
 DefMacroI('\tabularnewline', undef, Tokens());
@@ -2556,16 +2567,20 @@ DefMacroI('\tabularnewline', undef, Tokens());
 #======================================================================
 # Array and similar environments
 
+DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
+    my ($stomach, $pos, $template) = @_;
+    alignmentBindings($template, 'math',
+      attributes => { vattach => translateAttachment($pos),
+        role => 'ARRAY' });
+    return; });
+
 DefMacro('\array[]{}',
-  '\@alignment@bindings{#2}\@@array[#1]{#2}\@start@alignment');
+  '\@array@bindings[#1]{#2}\@@array[#1]{#2}\@start@alignment');
 DefMacroI('\endarray', undef,
   '\@finish@alignment\@end@array');
 DefPrimitiveI('\@end@array', undef, sub { $_[0]->egroup; });
 DefConstructor('\@@array[] Undigested DigestedBody',
-  sub { my ($document, $pos, $pat, $body, %props) = @_;
-    constructAlignment($document, $body,
-      attributes => { vattach => translateAttachment($pos),
-        role => 'ARRAY' }); },
+  '#3',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion => '\begin{array}[#1]{#2}#3\end{array}');
 

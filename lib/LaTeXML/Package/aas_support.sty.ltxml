@@ -377,8 +377,7 @@ DefMacro('\enddata', '\hline\@finish@alignment\@end@deluxetabular\egroup');
 DefPrimitive('\@deluxetable@bindings', sub {
     alignmentBindings(LookupValue('@deluxetable@template'), 'text'); });
 DefConstructor('\@@deluxetabular DigestedBody',
-  sub { my ($document, $body, %props) = @_;
-    constructAlignment($document, $body); },
+  '#1',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
