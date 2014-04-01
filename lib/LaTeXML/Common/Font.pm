@@ -13,6 +13,8 @@ package LaTeXML::Common::Font;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Core::Token;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Dimension;
 use List::Util qw(min max sum);
@@ -371,7 +373,7 @@ sub getNominalSize {
 #   height,depth : ?
 #   vattach : top, bottom, center, baseline (...?) affects how the height & depth are
 #      allocated when there are multiple lines.
-#   mode : horizontal or vertical !!!
+#   layout : horizontal or vertical !!!
 # Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
 #
 # The big problem with width is to have it propogate down from where
@@ -384,7 +386,10 @@ sub getNominalSize {
 sub computeBoxesSize {
   my ($self, $boxes, %options) = @_;
   my $font = (ref $self ? $self : $STATE->lookupValue('font'));
-  my $maxwidth = $options{width} && $options{width}->valueOf;
+  my $fillwidth = $options{width};
+  if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\textwidth')))) {
+    $fillwidth = $fillwidth->valueOf; }    # get register
+  my $maxwidth = $fillwidth && $fillwidth->valueOf;
   my @lines = ();
   my ($wd, $ht, $dp) = (0, 0, 0);
   my $vattach = $options{vattach} || 'baseline';
@@ -407,19 +412,22 @@ sub computeBoxesSize {
     else {
       Warn('expected', 'Dimension', undef,
         "Depth of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
-    if ((($options{mode} || '') eq 'vertical')    # EVERY box is a row?
-                                                  # || $box is a <ltx:break> (or similar)!!!!
+    if ((($options{layout} || '') eq 'vertical')    # EVERY box is a row?
+                                                    # || $box is a <ltx:break> (or similar)!!!!
       ) {
       push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
-    elsif ($maxwidth && ($wd >= $maxwidth)) {     # or we've reached the requested width
+    elsif ((defined $maxwidth) && ($wd >= $maxwidth)) {    # or we've reached the requested width
           # Compounding errors with wild abandon.
           # If an underlying box is too wide, we'll split it up into multiple rows
           # [Rather than correctly break it?]
-      while ($wd >= $maxwidth) {
-        push(@lines, [$maxwidth, $ht, $dp]); $wd = $wd - $maxwidth; }
-      $ht = $h->valueOf; $dp = $d->valueOf; }    # continue with the leftover
+          # BUT How do we know if it should break at alL!?!?!?!?!
+##     while ($wd >= $maxwidth) {
+##       push(@lines, [$maxwidth, $ht, $dp]); $wd = $wd - $maxwidth; }
+##      $ht = $h->valueOf; $dp = $d->valueOf;     # continue with the leftover
+      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0;
+    }
   }
-  if ($wd) {                                     # be sure to get last line
+  if ($wd) {    # be sure to get last line
     push(@lines, [$wd, $ht, $dp]); }
   # Deal with multiple lines
   my $nlines = scalar(@lines);
@@ -429,7 +437,7 @@ sub computeBoxesSize {
     $wd = max(map { $$_[0] } @lines);
     $ht = sum(map { $$_[1] } @lines);
     $dp = sum(map { $$_[2] } @lines);
-    if ($vattach eq 'top') {                     # Top of box is aligned with top(?) of current text
+    if ($vattach eq 'top') {    # Top of box is aligned with top(?) of current text
       my ($w, $h, $d) = $font->getNominalSize;
       $h = $h->valueOf;
       $dp = $ht + $dp - $h; $ht = $h; }

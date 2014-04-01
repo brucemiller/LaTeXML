@@ -234,6 +234,7 @@ sub computeSize {
     $options{height}  = $$props{height}  if $$props{height};
     $options{depth}   = $$props{depth}   if $$props{depth};
     $options{vattach} = $$props{vattach} if $$props{vattach};
+    $options{layout}  = $$props{layout}  if $$props{layout};
     ($width, $height, $depth) = $font->computeBoxesSize([@boxes], %options); }
   # Now, only set the dimensions that weren't already set.
   $$props{width}  = $width  unless defined $$props{width};
