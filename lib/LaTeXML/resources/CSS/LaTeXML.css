@@ -162,12 +162,10 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
    inner establishes position of stuff to be rotated */
 .ltx_transformed_outer {
     position:relative; top:0pt;left:0pt;
-    overflow:visible;
-    border:1px solid red; }
+    overflow:visible; }
 .ltx_transformed_inner {
     display:block;
-    position:absolute;top:0pt;left:0pt;
-    border:1px solid green; }
+    position:absolute;top:0pt;left:0pt; }
 .ltx_transformed_inner > .ltx_p {text-indent:0em; margin:0; padding:0; }
 
 .ltx_p { white-space:normal; }

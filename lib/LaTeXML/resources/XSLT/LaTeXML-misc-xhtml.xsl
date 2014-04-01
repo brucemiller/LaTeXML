@@ -36,6 +36,9 @@
             <xsl:with-param name="extra_classes" select="'ltx_transformed_outer'"/>
           </xsl:call-template>
           <xsl:element name="span" namespace="{$html_ns}">
+<!-- HTML5 doesn't like blocks inside of inline and will REWRITE the DOM!
+     Supposedly an "a" can contain blocks, but I still can't get this to work
+    <xsl:element name="{f:if($USE_HTML5,'a','span')}" namespace="{$html_ns}">-->
             <xsl:attribute name="class">ltx_transformed_inner</xsl:attribute>
             <xsl:call-template name="add_transformable_attributes"/>
             <xsl:apply-templates select="." mode="begin"/>
