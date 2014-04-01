@@ -1,0 +1,161 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  rotating                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+foreach my $option (qw(twoside figuresright figuresleft
+  quiet log chatter)) {
+  DeclareOption($option, undef); }
+ProcessOptions();
+
+# counterclockwise clockwise anticlockwise
+#  DeclareOption($option,undef); }
+
+# expected...
+RequirePackage('graphicx');
+#RequirePackage('ifthen');
+
+DefRegister('\rotFPtop' => Dimension('0pt'));
+DefRegister('\rotFPbot' => Dimension('0pt'));
+
+DefEnvironment('{sideways}',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:inline-block>",
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+
+DefEnvironment('{turn}{Float}',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:inline-block>",
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getBody)); });
+
+DefEnvironment('{rotate}{Float}',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:inline-block>",
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getBody, 1)); });
+
+# \turnbox{angle}{stuff}
+# Same as graphics' \rotatebox ?
+DefConstructor('\turnbox{Float} Digested',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#2"
+    . "</ltx:inline-block>",
+  properties => sub {
+    my ($stomach, $angle, $box) = @_;
+    rotatedProperties($angle, $box); },
+  mode => 'text');
+
+#======================================================================
+# These should produce a table or figure, but marked to rotate by 90degrees!
+# and this rotation likely should be ignored!!!
+# Basically, copy table & figure environments, but add class=ltx_sideways
+
+# REWRITE THESE TO USE Regular figure and the above inner macros?
+# No, that doesn't work, because there's no appropriate inline-block element
+# that could sensibly go inside or outside the figure!
+# Next best thing: at least make the contained elements have normal wrap
+
+DefEnvironment('{sidewaysfigure}[]',
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+    . " angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    RescueCaptionCounters('figure', $whatsit);
+    return; },
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+
+DefEnvironment('{sidewaysfigure*}[]',
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+    . " angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+
+DefEnvironment('{sidewaystable}[]',
+  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+    . " angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:table>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+
+DefEnvironment('{sidewaystable*}[]',
+  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+    . " angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#body"
+    . "</ltx:table>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+
+# This is likely to be totally wrong.
+# This way puts the caption where it can't be!
+#DefMacro('\rotcaption{}', '\turnbox{90}{\caption{#1}}');
+# This one puts the rotated caption ON TOP of the figure!
+DefMacro('\rotcaption{}', '\caption{\turnbox{90}{#1}}');
+#======================================================================
+
+1;
