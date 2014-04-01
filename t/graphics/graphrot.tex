@@ -2,10 +2,29 @@
 \usepackage{multicol}
 \usepackage{multirow}
 \usepackage{graphicx}
+\usepackage{rotating}
+\usepackage{hyperref}
+\def\degrees{{\small$^{\mathrm{o}}$}}
 
 \begin{document}
+\section{Scalings, Rotations using \texttt{graphics}}
+
 \begin{table}[htb]
-\scalebox{0.95}[0.8]{
+\centering
+  \begin{tabular}{|c|c|c|c|c|} \hline
+   \multicolumn{1}{|c|}{\multirow{5}{5pt}{\begin{rotatebox}{90}{{\footnotesize \textbf{Original pairs}}}\end{rotatebox}}} &
+     \multicolumn{1}{|c|}{ } & \multicolumn{3}{|c|}{\textbf{Monothematic pairs}}\\ \cline{2-5}
+     & & Y & N & Total \\ \cline{2-5}
+     & Y (32) & 116 & \ -- &  116  \\ \cline{2-5}
+     & N (29) & \ \ 96 & 29 & 125  \\ \cline{2-5}
+     & Total (61) & 212 & 29 & 241  \\ \hline
+  \end{tabular}
+  \caption{Normal: Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab1}
+\end{table}
+
+\begin{table}[htb]
+\scalebox{1.5}[0.75]{
 \centering
   \begin{tabular}{|c|c|c|c|c|} \hline
    \multicolumn{1}{|c|}{\multirow{5}{5pt}{\begin{rotatebox}{90}{{\footnotesize \textbf{Original pairs}}}\end{rotatebox}}} &
@@ -16,8 +35,8 @@
      & Total (61) & 212 & 29 & 241  \\ \hline
   \end{tabular}
   }
-   \caption{Distribution of monothematic pairs with respect to original Y/N pairs}
-  \label{tb:tab4}
+   \caption{Squinched: Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab2}
 \end{table}
 
 \begin{table}[htb]
@@ -32,7 +51,119 @@
      & Total (61) & 212 & 29 & 241  \\ \hline
   \end{tabular}
   }
-   \caption{Distribution of monothematic pairs with respect to original Y/N pairs}
-  \label{tb:tab4}
+   \caption{Flipped: Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab3}
 \end{table}
+
+\begin{table}[htb]
+\rotatebox{45}{
+\centering
+  \begin{tabular}{|c|c|c|c|c|} \hline
+   \multicolumn{1}{|c|}{\multirow{5}{5pt}{\begin{rotatebox}{90}{{\footnotesize \textbf{Original pairs}}}\end{rotatebox}}} &
+     \multicolumn{1}{|c|}{ } & \multicolumn{3}{|c|}{\textbf{Monothematic pairs}}\\ \cline{2-5}
+     & & Y & N & Total \\ \cline{2-5}
+     & Y (32) & 116 & \ -- &  116  \\ \cline{2-5}
+     & N (29) & \ \ 96 & 29 & 125  \\ \cline{2-5}
+     & Total (61) & 212 & 29 & 241  \\ \hline
+  \end{tabular}
+  }
+   \caption{Flipped: Distribution of monothematic pairs with respect to original Y/N pairs}
+  \label{tb:tab3}
+\end{table}
+
+\section{Scalings, Rotations using \texttt{rotating}}
+
+Start here
+\begin{rotate}{-56}
+Save whales
+\end{rotate}
+End here
+
+Start here \begin{turn}{56}%
+Save the whale
+\end{turn} end here
+
+Start here
+\begin{sideways}%
+Save the whale
+\end{sideways}
+End here
+
+\newsavebox{\foo}
+\def\testrot#1{%
+\savebox{\foo}{\parbox{1in}{Save 
+the whales Save the whale Save the \href{http://dlmf.nist.gov/LaTeXML/}{Kitty!} Save the whale}}%
+\framebox{---\begin{turn}{#1}\framebox{\usebox{\foo}}\end{turn}---}}%
+
+\begin{figure*}
+\begin{tabular}{|c|c|c|}
+\hline
+\testrot{0} &\testrot{-40}&\testrot{-80}\\
+0\degrees & -40\degrees & -80\degrees \\
+\hline
+\testrot{-120}&\testrot{-160}&\testrot{-200}\\
+120\degrees & -160\degrees & -200\degrees \\
+\hline
+\testrot{-240}&\testrot{-280}&\testrot{-320}\\
+-240\degrees & -280\degrees & -320\degrees \\
+\hline
+\end{tabular}
+\caption{Rotation of paragraphs between 0 and -320 degrees \label{angles1}}
+\end{figure*}
+
+\begin{quote}
+\rule{0pt}{1.5in}\begin{tabular}{rrr}
+\begin{rotate}{45}Column 1\end{rotate}&
+\begin{rotate}{45}Column 2\end{rotate}&
+\begin{rotate}{45}Column 3\end{rotate}\\
+\hline
+1& 2& 3\\
+4& 5& 6\\
+7& 8& 9\\
+\hline
+\end{tabular}
+\end{quote}
+
+\begin{quote}
+\begin{tabular}{rrr}
+\begin{turn}{45}Column 1\end{turn}&
+\begin{turn}{45}Column 2\end{turn}&
+\begin{turn}{45}Column 3\end{turn}\\
+\hline
+1& 2& 3\\
+4& 5& 6\\
+7& 8& 9\\
+\hline
+\end{tabular}
+\end{quote}
+
+\begin{sidewaystable}
+\centering
+\begin{tabular}{|llllllllp{1in}lp{1in}|}
+\hline
+Context   &Length   &Breadth/   &Depth   &Profile   &Pottery   &Flint   &Animal   &Stone   &Other    &C14 Dates \\
+  &         &Diameter   &        &          &          &        & 
+Bones&&&\\
+\hline
+&&&&&&&&&&\\
+\multicolumn{10}{|l}{\bf Grooved Ware}&\\
+784       &---        &0.9m       &0.18m   &Sloping U &P1       &$\times$46  &  $\times$8      &&       $\times$2 bone&  2150$\pm$ 100 BC\\
+785       &---        &1.00m      &0.12    &Sloping U &P2--4    &$\times$23  &  $\times$21     & Hammerstone &---&---\\
+962       &---        &1.37m      &0.20m   &Sloping U &P5--6    &$\times$48  &  $\times$57*    & ---&     ---&1990 $\pm$ 80 BC (Layer 4) 1870 $\pm$90 BC (Layer 1)\\
+983       &0.83m      &0.73m      &0.25m   &Stepped U &---      &$\times$18  &  $\times$8      & ---& Fired clay&---\\
+&&&&&&&&&&\\
+\multicolumn{10}{|l}{\bf Beaker}&\\
+552       &---        &0.68m      &0.12m   &Saucer    &P7--14   &---           & ---       & ---       &---        &---\\
+790       &---        &0.60m      &0.25m   &U         &P15      &$\times$12    & ---       & Quartzite-lump&---    &---\\
+794       &2.89m      &0.75m      &0.25m   &Irreg.    &P16      &$\times$3     & ---       & ---       &---        &---\\
+\hline
+\end{tabular}
+ 
+\caption[Grooved Ware and Beaker Features, their Finds and
+Radiocarbon Dates]{Grooved Ware and Beaker Features, their
+Finds and Radiocarbon Dates; For a breakdown of the Pottery
+Assemblages see Tables I and III; for
+the Flints see Tables II and IV; for the
+Animal Bones see Table V.}\label{rotfloat2}
+\end{sidewaystable}
 \end{document}

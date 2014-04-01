@@ -1,0 +1,497 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="multicol"?>
+<?latexml package="multirow"?>
+<?latexml package="graphicx"?>
+<?latexml package="rotating"?>
+<?latexml package="hyperref"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Scalings, Rotations using <text font="typewriter">graphics</text></title>
+    <table frefnum="Table 1" placement="htb" refnum="1" xml:id="S1.T1" labels="LABEL:tb:tab1">
+      <tabular vattach="middle" class="ltx_centering">
+        <tbody>
+          <tr>
+            <td align="center" border="b l r t" rowspan="5" thead="true">
+              <inline-block angle="90" depth="0.0pt" height="84.0pt" innerdepth="1.6pt" innerheight="5.6pt" innerwidth="84.0pt" width="7.2pt" xtranslate="-38.4pt" ytranslate="38.4pt">
+                <p>
+                  <text fontsize="footnote" font="bold">Original pairs</text>
+                </p>
+              </inline-block>
+            </td>
+            <td align="center" border="l r t" thead="true"></td>
+            <td align="center" border="l r t" colspan="3" thead="true">
+              <text font="bold">Monothematic pairs</text>
+            </td>
+          </tr>
+          <tr>
+            <td border="r t" thead="true"/>
+            <td align="center" border="r t" thead="true">Y</td>
+            <td align="center" border="r t" thead="true">N</td>
+            <td align="center" border="r t" thead="true">Total</td>
+          </tr>
+          <tr>
+            <td align="center" border="r t">Y (32)</td>
+            <td align="center" border="r t">116</td>
+            <td align="center" border="r t"> –</td>
+            <td align="center" border="r t">116</td>
+          </tr>
+          <tr>
+            <td align="center" border="r t">N (29)</td>
+            <td align="center" border="r t">  96</td>
+            <td align="center" border="r t">29</td>
+            <td align="center" border="r t">125</td>
+          </tr>
+          <tr>
+            <td align="center" border="b r t">Total (61)</td>
+            <td align="center" border="b r t">212</td>
+            <td align="center" border="b r t">29</td>
+            <td align="center" border="b r t">241</td>
+          </tr>
+        </tbody>
+      </tabular>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Table 1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+    </table>
+    <table frefnum="Table 2" placement="htb" refnum="2" xml:id="S1.T2" labels="LABEL:tb:tab2">
+      <inline-block depth="1.5pt" height="67.5pt" width="280.8pt" xscale="1.5" xtranslate="46.8pt" yscale="0.75" ytranslate="-11.5pt">
+        <tabular vattach="middle" class="ltx_centering">
+          <tbody>
+            <tr>
+              <td align="center" border="b l r t" rowspan="5" thead="true">
+                <inline-block angle="90" depth="0.0pt" height="84.0pt" innerdepth="1.6pt" innerheight="5.6pt" innerwidth="84.0pt" width="7.2pt" xtranslate="-38.4pt" ytranslate="38.4pt">
+                  <p>
+                    <text font="bold" fontsize="footnote">Original pairs</text>
+                  </p>
+                </inline-block>
+              </td>
+              <td align="center" border="l r t" thead="true"></td>
+              <td align="center" border="l r t" colspan="3" thead="true">
+                <text font="bold">Monothematic pairs</text>
+              </td>
+            </tr>
+            <tr>
+              <td border="r t" thead="true"/>
+              <td align="center" border="r t" thead="true">Y</td>
+              <td align="center" border="r t" thead="true">N</td>
+              <td align="center" border="r t" thead="true">Total</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">Y (32)</td>
+              <td align="center" border="r t">116</td>
+              <td align="center" border="r t"> –</td>
+              <td align="center" border="r t">116</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">N (29)</td>
+              <td align="center" border="r t">  96</td>
+              <td align="center" border="r t">29</td>
+              <td align="center" border="r t">125</td>
+            </tr>
+            <tr>
+              <td align="center" border="b r t">Total (61)</td>
+              <td align="center" border="b r t">212</td>
+              <td align="center" border="b r t">29</td>
+              <td align="center" border="b r t">241</td>
+            </tr>
+          </tbody>
+        </tabular>
+      </inline-block>
+      <toccaption><tag close=" ">2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
+      <caption><tag close=": ">Table 2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+    </table>
+    <table frefnum="Table 3" placement="htb" refnum="3" xml:id="S1.T3" labels="LABEL:tb:tab3">
+      <inline-block depth="2.0pt" height="90.0pt" width="187.2pt" xscale="-1" yscale="1">
+        <tabular vattach="middle" class="ltx_centering">
+          <tbody>
+            <tr>
+              <td align="center" border="b l r t" rowspan="5" thead="true">
+                <inline-block angle="90" depth="0.0pt" height="84.0pt" innerdepth="1.6pt" innerheight="5.6pt" innerwidth="84.0pt" width="7.2pt" xtranslate="-38.4pt" ytranslate="38.4pt">
+                  <p>
+                    <text fontsize="footnote" font="bold">Original pairs</text>
+                  </p>
+                </inline-block>
+              </td>
+              <td align="center" border="l r t" thead="true"></td>
+              <td align="center" border="l r t" colspan="3" thead="true">
+                <text font="bold">Monothematic pairs</text>
+              </td>
+            </tr>
+            <tr>
+              <td border="r t" thead="true"/>
+              <td align="center" border="r t" thead="true">Y</td>
+              <td align="center" border="r t" thead="true">N</td>
+              <td align="center" border="r t" thead="true">Total</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">Y (32)</td>
+              <td align="center" border="r t">116</td>
+              <td align="center" border="r t"> –</td>
+              <td align="center" border="r t">116</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">N (29)</td>
+              <td align="center" border="r t">  96</td>
+              <td align="center" border="r t">29</td>
+              <td align="center" border="r t">125</td>
+            </tr>
+            <tr>
+              <td align="center" border="b r t">Total (61)</td>
+              <td align="center" border="b r t">212</td>
+              <td align="center" border="b r t">29</td>
+              <td align="center" border="b r t">241</td>
+            </tr>
+          </tbody>
+        </tabular>
+      </inline-block>
+      <toccaption><tag close=" ">3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
+      <caption><tag close=": ">Table 3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+    </table>
+    <table frefnum="Table 4" placement="htb" refnum="4" xml:id="S1.T4" labels="LABEL:tb:tab3">
+      <inline-block angle="45" depth="1.41pt" height="196.01pt" innerdepth="2.0pt" innerheight="90.0pt" innerwidth="187.2pt" width="197.42pt" xtranslate="5.11pt" ytranslate="52.71pt">
+        <tabular vattach="middle" class="ltx_centering">
+          <tbody>
+            <tr>
+              <td align="center" border="b l r t" rowspan="5" thead="true">
+                <inline-block angle="90" depth="0.0pt" height="84.0pt" innerdepth="1.6pt" innerheight="5.6pt" innerwidth="84.0pt" width="7.2pt" xtranslate="-38.4pt" ytranslate="38.4pt">
+                  <p>
+                    <text font="bold" fontsize="footnote">Original pairs</text>
+                  </p>
+                </inline-block>
+              </td>
+              <td align="center" border="l r t" thead="true"></td>
+              <td align="center" border="l r t" colspan="3" thead="true">
+                <text font="bold">Monothematic pairs</text>
+              </td>
+            </tr>
+            <tr>
+              <td border="r t" thead="true"/>
+              <td align="center" border="r t" thead="true">Y</td>
+              <td align="center" border="r t" thead="true">N</td>
+              <td align="center" border="r t" thead="true">Total</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">Y (32)</td>
+              <td align="center" border="r t">116</td>
+              <td align="center" border="r t"> –</td>
+              <td align="center" border="r t">116</td>
+            </tr>
+            <tr>
+              <td align="center" border="r t">N (29)</td>
+              <td align="center" border="r t">  96</td>
+              <td align="center" border="r t">29</td>
+              <td align="center" border="r t">125</td>
+            </tr>
+            <tr>
+              <td align="center" border="b r t">Total (61)</td>
+              <td align="center" border="b r t">212</td>
+              <td align="center" border="b r t">29</td>
+              <td align="center" border="b r t">241</td>
+            </tr>
+          </tbody>
+        </tabular>
+      </inline-block>
+      <toccaption><tag close=" ">4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
+      <caption><tag close=": ">Table 4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+    </table>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>Scalings, Rotations using <text font="typewriter">rotating</text></title>
+    <para xml:id="S2.p1">
+      <p>Start here
+<inline-block angle="-56" depth="81.95pt" height="3.91pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="97.5pt" width="0.0pt" xtranslate="-17.76pt" ytranslate="38.43pt"><p>Save whales</p></inline-block>
+End here</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Start here <inline-block angle="56" depth="1.12pt" height="97.18pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="112.5pt" width="70.37pt" xtranslate="-21.06pt" ytranslate="44.65pt"><p>Save the whale</p></inline-block> end here</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Start here
+<inline-block angle="90" depth="0.0pt" height="112.5pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="112.5pt" width="9.0pt" xtranslate="-51.75pt" ytranslate="51.75pt"><p>Save the whale</p></inline-block>
+End here</p>
+    </para>
+    <figure frefnum="Figure 1" refnum="1" xml:id="S2.F1" labels="LABEL:angles1">
+      <tabular vattach="middle">
+        <tbody>
+          <tr>
+            <td align="center" border="l r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="0" depth="41.5pt" height="48.5pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="72.27pt" xtranslate="0pt" ytranslate="0pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-40" depth="78.24pt" height="37.15pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="113.21pt" xtranslate="20.47pt" ytranslate="12.7pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-80" depth="78.38pt" height="8.42pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="101.18pt" xtranslate="14.46pt" ytranslate="-1.6pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" border="l r">0<Math mode="inline" xml:id="S2.F1.m1" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="r">-40<Math mode="inline" xml:id="S2.F1.m2" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="r">-80<Math mode="inline" xml:id="S2.F1.m3" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+          </tr>
+          <tr>
+            <td align="center" border="l r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-120" depth="86.84pt" height="20.75pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="114.08pt" xtranslate="20.9pt" ytranslate="8.79pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-160" depth="70.29pt" height="39.0pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="98.69pt" xtranslate="13.21pt" ytranslate="9.65pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-200" depth="45.57pt" height="63.71pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="98.69pt" xtranslate="13.21pt" ytranslate="9.65pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" border="l r">120<Math mode="inline" xml:id="S2.F1.m4" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="r">-160<Math mode="inline" xml:id="S2.F1.m5" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="r">-200<Math mode="inline" xml:id="S2.F1.m6" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+          </tr>
+          <tr>
+            <td align="center" border="l r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-240" depth="24.25pt" height="83.34pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="114.08pt" xtranslate="20.9pt" ytranslate="8.79pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-280" depth="7.21pt" height="79.59pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="101.18pt" xtranslate="14.46pt" ytranslate="-1.6pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+            <td align="center" border="r t">
+              <text framecolor="black" framed="rectangle">—<inline-block angle="-320" depth="31.79pt" height="83.61pt" innerdepth="41.5pt" innerheight="48.5pt" innerwidth="72.27pt" width="113.21pt" xtranslate="20.47pt" ytranslate="12.7pt"><p><inline-block class="ltx_parbox" vattach="middle" width="72.27pt" framed="rectangle"><p>Save
+the whales Save the whale Save the <ref href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p></inline-block></p></inline-block>—</text>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" border="b l r">-240<Math mode="inline" xml:id="S2.F1.m7" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="b r">-280<Math mode="inline" xml:id="S2.F1.m8" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+            <td align="center" border="b r">-320<Math mode="inline" xml:id="S2.F1.m9" tex="{}^{\mathrm{o}}" text="^o"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="10"><XMTok role="UNKNOWN">o</XMTok></XMApp></XMath></Math></td>
+          </tr>
+        </tbody>
+      </tabular>
+      <toccaption><tag close=" ">1</tag>Rotation of paragraphs between 0 and -320 degrees </toccaption>
+      <caption><tag close=": ">Figure 1</tag>Rotation of paragraphs between 0 and -320 degrees </caption>
+    </figure>
+    <para xml:id="S2.p4">
+      <quote>
+        <p><rule height="108.41pt" width="0.0pt"/><tabular vattach="middle"><tbody><tr><td align="right"><inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="0.0pt" xtranslate="-5.6pt" ytranslate="19.89pt"><p>Column 1</p></inline-block></td><td align="right"><inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="0.0pt" xtranslate="-5.6pt" ytranslate="19.89pt"><p>Column 2</p></inline-block></td><td align="right"><inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="0.0pt" xtranslate="-5.6pt" ytranslate="19.89pt"><p>Column 3</p></inline-block></td></tr><tr><td align="right" border="t">1</td><td align="right" border="t">2</td><td align="right" border="t">3</td></tr><tr><td align="right">4</td><td align="right">5</td><td align="right">6</td></tr><tr><td align="right" border="b">7</td><td align="right" border="b">8</td><td align="right" border="b">9</td></tr></tbody></tabular></p>
+      </quote>
+    </para>
+    <para xml:id="S2.p5">
+      <quote>
+        <tabular vattach="middle">
+          <tbody>
+            <tr>
+              <td align="right">
+                <inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="48.79pt" xtranslate="-5.6pt" ytranslate="19.89pt">
+                  <p>Column 1</p>
+                </inline-block>
+              </td>
+              <td align="right">
+                <inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="48.79pt" xtranslate="-5.6pt" ytranslate="19.89pt">
+                  <p>Column 2</p>
+                </inline-block>
+              </td>
+              <td align="right">
+                <inline-block angle="45" depth="1.41pt" height="47.38pt" innerdepth="2.0pt" innerheight="7.0pt" innerwidth="60.0pt" width="48.79pt" xtranslate="-5.6pt" ytranslate="19.89pt">
+                  <p>Column 3</p>
+                </inline-block>
+              </td>
+            </tr>
+            <tr>
+              <td align="right" border="t">1</td>
+              <td align="right" border="t">2</td>
+              <td align="right" border="t">3</td>
+            </tr>
+            <tr>
+              <td align="right">4</td>
+              <td align="right">5</td>
+              <td align="right">6</td>
+            </tr>
+            <tr>
+              <td align="right" border="b">7</td>
+              <td align="right" border="b">8</td>
+              <td align="right" border="b">9</td>
+            </tr>
+          </tbody>
+        </tabular>
+      </quote>
+    </para>
+    <table angle="90" depth="0.0pt" frefnum="Table 5" height="622.49pt" innerdepth="45.0pt" innerheight="290.6pt" innerwidth="622.49pt" refnum="5" width="335.6pt" xml:id="S2.T5" xtranslate="-143.45pt" ytranslate="143.45pt" labels="LABEL:rotfloat2">
+      <tabular vattach="middle" class="ltx_centering">
+        <thead>
+          <tr>
+            <td align="left" border="l t" thead="true">Context</td>
+            <td align="left" border="t" thead="true">Length</td>
+            <td align="left" border="t" thead="true">Breadth/</td>
+            <td align="left" border="t" thead="true">Depth</td>
+            <td align="left" border="t" thead="true">Profile</td>
+            <td align="left" border="t" thead="true">Pottery</td>
+            <td align="left" border="t" thead="true">Flint</td>
+            <td align="left" border="t" thead="true">Animal</td>
+            <td align="justify" border="t" width="72.27pt" thead="true">Stone</td>
+            <td align="left" border="t" thead="true">Other</td>
+            <td align="justify" border="r t" width="72.27pt" thead="true">C14 Dates</td>
+          </tr>
+          <tr>
+            <td border="l" thead="true"/>
+            <td thead="true"/>
+            <td align="left" thead="true">Diameter</td>
+            <td thead="true"/>
+            <td thead="true"/>
+            <td thead="true"/>
+            <td thead="true"/>
+            <td align="left" thead="true">Bones</td>
+            <td align="justify" width="72.27pt" thead="true"/>
+            <td thead="true"/>
+            <td align="justify" border="r" width="72.27pt" thead="true"/>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td border="l t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td border="t"/>
+            <td align="justify" border="t" width="72.27pt"/>
+            <td border="t"/>
+            <td align="justify" border="r t" width="72.27pt"/>
+          </tr>
+          <tr>
+            <td align="left" border="l" colspan="10">
+              <text font="bold">Grooved Ware</text>
+            </td>
+            <td align="justify" border="r" width="72.27pt"/>
+          </tr>
+          <tr>
+            <td align="left" border="l">784</td>
+            <td align="left">—</td>
+            <td align="left">0.9m</td>
+            <td align="left">0.18m</td>
+            <td align="left">Sloping U</td>
+            <td align="left">P1</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m1" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>46</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m2" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>8</td>
+            <td align="justify" width="72.27pt"/>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m3" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>2 bone</td>
+            <td align="justify" border="r" width="72.27pt">2150<Math mode="inline" xml:id="S2.T5.m4" tex="\pm" text="plus-or-minus"><XMath><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok></XMath></Math> 100 BC</td>
+          </tr>
+          <tr>
+            <td align="left" border="l">785</td>
+            <td align="left">—</td>
+            <td align="left">1.00m</td>
+            <td align="left">0.12</td>
+            <td align="left">Sloping U</td>
+            <td align="left">P2–4</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m5" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>23</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m6" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>21</td>
+            <td align="justify" width="72.27pt">Hammerstone</td>
+            <td align="left">—</td>
+            <td align="justify" border="r" width="72.27pt">—</td>
+          </tr>
+          <tr>
+            <td align="left" border="l">962</td>
+            <td align="left">—</td>
+            <td align="left">1.37m</td>
+            <td align="left">0.20m</td>
+            <td align="left">Sloping U</td>
+            <td align="left">P5–6</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m7" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>48</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m8" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>57*</td>
+            <td align="justify" width="72.27pt">—</td>
+            <td align="left">—</td>
+            <td align="justify" border="r" width="72.27pt">1990 <Math mode="inline" xml:id="S2.T5.m9" tex="\pm" text="plus-or-minus"><XMath><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok></XMath></Math> 80 BC (Layer 4) 1870 <Math mode="inline" xml:id="S2.T5.m10" tex="\pm" text="plus-or-minus"><XMath><XMTok meaning="plus-or-minus" name="pm" role="ADDOP">±</XMTok></XMath></Math>90 BC (Layer 1)</td>
+          </tr>
+          <tr>
+            <td align="left" border="l">983</td>
+            <td align="left">0.83m</td>
+            <td align="left">0.73m</td>
+            <td align="left">0.25m</td>
+            <td align="left">Stepped U</td>
+            <td align="left">—</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m11" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>18</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m12" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>8</td>
+            <td align="justify" width="72.27pt">—</td>
+            <td align="left">Fired clay</td>
+            <td align="justify" border="r" width="72.27pt">—</td>
+          </tr>
+          <tr>
+            <td border="l"/>
+            <td/>
+            <td/>
+            <td/>
+            <td/>
+            <td/>
+            <td/>
+            <td/>
+            <td align="justify" width="72.27pt"/>
+            <td/>
+            <td align="justify" border="r" width="72.27pt"/>
+          </tr>
+          <tr>
+            <td align="left" border="l" colspan="10">
+              <text font="bold">Beaker</text>
+            </td>
+            <td align="justify" border="r" width="72.27pt"/>
+          </tr>
+          <tr>
+            <td align="left" border="l">552</td>
+            <td align="left">—</td>
+            <td align="left">0.68m</td>
+            <td align="left">0.12m</td>
+            <td align="left">Saucer</td>
+            <td align="left">P7–14</td>
+            <td align="left">—</td>
+            <td align="left">—</td>
+            <td align="justify" width="72.27pt">—</td>
+            <td align="left">—</td>
+            <td align="justify" border="r" width="72.27pt">—</td>
+          </tr>
+          <tr>
+            <td align="left" border="l">790</td>
+            <td align="left">—</td>
+            <td align="left">0.60m</td>
+            <td align="left">0.25m</td>
+            <td align="left">U</td>
+            <td align="left">P15</td>
+            <td align="left"><Math mode="inline" xml:id="S2.T5.m13" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>12</td>
+            <td align="left">—</td>
+            <td align="justify" width="72.27pt">Quartzite-lump</td>
+            <td align="left">—</td>
+            <td align="justify" border="r" width="72.27pt">—</td>
+          </tr>
+          <tr>
+            <td align="left" border="b l">794</td>
+            <td align="left" border="b">2.89m</td>
+            <td align="left" border="b">0.75m</td>
+            <td align="left" border="b">0.25m</td>
+            <td align="left" border="b">Irreg.</td>
+            <td align="left" border="b">P16</td>
+            <td align="left" border="b"><Math mode="inline" xml:id="S2.T5.m14" tex="\times" text="*"><XMath><XMTok meaning="times" role="MULOP">×</XMTok></XMath></Math>3</td>
+            <td align="left" border="b">—</td>
+            <td align="justify" border="b" width="72.27pt">—</td>
+            <td align="left" border="b">—</td>
+            <td align="justify" border="b r" width="72.27pt">—</td>
+          </tr>
+        </tbody>
+      </tabular>
+      <toccaption class="ltx_centering"><tag close=" ">5</tag>Grooved Ware and Beaker Features, their Finds and
+Radiocarbon Dates</toccaption>
+      <caption class="ltx_centering"><tag close=": ">Table 5</tag>Grooved Ware and Beaker Features, their
+Finds and Radiocarbon Dates; For a breakdown of the Pottery
+Assemblages see Tables I and III; for
+the Flints see Tables II and IV; for the
+Animal Bones see Table V.</caption>
+    </table>
+  </section>
+</document>
