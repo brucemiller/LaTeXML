@@ -13,57 +13,75 @@ package LaTeXML::Core::Alignment;
 use strict;
 use warnings;
 use LaTeXML::Global;
-#use LaTeXML::Package;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
-use List::Util qw(max);
-use base qw(LaTeXML::Common::Object);
+use List::Util qw(max sum);
+use base qw(LaTeXML::Core::Whatsit);
 use base qw(Exporter);
 our @EXPORT = (qw(
     &constructAlignment
-    &ReadAlignmentTemplate &parseAlignmentTemplate &MatrixTemplate));
+    &ReadAlignmentTemplate &MatrixTemplate));
 
-# Eventually, this should really be based on Whatsit..
-
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # An "Alignment" is an array/tabular construct as:
 #   <tabular><tr><td>...
 # or, for math mode
 #   <XMArray><XMRow><XMCell>...
 # (where initially, each XMCell will contain an XMArg to indicate
 # individual parsing of each cell's content is desired)
+#
+# An Alignment object is a sort of fake Whatsit;
+# It takes some magic to sneak it into the Digestion stream
+# (see TeX.pool \@open@alignment), but it needs to be created
+# BEFORE the contents of the alignment are digested,
+# since we stuff a lot of information into it
+# (row, column boxes, borders, spacing, etc...)
+# But once it has been captured, it should otherwise act
+# like a Whatsit and be responsible for construction (beAbsorbed),
+# and sizing estimation (computeSize)
+#
+# Ultimately, this should be better tied into DefConstructor
+# because an Alignment currently doesn't know what CS created it (debugging!);
+# Also, it would better connect the things being constructed, reversion, etc.
+#======================================================================
 
-# data should have:
-#   containerElement => name of the container element
-#   rowElement => name of row element
-#   colElement => name of col element.
+# Create a new Alignment.
+# %data can contain:
+#    template : an Alignment::Template object
+#    openContainer  = sub($doc,%attrib); creates the container element with given attributes
+#    closeContainer = sub($doc); closes the container
+#    openRow        = sub($doc,%attrib); creates the row element with given attributes
+#    closeRow       = closes the row
+#    openColumn     = sub($doc,%attrib); creates the column element with given attributes
+#    closeColumn    = closes the column
+#    attributes = hashref containing extra attributes for the container element.
 sub new {
   my ($class, %data) = @_;
-  return bless { %data,
-    template => LaTeXML::Core::Alignment::Template->new(), rows => [],
-    current_column => 0, current_row => undef }, $class; }
+  my $self = bless {%data}, $class;
+  $$self{template} = LaTeXML::Core::Alignment::Template->new() unless $$self{template};
+  $$self{template} = parseAlignmentTemplate($$self{template})  unless ref $$self{template};
+  $$self{rows}     = [];
+  $$self{current_column} = 0;
+  $$self{current_row}    = undef;
+  $$self{properties}     = {} unless $$self{properties};
+  # Copy any attribute width, height, depth to main properties.
+  if (my $attributes = $$self{properties}{attributes}) {
+    $$self{properties}{width}  = $$attributes{width}  if $$attributes{width};
+    $$self{properties}{height} = $$attributes{height} if $$attributes{height};
+    $$self{properties}{depth}  = $$attributes{depth}  if $$attributes{depth}; }
+  return $self; }
 
-###
-
-sub setMath {
-  my ($self) = @_;
-  return $$self{isMath} = 1; }
-
-###
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Alignment specific accessors
 sub getTemplate {
   my ($self, $template) = @_;
   return $$self{template}; }
 
-sub setTemplate {
-  my ($self, $template) = @_;
-  $$self{template} = $template;
-  return; }
-
-###
 sub currentRow {
   my ($self) = @_;
   return $$self{current_row}; }
@@ -100,8 +118,6 @@ sub rows {
   my ($self) = @_;
   return @{ $$self{rows} }; }
 
-###
-
 sub addLine {
   my ($self, $border, @cols) = @_;
   my $row = $$self{current_row};
@@ -114,7 +130,6 @@ sub addLine {
       $$colspec{border} .= $border; } }
   return; }
 
-###
 sub nextColumn {
   my ($self) = @_;
   my $colspec = $$self{current_row}->column(++$$self{current_column});
@@ -151,15 +166,138 @@ sub addAfterRow {
   $$self{current_row}{after} = [@{ $$self{current_row}{after} || [] }, @boxes];
   return; }
 
-# sub missingColumns {
-#   my($self)=@_;
-#   my $n = scalar(@{$$self{current_row}{columns}});
-#   $n - $$self{current_column}; }
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Making the Alignment act like a Whatsit
+sub toString {
+  my ($self) = @_;
+  return "Alignment[]"; }
+
+# Methods for overloaded operators
+sub stringify {
+  my ($self) = @_;
+  return "Alignment[]"; }
+
+sub revert {
+  my ($self) = @_;
+  return $self->getBody->revert; }
+
+sub computeSize {
+  my ($self, %options) = @_;
+  $self->normalizeAlignment;
+  my $props      = $self->getPropertiesRef;
+  my @rowheights = ();
+  my @colwidths  = ();
+  # add \baselineskip between rows? Or max the row heights with it ...
+  my $base = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
+  foreach my $row (@{ $$self{rows} }) {
+    # Do we need to account for any space in the $$row{before} or $$row{after}?
+    my @cols  = @{ $$row{columns} };
+    my $ncols = scalar(@cols);
+    if (my $short = $ncols - scalar(@colwidths)) {
+      push(@colwidths, map { 0 } 1 .. $short); }
+    my ($rowh, $rowd) = ($base * 0.7, $base * 0.3);
+    for (my $i = 0 ; $i < $ncols ; $i++) {
+      my $cell = $cols[$i];
+      next if $$cell{skipped};
+      my ($w, $h, $d) = $$cell{boxes}->getSize(align => $$cell{align}, width => $$cell{width},
+        vattach => $$cell{vattach});
+      if (($$cell{span} || 1) == 1) {
+        $colwidths[$i] = max($colwidths[$i], $w->valueOf); }
+      else { }    # Could check afterwards that spanned columns are wide enough?
+      if (($$cell{rowspan} || 1) == 1) {
+        $rowh = max($rowh, $h->valueOf);
+        $rowd = max($rowd, $d->valueOf); }
+      else { }    # Ditto spanned rows
+    }
+    push(@rowheights, $rowh + $rowd + 0.5 * $base); }    # somehow our heights are way too short????
+      # Should we check for space for spanned rows & columns ?
+      # sum
+  my $ww = Dimension(sum(@colwidths));
+  my $hh = Dimension(sum(@rowheights));
+  my $dd = Dimension(0);
+  $$props{width}  = $ww unless defined $$props{width};
+  $$props{height} = $hh unless defined $$props{height};
+  $$props{depth}  = $dd unless defined $$props{depth};
+  return; }
 
 #======================================================================
 # Constructing the XML for the alignment.
+
+sub beAbsorbed {
+  my ($self, $document) = @_;
+  my $attr   = $self->getProperty('attributes');
+  my $body   = $self->getBody;
+  my $ismath = $$self{isMath};
+  $self->normalizeAlignment;
+  # We _should_ attach boxes to the alignment and rows,
+  # but (ATM) we've only got sensible boxes for the cells.
+  &{ $$self{openContainer} }($document, ($attr ? %$attr : ()));
+  foreach my $row (@{ $$self{rows} }) {
+    &{ $$self{openRow} }($document, 'xml:id' => $$row{id},
+      refnum => $$row{refnum}, frefnum => $$row{frefnum}, rrefnum => $$row{rrefnum});
+    if (my $before = $$row{before}) {
+      map { $document->absorb($_) } @$before; }
+    foreach my $cell (@{ $$row{columns} }) {
+      next if $$cell{skipped};
+      # Normalize the border attribute
+      my $border = join(' ', sort(map { split(/ */, $_) } $$cell{border} || ''));
+      $border =~ s/(.) \1/$1$1/g;
+      my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
+      $$cell{cell} = &{ $$self{openColumn} }($document,
+        align => $$cell{align}, width => $$cell{width},
+        vattach => $$cell{vattach},
+        (($$cell{span}    || 1) != 1 ? (colspan => $$cell{span})    : ()),
+        (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan}) : ()),
+        ($border      ? (border => $border) : ()),
+        ($$cell{head} ? (thead  => 'true')  : ()));
+      if (!$empty) {
+        local $LaTeXML::BOX = $$cell{boxes};
+        $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;    # Hacky!
+        $document->absorb($$cell{boxes});
+        $document->closeElement('ltx:XMArg') if $ismath;
+      }
+      &{ $$self{closeColumn} }($document); }
+    if (my $after = $$row{after}) {
+      map { $document->absorb($_) } @$after; }
+    &{ $$self{closeRow} }($document); }
+  my $node = &{ $$self{closeContainer} }($document);
+
+  # If requested to guess headers & we're not nested inside another tabular
+  # This should be an afterConstruct somewhere?
+  if ($self->getProperty('guess_headers')
+    && !$document->findnodes("ancestor::ltx:tabular", $node)) {
+    # If no cells are already marked as being thead, apply heuristic
+    if (!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node)) {
+      guess_alignment_headers($document, $node, $self); }
+    # Otherwise, if not a math array, group thead & tbody rows
+    elsif (!$body->isMath) {    # in case already marked w/thead|tbody
+      alignment_regroup_rows($document, $node); } }
+  return $node; }
+
+# Deprecated
+sub constructAlignment {
+  my ($document, $body, %props) = @_;
+  Info('deprecated', 'constructAlignment', $document,
+    "The sub constructAlignment is a deprecated way to create Alignments",
+    "See LaTeX.pool {tabular} for the new way.");
+  my $alignment;
+  # Find the alignment that is embedded somewhere within body!
+  # See \@open@alignment for where this gets set into the Whatsit!
+  while (!($alignment = $body->getProperty('alignment'))) {
+    ($body) = grep { $_->getProperty('alignment') } $body->unlist; }
+  $$alignment{isMath} = 1 if $body->isMath;
+  # Merge the specified props with what's already in the Alignment
+  if (my $attr = $props{attributes}) {
+    map { $$alignment{properties}{attributes}{$_} = $$attr{$_} } keys %$attr; }
+  map { $$alignment{properties}{$_} = $props{$_} } grep { $_ ne 'attributes' } keys %props;
+  return $alignment->beAbsorbed($document); }
+
 #======================================================================
-# Normalize an alignment after construction
+# Normalize an alignment before construction
+# * scanning for empty rows and collapse them
+# * marking columns covered by row & column spans
+# * tweak borders into the right places while doing this.
+
 # Tasks:
 #  (1) a trailing \\ in the alignment will generate an empty row.
 #     Note that the trailing \\ is required to get an \hline at the bottom!
@@ -176,40 +314,15 @@ sub addAfterRow {
 #     But here, also, border data may need to be moved (but l/r borders)
 #  (3) put border attributes in a "normal" form to ease use as html's class attribute.
 #     Ie: group by l/r/t/b w/ spaces between groups.
-#
-# OR, since I'm doing so much manipulation here,
-# maybe it just makes sense to build the entire XML from the alignment construction?
-# This would avoid lots of back & forth between the alignment & xml.
 
 # NOTE: Another cleanup issue:
 # With \halign, Knuth seems to like to introduce many empty columns for spacing.
 # It may be useful to remove such columns?
 # Probably have to
 
-sub constructAlignment {
-  my ($document, $body, %props) = @_;
-  my $alignment;
-  while (!($alignment = $body->getProperty('alignment'))) {
-    ($body) = grep { $_->getProperty('alignment') } $body->unlist; }
-  $alignment->setMath if $body->isMath;
-
-  my %attr = ($props{attributes} ? %{ $props{attributes} } : ());
-  my $node = $alignment->beAbsorbed($document, %attr);
-  # If requested to guess headers & we're not nested inside another tabular
-  if ($props{guess_headers} && !$document->findnodes("ancestor::ltx:tabular", $node)) {
-    # If no cells are already marked as being thead, apply heuristic
-    if (!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node)) {
-      guess_alignment_headers($document, $node, $alignment); }
-    # Otherwise, if not a math array, group thead & tbody rows
-    elsif (!$body->isMath) {    # in case already marked w/thead|tbody
-      alignment_regroup_rows($document, $node); } }
-  return $node; }
-
-sub beAbsorbed {
-  my ($self, $document, %attributes) = @_;
-  my $ismath = $$self{isMath};
-
-  # Scan for empty rows and collapse them
+sub normalizeAlignment {
+  my ($self) = @_;
+  return if $$self{normalized};
   my @filtering = @{ $$self{rows} };
   my @rows      = ();
   while (my $row = shift(@filtering)) {
@@ -262,42 +375,11 @@ sub beAbsorbed {
           $$col{border} .= $sborder if $sborder; }
       } } }
 
-  # We _should_ attach boxes to the alignment and rows,
-  # but (ATM) we've only got sensible boxes for the cells.
-  &{ $$self{openContainer} }($document, %attributes);
-  foreach my $row (@{ $$self{rows} }) {
-    &{ $$self{openRow} }($document, 'xml:id' => $$row{id},
-      refnum => $$row{refnum}, frefnum => $$row{frefnum}, rrefnum => $$row{rrefnum});
-    if (my $before = $$row{before}) {
-      map { $document->absorb($_) } @$before; }
-    foreach my $cell (@{ $$row{columns} }) {
-      next if $$cell{skipped};
-      # Normalize the border attribute
-      my $border = join(' ', sort(map { split(/ */, $_) } $$cell{border} || ''));
-      $border =~ s/(.) \1/$1$1/g;
-      my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
-      $$cell{cell} = &{ $$self{openColumn} }($document,
-        align => $$cell{align}, width => $$cell{width},
-        vattach => $$cell{vattach},
-        (($$cell{span}    || 1) != 1 ? (colspan => $$cell{span})    : ()),
-        (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan}) : ()),
-        ($border      ? (border => $border) : ()),
-        ($$cell{head} ? (thead  => 'true')  : ()));
-      if (!$empty) {
-        local $LaTeXML::BOX = $$cell{boxes};
-        $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;
-        $document->absorb($$cell{boxes});
-        $document->closeElement('ltx:XMArg') if $ismath;
-      }
-      &{ $$self{closeColumn} }($document); }
-    if (my $after = $$row{after}) {
-      map { $document->absorb($_) } @$after; }
-    &{ $$self{closeRow} }($document); }
-  return &{ $$self{closeContainer} }($document); }
+  $$self{normalized} = 1;
+  return; }
 
-#======================================================================
-
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Dealing with templates
 
 # newcolumntype
 #  defines \NC@rewrite@<char>
@@ -350,9 +432,9 @@ sub MatrixTemplate {
   return LaTeXML::Core::Alignment::Template->new(repeated => [{ before => Tokens(T_CS('\hfil')),
         after => Tokens(T_CS('\hfil')) }]); }
 
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Experimental alignment heading heuristications.
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # We attempt to recognize patterns of rows/columns that indicate which might be headers.
 # We'll characterize the cells by alignment, content and borders.
 # Then, assuming that headers will be first and be noticably `different' from data lines,
