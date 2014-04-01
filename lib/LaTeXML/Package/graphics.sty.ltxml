@@ -16,8 +16,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Util::Image;
 
-#**********************************************************************
+#======================================================================
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Package options: draft, final, hiderotate, hidescale, hiresbb
 
@@ -29,29 +30,26 @@ DefParameterType('GraphixDimension', sub {
     else {
       $gullet->readDimension; } });
 
-# Use CSS transforms to achieve these
-DefConstructor('\scalebox{}[] Digested', sub {
-    my ($document, $xscale, $yscale, $box, %props) = @_;
-    my $scale;
-    insertBlock($document, $box,
-      cssstyle => $props{transform},
-      # Should we put the dimensions on attributes?
-      # width=>$props{width},
-      # height=>$props{height},
-      # depth=>$props{depth}
-      ); },
+DefConstructor('\scalebox{}[] Digested',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#3"
+    . "</ltx:inline-block>",
   properties => sub {
     my ($stomach, $xscale, $yscale, $box) = @_;
     $xscale = ToString($xscale);
     $yscale = ($yscale ? ToString($yscale) : $xscale);
-    my $transform = 'transform:scale(' . $xscale . ',' . $yscale . ');';
     my ($w, $h, $d) = $box->getSize;
-    (($w ? (width => $w->multiply($xscale)) : ()),
-      ($h      ? (height => $h->multiply($yscale)) : ()),
-      ($d      ? (depth  => $d->multiply($yscale)) : ()),
-      ($xscale ? (xscale => $xscale)               : ()),
-      ($yscale ? (yscale => $yscale)               : ()),
-      transform => $transform); },
+    return () unless $w;
+    (width => $w->multiply($xscale),
+      height     => $h->multiply($yscale),
+      depth      => $d->multiply($yscale),
+      xscale     => $xscale,
+      yscale     => $yscale,
+      xtranslate => $w->multiply(($xscale - 1) / 2),
+      ytranslate => $h->add($d)->multiply(($yscale - 1) / 2)); },
   mode => 'text');
 
 DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension} Digested', sub {
@@ -67,65 +65,94 @@ DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension} 
       depth => Dimension(0)); },      # ?
   mode => 'text');
 
-DefConstructor('\rotatebox{Float} Digested', sub {
-    my ($document, $angle, $box, %props) = @_;
-    insertBlock($document, $box,
-      cssstyle => $props{transform},
-      width    => $props{width},
-      #                height=>$props{height},
-      #                depth=>$props{depth}
-      ); },    # ?
-  properties => sub {
-    my ($stomach, $angle, $box) = @_;
-    my ($w, $h, $d) = map { $_->valueOf } $box->getSize;
-    $h += $d;
-    $angle = -$angle->valueOf;
-    my $rad    = $angle * 3.1415926 / 180;      # close enough
-    my $s      = sin($rad);
-    my $c      = cos($rad);
-    my $ww     = abs($w * $c) + abs($h * $s);
-    my $hh     = abs($h * $c) + abs($w * $s);
-    my $width  = Dimension($ww);
-    my $height = Dimension($hh);
-#                 my $transform = 'transform:translate('.2*$width->pxValue.'px,0) rotate('.$angle.'deg) ;';
-    my $transform = 'transform:rotate(' . $angle . 'deg) ;';
-    (width => $width,
-      height    => $height,
-      depth     => Dimension(0),
-      angle     => $angle,
-      transform => $transform); },
+# TeX wants to rotate CCW about the left edge of the box, at the baseline.
+# CSS3's rotation wants to rotate CW about the center of the box!
+# The resulting box should have it's origin at the leftmost corner
+# But we're shifting the box from the position CSS thought that it WAS (before rotation!)
+# However, I THINK that it is using the GIVEN width & height
+# to determine the center!
+sub rotatedProperties {
+  my ($angle, $box, $zero) = @_;
+  $angle = $angle->valueOf if ref $angle;
+  my $cwangle = -$angle;
+  my ($width, $height, $depth) = $box->getSize;
+  return () unless $width;
+  my ($w, $h, $d) = map { $_->valueOf } $width, $height, $depth;
+  my $H   = $h + $d;
+  my $rad = $angle * 3.1415926 / 180;                                        # close enough
+  my $s   = sin($rad);
+  my $c   = cos($rad);
+  my $wp  = abs($w * $c) + abs($H * $s);
+  my $hp  = max($c * $h + $s * $w, -$c * $d + $s * $w, -$c * $d, $c * $h);
+  my $dp  = max($c * $d, -$c * $h, -$c * $h - $s * $w, $c * $d - $s * $w);
+  my $xsh = Dimension(($wp - $w) / 2)->ptValue . 'pt';
+  my $ysh = Dimension(($hp + $dp - $h - $d) / 2)->ptValue . 'pt';
 
-  mode => 'text');
+  if ($zero) {
+    #    $wp = $hp = $dp = 0; }
+    $wp = 0; }
+  my $widthp  = Dimension($wp);
+  my $heightp = Dimension($hp);
+  my $depthp  = Dimension($dp);
 
-DefConstructor('\reflectbox Digested', sub {
-    my ($document, $box, %props) = @_;
-    insertBlock($document, $box,
-      cssstyle => $props{transform},
-      # Should we put the dimensions on attributes?
-      # width=>$props{width},
-      # height=>$props{height},
-      # depth=>$props{depth}
-      ); },
+## print STDERR "\nROTATE $angle of ".ToString($box)."\n"
+##  ." == ".ToString($width).' x '.ToString($height).' + '.ToString($depth)."\n"
+##  ." => ".ToString($widthp).' x '.ToString($heightp).' + '.ToString($depthp)."\n";
+  return (
+    angle       => $angle,
+    width       => $widthp,
+    height      => $heightp,
+    depth       => $depthp,
+    innerwidth  => $width,
+    innerheight => $height,
+    innerdepth  => $depth,
+    xtranslate  => $xsh,
+    ytranslate  => $ysh,
+    ); }
+
+DefConstructor('\rotatebox{Float} Digested',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#2"
+    . "</ltx:inline-block>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getArg(2))); });
+
+DefConstructor('\reflectbox Digested',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#1"
+    . "</ltx:inline-block>",
   properties => sub {
     my ($stomach, $box) = @_;
-    my $transform = 'transform:scale(-1,1);';
     my ($w, $h, $d) = $box->getSize;
-    (transform => $transform); },
+    return () unless $w;
+    (width => $w,
+      height => $h,
+      depth  => $d,
+      xscale => -1,
+      yscale => 1); },
   mode => 'text');
 
 DefConstructor('\graphicspath DirectoryList', sub {
     my ($document, $paths) = @_;
     foreach my $dir ($paths->getValues) {
       my $path = pathname_absolute(pathname_canonical(ToString($dir)));
-      print STDERR "GOT PATH: " . $path . "\n";
       $document->insertPI('latexml', graphicspath => $path); } });
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
   '\@includegraphics#1[#2][#3]{#4}');
 
-DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
-    my ($document, $starred, $op1, $op2, $graphic) = @_;
+DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
+  "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
+  properties => sub {
+    my ($stomach, $starred, $op1, $op2, $graphic) = @_;
     my $bb = ($op2 ? ToString($op1) . " " . ToString($op2) : ($op1 ? "0 0 " . ToString($op1) : ''));
     $bb =~ s/,/ /g;
     my $options = ($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
@@ -133,14 +160,16 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim', sub {
     my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
       @candidates = map { pathname_relative($_, $base) } @candidates; }
-    $document->insertElement('ltx:graphics', undef, graphic => $graphic, options => $options,
-      candidates => join(',', @candidates)); },
+    (graphic => $graphic,
+      candidates => join(',', @candidates),
+      options => $options,
+      sizer => sub { \&image_graphicx_sizer }); },
   alias => '\includegraphics');
 
 # Also unimplemented... probably nothing useful to pass thru anyway?
 DefConstructor('\DeclareGraphicsExtensions{}',          '');
 DefConstructor('\DeclareGraphicsRule{}{}{} Undigested', '');
 # Nothing done about the keyval package...
-#**********************************************************************
+#======================================================================
 1;
 
