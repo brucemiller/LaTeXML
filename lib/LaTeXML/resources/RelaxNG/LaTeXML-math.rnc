@@ -365,7 +365,7 @@ XMArray_attributes =
   attribute omcd { text }?,
 
   ## which row's baseline aligns with the container's baseline.
-  attribute vattach { "top" | "middle" | "bottom" }?,
+  attribute vattach { "top" | "middle" | "bottom" | "baseline" }?,
 
   ## the desired width of the array.
   attribute width { Length.type }?
