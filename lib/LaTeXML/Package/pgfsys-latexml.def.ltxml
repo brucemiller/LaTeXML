@@ -638,85 +638,40 @@ DefMacro('\pgfsys@endscope', sub {
 #=====================================================================
 # Helpers
 
-# \lxSVG@pgfsys@insertimage{width}{height}{path}{title}
-DefConstructor('\lxSVG@pgfsys@insertimage{}{}{}{}',
-  '<svg:g transform="matrix(1 0 0 -1 0 #2)">'
-    . '<svg:image x="#x" y="#y" width="#1" height="#2" '
-    . 'preserveAspectRatio="none" xlink:href="#3" alt="#4">'
-    . '<svg:title>#4</svg:title>'
-    . '</svg:image>'
-    . '</svg:g>',
-  properties => {
-    x => sub {
-      my ($stomach, $width, $height) = @_;
-      my $prevmaxx = (LookupValue('pgf_lastForeignObjX') || 0);
-      my $newmaxx = $prevmaxx + ToString($width);
-      AssignValue(pgf_lastForeignObjX => $newmaxx, 'global');
-      if ($prevmaxx < LookupValue('\pgf@picminx')->pxValue) {
-        AssignValue('\pgf@picminx' => Dimension($prevmaxx . 'pt'), 'global'); }
-      if ($newmaxx > LookupValue('\pgf@picmaxx')->pxValue) {
-        AssignValue('\pgf@picmaxx' => Dimension($newmaxx . 'pt'), 'global'); }
-      return $prevmaxx; },
-    y => sub {
-      my ($stomach, $width, $height) = @_;
-      my $prevmaxy = (LookupValue('pgf_lastForeignObjY') || 0);
-      my $newmaxy = $prevmaxy + ToString($height);
-      # AssignValue(pgf_lastForeignObjY => $newmaxy, 'global'); # if needed
-      if ($prevmaxy < LookupValue('\pgf@picminy')->pxValue) {
-        AssignValue('\pgf@picminy' => Dimension($prevmaxy . 'pt'), 'global'); }
-      if ($newmaxy > LookupValue('\pgf@picmaxy')->pxValue) {
-        AssignValue('\pgf@picmaxy' => Dimension($newmaxy . 'pt'), 'global'); }
-      return $prevmaxy; } });
-
 RawTeX('\newbox\lxSVG@imgbox');
 #=====================================================================
 # Implementation
 
-our $svg_image_types = [qw(png gif jpg jpeg eps ps ai pdf svg)];
-DefPrimitive('\pgfsys@defineimage', sub {
-    my $request = ToString(Expand(T_CS('\pgf@filename')));
-    $request =~ s/^\s+//; $request =~ s/\s+$//;
+DefMacro('\pgfsys@defineimage',
+  '\edef\pgf@image{\lxSVG@includegraphics{\pgf@imagewidth}{\pgf@imageheight}{\pgf@filename}}');
 
-    my $path = pathname_find($request, types => $svg_image_types,
+DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
+  "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
+  beforeConstruct => sub {
+    my ($document, $whatsit) = @_;
+    if (!foreignObjectCheck($document)) {
+      $document->openElement('svg:foreignObject',
+        width => $whatsit->getWidth, height => $whatsit->getHeight);
+      $whatsit->setProperty(OpenedForeignObject => 1); } },
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    if ($whatsit->getProperty('OpenedForeignObject')) {
+      $document->closeElement('svg:foreignObject'); } },
+  properties => sub {
+    my ($stomach, $w, $h, $graphic) = @_;
+    $w = ToString($w);
+    $h = ToString($h);
+    my $options = join(',', ($w ? ('width=' . $w) : ()), ($h ? ('height=' . $h) : ()));
+    $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
+    my @candidates = pathname_findall($graphic, types => ['*'],
       paths => LookupValue('GRAPHICSPATHS'));
-    my $title = $path;
-    if (defined $path) {
-      my $px = 72.27 / ($STATE->lookupValue('DPI') || 90);
-      my ($width, $height) = map { $_ * $px } image_size($path);    # PIXELS => pts!!!!!
-      my $w     = $width;                                                         # specified width
-      my $h     = $height;                                                        # specified height
-      my $wspec = !(xEquals(T_CS('\pgf@imagewidth'), T_CS('\pgfutil@empty')));
-      my $hspec = !(xEquals(T_CS('\pgf@imageheight'), T_CS('\pgfutil@empty')));
-
-      if ($wspec) {
-        $w = Dimension(ToString(Expand(T_CS('\pgf@imagewidth'))))->ptValue;
-        $h *= $w / $width unless $hspec; }                                        # scale to preserve ratio
-      if ($hspec) {
-        $h = Dimension(ToString(Expand(T_CS('\pgf@imageheight'))))->ptValue;
-        $w *= $h / $height unless $wspec; }                                       # scale to preserve ratio
-      DefMacro('\pgf@image',
-        Invocation(T_CS('\@@foreign@image'), $path,
-          Dimension($w . 'pt'), Dimension($h . 'pt'))); }
-    else {
-      Error("File " . $title . " not found.");
-      DefMacro('\pgf@image', ''); }
-    return; });
-
-DefConstructor('\@@foreign@image Semiverbatim {Dimension}{Dimension}', sub {
-    my ($doc, $path, $width, $height) = @_;
-    my $foreign = foreignObjectCheck($doc);
-    $doc->openElement('svg:foreignObject', width => $width, height => $height)
-      unless $foreign;
-    $doc->insertElement('ltx:graphics', undef, graphic => $path,
-      options => "width=" . $width->ptValue . "pt ,height=" . $height->ptValue . "pt");
-    $doc->closeElement('svg:foreignObject') unless $foreign; },
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    # Set these properties, so it knows its size!
-    $whatsit->setProperty(width  => $whatsit->getArg(2));
-    $whatsit->setProperty(height => $whatsit->getArg(3));
-    $whatsit->setProperty(depth  => Dimension(0));
-    return; });
+    if (my $base = LookupValue('SOURCEDIRECTORY')) {
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
+    (graphic => $graphic,
+      candidates => join(',', @candidates),
+      options => $options,
+      sizer => sub { \&image_graphicx_sizer }); },
+  alias => '\includegraphics');
 
 #=====================================================================#
 #= 10. Shading =======================================================#
@@ -967,12 +922,8 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 # tikz makes their width 0; unfortunately this makes them
 # disappear in the svg (overflow=visible doesn't seem to help)
 
-DefConstructor('\lxSVG@halign BoxSpecification', sub {
-    my ($document, $spec, %props) = @_;
-    my $body = $props{body};
-    constructAlignment($document, $body, attributes => {
-        width       => orNull(GetKeyVal($spec, 'to')),
-        'pad-width' => orNull(GetKeyVal($spec, 'spread')) }); },
+DefConstructor('\lxSVG@halign BoxSpecification',
+  '#body',
   reversion => '\halign #1{#2\cr#3}',
   #  bounded     => 1,
   afterDigest => sub {
@@ -1028,7 +979,11 @@ DefConstructor('\lxSVG@halign BoxSpecification', sub {
     # with \alignment@cr to recognize the end of the \halign
     # and sneak a \@finish@alignment in!!!!!
     # (otherwise none of the row/column/alignment constructors know when to end, as written)
-    tikzAlignmentBindings($template);
+    my $spec = $whatsit->getArg(1);
+    tikzAlignmentBindings($template, undef,
+      attributes => {
+        width       => orNull(GetKeyVal($spec, 'to')),
+        'pad-width' => orNull(GetKeyVal($spec, 'spread')) });
     $stomach->bgroup;    # This will be closed by the \halign's closing }
                          # but tikz is sticking in an extra \begingroup ????
                          #    $stomach->begingroup;
@@ -1038,8 +993,6 @@ DefConstructor('\lxSVG@halign BoxSpecification', sub {
 
 sub tikzAlignmentBindings {
   my ($template, $mode) = @_;
-  if ($template && !ref $template) {
-    $template = parseAlignmentTemplate($template); }
   $mode = LookupValue('MODE') unless $mode;
   #  my $ismath    = $mode =~ /math$/;
   #  my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
@@ -1048,16 +1001,14 @@ sub tikzAlignmentBindings {
   my $container = 'svg:g';
   my $rowtype   = 'svg:g';
   my $coltype   = 'svg:g';
-  my $alignment = LaTeXML::Core::Alignment
-    #    ->new(openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
-    ->new(openContainer => \&openTikzAlignment,
-    closeContainer => sub { $_[0]->closeElement($container); },
-    openRow        => \&openTikzAlignmentRow,
-    closeRow       => sub { $_[0]->closeElement($rowtype); },
-    openColumn     => \&openTikzAlignmentCol,
-    closeColumn    => sub { $_[0]->closeElement($coltype); });
-  AssignValue(Alignment => $alignment);
-  $alignment->setTemplate($template) if $template;
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template       => $template,
+      openContainer  => \&openTikzAlignment,
+      closeContainer => sub { $_[0]->closeElement($container); },
+      openRow        => \&openTikzAlignmentRow,
+      closeRow       => sub { $_[0]->closeElement($rowtype); },
+      openColumn     => \&openTikzAlignmentCol,
+      closeColumn    => sub { $_[0]->closeElement($coltype); }));
   # These would MASK tikz own new bindings
   # BUT it only seems sensible that we'll want to get tikz to call OUR bindings at some level!
   Let(T_ALIGN,           '\lxSVG@alignment@align');
