@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use LaTeXML::Util::Image;
 
 #**********************************************************************
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
@@ -32,21 +33,22 @@ DefKeyVal('epsGin', 'prolog', 'Semiverbatim');
 DefKeyVal('epsGin', 'silent', '');
 
 DefConstructor('\psfig RequiredKeyVals:epsGin',
-  "<ltx:graphics graphic='#file' candidates='#candidates' options='#1'/>",
-  afterDigest => sub {
-    my $kv = $_[1]->getArg(1);
+  "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
+  properties => sub {
+    my ($stomach, $kv) = @_;
     my $file = $kv->getValue('file') || $kv->getValue('figure');
     $file = ToString($file); $file =~ s/^\s+//; $file =~ s/\s+$//;
     $kv->setValue(file   => undef);
     $kv->setValue(figure => undef);
     $kv->setValue(clip   => 'true') if LookupValue('epsfclip');
-    $_[1]->setProperty(file => $file);
     my @candidates = pathname_findall($file, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
       @candidates = map { pathname_relative($_, $base) } @candidates; }
-    $_[1]->setProperty(candidates => join(',', @candidates));
-  });
+    my $options = ToString($kv);
+    (graphic => $file,
+      candidates => join(',', @candidates),
+      options => $options,
+      sizer => sub { \&image_graphicx_sizer }); });
 
 Let('\epsfig', '\psfig');
 
