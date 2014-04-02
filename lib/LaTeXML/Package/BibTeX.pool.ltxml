@@ -291,7 +291,6 @@ DefMacro('\bib@@title{}{}{}', sub {
     while ($title ne "") {
       if ($title =~ s/^(\s+)//) {
         $recap .= $1; $wb = 1; }
-      #    elsif($title =~ s/^([\w\\]+)//){
       elsif ($title =~ s/^((?:\w|\\(?:\w+|.))+)//) {
         if ($mode eq 'asis') {
           $recap .= $1; }
@@ -312,6 +311,7 @@ DefMacro('\bib@@title{}{}{}', sub {
           Error('expected', '}', $gullet, "Expected balancing } in bibliographic title");
           $title =~ s/^\{//; }
         else {
+          $wc++ if $wb;
           $recap .= $t; $wb = 0; } }
       elsif ($title =~ /^\$/) {
         my $t = extract_delimited($title, '$');
