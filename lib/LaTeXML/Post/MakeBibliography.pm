@@ -85,30 +85,52 @@ sub normalizeBibKey {
 # ================================================================================
 sub resolveBibliographies {
   my ($self, $doc) = @_;
-  my $bibnode = $doc->findnode('//ltx:bibliography');
-  my @bibs    = ($$self{bibliographies} ? @{ $$self{bibliographies} } : ());
-  my @names   = ();
-  my @paths   = $doc->getSearchPaths;
-  # Extract the (assumed) basenames of any bibliographies passed in.
-  foreach my $bib (@bibs) {
-    next if ref $bib;    # Already an XML doc? Oh, no...
-    my ($dir, $name, $type) = pathname_split($bib);
-    $name =~ s/\.bib$//;    # special case for foo.bib.xml
-    push(@names, $name); }
-  # Now check for any bib files referenced from the ltx:bibliography element.
-  # If the same name wasn't passed in, and an appropriate file (foo.bib.xml or foo.xml)
-  # is found, add it to the list to process.
-  if (my $files = $bibnode->getAttribute('files')) {
-    foreach my $bib (split(',', $files)) {
-      if (!grep { $_ eq $bib } @names) {
+  # use the commandline bibliographies, if explicitly given.
+  if ($$self{bibliographies} && scalar(@{ $$self{bibliographies} })) { }
+  else {
+    my $bibnode = $doc->findnode('//ltx:bibliography');
+    my @paths   = $doc->getSearchPaths;
+    my @bibs    = ();
+    if (my $files = $bibnode->getAttribute('files')) {
+      foreach my $bib (split(',', $files)) {
         if (my $path = pathname_find($bib, paths => [@paths], types => ['bib.xml', 'xml'])) {
-          push(@names, $bib);
-          push(@bibs,  $path); }
+          push(@bibs, $path); }
         else {
           Warn('expected', $bib, $doc,
-            "Couldn't find a bibliography named '$bib' in paths " . join(',', @paths)); } } } }
-  $$self{bibliographies} = [@bibs];
+            "Couldn't find a bibliography named '$bib' in paths " . join(',', @paths)); } } }
+    $$self{bibliographies} = [@bibs]; }
+  NoteProgress(" [using bibliographies " . join(',', @{ $$self{bibliographies} }) . "]");
   return; }
+
+# # This version attempts to merge the comandline --bibliography(s)
+# # with the internal ones. If you use special naming conventions
+# # it will end up with duplicates, which is weird.
+# sub resolveBibliographies {
+#   my ($self, $doc) = @_;
+#   my $bibnode = $doc->findnode('//ltx:bibliography');
+#   my @bibs    = ($$self{bibliographies} ? @{ $$self{bibliographies} } : ());
+#   my @names   = ();
+#   my @paths   = $doc->getSearchPaths;
+#   # Extract the (assumed) basenames of any bibliographies passed in.
+#   foreach my $bib (@bibs) {
+#     next if ref $bib;    # Already an XML doc? Oh, no...
+#     my ($dir, $name, $type) = pathname_split($bib);
+#     $name =~ s/\.bib$//;    # special case for foo.bib.xml
+#     push(@names, $name); }
+#   # Now check for any bib files referenced from the ltx:bibliography element.
+#   # If the same name wasn't passed in, and an appropriate file (foo.bib.xml or foo.xml)
+#   # is found, add it to the list to process.
+#   if (my $files = $bibnode->getAttribute('files')) {
+#     foreach my $bib (split(',', $files)) {
+#       if (!grep { $_ eq $bib } @names) {
+#         if (my $path = pathname_find($bib, paths => [@paths], types => ['bib.xml', 'xml'])) {
+#           push(@names, $bib);
+#           push(@bibs,  $path); }
+#         else {
+#           Warn('expected', $bib, $doc,
+#             "Couldn't find a bibliography named '$bib' in paths " . join(',', @paths)); } } } }
+#   $$self{bibliographies} = [@bibs];
+#   return; }
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
