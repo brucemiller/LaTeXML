@@ -2950,7 +2950,7 @@ The Whatsit is the (usefull) one representing the whole
 environment, and it now does have the body and trailer available,
 stored as a properties.
 
-=back;
+=back
 
 =item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
 
