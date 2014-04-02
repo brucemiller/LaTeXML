@@ -42,7 +42,7 @@ my ($navtoc) = (undef);
 my %navtocstyles = (context => 1, normal => 1, none => 1);
 my ($prescan, $dbfile, $scan, $crossref, $sitedir, $resourcedir) = (undef, undef, 1, 1, undef, undef);
 my ($index, $permutedindex, $splitindex) = (1, undef, undef);
-my ($splitbibliography, @bibliographies) = (undef);
+my ($bibliography, $splitbibliography, @bibliographies) = (1, undef);
 my ($timestamp)          = (undef);
 my @math_formats         = ();
 my %removed_math_formats = ();
@@ -99,6 +99,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "splitindex!"    => \$splitindex,
   # Generating Bibliographies
   "bibliography=s"     => \@bibliographies,
+  "nobibliography"     => sub { $bibliography = 0; },
   "splitbibliography!" => \$splitbibliography,
   # Options for two phase processing
   "prescan"             => \$prescan,
@@ -190,7 +191,7 @@ if (($permutedindex || $splitindex) && (!defined $index)) {
   $index = 1; }
 if (!$prescan && $index && !($scan || defined $crossref)) {
   xError("Cannot generate index (--index) without --scan or --dbfile"); }
-if (!$prescan && @bibliographies && !($scan || defined $crossref)) {
+if (!$prescan && $bibliography && !($scan || defined $crossref)) {
   xError("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
 
 $navtoc = lc($navtoc) if defined $navtoc;
@@ -288,7 +289,7 @@ if (!$prescan) {
     push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $permutedindex,
         split => $splitindex, scanner => $scanner,
         %OPTIONS)); }
-  if (@bibliographies) {
+  if ($bibliography) {
     require LaTeXML::Post::MakeBibliography;
     push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => [@bibliographies],
         split => $splitbibliography, scanner => $scanner,
