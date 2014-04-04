@@ -22,7 +22,8 @@ use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use Data::Dumper;
 our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
-our $is_bibtex = qr/(^literal\:\s*\@)|(\.bib$)/;
+our $is_bibtex  = qr/(^literal\:\s*\@)|(\.bib$)/;
+our $is_archive = qr/(^literal\:PK)|(\.zip$)/;
 
 sub new {
   my ($class, %opts) = @_;
@@ -194,8 +195,9 @@ sub read {
 
   $$opts{source} = $ARGV[0] unless $$opts{source};
   if (!$$opts{type} || ($$opts{type} eq 'auto')) {
-    $$opts{type} = 'BibTeX' if ($$opts{source} && ($$opts{source} =~ /$is_bibtex/));
-  }
+    $$opts{type} = 'BibTeX' if ($$opts{source} && ($$opts{source} =~ /$is_bibtex/)); }
+  if (!$$opts{whatsin}) {
+    $$opts{whatsin} = 'archive' if ($$opts{source} && ($$opts{source} =~ /$is_archive/)); }
   return;
 }
 
