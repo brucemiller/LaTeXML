@@ -378,26 +378,10 @@ sub convert_post {
       push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $$opts{permutedindex},
           split => $$opts{splitindex}, scanner => $scanner,
           %PostOPS)); }
-    if (@{ $$opts{bibliographies} }) {
-      if (grep { /$LaTeXML::Common::Config::is_bibtex/ } @{ $$opts{bibliographies} }) {
-        my $bib_converter =
-          $self->get_converter(LaTeXML::Common::Config->new(
-            cache_key      => 'BibTeX',
-            type           => "BibTeX",
-            post           => 0,
-            format         => 'dom',
-            whatsin        => 'document',
-            whatsout       => 'document',
-            bibliographies => []));
-        $$self{log} .= $self->flush_log;
-        @{ $$opts{bibliographies} } = map { /$LaTeXML::Common::Config::is_bibtex/ ?
-            $bib_converter->convert($_)->{result} : $_ } @{ $$opts{bibliographies} };
-        $self->bind_log;
-      }
-      require LaTeXML::Post::MakeBibliography;
-      push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => $$opts{bibliographies},
-          split => $$opts{splitbibliography}, scanner => $scanner,
-          %PostOPS)); }
+    require LaTeXML::Post::MakeBibliography;
+    push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => $$opts{bibliographies},
+        split => $$opts{splitbibliography}, scanner => $scanner,
+        %PostOPS));
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(db => $DB, urlstyle => $$opts{urlstyle}, format => $format,
