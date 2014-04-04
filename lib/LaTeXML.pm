@@ -227,8 +227,7 @@ sub convert {
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
-                           # Save the searchpaths for post-processing:
-      $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS');
+      $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
       $$state{status} = {};
   });
@@ -610,10 +609,14 @@ sub new_latexml {
 }
 
 sub bind_log {
-  # TODO: Move away from global file handles, they will inevitably end up causing problems..
   my ($self) = @_;
-  if (!$LaTeXML::DEBUG) {    # Debug will use STDERR for logs
-                             # Tie STDERR to log:
+  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
+  $ENV{HACK_LATEXML_STDERR_FRAME}++;    # May the modern Perl community forgive me for this hack...
+  return if $ENV{HACK_LATEXML_STDERR_FRAME} > 1;
+  # TODO: Move away from global file handles, they will inevitably end up causing problems..
+
+  if (!$LaTeXML::DEBUG) {               # Debug will use STDERR for logs
+                                        # Tie STDERR to log:
     my $log_handle;
     open($log_handle, ">>", \$$self{log}) or croak "Can't redirect STDERR to log! Dying...";
     *STDERR_SAVED = *STDERR;
@@ -625,6 +628,10 @@ sub bind_log {
 
 sub flush_log {
   my ($self) = @_;
+  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
+  $ENV{HACK_LATEXML_STDERR_FRAME}--;    # May the modern Perl community forgive me for this hack...
+  return '' if $ENV{HACK_LATEXML_STDERR_FRAME} > 0;
+
   # Close and restore STDERR to original condition.
   if (!$LaTeXML::DEBUG) {
     close $$self{log_handle};
