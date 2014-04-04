@@ -143,16 +143,18 @@ sub convertBibliographies {
   if (@bibs_to_convert) {
     my $done_bibs = 0;
     require LaTeXML;
-    my $bib_converter = LaTeXML->get_converter(LaTeXML::Common::Config->new(
-        cache_key      => 'BibTeX',
-        type           => "BibTeX",
-        post           => 0,
-        format         => 'dom',
-        whatsin        => 'document',
-        whatsout       => 'document',
-        verbosity      => -5,
-        bibliographies => []));
-
+    require LaTeXML::Common::Config;
+    my $bib_config = LaTeXML::Common::Config->new(
+      cache_key      => 'BibTeX',
+      type           => "BibTeX",
+      post           => 0,
+      format         => 'dom',
+      whatsin        => 'document',
+      whatsout       => 'document',
+      verbosity      => -5,
+      bibliographies => []);
+    my $bib_converter = LaTeXML->get_converter($bib_config);
+    $bib_converter->prepare_session($bib_config);
     foreach my $bib_file (@bibs_to_convert) {
       my $response = $bib_converter->convert($bib_file);
       $done_bibs++;
