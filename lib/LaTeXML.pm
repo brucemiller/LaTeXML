@@ -227,6 +227,8 @@ sub convert {
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
+                           # Save the searchpaths for post-processing:
+      $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS');
       $state->popDaemonFrame;
       $$state{status} = {};
   });
@@ -351,6 +353,7 @@ sub convert_post {
     sourceDirectory    => $$opts{sourcedirectory},
     siteDirectory      => $$opts{sitedirectory},
     resource_directory => $$opts{resource_directory},
+    searchpaths        => $$opts{searchpaths},
     nocache            => 1,
     destination        => $$opts{destination},
     is_html            => $$opts{is_html});
