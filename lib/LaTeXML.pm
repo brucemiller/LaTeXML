@@ -27,6 +27,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 # Contrived!!! See LaTeXML::Version
 $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
+our $LOG_STACK = 0;
 
 #**********************************************************************
 #our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimages mathimagemag );
@@ -611,12 +612,12 @@ sub new_latexml {
 sub bind_log {
   my ($self) = @_;
   # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
-  $ENV{HACK_LATEXML_STDERR_FRAME}++;    # May the modern Perl community forgive me for this hack...
-  return if $ENV{HACK_LATEXML_STDERR_FRAME} > 1;
+  $LaTeXML::LOG_STACK++;    # May the modern Perl community forgive me for this hack...
+  return if $LaTeXML::LOG_STACK > 1;
   # TODO: Move away from global file handles, they will inevitably end up causing problems..
 
-  if (!$LaTeXML::DEBUG) {               # Debug will use STDERR for logs
-                                        # Tie STDERR to log:
+  if (!$LaTeXML::DEBUG) {    # Debug will use STDERR for logs
+                             # Tie STDERR to log:
     my $log_handle;
     open($log_handle, ">>", \$$self{log}) or croak "Can't redirect STDERR to log! Dying...";
     *STDERR_SAVED = *STDERR;
@@ -629,8 +630,8 @@ sub bind_log {
 sub flush_log {
   my ($self) = @_;
   # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
-  $ENV{HACK_LATEXML_STDERR_FRAME}--;    # May the modern Perl community forgive me for this hack...
-  return '' if $ENV{HACK_LATEXML_STDERR_FRAME} > 0;
+  $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
+  return '' if $LaTeXML::LOG_STACK > 0;
 
   # Close and restore STDERR to original condition.
   if (!$LaTeXML::DEBUG) {
