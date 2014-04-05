@@ -49,6 +49,7 @@ sub process {
   return $doc if $doc->findnodes('//ltx:bibitem', $bib);    # Already populated?
 
   $self->resolveBibliographies($doc);
+  $self->convertBibliographies($doc);
 
   local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
   local %LaTeXML::Post::MakeBibliography::STYLE =
@@ -93,7 +94,7 @@ sub resolveBibliographies {
     my @bibs    = ();
     if (my $files = $bibnode->getAttribute('files')) {
       foreach my $bib (split(',', $files)) {
-        if (my $path = pathname_find($bib, paths => [@paths], types => ['bib.xml', 'xml'])) {
+        if (my $path = pathname_find($bib, paths => [@paths], types => ['bib.xml', 'xml', 'bib'])) {
           push(@bibs, $path); }
         else {
           Warn('expected', $bib, $doc,
@@ -131,6 +132,38 @@ sub resolveBibliographies {
 #             "Couldn't find a bibliography named '$bib' in paths " . join(',', @paths)); } } } }
 #   $$self{bibliographies} = [@bibs];
 #   return; }
+
+# ================================================================================
+sub convertBibliographies {
+  my ($self, $doc) = @_;
+  # If we have bibliographies that not yet converted to XML, do so:
+  my @bibs_to_convert = grep { /$LaTeXML::Common::Config::is_bibtex/ } ($$self{bibliographies} && @{ $$self{bibliographies} });
+  my @xml_bibs = grep { !/$LaTeXML::Common::Config::is_bibtex/ } ($$self{bibliographies} && @{ $$self{bibliographies} });
+  my @converted_bibs = ();
+  if (@bibs_to_convert) {
+    my $done_bibs = 0;
+    require LaTeXML;
+    require LaTeXML::Common::Config;
+    my $bib_config = LaTeXML::Common::Config->new(
+      cache_key      => 'BibTeX',
+      type           => "BibTeX",
+      post           => 0,
+      format         => 'dom',
+      whatsin        => 'document',
+      whatsout       => 'document',
+      verbosity      => -5,
+      bibliographies => []);
+    my $bib_converter = LaTeXML->get_converter($bib_config);
+    $bib_converter->prepare_session($bib_config);
+    foreach my $bib_file (@bibs_to_convert) {
+      my $response = $bib_converter->convert($bib_file);
+      $done_bibs++;
+      # TODO: We need to handle the logging properly, it's a bit of a mess for nested ->convert() calls
+      push @converted_bibs, $$response{result}; }
+    NoteProgress(" [Converted $done_bibs bibliographies]");
+  }
+  $$self{bibliographies} = [@xml_bibs, @converted_bibs];
+  return; }
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.

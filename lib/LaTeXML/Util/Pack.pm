@@ -164,7 +164,7 @@ sub get_archive {
     or (print STDERR 'Fatal:expected:directory Failed to compress directory \'$directory\': $@');
   my @entries = grep { /^[^.]/ } readdir($dirhandle);
   closedir $dirhandle;
-  my @files = grep { (!/zip|gz|epub|tex|bib|mobi|~$/) && -f pathname_concat($directory, $_) } @entries;
+  my @files = grep { (!/(?:zip|gz|epub|tex|bib|mobi|~)$/) && -f pathname_concat($directory, $_) } @entries;
   my @subdirs = grep { -d File::Spec->catdir($directory, $_) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,

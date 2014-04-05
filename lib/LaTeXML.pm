@@ -27,6 +27,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 # Contrived!!! See LaTeXML::Version
 $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
+our $LOG_STACK = 0;
 
 #**********************************************************************
 #our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimages mathimagemag );
@@ -227,6 +228,7 @@ sub convert {
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
+      $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
       $$state{status} = {};
   });
@@ -351,6 +353,7 @@ sub convert_post {
     sourceDirectory    => $$opts{sourcedirectory},
     siteDirectory      => $$opts{sitedirectory},
     resource_directory => $$opts{resource_directory},
+    searchpaths        => $$opts{searchpaths},
     nocache            => 1,
     destination        => $$opts{destination},
     is_html            => $$opts{is_html});
@@ -378,26 +381,10 @@ sub convert_post {
       push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $$opts{permutedindex},
           split => $$opts{splitindex}, scanner => $scanner,
           %PostOPS)); }
-    if (@{ $$opts{bibliographies} }) {
-      if (grep { /$LaTeXML::Common::Config::is_bibtex/ } @{ $$opts{bibliographies} }) {
-        my $bib_converter =
-          $self->get_converter(LaTeXML::Common::Config->new(
-            cache_key      => 'BibTeX',
-            type           => "BibTeX",
-            post           => 0,
-            format         => 'dom',
-            whatsin        => 'document',
-            whatsout       => 'document',
-            bibliographies => []));
-        $$self{log} .= $self->flush_log;
-        @{ $$opts{bibliographies} } = map { /$LaTeXML::Common::Config::is_bibtex/ ?
-            $bib_converter->convert($_)->{result} : $_ } @{ $$opts{bibliographies} };
-        $self->bind_log;
-      }
-      require LaTeXML::Post::MakeBibliography;
-      push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => $$opts{bibliographies},
-          split => $$opts{splitbibliography}, scanner => $scanner,
-          %PostOPS)); }
+    require LaTeXML::Post::MakeBibliography;
+    push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => $$opts{bibliographies},
+        split => $$opts{splitbibliography}, scanner => $scanner,
+        %PostOPS));
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(db => $DB, urlstyle => $$opts{urlstyle}, format => $format,
@@ -623,8 +610,12 @@ sub new_latexml {
 }
 
 sub bind_log {
-  # TODO: Move away from global file handles, they will inevitably end up causing problems..
   my ($self) = @_;
+  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
+  $LaTeXML::LOG_STACK++;    # May the modern Perl community forgive me for this hack...
+  return if $LaTeXML::LOG_STACK > 1;
+  # TODO: Move away from global file handles, they will inevitably end up causing problems..
+
   if (!$LaTeXML::DEBUG) {    # Debug will use STDERR for logs
                              # Tie STDERR to log:
     my $log_handle;
@@ -638,6 +629,10 @@ sub bind_log {
 
 sub flush_log {
   my ($self) = @_;
+  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
+  $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
+  return '' if $LaTeXML::LOG_STACK > 0;
+
   # Close and restore STDERR to original condition.
   if (!$LaTeXML::DEBUG) {
     close $$self{log_handle};
