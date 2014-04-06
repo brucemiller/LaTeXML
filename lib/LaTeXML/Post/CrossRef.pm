@@ -468,13 +468,13 @@ sub generateURL {
       my $pathdir     = pathname_directory($doclocation);
       my $url         = pathname_relative(($location =~ m|^/| ? $location : '/' . $location),
         ($pathdir =~ m|^/| ? $pathdir : '/' . $pathdir));
-      my $format   = $$self{format}   || 'xml';
-      my $urlstyle = $$self{urlstyle} || 'file';
+      my $extension = $$self{extension} || 'xml';
+      my $urlstyle  = $$self{urlstyle}  || 'file';
       if ($urlstyle eq 'server') {
-        $url =~ s/(^|\/)index.\Q$format\E$/$1/; }    # Remove trailing index.$format
+        $url =~ s/(^|\/)index.\Q$extension\E$/$1/; }    # Remove trailing index.$extension
       elsif ($urlstyle eq 'negotiated') {
-        $url =~ s/\.\Q$format\E$//;                  # Remove trailing $format
-        $url =~ s/(^|\/)index$/$1/;                  # AND trailing index
+        $url =~ s/\.\Q$extension\E$//;                  # Remove trailing $extension
+        $url =~ s/(^|\/)index$/$1/;                     # AND trailing index
       }
       $url = '.' unless $url;
       if (my $fragid = $object->getValue('fragid')) {
