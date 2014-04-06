@@ -13,10 +13,16 @@ package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
 
+our $uuid_tiny_installed;
+
+BEGIN {
+  my $eval_return = eval { require UUID::Tiny; 1; };
+  if ($eval_return && (!$@)) {
+    $uuid_tiny_installed = 1; } }
+
 use base qw(LaTeXML::Post::Manifest);
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catdir);
-use UUID::Tiny ':std';
 use POSIX qw(strftime);
 use LaTeXML::Post;    # for error handling!
 our $container_content = <<'EOL';
@@ -76,7 +82,7 @@ sub initialize {
   # Fish out any existing unique identifier for the book
   #       the UUID is the fallback default
   my $uid = $document_metadata->getValue('dc:identifier') ||
-    "urn:uuid:" . create_uuid_as_string();
+    "urn:uuid:" . _uuid();
   unless (($uid =~ /^urn:/) || pathname_is_url($uid)) {    # Already qualified
     my $type = 'uuid';
     if ($uid =~ /^[\d\- ]+$/) {                            # ISBN
@@ -214,4 +220,19 @@ sub finalize {
 
   return (); }
 
+# Less reliable fallback for UUID generation
+# Borrowed from: http://stackoverflow.com/a/2117523
+sub _uuid {
+  if ($uuid_tiny_installed) {
+    return UUID::Tiny::create_uuid_as_string(); }
+  else {
+    my $uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+    $uuid =~ s/([xy])/_uuid_char($1)/eg;
+    return $uuid; } }
+
+sub _uuid_char {
+  my $c = shift;
+  my $r = rand() * 16 | 0;
+  my $v = ($c eq 'x') ? $r : ($r & 0x3 | 0x8);
+  return sprintf('%x', $v); }
 1;
