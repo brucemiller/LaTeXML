@@ -20,8 +20,8 @@ use Pod::Usage;
 our $htmldest = '/local/www/site/htdocs/latexmltest';
 our $testdir  = "$FindBin::RealBin/../t";
 our $bindir   = "$FindBin::RealBin/../blib/script";
-our @TYPES    = ("html", "xhtml", "html5");
-our %TYPE_EXT = (html => 'html', xhtml => 'xhtml', html5 => 'html');
+our @TYPES    = ("html4", "xhtml", "html5");
+our %TYPE_EXT = (html4 => 'html', xhtml => 'xhtml', html5 => 'html');
 #**********************************************************************
 # Parse command line
 

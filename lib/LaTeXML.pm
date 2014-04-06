@@ -387,10 +387,12 @@ sub convert_post {
         %PostOPS));
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
-      push(@procs, LaTeXML::Post::CrossRef->new(db => $DB, urlstyle => $$opts{urlstyle}, format => $format,
-          ($$opts{numbersections} ? (number_sections => 1) : ()),
-          ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
-          %PostOPS)); }
+      push(@procs, LaTeXML::Post::CrossRef->new(
+        db => $DB, urlstyle => $$opts{urlstyle},
+        extension => $$opts{extension},
+        ($$opts{numbersections} ? (number_sections => 1) : ()),
+        ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
+        %PostOPS)); }
     if ($$opts{picimages}) {
       require LaTeXML::Post::PictureImages;
       push(@procs, LaTeXML::Post::PictureImages->new(%PostOPS));

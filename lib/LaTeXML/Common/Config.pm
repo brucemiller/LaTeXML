@@ -367,18 +367,29 @@ sub _prepare_options {
   unshift(@{ $$opts{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($$opts{type} eq 'BibTeX');
 
   # Destination extension might indicate the format:
+  if ((!defined $$opts{extension}) && (defined $$opts{destination})) {
+    if ($$opts{destination} =~ /\.([^.]+)$/) {
+      $$opts{extension} = $1; } }
   if ((!defined $$opts{format}) && (defined $$opts{destination})) {
     if ($$opts{destination} =~ /\.([^.]+)$/) {
       $$opts{format} = $1; } }
+  if ((!defined $$opts{extension}) && (defined $$opts{format})) {
+    if ($$opts{format} =~ /^html/) {
+      $$opts{extension} = 'html'; }
+    elsif ($$opts{format} =~ /^xhtml/) {
+      $$opts{extension} = 'xhtml'; }
+    else {
+      $$opts{extension} = 'xml'; } }
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
+    $$opts{format} = 'html5' if $$opts{format} eq 'html';    # Default
     if ($$opts{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
       $$opts{format}   = 'html5';
       $$opts{whatsout} = 'archive';
     }
-    $$opts{is_html}  = ($$opts{format} =~ /^html5?$/);
+    $$opts{is_html}  = ($$opts{format} =~ /^html/);
     $$opts{is_xhtml} = ($$opts{format} =~ /^(xhtml5?|epub|mobi)$/);
     $$opts{whatsout} = 'archive' if (($$opts{format} eq 'epub') || ($$opts{format} eq 'mobi'));
   }
@@ -474,16 +485,16 @@ sub _prepare_options {
     $$opts{format} = "xhtml" unless defined $$opts{format};
     if (!$$opts{stylesheet}) {
       if    ($$opts{format} eq 'xhtml')       { $$opts{stylesheet} = "LaTeXML-xhtml.xsl"; }
-      elsif ($$opts{format} eq "html")        { $$opts{stylesheet} = "LaTeXML-html.xsl"; }
+      elsif ($$opts{format} eq "html4")       { $$opts{stylesheet} = "LaTeXML-html4.xsl"; }
       elsif ($$opts{format} =~ /^epub|mobi$/) { $$opts{stylesheet} = "LaTeXML-epub3.xsl"; }
       elsif ($$opts{format} eq "html5")       { $$opts{stylesheet} = "LaTeXML-html5.xsl"; }
       elsif ($$opts{format} eq "xml")         { delete $$opts{stylesheet}; }
       else                                    { croak("Unrecognized target format: " . $$opts{format}); }
     }
     # Check format and complete math and image options
-    if ($$opts{format} eq 'html') {
+    if ($$opts{format} eq 'html4') {
       $$opts{svg} = 0 unless defined $$opts{svg};    # No SVG by default in HTML.
-      croak("Default html stylesheet only supports math images, not " . join(', ', @{ $$opts{math_formats} }))
+      croak("Default html4 stylesheet only supports math images, not " . join(', ', @{ $$opts{math_formats} }))
         if scalar(@{ $$opts{math_formats} });
       croak("Default html stylesheet does not support svg") if $$opts{svg};
       $$opts{mathimages}   = 1;
@@ -708,7 +719,8 @@ latexmls/latexmlc [options]
  --box              requests box output after expansion
                     and digestion.
  --format=name      requests "name" as the output format.
-                    Supported: tex,box,xml,html,html5,xhtml
+                    Supported: tex,box,xml,html4,html5,xhtml
+                    html implies html5
  --noparse          suppresses parsing math (default: off)
  --parse=name       enables parsing math (default: on)
                     and selects parser framework "name".
@@ -741,14 +753,14 @@ latexmls/latexmlc [options]
  --sourcedirectory=dir   sets the base directory of the
                          original TeX source
  --mathimages            converts math to images
-                         (default for html format)
+                         (default for html4 format)
  --nomathimages          disables the above
  --mathimagemagnification=mag specifies magnification factor
  --plane1           use plane-1 unicode for symbols
                     (default, if needed)
  --noplane1         do not use plane-1 unicode
  --pmml             converts math to Presentation MathML
-                    (default for xhtml format)
+                    (default for xhtml and html5 formats)
  --cmml             converts math to Content MathML
  --openmath         converts math to OpenMath
  --keepXMath        keeps the XMath of a formula as a MathML
@@ -906,7 +918,7 @@ Requests Box output for debugging purposes;
 =item C<--format=name>
 
 Requests an explicitly provided "name" as the output format of the conversion.
-    Currently supported: tex, box, xml, html, html5, xhtml
+    Currently supported: tex, box, xml, html4, html5, xhtml
     Tip: If you wish to apply your own custom XSLT stylesheet, select "xml"
     as the desired format.
 
@@ -943,7 +955,7 @@ Requests an embeddable XHTML div (requires: --post --format=xhtml),
 =item C<--mathimages>, C<--nomathimages>
 
 Requests or disables the conversion of math to images.
-Conversion is the default for html format.
+Conversion is the default for html4 format.
 
 =item C<--mathimagemagnification=>I<factor>
 
@@ -953,7 +965,7 @@ Default is 1.75.
 =item C<--pmml>
 
 Requests conversion of math to Presentation MathML.
-    Presentation MathML is the default math processor for the XHTML/HTML/HTML5 formats.
+    Presentation MathML is the default math processor for the XHTML/HTML5 formats.
     Will enable C<--post>.
 
 =item C<--cmml>

@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 # undef => unspecified; 0 = NO, 1 = YES
 my ($help, $showversion, $verbosity, $validate, $omit_doctype) = (0, 0, 0, 1, 0);
 my ($sourcedir, $destination) = (undef, undef);
-my ($format, $is_html, $urlstyle) = (undef, undef, 'server');
+my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
 my ($stylesheet, $defaultcss, $defaultresources, $icon, @css, @javascript, @xsltparameters);
 my ($mathimages, $mathimagemag) = (undef, 1.75);
@@ -68,10 +68,11 @@ GetOptions("quiet" => sub { $verbosity--; },
   # Basics
   "format=s" => \$format,
   "destination=s" => sub { $destination = $_[1];
+    if ((!defined $extension) && ($destination =~ /\.(\w)$/)) {
+      $extension = $1; }
     if (!defined $format) {
       $format = 'xhtml' if $destination =~ /\.xhtml$/;
-      $format = 'html'  if $destination =~ /\.html$/;
-      $format = 'html5' if $destination =~ /\.html5$/; } },
+      $format = 'html5' if $destination =~ /\.html$/; } },
   "omitdoctype!"    => \$omit_doctype,
   "numbersections!" => \$numbersections,
   # Some general XSLT/CSS options.
@@ -203,18 +204,21 @@ if ($navtoc) {
     xError("Cannot use --navigationtoc=$navtoc without --crossref"); } }
 
 # Check format and complete math and image options
+$format = 'html5' if (defined $format) && ($format eq 'html5');
 if (!defined $format) { }
-elsif ($format eq 'html') {
-  xError("Default html stylesheet only supports math images, not " . join(', ', @math_formats))
+elsif ($format eq 'html4') {
+  $extension = 'html' unless defined $extension;
+  xError("Default html4 stylesheet only supports math images, not " . join(', ', @math_formats))
     if (!defined $stylesheet) && scalar(@math_formats);
-  xError("Default html stylesheet does not support --svg") if $svg;
+  xError("Default html4 stylesheet does not support --svg") if $svg;
 
   $mathimages = 1 unless defined $mathimages;
   $dographics = 1 unless defined $dographics;
   $picimages  = 1 unless defined $picimages;
   $is_html    = 1;
-  $stylesheet = "LaTeXML-html.xsl" if !defined $stylesheet; }
+  $stylesheet = "LaTeXML-html4.xsl" if !defined $stylesheet; }
 elsif ($format eq 'html5') {
+  $extension = 'html' unless defined $extension;
   # In principle, should only have pMML and possibly MathImages (for altimg);
   # but I guess we can allow people to try...
   unshift(@math_formats, 'pmml')
@@ -224,6 +228,7 @@ elsif ($format eq 'html5') {
   $is_html    = 1;
   $stylesheet = "LaTeXML-html5.xsl" if !defined $stylesheet; }
 elsif ($format eq 'xhtml') {
+  $extension = 'xhtml' unless defined $extension;
   # Add pMML FIRST, unless already there, or was disabled.
   # note that MathImages can supply altimg attributes
   unshift(@math_formats, 'pmml')
@@ -232,7 +237,8 @@ elsif ($format eq 'xhtml') {
   $dographics = 1 unless defined $dographics;
   $is_html    = 0;
   $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
-elsif ($format eq 'xml') { }
+elsif ($format eq 'xml') {
+  $extension = 'xml' unless defined $extension; }
 else {
   xError("Unrecognized target format: $format"); }
 
@@ -296,7 +302,10 @@ if (!$prescan) {
         %OPTIONS)); }
   if ($crossref) {
     require LaTeXML::Post::CrossRef;
-    push(@procs, LaTeXML::Post::CrossRef->new(db => $DB, urlstyle => $urlstyle, format => $format,
+    push(@procs, LaTeXML::Post::CrossRef->new(
+        db        => $DB,
+        urlstyle  => $urlstyle,
+        extension => $extension,
         ($numbersections ? (number_sections => 1)       : ()),
         ($navtoc         ? (navigation_toc  => $navtoc) : ()),
         %OPTIONS)); }
@@ -471,7 +480,8 @@ latexmlpost [options] I<xmlfile>
                          source TeX file.
  --validate, --novalidate Enables (the default) or disables
                          validation of the source xml.
- --format=html|html5|xhtml|xml requests the output format.
+ --format=html|html5|html4|xhtml|xml requests the output format.
+                         (html defaults to html5)
  --destination=file      sets output file (and directory).
  --omitdoctype           omits the Doctype declaration,
  --noomitdoctype         disables the omission (the default)
@@ -484,7 +494,7 @@ latexmlpost [options] I<xmlfile>
                          (can be repeated)
  --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
-                         html/html5/xhtml (can be repeated)
+                         html4/html5/xhtml (can be repeated)
  --xsltparameter=name:value passes parameters to the XSLT.
  --split                 requests splitting each document
  --nosplit               disables the above (default)
@@ -521,7 +531,7 @@ latexmlpost [options] I<xmlfile>
  --dbfile=dbfile         sets file to store crossreferences
  --sitedirectory=dir     sets the base directory of the site
  --mathimages            converts math to images
-                         (default for html format)
+                         (default for html4 format)
  --nomathimages          disables the above
  --mathimagemagnification=mag sets magnification factor
  --presentationmathml    converts math to Presentation MathML
@@ -594,15 +604,24 @@ Enables (or disables) the validation of the source XML document (the default).
 
 =over 4
 
-=item C<--format>=C<(html|html5|xhtml|xml)>
+=item C<--format>=C<(html|html5|html4|xhtml|xml)>
 
-Specifies the output format for post processing. 
-C<html> format converts the material to html and the mathematics to png images.
+Specifies the output format for post processing.
+By default, it will be guessed from the file extension of the destination
+(if given), with html implying C<html5>, xhtml implying C<xhtml> and the
+default being C<xml>, which you probably don't want.
+
+The C<html5> format converts the material to html5 form with mathematics as MathML;
+C<html5> supports SVG.
+C<html4> format converts the material to the earlier html form, version 4,
+and the mathematics to png images.
 C<xhtml> format converts to xhtml and uses presentation MathML (after attempting
 to parse the mathematics) for representing the math.  C<html5> similarly converts
 math to presentation MathML. In these cases, any
 graphics will be converted to web-friendly formats and/or copied to the
-destination directory.  By default, C<xml>, the output is left in LaTeXML's xml,
+destination directory. If you simply specify C<html>, it will treat that as C<html5>.
+
+For the default, C<xml>, the output is left in LaTeXML's internal xml,
 but the math is parsed and converted to presentation MathML.
 For html, html5 and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
@@ -626,7 +645,7 @@ numbers in the formatted document and crossreference links.
 
 Requests the XSL transformation of the document using the given xslfile as stylesheet.
 If the stylesheet is omitted, a `standard' one appropriate for the
-format (html, html5 or xhtml) will be used.
+format (html4, html5 or xhtml) will be used.
 
 =item C<--css>=I<cssfile>
 
@@ -812,7 +831,7 @@ depends on the format and other options.
 =item C<--mathimages>, C<--nomathimages>
 
 Requests or disables the conversion of math to images.
-Conversion is the default for html format.
+Conversion is the default for html4 format.
 
 =item C<--mathimagemagnification=>I<factor>
 
