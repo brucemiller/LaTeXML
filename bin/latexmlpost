@@ -204,7 +204,7 @@ if ($navtoc) {
     xError("Cannot use --navigationtoc=$navtoc without --crossref"); } }
 
 # Check format and complete math and image options
-$format = 'html5' if (defined $format) && ($format eq 'html5');
+$format = 'html5' if (defined $format) && ($format eq 'html');
 if (!defined $format) { }
 elsif ($format eq 'html4') {
   $extension = 'html' unless defined $extension;
