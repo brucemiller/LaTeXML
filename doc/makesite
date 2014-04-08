@@ -43,6 +43,7 @@ heading("Generating site pages");
 # copy images referenced from the CSS.
 copy("$DOCDIR/graphics/latexml.png", "$WEBDIR/images/latexml.png");
 copy("$DOCDIR/graphics/mascot.png",  "$WEBDIR/images/mascot.png");
+copy("$DOCDIR/graphics/scratch.png", "$WEBDIR/images/scratch.png");
 ###copy("$DOCDIR/graphics/favicon.ico","$WEBDIR/images/favicon.ico");
 copy("$DOCDIR/latexmldoc.css", "$WEBDIR/latexmldoc.css");
 

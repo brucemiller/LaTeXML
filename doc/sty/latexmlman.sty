@@ -67,7 +67,13 @@
 % Containers for advanced material, examples, ...
 
 % Sort of a "double bend" thing?
-\newenvironment{advanced}{\vskip 2ex\textcolor{red}{\LARGE !!}}{\vskip 1ex}
+%\newenvironment{advanced}{\vskip 2ex\textcolor{red}{\LARGE !!}}{\vskip 1ex}
+\newenvironment{advanced}{%
+%\vskip 2ex
+\medbreak
+\noindent\hangindent=1.5cm\hangafter=-3\relax
+\hbox to 0pt{\hskip-1.6cm\vbox to 18pt{\noindent\includegraphics{../graphics/scratch.png}}\hfill}%
+}{\medbreak}
 
 %======================================================================
 % Phrase-level markup semantic or otherwise
