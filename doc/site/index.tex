@@ -30,8 +30,7 @@
 
 %============================================================
 The \emph{Current release} is \htmlref{\CurrentVersion}{get},
-but it is \emph{terribly} out of date!
-Please consider alpha versions 0.7.9 (see \ref{source.git}).
+available in pre-release form (see \ref{source.git}).
 Release 0.8.0 is on it's way!
 
 In the process of developing the
@@ -93,10 +92,11 @@ And, of course
 \section{Get \LaTeXML}\label{get}\index{get}
 \paragraph{Current Release:}\label{download.current}
 The current release is \htmlref{\CurrentVersion}{get},
-but it is \emph{terribly} out of date!
+is available in prerelease form from  \ref{source.git}).
 Release 0.8.0 is on it's way!
 
-\emph{Normally}, it is preferable to install a platform-specific, prebuilt release.
+\emph{Normally}, it is preferable to install a platform-specific, prebuilt release,
+but there are currently no prebuilt releases available.
 By using the appropriate, system-specific, \textit{magiccommand}
 both \LaTeXML\ and any prerequisites
 (additional perl modules that it needs, some of which themselves depend on C libraries)
@@ -135,9 +135,9 @@ To install the prerequisites by hand, the following instructions may help:
 \end{itemize}
 \begin{lstlisting}[style=shell]
 perl -MCPAN -e shell
-  cpan> install Archive::Zip, File::Which, Image::Size, IO::String
-  cpan> install libwww, JSON::XS, LWP, Parse::RecDescent, URI
-  cpan> install XML::LibXML, XML::LibXSLT
+  cpan> install Archive::Zip, DB_File, File::Which, Image::Size,
+  cpan> install IO::String, libwww, JSON::XS, LWP, Parse::RecDescent,
+  cpan> install URI, XML::LibXML, XML::LibXSLT
   cpan> quit
 \end{lstlisting}
 
@@ -253,7 +253,7 @@ Adding \texttt{ImageMagick ImageMagick-perl} will include the optional ImageMagi
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
 yum install \
-  perl-Archive-Zip perl-File-Which perl-Image-Size \
+  perl-Archive-Zip perl-DB_File perl-File-Which perl-Image-Size \
   perl-IO-string perl-JSON-XS perl-libwww-perl perl-Parse-RecDescent \
   perl-URI perl-XML-LibXML perl-XML-LibXSLT
 \end{lstlisting}
@@ -314,7 +314,7 @@ Adding \texttt{imagemagick perlmagick} will include the optional ImageMagick.
 The prerequisites can be installed (or updated) by running this command as root: 
 \begin{lstlisting}[style=shell]
 sudo apt-get install   \
-  libarchive-zip-perl libfile-which-perl libimage-size-perl \
+  libarchive-zip-perl libdb_file libfile-which-perl libimage-size-perl \
   libio-string-perl libjson-xs-perl libwww-perl libparse-recdescent-perl \
   liburi-perl libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl
 \end{lstlisting}
@@ -360,6 +360,7 @@ sudo port install \
   p5-json-xs p5-libwww-perl p5-parse-recdescent p5-uri \
   p5-xml-libxml p5-xml-libxslt
 \end{lstlisting}
+(I \emph{think} that \verb|DB_File| is included with the base perl.)
 Install the optional packages with:
 \begin{lstlisting}[style=shell]
 sudo port install p5-perlmagick texlive
@@ -443,13 +444,16 @@ but note that the \texttt{dmake} command should be used in place of \texttt{make
 \section{Documentation}\label{docs}
 If you're lucky, all that should be needed to convert
 a \TeX\ file, \textit{mydoc}\texttt{.tex} to XML, and
-then to XHTML+MathML would be:
+then to HTML would be:
 \begin{lstlisting}[style=shell]
    latexml --dest=%mydoc%.xml %mydoc%
-   latexmlpost -dest=%somewhere/mydoc%.xhtml %mydoc%.xml
+   latexmlpost -dest=%somewhere/mydoc%.html %mydoc%.xml
 \end{lstlisting}
-This will carry out a default transformation into XHTML+MathML.  If you
-give the destination extension with html, it will generate HTML+images.
+This will carry out a default transformation into HTML5,
+which represents mathematics using MathML.  Using an
+extension of xhtml would generate XHTML including MathML.
+Adding the option \verb|--format=html4| will generate
+HTML (version 4), using images to represent the math.
 
 If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 \begin{description}
