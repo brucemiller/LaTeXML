@@ -115,25 +115,27 @@ the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose
 
 \paragraph{Design Goals} The idealistic goals of \LaTeXML\ are:
 \begin{itemize}
-\item Faithful emulation of \TeX's behaviour.
-\item Easily extensible.
-\item Lossless; preserving both semantic and presentation cues.
-\item Uses abstract \LaTeX-like, extensible, document type.
-\item Determine the semantics of mathematical content\\
+\item Faithful emulation of \TeX's behaviour;
+\item Easily extensible;
+\item Lossless, preserving both semantic and presentation cues;
+\item Use an abstract \LaTeX-like, extensible, document type;
+\item Infer the semantics of mathematical content\\
     (\emph{Good} Presentation \MathML, eventually Content \MathML\ and \OpenMath).
 \end{itemize}
 
-As these goals are not entirely practical, or even somewhat contradictory,
+As these goals are not entirely practical, even somewhat contradictory,
 they are implicitly modified by \emph{as much as possible}.
 Completely mimicing \TeX's, and \LaTeX's, behaviour would seem to require the
 sneakiest modifications to \TeX, itself; redefining \LaTeX's internals does 
-not really guarantee compatibility. ``Ease of use'' is, of course, in the eye of the beholder.
+not really guarantee compatibility. ``Ease of use'' is, of course, in the eye of the beholder;
+this manual is an attempt to make it easier!
 More significantly, few documents are likely to have completely unambiguous
 mathematics markup; human understanding of both the topic and the surrounding 
 text is needed to properly interpret any particular fragment.
-Thus, rather than pretend to provide a ``turn-key'' solution,
-we expect that document-specific declarations or tuning to be necessary
-to faithfully convert documents.  Towards this end, we provide a variety
+Thus, while we'll try to provide a ``turn-key'' solution that does the `Right Thing'
+automatically, we expect that applications requiring high semantic content will require
+document-specific declarations and tuning to achieve the desired result.
+Towards this end, we provide a variety
 of means to customize the processing and declare the author's intent.
 At the same time, especially for new documents, we encourage a more logical, 
 content-oriented markup style, over a purely presentation-oriented style.
@@ -145,33 +147,44 @@ the system architecture in some detail. Strategies for customization
 and implementation of new packages is described in Chapter \ref{customization}.
 The special considerations for mathematics, including details of representation
 and how to improve the conversion, are covered in Chapter \ref{math}.
+Several specialized topics are covered in the remaining chapters.
 An overview of outstanding issues and planned future improvements
 are given in Chapter \ref{todo}.
 
 Finally, the Appendices give detailed documentation the system components:
 Appendix \ref{commands} describes the command-line programs provided by the system;
-Appendices \ref{coremodules} and \ref{utilitymodules} describes the core and utility Perl modules 
-comprising the system, while Appendix \ref{postmodules} describes the postprocessing modules;
-Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML;
-finally, Appendix \ref{errorcodes} gives an overview of the warning and
+Appendix \ref{included.bindings} lists the \LaTeX\ style packages for which
+we've provided \LaTeXML-specific bindings.
+Appendices \ref{modules},  \ref{commonmodules}, \ref{coremodules}, \ref{utilitymodules},
+\ref{premodules} and \ref{postmodules}
+describes the various Perl modules, in groups, that comprise the system.
+Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML.
+Appendix \ref{errorcodes} gives an overview of the warning and
 error messages that \LaTeXML\ may generate.
+Appendix \ref{cssclasses} describes the strategy and naming conventions
+used for CSS styling of the resulting \HTML.
 
-If all else fails, please consult the source code, or the author.
-
-\vskip 1cm\relax
 Using \LaTeXML, and programming for it, can be somewhat confusing as one is dealing with several
 languages not normally combined, often within the same file,
---- Perl, \TeX\ and \XML\ (along with \XSLT, \HTML, \CSS), plus shell programmming.
-To help visually distinguish different contexts, if only slightly,
-we'll try to put `programming' oriented material (Perl, \TeX) in a typewriter font,
+--- Perl, \TeX\ and \XML\ (along with \XSLT, \HTML, \CSS),
+plus the occasional shell programmming.
+To help visually distinguish different contexts in this manual
+we will put `programming' oriented material (Perl, \TeX) in a typewriter font,
 \texttt{like this}; \XML\ material will be put in a sans-serif face
 \textsf{like this}.
 
+\vskip 1cm\relax
+If you encounter difficulties, there is a support mailing list at
+\URL[\texttt{latexml-project}]{http://lists.jacobs-university.de/mailman/listinfo/project-latexml}.
+Bugs and enhancement requests can be reported at
+\URL[Github]{https://github.com/brucemiller/LaTeXML}.
+If all else fails, please consult the source code, or the author.
+
 \begin{advanced}
-In the interests of at least attempting to describe everything,
-there will be a lot of material that will not make much sense until
-you have dabbled quite a bit in \LaTeXML's internals.
-Such `advanced' or dangerous material will be presented like this paragraph
+Danger! When you see this sign, be warned that the material presented is
+somewhat advanced and may not make much sense until you have dabbled quite
+a bit in \LaTeXML's internals.
+Such advanced or `dangerous' material will be presented like this paragraph
 to make it easier to skip over.
 \end{advanced}
 

@@ -164,6 +164,9 @@ and build the Perl binding along with it.
 \item[Graphics::Magick] is an \emph{alternative} to \texttt{Image::Magick} that \LaTeXML\ will
 use if is found on the system; it may (or may not ) be easier to install, although it
 is less widespread.
+
+\item[UUID::Tiny] generates unique identifiers that can be used to make better ePub documents.
+
 \end{description}
 \emph{Note to packagers:} If you are preparing a compiled installation package (such as rpm or deb) for
 \LaTeXML, and the above packages are easily installable in your distribution,
@@ -255,7 +258,7 @@ The prerequisites can be installed (or updated) by running this command as root:
 yum install \
   perl-Archive-Zip perl-DB_File perl-File-Which perl-Image-Size \
   perl-IO-string perl-JSON-XS perl-libwww-perl perl-Parse-RecDescent \
-  perl-URI perl-XML-LibXML perl-XML-LibXSLT
+  perl-URI perl-XML-LibXML perl-XML-LibXSLT perl-UUID-Tiny
 \end{lstlisting}
 Install the optional packages with:
 \begin{lstlisting}[style=shell]

@@ -104,7 +104,6 @@ dl.ltx_description dd dl.ltx_description { clear:both; }
     position:absolute;
     color:red;
     font-size:200%;
-    width:50px;
     content:url("images/scratch.png"); }
 /*    content:"!!" }*/
 
@@ -113,12 +112,15 @@ dl.ltx_description dd dl.ltx_description { clear:both; }
    border: 3px double #B0B0B0; }
 */
 .ltx_advanced .ltx_para {
-   margin-left:60px;
+   margin-left:40px;
    margin-right:1em; 
-   border-left: 1px solid #FF0000;
-   border-right: 1px solid #FF0000;
+   border-left: 1px solid #971515;
+   border-right: 1px solid #971515;
    padding-left: 0.5em;
    padding-right: 0.5em;
 }
+
+.ltx_advanced .ltx_para .ltx_p:first-child {
+   text-indent:0em; }
 
 .ltx_keywords { display:none; }
