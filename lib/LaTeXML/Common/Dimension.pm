@@ -59,15 +59,14 @@ sub pointformat {
   $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
   return $s . 'pt'; }
 
+# When saved in an attribute, however, we can afford to lose
+# a lot of useless precision. Keeping only 1 decimal; do we even need that?
 sub attributeformat {
   my ($sp) = @_;
-  # As much as I'd like to make this more friendly & readable
-  # there's TeX code that depends on getting enough precision
-  # But see toAttribute for friendlier forms....
-  my $s = sprintf("%.2f", ($sp / 65536));
+  my $s = sprintf("%.1f", ($sp / 65536));
   $s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
-  $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
+  $s =~ s/\.$/.0/;
   return $s . 'pt'; }
 
 #======================================================================

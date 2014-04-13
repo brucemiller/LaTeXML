@@ -30,7 +30,7 @@
               <text backgroundcolor="#CCCCCC">one</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">two</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">two</text>
             </td>
           </tr>
           <tr>
@@ -38,7 +38,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
+              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
             </td>
           </tr>
         </tbody>
@@ -55,7 +55,7 @@
               <text backgroundcolor="#CCCCCC">one</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">two</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">two</text>
             </td>
           </tr>
           <tr>
@@ -63,7 +63,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
+              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
             </td>
           </tr>
         </tbody>
@@ -73,31 +73,31 @@
       <tabular>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text backgroundcolor="#00FFFF" font="bold" fontsize="large">A long table example</text>
+            <text font="bold" backgroundcolor="#00FFFF" fontsize="large">A long table example</text>
           </td>
         </tr>
         <tr>
           <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
-            <text backgroundcolor="#FF00FF" color="#FFFFFF">First two columns</text>
+            <text color="#FFFFFF" backgroundcolor="#FF00FF">First two columns</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
-            <text color="#FFFFFF" backgroundcolor="#FF00FF">Third column</text>
+            <text backgroundcolor="#FF00FF" color="#FFFFFF">Third column</text>
           </td>
         </tr>
         <tr>
           <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
-            <text color="#FFFFFF" backgroundcolor="#FF00FF">p-type</text>
+            <text backgroundcolor="#FF00FF" color="#FFFFFF">p-type</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
-            <text backgroundcolor="#FF00FF" color="#FFFFFF">D-type (<text font="sansserif">dcolumn</text>)</text>
+            <text color="#FFFFFF" backgroundcolor="#FF00FF">D-type (<text font="sansserif">dcolumn</text>)</text>
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">P-column</text>
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">P-column</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and another one</text>
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">and another one</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m1" tex="\pagecolor{yellow}12\cdot 34" text="12.34">
@@ -108,10 +108,10 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#CCCCCC">
+          <td align="justify" width="56.9pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">Total</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#CCCCCC">
+          <td align="justify" width="85.4pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">(wrong)</text>
           </td>
           <td align="char:⋅" backgroundcolor="#CCCCCC">
@@ -123,11 +123,11 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">Some long text in the first column</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m3" tex="\pagecolor{yellow}1\cdot 2" text="1.2">
@@ -138,10 +138,10 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">and some long text in the second column</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
@@ -153,10 +153,10 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#CCCCCC">
+          <td align="justify" width="56.9pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">Total</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#CCCCCC">
+          <td align="justify" width="85.4pt" backgroundcolor="#CCCCCC">
             <text backgroundcolor="#CCCCCC">(wrong)</text>
           </td>
           <td align="char:⋅" backgroundcolor="#CCCCCC">
@@ -168,11 +168,11 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m6" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -183,12 +183,12 @@
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Note that the coloured rules in all columns stretch to accomodate
 large entries in one column.</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m7" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -199,10 +199,10 @@ large entries in one column.</text>
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
@@ -214,10 +214,10 @@ large entries in one column.</text>
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">Depending on your driver you may get unsightly gaps or lines
 where the ‘screens’ used to produce different shapes interact
 badly. You may want to cause adjacent panels of the same colour by
@@ -233,10 +233,10 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000">
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
             <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
-          <td align="justify" width="85.36pt" backgroundcolor="#0000FF">
+          <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
@@ -248,13 +248,13 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
           </td>
         </tr>
         <tr>
-          <td align="justify" width="56.91pt" backgroundcolor="#FF0000"/>
-          <td align="justify" width="85.36pt"/>
+          <td align="justify" width="56.9pt" backgroundcolor="#FF0000"/>
+          <td align="justify" width="85.4pt"/>
           <td align="char:⋅"/>
         </tr>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text fontsize="large" font="bold" backgroundcolor="#00FFFF">The End</text>
+            <text font="bold" backgroundcolor="#00FFFF" fontsize="large">The End</text>
           </td>
         </tr>
       </tabular>
