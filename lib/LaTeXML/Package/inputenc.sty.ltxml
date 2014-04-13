@@ -16,17 +16,15 @@ use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
-DefPrimitive('\DeclareInputMath {} {}', sub {
+DefPrimitive('\DeclareInputMath {Number} {}', sub {
     my ($stomach, $code, $expansion) = @_;
-    $code = int(ToString($code));
-    my $char = pack('C', $code);
+    my $char = pack('C', $code->valueOf);
     AssignCatcode($char, CC_ACTIVE);
     DefMacroI($char, undef, $expansion); });
 
-DefPrimitive('\DeclareInputText {} {}', sub {
+DefPrimitive('\DeclareInputText {Number} {}', sub {
     my ($stomach, $code, $expansion) = @_;
-    $code = int(ToString($code));
-    my $char = pack('C', $code);
+    my $char = pack('C', $code->valueOf);
     AssignCatcode($char, CC_ACTIVE);
     DefMacroI($char, undef, $expansion); });
 
