@@ -415,8 +415,9 @@ sub pmml_internal {
   elsif ($tag eq 'ltx:XMHint') {
     return &{ lookupPresenter('Hint', $role, $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMArray') {
-    my $style     = $node->getAttribute('mathstyle');
-    my $vattach   = $node->getAttribute('vattach');
+    my $style   = $node->getAttribute('mathstyle');
+    my $vattach = $node->getAttribute('vattach');
+    $vattach = 'center' if $vattach && ($vattach eq 'middle');    # MathML uses center for this!
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
