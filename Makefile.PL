@@ -38,10 +38,15 @@ install_TeXStyles();
 extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
-  AUTHOR       => 'Bruce Miller <bruce.miller@nist.gov>',
-  ABSTRACT     => "transforms TeX and LaTeX into XML",
-  VERSION_FROM => 'lib/LaTeXML/Version.in',
-  PREREQ_PM    => {
+  AUTHOR             => 'Bruce Miller <bruce.miller@nist.gov>',
+  ABSTRACT           => "transforms TeX and LaTeX into XML/HTML/MathML",
+  VERSION_FROM       => 'lib/LaTeXML/Version.in',
+  MIN_PERL_VERSION   => 5.008001,
+  LICENSE            => 'CC0', # Close enough to Public Domain (in the U.S.)
+  CONFIGURE_REQUIRES => {
+    'version' => 0.77,
+  },
+  PREREQ_PM => {
     'Archive::Zip'      => 0,
     'DB_File'           => 0,
     'File::Which'       => 0,
