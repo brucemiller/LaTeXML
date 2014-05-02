@@ -1096,6 +1096,7 @@ DefMathML('Apply:ENCLOSE:?', sub {
 
 DefMathML("Token:APPLYOP:?",  \&pmml_mo, undef);  # APPLYOP is (only) \x{2061}; FUNCTION APPLICATION
 DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
+DefMathML("Token:DIFFOP:?",   \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
