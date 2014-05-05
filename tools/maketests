@@ -18,6 +18,9 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
+use File::Copy;
+use File::Which;
+use File::Spec::Functions;
 use Algorithm::Diff;
 
 #======================================================================
@@ -46,15 +49,24 @@ binmode(STDERR, ":encoding(UTF-8)");
 #  copy xml to a backup and compare ?
 # or compare option
 # What about if $ARG is a directory? Do all tests in that directory?
-foreach my $src_file (@ARGV) {
-  $src_file =~ s/(\.pdf|\.dvi|\.xml)$//;
-  $src_file .= ".tex" unless $src_file =~ /\.tex$/;
-  if (!-f $src_file) {
-    die "There seems to be no test case $src_file"; }
-  my ($dir, $name, $ext) = pathname_split($src_file);
+foreach my $source (@ARGV) {
+  $source =~ s/(\.pdf|\.dvi|\.xml|\.tex|\.spec)$//;    # Ignore extension, if given.
+  if (-f "$source.spec") {                             # Do Daemon style test
+    maketest_daemon($source); }
+  elsif (-f "$source.tex") {                           # Do LaTeXML style test
+    maketest_latexml($source); }
+  else {
+    die "There seems to be no test case $source"; }
+}
+
+#======================================================================
+sub maketest_latexml {
+  my ($source) = @_;
+  $source .= ".tex" unless $source =~ /\.tex$/;
+  my ($dir, $name, $ext) = pathname_split($source);
   my $xml_file = pathname_concat($dir, "$name.xml");
   my $pdf_file = pathname_concat($dir, "$name.pdf");
-  my $src_time = pathname_timestamp($src_file);
+  my $src_time = pathname_timestamp($source);
   my $xml_time = pathname_timestamp($xml_file);
   my $pdf_time = pathname_timestamp($pdf_file);
   if ($docompare) {
@@ -71,7 +83,50 @@ foreach my $src_file (@ARGV) {
     elsif (!defined $dopdf) {
       print STDERR "Test case $pdf_file seems uptodate\n"; }
   }
-}
+  return; }
+
+sub maketest_daemon {
+  my ($source) = @_;
+  $source .= ".spec" unless $source =~ /\.spec$/;
+  my ($dir, $name, $ext) = pathname_split($source);
+  my $cwd = pathname_cwd();
+  my $opts = read_options($source, "$dir/$name");
+  push @$opts, (['destination', "$name.test.xml"],
+    ['log',                "/dev/null"],
+    ['timeout',            5],
+    ['autoflush',          1],
+    ['timestamp',          '0'],
+    ['nodefaultresources', ''],
+    ['xsltparameter',      'LATEXML_VERSION:TEST'],
+    ['nocomments',         '']);
+
+  my $invocation = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc') . ' ';
+  my $timed = undef;
+  foreach my $opt (@$opts) {
+    if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
+      if ($timed) { next; } else { $timed = 1; }
+    }
+    $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
+  }
+  $invocation .= " 2>$name.test.status ";
+  chdir($dir);
+  if (system($invocation) != 0) {
+    die "Failed to execute '$invocation': $!"; }
+  if ($docompare) {
+    print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
+    compareLines(readXML("$name.xml"), readXML("$name.test.xml"));
+    print "\n" . ("=" x 40) . "\nCompare Expected Status $dir/$name to current status:\n";
+    compareLines(readText("$name.status"), readText("$name.test.status"));
+    unlink "$name.test.xml"    if -e "$name.test.xml";
+    unlink "$name.test.status" if -e "$name.test.status";
+  }
+  else {
+    print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
+    move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
+    move("$name.test.status", "$name.status") if -e "$name.test.status"; }
+  chdir($cwd);
+  return; }
+
 #======================================================================
 
 # Question!
@@ -98,20 +153,20 @@ sub compare_xml {
   my $file = pathname_concat($dir, $name);
   my $newdom = $latexml->convertFile(pathname_concat($dir, $name))
     or die "Failed to convert $file.tex: $!";
-  my $newlines = stringifyDom($newdom);
-
-  #========================================
-  # Read in the expected xml.
-  my $parser   = XML::LibXML->new();
-  my $olddom   = $parser->parse_file("$file.xml");
-  my $oldlines = stringifyDom($olddom);
 
   #========================================
   # Do the comparison
   print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
+  compareLines(readXML("$file.xml"), stringifyDom($newdom));
+  return; }
+
+sub compareLines {
+  my ($oldlines, $newlines) = @_;
   my $diff = Algorithm::Diff->new($oldlines, $newlines);
+  my $ndiffs = 0;
   while ($diff->Next()) {
     next if $diff->Same();
+    $ndiffs++;
     my $sep = '';
     if (!$diff->Items(2)) {
       printf "Missing: %d,%dd%d\n", $diff->Get(qw( Min1 Max1 Max2 )); }
@@ -124,7 +179,22 @@ sub compare_xml {
     print $sep;
     print "> $_\n" for $diff->Items(2);
   }
-  return; }
+  print "OK!\n" unless $ndiffs;
+  return $ndiffs; }
+
+sub readXML {
+  my ($xmlfile) = @_;
+  my $parser = XML::LibXML->new();
+  return stringifyDom($parser->parse_file($xmlfile)); }
+
+sub readText {
+  my ($textfile) = @_;
+  my $IN;
+  local $/ = undef;
+  open($IN, '<', $textfile) or die "Couldn't read textfile '$textfile': $!";
+  my $string = <$IN>;
+  close($IN);
+  return [grep { /\S/ } split("\n", $string)]; }
 
 sub stringifyDom {
   my ($dom) = @_;
@@ -178,6 +248,22 @@ sub gen_pdf {
   chdir($cwd) if $dir;
   return; }
 
+sub read_options {
+  my ($optionfile, $testname) = @_;
+  my $opts = [];
+  my $OPT;
+  if (open($OPT, "<", $optionfile)) {
+    while (my $line = <$OPT>) {
+      next if $line =~ /^#/;
+      chomp($line);
+      if ($line =~ /(\S+)\s*=\s*(.*)/) {
+        my ($key, $value) = ($1, $2 || '');
+        $value =~ s/\s+$//;
+        push @$opts, [$key, $value]; } }
+    close $OPT; }
+  else {
+    do_fail($testname, "Could not open $optionfile"); }
+  return $opts; }
 #======================================================================
 __END__
 
