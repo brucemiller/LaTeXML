@@ -388,11 +388,11 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-        db => $DB, urlstyle => $$opts{urlstyle},
-        extension => $$opts{extension},
-        ($$opts{numbersections} ? (number_sections => 1) : ()),
-        ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
-        %PostOPS)); }
+          db => $DB, urlstyle => $$opts{urlstyle},
+          extension => $$opts{extension},
+          ($$opts{numbersections} ? (number_sections => 1) : ()),
+          ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
+          %PostOPS)); }
     if ($$opts{picimages}) {
       require LaTeXML::Post::PictureImages;
       push(@procs, LaTeXML::Post::PictureImages->new(%PostOPS));
@@ -686,7 +686,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML> - Converter object and API for LaTeXML and LaTeXMLPost conversion.
+C<LaTeXML> - A converter that transforms TeX and LaTeX into XML/HTML/MathML
 
 =head1 SYNOPSIS
 
@@ -701,7 +701,10 @@ C<LaTeXML> - Converter object and API for LaTeXML and LaTeXMLPost conversion.
 
 =head1 DESCRIPTION
 
-A Converter object represents a converter instance and can convert files on demand, until dismissed.
+LaTeXML is a converter that transforms TeX and LaTeX into XML/HTML/MathML
+and other formats.
+
+A LaTeXML object represents a converter instance and can convert files on demand, until dismissed.
 
 =head2 METHODS
 
