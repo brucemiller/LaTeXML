@@ -50,19 +50,24 @@ sub process {
   $self->fill_in_bibrefs($doc);
   if (keys %LaTeXML::Post::CrossRef::MISSING) {
     my $tempid = 0;
-    my @msgs   = ();
-    foreach my $type (sort keys %LaTeXML::Post::CrossRef::MISSING) {
-      my @items = keys %{ $LaTeXML::Post::CrossRef::MISSING{$type} };
-      $tempid ||= grep { $_ eq 'TEMPORARY_DOCUMENT_ID' } @items;
-      push(@msgs, $type . ": " . join(', ', @items)); }
-    Warn('expected', 'ids', undef,
-      "Missing items:\n  " . join(";\n  ", @msgs),
-      ($tempid ? "[Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]" : ())); }
+    foreach my $severity (qw(error warn info)) {
+      my @msgs = ();
+      foreach my $type (sort keys %{ $LaTeXML::Post::CrossRef::MISSING{$severity} }) {
+        my @items = keys %{ $LaTeXML::Post::CrossRef::MISSING{$severity}{$type} };
+        $tempid ||= grep { $_ eq 'TEMPORARY_DOCUMENT_ID' } @items;
+        push(@msgs, $type . ": " . join(', ', @items)); }
+      if (@msgs) {
+        my @args = ('expected', 'ids', undef,
+          "Missing items:\n  " . join(";\n  ", @msgs),
+          ($tempid ? "[Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]" : ()));
+        if    ($severity eq 'error') { Error(@args); }
+        elsif ($severity eq 'warn')  { Warn(@args); }
+        elsif ($severity eq 'info')  { Info(@args); } } } }
   return $doc; }
 
 sub note_missing {
-  my ($self, $type, $key) = @_;
-  $LaTeXML::Post::CrossRef::MISSING{$type}{$key}++;
+  my ($self, $severity, $type, $key) = @_;
+  $LaTeXML::Post::CrossRef::MISSING{$severity}{$type}{$key}++;
   return; }
 
 sub fill_in_relations {
@@ -290,7 +295,7 @@ sub fill_in_refs {
           $show =~ s/^type//;       # Since author may have put explicit \S\ref... in!
         }
         else {
-          $self->note_missing('Target for Label', $label);
+          $self->note_missing('warn', 'Target for Label', $label);
           if (!$ref->textContent) {
             $doc->addNodes($ref, $label);    # Just to reassure (?) readers.
             $ref->setAttribute(broken => 1); }
@@ -326,7 +331,7 @@ sub fill_in_RDFa_refs {
           if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
           }
           else {
-            $self->note_missing("Target for $key Label", $label);
+            $self->note_missing('warn', "Target for $key Label", $label);
           } } }
       if ($id) {
         $n++;
@@ -365,7 +370,7 @@ sub make_bibcite {
   if ($show && ($show eq 'none') && !@preformatted) {
     $show = 'refnum'; }
   if (!$show) {
-    map { $self->note_missing("bibref 'show' parameter", $_) } @keys;
+    map { $self->note_missing('info', "bibref 'show' parameter", $_) } @keys;
     $show = 'refnum'; }
   if ($show eq 'nothing') {    # Ad Hoc support for \nocite!t
     return (); }
@@ -405,7 +410,7 @@ sub make_bibcite {
                 href => orNull($self->generateURL($doc, $id)),
                 ($title ? (title => orNull($title->textContent)) : ()) } }); } } }
     else {
-      $self->note_missing('Entry for citation', $key); } }
+      $self->note_missing('warn', 'Entry for citation', $key); } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs      = ();
   my $saveshow  = $show;
@@ -484,9 +489,9 @@ sub generateURL {
         $url = ''; }
       return $url; }
     else {
-      $self->note_missing('File location for ID', $id); } }
+      $self->note_missing('warn', 'File location for ID', $id); } }
   else {
-    $self->note_missing('DB Entry for ID', $id); }
+    $self->note_missing('warn', 'DB Entry for ID', $id); }
   return; }
 
 my $NBSP = pack('U', 0xA0);    # CONSTANT
@@ -512,8 +517,8 @@ sub generateRef {
   if (@stuff) {
     return @stuff; }
   else {
-    $self->note_missing('Usable title for ID', $reqid);
-    return ("?"); } }
+    $self->note_missing('info', 'Usable title for ID', $reqid);
+    return ($reqid); } }               # id is crummy, but better than "?"... or?
 
 # Check if the proposed content of a <ltx:ref> is "Good Enough"
 # (long enough, unique enough to give reader feedback,...)
