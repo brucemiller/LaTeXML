@@ -264,10 +264,15 @@ DefConstructor('\bib@addto@related {}{} Digested', sub {
 # author : The name(s) of the author(s); this gets NameList treatment
 DefConstructor('\bib@@@name{}{}',
   "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
+# This contructor merely serves to collect a set of names into one Whatsit
+# so that \bib@addto@related can capture it.
+DefConstructor('\bib@@@names{}', "#1");
 DefMacro('\bib@@names{}{}', sub {
     my ($gullet, $field, $ignore) = @_;
-    map { Invocation(T_CS('\bib@@@name'), $field, $_) }
-      processBibNameList(currentBibEntryField(ToString($field))); });
+    (T_CS('\bib@@@names'), T_BEGIN,
+      (map { Invocation(T_CS('\bib@@@name'), $field, $_) }
+          processBibNameList(currentBibEntryField(ToString($field)))),
+      T_END); });
 
 # Now, we define
 # \bib@@title
