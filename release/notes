@@ -5,35 +5,85 @@ Steps for making a new release
 
 #======================================================================
 # Last changes:
- * Adjust $LaTeXML::VERSION in LaTeXML.pm
- * add an entry to Changes
- * make
- * doc/makemanual (pdf)
- * svn commit -m "New release ..."
+# * Adjust $LaTeXML::VERSION in LaTeXML/Version.in
+# * add an entry to Changes
+make
+make test
+doc/makemanual (pdf)
+git commit -m "New release ..."
+git push
+
+#======================================================================
+# After preparing whatever tarballs & binaries you want:
+doc/makesite
+# to regenerate site w/current versions
 
 #======================================================================
 # Make the tarball
- * make distclean
- * perl Makefile.PL
- * make dist
+make distclean
+perl Makefile.PL
+make dist
 
-We now have LaTeXML-x.x.x.tar.gz
-Copy to <site>/releases
+# We now have LaTeXML-x.x.x.tar.gz
+# Copy to <site>/releases
 #======================================================================
 # Make RPM's
- [ To make initial LaTeXML.spec:
-       cpanspec --noprefix --packager=Me LaTeXML-x.x.x..tar.gz ]
- * Edit LaTeXML.spec for current version
- * cp LaTeXML-x.x.x.tar.gz ~/rpm/SOURCES/
- * rpmbuild -bs LaTeXML.spec
+# * Possibly make LaTeXML.spec (see below)
+#   Edit LaTeXML.spec for current version
+# * Make the source rpm:
+#   cp is important, otherwise it will reuse your old one!
 
-##### * rpmbuild --rebuild LaTeXML-x.x.x.src.rpm
-##### Now the rpm is in:
-#####  ~/rpm/RPMS/noarch/LaTeXML-x.x.x.noarch.rpm
+cp LaTeXML-x.x.x.tar.gz ~/rpmbuild/SOURCES/
+ rpmbuild -bs LaTeXML.spec
 
-Use mock to create various rpms
-  (see ~/mock/ for instructions)
-Copy them all to <site>/releases
+#   this creates ~/rpmbuild/SRPMS/LaTeXML-X.X.X-1.fcXX.src.rpm
+# * Use mock to create & test the rpm
+# * make sure you're in the mock group
+
+mock --rebuild ~/rpmbuild/SRPMS/LaTeXML-X.X.X-1.fcXX.src.rpm
+
+# Copy the rpms to <site>/releases
+
+#======================================================================
+# Make an rpm specfile: LaTeXML.spec
+
+cpanspec --noprefix --packager="Bruce Miller <bruce.miller@nist.gov>" LaTeXML-X.X.X..tar.gz
+# * Edit LaTeXML.spec to fix
+
+Version:        X.X.X
+Group:          Applications/Publishing
+URL:            http://dlmf.nist.gov/LaTeXML/
+
+# We will want to make the optional dependencies required, so add:
+Requires:       perl(Image::Magick)
+BuildRequires:  tex(tex), tex(latex)
+Requires:       tex(tex), tex(latex)
+Requires(post): tex(tex)
+Requires(postun): tex(tex)
+   
+# Should also add this, but it isn't yet available on Centos 6, so ... don't
+# Requires:       perl(UUID::Tiny)
+
+  *  rpm provides a variable %{_texmf_main} but it is the MAIN texmf directory
+     (NOT where we actually installed our module), so we need this at the top of the spec:
+
+%define texmf_local %(kpsewhich --expand-var='\$TEXMFLOCAL')
+
+  * Since we're dealing with some non-module files, we'll need to add to the %files section:
+
+%{_bindir}/*
+%{_mandir}/man1/*
+%{texmf_local}/tex/latex/latexml/*
+
+  * And add %post and %postun sections:
+
+%post
+mktexlsr >/dev/null 2>&1 || :
+
+%postun
+mktexlsr >/dev/null 2>&1 || :
+
+  * Check that the %install section uses DESTDIR, _NOT_ PERL_INSTALL_ROOT 
 
 
 #======================================================================
@@ -44,9 +94,13 @@ Copy them all to <site>/releases
  * copy resulting Portfile as <site>/releases/Portfile-<version>
 
 #======================================================================
-Run doc/makesite
-to regenerate site w/current versions
+# To test an installation, try:
 
+which latexml
+kpsewhich latexml.sty
+
+# to see if the "right" files turn up.
+# Same to check uninstall....
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other attempts...
