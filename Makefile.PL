@@ -42,7 +42,10 @@ WriteMakefile(NAME => 'LaTeXML',
   ABSTRACT           => "transforms TeX and LaTeX into XML/HTML/MathML",
   VERSION_FROM       => 'lib/LaTeXML/Version.in',
   MIN_PERL_VERSION   => 5.008001,
-  LICENSE            => 'CC0', # Close enough to Public Domain (in the U.S.)
+  # A very restricted set of licenses are allowed here. No Creative Commons, eg.!
+  # The tag open_source should be an Open Source Initiative approved license;
+  # public domain is sorta included. See http://opensource.org/faq#public-domain
+  LICENSE            => 'open_source',
   CONFIGURE_REQUIRES => {
     'version' => 0.77,
   },
@@ -56,6 +59,8 @@ WriteMakefile(NAME => 'LaTeXML',
     'JSON::XS'          => 0,
     'LWP'               => 0,
     'Parse::RecDescent' => 0,
+    'Pod::Parser'       => 0,   # for Pod::Find
+    'Test::More'        => 0,
     'URI'               => 0,
     # If we have an "old" version of XML::LibXML,
     # we also need XPathContext.
@@ -129,10 +134,12 @@ pure_all :: $(REVISION_FILE) update_revision
 
 # Always set version if version module template is newer
 $(REVISION_FILE): lib/LaTeXML/Version.in
+	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	$(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
 # update version if stored revision if not current
 update_revision:
+	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	- $(NOECHO) test $(REVISION) = $(OLD_REVISION) \
 	|| $(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
@@ -156,25 +163,34 @@ MakeGrammar
   return; }
 
 #======================================================================
-# Install included TeX style file(s) into the standard TEXMFLOCAL,
-# [note that this script has to handle the indirect installation for rpms!]
+# If there appears to be a TeX installation, install our included TeX style
+# file(s) into the standard TEXMFLOCAL, so that tex/latex can find & use them.
 #
-# FIGURE THIS OUT; We want to append
-#      --prefix=$(DESTDIR)
-# to install.PL so that it can "install" to staging directories
-# but for manual $(DESTDIR) is empty, so install.PL complains...
+# Note the following complications:
+#  * MakeMaker doesn't natively know how to install TeX styles,
+#    so we have to add explicit rules to the Makefile.
+#  * "staged builds", such as when building & installing rpms
+#    install files to a temporary root directory $(DESTDIR).
+#    (DESTDIR is generally empty for manual make)
+#  * We'll need to run mktexlsr once the files are installed in
+#    their _final_ location, so that they are indexed for tex.
+#  * We need to be careful constructing pathnames to avoid fouling
+#    Windows installations where the pathnames may have spaces.
+#    Not to mention working around dmake's limitations.
 #
-# CURRENTLY: We want to attempt to install the TeX files
-# IF there appears to be a TeX installation
-# BUT still fail gracefully if we are unable to install there.
-# This accommodates NOT making TeX a dependency
-# AND in case we're doing a local install (like from CPAN)
-# where we don't have permission to install into the TeX installation.
-# Whew!!
-#
-# AND NOTE: That the tests involved are painful & contrived
-# since they need to accomodate featureful gnu-make as well as
-# fairly lame dmake on windows....
+# Strategy:
+#  * During "perl Makefile.PL", tentatively use kpsewhich to find
+#    if kpsewhich exists, and if so, where the style files should go.
+#    This directory is stored in the Makefile (hopefully doesn't change later?)
+#  * During "make pure_install", including staged builds,
+#    if we've been supplied with a texmf directory, create the appropriate
+#    subdirectories and install the style files there (but under $(DESTDIR))
+#  * During "make pure_install", but NOT during staged builds, run mktexlsr.
+#    We test this simply by checking if texmf is writable.
+#  * Add "post install" operations to staged build specfiles
+#    to run mktexlsr.
+#  * Wrap each entire TeX-related pathname in ONE set of double quotes to protect
+#    embedded spaces.
 sub install_TeXStyles {
   if (!$TEXMF) {
     if (system("kpsewhich --expand-var='\$TEXMFLOCAL'") == 0) {    # can run kpsewhich?
@@ -193,31 +209,23 @@ sub install_TeXStyles {
   $$MORE_MACROS{DESTINSTALLTEXMFDIR}     = '$(DESTDIR)$(INSTALLTEXMFDIR)';
   $$MORE_MACROS{INSTALLTEXMFBASEDIR}     = "$TEXMF";
   $$MORE_MACROS{DESTINSTALLTEXMFBASEDIR} = '$(DESTDIR)$(INSTALLTEXMFBASEDIR)';
-  # The installation directory of TeX may well have spaces which screws up Make.
-  # we need to wrap any pathname that includes TEXMF with quotes in case of embedded spaces
-  # The quotes apparently don't hurt, when they completely enclose the path.
-  # ACTUALLY, (apparently) we must ONLY use double quotes to wrap with.
-  # (at least in the stuff that gets evaluated at a shell(like) level)
-  # It seems that single quotes cause some other oddness in windows(????)
-  # Note the dance below with -w shift; this is to keep from nesting quotes!
   $MORE_MAKERULES .= <<'InstallTeXStyles';
-
-# Install LaTeXML's LaTeX style files into the standard texmf location
 pure_install ::
-	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
+	$(NOECHO) (($(PERLRUN) -e "exit(1) unless shift;" -- "$(INSTALLTEXMFBASEDIR)") && \
 	$(MKPATH) "$(DESTINSTALLTEXMFDIR)" && \
 	$(MOD_INSTALL) \
 		read "$(INSTALLTEXMFDIR)/.packlist" \
 		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
-		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)" && \
-	($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFDIR)" || mktexlsr)) \
-	|| echo "No write permission for $(DESTINSTALLTEXMFBASEDIR), skipping installing LaTeXML TeX packages"
+		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)" ) \
+	||   echo "No TeX installation, skipping installing LaTeXML TeX packages"
+	$(NOECHO) ($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFBASEDIR)" || mktexlsr) \
+	||   echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping mktexlsr"
 
 uninstall ::
 	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
 		$(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist" && \
 		($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFDIR)" || mktexlsr)) \
-	|| echo "No write permission for $(DESTINSTALLTEXMFBASEDIR), skipping uninstalling LaTeXML TeX packages"
+	|| echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping uninstalling LaTeXML TeX packages"
 
 InstallTeXStyles
   return; }
