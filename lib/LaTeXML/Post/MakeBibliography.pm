@@ -138,7 +138,7 @@ sub getBibliographies {
       Info('expected', $bib, $self,
         "Couldn't find usable Bibliography for '$bib'"); } }
   NoteProgress(" [using bibliographies "
-      . join(',', map { (length($_) > 100 ? substring($_, 100) . '...' : $_) } @bibnames)
+      . join(',', map { (length($_) > 100 ? substr($_, 100) . '...' : $_) } @bibnames)
       . "]");
   return @bibs; }
 
