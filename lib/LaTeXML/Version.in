@@ -30,7 +30,7 @@ use FindBin;
 use vars qw($VERSION);
 
 # This is the main version of LaTeXML being claimed.
-$VERSION = '0.7.999_04';
+use version; our $VERSION = version->declare("0.8.0");
 
 $LaTeXML::VERSION = $VERSION;   # "export" it...
 
