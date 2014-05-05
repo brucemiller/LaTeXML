@@ -1,25 +1,42 @@
 #!/bin/bash
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Uninstall LaTeXML (and all it's Junk)
+# Use when manually installed with "make install"
+# When installed using rpm or other such tools,
+# use the tool's method.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Ugly, hacky...
-# use this only for source installs, not rpm
-rm /usr/local/bin/latexml
-rm /usr/local/bin/latexmlfind
-rm /usr/local/bin/latexmlpost
-rm /usr/local/bin/latexmlmath
+BINDIR=/usr/local/bin
+MAN1DIR=/usr/local/share/man/man1
+MAN3DIR=/usr/local/share/man/man3
+PMDIR=/usr/local/share/perl5
+TEXMFDIR=/usr/share/texlive/texmf-local/tex/latex/latexml
 
-rm /usr/local/lib/perl5/site_perl/5.10.0/LaTeXML.pm
-rm -rf /usr/local/lib/perl5/site_perl/5.10.0/LaTeXML
+# Remove binaries
+rm $BINDIR/latexml
+rm $BINDIR/latexmlfind
+rm $BINDIR/latexmlpost
+rm $BINDIR/latexmlmath
+rm $BINDIR/latexmlc
 
-rm /usr/local/share/man/man1/latexml.1
-rm /usr/local/share/man/man1/latexmlfind.1
-rm /usr/local/share/man/man1/latexmlpost.1
-rm /usr/local/share/man/man1/latexmlmath.1
+# Remove modules
+rm $PMDIR/LaTeXML.pm
+rm -rf $PMDIR/LaTeXML
 
-rm /usr/local/share/man/man3/LaTeXML.3pm
-rm /usr/local/share/man/man3/LaTeXML::*.3pm
+# Remove man pages
+rm $MAN1DIR/latexml.1
+rm $MAN1DIR/latexmlfind.1
+rm $MAN1DIR/latexmlpost.1
+rm $MAN1DIR/latexmlmath.1
+rm $MAN1DIR/latexmlc.1
 
-rm /usr/local/lib/perl5/site_perl/5.10.0/i386-linux-thread-multi/auto/LaTeXML/.packlist
+rm $MAN3DIR/LaTeXML.3pm
+rm $MAN3DIR/LaTeXML::*.3pm
 
-rm -rf /usr/local/share/texmf/tex/latex/latexml
+#???
+#rm /usr/local/lib/perl5/site_perl/5.10.0/i386-linux-thread-multi/auto/LaTeXML/.packlist
+
+# Clean up LaTeXML's LaTeX styles
+rm -rf $TEXMFDIR
 mktexlsr
 
