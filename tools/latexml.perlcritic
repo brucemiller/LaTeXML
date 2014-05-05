@@ -144,6 +144,29 @@ severity=2
 # was 3; would be severity=4 if it was selective enough!!!
 
 #======================================================================
+# Try out Perl::Critic::StricterSubs
+
+[Modules::RequireExplicitInclusion]
+#severity=4
+severity=1
+
+# This sounds wonderful, but doesn't actually track the imports
+# implicitly imported by a plain "use Module;"
+[Subroutines::ProhibitCallsToUndeclaredSubs]
+#severity=4
+severity=1
+
+[Subroutines::ProhibitCallsToUnexportedSubs]
+#severity=4
+severity=1
+
+[Subroutines::ProhibitExportingUndeclaredSubs]
+severity=4
+
+[Subroutines::ProhibitQualifiedSubDeclarations]
+severity=4
+
+#======================================================================
 # [Probably will want to]
 # Adjust some level 2 Policies up or down into required or hints,
 # according to my dubious personal taste.
