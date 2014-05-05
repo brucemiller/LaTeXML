@@ -120,14 +120,14 @@ sub getBibliographies {
       $bibdoc = $self->convertBibliography($doc, $bib); }
     elsif ($bib =~ /\.xml/) {
       $bibdoc = $doc->newFromFile($bib); }    # doc will do the searching...
-    elsif ($bib =~ /\.bib/) {
+    elsif ($bib =~ /\.bib(?:\.xml)?$/) {
+      my $name = $1;
       # NOTE: We should also use kpsewhich to get the effects of $BIBINPUTS?
       # NOTE: When better integrated with Core, should also check for cached bib documents.
-      if (my $path = pathname_find($bib, paths => [@paths], types => ['bib.xml', 'bib'])) {
-        if ($path =~ /\.xml/) {
-          $bibdoc = $doc->newFromFile($path); }    # doc will do the searching...
-        else {
-          $bibdoc = $self->convertBibliography($doc, $path); } }
+      if (my $xmlpath = pathname_find($bib, paths => [@paths], types => ['xml'])) {
+        $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
+      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])) {
+        $bibdoc = $self->convertBibliography($doc, $bibpath); }
       else {
         Error('expected', $bib, $self,
           "Couldn't find Bibliography '$bib'",
@@ -138,7 +138,7 @@ sub getBibliographies {
       Info('expected', $bib, $self,
         "Couldn't find usable Bibliography for '$bib'"); } }
   NoteProgress(" [using bibliographies "
-      . join(',', map { (length($_) > 100 ? substring($_, 100) . '...' : $_) } @bibnames)
+      . join(',', map { (length($_) > 100 ? substr($_, 100) . '...' : $_) } @bibnames)
       . "]");
   return @bibs; }
 
@@ -583,14 +583,14 @@ sub do_links {
 #    [xpath                              punct  pre              class    formatter      post ]
 @META_BLOCK =
   ([['ltx:bib-note', '', "Note: ", 'note', \&do_any, '']],
-  [[$LINKS, '', 'External Links: ', 'links', \&do_links, '.']]);
+  [[$LINKS, '', 'External Links: ', 'links', \&do_links, '']]);
 
 %FMT_SPEC =
   #    [xpath                              punct pre    class     formatter      post ]
   (article =>
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year', \&do_year, '']],
-    [['ltx:bib-title',              '', '', 'title', \&do_title, ',']],
+    [['ltx:bib-title',              '', '', 'title', \&do_title, '.']],
     [['ltx:bib-part[@role="part"]', '', '', 'part',  \&do_any,   ''],
       ['ltx:bib-related/ltx:bib-title', ', ', '',  'journal',  \&do_any,   ''],
       ['ltx:bib-part[@role="volume"]',  ' ',  '',  'volume',   \&do_any,   ''],
@@ -604,7 +604,7 @@ sub do_links {
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA, ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,     '']],
-    [['ltx:bib-title', '', '', 'title', \&do_title, ',']],
+    [['ltx:bib-title', '', '', 'title', \&do_title, '.']],
     [['ltx:bib-type',  '', '', 'type',  \&do_any,   ''],
       ['ltx:bib-edition',              ', ', '',      'edition',   \&do_edition, ''],
       ['ltx:bib-part[@role="series"]', ', ', '',      'series',    \&do_any,     ''],
@@ -620,10 +620,17 @@ sub do_links {
   'incollection' =>
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year', \&do_year, '']],
-    [['ltx:bib-title', '', '', 'title', \&do_title, ',']],
+    [['ltx:bib-title', '', '', 'title', \&do_title, '.']],
     [['ltx:bib-type',  '', '', 'type',  \&do_any,   ''],
-      ['ltx:bib-related[@bibrefs]',                   ' ', 'in ', 'crossref', \&do_crossref, ','],
-      ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ', 'in ', 'inbook',   \&do_title,    ',']],
+      # Show crossref if any
+      ['ltx:bib-related[@bibrefs]', ' ', 'See ', 'crossref', \&do_crossref, ','],
+      # if NO crossref, used embedded editors & booktitle.
+      #      ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ', 'in ', 'inbook',   \&do_title,    ',']
+      ['ltx:bib-related[@type="book"][not(../ltx:bib-related[@bibrefs])]/ltx:bib-name[@role="editor"]',
+        ' ', 'in ', 'editor', \&do_editorsA, ','],
+      ['ltx:bib-related[@type="book"][not(../ltx:bib-related[@bibrefs])]/ltx:bib-title',
+        ' ', '', 'inbook', \&do_title, ',']
+    ],
     [['ltx:bib-edition', '', '', 'edition', \&do_edition, ''],
       ['ltx:bib-name[@role="editor"]',                 ', ', '',      'editor',    \&do_editorsB, ''],
       ['ltx:bib-related/ltx:bib-part[@role="series"]', ', ', '',      'series',    \&do_any,      ''],
@@ -641,7 +648,7 @@ sub do_links {
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA, ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,     '']],
-    [['ltx:bib-title',                '', '',                  'title',  \&do_title, ',']],
+    [['ltx:bib-title',                '', '',                  'title',  \&do_title, '.']],
     [['ltx:bib-type',                 '', '',                  'type',   \&do_any,   '']],
     [['ltx:bib-part[@role="number"]', '', 'Technical Report ', 'number', \&do_any,   ''],
       ['ltx:bib-part[@role="series"]', ', ', '',      'series',    \&do_any, ''],
@@ -658,7 +665,7 @@ sub do_links {
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA, ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,     '']],
-    [['ltx:bib-title', '',  '', 'title', \&do_title,       ',']],
+    [['ltx:bib-title', '',  '', 'title', \&do_title,       '.']],
     [['ltx:bib-type',  ' ', '', 'type',  \&do_thesis_type, ''],
       ['ltx:bib-part[@role="part"]', ', ', 'Part ', 'part',      \&do_any, ''],
       ['ltx:bib-publisher',          ', ', '',      'publisher', \&do_any, ''],
