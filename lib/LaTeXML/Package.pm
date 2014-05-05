@@ -3627,6 +3627,14 @@ used for other definitions, except that macro being defined is a single characte
 The C<$expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
 
+=item C<< DefKeyVal($keyset,$key,$type,$default); >>
+
+X<DefKeyVal>
+Defines a keyword C<$key> used in keyval arguments for the set C<$keyset>.
+If type is given, it defines the type of value that must be supplied,
+such as C<'Dimension'>.  If C<$default> is given, that value will be used
+when C<$key> is used without an equals and explicit value.
+
 =back
 
 =head2 Access to State
