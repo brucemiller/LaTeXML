@@ -13,6 +13,10 @@ doc/makemanual (pdf)
 git commit -m "New release ..."
 git push
 
+# And tag the release:
+git tag -a vX.X.X -m "Release X.X.X" <commitid>
+git push --tags
+
 #======================================================================
 # After preparing whatever tarballs & binaries you want:
 doc/makesite
@@ -54,15 +58,19 @@ Version:        X.X.X
 Group:          Applications/Publishing
 URL:            http://dlmf.nist.gov/LaTeXML/
 
-# We will want to make the optional dependencies required, so add:
+# We will want to make the optional dependencies required, so add the following.
+# Note that UUID::Tiny is apparently only available in Fedora 18 and beyond;
+# Not yet in Centos, so we conditionalize.
+%if 0%{?fedora} >= 18
+Requires:       perl(UUID::Tiny)
+%endif
 Requires:       perl(Image::Magick)
 BuildRequires:  tex(tex), tex(latex)
 Requires:       tex(tex), tex(latex)
 Requires(post): tex(tex)
 Requires(postun): tex(tex)
    
-# Should also add this, but it isn't yet available on Centos 6, so ... don't
-# Requires:       perl(UUID::Tiny)
+
 
   *  rpm provides a variable %{_texmf_main} but it is the MAIN texmf directory
      (NOT where we actually installed our module), so we need this at the top of the spec:
@@ -85,13 +93,22 @@ mktexlsr >/dev/null 2>&1 || :
 
   * Check that the %install section uses DESTDIR, _NOT_ PERL_INSTALL_ROOT 
 
+#======================================================================
+# Scan tarballs, rpms, etc using ClamAV
+clamscan  --tempdir=/dev/shm --recursive  --max-recursion=128 --cross-fs=no  --infected  --block-encrypted=yes --max-files=123456789  --max-filesize=4000M  --max-scansize=4000M sometarball
 
 #======================================================================
 # Make MacPorts Portfile for MacOS
+# Maintainer: adfernandes@?  but appears to have quit?
 
  * Change version number
  * recompute checksums
  * copy resulting Portfile as <site>/releases/Portfile-<version>
+
+#======================================================================
+# Debian port
+# Debian Developer: Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
+
 
 #======================================================================
 # To test an installation, try:
