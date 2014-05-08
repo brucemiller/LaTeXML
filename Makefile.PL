@@ -61,6 +61,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'Parse::RecDescent' => 0,
     'Pod::Parser'       => 0,   # for Pod::Find
     'Test::More'        => 0,
+    'Time::HiRes'       => 0,
     'URI'               => 0,
     # If we have an "old" version of XML::LibXML,
     # we also need XPathContext.
