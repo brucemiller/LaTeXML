@@ -3,10 +3,10 @@ Name:           LaTeXML
 Version:        0.8.0
 Release:        1%{?dist}
 Summary:        Converter that transforms TeX and LaTeX into XML/HTML/MathML
-License:        OSI-Approved, see LICENSE
+License:        CC0
 Group:          Applications/Publishing
 URL:            http://dlmf.nist.gov/LaTeXML/
-Source0:        http://www.cpan.org/modules/by-module/LaTeXML/LaTeXML-%{version}.tar.gz
+Source0:        http://search.cpan.org/CPAN/authors/id/B/BR/BRMILLER/LaTeXML-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  perl >= 0:5.008001
@@ -22,6 +22,7 @@ BuildRequires:  perl(LWP)
 BuildRequires:  perl(Parse::RecDescent)
 BuildRequires:  perl(Pod::Parser)
 BuildRequires:  perl(Test::More)
+BuildRequires:  perl(Time::HiRes)
 BuildRequires:  perl(URI)
 BuildRequires:  perl(XML::LibXML) >= 1.61
 BuildRequires:  perl(XML::LibXSLT) >= 1.58
@@ -37,7 +38,12 @@ Requires:       perl(LWP)
 Requires:       perl(Parse::RecDescent)
 Requires:       perl(Pod::Parser)
 Requires:       perl(Test::More)
+Requires:       perl(Time::HiRes)
 Requires:       perl(URI)
+%if 0%{?fedora} >= 18
+BuildRequires:  perl(UUID::Tiny)
+Requires:       perl(UUID::Tiny)
+%endif
 Requires:       perl(XML::LibXML) >= 1.61
 Requires:       perl(XML::LibXSLT) >= 1.58
 Requires:       perl(:MODULE_COMPAT_%(eval "`%{__perl} -V:version`"; echo $version))
