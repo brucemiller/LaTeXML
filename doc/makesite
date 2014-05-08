@@ -123,8 +123,8 @@ sub getReleases {
       my ($v, $os, $osv) = ($1, "Fedora", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
-    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.noarch\.rpm$/) {
-      my ($v, $os, $osv) = ($1, "Centos", $2);
+    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.el(\d+)\.noarch\.rpm$/) {
+      my ($v, $os, $osv) = ($1, "RedHat", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
     # OBSOLETE naming scheme for RPM's (there's only 1 anyway...)
