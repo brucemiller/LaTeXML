@@ -119,11 +119,11 @@ sub getReleases {
     # New naming scheme!
     # BUT now we'll have fedora, centos!
     # Moreover, we soon will have f10, f11, ... which also needs managing!
-    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.f(\d+)\.ltxml\.noarch\.rpm$/) {
+    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.fc(\d+)\.noarch\.rpm$/) {
       my ($v, $os, $osv) = ($1, "Fedora", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
-    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.ltxml\.noarch\.rpm$/) {
+    elsif ($file =~ /^LaTeXML-(.*?)-\d+\.c(\d+)\.noarch\.rpm$/) {
       my ($v, $os, $osv) = ($1, "Centos", $2);
       $links{$v}{$os}{$osv}{file} = "\\href{releases/$file}{$file}";
       $links{$v}{$os}{$osv}{link} = "\\href{releases/$file}{$v\\nobreakspace($os $osv)}"; }
