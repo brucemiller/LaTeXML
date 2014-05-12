@@ -128,8 +128,8 @@ sub getNextChar {
   my ($self) = @_;
   if ($$self{colno} < $$self{nchars}) {
     my $ch = $$self{chars}[$$self{colno}++];
-    my $cc = $$STATE{table}{catcode}{$ch}[0];    # $STATE->lookupCatcode($ch); OPEN CODED!
-    if ((defined $cc) && ($cc == CC_SUPER)       # Possible convert ^^x
+    my $cc = $$STATE{catcode}{$ch}[0];         # $STATE->lookupCatcode($ch); OPEN CODED!
+    if ((defined $cc) && ($cc == CC_SUPER)     # Possible convert ^^x
       && ($$self{colno} + 1 < $$self{nchars}) && ($ch eq $$self{chars}[$$self{colno}])) {
       my ($c1, $c2);
       if (($$self{colno} + 2 < $$self{nchars})    # ^^ followed by TWO LOWERCASE Hex digits???
@@ -277,7 +277,8 @@ sub readToken {
       $$self{chars}  = [splitChars($line)];
       $$self{nchars} = scalar(@{ $$self{chars} });
       while (($$self{colno} < $$self{nchars})
-        && (($$STATE{table}{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
+        # DIRECT ACCESS to $STATE's catcode table!!!
+        && (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
         $$self{colno}++; }
 
       # Sneak a comment out, every so often.
