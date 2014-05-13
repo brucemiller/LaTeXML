@@ -130,7 +130,7 @@ Windows w/\href{http://strawberryperl.com}{Strawberry Perl}
    & see \htmlref{Windows prerequisites}{install.windows.prereq}  \\
 Other
    & see \htmlref{CPAN}{install.cpan} or \htmlref{GitHub}{install.github}
-   & see \htmlref{CPAN}{install.cpan.prereq} \\
+   & see \htmlref{CPAN prerequisites}{install.cpan.prereq} \\
 \end{tabular}
 Note that there is \emph{no} implied endorsement of any of these systems.
 
@@ -190,7 +190,8 @@ most software is obtained and installed via the yum repository.
 The following commands will install \LaTeXML, including its required
 and optional prerequisites:
 \begin{itemize}
-\item Download \CurrentFedora\ or \CurrentRedHat, as appropriate.
+\item Download \CurrentFedora\ or \CurrentRedHat\ (but enable the elp repository),
+as appropriate.
 \item Install \LaTeXML, and its prerequisites, using the command:
 \begin{lstlisting}[style=shell]
 yum --nogpgcheck localinstall LaTeXML-@\CurrentVersion@-*.noarch.rpm
