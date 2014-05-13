@@ -5710,6 +5710,17 @@ DefConstructor('\@MAYBEAPPLY{}{}',
   reversion => '#1#2');
 DefConstructor('\@WRAP{}',  "<ltx:XMWrap>#1</ltx:XMWrap>", reversion => '#1');
 DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
+DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
+  '#3',
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $node = $document->getLastChildElement($document->getNode);
+    if (my $lpadding = $whatsit->getArg(1)) {
+      $document->setAttribute($node, lpadding => $lpadding); }
+    if (my $rpadding = $whatsit->getArg(2)) {
+      $document->setAttribute($node, rpadding => $rpadding); } },
+  reversion => '#3');
+
 DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
 DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
 DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
