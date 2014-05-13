@@ -4129,7 +4129,7 @@ DefPrimitiveI('\filbreak', undef, undef);
 DefMacroI('\goodbreak', undef, '\par');
 DefMacroI('\eject',     undef, '\par\LTX@newpage');
 Let('\newpage', '\eject');
-DefConstructorI('\LTX@newpage', undef, "<ltx:pagination role='newpage'/>");
+DefConstructorI('\LTX@newpage', undef, "^<ltx:pagination role='newpage'/>");
 
 DefMacroI('\supereject', undef, '\par\LTX@newpage');
 DefPrimitiveI('\removelastskip', undef, undef);
