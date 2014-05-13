@@ -39,16 +39,16 @@ use LaTeXML::Core::Token;    # To get CatCodes
 # except for endgroup (which is linear in # of changed values in that frame).
 
 # There are 2 main structures used here.
-# For each $subtable (being "value", "meaning" or other space of names),
-# "table" maintains the bound values, and "undo" defines the stack frames:
-#    $$self{table}{$subtable}{$key} = [$current_value, $previous_value, ...]
-#    $$self{undo}[$frame]{$subtable}{$key} = (undef | $n)
+# For each of several $table's (being "value", "meaning", "catcode" or other space of names),
+# ech table maintains the bound values, and "undo" defines the stack frames:
+#    $$self{$table}{$key} = [$current_value, $previous_value, ...]
+#    $$self{undo}[$frame]{$table}{$key} = (undef | $n)
 # such that the "current value" associated with $key is the 0th element of the table array;
 # the $previous_value's (if any) are values that had been assigned within previous groups.
 # The undo list indicates how many values have been assigned for $key in
 # the $frame'th frame (usually 0 is the one of interest).
 # [Would be simpler to store boolean in undo, but see deactivateScope]
-# [All keys fo $$self{undo}[$frame} are subtable names, EXCEPT "_FRAME_LOCK_"!!]
+# [All keys fo $$self{undo}[$frame} are table names, EXCEPT "_FRAME_LOCK_"!!]
 #
 # So, in handwaving form, the algorithms are as follows:
 # push-frame == bgroup == begingroup:
@@ -67,10 +67,10 @@ use LaTeXML::Core::Token;    # To get CatCodes
 #     remove any locally scoped values, and undo entries for the key
 #     then set the 0th (only remaining) value to the given one.
 #   named-scope $scope:
-#      push an entry [$subtable,$key,$value] globally to the 'stash' subtable's value.
-#      And assign locally, if the $scope is active (has non-zero value in stash_active subtable),
+#      push an entry [$table,$key,$value] globally to the 'stash' table's value.
+#      And assign locally, if the $scope is active (has non-zero value in stash_active table),
 #
-# There are subtables for
+# There are tables for
 #  catcode: keys are char;
 #         Also, "math:$char" =1 when $char is active in math.
 #  value: keys are anything (typically a string, though) and value is the value associated with it
@@ -86,61 +86,58 @@ use LaTeXML::Core::Token;    # To get CatCodes
 #     model    => a Mod el object.
 sub new {
   my ($class, %options) = @_;
-  my $self = bless { table => {}, undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
+  my $self = bless {    # table => {},
+    value => {}, meaning => {}, stash => {}, stash_active => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
+    undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
     stomach => $options{stomach}, model => $options{model} }, $class;
-  $$self{table}{value}{VERBOSITY} = [0];
+  $$self{value}{VERBOSITY} = [0];
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
       "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
       "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
       "~" => CC_ACTIVE, chr(0) => CC_IGNORE);
-    map { $$self{table}{catcode}{$_} = [$std{$_}] } keys %std;
+    map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
-      $$self{table}{catcode}{ chr($c) } = [CC_LETTER];
-      $$self{table}{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
+      $$self{catcode}{ chr($c) } = [CC_LETTER];
+      $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{table}{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', '%', "'"]];
+  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', '%', "'"]];
   if ($options{catcodes} eq 'style') {
-    $$self{table}{catcode}{'@'} = [CC_LETTER]; }
-  $$self{table}{mathcode} = {};
-  $$self{table}{sfcode}   = {};
-  $$self{table}{lccode}   = {};
-  $$self{table}{uccode}   = {};
-  $$self{table}{delcode}  = {};
+    $$self{catcode}{'@'} = [CC_LETTER]; }
+  $$self{mathcode} = {};
+  $$self{sfcode}   = {};
+  $$self{lccode}   = {};
+  $$self{uccode}   = {};
+  $$self{delcode}  = {};
   return $self; }
 
 sub assign_internal {
-  my ($self, $subtable, $key, $value, $scope) = @_;
-  my $table = $$self{table};
+  my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if ($scope eq 'global') {
-## This was was sufficient before having lockable frames
-##    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
-##      delete $$undo{$subtable}{$key}; }
-##    $$table{$subtable}{$key} = [$value]; } # And place SINGLE value in table.
     # Remove bindings made in all frames down-to & including the next lower locked frame
-###    foreach my $undo (@{$$self{undo}}){ # remove ALL bindings of $key in $subtable's
     my $frame;
     my @frames = @{ $$self{undo} };
     while (@frames) {
       $frame = shift(@frames);
-      if (my $n = $$frame{$subtable}{$key}) {    # Undo the bindings, if $key was bound in this frame
-        map { shift(@{ $$table{$subtable}{$key} }) } 1 .. $n if $n;
-        delete $$frame{$subtable}{$key}; }
+      if (my $n = $$frame{$table}{$key}) {    # Undo the bindings, if $key was bound in this frame
+        map { shift(@{ $$self{$table}{$key} }) } 1 .. $n if $n;
+        delete $$frame{$table}{$key}; }
       last if $$frame{_FRAME_LOCK_}; }
     # whatever is left -- if anything -- should be bindings below the locked frame.
-    $$frame{$subtable}{$key}++;    # Note that this many values -- ie. one more -- must be undone
-    unshift(@{ $$table{$subtable}{$key} }, $value); }
+    $$frame{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
+    unshift(@{ $$self{$table}{$key} }, $value); }
   elsif ($scope eq 'local') {
-    $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
-    unshift(@{ $$table{$subtable}{$key} }, $value); }    # And push new binding.
+    $$self{undo}[0]{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
+    unshift(@{ $$self{$table}{$key} }, $value); }    # And push new binding.
   else {
     # print STDERR "Assigning $key in stash $stash\n";
-    assign_internal($self, 'stash', $scope, [], 'global') unless $$table{stash}{$scope}[0];
-    push(@{ $$table{stash}{$scope}[0] }, [$subtable, $key, $value]);
-    assign_internal($self, $subtable, $key, $value, 'local')
-      if $$table{stash_active}{$scope}[0]; }
+    assign_internal($self, 'stash', $scope, [], 'global') unless $$self{stash}{$scope}[0];
+    push(@{ $$self{stash}{$scope}[0] }, [$table, $key, $value]);
+    assign_internal($self, $table, $key, $value, 'local')
+      if $$self{stash_active}{$scope}[0]; }
   return; }
 
 #======================================================================
@@ -155,11 +152,11 @@ sub getModel {
 #======================================================================
 
 # Lookup & assign a general Value
-# [Note that the more direct $_[0]->{table}{value}{$_[1]}[0]; works, but creates entries
+# [Note that the more direct $$self{value}{$_[1]}[0]; works, but creates entries
 # this could concievably cause space issues, but timing doesn't show improvements this way]
 sub lookupValue {
   my ($self, $key) = @_;
-  my $e = $$self{table}{value}{$key};
+  my $e = $$self{value}{$key};
   return $e && $$e[0]; }
 
 sub assignValue {
@@ -170,40 +167,40 @@ sub assignValue {
 # manage a (global) list of values
 sub pushValue {
   my ($self, $key, @values) = @_;
-  my $vtable = $$self{table}{value};
+  my $vtable = $$self{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   push(@{ $$vtable{$key}[0] }, @values);
   return; }
 
 sub popValue {
   my ($self, $key) = @_;
-  my $vtable = $$self{table}{value};
+  my $vtable = $$self{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   return pop(@{ $$vtable{$key}[0] }); }
 
 sub unshiftValue {
   my ($self, $key, @values) = @_;
-  my $vtable = $$self{table}{value};
+  my $vtable = $$self{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   unshift(@{ $$vtable{$key}[0] }, @values);
   return; }
 
 sub shiftValue {
   my ($self, $key) = @_;
-  my $vtable = $$self{table}{value};
+  my $vtable = $$self{value};
   assign_internal($self, 'value', $key, [], 'global') unless $$vtable{$key}[0];
   return shift(@{ $$vtable{$key}[0] }); }
 
 # manage a (global) hash of values
 sub lookupMapping {
   my ($self, $map, $key) = @_;
-  my $vtable  = $$self{table}{value};
+  my $vtable  = $$self{value};
   my $mapping = $$vtable{$map}[0];
   return ($mapping ? $$mapping{$key} : undef); }
 
 sub assignMapping {
   my ($self, $map, $key, $value) = @_;
-  my $vtable = $$self{table}{value};
+  my $vtable = $$self{value};
   assign_internal($self, 'value', $map, {}, 'global') unless $$vtable{$map}[0];
   if (!defined $value) {
     delete $$vtable{$map}[0]{$key}; }
@@ -213,13 +210,13 @@ sub assignMapping {
 
 sub lookupMappingKeys {
   my ($self, $map) = @_;
-  my $vtable  = $$self{table}{value};
+  my $vtable  = $$self{value};
   my $mapping = $$vtable{$map}[0];
   return ($mapping ? sort keys %$mapping : ()); }
 
 sub lookupStackedValues {
   my ($self, $key) = @_;
-  my $stack = $$self{table}{value}{$key};
+  my $stack = $$self{value}{$key};
   return ($stack ? @$stack : ()); }
 
 #======================================================================
@@ -228,13 +225,13 @@ sub lookupStackedValues {
 sub isValueBound {
   my ($self, $key, $frame) = @_;
   return (defined $frame ? $$self{undo}[$frame]{value}{$key}
-    : defined $$self{table}{value}{$key}[0]); }
+    : defined $$self{value}{$key}[0]); }
 
 #======================================================================
 # Lookup & assign a character's Catcode
 sub lookupCatcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{catcode}{$key};
+  my $e = $$self{catcode}{$key};
   return $e && $$e[0]; }
 
 sub assignCatcode {
@@ -245,7 +242,7 @@ sub assignCatcode {
 # The following rarely used.
 sub lookupMathcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{mathcode}{$key};
+  my $e = $$self{mathcode}{$key};
   return $e && $$e[0]; }
 
 sub assignMathcode {
@@ -255,7 +252,7 @@ sub assignMathcode {
 
 sub lookupSFcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{sfcode}{$key};
+  my $e = $$self{sfcode}{$key};
   return $e && $$e[0]; }
 
 sub assignSFcode {
@@ -265,7 +262,7 @@ sub assignSFcode {
 
 sub lookupLCcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{lccode}{$key};
+  my $e = $$self{lccode}{$key};
   return $e && $$e[0]; }
 
 sub assignLCcode {
@@ -275,7 +272,7 @@ sub assignLCcode {
 
 sub lookupUCcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{uccode}{$key};
+  my $e = $$self{uccode}{$key};
   return $e && $$e[0]; }
 
 sub assignUCcode {
@@ -285,7 +282,7 @@ sub assignUCcode {
 
 sub lookupDelcode {
   my ($self, $key) = @_;
-  my $e = $$self{table}{delcode}{$key};
+  my $e = $$self{delcode}{$key};
   return $e && $$e[0]; }
 
 sub assignDelcode {
@@ -301,13 +298,15 @@ sub assignDelcode {
 # Otherwise, the token itself is returned.
 sub lookupMeaning {
   my ($self, $token) = @_;
-  if (my $cs = $token && $token->getExecutableName) {
-    my $e = $$self{table}{meaning}{$cs}; return $e && $$e[0]; }
+  if (my $cs = $token
+    && $LaTeXML::Core::Token::executable_catcode[$$token[1]]
+    && ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0])) {
+    my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
 
 sub lookupMeaning_internal {
   my ($self, $token) = @_;
-  my $e = $$self{table}{meaning}{ $token->getCSName };
+  my $e = $$self{meaning}{ $token->getCSName };
   return $e && $$e[0]; }
 
 sub assignMeaning {
@@ -318,8 +317,11 @@ sub assignMeaning {
 sub lookupDefinition {
   my ($self, $token) = @_;
   my $x;
-  return (($x = $token->getExecutableName) && ($x = $$self{table}{meaning}{$x}) && ($x = $$x[0])
-      && $x->isaDefinition
+  return ($token
+      && $LaTeXML::Core::Token::executable_catcode[$$token[1]]
+      && ($x = $$self{meaning}{ ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]) }) && ($x = $$x[0])
+###            && $x->isaDefinition
+      && $x->isa('LaTeXML::Core::Definition')
     ? $x : undef); }
 
 # And a shorthand for installing definitions
@@ -348,16 +350,15 @@ sub pushFrame {
 
 sub popFrame {
   my ($self) = @_;
-  my $table = $$self{table};
   if ($$self{undo}[0]{_FRAME_LOCK_}) {
     Fatal('unexpected', '<endgroup>', $self->getStomach,
       "Attempt to pop last locked stack frame"); }
   else {
     my $undo = shift(@{ $$self{undo} });
-    foreach my $subtable (keys %$undo) {
-      my $undosubtable = $$undo{$subtable};
-      foreach my $name (keys %$undosubtable) {
-        map { shift(@{ $$table{$subtable}{$name} }) } 1 .. $$undosubtable{$name}; } } }
+    foreach my $table (keys %$undo) {
+      my $undotable = $$undo{$table};
+      foreach my $name (keys %$undotable) {
+        map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
   return; }
 
 #======================================================================
@@ -387,15 +388,16 @@ sub pushDaemonFrame {
   my ($self) = @_;
   unshift(@{ $$self{undo} }, {});
   # Push copys of data for any data that is mutable;
-  # Only the value & stash subtables need to be to be checked.
-  foreach my $subtable (qw(value stash)) {
-    if (my $hash = $$self{table}{$subtable}) {
+  # Only the value & stash tables need to be to be checked.
+  # NOTE ??? No...
+  foreach my $table (qw(value stash)) {
+    if (my $hash = $$self{$table}) {
       foreach my $key (keys %$hash) {
         my $value = $$hash{$key}[0];
         my $type  = ref $value;
         if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
-                                                # Local assignment
-          $$self{undo}[0]{$subtable}{$key}++;   # Note that this many values -- ie. one more -- must be undone
+                                              # Local assignment
+          $$self{undo}[0]{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
       # Record the contents of LaTeXML::Package::Pool as preloaded
   my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
@@ -456,16 +458,15 @@ sub clearPrefixes {
 
 sub activateScope {
   my ($self, $scope) = @_;
-  my $table = $$self{table};
-  if (!$$table{stash_active}{$scope}[0]) {
+  if (!$$self{stash_active}{$scope}[0]) {
     assign_internal($self, 'stash_active', $scope, 1, 'local');
-    if (defined(my $defns = $$table{stash}{$scope}[0])) {
+    if (defined(my $defns = $$self{stash}{$scope}[0])) {
       # Now make local assignments for all those in the stash.
       my $frame = $$self{undo}[0];
       foreach my $entry (@$defns) {
-        my ($subtable, $key, $value) = @$entry;
-        $$frame{$subtable}{$key}++;    # Note that this many values must be undone
-        unshift(@{ $$table{$subtable}{$key} }, $value); } } }    # And push new binding.
+        my ($table, $key, $value) = @$entry;
+        $$frame{$table}{$key}++;    # Note that this many values must be undone
+        unshift(@{ $$self{$table}{$key} }, $value); } } }    # And push new binding.
   return; }
 
 # Probably, in most cases, the assignments made by activateScope
@@ -473,26 +474,24 @@ sub activateScope {
 # But they can also be undone explicitly
 sub deactivateScope {
   my ($self, $scope) = @_;
-  my $table = $$self{table};
-  if ($$table{stash_active}{$scope}[0]) {
+  if ($$self{stash_active}{$scope}[0]) {
     assign_internal($self, 'stash_active', $scope, 0, 'global');
-    if (defined(my $defns = $$table{stash}{$scope}[0])) {
+    if (defined(my $defns = $$self{stash}{$scope}[0])) {
       my $frame = $$self{undo}[0];
       foreach my $entry (@$defns) {
-        my ($subtable, $key, $value) = @$entry;
-        if ($$table{$subtable}{$key}[0] eq $value) {
-          shift(@{ $$table{$subtable}{$key} });
-          $$frame{$subtable}{$key}--; }
+        my ($table, $key, $value) = @$entry;
+        if ($$self{$table}{$key}[0] eq $value) {
+          shift(@{ $$self{$table}{$key} });
+          $$frame{$table}{$key}--; }
         else {
           Warn('internal', $key, $self->getStomach,
-            "Unassigning wrong value for $key from subtable $subtable in deactivateScope",
-            "value is $value but stack is " . join(', ', @{ $$table{$subtable}{$key} })); } } } }
+            "Unassigning wrong value for $key from table $table in deactivateScope",
+            "value is $value but stack is " . join(', ', @{ $$self{$table}{$key} })); } } } }
   return; }
 
 sub getActiveScopes {
   my ($self) = @_;
-  my $table = $$self{table};
-  my $scopes = $$table{stash_active} || {};
+  my $scopes = $$self{stash_active} || {};
   return [keys %$scopes]; }
 
 #======================================================================

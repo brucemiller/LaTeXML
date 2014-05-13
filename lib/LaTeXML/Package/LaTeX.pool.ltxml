@@ -985,6 +985,11 @@ DefConstructor('\subsubitem[]',
   "<ltx:item>?&defined(#1)(<ltx:tag>#1</ltx:tag>)");
 AssignValue(itemlevel => 0, 'global');
 
+# protection against lower-level code...
+DefConditional('\if@noitemarg');
+DefMacro('\@item',      '\item');    # Hopefully no circles...
+DefMacro('\@itemlabel', '');         # Maybe needs to be same as \item will be using?
+
 # Prepare for an list (itemize/enumerate/description/etc)
 # by determining the right counter (level)
 # and binding the right \item ( \$type@item, if $type is defined)
@@ -3742,7 +3747,7 @@ DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mod
   beforeDigest => sub { DefMacro('\f@series', 'b'); });
 DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded => 1, font => { family => 'serif' }, alias => '\textrm',
-  beforeDigest => sub { DefMacro('\f@family', 'cms'); });
+  beforeDigest => sub { DefMacro('\f@family', 'cm'); });
 DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded => 1, font => { family => 'sansserif' }, alias => '\textsf',
   beforeDigest => sub { DefMacro('\f@family', 'cmss'); });

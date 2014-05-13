@@ -625,14 +625,15 @@ DefParameterType('CSName', sub {
     my ($token, @toks) = ();
     # keep newlines from having \n inside!
     while (($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')) {
-      if ($token->getCatcode == CC_CS) {
+      my $cc = $token->getCatcode;
+      if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
           Error('unexpected', $token, $gullet,
             "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-      push(@toks, (Equals($token, T_SPACE) ? T_SPACE : $token)); }
+      push(@toks, ($cc == CC_SPACE ? T_SPACE : $token)); }
     T_CS("\\" . ToString(Tokens(@toks))); });
 
 DefMacro('\csname CSName', sub {
@@ -4128,7 +4129,7 @@ DefPrimitiveI('\filbreak', undef, undef);
 DefMacroI('\goodbreak', undef, '\par');
 DefMacroI('\eject',     undef, '\par\LTX@newpage');
 Let('\newpage', '\eject');
-DefConstructorI('\LTX@newpage', undef, "<ltx:pagination role='newpage'/>");
+DefConstructorI('\LTX@newpage', undef, "^<ltx:pagination role='newpage'/>");
 
 DefMacroI('\supereject', undef, '\par\LTX@newpage');
 DefPrimitiveI('\removelastskip', undef, undef);
@@ -5709,6 +5710,17 @@ DefConstructor('\@MAYBEAPPLY{}{}',
   reversion => '#1#2');
 DefConstructor('\@WRAP{}',  "<ltx:XMWrap>#1</ltx:XMWrap>", reversion => '#1');
 DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
+DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
+  '#3',
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $node = $document->getLastChildElement($document->getNode);
+    if (my $lpadding = $whatsit->getArg(1)) {
+      $document->setAttribute($node, lpadding => $lpadding); }
+    if (my $rpadding = $whatsit->getArg(2)) {
+      $document->setAttribute($node, rpadding => $rpadding); } },
+  reversion => '#3');
+
 DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
 DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
 DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');

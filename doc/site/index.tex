@@ -145,11 +145,15 @@ download and install the most recent versions of \texttt{libxml2} and \texttt{li
 Note that Strawberry Perl, on Windows, already includes these libraries.
 
 \paragraph{Optional Prerequisites}
-The following packages are usually desirable, but aren't strictly required.
+The following packages are optional because they are sometimes difficult
+to find or install, or in order to allow for minimal installs in unusual
+circumstances.  Most users should consider them as required and install
+them if at all possible.
 \begin{description}
-\item[\TeX] Most users of \LaTeXML\ will want to install \TeX.  \LaTeXML\ 
+\item[\TeX] Virtually all users of \LaTeXML\ will want to install \TeX.  \LaTeXML\ 
 \emph{should} find whatever \TeX-installation you have, and will
-use \TeX's style files directly in some cases, providing broader coverage.
+use \TeX's style files directly in some cases, providing broader coverage,
+particularly for the more complex styles like \texttt{babel} and \texttt{tikz}.
 Moreover, if \TeX\ is present when \LaTeXML\ is being installed,
 \LaTeXML\ will install a couple of its own style files that can be used
 with regular \TeX, or \LaTeX\ runs;
@@ -350,7 +354,7 @@ The following command will install the Perl prerequisites (including optional)
 for \LaTeXML, but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{prerequisites}).
 \begin{lstlisting}[style=shell]
 cpan Archive::Zip DB_File File::Which Image::Size \
-  IO::String libwww JSON::XS LWP Parse::RecDescent \
+  IO::String JSON::XS LWP Parse::RecDescent \
   URI XML::LibXML XML::LibXSLT UUID::Tiny
 \end{lstlisting}
 You may still want to install \TeX\ and \texttt{Image::Magick}

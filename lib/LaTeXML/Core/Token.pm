@@ -150,38 +150,38 @@ sub UnTeX {
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-my @primitive_catcode = (    # [CONSTANT]
+our @primitive_catcode = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
   0, 1);
-my @executable_catcode = (    # [CONSTANT]
+our @executable_catcode = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
   1, 0);
 
-my @standardchar = (          # [CONSTANT]
+our @standardchar = (          # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef);
 
-my @CC_NAME =                 #[CONSTANT]
+our @CC_NAME =                 #[CONSTANT]
   qw(Escape Begin End Math
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
   ControlSequence NotExpanded);
-my @PRIMITIVE_NAME = (        # [CONSTANT]
+our @PRIMITIVE_NAME = (        # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
   undef,       'NotExpanded');
-my @CC_SHORT_NAME =           #[CONSTANT]
+our @CC_SHORT_NAME =           #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER

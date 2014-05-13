@@ -885,13 +885,16 @@ sub DefConditionalI {
   my $csname = ToString($cs);
   # Special cases...
   if ($csname eq '\fi') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_fi => 1, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
+        $cs, undef, undef, conditional_type => 'fi', %options),
       $options{scope}); }
   elsif ($csname eq '\else') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_else => 1, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
+        $cs, undef, undef, conditional_type => 'else', %options),
       $options{scope}); }
   elsif ($csname eq '\or') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, undef, undef, is_or => 1, %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
+        $cs, undef, undef, conditional_type => 'or', %options),
       $options{scope}); }
   elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
     my $name = $1;
@@ -905,7 +908,8 @@ sub DefConditionalI {
     # For \ifcase, the parameter list better be a single Number !!
 ###    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
     $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
-        is_conditional => 1, %options),
+###        is_conditional => 1, %options),
+        conditional_type => 'if', %options),
       $options{scope}); }
   else {
     Error('misdefined', $cs, $STATE->getStomach,

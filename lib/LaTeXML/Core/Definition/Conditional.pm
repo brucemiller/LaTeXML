@@ -38,21 +38,20 @@ sub getTest {
 # they do NOT defined as macros, so they don't need to handle doInvocation,
 sub invoke {
   my ($self, $gullet) = @_;
-  # A real conditional must have is_conditional set
-  if ($$self{is_conditional}) {
-    return $self->invoke_conditional($gullet); }
-  elsif ($$self{is_else}) {
-    return $self->invoke_else($gullet); }
-  elsif ($$self{is_or}) {
-    return $self->invoke_else($gullet); }
-  elsif ($$self{is_fi}) {
-    return $self->invoke_fi($gullet); }
-  else {
-    Error('unexpected', $$self{cs}, $gullet,
-      "Unknown conditional control sequence " . Stringify($LaTeXML::CURRENT_TOKEN));
-    return; } }
+  # A real conditional must have condition_type set
+  if (my $cond_type = $$self{conditional_type}) {
+    if ($cond_type eq 'if') {
+      return $self->invoke_conditional($gullet); }
+    elsif ($cond_type eq 'else') {
+      return $self->invoke_else($gullet); }
+    elsif ($cond_type eq 'or') {
+      return $self->invoke_else($gullet); }
+    elsif ($cond_type eq 'fi') {
+      return $self->invoke_fi($gullet); } }
+  Error('unexpected', $$self{cs}, $gullet,
+    "Unknown conditional control sequence " . Stringify($LaTeXML::CURRENT_TOKEN));
+  return; }
 
-#sub invoke {
 sub invoke_conditional {
   my ($self, $gullet) = @_;
   # Keep a stack of the conditionals we are processing.
@@ -110,29 +109,33 @@ sub skipConditionalBody {
   my $level = 1;
   my $n_ors = 0;
   my $start = $gullet->getLocator;
+  # NOTE: Open-coded manipulation of if_stack!
+  # [we're only reading tokens & looking up, so State shouldn't change behind our backs]
+  my $stack = $STATE->lookupValue('if_stack');
   while (my $t = $gullet->readToken) {
     # The only Interesting tokens are bound to defns (defined OR \let!!!)
     if (defined(my $defn = $STATE->lookupDefinition($t))) {
-      if ($$defn{is_conditional}) {    #  Found a \ifxx of some sort
-        $level++; }
-      elsif ($$defn{is_fi}) {          #  Found a \fi
-                                       # But is it for a condition nested in the test clause?
-        if ($STATE->lookupValue('if_stack')->[0] ne $LaTeXML::IFFRAME) {
-          $STATE->shiftValue('if_stack'); }    # then DO pop that conditional's frame; it's DONE!
-        elsif (!--$level) {                    # If no more nesting, we're done.
-          $STATE->shiftValue('if_stack');      # Done with this frame
-          return $t; } }                       # AND Return the finishing token.
-      elsif ($level > 1) {                     # Ignore \else,\or nested in the body.
-      }
-      elsif ($$defn{is_or} && (++$n_ors == $nskips)) {
-        return $t; }
-      elsif ($$defn{is_else} && $nskips
-        # Found \else and we're looking for one?
-        # Make sure this \else is NOT for a nested \if that is part of the test clause!
-        && ($STATE->lookupValue('if_stack')->[0] eq $LaTeXML::IFFRAME)) {
-        # No need to actually call elseHandler, but note that we've seen an \else!
-        $STATE->lookupValue('if_stack')->[0]->{elses} = 1;
-        return $t; } } }
+      if (my $cond_type = $$defn{conditional_type}) {
+        if ($cond_type eq 'if') {    #  Found a \ifxx of some sort
+          $level++; }
+        elsif ($cond_type eq 'fi') {    #  Found a \fi
+          if ($$stack[0] ne $LaTeXML::IFFRAME) {
+            # But is it for a condition nested in the test clause?
+            shift(@$stack); }           # then DO pop that conditional's frame; it's DONE!
+          elsif (!--$level) {           # If no more nesting, we're done.
+            shift(@$stack);             # Done with this frame
+            return $t; } }              # AND Return the finishing token.
+        elsif ($level > 1) {            # Ignore \else,\or nested in the body.
+        }
+        elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
+          return $t; }
+        elsif (($cond_type eq 'else') && $nskips
+          # Found \else and we're looking for one?
+          # Make sure this \else is NOT for a nested \if that is part of the test clause!
+          && ($$stack[0] eq $LaTeXML::IFFRAME)) {
+          # No need to actually call elseHandler, but note that we've seen an \else!
+          $$stack[0]{elses} = 1;
+          return $t; } } } }
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
     "Conditional started at $start");
   return; }
