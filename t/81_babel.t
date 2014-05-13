@@ -10,4 +10,4 @@ latexml_tests("t/babel",
 			 german=>'germanb.ldf',
 			 greek=>'greek.ldf',
 			 french=>['frenchb.ldf','numprint.sty'],
-                         page545=>['germanb.ldf','french.ldf']});
+                         page545=>['germanb.ldf','frenchb.ldf']});
