@@ -220,10 +220,10 @@ or \htmlref{GitHub}{install.github}, as desired.
 \subsection{Debian-based systems}\label{install.deb}\index{Debian}
 For Debian-based systems (including Ubuntu), the deb repositories
 are generally used for software installation.
+Thanks to Atsuhito Kohda, \LaTeXML\ is available from Debian's
+unstable repositories.
 
 \paragraph{Installing prebuilt}
-\emph{LaTeXML 0.8.0 will be soon be available in the Debian repositories!}
-
 The following command will install \LaTeXML, including its required
 and optional prerequisites:
 \begin{lstlisting}[style=shell]
@@ -235,10 +235,11 @@ The prerequisites (including optional ones) can be installed
 by running this command: 
 \begin{lstlisting}[style=shell]
 sudo apt-get install   \
-  libarchive-zip-perl libdb_file libfile-which-perl libimage-size-perl \
-  libio-string-perl libjson-xs-perl libwww-perl libparse-recdescent-perl \
-  liburi-perl libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl \
-  texlive imagemagick perlmagick 
+  libarchive-zip-perl libfile-which-perl libimage-size-perl  \
+  libio-string-perl libjson-xs-perl libparse-recdescent-perl \
+  liburi-perl libuuid-tiny-perl libwww-perl                  \
+  libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl  \
+  texlive-latex-base imagemagick  perlmagick
 \end{lstlisting}
 [\emph{NOTE} Recheck this dependency list when the port is done!]
 
