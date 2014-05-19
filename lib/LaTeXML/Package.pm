@@ -620,9 +620,7 @@ sub StepCounter {
 # HOW can we retract this?
 sub RefStepCounter {
   my ($ctr) = @_;
-  my $refnumtokens = StepCounter($ctr);
-  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
-    scope => 'global');
+  StepCounter($ctr);
   my $iddef = LookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
 
@@ -1152,7 +1150,8 @@ sub DefMathI {
   # we will create an XMDual to separate content & presentation.
   elsif ((ref $presentation eq 'CODE')
     || ((ref $presentation) && grep { $_->equals(T_PARAM) } $presentation->unlist)
-    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
+    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))
+    || ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist))) {
     defmath_dual($cs, $paramlist, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
