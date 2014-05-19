@@ -17,14 +17,14 @@ use LaTeXML::Package;
 
 RequirePackage('array');
 
-DefMacro('\tabularx[]{Dimension}{}',
-  '\@tabular@bindings{#3}[vattach=#1,width=#2]\@@tabularx[#1]{#2}{#3}\@start@alignment');
+DefMacro('\tabularx{Dimension}[]{}',
+  '\@tabular@bindings{#3}[vattach=#2,width=#1]\@@tabularx{#1}[#2]{#3}\@start@alignment');
 DefMacro('\endtabularx',
   '\@finish@alignment\@end@tabularx');
 DefPrimitive('\@end@tabularx', sub { $_[0]->egroup; });
-DefConstructor('\@@tabularx[]{Dimension} Undigested DigestedBody',
+DefConstructor('\@@tabularx{Dimension}[] Undigested DigestedBody',
   '#4',
-  reversion    => '\begin{tabularx}[#1]{#2}{#3}#4\end{tabularx}',
+  reversion    => '\begin{tabularx}{#1}[#2]{#3}#4\end{tabularx}',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
 
