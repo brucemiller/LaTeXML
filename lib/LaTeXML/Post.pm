@@ -945,6 +945,14 @@ sub newDocument {
   # If new document has no date, try to add one
   $doc->addDate($self);
 
+  # And copy class from the top-level document; This is risky...
+  # We want to preserve global document style information
+  # But some may refer specifically to the document, and NOT to the parts?
+  if (my $class = $self->getDocumentElement->getAttribute('class')) {
+    my $root   = $doc->getDocumentElement;
+    my $oclass = $root->getAttribute('class');
+    $root->setAttribute(class => ($oclass ? $oclass . ' ' . $class : $class)); }
+
   # Finally, return the new document.
   return $doc; }
 
