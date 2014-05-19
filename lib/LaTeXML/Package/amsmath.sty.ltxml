@@ -67,7 +67,8 @@ Let('\notag', '\nonumber');
 ### DefConstructor('\tag OptionalMatch:* {}', '',
 DefConstructor('\tag OptionalMatch:* Digested', '',
   afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[2]), 'global'); },
+    my $tag = $_[1]->getArg(2);
+    AssignValue(EQUATIONROW_NUMBER => ToString($tag), 'global'); },
   mode => 'text');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
@@ -134,7 +135,7 @@ DefEnvironment('{equation}',
   beforeDigest => sub {
     AssignValue(EQUATIONROW_NUMBER => '_AUTO_', 'global');
     return; },
-  afterDigest => sub {
+  afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     my $num   = LookupValue('EQUATIONROW_NUMBER');
     my %props = ();
