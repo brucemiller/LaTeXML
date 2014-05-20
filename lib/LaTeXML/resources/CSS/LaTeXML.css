@@ -122,7 +122,12 @@ table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { pad
 table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
 
 /* Hide this from IE */
-tr > td.ltx_eqn_pad { width:50%; }
+tr > td.ltx_eqn_center_padleft,
+tr > td.ltx_eqn_center_padright { width:50%; }
+tr > td.ltx_eqn_left_padleft,
+tr > td.ltx_eqn_right_padright { min-width:2em; }
+tr > td.ltx_eqn_left_padright,
+tr > td.ltx_eqn_right_padleft  { width:100%; }
 
 /* Position the tag to look like a normal item bullet. */
 li.ltx_item > .ltx_tag { display:inline; margin-left:-1.5em; }
