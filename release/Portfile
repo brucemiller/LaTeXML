@@ -37,9 +37,6 @@ depends_lib p5.16-archive-zip \
   p5.16-xml-libxslt \
   p5.16-perlmagick
 
-# Optionally (else install MacTeX or whatever is preferred)
-#  bin:texhash:texlive
-
 # That last seems to be the way to depend on TeX
 # being installed, without necessarily requiring
 # _specifically_ texlive (eg MacTeX or something
@@ -48,6 +45,15 @@ depends_lib p5.16-archive-zip \
 #
 # Also requires: DB_File, Pod::Parser and Test::More
 # but those should be in Perl's core modules.
+#============================================================
+# LaTeXML works MUCH better if there is a TeX installed.
+# It (hopefully) will find any installation if it can find kpsewhich
+# However, we don't require a dependency here since
+# users may prefer MacTeX, or MacPort's texlive or ....
+#  bin:texhash:texlive
+notes "${name} works best with some version of TeX installed. \
+   Please install MacTeX or 'sudo port install texlive' (or other system) first."
+
 #============================================================
 # Configuration
 # Override configure to do it the perl way.
