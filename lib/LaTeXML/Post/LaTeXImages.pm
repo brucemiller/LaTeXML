@@ -19,9 +19,10 @@ use DB_File;
 use LaTeXML::Util::Image;
 use POSIX;
 use LaTeXML::Util::Pathname;
-use File::Temp qw(tempdir);
+use File::Temp;
 use File::Path;
 use File::Which;
+use File::Spec;
 use FindBin;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
@@ -207,7 +208,7 @@ sub process {
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
-    my $workdir = tempdir("LaTeXMLXXXXXX", CLEANUP => 0, TMPDIR => 1);
+    my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", CLEANUP=>0, TMPDIR => 1);
     my $preserve_tmpdir = 0;
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
@@ -455,6 +456,15 @@ sub convert_image {
 
   $image->Write(filename => $dest);
   return ($w, $h); }
+
+sub DESTROY {
+  if (my $tmpdir = File::Spec->tmpdir()) {
+   if (-d $tmpdir && opendir(my $tmpdir_fh, $tmpdir)) {
+     my @empty_magick = grep {-z $_} map {"$tmpdir/$_"} readdir($tmpdir_fh);
+     closedir($tmpdir_fh);
+     unlink $_ foreach @empty_magick;
+  }}
+}
 
 #======================================================================
 1;
