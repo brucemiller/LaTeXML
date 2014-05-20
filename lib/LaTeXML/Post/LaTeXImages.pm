@@ -20,7 +20,6 @@ use LaTeXML::Util::Image;
 use POSIX;
 use LaTeXML::Util::Pathname;
 use File::Temp;
-use File::Path;
 use File::Which;
 use File::Spec;
 use FindBin;
@@ -208,7 +207,7 @@ sub process {
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
-    my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", CLEANUP=>0, TMPDIR => 1);
+    my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", TMPDIR => 1);
     my $preserve_tmpdir = 0;
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
@@ -290,7 +289,7 @@ sub process {
       else {
         Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } }
     # Cleanup
-    rmtree($workdir) unless $preserve_tmpdir; }
+    $workdir->unlink_on_destroy( ! $preserve_tmpdir ); }
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table) {
