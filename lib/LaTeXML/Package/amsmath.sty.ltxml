@@ -236,7 +236,8 @@ sub rearrangeAMSGather {
     elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
     else {
-      map { $document->unwrapNodes($_) } $document->getChildElements($equation); } }
+      map { ($document->getNodeQName($_) eq 'ltx:_Capture_') && $document->unwrapNodes($_) }
+        $document->getChildElements($equation); } }
   return; }
 
 # Note that some people use align or gather inside equation, which seems to "work"
