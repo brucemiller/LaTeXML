@@ -67,7 +67,8 @@ Let('\notag', '\nonumber');
 ### DefConstructor('\tag OptionalMatch:* {}', '',
 DefConstructor('\tag OptionalMatch:* Digested', '',
   afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[2]), 'global'); },
+    my $tag = $_[1]->getArg(2);
+    AssignValue(EQUATIONROW_NUMBER => ToString($tag), 'global'); },
   mode => 'text');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
@@ -134,7 +135,7 @@ DefEnvironment('{equation}',
   beforeDigest => sub {
     AssignValue(EQUATIONROW_NUMBER => '_AUTO_', 'global');
     return; },
-  afterDigest => sub {
+  afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     my $num   = LookupValue('EQUATIONROW_NUMBER');
     my %props = ();
@@ -235,7 +236,8 @@ sub rearrangeAMSGather {
     elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
       $equationgroup->removeChild($equation); }
     else {
-      map { $document->unwrapNodes($_) } $document->getChildElements($equation); } }
+      map { ($document->getNodeQName($_) eq 'ltx:_Capture_') && $document->unwrapNodes($_) }
+        $document->getChildElements($equation); } }
   return; }
 
 # Note that some people use align or gather inside equation, which seems to "work"

@@ -21,7 +21,8 @@ use LaTeXML::Package;
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     my ($stomach, $star, $cs, $text) = @_;
-    DefMathI($cs, undef, $text, scriptpos => ($star ? 'mid' : 'post'),
+    DefMathI($cs, undef, Invocation(T_CS('\operatorname'), $star, $text),
+      scriptpos => ($star ? 'mid' : 'post'),
       role => 'OPFUNCTION',    # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
       font => { family => 'serif', series => 'medium', shape => 'upright' }); });
 

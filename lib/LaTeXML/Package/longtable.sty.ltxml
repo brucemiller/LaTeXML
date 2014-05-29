@@ -29,32 +29,30 @@ DefMacro('\csname longtable*\endcsname []{}',
 DefMacro('\csname endlongtable*\endcsname',
   '\@finish@alignment\@end@tabular');
 
-DefConstructor('\@@longtable [] Undigested DigestedBody', sub {
-    my ($document, $pos, $pat, $body, %xprops) = @_;
-    my $props = LookupValue('LONGTABLE_PROPERTIES') || {};
-    $document->openElement('ltx:table',
-      'xml:id' => $$props{id},
-      refnum   => $$props{refnum},
-      frefnum  => $$props{frefnum},
-      rrefnum  => $$props{rrefnum});
-    # blech...
-    my $alignment = $body->getProperty('alignment');
+DefConstructor('\@@longtable [] Undigested DigestedBody',
+  "<ltx:table xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+    . "?#caption(<ltx:caption>#caption</ltx:caption>)"
+    . "?#toccaption(<ltx:toccaption>#toccaption</ltx:toccaption>)"
+    . "#3"
+    . "</ltx:table>",
+  reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest  => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
     # Insert caption and toccaption, if any were encountered.
     if (my $caption = LookupValue('LONGTABLE_CAPTION')) {
-      $document->insertElement('ltx:caption', $caption); }
+      $whatsit->setProperty(caption => $caption); }
     if (my $toccaption = LookupValue('LONGTABLE_TOCCAPTION')) {
-      $document->insertElement('ltx:toccaption', $toccaption); }
+      $whatsit->setProperty(toccaption => $toccaption); }
+    my $alignment = LookupValue('Alignment');
     # Reinsert the head and foot into the alignment.
     if (my $head = LookupValue('LONGTABLE_HEAD')) {
       $alignment->prependRows(@{$head}); }
     if (my $foot = LookupValue('LONGTABLE_FOOT')) {
       $alignment->appendRows(@{$foot}); }
-    # Now do the construction.
-    $document->absorb($body);
-    $document->closeElement('ltx:table'); },
-  reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
-  beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
+    return; },
+  mode => 'text');
 
 DefPrimitive('\@longtable@bindings AlignmentTemplate', sub { longtableBindings($_[1]); });
 

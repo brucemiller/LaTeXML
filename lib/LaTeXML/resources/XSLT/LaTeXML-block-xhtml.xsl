@@ -98,13 +98,17 @@
     <xsl:value-of select="//processing-instruction()[local-name()='latexml'][contains(.,'class')]"/>
   </xsl:param>
   <!-- Equation numbers on left, or default right? -->
+<!--
   <xsl:param name="eqnopos"
              select="f:if(//*[contains(@class,'ltx_leqno')],'left','right')"/>
+  -->
   <!-- select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'leqno')],'left','right')" -->
 
   <!-- Displayed equations centered, or indented on left? -->
+  <!--
   <xsl:param name="eqpos"
              select="f:if(//*[contains(@class,'ltx_fleqn')],'left','center')"/>
+  -->
   <!--select="f:if(//processing-instruction('latexml')[contains(substring-after(.,'options'),'fleqn')],'left','center')"/>-->
 
 
@@ -167,6 +171,8 @@
   <xsl:template match="*" mode="unaligned-end"/>
 
   <xsl:template match="ltx:equationgroup" mode="unaligned">
+    <xsl:param name="eqnopos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
@@ -188,6 +194,8 @@
   </xsl:template>
 
   <xsl:template match="ltx:equation" mode="unaligned">
+    <xsl:param name="eqnopos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
@@ -354,6 +362,8 @@
   -->
   <xsl:template name="eqnumtd">
     <xsl:param name="side"/>                                   <!-- left or right -->
+    <xsl:param name="eqnopos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:choose>
       <xsl:when test="$eqnopos != $side"/>                       <!-- Wrong side: Nothing -->
       <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][@refnum][not(descendant::ltx:equation[@refnum])]"> <!-- eqn.group is numbered, but not eqns! -->
@@ -411,24 +421,26 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   </xsl:template>
 
   <xsl:template name="eq-left">
+    <xsl:param name="eqpos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:call-template name="eqnumtd">                         <!--Place left number, if any-->
       <xsl:with-param name='side' select="'left'"/>
     </xsl:call-template>
-    <xsl:if test="$eqpos != 'left'">
-      <xsl:text>&#x0A;</xsl:text>
-      <xsl:element name="td" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_eqn_pad</xsl:attribute>
-      </xsl:element>
-    </xsl:if><!-- column for centering -->
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="td" namespace="{$html_ns}">
+      <xsl:attribute name="class">
+      <xsl:value-of select="concat('ltx_eqn_',$eqpos,'_padleft')"/></xsl:attribute>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template name="eq-right">
-    <xsl:if test="$eqpos != 'right'">
-      <xsl:text>&#x0A;</xsl:text>
-      <xsl:element name="td" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_eqn_pad</xsl:attribute>
-      </xsl:element>
-    </xsl:if> <!-- Column for centering-->
+    <xsl:param name="eqpos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="td" namespace="{$html_ns}">
+      <xsl:attribute name="class">
+      <xsl:value-of select="concat('ltx_eqn_',$eqpos,'_padright')"/></xsl:attribute>
+    </xsl:element>
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name='side' select="'right'"/>
     </xsl:call-template>
@@ -447,6 +459,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
   <!-- for intertext type entries -->
   <xsl:template match="ltx:p" mode="inalignment">
     <xsl:param name="ncolumns"/>
+    <xsl:param name="eqpos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="tr" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_align_baseline</xsl:attribute>
@@ -454,7 +468,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
         <xsl:attribute name="class">ltx_align_left</xsl:attribute>
         <xsl:attribute name="style">white-space:normal;</xsl:attribute>
         <xsl:attribute name="colspan">
-          <xsl:value-of select="1+$ncolumns+f:if($eqpos!='left',1,0)+f:if($eqpos!='right',1,0)"/>
+          <xsl:value-of select="3+$ncolumns"/>
         </xsl:attribute>
         <xsl:apply-templates select="." mode="begin"/>
         <xsl:apply-templates select="." mode="inalignment-begin">
@@ -524,6 +538,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 
   <xsl:template match="ltx:equation" mode="inalignment">
     <xsl:param name="ncolumns"/>
+    <xsl:param name="eqpos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <!-- Case 1: (possibly) Multi-line equation -->
@@ -615,6 +631,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
 
   <xsl:template match="ltx:equationgroup|ltx:equation" mode="aligned-constraints">
     <xsl:param name="ncolumns"/>
+    <xsl:param name="eqpos"
+               select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:if test="ltx:constraint[not(@hidden='true')]">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="tr" namespace="{$html_ns}">
@@ -622,8 +640,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
           <xsl:attribute name="class">ltx_align_right</xsl:attribute>
           <!-- the $ncolumns of math, plus whatever endpadding, but NOT the number-->
           <xsl:attribute name="colspan">
-            <xsl:value-of select="$ncolumns
-                                  +f:if($eqpos != 'left',1,0)+f:if($eqpos != 'right',1,0)"/>
+            <xsl:value-of select="$ncolumns+2"/>
           </xsl:attribute>
           <xsl:apply-templates select="." mode="constraints"/>
         </xsl:element>

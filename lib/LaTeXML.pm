@@ -15,7 +15,8 @@ use warnings;
 use Carp;
 use Encode;
 use Data::Dumper;
-use File::Temp qw(tempdir);
+use File::Temp;
+File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
 use LaTeXML::Common::Config;
@@ -153,7 +154,7 @@ sub convert {
   elsif ($$opts{whatsin} =~ /^archive/) {
     # Sandbox the input
     $$opts{archive_sourcedirectory} = $$opts{sourcedirectory};
-    my $sandbox_directory = tempdir();
+    my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     $$opts{sourcedirectory} = $sandbox_directory;
     # Extract the archive in the sandbox
     $source = unpack_source($source, $sandbox_directory);
@@ -172,7 +173,7 @@ sub convert {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
     $$opts{archive_destination}   = $$opts{destination};
     my $destination_name  = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
-    my $sandbox_directory = tempdir();
+    my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     my $extension         = $$opts{format};
     $extension =~ s/\d+$//;
     $extension =~ s/^epub|mobi$/xhtml/;
