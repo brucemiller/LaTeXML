@@ -119,7 +119,7 @@ sub insertNavigation {
 Tag('ltx:document', 'afterClose' => \&insertNavigation);
 
 DefEnvironment('{lxNavbar}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeDigest => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
@@ -132,14 +132,14 @@ DefEnvironment('{lxNavbar}', sub { },
 # Repeated header/footers should give multiple header/footer lines ?
 # or do they just arrange the lines within it?
 DefEnvironment('{lxHeader}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeDigest => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
       ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
     return; });
 DefEnvironment('{lxFooter}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 1); },
+  beforeDigest => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
