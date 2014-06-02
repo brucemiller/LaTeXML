@@ -42,7 +42,8 @@ our @EXPORT = qw( &pathname_find &pathname_findall
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
-  &pathname_cwd &pathname_mkdir &pathname_copy);
+  &pathname_cwd &pathname_mkdir &pathname_copy
+  &pathname_installation);
 
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
@@ -245,7 +246,11 @@ sub pathname_copy {
 #    was installed, by appending it to the paths.
 
 # This is presumably daemon safe...
-my @INSTALLDIRS = grep { -d $_ } map { pathname_canonical("$_/LaTeXML") } @INC;    # [CONSTANT]
+my @INSTALLDIRS = grep { (-f "$_.pm") && (-d $_) }
+  map { pathname_canonical("$_/LaTeXML") } @INC;    # [CONSTANT]
+
+sub pathname_installation {
+  return $INSTALLDIRS[0]; }
 
 sub pathname_find {
   my ($pathname, %options) = @_;
