@@ -14,15 +14,11 @@ package LaTeXML::Post::LaTeXImages;
 use strict;
 use warnings;
 use DB_File;
-#use Image::Magick;
-#use Graphics::Magick;
 use LaTeXML::Util::Image;
-use POSIX;
+use POSIX qw(ceil);
 use LaTeXML::Util::Pathname;
 use File::Temp;
 use File::Which;
-use File::Spec;
-use FindBin;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
@@ -208,7 +204,6 @@ sub process {
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
     my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", TMPDIR => 1);
-    my $preserve_tmpdir = 0;
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
     my $TEX;
@@ -227,24 +222,23 @@ sub process {
     close($TEX);
 
     # === Run LaTeX on the file.
-    my $texinputs = ".:" . join(':', $doc->getSearchPaths, "$FindBin::RealBin/../lib/LaTeXML/texmf/")
+    my $texinputs = ".:" . join(':', $doc->getSearchPaths,
+      pathname_concat(pathname_installation(), 'texmf'))
       . ":" . ($ENV{TEXINPUTS} || '');
     my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
     my $err     = system($command);
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
-    if ($err != 0) {
-      $preserve_tmpdir = 1;
+    # And sometimes it doesn't produce a dvi, even with 0 return code?
+    if (($err != 0) || (!-f "$workdir/$jobname.dvi")) {
+      my $preserve = 1 if $$LaTeXML::POST{verbosity} > 0;    # preserve junk when verbosity high.
+      $workdir->unlink_on_destroy(0) if $preserve;
       Error('shell', $command, undef,
-        "Shell command ($command) returned code $err (!= 0) for image generation",
-        "Response was: $@", "See $workdir/$jobname.log"); }
-    if (!-f "$workdir/$jobname.dvi") {
-      $preserve_tmpdir = 1;
-      Error('shell', $command, undef,
-        "Shell command '$command' (for latex) failed: See $workdir/$jobname.log");
+        "Shell command '$command' failed",
+        ($err == 0 ? "No dvi file generated"     : "returned code $err (!= 0): $@"),
+        ($preserve ? "See $workdir/$jobname.log" : "Re-run with --verbose to see TeX log"));
       return $doc; }
-
-    $preserve_tmpdir = 1 if $$LaTeXML::POST{verbosity} > 2;
+    $workdir->unlink_on_destroy(0) if $$LaTeXML::POST{verbosity} > 2;
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();
@@ -288,17 +282,16 @@ sub process {
         $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       else {
         Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } }
-    # Cleanup
-    $workdir->unlink_on_destroy( ! $preserve_tmpdir ); }
 
-  # Finally, modify the original document to record the associated images.
-  foreach my $entry (values %table) {
-    next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
-    my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
-    # Ideally, $image is already relative, but if not, make relative to document
-    my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
-    foreach my $node (@{ $$entry{nodes} }) {
-      $self->setTeXImage($doc, $node, $reldest, $width, $height, $depth); } }
+    # Finally, modify the original document to record the associated images.
+    foreach my $entry (values %table) {
+      next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
+      my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
+      # Ideally, $image is already relative, but if not, make relative to document
+      my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
+      foreach my $node (@{ $$entry{nodes} }) {
+        $self->setTeXImage($doc, $node, $reldest, $width, $height, $depth); } }
+  }
   $doc->closeCache;    # If opened.
   return $doc; }
 
@@ -458,11 +451,11 @@ sub convert_image {
 
 sub DESTROY {
   if (my $tmpdir = File::Spec->tmpdir()) {
-   if (-d $tmpdir && opendir(my $tmpdir_fh, $tmpdir)) {
-     my @empty_magick = grep {-z $_} map {"$tmpdir/$_"} readdir($tmpdir_fh);
-     closedir($tmpdir_fh);
-     unlink $_ foreach @empty_magick;
-  }}
+    if (-d $tmpdir && opendir(my $tmpdir_fh, $tmpdir)) {
+      my @empty_magick = grep { -z $_ } map { "$tmpdir/$_" } readdir($tmpdir_fh);
+      closedir($tmpdir_fh);
+      unlink $_ foreach @empty_magick;
+    } }
 }
 
 #======================================================================
