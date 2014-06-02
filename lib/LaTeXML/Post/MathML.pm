@@ -921,11 +921,7 @@ sub cmml_top {
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
   local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node, 'opacity');
 
-  my ($item, @rest) = element_nodes($node);
-  if (@rest) {    # Unparsed ???
-    return cmml_unparsed($item, @rest); }
-  else {
-    return cmml($item); } }
+  return cmml_contents($node); }
 
 sub cmml {
   my ($node) = @_;
@@ -947,7 +943,7 @@ sub cmml_internal {
     local $LaTeXML::MathML::SOURCEID_LOCK = $LaTeXML::MathML::SOURCEID;
     return cmml($content); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {    # Only present if parsing failed!
-    return cmml_unparsed(element_nodes($node)); }
+    return cmml_contents($node); }
   elsif ($tag eq 'ltx:XMApp') {
     # Experiment: If XMApp has role ID, we treat it as a "Decorated Symbol"
     if (($node->getAttribute('role') || '') eq 'ID') {
@@ -963,8 +959,24 @@ sub cmml_internal {
     return &{ lookupContent('Token', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMHint') {                               # ????
     return &{ lookupContent('Hint', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
+  elsif ($tag eq 'ltx:XMArray') {
+    return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   else {
     return ['m:mtext', {}, $node->textContent]; } }
+
+# Convert the contents of a node, which normally should contain a single child.
+# It may be empty (assumed to be an error),
+# or contain multiple nodes (presumably not properly parsed).
+# We really should use m:cerror here, but need to find appropriate csymbol cd:name
+sub cmml_contents {
+  my ($node) = @_;
+  my ($item, @rest) = element_nodes($node);
+  if (!$item) {
+    return ['m:cerror', {}, ['m:csymbol', { cd => 'ambiguous' }, 'missing-subexpression']]; }
+  elsif (@rest) {
+    return cmml_unparsed($item, @rest); }
+  else {
+    return cmml($item); } }
 
 sub cmml_unparsed {
   my (@nodes) = @_;
@@ -1109,25 +1121,50 @@ DefMathML('Apply:?:?', sub {
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
 DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
 
-DefMathML("Token:?:open-interval", undef, sub {
-    return ['m:interval', { closure => "open" }]; });
-DefMathML("Token:?:closed-interval", undef, sub {
-    return ['m:interval', { closure => "closed" }]; });
-DefMathML("Token:?:closed-open-interval", undef, sub {
-    return ['m:interval', { closure => "closed-open" }]; });
-DefMathML("Token:?:open-closed-interval", undef, sub {
-    return ['m:interval', { closure => "open-closed" }]; });
+# In pragmatic CMML, these are containers
+DefMathML("Apply:?:open-interval", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:interval', { closure => "open" }, map { cmml($_) } @args]; });
+DefMathML("Apply:?:closed-interval", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:interval', { closure => "closed" }, map { cmml($_) } @args]; });
+DefMathML("Apply:?:closed-open-interval", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:interval', { closure => "closed-open" }, map { cmml($_) } @args]; });
+DefMathML("Apply:?:open-closed-interval", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:interval', { closure => "open-closed" }, map { cmml($_) } @args]; });
 
-DefMathML("Token:?:inverse",   undef, sub { return ['m:inverse']; });
-DefMathML("Token:?:lambda",    undef, sub { return ['m:lambda']; });
-DefMathML("Token:?:compose",   undef, sub { return ['m:compose']; });
-DefMathML("Token:?:identity",  undef, sub { return ['m:ident']; });
-DefMathML("Token:?:domain",    undef, sub { return ['m:domain']; });
-DefMathML("Token:?:codomain",  undef, sub { return ['m:codomain']; });
-DefMathML("Token:?:image",     undef, sub { return ['m:image']; });
-DefMathML("Token:?:piecewise", undef, sub { return ['m:piecewise']; });
-DefMathML("Token:?:piece",     undef, sub { return ['m:piece']; });
-DefMathML("Token:?:otherwise", undef, sub { return ['m:otherwise']; });
+DefMathML("Token:?:inverse",  undef, sub { return ['m:inverse']; });
+DefMathML("Token:?:lambda",   undef, sub { return ['m:lambda']; });
+DefMathML("Token:?:compose",  undef, sub { return ['m:compose']; });
+DefMathML("Token:?:identity", undef, sub { return ['m:ident']; });
+DefMathML("Token:?:domain",   undef, sub { return ['m:domain']; });
+DefMathML("Token:?:codomain", undef, sub { return ['m:codomain']; });
+DefMathML("Token:?:image",    undef, sub { return ['m:image']; });
+
+# m:piece, m:piecewise & m:otherwise are generated as part of a cases construct
+DefMathML("Array:?:cases", undef, sub {
+    my ($node) = @_;
+    my @rows = ();
+    my @otherwises;
+    foreach my $row (element_nodes($node)) {
+      my @items = element_nodes($row);
+      my $n     = scalar(@items);
+      if ($n == 0) { }    # empty row, just skip
+      elsif ($n == 1) {   # No condition? Perhaps it means "otherwise" ?
+        push(@otherwises, $items[0]); }
+      elsif ($items[1]->textContent eq 'otherwise') {    # more robust test?
+        push(@otherwises, $items[0]); }
+      else {    # Really, the 2nd cell needs to be "Looked at"; may contain "if","when" or "unless"?!?!
+        push(@rows, ['m:piece', {}, cmml_contents($items[0]), cmml_contents($items[1])]); } }
+    if (@otherwises) {
+      if (@otherwises > 1) {
+        Warn('unexpected', 'otherwise', $node,
+          "Cases statement seems to have multiple otherwise clauses",
+          @otherwises); }
+      push(@rows, ['m:otherwise', {}, cmml_contents($otherwises[0])]); }
+    return ['m:piecewise', {}, @rows]; });
 
 #======================================================================
 # Arithmetic, Algebra and Logic:
@@ -1312,8 +1349,12 @@ DefMathML("Token:?:laplacian",  undef, sub { return ['m:laplacian']; });
 #   set, list, union, intersect, in, notin, subset, prsubset, notsubset, notprsubset,
 #   setdiff, card, cartesianproduct.
 
-DefMathML("Token:?:set",            undef, sub { return ['m:set']; });
-DefMathML("Token:?:list",           undef, sub { return ['m:list']; });
+DefMathML("Apply:?:set", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:set', {}, map { cmml($_) } @args]; });
+DefMathML("Apply:?:list", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:list', {}, map { cmml($_) } @args]; });
 DefMathML("Token:?:union",          undef, sub { return ['m:union']; });
 DefMathML("Token:?:intersection",   undef, sub { return ['m:intersect']; });
 DefMathML("Token:?:element-of",     undef, sub { return ['m:in']; });
@@ -1434,14 +1475,23 @@ DefMathML("Token:?:moment",             undef, sub { return ['m:moment']; });
 #   vector, matrix, matrixrow, determinant, transpose, selector,
 #   vectorproduct, scalarproduct, outerproduct.
 
-DefMathML("Token:?:vector",         undef, sub { return ['m:vector']; });
-DefMathML("Token:?:matrix",         undef, sub { return ['m:matrix']; });
+DefMathML("Apply:?:vector", undef, sub {
+    my ($op, @args) = @_;
+    return ['m:vector', {}, map { cmml($_) } @args]; });
+#DefMathML("Token:?:matrix",         undef, sub { return ['m:matrix']; });
 DefMathML("Token:?:determinant",    undef, sub { return ['m:determinant']; });
 DefMathML("Token:?:transpose",      undef, sub { return ['m:transpose']; });
 DefMathML("Token:?:selector",       undef, sub { return ['m:selector']; });
 DefMathML("Token:?:vector-product", undef, sub { return ['m:vectorproduct']; });
 DefMathML("Token:?:scalar-product", undef, sub { return ['m:scalarproduct']; });
 DefMathML("Token:?:outer-product",  undef, sub { return ['m:outerproduct']; });
+
+# So by default any Array is a Matrix? hmmm....
+DefMathML("Array:?:?", undef, sub {
+    my ($node) = @_;
+    return ['m:matrix', {},
+      map { ['m:matrixrow', {}, map { cmml_contents($_) } element_nodes($_)] }
+        element_nodes($node)]; });
 
 #======================================================================
 # Semantic Mapping Elements
@@ -1497,6 +1547,9 @@ DefMathML('Apply:STACKED:?', sub {
       return ['m:mstyle', { scriptlevel => '+1' }, $stack]; }
     else {
       return $stack; } });
+
+# ================================================================================
+# More exotic things
 
 # ================================================================================
 # cfrac! Ugh!
