@@ -30,6 +30,7 @@ use LaTeXML::Util::ObjectDB;
 # undef => unspecified; 0 = NO, 1 = YES
 my ($help, $showversion, $verbosity, $validate, $omit_doctype) = (0, 0, 0, 1, 0);
 my ($sourcedir, $destination) = (undef, undef);
+my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
 my ($stylesheet, $defaultcss, $defaultresources, $icon, @css, @javascript, @xsltparameters);
@@ -64,6 +65,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   # Source Options
   "sourcedirectory=s" => \$sourcedir,
   "validate!"         => \$validate,
+  "path=s"            => \@paths,
 
   # Basics
   "format=s" => \$format,
@@ -166,6 +168,10 @@ $sourcedir   = $sourcedir   && pathname_absolute($sourcedir,   pathname_cwd());
 $destination = $destination && pathname_absolute($destination, pathname_cwd());
 $sitedir     = $sitedir     && pathname_absolute($sitedir,     pathname_cwd());
 $dbfile      = $dbfile      && pathname_absolute($dbfile,      pathname_cwd());
+
+@paths = map { pathname_canonical($_) } @paths;
+if (my @baddirs = grep { !-d $_ } @paths) {
+  warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 if (defined $parallelmath) {
   warn "The --parallelmath option is obsolete; Parallel markup will be generated"
@@ -364,7 +370,9 @@ if (!$prescan) {
     require LaTeXML::Post::XSLT;
     # Copy various kinds of resources, css, javascript, icon (others?)
     my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
-    my @searchpaths = ('.', $DOCUMENT->getSearchPaths);
+    my @searchpaths = ('.',
+      (grep { -d $_ } reverse(@paths)),
+      $DOCUMENT->getSearchPaths);
     foreach my $css (@css) {
       if (pathname_is_url($css)) {    # external url ? no need to copy
         print STDERR "Using CSS=$css\n" if $verbosity > 0;
@@ -416,7 +424,8 @@ if (!$prescan) {
         warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; } }
     push(@procs, LaTeXML::Post::XSLT->new(stylesheet => $stylesheet, parameters => $parameters,
         resource_directory => $resourcedir,
-        noresources => (defined $defaultresources) && !$defaultresources,
+        noresources        => (defined $defaultresources) && !$defaultresources,
+        searchpaths        => [@searchpaths],
         %OPTIONS)); }
 
   push(@procs, LaTeXML::Post::Writer->new(format => $format, omit_doctype => $omit_doctype, is_html => $is_html, %OPTIONS));
