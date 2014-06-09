@@ -253,18 +253,19 @@ a handy repository for software installation on Mac computers;
 download and install MacPorts from that site.
 
 \paragraph{Installing prebuilt}
+\LaTeXML\ has been included in the \href{http://www.macports.org}{MacPorts}
+repository (thanks Sean, Andrew Fernandes).
+
 Since some users prefer \href{http://tug.org/mactex/}{MacTeX} or another
 \TeX\ system over MacPort's \texttt{texlive},
-the \LaTeXML\ Portfile does \emph{not} require a \TeX-installation!
-You should pre-install either MacTeX or system of your choice,
+the \LaTeXML\ Portfile does \emph{not} include a dependency on a \TeX-installation!
+However, you really should pre-install either MacTeX or a system of your choice,
 or install texlive from MacPorts using
 \begin{lstlisting}[style=shell]
 sudo port install texlive
 \end{lstlisting}
 
-\LaTeXML\ has been included in the \href{http://www.macports.org}{MacPorts}
-repository (thanks Andrew Fernandes);
-it should be installable, along with its prerequisites, using the command
+To  install \LaTeXML, along with its prerequisites, use the command
 \begin{lstlisting}[style=shell]
 sudo port install LaTeXML
 \end{lstlisting}
