@@ -216,6 +216,79 @@ sub initialize_catalogs {
     XML::LibXML->load_catalog($catalog); }
   return; }
 
+# FINISH THIS EXPERIMENT LATER....
+
+# We need to be able to find various XML resources: XSLT, RelaxNG and other random xml.
+# Catalogs provide one means to provide a level of abstraction in pathname location.
+# But at least at the top level, files ought to be searched for according to the current
+# search paths (being command line arguments, relative to source files, etc);
+# Possibly files might be referred to within XML files that libxml is already parsing
+# and these could benefit from the searchpath approach?
+#
+# We can also provide InputCallbacks to the various XML::LibXML objects that allow
+# us to programatically find & read these XML items according to the searchpaths.
+# One problem is that we don't have (from this level of the API)
+# a clean method of accessing the current search paths!
+# Another problem is that embedded references to oddly-located relative files will usually
+# get turned into paths relative to the top-level document that libxml is currently reading!
+# So, we'll be given an absolute path before we have a chance to search the searchpaths for it!
+#
+# Perhaps we should even handle the catalog functionality here?
+#
+# How should we find the searchpaths?????
+# Note also that if you use relative pathnames to refer to xml objects from within another,
+# that libxml2 will already have _assumed_ that it is relative to the base document!
+# That is, we're getting an absolute path, here.  Of course, the original request
+# could have been an absolute path, so we probably shouldn't be blithely rewriting abs paths!!!
+# We could take over the whole catalog business, however...
+# sub initialize_input_callbacks {
+#   my($object,%options) = @_;
+# #  return;
+#   # THIS IS TOTALLY WRONG!!!! Figure out how we'll find out about search paths!
+#   my $paths = $LaTeXML::SEARCHPATHS;
+#   # options might be installation_subdirs, or such pathname_find things.
+#   my $cb = XML::LibXML::InputCallback->new();
+#   $cb->register_callbacks([
+#      sub {                      # Matcher
+#        my($uri)=@_;
+#        print STDERR "INPUT CHECK: $uri\n";
+#        # We don't want to do the search here, 'cause we'll have to do it again in open!
+#        return 0 if $uri =~ m|^file://|;                 # pass on absolute pathnames
+#        return 0 if pathname_is_absolute($uri);          # a
+# #       if($uri =~ /^urn:x-LaTeXML:([^:]*):(.*)$/){
+#        print STDERR "INPUT ACCEPT: $uri\n";
+#        return 1; },
+#      sub {                      # Opener
+#        my($uri)=@_;
+#        my $handle;
+#        $uri =~ s|^file://||;
+#        # WARNING!!! Kludge alert!
+#        my @paths = ('.');
+#        push(@paths, @$LaTeXML::SEARCHPATHS) if $LaTeXML::SEARCHPATHS;
+#        push(@paths, @{$LaTeXML::POST{searchpaths}}) if $LaTeXML::POST;
+#        push(@paths, $LaTeXML::DOCUMENT->getSearchPaths) if $LaTeXML::DOCUMENT;
+#        if(my $pathname =  pathname_find($uri,
+#                                         # types => ['xsl'], installation_subdir => 'resources/XSLT',
+#                                         paths=>[@paths])){
+#          open($handle,$pathname);
+#          return $handle; }
+#        else {
+#          Error('missing-file',$uri,undef,
+#                "Couldn't find file '$uri' in search paths",
+#                "Search paths were ".join(',',@paths));
+#          return; }},
+#      sub {                      # Reader
+#        my($handle,$length)=@_;
+#        my $buffer;
+#        read($handle,$buffer,$length);
+#        return $buffer; },
+#      sub {                      # Closer
+#        my($handle)=@_;
+#        close($handle);
+#        return; }]);
+#   $object->input_callbacks($cb);
+#   return; }
+
 #======================================================================
 # Odd place for this utility, but it is needed in both conversion & post
 # ALSO needs error reporting capability.

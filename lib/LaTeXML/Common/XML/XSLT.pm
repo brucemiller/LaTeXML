@@ -16,11 +16,15 @@ use XML::LibXSLT;
 
 sub new {
   my ($class, $stylesheet) = @_;
+  my $xslt = XML::LibXSLT->new();
   LaTeXML::Common::XML::initialize_catalogs();
+  #  LaTeXML::Common::XML::initialize_input_callbacks($xslt,installation_subdir => 'resources/XSLT');
+  # Do we still need this logic, if callbacks work?
   if (!ref $stylesheet) {
     $stylesheet = LaTeXML::Common::XML::Parser->new()->parseFile($stylesheet); }
+  #    $stylesheet = $xslt->parse_stylesheet_file($stylesheet); }
   if (ref $stylesheet eq 'XML::LibXML::Document') {
-    $stylesheet = XML::LibXSLT->new()->parse_stylesheet($stylesheet); }
+    $stylesheet = $xslt->parse_stylesheet($stylesheet); }
   return bless { stylesheet => $stylesheet }, $class; }
 
 sub transform {

@@ -25,6 +25,7 @@ sub new {
 sub parseFile {
   my ($self, $file) = @_;
   LaTeXML::Common::XML::initialize_catalogs();
+  #  LaTeXML::Common::XML::initialize_input_callbacks($$self{parser});
   return $$self{parser}->parse_file($file); }
 
 sub parseString {
