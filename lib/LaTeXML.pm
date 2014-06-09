@@ -172,9 +172,9 @@ sub convert {
   if ($$opts{whatsout} =~ /^archive/) {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
     $$opts{archive_destination}   = $$opts{destination};
-    my $destination_name  = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
+    my $destination_name = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
-    my $extension         = $$opts{format};
+    my $extension = $$opts{format};
     $extension =~ s/\d+$//;
     $extension =~ s/^epub|mobi$/xhtml/;
     my $sandbox_destination = "$destination_name.$extension";
@@ -510,7 +510,8 @@ sub convert_post {
       }
 
       push(@procs, LaTeXML::Post::XSLT->new(stylesheet => $xslt,
-          parameters => $parameters,
+          parameters  => $parameters,
+          searchpaths => [@searchpaths],
           noresources => (defined $$opts{defaultresources}) && !$$opts{defaultresources},
           %PostOPS));
     }
