@@ -411,7 +411,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
           <xsl:element name="td" namespace="{$html_ns}">
             <xsl:attribute name="rowspan"><xsl:value-of select="$nrows"/></xsl:attribute>
             <xsl:attribute name="class">
-              <xsl:value-of select="concat('ltx_align_middle ltx_align_',$side)"/>
+              <xsl:value-of select="concat('ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
             </xsl:attribute>
             <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/@refnum"/>
           </xsl:element>
