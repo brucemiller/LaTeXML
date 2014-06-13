@@ -1178,10 +1178,22 @@ DefConstructor('\list@item OptionalUndigested',
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 
-DefMacro('\trivlist@item[]', '');
+# This isn't quite right, although it seems right for deep, internal uses with a single \item.
+# Perhaps we need to check trivlist's afterwards and if they are just a single item,
+# reduce it to an ltx:p ??
+# DefMacro('\trivlist@item[]', '');
+# DefEnvironment('{trivlist}',
+#   '<ltx:p>#body</ltx:p>',
+#   beforeDigest => sub { Let('\item', '\trivlist@item'); });
+
 DefEnvironment('{trivlist}',
-  '<ltx:p>#body</ltx:p>',
-  beforeDigest => sub { Let('\item', '\trivlist@item'); });
+  "<ltx:itemize>#body</ltx:itemize>",
+  properties => sub { beginItemize('trivlist'); });
+
+DefConstructor('\trivlist@item OptionalUndigested',
+  "<ltx:item xml:id='#id' refnum='#refnum'>"
+    . "<ltx:tag>#refnum</ltx:tag>",    # At least an empty tag!
+  properties => sub { ($_[1] ? (refnum => Digest(Expand($_[1]))) : ()); });
 
 DefRegister('\topsep'           => Glue(0));
 DefRegister('\partopsep'        => Glue(0));
