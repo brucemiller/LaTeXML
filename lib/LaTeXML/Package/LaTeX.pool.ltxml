@@ -386,24 +386,26 @@ DefMath('\mathring{}', "\x{030A}", operator_role => 'OVERACCENT');
 
 # These are defined in terms of \@startsection so that
 # casual user redefinitions work, too.
-DefMacroI('\chapter', undef, '\@startsection{chapter}{}{}{}{}{}', locked => 1);
-DefMacroI('\part', undef, '\@startsection{part}{}{}{}{}{}'); # not locked since sometimes redefined as partition?
-DefMacroI('\section', undef, '\@startsection{section}{}{}{}{}{}', locked => 1);
-DefMacroI('\subsection',    undef, '\@startsection{subsection}{}{}{}{}{}',    locked => 1);
-DefMacroI('\subsubsection', undef, '\@startsection{subsubsection}{}{}{}{}{}', locked => 1);
-DefMacroI('\paragraph',     undef, '\@startsection{paragraph}{}{}{}{}{}',     locked => 1);
-DefMacroI('\subparagraph',  undef, '\@startsection{subparagraph}{}{}{}{}{}',  locked => 1);
+DefMacroI('\chapter', undef, '\@startsection{chapter}{0}{}{}{}{}', locked => 1);
+DefMacroI('\part', undef, '\@startsection{part}{-1}{}{}{}{}'); # not locked since sometimes redefined as partition?
+DefMacroI('\section', undef, '\@startsection{section}{1}{}{}{}{}', locked => 1);
+DefMacroI('\subsection',    undef, '\@startsection{subsection}{2}{}{}{}{}',    locked => 1);
+DefMacroI('\subsubsection', undef, '\@startsection{subsubsection}{3}{}{}{}{}', locked => 1);
+DefMacroI('\paragraph',     undef, '\@startsection{paragraph}{4}{}{}{}{}',     locked => 1);
+DefMacroI('\subparagraph',  undef, '\@startsection{subparagraph}{5}{}{}{}{}',  locked => 1);
 map { Tag("ltx:$_", autoClose => 1) }
   qw(part chapter section subsection subsubsection paragraph subparagraph);
 
 DefMacro('\secdef {}{} OptionalMatch:*', sub { ($_[3] ? ($_[2]) : ($_[1])); });
 
 DefMacroI('\@startsection@hook', undef, Tokens());
-
+NewCounter('secnumdepth');
+SetCounter('secnumdepth', Number(3));
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
-    if ($flag) {
+    $level = ToString($level);
+    if ($flag || (($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))) {
       RefStepID($ctr);
       (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'), T_BEGIN, $type->unlist, T_END); }
     else {
@@ -501,7 +503,6 @@ DefPrimitive('\addtocontents{}{}',     undef);
 #======================================================================
 # C.4.4 Style registers
 #======================================================================
-NewCounter('secnumdepth');
 NewCounter('tocdepth');
 
 #**********************************************************************
