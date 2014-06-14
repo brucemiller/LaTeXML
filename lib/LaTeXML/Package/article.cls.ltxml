@@ -55,6 +55,7 @@ EOTeX
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
+SetCounter('secnumdepth', Number(3));
 NewCounter('part',          'document',      idprefix => 'Pt',  nested => ['section']);
 NewCounter('section',       'document',      idprefix => 'S',   nested => ['subsection']);
 NewCounter('subsection',    'section',       idprefix => 'SS',  nested => ['subsubsection']);
@@ -104,7 +105,7 @@ DefMacro('\refname', 'References');
 Tag('ltx:appendix', autoClose => 1);
 # Actually we should be using section counter
 AssignValue(counter_for_appendix => 'section');
-DefMacro('\appendix@section', '\@startsection{appendix}{}{}{}{}{}');
+DefMacro('\appendix@section', '\@startsection{appendix}{1}{}{}{}{}');
 DefMacro('\appendix',         '\@appendix');
 DefPrimitive('\@appendix', sub {
     NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
