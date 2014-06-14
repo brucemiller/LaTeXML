@@ -9,115 +9,115 @@
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basics</title>
-    <paragraph xml:id="S1.SS0.SSS0.P1">
+    <paragraph xml:id="S1.SS0.SSS0.Px1">
       <title>Basics</title>
-      <para xml:id="S1.SS0.SSS0.P1.p1">
+      <para xml:id="S1.SS0.SSS0.Px1.p1">
         <p><text class="ltx_number">-123,456</text>; <text class="ltx_number">±123,456</text>; <text class="ltx_number">±3.141,592,7×10<sup>-3.1</sup></text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P2">
+    <paragraph xml:id="S1.SS0.SSS0.Px2">
       <title>Text vs Math</title>
-      <para xml:id="S1.SS0.SSS0.P2.p1">
-        <p><text class="ltx_number">123,456.134×10<sup>123</sup></text> and <Math mode="inline" xml:id="S1.SS0.SSS0.P2.p1.m1" tex="\numprint{123456.134e123}" text="123456.134e123"><XMath><XMDual><XMTok meaning="123456.134e123" role="NUMBER" font="italic">123456.134e123</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="123" role="NUMBER">123</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="456.134" role="NUMBER">456.134</XMTok><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMTok meaning="123" role="NUMBER">123</XMTok></XMApp></XMApp></XMApp></XMDual></XMath></Math></p>
+      <para xml:id="S1.SS0.SSS0.Px2.p1">
+        <p><text class="ltx_number">123,456.134×10<sup>123</sup></text> and <Math mode="inline" xml:id="S1.SS0.SSS0.Px2.p1.m1" tex="\numprint{123456.134e123}" text="123456.134e123"><XMath><XMDual><XMTok meaning="123456.134e123" role="NUMBER" font="italic">123456.134e123</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="123" role="NUMBER">123</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="456.134" role="NUMBER">456.134</XMTok><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMTok meaning="123" role="NUMBER">123</XMTok></XMApp></XMApp></XMApp></XMDual></XMath></Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P3">
+    <paragraph xml:id="S1.SS0.SSS0.Px3">
       <title>Exponents</title>
-      <para xml:id="S1.SS0.SSS0.P3.p1">
+      <para xml:id="S1.SS0.SSS0.Px3.p1">
         <p>Pure exponents: <text class="ltx_number">10<sup>43,242</sup></text>; <text class="ltx_number">-10<sup>43,242</sup></text>; <text class="ltx_number">±10<sup>43,242</sup></text>.</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P4">
+    <paragraph xml:id="S1.SS0.SSS0.Px4">
       <title>Expansion</title>
-      <para xml:id="S1.SS0.SSS0.P4.p1">
+      <para xml:id="S1.SS0.SSS0.Px4.p1">
         <p><text class="ltx_number">1,234.567,8</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P5">
+    <paragraph xml:id="S1.SS0.SSS0.Px5">
       <title>Units</title>
-      <para xml:id="S1.SS0.SSS0.P5.p1">
-        <p><text class="ltx_number">-123,456<Math mode="inline" xml:id="S1.SS0.SSS0.P5.p1.m1" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S1.SS0.SSS0.P5.p1.m2" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok><XMTok class="ltx_unit" role="UNKNOWN">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMath></Math></text>
+      <para xml:id="S1.SS0.SSS0.Px5.p1">
+        <p><text class="ltx_number">-123,456<Math mode="inline" xml:id="S1.SS0.SSS0.Px5.p1.m1" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S1.SS0.SSS0.Px5.p1.m2" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok><XMTok class="ltx_unit" role="UNKNOWN">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMath></Math></text>
 <text class="ltx_number">360</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P6">
+    <paragraph xml:id="S1.SS0.SSS0.Px6">
       <title>Counters and Lengths</title>
-      <para xml:id="S1.SS0.SSS0.P6.p1">
+      <para xml:id="S1.SS0.SSS0.Px6.p1">
         <p>Page: <text class="ltx_number">0</text></p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P6.p2">
+      <para xml:id="S1.SS0.SSS0.Px6.p2">
         <p>Lengths:
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m1" tex="\numprint[pt]{433.62}" text="433.62 * p * t"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" font="italic">433.62</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">t</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" rpadding="1.7pt">433.62</XMTok><XMTok class="ltx_unit" role="UNKNOWN">pt</XMTok></XMApp></XMDual></XMath></Math>,
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m2" tex="\numprint[pt]{433.62}" text="433.62 * p * t"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" font="italic">433.62</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">t</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" rpadding="1.7pt">433.62</XMTok><XMTok class="ltx_unit" role="UNKNOWN">pt</XMTok></XMApp></XMDual></XMath></Math>,
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m3" tex="\numprint[in]{6}" text="6 * i * n"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">i</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">n</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="6" role="NUMBER" rpadding="1.7pt">6</XMTok><XMTok class="ltx_unit" role="UNKNOWN">in</XMTok></XMApp></XMDual></XMath></Math>,
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m4" tex="\numprint[bp]{432}" text="432 * b * p"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="432" role="NUMBER" font="italic">432</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">b</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="432" role="NUMBER" rpadding="1.7pt">432</XMTok><XMTok class="ltx_unit" role="UNKNOWN">bp</XMTok></XMApp></XMDual></XMath></Math>,
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m5" tex="\numprint[mm]{152.4}" text="152.4 * m * m"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="152.4" role="NUMBER" font="italic">152.4</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="152.4" role="NUMBER" rpadding="1.7pt">152.4</XMTok><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok></XMApp></XMDual></XMath></Math>,
-<Math mode="inline" xml:id="S1.SS0.SSS0.P6.p2.m6" tex="\numprint[cm]{15.24}" text="15.24 * c * m"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="15.24" role="NUMBER" font="italic">15.24</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">c</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="15.24" role="NUMBER" rpadding="1.7pt">15.24</XMTok><XMTok class="ltx_unit" role="UNKNOWN">cm</XMTok></XMApp></XMDual></XMath></Math>.</p>
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m1" tex="\numprint[pt]{433.62}" text="433.62 * p * t"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" font="italic">433.62</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">t</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" rpadding="1.7pt">433.62</XMTok><XMTok class="ltx_unit" role="UNKNOWN">pt</XMTok></XMApp></XMDual></XMath></Math>,
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m2" tex="\numprint[pt]{433.62}" text="433.62 * p * t"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" font="italic">433.62</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">t</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="433.62" role="NUMBER" rpadding="1.7pt">433.62</XMTok><XMTok class="ltx_unit" role="UNKNOWN">pt</XMTok></XMApp></XMDual></XMath></Math>,
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m3" tex="\numprint[in]{6}" text="6 * i * n"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">i</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">n</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="6" role="NUMBER" rpadding="1.7pt">6</XMTok><XMTok class="ltx_unit" role="UNKNOWN">in</XMTok></XMApp></XMDual></XMath></Math>,
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m4" tex="\numprint[bp]{432}" text="432 * b * p"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="432" role="NUMBER" font="italic">432</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">b</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">p</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="432" role="NUMBER" rpadding="1.7pt">432</XMTok><XMTok class="ltx_unit" role="UNKNOWN">bp</XMTok></XMApp></XMDual></XMath></Math>,
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m5" tex="\numprint[mm]{152.4}" text="152.4 * m * m"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="152.4" role="NUMBER" font="italic">152.4</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="152.4" role="NUMBER" rpadding="1.7pt">152.4</XMTok><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok></XMApp></XMDual></XMath></Math>,
+<Math mode="inline" xml:id="S1.SS0.SSS0.Px6.p2.m6" tex="\numprint[cm]{15.24}" text="15.24 * c * m"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="15.24" role="NUMBER" font="italic">15.24</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">c</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">m</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="15.24" role="NUMBER" rpadding="1.7pt">15.24</XMTok><XMTok class="ltx_unit" role="UNKNOWN">cm</XMTok></XMApp></XMDual></XMath></Math>.</p>
       </para>
     </paragraph>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Customization</title>
-    <paragraph xml:id="S2.SS0.SSS0.P1">
+    <paragraph xml:id="S2.SS0.SSS0.Px1">
       <title>Four-digit case</title>
-      <para xml:id="S2.SS0.SSS0.P1.p1">
+      <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p><text class="ltx_number">1,234</text> vs.  <text class="ltx_number">1234</text>;
 But : <text class="ltx_number">12,345</text> vs.  <text class="ltx_number">12,345</text>.</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P2">
+    <paragraph xml:id="S2.SS0.SSS0.Px2">
       <title>Missing zero</title>
-      <para xml:id="S2.SS0.SSS0.P2.p1">
+      <para xml:id="S2.SS0.SSS0.Px2.p1">
         <p><text class="ltx_number">.123,4</text> vs.  <text class="ltx_number">0.123,4</text>;
 But : <text class="ltx_number">1,234</text> vs.  <text class="ltx_number">1,234</text>;</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P3">
+    <paragraph xml:id="S2.SS0.SSS0.Px3">
       <title>Adding pluses</title>
-      <para xml:id="S2.SS0.SSS0.P3.p1">
+      <para xml:id="S2.SS0.SSS0.Px3.p1">
         <p><text class="ltx_number">1,234</text> vs.  <text class="ltx_number">+1,234</text>;
 And : <text class="ltx_number">1,234×10<sup>4</sup></text> vs.  <text class="ltx_number">1,234×10<sup>+4</sup></text>;</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P4">
+    <paragraph xml:id="S2.SS0.SSS0.Px4">
       <title>Padding</title>
-      <para xml:id="S2.SS0.SSS0.P4.p1">
-        <p><Math mode="inline" xml:id="S2.SS0.SSS0.P4.p1.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.P4.p1.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok meaning="001" role="NUMBER">001</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
-<Math mode="inline" xml:id="S2.SS0.SSS0.P4.p1.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.P4.p1.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math> –</p>
+      <para xml:id="S2.SS0.SSS0.Px4.p1">
+        <p><Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok meaning="001" role="NUMBER">001</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
+<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math> –</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P4.p2">
-        <p>vs. <Math mode="inline" xml:id="S2.SS0.SSS0.P4.p2.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.P4.p2.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
-<Math mode="inline" xml:id="S2.SS0.SSS0.P4.p2.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.P4.p2.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math></p>
+      <para xml:id="S2.SS0.SSS0.Px4.p2">
+        <p>vs. <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
+<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P5">
+    <paragraph xml:id="S2.SS0.SSS0.Px5">
       <title>Replacing zeros</title>
-      <para xml:id="S2.SS0.SSS0.P5.p1">
+      <para xml:id="S2.SS0.SSS0.Px5.p1">
         <p><text class="ltx_number">123.000,00</text>
 vs.  <text class="ltx_number">123.—</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P6">
+    <paragraph xml:id="S2.SS0.SSS0.Px6">
       <title>Units format</title>
-      <para xml:id="S2.SS0.SSS0.P6.p1">
-        <p><text class="ltx_number">300<Math mode="inline" xml:id="S2.SS0.SSS0.P6.p1.m1" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S2.SS0.SSS0.P6.p1.m2" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok><XMTok class="ltx_unit" role="UNKNOWN">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMath></Math></text>
+      <para xml:id="S2.SS0.SSS0.Px6.p1">
+        <p><text class="ltx_number">300<Math mode="inline" xml:id="S2.SS0.SSS0.Px6.p1.m1" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S2.SS0.SSS0.Px6.p1.m2" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok><XMTok class="ltx_unit" role="UNKNOWN">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMApp></XMath></Math></text>
 vs. 
-<text class="ltx_number">300<Math mode="inline" xml:id="S2.SS0.SSS0.P6.p1.m3" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S2.SS0.SSS0.P6.p1.m4" tex="\color{blue}\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP" color="#0000FF">/</XMTok><XMTok role="UNKNOWN" color="#0000FF">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post4"/><XMTok role="UNKNOWN" color="#0000FF">mm</XMTok><XMTok meaning="2" role="NUMBER" color="#0000FF">2</XMTok></XMApp></XMApp></XMath></Math></text></p>
+<text class="ltx_number">300<Math mode="inline" xml:id="S2.SS0.SSS0.Px6.p1.m3" tex="{\,}" text="absent"><XMath><XMTok meaning="absent"/></XMath></Math><Math mode="inline" xml:id="S2.SS0.SSS0.Px6.p1.m4" tex="\color{blue}\mathrm{N/mm^{2}}" text="N / mm ^ 2"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP" color="#0000FF">/</XMTok><XMTok role="UNKNOWN" color="#0000FF">N</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post4"/><XMTok role="UNKNOWN" color="#0000FF">mm</XMTok><XMTok meaning="2" role="NUMBER" color="#0000FF">2</XMTok></XMApp></XMApp></XMath></Math></text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P7">
+    <paragraph xml:id="S2.SS0.SSS0.Px7">
       <title>New units</title>
-      <para xml:id="S2.SS0.SSS0.P7.p1">
-        <p><Math mode="inline" xml:id="S2.SS0.SSS0.P7.p1.m1" tex="\numprint[in]{6}" text="6 * i * n"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">i</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">n</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="6" role="NUMBER" rpadding="1.7pt">6</XMTok><XMTok class="ltx_unit" role="UNKNOWN">in</XMTok></XMApp></XMDual></XMath></Math> vs.  <Math mode="inline" xml:id="S2.SS0.SSS0.P7.p1.m2" tex="\numprint[\!{}^{\prime\prime}]{6}" text="6 * ^prime2"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp class="ltx_unit" lpadding="-1.7pt" role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok name="prime2">′′</XMTok></XMApp></XMApp><XMWrap><XMTok meaning="6" role="NUMBER" rpadding="3.4pt">6</XMTok><XMApp class="ltx_unit" role="FLOATSUPERSCRIPT" scriptpos="3"><XMTok name="prime2">′′</XMTok></XMApp></XMWrap></XMDual></XMath></Math></p>
+      <para xml:id="S2.SS0.SSS0.Px7.p1">
+        <p><Math mode="inline" xml:id="S2.SS0.SSS0.Px7.p1.m1" tex="\numprint[in]{6}" text="6 * i * n"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">i</XMTok><XMTok class="ltx_unit" role="UNKNOWN" font="italic">n</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="6" role="NUMBER" rpadding="1.7pt">6</XMTok><XMTok class="ltx_unit" role="UNKNOWN">in</XMTok></XMApp></XMDual></XMath></Math> vs.  <Math mode="inline" xml:id="S2.SS0.SSS0.Px7.p1.m2" tex="\numprint[\!{}^{\prime\prime}]{6}" text="6 * ^prime2"><XMath><XMDual><XMApp><XMTok meaning="times" role="MULOP" font="italic">⁢</XMTok><XMTok meaning="6" role="NUMBER" font="italic">6</XMTok><XMApp class="ltx_unit" lpadding="-1.7pt" role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok name="prime2">′′</XMTok></XMApp></XMApp><XMWrap><XMTok meaning="6" role="NUMBER" rpadding="3.4pt">6</XMTok><XMApp class="ltx_unit" role="FLOATSUPERSCRIPT" scriptpos="3"><XMTok name="prime2">′′</XMTok></XMApp></XMWrap></XMDual></XMath></Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P8">
+    <paragraph xml:id="S2.SS0.SSS0.Px8">
       <title>Fancier</title>
-      <para xml:id="S2.SS0.SSS0.P8.p1">
+      <para xml:id="S2.SS0.SSS0.Px8.p1">
         <p><text class="ltx_number">-123,456</text>; <text class="ltx_number">3.141,592,7×10<sup>-32</sup></text></p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P8.p2">
-        <p><Math mode="inline" xml:id="S2.SS0.SSS0.P8.p2.m1" tex="\cdot" text="cdot"><XMath><XMTok name="cdot" role="MULOP">⋅</XMTok></XMath></Math><text class="ltx_number">-123,456</text>; <text class="ltx_number">3.141,592,7<Math mode="inline" xml:id="S2.SS0.SSS0.P8.p2.m2" tex="{}*{}" text="*"><XMath><XMTok meaning="times" role="MULOP">*</XMTok></XMath></Math>10<sup>-32</sup></text></p>
+      <para xml:id="S2.SS0.SSS0.Px8.p2">
+        <p><Math mode="inline" xml:id="S2.SS0.SSS0.Px8.p2.m1" tex="\cdot" text="cdot"><XMath><XMTok name="cdot" role="MULOP">⋅</XMTok></XMath></Math><text class="ltx_number">-123,456</text>; <text class="ltx_number">3.141,592,7<Math mode="inline" xml:id="S2.SS0.SSS0.Px8.p2.m2" tex="{}*{}" text="*"><XMath><XMTok meaning="times" role="MULOP">*</XMTok></XMath></Math>10<sup>-32</sup></text></p>
       </para>
     </paragraph>
   </section>
@@ -577,7 +577,7 @@ vs.
               <Math mode="inline" xml:id="S3.p4.m11" tex="\numprint{45,1}" text="45,1">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="45,1" role="NUMBER" font="italic" color="#0000FF">45,1</XMTok>
+                    <XMTok meaning="45,1" role="NUMBER" color="#0000FF" font="italic">45,1</XMTok>
                     <XMText>
                       <text align="right" width="15.0pt" color="#0000FF">
                         <Math mode="inline" tex="\textstyle 45" text="45" xml:id="S3.p4.m11.m1">
@@ -746,7 +746,7 @@ vs.
               <Math mode="inline" xml:id="S3.p6.m3" tex="\numprint{123456.23e1}" text="123456.23e1">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="123456.23e1" role="NUMBER" color="#0000FF" font="italic">123456.23e1</XMTok>
+                    <XMTok meaning="123456.23e1" role="NUMBER" font="italic" color="#0000FF">123456.23e1</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMText>

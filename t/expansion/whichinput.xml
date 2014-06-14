@@ -9,93 +9,93 @@
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>TeX style input</title>
-    <paragraph xml:id="S1.SS0.SSS0.P1">
+    <paragraph xml:id="S1.SS0.SSS0.Px1">
       <title>Given</title>
-      <para xml:id="S1.SS0.SSS0.P1.p1">
+      <para xml:id="S1.SS0.SSS0.Px1.p1">
         <p>whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:</p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P1.p2">
+      <para xml:id="S1.SS0.SSS0.Px1.p2">
         <p><verbatim font="typewriter">\input whichfrag1</verbatim> →[read whichfrag1.tex]</p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P1.p3">
+      <para xml:id="S1.SS0.SSS0.Px1.p3">
         <p><verbatim font="typewriter">\input whichfrag1.tex</verbatim> →[read whichfrag1.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P2">
+    <paragraph xml:id="S1.SS0.SSS0.Px2">
       <title>Given</title>
-      <para xml:id="S1.SS0.SSS0.P2.p1">
+      <para xml:id="S1.SS0.SSS0.Px2.p1">
         <p>whichfrag2 and whichfrag2.tex:</p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P2.p2">
+      <para xml:id="S1.SS0.SSS0.Px2.p2">
         <p><verbatim font="typewriter">\input whichfrag2</verbatim> →[read whichfrag2.tex]</p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P2.p3">
+      <para xml:id="S1.SS0.SSS0.Px2.p3">
         <p><verbatim font="typewriter">\input whichfrag2.tex</verbatim> →[read whichfrag2.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.P3">
+    <paragraph xml:id="S1.SS0.SSS0.Px3">
       <title>Given</title>
-      <para xml:id="S1.SS0.SSS0.P3.p1">
+      <para xml:id="S1.SS0.SSS0.Px3.p1">
         <p>whichfrag3:</p>
       </para>
-      <para xml:id="S1.SS0.SSS0.P3.p2">
+      <para xml:id="S1.SS0.SSS0.Px3.p2">
         <p><verbatim font="typewriter">\input whichfrag3</verbatim> →[read whichfrag3]</p>
       </para>
     </paragraph>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>LaTeX style input</title>
-    <paragraph xml:id="S2.SS0.SSS0.P1">
+    <paragraph xml:id="S2.SS0.SSS0.Px1">
       <title>Given</title>
-      <para xml:id="S2.SS0.SSS0.P1.p1">
+      <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p>whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P1.p2">
+      <para xml:id="S2.SS0.SSS0.Px1.p2">
         <p><verbatim font="typewriter">\input{whichfrag1}</verbatim> →[read whichfrag1.tex]</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P1.p3">
+      <para xml:id="S2.SS0.SSS0.Px1.p3">
         <p><verbatim font="typewriter">\input{whichfrag1.tex}</verbatim> [read whichfrag1.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P2">
+    <paragraph xml:id="S2.SS0.SSS0.Px2">
       <title>Given</title>
-      <para xml:id="S2.SS0.SSS0.P2.p1">
+      <para xml:id="S2.SS0.SSS0.Px2.p1">
         <p>whichfrag2 and whichfrag2.tex:</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P2.p2">
+      <para xml:id="S2.SS0.SSS0.Px2.p2">
         <p><verbatim font="typewriter">\input{whichfrag2}</verbatim> →[read whichfrag2.tex]</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P2.p3">
+      <para xml:id="S2.SS0.SSS0.Px2.p3">
         <p><verbatim font="typewriter">\input{whichfrag2.tex}</verbatim> →[read whichfrag2.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.P3">
+    <paragraph xml:id="S2.SS0.SSS0.Px3">
       <title>Given</title>
-      <para xml:id="S2.SS0.SSS0.P3.p1">
+      <para xml:id="S2.SS0.SSS0.Px3.p1">
         <p>whichfrag3:</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.P3.p2">
+      <para xml:id="S2.SS0.SSS0.Px3.p2">
         <p><verbatim font="typewriter">\input{whichfrag3}</verbatim> →[read whichfrag3]</p>
       </para>
     </paragraph>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>usepackage</title>
-    <paragraph xml:id="S3.SS0.SSS0.P1">
+    <paragraph xml:id="S3.SS0.SSS0.Px1">
       <title>Given</title>
-      <para xml:id="S3.SS0.SSS0.P1.p1">
+      <para xml:id="S3.SS0.SSS0.Px1.p1">
         <p>whichpkga and whichpkga.sty:</p>
       </para>
-      <para xml:id="S3.SS0.SSS0.P1.p2">
+      <para xml:id="S3.SS0.SSS0.Px1.p2">
         <p><verbatim font="typewriter">\usepackage{whichpkga}</verbatim> →[loaded whichpkga.sty]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S3.SS0.SSS0.P2">
+    <paragraph xml:id="S3.SS0.SSS0.Px2">
       <title>Given</title>
-      <para xml:id="S3.SS0.SSS0.P2.p1">
+      <para xml:id="S3.SS0.SSS0.Px2.p1">
         <p>whichpkgb, whichpkgb.sty and whichpkgb.sty.sty:</p>
       </para>
-      <para xml:id="S3.SS0.SSS0.P2.p2">
+      <para xml:id="S3.SS0.SSS0.Px2.p2">
         <p><verbatim font="typewriter">\usepackage{whichpkgb.sty}</verbatim> →[loaded whichpkgb.sty.sty]</p>
       </para>
     </paragraph>
