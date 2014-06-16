@@ -442,7 +442,17 @@ sub CleanID {
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $key =~ s/\s//sg;
+  # Remove common idiom:
+  $key =~ s/\${}\^{(.*?)}\$/$1/g;
+  # transform some forbidden chars
   $key =~ s/:/../g;                        # No colons!
+  $key =~ s/@/-at-/g;
+  $key =~ s/\*/-star-/g;
+  $key =~ s/\$/-dollar-/g;
+  $key =~ s/,/-comma-/g;
+  $key =~ s/%/-pct-/g;
+  $key =~ s/&/-amp-/g;
+  $key =~ s/[^\w\_\-.]//g;                 # remove everything else.
   return $key; }
 
 sub CleanLabel {
