@@ -453,7 +453,7 @@ DefConstructor('\@tag[][]{}', "?#3(<ltx:tag open='#1' close='#2'>#3</ltx:tag>)()
 DefConstructor('\\@@section{}{}{}{}{}{}', sub {
     my ($document, $type, $id, $refnum, $frefnum, $toctitle, $title, %props) = @_;
     $frefnum = undef if $frefnum && $refnum && (ToString($frefnum) eq ToString($refnum));
-    $document->openElement("ltx:" . ToString($type), 'xml:id' => $id, refnum => $refnum, frefnum => $frefnum);
+    $document->openElement("ltx:" . ToString($type), 'xml:id' => CleanID($id), refnum => $refnum, frefnum => $frefnum);
     $document->insertElement('ltx:title',    $title);
     $document->insertElement('ltx:toctitle', $toctitle)
       if $toctitle && $toctitle->unlist && (ToString($toctitle) ne ToString($title)); },
