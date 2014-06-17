@@ -47,8 +47,7 @@ sub process {
       children => [] };
     # Group the pages into a tree, in case they are nested.
     my $haschildren = {};
-    foreach my $page (@pages) {
-      presortPages($tree, $haschildren, $page); }
+    presortPages($tree, $haschildren, @pages);
     # Work out the destination paths for each page
     $self->prenamePages($doc, $tree, $haschildren);
     # Now, create remove and create documents for each page.
@@ -69,15 +68,17 @@ sub getPages {
 # If a page contains NOTHING BUT child pages (except frontmatter),
 # we could just merge that page as a level in it's containing TOC instead of a document.???
 sub presortPages {
-  my ($tree, $haschildren, $page) = @_;
+  my ($tree, $haschildren, @pages) = @_;
   my $nextlevel;    # if $page is a descendant of some othe page
-####  if(($nextlevel = $$tree{children}[-1]) && (isDescendant($page, $$nextlevel{node}))){
-  if (($nextlevel = $$tree{children}[-1]) && (isChild($page, $$nextlevel{node}))) {
-    presortPages($nextlevel, $haschildren, $page); }
-  else {
+  foreach my $page (@pages) {
+    # $page should be a child of the current node, or a child of some higher one.
+    while ($$tree{parent} && !isChild($page, $$tree{node})) {
+      $tree = $$tree{parent}; }
+    my $entry = { node => $page, upid => $$tree{id}, id => $page->getAttribute('xml:id'),
+      parent => $tree, children => [] };
     $$haschildren{ $$tree{node}->localname } = 1;    # Wrong key for this!?!
-    push(@{ $$tree{children} },
-      { node => $page, upid => $$tree{id}, id => $page->getAttribute('xml:id'), parent => $tree, children => [] }); }
+    push(@{ $$tree{children} }, $entry);
+    $tree = $entry; }    # go "down", in case following are children of current node.
   return; }
 
 # Get destination pathnames for each page.
@@ -101,11 +102,11 @@ sub processPages {
     while (my $sib = $parent->lastChild) {
       $parent->removeChild($sib);
       unshift(@removed, $sib);
-      last if $$sib == ${ $entries[0]->{node} }; }
+      last if $sib->isSameNode($entries[0]->{node}); }
     # Build toc from adjacent nodes that are being extracted.
     my @toc = ();
     # Process a sequence of adjacent pages; these will go into the same TOC.
-    while (@entries && @removed && ${ $entries[0]->{node} } == ${ $removed[0] }) {
+    while (@entries && @removed && $entries[0]->{node}->isSameNode($removed[0])) {
       my $entry = shift(@entries);
       my $page  = $$entry{node};
       $doc->removeNodes(shift(@removed));
