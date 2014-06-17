@@ -1,0 +1,26 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ellipsis                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Nothing much to do here!
+#**********************************************************************
+DefMacro('\ellipsisgap',         '');
+DefMacro('\ellipsispunctuation', ',.:;!?');
+# \textellipsis already defined.
+DefMacro('\midwordellipsis', '\textellipsis');
+
+1;

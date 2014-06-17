@@ -1,0 +1,64 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  lineno                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Probably not that sensible to number lines...
+#**********************************************************************
+
+DefEnvironment('{linenumbers*}[Number]',         '#body');
+DefEnvironment('{runninglinenumbers*}[Number]',  '#body');
+DefEnvironment('{pagewiselinenumbers*}[Number]', '#body');
+
+DefMacro('\linenumbers OptionalMatch:* [Number]',        '');
+DefMacro('\nolinenumbers',                               '');
+DefMacro('\runninglinenumbers OptionalMatch:* [Number]', '');
+DefMacro('\pagewiselinenumbers',                         '');
+DefMacro('\realpagewiselinenumbers',                     '');
+DefMacro('\runningpagewiselinenumbers',                  '');
+
+DefMacro('\leftlinenumbers  OptionalMatch:*',  '');
+DefMacro('\rightlinenumbers OptionalMatch:*',  '');
+DefMacro('\switchlinenumbers OptionalMatch:*', '');
+
+DefMacro('\setrunninglinenumbers',  '');
+DefMacro('\setpagewiselinenumbers', '');
+
+DefMacro('\resetlinenumber [Number]',   '');
+DefMacro('\modulolinenumbers [Number]', '');
+
+DefMacro('\linenumberfont', '');
+DefRegister('\linenumbersep' => Number(0));
+
+DefMacro('\thelinenumber', '');
+
+DefMacro('\makeLineNumber',        '');
+DefMacro('\makeLineNumberRunning', '');
+DefMacro('\makeLineNumberOdd',     '');
+DefMacro('\makeLineNumberEven',    '');
+DefMacro('\makeLineNumberRight',   '');
+DefMacro('\makeLineNumberLeft',    '');
+DefMacro('\LineNumber',            '');
+
+DefMacro('\numquote',        '\quote');
+DefMacro('\endnumquote',     '\endquote');
+DefMacro('\numquotation',    '\quote');
+DefMacro('\endnumquotation', '\endquote');
+
+DefMacro('\quotelinenumberfont', '');
+DefRegister('\quotelinenumbersep' => Number(0));
+
+1;
