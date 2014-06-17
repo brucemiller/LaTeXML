@@ -48,11 +48,12 @@ my ($timestamp)          = (undef);
 my @math_formats         = ();
 my %removed_math_formats = ();
 my $splitback            = "//ltx:bibliography | //ltx:appendix | //ltx:index";
-my %splitpaths =
-  (chapter => "//ltx:chapter | $splitback",
-  section    => "//ltx:chapter | //ltx:section | $splitback",
-  subsection => "//ltx:chapter | //ltx:section | //ltx:subsection | $splitback",
-  subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | $splitback");
+my %splitpaths           = (
+  part       => "//ltx:part | $splitback",
+  chapter    => "//ltx:part | //ltx:chapter | $splitback",
+  section    => "//ltx:part | //ltx:chapter | //ltx:section | $splitback",
+  subsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | $splitback",
+  subsubsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | $splitback");
 
 # Obsolete...
 my $parallelmath;
