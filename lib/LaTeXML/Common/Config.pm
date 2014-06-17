@@ -446,11 +446,12 @@ sub _prepare_options {
       $$opts{splitat}     = 'section' unless defined $$opts{splitat};
       $$opts{splitnaming} = 'id'      unless defined $$opts{splitnaming};
       $$opts{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $$opts{splitback};
-      $$opts{splitpaths} =
-        { chapter => "//ltx:chapter | " . $$opts{splitback},
-        section    => "//ltx:chapter | //ltx:section | " . $$opts{splitback},
-        subsection => "//ltx:chapter | //ltx:section | //ltx:subsection | " . $$opts{splitback},
-        subsubsection => "//ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $$opts{splitback} }
+      $$opts{splitpaths} = {
+        part    => "//ltx:part | " . $$opts{splitback},
+        chapter => "//ltx:part | //ltx:chapter | " . $$opts{splitback},
+        section => "//ltx:part | //ltx:chapter | //ltx:section | " . $$opts{splitback},
+        subsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | " . $$opts{splitback},
+        subsubsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $$opts{splitback} }
         unless defined $$opts{splitpaths};
 
       $$opts{splitnaming} = _checkOptionValue('--splitnaming', $$opts{splitnaming},
