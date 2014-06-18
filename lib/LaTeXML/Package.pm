@@ -75,7 +75,7 @@ our @EXPORT = (qw(&DefExpandable
     &DefLigature &DefMathLigature),
 
   # Mid-level support for writing definitions.
-  qw(&Expand &Invocation &Digest &DigestIf &DigestLiteral
+  qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
     &Tokenize &TokenizeInternal),
 
@@ -352,6 +352,14 @@ sub Let {
 sub Digest {
   my (@stuff) = @_;
   return $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff)); }
+
+sub DigestText {
+  my (@stuff) = @_;
+  my $stomach = $STATE->getStomach;
+  $stomach->beginMode('text');
+  my $result = $stomach->digest(Tokens(map { (ref $_ ? $_ : TokenizeInternal($_)) } @stuff));
+  $stomach->endMode('text');
+  return $result; }
 
 # probably need to export this, as well?
 sub DigestLiteral {
@@ -645,9 +653,9 @@ sub RefStepCounter {
   #  my $frefnum = ToString(Digest(Invocation(T_CS('\lx@fnum@@'),$ctr)));
   #  my $rrefnum  = ToString(Digest(Invocation(T_CS('\lx@refnum@@'),$ctr)));
 
-  my $refnum    = Digest(T_CS("\\the$ctr"));
-  my $frefnum   = Digest(Invocation(T_CS('\lx@fnum@@'), $ctr));
-  my $rrefnum   = Digest(Invocation(T_CS('\lx@refnum@@'), $ctr));
+  my $refnum    = DigestText(T_CS("\\the$ctr"));
+  my $frefnum   = DigestText(Invocation(T_CS('\lx@fnum@@'), $ctr));
+  my $rrefnum   = DigestText(Invocation(T_CS('\lx@refnum@@'), $ctr));
   my $s_refnum  = ToString($refnum);
   my $s_frefnum = ToString($frefnum);
   my $s_rrefnum = ToString($rrefnum);
