@@ -134,7 +134,9 @@ tr > td.ltx_eqn_left_padright,
 tr > td.ltx_eqn_right_padleft  { width:100%; }
 
 /* Position the tag to look like a normal item bullet. */
-li.ltx_item > .ltx_tag { display:inline; margin-left:-1.5em; }
+li.ltx_item > .ltx_tag {
+   display:inline-block; margin-left:-1.5em; min-width:1.5em;
+   text-align:right; }
 .ltx_item .ltx_tag + .ltx_para,
 .ltx_item .ltx_tag + .ltx_para .ltx_p  { display:inline; }
 
