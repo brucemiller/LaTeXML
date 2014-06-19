@@ -128,6 +128,9 @@
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_tag ltx_tag_<xsl:value-of select="local-name(..)"/></xsl:attribute>
       <xsl:choose>
+        <xsl:when test="../ltx:tag">
+          <xsl:apply-templates select="../ltx:tag"/>    
+        </xsl:when>
         <xsl:when test="../@frefnum">
           <xsl:value-of select="../@frefnum"/>    
         </xsl:when>
