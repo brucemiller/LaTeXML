@@ -101,6 +101,9 @@ the processor will lift such elements out of math, when possible</a:documentatio
   </define>
   <define name="equation_model">
     <a:documentation>Content model for \elementref{equation}.</a:documentation>
+    <optional>
+      <ref name="tag"/>
+    </optional>
     <zeroOrMore>
       <choice>
         <ref name="Math"/>

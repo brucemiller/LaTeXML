@@ -71,7 +71,8 @@ equation_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{equation}.
-equation_model = (Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)* 
+equation_model =
+  tag?, (Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)* 
 
 #======================================================================
 

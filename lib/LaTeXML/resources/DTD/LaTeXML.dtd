@@ -479,14 +479,15 @@
   hidden CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
-<!ELEMENT ltx:equation (ltx:Math|ltx:MathFork|ltx:text
-                        |ltx:inline-itemize|ltx:inline-enumerate
-                        |ltx:inline-description|ltx:inline-block
-                        |ltx:verbatim|ltx:break|ltx:graphics|ltx:rawhtml
-                        |ltx:rawliteral|ltx:inline-para|ltx:tabular
-                        |ltx:picture|ltx:note|ltx:indexmark
-                        |ltx:glossarymark|ltx:rdf|ltx:ERROR|ltx:resource
-                        |ltx:navigation|ltx:constraint)*>
+<!ELEMENT ltx:equation (ltx:tag?,
+                        (ltx:Math|ltx:MathFork|ltx:text
+                         |ltx:inline-itemize|ltx:inline-enumerate
+                         |ltx:inline-description|ltx:inline-block
+                         |ltx:verbatim|ltx:break|ltx:graphics
+                         |ltx:rawhtml|ltx:rawliteral|ltx:inline-para
+                         |ltx:tabular|ltx:picture|ltx:note|ltx:indexmark
+                         |ltx:glossarymark|ltx:rdf|ltx:ERROR
+                         |ltx:resource|ltx:navigation|ltx:constraint)*)>
 <!ATTLIST ltx:equation
   xmlns:ltx CDATA #FIXED 'http://dlmf.nist.gov/LaTeXML'
   class NMTOKENS #IMPLIED
