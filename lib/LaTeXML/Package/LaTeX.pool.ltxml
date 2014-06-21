@@ -1806,32 +1806,26 @@ DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    my $key = "defined:" . Stringify($cs);
-    if (LookupValue($key)) {
+    if (!isDefinable($cs)) {
       Error('ignore', $cs, $stomach,
         "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'");
       return; }
-    AssignValue($key => 1);    # only if defined by \newcommand, not \def!
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 DefPrimitive('\CheckCommand OptionalMatch:* DefToken [][]{}', undef);
 
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    my $key = "defined:" . Stringify($cs);
-    AssignValue($key => 1);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    my $key = "defined:" . Stringify($cs);
-    return if LookupValue($key) || LookupDefinition($cs);
+    return unless isDefinable($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
 DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-###  return if LookupDefinition($cs);  # Why was this here? (shouldn't redefine?)
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # There are a bunch of ways in LaTeX to assign a command to
@@ -1869,7 +1863,7 @@ DefPrimitive('\ProvideTextCommand DefToken {}[][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (!LookupDefinition($cs)) {    # If not already defined...
+    if (isDefinable($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -1887,7 +1881,7 @@ DefPrimitive('\DeclareTextSymbol DefToken {}{Number}', sub {
     $code = $code->valueOf;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (!LookupDefinition($cs)) {    # If not already defined...
+    if (isDefinable($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -3920,16 +3914,18 @@ DefMathI('\owns',       undef, "\x{220B}", role => 'RELOP', meaning => 'contains
 DefMacro('\@namedef{}', '\expandafter\def\csname #1\endcsname');
 DefMacro('\@nameuse{}', '\csname #1\endcsname');
 
+sub isDefinable {
+  my ($token) = @_;
+  my $meaning = LookupMeaning($token);
+  my $name = $token->getString; $name =~ s/^\\//;
+  my $endmeaning = LookupMeaning(T_CS('\end' . $name));
+  return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
+      && ((!defined $endmeaning) || ($endmeaning eq LookupMeaning(T_CS('\relax'))))
+      && (($name ne 'relax') && ($name !~ /^end/))); }
+
 DefMacro('\@ifdefinable Token {}', sub {
     my ($gullet, $token, $if) = @_;
-    my $meaning    = LookupMeaning($token);
-    my $name       = $token->getString; $name =~ s/^\\//;
-    my $endmeaning = LookupMeaning(T_CS('\end' . $name));
-    if (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
-      && ((!defined $endmeaning) || ($endmeaning eq LookupMeaning(T_CS('\relax'))))
-      && (($name ne 'relax') && ($name !~ /^end/))) {
-      $if->unlist; }
-    else { (); } });
+    (isDefinable($token) ? $if->unlist : ()); });
 
 DefMacroI('\@spaces', undef, '\space\space\space\space');
 Let('\@sptoken', T_SPACE);
