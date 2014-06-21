@@ -38,18 +38,16 @@ Let('\plainfmtversion', '\fmtversion');
 DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub {
     my ($stomach, $cs, $params, $body) = @_;
     $params = parseDefParameters($cs, $params);    # in TeX.pool
-    my $key = "defined:" . Stringify($cs);
-    Error('ignore', $cs, $stomach,
-      "Ignoring redefinition (\\define) of '" . Stringify($cs) . "'") if LookupValue($key);
-    AssignValue($key => 1);    # only if defined by \define (or \newcommand!)??? Or ANY \def ???
+    if (!isDefinable($cs)) {
+      Error('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\define) of '" . Stringify($cs) . "'");
+      return; }
     DefMacroI($cs, $params, $body);
     return; });
 
 DefPrimitive('\redefine SkipSpaces Token UntilBrace {}', sub {
     my ($stomach, $cs, $params, $body) = @_;
     $params = parseDefParameters($cs, $params);    # in TeX.pool
-    my $key = "defined:" . Stringify($cs);
-    AssignValue($key => 1);    # only if defined by \define (or \newcommand!), not \def!
     DefMacroI($cs, $params, $body);
     return; });
 
@@ -58,9 +56,7 @@ DefPrimitive('\predefine Token Token', sub {
 
 DefPrimitive('\undefine Token', sub {
     my ($stomach, $cs) = @_;
-    my $key = "defined:" . Stringify($cs);
-    AssignValue($key => 0);
-    Let($_[1], '\undefined'); });
+    Let($_[1], '\relax'); });
 
 #======================================================================
 # Style choices
