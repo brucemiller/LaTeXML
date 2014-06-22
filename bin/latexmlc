@@ -32,7 +32,7 @@ use lib catdir($RealBin_safe, "..", "lib");
 
 #TODO: Do we ever care about ENV PATH that much? Do we miss on some feature like that?
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
-use LaTeXML::Version;
+use LaTeXML;
 use LaTeXML::Common::Config;
 use URI::Escape;
 use HTTP::Response;
