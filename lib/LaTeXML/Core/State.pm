@@ -40,7 +40,7 @@ use LaTeXML::Core::Token;    # To get CatCodes
 
 # There are 2 main structures used here.
 # For each of several $table's (being "value", "meaning", "catcode" or other space of names),
-# ech table maintains the bound values, and "undo" defines the stack frames:
+# each table maintains the bound values, and "undo" defines the stack frames:
 #    $$self{$table}{$key} = [$current_value, $previous_value, ...]
 #    $$self{undo}[$frame]{$table}{$key} = (undef | $n)
 # such that the "current value" associated with $key is the 0th element of the table array;
@@ -72,7 +72,9 @@ use LaTeXML::Core::Token;    # To get CatCodes
 #
 # There are tables for
 #  catcode: keys are char;
-#         Also, "math:$char" =1 when $char is active in math.
+#     Also, "math:$char" =1 when $char is active in math.
+#  mathcode, sfcode, lccode, uccode, delcode : are similar to catcode but store
+#    additional kinds codes per char (see TeX)
 #  value: keys are anything (typically a string, though) and value is the value associated with it
 #         some special cases? "Boolean:$cs",...
 #  meaning: The definition assocated with $key, usually a control-sequence.
