@@ -16,33 +16,30 @@ use warnings;
 use FindBin;
 
 #======================================================================
-# This puts versioning in one place so that all components of LaTeXML
-# can easily see it with only a minimal import.
-# However, we still must contrive that $VERSION is visible
-# DIRECTLY in LaTeXML.pm, otherwise MakeMaker won't see it
-# and modules that depend on LaTeXML won't see the version number!
-# This formulation:
-###   $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
-# seems to work around ExtUtils::MakeMaker's get_version.
-# Keep this as $LaTeXML::Version::VERSION, since get_version clears $VERSION!!!
+# The original idea here was to
+#  * collect VERSION (& related info) in ONE place
+#  * to provide a small file, editable by make, which could record git status
+# However, Perl/MakeMaker/CPAN maintain a perverse distinction between
+# module & distribution versions that makes this hard.
+#======================================================================
+# We _could_ put in Makefile.PL
+#   VERSION_FROM       => 'lib/LaTeXML/Version.in',
+# In here:
+#    use version; our $VERSION = version->declare("0.8.0");
+#    $LaTeXML::VERSION = $VERSION;   # "export" it...
+# and in LaTeXML:
+#  use LaTeXML::Version;
+#  $LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
+# That ALMOST works, but the CPAN indexer ONLY looks for explicit versions
+# in the "top level module"
+#======================================================================
+# SO, we keep the actual version in LaTeXML.pm
+# BUT, we can't "use LaTeXML" here, else we get a dependency loop,
+# so anyone that uses LaTeXML::Version must use LaTeXML as well.
 #======================================================================
 
-use vars qw($VERSION);
-
-# This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.0");
-
-$LaTeXML::VERSION = $VERSION;   # "export" it...
-
 # This is the git/svn/whatever revision; it should be filled in by make.
-$LaTeXML::REVISION = "__REVISION__";
-
-# Derived, more informative version numbers
-$LaTeXML::FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
-  . ($LaTeXML::REVISION ? "; revision $LaTeXML::REVISION" : '');
-
-# Handy identifier string for any executable.
-$LaTeXML::IDENTITY = "$FindBin::Script ($LaTeXML::FULLVERSION)";
+our $REVISION = "__REVISION__";
 
 1;
 

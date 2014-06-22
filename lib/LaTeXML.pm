@@ -26,8 +26,16 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
 use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
-# Contrived!!! See LaTeXML::Version
-$LaTeXML::VERSION = do { use LaTeXML::Version; $LaTeXML::Version::VERSION; };
+use vars qw($VERSION);
+# This is the main version of LaTeXML being claimed.
+use version; our $VERSION = version->declare("v0.8.0");
+use LaTeXML::Version;
+# Derived, more informative version numbers
+our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
+  . ($LaTeXML::Version::REVISION ? "; revision $LaTeXML::Version::REVISION" : '');
+# Handy identifier string for any executable.
+our $IDENTITY = "$FindBin::Script ($LaTeXML::FULLVERSION)";
+
 our $LOG_STACK = 0;
 
 #**********************************************************************
