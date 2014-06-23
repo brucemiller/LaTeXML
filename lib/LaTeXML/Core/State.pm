@@ -132,8 +132,11 @@ sub assign_internal {
     $$frame{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
     unshift(@{ $$self{$table}{$key} }, $value); }
   elsif ($scope eq 'local') {
-    $$self{undo}[0]{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
-    unshift(@{ $$self{$table}{$key} }, $value); }    # And push new binding.
+    if ($$self{undo}[0]{$table}{$key}) {    # If the value was previously assigned in this frame
+      $$self{$table}{$key}[0] = $value; }    # Simply replace the value
+    else {                                   # Otherwise, push new value & set 1 to be undone
+      $$self{undo}[0]{$table}{$key} = 1;
+      unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   else {
     # print STDERR "Assigning $key in stash $stash\n";
     assign_internal($self, 'stash', $scope, [], 'global') unless $$self{stash}{$scope}[0];
@@ -360,6 +363,7 @@ sub popFrame {
     foreach my $table (keys %$undo) {
       my $undotable = $$undo{$table};
       foreach my $name (keys %$undotable) {
+        # Typically only 1 value to shift off the table, unless scopes have been activated.
         map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
   return; }
 
@@ -388,7 +392,8 @@ sub endSemiverbatim {
 
 sub pushDaemonFrame {
   my ($self) = @_;
-  unshift(@{ $$self{undo} }, {});
+  my $frame = {};
+  unshift(@{ $$self{undo} }, $frame);
   # Push copys of data for any data that is mutable;
   # Only the value & stash tables need to be to be checked.
   # NOTE ??? No...
@@ -398,14 +403,14 @@ sub pushDaemonFrame {
         my $value = $$hash{$key}[0];
         my $type  = ref $value;
         if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
-                                              # Local assignment
-          $$self{undo}[0]{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
+                                                          # Local assignment
+          $$frame{$table}{$key} = 1;                      # Note new value in this frame.
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
       # Record the contents of LaTeXML::Package::Pool as preloaded
   my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
   $self->assignValue('_PRELOADED_POOL_', $pool_preloaded_hash, 'global');
   # Now mark the top frame as LOCKED!!!
-  $$self{undo}[0]{_FRAME_LOCK_} = 1;
+  $$frame{_FRAME_LOCK_} = 1;
   return; }
 
 sub daemon_copy {
@@ -466,6 +471,8 @@ sub activateScope {
       # Now make local assignments for all those in the stash.
       my $frame = $$self{undo}[0];
       foreach my $entry (@$defns) {
+        # Here we ALWAYS push the stashed values into the table
+        # since they may be popped off by deactivateScope
         my ($table, $key, $value) = @$entry;
         $$frame{$table}{$key}++;    # Note that this many values must be undone
         unshift(@{ $$self{$table}{$key} }, $value); } } }    # And push new binding.
@@ -483,6 +490,8 @@ sub deactivateScope {
       foreach my $entry (@$defns) {
         my ($table, $key, $value) = @$entry;
         if ($$self{$table}{$key}[0] eq $value) {
+          # Here we're popping off the values pushed by activateScope
+          # to (possibly) reveal a local assignment in the same frame, preceding activateScope.
           shift(@{ $$self{$table}{$key} });
           $$frame{$table}{$key}--; }
         else {
