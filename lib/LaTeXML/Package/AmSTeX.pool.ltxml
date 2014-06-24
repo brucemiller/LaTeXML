@@ -38,7 +38,7 @@ Let('\plainfmtversion', '\fmtversion');
 DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub {
     my ($stomach, $cs, $params, $body) = @_;
     $params = parseDefParameters($cs, $params);    # in TeX.pool
-    if (!isDefinable($cs)) {
+    if (LookupDefinition($cs)) {
       Error('ignore', $cs, $stomach,
         "Ignoring redefinition (\\define) of '" . Stringify($cs) . "'");
       return; }
