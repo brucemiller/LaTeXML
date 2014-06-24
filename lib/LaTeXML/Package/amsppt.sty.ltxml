@@ -70,7 +70,7 @@ DefConstructor('\@@@urladdr{}', "<ltx:contact role='url'>#1</ltx:contact>");
 DefMacro('\urladdr Until:\endurladdr', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
 
 DefMacro('\thanks Until:\endthanks',         '\@add@frontmatter{ltx:note}[role=support]{#1}');
-DefMacro('\date Until:\date',                '\@add@frontmatter{ltx:date}[role=creation]{#1}');
+DefMacro('\date Until:\enddate',             '\@add@frontmatter{ltx:date}[role=creation]{#1}');
 DefMacro('\dedicatory Until:\enddedicatory', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
 DefMacro('\translator Until:\endtranslator', '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#1}}');
 DefMacro('\keywords Until:\endkeywords',   '\@add@frontmatter{ltx:keywords}{#1}');
