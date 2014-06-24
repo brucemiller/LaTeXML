@@ -495,9 +495,11 @@ sub new {
     else {
       $data{siteDirectory} = $data{destinationDirectory}; } }
 
-  $data{document}      = $xmldoc;
-  $data{namespaces}    = { ltx => $NSURI } unless $data{namespaces};
-  $data{namespaceURIs} = { $NSURI => 'ltx' } unless $data{namespaceURIs};
+  $data{document} = $xmldoc;
+  if (!$xmldoc || !($xmldoc->documentElement)) {
+    Fatal('expected', 'document', undef, "Document has no root element"); }
+  $data{namespaces}    = { ltx    => $NSURI } unless $data{namespaces};
+  $data{namespaceURIs} = { $NSURI => 'ltx' }  unless $data{namespaceURIs};
 
   # Fetch any additional namespaces
   foreach my $ns ($xmldoc->documentElement->getNamespaces) {
