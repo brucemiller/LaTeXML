@@ -129,12 +129,12 @@ sub assign_internal {
         delete $$frame{$table}{$key}; }
       last if $$frame{_FRAME_LOCK_}; }
     # whatever is left -- if anything -- should be bindings below the locked frame.
-    $$frame{$table}{$key}++;    # Note that this many values -- ie. one more -- must be undone
+    $$frame{$table}{$key} = 1;                # Note that there's only one value in the stack, now
     unshift(@{ $$self{$table}{$key} }, $value); }
   elsif ($scope eq 'local') {
-    if ($$self{undo}[0]{$table}{$key}) {    # If the value was previously assigned in this frame
-      $$self{$table}{$key}[0] = $value; }    # Simply replace the value
-    else {                                   # Otherwise, push new value & set 1 to be undone
+    if ($$self{undo}[0]{$table}{$key}) {      # If the value was previously assigned in this frame
+      $$self{$table}{$key}[0] = $value; }     # Simply replace the value
+    else {                                    # Otherwise, push new value & set 1 to be undone
       $$self{undo}[0]{$table}{$key} = 1;
       unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   else {
