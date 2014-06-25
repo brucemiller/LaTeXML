@@ -1,0 +1,50 @@
+\documentclass{article}
+
+\usepackage{xargs}
+
+
+\newcommand{\comm}[1]{Hello #1!}
+\newcommandx{\commx}[3][2=xxX, 3=Xxx]{#2 Hello #1! #3}
+\newcommandx*\coord[3][1=1, 3=n]{(#2\_{#1}, ..., #2\_{#3})}
+
+\renewcommandx{\comm}[1]{Hello #1!!!}
+\providecommandx{\comm}[5][2=24, 4=42]{foo bar baz}
+
+\newenvironmentx{foo}{bar}{hum}
+\renewenvironmentx{foo}[2][1=honey, 2=mustard]{``{#1} - ``{#2}''}{``The End''}
+
+\newcommandx{\hihi}[2][1=honey, 2=mustard, usedefault]{``{#1}'' - ``{#2}''}
+\newcommandx{\hihihi}[2][1=honey, 2=mustard, usedefault=ha]{``{#1}'' - ``{#2}''}
+
+\newcommandx{\greeting}[2][1=Hello, 2=World]{#1 #2!}
+\newcommandx{\greetingUsedef}[2][1=Hello, 2=World, usedefault]{#1 #2!}
+\newcommandx{\greetingUsedefAt}[2][1=Hello, 2=World, usedefault=@]{#1 #2!}
+
+\newcommandx{\prefixstuff}[1][addprefix=\global]{Prefix: #1}
+\newcommandx*{\prefixstuffstar}[1][addprefix=\global]{** Prefix: #1 **}
+
+\begin{document}
+
+\comm{World} \\
+\commx{World} \\
+
+\coord{x} \\
+\coord[0]{y} \\
+\coord{z}[m] \\
+\coord[0]{t}[m]
+
+\begin{foo}
+	butterfly
+\end{foo}
+
+\greeting \\
+\greeting[Bye] \\
+\greeting[][Tree] \\
+\greetingUsedef[][Forrest] \\
+\greetingUsedefAt[@][Sea] \\
+\greetingUsedefAt[][Lake] \\
+
+\prefixstuff{foo} \\
+\prefixstuffstar{bar} \\
+
+\end{document}

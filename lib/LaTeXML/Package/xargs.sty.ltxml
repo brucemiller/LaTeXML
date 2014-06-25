@@ -1,0 +1,136 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | xargs.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released under the Gnu Public License                               | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+######################################################
+
+DefKeyVal('xargs', 'usedefault', undef, '');
+
+##################
+# Parameter Type #
+##################
+
+DefParameterType('XArgsOptional', sub {
+    my ($gullet, $default, $usedefault, $inner) = @_;
+    my $value = $gullet->readOptional;
+    if (($usedefault && ToString($value) eq ToString($usedefault)) ||
+      (!defined $usedefault && ToString($value) eq '')) {
+      $value = $default; }
+    $value; },
+  optional => 1);
+
+#########
+# Utils #
+#########
+
+# generate $paramlist
+sub convertXArgsArgs {
+  my ($nargs, $keyval) = @_;
+  my @paramlist = ();
+
+  # fix $nargs
+  $nargs = $nargs->toString if ref $nargs;
+  $nargs = 0 unless $nargs;
+
+  for my $i (1 .. $nargs) {
+    my $val = ($keyval) ? $keyval->getValue($i) : undef;
+    if (defined $val) {
+      my $usedef = ($keyval) ? $keyval->getValue('usedefault') : undef;
+      if (defined $usedef) {
+        push(@paramlist, LaTeXML::Core::Parameter->new(
+            'XArgsOptional',
+            "XArgsOptional:" . $val->toString() . "|" . ToString($usedef),
+            extra => [$val, $usedef]
+            )); }
+      else {
+        push(@paramlist, LaTeXML::Core::Parameter->new(
+            'Optional',
+            "Optional:" . $val->toString(),
+            extra => [$val, $usedef]
+            )); } }
+    else {
+      push(@paramlist, LaTeXML::Core::Parameter->new('Plain', "{}")); } }
+  return LaTeXML::Core::Parameters->new(@paramlist); }
+
+# generate command prefix (\global, \long, ...; but not \outer)
+sub getXArgsIsGlobal {
+  my ($star, $keyval) = @_;
+  my $prefix = '';
+  if (!defined $star) {
+    # defaults to \long for unstarred form
+    $prefix = '\\long'; }
+  if (defined $keyval) {
+    my $p = $keyval->getValue('addprefix');
+    $prefix .= join('', map { ToString($_) } (ref $p eq 'ARRAY' ? @$p : ($p))); }
+
+  # 1 if global in $prefix, 0 otherwise
+  return (index($prefix, 'global') != -1) ? 1 : 0; }
+
+##########
+# Macros #
+##########
+
+DefPrimitive('\CheckCommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', undef);
+
+DefPrimitive('\newcommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
+    if (!isDefinable($cs)) {
+      Error('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\newcommandx) of '" . Stringify($cs) . "'");
+      return; }
+    DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+DefPrimitive('\renewcommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
+    DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+DefPrimitive('\providecommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
+    return unless isDefinable($cs);
+    DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+DefPrimitive('\DeclareRobustCommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
+    DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+DefPrimitive('\newenvironmentx OptionalMatch:* {} [] OptionalKeyVals:xargs {}{}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $preamble, $postamble) = @_;
+    if (LookupDefinition(T_CS("\\$cs"))) {
+      Error('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\newenvironmentx) of Environment '$cs'");
+      return; }
+    $cs = ToString($cs);
+    DefMacroI(T_CS("\\$cs"), convertXArgsArgs($nargs, $defaults), $preamble, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ()));
+    DefMacroI(T_CS("\\end$cs"), undef, $postamble, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+DefPrimitive('\renewenvironmentx OptionalMatch:* {} [] OptionalKeyVals:xargs {}{}', sub {
+    my ($stomach, $star, $cs, $nargs, $defaults, $preamble, $postamble) = @_;
+    $cs = ToString($cs);
+    DefMacroI(T_CS("\\$cs"), convertXArgsArgs($nargs, $defaults), $preamble, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ()));
+    DefMacroI(T_CS("\\end$cs"), undef, $postamble, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
+
+######################################################
+
+1;
+
+# vim: ft=perl: expandtab:
