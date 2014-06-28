@@ -509,7 +509,7 @@ sub do_editorsB {
 
 sub do_year {
   my (@stuff) = @_;
-  return ('(', @stuff, @LaTeXML::Post::MakeBibliography::SUFFIX, ')'); }
+  return (' (', @stuff, @LaTeXML::Post::MakeBibliography::SUFFIX, ')'); }
 
 sub do_type {
   my (@stuff) = @_;
