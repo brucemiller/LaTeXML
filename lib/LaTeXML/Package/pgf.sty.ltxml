@@ -34,9 +34,10 @@ DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
 DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
 DefMacroI('\pgf@relevantforpicturesizetrue',  undef, '');
 
-# These wrap pgfpicture with lxSVG@picture
-RawTeX('\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}');
-RawTeX('\expandafter\def\expandafter\endpgfpicture\expandafter{\endpgfpicture\endlxSVG@picture}');
+# These wrap pgfpicture with lxSVG@picture (but wait till everything loaded!)
+AtBeginDocument(
+  '\expandafter\def\expandafter\pgfpicture\expandafter{\expandafter\lxSVG@picture\pgfpicture}'
+    . '\expandafter\def\expandafter\endpgfpicture\expandafter{\endpgfpicture\endlxSVG@picture}');
 
 # define "q" forms of some commands??
 DefMacro('\pgfpathqmoveto{}{}', '\pgfpathmoveto{\pgfqpoint{#1}{#2}}');
