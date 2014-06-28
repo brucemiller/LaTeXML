@@ -1,0 +1,32 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  pgfplots.sty                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Silviu Vlad Oprea <s.oprea@jacobs-university.de>          | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released under the Gnu Public License                               | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Pre-define since pgf's version uses low-level \openin
+# which isn't yet supported.
+DefMacro('\pgfplots@iffileexists{}{}{}',
+  '\IfFileExists{}{}{}',
+  locked => 1);
+
+InputDefinitions('pgfplots', type => 'sty', noltxml => 1);
+
+1;
