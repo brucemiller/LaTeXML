@@ -87,7 +87,7 @@
   <!-- Top level generated svg:svg element gets id & class from ltx:picture
        If ltx:picture/svg:svg had any of those, they got lost! -->
   <xsl:template match="ltx:picture" mode="as-svg">
-    <xsl:element name="svn" namespace="{$svg_ns}">
+    <xsl:element name="svg" namespace="{$svg_ns}">
       <!-- copy id, class, style from parent ltx:picture -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -97,10 +97,6 @@
       </xsl:for-each>
       <xsl:apply-templates select="svg:svg/*"/>
     </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="ltx:picture" mode="as-svg">
-    <xsl:apply-templates select="svg:svg"/>
   </xsl:template>
 
   <xsl:template match="svg:*">
