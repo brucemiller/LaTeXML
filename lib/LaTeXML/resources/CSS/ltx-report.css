@@ -9,23 +9,32 @@
 .ltx_title_abstract      { text-align:center; font-size: 100%; font-weight:bold; }
 .ltx_abstract { margin-left:4em; margin-right:4em; }
 
-.ltx_title_part          { font-size:200%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+.ltx_appendix,
+.ltx_part,   
+.ltx_chapter,   
+.ltx_section,   
+.ltx_subsection,
+.ltx_subsubsection { margin-top:1.5em; }
+.ltx_paragraph,
+.ltx_subparagraph   { margin-top:1.0em; }
+
+.ltx_title_part          { font-size:200%; font-weight:bold; margin-bottom:1em; }
 .ltx_title_appendix,
-.ltx_title_chapter       { font-size:200%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+.ltx_title_chapter       { font-size:200%; font-weight:bold; margin-bottom:1em; }
 .ltx_title_chapter .ltx_tag { display:block; font-size:90%; margin-bottom:0.5em; }
-.ltx_title_section       { font-size:140%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
-.ltx_title_subsection    { font-size:120%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
-.ltx_title_subsubsection { font-size:100%; font-weight:bold; margin-top:1.5em; margin-bottom:1em; }
+.ltx_title_section       { font-size:140%; font-weight:bold; margin-bottom:1em; }
+.ltx_title_subsection    { font-size:120%; font-weight:bold; margin-bottom:1em; }
+.ltx_title_subsubsection { font-size:100%; font-weight:bold; margin-bottom:1em; }
 
 /* Paragraph & Subparagraph titles should be runin! */
 .ltx_title_paragraph   { font-size:100%; font-weight:bold; display:inline; 
-                         margin-right:1em; margin-top:1.5em; }
+                         margin-right:1em; }
 .ltx_paragraph .ltx_title,
 .ltx_paragraph .ltx_title + .ltx_para,
 .ltx_paragraph .ltx_title + .ltx_para > .ltx_p { display:inline; }
 
 .ltx_title_subparagraph  { font-size:100%; font-weight:bold; display:inline; 
-                           margin-left:2em; margin-right:1em; margin-top:1.5em; }
+                           margin-left:2em; margin-right:1em; }
 .ltx_subparagraph .ltx_title,
 .ltx_subparagraph .ltx_title + .ltx_para,
 .ltx_subparagraph .ltx_title + .ltx_para > .ltx_p { display:inline; }
