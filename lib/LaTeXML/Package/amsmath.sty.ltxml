@@ -67,8 +67,7 @@ Let('\notag', '\nonumber');
 ### DefConstructor('\tag OptionalMatch:* {}', '',
 DefConstructor('\tag OptionalMatch:* Digested', '',
   afterDigest => sub {
-    my $tag = $_[1]->getArg(2);
-    AssignValue(EQUATIONROW_NUMBER => ToString($tag), 'global'); },
+    AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(2), 'global'); },
   mode => 'text');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
@@ -122,6 +121,7 @@ sub amsalignBindings {
 # So, we've got to delay the properties
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+#    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
@@ -144,6 +144,32 @@ DefEnvironment('{equation}',
     else {
       %props = RefStepID('equation');
       $props{refnum} = $num; }
+    $whatsit->setProperties(%props);
+    return; },
+  locked => 1);
+
+# Note: This DOES get a number if \tag is used!
+DefEnvironment('{equation*}',
+  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+#    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode => 'display_math',
+  beforeDigest => sub {
+    AssignValue(EQUATIONROW_NUMBER => undef, 'global');
+    return; },
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    my $num   = LookupValue('EQUATIONROW_NUMBER');
+    my %props = ();
+    %props = RefStepID('equation');
+    if($num){
+      $props{refnum} = $num;
+      $props{frefnum} = $num; }
     $whatsit->setProperties(%props);
     return; },
   locked => 1);
