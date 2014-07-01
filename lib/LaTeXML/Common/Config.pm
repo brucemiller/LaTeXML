@@ -287,6 +287,7 @@ sub _obey_profile {
   $$self{dirty} = 1;
   my $opts = $$self{opts};
   my $profile = lc($$opts{profile} || 'custom');
+  $profile =~ s/\.opt$//;
   # Look at the PROFILES_DB or find a profiles file (otherwise fallback to custom)
   my $profile_opts = {};
   if ($profile ne 'custom') {
