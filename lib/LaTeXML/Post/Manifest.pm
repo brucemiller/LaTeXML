@@ -32,9 +32,10 @@ sub new {
       $self = eval {
         "LaTeXML::Post::Manifest::$format"->new(%options);
       };
-      Warn('misdefined', 'Manifest', undef,
-	   "Manifest post-processor '$format' could not be instanciated; Skipping", $@);
-      $self = $class->SUPER::new(%options); }
+      if (!$self) {
+        Warn('misdefined', 'Manifest', undef,
+	     "Manifest post-processor '$format' could not be instanciated; Skipping", $@);
+        $self = $class->SUPER::new(%options); } }
     else {
       Warn('missing', 'Manifest', undef,
 	   "No Manifest post-processor found for format $format; Skipping", $@);
