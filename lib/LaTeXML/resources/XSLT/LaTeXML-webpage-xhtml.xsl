@@ -491,6 +491,9 @@
   <!--  ======================================================================
        Tables of Contents.
        ====================================================================== -->
+
+  <xsl:strip-space elements="ltx:TOC ltx:toclist ltx:tocentry"/>
+
   <!-- explictly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
     <xsl:apply-templates mode="short"/>

@@ -38,6 +38,8 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:strip-space elements="ltx:quote"/>
+
   <xsl:template match="ltx:quote">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="blockquote" namespace="{$html_ns}">
@@ -50,6 +52,8 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:strip-space elements="ltx:block"/>
+
   <xsl:template match="ltx:block">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
@@ -61,6 +65,8 @@
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
+
+  <xsl:strip-space elements="ltx:listingblock"/>
 
   <xsl:template match="ltx:listingblock">
     <xsl:text>&#x0A;</xsl:text>
@@ -144,6 +150,8 @@
 
   <!-- ======================================================================
        Basic templates, dispatching on aligned or unaligned forms-->
+
+  <xsl:strip-space elements="ltx:equation ltx:equationgroup"/>
 
   <xsl:template match="ltx:equationgroup">
     <xsl:choose>
@@ -698,6 +706,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
        Various Lists
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:itemize ltx:enumerate ltx:description ltx:item
+                             ltx:inline-itemize ltx:inline-enumerate ltx:inline-description ltx:inline-item"/>
   <xsl:template match="ltx:itemize">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="ul" namespace="{$html_ns}">

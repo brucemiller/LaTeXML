@@ -26,6 +26,8 @@
        ltx:inline-block, ltx:verbatim, ltx:break, ltx:graphics, ltx:svg, ltx:rawhtml
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:inline-block"/>
+
   <xsl:template match="ltx:inline-block">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>

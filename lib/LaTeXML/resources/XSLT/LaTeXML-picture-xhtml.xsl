@@ -25,6 +25,8 @@
   <xsl:param name="SVG_NAMESPACE">http://www.w3.org/2000/svg</xsl:param>
   <xsl:param name="USE_SVG">true</xsl:param>
 
+  <xsl:strip-space elements="ltx:picture svg:*"/>
+
   <!-- The namespace to use on SVG elements (typically SVG_NAMESPACE or none) -->
   <xsl:param name="svg_ns">
     <xsl:value-of select="f:if($USE_NAMESPACES,$SVG_NAMESPACE,'')"/>
