@@ -17,9 +17,7 @@ use XML::LibXML;
 sub new {
   my ($class) = @_;
   my $parser = XML::LibXML->new();
-###  $parser->clean_namespaces(1);
   $parser->validation(0);
-  $parser->keep_blanks(0);    # This allows formatting the output.
   return bless { parser => $parser }, $class; }
 
 sub parseFile {
