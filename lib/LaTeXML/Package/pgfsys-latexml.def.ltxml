@@ -137,9 +137,9 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
   mode => 'text', bounded => 1,
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
-  properties => { sizer => '#2' },
+  sizer        => '#2',
   beforeDigest => sub { reenterTextMode(); },
-  afterDigest => sub {
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
@@ -150,7 +150,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
     return; });
 
 DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
-  properties => { sizer => '#2' },
+  sizer       => '#2',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -657,6 +657,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
     my ($document, $whatsit) = @_;
     if ($whatsit->getProperty('OpenedForeignObject')) {
       $document->closeElement('svg:foreignObject'); } },
+  sizer      => \&image_graphicx_sizer,
   properties => sub {
     my ($stomach, $w, $h, $graphic) = @_;
     $w = ToString($w);
@@ -669,8 +670,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
-      options => $options,
-      sizer => sub { \&image_graphicx_sizer }); },
+      options => $options); },
   alias => '\includegraphics');
 
 #=====================================================================#
