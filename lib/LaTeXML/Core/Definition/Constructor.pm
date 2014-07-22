@@ -51,7 +51,14 @@ sub new {
 
 sub getReversionSpec {
   my ($self) = @_;
-  return $$self{reversion}; }
+  my $spec = $$self{reversion};
+  if ($spec && !ref $spec) {
+    $spec = $$self{reversion} = LaTeXML::Package::TokenizeInternal($spec); }
+  return $spec; }
+
+sub getSizer {
+  my ($self) = @_;
+  return $$self{sizer}; }
 
 sub getAlias {
   my ($self) = @_;
