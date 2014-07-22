@@ -151,6 +151,7 @@ DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
 
 DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
+  sizer      => \&image_graphicx_sizer,
   properties => sub {
     my ($stomach, $starred, $op1, $op2, $graphic) = @_;
     my $bb = ($op2 ? ToString($op1) . " " . ToString($op2) : ($op1 ? "0 0 " . ToString($op1) : ''));
@@ -162,8 +163,7 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
-      options => $options,
-      sizer => sub { \&image_graphicx_sizer }); },
+      options => $options); },
   alias => '\includegraphics');
 
 # Also unimplemented... probably nothing useful to pass thru anyway?
