@@ -1467,7 +1467,7 @@ sub decodeMathChar {
 
 DefConstructor('\mathchar Number',
   "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
-  properties => { sizer => '#1' },
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1484,7 +1484,8 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
     my ($role, $glyph) = decodeMathChar($value->valueOf);
     my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      properties => { role => $role, glyph => $glyph, sizer => '#1',
+      sizer => '#1',
+      properties => { role => $role, glyph => $glyph,
         font => sub { LookupValue('font')->specialize($glyph); } },
       reversion => '\mathchar' . $value->valueOf . '\relax',
     ) if $glyph;
@@ -1494,7 +1495,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
 
 DefConstructor('\mathaccent Number Digested',
   "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
-  properties => { sizer => '#1' },    # Close enough?
+  sizer       => '#1',    # Close enough?
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1612,7 +1613,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     $document->closeNode($node); },
 
   mode => 'text', bounded => 1,
-  properties => { sizer => '#2' },
+  sizer => '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   beforeDigest => sub { reenterTextMode(); },
@@ -1699,16 +1700,16 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     insertBlock($document, $contents, vattach => 'bottom',
       height       => orNull(GetKeyVal($spec, 'to')),
       'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  properties => { sizer => '#2' },
-  mode => 'text');
+  sizer => '#2',
+  mode  => 'text');
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top',
       height       => orNull(GetKeyVal($spec, 'to')),
       'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  properties => { sizer => '#2' },
-  mode => 'text');
+  sizer => '#2',
+  mode  => 'text');
 
 DefParameterType('RuleSpecification', sub {
     my ($gullet) = @_;
@@ -2016,6 +2017,7 @@ DefMacroI('\span', undef,
     . '\@alignment@span@marker'
     . '\@open@inner@column');
 DefConstructorI('\@alignment@span@marker', undef, '', reversion => '\span',
+  sizer => 0,
   properties => { alignmentSkippable => 1 });
 DefConstructorI('\omit', undef, '', properties => { alignmentSkippable => 1 });
 
@@ -2262,7 +2264,7 @@ DefPrimitive('\@close@alignment', sub { $_[0]->egroup; });
 DefConstructor('\@open@alignment SkipSpaces DigestedBody',
   "#alignment",
   reversion    => '#1',
-  properties   => { sizer => '#alignment' },
+  sizer        => '#alignment',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
@@ -2482,7 +2484,7 @@ DefConstructor('\halign BoxSpecification',
   '#body',
   reversion   => '\halign #1{#2\cr#3}',
   bounded     => 1,
-  properties  => { sizer => '#1' },
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $gullet = $stomach->getGullet;
@@ -3687,7 +3689,8 @@ DefConstructorI('&', undef, sub { Error('unexpected', '&', $_[0], "Stray alignme
 #
 # The following constructor (see how it's used in DefMath), adds meaning attributes
 # whereever it seems sensible on the presentation branch, after it has been generated.
-DefConstructor('\@ASSERT@MEANING{}{}', '#2', reversion => '#2',
+DefConstructor('\@ASSERT@MEANING{}{}', '#2',
+  reversion      => '#2',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
     my $node    = $document->getNode;              # This should be the wrapper just added.
@@ -5699,7 +5702,8 @@ DefConstructor('\DUAL[]{}{}',
         "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
       $whatsit->getDefinition->invocation($role, $content,
         $presentation); }
-  });
+  },
+  sizer => '#3');    # size according to presentation
 
 sub addMeaningRec {
   my ($document, $node, $meaning) = @_;
@@ -5753,13 +5757,17 @@ DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', rol
 # an id assigned, and the XMRef will get an idref refering to that id.
 # Through this connect, later processing can generate the appropriate presentation
 # form of the argument, when needed.
-DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>", reversion => '#2',
-  bounded => 1, beforeDigest => sub { AssignValue(mathstyle => 'text') },
+DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
+  reversion   => '#2',
+  bounded     => 1, beforeDigest => sub { AssignValue(mathstyle => 'text') },
   afterDigest => sub {
     AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
 DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
   reversion => sub {
-    Revert(LookupValue('xref:' . ToString($_[1]))); });
+    Revert(LookupValue('xref:' . ToString($_[1]))); },
+  properties => sub { my ($w, $h, $d) = LookupValue('xref:' . ToString($_[1]))->getSize;
+    (width => $w, height => $h, depth => $d); });
+
 Tag('ltx:XMArg', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
@@ -5822,7 +5830,8 @@ sub addClass {
   return; }
 
 DefConstructor('\@ADDCLASS Semiverbatim', sub {
-    addClass($_[0]->getElement, ToString($_[1])); });
+    addClass($_[0]->getElement, ToString($_[1])); },
+  sizer => 0);
 
 sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
