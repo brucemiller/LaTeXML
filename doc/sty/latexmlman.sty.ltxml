@@ -33,15 +33,28 @@ DefConstructor('\ltxpod@ref{}{}', "<ltx:ref labelref='#ref'>#1</ltx:ref>",
     my $name = $_[1]->getArg(2)->toString;
     $_[1]->setProperty(ref => CleanLabel('LaTeXML::' . $name)); });
 
-DefConstructor('\pod{}', "<ltx:ref href='#href' labelref='#ref'>#1</ltx:ref>",
+DefConstructor('\pod[] Semiverbatim', "<ltx:ref href='#href' labelref='#ref'>#text</ltx:ref>",
   afterDigest => sub {
-    my $name = $_[1]->getArg(1)->toString;
+    my $text = $_[1]->getArg(1);
+    my $name = $_[1]->getArg(2)->toString;
     if (($name =~ /^LaTeXML/) || ($name =~ /^latexml/)) {
-      $_[1]->setProperty(ref => CleanLabel($name)); }
+      my $label = $name;
+      # reformat the label
+      if ($label =~ /^(.*?)\/(.*)$/) {    # a reference to a POD/SECTION
+        $label = $1;
+        my $sec = $2;
+        if ($sec =~ /^\"(.*?)\"$/) {      # Strip quotes
+          $sec = $1; }
+        $text = $sec unless $text;
+        $sec =~ s/\s+/_/g;                # convert spaces
+        $label .= '_' . $sec; }
+      $_[1]->setProperty(ref => CleanLabel($label));
+      $_[1]->setProperty(text => $text || $name); }
     else {
       $name =~ s/::/%3A%3A/g;
       my $url = "http://search.cpan.org/search?query=$name&mode=module";
-      $_[1]->setProperty(href => $url); } });
+      $_[1]->setProperty(href => $url); }
+    return; });
 
 #======================================================================
 DefEnvironment('{advanced}', "<ltx:paragraph class='ltx_advanced'>#body</ltx:paragraph>");
