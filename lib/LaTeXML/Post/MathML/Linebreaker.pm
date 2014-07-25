@@ -112,8 +112,8 @@ sub fitToWidth {
     $LaTeXML::Post::MathML::Linebreaker::PUNCT = $n[1]; }
 
   # Compute the possible layouts
-  print STDERR "Starting layout of $mml\n" if $DEBUG;
-###  print STDERR "Starting layout of ".showNode($mml)."\n" if $DEBUG;
+###  print STDERR "\nStarting layout of $mml\n" if $DEBUG;
+  print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
   my $layouts = layout($mml, $width, 0, 1);
   if ($DEBUG) {
     print STDERR "Got " . scalar(@$layouts) . " layouts:\n";
@@ -143,8 +143,8 @@ sub bestFitToWidth {
     $mml = $n[0]; }
 
   # Compute the possible layouts
-  print STDERR "Starting layout of $mml\n" if $DEBUG;
-###  print STDERR "Starting layout of ".showNode($mml)."\n" if $DEBUG;
+###  print STDERR "\nStarting layout of $mml\n" if $DEBUG;
+  print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
   my @layouts = @{ layout($mml, $width, 0, 1) };
 
   # Add a penalty for larger overall area.
@@ -287,16 +287,20 @@ sub applyLayout_break {
     $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef; }
 
   my @firstrow = @{ shift(@rows) };
+  # the mtable should have displaystyle IFF the original object was in displaystyle!
+  # (but we haven't recorded that anywhere!)
   splice(@$node, 2, scalar(@children),
     ($$layout{lhs_pos}
-      ? ["m:mtable", { align => 'baseline 1', columnalign => 'left' },
+      ? ["m:mtable", { align => 'baseline 1', columnalign => 'left',
+          ($$layout{displaystyle} ? (displaystyle => 'true') : ()) },
         ["m:mtr", {},
           ["m:mtd", {}, @firstrow[0 .. $$layout{lhs_pos} - 1]],
           ["m:mtd", {}, @firstrow[$$layout{lhs_pos} .. $#firstrow]]],
         map { ["m:mtr", {},
             ["m:mtd", {}],
             ["m:mtd", {}, @$_]] } @rows]
-      : ["m:mtable", { align => 'baseline 1', columnalign => 'left' },
+      : ["m:mtable", { align => 'baseline 1', columnalign => 'left',
+          ($$layout{displaystyle} ? (displaystyle => 'true') : ()) },
         ["m:mtr", {}, ["m:mtd", {}, @firstrow]],
         map { ["m:mtr", {},
             ["m:mtd", {}, ["m:mspace", { width => $$layout{indentation} . "em" }], @$_]] }
@@ -384,7 +388,7 @@ sub describeLayouts {
   my @layouts = @$layouts;
   my $min     = $layouts[0];
   my $max     = $layouts[-1];
-  print "Layout " . scalar(@layouts) . " layout options\n"
+  print STDERR "Layout " . scalar(@layouts) . " layout options\n"
     . "  best = $$max{width} x ($$max{height} + $$max{depth}) penalty = $$max{penalty}\n"
     . "  narrowest = $$min{width} x ($$min{height} + $$min{depth})  penalty = $$min{penalty}\n";
   showLayout($max);
@@ -394,7 +398,7 @@ sub showLayout {
   my ($layout, $indent, $pos) = @_;
   $indent = 0 unless $indent;
   my $pre = (' ') x (2 * $indent) . (defined $pos ? "[$pos] " : "");
-  print $pre. layoutDescriptor($layout) . "\n";
+  print STDERR $pre . layoutDescriptor($layout) . "\n";
   if ($$layout{children}) {
     my $p = 0;
     foreach my $child (@{ $$layout{children} }) {
@@ -433,6 +437,8 @@ sub multiplex {
     return map { [$_] } @$layouts; } }
 
 # Given a list of break's (in order), form all choices of breaks.
+# WHOA: this is incredibly inefficient to BUILD the list of all these choices
+# [for n @breaks, there are 2^n choices!]
 sub choices {
   my (@breaks) = @_;
   if (@breaks) {
@@ -526,7 +532,8 @@ sub prunesort {
 # Row line breaker.
 # This is the real workhorse.
 #######################################################################
-# Here, of course, is where the Interesting stuff will happen.
+# Here, of course, is where the Interesting stuff will happen,
+# as rows are essentially the only place where linebreaking occurs.
 
 sub showNode {
   my ($node) = @_;
@@ -596,15 +603,25 @@ sub asRow {
       $running += $child_layouts[$i]->[-1]{width};
     } }
   my $indentation = $next_indentation;
-  # Form the set of all choices from the breaks.
-  my @breaksets = choices(@breaks);
-
+  #
+  # The Classic linebreaking algorithm simply accumulates rows of material
+  # until the line is too long and then starts a new one; essentially O(n).
+  # But that makes it harder to get alignments within groups, and doesn't
+  # provide alternative layouts of this level to upper levels which would
+  # enable the upper levels to make nicer choices.
+  #
+  # Here we'd like to try "all" alternatives, but with N potential breakpoints,
+  # there are 2^N possible sets of breaks! This does NOT scale well!!!
+  # So, we'll examine the breaksets in order of the number of breaks (nobreaks, 1 break, ..)
+  # and quit as soon as we get reasonable layouts; Pruning is _essential_!!!
+  my $nbreaks    = scalar(@breaks);
+  my $nbreaksets = 2**$nbreaks;
   print STDERR "", ("  " x $level), $type, " ",
     join("x", map { scalar(@$_) } @child_layouts), " layouts",
     (@breaks
     ? ", breaks@" . join(",", map { "[" . join(',', @$_) . "]" } @breaks)
-      . "(" . scalar(@breaksets) . " sets;"
-      . product((map { scalar(@$_) } @child_layouts), scalar(@breaksets)) . " combinations"
+      . "(" . $nbreaksets . " sets;"
+      . product((map { scalar(@$_) } @child_layouts), $nbreaksets) . " combinations"
       . ")"
     : "") . "\n"
     if $DEBUG > 1;
@@ -614,40 +631,31 @@ sub asRow {
   # And for each layout of children
   # Form composite layouts, computing the size, penalty, and pruning.
   # NOTE: Would we like to prefer more evenly balanced splits?
-  my $pruned = 0;
-BREAKSET: foreach my $breakset (reverse @breaksets) {    # prunes better reversed?
-        # Since we only allow to break the last child in a row,
-        # (otherwise we can't arrange the layout with an mtable????
-        # presumably because we don't have distinct left & right vertical alignment??)
-        # [But this could still work if break was immediately after the child???]
-        # form subset of children's layouts
-        # Namely, take only last (unbroken?) layout for all but last child in each row
-        # Unfortunately, this CAN end up giving no layouts at all
-    my @filtered_child_layouts = ();
-
-    foreach my $xline (split_row($breakset, @child_layouts)) {
-      my @xline_children_layouts = @$xline;
-      while (@xline_children_layouts) {
-        my $xchild_layouts = shift(@xline_children_layouts);
-        if (@xline_children_layouts) {    # More children?
-
-          my @x    = @$xchild_layouts;
-          my $last = $x[-1];
-          next BREAKSET if $$last{hasbreak} && (scalar(@breaksets) == 1);
-          push(@filtered_child_layouts, [$last]); }    # take last
-        else {
-          push(@filtered_child_layouts, $xchild_layouts); } } }
-    my @children_layouts = multiplex(@filtered_child_layouts);
-
+  my $pruned           = 0;
+  my @children_layouts = multiplex(@child_layouts);
+  my $breakpositions   = [];
+BREAKSET: while (1) {
+    my $breakset     = [map    { $breaks[$_] } @$breakpositions];
+    my $breakpenalty = sum(map { $$_[2] } @$breakset);
+    # PRUNE if we've gotten a reasonable layout or are getting too many breaks
+    if (scalar(@$breakpositions) > 4) {
+      foreach my $layout (@layouts) {
+        if (($$layout{width} < $target) && ($breakpenalty > $$layout{penalty})) {    #
+          last BREAKSET; } } }
   LAYOUT: foreach my $children_layout (@children_layouts) {
       my ($width, $height, $depth, $penalty, $indent, $rowheight) = (0, 0, 0, 0, 0, 0);
-      $penalty = sum(map { $$_[2] } @$breakset);
-      # Last (best) layout, for comparison & pruning
+      #      $penalty = sum(map { $$_[2] } @$breakset);
+      $penalty = $breakpenalty;    # penalty due to breaks, we may add more!
+                                   # Last (best) layout, for comparison & pruning
       my $last = (@layouts && $layouts[-1]);
       # Apply the breaks to split the children (actually their layout) into lines.
       foreach my $line (split_row($breakset, @$children_layout)) {
         my ($w, $h, $d) = (0, 0, 0);
         my @line_children_layout = @$line;
+        # If ANY but LAST child on line have a break, skip this layout.
+        # [since MathML can't describe this left/right alignment for an mtable!]
+        if (grep { $$_{hasbreak} } @line_children_layout[0 .. $#line_children_layout - 1]) {
+          next LAYOUT; }
         while (@line_children_layout) {    # For each line of nodes, compute sizes, possibly prune
           my $child_layout = shift(@line_children_layout);
           $w += $$child_layout{width};
@@ -657,10 +665,15 @@ BREAKSET: foreach my $breakset (reverse @breaksets) {    # prunes better reverse
               #  || (($$last{width} < 1.5*$target) && ($penalty > $$last{penalty})))){
               || (($$last{width} <= $w) && ($penalty > $$last{penalty})))) {
             $pruned++;
+            # [next layout? or next breakset???]
             next LAYOUT; }
 
-          $h = max($h, $$child_layout{height});
-          $d = max($d, $$child_layout{depth});
+###          $h = max($h, $$child_layout{height});
+###          $d = max($d, $$child_layout{depth});
+          my $tmp = $$child_layout{height};
+          $h   = $tmp if $tmp > $h;
+          $tmp = $$child_layout{depth};
+          $d   = $tmp if $tmp > $d;
         }
         # Then combine the lines
         $width = max($width, $w + $indent);
@@ -677,8 +690,12 @@ BREAKSET: foreach my $breakset (reverse @breaksets) {    # prunes better reverse
           indentation => $indentation, rowheight => $rowheight, lhs_pos => $lhs_pos,
           (scalar(@$breakset) ? (breakset => $breakset) : ()),
           hasbreak => scalar(@$breakset) || scalar(grep { $$_{hasbreak} } @$children_layout),
-          children => [@$children_layout] });
-      @layouts = prunesort($target, @layouts); } }
+          children => [@$children_layout],
+          displaystyle => $LaTeXML::DISPLAYSTYLE });
+      @layouts = prunesort($target, @layouts); }
+    # }
+    last unless $breakpositions = breakstepper($nbreaks, $breakpositions); }
+
 ##      }}
 ##  @layouts = prunesort($target,@layouts);
 
@@ -705,6 +722,36 @@ sub split_row {
     $pos = $breakpos; }
   push(@lines, [@stuff[$pos .. $#stuff]]);
   return @lines; }
+
+# Given N possible breakpoints, there are 2^N layouts! This does NOT scale well!!!
+# We'll try to process breaks in order of 0 breaks, 1 break, 2 breaks...
+# so that we can stop when we get too many breaks
+# [Could conceivably estimate the _minimum_ number of breaks required, too?]
+sub breakstepper {
+  my ($nbreaks, $breaks, $delta) = @_;
+  my $last = $$breaks[-1];
+  $delta = 0 unless $delta;
+  if (!$nbreaks) {
+    return; }
+  elsif (!defined $last) {
+    return $breaks = [0]; }
+  elsif ($last < $nbreaks - $delta - 1) {
+    $$breaks[-1]++;    # increment last break point
+    return $breaks; }
+  else {
+    pop(@$breaks);     # Remove last break point.
+    $breaks = breakstepper($nbreaks, $breaks, $delta + 1);    # step the previous break point.
+    return unless $breaks;
+    my $prev = $$breaks[-1];
+    if ($prev < $nbreaks - $delta - 1) {                      # Still room to add this break?
+      push(@$breaks, $prev + 1);
+      return $breaks; }
+    else {                                                    # step to more breaks
+      my $nb = scalar(@$breaks) + 1;
+      if ($nb > $nbreaks) {
+        return; }
+      else {
+        return $breaks = [0 .. $nb - 1]; } } } }
 
 #######################################################################
 # Layout handlers for various MathML tags
