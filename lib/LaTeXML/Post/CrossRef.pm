@@ -376,8 +376,8 @@ sub make_bibcite {
     return (); }
   my $sep   = $bibref->getAttribute('separator')   || ',';
   my $yysep = $bibref->getAttribute('yyseparator') || ',';
-  my @phrases = $bibref->getChildNodes();    # get the ltx;bibrefphrase's in the bibref!
-                                             # Collect all the data from the bibliography
+  my @phrases = element_nodes($bibref);    # get the ltx;bibrefphrase's in the bibref!
+                                           # Collect all the data from the bibliography
   my @data    = ();
   foreach my $key (@keys) {
     if (my $bentry = $$self{db}->lookup("BIBLABEL:$key")) {
