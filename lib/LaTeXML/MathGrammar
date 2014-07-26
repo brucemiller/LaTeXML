@@ -67,7 +67,7 @@ Anything : AnythingAny /^\Z/                    { $item[1]; }
 AnythingAny :
           Formulae 
         | OPEN Formulae CLOSE             { Fence($item[1],$item[2],$item[3]); }
-        | modifierFormula
+        | modifierFormulae
         | OPEN modifierFormula CLOSE      { Fence($item[1],$item[2],$item[3]); }
         | MODIFIER
         | MODIFIEROP Expression           { Apply($item[1],Absent(),$item[2]);}
@@ -183,11 +183,9 @@ metarelopFormula :
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # `Modifier' formula, things like $<0$, that might follow another formula or text.
 # Absent() is a placeholder for the missing thing... (?)
-
-#modifierFormula : relopExpr(s) { NewFormula(Absent(),map(@{$_},@{$item[1]}));}
-modifierFormula : relop Expression punctExpr(s?) 
-                 { NewFormula(Absent(),$item[1],
-                              NewList($item[2],map(@$_,@{$item[3]})));}
+# [and also when the LHS is moved away, due to alignment rearrangement]
+modifierFormulae : modifierFormula moreFormulae[$item[1]]
+modifierFormula : relop Expression moreRHS[Absent(),$item[1],$item[2]]
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Expressions; sums of terms
