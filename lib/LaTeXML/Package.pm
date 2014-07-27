@@ -1787,13 +1787,22 @@ sub ProcessOptions {
   my $name = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
   my $ext  = LookupDefinition(T_CS('\@currext'))  && ToString(Digest(T_CS('\@currext')));
   my @declaredoptions = @{ LookupValue('@declaredoptions') };
-  my @curroptions = @{ (defined($name) && defined($ext) && LookupValue('opt@' . $name . '.' . $ext)) || [] };
+  my @curroptions = @{ (defined($name) && defined($ext)
+        && LookupValue('opt@' . $name . '.' . $ext)) || [] };
+  my @classoptions = @{ LookupValue('class_options') || [] };
+  if ($ext eq 'cls') {
+    @classoptions = @curroptions; @curroptions = (); }
   #  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
 
   my $defaultcs = T_CS('\default@ds');
   # Execute options in declared order (unless \ProcessOptions*)
 
-  if ($options{inorder}) {    # Execute options in order (eg. \ProcessOptions*)
+  if ($options{inorder}) {    # Execute options in the order passed in (eg. \ProcessOptions*)
+    foreach my $option (@classoptions) {    # process global options, but no error
+      DefMacroI('\CurrentOption', undef, $option);
+      my $cs = T_CS('\ds@' . $option);
+      if (LookupDefinition($cs)) {
+        Digest($cs); } }
     foreach my $option (@curroptions) {
       DefMacroI('\CurrentOption', undef, $option);
       my $cs = T_CS('\ds@' . $option);
@@ -1801,9 +1810,9 @@ sub ProcessOptions {
         Digest($cs); }
       elsif ($defaultcs) {
         Digest($defaultcs); } } }
-  else {                      # Execute options in declared order (eg. \ProcessOptions)
+  else {                                    # Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions) {
-      if (grep { $option eq $_ } @curroptions) {
+      if (grep { $option eq $_ } @curroptions, @classoptions) {
         @curroptions = grep { $option ne $_ } @curroptions;    # Remove it, since it's been handled.
         DefMacroI('\CurrentOption', undef, $option);
         Digest(T_CS('\ds@' . $option)); } }
@@ -1964,6 +1973,7 @@ sub LoadClass {
   my ($class, %options) = @_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
+  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => 1, handleoptions => 1, noerror => 1,
       %options)) {
