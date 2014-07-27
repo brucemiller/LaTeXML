@@ -58,7 +58,7 @@ DefMacro('\endlxSVG@picture', sub { T_CS('\endgroup'); });
 DefConstructor('\lxSVG@pgfsys@insertpicture{}',
   '<ltx:picture>' .
     '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
-    . 'viewBox="#minx #miny #pxwidth #pxheight">'
+    . 'viewBox="#minx #miny #maxx #maxy">'
     . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
     . '#1'
     . '</svg:g>'
@@ -66,20 +66,25 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     . '</ltx:picture>',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $minx   = LookupValue('\pgf@picminx')->pxValue;
-    my $miny   = LookupValue('\pgf@picminy')->pxValue;
-    my $width  = LookupValue('\pgf@picmaxx');
-    my $height = LookupValue('\pgf@picmaxy');
+    my $margin = Dimension('2pt');
+    my $minx   = LookupValue('\pgf@picminx')->subtract($margin);
+    my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
+    my $maxx   = LookupValue('\pgf@picmaxx')->add($margin);
+    my $maxy   = LookupValue('\pgf@picmaxy')->add($margin);
+    my $width  = $maxx->subtract($minx);
+    my $height = $maxy->subtract($miny);
     my $w      = max($width->pxValue, 1);
     my $h      = max($height->pxValue, 1);
-    $whatsit->setProperty(minx      => $minx);
-    $whatsit->setProperty(miny      => $miny);
+    $whatsit->setProperty(minx      => $minx->pxValue);
+    $whatsit->setProperty(miny      => $miny->pxValue);
+    $whatsit->setProperty(maxx      => $maxx->pxValue);
+    $whatsit->setProperty(maxy      => $maxy->pxValue);
     $whatsit->setProperty(width     => $width);
     $whatsit->setProperty(height    => $height);
     $whatsit->setProperty(depth     => Dimension(0));
     $whatsit->setProperty(pxwidth   => $w);
     $whatsit->setProperty(pxheight  => $h);
-    $whatsit->setProperty(flipnmove => $h + 2 * $miny);
+    $whatsit->setProperty(flipnmove => $h + 2 * $miny->pxValue);
     # or tikz macro (see corescopes)
     return; });
 
