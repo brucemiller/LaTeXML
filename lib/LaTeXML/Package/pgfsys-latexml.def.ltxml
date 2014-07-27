@@ -58,7 +58,7 @@ DefMacro('\endlxSVG@picture', sub { T_CS('\endgroup'); });
 DefConstructor('\lxSVG@pgfsys@insertpicture{}',
   '<ltx:picture>' .
     '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
-    . 'viewBox="#minx #miny #maxx #maxy">'
+    . 'viewBox="#minx #miny #pxwidth #pxheight">'
     . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
     . '#1'
     . '</svg:g>'
@@ -75,6 +75,7 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     my $height = $maxy->subtract($miny);
     my $w      = max($width->pxValue, 1);
     my $h      = max($height->pxValue, 1);
+    # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
     $whatsit->setProperty(minx      => $minx->pxValue);
     $whatsit->setProperty(miny      => $miny->pxValue);
     $whatsit->setProperty(maxx      => $maxx->pxValue);
