@@ -66,20 +66,18 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     . '</ltx:picture>',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $margin = Dimension('2pt');
+    my $margin  = Dimension('2pt');
+    my $margin2 = Dimension('4pt');
+    # \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
     my $minx   = LookupValue('\pgf@picminx')->subtract($margin);
     my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
-    my $maxx   = LookupValue('\pgf@picmaxx')->add($margin);
-    my $maxy   = LookupValue('\pgf@picmaxy')->add($margin);
-    my $width  = $maxx->subtract($minx);
-    my $height = $maxy->subtract($miny);
+    my $width  = LookupValue('\pgf@picmaxx')->add($margin2);
+    my $height = LookupValue('\pgf@picmaxy')->add($margin2);
     my $w      = max($width->pxValue, 1);
     my $h      = max($height->pxValue, 1);
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
     $whatsit->setProperty(minx      => $minx->pxValue);
     $whatsit->setProperty(miny      => $miny->pxValue);
-    $whatsit->setProperty(maxx      => $maxx->pxValue);
-    $whatsit->setProperty(maxy      => $maxy->pxValue);
     $whatsit->setProperty(width     => $width);
     $whatsit->setProperty(height    => $height);
     $whatsit->setProperty(depth     => Dimension(0));
@@ -172,6 +170,7 @@ DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
 # 1. Beginning and ending a stream ===================================#
 #=====================================================================#
 DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
+% \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
 \advance\pgf@picmaxy by-\pgf@picminy\relax%
    \advance\pgf@picmaxx by-\pgf@picminx\relax%
    \ht#1=\pgf@picmaxy%
