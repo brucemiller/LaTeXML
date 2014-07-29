@@ -235,13 +235,13 @@ sub pgfAssignKey {
   elsif (my $def = pgfkeyLookup($key . '/.@def')) {    # else if a default, let to it
     Let(T_CS('\pgfkeyscurrentvalue'), pgfkeyCS($key . '/.@def')); }
 
-  if (xEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysvaluerequired'))) {    # value REQUIRED!
+  if (XEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysvaluerequired'))) {    # value REQUIRED!
     Digest(Tokens(pgfkeyCS('/errors/value required/.@def'), T_CS('\pgfcurrentkey'),
         T_CS('\pgfkeyscurrentkey'), T_CS('\pgfkeyscurrentvalue'))); }
   elsif (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {                              # Case 1
     pgfHandleValue($cmdkey, $value); }
   elsif (my $cs = pgfkeyLookup($key)) {                                          # Case 2
-    if (xEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysnovalue@text'))) {    # value empty?
+    if (XEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysnovalue@text'))) {    # value empty?
       Digest(pgfkeyCS($key)); }    # Just execute the STORED value!
     else {
       Let(pgfkeyCS($key), T_CS('\pgfkeyscurrentvalue')); } }
