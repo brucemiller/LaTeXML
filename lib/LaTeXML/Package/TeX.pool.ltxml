@@ -504,23 +504,7 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
 
-# !! ????
-# Probably should be promoted/exported somewhere...
-# [how many cases of $tok->equals($tok) should really be this xEquals?]
-sub xEquals {
-  my ($token1, $token2) = @_;
-  my $def1 = LookupMeaning($token1);
-  my $def2 = LookupMeaning($token2);
-  if (defined $def1 != defined $def2) {    # False, if they don't both have defs or both not have defs
-    return; }
-  elsif (!defined $def1 && !defined $def2) { # If neither have defs, then must have same catcode & chars
-    return ($token1->getCatcode == $token2->getCatcode)
-      && ($token1->getCharcode == $token2->getCharcode); }
-  elsif ($def1->equals($def2)) {             # If both have defns, must be same defn!
-    return 1; }
-  return; }
-
-DefConditional('\ifx Token Token', sub { xEquals($_[1], $_[2]); });
+DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
 # We'll assume that a box is horizontal if there's anything at all,
@@ -3520,8 +3504,9 @@ sub afterDFrac {
 # This will inhibit comparisons!!!!
 # Is it because of the delims forms already having args???
 # No, because constructor doesn't know there are 2 extra args!!
+# NOTE: This group needs to be reworked to preserve color (at least)
 DefConstructorI('\choose', undef,
-  "<ltx:XMApp open='(' close=')'>"
+  "<ltx:XMApp open='(' close=')' _force_font='color'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3533,7 +3518,7 @@ DefConstructorI('\choose', undef,
       T_CS('\choose'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brace', undef,
-  "<ltx:XMApp open='{' close='}'>"
+  "<ltx:XMApp open='{' close='}' _force_font='color'>"
     . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3545,7 +3530,7 @@ DefConstructorI('\brace', undef,
       T_CS('\choose'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brack', undef,
-  "<ltx:XMApp open='[' close=']'>"
+  "<ltx:XMApp open='[' close=']' _force_font='color'>"
     . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3558,7 +3543,7 @@ DefConstructorI('\brack', undef,
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\over', undef,
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
+    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP' _force_font='color'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>",
@@ -3581,8 +3566,8 @@ DefConstructorI('\atop', undef,
       T_CS('\atop'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructor('\overwithdelims Token Token',
-  "<ltx:XMApp open='#1' close='#2'>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
+  "<ltx:XMApp open='#1' close='#2' _force_font='color'>"
+    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP' _force_font='color'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>",
@@ -3710,10 +3695,12 @@ DefMathI('!', undef, '!', role => 'POSTFIX', meaning => 'factorial');
 DefMathI(',', undef, ',', role => 'PUNCT');
 DefMathI('.', undef, '.', role => 'PERIOD');
 DefMathI(';', undef, ';', role => 'PUNCT');
-DefMathI('(', undef, '(', role => 'OPEN'); DefMathI(')', undef, ')', role => 'CLOSE');
-DefMathI('[', undef, '[', role => 'OPEN'); DefMathI(']', undef, ']', role => 'CLOSE');
-DefMathI('|', undef, '|', role => 'VERTBAR');
-DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');    # Seems like good default role
+DefMathI('(', undef, '(', role => 'OPEN', stretchy => 'false');
+DefMathI(')', undef, ')', role => 'CLOSE', stretchy => 'false');
+DefMathI('[', undef, '[', role => 'OPEN', stretchy => 'false');
+DefMathI(']', undef, ']', role => 'CLOSE', stretchy => 'false');
+DefMathI('|', undef, '|', role => 'VERTBAR', stretchy => 'false');
+DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');      # Seems like good default role
 DefMathI('<', undef, '<', role => 'RELOP', meaning => 'less-than');
 DefMathI('>', undef, '>', role => 'RELOP', meaning => 'greater-than');
 
@@ -4291,7 +4278,7 @@ sub insertFrontMatter {
         my ($tag, $attr, @stuff) = @$item;
         $document->openElement($tag, ($attr ? %$attr : ()),
           (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
-            ? (font => $stuff[0]->getFont, _force_font => 'yes') : ()));
+            ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
         map { $document->absorb($_) } @stuff;
         $document->closeElement($tag); } } }
   return; }
@@ -4312,7 +4299,7 @@ DefConstructor('\beginsection Until:\par',
 #  If so, how do know when the theorem ends?
 DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
   "<ltx:theorem>"
-    . "<ltx:title font='#titlefont' _force_font='yes' >#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {
@@ -5134,26 +5121,28 @@ DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math
 # This meaning is handled in MathParser (for now)
 
 DefConstructorI('\{', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='OPEN'>{</ltx:XMTok>)({)",
-  properties => { font => sub { LookupValue('font')->specialize("{"); } });    # Since not DefMath!
+  "?#isMath(<ltx:XMTok font='#font' role='OPEN' stretchy='#stretchy'>{</ltx:XMTok>)({)",
+  properties => { font => sub { LookupValue('font')->specialize("{"); },    # Since not DefMath!
+    stretchy => 'false' });
 DefConstructorI('\}', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='CLOSE'>}</ltx:XMTok>)(})",
-  properties => { font => sub { LookupValue('font')->specialize("}"); } });    # Since not DefMath!
+  "?#isMath(<ltx:XMTok font='#font' role='CLOSE' stretchy='#stretchy'>}</ltx:XMTok>)(})",
+  properties => { font => sub { LookupValue('font')->specialize("}"); },    # Since not DefMath!
+    stretchy => 'false' });
 Let('\lbrace', '\{');
 Let('\lbrack', T_OTHER('['));
 Let('\rbrace', '\}');
 Let('\rbrack', T_OTHER(']'));
-DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN');                        # LEFT CEILING
-DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE');                       # RIGHT CEILING
-DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN');                        # LEFT FLOOR
-DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE');                       # RIGHT FLOOR
+DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN',  stretchy => 'false');    # LEFT CEILING
+DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE', stretchy => 'false');    # RIGHT CEILING
+DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN',  stretchy => 'false');    # LEFT FLOOR
+DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE', stretchy => 'false');    # RIGHT FLOOR
 # Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
-DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN');     # LEFT-POINTING ANGLE BRACKET
-DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE');    # RIGHT-POINTING ANGLE BRACKET
+DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # LEFT-POINTING ANGLE BRACKET
+DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
 # Not sure these should be defined here, or latex, or even latex compat mode.
-DefMathI('\lgroup',    undef, "(", font => { series => 'bold' }, role => 'OPEN');
-DefMathI('\rgroup',    undef, ")", font => { series => 'bold' }, role => 'CLOSE');
+DefMathI('\lgroup', undef, "(", font => { series => 'bold' }, role => 'OPEN',  stretchy => 'false');
+DefMathI('\rgroup', undef, ")", font => { series => 'bold' }, role => 'CLOSE', stretchy => 'false');
 DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBAR');
 
 ## DefMath('\lmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
@@ -5349,14 +5338,14 @@ DefConstructor('\smash{}', "#1");                         # well, what?
 
 # This is actually LaTeX's definition, but let's just do it this way.
 DefConstructor('\sqrt[] Digested',
-  "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
+  "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root' _force_font='color'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>)"
-    . "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
+    . "(<ltx:XMApp><ltx:XMTok meaning='square-root' _force_font='color'/>"
     . "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
 
 DefConstructor('\root Until:\of {}',
-  "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
+  "<ltx:XMApp><ltx:XMTok meaning='nth-root' _force_font='color'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
 
