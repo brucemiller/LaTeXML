@@ -176,7 +176,7 @@ Let('\textcite', '\citet');
 DefConstructor('\references',
   "<ltx:bibliography xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   afterDigest => sub { beginBibliography($_[1]); });
 

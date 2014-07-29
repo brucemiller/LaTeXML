@@ -132,7 +132,7 @@ DefPrimitive('\th@proof', sub {
 # Note that you get EITHER \proofname OR [#1] but NOT both!!!
 DefEnvironment('{@proof} OptionalUndigested',
   "<ltx:proof class='#class'>"
-    . "<ltx:title font='#titlefont' _force_font='yes' class='#titleclass'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true' class='#titleclass'>#title</ltx:title>"
     . "#body"
     . "</ltx:proof>",
   beforeDigest => sub {

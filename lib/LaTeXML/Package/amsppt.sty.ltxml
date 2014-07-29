@@ -168,7 +168,7 @@ DefMacro('\definitionfont', '\rm');
 DefMacroI('\definitionname', undef, 'Definition');
 DefConstructor('\definition Undigested DigestUntil:\enddefinition',
   "<ltx:theorem class='ltx_theorem_definition' xml:id='#id' refnum='#refnum'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {
@@ -182,7 +182,7 @@ DefMacro('\remarkfont', '\rm');
 DefMacroI('\remarkname', undef, 'Remark');
 DefConstructor('\remark Undigested DigestUntil:\endremark',
   "<ltx:theorem class='ltx_theorem_remark' xml:id='#id' refnum='#refnum'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {
@@ -193,7 +193,7 @@ Let('\endremark', '\relax');
 
 DefConstructor('\example Undigested DigestUntil:\endexample',
   "<ltx:theorem class='ltx_theorem_example' xml:id='#id' refnum='#refnum'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {
@@ -206,7 +206,7 @@ Let('\endexample', '\relax');
 DefMacroI('\demonstrationname', undef, 'Demonstration');
 DefConstructor('\demo Undigested DigestUntil:\enddemo',
   "<ltx:theorem class='ltx_theorem_demonstration' xml:id='#id' refnum='#refnum'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {

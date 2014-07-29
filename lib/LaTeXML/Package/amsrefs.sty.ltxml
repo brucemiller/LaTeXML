@@ -60,7 +60,7 @@ Let('\cites', '\cite');
 DefEnvironment('{bibdiv}',
   "<ltx:bibliography xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#body"
     . "</ltx:bibliography>",
   afterDigestBegin => sub { beginBibliography($_[1]); });
