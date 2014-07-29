@@ -1720,7 +1720,7 @@ DefRegister('\mathindent' => Dimension(0));
 # Underlying support in TeX.pool.ltxml
 DefConstructor('\frac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle' _force_font='color'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
@@ -2087,7 +2087,7 @@ sub defineNewTheorem {
   DefEnvironment("{$thmset} OptionalUndigested",
     "<ltx:theorem xml:id='#id' class='#class'"
       . " refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-      . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+      . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body"
       . "</ltx:theorem>",
     beforeDigest => sub {
@@ -2687,7 +2687,7 @@ DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
 DefConstructor('\@bibliography Semiverbatim',
   "<ltx:bibliography files='#1' xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "</ltx:bibliography>",
   afterDigest => sub { $_[0]->begingroup;    # wrapped so redefns don't take effect!
     beginBibliography($_[1]);
@@ -2727,7 +2727,7 @@ DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
 # Should be an environment, but people seem to want to misuse it.
 DefConstructorI('\thebibliography', undef,
   "<ltx:bibliography xml:id='#id'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   beforeDigest => sub { AssignValue(inPreamble => 0); },
   afterDigest => sub {
@@ -3098,7 +3098,7 @@ DefConstructorI('\index@done',       undef, sub { doIndexItem($_[0], 0); });
 DefMacroI('\indexname', undef, 'Index');
 DefEnvironment('{theindex}',
   "<ltx:index xml:id='#id'>"
-    . "<ltx:title font='#titlefont' _force_font='1'>#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#body"
     . "</ltx:index>",
   beforeDigest => sub {
@@ -4219,6 +4219,7 @@ RawTeX(<<'EOTeX');
 \def\remove@to@nnil#1\@nnil{}
 \def\remove@angles#1>{\set@simple@size@args}
 \def\remove@star#1*{#1}
+\def\@defaultunits{\afterassignment\remove@to@nnil}
 EOTeX
 
 DefMacroI('\@height', undef, 'height');
@@ -4261,7 +4262,7 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
     my ($gullet, $token, $if, $else) = @_;
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
-    (LaTeXML::Core::Definition::Expandable::substituteTokens(xEquals($token, $next) ? $if : $else), $next); });
+    (LaTeXML::Core::Definition::Expandable::substituteTokens(XEquals($token, $next) ? $if : $else), $next); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
 Let('\@ifnext',           '\@ifnextchar');    # ????
 
