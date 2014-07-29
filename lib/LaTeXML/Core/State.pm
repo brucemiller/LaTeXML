@@ -76,7 +76,6 @@ use LaTeXML::Core::Token;    # To get CatCodes
 #  mathcode, sfcode, lccode, uccode, delcode : are similar to catcode but store
 #    additional kinds codes per char (see TeX)
 #  value: keys are anything (typically a string, though) and value is the value associated with it
-#         some special cases? "Boolean:$cs",...
 #  meaning: The definition assocated with $key, usually a control-sequence.
 #  stash & stash_active: support named scopes
 #      (see also activateScope & deactivateScope)
