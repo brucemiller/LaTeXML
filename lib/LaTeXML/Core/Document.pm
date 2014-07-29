@@ -346,10 +346,11 @@ sub finalize_rec {
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
   if (my $font_attr = $node->getAttribute('_font')) {
-    $desired_font        = $$self{node_fonts}{$font_attr};
-    %pending_declaration = $desired_font->relativeTo($LaTeXML::FONT);
+    $desired_font = $$self{node_fonts}{$font_attr};
+    my $font_mode = ($node->hasChildNodes ? 1 : $node->getAttribute('_force_font'));
+    %pending_declaration = $desired_font->relativeTo($LaTeXML::FONT, $font_mode);
     if ($model->canHaveAttribute($qname, 'font')
-      && ($node->hasChildNodes || $node->getAttribute('_force_font'))
+      && $font_mode
       && scalar(keys %pending_declaration)) {
       foreach my $attr (keys %pending_declaration) {
         $self->setAttribute($node, $attr => $pending_declaration{$attr})

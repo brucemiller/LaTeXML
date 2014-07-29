@@ -272,22 +272,33 @@ sub isDiff {
 # Note that this returns a hash of Fontable.attributes & Colorable.attributes,
 # NOT the font keywords!!!
 sub relativeTo {
-  my ($self, $other) = @_;
+  my ($self, $other, $fontmode) = @_;
   my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
   my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
-  my @diffs = (
-    (isDiff($fam, $ofam) ? ($fam) : ()),
-    (isDiff($ser, $oser) ? ($ser) : ()),
-    (isDiff($shp, $oshp) ? ($shp) : ()));
-  return (
-    (@diffs ? (font => join(' ', @diffs)) : ()),
-    (isDiff($siz, $osiz) ? (fontsize        => $siz) : ()),
-    (isDiff($col, $ocol) ? (color           => $col) : ()),
-    (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
-    (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
-    ); }
+  if ((!defined $fontmode) || ($fontmode eq 'true') || ($fontmode eq '1')) {
+    my @diffs = (
+      (isDiff($fam, $ofam) ? ($fam) : ()),
+      (isDiff($ser, $oser) ? ($ser) : ()),
+      (isDiff($shp, $oshp) ? ($shp) : ()));
+    return (
+      (@diffs ? (font => join(' ', @diffs)) : ()),
+      (isDiff($siz, $osiz) ? (fontsize        => $siz) : ()),
+      (isDiff($col, $ocol) ? (color           => $col) : ()),
+      (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
+      (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
+      ); }
+  elsif ($fontmode eq 'color') {
+    return (
+      (isDiff($col, $ocol) ? (color           => $col) : ()),
+      (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
+      (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
+      ); }
+  else {
+    Warn('unexpected', $fontmode, undef,
+      "Unrecognized mode '$fontmode' passed to font->relativeTo; (should be (true|color))"); }
+  return (); }
 
 sub distance {
   my ($self, $other) = @_;
@@ -451,6 +462,8 @@ sub computeBoxesSize {
     else {                            # default is baseline (of the 1st line)
       my $h = $lines[0][1];
       $dp = $ht + $dp - $h; $ht = $h; } }
+  #print "BOXES SIZE ".($wd/65536)." x ".($ht/65536)." + ".($dp/65336)." for "
+  #  .join(' ',grep {$_} map { Stringify($_) } @$boxes)."\n";
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }
 
 sub isSticky {
