@@ -1075,7 +1075,17 @@ DefMathML("Token:NUMBER:?", \&pmml_mn, sub {
     my $n = $_[0]->textContent;
     return ['m:cn', { type => ($n =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $n]; });
 DefMathML("Token:?:absent", sub { return ['m:mi', {}] });    # Not m:none!
-DefMathML('Hint:?:?', sub { undef; }, sub { undef; });       # Should Disappear!
+# Hints normally would have disappeared during parsing
+# (turned into punctuation or padding?)
+# but if they survive (unparsed?) turn them into space
+DefMathML('Hint:?:?', sub {
+    my ($node) = @_;
+    if (my $w = $node->getAttribute('width')) {
+      $w = getXMHintSpacing($w) . "pt";
+      ['m:mspace', { width => $w }]; }
+    else {
+      undef } },
+  sub { undef; });    # Should Disappear from cmml!
 
 # At presentation level, these are essentially adorned tokens.
 # args are (accent,base)
@@ -1191,6 +1201,7 @@ DefMathML('Apply:?:divide', sub {
     my ($op, $num, $den, @more) = @_;
     my $style     = $op->getAttribute('mathstyle');
     my $thickness = $op->getAttribute('thickness');
+    my $color     = $op->getAttribute('color');
     #  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
     #      ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
     #   pmml_smaller($num),pmml_smaller($den)]; });
@@ -1201,7 +1212,8 @@ DefMathML('Apply:?:divide', sub {
       $op = '/' unless (ref $op ? $op->textContent : $op);
       return pmml_infix($op, $num, $den, @more); }
     else {
-      return ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()) },
+      return ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()),
+          ($color ? (mathcolor => $color) : ()) },
         pmml_smaller($num), pmml_smaller($den)]; } });
 
 DefMathML('Apply:MODIFIEROP:?', \&pmml_infix, undef);
@@ -1221,10 +1233,14 @@ DefMathML('Apply:POSTFIX:?', sub {
     return ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
 
 DefMathML('Apply:?:square-root',
-  sub { return ['m:msqrt', {}, pmml($_[1])]; },
+  sub {
+    my $color = $_[0]->getAttribute('color');
+    return ['m:msqrt', { ($color ? (mathcolor => $color) : ()) }, pmml($_[1])]; },
   sub { return ['m:apply', {}, ['m:root', {}], cmml($_[1])]; });
 DefMathML('Apply:?:nth-root',
-  sub { return ['m:mroot', {}, pmml($_[2]), pmml_smaller($_[1])]; },
+  sub {
+    my $color = $_[0]->getAttribute('color');
+    return ['m:mroot', { ($color ? (mathcolor => $color) : ()) }, pmml($_[2]), pmml_smaller($_[1])]; },
   sub { return ['m:apply', {}, ['m:root', {}], ['m:degree', {}, cmml($_[1])], cmml($_[2])]; });
 
 # Note MML's distinction between quotient and divide: quotient yeilds an integer
