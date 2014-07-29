@@ -50,7 +50,7 @@ use Text::Balanced;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable
     &DefMacro &DefMacroI
-    &DefConditional &DefConditionalI
+    &DefConditional &DefConditionalI &IfCondition
     &DefPrimitive  &DefPrimitiveI
     &DefRegister &DefRegisterI
     &DefConstructor &DefConstructorI
@@ -94,7 +94,7 @@ our @EXPORT = (qw(&DefExpandable
     &PushValue &PopValue &UnshiftValue &ShiftValue
     &LookupMapping &AssignMapping &LookupMappingKeys
     &LookupCatcode &AssignCatcode
-    &LookupMeaning &LookupDefinition &InstallDefinition
+    &LookupMeaning &LookupDefinition &InstallDefinition &XEquals
     &LookupMathcode &AssignMathcode
     &LookupSFcode &AssignSFcode
     &LookupLCcode &AssignLCcode
@@ -294,6 +294,19 @@ sub InstallDefinition {
   my ($name, $definition, $scope) = @_;
   $STATE->installDefinition($name, $definition, $scope);
   return }
+
+sub XEquals {
+  my ($token1, $token2) = @_;
+  my $def1 = LookupMeaning($token1);
+  my $def2 = LookupMeaning($token2);
+  if (defined $def1 != defined $def2) {    # False, if they don't both have defs or both not have defs
+    return; }
+  elsif (!defined $def1 && !defined $def2) { # If neither have defs, then must have same catcode & chars
+    return ($token1->getCatcode == $token2->getCatcode)
+      && ($token1->getCharcode == $token2->getCharcode); }
+  elsif ($def1->equals($def2)) {             # If both have defns, must be same defn!
+    return 1; }
+  return; }
 
 sub LookupMathcode {
   my ($char) = @_;
@@ -916,22 +929,33 @@ sub DefConditionalI {
     my $name = $1;
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
-      $test = sub { LookupValue('Boolean:' . $name); };
-      DefPrimitiveI(T_CS('\\' . $name . 'true'), undef, sub {
-          AssignValue('Boolean:' . $name => 1); });
-      DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
-          AssignValue('Boolean:' . $name => 0); }); }
-    # For \ifcase, the parameter list better be a single Number !!
-###    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
-###        is_conditional => 1, %options),
-        conditional_type => 'if', %options),
-      $options{scope}); }
+      DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
+      DefMacroI(T_CS('\\' . $name . 'false'), undef, Tokens(T_CS('\let'), $cs, T_CS('\iffalse')));
+      Let($cs, T_CS('\iffalse')); }
+    else {
+      # For \ifcase, the parameter list better be a single Number !!
+      $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
+          conditional_type => 'if', %options),
+        $options{scope}); }
+  }
   else {
     Error('misdefined', $cs, $STATE->getStomach,
       "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
+
+sub IfCondition {
+  my ($if, @args) = @_;
+  my $gullet = $STATE->getStomach->getGullet;
+  $if = coerceCS($if);
+  my ($defn, $test);
+  if (($defn = $STATE->lookupMeaning($if)) && (($$defn{conditional_type} || '') eq 'if')
+    && ($test = $defn->getTest)) {
+    return &$test($gullet, @args); }
+  else {
+    Error('expected', 'conditional', $gullet,
+      "Expected a conditional, got '" . ToString($if) . "'");
+    return; } }
 
 #======================================================================
 # Define a primitive control sequence.
@@ -2118,7 +2142,7 @@ sub DefColor {
   my ($name, $color, $scope) = @_;
   #print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
   my ($model, @spec) = @$color;
-  $scope = 'global' if LookupValue('Boolean:globalcolors');
+  $scope = 'global' if LookupDefinition(T_CS('\ifglobalcolors')) && IfCondition(T_CS('\ifglobalcolors'));
   AssignValue('color_' . $name => $color, $scope);
   # We could store these pieces separately,or in a list for above,
   # so that extract could use them more reasonably?
@@ -2607,6 +2631,13 @@ Internal form of C<DefConditional> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 Also, slightly more efficient for conditinal with no arguments (use C<undef> for
 C<paramlist>).
+
+=item C<IfCondition(I<$ifcs>,I<@args>)>
+
+X<IfCondition>
+C<IfCondition> allows you to test a conditional from within perl. Thus something like
+C<if(IfCondition('\ifmmode')){ domath } else { dotext }> might be equivalent to
+TeX's C<\ifmmode domath \else dotext \fi>.
 
 =back
 
@@ -3880,6 +3911,11 @@ Looks up the current definition, if any, of the C<$token>.
 X<InstallDefinition>
 Install the Definition C<$defn> into C<$STATE> under its
 control sequence.
+
+=item C<XEquals($token1,$token2)>
+
+Tests whether the two tokens are equal in the sense that they are either equal
+tokens, or if defined, have the same definition.
 
 =back
 
