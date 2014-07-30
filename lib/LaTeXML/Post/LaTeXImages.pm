@@ -281,17 +281,17 @@ sub process {
         # print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
         $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       else {
-        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } }
+	  Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
 
-    # Finally, modify the original document to record the associated images.
-    foreach my $entry (values %table) {
-      next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
-      my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
-      # Ideally, $image is already relative, but if not, make relative to document
-      my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
-      foreach my $node (@{ $$entry{nodes} }) {
-        $self->setTeXImage($doc, $node, $reldest, $width, $height, $depth); } }
-  }
+  # Finally, modify the original document to record the associated images.
+  foreach my $entry (values %table) {
+    next unless ($doc->cacheLookup($$entry{key}) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/;
+    my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
+    # Ideally, $image is already relative, but if not, make relative to document
+    my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
+    foreach my $node (@{ $$entry{nodes} }) {
+      $self->setTeXImage($doc, $node, $reldest, $width, $height, $depth); } }
+
   $doc->closeCache;    # If opened.
   return $doc; }
 
