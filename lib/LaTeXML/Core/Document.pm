@@ -346,17 +346,17 @@ sub finalize_rec {
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
   if (my $font_attr = $node->getAttribute('_font')) {
-    $desired_font = $$self{node_fonts}{$font_attr};
-    my $font_mode = ($node->hasChildNodes ? 1 : $node->getAttribute('_force_font'));
-    %pending_declaration = $desired_font->relativeTo($LaTeXML::FONT, $font_mode);
-    if ($model->canHaveAttribute($qname, 'font')
-      && $font_mode
+    $desired_font        = $$self{node_fonts}{$font_attr};
+    %pending_declaration = $desired_font->relativeTo($declared_font);
+    if (($node->hasChildNodes || $node->getAttribute('_force_font'))
       && scalar(keys %pending_declaration)) {
       foreach my $attr (keys %pending_declaration) {
-        $self->setAttribute($node, $attr => $pending_declaration{$attr})
-          if $model->canHaveAttribute($qname, $attr); }
-      $declared_font       = $desired_font;
-      %pending_declaration = (); } }
+        if ($model->canHaveAttribute($qname, $attr)) {
+          $self->setAttribute($node, $attr => $pending_declaration{$attr}{value});
+          # Merge to set the font currently in effect
+          $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
+          delete $pending_declaration{$attr}; } }
+    } }
 
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
@@ -380,7 +380,7 @@ sub finalize_rec {
         # Too late to do wrapNodes?
         my $text = $self->wrapNodes($FONT_ELEMENT_NAME, $child);
         foreach my $attr (keys %pending_declaration) {
-          $self->setAttribute($text, $attr => $pending_declaration{$attr}); }
+          $self->setAttribute($text, $attr => $pending_declaration{$attr}{value}); }
         $self->finalize_rec($text);    # Now have to clean up the new node!
       }
     } }
