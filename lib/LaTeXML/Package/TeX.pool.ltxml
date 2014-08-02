@@ -3506,7 +3506,7 @@ sub afterDFrac {
 # No, because constructor doesn't know there are 2 extra args!!
 # NOTE: This group needs to be reworked to preserve color (at least)
 DefConstructorI('\choose', undef,
-  "<ltx:XMApp open='(' close=')' _force_font='color'>"
+  "<ltx:XMApp open='(' close=')'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3518,7 +3518,7 @@ DefConstructorI('\choose', undef,
       T_CS('\choose'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brace', undef,
-  "<ltx:XMApp open='{' close='}' _force_font='color'>"
+  "<ltx:XMApp open='{' close='}'>"
     . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3530,7 +3530,7 @@ DefConstructorI('\brace', undef,
       T_CS('\choose'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\brack', undef,
-  "<ltx:XMApp open='[' close=']' _force_font='color'>"
+  "<ltx:XMApp open='[' close=']'>"
     . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
@@ -3543,7 +3543,7 @@ DefConstructorI('\brack', undef,
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructorI('\over', undef,
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP' _force_font='color'/>"
+    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>",
@@ -3566,8 +3566,8 @@ DefConstructorI('\atop', undef,
       T_CS('\atop'),
       Revert($whatsit->getProperty('bottom'))); });
 DefConstructor('\overwithdelims Token Token',
-  "<ltx:XMApp open='#1' close='#2' _force_font='color'>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP' _force_font='color'/>"
+  "<ltx:XMApp open='#1' close='#2'>"
+    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
     . "<ltx:XMArg>#top</ltx:XMArg>"
     . "<ltx:XMArg>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>",
@@ -5338,14 +5338,14 @@ DefConstructor('\smash{}', "#1");                         # well, what?
 
 # This is actually LaTeX's definition, but let's just do it this way.
 DefConstructor('\sqrt[] Digested',
-  "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root' _force_font='color'/>"
+  "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>)"
-    . "(<ltx:XMApp><ltx:XMTok meaning='square-root' _force_font='color'/>"
+    . "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
     . "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
 
 DefConstructor('\root Until:\of {}',
-  "<ltx:XMApp><ltx:XMTok meaning='nth-root' _force_font='color'/>"
+  "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
 

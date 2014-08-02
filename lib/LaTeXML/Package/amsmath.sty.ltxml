@@ -778,39 +778,39 @@ DefConstructor('\underset{}{}',
 
 DefConstructor('\tfrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle' _force_font='color'/>"
+    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
 DefConstructor('\dfrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle' _force_font='color'/>"
+    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeDFrac, afterDigest => \&afterDFrac);
 DefConstructor('\ifrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline' _force_font='color'/>"
+    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
 DefConstructor('\binom{}{}',
-  "<ltx:XMApp open='(' close=')' _force_font='color'>"
+  "<ltx:XMApp open='(' close=')'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
 
 DefConstructor('\tbinom{}{}',
-  "<ltx:XMApp open='(' close=')' _force_font='color'>"
+  "<ltx:XMApp open='(' close=')'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
 DefConstructor('\dbinom{}{}',
-  "<ltx:XMApp open='(' close=')' _force_font='color'>"
+  "<ltx:XMApp open='(' close=')'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
