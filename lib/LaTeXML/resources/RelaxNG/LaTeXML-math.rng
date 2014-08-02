@@ -89,6 +89,7 @@ the content of the \elementref{XMath} element.</a:documentation>
   </define>
   <!-- ====================================================================== -->
   <define name="XMath.attributes">
+    <a:documentation>Common attributes for the various XMath elements.</a:documentation>
     <optional>
       <attribute name="role">
         <a:documentation>The role that this item plays in the Grammar.</a:documentation>
@@ -274,6 +275,7 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
+    <ref name="Colorable.attributes"/>
     <ref name="Backgroundable.attributes"/>
     <optional>
       <attribute name="name">
