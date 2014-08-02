@@ -267,38 +267,44 @@ sub isDiff {
   my ($x, $y) = @_;
   return (defined $x) && (!(defined $y) || ($x ne $y)); }
 
-# Return a hash of the differences in font, size and color
-# [does encoding play a role here?]
-# Note that this returns a hash of Fontable.attributes & Colorable.attributes,
-# NOT the font keywords!!!
+# This method compares 2 fonts, returning the differences between them.
+# Noting that the font-related attributes in the schema distill the
+# font properties into fewer attributes (font,fontsize,color,background,opacity),
+# the return value encodes both the attribute changes that would be needed to effect
+# the font change, along with the font properties that differed
+# Namely, the result is a hash keyed on the attribute name and whose value is a hash
+#    value      => "new_attribute_value"
+#    properties => { %fontproperties }
 sub relativeTo {
-  my ($self, $other, $fontmode) = @_;
+  my ($self, $other) = @_;
   my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
   my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
-  if ((!defined $fontmode) || ($fontmode eq 'true') || ($fontmode eq '1')) {
-    my @diffs = (
-      (isDiff($fam, $ofam) ? ($fam) : ()),
-      (isDiff($ser, $oser) ? ($ser) : ()),
-      (isDiff($shp, $oshp) ? ($shp) : ()));
-    return (
-      (@diffs ? (font => join(' ', @diffs)) : ()),
-      (isDiff($siz, $osiz) ? (fontsize        => $siz) : ()),
-      (isDiff($col, $ocol) ? (color           => $col) : ()),
-      (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
-      (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
-      ); }
-  elsif ($fontmode eq 'color') {
-    return (
-      (isDiff($col, $ocol) ? (color           => $col) : ()),
-      (isDiff($bkg, $obkg) ? (backgroundcolor => $bkg) : ()),
-      (isDiff($opa, $oopa) ? (opacity         => $opa) : ()),
-      ); }
-  else {
-    Warn('unexpected', $fontmode, undef,
-      "Unrecognized mode '$fontmode' passed to font->relativeTo; (should be (true|color))"); }
-  return (); }
+  my @diffs = (
+    (isDiff($fam, $ofam) ? ($fam) : ()),
+    (isDiff($ser, $oser) ? ($ser) : ()),
+    (isDiff($shp, $oshp) ? ($shp) : ()));
+  return (
+    (@diffs ?
+        (font => { value => join(' ', @diffs),
+          properties => { (isDiff($fam, $ofam) ? (family => $fam) : ()),
+            (isDiff($ser, $oser) ? (series => $ser) : ()),
+            (isDiff($shp, $oshp) ? (shape  => $shp) : ()) } })
+      : ()),
+    (isDiff($siz, $osiz)
+      ? (fontsize => { value => $siz, properties => { size => $siz } })
+      : ()),
+    (isDiff($col, $ocol)
+      ? (color => { value => $col, properties => { color => $col } })
+      : ()),
+    (isDiff($bkg, $obkg)
+      ? (backgroundcolor => { value => $bkg, properties => { background => $bkg } })
+      : ()),
+    (isDiff($opa, $oopa)
+      ? (opacity => { value => $opa, properties => { opacity => $opa } })
+      : ()),
+    ); }
 
 sub distance {
   my ($self, $other) = @_;
