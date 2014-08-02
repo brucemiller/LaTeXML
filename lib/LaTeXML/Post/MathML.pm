@@ -317,20 +317,28 @@ sub pmml {
     local $LaTeXML::MathML::STYLE = $LaTeXML::MathML::DUALSTYLE || $LaTeXML::MathML::STYLE;
     local $LaTeXML::MathML::SOURCEID = $realnode->getAttribute('fragid');    # Better have an id!
     local $LaTeXML::MathML::SOURCEID_LOCK = undef;    # within XMDual arguments, use real id.
-    my $result = pmml_dowrap($realnode,
-      $LaTeXML::Post::MATHPROCESSOR->augmentNode(
-        $realnode, pmml_internal($realnode)));
+    my $result = pmml_inner_aux($realnode);
     $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
     return pmml_dowrap($node, $result); }
   else {
     local $LaTeXML::MathML::SOURCEID = $LaTeXML::MathML::SOURCEID_LOCK
       || $node->getAttribute('fragid') || $LaTeXML::MathML::SOURCEID;
     # leave SOURCEID_LOCK as is.
-    my $result = pmml_dowrap($node,
-      $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, pmml_internal($node)));
+    my $result = pmml_inner_aux($node);
     if (!$LaTeXML::MathML::SOURCEID_LOCK) {           # Defer associating id, if override!
       $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID); }
     return $result; } }
+
+sub pmml_inner_aux {
+  my ($node) = @_;
+  # Bind any style information from the current node
+  # so that any tokens synthesized from strings recover that style.
+  local $LaTeXML::MathML::SIZE  = $node->getAttribute('fontsize') || $LaTeXML::MathML::SIZE;
+  local $LaTeXML::MathML::COLOR = $node->getAttribute('color')    || $LaTeXML::MathML::COLOR;
+  local $LaTeXML::MathML::BGCOLOR = $node->getAttribute('backgroundcolor') || $LaTeXML::MathML::BGCOLOR;
+  local $LaTeXML::MathML::OPACITY = $node->getAttribute('opacity') || $LaTeXML::MathML::OPACITY;
+  return pmml_dowrap($node,
+    $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, pmml_internal($node))); }
 
 # Wrap the $result using the fencing, etc, attributes from $node
 # You know, there really could be some questions of ordering here.... Sigh!
@@ -1112,7 +1120,7 @@ DefMathML('Apply:UNDERACCENT:?', sub {
 DefMathML('Apply:ENCLOSE:?', sub {
     my ($op, $base) = @_;
     my $enclosure = $op->getAttribute('enclose');
-    my $color     = $op->getAttribute('color');
+    my $color = $op->getAttribute('color') || $LaTeXML::MathML::COLOR;
     return ['m:menclose', { notation => $enclosure, mathcolor => $color },
       ($color ? ['m:mstyle', { mathcolor => $LaTeXML::MathML::COLOR || 'black' }, pmml($base)]
         : pmml($base))]; });
@@ -1201,7 +1209,7 @@ DefMathML('Apply:?:divide', sub {
     my ($op, $num, $den, @more) = @_;
     my $style     = $op->getAttribute('mathstyle');
     my $thickness = $op->getAttribute('thickness');
-    my $color     = $op->getAttribute('color');
+    my $color     = $op->getAttribute('color') || $LaTeXML::MathML::COLOR;
     #  ['m:mfrac',{($thickness ? (linethickness=>$thickness):()),
     #      ($style && ($style eq 'inline') ? (bevelled=>'true'):())},
     #   pmml_smaller($num),pmml_smaller($den)]; });
@@ -1234,12 +1242,12 @@ DefMathML('Apply:POSTFIX:?', sub {
 
 DefMathML('Apply:?:square-root',
   sub {
-    my $color = $_[0]->getAttribute('color');
+    my $color = $_[0]->getAttribute('color') || $LaTeXML::MathML::COLOR;
     return ['m:msqrt', { ($color ? (mathcolor => $color) : ()) }, pmml($_[1])]; },
   sub { return ['m:apply', {}, ['m:root', {}], cmml($_[1])]; });
 DefMathML('Apply:?:nth-root',
   sub {
-    my $color = $_[0]->getAttribute('color');
+    my $color = $_[0]->getAttribute('color') || $LaTeXML::MathML::COLOR;
     return ['m:mroot', { ($color ? (mathcolor => $color) : ()) }, pmml($_[2]), pmml_smaller($_[1])]; },
   sub { return ['m:apply', {}, ['m:root', {}], ['m:degree', {}, cmml($_[1])], cmml($_[2])]; });
 
