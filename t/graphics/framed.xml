@@ -9,11 +9,11 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basics</title>
     <para xml:id="S1.p1">
-      <p framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle">This is stuff that’s framed.</p>
+      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">This is stuff that’s framed.</p>
     </para>
     <para xml:id="S1.p2">
       <p>Note that the</p>
-      <p framed="rectangle" cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000">framed</p>
+      <p framed="rectangle" framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt">framed</p>
       <p>stuff is a block!</p>
     </para>
     <para xml:id="S1.p3">
@@ -23,7 +23,7 @@
       </inline-block>
     </para>
     <para xml:id="S1.p4">
-      <p framed="rectangle" cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000">And even stuff in multiple Paragraphs.</p>
+      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle" framecolor="#000000">And even stuff in multiple Paragraphs.</p>
     </para>
     <paragraph xml:id="S1.SS0.SSS0.Px1">
       <title>Does this work?</title>
@@ -40,34 +40,26 @@ This doesn’t make so much sense for LaTeXML, so it’s pretty much
 the same.</p>
     </para>
     <para xml:id="S2.p2">
-      <p cssstyle="padding-top:12pt;padding-bottom:12pt" backgroundcolor="#80BF80">
-        <text backgroundcolor="#80BF80">This is stuff that’s shaded green;
-should fade into the margin, whatever that means.</text>
-      </p>
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:12pt;padding-bottom:12pt">This is stuff that’s shaded green;
+should fade into the margin, whatever that means.</p>
     </para>
     <para xml:id="S2.p3">
-      <p backgroundcolor="#80BF80" cssstyle="padding-top:12pt;padding-bottom:12pt">
-        <text backgroundcolor="#80BF80">This is stuff that’s shaded green;
-it should end sharply at the margin.</text>
-      </p>
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:12pt;padding-bottom:12pt">This is stuff that’s shaded green;
+it should end sharply at the margin.</p>
     </para>
     <para xml:id="S2.p4">
-      <p backgroundcolor="#80BF80" cssstyle="padding-top:3pt;padding-bottom:3pt">
-        <text backgroundcolor="#80BF80">This is stuff that’s snugly shaded green;
-fading into the margin.</text>
-      </p>
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:3pt;padding-bottom:3pt">This is stuff that’s snugly shaded green;
+fading into the margin.</p>
     </para>
     <para xml:id="S2.p5">
-      <p cssstyle="padding-top:3pt;padding-bottom:3pt" backgroundcolor="#80BF80">
-        <text backgroundcolor="#80BF80">This is stuff that’s snugly shaded green;
-ending sharply at the margin.</text>
-      </p>
+      <p backgroundcolor="#80BF80" cssstyle="padding-top:3pt;padding-bottom:3pt">This is stuff that’s snugly shaded green;
+ending sharply at the margin.</p>
     </para>
     <para xml:id="S2.p6">
       <p framecolor="#000000" framed="left">This is with a left bar, like a changebar?</p>
     </para>
     <para xml:id="S2.p7">
-      <p framecolor="#8080BF" framed="rectangle" backgroundcolor="white"><text cssstyle="display:block;width:100%;" backgroundcolor="#8080BF" color="#FFFFFF">A Titled Frame</text>
+      <p framed="rectangle" framecolor="#8080BF" backgroundcolor="white"><text cssstyle="display:block;width:100%;" color="#FFFFFF" backgroundcolor="#8080BF">A Titled Frame</text>
 This is a titled frame.</p>
     </para>
   </section>

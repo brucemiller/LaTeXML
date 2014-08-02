@@ -550,7 +550,7 @@ vs.
               <Math mode="inline" xml:id="S3.p4.m10" tex="\numprint{45,1}" text="45,1">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="45,1" role="NUMBER" font="italic" color="#0000FF">45,1</XMTok>
+                    <XMTok meaning="45,1" role="NUMBER" color="#0000FF" font="italic">45,1</XMTok>
                     <XMText>
                       <text align="right" width="15.0pt" color="#0000FF">
                         <Math mode="inline" tex="\textstyle 45" text="45" xml:id="S3.p4.m10.m1">
@@ -747,10 +747,10 @@ vs.
                 <XMath>
                   <XMDual>
                     <XMTok meaning="123456.23e1" role="NUMBER" font="italic" color="#0000FF">123456.23e1</XMTok>
-                    <XMApp>
+                    <XMApp color="#0000FF">
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMText>
-                        <text align="right" width="112.5pt" color="#0000FF">
+                        <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 123{,}456" text="list@(123, 456)" xml:id="S3.p6.m3.m1">
                             <XMath>
                               <XMApp>
@@ -761,7 +761,7 @@ vs.
                             </XMath>
                           </Math>
                         </text>
-                        <text align="left" width="30.0pt" color="#0000FF">
+                        <text align="left" width="30.0pt">
                           <Math mode="inline" tex="\textstyle{.}23" text=".23" xml:id="S3.p6.m3.m2">
                             <XMath>
                               <XMTok meaning=".23" role="NUMBER">.23</XMTok>
@@ -769,11 +769,11 @@ vs.
                           </Math>
                         </text>
                       </XMText>
-                      <XMTok role="UNKNOWN" color="#0000FF">×</XMTok>
+                      <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
-                        <XMTok meaning="10" role="NUMBER" color="#0000FF">10</XMTok>
-                        <XMTok meaning="1" role="NUMBER" color="#0000FF">1</XMTok>
+                        <XMTok meaning="10" role="NUMBER">10</XMTok>
+                        <XMTok meaning="1" role="NUMBER">1</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -816,11 +816,11 @@ vs.
               <Math mode="inline" xml:id="S3.p6.m6" tex="\numprint{14561234.562e12}" text="14561234.562e12">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="14561234.562e12" role="NUMBER" font="italic" color="#0000FF">14561234.562e12</XMTok>
-                    <XMApp>
+                    <XMTok meaning="14561234.562e12" role="NUMBER" color="#0000FF" font="italic">14561234.562e12</XMTok>
+                    <XMApp color="#0000FF">
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMText>
-                        <text align="right" width="112.5pt" color="#0000FF">
+                        <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 14{,}561{,}234" text="list@(14, 561, 234)" xml:id="S3.p6.m6.m1">
                             <XMath>
                               <XMApp>
@@ -832,7 +832,7 @@ vs.
                             </XMath>
                           </Math>
                         </text>
-                        <text align="left" width="30.0pt" color="#0000FF">
+                        <text align="left" width="30.0pt">
                           <Math mode="inline" tex="\textstyle{.}562" text=".562" xml:id="S3.p6.m6.m2">
                             <XMath>
                               <XMTok meaning=".562" role="NUMBER">.562</XMTok>
@@ -840,11 +840,11 @@ vs.
                           </Math>
                         </text>
                       </XMText>
-                      <XMTok role="UNKNOWN" color="#0000FF">×</XMTok>
+                      <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
-                        <XMTok meaning="10" role="NUMBER" color="#0000FF">10</XMTok>
-                        <XMTok meaning="12" role="NUMBER" color="#0000FF">12</XMTok>
+                        <XMTok meaning="10" role="NUMBER">10</XMTok>
+                        <XMTok meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
