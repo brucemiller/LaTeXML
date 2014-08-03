@@ -1,0 +1,71 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | fancyhdr.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released under the Gnu Public License                               | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+######################################################
+
+DefMacroI('\lhead', '{}', '');
+DefMacroI('\chead', '{}', '');
+DefMacroI('\rhead', '{}', '');
+
+DefMacroI('\lfoot', '{}', '');
+DefMacroI('\cfoot', '{}', '');
+DefMacroI('\rfoot', '{}', '');
+
+DefMacroI('\fancyhead', '[]{}', '');
+DefMacroI('\fancyfoot', '[]{}', '');
+
+DefMacroI('\fancypagestyle', '{}{}', '');
+DefMacroI('\fancyhf',        '[]',   '');
+
+DefMacroI('\fancyheadoffset', '[]{}', '');
+DefMacroI('\fancyfootoffset', '[]{}', '');
+DefMacroI('\fancyhfoffset',   '[]{}', '');
+
+DefMacroI('\iffloatpage', '{}{}', '');
+DefMacroI('\iftopfloat',  '{}{}', '');
+DefMacroI('\ifbotfloat',  '{}{}', '');
+
+DefConditional('\iffootnote', undef);
+
+DefMacroI('\headrulewidth',      undef, '0.4pt');
+DefMacroI('\footrulewidth',      undef, '0pt');
+DefMacroI('\plainheadrulewidth', undef, '0pt');
+DefMacroI('\plainfootrulewidth', undef, '0pt');
+DefMacroI('\footruleskip',       undef, '.3\normalbaselineskip');
+
+DefRegister('\headwidth' => Dimension(0));    # maybe need some other value here?
+
+DefMacroI('\headrule', undef, '');
+DefMacroI('\footrule', undef, '');
+
+DefMacroI('\nouppercase', undef, '');
+
+# for compatibility reasons (should not be used anymore)
+DefMacroI('\fancyplain', '{}{}', '');
+
+######################################################
+
+1;
+
+# vim: ft=perl: noexpandtab:
