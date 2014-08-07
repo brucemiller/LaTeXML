@@ -120,7 +120,6 @@ moreFormulae :
           /^\Z/ { $arg[0];}   # short circuit!
         | (endPunct Formula { [$item[1],$item[2]]; })(s)
                     { NewFormulae($arg[0],map(@$_,@{$item[1]})); }
-##        | METARELOP Formula     { Apply($item[1],$arg[0],$item[2]); }
         | metarelopFormula(s)     { NewFormula($arg[0],map(@$_,@{$item[1]})); }
         | { $arg[0]; }
 
@@ -268,8 +267,8 @@ Factor  :
 #       | OPEN ARRAY  { Annotate(Apply(New('cases'),$item[2]),open=>$item[1]); }
 #       | ARRAY CLOSE { Annotate(Apply(New('cases'),$item[1]),close=>$item[2]); }
         # should be explicitly {, and moreover the array should be only 1 or 2 columns!
-        | LBRACE ARRAY { Annotate($item[2], meaning=>'cases',open=>$item[1]); }
-        | ARRAY RBRACE { Annotate($item[1], meaning=>'cases',close=>$item[2]); }
+        | LBRACE ARRAY { InterpretDelimited(New('cases'),$item[1],$item[2],Absent()); }
+        | ARRAY RBRACE { InterpretDelimited(New('cases'),Absent(),$item[1],$item[2]); }
         | preScripted['FUNCTION'] addArgs[$item[1]]
         | preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
         | preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
@@ -281,18 +280,21 @@ Factor  :
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
-              addScripts[Fence('||',$item[4],'||')]
+              addScripts[Fence(New(undef,'||',role=>'OPEN'),$item[4],New(undef,'||',role=>'CLOSE'))]
         | { ($forbidVertBar ? undef : 1); }
           VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
               addScripts[Fence($item[2],$item[3],$item[4])]
         | { ($forbidVertBar ? undef : IsNotationAllowed('QM')); }
           VERTBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
-              addScripts[Fence('|',$item[3],'>')] # ket
+              addScripts[InterpretDelimited(New('ket'),
+                    Annotate($item[2],role=>'OPEN'),$item[3],Annotate($item[4],role=>'CLOSE'))] # ket
         | { IsNotationAllowed('QM'); }
-          LANGLE ketExpression VERTBAR maybeBra[$item[3]]
+          LANGLE ketExpression VERTBAR maybeBra[$item[2],$item[3],$item[4]]
         | { IsNotationAllowed('QM'); }
           LANGLE absExpression RANGLE
-               addScripts[Fence($item[2],$item[3],$item[4])]
+               addScripts[Fence(Annotate($item[2],role=>'OPEN'),
+                          $item[3],
+                          Annotate($item[4],role=>'CLOSE'))]
         | OPERATOR addScripts[$item[1]] nestOperators[$item[2]]
                     addOpFunArgs[$item[3]]
 
@@ -350,19 +352,27 @@ moreEvalAt :
 #======================================================================
 # After < a | we might be done, or get <a|b> or <a|H|b>
 
-# <$expr |   maybeBra[$expr]
+# <$expr |   maybeBra[$langle,$expr,$bar]
 maybeBra :
-          ketExpression maybeBraket[$arg[0],$item[1]]
-        | { SawNotation('QM'); } addScripts[Fence('<',$arg[0],'|')]
-# <$expr1|$expr2   maybeBraket[$expr1,$expr2]
+          ketExpression maybeBraket[$arg[0],$arg[1],$arg[2],$item[1]]
+        | { SawNotation('QM'); }
+          addScripts[InterpretDelimited(New('bra'),
+                     Annotate($arg[0],role=>'OPEN'),$arg[1],Annotate($arg[2],role=>'CLOSE'))]
+
+# <$expr1|$expr2   maybeBraket[$langle,$expr1,$bar,$expr2]
 maybeBraket :
           RANGLE { SawNotation('QM'); }
-              addScripts[Annotate(Apply(New('inner-product', "|",role=>'MIDDLE'),$arg[0],$arg[1]),
-                                  open=>'<',close=>'>')]
+              addScripts[InterpretDelimited(New('inner-product', undef,role=>'MIDDLE'),
+                                   Annotate($arg[0],role=>'OPEN'),$arg[1],
+                                   Annotate($arg[2],role=>'MIDDLE'),
+                                   $arg[3],Annotate($item[1],role=>'CLOSE'))]
         | VERTBAR ketExpression RANGLE { SawNotation('QM'); }
-              addScripts[Apply(New('inner-product', "\x{2061}",role=>'MIDDLE'), # Is this a good representation?
-                               Fence('<',$arg[0],'|'),
-                               Apply($arg[1],Fence('|',$item[2],'>')))]
+              addScripts[InterpretDelimited(New('quantum-operator-product',undef), # Is this a good representation?
+                            Annotate($arg[0],role=>'OPEN'),$arg[1],
+                                     Annotate($arg[2],role=>'CLOSE'),
+                            $arg[3],
+                            Annotate($item[1],role=>'OPEN'),$item[2],
+                                    Annotate($item[3],role=>'CLOSE'))]
 
 # bra's and ket's (ie <foo| & |foo>) can contain a rather wide variety of things
 # from simple symbols to full (but typically short) formula, and so we
@@ -448,8 +458,8 @@ factorOpenExpr :
                   addScripts[Fence($arg[0],$arg[1],map(@$_,@{$item[1]}),$item[2])]
         # only 2 things and 2nd one is an op?; some kind of group???
         | PUNCT AnyOp balancedClose[$arg[0]]
-                   addScripts[Annotate(Apply(New('group',undef,role=>'FENCED'),$arg[1],$item[2]),
-                                      open=>$arg[0],separators=>$item[1],close=>$item[3])]
+                   addScripts[InterpretDelimited(New('group'),
+                                            $arg[0],$arg[1],$item[1],$item[2],$item[3])]
         # parenthesized expression.
         | balancedClose[$arg[0]] addScripts[Fence($arg[0],$arg[1],$item[1])]
 
@@ -458,7 +468,7 @@ factorOpenExpr :
 # A conditionalized set
 scriptFactorOpen :
           Formula suchThatOp Formulae balancedClose[$arg[0]]
-          addScripts[ApplyDelimited(New('conditional-set',undef,role=>'FENCED'),
+          addScripts[InterpretDelimited(New('conditional-set'),
                                     $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
         | factorOpen[$arg[0]]
