@@ -3102,7 +3102,7 @@ These options are the same as for L</Primitives>
 
 =item C<nargs=E<gt>I<nargs>>
 
-These options are the same as for L</Constructor>
+These options are the same as for L</DefConstructor>
 
 =item C<beforeDigest=E<gt>I<code>($stomach)>
 
@@ -4081,6 +4081,7 @@ Formats the C<$number> in (uppercase) roman numerals, returning a list of the to
 
 =head1 SEE ALSO
 
+X<See also>
 See also L<LaTeXML::Global>,
 L<LaTeXML::Common::Object>,
 L<LaTeXML::Common::Error>,
