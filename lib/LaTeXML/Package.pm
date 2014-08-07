@@ -54,7 +54,7 @@ our @EXPORT = (qw(&DefExpandable
     &DefPrimitive  &DefPrimitiveI
     &DefRegister &DefRegisterI
     &DefConstructor &DefConstructorI
-    &dualize_arglist
+    &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
     &convertLaTeXArgs),
 
@@ -584,7 +584,10 @@ sub NewCounter {
       Tokens(T_CS($unctr), (($x = LookupValue("\\cl\@UN$within")) ? $x->unlist : ())),
     'global') if $within;
   AssignValue('nested_counters_' . $ctr => $options{nested}, 'global') if $options{nested};
-  DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}", scope => 'global');
+  # default is equivalent to \arabic{ctr}, but w/o using the LaTeX macro!
+  DefMacroI(T_CS("\\the$ctr"), undef, sub {
+      ExplodeText(CounterValue($ctr)->valueOf); },
+    scope => 'global');
   my $prefix = $options{idprefix};
   AssignValue('@ID@prefix@' . $ctr => $prefix, 'global') if $prefix;
   $prefix = LookupValue('@ID@prefix@' . $ctr) || CleanID($ctr) unless $prefix;
@@ -1118,6 +1121,52 @@ sub DefConstructorI {
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
 
+#======================================================================
+# Support for XMDual
+
+# Perhaps it would be better to use a label(-like) indirection here,
+# so all ID's can stay in the desired format?
+sub getXMArgID {
+  StepCounter('@XMARG');
+  DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
+    scope => 'global');
+  return Expand(T_CS('\the@XMARG@ID')); }
+
+# Given a list of Tokens (to be expanded into mathematical objects)
+# return two lists:
+#   (1) The Tokens' wrapped in an XMAarg, with an ID added
+#   (2) a corresponding list of Tokens creating XMRef's to those IDs
+sub dualize_arglist {
+  my (@args) = @_;
+  my (@cargs, @pargs);
+  foreach my $arg (@args) {
+    if ((defined $arg) && $arg->unlist) {    # defined and non-empty args get an ID.
+      my $id = getXMArgID();
+      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
+      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); }
+    else {
+      push(@cargs, $arg);
+      push(@pargs, $arg); } }
+  return ([@cargs], [@pargs]); }
+# Quick reversal!
+#  ( [@pargs],[@cargs] ); }
+
+# Given a list of XML nodes (either libxml nodes, or array representations)
+# ensure each has an ID, and return a list of XMRef's to those nodes.
+sub createXMRefs {
+  my ($document, @args) = @_;
+  my @refs = ();
+  foreach my $arg (@args) {
+    my $id;
+    if (ref $arg eq 'ARRAY') {
+      if (!($id = $$arg[1]{'xml:id'})) {
+        $$arg[1]{'xml:id'} = $id = getXMArgID(); } }
+    elsif (ref $arg eq 'XML::LibXML::Element') {
+      if (!($id = $arg->getAttribute('xml:id'))) {
+        $document->setAttribute($arg, 'xml:id' => ($id = getXMArgID())); } }
+    push(@refs, ['ltx:XMRef', { 'idref' => $id }]) if $id; }
+  return @refs; }
+
 # DefMath Define a Mathematical symbol or function.
 # There are two sets of cases:
 #  (1) If the presentation appears to be TeX code, we create an XMDual,
@@ -1142,24 +1191,6 @@ my $math_options = {    # [CONSTANT]
 my $simpletoken_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
-
-sub dualize_arglist {
-  my (@args) = @_;
-  my (@cargs, @pargs);
-  foreach my $arg (@args) {
-    if ((defined $arg) && $arg->unlist) {    # defined and non-empty args get an ID.
-      StepCounter('@XMARG');
-      DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
-        scope => 'global');
-      my $id = Expand(T_CS('\the@XMARG@ID'));
-      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); }
-    else {
-      push(@cargs, $arg);
-      push(@pargs, $arg); } }
-  return ([@cargs], [@pargs]); }
-# Quick reversal!
-#  ( [@pargs],[@cargs] ); }
 
 sub DefMath {
   my ($proto, $presentation, %options) = @_;
