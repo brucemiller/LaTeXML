@@ -309,27 +309,24 @@ sub pmml {
   # [since we follow split/scan, use the fragid, not xml:id! TO SOLVE LATER]
   # Do the core conversion.
   # Fetch the "real" node, if this is an XMRef to one; also use the OTHER's id!
+  my $refnode = $node->getAttribute('_is_referred');
   if (getQName($node) eq 'ltx:XMRef') {
-    my $realnode = realize($node);
-    # Pretend we're at the same mathstyle level as the DUAL was when it started;
-    # this is kind of backwards, but handles common case where dual args are presented
-    # as sub/super-scripts, but the content form is at top level (eg. display or text)
-    local $LaTeXML::MathML::STYLE = $LaTeXML::MathML::DUALSTYLE || $LaTeXML::MathML::STYLE;
-    local $LaTeXML::MathML::SOURCEID = $realnode->getAttribute('fragid');    # Better have an id!
-    local $LaTeXML::MathML::SOURCEID_LOCK = undef;    # within XMDual arguments, use real id.
-    my $result = pmml_inner_aux($realnode);
-    $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
-    return pmml_dowrap($node, $result); }
-  else {
-    local $LaTeXML::MathML::SOURCEID = $LaTeXML::MathML::SOURCEID_LOCK
-      || $node->getAttribute('fragid') || $LaTeXML::MathML::SOURCEID;
-    # leave SOURCEID_LOCK as is.
-    my $result = pmml_inner_aux($node);
-    if (!$LaTeXML::MathML::SOURCEID_LOCK) {           # Defer associating id, if override!
-      $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID); }
-    return $result; } }
+    $node    = realize($node);
+    $refnode = 1; }
+  local $LaTeXML::MathML::SOURCEID = ($LaTeXML::MathML::SOURCEID_INDUAL && !$refnode
+    ? $LaTeXML::MathML::SOURCEID
+    : $node->getAttribute('fragid'));
+  local $LaTeXML::MathML::SOURCEID_INDUAL = ($refnode ? undef : $LaTeXML::MathML::SOURCEID_INDUAL);
+  # Pretend we're at the same mathstyle level as the DUAL was when it started;
+  # this is kind of backwards, but handles common case where dual args are presented
+  # as sub/super-scripts, but the content form is at top level (eg. display or text)
+  # Probably would be better just to put args in the presentation side.
+  local $LaTeXML::MathML::STYLE = ($refnode ? $LaTeXML::MathML::DUALSTYLE : $LaTeXML::MathML::STYLE);
+  my $result = pmml_internal($node);
+  $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
+  return $result; }
 
-sub pmml_inner_aux {
+sub pmml_internal {
   my ($node) = @_;
   # Bind any style information from the current node
   # so that any tokens synthesized from strings recover that style.
@@ -338,7 +335,7 @@ sub pmml_inner_aux {
   local $LaTeXML::MathML::BGCOLOR = $node->getAttribute('backgroundcolor') || $LaTeXML::MathML::BGCOLOR;
   local $LaTeXML::MathML::OPACITY = $node->getAttribute('opacity') || $LaTeXML::MathML::OPACITY;
   return pmml_dowrap($node,
-    $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, pmml_internal($node))); }
+    $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, pmml_internal_aux($node))); }
 
 # Wrap the $result using the fencing, etc, attributes from $node
 # You know, there really could be some questions of ordering here.... Sigh!
@@ -381,7 +378,7 @@ sub getXMHintSpacing {
 
 my $NBSP = pack('U', 0xA0);    # CONSTANT
 
-sub pmml_internal {
+sub pmml_internal_aux {
   my ($node) = @_;
   return ['m:merror', {}, ['m:mtext', {}, "Missing Subexpression"]] unless $node;
   my $tag  = getQName($node);
@@ -390,12 +387,15 @@ sub pmml_internal {
     return pmml_row(map { pmml($_) } element_nodes($node)); }    # Really multiple nodes???
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
-    my $id = $node->getAttribute('xml:id');
-    local $LaTeXML::MathML::DUALSTYLE = $LaTeXML::MathML::STYLE;
-    local $LaTeXML::MathML::SOURCEID = $id || $LaTeXML::MathML::SOURCEID_LOCK
-      || $LaTeXML::MathML::SOURCEID;
-    local $LaTeXML::MathML::SOURCEID_LOCK = $LaTeXML::MathML::SOURCEID;
-    return pmml($presentation); }
+    # Unless we're already IN an XMDual, mark the targets of any visible XMRefs
+    if (!$LaTeXML::MathML::SOURCEID_INDUAL) {
+      my $doc = $LaTeXML::Post::DOCUMENT;
+      foreach my $xref ($doc->findnodes('.//ltx:XMRef', $content)) {
+        if (my $realnode = $doc->realizeXMNode($xref)) {
+          $realnode->setAttribute('_is_referred' => 1); } } }
+    local $LaTeXML::MathML::DUALSTYLE       = $LaTeXML::MathML::STYLE;
+    local $LaTeXML::MathML::SOURCEID_INDUAL = 1;
+    return pmml_internal($presentation); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
     return pmml_row(map { pmml($_) } element_nodes($node)); }
   elsif ($tag eq 'ltx:XMApp') {
@@ -939,7 +939,14 @@ sub cmml_top {
 
 sub cmml {
   my ($node) = @_;
-  local $LaTeXML::MathML::SOURCEID = $node->getAttribute('fragid') || $LaTeXML::MathML::SOURCEID;
+  my $refnode = $node->getAttribute('_is_referred');
+  if (getQName($node) eq 'ltx:XMRef') {
+    $node    = realize($node);
+    $refnode = 1; }
+  local $LaTeXML::MathML::SOURCEID = ($LaTeXML::MathML::SOURCEID_INDUAL && !$refnode
+    ? $LaTeXML::MathML::SOURCEID
+    : $node->getAttribute('fragid'));
+  local $LaTeXML::MathML::SOURCEID_INDUAL = ($refnode ? undef : $LaTeXML::MathML::SOURCEID_INDUAL);
   my $result = cmml_internal($node);
   $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
   return $result; }
@@ -951,11 +958,14 @@ sub cmml_internal {
   my $tag = getQName($node);
   if ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
-    my $id = $node->getAttribute('xml:id');
-    local $LaTeXML::MathML::SOURCEID = $id || $LaTeXML::MathML::SOURCEID_LOCK
-      || $LaTeXML::MathML::SOURCEID;
-    local $LaTeXML::MathML::SOURCEID_LOCK = $LaTeXML::MathML::SOURCEID;
-    return cmml($content); }
+    # Unless we're already IN an XMDual, mark the targets of any visible XMRefs
+    if (!$LaTeXML::MathML::SOURCEID_INDUAL) {
+      my $doc = $LaTeXML::Post::DOCUMENT;
+      foreach my $xref ($doc->findnodes('.//ltx:XMRef', $presentation)) {
+        if (my $realnode = $doc->realizeXMNode($xref)) {
+          $realnode->setAttribute('_is_referred' => 1); } } }
+    local $LaTeXML::MathML::SOURCEID_INDUAL = 1;
+    return cmml_internal($content); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {    # Only present if parsing failed!
     return cmml_contents($node); }
   elsif ($tag eq 'ltx:XMApp') {
