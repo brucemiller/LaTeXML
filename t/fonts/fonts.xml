@@ -47,17 +47,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m3" tex="[a+b\cup c]" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m3" tex="[a+b\cup c]" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM1"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM1">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -97,17 +107,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m7" tex="\mathrm{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m7" tex="\mathrm{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN">a</XMTok>
-                    <XMTok role="UNKNOWN">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM2"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM2">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN">a</XMTok>
+                        <XMTok role="UNKNOWN">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -140,17 +160,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m11" tex="\mathsf{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m11" tex="\mathsf{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="sansserif">a</XMTok>
-                    <XMTok role="UNKNOWN" font="sansserif">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM3"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="sansserif">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM3">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="sansserif">a</XMTok>
+                        <XMTok role="UNKNOWN" font="sansserif">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="sansserif">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -183,17 +213,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m15" tex="\mathtt{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m15" tex="\mathtt{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="typewriter">a</XMTok>
-                    <XMTok role="UNKNOWN" font="typewriter">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM4"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="typewriter">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM4">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="typewriter">a</XMTok>
+                        <XMTok role="UNKNOWN" font="typewriter">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="typewriter">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -231,17 +271,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m19" tex="\mathcal{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m19" tex="\mathcal{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="caligraphic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="caligraphic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM5"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="caligraphic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM5">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="caligraphic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="caligraphic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="caligraphic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -281,17 +331,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m23" tex="\mathbf{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m23" tex="\mathbf{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="bold">a</XMTok>
-                    <XMTok role="UNKNOWN" font="bold">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM6"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="bold">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM6">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="bold">a</XMTok>
+                        <XMTok role="UNKNOWN" font="bold">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="bold">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -331,17 +391,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m27" tex="\mathit{[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m27" tex="\mathit{[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM7"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM7">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -381,17 +451,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m31" tex="\rm[a+b\cup c]" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m31" tex="\rm[a+b\cup c]" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN">a</XMTok>
-                    <XMTok role="UNKNOWN">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM8"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM8">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN">a</XMTok>
+                        <XMTok role="UNKNOWN">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -424,17 +504,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m35" tex="\bf[a+b\cup c]" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m35" tex="\bf[a+b\cup c]" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="bold">a</XMTok>
-                    <XMTok role="UNKNOWN" font="bold">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM9"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="bold">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM9">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="bold">a</XMTok>
+                        <XMTok role="UNKNOWN" font="bold">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="bold">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -467,17 +557,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m39" tex="\it[a+b\cup c]" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m39" tex="\it[a+b\cup c]" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM10"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM10">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -517,17 +617,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m43" tex="\mathsf{\mathit{[a+b\cup c]}}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m43" tex="\mathsf{\mathit{[a+b\cup c]}}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM11"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM11">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -560,17 +670,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m47" tex="\mathit{\mathsf{[a+b\cup c]}}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m47" tex="\mathit{\mathsf{[a+b\cup c]}}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="sansserif">a</XMTok>
-                    <XMTok role="UNKNOWN" font="sansserif">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM12"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="sansserif">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM12">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="sansserif">a</XMTok>
+                        <XMTok role="UNKNOWN" font="sansserif">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="sansserif">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -603,17 +723,27 @@
             </Math>
           </td>
           <td align="center">
-            <Math mode="inline" xml:id="p1.m51" tex="\mathsf{\it[a+b\cup c]}" text="(a + b) union c">
+            <Math mode="inline" xml:id="p1.m51" tex="\mathsf{\it[a+b\cup c]}" text="delimited-[]@((a + b) union c)">
               <XMath>
-                <XMApp close="]" open="[">
-                  <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                <XMDual>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok meaning="delimited-[]"/>
+                    <XMRef idref="XM13"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">[</XMTok>
+                    <XMApp xml:id="XM13">
+                      <XMTok meaning="union" name="cup" role="ADDOP">∪</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMath>
             </Math>
           </td>
@@ -636,7 +766,7 @@
           <td align="left">-</td>
           <td align="center"><Math mode="inline" xml:id="p1.m53" tex="Fff" text="F * f * f"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="bold italic">F</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok><XMTok role="UNKNOWN" font="bold italic">f</XMTok></XMApp></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m54" tex="\alpha\Gamma" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m55" tex="[a+b\cup c]" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m55" tex="[a+b\cup c]" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM14"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM14"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right">
             <Math mode="inline" xml:id="p1.m56" tex="123" text="123">
               <XMath>
@@ -649,35 +779,35 @@
           <td align="left">mathrm</td>
           <td align="center"><Math mode="inline" xml:id="p1.m57" tex="\mathrm{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold">Fff</XMTok></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m58" tex="\mathrm{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m59" tex="\mathrm{[a+b\cup c]}" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m59" tex="\mathrm{[a+b\cup c]}" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM15"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM15"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold">a</XMTok><XMTok role="UNKNOWN" font="bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right"><Math mode="inline" xml:id="p1.m60" tex="\mathrm{123}" text="123"><XMath><XMTok meaning="123" role="NUMBER" font="bold">123</XMTok></XMath></Math></td>
         </tr>
         <tr>
           <td align="left">mathsf</td>
           <td align="center"><Math mode="inline" xml:id="p1.m61" tex="\mathsf{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="sansserif bold">Fff</XMTok></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m62" tex="\mathsf{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="sansserif bold">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m63" tex="\mathsf{[a+b\cup c]}" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="sansserif bold">a</XMTok><XMTok role="UNKNOWN" font="sansserif bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif bold">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m63" tex="\mathsf{[a+b\cup c]}" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM16"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM16"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="sansserif bold">a</XMTok><XMTok role="UNKNOWN" font="sansserif bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="sansserif bold">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right"><Math mode="inline" xml:id="p1.m64" tex="\mathsf{123}" text="123"><XMath><XMTok meaning="123" role="NUMBER" font="sansserif bold">123</XMTok></XMath></Math></td>
         </tr>
         <tr>
           <td align="left">mathtt</td>
           <td align="center"><Math mode="inline" xml:id="p1.m65" tex="\mathtt{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="typewriter bold">Fff</XMTok></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m66" tex="\mathtt{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="typewriter bold">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m67" tex="\mathtt{[a+b\cup c]}" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="typewriter bold">a</XMTok><XMTok role="UNKNOWN" font="typewriter bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter bold">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m67" tex="\mathtt{[a+b\cup c]}" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM17"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM17"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="typewriter bold">a</XMTok><XMTok role="UNKNOWN" font="typewriter bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="typewriter bold">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right"><Math mode="inline" xml:id="p1.m68" tex="\mathtt{123}" text="123"><XMath><XMTok meaning="123" role="NUMBER" font="typewriter bold">123</XMTok></XMath></Math></td>
         </tr>
         <tr>
           <td align="left">mathcal</td>
           <td align="center"><Math mode="inline" xml:id="p1.m69" tex="\mathcal{Fff}" text="F * f * f"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">F</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">f</XMTok></XMApp></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m70" tex="\mathcal{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="caligraphic bold">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m71" tex="\mathcal{[a+b\cup c]}" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">a</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic bold">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m71" tex="\mathcal{[a+b\cup c]}" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM18"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM18"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">a</XMTok><XMTok role="UNKNOWN" font="caligraphic bold">b</XMTok></XMApp><XMTok role="UNKNOWN" font="caligraphic bold">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right"><Math mode="inline" xml:id="p1.m72" tex="\mathcal{123}" text="123"><XMath><XMTok meaning="123" role="NUMBER" font="caligraphic bold">123</XMTok></XMath></Math></td>
         </tr>
         <tr>
           <td align="left">mathit</td>
           <td align="center"><Math mode="inline" xml:id="p1.m73" tex="\mathit{Fff}" text="Fff"><XMath><XMTok role="UNKNOWN" font="bold italic">Fff</XMTok></XMath></Math></td>
           <td align="center"><Math mode="inline" xml:id="p1.m74" tex="\mathit{\alpha\Gamma}" text="alpha * Gamma"><XMath><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok name="alpha" role="UNKNOWN" font="bold italic">α</XMTok><XMTok name="Gamma" role="UNKNOWN" font="bold italic">Γ</XMTok></XMApp></XMath></Math></td>
-          <td align="center"><Math mode="inline" xml:id="p1.m75" tex="\mathit{[a+b\cup c]}" text="(a + b) union c"><XMath><XMApp close="]" open="["><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp></XMath></Math></td>
+          <td align="center"><Math mode="inline" xml:id="p1.m75" tex="\mathit{[a+b\cup c]}" text="delimited-[]@((a + b) union c)"><XMath><XMDual><XMApp><XMTok meaning="delimited-[]"/><XMRef idref="XM19"/></XMApp><XMWrap><XMTok role="OPEN" stretchy="false" font="bold">[</XMTok><XMApp xml:id="XM19"><XMTok meaning="union" name="cup" role="ADDOP" font="bold">∪</XMTok><XMApp><XMTok meaning="plus" role="ADDOP" font="bold">+</XMTok><XMTok role="UNKNOWN" font="bold italic">a</XMTok><XMTok role="UNKNOWN" font="bold italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="bold italic">c</XMTok></XMApp><XMTok role="CLOSE" stretchy="false" font="bold">]</XMTok></XMWrap></XMDual></XMath></Math></td>
           <td align="right"><Math mode="inline" xml:id="p1.m76" tex="\mathit{123}" text="123"><XMath><XMTok meaning="123" role="NUMBER" font="bold italic">123</XMTok></XMath></Math></td>
         </tr>
       </tbody>

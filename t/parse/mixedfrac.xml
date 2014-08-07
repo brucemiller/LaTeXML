@@ -219,19 +219,33 @@
                 <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
-                  <XMApp close=")" open="(">
-                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                    <XMTok meaning="1" role="NUMBER">1</XMTok>
-                  </XMApp>
+                  <XMDual>
+                    <XMRef idref="XM1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="XM1">
+                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                        <XMTok meaning="1" role="NUMBER">1</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                   <XMTok role="UNKNOWN" font="italic">m</XMTok>
                 </XMApp>
                 <XMApp>
                   <XMTok meaning="factorial" role="POSTFIX">!</XMTok>
-                  <XMApp close=")" open="(">
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">m</XMTok>
-                  </XMApp>
+                  <XMDual>
+                    <XMRef idref="XM2"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="XM2">
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok role="UNKNOWN" font="italic">m</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                 </XMApp>
               </XMApp>
             </XMApp>

@@ -12,42 +12,96 @@
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="\not=,\not&lt;,\not\leq,\not\ll,\not\prec,\not\preceq,\not\subset,\not\subseteq,%&#10;\not\sqsubseteq,\not\lhd,\not\unlhd,\not\asymp" text="list@(not-equals, not-less-than, not-less-than-or-equals, not-much-less-than, not-precedes, not-precedes-or-equals, not-subset-of, not-subset-of-or-equals, not-square-image-of-or-equals, not-subgroup-of, not-subgroup-of-or-equals, not-asymptotically-equals)">
           <XMath>
-            <XMApp>
-              <XMTok meaning="list" role="FENCED" separators=", , , , , , , , , , ,"/>
-              <XMTok meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
-              <XMTok meaning="not-less-than" name="not-&lt;" role="RELOP">≮</XMTok>
-              <XMTok meaning="not-less-than-or-equals" name="not-leq" role="RELOP">≰</XMTok>
-              <XMTok meaning="not-much-less-than" name="not-ll" role="RELOP">≪̸</XMTok>
-              <XMTok meaning="not-precedes" name="not-prec" role="RELOP">⊀</XMTok>
-              <XMTok meaning="not-precedes-or-equals" name="not-preceq" role="RELOP">⋠</XMTok>
-              <XMTok meaning="not-subset-of" name="not-subset" role="RELOP">⊄</XMTok>
-              <XMTok meaning="not-subset-of-or-equals" name="not-subseteq" role="RELOP">⊈</XMTok>
-              <XMTok meaning="not-square-image-of-or-equals" name="not-sqsubseteq" role="RELOP">⋢</XMTok>
-              <XMTok meaning="not-subgroup-of" name="not-lhd" role="ADDOP">⋪</XMTok>
-              <XMTok meaning="not-subgroup-of-or-equals" name="not-unlhd" role="ADDOP">⋬</XMTok>
-              <XMTok meaning="not-asymptotically-equals" name="not-asymp" role="RELOP">≭</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="XM1"/>
+                <XMRef idref="XM2"/>
+                <XMRef idref="XM3"/>
+                <XMRef idref="XM4"/>
+                <XMRef idref="XM5"/>
+                <XMRef idref="XM6"/>
+                <XMRef idref="XM7"/>
+                <XMRef idref="XM8"/>
+                <XMRef idref="XM9"/>
+                <XMRef idref="XM10"/>
+                <XMRef idref="XM11"/>
+                <XMRef idref="XM12"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="not-equals" name="not-=" role="RELOP" xml:id="XM1">≠</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-less-than" name="not-&lt;" role="RELOP" xml:id="XM2">≮</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-less-than-or-equals" name="not-leq" role="RELOP" xml:id="XM3">≰</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-much-less-than" name="not-ll" role="RELOP" xml:id="XM4">≪̸</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-precedes" name="not-prec" role="RELOP" xml:id="XM5">⊀</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-precedes-or-equals" name="not-preceq" role="RELOP" xml:id="XM6">⋠</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-subset-of" name="not-subset" role="RELOP" xml:id="XM7">⊄</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-subset-of-or-equals" name="not-subseteq" role="RELOP" xml:id="XM8">⊈</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-square-image-of-or-equals" name="not-sqsubseteq" role="RELOP" xml:id="XM9">⋢</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-subgroup-of" name="not-lhd" role="ADDOP" xml:id="XM10">⋪</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-subgroup-of-or-equals" name="not-unlhd" role="ADDOP" xml:id="XM11">⋬</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-asymptotically-equals" name="not-asymp" role="RELOP" xml:id="XM12">≭</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
         <Math mode="display" xml:id="S1.Ex2.m1" tex="\not\equiv,\not&gt;,\not\geq,\not\gg,\not\succ,\not\succeq,\not\supset,\not%&#10;\supseteq,\not\sqsupseteq,\not\rhd,\not\unrhd,\not\approx," text="list@(not-equivalent-to, not-greater-than, not-greater-than-or-equals, not-much-greater-than, not-succeeds, not-succeeds-or-equals, not-superset-of, not-superset-of-or-equals, not-square-original-of-or-equals, not-contains-as-subgroup, not-contains-as-subgroup-or-equals, not-approximately-equals)">
           <XMath>
-            <XMApp punctuation=",">
-              <XMTok meaning="list" role="FENCED" separators=", , , , , , , , , , ,"/>
-              <XMTok meaning="not-equivalent-to" name="not-equiv" role="RELOP">≢</XMTok>
-              <XMTok meaning="not-greater-than" name="not-&gt;" role="RELOP">≯</XMTok>
-              <XMTok meaning="not-greater-than-or-equals" name="not-geq" role="RELOP">≱</XMTok>
-              <XMTok meaning="not-much-greater-than" name="not-gg" role="RELOP">≫̸</XMTok>
-              <XMTok meaning="not-succeeds" name="not-succ" role="RELOP">⊁</XMTok>
-              <XMTok meaning="not-succeeds-or-equals" name="not-succeq" role="RELOP">⋡</XMTok>
-              <XMTok meaning="not-superset-of" name="not-supset" role="RELOP">⊅</XMTok>
-              <XMTok meaning="not-superset-of-or-equals" name="not-supseteq" role="RELOP">⊉</XMTok>
-              <XMTok meaning="not-square-original-of-or-equals" name="not-sqsupseteq" role="RELOP">⋣</XMTok>
-              <XMTok meaning="not-contains-as-subgroup" name="not-rhd" role="ADDOP">⋫</XMTok>
-              <XMTok meaning="not-contains-as-subgroup-or-equals" name="not-unrhd" role="ADDOP">⋭</XMTok>
-              <XMTok meaning="not-approximately-equals" name="not-approx" role="RELOP">≉</XMTok>
-            </XMApp>
+            <XMDual punctuation=",">
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="XM13"/>
+                <XMRef idref="XM14"/>
+                <XMRef idref="XM15"/>
+                <XMRef idref="XM16"/>
+                <XMRef idref="XM17"/>
+                <XMRef idref="XM18"/>
+                <XMRef idref="XM19"/>
+                <XMRef idref="XM20"/>
+                <XMRef idref="XM21"/>
+                <XMRef idref="XM22"/>
+                <XMRef idref="XM23"/>
+                <XMRef idref="XM24"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="not-equivalent-to" name="not-equiv" role="RELOP" xml:id="XM13">≢</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-greater-than" name="not-&gt;" role="RELOP" xml:id="XM14">≯</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-greater-than-or-equals" name="not-geq" role="RELOP" xml:id="XM15">≱</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-much-greater-than" name="not-gg" role="RELOP" xml:id="XM16">≫̸</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-succeeds" name="not-succ" role="RELOP" xml:id="XM17">⊁</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-succeeds-or-equals" name="not-succeq" role="RELOP" xml:id="XM18">⋡</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-superset-of" name="not-supset" role="RELOP" xml:id="XM19">⊅</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-superset-of-or-equals" name="not-supseteq" role="RELOP" xml:id="XM20">⊉</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-square-original-of-or-equals" name="not-sqsupseteq" role="RELOP" xml:id="XM21">⋣</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-contains-as-subgroup" name="not-rhd" role="ADDOP" xml:id="XM22">⋫</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-contains-as-subgroup-or-equals" name="not-unrhd" role="ADDOP" xml:id="XM23">⋭</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-approximately-equals" name="not-approx" role="RELOP" xml:id="XM24">≉</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -59,11 +113,18 @@
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="\not a,\not\alpha" text="list@(not-a, not-alpha)">
           <XMath>
-            <XMApp>
-              <XMTok meaning="list" role="FENCED" separators=","/>
-              <XMTok name="not-a" role="UNKNOWN" font="italic">a̸</XMTok>
-              <XMTok name="not-alpha" role="UNKNOWN" font="italic">α̸</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="XM25"/>
+                <XMRef idref="XM26"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="not-a" role="UNKNOWN" xml:id="XM25" font="italic">a̸</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok name="not-alpha" role="UNKNOWN" xml:id="XM26" font="italic">α̸</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>

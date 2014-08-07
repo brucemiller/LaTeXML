@@ -51,9 +51,23 @@ displaymath, a single equation and both types of eqnarrays.
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
                       <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                      <XMTok close=")" open="(" role="UNKNOWN" font="italic">n</XMTok>
+                      <XMDual>
+                        <XMRef idref="XM1"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok role="UNKNOWN" xml:id="XM1" font="italic">n</XMTok>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
                     </XMApp>
-                    <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                    <XMDual>
+                      <XMRef idref="XM4"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM4" font="italic">z</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
                   </XMApp>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -86,15 +100,29 @@ displaymath, a single equation and both types of eqnarrays.
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                            <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM2"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMTok name="zeta" role="UNKNOWN" xml:id="XM2" font="italic">ζ</XMTok>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMApp>
                           <XMApp>
                             <XMTok role="SUPERSCRIPTOP" scriptpos="post5"/>
-                            <XMApp close=")" open="(">
-                              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                              <XMTok name="zeta" role="UNKNOWN" font="italic">ζ</XMTok>
-                              <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                            </XMApp>
+                            <XMDual>
+                              <XMRef idref="XM3"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMApp xml:id="XM3">
+                                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                                  <XMTok name="zeta" role="UNKNOWN" font="italic">ζ</XMTok>
+                                  <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                                </XMApp>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                             <XMApp>
                               <XMTok meaning="plus" role="ADDOP">+</XMTok>
                               <XMTok role="UNKNOWN" font="italic">n</XMTok>
@@ -221,7 +249,14 @@ math material) … If anyone knows, please inform us.</text>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                      <XMTok close=")" open="(" role="UNKNOWN" rpadding="1.7pt" font="italic">z</XMTok>
+                      <XMDual>
+                        <XMRef idref="XM5"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok role="UNKNOWN" xml:id="XM5" font="italic">z</XMTok>
+                          <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
                       <XMTok role="UNKNOWN" font="italic">d</XMTok>
                       <XMTok role="UNKNOWN" font="italic">z</XMTok>
                     </XMApp>
@@ -239,17 +274,38 @@ math material) … If anyone knows, please inform us.</text>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                      <XMApp close=")" open="(">
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
-                        <XMTok close=")" open="(" role="UNKNOWN" font="italic">t</XMTok>
-                      </XMApp>
+                      <XMDual>
+                        <XMRef idref="XM7"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="XM7">
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM6"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMTok role="UNKNOWN" xml:id="XM6" font="italic">t</XMTok>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                          </XMApp>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
                         <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
                         <XMTok name="prime" role="SUPOP">′</XMTok>
                       </XMApp>
-                      <XMTok close=")" open="(" role="UNKNOWN" rpadding="1.7pt" font="italic">t</XMTok>
+                      <XMDual>
+                        <XMRef idref="XM8"/>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok role="UNKNOWN" xml:id="XM8" font="italic">t</XMTok>
+                          <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
                       <XMTok role="UNKNOWN" font="italic">d</XMTok>
                       <XMTok role="UNKNOWN" font="italic">t</XMTok>
                     </XMApp>
@@ -297,7 +353,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                        <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                        <XMDual>
+                          <XMRef idref="XM10"/>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">(</XMTok>
+                            <XMTok role="UNKNOWN" xml:id="XM10" font="italic">z</XMTok>
+                            <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                          </XMWrap>
+                        </XMDual>
                       </XMApp>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -327,7 +390,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                                <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                                <XMDual>
+                                  <XMRef idref="XM9"/>
+                                  <XMWrap>
+                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                    <XMTok name="zeta" role="UNKNOWN" xml:id="XM9" font="italic">ζ</XMTok>
+                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                  </XMWrap>
+                                </XMDual>
                               </XMApp>
                               <XMApp>
                                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -351,7 +421,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                            <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM11"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMTok role="UNKNOWN" xml:id="XM11" font="italic">z</XMTok>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMApp>
                         </XMath>
                       </Math>
@@ -394,7 +471,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                                   <XMApp>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                     <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                                    <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                                    <XMDual>
+                                      <XMRef idref="XM12"/>
+                                      <XMWrap>
+                                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                        <XMTok name="zeta" role="UNKNOWN" xml:id="XM12" font="italic">ζ</XMTok>
+                                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
                                   </XMApp>
                                   <XMApp>
                                     <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -449,27 +533,34 @@ That’s no bug, it’s LaTeX-immanent.</text>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                            <XMApp close=")" open="(">
-                              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                              <XMApp>
-                                <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
-                                <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                                <XMTok meaning="0" role="NUMBER">0</XMTok>
-                              </XMApp>
-                              <XMApp>
-                                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                <XMTok role="UNKNOWN" font="italic">r</XMTok>
-                                <XMApp>
-                                  <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
-                                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM13"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMApp xml:id="XM13">
+                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                  <XMApp>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
+                                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                                    <XMTok meaning="0" role="NUMBER">0</XMTok>
+                                  </XMApp>
                                   <XMApp>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                    <XMTok role="UNKNOWN" font="italic">r</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
+                                      <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                      <XMApp>
+                                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                      </XMApp>
+                                    </XMApp>
                                   </XMApp>
                                 </XMApp>
-                              </XMApp>
-                            </XMApp>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                             <XMTok role="UNKNOWN" font="italic">d</XMTok>
                             <XMTok role="UNKNOWN" font="italic">t</XMTok>
                           </XMApp>
@@ -519,27 +610,34 @@ That’s no bug, it’s LaTeX-immanent.</text>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                                <XMApp close=")" open="(">
-                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                                  <XMApp>
-                                    <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
-                                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                                    <XMTok meaning="0" role="NUMBER">0</XMTok>
-                                  </XMApp>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">r</XMTok>
-                                    <XMApp>
-                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
-                                      <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                <XMDual>
+                                  <XMRef idref="XM14"/>
+                                  <XMWrap>
+                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                    <XMApp xml:id="XM14">
+                                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                      <XMApp>
+                                        <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
+                                        <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                                      </XMApp>
                                       <XMApp>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                        <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                        <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">r</XMTok>
+                                        <XMApp>
+                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
+                                          <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                          <XMApp>
+                                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                            <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                            <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                          </XMApp>
+                                        </XMApp>
                                       </XMApp>
                                     </XMApp>
-                                  </XMApp>
-                                </XMApp>
+                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                  </XMWrap>
+                                </XMDual>
                                 <XMTok role="UNKNOWN" font="italic">d</XMTok>
                                 <XMTok role="UNKNOWN" font="italic">t</XMTok>
                               </XMApp>
@@ -577,7 +675,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                        <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                        <XMDual>
+                          <XMRef idref="XM16"/>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">(</XMTok>
+                            <XMTok role="UNKNOWN" xml:id="XM16" font="italic">z</XMTok>
+                            <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                          </XMWrap>
+                        </XMDual>
                       </XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMApp>
@@ -608,7 +713,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                                <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                                <XMDual>
+                                  <XMRef idref="XM15"/>
+                                  <XMWrap>
+                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                    <XMTok name="zeta" role="UNKNOWN" xml:id="XM15" font="italic">ζ</XMTok>
+                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                  </XMWrap>
+                                </XMDual>
                               </XMApp>
                               <XMApp>
                                 <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -650,27 +762,34 @@ That’s no bug, it’s LaTeX-immanent.</text>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                            <XMApp close=")" open="(">
-                              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                              <XMApp>
-                                <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
-                                <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                                <XMTok meaning="0" role="NUMBER">0</XMTok>
-                              </XMApp>
-                              <XMApp>
-                                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                <XMTok role="UNKNOWN" font="italic">r</XMTok>
-                                <XMApp>
-                                  <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
-                                  <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM17"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMApp xml:id="XM17">
+                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                  <XMApp>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
+                                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                                    <XMTok meaning="0" role="NUMBER">0</XMTok>
+                                  </XMApp>
                                   <XMApp>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                    <XMTok role="UNKNOWN" font="italic">r</XMTok>
+                                    <XMApp>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
+                                      <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                      <XMApp>
+                                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                      </XMApp>
+                                    </XMApp>
                                   </XMApp>
                                 </XMApp>
-                              </XMApp>
-                            </XMApp>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                             <XMTok role="UNKNOWN" font="italic">d</XMTok>
                             <XMTok role="UNKNOWN" font="italic">t</XMTok>
                           </XMApp>
@@ -687,7 +806,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                            <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                            <XMDual>
+                              <XMRef idref="XM18"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMTok role="UNKNOWN" xml:id="XM18" font="italic">z</XMTok>
+                                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMApp>
                         </XMath>
                       </Math>
@@ -730,7 +856,14 @@ That’s no bug, it’s LaTeX-immanent.</text>
                                   <XMApp>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                     <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                                    <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                                    <XMDual>
+                                      <XMRef idref="XM19"/>
+                                      <XMWrap>
+                                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                        <XMTok name="zeta" role="UNKNOWN" xml:id="XM19" font="italic">ζ</XMTok>
+                                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                      </XMWrap>
+                                    </XMDual>
                                   </XMApp>
                                   <XMApp>
                                     <XMTok meaning="minus" role="ADDOP">-</XMTok>
@@ -787,27 +920,34 @@ That’s no bug, it’s LaTeX-immanent.</text>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok role="UNKNOWN" font="italic">f</XMTok>
-                                <XMApp close=")" open="(">
-                                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                                  <XMApp>
-                                    <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
-                                    <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                                    <XMTok meaning="0" role="NUMBER">0</XMTok>
-                                  </XMApp>
-                                  <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok role="UNKNOWN" font="italic">r</XMTok>
-                                    <XMApp>
-                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
-                                      <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                <XMDual>
+                                  <XMRef idref="XM20"/>
+                                  <XMWrap>
+                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                    <XMApp xml:id="XM20">
+                                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                                      <XMApp>
+                                        <XMTok role="SUBSCRIPTOP" scriptpos="post10"/>
+                                        <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                                      </XMApp>
                                       <XMApp>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                        <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                                        <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                        <XMTok role="UNKNOWN" font="italic">r</XMTok>
+                                        <XMApp>
+                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post10"/>
+                                          <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                                          <XMApp>
+                                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                            <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                                            <XMTok role="UNKNOWN" font="italic">t</XMTok>
+                                          </XMApp>
+                                        </XMApp>
                                       </XMApp>
                                     </XMApp>
-                                  </XMApp>
-                                </XMApp>
+                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                  </XMWrap>
+                                </XMDual>
                                 <XMTok role="UNKNOWN" font="italic">d</XMTok>
                                 <XMTok role="UNKNOWN" font="italic">t</XMTok>
                               </XMApp>
@@ -861,7 +1001,14 @@ the last one gets the endmark:</p>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                     <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                    <XMTok close=")" open="(" role="UNKNOWN" rpadding="1.7pt" font="italic">z</XMTok>
+                    <XMDual>
+                      <XMRef idref="XM21"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM21" font="italic">z</XMTok>
+                        <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
                     <XMTok role="UNKNOWN" font="italic">d</XMTok>
                     <XMTok role="UNKNOWN" font="italic">z</XMTok>
                   </XMApp>
@@ -879,17 +1026,38 @@ the last one gets the endmark:</p>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                     <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                    <XMApp close=")" open="(">
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
-                      <XMTok close=")" open="(" role="UNKNOWN" font="italic">t</XMTok>
-                    </XMApp>
+                    <XMDual>
+                      <XMRef idref="XM23"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="XM23">
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
+                          <XMDual>
+                            <XMRef idref="XM22"/>
+                            <XMWrap>
+                              <XMTok role="OPEN" stretchy="false">(</XMTok>
+                              <XMTok role="UNKNOWN" xml:id="XM22" font="italic">t</XMTok>
+                              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                            </XMWrap>
+                          </XMDual>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                       <XMTok name="gamma" possibleFunction="yes" role="UNKNOWN" font="italic">γ</XMTok>
                       <XMTok name="prime" role="SUPOP">′</XMTok>
                     </XMApp>
-                    <XMTok close=")" open="(" role="UNKNOWN" rpadding="1.7pt" font="italic">t</XMTok>
+                    <XMDual>
+                      <XMRef idref="XM24"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM24" font="italic">t</XMTok>
+                        <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
                     <XMTok role="UNKNOWN" font="italic">d</XMTok>
                     <XMTok role="UNKNOWN" font="italic">t</XMTok>
                   </XMApp>
@@ -965,9 +1133,23 @@ the last one gets the endmark:</p>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                     <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                    <XMTok close=")" open="(" role="UNKNOWN" font="italic">n</XMTok>
+                    <XMDual>
+                      <XMRef idref="XM25"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM25" font="italic">n</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
                   </XMApp>
-                  <XMTok close=")" open="(" role="UNKNOWN" font="italic">z</XMTok>
+                  <XMDual>
+                    <XMRef idref="XM28"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMTok role="UNKNOWN" xml:id="XM28" font="italic">z</XMTok>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
                 </XMApp>
                 <XMApp>
                   <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1000,15 +1182,29 @@ the last one gets the endmark:</p>
                         <XMApp>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-                          <XMTok close=")" name="zeta" open="(" role="UNKNOWN" font="italic">ζ</XMTok>
+                          <XMDual>
+                            <XMRef idref="XM26"/>
+                            <XMWrap>
+                              <XMTok role="OPEN" stretchy="false">(</XMTok>
+                              <XMTok name="zeta" role="UNKNOWN" xml:id="XM26" font="italic">ζ</XMTok>
+                              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                            </XMWrap>
+                          </XMDual>
                         </XMApp>
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
-                          <XMApp close=")" open="(">
-                            <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                            <XMTok name="zeta" role="UNKNOWN" font="italic">ζ</XMTok>
-                            <XMTok role="UNKNOWN" font="italic">z</XMTok>
-                          </XMApp>
+                          <XMDual>
+                            <XMRef idref="XM27"/>
+                            <XMWrap>
+                              <XMTok role="OPEN" stretchy="false">(</XMTok>
+                              <XMApp xml:id="XM27">
+                                <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                                <XMTok name="zeta" role="UNKNOWN" font="italic">ζ</XMTok>
+                                <XMTok role="UNKNOWN" font="italic">z</XMTok>
+                              </XMApp>
+                              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                            </XMWrap>
+                          </XMDual>
                           <XMApp>
                             <XMTok meaning="plus" role="ADDOP">+</XMTok>
                             <XMTok role="UNKNOWN" font="italic">n</XMTok>

@@ -50,19 +50,26 @@
     <equation xml:id="S0.Ex4">
       <Math mode="display" xml:id="S0.Ex4.m1" tex="a+b\quad c+d" text="list@(a + b, c + d)">
         <XMath>
-          <XMApp>
-            <XMTok meaning="list" role="FENCED" separators=" "/>
+          <XMDual>
             <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              <XMTok meaning="list"/>
+              <XMRef idref="XM1"/>
+              <XMRef idref="XM2"/>
             </XMApp>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">c</XMTok>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
-            </XMApp>
-          </XMApp>
+            <XMWrap>
+              <XMApp xml:id="XM1">
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              </XMApp>
+              <XMTok name="quad" role="PUNCT" font="italic"> </XMTok>
+              <XMApp xml:id="XM2">
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
         </XMath>
       </Math>
     </equation>
@@ -84,7 +91,14 @@
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-              <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM3"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="XM3" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
               <XMTok role="UNKNOWN" font="italic">d</XMTok>
               <XMTok role="UNKNOWN" font="italic">x</XMTok>
             </XMApp>
@@ -108,7 +122,14 @@
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
-              <XMTok close=")" open="(" role="UNKNOWN" rpadding="1.7pt" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM4"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="XM4" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
               <XMTok role="UNKNOWN" font="italic">d</XMTok>
               <XMTok role="UNKNOWN" font="italic">x</XMTok>
             </XMApp>
