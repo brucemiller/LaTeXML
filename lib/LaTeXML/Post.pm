@@ -423,6 +423,8 @@ sub rawIDSuffix {
 sub associateID {
   my ($self, $node, $sourceid) = @_;
   return $node unless $sourceid && ref $node;
+  # or if already has an id (do we still need bookkeeping?)
+  return if (ref $node eq 'ARRAY' ? $$node[1]{'xml:id'} : $node->getAttribute('xml:id'));
   my $id = $sourceid . $self->IDSuffix;
   if (my $previous_ids = $$self{convertedIDs}{$sourceid}) {
     $id = LaTeXML::Post::uniquifyID($sourceid, scalar(@$previous_ids), $self->IDSuffix); }
