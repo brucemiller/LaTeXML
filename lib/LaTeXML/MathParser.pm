@@ -731,6 +731,8 @@ sub p_getValue {
       return join('', grep { defined $_ } map { p_getValue($_) } @args); }
     else {
       return $$node[1]{name}; } }
+  elsif (ref $node eq 'XML::LibXML::Text') {
+      return $node->textContent; }
   else {                                            # ????
     return $node; } }
 
