@@ -504,23 +504,7 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
 
-# !! ????
-# Probably should be promoted/exported somewhere...
-# [how many cases of $tok->equals($tok) should really be this xEquals?]
-sub xEquals {
-  my ($token1, $token2) = @_;
-  my $def1 = LookupMeaning($token1);
-  my $def2 = LookupMeaning($token2);
-  if (defined $def1 != defined $def2) {    # False, if they don't both have defs or both not have defs
-    return; }
-  elsif (!defined $def1 && !defined $def2) { # If neither have defs, then must have same catcode & chars
-    return ($token1->getCatcode == $token2->getCatcode)
-      && ($token1->getCharcode == $token2->getCharcode); }
-  elsif ($def1->equals($def2)) {             # If both have defns, must be same defn!
-    return 1; }
-  return; }
-
-DefConditional('\ifx Token Token', sub { xEquals($_[1], $_[2]); });
+DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
 # We'll assume that a box is horizontal if there's anything at all,
@@ -1467,7 +1451,7 @@ sub decodeMathChar {
 
 DefConstructor('\mathchar Number',
   "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
-  properties => { sizer => '#1' },
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1484,7 +1468,8 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
     my ($role, $glyph) = decodeMathChar($value->valueOf);
     my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      properties => { role => $role, glyph => $glyph, sizer => '#1',
+      sizer => '#1',
+      properties => { role => $role, glyph => $glyph,
         font => sub { LookupValue('font')->specialize($glyph); } },
       reversion => '\mathchar' . $value->valueOf . '\relax',
     ) if $glyph;
@@ -1494,7 +1479,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
 
 DefConstructor('\mathaccent Number Digested',
   "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
-  properties => { sizer => '#1' },    # Close enough?
+  sizer       => '#1',    # Close enough?
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -1612,7 +1597,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     $document->closeNode($node); },
 
   mode => 'text', bounded => 1,
-  properties => { sizer => '#2' },
+  sizer => '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   beforeDigest => sub { reenterTextMode(); },
@@ -1699,16 +1684,16 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     insertBlock($document, $contents, vattach => 'bottom',
       height       => orNull(GetKeyVal($spec, 'to')),
       'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  properties => { sizer => '#2' },
-  mode => 'text');
+  sizer => '#2',
+  mode  => 'text');
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top',
       height       => orNull(GetKeyVal($spec, 'to')),
       'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  properties => { sizer => '#2' },
-  mode => 'text');
+  sizer => '#2',
+  mode  => 'text');
 
 DefParameterType('RuleSpecification', sub {
     my ($gullet) = @_;
@@ -2016,6 +2001,7 @@ DefMacroI('\span', undef,
     . '\@alignment@span@marker'
     . '\@open@inner@column');
 DefConstructorI('\@alignment@span@marker', undef, '', reversion => '\span',
+  sizer => 0,
   properties => { alignmentSkippable => 1 });
 DefConstructorI('\omit', undef, '', properties => { alignmentSkippable => 1 });
 
@@ -2262,7 +2248,7 @@ DefPrimitive('\@close@alignment', sub { $_[0]->egroup; });
 DefConstructor('\@open@alignment SkipSpaces DigestedBody',
   "#alignment",
   reversion    => '#1',
-  properties   => { sizer => '#alignment' },
+  sizer        => '#alignment',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
@@ -2482,7 +2468,7 @@ DefConstructor('\halign BoxSpecification',
   '#body',
   reversion   => '\halign #1{#2\cr#3}',
   bounded     => 1,
-  properties  => { sizer => '#1' },
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $gullet = $stomach->getGullet;
@@ -3518,6 +3504,7 @@ sub afterDFrac {
 # This will inhibit comparisons!!!!
 # Is it because of the delims forms already having args???
 # No, because constructor doesn't know there are 2 extra args!!
+# NOTE: This group needs to be reworked to preserve color (at least)
 DefConstructorI('\choose', undef,
   "<ltx:XMApp open='(' close=')'>"
     . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
@@ -3687,7 +3674,8 @@ DefConstructorI('&', undef, sub { Error('unexpected', '&', $_[0], "Stray alignme
 #
 # The following constructor (see how it's used in DefMath), adds meaning attributes
 # whereever it seems sensible on the presentation branch, after it has been generated.
-DefConstructor('\@ASSERT@MEANING{}{}', '#2', reversion => '#2',
+DefConstructor('\@ASSERT@MEANING{}{}', '#2',
+  reversion      => '#2',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
     my $node    = $document->getNode;              # This should be the wrapper just added.
@@ -3707,10 +3695,12 @@ DefMathI('!', undef, '!', role => 'POSTFIX', meaning => 'factorial');
 DefMathI(',', undef, ',', role => 'PUNCT');
 DefMathI('.', undef, '.', role => 'PERIOD');
 DefMathI(';', undef, ';', role => 'PUNCT');
-DefMathI('(', undef, '(', role => 'OPEN'); DefMathI(')', undef, ')', role => 'CLOSE');
-DefMathI('[', undef, '[', role => 'OPEN'); DefMathI(']', undef, ']', role => 'CLOSE');
-DefMathI('|', undef, '|', role => 'VERTBAR');
-DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');    # Seems like good default role
+DefMathI('(', undef, '(', role => 'OPEN', stretchy => 'false');
+DefMathI(')', undef, ')', role => 'CLOSE', stretchy => 'false');
+DefMathI('[', undef, '[', role => 'OPEN', stretchy => 'false');
+DefMathI(']', undef, ']', role => 'CLOSE', stretchy => 'false');
+DefMathI('|', undef, '|', role => 'VERTBAR', stretchy => 'false');
+DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');      # Seems like good default role
 DefMathI('<', undef, '<', role => 'RELOP', meaning => 'less-than');
 DefMathI('>', undef, '>', role => 'RELOP', meaning => 'greater-than');
 
@@ -4288,7 +4278,7 @@ sub insertFrontMatter {
         my ($tag, $attr, @stuff) = @$item;
         $document->openElement($tag, ($attr ? %$attr : ()),
           (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
-            ? (font => $stuff[0]->getFont, _force_font => 'yes') : ()));
+            ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
         map { $document->absorb($_) } @stuff;
         $document->closeElement($tag); } } }
   return; }
@@ -4309,7 +4299,7 @@ DefConstructor('\beginsection Until:\par',
 #  If so, how do know when the theorem ends?
 DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
   "<ltx:theorem>"
-    . "<ltx:title font='#titlefont' _force_font='yes' >#title</ltx:title>"
+    . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
   properties => sub {
@@ -5131,26 +5121,28 @@ DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math
 # This meaning is handled in MathParser (for now)
 
 DefConstructorI('\{', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='OPEN'>{</ltx:XMTok>)({)",
-  properties => { font => sub { LookupValue('font')->specialize("{"); } });    # Since not DefMath!
+  "?#isMath(<ltx:XMTok font='#font' role='OPEN' stretchy='#stretchy'>{</ltx:XMTok>)({)",
+  properties => { font => sub { LookupValue('font')->specialize("{"); },    # Since not DefMath!
+    stretchy => 'false' });
 DefConstructorI('\}', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='CLOSE'>}</ltx:XMTok>)(})",
-  properties => { font => sub { LookupValue('font')->specialize("}"); } });    # Since not DefMath!
+  "?#isMath(<ltx:XMTok font='#font' role='CLOSE' stretchy='#stretchy'>}</ltx:XMTok>)(})",
+  properties => { font => sub { LookupValue('font')->specialize("}"); },    # Since not DefMath!
+    stretchy => 'false' });
 Let('\lbrace', '\{');
 Let('\lbrack', T_OTHER('['));
 Let('\rbrace', '\}');
 Let('\rbrack', T_OTHER(']'));
-DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN');                        # LEFT CEILING
-DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE');                       # RIGHT CEILING
-DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN');                        # LEFT FLOOR
-DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE');                       # RIGHT FLOOR
+DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN',  stretchy => 'false');    # LEFT CEILING
+DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE', stretchy => 'false');    # RIGHT CEILING
+DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN',  stretchy => 'false');    # LEFT FLOOR
+DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE', stretchy => 'false');    # RIGHT FLOOR
 # Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
-DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN');     # LEFT-POINTING ANGLE BRACKET
-DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE');    # RIGHT-POINTING ANGLE BRACKET
+DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # LEFT-POINTING ANGLE BRACKET
+DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
 # Not sure these should be defined here, or latex, or even latex compat mode.
-DefMathI('\lgroup',    undef, "(", font => { series => 'bold' }, role => 'OPEN');
-DefMathI('\rgroup',    undef, ")", font => { series => 'bold' }, role => 'CLOSE');
+DefMathI('\lgroup', undef, "(", font => { series => 'bold' }, role => 'OPEN',  stretchy => 'false');
+DefMathI('\rgroup', undef, ")", font => { series => 'bold' }, role => 'CLOSE', stretchy => 'false');
 DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBAR');
 
 ## DefMath('\lmoustache',"???", font=>{series=>'bold'}, role=>'OPEN');
@@ -5699,7 +5691,8 @@ DefConstructor('\DUAL[]{}{}',
         "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
       $whatsit->getDefinition->invocation($role, $content,
         $presentation); }
-  });
+  },
+  sizer => '#3');    # size according to presentation
 
 sub addMeaningRec {
   my ($document, $node, $meaning) = @_;
@@ -5753,13 +5746,17 @@ DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', rol
 # an id assigned, and the XMRef will get an idref refering to that id.
 # Through this connect, later processing can generate the appropriate presentation
 # form of the argument, when needed.
-DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>", reversion => '#2',
-  bounded => 1, beforeDigest => sub { AssignValue(mathstyle => 'text') },
+DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
+  reversion   => '#2',
+  bounded     => 1, beforeDigest => sub { AssignValue(mathstyle => 'text') },
   afterDigest => sub {
     AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
 DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
   reversion => sub {
-    Revert(LookupValue('xref:' . ToString($_[1]))); });
+    Revert(LookupValue('xref:' . ToString($_[1]))); },
+  properties => sub { my ($w, $h, $d) = LookupValue('xref:' . ToString($_[1]))->getSize;
+    (width => $w, height => $h, depth => $d); });
+
 Tag('ltx:XMArg', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
@@ -5822,7 +5819,8 @@ sub addClass {
   return; }
 
 DefConstructor('\@ADDCLASS Semiverbatim', sub {
-    addClass($_[0]->getElement, ToString($_[1])); });
+    addClass($_[0]->getElement, ToString($_[1])); },
+  sizer => 0);
 
 sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;

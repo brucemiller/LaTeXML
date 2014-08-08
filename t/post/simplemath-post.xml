@@ -17,16 +17,7 @@
             <XMTok meaning="123" role="NUMBER">123</XMTok>
           </XMApp>
         </XMath>
-        <m:math alttext="a+b+123" display="block">
-          <m:mrow>
-            <m:mi>a</m:mi>
-            <m:mo>+</m:mo>
-            <m:mi>b</m:mi>
-            <m:mo>+</m:mo>
-            <m:mn>123</m:mn>
-          </m:mrow>
-        </m:math>
-      </Math>
+        <m:math alttext="a+b+123" display="block"><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi><m:mo>+</m:mo><m:mn>123</m:mn></m:mrow></m:math></Math>
     </equation>
     <equation xml:id="S0.Ex2">
       <Math mode="display" xml:id="S0.Ex2.m1" tex="a+b+f(123)" text="a + b + f@(123)">
@@ -41,24 +32,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math alttext="a+b+f(123)" display="block">
-          <m:mrow>
-            <m:mi>a</m:mi>
-            <m:mo>+</m:mo>
-            <m:mi>b</m:mi>
-            <m:mo>+</m:mo>
-            <m:mrow>
-              <m:mi>f</m:mi>
-              <m:mo>⁡</m:mo>
-              <m:mrow>
-                <m:mo>(</m:mo>
-                <m:mn>123</m:mn>
-                <m:mo>)</m:mo>
-              </m:mrow>
-            </m:mrow>
-          </m:mrow>
-        </m:math>
-      </Math>
+        <m:math alttext="a+b+f(123)" display="block"><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi><m:mo>+</m:mo><m:mrow><m:mi>f</m:mi><m:mo>⁡</m:mo><m:mrow><m:mo>(</m:mo><m:mn>123</m:mn><m:mo>)</m:mo></m:mrow></m:mrow></m:mrow></m:math></Math>
     </equation>
   </para>
   <para xml:id="p3">
@@ -82,29 +56,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math alttext="f_{D}f(a+b)" display="block">
-          <m:mrow>
-            <m:msub>
-              <m:mi>f</m:mi>
-              <m:mi>D</m:mi>
-            </m:msub>
-            <m:mo>⁢</m:mo>
-            <m:mrow>
-              <m:mi>f</m:mi>
-              <m:mo>⁡</m:mo>
-              <m:mrow>
-                <m:mo>(</m:mo>
-                <m:mrow>
-                  <m:mi>a</m:mi>
-                  <m:mo>+</m:mo>
-                  <m:mi>b</m:mi>
-                </m:mrow>
-                <m:mo>)</m:mo>
-              </m:mrow>
-            </m:mrow>
-          </m:mrow>
-        </m:math>
-      </Math>
+        <m:math alttext="f_{D}f(a+b)" display="block"><m:mrow><m:msub><m:mi>f</m:mi><m:mi>D</m:mi></m:msub><m:mo>⁢</m:mo><m:mrow><m:mi>f</m:mi><m:mo>⁡</m:mo><m:mrow><m:mo>(</m:mo><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow><m:mo>)</m:mo></m:mrow></m:mrow></m:mrow></m:math></Math>
     </equation>
     <equation xml:id="S0.Ex4">
       <Math mode="display" xml:id="S0.Ex4.m1" tex="f_{1}(a+b)" text="f _ 1 * (a + b)">
@@ -123,25 +75,7 @@
             </XMApp>
           </XMApp>
         </XMath>
-        <m:math alttext="f_{1}(a+b)" display="block">
-          <m:mrow>
-            <m:msub>
-              <m:mi>f</m:mi>
-              <m:mn>1</m:mn>
-            </m:msub>
-            <m:mo>⁢</m:mo>
-            <m:mrow>
-              <m:mo>(</m:mo>
-              <m:mrow>
-                <m:mi>a</m:mi>
-                <m:mo>+</m:mo>
-                <m:mi>b</m:mi>
-              </m:mrow>
-              <m:mo>)</m:mo>
-            </m:mrow>
-          </m:mrow>
-        </m:math>
-      </Math>
+        <m:math alttext="f_{1}(a+b)" display="block"><m:mrow><m:msub><m:mi>f</m:mi><m:mn>1</m:mn></m:msub><m:mo>⁢</m:mo><m:mrow><m:mo>(</m:mo><m:mrow><m:mi>a</m:mi><m:mo>+</m:mo><m:mi>b</m:mi></m:mrow><m:mo>)</m:mo></m:mrow></m:mrow></m:math></Math>
     </equation>
     <equation xml:id="S0.Ex5">
       <Math mode="display" xml:id="S0.Ex5.m1" tex="\hat{f}a" text="hat@(f) * a">
@@ -155,17 +89,7 @@
             <XMTok role="ID" font="italic">a</XMTok>
           </XMApp>
         </XMath>
-        <m:math alttext="\hat{f}a" display="block">
-          <m:mrow>
-            <m:mover accent="true">
-              <m:mi>f</m:mi>
-              <m:mo>^</m:mo>
-            </m:mover>
-            <m:mo>⁢</m:mo>
-            <m:mi>a</m:mi>
-          </m:mrow>
-        </m:math>
-      </Math>
+        <m:math alttext="\hat{f}a" display="block"><m:mrow><m:mover accent="true"><m:mi>f</m:mi><m:mo>^</m:mo></m:mover><m:mo>⁢</m:mo><m:mi>a</m:mi></m:mrow></m:math></Math>
     </equation>
   </para>
   <section refnum="1" xml:id="S1" labels="LABEL:sec:restricted">
@@ -187,32 +111,7 @@
               <XMTok meaning="123" role="NUMBER">123</XMTok>
             </XMApp>
           </XMath>
-          <m:math alttext="a(x)+b(x)+123" display="block">
-            <m:mrow>
-              <m:mrow>
-                <m:mi>a</m:mi>
-                <m:mo>⁡</m:mo>
-                <m:mrow>
-                  <m:mo>(</m:mo>
-                  <m:mi>x</m:mi>
-                  <m:mo>)</m:mo>
-                </m:mrow>
-              </m:mrow>
-              <m:mo>+</m:mo>
-              <m:mrow>
-                <m:mi>b</m:mi>
-                <m:mo>⁡</m:mo>
-                <m:mrow>
-                  <m:mo>(</m:mo>
-                  <m:mi>x</m:mi>
-                  <m:mo>)</m:mo>
-                </m:mrow>
-              </m:mrow>
-              <m:mo>+</m:mo>
-              <m:mn>123</m:mn>
-            </m:mrow>
-          </m:math>
-        </Math>
+          <m:math alttext="a(x)+b(x)+123" display="block"><m:mrow><m:mrow><m:mi>a</m:mi><m:mo>⁡</m:mo><m:mrow><m:mo>(</m:mo><m:mi>x</m:mi><m:mo>)</m:mo></m:mrow></m:mrow><m:mo>+</m:mo><m:mrow><m:mi>b</m:mi><m:mo>⁡</m:mo><m:mrow><m:mo>(</m:mo><m:mi>x</m:mi><m:mo>)</m:mo></m:mrow></m:mrow><m:mo>+</m:mo><m:mn>123</m:mn></m:mrow></m:math></Math>
       </equation>
     </para>
   </section>

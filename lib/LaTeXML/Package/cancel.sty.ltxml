@@ -34,7 +34,7 @@ sub cancelColorProperties {
   $STATE->getStomach->bgroup;
   if (Digest(T_CS('\CancelColor'))) {
     $props{cancelfont} = LookupValue('font');
-    $props{forcefont}  = 1; }
+    $props{forcefont}  = 'true'; }
   $STATE->getStomach->egroup;
   return %props; }
 
@@ -103,7 +103,7 @@ DefConstructor('\cancelto{}{}',
 # This works, except that
 # there isn't any CSS to create the different types of cross throughs
 DefConstructor('\@@text@cancel{}',
-  "<ltx:del class='downdiagonalstrike' _force_font='1' _font='#cancelfont'>"
+  "<ltx:del class='downdiagonalstrike' _force_font='#forcefont' _font='#cancelfont'>"
     . "<ltx:text _noautoclose='1' _force_font='#forcefont' _font='#innerfont'>"
     . "#1"
     . "</ltx:text>"

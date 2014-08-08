@@ -56,8 +56,7 @@ sub process {
   # Remove any bibentry's (these should have been converted to bibitems)
   $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
   foreach my $biblist ($doc->findnodes('//ltx:biblist')) {
-    $doc->removeNodes($biblist)
-      unless grep { $_->nodeType == XML_ELEMENT_NODE } $biblist->childNodes; }
+    $doc->removeNodes($biblist) unless element_nodes($biblist); }
 
   if ($$self{split}) {
     # Separate by initial.
@@ -393,9 +392,9 @@ sub formatBibEntry {
     push(@tags, ['ltx:bibtag', { role => 'refnum', class => 'ltx_bib_key', open => '[', close => ']' }, $number]); }
   elsif ($style eq 'AY') {
     my @rfnames;
-    if (my @authors = $doc->findnodes('ltx:bib-name[@role="author"]', $bibentry)) {
+    if (my @authors = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry)) {
       @rfnames = @authors; }
-    elsif (my @editors = $doc->findnodes('ltx:bib-name[@role="editor"]', $bibentry)) {
+    elsif (my @editors = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname', $bibentry)) {
       @rfnames = @editors; }
     else {
       @rfnames = $keytag->childNodes; }

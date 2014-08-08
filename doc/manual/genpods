@@ -113,6 +113,7 @@ foreach my $name (@exes) {
   my $dest = "$GENDIR/$name.tex";
   if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for $name to LaTeX\n";
+    local $::PODDOC = $name;    # $::PODDOC =~ s/::/_/g;
     my $podconverter = MyPodConverter->new();
     $podconverter->parse_from_file($src, $dest); } }
 
@@ -125,6 +126,7 @@ foreach my $name (@modules) {
   $dest = "$GENDIR/$dest.tex";
   if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for $name to LaTeX\n";
+    local $::PODDOC = $name;    # $::PODDOC =~ s/::/_/g;
     my $podconverter = MyPodConverter->new();
     $podconverter->parse_from_file($src, $dest); } }
 
@@ -165,8 +167,15 @@ sub head {
 # Redefined to translate links to our PODs
 sub interior_sequence {
   my ($self, $seq_command, $seq_argument, $pod_seq) = @_;
-  if ($seq_command eq 'L') {
-    return "\\pod{$seq_argument}"; }
+  if (($seq_command eq 'L')
+    && ($seq_argument =~ /^(?:LaTeXML|latexml|\/)/)) {   # A reference to somewhere within our own docs.
+    my $text;
+    my $label = $seq_argument;
+    if ($seq_argument =~ /^(.*)\|(.*)$/) {               # Separate the text to use, if given
+      $text = $1; $label = $2; }
+    if ($label =~ /^\//) {                               # reference to section within THIS pod?
+      $label = $::PODDOC . $label; }
+    return ($text ? "\\pod[$text]{$label}" : "\\pod{$label}"); }
   elsif ($seq_command eq 'X') {
     return "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
   else {
@@ -188,6 +197,10 @@ sub _create_index {
 # Redefined to avoid unnecessary math.
 sub _replace_special_chars_late {
   my ($self, $paragraph) = @_;
+  $paragraph =~ s/<\s+/\\textless\\ /g;
+  $paragraph =~ s/>\s+/\\textgreater\\ /g;
+  $paragraph =~ s/\|\s+/\\textbar\\ /g;
+
   $paragraph =~ s/</\\textless /g;
   $paragraph =~ s/>/\\textgreater /g;
   $paragraph =~ s/\|/\\textbar /g;

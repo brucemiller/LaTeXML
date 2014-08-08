@@ -18,7 +18,7 @@
     <paragraph xml:id="S1.SS0.SSS0.Px2">
       <title>Text vs Math</title>
       <para xml:id="S1.SS0.SSS0.Px2.p1">
-        <p><text class="ltx_number">123,456.134×10<sup>123</sup></text> and <Math mode="inline" xml:id="S1.SS0.SSS0.Px2.p1.m1" tex="\numprint{123456.134e123}" text="123456.134e123"><XMath><XMDual><XMTok meaning="123456.134e123" role="NUMBER" font="italic">123456.134e123</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="123" role="NUMBER">123</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="456.134" role="NUMBER">456.134</XMTok><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMTok meaning="123" role="NUMBER">123</XMTok></XMApp></XMApp></XMApp></XMDual></XMath></Math></p>
+        <p><text class="ltx_number">123,456.134×10<sup>123</sup></text> and <Math mode="inline" xml:id="S1.SS0.SSS0.Px2.p1.m1" tex="\numprint{123456.134e123}" text="123456.134e123"><XMath><XMDual><XMTok meaning="123456.134e123" role="NUMBER" font="italic">123456.134e123</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM1"/><XMRef idref="XM2"/></XMApp><XMWrap><XMTok meaning="123" role="NUMBER" xml:id="XM1">123</XMTok><XMTok role="PUNCT">,</XMTok><XMApp xml:id="XM2"><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="456.134" role="NUMBER">456.134</XMTok><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMTok meaning="123" role="NUMBER">123</XMTok></XMApp></XMApp></XMWrap></XMDual></XMDual></XMath></Math></p>
       </para>
     </paragraph>
     <paragraph xml:id="S1.SS0.SSS0.Px3">
@@ -82,12 +82,12 @@ And : <text class="ltx_number">1,234×10<sup>4</sup></text> vs.  <text class="l
     <paragraph xml:id="S2.SS0.SSS0.Px4">
       <title>Padding</title>
       <para xml:id="S2.SS0.SSS0.Px4.p1">
-        <p><Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok meaning="001" role="NUMBER">001</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
-<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="001" role="NUMBER">001</XMTok><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math> –</p>
+        <p><Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM3"/><XMRef idref="XM4"/></XMApp><XMWrap><XMTok meaning="001" role="NUMBER" xml:id="XM3">001</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="234" role="NUMBER" xml:id="XM4">234</XMTok></XMWrap></XMDual></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM5"/><XMRef idref="XM6"/></XMApp><XMWrap><XMApp xml:id="XM5"><XMTok meaning="minus" role="ADDOP">-</XMTok><XMTok meaning="001" role="NUMBER">001</XMTok></XMApp><XMTok role="PUNCT">,</XMTok><XMTok meaning="234" role="NUMBER" xml:id="XM6">234</XMTok></XMWrap></XMDual></XMDual></XMath></Math>;
+<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM7"/><XMRef idref="XM8"/><XMRef idref="XM9"/></XMApp><XMWrap><XMTok meaning="12" role="NUMBER" xml:id="XM7">12</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="345" role="NUMBER" xml:id="XM8">345</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="678" role="NUMBER" xml:id="XM9">678</XMTok></XMWrap></XMDual></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p1.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM10"/><XMRef idref="XM11"/><XMRef idref="XM12"/></XMApp><XMWrap><XMTok meaning="001" role="NUMBER" xml:id="XM10">001</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="234.567" role="NUMBER" xml:id="XM11">234.567</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="8" role="NUMBER" xml:id="XM12">8</XMTok></XMWrap></XMDual></XMDual></XMath></Math> –</p>
       </para>
       <para xml:id="S2.SS0.SSS0.Px4.p2">
-        <p>vs. <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMApp><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp></XMApp><XMTok meaning="234" role="NUMBER">234</XMTok></XMApp></XMDual></XMath></Math>;
-<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok><XMTok meaning="678" role="NUMBER">678</XMTok></XMApp></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMApp><XMTok meaning="list" role="FENCED" separators=", ,"/><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok meaning="234.567" role="NUMBER">234.567</XMTok><XMTok meaning="8" role="NUMBER">8</XMTok></XMApp></XMDual></XMath></Math></p>
+        <p>vs. <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m1" tex="\numprint{1234}" text="1234"><XMath><XMDual><XMTok meaning="1234" role="NUMBER" font="italic">1234</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM13"/><XMRef idref="XM14"/></XMApp><XMWrap><XMApp xml:id="XM13"><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok role="PUNCT">,</XMTok><XMTok meaning="234" role="NUMBER" xml:id="XM14">234</XMTok></XMWrap></XMDual></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m2" tex="\numprint{-1234}" text="-1234"><XMath><XMDual><XMTok meaning="-1234" role="NUMBER" font="italic">-1234</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM15"/><XMRef idref="XM16"/></XMApp><XMWrap><XMApp xml:id="XM15"><XMTok meaning="minus" role="ADDOP">-</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp></XMApp><XMTok role="PUNCT">,</XMTok><XMTok meaning="234" role="NUMBER" xml:id="XM16">234</XMTok></XMWrap></XMDual></XMDual></XMath></Math>;
+<Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m3" tex="\numprint{12345678}" text="12345678"><XMath><XMDual><XMTok meaning="12345678" role="NUMBER" font="italic">12345678</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM17"/><XMRef idref="XM18"/><XMRef idref="XM19"/></XMApp><XMWrap><XMTok meaning="12" role="NUMBER" xml:id="XM17">12</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="345" role="NUMBER" xml:id="XM18">345</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="678" role="NUMBER" xml:id="XM19">678</XMTok></XMWrap></XMDual></XMDual></XMath></Math>; <Math mode="inline" xml:id="S2.SS0.SSS0.Px4.p2.m4" tex="\numprint{1234.5678}" text="1234.5678"><XMath><XMDual><XMTok meaning="1234.5678" role="NUMBER" font="italic">1234.5678</XMTok><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM20"/><XMRef idref="XM21"/><XMRef idref="XM22"/></XMApp><XMWrap><XMApp xml:id="XM20"><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="1" role="NUMBER">1</XMTok></XMApp><XMTok role="PUNCT">,</XMTok><XMTok meaning="234.567" role="NUMBER" xml:id="XM21">234.567</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="8" role="NUMBER" xml:id="XM22">8</XMTok></XMWrap></XMDual></XMDual></XMath></Math></p>
       </para>
     </paragraph>
     <paragraph xml:id="S2.SS0.SSS0.Px5">
@@ -163,11 +163,18 @@ vs.
                       <text align="right" width="45.0pt">
                         <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p1.m2.m1">
                           <XMath>
-                            <XMApp>
-                              <XMTok meaning="list" role="FENCED" separators=","/>
-                              <XMTok meaning="12" role="NUMBER">12</XMTok>
-                              <XMTok meaning="345" role="NUMBER">345</XMTok>
-                            </XMApp>
+                            <XMDual>
+                              <XMApp>
+                                <XMTok meaning="list"/>
+                                <XMRef idref="XM23"/>
+                                <XMRef idref="XM24"/>
+                              </XMApp>
+                              <XMWrap>
+                                <XMTok meaning="12" role="NUMBER" xml:id="XM23">12</XMTok>
+                                <XMTok role="PUNCT">,</XMTok>
+                                <XMTok meaning="345" role="NUMBER" xml:id="XM24">345</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMath>
                         </Math>
                       </text>
@@ -225,11 +232,18 @@ vs.
                       <text align="right" width="45.0pt">
                         <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p2.m2.m1">
                           <XMath>
-                            <XMApp>
-                              <XMTok meaning="list" role="FENCED" separators=","/>
-                              <XMTok meaning="12" role="NUMBER">12</XMTok>
-                              <XMTok meaning="345" role="NUMBER">345</XMTok>
-                            </XMApp>
+                            <XMDual>
+                              <XMApp>
+                                <XMTok meaning="list"/>
+                                <XMRef idref="XM25"/>
+                                <XMRef idref="XM26"/>
+                              </XMApp>
+                              <XMWrap>
+                                <XMTok meaning="12" role="NUMBER" xml:id="XM25">12</XMTok>
+                                <XMTok role="PUNCT">,</XMTok>
+                                <XMTok meaning="345" role="NUMBER" xml:id="XM26">345</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMath>
                         </Math>
                       </text>
@@ -389,11 +403,25 @@ vs.
                         <text align="right" width="45.0pt" fontsize="small">
                           <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m4.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=","/>
-                                <XMTok meaning="12" role="NUMBER" fontsize="normal">12</XMTok>
-                                <XMTok meaning="345" role="NUMBER" fontsize="normal">345</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM27"/>
+                                  <XMRef idref="XM28"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM27"/>
+                                    <XMRef idref="XM28"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="12" role="NUMBER" xml:id="XM27" fontsize="normal">12</XMTok>
+                                    <XMTok role="PUNCT" fontsize="normal">,</XMTok>
+                                    <XMTok meaning="345" role="NUMBER" xml:id="XM28" fontsize="normal">345</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
@@ -427,11 +455,25 @@ vs.
                         <text align="right" width="45.0pt" fontsize="small">
                           <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m5.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=","/>
-                                <XMTok meaning="12" role="NUMBER" fontsize="normal">12</XMTok>
-                                <XMTok meaning="345" role="NUMBER" fontsize="normal">345</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM29"/>
+                                  <XMRef idref="XM30"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM29"/>
+                                    <XMRef idref="XM30"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="12" role="NUMBER" xml:id="XM29" fontsize="normal">12</XMTok>
+                                    <XMTok role="PUNCT" fontsize="normal">,</XMTok>
+                                    <XMTok meaning="345" role="NUMBER" xml:id="XM30" fontsize="normal">345</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
@@ -474,11 +516,25 @@ vs.
                         <text align="right" width="45.0pt" fontsize="small">
                           <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m6.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=","/>
-                                <XMTok meaning="12" role="NUMBER" fontsize="normal">12</XMTok>
-                                <XMTok meaning="345" role="NUMBER" fontsize="normal">345</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM31"/>
+                                  <XMRef idref="XM32"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM31"/>
+                                    <XMRef idref="XM32"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="12" role="NUMBER" xml:id="XM31" fontsize="normal">12</XMTok>
+                                    <XMTok role="PUNCT" fontsize="normal">,</XMTok>
+                                    <XMTok meaning="345" role="NUMBER" xml:id="XM32" fontsize="normal">345</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
@@ -622,13 +678,33 @@ vs.
                         <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 123{,}456{,}123{,}456" text="list@(123, 456, 123, 456)" xml:id="S3.p5.m1.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=", , ,"/>
-                                <XMTok meaning="123" role="NUMBER">123</XMTok>
-                                <XMTok meaning="456" role="NUMBER">456</XMTok>
-                                <XMTok meaning="123" role="NUMBER">123</XMTok>
-                                <XMTok meaning="456" role="NUMBER">456</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM33"/>
+                                  <XMRef idref="XM34"/>
+                                  <XMRef idref="XM35"/>
+                                  <XMRef idref="XM36"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM33"/>
+                                    <XMRef idref="XM34"/>
+                                    <XMRef idref="XM35"/>
+                                    <XMRef idref="XM36"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="123" role="NUMBER" xml:id="XM33">123</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="456" role="NUMBER" xml:id="XM34">456</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="123" role="NUMBER" xml:id="XM35">123</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="456" role="NUMBER" xml:id="XM36">456</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
@@ -675,13 +751,33 @@ vs.
                         <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 123{,}456{,}123{,}456" text="list@(123, 456, 123, 456)" xml:id="S3.p5.m2.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=", , ,"/>
-                                <XMTok meaning="123" role="NUMBER" font="bold">123</XMTok>
-                                <XMTok meaning="456" role="NUMBER" font="bold">456</XMTok>
-                                <XMTok meaning="123" role="NUMBER" font="bold">123</XMTok>
-                                <XMTok meaning="456" role="NUMBER" font="bold">456</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM37"/>
+                                  <XMRef idref="XM38"/>
+                                  <XMRef idref="XM39"/>
+                                  <XMRef idref="XM40"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM37"/>
+                                    <XMRef idref="XM38"/>
+                                    <XMRef idref="XM39"/>
+                                    <XMRef idref="XM40"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="123" role="NUMBER" xml:id="XM37" font="bold">123</XMTok>
+                                    <XMTok role="PUNCT" font="bold">,</XMTok>
+                                    <XMTok meaning="456" role="NUMBER" xml:id="XM38" font="bold">456</XMTok>
+                                    <XMTok role="PUNCT" font="bold">,</XMTok>
+                                    <XMTok meaning="123" role="NUMBER" xml:id="XM39" font="bold">123</XMTok>
+                                    <XMTok role="PUNCT" font="bold">,</XMTok>
+                                    <XMTok meaning="456" role="NUMBER" xml:id="XM40" font="bold">456</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
@@ -712,7 +808,7 @@ vs.
       <tabular vattach="middle">
         <tbody>
           <tr>
-            <td align="char:." thead="true">before <Math mode="inline" xml:id="S3.p6.m1" tex="\numprint{123456123456.123e12}" text="123456123456.123e12"><XMath><XMDual><XMTok meaning="123456123456.123e12" role="NUMBER" font="italic">123456123456.123e12</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMText><text align="right" width="112.5pt"><Math mode="inline" tex="\textstyle 123{,}456{,}123{,}456" text="list@(123, 456, 123, 456)" xml:id="S3.p6.m1.m1"><XMath><XMApp><XMTok meaning="list" role="FENCED" separators=", , ,"/><XMTok meaning="123" role="NUMBER">123</XMTok><XMTok meaning="456" role="NUMBER">456</XMTok><XMTok meaning="123" role="NUMBER">123</XMTok><XMTok meaning="456" role="NUMBER">456</XMTok></XMApp></XMath></Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}123" text=".123" xml:id="S3.p6.m1.m2"><XMath><XMTok meaning=".123" role="NUMBER">.123</XMTok></XMath></Math></text></XMText><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post8"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m1.m3"><XMath><XMTok meaning="12" role="NUMBER">12</XMTok></XMath></Math></text><text align="left" width="0.0pt"/></XMText></XMApp></XMApp></XMDual></XMath></Math> after</td>
+            <td align="char:." thead="true">before <Math mode="inline" xml:id="S3.p6.m1" tex="\numprint{123456123456.123e12}" text="123456123456.123e12"><XMath><XMDual><XMTok meaning="123456123456.123e12" role="NUMBER" font="italic">123456123456.123e12</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMText><text align="right" width="112.5pt"><Math mode="inline" tex="\textstyle 123{,}456{,}123{,}456" text="list@(123, 456, 123, 456)" xml:id="S3.p6.m1.m1"><XMath><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM41"/><XMRef idref="XM42"/><XMRef idref="XM43"/><XMRef idref="XM44"/></XMApp><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM41"/><XMRef idref="XM42"/><XMRef idref="XM43"/><XMRef idref="XM44"/></XMApp><XMWrap><XMTok meaning="123" role="NUMBER" xml:id="XM41">123</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="456" role="NUMBER" xml:id="XM42">456</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="123" role="NUMBER" xml:id="XM43">123</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="456" role="NUMBER" xml:id="XM44">456</XMTok></XMWrap></XMDual></XMDual></XMath></Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}123" text=".123" xml:id="S3.p6.m1.m2"><XMath><XMTok meaning=".123" role="NUMBER">.123</XMTok></XMath></Math></text></XMText><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post8"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m1.m3"><XMath><XMTok meaning="12" role="NUMBER">12</XMTok></XMath></Math></text><text align="left" width="0.0pt"/></XMText></XMApp></XMApp></XMDual></XMath></Math> after</td>
             <td align="char:.">
               <Math mode="inline" xml:id="S3.p6.m2" tex="\numprint{12.12345}" text="12.12345">
                 <XMath>
@@ -729,11 +825,18 @@ vs.
                       <text align="left" width="45.0pt">
                         <Math mode="inline" tex="\textstyle{.}123{,}5" text="list@(.123, 5)" xml:id="S3.p6.m2.m2">
                           <XMath>
-                            <XMApp>
-                              <XMTok meaning="list" role="FENCED" separators=","/>
-                              <XMTok meaning=".123" role="NUMBER">.123</XMTok>
-                              <XMTok meaning="5" role="NUMBER">5</XMTok>
-                            </XMApp>
+                            <XMDual>
+                              <XMApp>
+                                <XMTok meaning="list"/>
+                                <XMRef idref="XM45"/>
+                                <XMRef idref="XM46"/>
+                              </XMApp>
+                              <XMWrap>
+                                <XMTok meaning=".123" role="NUMBER" xml:id="XM45">.123</XMTok>
+                                <XMTok role="PUNCT">,</XMTok>
+                                <XMTok meaning="5" role="NUMBER" xml:id="XM46">5</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMath>
                         </Math>
                       </text>
@@ -747,21 +850,35 @@ vs.
                 <XMath>
                   <XMDual>
                     <XMTok meaning="123456.23e1" role="NUMBER" font="italic" color="#0000FF">123456.23e1</XMTok>
-                    <XMApp>
+                    <XMApp color="#0000FF">
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMText>
-                        <text align="right" width="112.5pt" color="#0000FF">
+                        <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 123{,}456" text="list@(123, 456)" xml:id="S3.p6.m3.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=","/>
-                                <XMTok meaning="123" role="NUMBER">123</XMTok>
-                                <XMTok meaning="456" role="NUMBER">456</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM47"/>
+                                  <XMRef idref="XM48"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM47"/>
+                                    <XMRef idref="XM48"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="123" role="NUMBER" xml:id="XM47">123</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="456" role="NUMBER" xml:id="XM48">456</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
-                        <text align="left" width="30.0pt" color="#0000FF">
+                        <text align="left" width="30.0pt">
                           <Math mode="inline" tex="\textstyle{.}23" text=".23" xml:id="S3.p6.m3.m2">
                             <XMath>
                               <XMTok meaning=".23" role="NUMBER">.23</XMTok>
@@ -769,11 +886,11 @@ vs.
                           </Math>
                         </text>
                       </XMText>
-                      <XMTok role="UNKNOWN" color="#0000FF">×</XMTok>
+                      <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
-                        <XMTok meaning="10" role="NUMBER" color="#0000FF">10</XMTok>
-                        <XMTok meaning="1" role="NUMBER" color="#0000FF">1</XMTok>
+                        <XMTok meaning="10" role="NUMBER">10</XMTok>
+                        <XMTok meaning="1" role="NUMBER">1</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -782,7 +899,7 @@ vs.
             </td>
           </tr>
           <tr>
-            <td align="char:." thead="true">before <Math mode="inline" xml:id="S3.p6.m4" tex="\numprint{12345.123e12}" text="12345.123e12"><XMath><XMDual><XMTok meaning="12345.123e12" role="NUMBER" font="italic">12345.123e12</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMText><text align="right" width="112.5pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p6.m4.m1"><XMath><XMApp><XMTok meaning="list" role="FENCED" separators=","/><XMTok meaning="12" role="NUMBER">12</XMTok><XMTok meaning="345" role="NUMBER">345</XMTok></XMApp></XMath></Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}123" text=".123" xml:id="S3.p6.m4.m2"><XMath><XMTok meaning=".123" role="NUMBER">.123</XMTok></XMath></Math></text></XMText><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post8"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m4.m3"><XMath><XMTok meaning="12" role="NUMBER">12</XMTok></XMath></Math></text><text align="left" width="0.0pt"/></XMText></XMApp></XMApp></XMDual></XMath></Math> after</td>
+            <td align="char:." thead="true">before <Math mode="inline" xml:id="S3.p6.m4" tex="\numprint{12345.123e12}" text="12345.123e12"><XMath><XMDual><XMTok meaning="12345.123e12" role="NUMBER" font="italic">12345.123e12</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMText><text align="right" width="112.5pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p6.m4.m1"><XMath><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM49"/><XMRef idref="XM50"/></XMApp><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="XM49"/><XMRef idref="XM50"/></XMApp><XMWrap><XMTok meaning="12" role="NUMBER" xml:id="XM49">12</XMTok><XMTok role="PUNCT">,</XMTok><XMTok meaning="345" role="NUMBER" xml:id="XM50">345</XMTok></XMWrap></XMDual></XMDual></XMath></Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}123" text=".123" xml:id="S3.p6.m4.m2"><XMath><XMTok meaning=".123" role="NUMBER">.123</XMTok></XMath></Math></text></XMText><XMTok role="UNKNOWN">×</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post8"/><XMTok meaning="10" role="NUMBER">10</XMTok><XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m4.m3"><XMath><XMTok meaning="12" role="NUMBER">12</XMTok></XMath></Math></text><text align="left" width="0.0pt"/></XMText></XMApp></XMApp></XMDual></XMath></Math> after</td>
             <td align="char:.">
               <Math mode="inline" xml:id="S3.p6.m5" tex="\numprint{12.1}" text="12.1">
                 <XMath>
@@ -799,11 +916,18 @@ vs.
                       <text align="left" width="45.0pt">
                         <Math mode="inline" tex="\textstyle{.}100{,}0" text="list@(.100, 0)" xml:id="S3.p6.m5.m2">
                           <XMath>
-                            <XMApp>
-                              <XMTok meaning="list" role="FENCED" separators=","/>
-                              <XMTok meaning=".100" role="NUMBER">.100</XMTok>
-                              <XMTok meaning="0" role="NUMBER">0</XMTok>
-                            </XMApp>
+                            <XMDual>
+                              <XMApp>
+                                <XMTok meaning="list"/>
+                                <XMRef idref="XM51"/>
+                                <XMRef idref="XM52"/>
+                              </XMApp>
+                              <XMWrap>
+                                <XMTok meaning=".100" role="NUMBER" xml:id="XM51">.100</XMTok>
+                                <XMTok role="PUNCT">,</XMTok>
+                                <XMTok meaning="0" role="NUMBER" xml:id="XM52">0</XMTok>
+                              </XMWrap>
+                            </XMDual>
                           </XMath>
                         </Math>
                       </text>
@@ -816,23 +940,40 @@ vs.
               <Math mode="inline" xml:id="S3.p6.m6" tex="\numprint{14561234.562e12}" text="14561234.562e12">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="14561234.562e12" role="NUMBER" font="italic" color="#0000FF">14561234.562e12</XMTok>
-                    <XMApp>
+                    <XMTok meaning="14561234.562e12" role="NUMBER" color="#0000FF" font="italic">14561234.562e12</XMTok>
+                    <XMApp color="#0000FF">
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMText>
-                        <text align="right" width="112.5pt" color="#0000FF">
+                        <text align="right" width="112.5pt">
                           <Math mode="inline" tex="\textstyle 14{,}561{,}234" text="list@(14, 561, 234)" xml:id="S3.p6.m6.m1">
                             <XMath>
-                              <XMApp>
-                                <XMTok meaning="list" role="FENCED" separators=", ,"/>
-                                <XMTok meaning="14" role="NUMBER">14</XMTok>
-                                <XMTok meaning="561" role="NUMBER">561</XMTok>
-                                <XMTok meaning="234" role="NUMBER">234</XMTok>
-                              </XMApp>
+                              <XMDual>
+                                <XMApp>
+                                  <XMTok meaning="list"/>
+                                  <XMRef idref="XM53"/>
+                                  <XMRef idref="XM54"/>
+                                  <XMRef idref="XM55"/>
+                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM53"/>
+                                    <XMRef idref="XM54"/>
+                                    <XMRef idref="XM55"/>
+                                  </XMApp>
+                                  <XMWrap>
+                                    <XMTok meaning="14" role="NUMBER" xml:id="XM53">14</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="561" role="NUMBER" xml:id="XM54">561</XMTok>
+                                    <XMTok role="PUNCT">,</XMTok>
+                                    <XMTok meaning="234" role="NUMBER" xml:id="XM55">234</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMDual>
                             </XMath>
                           </Math>
                         </text>
-                        <text align="left" width="30.0pt" color="#0000FF">
+                        <text align="left" width="30.0pt">
                           <Math mode="inline" tex="\textstyle{.}562" text=".562" xml:id="S3.p6.m6.m2">
                             <XMath>
                               <XMTok meaning=".562" role="NUMBER">.562</XMTok>
@@ -840,11 +981,11 @@ vs.
                           </Math>
                         </text>
                       </XMText>
-                      <XMTok role="UNKNOWN" color="#0000FF">×</XMTok>
+                      <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
-                        <XMTok meaning="10" role="NUMBER" color="#0000FF">10</XMTok>
-                        <XMTok meaning="12" role="NUMBER" color="#0000FF">12</XMTok>
+                        <XMTok meaning="10" role="NUMBER">10</XMTok>
+                        <XMTok meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -893,11 +1034,25 @@ vs.
                           <text align="right" width="45.0pt">
                             <Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p7.m1.m1">
                               <XMath>
-                                <XMApp>
-                                  <XMTok meaning="list" role="FENCED" separators=","/>
-                                  <XMTok meaning="12" role="NUMBER">12</XMTok>
-                                  <XMTok meaning="345" role="NUMBER">345</XMTok>
-                                </XMApp>
+                                <XMDual>
+                                  <XMApp>
+                                    <XMTok meaning="list"/>
+                                    <XMRef idref="XM56"/>
+                                    <XMRef idref="XM57"/>
+                                  </XMApp>
+                                  <XMDual>
+                                    <XMApp>
+                                      <XMTok meaning="list"/>
+                                      <XMRef idref="XM56"/>
+                                      <XMRef idref="XM57"/>
+                                    </XMApp>
+                                    <XMWrap>
+                                      <XMTok meaning="12" role="NUMBER" xml:id="XM56">12</XMTok>
+                                      <XMTok role="PUNCT">,</XMTok>
+                                      <XMTok meaning="345" role="NUMBER" xml:id="XM57">345</XMTok>
+                                    </XMWrap>
+                                  </XMDual>
+                                </XMDual>
                               </XMath>
                             </Math>
                           </text>

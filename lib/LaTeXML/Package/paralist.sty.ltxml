@@ -30,21 +30,21 @@ RawTeX(<<'EOTeX');
 \newif\if@plloadcfg\@plloadcfgtrue
 EOTeX
 
-DeclareOption('newitem',       sub { AssignValue('Boolean:@plnewitem'       => 1); });
-DeclareOption('olditem',       sub { AssignValue('Boolean:@plnewitem'       => 0); });
-DeclareOption('newenum',       sub { AssignValue('Boolean:@plnewenum'       => 1); });
-DeclareOption('oldenum',       sub { AssignValue('Boolean:@plnewenum'       => 0); });
-DeclareOption('alwaysadjust',  sub { AssignValue('Boolean:@plalwaysadjust'  => 1); });
-DeclareOption('neveradjust',   sub { AssignValue('Boolean:@plneveradjust'   => 1); });
-DeclareOption('neverdecrease', sub { AssignValue('Boolean:@plneverdecrease' => 1); });
-DeclareOption('increaseonly',  sub { AssignValue('Boolean:@plneverdecrease' => 1); });
-DeclareOption('defblank',      sub { AssignValue('Boolean:@pldefblank'      => 1); });
-DeclareOption('pointedenum',   sub { AssignValue('Boolean:@plpointedenum'   => 1); });
-DeclareOption('pointlessenum', sub { AssignValue('Boolean:@plpointlessenum' => 1); });
-DeclareOption('cfg',           sub { AssignValue('Boolean:@plloadcfg'       => 1); });
-DeclareOption('nocfg',         sub { AssignValue('Boolean:@plloadcfg'       => 0); });
-DeclareOption('flushright',    sub { AssignValue('Boolean:@plflushright'    => 1); });
-DeclareOption('flushleft',     sub { AssignValue('Boolean:@plflushright'    => 0); });
+DeclareOption('newitem',       '\@plnewitemtrue');
+DeclareOption('olditem',       '\@plnewitemfalse');
+DeclareOption('newenum',       '\@plnewenumtrue');
+DeclareOption('oldenum',       '\@plnewenumfalse');
+DeclareOption('alwaysadjust',  '\@plalwaysadjusttrue');
+DeclareOption('neveradjust',   '\@plneveradjusttrue');
+DeclareOption('neverdecrease', '\@plneverdecreasetrue');
+DeclareOption('increaseonly',  '\@plneverdecreasetrue');
+DeclareOption('defblank',      '\@pldefblanktrue');
+DeclareOption('pointedenum',   '\@plpointedenumtrue');
+DeclareOption('pointlessenum', '\@plpointlessenumtrue');
+DeclareOption('cfg',           '\@plloadcfgtrue');
+DeclareOption('nocfg',         '\@plloadcfgfalse');
+DeclareOption('flushright',    '\@plflushrighttrue');
+DeclareOption('flushleft',     '\@plflushrightfalse');
 
 ExecuteOptions(qw(newitem newenum cfg flushright));
 ProcessOptions();
@@ -94,8 +94,8 @@ DefEnvironment('{asparaenum} OptionalUndigested',
   properties => sub { beginItemize('enumerate', 'enum'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 
-# Possibly redefine stock itemize to take optional argument
-if (LookupValue('Boolean:@plnewenum')) {
+# Possibly redefine stock enumerate to take optional argument
+if (IfCondition(T_CS('\if@plnewenum'))) {
   DefEnvironment('{enumerate} OptionalUndigested',
     "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
     properties => sub { beginItemize('enumerate', 'enum'); },
@@ -124,7 +124,7 @@ DefEnvironment('{asparaitem} OptionalUndigested',
   properties => sub { beginItemize('itemize', '@@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 
-if (LookupValue('Boolean:@plnewitem')) {
+if (IfCondition(T_CS('\if@plnewitem'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
     properties => sub { beginItemize('itemize', '@@item'); },

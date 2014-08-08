@@ -58,6 +58,7 @@ Math_attributes =
 Math_model =   Math.class*
 
 #======================================================================
+## Common attributes for the various XMath elements.
 XMath.attributes =
 
   ## The role that this item plays in the Grammar.
@@ -187,6 +188,7 @@ XMApp_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+  Colorable.attributes,
   Backgroundable.attributes,
 
   ## The name of the token, typically the control sequence that created it.

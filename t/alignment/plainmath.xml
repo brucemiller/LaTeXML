@@ -85,7 +85,14 @@
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">s</XMTok>
-              <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="XM1" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
             <XMArray meaning="cases" open="{">
               <XMRow>
@@ -238,7 +245,14 @@
                 </XMApp>
               </XMCell>
               <XMCell align="left">
-                <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
+                <XMDual>
+                  <XMRef idref="XM2"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM2" font="italic">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMCell>
             </XMRow>
             <XMRow>
@@ -282,7 +296,14 @@
                 </XMApp>
               </XMCell>
               <XMCell align="left">
-                <XMTok close=")" open="(" role="UNKNOWN" font="italic">x</XMTok>
+                <XMDual>
+                  <XMRef idref="XM3"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM3" font="italic">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMCell>
             </XMRow>
             <XMRow>

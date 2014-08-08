@@ -66,20 +66,24 @@ DefConstructor('\lxSVG@pgfsys@insertpicture{}',
     . '</ltx:picture>',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $minx   = LookupValue('\pgf@picminx')->pxValue;
-    my $miny   = LookupValue('\pgf@picminy')->pxValue;
-    my $width  = LookupValue('\pgf@picmaxx');
-    my $height = LookupValue('\pgf@picmaxy');
+    my $margin  = Dimension('2pt');
+    my $margin2 = Dimension('4pt');
+    # \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
+    my $minx   = LookupValue('\pgf@picminx')->subtract($margin);
+    my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
+    my $width  = LookupValue('\pgf@picmaxx')->add($margin2);
+    my $height = LookupValue('\pgf@picmaxy')->add($margin2);
     my $w      = max($width->pxValue, 1);
     my $h      = max($height->pxValue, 1);
-    $whatsit->setProperty(minx      => $minx);
-    $whatsit->setProperty(miny      => $miny);
+    # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
+    $whatsit->setProperty(minx      => $minx->pxValue);
+    $whatsit->setProperty(miny      => $miny->pxValue);
     $whatsit->setProperty(width     => $width);
     $whatsit->setProperty(height    => $height);
     $whatsit->setProperty(depth     => Dimension(0));
     $whatsit->setProperty(pxwidth   => $w);
     $whatsit->setProperty(pxheight  => $h);
-    $whatsit->setProperty(flipnmove => $h + 2 * $miny);
+    $whatsit->setProperty(flipnmove => $h + 2 * $miny->pxValue);
     # or tikz macro (see corescopes)
     return; });
 
@@ -137,9 +141,9 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
   mode => 'text', bounded => 1,
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
-  properties => { sizer => '#2' },
+  sizer        => '#2',
   beforeDigest => sub { reenterTextMode(); },
-  afterDigest => sub {
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
     my $box  = $whatsit->getArg(2);
@@ -150,7 +154,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
     return; });
 
 DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
-  properties => { sizer => '#2' },
+  sizer       => '#2',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -166,6 +170,7 @@ DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
 # 1. Beginning and ending a stream ===================================#
 #=====================================================================#
 DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
+% \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
 \advance\pgf@picmaxy by-\pgf@picminy\relax%
    \advance\pgf@picmaxx by-\pgf@picminx\relax%
    \ht#1=\pgf@picmaxy%
@@ -657,6 +662,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
     my ($document, $whatsit) = @_;
     if ($whatsit->getProperty('OpenedForeignObject')) {
       $document->closeElement('svg:foreignObject'); } },
+  sizer      => \&image_graphicx_sizer,
   properties => sub {
     my ($stomach, $w, $h, $graphic) = @_;
     $w = ToString($w);
@@ -669,8 +675,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
-      options => $options,
-      sizer => sub { \&image_graphicx_sizer }); },
+      options => $options); },
   alias => '\includegraphics');
 
 #=====================================================================#

@@ -24,6 +24,8 @@
        Logical paragraphs
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:para ltx:inline-para"/>
+
   <xsl:template match="ltx:para">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
@@ -52,6 +54,8 @@
 
   <!-- theorem's title is in LaTeXML-structure-xhtml, where it's import precedence
        can be better managed -->
+  <xsl:strip-space elements="ltx:theorem ltx:proof"/>
+
   <xsl:template match="ltx:theorem | ltx:proof">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
@@ -67,6 +71,8 @@
   <!-- ======================================================================
        Floating things; Figures & Tables
        ====================================================================== -->
+
+  <xsl:strip-space elements="ltx:figure ltx:table ltx:float ltx:listing"/>
 
   <xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing">
     <xsl:text>&#x0A;</xsl:text>

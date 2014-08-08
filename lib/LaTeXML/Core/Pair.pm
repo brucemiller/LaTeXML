@@ -59,12 +59,12 @@ sub swap {
   return (ref $self)->new($$self[1], $$self[0]); }
 
 sub ptValue {
-  my ($self) = @_;
-  return $$self[0]->ptValue() . ',' . $$self[1]->ptValue(); }
+  my ($self, $prec) = @_;
+  return $$self[0]->ptValue($prec) . ',' . $$self[1]->ptValue($prec); }
 
 sub pxValue {
-  my ($self) = @_;
-  return $$self[0]->pxValue() . ',' . $$self[1]->pxValue(); }
+  my ($self, $prec) = @_;
+  return $$self[0]->pxValue($prec) . ',' . $$self[1]->pxValue($prec); }
 
 sub toString {
   my ($self) = @_;

@@ -28,7 +28,7 @@ use base (qw(Exporter));
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
     &Annotate &InvisibleTimes &InvisibleComma
     &NewFormulae &NewFormula &NewList
-    &ApplyDelimited &NewScript &DecorateOperator
+    &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited
     &LeftRec
     &Arg &MaybeFunction
     &SawNotation &IsNotationAllowed
@@ -37,7 +37,7 @@ our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
       &Annotate &InvisibleTimes &InvisibleComma
       &NewFormulae &NewFormula &NewList
-      &ApplyDelimited &NewScript &DecorateOperator
+      &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited
       &LeftRec
       &Arg &MaybeFunction
       &SawNotation &IsNotationAllowed
@@ -111,7 +111,7 @@ sub token_prettyname {
   elsif ($name = $node->textContent) {
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
     my %attr = $font->relativeTo($DEFAULT_FONT);
-    my $desc = join(' ', map { ToString($_) } values %attr);
+    my $desc = join(' ', map { ToString($attr{$_}{value}) } keys %attr);
     $name .= "{$desc}" if $desc; }
   else {
     $name = Stringify($node); }    # what else ????
@@ -633,6 +633,9 @@ sub textrec {
     return join('@', map { textrec($_) } element_nodes($node)); }
   elsif ($tag eq 'ltx:XMArray') {
     return textrec_array($node); }
+  elsif ($tag eq 'ltx:XMRef') {
+    return textrec($LaTeXML::MathParser::DOCUMENT->lookupID($node->getAttribute('idref')),
+      $outer_bp, $outer_name); }
   else {
     return '[' . $node->textContent . ']'; } }
 
@@ -804,6 +807,7 @@ sub Arg {
 
 # Add more attributes to a node.
 # Values can be strings or nodes whose text content is used.
+# Note that it avoids changing the underlying XML, so it may return a new object!
 sub Annotate {
   my ($node, %attributes) = @_;
   my %attrib = ();
@@ -853,12 +857,27 @@ sub Apply {
 # Apply $op to a `delimited' list of arguments of the form
 #     open, expr (punct expr)* close
 # after extracting the opening and closing delimiters, and the separating punctuation
+# Generate an XMDual, so that any styling of delimiters & punctuation is preserved.
 sub ApplyDelimited {
   my ($op, @stuff) = @_;
-  my $open  = shift(@stuff);
-  my $close = pop(@stuff);
-  my ($seps, @args) = extract_separators(@stuff);
-  return Apply(Annotate($op, argopen => $open, argclose => $close, separators => $seps), @args); }
+  my $open  = $stuff[0];
+  my $close = $stuff[-1];
+  my ($seps, @args) = extract_separators(@stuff[1 .. $#stuff - 1]);
+  return ['ltx:XMDual', {},
+    Apply(LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $op),
+      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @args)),
+    Apply($op, ['ltx:XMWrap', {}, @stuff])]; }
+
+# This is similar, but "interprets" a delimited list as being the
+# application of some operator to the items in the list.
+sub InterpretDelimited {
+  my ($op, @stuff) = @_;
+  my $open  = $stuff[0];
+  my $close = $stuff[-1];
+  my ($seps, @args) = extract_separators(@stuff[1 .. $#stuff - 1]);
+  return ['ltx:XMDual', {},
+    Apply($op, LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @args)),
+    ['ltx:XMWrap', {}, @stuff]]; }
 
 # Given a sequence of operators, form the nested application op(op(...(arg)))
 sub recApply {
@@ -935,8 +954,7 @@ sub isMatchingClose {
 # Given a delimited sequence: open expr (punct expr)* close
 # (OR, an empty sequence open close)
 # Convert it into the appropriate thing, depending on the specific open & close used.
-# If the open/close are `simple' delimiters and there is only one expr,
-# simply add open/close attributes.
+# Generate an XMDual to preserve any styling of delimiters and punctuation.
 sub Fence {
   my (@stuff) = @_;
   # Peak at delimiters to guess what kind of construct this is.
@@ -946,12 +964,10 @@ sub Fence {
     "got " . join(' ', map { ToString($_) } @stuff))
     if ($nargs != 2) && (($nargs % 2) == 0);    # either empty or odd number
   my ($open, $close) = ($stuff[0], $stuff[-1]);
-  my $lpad = (ref $open)  && $open->getAttribute('lpadding');
-  my $rpad = (ref $close) && $close->getAttribute('rpadding');
-  my $o    = p_getValue($open);
-  my $c    = p_getValue($close);
-  my $n    = int(($nargs - 2 + 1) / 2);
-  my @p = map { p_getValue(@stuff[2 * $_]) } 1 .. $n - 1;
+  my $o  = p_getValue($open);
+  my $c  = p_getValue($close);
+  my $n  = int(($nargs - 2 + 1) / 2);
+  my @p  = map { p_getValue(@stuff[2 * $_]) } 1 .. $n - 1;
   my $op = ($n == 0
     ? 'list'                                    # ?
     : ($n == 1
@@ -959,16 +975,13 @@ sub Fence {
       : ($n == 2
         ? ($enclose2{ $o . '@' . $p[0] . '@' . $c } || 'list')
         : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
-  # When we're parsing XMWrap, we shouldn't try so hard to infer a meaning (it'll usually be wrong)
-  $op = undef unless $LaTeXML::MathParser::STRICT;
-  if (($n == 1) && (!defined $op)) {            # Simple case.
-    return Annotate($stuff[1],
-      open     => ($open  ? $open  : undef),
-      close    => ($close ? $close : undef),
-      lpadding => ($lpad  ? $lpad  : undef),
-      rpadding => ($rpad  ? $rpad  : undef)); }
+  $op = 'delimited-' . $o . $c unless defined $op;
+  if (($n == 1) && ($op eq 'delimited-()')) {    # Hopefully, can just ignore the parens?
+    return ['ltx:XMDual', {},
+      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $stuff[1]),
+      ['ltx:XMWrap', {}, @stuff]]; }
   else {
-    return ApplyDelimited(New($op, undef, role => 'FENCED'), @stuff); } }
+    return InterpretDelimited(New($op), @stuff); } }
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
@@ -978,7 +991,10 @@ sub NewFormulae {
     return $stuff[0]; }
   else {
     my ($seps, @formula) = extract_separators(@stuff);
-    return Apply(New('formulae', undef, separators => $seps), @formula); } }
+    return ['ltx:XMDual', {},
+      Apply(New('formulae'),
+        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @formula)),
+      ['ltx:XMWrap', {}, @stuff]]; } }
 
 # A Formula is an alternation of expr (relationalop expr)*
 # It presumably would be equivalent to (expr1 relop1 expr2) AND (expr2 relop2 expr3) ...
@@ -999,7 +1015,10 @@ sub NewList {
     return $stuff[0]; }
   else {
     my ($seps, @items) = extract_separators(@stuff);
-    return Apply(New('list', undef, separators => $seps, role => 'FENCED'), @items); } }
+    return ['ltx:XMDual', {},
+      Apply(New('list'),
+        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @items)),
+      ['ltx:XMWrap', {}, @stuff]]; } }
 
 # Given alternation of expr (addop expr)*, compose the tree (left recursive),
 # flattenning portions that have the same operator
@@ -1183,6 +1202,11 @@ should represent open and close delimiters and the arguments are
 seperated by punctuation nodes.  The text of these delimiters and
 punctuation are used to annotate the operator node with
 C<argopen>, C<argclose> and C<separator> attributes.
+
+=item C<< $node = InterpretDelimited($op,@stuff); >>
+
+Similar to C<ApplyDelimited>, this interprets sequence of
+delimited, punctuated items as being the application of C<$op> to those items.
 
 =item C<< $node = recApply(@ops,$arg); >>
 

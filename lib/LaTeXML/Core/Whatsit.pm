@@ -209,8 +209,9 @@ sub computeSize {
   my ($self, %options) = @_;
   # Use #body, if any, else ALL args !?!?!
   # Eventually, possibly options like sizeFrom, or computeSize or....
+  my $defn  = $self->getDefinition;
   my $props = $self->getPropertiesRef;
-  my $sizer = $$props{sizer};
+  my $sizer = $defn->getSizer;
   my ($width, $height, $depth);
   # If sizer is a function, call it
   if (ref $sizer) {
@@ -221,11 +222,11 @@ sub computeSize {
       @boxes = ($$self{properties}{body}
         ? ($$self{properties}{body})
         : (map { ((ref $_) && ($_->isaBox) ? $_->unlist : ()) } @{ $$self{args} })); }
-    elsif ($sizer eq '0') { }    # 0 size!
-    elsif ($sizer =~ /^#(\d+)$/) {    # Else if of form '#digit', derive size from that argument
-      push(@boxes, $self->getArg($1)); }
-    elsif ($sizer =~ /^#(\w+)$/) {    # Or if of form '#word', derivce size from that property (a box?)
-      push(@boxes, $$self{properties}{$1}); }
+    elsif (($sizer eq '0') || ($sizer eq '')) { }    # 0 size!
+    elsif ($sizer =~ /^(#\w+)*$/) {    # Else if of form '#digit' or '#prop', combine sizes
+      while ($sizer =~ s/^#(\w+)//) {
+        my $arg = $1;
+        push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
     else {
       Warn('unexpected', $sizer, undef,
         "Expected sizer to be a function, or arg or property specification, not '$sizer'"); }

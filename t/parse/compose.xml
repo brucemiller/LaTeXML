@@ -13,12 +13,26 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMTok role="FUNCTION" font="italic">f</XMTok>
-                <XMTok role="FUNCTION" font="italic">g</XMTok>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM1">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
+                    <XMTok role="FUNCTION" font="italic">g</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM2"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM2" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -28,16 +42,30 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMApp>
-                  <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                  <XMTok role="FUNCTION" font="italic">f</XMTok>
-                  <XMTok role="FUNCTION" font="italic">g</XMTok>
-                </XMApp>
-                <XMTok role="FUNCTION" font="italic">h</XMTok>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM3"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM3">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMApp>
+                      <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                      <XMTok role="FUNCTION" font="italic">f</XMTok>
+                      <XMTok role="FUNCTION" font="italic">g</XMTok>
+                    </XMApp>
+                    <XMTok role="FUNCTION" font="italic">h</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM4"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM4" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -52,16 +80,30 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                  <XMTok role="ID" font="italic">y</XMTok>
-                  <XMTok meaning="2" role="NUMBER">2</XMTok>
-                </XMApp>
-                <XMTok role="FUNCTION" font="italic">f</XMTok>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM5"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM5">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                      <XMTok role="ID" font="italic">y</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM6"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM6" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -71,20 +113,34 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMApp>
-                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                  <XMTok role="ID" font="italic">y</XMTok>
-                  <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                    <XMTok role="ID" font="italic">y</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+              <XMDual>
+                <XMRef idref="XM7"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM7">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok role="ID" font="italic">y</XMTok>
+                      <XMApp>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                        <XMTok role="ID" font="italic">y</XMTok>
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                      </XMApp>
+                    </XMApp>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
                   </XMApp>
-                </XMApp>
-                <XMTok role="FUNCTION" font="italic">f</XMTok>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM8"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM8" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -94,16 +150,30 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                  <XMTok role="ID" font="italic">y</XMTok>
-                  <XMTok meaning="2" role="NUMBER">2</XMTok>
-                </XMApp>
-                <XMTok role="FUNCTION" font="italic">f</XMTok>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM9"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM9">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                      <XMTok role="ID" font="italic">y</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM10"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM10" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -113,16 +183,30 @@
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
-                <XMTok role="FUNCTION" font="italic">f</XMTok>
-                <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                  <XMTok role="ID" font="italic">y</XMTok>
-                  <XMTok meaning="2" role="NUMBER">2</XMTok>
-                </XMApp>
-              </XMApp>
-              <XMTok close=")" open="(" role="ID" font="italic">x</XMTok>
+              <XMDual>
+                <XMRef idref="XM11"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="XM11">
+                    <XMTok meaning="compose" role="COMPOSEOP">*</XMTok>
+                    <XMTok role="FUNCTION" font="italic">f</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                      <XMTok role="ID" font="italic">y</XMTok>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMRef idref="XM12"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok role="ID" xml:id="XM12" font="italic">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>

@@ -50,11 +50,11 @@ use Text::Balanced;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefExpandable
     &DefMacro &DefMacroI
-    &DefConditional &DefConditionalI
+    &DefConditional &DefConditionalI &IfCondition
     &DefPrimitive  &DefPrimitiveI
     &DefRegister &DefRegisterI
     &DefConstructor &DefConstructorI
-    &dualize_arglist
+    &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
     &convertLaTeXArgs),
 
@@ -94,7 +94,7 @@ our @EXPORT = (qw(&DefExpandable
     &PushValue &PopValue &UnshiftValue &ShiftValue
     &LookupMapping &AssignMapping &LookupMappingKeys
     &LookupCatcode &AssignCatcode
-    &LookupMeaning &LookupDefinition &InstallDefinition
+    &LookupMeaning &LookupDefinition &InstallDefinition &XEquals
     &LookupMathcode &AssignMathcode
     &LookupSFcode &AssignSFcode
     &LookupLCcode &AssignLCcode
@@ -294,6 +294,19 @@ sub InstallDefinition {
   my ($name, $definition, $scope) = @_;
   $STATE->installDefinition($name, $definition, $scope);
   return }
+
+sub XEquals {
+  my ($token1, $token2) = @_;
+  my $def1 = LookupMeaning($token1);
+  my $def2 = LookupMeaning($token2);
+  if (defined $def1 != defined $def2) {    # False, if they don't both have defs or both not have defs
+    return; }
+  elsif (!defined $def1 && !defined $def2) { # If neither have defs, then must have same catcode & chars
+    return ($token1->getCatcode == $token2->getCatcode)
+      && ($token1->getCharcode == $token2->getCharcode); }
+  elsif ($def1->equals($def2)) {             # If both have defns, must be same defn!
+    return 1; }
+  return; }
 
 sub LookupMathcode {
   my ($char) = @_;
@@ -571,10 +584,13 @@ sub NewCounter {
       Tokens(T_CS($unctr), (($x = LookupValue("\\cl\@UN$within")) ? $x->unlist : ())),
     'global') if $within;
   AssignValue('nested_counters_' . $ctr => $options{nested}, 'global') if $options{nested};
-  DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}", scope => 'global');
+  # default is equivalent to \arabic{ctr}, but w/o using the LaTeX macro!
+  DefMacroI(T_CS("\\the$ctr"), undef, sub {
+      ExplodeText(CounterValue($ctr)->valueOf); },
+    scope => 'global');
   my $prefix = $options{idprefix};
   AssignValue('@ID@prefix@' . $ctr => $prefix, 'global') if $prefix;
-  $prefix = LookupValue('@ID@prefix@' . $ctr) unless $prefix;
+  $prefix = LookupValue('@ID@prefix@' . $ctr) || CleanID($ctr) unless $prefix;
   if (defined $prefix) {
     if (my $idwithin = $options{idwithin} || $within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
@@ -916,22 +932,33 @@ sub DefConditionalI {
     my $name = $1;
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
-      $test = sub { LookupValue('Boolean:' . $name); };
-      DefPrimitiveI(T_CS('\\' . $name . 'true'), undef, sub {
-          AssignValue('Boolean:' . $name => 1); });
-      DefPrimitiveI(T_CS('\\' . $name . 'false'), undef, sub {
-          AssignValue('Boolean:' . $name => 0); }); }
-    # For \ifcase, the parameter list better be a single Number !!
-###    $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
-###        is_conditional => 1, %options),
-        conditional_type => 'if', %options),
-      $options{scope}); }
+      DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
+      DefMacroI(T_CS('\\' . $name . 'false'), undef, Tokens(T_CS('\let'), $cs, T_CS('\iffalse')));
+      Let($cs, T_CS('\iffalse')); }
+    else {
+      # For \ifcase, the parameter list better be a single Number !!
+      $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
+          conditional_type => 'if', %options),
+        $options{scope}); }
+  }
   else {
     Error('misdefined', $cs, $STATE->getStomach,
       "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
+
+sub IfCondition {
+  my ($if, @args) = @_;
+  my $gullet = $STATE->getStomach->getGullet;
+  $if = coerceCS($if);
+  my ($defn, $test);
+  if (($defn = $STATE->lookupMeaning($if)) && (($$defn{conditional_type} || '') eq 'if')
+    && ($test = $defn->getTest)) {
+    return &$test($gullet, @args); }
+  else {
+    Error('expected', 'conditional', $gullet,
+      "Expected a conditional, got '" . ToString($if) . "'");
+    return; } }
 
 #======================================================================
 # Define a primitive control sequence.
@@ -1048,9 +1075,16 @@ sub flatten {
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
   mode         => 1, requireMath => 1, forbidMath      => 1, font           => 1,
-  reversion    => 1, properties  => 1, alias           => 1, nargs          => 1,
+  alias        => 1, reversion   => 1, sizer           => 1, properties     => 1,
+  nargs        => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
   captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1 };
+
+sub inferSizer {
+  my ($sizer, $reversion) = @_;
+  return (defined $sizer ? $sizer
+    : ((defined $reversion) && (!ref $reversion) && ($reversion =~ /^(?:#\w+)*$/)
+      ? $reversion : undef)); }
 
 sub DefConstructor {
   my ($proto, $replacement, %options) = @_;
@@ -1079,13 +1113,59 @@ sub DefConstructorI {
       afterConstruct  => flatten($options{afterConstruct}),
       nargs           => $options{nargs},
       alias           => $options{alias},
-      reversion       => ($options{reversion} && !ref $options{reversion}
-        ? Tokenize($options{reversion}) : $options{reversion}),
-      captureBody => $options{captureBody},
-      properties => $options{properties} || {}),
+      reversion       => $options{reversion},
+      sizer           => inferSizer($options{sizer}, $options{reversion}),
+      captureBody     => $options{captureBody},
+      properties      => $options{properties} || {}),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
+
+#======================================================================
+# Support for XMDual
+
+# Perhaps it would be better to use a label(-like) indirection here,
+# so all ID's can stay in the desired format?
+sub getXMArgID {
+  StepCounter('@XMARG');
+  DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
+    scope => 'global');
+  return Expand(T_CS('\the@XMARG@ID')); }
+
+# Given a list of Tokens (to be expanded into mathematical objects)
+# return two lists:
+#   (1) The Tokens' wrapped in an XMAarg, with an ID added
+#   (2) a corresponding list of Tokens creating XMRef's to those IDs
+sub dualize_arglist {
+  my (@args) = @_;
+  my (@cargs, @pargs);
+  foreach my $arg (@args) {
+    if ((defined $arg) && $arg->unlist) {    # defined and non-empty args get an ID.
+      my $id = getXMArgID();
+      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
+      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); }
+    else {
+      push(@cargs, $arg);
+      push(@pargs, $arg); } }
+  return ([@cargs], [@pargs]); }
+# Quick reversal!
+#  ( [@pargs],[@cargs] ); }
+
+# Given a list of XML nodes (either libxml nodes, or array representations)
+# ensure each has an ID, and return a list of XMRef's to those nodes.
+sub createXMRefs {
+  my ($document, @args) = @_;
+  my @refs = ();
+  foreach my $arg (@args) {
+    my $id;
+    if (ref $arg eq 'ARRAY') {
+      if (!($id = $$arg[1]{'xml:id'})) {
+        $$arg[1]{'xml:id'} = $id = getXMArgID(); } }
+    elsif (ref $arg eq 'XML::LibXML::Element') {
+      if (!($id = $arg->getAttribute('xml:id'))) {
+        $document->setAttribute($arg, 'xml:id' => ($id = getXMArgID())); } }
+    push(@refs, ['ltx:XMRef', { 'idref' => $id }]) if $id; }
+  return @refs; }
 
 # DefMath Define a Mathematical symbol or function.
 # There are two sets of cases:
@@ -1102,7 +1182,7 @@ sub DefConstructorI {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 my $math_options = {    # [CONSTANT]
-  name => 1, meaning => 1, omcd => 1, reversion => 1, alias => 1,
+  name => 1, meaning => 1, omcd => 1, reversion => 1, sizer => 1, alias => 1,
   role => 1, operator_role => 1, reorder => 1, dual => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
@@ -1111,24 +1191,6 @@ my $math_options = {    # [CONSTANT]
 my $simpletoken_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
-
-sub dualize_arglist {
-  my (@args) = @_;
-  my (@cargs, @pargs);
-  foreach my $arg (@args) {
-    if ((defined $arg) && $arg->unlist) {    # defined and non-empty args get an ID.
-      StepCounter('@XMARG');
-      DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
-        scope => 'global');
-      my $id = Expand(T_CS('\the@XMARG@ID'));
-      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); }
-    else {
-      push(@cargs, $arg);
-      push(@pargs, $arg); } }
-  return ([@cargs], [@pargs]); }
-# Quick reversal!
-#  ( [@pargs],[@cargs] ); }
 
 sub DefMath {
   my ($proto, $presentation, %options) = @_;
@@ -1155,8 +1217,6 @@ sub DefMathI {
     if ($nargs == 0) && !defined $options{role};
   $options{operator_role} = 'UNKNOWN'
     if ($nargs > 0) && !defined $options{operator_role};
-  $options{reversion} = Tokenize($options{reversion})
-    if $options{reversion} && !ref $options{reversion};
   # Store some data for introspection
   defmath_introspective($cs, $paramlist, $presentation, %options);
 
@@ -1200,16 +1260,18 @@ sub defmath_rewrite {
   # No, do NOT make mathactive; screws up things like babel french, or... ?
   # EXPERIMENT: store XMTok attributes for if this char ends up a Math Token.
   # But only some DefMath options make sense!
-  my $rw_options = { name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1 }; # (well, mathstyle?)
+  my $rw_options = { name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
   CheckOptions("DefMath reimplemented as DefRewrite ($csname)", $rw_options, %options);
   AssignValue('math_token_attributes_' . $csname => {%options}, 'global');
   return; }
 
 sub defmath_common_constructor_options {
   my ($cs, $presentation, %options) = @_;
+  my $sizer = inferSizer($options{sizer}, $options{reversion});
   return (
     alias => $options{alias} || $cs->getString,
     (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
+    (defined $sizer ? (sizer => $sizer) : ()),
     beforeDigest => flatten(sub { requireMath($cs->getString); },
       ($options{nogroup} ? () : (sub { $_[0]->bgroup; })),
       ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1321,7 +1383,12 @@ sub defmath_cons {
           . " scriptpos='#operator_scriptpos' stretchy='#operator_stretchy' $end_tok"
           . join('', map { "<ltx:XMArg>#$_</ltx:XMArg>" } 1 .. $nargs)
           . "</ltx:XMApp>"),
-      defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
+      defmath_common_constructor_options($cs, $presentation,
+        sizer => sub {
+          #           my $font = $_[1]->getFont || LaTeXML::Common::Font->mathDefault;
+          my $font = LaTeXML::Common::Font->mathDefault;
+          $font->computeStringSize($presentation); },
+        %options)), $options{scope});
   return; }
 
 #======================================================================
@@ -1333,7 +1400,7 @@ my $environment_options = {    # [CONSTANT]
   beforeDigest     => 1, afterDigest     => 1,
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
   beforeConstruct  => 1, afterConstruct  => 1,
-  reversion        => 1, scope           => 1, locked => 1 };
+  reversion        => 1, sizer           => 1, scope => 1, locked => 1 };
 
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
@@ -1354,6 +1421,7 @@ sub DefEnvironmentI {
   $name = ToString($name) if ref $name;
 ##  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
+  my $sizer = inferSizer($options{sizer}, $options{reversion});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
@@ -1373,7 +1441,7 @@ sub DefEnvironmentI {
       captureBody    => 1,
       properties => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-
+      (defined $sizer ? (sizer => $sizer) : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
@@ -1406,6 +1474,7 @@ sub DefEnvironmentI {
       captureBody => T_CS("\\end$name"),          # Required to capture!!
       properties => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
+      (defined $sizer ? (sizer => $sizer) : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end$name"), "", "",
@@ -1773,13 +1842,22 @@ sub ProcessOptions {
   my $name = LookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
   my $ext  = LookupDefinition(T_CS('\@currext'))  && ToString(Digest(T_CS('\@currext')));
   my @declaredoptions = @{ LookupValue('@declaredoptions') };
-  my @curroptions = @{ (defined($name) && defined($ext) && LookupValue('opt@' . $name . '.' . $ext)) || [] };
+  my @curroptions = @{ (defined($name) && defined($ext)
+        && LookupValue('opt@' . $name . '.' . $ext)) || [] };
+  my @classoptions = @{ LookupValue('class_options') || [] };
+  if ($ext eq 'cls') {
+    @classoptions = @curroptions; @curroptions = (); }
   #  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
 
   my $defaultcs = T_CS('\default@ds');
   # Execute options in declared order (unless \ProcessOptions*)
 
-  if ($options{inorder}) {    # Execute options in order (eg. \ProcessOptions*)
+  if ($options{inorder}) {    # Execute options in the order passed in (eg. \ProcessOptions*)
+    foreach my $option (@classoptions) {    # process global options, but no error
+      DefMacroI('\CurrentOption', undef, $option);
+      my $cs = T_CS('\ds@' . $option);
+      if (LookupDefinition($cs)) {
+        Digest($cs); } }
     foreach my $option (@curroptions) {
       DefMacroI('\CurrentOption', undef, $option);
       my $cs = T_CS('\ds@' . $option);
@@ -1787,9 +1865,9 @@ sub ProcessOptions {
         Digest($cs); }
       elsif ($defaultcs) {
         Digest($defaultcs); } } }
-  else {                      # Execute options in declared order (eg. \ProcessOptions)
+  else {                                    # Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions) {
-      if (grep { $option eq $_ } @curroptions) {
+      if (grep { $option eq $_ } @curroptions, @classoptions) {
         @curroptions = grep { $option ne $_ } @curroptions;    # Remove it, since it's been handled.
         DefMacroI('\CurrentOption', undef, $option);
         Digest(T_CS('\ds@' . $option)); } }
@@ -1950,6 +2028,7 @@ sub LoadClass {
   my ($class, %options) = @_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
+  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => 1, handleoptions => 1, noerror => 1,
       %options)) {
@@ -2094,7 +2173,7 @@ sub DefColor {
   my ($name, $color, $scope) = @_;
   #print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
   my ($model, @spec) = @$color;
-  $scope = 'global' if LookupValue('Boolean:globalcolors');
+  $scope = 'global' if LookupDefinition(T_CS('\ifglobalcolors')) && IfCondition(T_CS('\ifglobalcolors'));
   AssignValue('color_' . $name => $color, $scope);
   # We could store these pieces separately,or in a list for above,
   # so that extract could use them more reasonably?
@@ -2238,8 +2317,10 @@ to customize or extend LaTeXML. The LaTeXML implementation of some package
 might look something like the following, but see the
 installed C<LaTeXML/Package> directory for realistic examples.
 
-  use LaTeXML::Package;
-  use strict;
+  package LaTeXML::Package::pool;  # to put new subs & variables in common pool
+  use LaTeXML::Package;            # to load these definitions
+  use strict;                      # good style
+  use warnings;
   #
   # Load "anotherpackage"
   RequirePackage('anotherpackage');
@@ -2276,44 +2357,58 @@ installed C<LaTeXML/Package> directory for realistic examples.
 
 =head1 DESCRIPTION
 
-To provide a LaTeXML-specific version of a LaTeX package C<mypackage.sty>
-or class C<myclass.cls> (so that eg. C<\usepackage{mypackage}> works),
-you create the file C<mypackage.sty.ltxml> or C<myclass.cls.ltxml>
-and save it in the searchpath (current directory, or one of the directories
-given to the --path option, or possibly added to the variable SEARCHPATHS).
-Similarly, to provide document-specific customization for, say, C<mydoc.tex>,
-you would create the file C<mydoc.latexml> (typically in the same directory).
-However,  in the first cases, C<mypackage.sty.ltxml> are loaded I<instead> of
-C<mypackage.sty>, while a file like C<mydoc.latexml> is loaded in I<addition> to
-C<mydoc.tex>.
-In either case, you'll C<use LaTeXML::Package;> to import the various declarations
-and defining forms that allow you to specify what should be done with various
-control sequences, whether there is special treatment of certain document elements,
-and so forth.  Using C<LaTeXML::Package> also imports the functions and variables
-defined in L<LaTeXML::Global>, so see that documentation as well.
+This module provides a large set of utilities and declarations that are useful
+for writing `bindings': LaTeXML-specific implementations of a set of control
+sequences such as would be defined in a LaTeX style or class file. They are also
+useful for controlling and customization of LaTeXML's processing.
+See the L</"See also"> section, below, for additional lower-level modules imported & re-exported.
 
-Since LaTeXML attempts to mimic TeX, a familiarity with TeX's processing
-model is also helpful.  Additionally, it is often useful, when implementing
-non-trivial behaviour, to think TeX-like.
+To a limited extent (and currently only when explicitly enabled), LaTeXML can process
+the raw TeX code found in style files.  However, to preserve document structure
+and semantics, as well as for efficiency, it is usually necessary to supply a
+LaTeXML-specific `binding' for style and class files. For example, a binding
+C<mypackage.sty.ltxml> would encode LaTeXML-specific implementations of
+all the control sequences in C<mypackage.sty> so that C<\usepackage{mypackage}> would work.
+Similarly for C<myclass.cls.ltxml>.  Additionally, document-specific bindings can
+be supplied: before processing a TeX source file, eg C<mydoc.tex>, LaTeXML
+will automatically include the definitions and settings in C<mydoc.latexml>.
+These C<.ltxml> and C<.latexml> files should be placed LaTeXML's searchpaths, where will
+find them: either in the current directory or in a directory given to the --path option,
+or possibly added to the variable SEARCHPATHS).
 
-Many of the following forms take code references as arguments or options.
-That is, either a reference to a defined sub, C<\&somesub>, or an
-anonymous function S<sub { ... }>.  To document these cases, and the
+Since LaTeXML mimics TeX, a familiarity with TeX's processing model is critical.
+LaTeXML models: catcodes and tokens
+(See L<LaTeXML::Core::Token>,  L<LaTeXML::Core::Tokens>) which are extracted
+from the plain source text characters by the L<LaTeXML::Core::Mouth>;
+L</Macros>, which are expanded within the L<LaTeXML::Core::Gullet>;
+and L</Primitives>, which are digested within the L<LaTeXML::Core::Stomach>
+to produce L<LaTeXML::Core::Box>, L<LaTeXML::Core::List>.
+A key additional feature is the L</Constructors>:
+when digested they generate a L<LaTeXML::Core::Whatsit> which, upon absorbtion by
+L<LaTeXML::Core::Document>, inserts text or XML fragments in the final document tree.
+
+
+I<Notation:> Many of the following forms take code references as arguments or options.
+That is, either a reference to a defined sub, eg. C<\&somesub>, or an
+anonymous function C<sub { ... }>.  To document these cases, and the
 arguments that are passed in each case, we'll use a notation like
-S<CODE($token,..)>.
+C<I<code>($stomach,...)>.
 
 =head2 Control Sequences
 
 Many of the following forms define the behaviour of control sequences.
-In TeX you'll typically only define macros. In LaTeXML, we're
-effectively redefining TeX itself,  so we define macros as well as primitives,
-registers, constructors and environments.  These define the behaviour
-of these commands when processed during the various phases of LaTeX's
-immitation of TeX's digestive tract.
+While in TeX you'll typically only define macros, LaTeXML is effectively redefining TeX itself,
+so we define L</Macros> as well as L</Primitives>, L</Registers>,
+L</Constructors> and L</Environments>.
+These define the behaviour of these control sequences when processed during the various
+phases of LaTeX's imitation of TeX's digestive tract.
 
-The first argument to each of these defining forms (C<DefMacro>, C<DefPrimive>, etc)
-is a I<prototype> consisting of the control sequence being defined along with
-the specification of parameters required by the control sequence.
+=head3 Prototypes
+
+LaTeXML uses a more convienient method of specifying parameter patterns for
+control sequences. The first argument to each of these defining forms
+(C<DefMacro>, C<DefPrimive>, etc) is a I<prototype> consisting of the control
+sequence being defined along with the specification of parameters required by the control sequence.
 Each parameter describes how to parse tokens following the control sequence into
 arguments or how to delimit them.  To simplify coding and capture common idioms
 in TeX/LaTeX programming, latexml's parameter specifications are more expressive
@@ -2322,71 +2417,80 @@ familiar TeX or LaTeX control sequences are:
 
    DefConstructor('\usepackage[]{}',...
    DefPrimitive('\multiply Variable SkipKeyword:by Number',..
-   DefPrimitive('\newcommand OptionalMatch:* {Token}[]{}', ...
-
-=head3 Control Sequence Parameters
-
-The general syntax for parameter for a control sequence is something like
-
-  OpenDelim? Modifier? Type (: value (| value)* )? CloseDelim?
-
-The enclosing delimiters, if any, are either {} or [], affect the way the
-argument is delimited.  With {}, a regular TeX argument (token or sequence
-balanced by braces) is read before parsing according to the type (if needed).
-With [], a LaTeX optional argument is read, delimited by (non-nested) square brackets.
-
-The modifier can be either C<Optional> or C<Skip>, allowing the argument to
-be optional. For C<Skip>, no argument is contributed to the argument list.
-
-The shorthands {} and [] default the type to C<Plain> and reads a normal
-TeX argument or LaTeX default argument with no special parsing.
+   DefPrimitive('\newcommand OptionalMatch:* DefToken[]{}', ...
 
 The general syntax for parameter specification is
 
- {}     reads a regular TeX argument, a sequence of
-        tokens delimited by braces, or a single token.
- {spec} reads a regular TeX argument, then reparses it
-        to match the given spec. The spec is parsed
-        recursively, but usually should correspond to
-        a single argument.
- [spec] reads an LaTeX-style optional argument. If the
-        spec is of the form Default:stuff, then stuff
-        would be the default value.
- Type   Reads an argument of the given type, where either
-        Type has been declared, or there exists a ReadType
-        function accessible from LaTeXML::Package::Pool.
- Type:value, or Type:value1:value2...    These forms
-        pass additional Tokens to the reader function.
- OptionalType  Similar to Type, but it is not considered
-        an error if the reader returns undef.
- SkipType  Similar to OptionalType, but the value returned
-        from the reader is ignored, and does not occupy a
-        position in the arguments list.
+=over 4
 
-The predefined argument types are as follows.
+=item C<{I<spec>}>
+
+reads a regular TeX argument.
+I<spec> can be omitted (ie. C<{}>).
+Otherwise I<spec> is itself a parameter specification and
+the argument is reparsed to accordingly.
+(C<{}> is a shorthand for C<Plain>.)
+
+=item C<[I<spec>]>
+
+reads an LaTeX-style optional argument.
+I<spec> can be omitted (ie. C<{}>).
+Otherwise, if I<spec> is of the form Default:stuff, then stuff
+would be the default value.
+Otherwise I<spec> is itself a parameter specification
+and the argument, if supplied, is reparsed according to that specification.
+(C<[]> is a shorthand for C<Optional>.)
+
+=item I<Type>
+
+Reads an argument of the given type, where either
+Type has been declared, or there exists a ReadType
+function accessible from LaTeXML::Package::Pool.
+See the available types, below.
+
+=item C<I<Type>:I<value> | I<Type>:I<value1>:I<value2>...>
+
+These forms invoke the parser for I<Type> but
+pass additional Tokens to the reader function.
+Typically this would supply defaults or parameters to a match.
+
+=item C<OptionalI<Type>>
+
+Similar to I<Type>, but it is not considered
+an error if the reader returns undef.
+
+=item C<SkipI<Type>>
+
+Similar to C<Optional>I<Type>, but the value returned
+from the reader is ignored, and does not occupy a
+position in the arguments list.
+
+=back
+
+The predefined argument I<Type>s are as follows.
 
 =over 4
 
-=item C<Plain>, C<Semiverbatim>
+=item C<Plain, Semiverbatim>
 
 X<Plain>X<Semiverbatim>
 Reads a standard TeX argument being either the next token, or if the
 next token is an {, the balanced token list.  In the case of C<Semiverbatim>,
 many catcodes are disabled, which is handy for URL's, labels and similar.
 
-=item C<Token>, C<XToken>
+=item C<Token, XToken>
 
 X<Token>X<XToken>
 Read a single TeX Token.  For C<XToken>, if the next token is expandable,
 it is repeatedly expanded until an unexpandable token remains, which is returned.
 
-=item C<Number>, C<Dimension>, C<Glue> or C<MuGlue>
+=item C<Number, Dimension, Glue | MuGlue>
 
 X<Number>X<Dimension>X<Glue>X<MuGlue>
 Read an Object corresponding to Number, Dimension, Glue or MuGlue,
 using TeX's rules for parsing these objects.
 
-=item C<Until:>I<match>, C<XUntil:>I<match>
+=item C<Until:I<match> | XUntil:>I<match>>
 
 X<Until>X<XUntil>
 Reads tokens until a match to the tokens I<match> is found, returning
@@ -2399,7 +2503,7 @@ X<UntilBrace>
 Reads tokens until the next open brace C<{>.  
 This corresponds to the peculiar TeX construct C<\def\foo#{...>.
 
-=item C<Match:>I<match(|match)*>, C<Keyword:>I<match(|match)*>
+=item C<Match:I<match(|match)*> | Keyword:>I<match(|match)*>>
 
 X<Match>X<Keyword>
 Reads tokens expecting a match to one of the token lists I<match>,
@@ -2417,7 +2521,7 @@ Read tokens until a closing }, but respecting nested {} pairs.
 X<BalancedParen>
 Read a parenthesis delimited tokens, but does I<not> balance any nested parentheses.
 
-=item C<Undigested>, C<Digested>, C<DigestUntil:>I<match>
+=item C<Undigested, Digested, DigestUntil:I<match>>
 
 X<Undigested>X<Digested>
 These types alter the usual sequence of tokenization and digestion in separate stages (like TeX).
@@ -2433,53 +2537,66 @@ Reads a token, expanding if necessary, and expects a control sequence naming
 a writable register.  If such is found, it returns an array of the corresponding
 definition object, and any arguments required by that definition.
 
-=item C<SkipSpaces>,C<Skip1Space>
+=item C<SkipSpaces, Skip1Space>
 
 X<SkipSpaces>X<Skip1Space>
 Skips one, or any number of, space tokens, if present, but contributes nothing to the argument list.
 
 =back
 
-=head3 Control of Scoping
+=head3 Common Options
+
+=over
+
+=item C<scope=E<gt>'local' | 'global' | I<scope>>
 
 Most defining commands accept an option to control how the definition is stored,
-C<< scope=>$scope >>, where C<$scope> can be c<'global'> for global definitions,
-C<'local'>, to be stored in the current stack frame, or a string naming a I<scope>.
-A scope saves a set of definitions and values that can be activated at a later time.
+for global or local definitions, or using a named I<scope>
+A named scope saves a set of definitions and values that can be activated at a later time.
 
 Particularly interesting forms of scope are those that get automatically activated
 upon changes of counter and label.  For example, definitions that have
-C<< scope=>'section:1.1' >>  will be activated when the section number is "1.1",
-and will be deactivated when the section ends.
+C<scope=E<gt>'section:1.1'>  will be activated when the section number is "1.1",
+and will be deactivated when that section ends.
+
+=item C<locked=E<gt>I<boolean>>
+
+This option controls whether this definition is locked from further
+changes in the TeX sources; this keeps local 'customizations' by an author
+from overriding important LaTeXML definitions and breaking the conversion.
+
+=back
 
 =head3 Macros
 
 =over 4
 
-=item C<< DefMacro($prototype,$string | $tokens | $code,%options); >>
+=item C<DefMacro(I<prototype>, I<expansion>, I<%options>);>
 
 X<DefMacro>
-Defines the macro expansion for C<$prototype>; a macro control sequence that is
-expanded during macro expansion time (in the  L<LaTeXML::Core::Gullet>).  If a C<$string> is supplied, it will be
-tokenized at definition time. Any macro arguments will be substituted for parameter
-indicators (eg #1) at expansion time; the result is used as the expansion of
-the control sequence. 
-
-If defined by C<$code>, the form is C<CODE($gullet,@args)> and it
-must return a list of L<LaTeXML::Core::Token>'s.
-
+Defines the macro expansion for I<prototype>; a macro control sequence that is
+expanded during macro expansion time in the  L<LaTeXML::Core::Gullet>.
+The I<expansion> should be one of I<tokens> | I<string> | I<code>($gullet,@args)>:
+a I<string> will be tokenized upon first usage.
+Any macro arguments will be substituted for parameter indicators (eg #1)
+in the I<tokens> or tokenized I<string> and the result is used as the expansion
+of the control sequence. If I<code> is used, it is called at expansion time
+and should return a list of tokens as its result.
 
 DefMacro options are
 
 =over 4
 
-=item scope=>$scope
+=item C<scope=E<gt>I<scope>>,
 
-See L</"Control of Scoping">.
+=item C<locked=E<gt>I<boolean>>
 
-=item locked=>boolean
+See L</"Common Options">.
 
-Whether this definition is locked out of changes in the TeX sources.
+=item C<mathactive=E<gt>I<boolean>>
+
+specifies a definition that will only be expanded in math mode;
+the control sequence must be a single character.
 
 =back
 
@@ -2488,13 +2605,13 @@ Examples:
   DefMacro('\thefootnote','\arabic{footnote}');
   DefMacro('\today',sub { ExplodeText(today()); });
 
-=item C<< DefMacroI($cs,$paramlist,$string | $tokens | $code,%options); >>
+=item C<DefMacroI(I<cs>, I<paramlist>, I<expansion>, I<%options>);>
 
 X<DefMacroI>
 Internal form of C<DefMacro> where the control sequence and parameter list
 have already been separated; useful for definitions from within code.
 Also, slightly more efficient for macros with no arguments (use C<undef> for
-C<$paramlist>), and useful for obscure cases like defining C<\begin{something*}>
+I<paramlist>), and useful for obscure cases like defining C<\begin{something*}>
 as a Macro.
 
 =back
@@ -2503,13 +2620,16 @@ as a Macro.
 
 =over 4
 
-=item C<< DefConditional($prototype,$test,%options); >>
+=item C<DefConditional(I<prototype>, I<test>, I<%options>);>
 
 X<DefConditional>
-Defines a conditional for C<$prototype>; a control sequence that is
+Defines a conditional for I<prototype>; a control sequence that is
 processed during macro expansion time (in the  L<LaTeXML::Core::Gullet>).
 A conditional corresponds to a TeX C<\if>.
-It evaluates C<$test>, which should be CODE that is applied to the arguments, if any.
+If the I<test> is C<undef>, a C<\newif> type of conditional is defined,
+which is controlled with control sequences like C<\footrue> and C<\foofalse>.
+Otherwise the I<test> should be C<I<code>($gullet,@args)> (with the control sequence's arguments)
+that is called at expand time to determine the condition.
 Depending on whether the result of that evaluation returns a true or false value
 (in the usual Perl sense), the result of the expansion is either the
 first or else code following, in the usual TeX sense.
@@ -2518,13 +2638,15 @@ DefConditional options are
 
 =over 4
 
-=item scope=>$scope
+=item C<scope=E<gt>I<scope>>,
 
-See L</"Control of Scoping">.
+=item C<locked=E<gt>I<boolean>>
 
-=item locked=>boolean
+See L</"Common Options">.
 
-Whether this definition is locked out of changes in the TeX sources.
+=item C<skipper=E<gt>I<code>($gullet)>
+
+This option is I<only> used to define C<\ifcase>.
 
 =back
 
@@ -2533,13 +2655,20 @@ Example:
   DefConditional('\ifmmode',sub {
      LookupValue('IN_MATH'); });
 
-=item C<< DefConditionalI($cs,$paramlist,$test,%options); >>
+=item C<DefConditionalI(I<cs>, I<paramlist>, I<test>, I<%options>);>
 
 X<DefConditionalI>
 Internal form of C<DefConditional> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 Also, slightly more efficient for conditinal with no arguments (use C<undef> for
-C<$paramlist>).
+C<paramlist>).
+
+=item C<IfCondition(I<$ifcs>,I<@args>)>
+
+X<IfCondition>
+C<IfCondition> allows you to test a conditional from within perl. Thus something like
+C<if(IfCondition('\ifmmode')){ domath } else { dotext }> might be equivalent to
+TeX's C<\ifmmode domath \else dotext \fi>.
 
 =back
 
@@ -2547,73 +2676,76 @@ C<$paramlist>).
 
 =over 4
 
-=item C<< DefPrimitive($prototype,$replacement,%options); >>
+=item C<DefPrimitive(I<prototype>, I<replacement>, I<%options>);>
 
 X<DefPrimitive>
-Define a primitive control sequence; a primitive is processed during
+Defines a primitive control sequence; a primitive is processed during
 digestion (in the  L<LaTeXML::Core::Stomach>), after macro expansion but before Construction time.
 Primitive control sequences generate Boxes or Lists, generally
 containing basic Unicode content, rather than structured XML.
 Primitive control sequences are also executed for side effect during digestion,
 effecting changes to the L<LaTeXML::Core::State>.
 
-The C<$replacement> is either a string, used as the Boxes text content
-(the box gets the current font), or C<CODE($stomach,@args)>, which is
-invoked at digestion time, probably for side-effect, but returning Boxes or Lists.
-C<$replacement> may also be undef, which contributes nothing to the document,
+The I<replacement> can be a string used as the text content of a Box to be
+created (using the current font).
+Alternatively I<replacement> can be C<I<code>($stomach,@args)>
+(with the control sequence's arguments)
+which is invoked at digestion time, probably for side-effect,
+but returning Boxes or Lists or nothing.
+I<replacement> may also be undef, which contributes nothing to the document,
 but does record the TeX code that created it.
 
 DefPrimitive options are
 
 =over 4
 
-=item  mode=>(text|display_math|inline_math)
+=item C<scope=E<gt>I<scope>>,
+
+=item C<locked=E<gt>I<boolean>>
+
+See L</"Common Options">.
+
+=item C<mode=E<gt> ('text' | 'display_math' | 'inline_math')>
 
 Changes to this mode during digestion.
 
-=item  bounded=>boolean
+=item C<font=E<gt>{I<%fontspec>}>
 
-If true, TeX grouping (ie. C<{}>) is enforced around this invocation.
-
-=item  requireMath=>boolean,
-
-=item  forbidMath=>boolean
-
-These specify whether the given constructor can only appear,
-or cannot appear, in math mode.
-
-=item  font=>{fontspec...}
-
-Specifies the font to use (see L</"MergeFont(%style);">).
+Specifies the font to use (see L</"Fonts">).
 If the font change is to only apply to material generated within this command,
 you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
 as for a font switching command.
 
-=item  beforeDigest=>CODE($stomach)
+=item C<bounded=E<gt>I<boolean>>
 
-This option supplies a Daemon to be executed during digestion 
-just before the main part of the primitive is executed.
-The CODE should either return nothing (return;) or a list of digested items (Box's,List,Whatsit).
+If true, TeX grouping (ie. C<{}>) is enforced around this invocation.
+
+=item C<requireMath=E<gt>I<boolean>>,
+
+=item C<forbidMath=E<gt>I<boolean>>
+
+specifies whether the given constructor can I<only> appear,
+or I<cannot> appear, in math mode.
+
+=item C<beforeDigest=E<gt>I<code>($stomach)>
+
+supplies a hook to execute during digestion 
+just before the main part of the primitive is executed
+(and before any arguments have been read).
+The I<code> should either return nothing (return;)
+or a list of digested items (Box's,List,Whatsit).
 It can thus change the State and/or add to the digested output.
 
-=item  afterDigest=>CODE($stomach)
+=item C<afterDigest=E<gt>I<code>($stomach)>
 
-This option supplies a Daemon to be executed during digestion
+supplies a hook to execute during digestion
 just after the main part of the primitive ie executed.
 it should either return nothing (return;) or digested items.
 It can thus change the State and/or add to the digested output.
 
-=item  scope=>$scope
+=item C<isPrefix=E<gt>I<boolean>>
 
-See L</"Control of Scoping">.
-
-=item locked=>boolean
-
-Whether this definition is locked out of changes in the TeX sources.
-
-=item C<< isPrefix=>1 >>
-
-Indicates whether this is a prefix type of command;
+indicates whether this is a prefix type of command;
 This is only used for the special TeX assignment prefixes, like C<\global>.
 
 =back
@@ -2622,17 +2754,23 @@ Example:
 
    DefPrimitive('\begingroup',sub { $_[0]->begingroup; });
 
-=item C<< DefPrimitiveI($cs,$paramlist,CODE($stomach,@args),%options); >>
+=item C<DefPrimitiveI(I<cs>, I<paramlist>, I<code>($stomach,@args), I<%options>);>
 
 X<DefPrimitiveI>
 Internal form of C<DefPrimitive> where the control sequence and parameter list
 have already been separated; useful for definitions from within code.
 
-=item C<< DefRegister($prototype,$value,%options); >>
+=back
+
+=head3 Registers
+
+=over
+
+=item C<DefRegister(I<prototype>, I<value>, I<%options>);>
 
 X<DefRegister>
-Defines a register with the given initial value (a Number, Dimension, Glue, MuGlue or Tokens
---- I haven't handled Box's yet).  Usually, the C<$prototype> is just the control sequence,
+Defines a register with I<value> as the initial value (a Number, Dimension, Glue, MuGlue or Tokens
+--- I haven't handled Box's yet).  Usually, the I<prototype> is just the control sequence,
 but registers are also handled by prototypes like C<\count{Number}>. C<DefRegister> arranges
 that the register value can be accessed when a numeric, dimension, ... value is being read,
 and also defines the control sequence for assignment.
@@ -2641,15 +2779,15 @@ Options are
 
 =over 4
 
-=item C<readonly>
+=item C<readonly=E<gt>I<boolean>>
 
 specifies if it is not allowed to change this value.
 
-=item C<getter>=>CODE(@args)
+=item C<getter=E<gt>I<code>(@args)>,
 
-=item C<setter>=>CODE($value,@args)
+=item C<setter=E<gt>I<code>($value,@args)>
 
-By default the value is stored in the State's Value table under a name concatenating the 
+By default I<value> is stored in the State's Value table under a name concatenating the 
 control sequence and argument values.  These options allow other means of fetching and
 storing the value.
 
@@ -2659,7 +2797,7 @@ Example:
 
   DefRegister('\pretolerance',Number(100));
 
-=item C<< DefRegisterI($cs,$paramlist,$value,%options); >>
+=item C<DefRegisterI(I<cs>, I<paramlist>, I<value>, I<%options>);>
 
 X<DefRegisterI>
 Internal form of C<DefRegister> where the control sequence and parameter list
@@ -2671,7 +2809,7 @@ have already been parsed; useful for definitions from within code.
 
 =over 4
 
-=item C<< DefConstructor($prototype,$xmlpattern | $code,%options); >>
+=item C<DefConstructor(I<prototype>, I<$replacement>, I<%options>);>
 
 X<DefConstructor>
 The Constructor is where LaTeXML really starts getting interesting;
@@ -2679,31 +2817,31 @@ invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
 will be read and digested, creating a L<LaTeXML::Core::Whatsit> to represent the object. During
 absorbtion by the L<LaTeXML::Core::Document>, the C<Whatsit> will generate the XML fragment according
-to the replacement C<$xmlpattern>, or by executing C<CODE>.
+to I<replacement>. The I<replacement> can be C<I<code>($document,@args,%properties)>
+which is called during document absorbtion to create the appropriate XML
+(See the methods of L<LaTeXML::Core::Document>).
 
-The C<$xmlpattern> is simply a bit of XML as a string with certain substitutions to be made.
-The substitutions are of the following forms:
-
-If code is supplied,  the form is C<CODE($document,@args,%properties)>
+More conveniently, I<replacement> can be an pattern: simply a bit of XML as a string
+with certain substitutions to be made. The substitutions are of the following forms:
 
 =over 4
 
-=item  #1, #2 ... #name
+=item C<#1, #2 ... #name>
 
 These are replaced by the corresponding argument (for #1) or property (for #name)
 stored with the Whatsit. Each are turned into a string when it appears as
 in an attribute position, or recursively processed when it appears as content.
 
-=item C<&function(@args)>
+=item C<&I<function>(@args)>
 
 Another form of substituted value is prefixed with C<&> which invokes a function.
 For example, C< &func(#1) > would invoke the function C<func> on the first argument
 to the control sequence; what it returns will be inserted into the document.
 
-=item C<?COND(pattern)>  or C<?COND(ifpattern)(elsepattern)>
+=item C<?I<test>(I<pattern>)>  or C<?I<test>(I<ifpattern>)(I<elsepattern>)>
 
-Patterns can be conditionallized using this form.  The C<COND> is any
-of the above expressions, considered true if the result is non-empty.
+Patterns can be conditionallized using this form.  The I<test> is any
+of the above expressions (eg. C<#1>), considered true if the result is non-empty.
 Thus C<< ?#1(<foo/>) >> would add the empty element C<foo> if the first argument
 were given.
 
@@ -2723,70 +2861,83 @@ DefConstructor options are
 
 =over 4
 
-=item  mode=>(text|display_math|inline_math)
+=item C<scope=E<gt>I<scope>>,
 
-Changes to this mode during digestion.
+=item C<locked=E<gt>I<boolean>>
 
-=item  bounded=>boolean
+See L</"Common Options">.
 
-If true, TeX grouping (ie. C<{}>) is enforced around this invocation.
+=item C<mode=E<gt>I<mode>>,
 
-=item  requireMath=>boolean,
+=item C<font=E<gt>{I<%fontspec>}>,
 
-=item  forbidMath=>boolean
+=item C<bounded=E<gt>I<boolean>>,
 
-These specify whether the given constructor can only appear,
-or cannot appear, in math mode.
+=item C<requireMath=E<gt>I<boolean>>,
 
-=item  font=>{fontspec...}
+=item C<forbidMath=E<gt>I<boolean>>
 
-Specifies the font to use (see L</"MergeFont(%style);">).
-If the font change is to only apply to material generated within this command,
-you would also use C<<bounded=>1>>; otherwise, the font will remain in effect afterwards
-as for a font switching command.
+These options are the same as for L</Primitives>
 
-=item  reversion=>$texstring or CODE($whatsit,#1,#2,...)
+=item C<reversion=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>
 
-Specifies the reversion of the invocation back into TeX tokens
+specifies the reversion of the invocation back into TeX tokens
 (if the default reversion is not appropriate).
-The $textstring string can include #1,#2...
-The CODE is called with the $whatsit and digested arguments
+The I<textstring> string can include C<#1>, C<#2>...
+The I<code> is called with the C<$whatsit> and digested arguments
 and must return a list of Token's.
 
-=item  properties=>{prop=>value,...} or CODE($stomach,#1,#2...)
+=item C<alias=E<gt>I<control_sequence>>
 
-This option supplies additional properties to be set on the
+provides a control sequence to be used in the C<reversion> instead of
+the one defined in the C<prototype>.  This is a convenient alternative for
+reversion when a 'public' command conditionally expands into
+an internal one, but the reversion should be for the public command.
+
+=item C<sizer=E<gt>I<string> | I<code>($whatsit)>
+
+specifies how to compute (approximate) the displayed size of the object,
+if that size is ever needed (typically needed for graphics generation).
+If a string is given, it should contain only a sequence of C<#1> or C<#name> to
+access arguments and properties of the Whatsit: the size is computed from these
+items layed out side-by-side.  If I<code> is given, it should return
+the three Dimensions (width, height and depth).  If neither is given,
+and the C<reversion> specification is of suitible format, it will be used for the sizer.
+
+=item C<properties=E<gt>{I<%properties>} | I<code>($stomach,#1,#2...)>
+
+supplies additional properties to be set on the
 generated Whatsit.  In the first form, the values can
 be of any type, but if a value is a code references, it takes
 the same args ($stomach,#1,#2,...) and should return the value;
 it is executed before creating the Whatsit.
 In the second form, the code should return a hash of properties.
 
-=item  beforeDigest=>CODE($stomach)
+=item C<beforeDigest=E<gt>I<code>($stomach)>
 
-This option supplies a Daemon to be executed during digestion
-just before the Whatsit is created.  The CODE should either
+supplies a hook to execute during digestion
+just before the Whatsit is created.  The I<code> should either
 return nothing (return;) or a list of digested items (Box's,List,Whatsit).
 It can thus change the State and/or add to the digested output.
 
-=item  afterDigest=>CODE($stomach,$whatsit)
+=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>
 
-This option supplies a Daemon to be executed during digestion
+supplies a hook to execute during digestion
 just after the Whatsit is created (and so the Whatsit already
 has its arguments and properties). It should either return
 nothing (return;) or digested items.  It can thus change the State,
 modify the Whatsit, and/or add to the digested output.
 
-=item  beforeConstruct=>CODE($document,$whatsit)
+=item C<beforeConstruct=E<gt>I<code>($document,$whatsit)>
 
-Supplies CODE to execute before constructing the XML
-(generated by $replacement).
+supplies a hook to execute before constructing the XML
+(generated by I<replacement>).
 
-=item  afterConstruct=>CODE($document,$whatsit)
+=item C<afterConstruct=E<gt>I<code>($document,$whatsit)>
 
-Supplies CODE to execute after constructing the XML.
+Supplies I<code> to execute after constructing the XML.
 
-=item  captureBody=>boolean or Token
+=item C<captureBody=E<gt>I<boolean> | I<Token>>
 
 if true, arbitrary following material will be accumulated into
 a `body' until the current grouping level is reverted,
@@ -2794,178 +2945,196 @@ or till the C<Token> is encountered if the option is a C<Token>.
 This body is available as the C<body> property of the Whatsit.
 This is used by environments and math.
 
-=item  alias=>$control_sequence
-
-Provides a control sequence to be used when reverting Whatsit's back to Tokens,
-in cases where it isn't the command used in the C<$prototype>.
-
-=item  nargs=>$nargs
+=item C<nargs=E<gt>I<nargs>>
 
 This gives a number of args for cases where it can't be infered directly
-from the C<$prototype> (eg. when more args are explictly read by Daemons).
-
-=item  scope=>$scope
-
-See L</"Control of Scoping">.
+from the I<prototype> (eg. when more args are explictly read by hooks).
 
 =back
 
-=item C<< DefConstructorI($cs,$paramlist,$xmlpattern | $code,%options); >>
+=item C<DefConstructorI(I<cs>, I<paramlist>, I<replacement>, I<%options>);>
 
 X<DefConstructorI>
 Internal form of C<DefConstructor> where the control sequence and parameter list
 have already been separated; useful for definitions from within code.
 
-=item C<< DefMath($prototype,$tex,%options); >>
+=item C<DefMath(I<prototype>, I<tex>, I<%options>);>
 
 X<DefMath>
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
 such as a symbol, function or operator application.  
 The options given can effectively create semantic macros that contribute to the eventual
 parsing of mathematical content.
-In particular, it generates an XMDual using the replacement $tex for the presentation.
+In particular, it generates an XMDual using the replacement I<tex> for the presentation.
 The content information is drawn from the name and options
 
-These C<DefConstructor> options also apply:
-
-  reversion, alias, beforeDigest, afterDigest,
-  beforeConstruct, afterConstruct and scope.
-
-Additionally, it accepts
+C<DefMath> accepts the options:
 
 =over 4
 
-=item  style=>astyle
+=item C<scope=E<gt>I<scope>>,
 
-adds a style attribute to the object.
+=item C<locked=E<gt>I<boolean>>
 
-=item  name=>aname
+See L</"Common Options">.
+
+=item C<font=E<gt>{I<%fontspec>}>,
+
+=item C<reversion=E<gt>I<reversion>>,
+
+=item C<alias=E<gt>I<cs>>,
+
+=item C<sizer=E<gt>I<sizer>>,
+
+=item C<properties=E<gt>I<properties>>,
+
+=item C<beforeDigest=E<gt>I<code>($stomach)>,
+
+=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>,
+
+These options are the same as for L</Constructors>
+
+=item C<name=E<gt>I<name>>
 
 gives a name attribute for the object
 
-=item  omcd=>cdname
+=item C<omcd=E<gt>I<cdname>>
 
 gives the OpenMath content dictionary that name is from.
 
-=item  role=>grammatical_role
+=item C<role=E<gt>I<grammatical_role>>
 
 adds a grammatical role attribute to the object; this specifies
 the grammatical role that the object plays in surrounding expressions.
 This direly needs documentation!
 
-=item  font=>{fontspec}
-
-Specifies the font to use (see L</"MergeFont(%style);">).
-
-=item mathstyle=(display|text|inline)
+=item C<mathstyle=E<gt>('display' | 'text' | 'inline')>
 
 Controls whether the this object will be presented in a specific
 mathstyle, or according to the current setting of C<mathstyle>.
 
-=item scriptpos=>(mid|post)
+=item C<scriptpos=E<gt>('mid' | 'post')>
 
 Controls the positioning of any sub and super-scripts relative to this object;
 whether they be stacked over or under it, or whether they will appear in the usual position.
 TeX.pool defines a function C<doScriptpos()> which is useful for operators
 like C<\sum> in that it sets to C<mid> position when in displaystyle, otherwise C<post>.
 
-=item stretchy=>boolean
+=item C<stretchy=E<gt>I<boolean>>
 
 Whether or not the object is stretchy when displayed.
 
-=item operator_role=>grammatical_role
+=item C<operator_role=E<gt>I<grammatical_role>>,
 
-=item operator_scriptpos=>boolean
+=item C<operator_scriptpos=E<gt>I<boolean>>,
 
-=item operator_stretchy=>boolean
+=item C<operator_stretchy=E<gt>I<boolean>>
 
 These three are similar to C<role>, C<scriptpos> and C<stretchy>, but are used in
 unusual cases.  These apply to the given attributes to the operator token
 in the content branch.
 
-=item  nogroup=>boolean
+=item C<nogroup=E<gt>I<boolean>>
 
 Normally, these commands are digested with an implicit grouping around them,
 localizing changes to fonts, etc; C<< noggroup=>1 >> inhibits this.
+
+=back
 
 Example:
 
   DefMath('\infty',"\x{221E}",
      role=>'ID', meaning=>'infinity');
 
-=back
-
-=item C<< DefMathI($cs,$paramlist,$tex,%options); >>
+=item C<DefMathI(I<cs>, I<paramlist>, I<tex>, I<%options>);>
 
 X<DefMathI>
 Internal form of C<DefMath> where the control sequence and parameter list
 have already been separated; useful for definitions from within code.
 
-=item C<< DefEnvironment($prototype,$replacement,%options); >>
+=back
+
+=head3 Environments
+
+=over
+
+=item C<DefEnvironment(I<prototype>, I<replacement>, I<%options>);>
 
 X<DefEnvironment>
-Defines an Environment that generates a specific XML fragment.  C<$replacement> is
+Defines an Environment that generates a specific XML fragment.  C<replacement> is
 of the same form as for DefConstructor, but will generally include reference to
 the C<#body> property. Upon encountering a C<\begin{env}>:  the mode is switched, if needed,
-else a new group is opened; then the environment name is noted; the beforeDigest daemon is run.
+else a new group is opened; then the environment name is noted; the beforeDigest hook is run.
 Then the Whatsit representing the begin command (but ultimately the whole environment) is created
-and the afterDigestBegin daemon is run.
+and the afterDigestBegin hook is run.
 Next, the body will be digested and collected until the balancing C<\end{env}>.   Then,
-any afterDigest daemon is run, the environment is ended, finally the mode is ended or
+any afterDigest hook is run, the environment is ended, finally the mode is ended or
 the group is closed.  The body and C<\end{env}> whatsit are added to the C<\begin{env}>'s whatsit
 as body and trailer, respectively.
 
-
-It shares options with C<DefConstructor>:
-
- mode, requireMath, forbidMath, properties, nargs,
- font, beforeDigest, afterDigest, beforeConstruct, 
- afterConstruct and scope.
-
-Additionally, C<afterDigestBegin> is effectively an C<afterDigest>
-for the C<\begin{env}> control sequence.
-
-Example:
-
-  DefConstructor('\emph{}',
-     "<ltx:emph>#1</ltx:emph", mode=>'text');
-
-DefEnvironment gives slightly different interpretation to some of
-C<DefConstructor>'s options and adds some new ones:
+C<DefEnvironment> takes the following options:
 
 =over 4
 
-=item  beforeDigest=>CODE($stomach)
+=item C<scope=E<gt>I<scope>>,
 
-This option is the same as for C<DefConstructor>,
+=item C<locked=E<gt>I<boolean>>
+
+See L</"Common Options">.
+
+=item C<mode=E<gt>I<mode>>,
+
+=item C<font=E<gt>{I<%fontspec>}>
+
+=item C<requireMath=E<gt>I<boolean>>,
+
+=item C<forbidMath=E<gt>I<boolean>>,
+
+These options are the same as for L</Primitives>
+
+=item C<reversion=E<gt>I<reversion>>,
+
+=item C<alias=E<gt>I<cs>>,
+
+=item C<sizer=E<gt>I<sizer>>,
+
+=item C<properties=E<gt>I<properties>>,
+
+=item C<nargs=E<gt>I<nargs>>
+
+These options are the same as for L</DefConstructor>
+
+=item C<beforeDigest=E<gt>I<code>($stomach)>
+
+This hook is similar to that for C<DefConstructor>,
 but it applies to the C<\begin{environment}> control sequence.
 
-=item  afterDigestBegin=>CODE($stomach,$whatsit)
+=item C<afterDigestBegin=E<gt>I<code>($stomach,$whatsit)>
 
-This option is the same as C<DefConstructor>'s C<afterDigest>
+This hook is similar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\begin{environment}> control sequence.
 The Whatsit is the one for the begining control sequence,
 but represents the environment as a whole.
 Note that although the arguments and properties are present in
-the Whatsit, the body of the environment is I<not>.
+the Whatsit, the body of the environment is I<not> yet available!
 
-=item  beforeDigestEnd=>CODE($stomach)
+=item C<beforeDigestEnd=E<gt>I<code>($stomach)>
 
-This option is the same as C<DefConstructor>'s C<beforeDigest>
+This hook is similar to C<DefConstructor>'s C<beforeDigest>
 but it applies to the C<\end{environment}> control sequence.
 
-=item  afterDigest=>CODE($stomach,$whatsit)
+=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>
 
-This option is the same as C<DefConstructor>'s C<afterDigest>
+This hook is simlar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\end{environment}> control sequence.
 Note, however that the Whatsit is only for the ending control sequence,
 I<not> the Whatsit for the environment as a whole.
 
-=item  afterDigestBody=>CODE($stomach,$whatsit)
+=item C<afterDigestBody=E<gt>I<code>($stomach,$whatsit)>
 
-This option supplies a Daemon to be executed during digestion
+This option supplies a hook to be executed during digestion
 after the ending control sequence has been digested (and all the 4
-other digestion Daemons have executed) and after
+other digestion hook have executed) and after
 the body of the environment has been obtained.
 The Whatsit is the (usefull) one representing the whole
 environment, and it now does have the body and trailer available,
@@ -2973,7 +3142,12 @@ stored as a properties.
 
 =back
 
-=item C<< DefEnvironmentI($name,$paramlist,$replacement,%options); >>
+Example:
+
+  DefConstructor('\emph{}',
+     "<ltx:emph>#1</ltx:emph", mode=>'text');
+
+=item C<DefEnvironmentI(I<name>, I<paramlist>, I<replacement>, I<%options>);>
 
 X<DefEnvironmentI>
 Internal form of C<DefEnvironment> where the control sequence and parameter list
@@ -2985,14 +3159,14 @@ have already been separated; useful for definitions from within code.
 
 =over 4
 
-=item C<< FindFile($name,%options); >>
+=item C<FindFile(I<name>, I<%options>);>
 
 X<FindFile>
-Find an appropriate file with the given C<$name> in the current directories
+Find an appropriate file with the given I<name> in the current directories
 in C<SEARCHPATHS>.
 If a file ending with C<.ltxml> is found, it will be preferred.
 
-Note that if the C<$name> starts with a recognized I<protocol>
+Note that if the C<name> starts with a recognized I<protocol>
 (currently one of C<(literal|http|https|ftp)>) followed by a colon,
 the name is returned, as is, and no search for files is carried out.
 
@@ -3000,24 +3174,24 @@ The options are:
 
 =over 4
 
-=item type=>type
+=item C<type=E<gt>I<type>>
 
 specifies the file type.  If not set, it will search for
-both C<$name.tex> and C<$name>.
+both C<I<name>.tex> and I<name>.
 
-=item noltxml=>1
+=item C<noltxml=E<gt>1>
 
-inhibits searching for a LaTeXML binding to use instead
-of the file itself (C<$name.$type.ltxml>)
+inhibits searching for a LaTeXML binding (C<I<name>.I<type>.ltxml>)
+to use instead of the file itself.
 
-=item notex=>1
+=item C<notex=E<gt>1>
 
 inhibits searching for raw tex version of the file.
 That is, it will I<only> search for the LaTeXML binding.
 
 =back
 
-=item C<< InputContent($request,%options); >>
+=item C<InputContent(I<request>, I<%options>);>
 
 X<InputContent>
 C<InputContent> is used for cases when the file (or data)
@@ -3042,22 +3216,22 @@ The only option to C<InputContent> is:
 
 =over 4
 
-=item noerror=>boolean
+=item C<noerror=E<gt>I<boolean>>
 
 Inhibits signalling an error if no appropriate file is found.
 
 =back
 
-=item C<< Input($request); >>
+=item C<Input(I<request>);>
 
 X<Input>
 C<Input> is analogous to LaTeX's C<\input>, and is used in
 cases where it isn't completely clear whether content or definitions
 is expected.  Once a file is found, the approach specified
-by L<InputContent> or L<InputDefinitions> is used, depending on
+by C<InputContent> or C<InputDefinitions> is used, depending on
 which type of file is found.
 
-=item C<< InputDefinitions($request,%options); >>
+=item C<InputDefinitions(I<request>, I<%options>);>
 
 X<InputDefinitions>
 C<InputDefinitions> is used for loading I<definitions>,
@@ -3067,28 +3241,27 @@ reading in raw TeX definitions or style files.
 It reads and processes the material completely before
 returning, even in the case of TeX definitions.
 This procedure optionally supports the conventions used
-for standard LaTeX packages and classes (see L<RequirePackage> and L<LoadClass>).
+for standard LaTeX packages and classes (see C<RequirePackage> and C<LoadClass>).
 
 Options for C<InputDefinitions> are:
 
 =over
 
-=item type=>$type
+=item C<type=E<gt>I<type>>
 
 the file type to search for.
 
-=item noltxml=>boolean
+=item C<noltxml=E<gt>I<boolean>>
 
 inhibits searching for a LaTeXML binding; only raw TeX files will be sought and loaded.
 
-=item notex=>boolean
+=item C<notex=E<gt>I<boolean>>
 
 inhibits searching for raw TeX files, only a LaTeXML binding will be sought and loaded.
 
-=item noerror=>boolean
+=item C<noerror=E<gt>I<boolean>>
 
 inhibits reporting an error if no appropriate file is found.
-
 
 =back
 
@@ -3097,24 +3270,24 @@ is supporting standard LaTeX package and class loading.
 
 =over
 
-=item withoptions=boolean
+=item C<withoptions=E<gt>I<boolean>>
 
 indicates whether to pass in any options from the calling class or package.
 
-=item handleoptions=boolean
+=item C<handleoptions=E<gt>I<boolean>>
 
 indicates whether options processing should be handled.
 
-=item options=>[...]
+=item C<options=E<gt>[...]>
 
-specifies a list of options to be passed
+specifies a list of options (in the 'package options' sense) to be passed
 (possibly in addition to any provided by the calling class or package).
 
-=item after
+=item C<after=E<gt>I<tokens> | I<code>($gullet)>
 
-provides code or tokens to be processed by a C<$name.$type-hook> macro.
+provides I<tokens> or I<code> to be processed by a C<I<name>.I<type>-hook> macro.
 
-=item as_class
+=item C<as_class=E<gt>I<boolean>>
 
 fishy option that indicates that this definitions file should
 be treated as if it were defining a class; typically shows up
@@ -3122,100 +3295,110 @@ in latex compatibility mode, or AMSTeX.
 
 =back
 
+A handy method to use most of the TeX distribution's raw TeX definitions for a package,
+but override only a few with LaTeXML bindings is by defining a binding file,
+say C<tikz.sty.ltxml>, to contain
+
+  InputDefinitions('tikz', type => 'sty', noltxml => 1);
+
+which would find and read in C<tizk.sty>, and then follow it by a couple of strategic
+LaTeXML definitions, C<DefMacro>, etc.
+
 =back
 
 =head2 Class and Packages
 
 =over
 
-=item C<< RequirePackage($package,%options); >>
+=item C<RequirePackage(I<package>, I<%options>);>
 
 X<RequirePackage>
-Finds and loads a package implementation (usually C<*.sty.ltxml>, unless C<raw> is specified)
-for the required C<$package>.  It returns the pathname of the loaded package.
+Finds and loads a package implementation (usually C<I<package>.sty.ltxml>,
+unless C<noltxml> is specified)for the requested I<package>.
+It returns the pathname of the loaded package.
 The options are:
 
 =over
 
-=item type=>type
+=item C<type=E<gt>I<type>>
 
 specifies the file type (default C<sty>.
 
-=item options=>[...]
+=item C<options=E<gt>[...]>
 
 specifies a list of package options.
 
-=item noltxml=>1
+=item C<noltxml=E<gt>I<boolean>>
 
-inhibits searching for the LaTeXML binding for the file (ie. C<$name.$type.ltxml>
+inhibits searching for the LaTeXML binding for the file (ie. C<I<name>.I<type>.ltxml>
 
-=item notex=>1
+=item C<notex=E<gt>1>
 
 inhibits searching for raw tex version of the file.
 That is, it will I<only> search for the LaTeXML binding.
 
 =back
 
-=item C<< LoadClass($class,%options); >>
+=item C<LoadClass(I<class>, I<%options>);>
 
 X<LoadClass>
-Finds and loads a class definition (usually C<*.cls.ltxml>).
+Finds and loads a class definition (usually C<I<class>.cls.ltxml>).
 It returns the pathname of the loaded class.
 The only option is
 
 =over
 
-=item options=>[...] 
+=item C<options=E<gt>[...]>
 
 specifies a list of class options.
 
 =back
 
-=item C<< LoadPool($pool,%options); >>
+=item C<LoadPool(I<pool>, I<%options>);>
 
 X<LoadPool>
-Loads a I<pool> file, one of the top-level definition files,
-such as TeX, LaTeX or AMSTeX.
+Loads a I<pool> file (usually C<I<pool>.pool.ltxml>),
+one of the top-level definition files, such as TeX, LaTeX or AMSTeX.
 It returns the pathname of the loaded file.
 
-=item C<< DeclareOption($option,$code); >>
+=item C<DeclareOption(I<option>, I<tokens> | I<string> | I<code>($stomach));>
 
 X<DeclareOption>
 Declares an option for the current package or class.
-The C<$code> can be a string or Tokens (which will be macro expanded),
-or can be a code reference which is treated as a primitive.
+The 2nd argument can be a I<string> (which will be tokenized and expanded)
+or I<tokens> (which will be macro expanded), to provide the value for the option,
+or it can be a code reference which is treated as a primitive for side-effect.
 
 If a package or class wants to accomodate options, it should start
 with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 
-=item C<< PassOptions($name,$ext,@options); >>
+=item C<PassOptions(I<name>, I<ext>, I<@options>); >>
 
 X<PassOptions>
-Causes the given C<@options> (strings) to be passed to the package
-(if C<$ext> is C<sty>) or class (if C<$ext> is C<cls>)
-named by C<$name>.
+Causes the given I<@options> (strings) to be passed to the package
+(if I<ext> is C<sty>) or class (if I<ext> is C<cls>)
+named by I<name>.
 
-=item C<< ProcessOptions(); >>
+=item C<ProcessOptions(I<%options>);>
 
 X<ProcessOptions>
 Processes the options that have been passed to the current package
-or class in a fashion similar to LaTeX.  If the keyword
-C<< inorder=>1 >> is given, the options are processed in the
+or class in a fashion similar to LaTeX.  The only option (to C<ProcessOptions>
+is C<inorder=E<gt>I<boolean>> indicating whehter the (package) options are processed in the
 order they were used, like C<ProcessOptions*>.
 
-=item C<< ExecuteOptions(@options); >>
+=item C<ExecuteOptions(I<@options>);>
 
 X<ExecuteOptions>
-Process the options given explicitly in C<@options>.
+Process the options given explicitly in I<@options>.
 
-=item C<< AtBeginDocument(@stuff); >>
+=item C<AtBeginDocument(I<@stuff>); >>
 
 X<AtBeginDocument>
-Arranges for C<@stuff> to be carried out after the preamble, at the beginning of the document.
-C<@stuff> should typically be macro-level stuff, but carried out for side effect;
+Arranges for I<@stuff> to be carried out after the preamble, at the beginning of the document.
+I<@stuff> should typically be macro-level stuff, but carried out for side effect;
 it should be tokens, tokens lists, strings (which will be tokenized),
-or a sub (which presumably contains code as would be in a package file, such as C<DefMacro>
-or similar.
+or C<I<code>($gullet)> which would yeild tokens to be expanded.
 
 This operation is useful for style files loaded with C<--preload> or document specific
 customization files (ie. ending with C<.latexml>); normally the contents would be executed
@@ -3223,27 +3406,41 @@ before LaTeX and other style files are loaded and thus can be overridden by them
 By deferring the evaluation to begin-document time, these contents can override those style files. 
 This is likely to only be meaningful for LaTeX documents.
 
+=item C<AtEndDocument(I<@stuff>)>
+
+Arranges for I<@stuff> to be carried out just before C<\\end{document}>.
+These tokens can be used for side effect, or any content they generate will appear as the
+last children of the document.
+
 =back
 
 =head2 Counters and IDs
 
 =over 4
 
-=item C<< NewCounter($ctr,$within,%options); >>
+=item C<NewCounter(I<ctr>, I<within>, I<%options>);>
 
 X<NewCounter>
 Defines a new counter, like LaTeX's \newcounter, but extended.
 It defines a counter that can be used to generate reference numbers,
-and defines \the$ctr, etc. It also defines an "uncounter" which
+and defines C<\theI<ctr>>, etc. It also defines an "uncounter" which
 can be used to generate ID's (xml:id) for unnumbered objects.
-C<$ctr> is the name of the counter.  If defined, C<$within> is the name
+I<ctr> is the name of the counter.  If defined, I<within> is the name
 of another counter which, when incremented, will cause this counter
 to be reset.
 The options are
 
-   idprefix  Specifies a prefix to be used to generate ID's
-             when using this counter
-   nested    Not sure that this is even sane.
+=over
+
+=item C<idprefix=E<gt>I<string>>
+
+Specifies a prefix to be used to generate ID's when using this counter
+
+=item C<nested>
+
+Not sure that this is even sane.
+
+=back
 
 =item C<< $num = CounterValue($ctr); >>
 
@@ -3283,6 +3480,7 @@ X<GenerateID>
 Generates an ID for nodes during the construction phase, useful
 for cases where the counter based scheme is inappropriate.
 The calling pattern makes it appropriate for use in Tag, as in
+
    Tag('ltx:para',afterClose=>sub { GenerateID(@_,'p'); })
 
 If C<$node> doesn't already have an xml:id set, it computes an
@@ -3298,17 +3496,17 @@ Document Model is used to control exactly how those fragments are assembled.
 
 =over
 
-=item C<< Tag($tag,%properties); >>
+=item C<Tag(I<tag>, I<%properties>);>
 
 X<Tag>
-Declares properties of elements with the name C<$tag>.
+Declares properties of elements with the name I<tag>.
 Note that C<Tag> can set or add properties to any element from any binding file,
 unlike the properties set on control by  C<DefPrimtive>, C<DefConstructor>, etc..
 And, since the properties are recorded in the current Model, they are not
 subject to TeX grouping; once set, they remain in effect until changed
 or the end of the document.
 
-The C<$tag> can be specified in one of three forms:
+The I<tag> can be specified in one of three forms:
 
    prefix:name matches specific name in specific namespace
    prefix:*    matches any tag in the specific namespace;
@@ -3329,16 +3527,15 @@ The recognized scalar properties are:
 
 =over
 
-=item autoOpen=>boolean
+=item C<autoOpen=E<gt>I<boolean>>
 
-Specifies whether this $tag can be automatically opened
-if needed to insert an element that can only
-be contained by $tag.
+Specifies whether I<tag> can be automatically opened
+if needed to insert an element that can only be contained by I<tag>.
 This property can help match the more  SGML-like LaTeX to XML.
 
-=item  autoClose=>boolean
+=item C<autoClose=E<gt>I<boolean>>
 
-Specifies whether this $tag can be automatically closed
+Specifies whether this I<tag> can be automatically closed
 if needed to close an ancestor node, or insert
 an element into an ancestor.
 This property can help match the more  SGML-like LaTeX to XML.
@@ -3369,9 +3566,9 @@ The recognized code properties are:
 
 =over
 
-=item C<< afterOpen=>CODE($document,$box) >>
+=item C<afterOpen=E<gt>I<code>($document,$box)>
 
-Provides CODE to be run whenever a node with this $tag
+Provides I<code> to be run whenever a node with this I<tag>
 is opened.  It is called with the document being constructed,
 and the initiating digested object as arguments.
 It is called after the node has been created, and after
@@ -3382,9 +3579,9 @@ C<afterOpen:early> or C<afterOpen:late> can be used in
 place of C<afterOpen>; these will be run as a group
 bfore, or after (respectively) the unmodified blocks.
 
-=item C<< afterClose=>CODE($document,$box) >>
+=item C<afterClose=E<gt>I<code>($document,$box)>
 
-Provides CODE to be run whenever a node with this $tag
+Provides I<code> to be run whenever a node with this I<tag>
 is closed.  It is called with the document being constructed,
 and the initiating digested object as arguments.
 
@@ -3396,27 +3593,27 @@ bfore, or after (respectively) the unmodified blocks.
 
 =back
 
-=item C<< RelaxNGSchema($schemaname); >>
+=item C<RelaxNGSchema(I<schemaname>);>
 
 X<RelaxNGSchema>
 Specifies the schema to use for determining document model.
-You can leave off the extension; it will look for C<.rng>,
-and maybe eventually, C<.rnc> once that is implemented.
+You can leave off the extension; it will look for C<I<schemaname>.rng>
+(and maybe eventually, C<.rnc> if that is ever implemented).
 
-=item C<< RegisterNamespace($prefix,$URL); >>
+=item C<RegisterNamespace(I<prefix>, I<URL>);>
 
 X<RegisterNamespace>
-Declares the C<$prefix> to be associated with the given C<$URL>.
+Declares the I<prefix> to be associated with the given I<URL>.
 These prefixes may be used in ltxml files, particularly for
 constructors, xpath expressions, etc.  They are not necessarily
 the same as the prefixes that will be used in the generated document
 Use the prefix C<#default> for the default, non-prefixed, namespace.
 (See RegisterDocumentNamespace, as well as DocType or RelaxNGSchema).
 
-=item C<< RegisterDocumentNamespace($prefix,$URL); >>
+=item C<RegisterDocumentNamespace(I<prefix>, I<URL>);>
 
 X<RegisterDocumentNamespace>
-Declares the C<$prefix> to be associated with the given C<$URL>
+Declares the I<prefix> to be associated with the given I<URL>
 used within the generated XML. They are not necessarily
 the same as the prefixes used in code (RegisterNamespace).
 This function is less rarely needed, as the namespace declarations
@@ -3424,11 +3621,11 @@ are generally obtained from the DTD or Schema themselves
 Use the prefix C<#default> for the default, non-prefixed, namespace.
 (See DocType or RelaxNGSchema).
 
-=item C<< DocType($rootelement,$publicid,$systemid,%namespaces); >>
+=item C<DocType(I<rootelement>, I<publicid>, I<systemid>, I<%namespaces>);>
 
 X<DocType>
-Declares the expected rootelement, the public and system ID's of the document type
-to be used in the final document.  The hash C<%namespaces> specifies
+Declares the expected I<rootelement>, the public and system ID's of the document type
+to be used in the final document.  The hash I<%namespaces> specifies
 the namespaces prefixes that are expected to be found in the DTD, along with
 each associated namespace URI.  Use the prefix C<#default> for the default namespace
 (ie. the namespace of non-prefixed elements in the DTD).
@@ -3439,25 +3636,6 @@ The generated document will use the namespaces and prefixes defined for the DTD.
 
 =back
 
-A related capability is adding commands to be executed at the beginning
-and end of the document
-
-=over
-
-=item C<< AtBeginDocument($tokens,...) >>
-
-adds the C<$tokens> to a list to be processed just after C<\\begin{document}>.
-These tokens can be used for side effect, or any content they generate will appear as the
-first children of the document (but probably after titles and frontmatter).
-
-=item C<< AtEndDocument($tokens,...) >>
-
-adds the C<$tokens> to the list to be processed just before C<\\end{document}>.
-These tokens can be used for side effect, or any content they generate will appear as the
-last children of the document.
-
-=back
-
 =head2 Document Rewriting
 
 During document construction, as each node gets closed, the text content gets simplfied.
@@ -3465,21 +3643,21 @@ We'll call it I<applying ligatures>, for lack of a better name.
 
 =over
 
-=item C<< DefLigature($regexp,%options); >>
+=item C<DefLigature(I<regexp>, I<%options>);>
 
 X<DefLigature>
 Apply the regular expression (given as a string: "/fa/fa/" since it will
 be converted internally to a true regexp), to the text content.
-The only option is C<fontTest=CODE($font)>; if given, then the substitution
+The only option is C<fontTest=E<gt>I<code>($font)>; if given, then the substitution
 is applied only when C<fontTest> returns true.
 
 Predefined Ligatures combine sequences of "." or single-quotes into appropriate
 Unicode characters.
 
-=item C<< DefMathLigature(CODE($document,@nodes)); >>
+=item C<DefMathLigature(I<code>($document,@nodes));>
 
 X<DefMathLigature>
-CODE is called on each sequence of math nodes at a given level.  If they should
+I<code> is called on each sequence of math nodes at a given level.  If they should
 be replaced, return a list of C<($n,$string,%attributes)> to replace
 the text content of the first node with C<$string> content and add the given attributes.
 The next C<$n-1> nodes are removed.  If no replacement is called for, CODE
@@ -3495,15 +3673,15 @@ document can take place.
 
 =over
 
-=item C<< DefRewrite(%specification); >>
+=item C<DefRewrite(I<%specification>);>
 
-=item C<< DefMathRewrite(%specification); >>
+=item C<DefMathRewrite(I<%specification>);>
 
 X<DefRewrite>X<DefMathRewrite>
 These two declarations define document rewrite rules that are applied to the
 document tree after it has been constructed, but before math parsing, or
-any other postprocessing, is done.  The C<%specification> consists of a 
-seqeuence of key/value pairs with the initial specs successively narrowing the
+any other postprocessing, is done.  The I<%specification> consists of a 
+sequence of key/value pairs with the initial specs successively narrowing the
 selection of document nodes, and the remaining specs indicating how
 to modify or replace the selected nodes.
 
@@ -3511,25 +3689,25 @@ The following select portions of the document:
 
 =over
 
-=item label =>$label
+=item C<label=E<gt>I<label>>
 
 Selects the part of the document with label=$label
 
-=item scope =>$scope
+=item C<scope=E<gt>I<scope>>
 
-The $scope could be "label:foo" or "section:1.2.3" or something
+The I<scope> could be "label:foo" or "section:1.2.3" or something
 similar. These select a subtree labelled 'foo', or
 a section with reference number "1.2.3"
 
-=item xpath =>$xpath
+=item C<xpath=E<gt>I<xpath>>
 
 Select those nodes matching an explicit xpath expression.
 
-=item match =>$TeX
+=item C<match=E<gt>I<tex>>
 
-Selects nodes that look like what the processing of $TeX would produce.
+Selects nodes that look like what the processing of I<tex> would produce.
 
-=item regexp=>$regexp
+=item C<regexp=E<gt>I<regexp>>
 
 Selects text nodes that match the regular expression.
 
@@ -3539,13 +3717,13 @@ The following act upon the selected node:
 
 =over
 
-=item attributes => $hash
+=item C<attributes=E<gt>I<hashref>>
 
 Adds the attributes given in the hash reference to the node.
 
-=item replace =>$replacement
+=item C<replace=E<gt>I<replacement>>
 
-Interprets the $replacement as TeX code to generate nodes that will
+Interprets I<replacement> as TeX code to generate nodes that will
 replace the selected nodes.
 
 =back
@@ -3610,51 +3788,51 @@ X<ReadParameters>
 Reads from C<$gullet> the tokens corresponding to C<$spec>
 (a Parameters object).
 
-=item C<< DefParameterType($type,CODE($gullet,@values),%options); >>
+=item C<DefParameterType(I<type>, I<code>($gullet,@values), I<%options>);>
 
 X<DefParameterType>
-Defines a new Parameter type, C<$type>, with CODE for its reader.
+Defines a new Parameter type, I<type>, with I<code> for its reader.
 
 Options are:
 
 =over
 
-=item reversion=>CODE($arg,@values);
+=item C<reversion=E<gt>I<code>($arg,@values);>
 
-This CODE is responsible for converting a previously parsed argument back
+This I<code> is responsible for converting a previously parsed argument back
 into a sequence of Token's.
 
-=item optional=>boolean
+=item C<optional=E<gt>I<boolean>>
 
 whether it is an error if no matching input is found.
 
-=item novalue=>boolean
+=item C<novalue=E<gt>I<boolean>>
 
 whether the value returned should contribute to argument lists, or
 simply be passed over.
 
-=item semiverbatim=>boolean
+=item C<semiverbatim=E<gt>I<boolean>>
 
 whether the catcode table should be modified before reading tokens.
 
 =back
 
-=item C<< DefColumnType($proto,$expansion); >>
+=item C<<DefColumnType(I<proto>, I<expansion>);>
 
 X<DefColumnType>
 Defines a new column type for tabular and arrays.
-C<$proto> is the prototype for the pattern, analogous to the pattern
+I<proto> is the prototype for the pattern, analogous to the pattern
 used for other definitions, except that macro being defined is a single character.
-The C<$expansion> is a string specifying what it should expand into,
+The I<expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
 
-=item C<< DefKeyVal($keyset,$key,$type,$default); >>
+=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >>
 
 X<DefKeyVal>
-Defines a keyword C<$key> used in keyval arguments for the set C<$keyset>.
-If type is given, it defines the type of value that must be supplied,
-such as C<'Dimension'>.  If C<$default> is given, that value will be used
-when C<$key> is used without an equals and explicit value.
+Defines a keyword I<key> used in keyval arguments for the set I<keyset>.
+If I<type> is given, it defines the type of value that must be supplied,
+such as C<'Dimension'>.  If I<default> is given, that value will be used
+when I<key> is used without an equals and explicit value in a keyvals argument.
 
 =back
 
@@ -3765,11 +3943,34 @@ X<InstallDefinition>
 Install the Definition C<$defn> into C<$STATE> under its
 control sequence.
 
+=item C<XEquals($token1,$token2)>
+
+Tests whether the two tokens are equal in the sense that they are either equal
+tokens, or if defined, have the same definition.
+
 =back
 
-=head2 Font Encoding
+=head2 Fonts
 
 =over
+
+=item C<MergeFont(I<%fontspec>); >>
+
+X<MergeFont>
+Set the current font by merging the font style attributes with the current font.
+The I<%fontspec> specifies the properties of the desired font.
+Likely values include (the values aren't required to be in this set):
+
+ family : serif, sansserif, typewriter, caligraphic,
+          fraktur, script
+ series : medium, bold
+ shape  : upright, italic, slanted, smallcaps
+ size   : tiny, footnote, small, normal, large,
+          Large, LARGE, huge, Huge
+ color  : any named color, default is black
+
+Some families will only be used in math.
+This function returns nothing so it can be easily used in beforeDigest, afterDigest.
 
 =item C<< DeclareFontMap($name,$map,%options); >>
 
@@ -3866,23 +4067,6 @@ X<UTF>
 Generates a UTF character, handy for the the 8 bit characters.
 For example, C<UTF(0xA0)> generates the non-breaking space.
 
-=item C<< MergeFont(%style); >>
-
-X<MergeFont>
-Set the current font by merging the font style attributes with the current font.
-The attributes and likely values (the values aren't required to be in this set):
-
- family : serif, sansserif, typewriter, caligraphic,
-          fraktur, script
- series : medium, bold
- shape  : upright, italic, slanted, smallcaps
- size   : tiny, footnote, small, normal, large,
-          Large, LARGE, huge, Huge
- color  : any named color, default is black
-
-Some families will only be used in math.
-This function returns nothing so it can be easily used in beforeDigest, afterDigest.
-
 =item C<< @tokens = roman($number); >>
 
 X<roman>
@@ -3894,6 +4078,29 @@ X<Roman>
 Formats the C<$number> in (uppercase) roman numerals, returning a list of the tokens.
 
 =back
+
+=head1 SEE ALSO
+
+X<See also>
+See also L<LaTeXML::Global>,
+L<LaTeXML::Common::Object>,
+L<LaTeXML::Common::Error>,
+L<LaTeXML::Core::Token>,
+L<LaTeXML::Core::Tokens>,
+L<LaTeXML::Core::Box>,
+L<LaTeXML::Core::List>,
+L<LaTeXML::Common::Number>,
+L<LaTeXML::Common::Float>,
+L<LaTeXML::Common::Dimension>,
+L<LaTeXML::Common::Glue>,
+L<LaTeXML::Core::MuDimension>,
+L<LaTeXML::Core::MuGlue>,
+L<LaTeXML::Core::Pair>,
+L<LaTeXML::Core::PairList>,
+L<LaTeXML::Common::Color>,
+L<LaTeXML::Core::Alignment>,
+L<LaTeXML::Common::XML>,
+L<LaTeXML::Util::Radix>.
 
 =head1 AUTHOR
 

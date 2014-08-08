@@ -355,13 +355,21 @@ sub processNode {
     @conversion = $self->combineParallel($doc, $math, $xmath, $primary, @secondaries); }
   else {
     @conversion = ($self->convertNode($doc, $xmath, $style)); }
-  # we now REMOVE the ltx:XMath from the ltx:Math
+  # we now REMOVE the ltx:XMath from the ltx:Math (and any whitespace nodes)
   # (if there's an XMath PostProcessing module, it will add it back, with appropriate id's
+  # but first, copy the initial indentation whitespace to insert in front of each new format
+  my $indentation;
+  if (my $pre = $xmath->previousSibling) {
+    if (($pre->nodeType == XML_TEXT_NODE) && ($pre->textContent =~ /^\s*$/)) {
+      $indentation = $pre; } }
   $doc->removeNodes($xmath);
-  # Lastly, we can wrap up the conversion
+  $doc->removeBlankNodes($math);
   @conversion = $self->outerWrapper($doc, $math, $xmath, @conversion);
   # Finally, we add the conversion results to ltx:Math
-  $doc->addNodes($math, @conversion);
+  if ($indentation) {
+    $doc->addNodes($math, map { ($indentation, $_) } @conversion); }
+  else {
+    $doc->addNodes($math, @conversion); }
   return; }
 
 # NOTE: Sort out how parallel & outerWrapper should work.
@@ -415,6 +423,8 @@ sub rawIDSuffix {
 sub associateID {
   my ($self, $node, $sourceid) = @_;
   return $node unless $sourceid && ref $node;
+  # or if already has an id (do we still need bookkeeping?)
+  return if (ref $node eq 'ARRAY' ? $$node[1]{'xml:id'} : $node->getAttribute('xml:id'));
   my $id = $sourceid . $self->IDSuffix;
   if (my $previous_ids = $$self{convertedIDs}{$sourceid}) {
     $id = LaTeXML::Post::uniquifyID($sourceid, scalar(@$previous_ids), $self->IDSuffix); }
@@ -828,6 +838,14 @@ sub removeNodes {
           delete $$self{idcache}{$id}; } }
       $node->unlinkNode; } }
   return; }
+
+sub removeBlankNodes {
+  my ($self, $node) = @_;
+  my $n = 0;
+  foreach my $child ($node->childNodes) {
+    if (($child->nodeType == XML_TEXT_NODE) && ($child->textContent =~ /^\s*$/)) {
+      $node->removeChild($child); $n++; } }
+  return $n; }
 
 # Replace $node by @replacements in the document
 sub replaceNode {

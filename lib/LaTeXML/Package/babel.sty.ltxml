@@ -29,81 +29,87 @@ use LaTeXML::Util::Pathname;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # babel.def only needs to be loaded ONCE.
-RequirePackage('babel', type => 'def');
-DeclareOption('acadian',    sub { InputDefinitions('frenchb',   type => 'ldf'); return; });
-DeclareOption('albanian',   sub { InputDefinitions('albanian',  type => 'ldf'); return; });
-DeclareOption('afrikaans',  sub { InputDefinitions('dutch',     type => 'ldf'); return; });
-DeclareOption('american',   sub { InputDefinitions('english',   type => 'ldf'); return; });
-DeclareOption('australian', sub { InputDefinitions('english',   type => 'ldf'); return; });
-DeclareOption('austrian',   sub { InputDefinitions('germanb',   type => 'ldf'); return; });
-DeclareOption('bahasa',     sub { InputDefinitions('bahasai',   type => 'ldf'); return; });
-DeclareOption('indonesian', sub { InputDefinitions('bahasai',   type => 'ldf'); return; });
-DeclareOption('indon',      sub { InputDefinitions('bahasai',   type => 'ldf'); return; });
-DeclareOption('bahasai',    sub { InputDefinitions('bahasai',   type => 'ldf'); return; });
-DeclareOption('malay',      sub { InputDefinitions('bahasam',   type => 'ldf'); return; });
-DeclareOption('meyalu',     sub { InputDefinitions('bahasam',   type => 'ldf'); return; });
-DeclareOption('bahasam',    sub { InputDefinitions('bahasam',   type => 'ldf'); return; });
-DeclareOption('basque',     sub { InputDefinitions('basque',    type => 'ldf'); return; });
-DeclareOption('brazil',     sub { InputDefinitions('portuges',  type => 'ldf'); return; });
-DeclareOption('brazilian',  sub { InputDefinitions('portuges',  type => 'ldf'); return; });
-DeclareOption('breton',     sub { InputDefinitions('breton',    type => 'ldf'); return; });
-DeclareOption('british',    sub { InputDefinitions('english',   type => 'ldf'); return; });
-DeclareOption('bulgarian',  sub { InputDefinitions('bulgarian', type => 'ldf'); return; });
-DeclareOption('canadian',   sub { InputDefinitions('english',   type => 'ldf'); return; });
-DeclareOption('canadien',   sub { InputDefinitions('frenchb',   type => 'ldf'); return; });
-DeclareOption('catalan',    sub { InputDefinitions('catalan',   type => 'ldf'); return; });
-DeclareOption('croatian',   sub { InputDefinitions('croatian',  type => 'ldf'); return; });
-DeclareOption('czech',      sub { InputDefinitions('czech',     type => 'ldf'); return; });
-DeclareOption('danish',     sub { InputDefinitions('danish',    type => 'ldf'); return; });
-DeclareOption('dutch',      sub { InputDefinitions('dutch',     type => 'ldf'); return; });
-DeclareOption('english',    sub { InputDefinitions('english',   type => 'ldf'); return; });
-DeclareOption('esperanto',  sub { InputDefinitions('esperanto', type => 'ldf'); return; });
-DeclareOption('estonian',   sub { InputDefinitions('estonian',  type => 'ldf'); return; });
-DeclareOption('finnish',    sub { InputDefinitions('finnish',   type => 'ldf'); return; });
-DeclareOption('francais',   sub { InputDefinitions('frenchb',   type => 'ldf'); return; });
-DeclareOption('frenchb',    sub { InputDefinitions('frenchb',   type => 'ldf'); return; });
-DeclareOption('french',     sub { InputDefinitions('frenchb',   type => 'ldf'); return; });
-DeclareOption('galician',   sub { InputDefinitions('galician',  type => 'ldf'); return; });
-DeclareOption('german',     sub { InputDefinitions('germanb',   type => 'ldf'); return; });
-DeclareOption('germanb',    sub { InputDefinitions('germanb',   type => 'ldf'); return; });
-DeclareOption('greek',      sub { InputDefinitions('greek',     type => 'ldf'); return; });
-DeclareOption('polutonikogreek', sub { InputDefinitions('greek', type => 'ldf');
+# but isn't loaded until a language is specified...
+sub inputBabelLanguage {
+  my ($language) = @_;
+  RequirePackage('babel', type => 'def');
+  InputDefinitions($language, type => 'ldf');
+  return; }
+
+DeclareOption('acadian',    sub { inputBabelLanguage('frenchb'); });
+DeclareOption('albanian',   sub { inputBabelLanguage('albanian'); });
+DeclareOption('afrikaans',  sub { inputBabelLanguage('dutch'); });
+DeclareOption('american',   sub { inputBabelLanguage('english'); });
+DeclareOption('australian', sub { inputBabelLanguage('english'); });
+DeclareOption('austrian',   sub { inputBabelLanguage('germanb'); });
+DeclareOption('bahasa',     sub { inputBabelLanguage('bahasai'); });
+DeclareOption('indonesian', sub { inputBabelLanguage('bahasai'); });
+DeclareOption('indon',      sub { inputBabelLanguage('bahasai'); });
+DeclareOption('bahasai',    sub { inputBabelLanguage('bahasai'); });
+DeclareOption('malay',      sub { inputBabelLanguage('bahasam'); });
+DeclareOption('meyalu',     sub { inputBabelLanguage('bahasam'); });
+DeclareOption('bahasam',    sub { inputBabelLanguage('bahasam'); });
+DeclareOption('basque',     sub { inputBabelLanguage('basque'); });
+DeclareOption('brazil',     sub { inputBabelLanguage('portuges'); });
+DeclareOption('brazilian',  sub { inputBabelLanguage('portuges'); });
+DeclareOption('breton',     sub { inputBabelLanguage('breton'); });
+DeclareOption('british',    sub { inputBabelLanguage('english'); });
+DeclareOption('bulgarian',  sub { inputBabelLanguage('bulgarian'); });
+DeclareOption('canadian',   sub { inputBabelLanguage('english'); });
+DeclareOption('canadien',   sub { inputBabelLanguage('frenchb'); });
+DeclareOption('catalan',    sub { inputBabelLanguage('catalan'); });
+DeclareOption('croatian',   sub { inputBabelLanguage('croatian'); });
+DeclareOption('czech',      sub { inputBabelLanguage('czech'); });
+DeclareOption('danish',     sub { inputBabelLanguage('danish'); });
+DeclareOption('dutch',      sub { inputBabelLanguage('dutch'); });
+DeclareOption('english',    sub { inputBabelLanguage('english'); });
+DeclareOption('esperanto',  sub { inputBabelLanguage('esperanto'); });
+DeclareOption('estonian',   sub { inputBabelLanguage('estonian'); });
+DeclareOption('finnish',    sub { inputBabelLanguage('finnish'); });
+DeclareOption('francais',   sub { inputBabelLanguage('frenchb'); });
+DeclareOption('frenchb',    sub { inputBabelLanguage('frenchb'); });
+DeclareOption('french',     sub { inputBabelLanguage('frenchb'); });
+DeclareOption('galician',   sub { inputBabelLanguage('galician'); });
+DeclareOption('german',     sub { inputBabelLanguage('germanb'); });
+DeclareOption('germanb',    sub { inputBabelLanguage('germanb'); });
+DeclareOption('greek',      sub { inputBabelLanguage('greek'); });
+DeclareOption('polutonikogreek', sub { inputBabelLanguage('greek');
     RawTeX('\languageattribute{greek}{polutoniko}'); return; });
 DeclareOption('hebrew', sub {    #   \input{rlbabel.def}%
-    InputDefinitions('hebrew', type => 'ldf'); return; });
-DeclareOption('hungarian',    sub { InputDefinitions('magyar',      type => 'ldf'); return; });
-DeclareOption('icelandic',    sub { InputDefinitions('icelandic',   type => 'ldf'); return; });
-DeclareOption('interlingua',  sub { InputDefinitions('interlingua', type => 'ldf'); return; });
-DeclareOption('irish',        sub { InputDefinitions('irish',       type => 'ldf'); return; });
-DeclareOption('italian',      sub { InputDefinitions('italian',     type => 'ldf'); return; });
-DeclareOption('latin',        sub { InputDefinitions('latin',       type => 'ldf'); return; });
-DeclareOption('lowersorbian', sub { InputDefinitions('lsorbian',    type => 'ldf'); return; });
-DeclareOption('magyar',       sub { InputDefinitions('magyar',      type => 'ldf'); return; });
-DeclareOption('naustrian',    sub { InputDefinitions('ngermanb',    type => 'ldf'); return; });
-DeclareOption('newzealand',   sub { InputDefinitions('english',     type => 'ldf'); return; });
-DeclareOption('ngerman',      sub { InputDefinitions('ngermanb',    type => 'ldf'); return; });
-DeclareOption('norsk',        sub { InputDefinitions('norsk',       type => 'ldf'); return; });
-DeclareOption('samin',        sub { InputDefinitions('samin',       type => 'ldf'); return; });
-DeclareOption('nynorsk',      sub { InputDefinitions('norsk',       type => 'ldf'); return; });
-DeclareOption('polish',       sub { InputDefinitions('polish',      type => 'ldf'); return; });
-DeclareOption('portuges',     sub { InputDefinitions('portuges',    type => 'ldf'); return; });
-DeclareOption('portuguese',   sub { InputDefinitions('portuges',    type => 'ldf'); return; });
-DeclareOption('romanian',     sub { InputDefinitions('romanian',    type => 'ldf'); return; });
-DeclareOption('russian',      sub { InputDefinitions('russianb',    type => 'ldf'); return; });
-DeclareOption('scottish',     sub { InputDefinitions('scottish',    type => 'ldf'); return; });
-DeclareOption('serbian',      sub { InputDefinitions('serbian',     type => 'ldf'); return; });
-DeclareOption('slovak',       sub { InputDefinitions('slovak',      type => 'ldf'); return; });
-DeclareOption('slovene',      sub { InputDefinitions('slovene',     type => 'ldf'); return; });
-DeclareOption('spanish',      sub { InputDefinitions('spanish',     type => 'ldf'); return; });
-DeclareOption('swedish',      sub { InputDefinitions('swedish',     type => 'ldf'); return; });
-DeclareOption('turkish',      sub { InputDefinitions('turkish',     type => 'ldf'); return; });
-DeclareOption('ukrainian',    sub { InputDefinitions('ukraineb',    type => 'ldf'); return; });
-DeclareOption('uppersorbian', sub { InputDefinitions('usorbian',    type => 'ldf'); return; });
-DeclareOption('welsh',        sub { InputDefinitions('welsh',       type => 'ldf'); return; });
-DeclareOption('UKenglish',    sub { InputDefinitions('english',     type => 'ldf'); return; });
-DeclareOption('USenglish',    sub { InputDefinitions('english',     type => 'ldf'); return; });
+    inputBabelLanguage('hebrew'); });
+DeclareOption('hungarian',    sub { inputBabelLanguage('magyar'); });
+DeclareOption('icelandic',    sub { inputBabelLanguage('icelandic'); });
+DeclareOption('interlingua',  sub { inputBabelLanguage('interlingua'); });
+DeclareOption('irish',        sub { inputBabelLanguage('irish'); });
+DeclareOption('italian',      sub { inputBabelLanguage('italian'); });
+DeclareOption('latin',        sub { inputBabelLanguage('latin'); });
+DeclareOption('lowersorbian', sub { inputBabelLanguage('lsorbian'); });
+DeclareOption('magyar',       sub { inputBabelLanguage('magyar'); });
+DeclareOption('naustrian',    sub { inputBabelLanguage('ngermanb'); });
+DeclareOption('newzealand',   sub { inputBabelLanguage('english'); });
+DeclareOption('ngerman',      sub { inputBabelLanguage('ngermanb'); });
+DeclareOption('norsk',        sub { inputBabelLanguage('norsk'); });
+DeclareOption('samin',        sub { inputBabelLanguage('samin'); });
+DeclareOption('nynorsk',      sub { inputBabelLanguage('norsk'); });
+DeclareOption('polish',       sub { inputBabelLanguage('polish'); });
+DeclareOption('portuges',     sub { inputBabelLanguage('portuges'); });
+DeclareOption('portuguese',   sub { inputBabelLanguage('portuges'); });
+DeclareOption('romanian',     sub { inputBabelLanguage('romanian'); });
+DeclareOption('russian',      sub { inputBabelLanguage('russianb'); });
+DeclareOption('scottish',     sub { inputBabelLanguage('scottish'); });
+DeclareOption('serbian',      sub { inputBabelLanguage('serbian'); });
+DeclareOption('slovak',       sub { inputBabelLanguage('slovak'); });
+DeclareOption('slovene',      sub { inputBabelLanguage('slovene'); });
+DeclareOption('spanish',      sub { inputBabelLanguage('spanish'); });
+DeclareOption('swedish',      sub { inputBabelLanguage('swedish'); });
+DeclareOption('turkish',      sub { inputBabelLanguage('turkish'); });
+DeclareOption('ukrainian',    sub { inputBabelLanguage('ukraineb'); });
+DeclareOption('uppersorbian', sub { inputBabelLanguage('usorbian'); });
+DeclareOption('welsh',        sub { inputBabelLanguage('welsh'); });
+DeclareOption('UKenglish',    sub { inputBabelLanguage('english'); });
+DeclareOption('USenglish',    sub { inputBabelLanguage('english'); });
 DeclareOption(undef, sub {
-    InputDefinitions(ToString(Digest(T_CS('\CurrentOption'))), type => 'ldf'); return; });
+    inputBabelLanguage(ToString(Digest(T_CS('\CurrentOption')))); });
 
 # \InputIfFileExists{bblopts.cfg}{%
 DeclareOption('activeacute',          undef);
@@ -111,6 +117,9 @@ DeclareOption('activegrave',          undef);
 DeclareOption('KeepShorthandsActive', undef);
 
 ProcessOptions(inorder => 1);
+if (!LookupDefinition(T_CS('\bbl@main@language'))) {
+  Error('expected', 'language', undef,
+    "No language option specified with babel."); }
 AtBeginDocument('\expandafter\selectlanguage\expandafter{\bbl@main@language}');
 # Now hopefully, \bbl@main@language is defined?
 

@@ -47,6 +47,10 @@
   <!-- The XHTML namespace -->
   <xsl:param name="XHTML_NAMESPACE">http://www.w3.org/1999/xhtml</xsl:param>
 
+  <!-- Whether to use xml:id instead of plain ole id;
+       Not sure if we ever should; probably depends on embedded schema, as well? -->  
+  <xsl:param name="USE_XMLID"></xsl:param>
+
   <!-- The namespace to use on html elements (typically XHTML_NAMESPACE or none) -->
   <xsl:param name="html_ns">
     <xsl:value-of select="f:if($USE_NAMESPACES,$XHTML_NAMESPACE,'')"/>
@@ -311,7 +315,7 @@
   </xsl:template>
 
   <xsl:template match="@xml:id" mode='copy-attribute'>
-    <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
+    <xsl:attribute name="{f:if($USE_XMLID,'xml:id','id')}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>

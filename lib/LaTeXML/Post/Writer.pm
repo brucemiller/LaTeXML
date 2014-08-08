@@ -36,6 +36,9 @@ sub process {
   $root->removeAttribute('xml:id')
     if ($root->getAttribute('xml:id') || '') eq 'TEMPORARY_DOCUMENT_ID';
 
+  # Note that this will NOT RE-format a document read in from xml,
+  # (providing no_blanks is false; which it should be, since it is dangerous.
+  #  it can also remove significant spaces between elements!)
   my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
 
   if (my $destination = $doc->getDestination) {

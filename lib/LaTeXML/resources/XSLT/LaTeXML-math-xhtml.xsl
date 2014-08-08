@@ -33,6 +33,8 @@
     <xsl:value-of select="f:if($USE_NAMESPACES,$MathML_NAMESPACE,'')"/>
   </xsl:param>
 
+  <xsl:strip-space elements="ltx:Math"/>
+
   <xsl:template match="ltx:Math">
     <xsl:choose>
       <!-- Prefer MathML, if allowed -->

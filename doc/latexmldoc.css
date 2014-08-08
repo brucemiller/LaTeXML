@@ -92,6 +92,10 @@ a[rel~="prev"]:before { content:"\261C "; }
   border:none; 
 }
 
+/* make smaller */
+dl.ltx_description dt {
+  font-size:90%; }
+
 dl.ltx_description.ltx_moduledescription dt,
 dl.ltx_description.ltx_elementdescription dt,
 dl.ltx_description.ltx_patterndescription dt

@@ -107,36 +107,19 @@ EOTeX
 
 # These should appear BEFORE the supertabular environment
 # Record the Tokens() for the various headings, footers and captions for later.
-DefPrimitive('\topcaption []{}', sub {
-    AssignValue(SUPERTABULAR_TOPTOCCAPTION => $_[1]);
-    AssignValue(SUPERTABULAR_TOPCAPTION    => $_[2]); });
-DefPrimitive('\bottomcaption []{}', sub {
-    AssignValue(SUPERTABULAR_BOTTOMTOCCAPTION => $_[1]);
-    AssignValue(SUPERTABULAR_BOTTOMCAPTION    => $_[2]); });
+DefMacro('\topcaption',    '\@topcaptiontrue\tablecaption');
+DefMacro('\bottomcaption', '\@topcaptionfalse\tablecaption');
 DefPrimitive('\tablecaption []{}', sub {
     AssignValue(SUPERTABULAR_TOCCAPTION => $_[1]);
     AssignValue(SUPERTABULAR_CAPTION    => $_[2]); });
 
 # Place appropriate captions.
 # We're just going to use \caption, assuming that there's a table environment around it.
-DefMacro('\@supertabular@topcaption', sub {
-    my $top = LookupValue('Boolean:@topcaption');
-    my ($cap, $toccap);
-    if ($cap = LookupValue('SUPERTABULAR_TOPCAPTION')) {
-      $toccap = LookupValue('SUPERTABULAR_TOPTOCCAPTION'); }
-    elsif ($top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))) {
-      $toccap = LookupValue('SUPERTABULAR_TOCCAPTION'); }
-##  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
-    ($cap ? Invocation(T_CS('\@caption'), T_OTHER('table'), $toccap, $cap)->unlist : ()); });
-
-DefMacro('\@supertabular@bottomcaption', sub {
-    my $top = LookupValue('Boolean:@topcaption');
-    my ($cap, $toccap);
-    if ($cap = LookupValue('SUPERTABULAR_BOTTOMCAPTION')) {
-      $toccap = LookupValue('SUPERTABULAR_BOTTOMTOCCAPTION'); }
-    elsif (!$top && ($cap = LookupValue('SUPERTABULAR_CAPTION'))) {
-      $toccap = LookupValue('SUPERTABULAR_TOCCAPTION'); }
-    #  ($cap ? Invocation(T_CS('\caption'),$toccap,$cap)->unlist : ()); });
+DefMacro('\@supertabular@topcaption',    '\if@topcaption\@supertabular@docaption\fi');
+DefMacro('\@supertabular@bottomcaption', '\if@topcaption\else\@supertabular@docaption\fi');
+DefMacro('\@supertabular@docaption', sub {
+    my $cap    = LookupValue('SUPERTABULAR_CAPTION');
+    my $toccap = LookupValue('SUPERTABULAR_TOCCAPTION');
     ($cap ? Invocation(T_CS('\@caption'), T_OTHER('table'), $toccap, $cap)->unlist : ()); });
 
 #======================================================================

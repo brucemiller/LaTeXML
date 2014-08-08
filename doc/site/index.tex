@@ -248,27 +248,36 @@ Continue by installing \LaTeXML\ from
 or \htmlref{GitHub}{install.github}, as desired.
 
 \subsection{MacOS}\label{install.mac}\index{Apple Macintosh}
-These installation instructions assume you will use \href{http://www.macports.org}{MacPorts},
-a handy repository for software installation on Mac computers;
-download and install MacPorts from that site.
+For Apple Macintosh systems, the  \href{http://www.macports.org}{MacPorts}
+repository is the most convenient way to install \LaTeXML; thanks to Sean and Andrew Fernandes.
+Download and install MacPorts from that site.
 
 \paragraph{Installing prebuilt}
-\LaTeXML\ has been included in the \href{http://www.macports.org}{MacPorts}
-repository (thanks Sean, Andrew Fernandes).
-
 Since some users prefer \href{http://tug.org/mactex/}{MacTeX} or another
-\TeX\ system over MacPort's \texttt{texlive},
-the \LaTeXML\ Portfile does \emph{not} include a dependency on a \TeX-installation!
-However, you really should pre-install either MacTeX or a system of your choice,
-or install texlive from MacPorts using
+\TeX\ system over MacPort's \texttt{texlive}, and since \texttt{texlive} is quite large,
+the \emph{default} \LaTeXML\ installation does \emph{not} include a dependency
+on a \TeX-installation nor does it install \LaTeXML's own style files!
+However, we provide two `variants' that do include or assume such a dependency:
+
+\subparagraph{MacPort's TeXLive:}  To install \LaTeXML, including MacPort's \texttt{texlive}
+along with \LaTeXML's other prerequisites and style files, use the command:
 \begin{lstlisting}[style=shell]
-sudo port install texlive
+sudo port install LaTeXML +texlive
 \end{lstlisting}
 
-To  install \LaTeXML, along with its prerequisites, use the command
+\subparagraph{MacTeX:}  To install \LaTeXML, along with its prerequisites and style files,
+using your (preinstalled) MacTeX, use the command:
+\begin{lstlisting}[style=shell]
+sudo port install LaTeXML +mactex
+\end{lstlisting}
+
+\subparagraph{Other:} To install \LaTeXML\ without assuming any installed \TeX,
+use the command:
 \begin{lstlisting}[style=shell]
 sudo port install LaTeXML
 \end{lstlisting}
+Note that the latter will \emph{not} install \LaTeXML's style files into any texmf directory,
+although \LaTeXML\ will still use any \TeX\ system it finds at runtime.
 
 \paragraph{Installing prerequisites}\label{install.mac.prereq}
 The prerequisites (including optional ones except \TeX) can be installed by running

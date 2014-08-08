@@ -21,11 +21,21 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use List::Util qw(min max);
-RequirePackage('color');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Options & Initializations.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+DefConditional('\ifglobalcolors',   undef);
+DefConditional('\ifdefinecolors',   undef);
+DefConditional('\ifconvertcolorsD', undef);
+DefConditional('\ifconvertcolorsU', undef);
+DefConditional('\ifblendcolors',    undef);
+DefConditional('\ifmaskcolors',     undef);
+DefConditional('\ifxglobal@',       undef);
+RawTeX('\globalcolorsfalse\definecolorstrue');
+
+RequirePackage('color');
 
 # Setting target color model (ignored for now)
 foreach my $option (qw(natural rgb cmy cmyk hsb gray RGB HTML HSB Gray monochrome)) {    #mono???
@@ -57,15 +67,6 @@ DefMacro('\GinDriver',    'LaTeXML');
 
 DefRegister('\tracingcolors' => Number(0));
 DefMacro('\XC@tracing', '0');
-
-DefConditional('\ifglobalcolors',   undef);
-DefConditional('\ifdefinecolors',   undef);
-DefConditional('\ifconvertcolorsD', undef);
-DefConditional('\ifconvertcolorsU', undef);
-DefConditional('\ifblendcolors',    undef);
-DefConditional('\ifmaskcolors',     undef);
-DefConditional('\ifxglobal@',       undef);
-RawTeX('\globalcolorsfalse\definecolorstrue');
 
 # Start with "current color" (using the shorthand ".") to black
 AssignValue('color_.' => Black());
@@ -369,7 +370,7 @@ DefMacroI('\xglobal@list', undef,
 DefMacro('\xglobal Token', sub {
     my ($gullet, $token) = @_;
     if (grep { $token->equals($_) } LookupDefinition(T_CS('\xglobal@list'))->getExpansion->unlist) {
-      AssignValue('Boolean:xglobal@' => 1);
+      AssignValue('xglobal@' => 1);
       $token; }
     else {
       (T_CS('\global'), $token); } });
@@ -410,8 +411,8 @@ DefPrimitive('\XC@definecolor[]{}[]{}{}', sub {
     ($type, $name, $prefix, $models, $specs)
       = map { $_ && Expand($_) } $type, $name, $prefix, $models, $specs;
     DefColor(ToString($name), ParseXColor($models, $specs),
-      (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef));
-    AssignValue('Boolean:xglobal@' => 0);
+      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    AssignValue('xglobal@' => 0);
     # and return a box, so it can be recorded?
     # but we don't want the \XC@ version, and we're not handling the prefix anyway...
     Box(undef, undef, undef,
@@ -426,8 +427,8 @@ DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
     my $sname = ToString($name);
     return if LookupValue('color_' . $sname);
     DefColor($sname, ParseXColor($models, $specs),
-      (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef));
-    AssignValue('Boolean:xglobal@' => 0);
+      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
       #      Invocation(T_CS('\XC@providecolor'),$type,$name,$prefix,$models,$specs)); });
       Invocation(T_CS('\providecolor'), ($type && $type->unlist ? $type : undef),
@@ -440,8 +441,8 @@ DefPrimitive('\colorlet[]{}[]{}', sub {
     ($type, $name, $tomodel, $colordesc)
       = map { $_ && Expand($_) } $type, $name, $tomodel, $colordesc;
     DefColor(ToString($name), ParseXColor(undef, $colordesc, $tomodel),
-      (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef));
-    AssignValue('Boolean:xglobal@' => 0);
+      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
       Invocation(T_CS('\colorlet'), $type, $name, $tomodel, $colordesc)); });
 
@@ -453,13 +454,13 @@ DefPrimitive('\definecolorset[]{}{}{}{}', sub {
       = map { $_ && Expand($_) } $type, $models, $head, $tail, $specset;
     my $shead = ToString($head);
     my $stail = ToString($tail);
-    my $scope = (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef);
+    my $scope = (LookupValue('xglobal@' => 0) ? 'global' : undef);
     foreach my $spec (split(/;/, ToString($specset))) {
 
       if ($spec =~ /^([^,]*),(.*)$/) {
         my ($name, $specs) = ($1, $2);
         DefColor($shead . $name . $stail, ParseXColor($models, $specs), $scope); } }
-    AssignValue('Boolean:xglobal@' => 0);
+    AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
       Invocation(T_CS('\definecolorset'), $type, $models, $head, $tail, $specset)); });
 
@@ -473,7 +474,7 @@ DefPrimitive('\providecolorset[]{}{}{}{}', sub {
       = map { $_ && Expand($_) } $type, $models, $head, $tail, $specset;
     my $shead = ToString($head);
     my $stail = ToString($tail);
-    my $scope = (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef);
+    my $scope = (LookupValue('xglobal@' => 0) ? 'global' : undef);
     foreach my $spec (split(/;/, ToString(Expand($specset)))) {
 
       if ($spec =~ /^([^,]*),(.*)$/) {
@@ -481,7 +482,7 @@ DefPrimitive('\providecolorset[]{}{}{}{}', sub {
         my $defname = $shead . $name . $stail;
         next if LookupValue('color_' . $defname);
         DefColor($defname, ParseXColor($models, $specs), $scope); } }
-    AssignValue('Boolean:xglobal@' => 0);
+    AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
       Invocation(T_CS('\providecolorset'), $type, $models, $head, $tail, $specset)); });
 
@@ -595,8 +596,8 @@ DefPrimitive('\blendcolors OptionalMatch:* {}', sub {
     my ($stomach, $star, $mix) = @_;
     # global if \global
     AssignValue(color_blend => (($star && LookupValue('color_blend')) || '') . ToString(Expand($mix)),
-      (LookupValue('Boolean:xglobal@' => 0) ? 'global' : undef));
-    AssignValue('Boolean:xglobal@' => 0); });
+      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    AssignValue('xglobal@' => 0); });
 
 DefMacro('\colorblend', sub { Explode(LookupValue('color_blend')); });
 
@@ -611,7 +612,7 @@ DefPrimitive('\maskcolors[]{}', sub {
       "Ignoring \\maskcolors declaration.");
     return;
     # DefMacroI('\colormask',undef,$color);
-    # AssignValue('Boolean:maskcolors'=>1);
+    # \maskcolorstrue
     # $color = ToString(Expand($color));
     # if($color){
     #   $color = ParseXColor(undef,$color,$model); }
@@ -710,12 +711,13 @@ DefPrimitive('\rowcolors OptionalMatch:* []{Number}{}{}', sub {
     AssignValue(tabular_row_color_even => ($evencolor->unlist ? ParseXColor(undef, $evencolor) : undef)); });
 
 DefConditional('\if@rowcolors', undef);
-AssignValue('Boolean:@rowcolors' => 1);
+RawTeX('\@rowcolorstrue');
 DefMacroI('\showrowcolors', undef, '\global\@rowcolorstrue');
 DefMacroI('\hiderowcolors', undef, '\global\@rowcolorsfalse');
 
 DefMacro('\rownum', sub { Explode(LookupValue('Alignment')->currentRowNumber); });
 
+# This doesn't happen early enough to register \hiderowcolors|\showrowcolors in the same row!
 AddToMacro('\@tabular@row@before', '\@tabular@row@before@xcolor');
 #AddToMacro('\@tabular@row@after','\@tabular@row@after@xcolor');
 
@@ -730,7 +732,7 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
     return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    if (LookupValue('Boolean:@rowcolors')) {
+    if (IfCondition(T_CS('\if@rowcolors'))) {
       my $n     = LookupValue('Alignment')->currentRowNumber;
       my $first = LookupValue('tabular_row_color_first');
       my $odd   = LookupValue('tabular_row_color_odd');

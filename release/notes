@@ -120,6 +120,15 @@ kpsewhich latexml.sty
 # Same to check uninstall....
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% To set up a temporary port on a Mac:
+mkdir -p ~/ports/tex/LaTeXML
+cp Portfile ~/ports/tex/LaTeXML
+sudo emacs /opt/local/etc/macports/sources.conf
+# to prepend file:///Users/miller/ports
+cd ~/ports
+portindex
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Other attempts...
 
 #======================================================================

@@ -31,6 +31,11 @@
        Document Structure
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:document ltx:part ltx:chapter ltx:section ltx:subsection
+                             ltx:subsubsection ltx:paragraph ltx:subparagraph
+                             ltx:bibliography ltx:appendix ltx:index ltx:glossary
+                             ltx:slide ltx:sidebar"/>
+
   <xsl:template match="ltx:document  | ltx:part | ltx:chapter
                        | ltx:section | ltx:subsection | ltx:subsubsection
                        | ltx:paragraph | ltx:subparagraph
@@ -219,6 +224,8 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:strip-space elements="ltx:titlepage"/>
+
   <xsl:template match="ltx:titlepage">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
@@ -283,6 +290,8 @@
       </xsl:element>
     </xsl:if>
   </xsl:template>
+
+  <xsl:strip-space elements="ltx:creator ltx:contact"/>
 
   <xsl:template match="ltx:creator"/>
 
@@ -423,6 +432,8 @@
        Indices
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:indexlist ltx:indexentry ltx:indexrefs"/>
+
   <xsl:template match="ltx:indexlist">
     <xsl:choose>
       <xsl:when test="$twocolumn-indexlist and not(ancestor::ltx:indexlist)">
@@ -480,6 +491,8 @@
   <!-- ======================================================================
        Glossaries
        ====================================================================== -->
+
+  <xsl:strip-space elements="ltx:glossarlist ltx:glossaryentry"/>
 
   <xsl:template match="ltx:glossarylist">
     <xsl:choose>

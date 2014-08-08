@@ -68,7 +68,8 @@ Let('\notag', '\nonumber');
 DefConstructor('\tag OptionalMatch:* Digested', '',
   afterDigest => sub {
     AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(2), 'global'); },
-  mode => 'text');
+  reversion => '',        # normally should disappear?
+  mode      => 'text');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
@@ -121,7 +122,7 @@ sub amsalignBindings {
 # So, we've got to delay the properties
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-#    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
+    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
@@ -151,14 +152,14 @@ DefEnvironment('{equation}',
 # Note: This DOES get a number if \tag is used!
 DefEnvironment('{equation*}',
   "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-#    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
+    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode => 'display_math',
+  mode         => 'display_math',
   beforeDigest => sub {
     AssignValue(EQUATIONROW_NUMBER => undef, 'global');
     return; },
@@ -167,8 +168,8 @@ DefEnvironment('{equation*}',
     my $num   = LookupValue('EQUATIONROW_NUMBER');
     my %props = ();
     %props = RefStepID('equation');
-    if($num){
-      $props{refnum} = $num;
+    if ($num) {
+      $props{refnum}  = $num;
       $props{frefnum} = $num; }
     $whatsit->setProperties(%props);
     return; },

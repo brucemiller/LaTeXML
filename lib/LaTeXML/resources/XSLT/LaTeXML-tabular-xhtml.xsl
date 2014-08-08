@@ -24,6 +24,8 @@
        Tabulars
        ====================================================================== -->
 
+  <xsl:strip-space elements="ltx:tabular ltx:thead ltx:tbody ltx:tfoot ltx:tr"/>
+
   <xsl:template match="ltx:tabular">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="table" namespace="{$html_ns}">

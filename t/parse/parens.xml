@@ -11,30 +11,58 @@
       <equation xml:id="S1.Ex1">
         <Math mode="display" xml:id="S1.Ex1.m1" tex="((a+b)-c)" text="(a + b) - c">
           <XMath>
-            <XMApp close=")" open="(">
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
-              </XMApp>
-              <XMTok role="ID" font="italic">c</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="XM3"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="XM3">
+                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                  <XMDual>
+                    <XMRef idref="XM2"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="XM2">
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok role="ID" font="italic">a</XMTok>
+                        <XMTok role="ID" font="italic">b</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMTok role="ID" font="italic">c</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
         <Math mode="display" xml:id="S1.Ex2.m1" tex="(a+(b-c))" text="a + (b - c)">
           <XMath>
-            <XMApp close=")" open="(">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp close=")" open="(">
-                <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-              </XMApp>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="XM5"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="XM5">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMDual>
+                    <XMRef idref="XM4"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="XM4">
+                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                        <XMTok role="ID" font="italic">b</XMTok>
+                        <XMTok role="ID" font="italic">c</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -46,44 +74,80 @@
       <equation xml:id="S2.Ex3">
         <Math mode="display" xml:id="S2.Ex3.m1" tex="(a,b)" text="open-interval@(a, b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose=")" argopen="(" meaning="open-interval" role="FENCED" separators=","/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="open-interval"/>
+                <XMRef idref="XM6"/>
+                <XMRef idref="XM7"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMTok role="ID" xml:id="XM6" font="italic">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok role="ID" xml:id="XM7" font="italic">b</XMTok>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex4">
         <Math mode="display" xml:id="S2.Ex4.m1" tex="[a,b)" text="closed-open-interval@(a, b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose=")" argopen="[" meaning="closed-open-interval" role="FENCED" separators=","/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="closed-open-interval"/>
+                <XMRef idref="XM8"/>
+                <XMRef idref="XM9"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">[</XMTok>
+                <XMTok role="ID" xml:id="XM8" font="italic">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok role="ID" xml:id="XM9" font="italic">b</XMTok>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex5">
         <Math mode="display" xml:id="S2.Ex5.m1" tex="(a,b]" text="open-closed-interval@(a, b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="]" argopen="(" meaning="open-closed-interval" role="FENCED" separators=","/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="open-closed-interval"/>
+                <XMRef idref="XM10"/>
+                <XMRef idref="XM11"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMTok role="ID" xml:id="XM10" font="italic">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok role="ID" xml:id="XM11" font="italic">b</XMTok>
+                <XMTok role="CLOSE" stretchy="false">]</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S2.Ex6">
         <Math mode="display" xml:id="S2.Ex6.m1" tex="[a,b]" text="closed-interval@(a, b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="]" argopen="[" meaning="closed-interval" role="FENCED" separators=","/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="closed-interval"/>
+                <XMRef idref="XM12"/>
+                <XMRef idref="XM13"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">[</XMTok>
+                <XMTok role="ID" xml:id="XM12" font="italic">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok role="ID" xml:id="XM13" font="italic">b</XMTok>
+                <XMTok role="CLOSE" stretchy="false">]</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -93,34 +157,54 @@
     <title><tag close=" ">3</tag>Cases</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex7">
-        <Math mode="display" xml:id="S3.Ex7.m1" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="cases[[a], [b]] = cases[[c], [d]]">
+        <Math mode="display" xml:id="S3.Ex7.m1" tex="\left.\begin{array}[]{l}a\\&#10;b\end{array}\right\}=\left\{\begin{array}[]{l}c\\&#10;d\end{array}\right." text="cases@(Array[[a], [b]]) = cases@(Array[[c], [d]])">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
-              <XMArray close="}" meaning="cases" role="ARRAY" vattach="middle">
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">a</XMTok>
-                  </XMCell>
-                </XMRow>
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">b</XMTok>
-                  </XMCell>
-                </XMRow>
-              </XMArray>
-              <XMArray meaning="cases" open="{" role="ARRAY" vattach="middle">
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">c</XMTok>
-                  </XMCell>
-                </XMRow>
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">d</XMTok>
-                  </XMCell>
-                </XMRow>
-              </XMArray>
+              <XMDual>
+                <XMApp>
+                  <XMTok meaning="cases"/>
+                  <XMRef idref="XM14"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok meaning="absent"/>
+                  <XMArray role="ARRAY" vattach="middle" xml:id="XM14">
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok role="ID" font="italic">a</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok role="ID" font="italic">b</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                  <XMTok role="CLOSE">}</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMDual>
+                <XMApp>
+                  <XMTok meaning="cases"/>
+                  <XMRef idref="XM15"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN">{</XMTok>
+                  <XMArray role="ARRAY" vattach="middle" xml:id="XM15">
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok role="ID" font="italic">c</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok role="ID" font="italic">d</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                  <XMTok meaning="absent"/>
+                </XMWrap>
+              </XMDual>
             </XMApp>
           </XMath>
         </Math>
@@ -130,41 +214,62 @@
       <equation xml:id="S3.Ex8">
         <Math mode="display" xml:id="S3.Ex8.m1" tex="\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)" text="Array[[c], [d]]">
           <XMath>
-            <XMArray close=")" open="(" role="ARRAY" vattach="middle">
-              <XMRow>
-                <XMCell align="left">
-                  <XMTok role="ID" font="italic">c</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="left">
-                  <XMTok role="ID" font="italic">d</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
+            <XMDual>
+              <XMRef idref="XM16"/>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMArray role="ARRAY" vattach="middle" xml:id="XM16">
+                  <XMRow>
+                    <XMCell align="left">
+                      <XMTok role="ID" font="italic">c</XMTok>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell align="left">
+                      <XMTok role="ID" font="italic">d</XMTok>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S3.Ex9">
         <Math mode="display" xml:id="S3.Ex9.m1" tex="(a+\left(\begin{array}[]{l}c\\&#10;d\end{array}\right)+b)" text="a + Array[[c], [d]] + b">
           <XMath>
-            <XMApp close=")" open="(">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMArray close=")" open="(" role="ARRAY" vattach="middle">
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">c</XMTok>
-                  </XMCell>
-                </XMRow>
-                <XMRow>
-                  <XMCell align="left">
-                    <XMTok role="ID" font="italic">d</XMTok>
-                  </XMCell>
-                </XMRow>
-              </XMArray>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="XM18"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="XM18">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMDual>
+                    <XMRef idref="XM17"/>
+                    <XMWrap>
+                      <XMTok role="OPEN">(</XMTok>
+                      <XMArray role="ARRAY" vattach="middle" xml:id="XM17">
+                        <XMRow>
+                          <XMCell align="left">
+                            <XMTok role="ID" font="italic">c</XMTok>
+                          </XMCell>
+                        </XMRow>
+                        <XMRow>
+                          <XMCell align="left">
+                            <XMTok role="ID" font="italic">d</XMTok>
+                          </XMCell>
+                        </XMRow>
+                      </XMArray>
+                      <XMTok role="CLOSE">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -190,16 +295,26 @@
         </Math>
       </equation>
       <equation xml:id="S4.Ex11">
-        <Math mode="display" xml:id="S4.Ex11.m1" tex="a+\left[b\atop c\right]+d" text="a + STACKED@(b, c) + d">
+        <Math mode="display" xml:id="S4.Ex11.m1" tex="a+\left[b\atop c\right]+d" text="a + delimited-[]@(STACKED@(b, c)) + d">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp close="]" open="[">
-                <XMTok mathstyle="display" role="STACKED"/>
-                <XMTok role="ID" font="italic">b</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-              </XMApp>
+              <XMDual>
+                <XMApp>
+                  <XMTok meaning="delimited-[]"/>
+                  <XMRef idref="XM19"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN">[</XMTok>
+                  <XMApp xml:id="XM19">
+                    <XMTok mathstyle="display" role="STACKED"/>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                    <XMTok role="ID" font="italic">c</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE">]</XMTok>
+                </XMWrap>
+              </XMDual>
               <XMTok role="ID" font="italic">d</XMTok>
             </XMApp>
           </XMath>
@@ -213,216 +328,359 @@
       <equation xml:id="S5.Ex12">
         <Math mode="display" xml:id="S5.Ex12.m1" tex="\left({a\over b}\right)" text="a / b">
           <XMath>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="XM20"/>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM20">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex13">
-        <Math mode="display" xml:id="S5.Ex13.m1" tex="\left[{a\over b}\right]" text="a / b">
+        <Math mode="display" xml:id="S5.Ex13.m1" tex="\left[{a\over b}\right]" text="delimited-[]@(a / b)">
           <XMath>
-            <XMApp close="]" open="[">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-[]"/>
+                <XMRef idref="XM21"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">[</XMTok>
+                <XMApp xml:id="XM21">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">]</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex14">
-        <Math mode="display" xml:id="S5.Ex14.m1" tex="\left[{a\over b}\right]" text="a / b">
+        <Math mode="display" xml:id="S5.Ex14.m1" tex="\left[{a\over b}\right]" text="delimited-[]@(a / b)">
           <XMath>
-            <XMApp close="]" open="[">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-[]"/>
+                <XMRef idref="XM22"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">[</XMTok>
+                <XMApp xml:id="XM22">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">]</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex15">
         <Math mode="display" xml:id="S5.Ex15.m1" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="}" argopen="{" meaning="set" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="set"/>
+                <XMRef idref="XM23"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">{</XMTok>
+                <XMApp xml:id="XM23">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">}</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex16">
         <Math mode="display" xml:id="S5.Ex16.m1" tex="\left\{{a\over b}\right\}" text="set@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="}" argopen="{" meaning="set" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="set"/>
+                <XMRef idref="XM24"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">{</XMTok>
+                <XMApp xml:id="XM24">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">}</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex17">
         <Math mode="display" xml:id="S5.Ex17.m1" tex="\left\lfloor{a\over b}\right\rfloor" text="floor@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="⌋" argopen="⌊" meaning="floor" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="floor"/>
+                <XMRef idref="XM25"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok name="lfloor" role="OPEN">⌊</XMTok>
+                <XMApp xml:id="XM25">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="rfloor" role="CLOSE">⌋</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex18">
         <Math mode="display" xml:id="S5.Ex18.m1" tex="\left\lceil{a\over b}\right\rceil" text="ceiling@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="⌉" argopen="⌈" meaning="ceiling" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="ceiling"/>
+                <XMRef idref="XM26"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok name="lceil" role="OPEN">⌈</XMTok>
+                <XMApp xml:id="XM26">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="rceil" role="CLOSE">⌉</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex19">
-        <Math mode="display" xml:id="S5.Ex19.m1" tex="\left&lt;{a\over b}\right&gt;" text="a / b">
+        <Math mode="display" xml:id="S5.Ex19.m1" tex="\left&lt;{a\over b}\right&gt;" text="delimited-⟨⟩@(a / b)">
           <XMath>
-            <XMApp close="⟩" open="⟨">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-⟨⟩"/>
+                <XMRef idref="XM27"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="langle" role="OPEN">⟨</XMTok>
+                <XMApp xml:id="XM27">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="rangle" role="CLOSE">⟩</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex20">
-        <Math mode="display" xml:id="S5.Ex20.m1" tex="\left\langle{a\over b}\right\rangle" text="a / b">
+        <Math mode="display" xml:id="S5.Ex20.m1" tex="\left\langle{a\over b}\right\rangle" text="delimited-⟨⟩@(a / b)">
           <XMath>
-            <XMApp close="⟩" open="⟨">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-⟨⟩"/>
+                <XMRef idref="XM28"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="langle" role="OPEN">⟨</XMTok>
+                <XMApp xml:id="XM28">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="rangle" role="CLOSE">⟩</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex21">
         <Math mode="display" xml:id="S5.Ex21.m1" tex="\left|{a\over b}\right|" text="absolute-value@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="absolute-value"/>
+                <XMRef idref="XM29"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="VERTBAR">|</XMTok>
+                <XMApp xml:id="XM29">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="VERTBAR">|</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex22">
         <Math mode="display" xml:id="S5.Ex22.m1" tex="\left|{a\over b}\right|" text="absolute-value@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="|" argopen="|" meaning="absolute-value" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="absolute-value"/>
+                <XMRef idref="XM30"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="VERTBAR">|</XMTok>
+                <XMApp xml:id="XM30">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="VERTBAR">|</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex23">
         <Math mode="display" xml:id="S5.Ex23.m1" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="∥" argopen="∥" meaning="norm" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="norm"/>
+                <XMRef idref="XM31"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="VERTBAR">∥</XMTok>
+                <XMApp xml:id="XM31">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="VERTBAR">∥</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex24">
         <Math mode="display" xml:id="S5.Ex24.m1" tex="\left\|{a\over b}\right\|" text="norm@(a / b)">
           <XMath>
-            <XMApp>
-              <XMTok argclose="∥" argopen="∥" meaning="norm" role="FENCED"/>
+            <XMDual>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">a</XMTok>
-                <XMTok role="ID" font="italic">b</XMTok>
+                <XMTok meaning="norm"/>
+                <XMRef idref="XM32"/>
               </XMApp>
-            </XMApp>
+              <XMWrap>
+                <XMTok role="VERTBAR">∥</XMTok>
+                <XMApp xml:id="XM32">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="VERTBAR">∥</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex25">
-        <Math mode="display" xml:id="S5.Ex25.m1" tex="\left\uparrow{a\over b}\right\downarrow" text="a / b">
+        <Math mode="display" xml:id="S5.Ex25.m1" tex="\left\uparrow{a\over b}\right\downarrow" text="delimited-↑↓@(a / b)">
           <XMath>
-            <XMApp close="↓" open="↑">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-↑↓"/>
+                <XMRef idref="XM33"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="uparrow" role="OPEN">↑</XMTok>
+                <XMApp xml:id="XM33">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="downarrow" role="CLOSE">↓</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex26">
-        <Math mode="display" xml:id="S5.Ex26.m1" tex="\left\Uparrow{a\over b}\right\Downarrow" text="a / b">
+        <Math mode="display" xml:id="S5.Ex26.m1" tex="\left\Uparrow{a\over b}\right\Downarrow" text="delimited-⇑⇓@(a / b)">
           <XMath>
-            <XMApp close="⇓" open="⇑">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-⇑⇓"/>
+                <XMRef idref="XM34"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="Uparrow" role="OPEN">⇑</XMTok>
+                <XMApp xml:id="XM34">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="Downarrow" role="CLOSE">⇓</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S5.Ex27">
-        <Math mode="display" xml:id="S5.Ex27.m1" tex="\left\updownarrow{a\over b}\right\Updownarrow" text="a / b">
+        <Math mode="display" xml:id="S5.Ex27.m1" tex="\left\updownarrow{a\over b}\right\Updownarrow" text="delimited-↕⇕@(a / b)">
           <XMath>
-            <XMApp close="⇕" open="↕">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="ID" font="italic">a</XMTok>
-              <XMTok role="ID" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="delimited-↕⇕"/>
+                <XMRef idref="XM35"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="updownarrow" role="OPEN">↕</XMTok>
+                <XMApp xml:id="XM35">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="ID" font="italic">a</XMTok>
+                  <XMTok role="ID" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok name="Updownarrow" role="CLOSE">⇕</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S5.p2">
       <equation xml:id="S5.Ex28">
-        <Math mode="display" xml:id="S5.Ex28.m1" tex="a+\left\langle{b\over c}\right\rangle+d" text="a + b / c + d">
+        <Math mode="display" xml:id="S5.Ex28.m1" tex="a+\left\langle{b\over c}\right\rangle+d" text="a + delimited-⟨⟩@(b / c) + d">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="ID" font="italic">a</XMTok>
-              <XMApp close="⟩" open="⟨">
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-                <XMTok role="ID" font="italic">b</XMTok>
-                <XMTok role="ID" font="italic">c</XMTok>
-              </XMApp>
+              <XMDual>
+                <XMApp>
+                  <XMTok meaning="delimited-⟨⟩"/>
+                  <XMRef idref="XM36"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok name="langle" role="OPEN">⟨</XMTok>
+                  <XMApp xml:id="XM36">
+                    <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                    <XMTok role="ID" font="italic">b</XMTok>
+                    <XMTok role="ID" font="italic">c</XMTok>
+                  </XMApp>
+                  <XMTok name="rangle" role="CLOSE">⟩</XMTok>
+                </XMWrap>
+              </XMDual>
               <XMTok role="ID" font="italic">d</XMTok>
             </XMApp>
           </XMath>
