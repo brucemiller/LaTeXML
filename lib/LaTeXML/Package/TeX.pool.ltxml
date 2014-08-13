@@ -523,8 +523,8 @@ DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
 DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
 DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 
-# Implementing this assumes we've got some notion of file numbers!!!
-DefConditionalI('\ifeof',   undef, sub { 0; });
+# This is probably the safest default, until we fully deal with the I/O macros
+DefConditional('\ifeof Number', sub { 1; });
 DefConditionalI('\iftrue',  undef, sub { 1; });
 DefConditionalI('\iffalse', undef, sub { 0; });
 
