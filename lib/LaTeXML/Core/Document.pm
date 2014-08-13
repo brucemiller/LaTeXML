@@ -113,7 +113,8 @@ sub getFirstChildElement {
     my $n = $node->firstChild;
     while ($n && $n->nodeType != XML_ELEMENT_NODE) {
       $n = $n->nextSibling; }
-    return $n; } }
+    return $n; }
+  return; }
 
 # Find the nodes according to the given $xpath expression,
 # the xpath is relative to $node (if given), otherwise to the document node.
