@@ -2668,7 +2668,7 @@ sub beginBibliography {
   AssignValue(n_bibliographies => ++$bibnumber, 'global');
   my $docid = ToString(Expand(T_CS('\thedocument@ID')));
   my $bibid = ($docid ? $docid . '.' : '') . 'bib' . radix_alpha($bibnumber - 1);
-  DefMacroI(T_CS('\thebibliography@ID'), undef, T_OTHER($bibid));
+  DefMacroI(T_CS('\thebibliography@ID'), undef, T_OTHER($bibid), scope => 'global');
   #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
   $whatsit->setProperty(id => $bibid);
   my $title = DigestIf('\refname') || DigestIf('\bibname');
