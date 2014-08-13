@@ -21,6 +21,17 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# This gets defined in terms of low-level I/O which fails...
+# So give the same definition as LaTeX's, but LOCK it!
+DefMacro('\pgfutil@InputIfFileExists{}{}{}', sub {
+    my ($gullet, $file, $if, $else) = @_;
+    $file = ToString(Expand($file));
+    if (FindFile($file)) {
+      Input($file);
+      $if->unlist; }
+    else { $else->unlist; } },
+  locked => 1);
+
 DefMacro('\pgfsysdriver', 'pgfsys-latexml.def');    # and we'll load the .ltxml!
 
 # We're going to load the raw tex of pgf ...
