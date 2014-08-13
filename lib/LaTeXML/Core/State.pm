@@ -499,10 +499,13 @@ sub deactivateScope {
             "value is $value but stack is " . join(', ', @{ $$self{$table}{$key} })); } } } }
   return; }
 
+sub getKnownScopes {
+  my ($self) = @_;
+  return sort keys %{ $$self{stash} }; }
+
 sub getActiveScopes {
   my ($self) = @_;
-  my $scopes = $$self{stash_active} || {};
-  return [keys %$scopes]; }
+  return sort keys %{ $$self{stash_active} }; }
 
 #======================================================================
 # Units.
