@@ -1152,19 +1152,30 @@ sub dualize_arglist {
 #  ( [@pargs],[@cargs] ); }
 
 # Given a list of XML nodes (either libxml nodes, or array representations)
-# ensure each has an ID, and return a list of XMRef's to those nodes.
+# ensure each has an ID, and return a list of ltx:XMRef's to those nodes.
+# Note that ltx:XMHint nodes are ephemeral and shouldn't be ref'd!
+# likewise, we avoid creating XMRefs to XMRefs
 sub createXMRefs {
   my ($document, @args) = @_;
   my @refs = ();
   foreach my $arg (@args) {
-    my $id;
-    if (ref $arg eq 'ARRAY') {
-      if (!($id = $$arg[1]{'xml:id'})) {
-        $$arg[1]{'xml:id'} = $id = getXMArgID(); } }
-    elsif (ref $arg eq 'XML::LibXML::Element') {
-      if (!($id = $arg->getAttribute('xml:id'))) {
-        $document->setAttribute($arg, 'xml:id' => ($id = getXMArgID())); } }
-    push(@refs, ['ltx:XMRef', { 'idref' => $id }]) if $id; }
+    my $isarray = (ref $arg eq 'ARRAY');
+    my $qname = ($isarray ? $$arg[0] : $document->getNodeQName($arg));
+    # XMHint's are ephemeral, they may disappear; so just clone it w/o id
+    if ($qname eq 'ltx:XMHint') {
+      my %attr = ($isarray ? %{ $$arg[1] } : (map { $_->nodeName => $_->getValue } $arg->attributes));
+      delete $attr{'xml:id'};
+      push(@refs, [$qname, {%attr}]); }
+    # Likewise, clone an XMRef (w/o any attributes or id ?) rather than create an XMRef to an XMRef.
+    elsif ($qname eq 'ltx:XMRef') {
+      push(@refs, [$qname, { idref => $arg->getAttribute('idref') }]); }
+    else {
+      my $id = ($isarray ? $$arg[1]{'xml:id'} : $arg->getAttribute('xml:id'));
+      if (!$id) {
+        $id = ToString(getXMArgID());
+        if ($isarray) { $$arg[1]{'xml:id'} = $id; }
+        else { $document->setAttribute($arg, 'xml:id' => $id); } }
+      push(@refs, ['ltx:XMRef', { 'idref' => $id }]); } }
   return @refs; }
 
 # DefMath Define a Mathematical symbol or function.
