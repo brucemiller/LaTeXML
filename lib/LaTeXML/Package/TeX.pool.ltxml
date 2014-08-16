@@ -251,7 +251,8 @@ DefParameterType('DefToken', sub {
       my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
       $token = shift(@toks);
       $gullet->unread(@toks); }
-    $token; });
+    $token; },
+  undigested => 1);
 
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
