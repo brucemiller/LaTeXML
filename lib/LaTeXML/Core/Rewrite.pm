@@ -256,12 +256,11 @@ sub compile_match1 {
   map { $frag->appendChild($_) } @nodes;
   # Convert the captured nodes to an XPath that would match them.
   my $xpath = domToXPath($capdocument, $frag);
-  # For math, restrict to NOT operate on presentation branch of XMDual.
-  # The semantics should already be associated with it, through the XMDual itself.
-  # This assumes that any arguments in the presentation branch are by reference (XMRef)
-  # to the same args in the content branch --- thus the args will still be matched.
-  $xpath .= "[not(ancestor-or-self::*[parent::ltx:XMDual and not(following-sibling::*)])]"
-    if $$self{math};
+  # The branches of an XMDual can contain "decorations", nodes that are ONLY visible
+  # from either presentation or content, but not both.
+  # [See LaTeXML::Core::Document->markXMNodeVisibility]
+  # These decorations should NOT have rewrite rules applied
+  $xpath .= '[@_pvis and @_cvis]' if $$self{math};
 
   print STDERR "Converting \"" . ToString($patternbox) . "\"\n  => xpath= \"$xpath\"\n"
     if $LaTeXML::Core::Rewrite::DEBUG;
