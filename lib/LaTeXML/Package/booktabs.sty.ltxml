@@ -26,9 +26,10 @@ DefMacro('\midrule[Dimension]', '\hline');
 DefMacro('\bottomrule[Dimension]', '\hline\hline');
 
 # \cmidrule[thickness](trim){col-col}
+DefMacro('\@afterfi Until:\fi', '\fi#1');
 DefMacro('\cmidrule[]',
-  '\@ifnextchar({\ifx.#1.\ltx@@cmidrule\else\ltx@@cmidrule[#1]fi}'
-    . '{\ifx.#1.\ltx@cmidrule\else\ltx@cmidrule[#1]fi}');
+  '\@ifnextchar({\ifx.#1.\expandafter\ltx@@cmidrule\else\@afterfi\ltx@@cmidrule[#1]\fi}'
+    . '{\ifx.#1.\expandafter\ltx@cmidrule\else\@afterfi\ltx@cmidrule[#1]\fi}');
 
 DefMacro('\ltx@@cmidrule[Dimension] Match:( Until:){}', '\cline{#3}');
 DefMacro('\ltx@cmidrule[Dimension]{}',                  '\cline{#2}');
