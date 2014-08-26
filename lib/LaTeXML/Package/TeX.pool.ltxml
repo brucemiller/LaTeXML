@@ -3441,6 +3441,10 @@ sub chooseArgHandler {
   AssignValue(mathstyle => $mathstylemap{$style});    # Bump the style smaller.
        # Unfortunately, the way we've done it, it's too late for the numerator!!!
   my @top = $stomach->regurgitate;
+  # A VERY risky strategy!! Now that we've set the display style, RE-digest the numerator!
+  # But because of XMRef/XMArg complications, we really want the raw (internal) TeX code
+  { local $LaTeXML::REVERT_RAW = 1;
+    @top = (Digest(Tokens(map { Revert($_) } @top))); }
   my @bot = $stomach->digestNextBody();
   my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
   $whatsit->setProperty(top    => List(@top, mode => 'math'));
@@ -4676,7 +4680,7 @@ sub doScriptpos {
   return (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
 
 sub doVariablesizeOp {
-  return (LookupValue('mathstyle') eq 'display' ? 'display' : undef); }
+  return (LookupValue('mathstyle') eq 'display' ? 'display' : 'text'); }
 
 DefMathI('\sum', undef, "\x{2211}",
   role      => 'SUMOP',
@@ -5735,44 +5739,52 @@ DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', rol
 
 # These are used (primarily?) within XMDual
 # The XMDual represents both a content & presentation representation of some
-# possibly exotic structure; what is sometimes called "Transfix notation",
+# possibly exotic structure ("Transfix notation"),
 # or just a somewhat complex presentation that corresponds (often) to a simpler
 # applicative content structure.
 # Invoking such a mathematical object to "arguments" requires that both the
 # content & presentation branches contain those arguments.
-# XMDual (see DefMath's support) places the actual arguments in the content branch,
-# wrapped in an XMArg, with a temporary identifier (xmkey);
-# The presentation branch gets an XMRef with the same identifier.
-# When the material is actually absorbed & turned into XML, the XMArg will get
-# an id assigned, and the XMRef will get an idref refering to that id.
-# Through this connect, later processing can generate the appropriate presentation
-# form of the argument, when needed.
+# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
+# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
+# unless the arg is "hidden" (ie. semantic, but not displayed).
+# This means that we don't know which one appears first! (See Package's dualize_arglist)
+#
+# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
+# and establish an id and idref later.
 DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
   reversion   => '#2',
-  bounded     => 1, beforeDigest => sub { AssignValue(mathstyle => 'text') },
+  bounded     => 1,
   afterDigest => sub {
     AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
 DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
   reversion => sub {
     Revert(LookupValue('xref:' . ToString($_[1]))); },
-  properties => sub { my ($w, $h, $d) = LookupValue('xref:' . ToString($_[1]))->getSize;
-    (width => $w, height => $h, depth => $d); });
+  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
 
+# Connect up the XMArg/XMRef pairs (actually can be multiple XMRef's)
+# We want to set the idref of the XMRef's to point to the id of the XMArg,
+# but we don't generally know which ones have been computed first
+# so we have to work both ways (use state to record associations, to avoid expensive xpath)
 Tag('ltx:XMArg', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
       GenerateID($document, $node, undef, 'xm');    # Generate id if none already.
       my $id = $node->getAttribute('xml:id');
-      AssignValue('xmkey:' . $key => $id, 'global'); } });
+      AssignValue('xmkey:' . $key => $id, 'global');    # for future use by XMRef
+            # but if we came after any XMRef's record their idref's as well.
+      if (my $referrers = LookupValue('xmkey_referrers:' . $key)) {
+        map { $document->setAttribute($_, idref => $id) } @$referrers;
+        AssignValue('xmkey_referrers:' . $key, undef, 'global'); }
+} });
 Tag('ltx:XMRef', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
-      if (!$node->getAttribute('idref')) {          # If not already set (somehow?)
-        my $id = LookupValue('xmkey:' . $key);
-        Warn('malformed', 'idref', $document,
-          "ID $id referenced by XMRef not found in any XMArg (via key $key)")
-          unless $id;
-        $document->setAttribute($node, idref => $id) if $id; } } });
+      if (!$node->getAttribute('idref')) {    # If not yet set
+        if (my $id = LookupValue('xmkey:' . $key)) {    # If XMArg already has an id
+          $document->setAttribute($node, idref => $id); }    # Note that id here
+        else {
+          PushValue('xmkey_referrers:' . $key, $node); } } }    # else, note that we still need an idref!
+});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
