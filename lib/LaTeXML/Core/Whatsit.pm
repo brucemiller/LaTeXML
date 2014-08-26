@@ -129,14 +129,17 @@ sub unlist {
 sub revert {
   my ($self) = @_;
   # WARNING: Forbidden knowledge?
-  # But how else to cache this stuff (which is a big performance boost)
-  if (my $saved = ($LaTeXML::DUAL_BRANCH
+  # (1) provide a means to get the RAW, internal markup that can (hopefully) be RE-digested
+  #     this is needed for getting the numerator of \over into textstyle!
+  # (2) caching the reversion (which is a big performance boost)
+  if (my $saved = !$LaTeXML::REVERT_RAW
+    && ($LaTeXML::DUAL_BRANCH
       ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
       : $$self{reversion})) {
     return $saved->unlist; }
   else {
     my $defn   = $self->getDefinition;
-    my $spec   = $defn->getReversionSpec;
+    my $spec   = ($LaTeXML::REVERT_RAW ? undef : $defn->getReversionSpec);
     my @tokens = ();
     if ((defined $spec) && (ref $spec eq 'CODE')) {    # If handled by CODE, call it
       @tokens = &$spec($self, $self->getArgs); }
@@ -145,7 +148,7 @@ sub revert {
         @tokens = LaTeXML::Core::Definition::Expandable::substituteTokens($spec, map { Tokens(Revert($_)) } $self->getArgs)
           if $spec ne ''; }
       else {
-        my $alias = $defn->getAlias;
+        my $alias = ($LaTeXML::REVERT_RAW ? undef : $defn->getAlias);
         if (defined $alias) {
           push(@tokens, T_CS($alias)) if $alias ne ''; }
         else {
@@ -157,7 +160,8 @@ sub revert {
         if (defined(my $trailer = $self->getTrailer)) {
           push(@tokens, Revert($trailer)); } } }
     # Now cache it, in case it's needed again
-    if ($LaTeXML::DUAL_BRANCH) {
+    if ($LaTeXML::REVERT_RAW) { }    # don't cache
+    elsif ($LaTeXML::DUAL_BRANCH) {
       $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH} = Tokens(@tokens); }
     else {
       $$self{reversion} = Tokens(@tokens); }
