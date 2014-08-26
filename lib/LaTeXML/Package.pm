@@ -1136,20 +1136,35 @@ sub getXMArgID {
 # return two lists:
 #   (1) The Tokens' wrapped in an XMAarg, with an ID added
 #   (2) a corresponding list of Tokens creating XMRef's to those IDs
+# Ah, but there are complications!!!
+# On the one hand, arguments may be hidden, never appearing on the presentation side
+# (all will be passed to the content side); This argues for putting the XMArg's on the content side.
+# OTOH, they ought to be on the presentation side, so that they can be expanded & digested in
+# the proper context they will be presented, and pick up all the styling (font size, displaystyle..)
+# I don't know how to work around the latter, so we'll put args on the presentation side,
+# UNLESS they are hidden, in which case they'll be on the content side.
+# So, how do we know if they're hidden? We'll scan the presentation for #\d, that's how!
 sub dualize_arglist {
-  my (@args) = @_;
+  my ($presentation, @args) = @_;
+  my %used = ();
+  $presentation = ToString($presentation);
+  $presentation =~ s/#(\d)/{ $used{$1}++; }/ge;    # Get the args that were actually used!
   my (@cargs, @pargs);
+  my $i = 0;
   foreach my $arg (@args) {
-    if ((defined $arg) && $arg->unlist) {    # defined and non-empty args get an ID.
+    $i++;
+    if (!(defined $arg) || !$arg->unlist) {        # undefined or empty args, just pass through
+      push(@pargs, $arg);
+      push(@cargs, $arg); }
+    elsif ($used{$i}) {                            # used in presentation?
+      my $id = getXMArgID();
+      push(@pargs, Invocation(T_CS('\@XMArg'), $id, $arg));    # put XMArg in presentation
+      push(@cargs, Invocation(T_CS('\@XMRef'), $id)); }
+    else {                                                     # Hidden arg, put XMArg in content.
       my $id = getXMArgID();
       push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); }
-    else {
-      push(@cargs, $arg);
-      push(@pargs, $arg); } }
+      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); } }
   return ([@cargs], [@pargs]); }
-# Quick reversal!
-#  ( [@pargs],[@cargs] ); }
 
 # Given a list of XML nodes (either libxml nodes, or array representations)
 # ensure each has an ID, and return a list of ltx:XMRef's to those nodes.
@@ -1322,8 +1337,8 @@ sub defmath_dual {
   my $pres_cs = T_CS($csname . "\@presentation");
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
-        my ($self,  @args)  = @_;
-        my ($cargs, $pargs) = dualize_arglist(@args);
+        my ($self, @args) = @_;
+        my ($cargs, $pargs) = dualize_arglist($presentation, @args);
         Invocation(T_CS('\DUAL'),
           ($options{role} ? T_OTHER($options{role}) : undef),
           Invocation($cont_cs, @$cargs),
