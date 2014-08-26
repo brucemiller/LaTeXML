@@ -29,65 +29,159 @@
       </Math>
     </equation>
     <equation frefnum="(2)" refnum="2" xml:id="S0.E2" labels="LABEL:xx">
-      <Math mode="display" xml:id="S0.E2.m1" tex="\begin{split}a&amp;=b+c-c\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" text="a = (((b + c) - c) + e) - f = g + h = i">
+      <Math mode="display" xml:id="S0.E2.m1" tex="\begin{split}\displaystyle a&amp;\displaystyle=b+c-c\\&#10;&amp;\displaystyle\quad+e-f\\&#10;&amp;\displaystyle=g+h\\&#10;&amp;\displaystyle=i\end{split}" text="a = (((b + c) - c) + e) - f = g + h = i">
         <XMath>
-          <XMApp>
-            <XMTok meaning="multirelation"/>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMTok meaning="equals" role="RELOP">=</XMTok>
+          <XMDual>
             <XMApp>
-              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+              <XMTok meaning="multirelation"/>
+              <XMRef idref="XM1"/>
+              <XMRef idref="XM2"/>
               <XMApp>
-                <XMTok lpadding="10.0pt" meaning="plus" role="ADDOP">+</XMTok>
+                <XMRef idref="XM10"/>
                 <XMApp>
-                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                  <XMRef idref="XM8"/>
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMRef idref="XM6"/>
+                    <XMApp>
+                      <XMRef idref="XM4"/>
+                      <XMRef idref="XM3"/>
+                      <XMRef idref="XM5"/>
+                    </XMApp>
+                    <XMRef idref="XM7"/>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMRef idref="XM9"/>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                <XMRef idref="XM11"/>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">f</XMTok>
+              <XMRef idref="XM12"/>
+              <XMApp>
+                <XMRef idref="XM14"/>
+                <XMRef idref="XM13"/>
+                <XMRef idref="XM15"/>
+              </XMApp>
+              <XMRef idref="XM16"/>
+              <XMRef idref="XM17"/>
             </XMApp>
-            <XMTok meaning="equals" role="RELOP">=</XMTok>
-            <XMApp>
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic">g</XMTok>
-              <XMTok role="UNKNOWN" font="italic">h</XMTok>
-            </XMApp>
-            <XMTok meaning="equals" role="RELOP">=</XMTok>
-            <XMTok role="UNKNOWN" font="italic">i</XMTok>
-          </XMApp>
+            <XMArray name="aligned">
+              <XMRow>
+                <XMCell align="right">
+                  <XMTok role="UNKNOWN" xml:id="XM1" font="italic">a</XMTok>
+                </XMCell>
+                <XMCell align="left">
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP" xml:id="XM2">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMApp>
+                      <XMTok meaning="minus" role="ADDOP" xml:id="XM6">-</XMTok>
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="XM4">+</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM3" font="italic">b</XMTok>
+                        <XMTok role="UNKNOWN" xml:id="XM5" font="italic">c</XMTok>
+                      </XMApp>
+                      <XMTok role="UNKNOWN" xml:id="XM7" font="italic">c</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell/>
+                <XMCell align="left">
+                  <XMApp>
+                    <XMTok meaning="minus" role="ADDOP" xml:id="XM10">-</XMTok>
+                    <XMApp>
+                      <XMTok lpadding="10.0pt" meaning="plus" role="ADDOP" xml:id="XM8">+</XMTok>
+                      <XMTok role="UNKNOWN" xml:id="XM9" font="italic">e</XMTok>
+                    </XMApp>
+                    <XMTok role="UNKNOWN" xml:id="XM11" font="italic">f</XMTok>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell/>
+                <XMCell align="left">
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP" xml:id="XM12">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP" xml:id="XM14">+</XMTok>
+                      <XMTok role="UNKNOWN" xml:id="XM13" font="italic">g</XMTok>
+                      <XMTok role="UNKNOWN" xml:id="XM15" font="italic">h</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell/>
+                <XMCell align="left">
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP" xml:id="XM16">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok role="UNKNOWN" xml:id="XM17" font="italic">i</XMTok>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation frefnum="(3)" refnum="3" xml:id="S0.E3">
-      <Math mode="display" xml:id="S0.E3.m1" tex="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" text="a + b + c + d + e + f + i + j + k + l + m + n">
+      <Math mode="display" xml:id="S0.E3.m1" tex="\displaystyle a+b+c+d+e+f\\&#10;\displaystyle+i+j+k+l+m+n" text="a + b + c + d + e + f + i + j + k + l + m + n">
         <XMath>
-          <XMApp>
-            <XMTok meaning="plus" role="ADDOP">+</XMTok>
-            <XMTok role="UNKNOWN" font="italic">a</XMTok>
-            <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            <XMTok role="UNKNOWN" font="italic">c</XMTok>
-            <XMTok role="UNKNOWN" font="italic">d</XMTok>
-            <XMTok role="UNKNOWN" font="italic">e</XMTok>
-            <XMTok role="UNKNOWN" font="italic">f</XMTok>
-            <XMTok role="UNKNOWN" font="italic">i</XMTok>
-            <XMTok role="UNKNOWN" font="italic">j</XMTok>
-            <XMTok role="UNKNOWN" font="italic">k</XMTok>
-            <XMTok role="UNKNOWN" font="italic">l</XMTok>
-            <XMTok role="UNKNOWN" font="italic">m</XMTok>
-            <XMTok role="UNKNOWN" font="italic">n</XMTok>
-          </XMApp>
+          <XMDual>
+            <XMApp>
+              <XMRef idref="XM19"/>
+              <XMRef idref="XM18"/>
+              <XMRef idref="XM20"/>
+              <XMRef idref="XM22"/>
+              <XMRef idref="XM24"/>
+              <XMRef idref="XM26"/>
+              <XMRef idref="XM28"/>
+              <XMRef idref="XM30"/>
+              <XMRef idref="XM32"/>
+              <XMRef idref="XM34"/>
+              <XMRef idref="XM36"/>
+              <XMRef idref="XM38"/>
+              <XMRef idref="XM40"/>
+            </XMApp>
+            <XMArray name="multline">
+              <XMRow>
+                <XMCell align="left">
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP" xml:id="XM19">+</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM18" font="italic">a</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM20" font="italic">b</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM22" font="italic">c</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM24" font="italic">d</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM26" font="italic">e</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM28" font="italic">f</XMTok>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="right">
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP" xml:id="XM31">+</XMTok>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP" xml:id="XM29">+</XMTok>
+                      <XMTok role="UNKNOWN" xml:id="XM30" font="italic">i</XMTok>
+                    </XMApp>
+                    <XMTok role="UNKNOWN" xml:id="XM32" font="italic">j</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM34" font="italic">k</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM36" font="italic">l</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM38" font="italic">m</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="XM40" font="italic">n</XMTok>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMDual>
         </XMath>
       </Math>
     </equation>
     <equationgroup class="ltx_eqn_gather" xml:id="S0.EGx1">
       <equation frefnum="(4)" refnum="4" xml:id="S0.E4">
-        <Math mode="inline" xml:id="S0.E4.m1" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
+        <Math mode="display" xml:id="S0.E4.m1" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -114,7 +208,7 @@
         </Math>
       </equation>
       <equation frefnum="(5)" refnum="5" xml:id="S0.E5">
-        <Math mode="inline" xml:id="S0.E5.m1" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
+        <Math mode="display" xml:id="S0.E5.m1" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
