@@ -210,6 +210,7 @@ sub convertDocument {
 
       if (my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES')) {
         NoteBegin("Rewriting");
+        $document->markXMNodeVisibility;
         foreach my $rule (@$rules) {
           $rule->rewrite($document, $document->getDocument->documentElement); }
         NoteEnd("Rewriting"); }
