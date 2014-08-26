@@ -128,7 +128,7 @@ sub onlyPreamble {
 
 AssignValue(current_environment => '', 'global');
 DefMacro('\@currenvir', '');
-DefMacro('\lx@setcurrenvir{}', sub {
+DefPrimitive('\lx@setcurrenvir{}', sub {
     DefMacro('\@currenvir', $_[1]);
     AssignValue(current_environment => ToString($_[1])); });
 Let('\@currenvline', '\@empty');
