@@ -248,22 +248,33 @@ sub parseString {
   my ($self) = @_;
   $self->skipWhite;
   my $string;
-  if ($$self{line} =~ /^\"/) {
-    while (($$self{line} !~ /\".*\"/) && $self->extendLine) { } # minor optimization: make sure there's at least two ""
-          # Hmmm.. apparently " is effectively quoted within the string as {"} ?
-    while ((!defined($string = extract_delimited($$self{line}, '\"'))) && $self->extendLine) { } # extend till balanced.
+  if ($$self{line} =~ s/^\"//) {    # If opening " (and remove it!)
+        # Note that BibTeX doesn't see a " if it is enclosed with {}, so can't use extract_delmited
+    while ($$self{line} !~ s/^\"//) {    # Until we've found the closing "
+      if (!$$self{line}) { $self->extendLine; }
+      elsif ($$self{line} =~ /^\{/) {    # Starts with a brace! extract balanced {}
+        $string .= $self->parseBalancedBraces; }
+      elsif ($$self{line} =~ s/^([^"\{]*)//) {    # else pull off everything except a brace or "
+        $string .= $1; } }
   }
   elsif ($$self{line} =~ /^\{/) {
-    while (($$self{line} !~ /\}/) && $self->extendLine) { } # minor optimization: make sure there's at least a closing }
-    while ((!defined($string = extract_bracketed($$self{line}, '{}'))) && $self->extendLine) { } # extend till balanced
-  }
+    $string = $self->parseBalancedBraces;
+    $string =~ s/^.//;                            # Remove the delimiters.
+    $string =~ s/.$//; }
   else {
     Error('expected', '<delimitedstring>', undef,
       "Expected a string delimited by \"..\", (..) or {..}"); }
-  $string =~ s/^.//;      # Remove the delimiters.
-  $string =~ s/.$//;
-  $string =~ s/^\s+//;    # and trim
+  $string =~ s/^\s+//;                            # and trim
   $string =~ s/\s+$//;
+  return $string; }
+
+sub parseBalancedBraces {
+  my ($self) = @_;
+  my $string;
+  # minor optimization: make sure there's at least one closing }
+  while (($$self{line} !~ /\}/) && $self->extendLine) { }
+  # Now try to parse balanced {}, extending until we do get a balanced pair.
+  while ((!defined($string = extract_bracketed($$self{line}, '{}'))) && $self->extendLine) { }
   return $string; }
 
 sub extendLine {
