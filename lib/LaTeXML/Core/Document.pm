@@ -333,6 +333,7 @@ sub doctest_children {
 # It removes the `helper' attributes that store fonts, source box, etc.
 sub finalize {
   my ($self) = @_;
+  $self->pruneXMDuals;
   if (my $root = $self->getDocument->documentElement) {
     local $LaTeXML::FONT = $self->getNodeFont($root);
     $self->finalize_rec($root);
@@ -1100,6 +1101,82 @@ sub modifyID {
 sub lookupID {
   my ($self, $id) = @_;
   return $$self{idstore}{$id}; }
+
+#======================================================================
+# Odd bit:
+# In an XMDual, in each branch (content, presentation) there will be atoms
+# that correspond to the input (one will be real, the other an XMRef to the first).
+# But also there will be additional "decoration" (delimiters, punctuation, etc on the presentation
+# side; other symbols, bindings, whatever, on the content side).
+# These decorations should NOT be subject to rewrite rules,
+# and in cross-linked parallel markup, they should be attributed to the
+# upper containing object's ID, rather than left dangling.
+#
+# To determine this, we mark all math nodes as to whether they are "visible" from
+# presentation, content or both (the default top-level being both).
+# Decorations are the nodes that are visible to only one mode.
+# Note that nodes that are not visible at all CAN occur (& do currently when the parser
+# creates XMDuals), pruneXMDuals (below) gets rid of them.
+
+# NOTE: This should ultimately be in a base Document class,
+# since it is also needed before conversion to parallel markup!
+sub markXMNodeVisibility {
+  my ($self) = @_;
+  my @xmath = $self->findnodes('//ltx:XMath/*');
+  foreach my $math (@xmath) {
+    foreach my $node ($self->findnodes('descendant-or-self::*[@_pvis or @_cvis]', $math)) {
+      $node->removeAttribute('_pvis');
+      $node->removeAttribute('_cvis'); } }
+  foreach my $math (@xmath) {
+    $self->markXMNodeVisibility_aux($math, 1, 1); }
+  return; }
+
+sub markXMNodeVisibility_aux {
+  my ($self, $node, $cvis, $pvis) = @_;
+  my $qname = $self->getNodeQName($node);
+  return if (!$cvis || $node->getAttribute('_cvis')) && (!$pvis || $node->getAttribute('_pvis'));
+  # Special case: for XMArg used to wrap "formal" arguments on the content side,
+  # mark them as visible as presentation as well.
+  $pvis = 1 if $cvis && ($qname eq 'ltx:XMArg');
+  $node->setAttribute('_cvis' => 1) if $cvis;
+  $node->setAttribute('_pvis' => 1) if $pvis;
+  if ($qname eq 'ltx:XMDual') {
+    my ($c, $p) = element_nodes($node);
+    $self->markXMNodeVisibility_aux($c, 1, 0) if $cvis;
+    $self->markXMNodeVisibility_aux($p, 0, 1) if $pvis; }
+  elsif ($qname eq 'ltx:XMRef') {
+    #    $self->markXMNodeVisibility_aux($self->realizeXMNode($node),$cvis,$pvis); }
+    my $id = $node->getAttribute('idref');
+    if (!$id) {
+      Warn('expected', 'id', $self, "Missing id on ltx:XMRef");
+      return; }
+    my $reffed = $self->lookupID($id);
+    if (!$reffed) {
+      Warn('expected', 'node', $self, "No node found with id=$id (referred to from ltx:XMRef)");
+      return; }
+    $self->markXMNodeVisibility_aux($reffed, $cvis, $pvis); }
+  else {
+    foreach my $child (element_nodes($node)) {
+      $self->markXMNodeVisibility_aux($child, $cvis, $pvis); } }
+  return; }
+
+# Reduce any ltx:XMDual's to just the visible branch, if the other is not visible
+# (according to markXMNodeVisibility)
+# If we could be 100% sure that the marking had stayed consistent (after various doc surgery)
+# we could avoid re-marking, but we'd better be sure before removing nodes!
+sub pruneXMDuals {
+  my ($self) = @_;
+  # RE-mark visibility!
+  $self->markXMNodeVisibility;
+  # will reversing keep from problems removing nodes from trees that already have been removed?
+  foreach my $dual (reverse $self->findnodes('descendant-or-self::ltx:XMDual')) {
+    my ($content, $presentation) = element_nodes($dual);
+    if (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $content)) {    # content never seen
+      $self->replaceTree($presentation, $dual); }
+    elsif (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $presentation)) {    # pres.
+      $self->replaceTree($content, $dual); }
+  }
+  return; }
 
 #**********************************************************************
 # Record the Box that created this node.
