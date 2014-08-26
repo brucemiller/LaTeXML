@@ -245,11 +245,13 @@ sub applyLayout_rec {
   if (my $breakset = $$layout{breakset}) {
     applyLayout_break($breakset, $layout, $node, @children);
   }
-  # If this is a row, and there are breaks underneath, adjust any fences!
+  # If this is a row, and there are breaks _underneath_, adjust any fences! (make stretchy!)
   elsif ((nodeName($node) eq 'm:mrow') && $$layout{hasbreak}) {
     if (isFence($children[0])) {
+      $children[0][1]{stretchy}  = 'true';
       $children[0][1]{symmetric} = 'false'; }
     if (isFence($children[-1])) {
+      $children[-1][1]{stretchy}  = 'true';
       $children[-1][1]{symmetric} = 'false'; }
   }
   # HACK: If this is an mfenced whose single mrow child was linebroken,
