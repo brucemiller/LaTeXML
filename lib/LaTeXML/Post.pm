@@ -277,6 +277,7 @@ sub toProcess {
 sub process {
   my ($self, $doc, @maths) = @_;
   local $LaTeXML::Post::MATHPROCESSOR = $self;
+  $doc->markXMNodeVisibility;
   $self->preprocess($doc, @maths);
   if ($$self{parallel}) {
     my @secondaries = @{ $$self{secondary_processors} };
@@ -310,6 +311,8 @@ sub process {
     if ($proc1 && $proc2) {
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
+  $doc->unmarkXMNodeVisibility;
+
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -441,9 +444,9 @@ sub associateID_aux {
   my ($self, $node, $sourceid) = @_;
   if (!ref $node) { }
   elsif (ref $node eq 'ARRAY') {    # Array represented
-    $self->associateID($node, $sourceid) unless $$node[1]{'xml:id'}; }
+    $self->associateID($node, $sourceid); }
   elsif ($node->nodeType == XML_ELEMENT_NODE) {
-    $self->associateID($node, $sourceid) unless $node->hasAttribute('xml:id'); }
+    $self->associateID($node, $sourceid); }
   return; }
 
 # Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
@@ -905,6 +908,44 @@ sub cloneNode {
 sub cloneNodes {
   my ($self, @nodes) = @_;
   return map { $self->cloneNode($_) } @nodes; }
+
+#======================================================================
+# DUPLICATED from Core::Document...(see discussion there)
+# Decorations on one side of an XMDual should be attributed to the
+# parent node on the other side (see ->associateIDs)
+
+sub markXMNodeVisibility {
+  my ($self) = @_;
+  foreach my $math ($self->findnodes('//ltx:XMath/*')) {
+    $self->markXMNodeVisibility_aux($math, 1, 1); }
+  return; }
+
+sub markXMNodeVisibility_aux {
+  my ($self, $node, $cvis, $pvis) = @_;
+  my $qname = $self->getQName($node);
+  return if (!$cvis || $node->getAttribute('_cvis')) && (!$pvis || $node->getAttribute('_pvis'));
+  $node->setAttribute('_cvis' => 1) if $cvis;
+  $node->setAttribute('_pvis' => 1) if $pvis;
+  if ($qname eq 'ltx:XMDual') {
+    my ($c, $p) = element_nodes($node);
+    $self->markXMNodeVisibility_aux($c, 1, 0) if $cvis;
+    $self->markXMNodeVisibility_aux($p, 0, 1) if $pvis; }
+  elsif ($qname eq 'ltx:XMRef') {
+    #    $self->markXMNodeVisibility_aux($self->realizeXMNode($node),$cvis,$pvis); }
+    my $id = $node->getAttribute('idref');
+    $self->markXMNodeVisibility_aux($self->findNodeByID($id), $cvis, $pvis); }
+  else {
+    foreach my $child (element_nodes($node)) {
+      $self->markXMNodeVisibility_aux($child, $cvis, $pvis); } }
+  return; }
+
+sub unmarkXMNodeVisibility {
+  my ($self) = @_;
+  foreach my $math ($self->findnodes('//ltx:XMath')) {
+    foreach my $node ($self->findnodes('descendant-or-self::*[@_pvis or //@_cvis]', $math)) {
+      $node->removeAttribute('_pvis');
+      $node->removeAttribute('_cvis'); } }
+  return; }
 
 #======================================================================
 
