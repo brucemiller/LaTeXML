@@ -176,56 +176,127 @@ DefEnvironment('{equation*}',
   locked => 1);
 
 #======================================================================
+# A utiltity for extracting the contents of an XMArray
+# $interrow, $intercolumn are optional markup to insert between rows & columns, respectively.
+# can be array representation of xml.
+sub extractXMArrayCells {
+  my ($document, $array, $interrow, $intercolumn) = @_;
+  my @contents = ();
+  my @rows     = element_nodes($array);
+  while (@rows) {
+    my $row   = shift(@rows);
+    my @cells = element_nodes($row);
+    while (@cells) {
+      my $cell = shift(@cells);           # ltx:XMCell should contain a single ltx:XMArg
+      my ($arg) = element_nodes($cell);
+      if ($arg) {
+        my @nodes = element_nodes($arg);
+        # Strip leading & trailing XMHint's from cells;
+        # they're (presumably) only for positioning and interfere with interpretation of the whole.
+        if (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
+        if (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
+        push(@contents, @nodes); }
+      push(@contents, $intercolumn) if $intercolumn && @cells; }
+    push(@contents, $interrow) if $interrow && @rows; }
+  return @contents; }
+
+#======================================================================
 # Section 3.3 Split equations without alignment
 
 # Multiline is for SINGLE equations,
 # but split on multiple lines, using \\ to separate lines. (there are no &)
 # Justifies the 1st line left, last line right, and middle ones centered.
-# Very useful when you are trying to fit a long equation into a known space,
-# but preserving the alignment seems less useful in the vaguer XML context,
-# particularly since there's no real alignment of columns that convey symmetry.
-# So... For now, we'll just turn into a single equation, ignoring the line breaks.
-# There is at most a single equation number, so MathFork isn't strictly required
-# here, but could be useful...
-DefEnvironment('{multline}',
+# Useful when you are trying to fit a long equation into a known space,
+# This preserves the splits and semantics by constructing an XMDual.
+DefMacro('\multline',                      '\@@multline\@start@alignment');
+DefMacro('\endmultline',                   '\@finish@alignment\@end@multline');
+DefMacro('\csname multline*\endcsname',    '\@@multlinestar\@start@alignment');
+DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline');
+DefPrimitive('\@end@multline', sub { $_[0]->egroup; });
+
+DefConstructor('\@@multline DigestedBody',
   "<ltx:equation refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>#body</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode => 'display_math',
-  beforeDigest => sub { Let(T_MATH, '\@dollar@in@mathmode'); },
-  properties => sub { RefStepCounter('equation') });
-DefEnvironment('{multline*}',
+  mode         => 'display_math',
+  properties   => sub { RefStepCounter('equation') },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    amsMultlineBindings(); },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  reversion => '\begin{multline}#1\end{multline}',
+  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
+
+DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>#body</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  beforeDigest => sub { Let(T_MATH, '\@dollar@in@mathmode'); },
-  mode => 'display_math');
+  mode         => 'display_math',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    amsMultlineBindings(); },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  reversion => '\begin{multline*}#1\end{multline*}',
+  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
 
+sub rearrangeAMSMultiline {
+  my ($document) = @_;
+  my $array      = $document->getNode->lastChild->lastChild->lastChild->lastChild;
+  my @rows       = element_nodes($array);
+  # Adjust the alignment of the 1st & last rows
+  map { $_->setAttribute(align => 'left'); } element_nodes($rows[0]);
+  map { $_->setAttribute(align => 'right'); } element_nodes($rows[-1]);
+  my @stuff = extractXMArrayCells($document, $array);
+  $document->replaceTree(['ltx:XMDual', {},
+      ['ltx:XMWrap', {},
+        createXMRefs($document, @stuff)],
+      $array],
+    $array);
+  return; }
+
+sub amsMultlineBindings {
+  # Need to arrange left, centered*, right alignment!
+  my $col1 = { before => Tokens(T_CS('\hfil'),
+      T_CS('\displaystyle')) };
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
+  alignmentBindings($template, undef, attributes => { name => 'multline' });
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
 
 # split is for SINGLE equations,
 # split is used WITHIN other math environments to provide line breaks and alignment.
-# Since it's already within math, the MathFork branching doesn't work here.
-# Should we use a math alignment stucture?
-# [in which case it is XMDual sufficient to capture the high-level
-# presentation vs. semantic?]
-# Or just turn the markup into XMHint's; effectively ignoring them.
-# The latter, for now.
-DefEnvironment('{split}',
-  "<ltx:XMHint name='split-begin'/>#body<ltx:XMHint name='split-end'/>",
-  beforeDigest => sub {
-    # Just dummy up these definitions; they shouldn't do much special now.
-    DefConstructor("&", "<ltx:XMHint name='align'/>");
-    DefConstructor("\\\\", "<ltx:XMHint name='newline'/>",
-      reversion => Tokens(T_CS("\\\\"), T_CR));
-    DefConstructor('\intertext{}',
-      "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text'); });
+# We'll use an XMDual to represent both the whole equation,
+# and the alignment structure.
+# (\intertext?)
 
+DefMacro('\split',    '\@@split\@start@alignment');
+DefMacro('\endsplit', '\@finish@alignment\@end@split');
+DefPrimitive('\@end@split', sub { $_[0]->egroup; });
+DefConstructor('\@@split DigestedBody',
+  '#1',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    amsAlignedBindings(); },
+  reversion => '\begin{split}#1\end{split}',
+  afterConstruct => sub { rearrangeAMSSplit($_[0], $_[0]->getNode->lastChild); });
+
+sub rearrangeAMSSplit {
+  my ($document, $array) = @_;
+  my @stuff = extractXMArrayCells($document, $array);
+  $document->replaceTree(['ltx:XMDual', {},
+      ['ltx:XMWrap', {},
+        createXMRefs($document, @stuff)],
+      $array],
+    $array);
+  return; }
 #======================================================================
 # Section 3.5 Equation groups without alignment
 # gather is for several equations, one per line, separated by \\ (& is not used)
@@ -264,7 +335,8 @@ sub rearrangeAMSGather {
       $equationgroup->removeChild($equation); }
     else {
       map { ($document->getNodeQName($_) eq 'ltx:_Capture_') && $document->unwrapNodes($_) }
-        $document->getChildElements($equation); } }
+        $document->getChildElements($equation);
+      map { $_->setAttribute(mode => 'display') } $document->findnodes('ltx:Math', $equation); } }
   return; }
 
 # Note that some people use align or gather inside equation, which seems to "work"
@@ -391,25 +463,37 @@ DefMacro('\endxxalignat',
 # a larger expression.
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
-
-# So, we just leave Hint markers for & and \\
-# Hmm...
-DefMacro('\@noop@newline', sub {
-    my ($gullet) = @_;
-    readNewlineArgs($gullet);    # ignore
-    (T_CS('\@noop@newline@marker')); });
-
-DefConstructor('\@noop@newline@marker',
-  "?#isMath(<ltx:XMHint name='newline'/>)(\n)",
-  properties => { isSpace => 1 },
-  reversion => "\\\\");
-
-DefEnvironment('{gathered}[]',
-  "<ltx:XMHint name='gathered-begin'/>"
-    . "#body"
-    . "<ltx:XMHint name='gathered-end'/>",
+# We'll just create an XMDual to contain the whole results, and the aligned structure.
+DefMacro('\gathered',    '\@@gathered\@start@alignment');
+DefMacro('\endgathered', '\@finish@alignment\@end@gathered');
+DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
+DefConstructor('\@@gathered DigestedBody',
+  '#1',
   beforeDigest => sub {
-    Let('\\\\', '\@noop@newline'); });
+    $_[0]->bgroup;
+    amsGatheredBindings(); },
+  reversion      => '\begin{gathered}#1\end{gathered}',
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $array = $document->getNode->lastChild;
+    # Insert a \qquad between the rows to encourage the parser to see them as separate eqns.
+    my @stuff = extractXMArrayCells($document, $array);
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMWrap', {},
+          createXMRefs($document, @stuff)],
+        $array],
+      $array);
+    return; });
+
+sub amsGatheredBindings {
+  # single column, centered
+  my $col1 = { before => Tokens(T_CS('\hfil'),
+      T_CS('\displaystyle')),
+    after => Tokens(T_CS('\hfil')) };
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
+  alignmentBindings($template, undef, attributes => { name => 'gathered' });
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
 
 DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned');
@@ -419,16 +503,20 @@ DefMacro('\endalignedat',  '\@finish@alignment\@end@amsaligned');
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
   '#1',
-  beforeDigest => sub { $_[0]->bgroup;
-    my $col1 = { before => Tokens(T_CS('\hfil'),
-        T_CS('\displaystyle')) };
-    my $col2 = { before => Tokens(T_CS('\displaystyle')),
-      after => Tokens(T_CS('\hfil')) };
-    my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
-    alignmentBindings($template, undef, attributes => { name => 'aligned' });
-    Let("\\\\", '\@alignment@newline@noskip');
-  },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    amsAlignedBindings(); },
   reversion => '\begin{aligned}#1\end{aligned}');
+
+sub amsAlignedBindings {
+  my $col1 = { before => Tokens(T_CS('\hfil'),
+      T_CS('\displaystyle')) };
+  my $col2 = { before => Tokens(T_CS('\displaystyle')),
+    after => Tokens(T_CS('\hfil')) };
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
+  alignmentBindings($template, undef, attributes => { name => 'aligned' });
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
 
 # If an aligned is the only child of an equation,
 # it seems better to rewrite the thing into an equationgroup/equation/MathFork construct!
@@ -477,16 +565,57 @@ sub rearrangeLoneAMSAligned {
         } } } }
   return; }
 
-DefMacro('\cases',    '\@@cases\@start@alignment');
-DefMacro('\endcases', '\@finish@alignment\@end@cases');
-DefPrimitive('\@end@cases', sub { $_[0]->egroup; });
-DefConstructor('\@@cases DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings('ll', 'math', attributes => { meaning => 'cases', open => '{' });
-    Let("\\\\", '\@alignment@newline@noskip'); },
-  reversion => '\begin{cases}#1\end{cases}');
+#======================================================================
+# set up a general macro to support variations on cases environments (see mathtools)
+
+# \lx@ams@cases{keyvals}{left}{right} body
+# keys are
+#  name  : the name of the environment (for reversion)
+#  meaning: the (presumed) meaning of the construct
+#  style : \textstyle or \displaystyle
+#  conditionmode : mode of 2nd column, text or math
+DefMacro('\lx@ams@cases{}',
+  '\lx@ams@cases@bindings{#1}\lx@ams@cases@{#1}\@start@alignment');
+DefMacro('\lx@end@ams@cases',
+  '\@finish@alignment\lx@end@ams@cases@');
+
+DefPrimitive('\lx@ams@cases@bindings RequiredKeyVals', sub {
+    my ($stomach, $kv) = @_;
+    $stomach->bgroup;
+    my $style = Invocation(T_CS('\@hidden'), $kv->getValue('style') || T_CS('\textstyle'));
+    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
+      ? (Invocation(T_CS('\@hidden'), T_MATH)) : ());
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        columns => [
+          { before => $style, after => Tokens(T_CS('\hfil')) },
+          { before => Tokens(@mode, $style), after => Tokens(@mode, T_CS('\hfil')) }]),
+      'math'); });
+
+DefKeyVal('CASES', 'style', 'UndigestedKey');
+DefConstructor('\lx@ams@cases@ RequiredKeyVals:CASES DigestedBody',
+  '<ltx:XMDual>'
+    . '<ltx:XMApp><ltx:XMTok meaning="#meaning"/><ltx:XMWrap/></ltx:XMApp>'
+    . '<ltx:XMWrap>#left#2#right</ltx:XMWrap></ltx:XMDual>',
+  properties => sub { %{ $_[1]->getKeyVals }; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $point = $document->getElement->lastChild;
+    my $ref   = $document->findnode('ltx:XMApp[1]/ltx:XMWrap',   $point);
+    my $array = $document->findnode('ltx:XMWrap[1]/ltx:XMArray', $point);
+    $document->replaceTree(createXMRefs($document, $array), $ref); },
+  reversion => sub {
+    my ($whatsit, $kv, $body) = @_;
+    my $name = $kv->getValue('name');
+    (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
+      Revert($body),
+      T_CS('\end'), T_BEGIN, Revert($name), T_END); });
+
+DefPrimitive('\lx@end@ams@cases@', sub { $_[0]->egroup; });
+
+# NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
+# NOTE: These defns have an  column spec [] (omit that for mathtools)
+DefMacro('\cases',    '\lx@ams@cases{name=cases,meaning=cases,left=\@left\{}');
+DefMacro('\endcases', '\lx@end@ams@cases');
 
 #======================================================================
 # Section 3.8 Adjusting tag placement
@@ -544,81 +673,68 @@ DefEnvironment('{subequations}',
 #======================================================================
 # Section 4.1 Matrices
 
-DefMacro('\matrix',    '\@@matrix\@start@alignment');
-DefMacro('\endmatrix', '\@finish@alignment\@end@matrix');
-DefPrimitive('\@end@matrix', sub { $_[0]->egroup; });
-DefConstructor('\@@matrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' }); },
-  reversion => '\begin{matrix}#1\end{matrix}');
+# set up a general macro to support variations on matrix environments (see mathtools)
+# \lx@ams@matrix{kevayls}{left}{right}[alignment] body
+# keys are
+#  name  : the name of the environment (for reversion)
+#  meaning: the (presumed) meaning of the construct
+#  left  : TeX code for left of matrix
+#  right  : TeX code for right
+DefMacro('\lx@ams@matrix {}[]',
+  '\lx@ams@matrix@bindings{#1}{#2}\@hidden{\textstyle}\lx@ams@matrix@{#1}{#2}\@start@alignment');
+DefMacro('\lx@end@ams@matrix',
+  '\@finish@alignment\lx@end@ams@matrix@');
 
-DefMacro('\pmatrix',    '\@@pmatrix\@start@alignment');
-DefMacro('\endpmatrix', '\@finish@alignment\@end@pmatrix');
-DefPrimitive('\@end@pmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@pmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
-        open => '(', close => ')' }); },
-  reversion => '\begin{pmatrix}#1\end{pmatrix}');
+DefPrimitive('\lx@ams@matrix@bindings{}{}', sub {
+    my ($stomach, $kv, $columns) = @_;
+    $stomach->bgroup;
+    $columns = ToString($columns) || 'c';
+    # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
+    # but we'd have to convert it to a repeating spec somehow.
+    my @cols = (($columns =~ /^(?:c|r)/ ? (before => Tokens(T_CS('\hfil'))) : ()),
+      ($columns =~ /^(?:c|l)/ ? (after => Tokens(T_CS('\hfil'))) : ()));
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        repeated => [{@cols}]),
+      'math'); });
 
-DefMacro('\bmatrix',    '\@@bmatrix\@start@alignment');
-DefMacro('\endbmatrix', '\@finish@alignment\@end@bmatrix');
-DefPrimitive('\@end@bmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@bmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
-        open => '[', close => ']' }); },
-  reversion => '\begin{bmatrix}#1\end{bmatrix}');
+DefConstructor('\lx@ams@matrix@ RequiredKeyVals {} DigestedBody',
+  '<ltx:XMDual>'
+    . '<ltx:XMApp><ltx:XMTok meaning="#meaning"/><ltx:XMWrap/></ltx:XMApp>'
+    . '<ltx:XMWrap>#left#3#right</ltx:XMWrap></ltx:XMDual>',
+  properties => sub { %{ $_[1]->getKeyVals }; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $point = $document->getElement->lastChild;
+    my $ref   = $document->findnode('ltx:XMApp[1]/ltx:XMWrap',   $point);
+    my $array = $document->findnode('ltx:XMWrap[1]/ltx:XMArray', $point);
+    $document->replaceTree(createXMRefs($document, $array), $ref); },
+  reversion => sub {
+    my ($whatsit, $kv, $alignment, $body) = @_;
+    my $name = $kv->getValue('name');
+    (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
+      ($alignment->unlist ? (T_OTHER('['), Revert($alignment), T_OTHER(']')) : ()),
+      Revert($body),
+      T_CS('\end'), T_BEGIN, Revert($name), T_END); }
+);
 
-DefMacro('\Bmatrix',    '\@@Bmatrix\@start@alignment');
-DefMacro('\endBmatrix', '\@finish@alignment\@end@Bmatrix');
-DefPrimitive('\@end@Bmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@Bmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
-        open => '{', close => '}' }); },
-  reversion => '\begin{Bmatrix}#1\end{Bmatrix}');
+DefPrimitive('\lx@end@ams@matrix@', sub { $_[0]->egroup; });
 
-DefMacro('\vmatrix',    '\@@vmatrix\@start@alignment');
-DefMacro('\endvmatrix', '\@finish@alignment\@end@vmatrix');
-DefPrimitive('\@end@vmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@vmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
-        open => '|', close => '|' }); },
-  reversion => '\begin{vmatrix}#1\end{vmatrix}');
-
-DefMacro('\Vmatrix',    '\@@Vmatrix\@start@alignment');
-DefMacro('\endVmatrix', '\@finish@alignment\@end@Vmatrix');
-DefPrimitive('\@end@Vmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@Vmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix',
-        open  => "\x{2225}",
-        close => "\x{2225}" }); },
-  reversion => '\begin{Vmatrix}#1\end{Vmatrix}');
-
-DefMacro('\smallmatrix',    '\@hidden{\scriptsize}\@@smallmatrix\@start@alignment');
-DefMacro('\endsmallmatrix', '\@finish@alignment\@end@smallmatrix');
-DefPrimitive('\@end@smallmatrix', sub { $_[0]->egroup; });
-DefConstructor('\@@smallmatrix DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' }); },
-  reversion => '\begin{smallmatrix}#1\end{smallmatrix}');
+# NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
+# NOTE: These defns have an  column spec [] (omit that for mathtools)
+DefMacro('\matrix',    '\lx@ams@matrix{name=matrix,meaning=matrix}[]');
+DefMacro('\endmatrix', '\lx@end@ams@matrix');
+DefMacro('\pmatrix',   '\lx@ams@matrix{name=pmatrix,meaning=matrix,left=\@left(,right=\@right)}[]');
+DefMacro('\endpmatrix', '\lx@end@ams@matrix');
+DefMacro('\bmatrix', '\lx@ams@matrix{name=bmatrix,meaning=matrix,left=\@left[,right=\@right]}[]');
+DefMacro('\endbmatrix', '\lx@end@ams@matrix');
+DefMacro('\Bmatrix', '\lx@ams@matrix{name=Bmatrix,meaning=matrix,left=\@left\{,right=\@right\}}[]');
+DefMacro('\endBmatrix', '\lx@end@ams@matrix');
+DefMacro('\vmatrix', '\lx@ams@matrix{name=vmatrix,meaning=determinant,left=\@left|,right=\@right|}[]');
+DefMacro('\endvmatrix', '\lx@end@ams@matrix');
+DefMacro('\Vmatrix', '\lx@ams@matrix{name=Vmatrix,meaning=norm,left=\@left\|,right=\@right\|}[]');
+DefMacro('\endVmatrix',     '\lx@end@ams@matrix');
+DefMacro('\smallmatrix',    '\lx@ams@matrix{name=smallmatrix,meaning=matrix,left=\scriptsize}[]');
+DefMacro('\endsmallmatrix', '\lx@end@ams@matrix');
 
 #======================================================================
 # Section 4.2 Math spacing commands
@@ -722,39 +838,32 @@ DefMath('\underleftrightarrow{}', "\x{2194}", operator_role => 'UNDERACCENT');
 #======================================================================
 # Section 4.9 Extensible arrows
 #  \xleftarrow, \xrightarrow
-# Note that these are treated primarily as arrows with stuff as accents over & maybe under.
-DefConstructor('\xrightarrow[]{}',
-  "?#1("
+
+# set up a general macro to support variations on xarrows macros (see mathtools)
+# \lx@long@arrow{token}{arrow}[under]{over}
+DefConstructor('\lx@long@arrow DefToken {}[]{}',
+  "?#3("
     . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#3</ltx:XMWrap>"
     . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='rightarrow' role='ARROW'>\x{2192}</ltx:XMTok>"
+    . "<ltx:XMWrap role='OVERACCENT'>#4</ltx:XMWrap>"
+    . "#2"
     . "</ltx:XMApp>"
     . "</ltx:XMApp>"
     . ")("
     . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='rightarrow' role='ARROW'>\x{2192}</ltx:XMTok>"
+    . "<ltx:XMWrap role='OVERACCENT'>#4</ltx:XMWrap>"
+    . "#2"
     . "</ltx:XMApp>"
     . ")",
+  reversion => sub {
+    my ($whatsit, $cs, $arrow, $under, $over) = @_;
+    ($cs, ($under ? (T_OTHER('['), Revert($under), T_OTHER(']')) : ()), T_BEGIN, Revert($over), T_END); },
+  # specialize to ldots ???
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
-DefConstructor('\xleftarrow[]{}',
-  "?#1("
-    . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
-    . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='leftarrow' role='ARROW'>\x{2190}</ltx:XMTok>"
-    . "</ltx:XMApp>"
-    . "</ltx:XMApp>"
-    . ")("
-    . "<ltx:XMApp role='ARROW'>"
-    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
-    . "<ltx:XMTok name='leftarrow' role='ARROW'>\x{2190}</ltx:XMTok>"
-    . "</ltx:XMApp>"
-    . ")",
-  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefMacro('\xrightarrow', '\lx@long@arrow{\xrightarrow}{\rightarrow}');
+DefMacro('\xleftarrow',  '\lx@long@arrow{\xleftarrow}{\leftarrow}');
 
 #======================================================================
 # Section 4.10 Affixing symbols to other symbols
