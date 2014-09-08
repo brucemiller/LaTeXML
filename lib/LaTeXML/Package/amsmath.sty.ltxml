@@ -905,66 +905,125 @@ DefConstructor('\ifrac{}{}',
   beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
-DefConstructor('\binom{}{}',
-  "<ltx:XMApp open='(' close=')'>"
-    . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
+DefConstructor('\lx@genbinom DefToken {}',
+  "<ltx:XMDual>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='binomial' role='#role'/>"
+    . "<ltx:XMRef _xmkey='#xmkey1'/>"
+    . "<ltx:XMRef _xmkey='#xmkey2'/>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMWrap>"
+    . "<ltx:XMTok role='OPEN' stretchy='true'>(</ltx:XMTok>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok role='STACKED' meaning='binomial' mathstyle='#mathstyle'/>"
+    . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
+    . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMTok role='CLOSE' stretchy='true'>)</ltx:XMTok>"
+    . "</ltx:XMWrap>"
+    . "</ltx:XMDual>",
+  reversion => sub {
+    my ($whatsit) = @_;
+    ($whatsit->getArg(1),
+      T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
+      T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
+  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
+  afterDigest => sub {
+    my ($stomach,   $whatsit) = @_;
+    my ($reversion, $style)   = $whatsit->getArgs;
+    $style = ToString($style);
+    my $mathstyle = $style || LookupValue('mathstyle');
+    $stomach->bgroup;
+    AssignValue(mathstyle => $LaTeXML::Package::Pool::mathstylemap{$mathstyle});
+    my $numer = Digest($stomach->getGullet->readArg);
+    my $denom = Digest($stomach->getGullet->readArg);
+    $stomach->egroup;
+    $whatsit->setProperties(
+      mathstyle => $mathstyle,
+      top       => $numer,
+      bottom    => $denom,
+      xmkey1    => LaTeXML::Package::getXMArgID(),
+      xmkey2    => LaTeXML::Package::getXMArgID());
+  });
 
-DefConstructor('\tbinom{}{}',
-  "<ltx:XMApp open='(' close=')'>"
-    . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
-DefConstructor('\dbinom{}{}',
-  "<ltx:XMApp open='(' close=')'>"
-    . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  beforeDigest => \&beforeDFrac, afterDigest => \&afterDFrac);
-
-# Annoying defaults!
-DefMacro('\genfrac{}{}{}{}{}{}',
-  '\if @#3@'
-    . '\if.#4.\@@genfrac{#1}{#2}{#5}{#6}\else\@@genfrac{#1}{#2}{#5}{#6}[#4]\fi'
-    . '\else'
-    . '\if.#4.\@@genfrac{#1}{#2}[#3]{#5}{#6}\else\@@genfrac{#1}{#2}[#3]{#5}{#6}[#4]\fi'
-    . '\fi');
+DefMacro('\binom',  '\lx@genbinom{\binom}{}');
+DefMacro('\tbinom', '\lx@genbinom{\binom}{text}');
+DefMacro('\dbinom', '\lx@genbinom{\binom}{display}');
 
 # Section 4.11.3 The \genfrac command
-DefConstructor('\@@genfrac{}{}[Dimension]{}{}[Number]',
-  "<ltx:XMApp open='#open' close='#close'>"
-    . "<ltx:XMTok role='#role' ?#meaning(meaning='#meaning')()"
-    . " ?#thickness(thickness='#thickness')() mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#4</ltx:XMArg>"
-    . "<ltx:XMArg>#5</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  reversion   => '\genfrac{#1}{#2}{#3}{#6}{#4}{#5}',
-  alias       => '\genfrac',
+# \genfrac{open}{close}{thickness}{style}{numerator}{denominator}
+# Annoying defaults: if thickness is empty, it is the normal line thickness
+# if style is empty, it is the current mathstyle.
+# (to disambiguate the optional's, shuffle the order)
+DefMacro('\genfrac{}{}{}{}{}{}',
+  '\lx@genfrac{\if.#1.\else\@left#1\fi}{\if.#2.\else\@right#2\fi}{#3}{#4}{#5}{#6}');
+DefMacro('\lx@genfrac{}{}{}{}{}{}',
+  '\if @#3@'
+    . '\if.#4.\lx@@genfrac{#1}{#2}{#5}{#6}\else\lx@@genfrac{#1}{#2}[#4]{#5}{#6}\fi'
+    . '\else'
+    . '\if.#4.\lx@@genfrac{#1}[#3]{#2}{#5}{#6}\else\lx@@genfrac{#1}[#3]{#2}[#4]{#5}{#6}\fi'
+    . '\fi');
+
+DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
+  "?#needXMDual(<ltx:XMDual>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='#meaning' role='#role'/>"
+    . "<ltx:XMRef _xmkey='#xmkey1'/>"
+    . "<ltx:XMRef _xmkey='#xmkey2'/>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMWrap>"
+    . "#open)()"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
+    . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
+    . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "?#needXMDual(#close"
+    . "</ltx:XMWrap>"
+    . "</ltx:XMDual>)()",
+  reversion => sub {
+    my ($whatsit) = @_;
+    my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
+    (T_CS('\genfrac'),
+      T_BEGIN, Revert($open->getArg(1)),  T_END,    # Assumes wrapped in \@left/\@right!
+      T_BEGIN, Revert($close->getArg(1)), T_END,
+      T_BEGIN, ($thickness ? Revert($thickness) : ()), T_END,
+      T_BEGIN, ($stylecode ? Revert($stylecode) : ()), T_END,
+      T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
+      T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
+  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my ($open, $close, $thickness, $num, $denom, $stylecode) = $whatsit->getArgs;
-    $open = ToString($open); $close = ToString($close);
-    if (my $entry = LaTeXML::Package::Pool::lookup_delimiter($open)) {
-      $open = $$entry{char}; }
-    if (my $entry = LaTeXML::Package::Pool::lookup_delimiter($close)) {
-      $close = $$entry{char}; }
-    my $role = ($thickness && ($thickness->valueOf == 0) ? 'STACKED' : 'MULOP');
-    my $meaning = ($role eq 'MULOP' ? 'divide' : undef);
+    my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
     $stylecode = $stylecode->valueOf if defined $stylecode;
     my $mathstyle = (!defined $stylecode ? LookupValue('mathstyle')
       : ($stylecode == 0 ? 'display'
         : ($stylecode == 1 ? 'text'
           : ($stylecode == 2 ? 'script'
             : 'scriptscript'))));
-    $whatsit->setProperties(open => $open,
+    $stomach->bgroup;
+    AssignValue(mathstyle => $LaTeXML::Package::Pool::mathstylemap{$mathstyle});
+    my $numer = Digest($stomach->getGullet->readArg);
+    my $denom = Digest($stomach->getGullet->readArg);
+    $stomach->egroup;
+    my $role = ($thickness && ($thickness->valueOf == 0) ? 'STACKED' : 'MULOP');
+    my $meaning = ($role eq 'MULOP' ? 'divide' : undef);
+    $whatsit->setProperties(
+      open      => $open,
       close     => $close,
       role      => $role,
       meaning   => $meaning,
       thickness => $thickness,
-      mathstyle => $mathstyle); });
+      mathstyle => $mathstyle,
+      top       => $numer,
+      bottom    => $denom);
+
+    if ($open || $close) {
+      $whatsit->setProperties(needXMDual => 1,
+        xmkey1 => LaTeXML::Package::getXMArgID(),
+        xmkey2 => LaTeXML::Package::getXMArgID()); }
+
+  });
 
 #======================================================================
 # Section 4.12 Continued fractions
