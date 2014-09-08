@@ -3428,31 +3428,45 @@ DefMacroI('\'', undef, sub {
   mathactive => 1);    # Only in math!
 
 #======================================================================
-# \choose & friends, also need special argument handling
+# \choose & friends, also need VERY special argument handling
 
 # After digesting the \choose (or whatever), grab the previous and following material
 # and store as args in the whatsit.
 our %mathstylemap = (display => 'text', text => 'script',
   script => 'scriptscript', scriptscript => 'scriptscript');
 
-sub chooseArgHandler {
-  my ($stomach, $whatsit) = @_;
-  my $style = LookupValue('mathstyle');
-  AssignValue(mathstyle => $mathstylemap{$style});    # Bump the style smaller.
-       # Unfortunately, the way we've done it, it's too late for the numerator!!!
-  my @top = $stomach->regurgitate;
-  # A VERY risky strategy!! Now that we've set the display style, RE-digest the numerator!
-  # But because of XMRef/XMArg complications, we really want the raw (internal) TeX code
-  { local $LaTeXML::REVERT_RAW = 1;
-    @top = (Digest(Tokens(map { Revert($_) } @top))); }
-  my @bot = $stomach->digestNextBody();
-  my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
-  $whatsit->setProperty(top    => List(@top, mode => 'math'));
-  $whatsit->setProperty(bottom => List(@bot, mode => 'math'));
-  $whatsit->setProperty(mathstyle => $style);
+# Increment the mathstyle stored in any boxes & whatsits.
+# The tricky part is to know when NOT to increment!
+# \displaystyle, constructors that set their own specific style,...
+# And, any collateral adjustments that had been done in digestion depending on mathstyle
+# WONT be adjusted!
+# We don't have a clear API to find the displayable Boxes within;
+# and we don't have a good handle on grouping...
+sub adjustMathstyle {
+  my ($adjusted, @boxes) = @_;
+  foreach my $box (@boxes) {
+    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
+    $$adjusted{$box} = 1;
+    my $r = ref $box;
+    next unless $r and $r->isaBox;
+    return if $box->getProperty('explicit_smathstyle');
+    next   if $box->getProperty('own_smathstyle');
 
-  AssignValue(mathstyle => $style);
-  return $closing; }          # leave the closing bit
+    if ($r eq 'LaTeXML::Core::Box') {
+
+      if (my $style = $box->getProperty('mathstyle')) {
+        if (my $newstyle = $mathstylemap{$style}) {
+          $box->setProperty(mathstyle => $newstyle); } } }
+    elsif ($r eq 'LaTeXML::Core::List') {
+      adjustMathstyle($adjusted, $box->unlist); }
+    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+      if (my $style = $box->getProperty('mathstyle')) {
+        if (my $newstyle = $mathstylemap{$style}) {
+          $box->setProperty(mathstyle => $newstyle); } }
+      # now recurse on contained boxes (args AND properties!)
+      adjustMathstyle($adjusted, $box->getArgs);
+      adjustMathstyle($adjusted, values %{ $box->getPropertiesRef }); } }
+  return; }
 
 sub computeFracSize {
   my ($whatsit) = @_;
@@ -3463,6 +3477,16 @@ sub computeFracSize {
   my $h         = $top->getTotalHeight->add($d);
   $whatsit->setProperties(width => $w, height => $h, depth => $d);
   return; }
+
+sub fracSizer {
+  my ($numerator, $denominator) = @_;
+  my $w = $numerator->getWidth->larger($denominator->getWidth);
+  my $d = $denominator->getTotalHeight->multiply(0.5);
+  my $h = $numerator->getTotalHeight->add($d);
+  return ($w, $h, $d); }
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Some of this obsolete?
 
 # Support here: Used by LaTeX, amsmath, but also amstex
 sub beforeFrac {
@@ -3490,6 +3514,7 @@ sub beforeTFrac {
 sub afterTFrac {
   my ($stomach, $whatsit) = @_;
   afterFrac($stomach, $whatsit);
+  $whatsit->setProperty(own_mathstyle => 1);
   $stomach->egroup;
   return; }
 
@@ -3502,131 +3527,91 @@ sub beforeDFrac {
 sub afterDFrac {
   my ($stomach, $whatsit) = @_;
   afterFrac($stomach, $whatsit);
+  $whatsit->setProperty(own_mathstyle => 1);
   $stomach->egroup;
   return; }
 
-# WHY did I change to top/bottom instead of #1,#2 ????
-# This will inhibit comparisons!!!!
-# Is it because of the delims forms already having args???
-# No, because constructor doesn't know there are 2 extra args!!
-# NOTE: This group needs to be reworked to preserve color (at least)
-DefConstructorI('\choose', undef,
-  "<ltx:XMApp open='(' close=')'>"
-    . "<ltx:XMTok meaning='binomial' role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# New version!
+
+# \lx@generalized@over{reversion}{keyvals}{top}{bottom}
+# keyvals: role,meaning, left,right, thickness
+DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
+  "?#needXMDual("
+    . "<ltx:XMDual>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='#meaning' role='#role'/>"
+    . "<ltx:XMRef _xmkey='#xmkey1'/>"
+    . "<ltx:XMRef _xmkey='#xmkey2'/>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMWrap>"
+    . "#left)()"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
+    . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
+    . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "?#needXMDual(#right"
+    . "</ltx:XMWrap>"
+    . "</ltx:XMDual>)()",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv = $whatsit->getArg(2);
+    # Really, we want the mathstyle that was in effect BEFORE the group starting the numerator!
+    # (there could be a \displaystyle INSIDE the numerator, but that's not the one we want)
+    # Of course the group that started the numerator may be the start of the Math, itself!
+    # AND, the numerator, which was already digested, needs it's mathstyle ADJUSTED
+    my $style = ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+      ? $STATE->lookupValue('mathstyle')            # then just use whatever style we've got
+      : ($STATE->isValueBound('mathstyle', 0)       # else if style was set in numerator
+          && $STATE->valueInFrame('mathstyle', 1))
+        || $STATE->lookupValue('mathstyle')         # then just use whatever style we've got
+    );
+    my $newstyle = $mathstylemap{$style};
+    AssignValue(mathstyle => $mathstylemap{$style});    # Bump the style smaller.
+         # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
+    my @top = $stomach->regurgitate;
+    # really have to pass +/-1, +/-2 etc..!
+    adjustMathstyle({}, @top);
+
+    my @bot = $stomach->digestNextBody();
+    my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
+    $whatsit->setProperties(top => List(@top, mode => 'math'),
+      bottom => List(@bot, mode => 'math'),
+      mathstyle => $style);
+    if ($kv->getValue('left') || $kv->getValue('right')) {
+      $whatsit->setProperties(needXMDual => 1,
+        xmkey1 => LaTeXML::Package::getXMArgID(),
+        xmkey2 => LaTeXML::Package::getXMArgID()); }
+    AssignValue(mathstyle => $style);    # Revert the style
+    return $closing; },                  # and leave the closing bit, whatever it is.
+  properties => sub { %{ $_[2]->getKeyVals }; },
+  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
+  reversion => sub {
     my ($whatsit) = @_;
     (Revert($whatsit->getProperty('top')),
-      T_CS('\choose'),
-      Revert($whatsit->getProperty('bottom'))); });
-DefConstructorI('\brace', undef,
-  "<ltx:XMApp open='{' close='}'>"
-    . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit) = @_;
-    (Revert($whatsit->getProperty('top')),
-      T_CS('\choose'),
-      Revert($whatsit->getProperty('bottom'))); });
-DefConstructorI('\brack', undef,
-  "<ltx:XMApp open='[' close=']'>"
-    . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"    # what meaning?
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit) = @_;
-    (Revert($whatsit->getProperty('top')),
-      T_CS('\choose'),
-      Revert($whatsit->getProperty('bottom'))); });
-DefConstructorI('\over', undef,
-  "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit) = @_;
-    (Revert($whatsit->getProperty('top')),
-      T_CS('\over'),
-      Revert($whatsit->getProperty('bottom'))); });
-DefConstructorI('\atop', undef,
-  "<ltx:XMApp>"
-    . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit) = @_;
-    (Revert($whatsit->getProperty('top')),
-      T_CS('\atop'),
-      Revert($whatsit->getProperty('bottom'))); });
-DefConstructor('\overwithdelims Token Token',
-  "<ltx:XMApp open='#1' close='#2'>"
-    . "<ltx:XMTok meaning='divide' mathstyle='#mathstyle' role='MULOP'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit, @args) = @_;
-    (Revert($whatsit->getProperty('top')),
-      $whatsit->getDefinition->invocation(@args),
-      Revert($whatsit->getProperty('bottom'))); });
-# But, wonder what the _meaning_ is!
-DefConstructor('\atopwithdelims Token Token',
-  "<ltx:XMApp open='#1' close='#2'>"
-    . "<ltx:XMTok role='STACKED' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit, @args) = @_;
-    (Revert($whatsit->getProperty('top')),
-      $whatsit->getDefinition->invocation(@args),
+      $whatsit->getArg(1),
       Revert($whatsit->getProperty('bottom'))); });
 
-sub IsZero {
-  my ($dim) = @_;
-  return (!defined $dim) || ($dim->valueOf == 0); }
-
-DefConstructor('\above Dimension',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok ?&IsZero(#1)(role='STACKED')(role='MULOP' meaning='divide')"
-    . " mathstyle='#mathstyle' thickness='#1'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit, @args) = @_;
-    (Revert($whatsit->getProperty('top')),
-      $whatsit->getDefinition->invocation(@args),
-      Revert($whatsit->getProperty('bottom'))); });
-
-DefConstructor('\abovewithdelims Token Token Dimension',
-  "<ltx:XMApp open='#1' close='#2'>"
-    . "<ltx:XMTok ?&IsZero(#3)(role='STACKED')(role='MULOP' meaning='divide')"
-    . " mathstyle='#mathstyle' thickness='#3'/>"
-    . "<ltx:XMArg>#top</ltx:XMArg>"
-    . "<ltx:XMArg>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  afterDigest => \&chooseArgHandler,
-  reversion   => sub {
-    my ($whatsit, @args) = @_;
-    (Revert($whatsit->getProperty('top')),
-      $whatsit->getDefinition->invocation(@args),
-      Revert($whatsit->getProperty('bottom'))); });
+DefMacro('\choose',
+  '\lx@generalized@over{\choose}{meaning=binomial,role=STACKED,left=\@left(,right=\@right)}');
+DefMacro('\brace',
+  '\lx@generalized@over{\brace}{role=STACKED,left=\@left\{,right=\@right\}}');
+DefMacro('\brack',
+  '\lx@generalized@over{\brack}{role=STACKED,left=\@left[,right=\@right]}');
+DefMacro('\atop',
+  '\lx@generalized@over{\atop}{role=STACKED}');
+DefMacro('\atopwithdelims Token Token',
+  '\lx@generalized@over{\atopwithdelims #1 #2}{role=STACKED,left={\@left#1},right={\@right#2}}');
+DefMacro('\over',
+  '\lx@generalized@over{\over}{meaning=divide,role=MULOP}');
+DefMacro('\overwithdelims Token Token',
+'\lx@generalized@over{\overwithdelims #1 #2}{left={\@left#1},right={\@right#2},meaning=divide,role=MULOP}');
+# My thinking was that this is a "fraction" providing the dimension is > 0!
+DefMacro('\above Dimension',
+  '\lx@generalized@over{\above #1}{meaning=divide,thickness=#1,role=MULOP}');
+DefMacro('\abovewithdelims Token Token Dimension',
+'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3,role=MULOP}');
 
 #======================================================================
 DefConstructorI('\cal', undef, '',
@@ -5312,14 +5297,18 @@ Let('\Vert', '\|');
 # TeX Book, Appendix B. p. 360
 
 # \choose, et al, already handle above.
+# Note that in TeX, all 4 args get digested(!)
+# and the choice is made when absorbing!
+DefConstructor('\mathchoice{}{}{}{}', sub {
+    my ($document, $d, $t, $s, $ss, %props) = @_;
+    my $style = $props{mathstyle};
+    my $choice = ($style eq 'display' ? $d
+      : ($style eq 'text' ? $t
+        : ($style eq 'script' ? $s
+          : $ss)));
+    $document->absorb($choice); },
+  properties => { mathstyle => sub { LookupValue('mathstyle'); } });
 
-DefMacro('\mathchoice{}{}{}{}', sub {
-    my ($gullet, $d, $t, $s, $ss) = @_;
-    my $style = LookupValue('mathstyle') || 'display';
-    if    ($style eq 'display') { $d->unlist; }
-    elsif ($style eq 'text')    { $t->unlist; }
-    elsif ($style eq 'script')  { $s->unlist; }
-    else { $ss->unlist; } });
 DefMacro('\mathpalette{}{}',
   '\mathchoice{#1\displaystyle{#2}}{#1\textstyle{#2}}'
     . '{#1\scriptstyle{#2}}{#1\scriptscriptstyle{#2}}');
@@ -5542,10 +5531,19 @@ DefConstructor('\@', '');
 # Math spacing.
 
 # Math style.
-DefPrimitiveI('\displaystyle', undef, '', afterDigest => sub { AssignValue(mathstyle => 'display'); });
-DefPrimitiveI('\textstyle', undef, '', afterDigest => sub { AssignValue(mathstyle => 'text'); });
-DefPrimitiveI('\scriptstyle', undef, '', afterDigest => sub { AssignValue(mathstyle => 'script'); });
-DefPrimitiveI('\scriptscriptstyle', undef, '', afterDigest => sub { AssignValue(mathstyle => 'scriptscript'); });
+# Also record that this explicitly sets the mathstyle (support for \over, etal)
+DefPrimitiveI('\displaystyle', undef, sub {
+    Box(undef, undef, undef, T_CS('\displaystyle'), explicit_mathstyle => 1); },
+  afterDigest => sub { AssignValue(mathstyle => 'display'); });
+DefPrimitiveI('\textstyle', undef, sub {
+    Box(undef, undef, undef, T_CS('\textstyle'), explicit_mathstyle => 1); },
+  afterDigest => sub { AssignValue(mathstyle => 'text'); });
+DefPrimitiveI('\scriptstyle', undef, sub {
+    Box(undef, undef, undef, T_CS('\scriptstyle'), explicit_mathstyle => 1); },
+  afterDigest => sub { AssignValue(mathstyle => 'script'); });
+DefPrimitiveI('\scriptscriptstyle', undef, sub {
+    Box(undef, undef, undef, T_CS('\scriptscriptstyle'), explicit_mathstyle => 1); },
+  afterDigest => sub { AssignValue(mathstyle => 'scriptscript'); });
 
 #======================================================================
 
