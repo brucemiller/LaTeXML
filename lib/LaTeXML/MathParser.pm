@@ -92,7 +92,10 @@ sub parseMath {
 
 sub getQName {
   my ($node) = @_;
-  return $LaTeXML::MathParser::DOCUMENT->getModel->getNodeQName($node); }
+  if (ref $node eq 'ARRAY') {
+    return $$node[0]; }
+  else {
+    return $LaTeXML::MathParser::DOCUMENT->getModel->getNodeQName($node); } }
 
 sub realizeXMNode {
   my ($node) = @_;
@@ -110,8 +113,8 @@ sub realizeXMNode {
     if (my $realnode = $doc->lookupID($idref)) {
       return $realnode; }
     else {
-      Fatal("expected", $idref, undef, "Cannot find a node with xml:id='$idref'");
-      return; } }
+      Error("expected", $idref, undef, "Cannot find a node with xml:id='$idref'");
+      return ['ltx:ERROR', {}, "Missing XMRef idref=$idref"]; } }
   else {
     return $node; } }
 
@@ -202,10 +205,10 @@ sub node_location {
 # us something about what the child must be....
 sub parse {
   my ($self, $xnode, $document) = @_;
-  local $LaTeXML::MathParser::STRICT = 1;
-  local $LaTeXML::MathParser::WARNED = 0;
-  local $LaTeXML::MathParser::XNODE  = $xnode;
-
+  local $LaTeXML::MathParser::STRICT      = 1;
+  local $LaTeXML::MathParser::WARNED      = 0;
+  local $LaTeXML::MathParser::XNODE       = $xnode;
+  local $LaTeXML::MathParser::PUNCTUATION = {};
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
     my $p = $xnode->parentNode;
@@ -217,6 +220,13 @@ sub parse {
         $p = $n[0]; }
       else {
         Fatal('malformed', '<XMath>', $xnode, "XMath node has DOCUMENT_FRAGMENT for parent!"); } }
+    # HACK: replace XMRef's to stray trailing punctution
+    foreach my $id (keys %$LaTeXML::MathParser::PUNCTUATION) {
+      my $r = $$LaTeXML::MathParser::PUNCTUATION{$id}->cloneNode;
+      $r->removeAttribute('xml:id');
+      foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
+        $document->replaceTree($r, $n); } }
+
     $p->setAttribute('text', text_form($result)); }
   return; }
 
@@ -479,7 +489,13 @@ sub parse_single {
     my ($x, $r) = ($nodes[-1]);
     $punct = ($x && (getQName($x) eq 'ltx:XMTok')
         && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT') || ($r eq 'PERIOD'))
-      ? pop(@nodes) : undef); }
+      ? pop(@nodes) : undef);
+    # Special case hackery, in case this thing is XMRef'd!!!
+    # We could just stick it on the end of the presentation,
+    # but it doesn't belong in the content at all!?!?
+    if (my $id = $punct && $punct->getAttribute('xml:id')) {
+      $$LaTeXML::MathParser::PUNCTUATION{$id} = $punct; }
+  }
 
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
     $result = $nodes[0] || Absent(); }
@@ -663,7 +679,7 @@ sub textrec {
   elsif ($tag eq 'ltx:XMArray') {
     return textrec_array($node); }
   else {
-    return '[' . $node->textContent . ']'; } }
+    return '[' . p_getValue($node) . ']'; } }
 
 sub textrec_apply {
   my ($name, $op, @args) = @_;
@@ -911,7 +927,7 @@ sub extract_separators {
   if (@stuff) {
     push(@args, shift(@stuff));    # Grab 1st expression
     while (@stuff) {               # Expecting pairs of punct, expression
-      my $p = shift(@stuff);
+      my $p = realizeXMNode(shift(@stuff));
       $punct .=
         ($punct ? ' ' : '')        # Delimited by SINGLE SPACE!
         . spacingToString(getXMHintSpacing(p_getAttribute($p, 'lpadding')))
@@ -985,7 +1001,7 @@ sub Fence {
   my $o  = p_getValue($open);
   my $c  = p_getValue($close);
   my $n  = int(($nargs - 2 + 1) / 2);
-  my @p  = map { p_getValue(@stuff[2 * $_]) } 1 .. $n - 1;
+  my @p  = map { p_getValue(realizeXMNode(@stuff[2 * $_])) } 1 .. $n - 1;
   my $op = ($n == 0
     ? 'list'                                    # ?
     : ($n == 1
