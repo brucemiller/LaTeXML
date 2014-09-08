@@ -24,7 +24,7 @@ our @EXPORT = (
 # Exported constructors
 
 sub Box {
-  my ($string, $font, $locator, $tokens) = @_;
+  my ($string, $font, $locator, $tokens, %properties) = @_;
   $font = $STATE->lookupValue('font') unless defined $font;
   $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
   $tokens = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
@@ -32,9 +32,9 @@ sub Box {
   if ($state->lookupValue('IN_MATH')) {
     my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     return LaTeXML::Core::Box->new($string, $font->specialize($string), $locator, $tokens,
-      mode => 'math', attributes => $attr); }
+      mode => 'math', attributes => $attr, %properties); }
   else {
-    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens); } }
+    return LaTeXML::Core::Box->new($string, $font, $locator, $tokens, %properties); } }
 
 #======================================================================
 # Box Object
