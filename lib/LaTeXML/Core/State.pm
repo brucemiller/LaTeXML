@@ -231,6 +231,14 @@ sub isValueBound {
   return (defined $frame ? $$self{undo}[$frame]{value}{$key}
     : defined $$self{value}{$key}[0]); }
 
+sub valueInFrame {
+  my ($self, $key, $frame) = @_;
+  $frame = 0 unless defined $frame;
+  my $p = 0;
+  for (my $f = 0 ; $f < $frame ; $f++) {
+    $p += $$self{undo}[$f]{value}{$key}; }
+  return $$self{value}{$key}[$p]; }
+
 #======================================================================
 # Lookup & assign a character's Catcode
 sub lookupCatcode {
@@ -501,11 +509,13 @@ sub deactivateScope {
 
 sub getKnownScopes {
   my ($self) = @_;
-  return sort keys %{ $$self{stash} }; }
+  my @scopes = sort keys %{ $$self{stash} };
+  return @scopes; }
 
 sub getActiveScopes {
   my ($self) = @_;
-  return sort keys %{ $$self{stash_active} }; }
+  my @scopes = sort keys %{ $$self{stash_active} };
+  return @scopes; }
 
 #======================================================================
 # Units.
