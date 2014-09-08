@@ -313,7 +313,7 @@ DefMacro('\the@bibitem', '\number\c@@bibitem');
 ## No that gives too many elements that can be auto-opened!
 ## try the \@auto@Refs bit ... ?
 ##Tag('ltx:bibliography',autoOpen=>1,autoClose=>1);
-
+Tag('ltx:bibliography', autoClose => 1);
 Tag('ltx:biblist', autoOpen => 1, autoClose => 1);
 
 DefRegister('\refindentwd' => Dimension(0));
