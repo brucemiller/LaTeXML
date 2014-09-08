@@ -16,11 +16,22 @@
               <XMTok role="UNKNOWN" font="italic">a</XMTok>
               <XMTok role="UNKNOWN" font="italic">b</XMTok>
             </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex1.m1.xm1"/>
+                <XMRef idref="S0.Ex1.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM41">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex1.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
@@ -32,21 +43,54 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" role="STACKED" thickness="0.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="1.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="2.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok role="STACKED"/>
+                <XMRef idref="S0.Ex2.m1.xm1"/>
+                <XMRef idref="S0.Ex2.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM42">
+                  <XMTok mathstyle="display" role="STACKED" thickness="0.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex2.m1.xm3"/>
+                <XMRef idref="S0.Ex2.m1.xm4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM43">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="1.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm3" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm4" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex2.m1.xm5"/>
+                <XMRef idref="S0.Ex2.m1.xm6"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM44">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="2.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm5" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex2.m1.xm6" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
@@ -58,21 +102,54 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="1.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="2.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="3.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex3.m1.xm1"/>
+                <XMRef idref="S0.Ex3.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM45">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="1.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex3.m1.xm3"/>
+                <XMRef idref="S0.Ex3.m1.xm4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM46">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="2.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm3" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm4" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex3.m1.xm5"/>
+                <XMRef idref="S0.Ex3.m1.xm6"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM47">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="3.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm5" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex3.m1.xm6" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
@@ -84,31 +161,86 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="text" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="script" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="scriptscript" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex4.m1.xm1"/>
+                <XMRef idref="S0.Ex4.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM48">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex4.m1.xm3"/>
+                <XMRef idref="S0.Ex4.m1.xm4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM49">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm3" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm4" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex4.m1.xm5"/>
+                <XMRef idref="S0.Ex4.m1.xm6"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM50">
+                  <XMTok mathstyle="text" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm5" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm6" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex4.m1.xm7"/>
+                <XMRef idref="S0.Ex4.m1.xm8"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM51">
+                  <XMTok mathstyle="script" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm7" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm8" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex4.m1.xm9"/>
+                <XMRef idref="S0.Ex4.m1.xm10"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM52">
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm9" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex4.m1.xm10" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
@@ -120,26 +252,70 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="text" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="script" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="scriptscript" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex5.m1.xm1"/>
+                <XMRef idref="S0.Ex5.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM53">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex5.m1.xm3"/>
+                <XMRef idref="S0.Ex5.m1.xm4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM54">
+                  <XMTok mathstyle="text" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm3" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm4" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex5.m1.xm5"/>
+                <XMRef idref="S0.Ex5.m1.xm6"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM55">
+                  <XMTok mathstyle="script" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm5" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm6" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex5.m1.xm7"/>
+                <XMRef idref="S0.Ex5.m1.xm8"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM56">
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="MULOP"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm7" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.xm8" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
@@ -151,26 +327,70 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="scriptscript" role="STACKED" thickness="0.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="script" meaning="divide" role="MULOP" thickness="1.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="text" meaning="divide" role="MULOP" thickness="2.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
-            <XMApp close=")" open="(">
-              <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="3.0pt"/>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok role="STACKED"/>
+                <XMRef idref="S0.Ex6.m1.xm1"/>
+                <XMRef idref="S0.Ex6.m1.xm2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM57">
+                  <XMTok mathstyle="scriptscript" role="STACKED" thickness="0.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm1" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm2" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex6.m1.xm3"/>
+                <XMRef idref="S0.Ex6.m1.xm4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM58">
+                  <XMTok mathstyle="script" meaning="divide" role="MULOP" thickness="1.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm3" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm4" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex6.m1.xm5"/>
+                <XMRef idref="S0.Ex6.m1.xm6"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM59">
+                  <XMTok mathstyle="text" meaning="divide" role="MULOP" thickness="2.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm5" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm6" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="divide" role="MULOP"/>
+                <XMRef idref="S0.Ex6.m1.xm7"/>
+                <XMRef idref="S0.Ex6.m1.xm8"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN">(</XMTok>
+                <XMApp xml:id="XM60">
+                  <XMTok mathstyle="display" meaning="divide" role="MULOP" thickness="3.0pt"/>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm7" font="italic">a</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.xm8" font="italic">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE">)</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math>
