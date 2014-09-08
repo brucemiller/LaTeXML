@@ -1092,7 +1092,7 @@ DefMathML('Apply:OVERACCENT:?', sub {
     if (getQName($base) eq 'ltx:XMApp') {
       my ($xaccent, $xbase) = element_nodes($base);
       if ((getQName($xaccent) eq 'ltx:XMTok')
-        && ($xaccent->getAttribute('role') eq 'UNDERACCENT')) {
+        && (($xaccent->getAttribute('role') || '') eq 'UNDERACCENT')) {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($xaccent), pmml_scriptsize($accent)]; } }
     return ['m:mover', { accent => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
@@ -1102,7 +1102,7 @@ DefMathML('Apply:UNDERACCENT:?', sub {
     if (getQName($base) eq 'ltx:XMApp') {
       my ($xaccent, $xbase) = element_nodes($base);
       if ((getQName($xaccent) eq 'ltx:XMTok')
-        && ($xaccent->getAttribute('role') eq 'OVERACCENT')) {
+        && (($xaccent->getAttribute('role') || '') eq 'OVERACCENT')) {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($accent), pmml_scriptsize($xaccent)]; } }
     return ['m:munder', { accentunder => 'true' }, pmml($base), pmml_scriptsize($accent)]; });
