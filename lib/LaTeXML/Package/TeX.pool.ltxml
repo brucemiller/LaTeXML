@@ -5078,11 +5078,11 @@ DefMath('\vec Digested', "\x{2192}",
 DefMath('\dot Digested',      "\x{02D9}", operator_role => 'OVERACCENT');    # DOT ABOVE
 DefMath('\ddot Digested',     UTF(0xA8),  operator_role => 'OVERACCENT');    # DIAERESIS
 DefMath('\overline Digested', UTF(0xAF),  operator_role => 'OVERACCENT');    # MACRON
-DefMath('\overbrace Digested', "\x{FE37}", operator_role => 'OVERACCENT', # PRESENTATION FORM FOR VERTICAL LEFT CURLY BRACKET
+DefMath('\overbrace Digested', "\x{23DE}", operator_role => 'OVERACCENT', # TOP CURLY BRACKET
   scriptpos => 'mid');
 DefMath('\widehat Digested', UTF(0x5E), operator_role => 'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILDE [plain? also amsfonts]
-DefMath('\underbrace Digested', "\x{FE38}", operator_role => 'UNDERACCENT', # PRESENTATION FORM FOR VERTICAL RIGHT CURLY BRACKET
+DefMath('\underbrace Digested', "\x{23DF}", operator_role => 'UNDERACCENT', # BOTTOM CURLY BRACKET
   scriptpos => 'mid');
 
 # NOTE that all the above accents REQUIRE math mode
