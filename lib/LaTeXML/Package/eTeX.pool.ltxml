@@ -129,10 +129,14 @@ DefRegister('\tracingscantokens' => Number(0));
 # NOTE: These tokens are NOT used anywhere (yet?)
 DefRegister('\everyeof', Tokens());
 
-# NOTE REMOVE defn from TeX.pool.ltxml.
-# \middle
-DefConstructor('\middle Token', "<ltx:XMWrap stretchy='true'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
+DefConstructor('\middle Token', '#1',
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $current = $document->getNode;
+    my $delim = $document->getLastChildElement($current) || $current;
+    $document->setAttribute($delim, role     => 'MIDDLE');
+    $document->setAttribute($delim, stretchy => 'true');
+    return; });
 
 # \unless someif
 DefConditional('\unless Token', sub {
