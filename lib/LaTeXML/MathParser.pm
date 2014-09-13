@@ -673,7 +673,7 @@ sub textrec {
     my $name = getTokenMeaning($node);
     $name = 'Unknown' unless defined $name;
     return $PREFIX_ALIAS{$name} || $name; }
-  elsif ($tag eq 'ltx:XMWrap') {
+  elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMCell')) {
     # ??
     return join('@', map { textrec($_) } element_nodes($node)); }
   elsif ($tag eq 'ltx:XMArray') {
