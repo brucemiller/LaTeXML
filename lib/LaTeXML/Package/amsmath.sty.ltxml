@@ -575,42 +575,34 @@ sub rearrangeLoneAMSAligned {
 #  style : \textstyle or \displaystyle
 #  conditionmode : mode of 2nd column, text or math
 DefMacro('\lx@ams@cases{}',
-  '\lx@ams@cases@bindings{#1}\lx@ams@cases@{#1}\@start@alignment');
+  '\lx@gen@cases@bindings{#1}\lx@ams@cases@{#1}\@start@alignment');
 DefMacro('\lx@end@ams@cases',
-  '\@finish@alignment\lx@end@ams@cases@');
+  '\@finish@alignment\lx@end@gen@cases');
 
-DefPrimitive('\lx@ams@cases@bindings RequiredKeyVals', sub {
-    my ($stomach, $kv) = @_;
-    $stomach->bgroup;
-    my $style = Invocation(T_CS('\@hidden'), $kv->getValue('style') || T_CS('\textstyle'));
-    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
-      ? (Invocation(T_CS('\@hidden'), T_MATH)) : ());
-    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
-        columns => [
-          { before => $style, after => Tokens(T_CS('\hfil')) },
-          { before => Tokens(@mode, $style), after => Tokens(@mode, T_CS('\hfil')) }]),
-      'math'); });
-
-DefKeyVal('CASES', 'style', 'UndigestedKey');
-DefConstructor('\lx@ams@cases@ RequiredKeyVals:CASES DigestedBody',
-  '<ltx:XMDual>'
-    . '<ltx:XMApp><ltx:XMTok meaning="#meaning"/><ltx:XMWrap/></ltx:XMApp>'
-    . '<ltx:XMWrap>#left#2#right</ltx:XMWrap></ltx:XMDual>',
+# The logical structure for cases extracts the columns of the alignment
+# to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
+DefConstructor('\lx@ams@cases@ RequiredKeyVals:lx@GEN DigestedBody',
+  '<ltx:XMWrap>#left#2#right</ltx:XMWrap>',
   properties => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
     my $point = $document->getElement->lastChild;
-    my $ref   = $document->findnode('ltx:XMApp[1]/ltx:XMWrap',   $point);
-    my $array = $document->findnode('ltx:XMWrap[1]/ltx:XMArray', $point);
-    $document->replaceTree(createXMRefs($document, $array), $ref); },
+    # Get the sequence of alternating (case, condition).
+    # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+    my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+    my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+        : ['ltx:XMText', {}, 'otherwise']) } @cells;
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+        $point],
+      $point);
+  },
   reversion => sub {
     my ($whatsit, $kv, $body) = @_;
     my $name = $kv->getValue('name');
     (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
       Revert($body),
       T_CS('\end'), T_BEGIN, Revert($name), T_END); });
-
-DefPrimitive('\lx@end@ams@cases@', sub { $_[0]->egroup; });
 
 # NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
 # NOTE: These defns have an  column spec [] (omit that for mathtools)
@@ -677,63 +669,75 @@ DefEnvironment('{subequations}',
 # \lx@ams@matrix{kevayls}{left}{right}[alignment] body
 # keys are
 #  name  : the name of the environment (for reversion)
-#  meaning: the (presumed) meaning of the construct
+#  datameaning: the (presumed) meaning of the array construct
+#  opmeaning  : the meaning of an operator to be applied to the array (if any)
+#  style : (display|text|script|scriptscript)
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
-DefMacro('\lx@ams@matrix {}[]',
-  '\lx@ams@matrix@bindings{#1}{#2}\@hidden{\textstyle}\lx@ams@matrix@{#1}{#2}\@start@alignment');
+DefMacro('\lx@ams@matrix {}',
+  '\lx@gen@matrix@bindings{#1}\lx@ams@matrix@{#1}\@start@alignment');
 DefMacro('\lx@end@ams@matrix',
-  '\@finish@alignment\lx@end@ams@matrix@');
+  '\@finish@alignment\lx@end@gen@matrix');
 
-DefPrimitive('\lx@ams@matrix@bindings{}{}', sub {
-    my ($stomach, $kv, $columns) = @_;
-    $stomach->bgroup;
-    $columns = ToString($columns) || 'c';
-    # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
-    # but we'd have to convert it to a repeating spec somehow.
-    my @cols = (($columns =~ /^(?:c|r)/ ? (before => Tokens(T_CS('\hfil'))) : ()),
-      ($columns =~ /^(?:c|l)/ ? (after => Tokens(T_CS('\hfil'))) : ()));
-    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
-        repeated => [{@cols}]),
-      'math'); });
+# The delimiters around a matrix may simply be notational, or for readability,
+# and don't affect the "meaning" of the array structure as a matrix.
+# In that case, we'll use an XMDual to indidate the content is simply the matrix,
+# but the presentation includes the delimiters.
+# HOWEVER, the delimeters may also signify an OPERATION on the matrix
+# in which case the application & meaning of that operator must be supplied.
 
-DefConstructor('\lx@ams@matrix@ RequiredKeyVals {} DigestedBody',
-  '<ltx:XMDual>'
-    . '<ltx:XMApp><ltx:XMTok meaning="#meaning"/><ltx:XMWrap/></ltx:XMApp>'
-    . '<ltx:XMWrap>#left#3#right</ltx:XMWrap></ltx:XMDual>',
+# Similar to \lx#gen@plain@matrix@, but for the body & reversion!
+DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
+  "?#needXMDual("
+    . "<ltx:XMDual>"
+    . "?#delimitermeaning("
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='#delimitermeaning'/>"
+    . "<ltx:XMRef _xmkey='#xmkey'/>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMRef _xmkey='#xmkey'/>"
+    . ")"
+    . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
+    . "</ltx:XMDual>"
+    . ")("
+    . "#2"
+    . ")",
   properties => sub { %{ $_[1]->getKeyVals }; },
-  afterConstruct => sub {
-    my ($document) = @_;
-    my $point = $document->getElement->lastChild;
-    my $ref   = $document->findnode('ltx:XMApp[1]/ltx:XMWrap',   $point);
-    my $array = $document->findnode('ltx:XMWrap[1]/ltx:XMArray', $point);
-    $document->replaceTree(createXMRefs($document, $array), $ref); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv = $whatsit->getArg(1);
+    if ($kv->getValue('left') || $kv->getValue('right')) {
+      $whatsit->setProperties(
+        needXMDual => 1,
+        xmkey      => LaTeXML::Package::getXMArgID()); }
+    return; },
   reversion => sub {
-    my ($whatsit, $kv, $alignment, $body) = @_;
-    my $name = $kv->getValue('name');
+    my ($whatsit, $kv, $body) = @_;
+    my $name  = $kv->getValue('name');
+    my $align = $kv->getValue('alignment');
     (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
-      ($alignment->unlist ? (T_OTHER('['), Revert($alignment), T_OTHER(']')) : ()),
+      ($align && $align->unlist ? (T_OTHER('['), Revert($align), T_OTHER(']')) : ()),
       Revert($body),
       T_CS('\end'), T_BEGIN, Revert($name), T_END); }
 );
 
-DefPrimitive('\lx@end@ams@matrix@', sub { $_[0]->egroup; });
-
 # NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
 # NOTE: These defns have an  column spec [] (omit that for mathtools)
-DefMacro('\matrix',    '\lx@ams@matrix{name=matrix,meaning=matrix}[]');
+DefMacro('\matrix',    '\lx@ams@matrix{name=matrix,datameaning=matrix}');
 DefMacro('\endmatrix', '\lx@end@ams@matrix');
-DefMacro('\pmatrix',   '\lx@ams@matrix{name=pmatrix,meaning=matrix,left=\@left(,right=\@right)}[]');
+DefMacro('\pmatrix', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}');
 DefMacro('\endpmatrix', '\lx@end@ams@matrix');
-DefMacro('\bmatrix', '\lx@ams@matrix{name=bmatrix,meaning=matrix,left=\@left[,right=\@right]}[]');
+DefMacro('\bmatrix', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,left=\@left[,right=\@right]}');
 DefMacro('\endbmatrix', '\lx@end@ams@matrix');
-DefMacro('\Bmatrix', '\lx@ams@matrix{name=Bmatrix,meaning=matrix,left=\@left\{,right=\@right\}}[]');
+DefMacro('\Bmatrix', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,left=\@left\{,right=\@right\}}');
 DefMacro('\endBmatrix', '\lx@end@ams@matrix');
-DefMacro('\vmatrix', '\lx@ams@matrix{name=vmatrix,meaning=determinant,left=\@left|,right=\@right|}[]');
+DefMacro('\vmatrix', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\@left|,right=\@right|}');
 DefMacro('\endvmatrix', '\lx@end@ams@matrix');
-DefMacro('\Vmatrix', '\lx@ams@matrix{name=Vmatrix,meaning=norm,left=\@left\|,right=\@right\|}[]');
-DefMacro('\endVmatrix',     '\lx@end@ams@matrix');
-DefMacro('\smallmatrix',    '\lx@ams@matrix{name=smallmatrix,meaning=matrix,left=\scriptsize}[]');
+DefMacro('\Vmatrix', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\@left\|,right=\@right\|}');
+DefMacro('\endVmatrix', '\lx@end@ams@matrix');
+#DefMacro('\smallmatrix',    '\lx@ams@matrix{name=smallmatrix,atameaning=matrix,left=\scriptsize}');
+DefMacro('\smallmatrix',    '\lx@ams@matrix{name=smallmatrix,atameaning=matrix,style=\scriptsize}');
 DefMacro('\endsmallmatrix', '\lx@end@ams@matrix');
 
 #======================================================================
