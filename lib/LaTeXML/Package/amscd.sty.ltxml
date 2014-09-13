@@ -36,7 +36,7 @@ DefConstructor('\@@CD DigestedBody',
   '#1',
   beforeDigest => sub {
     $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { name => 'Matrix' });
+    alignmentBindings(MatrixTemplate(), 'math', attributes => { meaning => 'commutative-diagram' });
     Let(T_ALIGN, '\@cd@invisible@align');
     Let("\\\\",  '\@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
