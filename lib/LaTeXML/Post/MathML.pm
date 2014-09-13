@@ -441,7 +441,10 @@ sub pmml_internal {
 ### We shouldn't use a blanket (row|column)spacing!!!
 ### Either it should scale with font size, or be recorded when creating the alignment!
 ####    my $result = ['m:mtable', { rowspacing => "0.2ex", columnspacing => "0.4em", align => $vattach }, @rows];
-    my $result = ['m:mtable', { align => $vattach }, @rows];
+    my $result = ['m:mtable', { align => $vattach,
+        # Mozilla seems to need some encouragement?
+        ($LaTeXML::MathML::STYLE eq 'display' ? (displaystyle => 'true') : ()) },
+      @rows];
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
