@@ -32,7 +32,7 @@ sub Box {
   if ($state->lookupValue('IN_MATH')) {
     my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     return LaTeXML::Core::Box->new($string, $font->specialize($string), $locator, $tokens,
-      mode => 'math', attributes => $attr, %properties); }
+      mode => 'math', ($attr ? %$attr : ()), %properties); }
   else {
     return LaTeXML::Core::Box->new($string, $font, $locator, $tokens, %properties); } }
 
@@ -100,11 +100,10 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self[0];
-  my $mode   = $$self[4]{mode} || 'text';
-  my $attr   = $$self[4]{attributes};
+  my $mode = $$self[4]{mode} || 'text';
   return ((defined $string) && ($string ne '')
     ? ($mode eq 'math'
-      ? $document->insertMathToken($string, font => $$self[1], ($attr ? %$attr : ()))
+      ? $document->insertMathToken($string, font => $$self[1], %{ $$self[4] })
       : $document->openText($string, $$self[1]))
     : undef); }
 
