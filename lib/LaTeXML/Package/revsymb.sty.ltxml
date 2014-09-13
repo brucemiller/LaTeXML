@@ -28,28 +28,28 @@ DefMacro('\Bbb{}', '\mathbb{#1}');
 # These constructors DO create Tokens with the appropriate series & size font attributes;
 # However, the way delimiters are stored in the parsed math representation (as attributes)
 # loses that font information, so that these tokens will appear as normal delimiters in the mathml.
-DefConstructor('\biglb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\biglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
   font => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\bigrb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\bigrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
   font => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Biglb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\Biglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
   font => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Bigrb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\Bigrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
   font => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\bigglb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\bigglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
   font => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\biggrb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\biggrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
   font => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Bigglb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\Bigglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
   font => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
-DefConstructor('\Biggrb Token', "<ltx:XMWrap>#1</ltx:XMWrap>",
+DefConstructor('\Biggrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
   font => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 
