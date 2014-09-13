@@ -1367,26 +1367,20 @@ sub defmath_dual {
 
 sub defmath_prim {
   my ($cs, $paramlist, $presentation, %options) = @_;
-  my $string     = ToString($presentation);
-  my %attributes = %options;
-  my $reqfont    = $attributes{font} || {};
-  delete $attributes{locked};
-  delete $attributes{font};
-  ## Whoops???
-###  $attributes{name} = $name if (defined $name) && !(defined $options{name});
+  my $string = ToString($presentation);
+  my $reqfont = $options{font} || {};
+  delete $options{locked};
+  delete $options{font};
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($cs, undef, sub {
-        my ($stomach) = @_;
-        my $locator   = $stomach->getGullet->getLocator;
-        my $font      = LookupValue('font')->merge(%$reqfont)->specialize($string);
-        my $attr      = {};
-        foreach my $key (keys %attributes) {
-          my $value = $attributes{$key};
+        my ($stomach)  = @_;
+        my $locator    = $stomach->getGullet->getLocator;
+        my %properties = %options;
+        my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
+        foreach my $key (keys %properties) {
+          my $value = $properties{$key};
           if (ref $value eq 'CODE') {
-            $$attr{$key} = &$value(); }
-          else {
-            $$attr{$key} = $value; } }
-        LaTeXML::Core::Box->new($string, $font, $locator, $cs,
-          mode => 'math', attributes => $attr); }));
+            $properties{$key} = &$value(); } }
+        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => 'math', %properties); }));
   return; }
 
 sub defmath_cons {
