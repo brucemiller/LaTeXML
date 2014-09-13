@@ -3332,8 +3332,6 @@ sub scriptSizer {
   my ($w, $h, $d) = (0, 0, 0);
   # Fishing for the scriptpos on the base (if any)
   my $attr;
-  $pos = $$attr{scriptpos} if !defined $pos && defined $base
-    && defined($attr = $base->getProperty('attributes'));
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
   $pos = 'post' if !defined $pos;
   if ($pos eq 'mid') {
@@ -3445,15 +3443,15 @@ our %mathstylemap = (display => 'text', text => 'script',
 sub adjustMathstyle {
   my ($adjusted, @boxes) = @_;
   foreach my $box (@boxes) {
+    next unless defined $box;
     next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
     $$adjusted{$box} = 1;
     my $r = ref $box;
     next unless $r and $r->isaBox;
-    return if $box->getProperty('explicit_smathstyle');
-    next   if $box->getProperty('own_smathstyle');
+    return if $box->getProperty('explicit_mathstyle');
+    next   if $box->getProperty('own_mathstyle');
 
     if ($r eq 'LaTeXML::Core::Box') {
-
       if (my $style = $box->getProperty('mathstyle')) {
         if (my $newstyle = $mathstylemap{$style}) {
           $box->setProperty(mathstyle => $newstyle); } } }
@@ -5238,57 +5236,52 @@ DefConstructor('\@right Token',
     return; },
   alias => '\right');
 
-sub addDelimiterRole {
+DefConstructor('\big Token',  '#1', bounded => 1, font => { size => 'big' });
+DefConstructor('\Big Token',  '#1', bounded => 1, font => { size => 'Big' });
+DefConstructor('\bigg Token', '#1', bounded => 1, font => { size => 'bigg' });
+DefConstructor('\Bigg Token', '#1', bounded => 1, font => { size => 'Bigg' });
+
+sub addDelimiterRoleX {
   my ($document, $role) = @_;
-  my $current = $document->getNode;
-  # This should be the wrapper just added.
-  my $node = $document->getLastChildElement($current) || $current;
-  my $delim = $node && $document->getFirstChildElement($node);
-  my $delim_role = (($delim && $delim->getAttribute('role')) || '');
-  my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR)$/ ? $role : $delim_role);
-## Maybe we shouldn't switch VERTBAR ?
-## The catch is that occasionally people use a single \Bigl (or whatever)
-## where they should have used a \Big
-##  my $wrapper_role = ($delim_role =~ /^(OPEN|MIDDLE|CLOSE)$/ ? $role : $delim_role);
-## Hmm... do some more research first.
-  $document->setAttribute($node, role => $wrapper_role) if $node && $wrapper_role;
+  my $current    = $document->getNode;
+  my $delim      = $document->getLastChildElement($current) || $current;
+  my $delim_role = (($delim && $delim->getAttribute('role')) || '<none>');
+  # if there is some delimiter-like role on the "delimiter", switch it, otherwise, leave it alone!
+  if ($delim && ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR|<none>)$/)) {
+    ## Maybe we shouldn't switch VERTBAR ?
+    ## The catch is that occasionally people use a single \Bigl (or whatever)
+    ## where they should have used a \Big
+    $document->setAttribute($delim, role => $role); }
   return; }
 
-# Defined in e-Tex and other places.
-DefConstructor('\bigl Token', "<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
+# The "m" versions are defined in e-Tex and other places.
+DefConstructor('\bigl Token', '#1', bounded => 1, font => { size => 'big' },
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\bigm Token', "<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
+DefConstructor('\bigm Token', '#1', bounded => 1, font => { size => 'big' },
   afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\bigr Token', "<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
-DefConstructor('\Bigl Token', "<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\Bigm Token', "<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\Bigr Token', "<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
-DefConstructor('\biggl Token', "<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\biggm Token', "<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\biggr Token', "<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
-DefConstructor('\Biggl Token', "<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
-DefConstructor('\Biggm Token', "<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
-DefConstructor('\Biggr Token', "<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
+DefConstructor('\bigr Token', '#1', bounded => 1, font => { size => 'big' },
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
-# ?
-DefConstructor('\big Token', "<ltx:XMWrap fontsize='big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0]); });
-DefConstructor('\Big Token', "<ltx:XMWrap fontsize='Big'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0]); });
-DefConstructor('\bigg Token', "<ltx:XMWrap fontsize='bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0]); });
-DefConstructor('\Bigg Token', "<ltx:XMWrap fontsize='Bigg'>#1</ltx:XMWrap>",
-  afterConstruct => sub { addDelimiterRole($_[0]); });
+DefConstructor('\Bigl Token', '#1', bounded => 1, font => { size => 'Big' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
+DefConstructor('\Bigm Token', '#1', bounded => 1, font => { size => 'Big' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
+DefConstructor('\Bigr Token', '#1', bounded => 1, font => { size => 'Big' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
+
+DefConstructor('\biggl Token', '#1', bounded => 1, font => { size => 'bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
+DefConstructor('\biggm Token', '#1', bounded => 1, font => { size => 'bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
+DefConstructor('\biggr Token', '#1', bounded => 1, font => { size => 'bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
+
+DefConstructor('\Biggl Token', '#1', bounded => 1, font => { size => 'Bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); });
+DefConstructor('\Biggm Token', '#1', bounded => 1, font => { size => 'Bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'MIDDLE'); });
+DefConstructor('\Biggr Token', '#1', bounded => 1, font => { size => 'Bigg' },
+  afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); });
 
 Let('\vert', T_OTHER('|'));
 Let('\Vert', '\|');
@@ -5404,45 +5397,151 @@ DefMath('\bmod', 'mod', role => 'MODIFIEROP', meaning => 'modulo');
 
 #======================================================================
 # TeX Book, Appendix B. p. 362
-DefMacro('\matrix{}',
-  '\@@matrix{\@start@alignment#1\@finish@alignment}');
-DefConstructor('\@@matrix{}',
-  '#1',
-  reversion => '\matrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
-      attributes => { name => 'Matrix' }); });
 
+#----------------------------------------------------------------------
+# Matrices;  Generalized
+
+# The delimiters around a matrix may simply be notational, or for readability,
+# and don't affect the "meaning" of the array structure as a matrix.
+# In that case, we'll use an XMDual to indidate the content is simply the matrix,
+# but the presentation includes the delimiters.
+# HOWEVER, the delimeters may also signify an OPERATION on the matrix
+# in which case the application & meaning of that operator must be supplied.
+
+# keys are
+#  name  : the name of the environment (for reversion)
+#  datameaning: the (presumed) meaning of the array construct (typically 'matrix')
+#  delimitermeaning  : the meaning of an operator to be applied to the array (if any, eg, 'norm')
+#  style : typically \displaystyle, \textstyle...
+#  left  : TeX code for left of matrix
+#  right  : TeX code for right
+DefKeyVal('lx@GEN', 'style', 'UndigestedKey');
+
+DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
+    my ($stomach, $kv) = @_;
+    $stomach->bgroup;
+    my $style = $kv->getValue('style') || T_CS('\textstyle');
+    my $align = ToString($kv->getValue('alignment')) || 'c';
+    # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
+    # but we'd have to convert it to a repeating spec somehow.
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        repeated => [{ before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()),
+              Invocation(T_CS('\@hidden'), $style)),
+            after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())) }]),
+      'math',
+      attributes => { meaning => $kv->getValue('datameaning') }); });
+DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
+
+DefMacro('\lx@gen@plain@matrix{}{}',
+  '\lx@gen@matrix@bindings{#1}'
+    . '\lx@gen@plain@matrix@{#1}{\@start@alignment#2\@finish@alignment}'
+    . '\lx@end@gen@matrix');
+
+# The delimiters on a matrix are presumably just for notation or readability (not an operator);
+# the array data itself is the matrix.
+DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
+  "?#needXMDual("
+    . "<ltx:XMDual>"
+    . "?#delimitermeaning("
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='#delimitermeaning'/>"
+    . "<ltx:XMRef _xmkey='#xmkey'/>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMRef _xmkey='#xmkey'/>"
+    . ")"
+    . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
+    . "</ltx:XMDual>"
+    . ")("
+    . "#2"
+    . ")",
+  properties => sub { %{ $_[1]->getKeyVals }; },
+  reversion => sub {
+    my ($whatsit, $kv, $body) = @_;
+    my $name = ToString($kv->getValue('name'));
+    (T_CS('\\' . $name), T_BEGIN, Revert($body), T_END); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv = $whatsit->getArg(1);
+    if ($kv->getValue('left') || $kv->getValue('right')) {
+      $whatsit->setProperties(
+        needXMDual => 1,
+        xmkey      => LaTeXML::Package::getXMArgID()); }
+    return; });
+
+DefMacro('\matrix{}',
+  '\lx@gen@plain@matrix{name=matrix,datameaning=matrix}{#1}');
 # TODO: This is wrong; I'm not even clear how this differs from \matrix
 DefMacro('\bordermatrix{}',
-  '\@@bordermatrix{\@start@alignment#1\@finish@alignment}');
-DefConstructor('\@@bordermatrix{}',
-  '#1',
-  reversion => '\bordermatrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
-      attributes => { name => 'Matrix' }); });
-
+  '\lx@gen@plain@matrix{name=bordermatrix,datameaning=matrix}{#1}');
 DefMacro('\pmatrix{}',
-  '\@@pmatrix{\@start@alignment#1\@finish@alignment}');
-DefConstructor('\@@pmatrix{}',
-  '#1',
-  reversion => '\pmatrix{#1}', bounded => 1,
-  beforeDigest => sub { alignmentBindings(MatrixTemplate(), 'math',
-      attributes => { name => 'Matrix',
-        open => '(', close => ')' }); });
+  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
+
+#----------------------------------------------------------------------
+# Cases: Generalized
+# keys are
+#  name  : the name of the command (for reversion)
+#  meaning: the (presumed) meaning of the construct
+#  style : \textstyle or \displaystyle
+#  conditionmode : mode of 2nd column, text or math
+#  left  : TeX code for left of cases
+#  right  : TeX code for right
+
+DefConstructorI('\lx@cases@condition', undef,
+  "<ltx:XMText>#body</ltx:XMText>",
+  alias => '', beforeDigest => sub { $_[0]->beginMode('text'); }, captureBody => 1);
+DefConstructorI('\lx@cases@end@condition', undef, "", alias => '',
+  beforeDigest => sub { $_[0]->endMode('text'); });
+
+DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
+    my ($stomach, $kv) = @_;
+    $stomach->bgroup;
+    my $style = $kv->getValue('style') || T_CS('\textstyle');
+    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
+      ? (Invocation(T_CS('\@hidden'), T_MATH)) : ());
+    my $condtext = ToString($kv->getValue('conditionmode')) eq 'text';
+    alignmentBindings(LaTeXML::Core::Alignment::Template->new(
+        columns => [
+          { before => Invocation(T_CS('\@hidden'), $style), after => Tokens(T_CS('\hfil')) },
+          { before => Tokens(Invocation(T_CS('\@hidden'), $style),
+              ($condtext ? (T_CS('\lx@cases@condition')) : ())),
+            after => Tokens(($condtext ? (T_CS('\lx@cases@end@condition')) : ()),
+              T_CS('\hfil')) }]),
+      'math'); });
+
+DefMacro('\lx@gen@plain@cases{}{}',
+  '\lx@gen@cases@bindings{#1}'
+    . '\lx@gen@plain@cases@{#1}{\@start@alignment#2\@finish@alignment}'
+    . '\lx@end@gen@cases');
+DefPrimitive('\lx@end@gen@cases', sub { $_[0]->egroup; });
+
+# The logical structure for cases extracts the columns of the alignment
+# to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
+DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
+  '<ltx:XMWrap>#left#2#right</ltx:XMWrap>',
+  properties => sub { %{ $_[1]->getKeyVals }; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $point = $document->getElement->lastChild;
+    # Get the sequence of alternating (case, condition).
+    # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+    my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+    my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+        : ['ltx:XMText', {}, 'otherwise']) } @cells;
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+        $point],
+      $point); },
+  reversion => sub {
+    my ($whatsit, $kv, $body) = @_;
+    my $name = $kv->getValue('name');
+    (T_CS('\cases'), T_BEGIN, Revert($body), T_END); });
 
 # Note that 2nd column in \cases is in text mode!
 DefMacro('\cases{}',
-  '\@@cases{\@start@alignment#1\@finish@alignment}');
-DefConstructor('\@@cases{}',
-  '#1',
-  reversion => '\cases{#1}', bounded => 1,
-  beforeDigest => sub {
-    my $col1 = { before => Tokens(), after => Tokens(T_CS('\hfil')) };
-    my $col2 = { before => Tokens(T_CS('\hbox'), T_BEGIN),
-      after => Tokens(T_END, T_CS('\hfil')) };
-    alignmentBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2]), 'math',
-      attributes => { meaning => 'cases', open => '{' }); });
+  '\lx@gen@plain@cases{meaning=cases,left=\@left\{,conditionmode=text,style=\textstyle}{#1}');
 
+#----------------------------------------------------------------------
 DefPrimitive('\openup Dimension', undef);
 
 # What should this do? (needs to work with alignments..)
