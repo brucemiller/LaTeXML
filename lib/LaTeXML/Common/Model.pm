@@ -361,6 +361,7 @@ sub canHaveAttribute {
   return 0 if $tag eq '#Document';
   return 0 if $tag eq '#ProcessingInstruction';
   return 0 if $tag eq '#DTD';
+  return 1 if $tag =~ /(.*?:)?_Capture_$/;
   return 1 if $$self{permissive};
   return $$self{tagprop}{$tag}{attributes}{$attrib}; }
 
