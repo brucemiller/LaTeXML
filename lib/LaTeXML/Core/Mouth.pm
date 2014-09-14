@@ -310,13 +310,18 @@ sub readTokens {
 #**********************************************************************
 # Read a raw lines; there are so many variants of how it should end,
 # that the Mouth API is left as simple as possible.
+# Alas: $noread true means NOT to read a new line, but only return
+# the remainder of the current line, if any. This is useful when combining
+# with previously peeked tokens from the Gullet.
 sub readRawLine {
-  my ($self) = @_;
+  my ($self, $noread) = @_;
   my $line;
   if ($$self{colno} < $$self{nchars}) {
     $line = join('', @{ $$self{chars} }[$$self{colno} .. $$self{nchars} - 1]);
     # End lines with \n, not CR, since the result will be treated as strings
     $$self{colno} = $$self{nchars}; }
+  elsif ($noread) {
+    $line = ''; }
   else {
     $line = $self->getNextLine;
     if (!defined $line) {
