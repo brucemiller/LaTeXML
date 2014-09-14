@@ -27,6 +27,8 @@ use LaTeXML::Package;
 #  HTML, XML comments & CDATA sections not recognized.
 #  Perl, Visual Basic, Java, tcl; something (comments?) is not recognized, but what?
 
+RequireResource('ltx-listings.css');
+
 #======================================================================
 # Note that listings.sty uses a couple of textcomp characters
 # (\textquotesingle, \textasciigrave)
@@ -125,6 +127,7 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     @expansion; });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
+AssignValue(lstlisting_data_counter => 0);
 
 sub lstProcessBlock {
   my ($name, $text) = @_;
@@ -155,6 +158,10 @@ sub lstProcessBlock {
   # We go a bit (a bit too far?) to try to treat this as a separate Para level object
   # (if with captions or titled),
   # or as an in-block item (within a logical paragraph)
+  my $c = LookupValue('lstlisting_data_counter') + 1;
+  AssignValue('lstlisting_data_counter' => $c,    'global');
+  AssignValue('lstlisting_data_' . $c   => $text, 'global');
+
   return (
     ($numbered || $caption ? (T_CS('\par')) : ()),
     T_BEGIN,
@@ -163,6 +170,7 @@ sub lstProcessBlock {
         : ($caption ? T_CS('\@@listings')
           : T_CS('\@@listings@inblock'))),
       listingsSemantics(),
+      T_OTHER($c),
       Tokens(@body)),
     T_END); }
 
@@ -183,21 +191,38 @@ DefMacro('\lstlisting@maketoctitle{}',
 
 DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
 
-DefConstructor('\@listings Semiverbatim {}',
-  "<ltx:listing xml:id='#id' refnum='#refnum' class='#1'>"
-    . "#2"
+# Numbered form,  with caption
+# \@listings <classes> <formatted>
+DefConstructor('\@listings Semiverbatim {} {}',
+  "<ltx:listing xml:id='#id' refnum='#refnum' class='#1' data='#data'>"
+    . "#3"
     . "</ltx:listing>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
-  afterDigest => sub { RescueCaptionCounters('lstlisting', $_[1]); });
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2))));
+    RescueCaptionCounters('lstlisting', $whatsit); });
 
-DefConstructor('\@@listings Semiverbatim {}',
-  "<ltx:listing xml:id='#id' class='#1'>#2</ltx:listing>",
+# Unnumbered form, but with caption
+# \@listings <classes> <formatted>
+DefConstructor('\@@listings Semiverbatim {} {}',
+  "<ltx:listing xml:id='#id' class='#1' data='#data'>#3</ltx:listing>",
   properties => sub { RefStepID('lstlisting'); },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); });
-DefConstructor('\@@listings@inblock Semiverbatim {}',
-  "<ltx:listingblock xml:id='#id' class='#1'>#2</ltx:listingblock>",
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2))));
+    RescueCaptionCounters('lstlisting', $whatsit); });
+
+# Unnumbered, no caption
+# \@@listingsblock <classes> <formatted>
+DefConstructor('\@@listings@inblock Semiverbatim {} {}',
+  "<ltx:listingblock xml:id='#id' class='#1' data='#data'>#3</ltx:listingblock>",
   properties => sub { RefStepID('lstlisting'); },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); });
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2)))); });
 
 #======================================================================
 # extract some minimal bit of "semantics" from the keywords or other bound formatting
@@ -1123,6 +1148,7 @@ sub lstProcess_internal {
       lstProcessPush(lstClassEnd($classname)); }
     # Identifiers (possibly keywords, or other classes)
     elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
+      $LaTeXML::colnum += length($1);    # ?
       my $word      = $1;
       my $lookup    = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
       my $classname = $$words{$lookup}{class};
