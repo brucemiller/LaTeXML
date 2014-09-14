@@ -542,7 +542,8 @@ sub new {
 ###print STDERR "INIT $$self{destination} ID=".$node->getAttribute('xml:id')."\n";
     $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
   # Possibly disable permanent cache?
-  $$self{cache} = {} if $data{nocache};
+  ### NO this is NOT a safe way to do this....
+  ### $$self{cache} = {} if $data{nocache};
   return $self; }
 
 sub newFromFile {
