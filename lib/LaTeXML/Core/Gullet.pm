@@ -288,8 +288,13 @@ sub readRawLine {
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;            # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_) } @markers; }
   $$self{pushback} = [];
-  my $line = $$self{mouth}->readRawLine;
-  return (@tokens ? ToString(Tokens(@tokens)) . ($line || '') : $line); }
+  # If we still have peeked tokens, we ONLY want to combine it with the remainder
+  # of the current line from the Mouth (NOT reading a new line)
+  if (@tokens) {
+    return ToString(Tokens(@tokens)) . $$self{mouth}->readRawLine(1); }
+  # Otherwise, read the next line from the Mouth.
+  else {
+    return $$self{mouth}->readRawLine; } }
 
 #**********************************************************************
 # Mid-level readers: checking and matching tokens, strings etc.
