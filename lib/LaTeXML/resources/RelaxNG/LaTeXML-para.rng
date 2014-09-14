@@ -106,6 +106,11 @@ different kinds of proof.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="data">
+        <a:documentation>raw data related to the proof</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="proof_model">
     <a:documentation>Content model for \elementref{proof}.</a:documentation>
@@ -145,6 +150,11 @@ Or, should caption be used for theorem and proof?</a:documentation>
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="data">
+        <a:documentation>raw data related to the figure</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="figure_model">
     <a:documentation>Content model for \elementref{figure}.</a:documentation>
@@ -174,6 +184,11 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="data">
+        <a:documentation>raw data related to the table; perhaps csv?</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -207,6 +222,11 @@ Or, should caption be used for theorem and proof?</a:documentation>
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="data">
+        <a:documentation>raw data related to the float</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="float_model">
     <a:documentation>Content model for \elementref{float}.</a:documentation>
@@ -235,6 +255,11 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <optional>
       <attribute name="placement">
         <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="data">
+        <a:documentation>raw data related to the float; presumably the unformatted listing itself</a:documentation>
       </attribute>
     </optional>
   </define>

@@ -166,7 +166,9 @@ element listingblock { listingblock_attributes, listingblock_model }
 listingblock_attributes =
   Common.attributes,
   Labelled.attributes,
-  Backgroundable.attributes
+  Backgroundable.attributes,
+  ## raw data related to the listing; presumably the unformatted listing
+  attribute data { text }?
 
 ## Content model for \elementref{listingblock}.
 listingblock_model = Block.model*

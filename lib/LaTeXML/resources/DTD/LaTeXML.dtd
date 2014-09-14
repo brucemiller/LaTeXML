@@ -682,7 +682,8 @@
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
   rrefnum CDATA #IMPLIED
-  backgroundcolor CDATA #IMPLIED>
+  backgroundcolor CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:itemize (ltx:item)*>
 <!ATTLIST ltx:itemize
@@ -1541,7 +1542,8 @@
   refnum CDATA #IMPLIED
   frefnum CDATA #IMPLIED
   rrefnum CDATA #IMPLIED
-  backgroundcolor CDATA #IMPLIED>
+  backgroundcolor CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:figure ((ltx:figure
                        |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
@@ -1599,7 +1601,8 @@
   innerheight CDATA #IMPLIED
   innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
-  placement CDATA #IMPLIED>
+  placement CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:table ((ltx:table
                       |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
@@ -1657,7 +1660,8 @@
   innerheight CDATA #IMPLIED
   innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
-  placement CDATA #IMPLIED>
+  placement CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:float ((ltx:float
                       |(ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
@@ -1715,7 +1719,8 @@
   innerheight CDATA #IMPLIED
   innerdepth CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
-  placement CDATA #IMPLIED>
+  placement CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:listing ((ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                         |ltx:block|ltx:listingblock|ltx:itemize
@@ -1764,7 +1769,8 @@
   framed CDATA #IMPLIED
   framecolor CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
-  placement CDATA #IMPLIED>
+  placement CDATA #IMPLIED
+  data CDATA #IMPLIED>
 
 <!ELEMENT ltx:caption (#PCDATA|ltx:tag|ltx:text|ltx:emph|ltx:del|ltx:sub
                        |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
