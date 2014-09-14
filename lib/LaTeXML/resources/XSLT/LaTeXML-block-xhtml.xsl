@@ -86,6 +86,19 @@
     <xsl:text> ltx_listing</xsl:text>
   </xsl:template>
 
+  <xsl:template match="ltx:listingblock[@data]" mode="begin">
+    <xsl:element name="div" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_listing_data</xsl:attribute>
+      <xsl:element name="a" namespace="{$html_ns}">
+        <xsl:attribute name="href">
+<!--          <xsl:value-of select="concat('data:text/plain;base64,',@data)"/>-->
+          <xsl:value-of select="concat('data:text/plain,',@data)"/>
+        </xsl:attribute>
+        <xsl:text>&#x2B07;</xsl:text>
+      </xsl:element>
+    </xsl:element>
+  </xsl:template>
+
   <!-- ======================================================================
        Equation structures
        ====================================================================== -->
