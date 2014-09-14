@@ -93,6 +93,13 @@ usually generated automatically by the latexml.</a:documentation>
         <data type="ID"/>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="fragid">
+        <a:documentation>a "fragment identifier" derived from the \attr{xml:id} 
+relative to a page split from the complete document.
+This is used internally and may go away some day.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="IDREF.attributes">
     <a:documentation>Attributes for elements that can cross-reference other elements.</a:documentation>

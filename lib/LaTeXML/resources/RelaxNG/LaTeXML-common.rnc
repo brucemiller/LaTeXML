@@ -76,7 +76,11 @@ ID.attributes =
 
   ## the unique identifier of the element, 
   ## usually generated automatically by the latexml.
-  attribute xml:id { xsd:ID }?
+  attribute xml:id { xsd:ID }?,
+  ## a "fragment identifier" derived from the \attr{xml:id} 
+  ## relative to a page split from the complete document.
+  ## This is used internally and may go away some day.
+  attribute fragid { text }?  
 
 ## Attributes for elements that can cross-reference other elements.
 IDREF.attributes =
