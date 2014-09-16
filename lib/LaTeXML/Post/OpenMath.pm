@@ -55,10 +55,7 @@ sub outerWrapper {
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my ($item, @rest) = element_nodes($xmath);
-  if (@rest) {    # Unparsed ???
-    Warn('unexpected', 'content', undef,
-      "Got extra nodes for math content:" . $xmath->toString) if @rest; }
-  return om_expr($item); }
+  return (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)); }
 
 sub combineParallel {
   my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
@@ -99,6 +96,8 @@ sub DefOpenMath {
 
 sub om_expr {
   my ($node) = @_;
+  # Get the real node, first.
+  $node = $LaTeXML::Post::DOCUMENT->realizeXMNode($node);
   my $result = om_expr_aux($node);
   # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
   if (my $id = $node->getAttribute('fragid')) {
@@ -111,11 +110,9 @@ sub om_expr_aux {
   my ($node) = @_;
   return OMError("Missing Subexpression") unless $node;
   my $tag = getQName($node);
-  if (($tag eq 'ltx:XMath') || ($tag eq 'ltx:XMWrap')) {
+  if (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {    # Unparsed
     my ($item, @rest) = element_nodes($node);
-    Warn('unexpected', 'content', undef,
-      "Got extra nodes for content: " . $node->toString) if @rest;
-    return om_expr($item); }
+    return (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)); }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     return om_expr($content); }
@@ -131,6 +128,24 @@ sub om_expr_aux {
     return (); }
   else {
     return ['om:OMSTR', {}, $node->textContent]; } }
+
+sub om_unparsed {
+  my (@nodes) = @_;
+  if (!@nodes) {
+    return ['om:OME', {},
+      ['om:OMS', { name => 'unexpected', cd => 'moreerrors' }],
+      ['om:OMSTR', {}, "Missing Subexpression"]]; }
+  else {
+    my @om = ();
+    foreach my $node (@nodes) {
+      $node = $LaTeXML::Post::DOCUMENT->realizeXMNode($node);
+      my $tag = getQName($node);
+      if ($tag eq 'ltx:XMHint') { }
+      elsif (($tag eq 'ltx:XMTok') && (($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')) {
+        push(@om, ['om:OMS', { cd => 'unknown', name => $node->textContent }]); }
+      else {
+        push(@om, om_expr_aux($node)); } }
+    return ['om:OME', {}, ['om:OMS', { cd => 'ambiguous', name => 'fragments' }], @om]; } }
 
 sub lookupConverter {
   my ($mode, $role, $name) = @_;
