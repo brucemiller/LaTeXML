@@ -381,7 +381,7 @@ sub image_write {
   if (@$image > 1) {
     my $fimage = $image->Flatten();    # Just in case we ended up with pieces!?!?!?
     $image = $fimage if $fimage; }
-  return image_internalop($image, 'Write', filename => $destination) or return; }
+  return image_internalop($image, 'Write', filename => $destination); }
 
 sub image_getvalue {
   my ($image, @args) = @_;
