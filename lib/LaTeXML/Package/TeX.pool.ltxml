@@ -5241,7 +5241,7 @@ DefConstructor('\Big Token',  '#1', bounded => 1, font => { size => 'Big' });
 DefConstructor('\bigg Token', '#1', bounded => 1, font => { size => 'bigg' });
 DefConstructor('\Bigg Token', '#1', bounded => 1, font => { size => 'Bigg' });
 
-sub addDelimiterRoleX {
+sub addDelimiterRole {
   my ($document, $role) = @_;
   my $current    = $document->getNode;
   my $delim      = $document->getLastChildElement($current) || $current;
@@ -5415,6 +5415,7 @@ DefMath('\bmod', 'mod', role => 'MODIFIEROP', meaning => 'modulo');
 #  style : typically \displaystyle, \textstyle...
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
+#  ncolumns : the number of columns (default is not limited)
 DefKeyVal('lx@GEN', 'style', 'UndigestedKey');
 
 DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
@@ -5424,10 +5425,13 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
     my $align = ToString($kv->getValue('alignment')) || 'c';
     # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
     # but we'd have to convert it to a repeating spec somehow.
+    my @colspec = (before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()),
+        Invocation(T_CS('\@hidden'), $style)),
+      after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())));
+    my $ncols = ToString($kv->getValue('ncolumns'));
     alignmentBindings(LaTeXML::Core::Alignment::Template->new(
-        repeated => [{ before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()),
-              Invocation(T_CS('\@hidden'), $style)),
-            after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())) }]),
+        ($ncols ? (columns => [map { { @colspec } } 1 .. $ncols])
+          : (repeated => [{@colspec}]))),
       'math',
       attributes => { meaning => $kv->getValue('datameaning') }); });
 DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
