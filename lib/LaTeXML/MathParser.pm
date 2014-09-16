@@ -679,7 +679,7 @@ sub textrec {
   elsif ($tag eq 'ltx:XMArray') {
     return textrec_array($node); }
   else {
-    return '[' . p_getValue($node) . ']'; } }
+    return '[' . (p_getValue($node) || '') . ']'; } }
 
 sub textrec_apply {
   my ($name, $op, @args) = @_;
