@@ -5651,11 +5651,23 @@ DefPrimitiveI('\scriptscriptstyle', undef, sub {
 #======================================================================
 
 # Special Characters.
-DefPrimitiveI('\#',   undef, '#');
-DefPrimitiveI('\&',   undef, '&');
-DefPrimitiveI('\%',   undef, '%');    #[Had still been DefMacro...Was there a hidden reason?]
-DefPrimitiveI("\\\$", undef, "\$");
-DefPrimitiveI('\_',   undef, '_');
+# Try to give them some sense in math...
+DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi');
+DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi');
+DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi');
+DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi');
+DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi');
+DefPrimitiveI('\lx@text@hash',       undef, '#',  alias => '\#');
+DefPrimitiveI('\lx@text@amp',        undef, '&',  alias => '\&');
+DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');
+DefPrimitiveI('\lx@text@dollar',     undef, "\$", alias => "\\\$");
+DefPrimitiveI('\lx@text@underscore', undef, '_',  alias => '\_');
+DefMathI('\lx@math@hash',    undef, '#', alias => '\#');
+DefMathI('\lx@math@amp',     undef, '&', role  => 'ADDOP', meaning => 'and', alias => '\&');
+DefMathI('\lx@math@percent', undef, '%', role  => 'POSTFIX', meaning => 'percent', alias => '\%');
+DefMathI('\lx@math@dollar', undef, "\$", role => 'OPERATOR', meaning => 'currency-dollar',
+  alias => "\\\$");
+DefMathI('\lx@math@underscore', undef, '_', alias => '\_');
 
 # Discretionary times; just treat as invisible ?
 DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times'); # INVISIBLE TIMES (or MULTIPLICATION SIGN = 00D7)
