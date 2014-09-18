@@ -1232,7 +1232,7 @@ sub DefMathI {
   my $nargs   = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $csname  = $cs->getString;
   my $meaning = $options{meaning};
-  my $name    = $csname;
+  my $name    = $options{alias} || $csname;
   $name =~ s/^\\//;
   $name = $options{name} if defined $options{name};
   $name = undef          if (defined $name)
