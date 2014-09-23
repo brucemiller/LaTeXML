@@ -131,11 +131,20 @@
     </para>
     <para xml:id="S2.p2">
       <equation xml:id="S2.Ex4">
-        <Math mode="display" xml:id="S2.Ex4.m1" tex="\not+,\not 4">
+        <Math mode="display" xml:id="S2.Ex4.m1" tex="\not+,\not 4" text="list@(not-plus, not-4)">
           <XMath>
-            <XMTok meaning="not-plus" name="not-+" role="ADDOP">+̸</XMTok>
-            <XMTok role="PUNCT">,</XMTok>
-            <XMTok meaning="not-4" name="not-4" role="NUMBER">4̸</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="XM27"/>
+                <XMRef idref="XM28"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="not-plus" name="not-+" role="ADDOP" xml:id="XM27">+̸</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="not-4" name="not-4" role="NUMBER" xml:id="XM28">4̸</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
