@@ -437,27 +437,29 @@ sub simplify {
       @args = $self->simplify_args($binding, $parentbinding, $container, @args);
       $$self{usesname}{$qname}{$container} = 1 if $container;
       return (['ref', $qname]); }
-    elsif ($op =~ /^def(choice|interleave)$/) {
-      my $combination = $1;
-      my $qname       = $binding . ":" . $name;
-      $$self{usesname}{$qname}{$container} = 1 if $container;
-      @args = $self->simplify_args($binding, $parentbinding, "pattern:$qname", @args);
-      my $prev = $$self{defs}{$qname};
-      my @xargs = grep { !eqOp($_, 'doc') } @args;    # Remove annotations
-      $$self{defs}{$qname} = simplifyCombination(['combination', $combination,
-          ($prev ? @$prev : ()), @xargs]);
-      return ([$op, $qname, @args]); }
-    elsif ($op eq 'def') {
+    elsif ($op =~ /^def(choice|interleave|)$/) {
+      my $combination = $1 || 'group';
       my $qname = $binding . ":" . $name;
       $$self{usesname}{$qname}{$container} = 1 if $container;
       @args = $self->simplify_args($binding, $parentbinding, "pattern:$qname", @args);
-      if ((scalar(@args) == 1) && eqOp($args[0], 'element')) {
+
+      # Special case: simple definition of an element
+      if (($combination eq 'group') && (scalar(@args) == 1) && eqOp($args[0], 'element')) {
         $$self{elementdefs}{$qname} = $args[0][1];
         $$self{elementreversedefs}{ $args[0][1] } = $qname;
         return @args; }
       else {
+        my $prev  = $$self{defs}{$qname};
+        my $prevc = $$self{def_combiner}{$qname};
         my @xargs = grep { !eqOp($_, 'doc') } @args;    # Remove annotations
-        $$self{defs}{$qname} = simplifyCombination(['combination', 'group', @xargs]);
+        if ($prev) {                                    # Previoud definition?
+          if (($combination eq 'group') && ($prevc eq 'group')) {    # apparently RE-defining $qname?
+            $prev = undef; }
+          elsif (($combination eq 'group') && ($prevc ne 'group')) {    # Use old combination!?!?!?!?
+            $combination = $prevc; } }
+        $$self{defs}{$qname} = simplifyCombination(['combination', $combination,
+            ($prev ? @$prev : ()), @xargs]);
+        $$self{def_combiner}{$qname} = $combination;
         return ([$op, $qname, @args]); } }
     else {
       return ([$op, $name, $self->simplify_args($binding, $parentbinding, $container, @args)]); } }
