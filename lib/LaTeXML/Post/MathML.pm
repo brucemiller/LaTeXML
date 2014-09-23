@@ -739,10 +739,17 @@ sub pmml_script {
   my ($innerbase, $prescripts, $midscripts, $postscripts, $emb_left, $emb_right)
     = pmml_script_decipher($op, $base, $script);
   # check if base needs displaystyle.
-  my $result = pmml_script_multi_layout(
-    pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
-    $prescripts, $postscripts);
-  return $result; }
+  my $style = $innerbase->getAttribute('mathstyle');
+  if ($style && ($style ne $LaTeXML::MathML::STYLE)) {
+    local $LaTeXML::MathML::STYLE = $style;
+    return ['m:mstyle', { displaystyle => ($style eq 'display' ? 'true' : 'false') },
+      pmml_script_multi_layout(
+        pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
+        $prescripts, $postscripts)]; }
+  else {
+    return pmml_script_multi_layout(
+      pmml_script_mid_layout($innerbase, $midscripts, $emb_left, $emb_right),
+      $prescripts, $postscripts); } }
 
 sub pmml_script_mid_layout {
   my ($base, $midscripts, $emb_left, $emb_right) = @_;
