@@ -20,7 +20,7 @@ use LaTeXML::Package;
 our @XSPACES = (
   T_BEGIN, T_END, T_CS('\/'), T_CS('\ '), T_CS('~'),
   (map { T_OTHER($_) } '.', '!', ',', ':', ';', '?', '/', "'", ")", '-'),
-  T_CS('\@xobeysp'), T_CS('\space'), T_CS('\@sptoken'));
+  T_CS('\@xobeysp'), T_CS('\xspace'), T_CS('\space'), T_CS('\@sptoken'));
 
 # Signature is actually \xpace Token
 # but be more defensive if we're in an argument {...\xspace}
@@ -28,7 +28,7 @@ our @XSPACES = (
 DefMacro('\xspace', sub {
     my ($gullet) = @_;
     if (my $token = $gullet->readToken) {
-      (grep { Equals($token, $_) } @XSPACES ? ($token) : (T_SPACE, $token)); }
+      ((grep { Equals($token, $_) } @XSPACES) ? ($token) : (T_SPACE, $token)); }
     else {
       (); } });
 
