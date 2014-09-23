@@ -194,14 +194,13 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
       # but maybe that's just the bad size info we have?
       transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')',
       class     => 'ltx_svg_fog');
-    my $node = $doc->getNode;
-    while ($node && !$node->getAttribute('stroke')) { $node = $node->parentNode; }
-    my $sw = $doc->openElement('svg:switch');
-    my $fo = $doc->openElement('svg:foreignObject',
+    my $strokeattr = $doc->findnode('ancestor-or-self::*/@stroke', $doc->getElement);
+    my $sw         = $doc->openElement('svg:switch');
+    my $fo         = $doc->openElement('svg:foreignObject',
       width    => $w->pxValue,
       height   => $h->add($d)->pxValue,
       overflow => 'visible',
-      color    => $node->getAttribute('stroke'));
+      color    => $strokeattr && $strokeattr->getValue);
     my $p = $doc->openElement('ltx:p');
     $doc->absorb($box);
     $doc->maybeCloseElement('ltx:text');
