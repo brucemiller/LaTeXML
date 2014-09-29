@@ -441,7 +441,8 @@ sub _prepare_options {
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
-      $$opts{picimages}  = 1 unless defined $$opts{picimages}; }
+      $$opts{picimages} = 1 if ($$opts{format} eq "html4") && !defined $$opts{picimages};
+    }
     # Split sanity:
     if ($$opts{split}) {
       $$opts{splitat}     = 'section' unless defined $$opts{splitat};
