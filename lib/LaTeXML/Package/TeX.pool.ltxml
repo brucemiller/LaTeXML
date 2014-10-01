@@ -2566,18 +2566,30 @@ DefConstructor('\@@ooalign{}',
   beforeDigest => sub { alignmentBindings('l'); });
 
 #----------------------------------------------------------------------
-DefPrimitiveI('\indent',   undef, undef);
-DefPrimitiveI('\noindent', undef, undef);
+# These determine whether the _next_ paragraph gets indented!
+# thus it needs \par to check whether such indentation has been set.
+DefPrimitiveI('\indent',   undef, sub { AssignValue(next_para_class => 'ltx_indent'); });
+DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noindent'); });
 
 # <ltx:para> represents a Logical Paragraph, whereas <ltx:p> is a `physical paragraph'.
 # A para can contain both p and displayed equations and such.
 
-# Remember; \par closes, not opens, paragraphs!
+# Remember; \par _closes_, not opens, paragraphs!
 # Here, we want to close both an open p and para (if either are open).
 DefConstructorI('\par', undef,
-  sub { $_[0]->maybeCloseElement('ltx:p');
-    $_[0]->maybeCloseElement('ltx:para'); },
-  afterDigest => sub { Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
+  sub {
+    my ($document, %props) = @_;
+    $document->maybeCloseElement('ltx:p');
+    if (my $c = $props{class}) {
+      my $node = $document->getElement;
+      if ($document->getNodeQName($node) eq 'ltx:para') {    # Only set on the para about to close!
+        $document->setAttribute($node, class => $c); } }
+    $document->maybeCloseElement('ltx:para'); },
+  afterDigest => sub {
+    if (my $c = LookupValue('next_para_class')) {
+      $_[1]->setProperty(class => $c);
+      AssignValue(next_para_class => undef); }
+    Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
         T_CS('\LTX@clear@vadjust@afterpar'))); },
   alias => "\\par\n");
 # OTOH, sometimes \par is just a minimalistic "start a new line"
