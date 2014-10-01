@@ -96,7 +96,7 @@ td.ltx_subfloat { width:50%; }
 .ltx_align_left     {text-align:left; }
 .ltx_align_right    {text-align:right; }
 .ltx_align_center   {text-align:center; }
-.ltx_align_justify  { }
+.ltx_align_justify  {text-align:justify; }
 .ltx_align_top      {vertical-align:top; }
 .ltx_align_bottom   {vertical-align:bottom; }
 .ltx_align_middle   {vertical-align:middle; }
@@ -179,7 +179,12 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
     position:absolute;top:0pt;left:0pt; }
 .ltx_transformed_inner > .ltx_p {text-indent:0em; margin:0; padding:0; }
 
-.ltx_p { white-space:normal; }
+/* by default, p doesn't indent */
+.ltx_p { text-indent:0em; white-space:normal; }
+/* explicit control of indentation (on ltx_para) */
+.ltx_indent > .ltx_p:first-child { text-indent:2em!important; }
+.ltx_noindent > .ltx_p:first-child { text-indent:0em!important; }
+
 /*======================================================================
   Columns */
 .ltx_page_column1 {
