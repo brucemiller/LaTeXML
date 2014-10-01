@@ -909,50 +909,12 @@ DefConstructor('\ifrac{}{}',
   beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
-DefConstructor('\lx@genbinom DefToken {}',
-  "<ltx:XMDual>"
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='binomial' role='#role'/>"
-    . "<ltx:XMRef _xmkey='#xmkey1'/>"
-    . "<ltx:XMRef _xmkey='#xmkey2'/>"
-    . "</ltx:XMApp>"
-    . "<ltx:XMWrap>"
-    . "<ltx:XMTok role='OPEN' stretchy='true'>(</ltx:XMTok>"
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok role='STACKED' meaning='binomial' mathstyle='#mathstyle'/>"
-    . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
-    . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
-    . "</ltx:XMApp>"
-    . "<ltx:XMTok role='CLOSE' stretchy='true'>)</ltx:XMTok>"
-    . "</ltx:XMWrap>"
-    . "</ltx:XMDual>",
-  reversion => sub {
-    my ($whatsit) = @_;
-    ($whatsit->getArg(1),
-      T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
-      T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
-  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
-  afterDigest => sub {
-    my ($stomach,   $whatsit) = @_;
-    my ($reversion, $style)   = $whatsit->getArgs;
-    $style = ToString($style);
-    my $mathstyle = $style || LookupValue('mathstyle');
-    $stomach->bgroup;
-    AssignValue(mathstyle => $LaTeXML::Package::Pool::mathstylemap{$mathstyle});
-    my $numer = Digest($stomach->getGullet->readArg);
-    my $denom = Digest($stomach->getGullet->readArg);
-    $stomach->egroup;
-    $whatsit->setProperties(
-      mathstyle => $mathstyle,
-      top       => $numer,
-      bottom    => $denom,
-      xmkey1    => LaTeXML::Package::getXMArgID(),
-      xmkey2    => LaTeXML::Package::getXMArgID());
-  });
-
-DefMacro('\binom',  '\lx@genbinom{\binom}{}');
-DefMacro('\tbinom', '\lx@genbinom{\binom}{text}');
-DefMacro('\dbinom', '\lx@genbinom{\binom}{display}');
+DefMath('\binom{}{}', '{\left({{#1}\atop{#2}}\right)}',
+  meaning => 'binomial');
+DefMath('\tbinom{}{}', '{\textstyle\left({{#1}\atop{#2}}\right)}',
+  meaning => 'binomial');
+DefMath('\dbinom{}{}', '{\displaystyle\left({{#1}\atop{#2}}\right)}',
+  meaning => 'binomial');
 
 # Section 4.11.3 The \genfrac command
 # \genfrac{open}{close}{thickness}{style}{numerator}{denominator}
