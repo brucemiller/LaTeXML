@@ -8,7 +8,7 @@
   <resource src="ltx-article.css" type="text/css"/>
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Basics</title>
-    <para xml:id="S1.p1">
+    <para xml:id="S1.p1" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -22,7 +22,7 @@
         </tbody>
       </tabular>
     </para>
-    <para xml:id="S1.p2">
+    <para xml:id="S1.p2" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -38,7 +38,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
             </td>
           </tr>
         </tbody>
@@ -47,7 +47,7 @@
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Complex</title>
-    <para xml:id="S2.p1">
+    <para xml:id="S2.p1" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -73,7 +73,7 @@
       <tabular>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text font="bold" backgroundcolor="#00FFFF" fontsize="large">A long table example</text>
+            <text fontsize="large" backgroundcolor="#00FFFF" font="bold">A long table example</text>
           </td>
         </tr>
         <tr>
@@ -97,7 +97,7 @@
             <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">P-column</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">and another one</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and another one</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m1" tex="\pagecolor{yellow}12\cdot 34" text="12.34">
@@ -142,7 +142,7 @@
             <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">and some long text in the second column</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and some long text in the second column</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m4" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -188,7 +188,7 @@
 large entries in one column.</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m7" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -200,10 +200,10 @@ large entries in one column.</text>
         </tr>
         <tr>
           <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m8" tex="\pagecolor{yellow}100" text="100">
@@ -234,10 +234,10 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
         </tr>
         <tr>
           <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m10" tex="\pagecolor{yellow}45\cdot 3" text="45.3">
@@ -254,7 +254,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
         </tr>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text font="bold" backgroundcolor="#00FFFF" fontsize="large">The End</text>
+            <text backgroundcolor="#00FFFF" fontsize="large" font="bold">The End</text>
           </td>
         </tr>
       </tabular>
@@ -262,7 +262,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>Row &amp; Cell Colors</title>
-    <para xml:id="S3.p1">
+    <para xml:id="S3.p1" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -281,7 +281,7 @@ three</text>
         </tbody>
       </tabular>
     </para>
-    <para xml:id="S3.p2">
+    <para xml:id="S3.p2" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -299,7 +299,7 @@ three</text>
         </tbody>
       </tabular>
     </para>
-    <para xml:id="S3.p3">
+    <para xml:id="S3.p3" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -320,7 +320,7 @@ three</text>
         </tbody>
       </tabular>
     </para>
-    <para xml:id="S3.p4">
+    <para xml:id="S3.p4" class="ltx_noindent">
       <tabular vattach="middle">
         <tbody>
           <tr>
