@@ -241,7 +241,7 @@ my %sizes = (    # CONSTANT
   tiny => 'small', script => 'small', footnote => 'small', small => 'small',
   normal => 'normal',
   large => 'big', Large => 'big', LARGE => 'big', huge => 'big', Huge => 'big',
-  big => '1.1em', Big => '1.5em', bigg => '2.0em', Bigg => '2.5em');
+  big => '1.2em', Big => '1.6em', bigg => '2.1em', Bigg => '2.6em');
 
 # Given a font string (joining the components)
 # reduce it to a "sane" font.  Note that MathML uses a single mathvariant
@@ -588,7 +588,8 @@ my %plane1hack = (    # CONSTANT
 sub stylizeContent {
   my ($item, $mihack, %attr) = @_;
   my $iselement = (ref $item) eq 'XML::LibXML::Element';
-  my $font = ($iselement ? $item->getAttribute('font') : $attr{font})
+  my $role      = ($iselement ? $item->getAttribute('role') : 'ID');
+  my $font      = ($iselement ? $item->getAttribute('font') : $attr{font})
     || $LaTeXML::MathML::FONT;
   my $size = ($iselement ? $item->getAttribute('fontsize') : $attr{fontsize})
     || $LaTeXML::MathML::SIZE;
@@ -604,11 +605,20 @@ sub stylizeContent {
   my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
   $size = undef if ($stretchy || 'false') eq 'true';    # Ignore size, if we're stretching.
   $size = undef if $size && ($size eq $LaTeXML::MathML::STYLE);
-  $stretchy = 'false' if $size;   # Conversely, if size was specifically set, we shouldn't stretch it!
-                                  # Failsafe for empty tokens?
+  my $stretchyhack = undef;
 
+  if ($size) {
+    # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
+    # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
+    # (Thanks Peter Krautzberger)
+    if (($role eq 'OPEN') || ($role eq 'CLOSE')) {
+      $stretchyhack = 1;
+      $stretchy     = undef; }
+    else {
+      $stretchy = 'false' } };    # Conversely, if size was specifically set, we shouldn't stretch it!
+                                  # Failsafe for empty tokens?
   if ((!defined $text) || ($text eq '')) {
-    $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $item->getAttribute('role') : '?');
+    $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
     $color = 'red'; }
 
   if ($font && !$variant) {
@@ -644,8 +654,11 @@ sub stylizeContent {
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
   return ($text,
-    ($variant  ? (mathvariant    => $variant)           : ()),
-    ($size     ? (mathsize       => $sizes{$size})      : ()),
+    ($variant ? (mathvariant => $variant) : ()),
+    ($size ? ($stretchyhack
+        ? (minsize => $sizes{$size}, maxsize => $sizes{$size})
+        : (mathsize => $sizes{$size}))
+      : ()),
     ($color    ? (mathcolor      => $color)             : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
     ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
