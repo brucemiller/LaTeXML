@@ -416,7 +416,7 @@ sub pmml_internal {
   elsif ($tag eq 'ltx:XMArray') {
     my $style   = $node->getAttribute('mathstyle');
     my $vattach = $node->getAttribute('vattach');
-    $vattach = 'center' if $vattach && ($vattach eq 'middle');    # MathML uses center for this!
+    $vattach = 'axis' if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
@@ -441,7 +441,7 @@ sub pmml_internal {
 ### We shouldn't use a blanket (row|column)spacing!!!
 ### Either it should scale with font size, or be recorded when creating the alignment!
 ####    my $result = ['m:mtable', { rowspacing => "0.2ex", columnspacing => "0.4em", align => $vattach }, @rows];
-    my $result = ['m:mtable', { align => $vattach,
+    my $result = ['m:mtable', { ($vattach ne 'axis' ? (align => $vattach) : ()),
         # Mozilla seems to need some encouragement?
         ($LaTeXML::MathML::STYLE eq 'display' ? (displaystyle => 'true') : ()) },
       @rows];
@@ -683,9 +683,11 @@ sub pmml_mo {
   my $isfence   = $role && ($role =~ /^(OPEN|CLOSE)$/);
   my $ispunct   = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
-  my $lpad = ((ref $item) && $item->getAttribute('lpadding'))
+  my $lpad      = $attr{lpadding}
+    || ((ref $item) && $item->getAttribute('lpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
-  my $rpad = ((ref $item) && $item->getAttribute('rpadding'))
+  my $rpad = $attr{rpadding}
+    || ((ref $item) && $item->getAttribute('rpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   return ['m:mo', { %mmlattr,
@@ -1132,7 +1134,6 @@ DefMathML('Apply:ENCLOSE:?', sub {
 
 DefMathML("Token:APPLYOP:?",  \&pmml_mo, undef);  # APPLYOP is (only) \x{2061}; FUNCTION APPLICATION
 DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
-DefMathML("Token:DIFFOP:?",   \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
@@ -1144,6 +1145,11 @@ DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
 DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
+DefMathML("Token:DIFFOP:?",    \&pmml_mo,    undef);
+DefMathML("Apply:DIFFOP:?", sub {
+    my ($op, @args) = @_;
+    return ['m:mrow', {}, map { pmml($_) } $op, @args]; },
+  undef);
 
 # In pragmatic CMML, these are containers
 DefMathML("Apply:?:open-interval", undef, sub {
@@ -1238,8 +1244,9 @@ DefMathML('Token:SUPERSCRIPTOP:?', undef, sub {
 DefMathML('Token:SUBSCRIPTOP:?', undef, sub {
     return ['m:csymbol', { cd => 'ambiguous' }, 'subscript']; });
 
-DefMathML('Apply:POSTFIX:?', sub {
+DefMathML('Apply:POSTFIX:?', sub {    # Reverse presentation, no @apply
     return ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
+DefMathML("Token:POSTFIX:?", sub { pmml_mo($_[0], lpadding => '-4pt', rpadding => '1pt'); }, undef);
 
 DefMathML('Apply:?:square-root',
   sub {
