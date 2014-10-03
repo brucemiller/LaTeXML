@@ -14,6 +14,7 @@ package LaTeXML::Post::LaTeXImages;
 use strict;
 use warnings;
 use DB_File;
+use Config;
 use LaTeXML::Util::Image;
 use POSIX qw(ceil);
 use LaTeXML::Util::Pathname;
@@ -222,16 +223,17 @@ sub process {
     close($TEX);
 
     # === Run LaTeX on the file.
-    my $texinputs = ".:" . join(':', $doc->getSearchPaths,
-      pathname_concat(pathname_installation(), 'texmf'))
-      . ":" . ($ENV{TEXINPUTS} || '');
+    my $sep = $Config::Config{path_sep};
+    my $texinputs = join($sep, '.', $doc->getSearchPaths,
+      pathname_concat(pathname_installation(), 'texmf'),
+      ($ENV{TEXINPUTS} || $sep));
     my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
     my $err     = system($command);
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
     if (($err != 0) || (!-f "$workdir/$jobname.dvi")) {
-      my $preserve = 1 if $$LaTeXML::POST{verbosity} > 0;    # preserve junk when verbosity high.
+      my $preserve = $$LaTeXML::POST{verbosity} > 0;    # preserve junk when verbosity high.
       $workdir->unlink_on_destroy(0) if $preserve;
       Error('shell', $command, undef,
         "Shell command '$command' failed",
@@ -281,7 +283,7 @@ sub process {
         # print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
         $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       else {
-	  Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
+        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table) {
@@ -456,7 +458,7 @@ sub DESTROY {
       closedir($tmpdir_fh);
       unlink $_ foreach @empty_magick;
     } }
-}
+  return; }
 
 #======================================================================
 1;
