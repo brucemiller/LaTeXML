@@ -227,7 +227,9 @@ sub process {
     my $texinputs = join($sep, '.', $doc->getSearchPaths,
       pathname_concat(pathname_installation(), 'texmf'),
       ($ENV{TEXINPUTS} || $sep));
-    my $command = "cd $workdir ; TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
+    # Using && should work in Windows cmd, as well as unix shells
+    # redirect output to silence latex's bathering
+    my $command = "cd $workdir && TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
     my $err     = system($command);
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
@@ -260,7 +262,8 @@ sub process {
     my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
     my $dpi           = int($$self{dpi} * $$self{magnification});
     my $resoption     = ($$self{use_dvipng} ? "-D$dpi" : "-x$mag");
-    if (system("cd $workdir ; TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") != 0) {
+    # Using && should work in Windows cmd, as well as unix shells
+    if (system("cd $workdir && TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") != 0) {
       Error('shell', $$self{dvicmd}, undef,
         "Shell command $$self{dvicmd} (for dvi conversion) failed (see $workdir for clues)",
         "Response was: $!");
