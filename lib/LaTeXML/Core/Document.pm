@@ -347,6 +347,11 @@ sub finalize_rec {
   my $declared_font       = $LaTeXML::FONT;
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
+  if (my $comment = $node->getAttribute('_pre_comment')) {
+    $node->parentNode->insertBefore(XML::LibXML::Comment->new($comment), $node); }
+  if (my $comment = $node->getAttribute('_comment')) {
+    $node->parentNode->insertAfter(XML::LibXML::Comment->new($comment), $node); }
+
   if (my $font_attr = $node->getAttribute('_font')) {
     $desired_font        = $$self{node_fonts}{$font_attr};
     %pending_declaration = $desired_font->relativeTo($declared_font);
@@ -359,7 +364,6 @@ sub finalize_rec {
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
     } }
-
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
     my $type = $child->nodeType;
