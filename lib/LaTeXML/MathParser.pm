@@ -303,38 +303,63 @@ my $HINT_PUNCT_THRESHOLD = 10.0;    # \quad or bigger becomes punctuation ? [CON
 
 sub filter_hints {
   my ($self, $document, @nodes) = @_;
+  my @prefiltered      = ();
+  my $prev             = undef;
+  my $pending_comments = '';
+  my $pending_space    = 0.0;
+  # Filter the nodes, watching for XMHint's and Comments.
+  foreach my $node (@nodes) {
+    my $type = $node->nodeType;
+    if ($type == XML_TEXT_NODE) {    # text? better be (ignorable) whitespace!
+      my $string = $node->textContent;
+      if ($string =~ /\S/) {
+        Warn('unexpected', 'text', $node, "Unexpected text in Math tree"); } }
+    elsif ($type == XML_COMMENT_NODE) {    # Comment!
+      my $comment = $node->getData;
+      if ($prev) {                         # Append to previous element's comments
+        my $c = $prev->getAttribute('_comment');
+        $prev->setAttribute(_comment => ($c ? $c . "\n" . $comment : $comment)); }
+      else {                               # Or save for first
+        $pending_comments = ($pending_comments ? $pending_comments . "\n" . $comment : $comment); } }
+    elsif ($type != XML_ELEMENT_NODE) {
+      Warn('unexpected', 'node', $node, "Unexpected item in Math tree"); }
+    elsif (getQName($node) eq 'ltx:XMHint') {    # If a Hint node?
+      if (my $width = $node->getAttribute('width')) {
+        if (my $pts = getXMHintSpacing($width)) {
+          if ($prev) {
+            my $s = $prev->getAttribute('_space') || 0.0;
+            $prev->setAttribute(_space => $s + $pts); }
+          else {
+            $pending_space += $pts; } } } }
+    else {                                       # Some other element.
+      if ($pending_comments) {
+        $node->setAttribute(_pre_comment => $pending_comments);
+        $pending_comments = ''; }
+      if ($pending_space) {
+        $node->setAttribute(lpadding =>
+            LaTeXML::Common::Dimension::attributeformat($pending_space * 65536));
+        $pending_space = 0.0; }
+      push(@prefiltered, $node); $prev = $node; }    # Keep it.
+  }
   my @filtered = ();
-  my $prev     = undef;
-  while (@nodes) {
-    my $c = shift(@nodes);
-    if (getQName($c) ne 'ltx:XMHint') {    # Is it NOT a Hint node?
-      push(@filtered, $c); $prev = $c; }    # Keep it.
-    elsif (my $width = $c->getAttribute('width')) {    # Is it a spacing hint?
-          # Get the pts (combining w/any following spacing hints)
-      my $pts = getXMHintSpacing($width);
-      while (@nodes && (getQName($nodes[0]) eq 'ltx:XMHint')    # Combine w/ more?
-        && ($width = $c->getAttribute('width'))) {
-        $pts += getXMHintSpacing($width);
-        shift(@nodes); }                                        # and remove the extra hints
-          # A wide space, between Stuff, is likely acting like punctuation, so convert it
-      if ($prev && (($prev->getAttribute('role') || '') ne 'PUNCT')
-        && scalar(@nodes) && ($pts >= $HINT_PUNCT_THRESHOLD)) {
-        $c = $c->cloneNode(1); $c->setNodeName('XMTok');
-        $c->removeAttribute('width');
-        $c->removeAttribute('height');    # ?
-        $c->setAttribute(role => 'PUNCT');    # convert to punctuation!
-        $c->appendText(spacingToString($pts));
-        push(@filtered, $c); }
+  # Filter through the pre-filtered nodes looking for large rpadding.
+  foreach my $node (@prefiltered) {
+    push(@filtered, $node);
+    if (my $s = $node->getAttribute('_space')) {
+      $node->removeAttribute('_space');
+      if ($s >= $HINT_PUNCT_THRESHOLD) {
+        # Create a new Punctuation node (XMTok) from the wide space
+        # I'm leary that this is a safe way to create an XML node that's NOT in the tree, but...
+        my $p = $node->parentNode;
+        #        my $punct = $document->openElementAt($p,'ltx:XMTok',role=>'PUNCT',rpadding=>$s.'pt');
+        my $punct = $document->openElementAt($p, 'ltx:XMTok', role => 'PUNCT',
+          name => ('q' x int($s / 10)) . 'uad');
+        $punct->appendText(spacingToString($s));
+        $p->removeChild($punct);    # But don't actually leave it in the tree!!!!
+        push(@filtered, $punct); }
       else {
-        if ($pts) {
-          if ($prev) {                        # Else add rpadding to previous item
-            $prev->setAttribute(rpadding => $pts . 'pt'); }
-          elsif (scalar(@nodes)) {            # or maybe lpadding to next??
-            $nodes[0]->setAttribute(lpadding => $pts . 'pt'); }
-        } }
-      $prev = undef; }                        # at any rate, remove it now
-    else {
-      $prev = undef; } }                      # other hint; remove it now
+        $node->setAttribute(rpadding =>
+            LaTeXML::Common::Dimension::attributeformat($s * 65536)); } } }
   return @filtered; }
 
 # Given a width attribute on an XMHint, return the pts, if any
@@ -373,7 +398,7 @@ sub spacingToString {
 # Especially, when we want to try alternative parse strategies.
 sub parse_kludge {
   my ($self, $mathnode, $document) = @_;
-  my @nodes = $self->filter_hints($document, element_nodes($mathnode));
+  my @nodes = $self->filter_hints($document, $mathnode->childNodes);
   # the 1st array in stack accumlates the nodes within the current fenced row.
   # When there's only a single array, it's single entry will be the complete row.
   my @stack = ([], []);
@@ -422,7 +447,7 @@ sub parse_kludgeScripts_rec {
 
 # sub parse_kludge {
 #   my($self,$mathnode,$document)=@_;
-#   my @nodes = $self->filter_hints($document,element_nodes($mathnode));
+#   my @nodes = $self->filter_hints($document,$mathnode->childNodes);
 #   map { $mathnode->removeChild($_) } @nodes;
 #   my @result=();
 #   while(@nodes){
@@ -481,7 +506,7 @@ sub parse_kludgeScripts_rec {
 # Convert to textual form for processing by MathGrammar
 sub parse_single {
   my ($self, $mathnode, $document, $rule) = @_;
-  my @nodes = $self->filter_hints($document, element_nodes($mathnode));
+  my @nodes = $self->filter_hints($document, $mathnode->childNodes);
 
   my ($punct, $result, $unparsed);
   # Extract trailing punctuation, if rule allows it.
