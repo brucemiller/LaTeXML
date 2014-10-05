@@ -42,7 +42,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
-  &pathname_cwd &pathname_mkdir &pathname_copy
+  &pathname_cwd &pathname_chdir &pathname_mkdir &pathname_copy
   &pathname_installation);
 
 # NOTE: For absolute pathnames, the directory component starts with
@@ -193,6 +193,10 @@ sub pathname_timestamp {
 
 sub pathname_cwd {
   return pathname_canonical(cwd()); }
+
+sub pathname_chdir {
+  my ($directory) = @_;
+  return chdir($directory); }
 
 sub pathname_mkdir {
   my ($directory) = @_;
