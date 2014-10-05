@@ -164,7 +164,12 @@ sub cleanTeX {
 sub process {
   my ($self, $doc, @nodes) = @_;
 
-  my $jobname = "ltxmlimg";
+  my $jobname  = "ltxmlimg";
+  my $orig_cwd = pathname_cwd();
+  my $sep      = $Config::Config{path_sep};
+  local $ENV{TEXINPUTS} = join($sep, '.', $doc->getSearchPaths,
+    pathname_concat(pathname_installation(), 'texmf'),
+    ($ENV{TEXINPUTS} || $sep));
 
   my %table = ();
 
@@ -223,24 +228,21 @@ sub process {
     close($TEX);
 
     # === Run LaTeX on the file.
-    my $sep = $Config::Config{path_sep};
-    my $texinputs = join($sep, '.', $doc->getSearchPaths,
-      pathname_concat(pathname_installation(), 'texmf'),
-      ($ENV{TEXINPUTS} || $sep));
-    # Using && should work in Windows cmd, as well as unix shells
-    # redirect output to silence latex's bathering
-    my $command = "cd $workdir && TEXINPUTS=$texinputs $LATEXCMD $jobname > $jobname.output";
-    my $err     = system($command);
+    # (keep the command simple so it works in Windows)
+    pathname_chdir($workdir);
+    my $ltxcommand = "$LATEXCMD $jobname > $jobname.ltxoutput";
+    my $ltxerr     = system($ltxcommand);
+    pathname_chdir($orig_cwd);
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
-    if (($err != 0) || (!-f "$workdir/$jobname.dvi")) {
+    if (($ltxerr != 0) || (!-f "$workdir/$jobname.dvi")) {
       my $preserve = $$LaTeXML::POST{verbosity} > 0;    # preserve junk when verbosity high.
       $workdir->unlink_on_destroy(0) if $preserve;
-      Error('shell', $command, undef,
-        "Shell command '$command' failed",
-        ($err == 0 ? "No dvi file generated"     : "returned code $err (!= 0): $@"),
-        ($preserve ? "See $workdir/$jobname.log" : "Re-run with --verbose to see TeX log"));
+      Error('shell', $LATEXCMD, undef,
+        "LaTeX command '$ltxcommand' failed",
+        ($ltxerr == 0 ? "No dvi file generated"     : "returned code $ltxerr (!= 0): $@"),
+        ($preserve    ? "See $workdir/$jobname.log" : "Re-run with --verbose to see TeX log"));
       return $doc; }
     $workdir->unlink_on_destroy(0) if $$LaTeXML::POST{verbosity} > 2;
 
@@ -262,10 +264,14 @@ sub process {
     my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
     my $dpi           = int($$self{dpi} * $$self{magnification});
     my $resoption     = ($$self{use_dvipng} ? "-D$dpi" : "-x$mag");
-    # Using && should work in Windows cmd, as well as unix shells
-    if (system("cd $workdir && TEXINPUTS=$texinputs $$self{dvicmd} $resoption $jobname.dvi") != 0) {
+    pathname_chdir($workdir);
+    my $dvicommand = "$$self{dvicmd} $resoption $jobname.dvi > $jobname.dvioutput";
+    my $dvierr     = system($dvicommand);
+    pathname_chdir($orig_cwd);
+
+    if ($dvierr != 0) {
       Error('shell', $$self{dvicmd}, undef,
-        "Shell command $$self{dvicmd} (for dvi conversion) failed (see $workdir for clues)",
+        "Shell command '$dvicommand' (for dvi conversion) failed (see $workdir for clues)",
         "Response was: $!");
       return $doc; }
 
