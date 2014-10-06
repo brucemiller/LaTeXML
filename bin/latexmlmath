@@ -158,7 +158,8 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 our $omURI  = "http://www.openmath.org/OpenMath";
 
 # Default to pmml to stdout, if nothing else specified.
-$pmml = '-' unless (defined $mathimage || defined $pmml || defined $cmml || defined $om || defined $xmath);
+$pmml = '-' unless (defined $mathimage
+  || defined $pmml || defined $cmml || defined $om || defined $xmath);
 
 our %OPTIONS = ();
 
@@ -171,11 +172,19 @@ my $post = LaTeXML::Post->new(verbosity => $verbosity || 0);
   LaTeXML::Post::CrossRef->new(db => $DB, %OPTIONS));
 
 if ($mathimage) {
+  my $imagetype = 'png';
+##  if($mathimage eq 'svg'){      # hack
+##    $mathimage = '-';
+##    $imagetype = 'svg'; }
+##  els
+  if ($mathimage =~ s/\.(png|gif|jpg|jpeg|svg)$//) {
+    $imagetype = $1; }
+
+  # We could print the svg to stdout, but we've already made a file, so....
+##  if (($mathimage eq '-') && ($imagetype ne 'svg')){
   if ($mathimage eq '-') {
     die "I dont really want to write the image to STDOUT, sorry!"; }
-  my $imagetype = 'png';
-  if ($mathimage =~ s/\.(png|gif|jpg|jpeg)$//) {
-    $imagetype = $1; }
+
   my ($result) = $post->ProcessChain($document,
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
