@@ -35,17 +35,6 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 # dvips converts the dvi to eps, and ImageMagick can convert the eps to png;
 # OR dvipng can convert the dvi to png MUCH quicker... if it's available.
 
-# Useful DVIPS options:
-#  -q  : run quietly
-#  -x#  : magnification * 1000
-#  -S1 -i  : make a separate file for each `section' consisting of a single page.
-#       QUESTION: dvips' naming scheme allows for 999 pages... what happens at 1000?
-#  -E   :  crop each page close to the `ink'.
-#  -j0  : don't subset fonts; silly really, but some font tests are making problems!
-
-our $DVIPSCMD  = 'dvips -q -S1 -i -E -j0 -o imgx';                    # [ CONFIGURABLE?]
-our $DVIPNGCMD = 'dvipng -bg Transparent -T tight -q -o imgx%03d';    # [ CONFIGURABLE?]
-
 # Options:
 #   source         : (dir)
 #   magnification  : typically something like 1.33333, but you may want bigger
@@ -57,11 +46,10 @@ sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.33333;
-  $$self{magnification} = 1.3333333;
-  $$self{maxwidth}      = $options{maxwidth} || 800;
-  $$self{dpi}           = $options{dpi} || 96;
-  $$self{background}    = $options{background} || "#FFFFFF";
-  $$self{imagetype}     = $options{imagetype} || 'png';
+  $$self{maxwidth}      = $options{maxwidth}      || 800;
+  $$self{dpi}           = $options{dpi}           || 96;
+  $$self{background}    = $options{background}    || "#FFFFFF";
+  $$self{imagetype}     = $options{imagetype}     || 'png';
 
   # Parameters for separating the clipping box from the
   # desired padding between image edge and "ink"
@@ -70,12 +58,48 @@ sub new {
   $$self{clippingfudge} = 3;       # px
   $$self{clippingrule}  = 0.90;    # pixels (< 1 to avoid antialiasing..?)
 
-  # We'll use dvipng (MUCH faster) if requested or not forbidden & available.
-  # But be careful: it can't handle much postscript, so better NOT for graphics!
-  $$self{use_dvipng} = 1
-    if ($options{use_dvipng} || (!defined $options{use_dvipng})) && which('dvipng');
-  $$self{dvicmd}             = ($$self{use_dvipng} ? $DVIPNGCMD : $DVIPSCMD);
-  $$self{dvicmd_output_type} = ($$self{use_dvipng} ? 'png32'    : 'eps');
+  # Sanity check of dvi processing...
+  # If trying to create svg...
+  if (($$self{imagetype} eq 'svg') && (!defined $options{use_dvisvgm}) && which('dvisvgm')) {
+    $$self{use_dvisvgm} = 1; }
+  elsif ($$self{use_dvisvgm} && (($$self{imagetype} ne 'svg') || !which('dvisvgm'))) {
+    $$self{use_dvisvgm} = 0; }    # but disable if inappropriate or unavailable
+      # We'll use dvipng (MUCH faster) if requested or not forbidden & available.
+      # But be careful: it can't handle much postscript, so better NOT for graphics!
+  if (($$self{imagetype} eq 'png') && (!defined $options{use_dvipng}) && which('dvipng')) {
+    $$self{use_dvipng} = 1; }
+  elsif ($$self{use_dvipng} && (($$self{imagetype} ne 'png') || !which('dvipng'))) {
+    $$self{use_dvipng} = 0; }    # but disable if inappropriate or unavailable.
+
+  # Parameterize according to the selected dvi-to-whatever processor.
+  my $mag = int($$self{magnification} * 1000);
+  my $dpi = int($$self{dpi} * $$self{magnification});
+  # Unfortunately, each command has incompatible -o option to name the output file.
+  # Note that the formatting char used, '%', has to be doubled on Windows!!
+  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
+  if ($$self{use_dvisvgm}) {
+    # img name uses 2 digits for page; what happens at 100?
+    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
+    $$self{dvicmd_output_name} = 'imgx-%02d.svg';
+    $$self{dvicmd_output_type} = 'svg';
+    $$self{frame_output}       = 0; }
+  elsif ($$self{use_dvipng}) {
+    $$self{dvicmd}             = "dvipng -bg Transparent -T tight -q -D$dpi -o imgx-${fmt}03d.png";
+    $$self{dvicmd_output_name} = 'imgx-%03d.png';
+    $$self{dvicmd_output_type} = 'png32';
+    $$self{frame_output}       = 1; }
+  else {
+    # Useful DVIPS options:
+    #  -q  : run quietly
+    #  -x#  : magnification * 1000
+    #  -S1 -i  : make a separate file for each `section' consisting of a single page.
+    #       QUESTION: dvips' naming scheme allows for 999 pages... what happens at 1000?
+    #  -E   :  crop each page close to the `ink'.
+    #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
+    $$self{dvicmd}             = "dvips -q -S1 -i -E -j0 -x$mag -o imgx";
+    $$self{dvicmd_output_name} = 'imgx%03d';
+    $$self{dvicmd_output_type} = 'eps';
+    $$self{frame_output}       = 1; }
   return $self; }
 
 #**********************************************************************
@@ -260,12 +284,8 @@ sub process {
         "Response was: $!"); }
 
     # === Run dvicmd to extract individual png|postscript files.
-    my $mag           = int($$self{magnification} * 1000);
-    my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
-    my $dpi           = int($$self{dpi} * $$self{magnification});
-    my $resoption     = ($$self{use_dvipng} ? "-D$dpi" : "-x$mag");
     pathname_chdir($workdir);
-    my $dvicommand = "$$self{dvicmd} $resoption $jobname.dvi > $jobname.dvioutput";
+    my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput";
     my $dvierr     = system($dvicommand);
     pathname_chdir($orig_cwd);
 
@@ -276,20 +296,26 @@ sub process {
       return $doc; }
 
     # === Convert each image to appropriate type and put in place.
+    my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
-      my $src = "$workdir/imgx" . sprintf("%03d", ++$index);
+      my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
       if (-f $src) {
         my $dest = $$entry{dest}
           || $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype});
         my $absdest = $doc->checkDestination($dest);
-        my ($w, $h) = $self->convert_image($doc, $src, $absdest);
-        next unless defined $w && defined $h;
         my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
+        my ($w, $h);
+        if ($$self{frame_output}) {    # If framed, trim the frame
+          ($w, $h) = $self->convert_image($doc, $src, $absdest);
+          next unless defined $w && defined $h; }
+        else {
+          pathname_copy($src, $absdest);
+          $w = int($ww + 0.5); $h = int($hh + $dd + 0.5); }
         my $d = int(0.5 + ($dd || 0) + $$self{padding});
         if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
           Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
-        # print STDERR "\nImage[$index] $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
+        #print STDERR "\nImage[$index] '$dest' $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
         $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       else {
         Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
@@ -350,8 +376,10 @@ sub pre_preamble {
 
   my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
-  my $th = $$self{clippingrule} * $pts_per_pixel;   # clipping box thickness in points.
-                                                    #  print STDERR "w=$w, gap=$gap, thickness=$th\n";
+  my $th  = ($$self{frame_output}
+    ? $$self{clippingrule} * $pts_per_pixel    # clipping box thickness in points.
+    : 0);                                      # NO clipping box!
+                                               #  print STDERR "w=$w, gap=$gap, thickness=$th\n";
   return <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
