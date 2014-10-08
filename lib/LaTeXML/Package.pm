@@ -1175,7 +1175,8 @@ sub createXMRefs {
   my @refs = ();
   foreach my $arg (@args) {
     my $isarray = (ref $arg eq 'ARRAY');
-    my $qname = ($isarray ? $$arg[0] : $document->getNodeQName($arg));
+    my $qname   = ($isarray ? $$arg[0] : $document->getNodeQName($arg));
+    my $box     = ($isarray ? $$arg[1]{_box} : $document->getNodeBox($arg));
     # XMHint's are ephemeral, they may disappear; so just clone it w/o id
     if ($qname eq 'ltx:XMHint') {
       my %attr = ($isarray ? %{ $$arg[1] } : (map { $_->nodeName => $_->getValue } $arg->attributes));
@@ -1183,14 +1184,14 @@ sub createXMRefs {
       push(@refs, [$qname, {%attr}]); }
     # Likewise, clone an XMRef (w/o any attributes or id ?) rather than create an XMRef to an XMRef.
     elsif ($qname eq 'ltx:XMRef') {
-      push(@refs, [$qname, { idref => $arg->getAttribute('idref') }]); }
+      push(@refs, [$qname, { idref => $arg->getAttribute('idref'), _box => $box }]); }
     else {
       my $id = ($isarray ? $$arg[1]{'xml:id'} : $arg->getAttribute('xml:id'));
       if (!$id) {
         $id = ToString(getXMArgID());
         if ($isarray) { $$arg[1]{'xml:id'} = $id; }
         else { $document->setAttribute($arg, 'xml:id' => $id); } }
-      push(@refs, ['ltx:XMRef', { 'idref' => $id }]); } }
+      push(@refs, ['ltx:XMRef', { 'idref' => $id, _box => $box }]); } }
   return @refs; }
 
 # DefMath Define a Mathematical symbol or function.
