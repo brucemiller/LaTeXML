@@ -286,6 +286,9 @@ XMWrap_attributes =
   Backgroundable.attributes,
   ID.attributes,
 
+  ## The grammatical rule that should apply to the contained sequence
+  attribute rule { text }?,
+
   attribute name { text }?,
 
   ## A more semantic name corresponding to the intended meaning,
@@ -316,6 +319,8 @@ XMArg_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
+
+  ## The grammatical rule that should apply to the contained sequence
   attribute rule { text }?,
 
   ## An encoding of the position of this token as a sub/superscript, used

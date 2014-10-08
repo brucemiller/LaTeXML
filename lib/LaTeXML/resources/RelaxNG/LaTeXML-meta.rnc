@@ -27,6 +27,7 @@ element note { note_attributes, note_model }
 note_attributes =
   Common.attributes,
   ID.attributes,
+  Labelled.attributes,
 
   ## indicates the desired visible marker to be linked to the note.
   attribute mark { text }?,

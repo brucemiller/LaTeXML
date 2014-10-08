@@ -1138,6 +1138,12 @@
   content CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
+  xml:id ID #IMPLIED
+  fragid CDATA #IMPLIED
+  labels CDATA #IMPLIED
+  refnum CDATA #IMPLIED
+  frefnum CDATA #IMPLIED
+  rrefnum CDATA #IMPLIED
   mark CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -2162,6 +2168,7 @@
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
+  rule CDATA #IMPLIED
   name CDATA #IMPLIED
   meaning CDATA #IMPLIED
   style CDATA #IMPLIED

@@ -408,6 +408,11 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <ref name="Backgroundable.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
+      <attribute name="rule">
+        <a:documentation>The grammatical rule that should apply to the contained sequence</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="name"/>
     </optional>
     <optional>
@@ -449,7 +454,9 @@ and thus generally disappears after parsing.</a:documentation>
     <ref name="XMath.attributes"/>
     <ref name="ID.attributes"/>
     <optional>
-      <attribute name="rule"/>
+      <attribute name="rule">
+        <a:documentation>The grammatical rule that should apply to the contained sequence</a:documentation>
+      </attribute>
     </optional>
     <optional>
       <attribute name="scriptpos">
