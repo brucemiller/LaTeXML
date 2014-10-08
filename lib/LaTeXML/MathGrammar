@@ -227,7 +227,7 @@ addExpressionModifier :
 ###                 moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
 ###            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
         | PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
-            { Apply($item[3],$arg[0],$item[4]); }
+            { Apply($item[3],$arg[0],$item[4]); } # Is the punctuation Lost here?
         | MODIFIER
             { Apply(New('annotated'),$arg[0],$item[1]); }
         | MODIFIEROP Expression
@@ -243,9 +243,6 @@ addExpressionModifier :
 SignedTerm : AddOp Term                         { Apply($item[1],$item[2]); }
         | Term
 
-### Term        : Factor (MULOP(?) Factor { [$item[1]->[0] || InvisibleTimes(), $item[2]]; })(s?)
-###                                     { LeftRec($item[1],map(@$_,@{$item[2]})); }
-
 Term    : Factor moreFactors[$item[1]]
 moreFactors :
           /^\Z/ { $arg[0];}   # short circuit!
@@ -253,9 +250,6 @@ moreFactors :
         # Given an explicit COMPOSEOP, we'll assume the preceding is
         # an implicit lambda of some sort(?)
         | COMPOSEOP makeComposition[$arg[0],$item[1]]
-#        | { ($forbidEvalAt ? undef : 1); }
-#         evalAtOp POSTSUBSCRIPT
-#                  moreFactors[Apply(New('evaluated-at'),$arg[0],Arg($item[3],0))]
         | { ($forbidEvalAt ? undef : 1); }
           evalAtOp maybeEvalAt[$arg[0],$item[2]]
         | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
@@ -449,9 +443,6 @@ factorOpen :
         | Expression factorOpenExpr[$arg[0],$item[1]]
         # Empty OPEN CLOSE ?
         | balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
-##        # Singlet containing an operator ? 
-##        | AnyOp balancedClose[$arg[0]]
-##                   addScripts[Fence($arg[0],$item[1],$item[2])]
         # Sequence starting  with an operator ? 
         | AnyOp factorOpenExpr[$arg[0],$item[1]]
 
@@ -587,6 +578,7 @@ makeComposition :
 # addOpArgs[$bigop]; Add following Term to a bigop, if present.
 addOpArgs :
           /^\Z/ { $arg[0];}   # short circuit!
+        # Is the APPLYOP getting "lost" here?
         | APPLYOP(?) Factor moreOpArgFactors[$item[2]] { Apply($arg[0],$item[3]);}
         | { $arg[0]; }
 
