@@ -254,7 +254,7 @@ sub rearrangeAMSMultiline {
   map { $_->setAttribute(align => 'right'); } element_nodes($rows[-1]);
   my @stuff = extractXMArrayCells($document, $array);
   $document->replaceTree(['ltx:XMDual', {},
-      ['ltx:XMWrap', {},
+      ['ltx:XMWrap', { rule => 'Anything,' },
         createXMRefs($document, @stuff)],
       $array],
     $array);
@@ -292,7 +292,7 @@ sub rearrangeAMSSplit {
   my ($document, $array) = @_;
   my @stuff = extractXMArrayCells($document, $array);
   $document->replaceTree(['ltx:XMDual', {},
-      ['ltx:XMWrap', {},
+      ['ltx:XMWrap', { rule => 'Anything,' },
         createXMRefs($document, @stuff)],
       $array],
     $array);
@@ -479,7 +479,7 @@ DefConstructor('\@@gathered DigestedBody',
     # Insert a \qquad between the rows to encourage the parser to see them as separate eqns.
     my @stuff = extractXMArrayCells($document, $array);
     $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMWrap', {},
+        ['ltx:XMWrap', { rule => 'Anything,' },
           createXMRefs($document, @stuff)],
         $array],
       $array);
