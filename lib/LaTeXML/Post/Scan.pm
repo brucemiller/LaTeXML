@@ -45,6 +45,7 @@ sub new {
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
   $self->registerHandler('ltx:item'          => \&labelled_handler);
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
+  $self->registerHandler('ltx:note'          => \&note_handler);
 
   $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
   $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
@@ -228,6 +229,30 @@ sub labelled_handler {
       refnum   => orNull($refnum),
       frefnum  => orNull(($refnum && $reftag ? $reftag : $frefnum)),
       rrefnum  => orNull(($refnum && $reftag ? $reftag : $rrefnum)));
+    $self->addAsChild($id, $parent_id); }
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
+
+# Maybe with some careful redesign of the schema, this would fall under labelled?
+sub note_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id = $node->getAttribute('xml:id');
+  if ($id) {
+    my $refnum = $node->getAttribute('mark');
+    my $reftag = $self->cleanNode($doc, $doc->findnode('ltx:tag', $node));
+    # Rather annoying interpretation:
+    # an <ltx:tag> might just be something like an itemization bullet that
+    # doesn't make sense to use when referring to the object.
+    # OTOH, it might be a more nicely formatted version of the frefnum
+    # So, IF there is a refnum, use tag in place of the frefnum!
+    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      labels   => orNull($self->noteLabels($node)),
+      location => orNull($doc->siteRelativeDestination),
+      pageid   => orNull($self->pageID($doc)),
+      fragid   => orNull($self->inPageID($doc, $id)),
+      refnum   => orNull($refnum),
+      frefnum  => orNull($refnum),
+      rrefnum  => orNull($refnum));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
