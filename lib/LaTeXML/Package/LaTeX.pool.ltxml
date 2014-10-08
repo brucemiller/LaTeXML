@@ -348,7 +348,10 @@ sub relocateFootnote {
       foreach my $note ($document->findnodes(".//ltx:note[\@role='${notetype}mark'][\@mark='$mark']")) {
         $node->parentNode->removeChild($node);
         $document->appendClone($note, $node->childNodes);
-        $document->setAttribute($note, role => $notetype); } } }
+        $document->setAttribute($note, role => $notetype);
+        if (my $labels = $node->getAttribute('labels')) {
+          GenerateID($document, $note);
+          $document->setAttribute($note, labels => $labels); } } } }
   return; }
 
 # Style parameters
