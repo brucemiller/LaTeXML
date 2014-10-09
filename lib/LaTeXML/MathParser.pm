@@ -209,6 +209,7 @@ sub parse {
   local $LaTeXML::MathParser::WARNED      = 0;
   local $LaTeXML::MathParser::XNODE       = $xnode;
   local $LaTeXML::MathParser::PUNCTUATION = {};
+  local $LaTeXML::MathParser::LOSTNODES   = {};
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
     my $p = $xnode->parentNode;
@@ -226,6 +227,9 @@ sub parse {
       $r->removeAttribute('xml:id');
       foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
         $document->replaceTree($r, $n); } }
+    foreach my $id (keys %$LaTeXML::MathParser::LOSTNODES) {
+      foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
+        $document->setAttribute($n, idref => $$LaTeXML::MathParser::LOSTNODES{$id}); } }
 
     $p->setAttribute('text', text_form($result)); }
   return; }
@@ -512,7 +516,7 @@ sub parse_single {
   # Extract trailing punctuation, if rule allows it.
   if ($rule =~ s/,$//) {
     my ($x, $r) = ($nodes[-1]);
-    $punct = ($x && (getQName($x) eq 'ltx:XMTok')
+    $punct = ($x && ($x = realizeXMNode($x)) && (getQName($x) eq 'ltx:XMTok')
         && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT') || ($r eq 'PERIOD'))
       ? pop(@nodes) : undef);
     # Special case hackery, in case this thing is XMRef'd!!!
@@ -1089,6 +1093,7 @@ sub LeftRec {
     my $opname = p_getTokenMeaning(realizeXMNode($op));
     my @args   = ($arg1, shift(@more));
     while (@more && ($opname eq p_getTokenMeaning(realizeXMNode($more[0])))) {
+      ReplacedBy($more[0], $op);
       shift(@more);
       push(@args, shift(@more)); }
     return LeftRec(Apply($op, @args), @more); }
@@ -1113,12 +1118,32 @@ sub ApplyNary {
         qw(mathstyle))    # Check ops are used in similar way
                           # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
       && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(open close enclose))) {
+      # Note that $op1 GOES AWAY!!!
+      ReplacedBy($op1, $rop);
       push(@args, @args1); }
     else {
       push(@args, $arg1); } }
   else {
     push(@args, $arg1); }
   return Apply($op, @args, $arg2); }
+
+# There are several cases where parsing a formula will rearrange nodes
+# such that some nodes will no-longer be used.  For example, when
+# converting a nested set of infix + into a single n-ary sum.
+# In effect, all those excess +'s are subsumed by the single first one.
+# It may be, however, that those lost nodes are referenced (XMRef) from the
+# other branch of an XMDual, and those references should be updated to refer
+# to the single node replacing the lost ones.
+# This function records that replacement, and the top-level parser fixes up the tree.
+# NOTE: There may be cases (in the Grammar, eg) where punctuation & ApplyOp's
+# get lost completely? Watch out for this!
+sub ReplacedBy {
+  my ($lostnode, $keepnode) = @_;
+  if (my $lostid = p_getAttribute($lostnode, 'xml:id')) {
+    if (my $keepid = p_getAttribute($keepnode, 'xml:id')) {
+      # print STDERR "LOST $lostid use instead $keepid\n";
+      $$LaTeXML::MathParser::LOSTNODES{$lostid} = $keepid; } }
+  return; }
 
 # ================================================================================
 # Construct an appropriate application of sub/superscripts
