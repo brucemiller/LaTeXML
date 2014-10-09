@@ -1214,14 +1214,14 @@ sub lstClassBegin {
   my ($classname) = @_;
   my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
   return ($class
-    ? (T_BEGIN, ($$class{begin} ? $$class{begin}->unlist : ()), lstClassBegin($$class{class}))
+    ? (T_BEGIN, lstClassBegin($$class{class}), ($$class{begin} ? $$class{begin}->unlist : ()))
     : ()); }
 
 sub lstClassEnd {
   my ($classname) = @_;
   my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
   return ($class
-    ? (lstClassEnd($$class{class}), ($$class{end} ? $$class{end}->unlist : ()), T_END)
+    ? (($$class{end} ? $$class{end}->unlist : ()), lstClassEnd($$class{class}), T_END)
     : ()); }
 
 sub lstClassProperty {
