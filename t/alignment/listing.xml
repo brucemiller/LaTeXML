@@ -124,7 +124,7 @@
           <tr>
             <td class="ltx_lst_linenum"/>
             <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(’<text font="typewriter">case<text class="ltx_lst_space">␣</text>insensitive</text>’);</text>
+              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(<text font="typewriter" color="#FF0000">'case<text class="ltx_lst_space">␣</text>insensitive'</text>);</text>
             </td>
           </tr>
           <tr>
@@ -132,13 +132,13 @@
               <text fontsize="tiny">7</text>
             </td>
             <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(’<text font="typewriter">long<text class="ltx_lst_space">␣</text>''<text class="ltx_lst_space">␣</text>string</text>’);</text>
+              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(<text color="#FF0000" font="typewriter">'long<text class="ltx_lst_space">␣</text>''<text class="ltx_lst_space">␣</text>string'</text>);</text>
             </td>
           </tr>
           <tr>
             <td class="ltx_lst_linenum"/>
             <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">WritE</text>(’<text font="typewriter">Pascal<text class="ltx_lst_space">␣</text>keywords.</text>’);</text>
+              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">WritE</text>(<text color="#FF0000" font="typewriter">'Pascal<text class="ltx_lst_space">␣</text>keywords.'</text>);</text>
             </td>
           </tr>
         </tabular>
@@ -334,7 +334,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">//calculate <Math mode="inline" xml:id="LSTx8.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
+              <text class="ltx_lst_line" color="#00FF00">//calculate <Math mode="inline" xml:id="LSTx8.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
             </td>
           </tr>
           <tr>
@@ -352,7 +352,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">//calculate <Math mode="inline" xml:id="LSTx9.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
+              <text class="ltx_lst_line"><text font="italic">//</text>calculate <Math mode="inline" xml:id="LSTx9.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
             </td>
           </tr>
           <tr>
@@ -370,7 +370,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">//<text class="ltx_lst_space" font="italic"> </text><text font="italic">calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">i</XMTok><XMTok role="UNKNOWN">j</XMTok></XMApp></XMApp></XMath></Math></text></text>
+              <text class="ltx_lst_line" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
             </td>
           </tr>
           <tr>
@@ -382,7 +382,7 @@
           <tr>
             <td class="ltx_lst_linenum">3</td>
             <td>
-              <text class="ltx_lst_line">//<text class="ltx_lst_space" font="italic"> </text><text font="italic">calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m3" tex="a_{ij}=\sin x" text="a _ (i * j) = sine@(x)"><XMath><XMApp><XMTok meaning="equals" role="RELOP" font="upright">=</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">i</XMTok><XMTok role="UNKNOWN">j</XMTok></XMApp></XMApp><XMApp><XMTok meaning="sine" role="TRIGFUNCTION" font="upright">sin</XMTok><XMTok role="UNKNOWN">x</XMTok></XMApp></XMApp></XMath></Math></text></text>
+              <text class="ltx_lst_line" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m3" tex="a_{ij}=\sin x" text="a _ (i * j) = sine@(x)"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp><XMApp><XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok></XMApp></XMApp></XMath></Math></text>
             </td>
           </tr>
           <tr>
@@ -412,7 +412,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">//<text class="ltx_lst_space" font="italic"> </text><text font="italic">calculate<text class="ltx_lst_space"> </text>&lt;<Math mode="inline" xml:id="LSTx11.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">i</XMTok><XMTok role="UNKNOWN">j</XMTok></XMApp></XMApp></XMath></Math>&gt;</text></text>
+              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>&lt;<Math mode="inline" xml:id="LSTx11.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">i</XMTok><XMTok role="UNKNOWN">j</XMTok></XMApp></XMApp></XMath></Math>&gt;</text>
             </td>
           </tr>
           <tr>
@@ -436,7 +436,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">//<text class="ltx_lst_space" font="italic"> </text><text font="italic">calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text></text>
+              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
             </td>
           </tr>
           <tr>
@@ -454,7 +454,7 @@
           <tr>
             <td class="ltx_lst_linenum">4</td>
             <td>
-              <text class="ltx_lst_line">//<text class="ltx_lst_space" font="italic"> </text><text font="italic">calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text></text>
+              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text>
             </td>
           </tr>
           <tr>
@@ -472,19 +472,19 @@
           <tr>
             <td class="ltx_lst_linenum">7</td>
             <td>
-              <text class="ltx_lst_line">foo=”<text font="typewriter">a<text class="ltx_lst_space">␣</text>word</text>”;</text>
+              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>word"</text>;</text>
             </td>
           </tr>
           <tr>
             <td class="ltx_lst_linenum">8</td>
             <td>
-              <text class="ltx_lst_line">foo=”<text font="typewriter">a<text class="ltx_lst_space">␣</text>\"string</text>”;</text>
+              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>\"string"</text>;</text>
             </td>
           </tr>
           <tr>
             <td class="ltx_lst_linenum">9</td>
             <td>
-              <text class="ltx_lst_line">foo=”<text font="typewriter">a<text class="ltx_lst_space">␣</text>$x^2$<text class="ltx_lst_space">␣</text>math</text>”;</text>
+              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>$x^2$<text class="ltx_lst_space">␣</text>math"</text>;</text>
             </td>
           </tr>
         </tabular>
@@ -499,7 +499,7 @@
         <tr>
           <td class="ltx_lst_linenum">1</td>
           <td>
-            <text class="ltx_lst_line">#<text class="ltx_lst_space" font="italic"> </text><text font="italic">-*-<text class="ltx_lst_space"> </text>CPERL<text class="ltx_lst_space"> </text>-*-</text></text>
+            <text class="ltx_lst_line" font="italic">#<text class="ltx_lst_space"> </text>-*-<text class="ltx_lst_space"> </text>CPERL<text class="ltx_lst_space"> </text>-*-</text>
           </td>
         </tr>
         <tr>
@@ -555,7 +555,7 @@
   </section>
   <section refnum="8" xml:id="S8">
     <title><tag close=" ">8</tag>A Recursive TeX listing</title>
-    <listing class="ltx_lstlisting ltx_lst_language_TeX_LaTeX" data="\documentclass{article}&#10;\usepackage{makeidx}&#10;\makeindex&#10;\usepackage{listings}&#10;\usepackage{color}&#10;\begin{document}&#10;\lstset{numbers=left}&#10;&#10;\section{Introduction}&#10;This document contains the following listings:&#10;\lstlistoflistings&#10;&#10;\section{Inline Listings}&#10;Various delimiters: \lstinline{a_word},&#10;\lstinline!a_word!, \lstinline Aa_wordA,&#10;\lstinline&amp;a_word&amp; and even \lstinline^a_word^ done.&#10;&#10;\section{An untyped Listing}&#10;No options, language, etc&#10;\begin{lstlisting}&#10;stuff1&#10;stuff2&#10;stuff3&#10;\end{lstlisting}&#10;&#10;\section{A Pascal Listing}&#10;A listing portion:&#10;\begin{lstlisting}[language=Pascal,firstline=2,lastline=5,caption={}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A numbered listing:&#10;\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\ttfamily,showspaces,tabsize=4]&#10;for i:=maxint to 0 do&#10;&#9;begin&#10;&#9;&#9;{ do nothing }&#10;&#9;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A Titled listing:&#10;\begin{lstlisting}[language=Pascal,title={A bit of Pascal}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;Write('case insensitive');&#10;\end{lstlisting}&#10;&#10;&#10;A Captioned listing (known as Listing \ref{pascallisting}) :&#10;\begin{lstlisting}[language=Pascal,caption=Another bit of Pascal, label=pascallisting,firstnumber=100,numbers=left]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\section{An Environment}&#10;\begin{lstlisting}[language=Pascal]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}&#10;\begin{colored}{red}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\begin{colored}{blue}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\section{Listing with Math}&#10;\begin{lstlisting}[language=c,texcl]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[texcl,language=c]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,mathescape,numbers=left]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,escapechar=\%,escapebegin=\textless,escapeend=\textgreater,numbers=left]&#10;// calculate %$a_{ij}$%&#10;a_{ij}&#10; = a_{jj}/a{ij};&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,numbers=left,stringstyle=\ttfamily]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a \&quot;string&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\section{A Perl Listing}&#10;\lstinputlisting[language=perl]{any.sty.ltxml}&#10;&#10;\section{A Recursive \TeX\ listing}&#10;\lstinputlisting[language={[LaTeX]TeX}]{listing.tex}&#10;&#10;\section{Testing Tag}&#10;% AHA, tagstyle only is in effect with XML (?)&#10;\begin{lstlisting}[language=XML,tagstyle=\bf]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,usekeywordsintag=false]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;&#10;\section{Screwiness}&#10;\lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}&#10;%,&#10;% AHA, words can only be in one class (1st one declared?)&#10;% BUT, index is separate, and classname is without the &quot;style&quot; !!&#10;\begin{lstlisting}[language=bingo,keywordstyle=\bfseries,keywordstyle={[2]\itshape},index={[1][keywords2]{bar,baz}}]&#10;foo bar baz bing booboo&#10;\end{lstlisting}&#10;{\bfseries\itshape bfit}&#10;{\itshape\bfseries itbf}&#10;\printindex&#10;\end{document}&#10;" xml:id="LSTx14">
+    <listing class="ltx_lstlisting ltx_lst_language_TeX_LaTeX" data="\documentclass{article}&#10;\usepackage{makeidx}&#10;\makeindex&#10;\usepackage{listings}&#10;\usepackage{color}&#10;\begin{document}&#10;\lstset{numbers=left}&#10;&#10;\section{Introduction}&#10;This document contains the following listings:&#10;\lstlistoflistings&#10;&#10;\section{Inline Listings}&#10;Various delimiters: \lstinline{a_word},&#10;\lstinline!a_word!, \lstinline Aa_wordA,&#10;\lstinline&amp;a_word&amp; and even \lstinline^a_word^ done.&#10;&#10;\section{An untyped Listing}&#10;No options, language, etc&#10;\begin{lstlisting}&#10;stuff1&#10;stuff2&#10;stuff3&#10;\end{lstlisting}&#10;&#10;\section{A Pascal Listing}&#10;A listing portion:&#10;\begin{lstlisting}[language=Pascal,firstline=2,lastline=5,caption={}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A numbered listing:&#10;\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\color{red}\ttfamily,showspaces,tabsize=4]&#10;for i:=maxint to 0 do&#10;&#9;begin&#10;&#9;&#9;{ do nothing }&#10;&#9;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A Titled listing:&#10;\begin{lstlisting}[language=Pascal,title={A bit of Pascal}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;Write('case insensitive');&#10;\end{lstlisting}&#10;&#10;&#10;A Captioned listing (known as Listing \ref{pascallisting}) :&#10;\begin{lstlisting}[language=Pascal,caption=Another bit of Pascal, label=pascallisting,firstnumber=100,numbers=left]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\section{An Environment}&#10;\begin{lstlisting}[language=Pascal]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}&#10;\begin{colored}{red}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\begin{colored}{blue}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\section{Listing with Math}&#10;\begin{lstlisting}[language=c,texcl,commentstyle=\color{green}]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[texcl,language=c]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,mathescape,numbers=left,commentstyle=\color{green}]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,escapechar=\%,escapebegin=\textless,escapeend=\textgreater,numbers=left]&#10;// calculate %$a_{ij}$%&#10;a_{ij}&#10; = a_{jj}/a{ij};&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,numbers=left,stringstyle=\ttfamily]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a \&quot;string&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\section{A Perl Listing}&#10;\lstinputlisting[language=perl]{any.sty.ltxml}&#10;&#10;\section{A Recursive \TeX\ listing}&#10;\lstinputlisting[language={[LaTeX]TeX}]{listing.tex}&#10;&#10;\section{Testing Tag}&#10;% AHA, tagstyle only is in effect with XML (?)&#10;\begin{lstlisting}[language=XML,tagstyle=\bf]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,usekeywordsintag=false]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;&#10;\section{Screwiness}&#10;\lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}&#10;%,&#10;% AHA, words can only be in one class (1st one declared?)&#10;% BUT, index is separate, and classname is without the &quot;style&quot; !!&#10;\begin{lstlisting}[language=bingo,keywordstyle=\bfseries,keywordstyle={[2]\itshape},index={[1][keywords2]{bar,baz}}]&#10;foo bar baz bing booboo&#10;\end{lstlisting}&#10;{\bfseries\itshape bfit}&#10;{\itshape\bfseries itbf}&#10;\printindex&#10;\end{document}&#10;" xml:id="LSTx14">
       <toccaption>listing.tex</toccaption>
       <tabular>
         <tr>
@@ -795,7 +795,7 @@
         <tr>
           <td class="ltx_lst_linenum">40</td>
           <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,numbers=left,<text class="ltx_lst_space"> </text>numberstyle=<text class="ltx_lst_texcs" font="bold">\tiny</text>,<text class="ltx_lst_space"> </text>stepnumber=2,stringstyle=<text class="ltx_lst_texcs" font="bold">\ttfamily</text>,showspaces,tabsize=4]</text>
+            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,numbers=left,<text class="ltx_lst_space"> </text>numberstyle=<text class="ltx_lst_texcs" font="bold">\tiny</text>,<text class="ltx_lst_space"> </text>stepnumber=2,stringstyle=\color{red}<text class="ltx_lst_texcs" font="bold">\ttfamily</text>,showspaces,tabsize=4]</text>
           </td>
         </tr>
         <tr>
@@ -1113,7 +1113,7 @@
         <tr>
           <td class="ltx_lst_linenum">93</td>
           <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,texcl]</text>
+            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,texcl,commentstyle=\color{green}]</text>
           </td>
         </tr>
         <tr>
@@ -1173,7 +1173,7 @@
         <tr>
           <td class="ltx_lst_linenum">103</td>
           <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,mathescape,numbers=left]</text>
+            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,mathescape,numbers=left,commentstyle=\color{green}]</text>
           </td>
         </tr>
         <tr>
@@ -1239,13 +1239,13 @@
         <tr>
           <td class="ltx_lst_linenum">114</td>
           <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,escapechar=\%<text font="italic">,escapebegin=\textless,escapeend=\textgreater,numbers=left]</text></text>
+            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,escapechar=\<text font="italic">%,escapebegin=\textless,escapeend=\textgreater,numbers=left]</text></text>
           </td>
         </tr>
         <tr>
           <td class="ltx_lst_linenum">115</td>
           <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>%<text font="italic">$a_{ij}$%</text></text>
+            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><text font="italic">%$a_{ij}$%</text></text>
           </td>
         </tr>
         <tr>
@@ -1389,7 +1389,7 @@
         <tr>
           <td class="ltx_lst_linenum">139</td>
           <td>
-            <text class="ltx_lst_line">%<text class="ltx_lst_space" font="italic"> </text><text font="italic">AHA,<text class="ltx_lst_space"> </text>tagstyle<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>effect<text class="ltx_lst_space"> </text>with<text class="ltx_lst_space"> </text>XML<text class="ltx_lst_space"> </text>(?)</text></text>
+            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>tagstyle<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>effect<text class="ltx_lst_space"> </text>with<text class="ltx_lst_space"> </text>XML<text class="ltx_lst_space"> </text>(?)</text>
           </td>
         </tr>
         <tr>
@@ -1467,19 +1467,19 @@
         <tr>
           <td class="ltx_lst_linenum">152</td>
           <td>
-            <text class="ltx_lst_line">%<text font="italic">,</text></text>
+            <text class="ltx_lst_line" font="italic">%,</text>
           </td>
         </tr>
         <tr>
           <td class="ltx_lst_linenum">153</td>
           <td>
-            <text class="ltx_lst_line">%<text class="ltx_lst_space" font="italic"> </text><text font="italic">AHA,<text class="ltx_lst_space"> </text>words<text class="ltx_lst_space"> </text>can<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>be<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>class<text class="ltx_lst_space"> </text>(1st<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>declared?)</text></text>
+            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>words<text class="ltx_lst_space"> </text>can<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>be<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>class<text class="ltx_lst_space"> </text>(1st<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>declared?)</text>
           </td>
         </tr>
         <tr>
           <td class="ltx_lst_linenum">154</td>
           <td>
-            <text class="ltx_lst_line">%<text class="ltx_lst_space" font="italic"> </text><text font="italic">BUT,<text class="ltx_lst_space"> </text>index<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>separate,<text class="ltx_lst_space"> </text>and<text class="ltx_lst_space"> </text>classname<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>without<text class="ltx_lst_space"> </text>the<text class="ltx_lst_space"> </text>”style”<text class="ltx_lst_space"> </text>!!</text></text>
+            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>BUT,<text class="ltx_lst_space"> </text>index<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>separate,<text class="ltx_lst_space"> </text>and<text class="ltx_lst_space"> </text>classname<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>without<text class="ltx_lst_space"> </text>the<text class="ltx_lst_space"> </text>”style”<text class="ltx_lst_space"> </text>!!</text>
           </td>
         </tr>
         <tr>
@@ -1535,7 +1535,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">&lt;<text class="ltx_lst_keyword" font="bold">element</text><text class="ltx_lst_space" font="bold"> </text><text font="bold">attr=’value’</text>&gt;content&lt;<text font="bold">/<text class="ltx_lst_keyword">element</text></text>&gt;</text>
+              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
             </td>
           </tr>
         </tabular>
@@ -1545,7 +1545,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">&lt;<text class="ltx_lst_keyword" font="bold">element</text><text class="ltx_lst_space" font="bold"> </text><text font="bold">attr=’value’</text>&gt;content&lt;<text font="bold">/<text class="ltx_lst_keyword">element</text></text>&gt;</text>
+              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
             </td>
           </tr>
         </tabular>
@@ -1555,7 +1555,7 @@
           <tr>
             <td class="ltx_lst_linenum">1</td>
             <td>
-              <text class="ltx_lst_line">&lt;<text class="ltx_lst_keyword" font="bold">element</text><text class="ltx_lst_space" font="bold"> </text><text font="bold">attr=’value’</text>&gt;content&lt;<text font="bold">/<text class="ltx_lst_keyword">element</text></text>&gt;</text>
+              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
             </td>
           </tr>
         </tabular>

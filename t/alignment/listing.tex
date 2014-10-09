@@ -37,7 +37,7 @@ WritE('Pascal keywords.');
 \end{lstlisting}
 
 A numbered listing:
-\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\ttfamily,showspaces,tabsize=4]
+\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\color{red}\ttfamily,showspaces,tabsize=4]
 for i:=maxint to 0 do
 	begin
 		{ do nothing }
@@ -90,7 +90,7 @@ end;
 \end{colored}
 
 \section{Listing with Math}
-\begin{lstlisting}[language=c,texcl]
+\begin{lstlisting}[language=c,texcl,commentstyle=\color{green}]
 // \upshape calculate $a_{ij}$
 a[i][j] = a[j][j]/a[i][j];
 \end{lstlisting}
@@ -100,7 +100,7 @@ a[i][j] = a[j][j]/a[i][j];
 a[i][j] = a[j][j]/a[i][j];
 \end{lstlisting}
 
-\begin{lstlisting}[language=c,mathescape,numbers=left]
+\begin{lstlisting}[language=c,mathescape,numbers=left,commentstyle=\color{green}]
 // calculate $a_{ij}$
 $a_{ij}
  = a_{jj}/a{ij}$;
