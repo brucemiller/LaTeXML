@@ -76,7 +76,10 @@ sub new {
   my $dpi = int($$self{dpi} * $$self{magnification});
   # Unfortunately, each command has incompatible -o option to name the output file.
   # Note that the formatting char used, '%', has to be doubled on Windows!!
-  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
+  # Maybe that's only true when it looks like an environment variable?
+  # Ie. %variable% ?
+  #  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
+  my $fmt = '%';
   if ($$self{use_dvisvgm}) {
     # img name uses 2 digits for page; what happens at 100?
     $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
