@@ -351,7 +351,7 @@ sub filter_hints {
     push(@filtered, $node);
     if (my $s = $node->getAttribute('_space')) {
       $node->removeAttribute('_space');
-      if ($s >= $HINT_PUNCT_THRESHOLD) {
+      if (($s >= $HINT_PUNCT_THRESHOLD) && (($node->getAttribute('role') || '') ne 'PUNCT')) {
         # Create a new Punctuation node (XMTok) from the wide space
         # I'm leary that this is a safe way to create an XML node that's NOT in the tree, but...
         my $p = $node->parentNode;
