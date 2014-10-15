@@ -36,11 +36,19 @@ DefMacro('\floatname{}{}', '\@namedef{fname@#1}{#2}');
 
 DefPrimitive('\newfloat{}{}{}[]', sub {
     my ($gullet, $type, $placement, $auxext, $within) = @_;
-    $type = ToString($type);
+    $type   = ToString($type);
+    $within = ToString($within);
     NewCounter($type, $within);
+    DefMacro('\the' . $type, '\the' . $within . '.\arabic{' . $type . '}') if $within;
     if (!LookupDefinition(T_CS('\fname@' . ToString($type)))) {
       DefMacroI('\fname@' . $type, undef, $type); }
     DefEnvironment("{$type}[]",
+"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+        . "#body"
+        . "</ltx:float>",
+      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
+      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+    DefEnvironment("{$type*}[]",
 "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
         . "#body"
         . "</ltx:float>",
