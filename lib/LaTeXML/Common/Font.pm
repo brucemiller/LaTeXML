@@ -505,6 +505,9 @@ sub merge {
   $forcebold  = $$self[8] unless defined $forcebold;
   $forceshape = $$self[9] unless defined $forceshape;
 
+  if (my $scale = $options{scale}) {
+    $size = lookupFontSize($scale * $font_size{$size}); }
+
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color,    $bg,        $opacity,
     $encoding, $forcebold, $forceshape); }
