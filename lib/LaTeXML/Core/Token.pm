@@ -234,11 +234,14 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
   0, 0, 0, 1,
   1, 0, 1, 1,
   1, 0, 0, 0,
-  0, 1, 1, 0,
+  0, 1, 0, 0,
   0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
+# NOTE that although '%' gets it's catcode changed in Semiverbatim,
+# I'm pretty sure we do NOT want to neutralize comments (turn them into CC_OTHER)
+# here, since if comments do get into the Tokens, that will introduce weird crap into the stream.
 sub neutralize {
   my ($self) = @_;
   my ($ch, $cc) = @$self;
