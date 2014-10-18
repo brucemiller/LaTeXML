@@ -188,7 +188,11 @@ sub cleanTeX {
 #   (1) where to write the images.
 #   (2) relative path from doc to images.
 
-sub process {
+# sub process {
+#   my ($self, $doc, @nodes) = @_;
+#   return $self->generateImages($doc, @nodes); }
+
+sub generateImages {
   my ($self, $doc, @nodes) = @_;
 
   my $jobname  = "ltxmlimg";
@@ -212,11 +216,17 @@ sub process {
 
     # Ideally, $dest is relative to document..
     my $dest = $self->desiredResourcePathname($doc, $node, undef, $$self{imagetype});
-    my $key = (ref $self) . ":" . $tex . ($dest ? ":$dest" : '');
+    #    my $key = (ref $self) . ":" . $tex . ($dest ? ":$dest" : '');
+    my $key   = (ref $self) . ':' . $$self{imagetype} . ':' . $tex;
     my $entry = $table{$key};
     if (!$entry) {
       $nuniq++;
-      $entry = $table{$key} = { tex => $tex, key => $key, nodes => [], dest => $dest }; }
+      $entry = $table{$key} = { tex => $tex, key => $key, nodes => [], dest => [] }; }
+    # Why do I need to make things so complicated?!?!
+    # It may be desired that a particular image gets a specific name.
+    # AND, the same TeX may get different names, or some with & without names!!
+    if ($dest && (!grep { $dest eq $_ } @{ $$entry{dest} })) {
+      push(@{ $$entry{dest} }, $dest); }
     push(@{ $$entry{nodes} }, $node); }
 
   return $doc unless $nuniq;    # No strings to process!
@@ -304,22 +314,25 @@ sub process {
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
       if (-f $src) {
-        my $dest = $$entry{dest}
-          || $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype});
-        my $absdest = $doc->checkDestination($dest);
-        my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
-        my ($w, $h);
-        if ($$self{frame_output}) {    # If framed, trim the frame
-          ($w, $h) = $self->convert_image($doc, $src, $absdest);
-          next unless defined $w && defined $h; }
-        else {
-          pathname_copy($src, $absdest);
-          $w = int($ww + 0.5); $h = int($hh + $dd + 0.5); }
-        my $d = int(0.5 + ($dd || 0) + $$self{padding});
-        if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
-          Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
-        #print STDERR "\nImage[$index] '$dest' $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
-        $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
+        my @dests = @{ $$entry{dest} };
+        push(@dests, $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype}))
+          unless @dests;
+        foreach my $dest (@dests) {
+          my $absdest = $doc->checkDestination($dest);
+          my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
+          my ($w, $h);
+          if ($$self{frame_output}) {    # If framed, trim the frame
+            ($w, $h) = $self->convert_image($doc, $src, $absdest);
+            next unless defined $w && defined $h; }
+          else {
+            pathname_copy($src, $absdest);
+            $w = int($ww + 0.5); $h = int($hh + $dd + 0.5); }
+          my $d = int(0.5 + ($dd || 0) + $$self{padding});
+          if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
+            Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
+#          print STDERR "\nFor key='$$entry{key}': Image[$index] '$dest' $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
+          $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
+      }
       else {
         Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
 
