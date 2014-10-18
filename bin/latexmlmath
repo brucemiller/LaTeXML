@@ -19,10 +19,8 @@ use Pod::Usage;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Core;
 use LaTeXML::Util::Pathname;
-
-# latexmlpost
-
 use File::Spec;
+use File::Temp qw(tempfile);
 use LaTeXML::Post;
 use LaTeXML::Post::Scan;
 use LaTeXML::Post::CrossRef;
@@ -35,7 +33,7 @@ use LaTeXML::Util::ObjectDB;
 my ($verbosity, $strict, $noparse, $includestyles) = (-1, 0, 0, 0);
 my ($destination, $help, $showversion) = ('', '');
 my ($documentid);
-my ($mathimage, $mag) = (undef, 1.75);
+my ($mathimage, $mathsvg, $mag) = (undef, undef, 1.75);
 my ($pmml, $linelength, $plane1, $hackplane1) = (undef, undef, undef, undef);
 my $xmath = undef;
 my $cmml  = undef;
@@ -45,6 +43,7 @@ my @preload;
 GetOptions(
   # No provision for parallel output (yet)
   "mathimage=s"               => \$mathimage,
+  "mathsvg=s"                 => \$mathsvg,
   "magnification=f"           => \$mag,
   "presentationmathml|pmml=s" => \$pmml,
   "linelength=i"              => \$linelength,
@@ -158,7 +157,7 @@ our $mmlURI = "http://www.w3.org/1998/Math/MathML";
 our $omURI  = "http://www.openmath.org/OpenMath";
 
 # Default to pmml to stdout, if nothing else specified.
-$pmml = '-' unless (defined $mathimage
+$pmml = '-' unless (defined $mathimage || defined $mathsvg
   || defined $pmml || defined $cmml || defined $om || defined $xmath);
 
 our %OPTIONS = ();
@@ -173,15 +172,8 @@ my $post = LaTeXML::Post->new(verbosity => $verbosity || 0);
 
 if ($mathimage) {
   my $imagetype = 'png';
-##  if($mathimage eq 'svg'){      # hack
-##    $mathimage = '-';
-##    $imagetype = 'svg'; }
-##  els
   if ($mathimage =~ s/\.(png|gif|jpg|jpeg|svg)$//) {
     $imagetype = $1; }
-
-  # We could print the svg to stdout, but we've already made a file, so....
-##  if (($mathimage eq '-') && ($imagetype ne 'svg')){
   if ($mathimage eq '-') {
     die "I dont really want to write the image to STDOUT, sorry!"; }
 
@@ -189,7 +181,29 @@ if ($mathimage) {
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
       %OPTIONS));
-}
+  unlink('LaTeXML.cache'); }
+
+if ($mathsvg) {
+  my $imagetype = 'svg';
+  if ($mathsvg eq '-') {
+    my ($fh, $tmpfile) = tempfile();
+    my ($result) = $post->ProcessChain($document,
+      DirectMathImages->new(magnification => $mag,
+        imagename => $tmpfile, imagetype => $imagetype,
+        %OPTIONS));
+    my $SVG;
+    open($SVG, '<', "$tmpfile.svg") or die "Couldn't read temporary svg output '$tmpfile': $!";
+    while (<$SVG>) {
+      print $_; }
+    close($SVG);
+    unlink "$tmpfile.svg"; }
+  else {
+    $mathsvg =~ s/\.svg$//;
+    my ($result) = $post->ProcessChain($document,
+      DirectMathImages->new(magnification => $mag,
+        imagename => $mathsvg, imagetype => $imagetype,
+        %OPTIONS)); }
+  unlink('LaTeXML.cache'); }
 
 if ($pmml) {
   require LaTeXML::Post::MathML::Presentation;
@@ -274,6 +288,7 @@ latexmlmath [options] I<texmath>
 
  Options:
  --mathimage=file           converts to image in file
+ --mathsvg=file             converts to svg image in file
  --magnification=mag        specifies magnification factor
  --presentationmathml=file  converts to Presentation MathML
  --pmml=file                alias for --presentationmathml
@@ -340,6 +355,10 @@ presentation MathML to standard output.
 =item C<--mathimage>=I<file>
 
 Requests conversion to png images.
+
+=item C<--mathsvg>=I<file>
+
+Requests conversion to svg images.
 
 =item C<--magnification=>I<factor>
 
