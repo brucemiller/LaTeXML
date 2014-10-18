@@ -40,6 +40,10 @@ sub extractTeX {
   # xunitlength, yunitlength for pstricks???
   return "\\beginPICTURE $tex\\endPICTURE"; }
 
+sub process {
+  my ($self, $doc, @nodes) = @_;
+  return $self->generateImages($doc, @nodes); }
+
 # Definitions needed for processing inline & display picture images
 sub preamble {
   my ($self, $doc) = @_;
