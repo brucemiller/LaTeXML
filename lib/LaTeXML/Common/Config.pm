@@ -89,11 +89,14 @@ sub getopt_specification {
     #   or, in fact, _other_ parallel means? (om?, omdoc? ...)
     # So, need to separate multiple transformations from the combination.
     # However, IF combining, then will need to support a id/ref mechanism.
-    "mathimages!"                 => \$$opts{mathimages},
     "mathimagemagnification=f"    => \$$opts{mathimagemag},
     "linelength=i"                => \$$opts{linelength},
     "plane1!"                     => \$$opts{plane1},
     "hackplane1!"                 => \$$opts{hackplane1},
+    "mathimages"                  => sub { _addMathFormat($opts, 'images'); },
+    "nomathimages"                => sub { _removeMathFormat($opts, 'images'); },
+    "mathsvg"                     => sub { _addMathFormat($opts, 'svg'); },
+    "nomathsvg"                   => sub { _removeMathFormat($opts, 'svg'); },
     "presentationmathml|pmml"     => sub { _addMathFormat($opts, 'pmml'); },
     "contentmathml|cmml"          => sub { _addMathFormat($opts, 'cmml'); },
     "openmath|om"                 => sub { _addMathFormat($opts, 'om'); },
@@ -478,9 +481,11 @@ sub _prepare_options {
       croak("Cannot generate index (--index) without --scan or --dbfile"); }
     if (!$$opts{prescan} && @{ $$opts{bibliographies} } && !($$opts{scan} || defined $$opts{crossref})) {
       croak("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-    if ((!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/) && ($$opts{mathimages} || $$opts{dographics} || $$opts{picimages})) {
+    if ((!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)
+      && (_checkMathFormat($opts, 'images') || _checkMathFormat($opts, 'svg')
+        || $$opts{dographics} || $$opts{picimages})) {
       croak("Must supply --destination unless all auxilliary file writing is disabled"
-          . "(--nomathimages --nographicimages --nopictureimages --nodefaultcss)"); }
+          . "(--nomathimages --nomathsvg --nographicimages --nopictureimages --nodefaultcss)"); }
 
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
@@ -498,16 +503,16 @@ sub _prepare_options {
     if ($$opts{format} eq 'html4') {
       $$opts{svg} = 0 unless defined $$opts{svg};    # No SVG by default in HTML.
       croak("Default html4 stylesheet only supports math images, not " . join(', ', @{ $$opts{math_formats} }))
-        if scalar(@{ $$opts{math_formats} });
+        if (!defined $$opts{stylesheet})
+        && scalar(grep { $_ ne 'images' } @{ $$opts{math_formats} });
       croak("Default html stylesheet does not support svg") if $$opts{svg};
-      $$opts{mathimages}   = 1;
       $$opts{math_formats} = [];
+      _maybeAddMathFormat($opts, 'images');
     }
     $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
           # PMML default if we're HTMLy and all else fails and no mathimages:
-    if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} }))) &&
-      (!$$opts{mathimages}) && ($$opts{is_html} || $$opts{is_xhtml}))
-    {
+    if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} })))
+      && ($$opts{is_html} || $$opts{is_xhtml})) {
       CORE::push @{ $$opts{math_formats} }, 'pmml';
     }
     # use parallel markup if there are multiple formats requested.
@@ -532,6 +537,16 @@ sub _removeMathFormat {
   @{ $$opts{math_formats} } = grep { $_ ne $fmt } @{ $$opts{math_formats} };
   $$opts{removed_math_formats}->{$fmt} = 1;
   return; }
+
+sub _maybeAddMathFormat {
+  my ($opts, $fmt) = @_;
+  unshift(@{ $$opts{math_formats} }, $fmt)
+    unless (grep { $_ eq $fmt } @{ $$opts{math_formats} }) || $$opts{removed_math_formats}{$fmt};
+  return; }
+
+sub _checkMathFormat {
+  my ($opts, $fmt) = @_;
+  return grep { $_ eq $fmt } @{ $$opts{math_formats} }; }
 
 sub _checkOptionValue {
   my ($option, $value, @choices) = @_;
@@ -959,6 +974,10 @@ Requests an embeddable XHTML div (requires: --post --format=xhtml),
 
 Requests or disables the conversion of math to images.
 Conversion is the default for html4 format.
+
+=item C<--mathsvg>, C<--nomathsvg>
+
+Requests or disables the conversion of math to svg images.
 
 =item C<--mathimagemagnification=>I<factor>
 
