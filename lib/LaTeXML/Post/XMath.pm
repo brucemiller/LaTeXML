@@ -41,23 +41,36 @@ use base qw(LaTeXML::Post::MathProcessor);
 # Top level
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+our $lxMimeType = 'application/x-latexml';
+
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my $idsuffix = $self->IDSuffix;
-  if ($idsuffix) {
-    return ['ltx:XMath', {}, map { $doc->cloneNode($_, $idsuffix) } element_nodes($xmath)]; }
-  else {
-    # If no idsuffix, we're actually just PRESERVING the xmath,
-    # so we shouldn't need any cloning or id munging (!?!?!?!)
-    return $xmath; } }
+  return { processor => $self, encoding => $lxMimeType, mimetype => $lxMimeType,
+    xml => ($idsuffix
+      ? ['ltx:XMath', {}, map { $doc->cloneNode($_, $idsuffix) } element_nodes($xmath)]
+        # If no idsuffix, we're actually just PRESERVING the xmath,
+        # so we shouldn't need any cloning or id munging (!?!?!?!)
+      : $xmath) }; }
 
 sub combineParallel {
-  my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
+  my ($self, $doc, $xmath, $primary, @secondaries) = @_;
   # Just return the converted nodes to be added to the ltx:Math
-  return ($primary, map { $$_[1] } @secondaries); }
-
-sub getEncodingName {
-  return 'application/x-latexml'; }
+  my $id  = $xmath->getAttribute('fragid');
+  my @alt = ();
+  foreach my $secondary (@secondaries) {
+    if ($$secondary{mimetype} =~ $lxMimeType) {    # XMath
+      push(@alt, $$secondary{xml}); }
+    elsif (my $xml = $$secondary{xml}) {           # Other XML? may need wrapping.
+      push(@alt, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)); }
+    #    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
+    #      push(@alt, ['ltx:graphic', { src => $src }]); }
+    #    elsif (my $string = $$secondary{string}) {    # simple string data?
+    #      push(@alt, ['m:annotation', { encoding => $$secondary{encoding} }, $string]); }
+    # anything else ignore?
+  }
+  return { processor => $self, mimetype => $lxMimeType,
+    xml => ['_Fragment_', {}, $$primary{xml}, @alt] }; }
 
 sub rawIDSuffix {
   return '.xm'; }
