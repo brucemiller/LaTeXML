@@ -35,49 +35,65 @@ our @EXPORT = (
   qw( &om_expr ),
 );
 
-my $omURI = "http://www.openmath.org/OpenMath";    # CONSTANT
+my $omURI      = "http://www.openmath.org/OpenMath";    # CONSTANT
+my $omMimeType = 'application/openmath+xml';            # CONSTANT
 
 sub preprocess {
   my ($self, $doc, @nodes) = @_;
   $$self{hackplane1} = 0 unless $$self{hackplane1};
   $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
-  $doc->adjust_latexml_doctype('OpenMath');        # Add OpenMath if LaTeXML dtd.
+  $doc->adjust_latexml_doctype('OpenMath');             # Add OpenMath if LaTeXML dtd.
   $doc->addNamespace($omURI, 'om');
   return; }
 
 sub outerWrapper {
-  my ($self, $doc, $math, $xmath, @conversion) = @_;
-  my $wrapped = ['om:OMOBJ', {}, @conversion];
-  if (my $id = $xmath->getAttribute('fragid')) {
-    $wrapped = $self->associateID($wrapped, $id); }
-  return ($wrapped); }
+  my ($self, $doc, $xmath, $om) = @_;
+  return ['om:OMOBJ', {}, $om]; }
 
 sub convertNode {
-  my ($self, $doc, $xmath, $style) = @_;
+  my ($self, $doc, $xmath) = @_;
   my ($item, @rest) = element_nodes($xmath);
-  return (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)); }
+  return { processor => $self,
+    encoding => 'OpenMath', mimetype => $omMimeType,
+    xml => (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)) }; }
 
 sub combineParallel {
-  my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
-  my $tex = isElementNode($math) && $math->getAttribute('tex');
-  my $id = $xmath->getAttribute('fragid');
-  # secondaries should already have been wrapped with m:annotaiton by innerWrapper
+  my ($self, $doc, $xmath, $primary, @secondaries) = @_;
+  my $id   = $xmath->getAttribute('fragid');
   my @attr = ();
-  foreach my $pair (@secondaries) {
-    my ($proc, $secondary) = @$pair;
-    my $wrapped = ['om:OMFOREIGN', {}, $secondary];
-    $wrapped = $proc->associateID($wrapped, $id) if $id;
-    push(@attr, ['om:OMS', { cd => "Alternate", name => $proc->getEncodingName }], $wrapped); }
-  return (['om:OMATTR', {}, @attr,
-      ($tex ? (['om:OMS', { cd => 'Alternate', name => 'TeX' }], ['om:OMFOREIGN', {}, $tex]) : ()),
-      $primary]); }
+  foreach my $secondary (@secondaries) {
+    my $type = $$secondary{mimetype};
+    if ($$secondary{mimetype} eq $omMimeType) {    # Another OpenMath object?
+      push(@attr,
+        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        $$secondary{xml}); }
+    elsif (my $xml = $$secondary{xml}) {           # Or some other XML object?
+                                                   # ORRRR should this be in other order?
+      push(@attr,
+        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        ['om:OMFOREIGN', {}, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)]); }
+    # What do do with src?
+##    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
+##      push(@wsecondaries, ['m:annotation', { encoding => $$secondary{mimetype}, src => $src }]); }
+    elsif (my $string = $$secondary{string}) {     # simple string data?
+      push(@attr,
+        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        ['om:OMSTR', {}, $string]); }
+    # anything else ignore?
+  }
+  # Throw in a TeX encoding, for good measure. Should be own processor?
+  my $math = $xmath->parentNode;
+  if (my $tex = $math && isElementNode($math) && $math->getAttribute('tex')) {
+    push(@attr,
+      ['om:OMS', { cd => 'Alternate', name => 'TeX' }],
+      ['om:OMFOREIGN', {}, $tex]); }               # Should this simply be OMSTR ???
+  return { processor => $self,
+    mimetype => 'application/openmath+xml',
+    xml => ['om:OMATTR', {}, @attr, $$primary{xml}] }; }
 
 sub getQName {
   my ($node) = @_;
   return $LaTeXML::Post::DOCUMENT->getQName($node); }
-
-sub getEncodingName {
-  return 'OpenMath'; }
 
 sub rawIDSuffix {
   return '.om'; }
