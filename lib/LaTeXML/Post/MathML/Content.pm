@@ -16,11 +16,9 @@ use warnings;
 use base qw(LaTeXML::Post::MathML);
 
 sub convertNode {
-  my ($self, $doc, $xmath, $style) = @_;
-  return $self->cmml_top($xmath); }
-
-sub getEncodingName {
-  return 'MathML-Content'; }
+  my ($self, $doc, $xmath) = @_;
+  return { processor => $self, xml => $self->cmml_top($xmath),
+    mimetype => 'application/mathml-content+xml' }; }
 
 sub rawIDSuffix {
   return '.cmml'; }
