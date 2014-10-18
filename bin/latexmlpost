@@ -34,7 +34,7 @@ my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
 my ($stylesheet, $defaultcss, $defaultresources, $icon, @css, @javascript, @xsltparameters);
-my ($mathimages, $mathimagemag) = (undef, 1.75);
+my ($mathimagemag) = (1.75);
 my ($linelength, $plane1, $hackplane1) = (undef, undef, undef);
 my ($dographics, $svg,    $picimages)  = (undef, undef, undef);
 my @graphicsmaps = ();
@@ -118,8 +118,10 @@ GetOptions("quiet" => sub { $verbosity--; },
   # So, need to separate multiple transformations from the combination.
   # However, IF combining, then will need to support a id/ref mechanism.
   #        "mathml|mml!"  =>\$mathml,
-  "mathimages!"                 => \$mathimages,
-  "mathimagemagnification=f"    => \$mathimagemag,
+  "mathimages"                  => sub { addMathFormat('images'); },
+  "nomathimages"                => sub { removeMathFormat('images'); },
+  "mathsvg"                     => sub { addMathFormat('svg'); },
+  "nomathsvg"                   => sub { removeMathFormat('svg'); },
   "linelength=i"                => \$linelength,
   "plane1!"                     => \$plane1,
   "hackplane1!"                 => \$hackplane1,
@@ -216,10 +218,9 @@ if (!defined $format) { }
 elsif ($format eq 'html4') {
   $extension = 'html' unless defined $extension;
   xError("Default html4 stylesheet only supports math images, not " . join(', ', @math_formats))
-    if (!defined $stylesheet) && scalar(@math_formats);
+    if (!defined $stylesheet) && scalar(grep { $_ ne 'images' } @math_formats);
   xError("Default html4 stylesheet does not support --svg") if $svg;
-
-  $mathimages = 1 unless defined $mathimages;
+  maybeAddMathFormat('images');
   $dographics = 1 unless defined $dographics;
   $picimages  = 1 unless defined $picimages;
   $is_html    = 1;
@@ -228,8 +229,7 @@ elsif ($format eq 'html5') {
   $extension = 'html' unless defined $extension;
   # In principle, should only have pMML and possibly MathImages (for altimg);
   # but I guess we can allow people to try...
-  unshift(@math_formats, 'pmml')
-    unless (grep { $_ eq 'pmml' } @math_formats) || $removed_math_formats{pmml};
+  maybeAddMathFormat('pmml');
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html    = 1;
@@ -238,8 +238,7 @@ elsif ($format eq 'xhtml') {
   $extension = 'xhtml' unless defined $extension;
   # Add pMML FIRST, unless already there, or was disabled.
   # note that MathImages can supply altimg attributes
-  unshift(@math_formats, 'pmml')
-    unless (grep { $_ eq 'pmml' } @math_formats) || $removed_math_formats{pmml};
+  maybeAddMathFormat('pmml');
   $svg        = 1 unless defined $svg;
   $dographics = 1 unless defined $dographics;
   $is_html    = 0;
@@ -249,11 +248,15 @@ elsif ($format eq 'xml') {
 else {
   xError("Unrecognized target format: $format"); }
 
-if ((!defined $destination) && ($mathimages || $dographics || $picimages)) {
+if ((!defined $destination)
+  && ($dographics || $picimages
+    || checkMathFormat('images') || checkMathFormat('svg'))) {
   print STDERR "WARNING: must supply destination to support auxilliary files;\n"
     . "  disabling: --nomathimages --nographicimages --nopictureimages\n";
   # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
-  $mathimages = $dographics = $picimages = 0; }
+  $dographics = $picimages = 0;
+  removeMathFormat('images'); removeMathFormat('svg');
+}
 
 #======================================================================
 # Do the processing.
@@ -357,15 +360,19 @@ if (!$prescan) {
             (defined $plane1 ? (plane1 => $plane1) : (plane1 => 1)),
             ($hackplane1 ? (hackplane1 => 1) : ()),
             %OPTIONS)); }
+      elsif ($fmt eq 'images') {
+        require LaTeXML::Post::MathImages;
+        push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag,
+            %OPTIONS)); }
+      elsif ($fmt eq 'svg') {
+        require LaTeXML::Post::MathImages;
+        push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag, imagetype => 'svg',
+            %OPTIONS)); }
+
     }
     my $main = shift(@mprocs);
     $main->setParallel(@mprocs);
     push(@procs, $main); }
-  # Done AFTER other math formats, so that it can add attributes in appropriate places
-  # (eg. MathML's altimg).
-  if ($mathimages) {
-    require LaTeXML::Post::MathImages;
-    push(@procs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag, %OPTIONS)); }
 
   if ($stylesheet) {
     require LaTeXML::Post::XSLT;
@@ -461,6 +468,16 @@ sub removeMathFormat {
   $removed_math_formats{$fmt} = 1;
   return; }
 
+sub maybeAddMathFormat {
+  my ($fmt) = @_;
+  unshift(@math_formats, $fmt)
+    unless (grep { $_ eq $fmt } @math_formats) || $removed_math_formats{$fmt};
+  return; }
+
+sub checkMathFormat {
+  my ($fmt) = @_;
+  return grep { $_ eq $fmt } @math_formats; }
+
 sub checkOptionValue {
   my ($option, $value, @choices) = @_;
   if ($value) {
@@ -543,6 +560,8 @@ latexmlpost [options] I<xmlfile>
  --mathimages            converts math to images
                          (default for html4 format)
  --nomathimages          disables the above
+ --mathsvg               converts math to svg images
+ --nomathsvg             disables the above
  --mathimagemagnification=mag sets magnification factor
  --presentationmathml    converts math to Presentation MathML
                          (default for xhtml & html5 formats)
@@ -639,7 +658,7 @@ the C<--stylesheet> option.
 =item C<--destination=>I<destination>
 
 Specifies the destination file and directory.  The directory is needed for
-mathimages and graphics processing.
+mathimages, mathsvg and graphics processing.
 
 =item C<--omitdoctype>, C<--noomitdoctype>
 
@@ -840,13 +859,17 @@ depends on the format and other options.
 
 =item C<--mathimages>, C<--nomathimages>
 
-Requests or disables the conversion of math to images.
+Requests or disables the conversion of math to images (png by default).
 Conversion is the default for html4 format.
+
+=item C<--mathsvg>, C<--nomathsvg>
+
+Requests or disables the conversion of math to svg images.
 
 =item C<--mathimagemagnification=>I<factor>
 
-Specifies the magnification used for math images, if they are made.
-Default is 1.75.
+Specifies the magnification used for math images (both png and svg),
+if they are made. Default is 1.75.
 
 =item C<--presentationmathml>, C<--nopresentationmathml>
 
