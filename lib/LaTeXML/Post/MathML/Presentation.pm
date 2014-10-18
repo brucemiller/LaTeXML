@@ -25,8 +25,7 @@ sub preprocess {
 # This would be the non-linebreaking version
 sub convertNode_simple {
   my ($self, $doc, $xmath, $style) = @_;
-  my @trans = $self->pmml_top($xmath, $style);
-  return (scalar(@trans) > 1 ? ['m:mrow', {}, @trans] : $trans[0]); }
+  return $self->pmml_top($xmath, $style); }
 
 # Convert a node and compute it's linebroken layout
 sub convertNode_linebreak {
@@ -43,11 +42,14 @@ sub convertNode_linebreak {
   return ($pmml, $$layout{hasbreak}); }
 
 sub convertNode {
-  my ($self, $doc, $xmath, $style) = @_;
+  my ($self, $doc, $xmath) = @_;
+  my $style = (($xmath->parentNode->getAttribute('mode') || 'inline') eq 'display'
+    ? 'display' : 'text');
   my $id = $xmath->parentNode->getAttribute('xml:id');
   # If this node has already been pre-converted
-  if (my $pmml = $id && $$doc{converted_pmml_cache}{$id}) {
-    return $pmml; }
+
+  my $pmml;
+  if ($pmml = $id && $$doc{converted_pmml_cache}{$id}) { }
   # A straight displayed Math will have been handled by preprocess_linebreaking (below),
   # and, if it needed line-breaking, will have generated a MathFork/MathBranch.
   # Other math, in the non-semantic side of a MathFork, may want to line break here as well.
@@ -57,13 +59,11 @@ sub convertNode {
     && ($doc->findnodes('ancestor::ltx:MathBranch', $xmath))    # In formatted side of MathFork?
           # But ONLY if last column!! (until we can adapt LineBreaker!)
     && !$doc->findnodes('parent::ltx:Math/parent::ltx:td/following-sibling::ltx:td', $xmath)) {
-    my ($pmml, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
-    return $pmml; }
+    my ($pmmlb, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
+    $pmml = $pmmlb; }
   else {
-    return $self->convertNode_simple($doc, $xmath, $style); } }
-
-sub getEncodingName {
-  return 'MathML-Presentation'; }
+    $pmml = $self->convertNode_simple($doc, $xmath, $style); }
+  return { processor => $self, xml => $pmml, mimetype => 'application/mathml-presentation+xml' }; }
 
 sub rawIDSuffix {
   return '.pmml'; }
@@ -113,7 +113,7 @@ sub preprocess_linebreaking {
       $doc->replaceNode($math, ['ltx:MathFork', {}, $math,
           ['ltx:MathBranch', {},
             ['ltx:Math', { 'xml:id' => $id },
-              $self->outerWrapper($doc, $math, $xmath, $pmml)]]]); }
+              $self->outerWrapper($doc, $xmath, $pmml)]]]); }
     # cache the converted pmml?
     # [But note that applyLayout MODIFIED the orignal $pmml, so it may have linebreaks!]
     if ($id) {
