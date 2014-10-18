@@ -257,13 +257,12 @@ use base qw(LaTeXML::Post::Processor);
 use LaTeXML::Common::XML;
 
 # This is an abstract class; A complete MathProcessor will need to define:
-#    $self->convertNode($doc,$xmath,$style)
+#    $self->convertNode($doc,$xmath)
 #        to generate the converted math node
 #    $self->combineParallel($doc,$math,$primary,@secondaries)
 #        to combine the $primary (the result of $self's conversion of $math)
 #        with the results of other math processors to create the
 #        parallel markup appropriate for this processor's markup.
-#    $self->getEncodingName returns a mime type to describe the markup type
 #    $self->rawIDSuffix returns a short string to append to id's for nodes
 #        using this markup.
 
@@ -319,9 +318,12 @@ sub process {
 # and make all of the @moreprocessors be secondary ones.
 sub setParallel {
   my ($self, @moreprocessors) = @_;
-  $$self{parallel} = 1;
-  map { $$_{is_secondary} = 1 } @moreprocessors;    # Mark the others as secondary
-  $$self{secondary_processors} = [@moreprocessors];
+  if (@moreprocessors) {
+    $$self{parallel} = 1;
+    map { $$_{is_secondary} = 1 } @moreprocessors;    # Mark the others as secondary
+    $$self{secondary_processors} = [@moreprocessors]; }
+  else {
+    $$self{parallel} = 0; }
   return; }
 
 # Optional; if you want to do anything before translation
@@ -331,48 +333,46 @@ sub preprocess {
 
 # $self->processNode($doc,$mathnode) is the top-level conversion
 # It converts the XMath within $mathnode, and adds it to the $mathnode,
-# This invokes $self->convertNode($doc,$xmath,$style) to get the conversion.
+# This invokes $self->convertNode($doc,$xmath) to get the conversion.
 sub processNode {
   my ($self, $doc, $math) = @_;
-  my $mode = $math->getAttribute('mode') || 'inline';
   my $xmath = $doc->findnode('ltx:XMath', $math);
   return unless $xmath;    # Nothing to convert if there's no XMath ... !
-  my $style = ($mode eq 'display' ? 'display' : 'text');
   local $LaTeXML::Post::MATHPROCESSOR = $self;
-  my @conversion;
+  my $conversion;
   if ($$self{parallel}) {
-    # THIS should probably should
-    # 1. collect the conversions,
-    # 2. apply outerWrapper (when namespaces differ from primary)
-    # 3. invoke combineParallel
-    my $primary = $self->convertNode($doc, $xmath, $style);
-    my $nsprefix = (($doc->getQName($primary) =~ /^(\w*):/) && $1) || '';
+    my $primary = $self->convertNode($doc, $xmath);
     my @secondaries = ();
     foreach my $proc (@{ $$self{secondary_processors} }) {
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
-      my $secondary = $proc->convertNode($doc, $xmath, $style);
-      # Heuristic? If namespace of primary is diff from secondary, assume we need OuterWrapper
-      if ((($doc->getQName($secondary) || '') =~ /^(\w*):/) && ($1 ne $nsprefix)) {
-        ($secondary) = $proc->outerWrapper($doc, $math, $xmath, $secondary); }
-      push(@secondaries, [$proc, $secondary]); }
-    @conversion = $self->combineParallel($doc, $math, $xmath, $primary, @secondaries); }
+      my $secondary = $proc->convertNode($doc, $xmath);
+      # IF it is (first) image, copy image attributes to ltx:Math ???
+      $self->maybeSetMathImage($math, $secondary);
+      push(@secondaries, $secondary); }
+    $conversion = $self->combineParallel($doc, $xmath, $primary, @secondaries); }
   else {
-    @conversion = ($self->convertNode($doc, $xmath, $style)); }
-  # we now REMOVE the ltx:XMath from the ltx:Math (and any whitespace nodes)
-  # (if there's an XMath PostProcessing module, it will add it back, with appropriate id's
-  # but first, copy the initial indentation whitespace to insert in front of each new format
-  my $indentation;
-  if (my $pre = $xmath->previousSibling) {
-    if (($pre->nodeType == XML_TEXT_NODE) && ($pre->textContent =~ /^\s*$/)) {
-      $indentation = $pre; } }
+    $conversion = $self->convertNode($doc, $xmath);
+    $self->maybeSetMathImage($math, $conversion); }
+  # we now REMOVE the ltx:XMath from the ltx:Math, and whitespace
+  # (if there's an XMath PostProcessing module, it will add it back, with appropriate id's)
+  if (my $xml = $$conversion{xml}) {
+    $$conversion{xml} = $self->outerWrapper($doc, $xmath, $xml); }
   $doc->removeNodes($xmath);
   $doc->removeBlankNodes($math);
-  @conversion = $self->outerWrapper($doc, $math, $xmath, @conversion);
-  # Finally, we add the conversion results to ltx:Math
-  if ($indentation) {
-    $doc->addNodes($math, map { ($indentation, $_) } @conversion); }
-  else {
-    $doc->addNodes($math, @conversion); }
+  if (my $new = $$conversion{xml}) {
+    $doc->addNodes($math, $new); }
+  # else ?
+  return; }
+
+sub maybeSetMathImage {
+  my ($self, $math, $conversion) = @_;
+  if (($$conversion{mimetype} =~ /^image\//)    # Got an image?
+    && !$math->getAttribute('imagesrc')) {      # and it's the first one
+    if (my $src = $$conversion{src}) {
+      $math->setAttribute(imagesrc    => $src);
+      $math->setAttribute(imagewidth  => $$conversion{width});
+      $math->setAttribute(imageheight => $$conversion{height});
+      $math->setAttribute(imagedepth  => $$conversion{depth}); } }
   return; }
 
 # NOTE: Sort out how parallel & outerWrapper should work.
@@ -382,13 +382,12 @@ sub processNode {
 #
 # This should wrap the resulting conversion with m:math or om:OMA or whatever appropriate?
 sub outerWrapper {
-  my ($self, $doc, $math, $xmath, @conversion) = @_;
-  return @conversion; }
+  my ($self, $doc, $xmath, $conversion) = @_;
+  return $conversion; }
 
 # This should proably be from the core of the current ->processNode
-# $style is either display or inline
 sub convertNode {
-  my ($self, $doc, $node, $style) = @_;
+  my ($self, $doc, $node) = @_;
   Fatal('misdefined', (ref $self), undef,
     "Abstract package: math conversion has not been defined for this MathProcessor");
   return; }
@@ -396,10 +395,10 @@ sub convertNode {
 # This should be implemented by potential Primaries
 # Maybe the caller of this should check the namespaces, and call wrapper if needed?
 sub combineParallel {
-  my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
+  my ($self, $doc, $xmath, $primary, @secondaries) = @_;
   LaTeXML::Post::Error('misdefined', (ref $self), undef,
     "Abstract package: combining parallel markup has not been defined for this MathProcessor",
-    "dropping the extra markup");
+    "dropping the extra markup from: " . join(',', map { $$_{processor} } @secondaries));
   return $primary; }
 
 # When converting an XMath node (with an id) to some other format,
@@ -723,11 +722,13 @@ sub addNamespace {
     $self->getDocumentElement->setNamespace($nsuri, $prefix, 0); }
   return; }
 
+use Carp;
+
 sub getQName {
   my ($self, $node) = @_;
   if (ref $node eq 'ARRAY') {
     return $$node[0]; }
-  elsif (ref $node) {
+  elsif (ref $node eq 'XML::LibXML::Element') {
     my $nsuri = $node->namespaceURI;
     if (!$nsuri) {    # No namespace at all???
       if ($node->nodeType == XML_ELEMENT_NODE) {
@@ -742,7 +743,10 @@ sub getQName {
       # Register it, but Don't add it to the document!!! (or xpath, for that matter)
       $$self{namespaces}{$prefix}   = $nsuri;
       $$self{namespaceURIs}{$nsuri} = $prefix;
-      return $prefix . ":" . $node->localname; } } }
+      return $prefix . ":" . $node->localname; } }
+  else {
+    #    confess "What's this? $node\n";
+    return; } }
 
 #======================================================================
 # ADD nodes to $node in the document $self.
@@ -765,28 +769,38 @@ sub addNodes {
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {
       my ($tag, $attributes, @children) = @$child;
-      my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
-      my $nsuri = $prefix && $$self{namespaces}{$prefix};
-      LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
-      my $new = $node->addNewChild($nsuri, $localname);
-      if ($attributes) {
-        foreach my $key (sort keys %$attributes) {
-          next unless defined $$attributes{$key};
-          my ($attrprefix, $attrname) = $key =~ /^(.*):(.*)$/;
-          my $value = $$attributes{$key};
-          if ($key eq 'xml:id') {
-            if (defined $$self{idcache}{$value}) {    # Duplicated ID ?!?!
-              my $newid = LaTeXML::Post::uniquifyID($value, ++$$self{idcache_clashes}{$value});
-              print STDERR "Duplicated id=$value using $newid " . ($$self{destination} || '') . "\n";
-              $value = $newid; }
-            $$self{idcache}{$value} = $new;
-            $new->setAttribute($key, $value); }
-          elsif ($attrprefix && ($attrprefix ne 'xml')) {
-            my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
-            $new->setAttributeNS($attrnsuri, $key, $$attributes{$key}); }
-          else {
-            $new->setAttribute($key, $$attributes{$key}); } } }
-      $self->addNodes($new, @children); }
+      if ($tag eq '_Fragment_') {
+        my $indent;    # Derive indentation from indentation of $node
+        if (my $pre = $node->previousSibling) {
+          if (($pre->nodeType == XML_TEXT_NODE) && (($pre = $pre->textContent) =~ /^\s*$/)) {
+            $indent = $pre . '  '; } }
+        if ($indent) {
+          $self->addNodes($node, map { ($indent, $_) } @children); }
+        else {
+          $self->addNodes($node, @children); } }
+      else {
+        my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
+        my $nsuri = $prefix && $$self{namespaces}{$prefix};
+        LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
+        my $new = $node->addNewChild($nsuri, $localname);
+        if ($attributes) {
+          foreach my $key (sort keys %$attributes) {
+            next unless defined $$attributes{$key};
+            my ($attrprefix, $attrname) = $key =~ /^(.*):(.*)$/;
+            my $value = $$attributes{$key};
+            if ($key eq 'xml:id') {
+              if (defined $$self{idcache}{$value}) {    # Duplicated ID ?!?!
+                my $newid = LaTeXML::Post::uniquifyID($value, ++$$self{idcache_clashes}{$value});
+                print STDERR "Duplicated id=$value using $newid " . ($$self{destination} || '') . "\n";
+                $value = $newid; }
+              $$self{idcache}{$value} = $new;
+              $new->setAttribute($key, $value); }
+            elsif ($attrprefix && ($attrprefix ne 'xml')) {
+              my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
+              $new->setAttributeNS($attrnsuri, $key, $$attributes{$key}); }
+            else {
+              $new->setAttribute($key, $$attributes{$key}); } } }
+        $self->addNodes($new, @children); } }
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
