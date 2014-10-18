@@ -39,7 +39,7 @@ our $IDENTITY = "$FindBin::Script ($LaTeXML::FULLVERSION)";
 our $LOG_STACK = 0;
 
 #**********************************************************************
-#our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimages mathimagemag );
+#our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimagemag );
 
 # Switching to white-listing options that are important for new_latexml:
 our @COMPARABLE = qw(preload paths verbosity strict comments inputencoding includestyles documentid mathparse);
@@ -445,6 +445,15 @@ sub convert_post {
               (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
               ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
               %PostOPS)); }
+        elsif ($fmt eq 'images') {
+          require LaTeXML::Post::MathImages;
+          push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $$opts{mathimagemag},
+              %PostOPS)); }
+        elsif ($fmt eq 'svg') {
+          require LaTeXML::Post::MathImages;
+          push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $$opts{mathimagemag},
+              imagetype => 'svg',
+              %PostOPS)); }
       }
       ###    $keepXMath  = 0 unless defined $keepXMath;
       ### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
@@ -454,10 +463,6 @@ sub convert_post {
         push(@procs, $main); }
       else {
         push(@procs, @mprocs); }
-    }
-    if ($$opts{mathimages}) {
-      require LaTeXML::Post::MathImages;
-      push(@procs, LaTeXML::Post::MathImages->new(magnification => $$opts{mathimagemag}, %PostOPS));
     }
     if ($xslt) {
       require LaTeXML::Post::XSLT;
