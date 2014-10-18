@@ -14,13 +14,16 @@ package LaTeXML::Post::MathImages;
 use strict;
 use warnings;
 use LaTeXML::Post;
-use base qw(LaTeXML::Post::LaTeXImages);
+use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Post::MathProcessor LaTeXML::Post::LaTeXImages);
 
 sub new {
   my ($class, %options) = @_;
   $options{resource_directory} = 'mi' unless defined $options{resource_directory};
   $options{resource_prefix}    = 'mi' unless defined $options{resource_prefix};
-  return $class->SUPER::new(%options); }
+  #  return $class->SUPER::new(%options); }
+  # Dangerous, since multiple inheritance!
+  return $class->LaTeXML::Post::LaTeXImages::new(%options); }
 
 #======================================================================
 
@@ -40,17 +43,33 @@ sub extractTeX {
 
 my $MML_NAMESPACE = "http://www.w3.org/1998/Math/MathML";    # [CONSTANT]
 
+# Don't set the image attributes, will be handled by math postprocessing.
 sub setTeXImage {
-  my ($self, $doc, $node, $path, $width, $height, $depth) = @_;
-  $self->SUPER::setTeXImage($doc, $node, $path, $width, $height, $depth);
-  # IF the ltx:Math node has a m:math child, add image info to it, too. (MML3)
-  #  if($mml = $node->findnode('m:math',$node)){
-  if (my $mml = $doc->findnode("child::*[local-name() = 'math' and namespace-uri() = '$MML_NAMESPACE']", $node)) {
-    $mml->setAttribute('altimg',        $path);
-    $mml->setAttribute('altimg-width',  $width);
-    $mml->setAttribute('altimg-height', $height);
-    $mml->setAttribute('altimg-valign', -$depth) if defined $depth; }    # Note the sign!!
   return; }
+
+our %MIMETYPES = (gif => 'image/gif', jpeg => 'image/jpeg', png => 'image/png', svg => 'image/svg+xml');
+
+sub preprocess {
+  my ($self, $doc, @nodes) = @_;
+  return $self->generateImages($doc, @nodes); }
+
+# RIDICULOUS amount of work to look up the image that was previously generated!!!
+sub convertNode {
+  my ($self, $doc, $xmath, $style) = @_;
+  my $math = $xmath->parentNode;
+  my $tex  = $self->extractTeX($doc, $math);
+  my $type = $$self{imagetype};
+  #  next if !(defined $tex) || ($tex =~ /^\s*$/);
+  my $key = (ref $self) . ':' . $type . ':' . $tex;
+  if (($doc->cacheLookup($key) || '') =~ /^(.*);(\d+);(\d+);(\d+)$/) {
+    my ($image, $width, $height, $depth) = ($1, $2, $3, $4);
+    # Ideally, $image is already relative, but if not, make relative to document
+    my $reldest = pathname_relative($image, $doc->getDestinationDirectory);
+    return { processor => $self, mimetype => $MIMETYPES{$type},
+      src => $reldest, width => $width, height => $height, depth => $depth }; }
+  else {
+    print STDERR "Couldn't find image for '$key'\n";
+    return {}; } }
 
 # Definitions needed for processing inline & display math images
 sub preamble {
