@@ -68,29 +68,58 @@ sub preprocess {
 
 # Works for pmml, cmml
 sub outerWrapper {
-  my ($self, $doc, $math, $xmath, @conversion) = @_;
+  my ($self, $doc, $xmath, $mml) = @_;
+  my $math = $xmath->parentNode;
   my $mode = $math->getAttribute('mode') || 'inline';
-  my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
+  my @img  = ();
+  if (my $src = $math->getAttribute('imagesrc')) {
+    my $depth = $math->getAttribute('imagedepth');
+    @img = (altimg => $src,
+      'altimg-width'  => $math->getAttribute('imagewidth'),
+      'altimg-height' => $math->getAttribute('imageheight'),
+      'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
+  return ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
-      alttext => $math->getAttribute('tex') },
-    @conversion];
-  if (my $id = $xmath->getAttribute('fragid')) {
-    $wrapped = $self->associateID($wrapped, $id); }
-  return ($wrapped); }
+      alttext => $math->getAttribute('tex'),
+      @img },
+    $mml]; }
+
+# Map mimetype to Official MathML encodings
+our %ENCODINGS = (
+  'application/mathml-presentation+xml' => 'MathML-Presentation',
+  'application/mathml-content+xml'      => 'MathML-Content',
+  'image/svg+xml'                       => 'SVG1.1',
+);
+
+sub rawIDSuffix {
+  return '.msvg'; }
 
 # This works for either pmml or cmml.
 sub combineParallel {
-  my ($self, $doc, $math, $xmath, $primary, @secondaries) = @_;
-  my $tex          = isElementNode($math) && $math->getAttribute('tex');
-  my $id           = $xmath->getAttribute('fragid');
-  my @wsecondaries = ();
-  foreach my $pair (@secondaries) {
-    my ($proc, $secondary) = @$pair;
-    my $wrapped = ['m:annotation-xml', { encoding => $proc->getEncodingName }, $secondary];
-    $wrapped = $proc->associateID($wrapped, $id) if $id;
-    push(@wsecondaries, $wrapped); }
-  return (['m:semantics', {}, $primary, @wsecondaries,
-      (defined $tex ? (['m:annotation', { encoding => 'application/x-tex' }, $tex]) : ())]); }
+  my ($self, $doc, $xmath, $primary, @secondaries) = @_;
+  my $id  = $xmath->getAttribute('fragid');
+  my @alt = ();
+  foreach my $secondary (@secondaries) {
+    my $mimetype = $$secondary{mimetype};
+    my $encoding = $ENCODINGS{$mimetype} || $mimetype;
+    if ($mimetype =~ /^application\/mathml/) {    # Some flavor of MathML? simple case
+      push(@alt, ['m:annotation-xml', { encoding => $encoding },
+          $$secondary{xml}]); }
+    elsif (my $xml = $$secondary{xml}) {          # Other XML? may need wrapping.
+      push(@alt, ['m:annotation-xml', { encoding => $encoding },
+          $$secondary{processor}->outerWrapper($doc, $xmath, $xml)]); }
+    elsif (my $src = $$secondary{src}) {          # something referred to by a file? Image, maybe?
+      push(@alt, ['m:annotation', { encoding => $encoding, src => $src }]); }
+    elsif (my $string = $$secondary{string}) {    # simple string data?
+      push(@alt, ['m:annotation', { encoding => $encoding }, $string]); }
+    # anything else ignore?
+  }
+  # Perhaps should be it's own processor?
+  my $math = $xmath->parentNode;
+  if (my $tex = $math && isElementNode($math) && $math->getAttribute('tex')) {
+    push(@alt, ['m:annotation', { encoding => 'application/x-tex' }, $tex]); }
+  return { processor => $self, mimetype => $$primary{mimetype},
+    xml => ['m:semantics', {}, $$primary{xml}, @alt] }; }
 
 # $self->convertNode($doc,$node);
 # will be handled by specific Presentation or Content MathML converters; See at END.
@@ -127,7 +156,7 @@ sub addCrossref {
 
 sub realize {
   my ($node) = @_;
-  return $LaTeXML::Post::DOCUMENT->realizeXMNode($node); }
+  return (ref $node) ? $LaTeXML::Post::DOCUMENT->realizeXMNode($node) : $node; }
 
 # For a node that is a (possibly embellished) operator,
 # find the underlying role.
@@ -278,7 +307,8 @@ sub pmml_top {
   local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node, 'color');
   local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
   local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node, 'opacity');
-  return map { pmml($_) } element_nodes($node); }
+  my @result = map { pmml($_) } element_nodes($node);
+  return (scalar(@result) > 1 ? ['m:mrow', {}, @result] : $result[0]); }
 
 sub find_inherited_attribute {
   my ($node, $attribute) = @_;
@@ -518,7 +548,7 @@ sub pmml_punctuate {
 # This is suitable for use as an Apply handler.
 sub pmml_infix {
   my ($op, @args) = @_;
-  $op = realize($op);
+  $op = realize($op) if ref $op;
   return ['m:mrow', {}] unless $op && @args;    # ??
   my @items = ();
   if (scalar(@args) == 1) {                     # Infix with 1 arg is presumably Prefix!
