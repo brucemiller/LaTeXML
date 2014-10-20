@@ -78,11 +78,14 @@ sub outerWrapper {
       'altimg-width'  => $math->getAttribute('imagewidth'),
       'altimg-height' => $math->getAttribute('imageheight'),
       'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
-  return ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
+  my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
       alttext => $math->getAttribute('tex'),
       @img },
-    $mml]; }
+    $mml];
+  if (my $id = $xmath->getAttribute('fragid')) {               # Associate id's, but DONT crossref
+    $wrapped = $self->associateID($wrapped, $id, 1); }
+  return $wrapped; }
 
 # Map mimetype to Official MathML encodings
 our %ENCODINGS = (
