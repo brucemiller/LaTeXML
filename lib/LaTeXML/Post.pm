@@ -420,32 +420,32 @@ sub rawIDSuffix {
 # The id will be derived from $sourceid using the appropriate IDSuffix,
 # and bumping the id counter to avoid conflicts with any other node derived
 # from that same source id.
-# Moreover, the new ids will be recorded as having been generated from $sourceid,
+# Moreover, unless $noxref, the new ids will be recorded as having been generated from $sourceid,
 # so that cross-referencing in parallel markup can be effected.
 sub associateID {
-  my ($self, $node, $sourceid) = @_;
+  my ($self, $node, $sourceid, $noxref) = @_;
   return $node unless $sourceid && ref $node;
   # or if already has an id (do we still need bookkeeping?)
   return if (ref $node eq 'ARRAY' ? $$node[1]{'xml:id'} : $node->getAttribute('xml:id'));
   my $id = $sourceid . $self->IDSuffix;
-  if (my $previous_ids = $$self{convertedIDs}{$sourceid}) {
-    $id = LaTeXML::Post::uniquifyID($sourceid, scalar(@$previous_ids), $self->IDSuffix); }
-  push(@{ $$self{convertedIDs}{$sourceid} }, $id);
+  if (my $ctr = $$self{convertedID_counter}{$sourceid}++) {
+    $id = LaTeXML::Post::uniquifyID($sourceid, $ctr, $self->IDSuffix); }
+  push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref;
   if (ref $node eq 'ARRAY') {    # Array represented
     $$node[1]{'xml:id'} = $id;
-    map { $self->associateID_aux($_, $sourceid) } @$node[2 .. $#$node]; }
+    map { $self->associateID_aux($_, $sourceid, $noxref) } @$node[2 .. $#$node]; }
   else {                         # LibXML node
     $node->setAttribute('xml:id' => $id);
-    map { $self->associateID_aux($_, $sourceid) } $node->childNodes; }
+    map { $self->associateID_aux($_, $sourceid, $noxref) } $node->childNodes; }
   return $node; }
 
 sub associateID_aux {
-  my ($self, $node, $sourceid) = @_;
+  my ($self, $node, $sourceid, $noxref) = @_;
   if (!ref $node) { }
   elsif (ref $node eq 'ARRAY') {    # Array represented
-    $self->associateID($node, $sourceid); }
+    $self->associateID($node, $sourceid, $noxref); }
   elsif ($node->nodeType == XML_ELEMENT_NODE) {
-    $self->associateID($node, $sourceid); }
+    $self->associateID($node, $sourceid, $noxref); }
   return; }
 
 # Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
