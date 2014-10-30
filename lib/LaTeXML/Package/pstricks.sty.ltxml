@@ -968,8 +968,9 @@ DefConstructor('\rotateright {}', "<ltx:g transform='rotate(-90)'> #1 </ltx:g>",
 DefConstructor('\rotatedown {}', "<ltx:g transform='rotate(180)'> #1 </ltx:g>",
   bounded => 1, beforeDigest => sub { ackTransform('rotate(180)'); });
 
-DefConstructor('\scalebox {} {}', "<ltx:g transform='scale(#1)'> #2 </ltx:g>",
-  bounded => 1, beforeDigest => sub { ackTransform('scale(' . ToString($_[1]) . ')'); });
+DefPrimitive('\@@@ackscale{}', sub { ackTransform('scale(' . ToString($_[1]) . ')'); });
+DefMacro('\scalebox{}{}', '{\@@@ackscale{#1}\@@scalebox{#1}{#2}}');
+DefConstructor('\@@scalebox {} {}', "<ltx:g transform='scale(#1)'> #2 </ltx:g>");
 
 DefConstructor('\scaleboxto PSCoord {}', "<ltx:g scaleto='&ptValue(#1)'>#2</ltx:g>");
 
