@@ -249,7 +249,7 @@ sub convertText {
   my %Font = %{ $::FONTSTACK[0] };
   foreach my $attr (keys %Font) {
     next if $newNode->hasAttribute($attr);
-    $newNode->setAttribute($attr => $Font{$attr}); }
+    $newNode->setAttribute($attr => $Font{$attr}) if $Font{$attr}; }
 
   my @children = $node->childNodes;
   foreach my $child (@children) {
@@ -341,7 +341,8 @@ sub convertDots {
     my $dot = $newNode->addNewChild($svgURI, 'circle');
     ### copy_attributes($dot, $node);
     copy_some_attributes($dot, $node, qw(fill r stroke stroke-width transform));    # ???
-    $dot->setAttribute(r  => $node->getAttribute('dotsize'));
+    if (my $size = $node->getAttribute('dotsize')) {
+      $dot->setAttribute(r => $size); }
     $dot->setAttribute(cx => $x);
     $dot->setAttribute(cy => $y);
     #map { convertNode($dot,$_) } element_nodes($node);
@@ -379,7 +380,8 @@ sub convertArc {
   my $linestroke = ($stroke || '') eq 'none' ? $fill : $stroke;
 
   my $newNode = $parent->addNewChild($svgURI, 'g');
-  $newNode->setAttribute(transform => $node->getAttribute('transform'));
+  if (my $transform = $node->getAttribute('transform')) {
+    $newNode->setAttribute(transform => $transform); }
   if (($sp || '') eq 'true') {
     my $newLine = $newNode->addNewChild($svgURI, 'path');
     $newLine->setAttribute(d                  => "M $x1 $y1 $x $y $x2 $y2");
