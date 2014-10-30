@@ -1,0 +1,13 @@
+% Declaration of options
+\def\my@package@stuff{}
+
+\DeclareOption{acommonoption}{\xdef\my@package@stuff{\my@package@stuff,acommonoption}}
+\DeclareOption{apackageoption}{\xdef\my@package@stuff{\my@package@stuff,apackageoption}}
+\DeclareOption{anotherpackageoption}{\xdef\my@package@stuff{\my@package@stuff,anotherpackageoption}}
+% Execution of options
+\ProcessOptions
+% package loading
+
+% main code
+\def\showpackagestuff{\par\noindent Package options: \my@package@stuff}
+

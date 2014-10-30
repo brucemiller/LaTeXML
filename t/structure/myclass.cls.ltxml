@@ -1,0 +1,17 @@
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+use warnings;
+use strict;
+
+DefMacro('\my@class@stuff', '');
+DeclareOption('acommonoption', '\xdef\my@class@stuff{\my@class@stuff, acommonoption}');
+DeclareOption('aclassoption',  '\xdef\my@class@stuff{\my@class@stuff, aclassoption}');
+DeclareOption(undef, sub { PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+# Execution of options
+ProcessOptions();
+# package loading
+LoadClass('article');
+# main code
+DefMacro('\showclassstuff', '\par\noindent Class options: \my@class@stuff');
+1;
+
