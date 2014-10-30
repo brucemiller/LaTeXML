@@ -1846,7 +1846,7 @@ sub DeclareOption {
 sub PassOptions {
   my ($name, $ext, @options) = @_;
   PushValue('opt@' . $name . '.' . $ext, map { ToString($_) } @options);
-  # print STDERR "Passing to $name.$ext options: ".join(', ',@options)."\n";
+  # print STDERR "Passing to $name.$ext options: " . join(', ', @options) . "\n";
   return; }
 
 # Process the options passed to the currently loading package or class.
@@ -1866,49 +1866,59 @@ sub ProcessOptions {
   my @curroptions = @{ (defined($name) && defined($ext)
         && LookupValue('opt@' . $name . '.' . $ext)) || [] };
   my @classoptions = @{ LookupValue('class_options') || [] };
-  if ($ext eq 'cls') {
-    @classoptions = @curroptions; @curroptions = (); }
-  #  print STDERR "\nProcessing options for $name.$ext: ".join(', ',@curroptions)."\n";
+  # print STDERR "\nProcessOptions for $name.$ext\n"
+  #   . "  declared: " . join(',', @declaredoptions) . "\n"
+  #   . "  provided: " . join(',', @curroptions) . "\n"
+  #   . "  class: " . join(',', @classoptions) . "\n";
 
   my $defaultcs = T_CS('\default@ds');
   # Execute options in declared order (unless \ProcessOptions*)
 
   if ($options{inorder}) {    # Execute options in the order passed in (eg. \ProcessOptions*)
     foreach my $option (@classoptions) {    # process global options, but no error
-      DefMacroI('\CurrentOption', undef, $option);
-      my $cs = T_CS('\ds@' . $option);
-      if (LookupDefinition($cs)) {
-        Digest($cs); } }
+      executeOption_internal($option); }
     foreach my $option (@curroptions) {
-      DefMacroI('\CurrentOption', undef, $option);
-      my $cs = T_CS('\ds@' . $option);
-      if (LookupDefinition($cs)) {
-        Digest($cs); }
-      elsif ($defaultcs) {
-        Digest($defaultcs); } } }
+      if    (executeOption_internal($option))        { }
+      elsif (executeDefaultOption_internal($option)) { } } }
   else {                                    # Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions) {
       if (grep { $option eq $_ } @curroptions, @classoptions) {
         @curroptions = grep { $option ne $_ } @curroptions;    # Remove it, since it's been handled.
-        DefMacroI('\CurrentOption', undef, $option);
-        Digest(T_CS('\ds@' . $option)); } }
+        executeOption_internal($option); } }
     # Now handle any remaining options (eg. default options), in the given order.
     foreach my $option (@curroptions) {
-      DefMacroI('\CurrentOption', undef, $option);
-      Digest($defaultcs); } }
+      executeDefaultOption_internal($option); } }
   # Now, undefine the handlers?
   foreach my $option (@declaredoptions) {
     Let('\ds@' . $option, '\relax'); }
   return; }
 
+sub executeOption_internal {
+  my ($option) = @_;
+  my $cs = T_CS('\ds@' . $option);
+  if (LookupDefinition($cs)) {
+    # print STDERR "\nPROCESS OPTION $option\n";
+    DefMacroI('\CurrentOption', undef, $option);
+    AssignValue('@unusedoptionlist',
+      [grep { $_ ne $option } @{ LookupValue('@unusedoptionlist') || [] }]);
+    Digest($cs);
+    return 1; }
+  else {
+    return; } }
+
+sub executeDefaultOption_internal {
+  my ($option) = @_;
+  # print STDERR "\nPROCESS DEFAULT OPTION $option\n";
+  # presumably should NOT remove from @unusedoptionlist ?
+  DefMacroI('\CurrentOption', undef, $option);
+  Digest(T_CS('\default@ds'));
+  return 1; }
+
 sub ExecuteOptions {
   my (@options) = @_;
   my %unhandled = ();
   foreach my $option (@options) {
-    my $cs = T_CS('\ds@' . $option);
-    if (LookupDefinition($cs)) {
-      DefMacroI('\CurrentOption', undef, $option);
-      Digest($cs); }
+    if (executeOption_internal($option)) { }
     else {
       $unhandled{$option} = 1; } }
   foreach my $option (keys %unhandled) {
@@ -2049,7 +2059,8 @@ sub LoadClass {
   my ($class, %options) = @_;
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
-  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
+  #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
+  PushValue(class_options => ($options{options} ? @{ $options{options} } : ()));
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => 1, handleoptions => 1, noerror => 1,
       %options)) {
@@ -2059,7 +2070,7 @@ sub LoadClass {
     Warn('missing_file', $class, $STATE->getStomach->getGullet,
       "Can't find binding for class $class (using article)",
       maybeReportSearchPaths());
-    if (my $success = InputDefinitions('article', type => 'cls', noerror => 1, %options)) {
+    if (my $success = InputDefinitions('article', type => 'cls', noerror => 1, handleoptions => 1, %options)) {
       return $success; }
     else {
       Fatal('missing_file', 'article.cls.ltxml', $STATE->getStomach->getGullet,
