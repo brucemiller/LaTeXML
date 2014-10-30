@@ -386,7 +386,7 @@ sub checkNoPostscript {
   my ($type, $macro) = @_;
   $type = ToString($type->isaBox ? $type : Expand($type)) if ref $type;
   if ($type && ($type eq 'ps')) {    # Warn? Ignore postscript
-    Warn('ignored', $macro, $STATE->getStomach, "Ignoring definition of postscript color in $macro");
+    Info('ignored', $macro, $STATE->getStomach, "Ignoring definition of postscript color in $macro");
     return; }
   return 1; }
 

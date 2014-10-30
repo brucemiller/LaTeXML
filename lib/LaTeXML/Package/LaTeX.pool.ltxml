@@ -1808,7 +1808,7 @@ DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
-      Error('ignore', $cs, $stomach,
+      Info('ignore', $cs, $stomach,
         "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'");
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
@@ -1982,7 +1982,7 @@ DefPrimitive('\TextSymbolUnavailable{}',     undef);
 DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
     $name = ToString($name);
-    Error('ignore', $name, $stomach,
+    Info('ignore', $name, $stomach,
       "Ignoring redefinition (\\newenvironment) of Environment '$name'")
       if LookupDefinition(T_CS("\\$name"));
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);

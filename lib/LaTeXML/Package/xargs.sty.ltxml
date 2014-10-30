@@ -95,7 +95,7 @@ DefPrimitive('\CheckCommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {
 DefPrimitive('\newcommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
     my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
     if (!isDefinable($cs)) {
-      Error('ignore', $cs, $stomach,
+      Info('ignore', $cs, $stomach,
         "Ignoring redefinition (\\newcommandx) of '" . Stringify($cs) . "'");
       return; }
     DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
@@ -116,7 +116,7 @@ DefPrimitive('\DeclareRobustCommandx OptionalMatch:* DefToken [] OptionalKeyVals
 DefPrimitive('\newenvironmentx OptionalMatch:* {} [] OptionalKeyVals:xargs {}{}', sub {
     my ($stomach, $star, $cs, $nargs, $defaults, $preamble, $postamble) = @_;
     if (LookupDefinition(T_CS("\\$cs"))) {
-      Error('ignore', $cs, $stomach,
+      Info('ignore', $cs, $stomach,
         "Ignoring redefinition (\\newenvironmentx) of Environment '$cs'");
       return; }
     $cs = ToString($cs);

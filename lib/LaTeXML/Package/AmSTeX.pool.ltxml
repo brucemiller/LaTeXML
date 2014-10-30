@@ -40,7 +40,7 @@ DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub {
     my ($stomach, $cs, $params, $body) = @_;
     $params = parseDefParameters($cs, $params);    # in TeX.pool
     if (LookupDefinition($cs)) {
-      Error('ignore', $cs, $stomach,
+      Info('ignore', $cs, $stomach,
         "Ignoring redefinition (\\define) of '" . Stringify($cs) . "'");
       return; }
     DefMacroI($cs, $params, $body);
