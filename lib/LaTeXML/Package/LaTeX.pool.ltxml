@@ -52,16 +52,15 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     my $options = $whatsit->getArg(1);
     LoadClass(ToString($whatsit->getArg(2)),
       options => [($options ? split(/,\s*/, ToString($options)) : ())],
-      after => Tokens(T_CS('\warn@unusedclassoptions')));
+      after => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
     return; });
 
 AssignValue('@unusedoptionlist', []);
 DefPrimitiveI('\warn@unusedclassoptions', undef, sub {
-    my $name = ToString(Digest(T_CS('\@currname')));
-    my $type = ToString(Digest(T_CS('\@currext')));
-    foreach my $option (@{ LookupValue('@unusedoptionlist') }) {
-      Info('unexpected', $option, $_[0], "Unexpected option '$option' passed to $name.$type"); }
-    AssignValue('@unusedoptionlist', []); });
+    if (my @unused = @{ LookupValue('@unusedoptionlist') }) {
+      Info('unexpected', 'options', $_[0], "Unused global options: " . join(',', @unused));
+      AssignValue('@unusedoptionlist', []); }
+    return; });
 
 DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
   "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
@@ -621,7 +620,6 @@ DefMacroI('\CurrentOption', undef, Tokens());
 
 DefPrimitiveI('\OptionNotUsed', undef, sub {
     if (my $option = ToString(Digest(T_CS('\CurrentOption')))) {
-      my $name = ToString(Digest(T_CS('\@currname')));
       my $type = ToString(Digest(T_CS('\@currext')));
       if ($type eq 'cls') {
         PushValue('@unusedoptionlist', $option); } }
