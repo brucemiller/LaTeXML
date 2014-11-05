@@ -276,7 +276,7 @@ sub convert {
 
   # 3 If desired, post-process
   my $result = $dom;
-  if ($$opts{post} && $dom) {
+  if ($$opts{post} && $dom && $dom->documentElement) {
     my $post_eval_return = eval {
       local $SIG{'ALRM'} = sub { die "alarm\n" };
       alarm($$opts{timeout});
