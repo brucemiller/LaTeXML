@@ -2067,14 +2067,15 @@ sub LoadClass {
     return $success; }
   else {
     $STATE->noteStatus(missing => $class . '.cls');
+    my $alternate = 'OmniBus';    # was 'article'
     Warn('missing_file', $class, $STATE->getStomach->getGullet,
-      "Can't find binding for class $class (using article)",
+      "Can't find binding for class $class (using $alternate)",
       maybeReportSearchPaths());
-    if (my $success = InputDefinitions('article', type => 'cls', noerror => 1, handleoptions => 1, %options)) {
+    if (my $success = InputDefinitions($alternate, type => 'cls', noerror => 1, handleoptions => 1, %options)) {
       return $success; }
     else {
-      Fatal('missing_file', 'article.cls.ltxml', $STATE->getStomach->getGullet,
-        "Can't find binding for class article (installation error)");
+      Fatal('missing_file', $alternate . '.cls.ltxml', $STATE->getStomach->getGullet,
+        "Can't find binding for class $alternate (installation error)");
       return; } } }
 
 sub LoadPool {

@@ -1,0 +1,111 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  OmniBus.cls                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Catalin David <c.david@jacobs-university.de>              | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# This is the OmniBus class file.
+# It is a stand-in for class files for which we have no binding.
+# It attempts to define in fairly generic fashion most of the frontmatter
+# commands that are commonly encountered.
+# Of course having the "wrong" things defined
+# or the right things defined wrongly may lead to other errors.
+# But we're betting that we come out ahead.
+#======================================================================
+
+LoadClass('article');
+ProcessOptions();
+
+DefEnvironment('{frontmatter}', '#body');
+DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\shortauthor{}', '');
+DefRegister('\titlerunning',  Tokens());
+DefRegister('\authorrunning', Tokens());
+
+DefMacro('\runningtitle{}', Tokens());
+DefMacro('\shortauthor{}',  Tokens());
+DefMacro('\authors{}',      Tokens());
+DefMacro('\shortauthors{}', Tokens());
+
+DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
+DefMacro('\email{}',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
+DefMacro('\ead{}[email]', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
+DefMacro('\emailname',    'E-mail');
+DefMacro('\speaker{}',    '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
+
+# \institute,, \inst  from inst_support
+RequirePackage('inst_support');
+
+# like from aas
+DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affil{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\altaffilmark{}', sub {
+    my ($gullet, $marks) = @_;
+    map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
+DefConstructor('\@altaffilmark{}',
+  "<ltx:note role='affiliationmark' mark='#1'/> ");
+DefConstructor('\altaffiltext{}{}',
+  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+
+DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+
+# Comes as both macro with arg, and environment! w/ or w/o "s"!
+DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+# {keyword}, {keywords}
+
+DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
+DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+
+# \abstracts
+# \editors
+
+# Seems to come in different spellings and often misused!
+DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
+  properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
+DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
+Tag("ltx:acknowledgements", autoClose => 1);
+
+DefMacro('\acknowledgmentsname', 'Acknowledgements');
+Let('\acknowledgements',      '\acknowledgments');
+Let('\endacknowledgements',   '\endacknowledgments');
+Let('\theacknowledgments',    '\acknowledgments');
+Let('\endtheacknowledgments', '\endacknowledgments');
+
+DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\pubyear',    '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+
+# work as environment or not...
+DefConstructor('\references',
+  "<ltx:bibliography xml:id='#id' "
+    . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
+    . "<ltx:biblist>",
+  afterDigest => sub { beginBibliography($_[1]); });
+
+DefConstructor('\endreferences',
+  "</ltx:biblist></ltx:bibliography>");
+
+1;
