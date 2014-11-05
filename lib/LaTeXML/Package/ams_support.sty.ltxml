@@ -78,20 +78,20 @@ RequirePackage('makeidx');
 # #======================================================================
 # # Sec. 4. Top Matter
 # # FrontMatter:
-DefMacroI('\shorttitle',   undef, Tokens());
-DefMacroI('\shortauthor',  undef, Tokens());
-DefMacroI('\authors',      undef, Tokens());
-DefMacroI('\shortauthors', undef, Tokens());
-DefMacroI('\addresses',    undef, Tokens());
-DefMacroI('\publname',     undef, Tokens());
-DefMacroI('\publname',     undef, Tokens());
+DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\shortauthor{}',  Tokens());                                # Not useful?
+DefMacro('\authors{}',      Tokens());
+DefMacro('\shortauthors{}', Tokens());
+DefMacro('\addresses{}',    Tokens());
+DefMacro('\publname{}',     Tokens());
+DefMacro('\publname{}',     Tokens());
 
 DefMacro('\title[]{}',
   '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
     . '\@add@frontmatter{ltx:title}{#2}');
 
 DefMacro('\lx@author@sep',  ',\ ');
-DefMacro('\lx@author@conj', '\ and\ ');    # \@@and
+DefMacro('\lx@author@conj', '\ and\ ');                               # \@@and
 
 DefMacro('\author[]{}',
   '\if.#1.\else\def\shortauthor{#1}\fi'

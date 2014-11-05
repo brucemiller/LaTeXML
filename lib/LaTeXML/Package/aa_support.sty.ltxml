@@ -74,8 +74,8 @@ DefMacroI('\keywordname', undef, '\sffamily\bfseries Key Words.');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
 # Formatting the header and running title
-DefMacro('\titlerunning{}',  '');    # Ignorable
-DefMacro('\authorrunning{}', '');
+DefRegister('\titlerunning',  Tokens());    # Ignorable
+DefRegister('\authorrunning', Tokens());
 #DefRegister('\authrun'=>Box());
 #DefRegister('\titrun'=>Box());
 DefMacro('\authrun', '');

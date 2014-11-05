@@ -21,12 +21,12 @@ RequirePackage('inst_support');
 
 #======================================================================
 # Frontmatter
-DefMacro('\titlerunning', Tokens());
-DefMacro('\titrun',       Tokens());
-DefMacro('\subtitle{}',   '\@add@frontmatter{ltx:subtitle}{#1}');
+DefRegister('\titlerunning', Tokens());
+DefMacro('\titrun',     Tokens());
+DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 
-DefMacro('\authorrunning', Tokens());
-DefMacro('\authrun',       Tokens());
+DefRegister('\authorrunning', Tokens());
+DefMacro('\authrun', Tokens());
 
 DefMacro('\emailname', 'E-mail');
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email' name='#name'>#1</ltx:contact>",
