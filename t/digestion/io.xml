@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <paragraph xml:id="S0.SS0.SSS0.Px1">
+    <title>Checking files</title>
+    <para xml:id="S0.SS0.SSS0.Px1.p1">
+      <p>Checking for file exists.data:
+I found the file exists.data.</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px1.p2">
+      <p>Checking for file missing.data:
+I couldn’t find the file missing.data.</p>
+    </para>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px2">
+    <title>Reading a file</title>
+    <para xml:id="S0.SS0.SSS0.Px2.p1">
+      <p>Reading file exists.data:<break/>
+
+Line: “This file exists!
+”<break/>
+
+Line: “line 2
+”<break/>
+
+Line: “another line spaces
+”<break/>
+
+Line: “<text font="bold">Foo!</text>
+”<break/>
+
+Line: “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p2">
+      <p><Math mode="inline" xml:id="S0.SS0.SSS0.Px2.p2.m1" tex="x^{\prime}" text="x ^ prime"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok name="prime" role="SUPOP">′</XMTok></XMApp></XMath></Math>
+”<break/>
+
+Line: “line  in brackets
+still  continues
+”<break/>
+
+Line: “last line.
+”<break/>
+
+Line: “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p3">
+      <p>”<break/>
+Closed!</p>
+    </para>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px3">
+    <title>Reading a file w eTeX</title>
+    <para xml:id="S0.SS0.SSS0.Px3.p1">
+      <p>Reading file exists.data:<break/>
+
+Line: “This file exists!”<break/>
+
+Line: “line 2”<break/>
+
+Line: “another line       spaces”<break/>
+
+Line: “%oddchars # &amp; “foo”<break/>
+
+Line: ““foo”<break/>
+
+Line: “”<break/>
+
+Line: “$x’$”<break/>
+
+Line: “line – in brackets”<break/>
+
+Line: “still ˝ continues”<break/>
+
+Line: “last line.”<break/>
+
+Line: “”<break/>
+Closed!</p>
+    </para>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px4">
+    <title>Writing a file</title>
+    <para xml:id="S0.SS0.SSS0.Px4.p1">
+      <p>Checking for file generated.data:
+I couldn’t find the file generated.data.</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p2">
+      <p>Checking for file generated.data:
+I found the file generated.data.
+
+
+Reading file generated.data:<break/>
+
+Line: “First line
+”<break/>
+
+Line: “Second line
+”<break/>
+
+Line: “Last line
+”<break/>
+Closed!</p>
+    </para>
+  </paragraph>
+</document>

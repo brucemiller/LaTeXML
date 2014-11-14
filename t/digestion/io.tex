@@ -1,0 +1,84 @@
+\documentclass{article}
+
+\def\foo{\textbf{Foo!}}
+
+% Damn catcodes...
+%\def\showline macro:->#1\end{%
+\def\showline{%
+   \expandafter\showtheline\meaning\aline\end}
+\def\showtheline#1\end{%
+  Line: ``#1''\\}
+
+\def\showline{
+  Line: ``\aline''\\}
+
+\newwrite\file
+\def\findfile#1{
+  Checking for file #1:
+  \openin\file = #1
+  \ifeof\file
+    \closein\file
+    {I couldn't find the file #1.}
+  \else
+    \closein\file
+    {I found the file #1.}
+  \fi}
+
+\newtoks\aline
+\def\readnext{
+  \ifeof\file
+    \closein\file
+    Closed!
+  \else
+     \read\file to \aline
+     \showline
+     \readnext
+  \fi}
+
+\def\readfile#1{
+  Reading file #1:\\
+ \openin\file = #1
+  \readnext}
+
+\def\Ereadnext{
+  \ifeof\file
+    \closein\file
+    Closed!
+  \else
+     \readline\file to \aline
+     \showline
+     \Ereadnext
+  \fi}
+\def\Ereadfile#1{
+  Reading file #1:\\
+ \openin\file = #1
+  \Ereadnext}
+
+\begin{document}
+\paragraph{Checking files}
+
+\findfile{exists.data}
+
+\findfile{missing.data}
+
+\paragraph{Reading a file}
+
+\readfile{exists.data}
+
+\paragraph{Reading a file w eTeX}
+
+\Ereadfile{exists.data}
+
+\paragraph{Writing a file}
+\findfile{generated.data}
+
+\immediate\openout\file = generated.data
+\immediate\write\file {First line}
+\immediate\write\file {Second line}
+\immediate\write\file {Last line}
+\immediate\closeout\file
+
+\findfile{generated.data}
+\readfile{generated.data}
+
+\end{document}
