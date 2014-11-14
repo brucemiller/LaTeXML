@@ -37,11 +37,13 @@ DefMacro('\unexpanded {}', '#1');
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 
-# \readline
-# Since we haven't implemented \read ... ?!
-DefMacro('\read Number SkipKeyword:to Token', sub {
-    my ($gullet, $fh, $token) = @_;
-    DefMacroI($token, undef, Tokens()); });
+# \readline; like \read, but only spaces & other
+DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
+    my ($gullet, $port, $token) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      DefMacroI($token, undef, Tokens(Explode($mouth->readRawLine))); }
+    return; });
 
 DefMacro('\scantokens {}', sub {
     LaTeXML::Core::Mouth->new(UnTeX($_[1]))->readTokens; });
