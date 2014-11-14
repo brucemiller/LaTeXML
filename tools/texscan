@@ -557,7 +557,12 @@ sub scan {
       foreach my $pkg (@pkgs) {
         my $loadpath = pathname_find("$pkg.ltxml", paths => $paths, installation_subdir => 'Package');
         if (!$loadpath) {
-          print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n"; return; }
+          if ($pkg =~ /(.*)\.cls$/) {
+            print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg; using article.cls\n";
+            LaTeXML::Package::LoadClass('article'); }
+          else {
+            print STDERR "WARN: Couldn't find LaTeXML implementation for $pkg\n";
+            return; } }
         if    ($pkg =~ /(.*)\.pool$/) { LaTeXML::Package::LoadPool($1); }
         elsif ($pkg =~ /(.*)\.sty$/)  { LaTeXML::Package::RequirePackage($1); }
         elsif ($pkg =~ /(.*)\.cls$/)  { LaTeXML::Package::LoadClass($1); }
