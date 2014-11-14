@@ -165,6 +165,12 @@ DefMacro('\end{}', sub {
 # \protect is already in TeX for obscure reasons...
 #Let('\@typeset@protect','\relax');
 RawTeX(<<'EOTeX');
+\def\@ignorefalse{\global\let\if@ignore\iffalse}
+\def\@ignoretrue {\global\let\if@ignore\iftrue}
+\def\zap@space#1 #2{%
+  #1%
+  \ifx#2\@empty\else\expandafter\zap@space\fi
+  #2}
 \def\@unexpandable@protect{\noexpand\protect\noexpand}
 \def\x@protect#1{%
    \ifx\protect\@typeset@protect\else
@@ -195,6 +201,29 @@ RawTeX(<<'EOTeX');
 }
 \def\restore@protect{\let\protect\@@protect}
 \set@typeset@protect
+\def\@nobreakfalse{\global\let\if@nobreak\iffalse}
+\def\@nobreaktrue {\global\let\if@nobreak\iftrue}
+\@nobreakfalse
+
+\newif\ifv@
+\newif\ifh@
+\newif\ifdt@p
+\newif\if@pboxsw
+\newif\if@rjfield
+\newif\if@firstamp
+\newif\if@negarg
+\newif\if@ovt
+\newif\if@ovb
+\newif\if@ovl
+\newif\if@ovr
+\newdimen\@ovxx
+\newdimen\@ovyy
+\newdimen\@ovdx
+\newdimen\@ovdy
+\newdimen\@ovro
+\newdimen\@ovri
+\newif\if@noskipsec \@noskipsectrue
+
 EOTeX
 
 #======================================================================
@@ -285,7 +314,7 @@ DefEnvironment('{document}', sub {
 # \TeX is in TeX.pool.ltxml
 DefConstructorI('\LaTeX',  undef, 'LaTeX');
 DefConstructorI('\LaTeXe', undef, 'LaTeX2e');
-DefMacroI('\fmtname',    undef, 'LaTeXML');
+DefMacroI('\fmtname',    undef, 'LaTeX2e');
 DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
@@ -1323,11 +1352,6 @@ DefConstructor('\@math@verb{}{}', "#2",    # Will already end up wrapped as XMTo
 DefPrimitiveI('\obeycr',    undef, sub { AssignValue('PRESERVE_NEWLINES' => 1); });
 DefPrimitiveI('\restorecr', undef, sub { AssignValue('PRESERVE_NEWLINES' => 0); });
 
-DefPrimitiveI('\dospecials', undef, sub {
-    map { $STATE->assignCatcode($_ => CC_OTHER, 'local') }
-      #        '^', '_', '@', '~', '&', '$', '#', '%', "'", ' ');
-      ' ', '\\', '{', '}', '$', '&', '#', '^', '_', '%', '~';
-    return; });
 DefMacroI('\normalsfcodes', undef, Tokens());
 
 #**********************************************************************
@@ -2930,7 +2954,7 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
       NoteProgress("[Cached filecontents* for $filename (" . scalar(@lines) . " lines)]"); }]);
-
+DefMacro('\endfilecontents', '');
 DefPrimitive('\listfiles', undef);
 
 #======================================================================
@@ -3591,6 +3615,11 @@ DefConstructor('\qbezier [Number] Pair Pair Pair',
   alias      => '\qbezier',
   properties => sub {
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
+DefConstructor('\bezier Number Pair Pair Pair',
+  "<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
+  alias      => '\bezier',
+  properties => sub {
+    picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
 
 DefConstructor('\pic@makebox Pair []{}',
   "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
@@ -3910,9 +3939,14 @@ DefMathI('\owns',       undef, "\x{220B}", role => 'RELOP', meaning => 'contains
 # Other stuff
 #**********************************************************************
 # Some stuff that got missed in the appendices ?
-
-DefMacro('\@namedef{}', '\expandafter\def\csname #1\endcsname');
-DefMacro('\@nameuse{}', '\csname #1\endcsname');
+RawTeX(<<'EoTeX');
+\def\@namedef#1{\expandafter\def\csname #1\endcsname}
+\def\@nameuse#1{\csname #1\endcsname}
+\def\@cons#1#2{\begingroup\let\@elt\relax\xdef#1{#1\@elt #2}\endgroup}
+\def\@car#1#2\@nil{#1}
+\def\@cdr#1#2\@nil{#2}
+\def\@carcube#1#2#3#4\@nil{#1#2#3}
+EoTeX
 
 sub isDefinable {
   my ($token) = @_;
@@ -3985,6 +4019,8 @@ RawTeX(<<'EoTeX');
   \edef #1{\expandafter\strip@prefix
            \meaning #1}%
 }
+\def\dospecials{\do\ \do\\\do\{\do\}\do\$\do\&%
+  \do\#\do\^\do\_\do\%\do\~}
 EoTeX
 
 DefMacroI('\nfss@catcodes', undef, <<'EOMacro');
@@ -4158,6 +4194,7 @@ RawTeX(<<'EOTeX');
 \newwrite\@unused
 \newwrite\@mainaux
 \newwrite\@partaux
+\openout\@mainaux\jobname.aux
 \newcount\@clubpenalty
 \@clubpenalty \clubpenalty
 \newif\if@filesw \@fileswtrue
@@ -4221,6 +4258,16 @@ RawTeX(<<'EOTeX');
 \def\remove@angles#1>{\set@simple@size@args}
 \def\remove@star#1*{#1}
 \def\@defaultunits{\afterassignment\remove@to@nnil}
+
+\newif\ifmath@fonts \math@fontstrue
+\newbox\@labels
+\newif\if@inlabel \@inlabelfalse
+\newif\if@newlist   \@newlistfalse
+\newif\if@noparitem \@noparitemfalse
+\newif\if@noparlist \@noparlistfalse
+\newif\if@noitemarg \@noitemargfalse
+\newif\if@nmbrlist  \@nmbrlistfalse
+
 EOTeX
 
 DefMacroI('\@height', undef, 'height');
@@ -4239,8 +4286,6 @@ DefMacroI('\@charrb',        undef, T_LETTER('}'));
 
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
-DefMacroI('\math@fontsfalse', undef, Tokens());
-DefMacroI('\math@fontstrue',  undef, Tokens());
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');
@@ -4354,12 +4399,20 @@ DefMacroI('\mathgroup',            undef, Tokens());
 DefMacroI('\mathalpha',            undef, Tokens());
 
 #\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
+DefPrimitive('\mathhexbox {}{}{}', sub {
+    my ($stomach, $a, $b, $c) = @_;
+    my $n = ToString($a) * 256 + ToString($b) * 16 + ToString($c);
+    my ($role, $glyph) = decodeMathChar($n);
+    return Box($glyph, LookupValue('font')->specialize($glyph)); });
+
 DefMacroI('\nocorrlist', undef, ',.');
 Let('\nocorr',    '\relax');
 Let('\check@icl', '\@empty');
 Let('\check@icr', '\@empty');
 DefMacro('\text@command{}',                          '');    # ?
 DefMacro('\check@nocorr@ Until:\nocorr Until:\@nil', '');
+RawTeX('\newif\ifmaybe@ic');
+
 DefMacroI('\maybe@ic',  undef, '');
 DefMacroI('\maybe@ic@', undef, '');
 # \t@st@ic
