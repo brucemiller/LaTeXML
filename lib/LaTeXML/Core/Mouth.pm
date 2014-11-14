@@ -22,7 +22,10 @@ use base qw(LaTeXML::Common::Object);
 
 # Factory method;
 # Create an appropriate Mouth
-# options are quiet, atletter, content
+# options are
+#  quiet,
+#  atletter,
+#  content
 sub create {
   my ($class, $source, %options) = @_;
   if ($options{content}) {    # we've cached the content of this source
@@ -195,10 +198,15 @@ sub handle_escape {    # Read control sequence
     while ((($ch, $cc) = $self->getNextChar) && $ch && ($cc == CC_LETTER)) {
       $cs .= $ch; }
     $$self{colno}--; }
-  if (($cc == CC_SPACE) || ($cc == CC_EOL)) {    # We'll skip whitespace here.
-                                                 # Now, skip spaces
-    while ((($ch, $cc) = $self->getNextChar) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) { }
+  if ($cc == CC_SPACE) {     # We'll skip whitespace here.
+    while ((($ch, $cc) = $self->getNextChar) && $ch && ($cc == CC_SPACE)) { }
     $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
+  if ($cc == CC_EOL) {       # If we've got an EOL
+                             # if in \read mode, leave the EOL to be turned into a T_SPACE
+    if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
+    else {                   # else skip it.
+      $self->getNextChar;
+      $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
   return T_CS($cs); }
 
 sub handle_EOL {
