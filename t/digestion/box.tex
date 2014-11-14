@@ -6,20 +6,20 @@
  \fi\fi\fi
  \par}
 \begin{document}
-\setbox0=\hbox{Goodbye}
-\testbox{0}
-\setbox1=\hbox{Hello}
-\testbox{1}
-\setbox2=\vbox{\box1,\box0}
-\testbox{2}
+\setbox100=\hbox{Goodbye}
+\testbox{100}
+\setbox101=\hbox{Hello}
+\testbox{101}
+\setbox102=\vbox{\box101,\box100}
+\testbox{102}
 
 Using...
-\box2
+\box102
 
-\setbox3=\hbox{}
-\testbox{3}
+\setbox103=\hbox{}
+\testbox{103}
 
-\testbox{4}
+\testbox{104}
 
 \[ a + \hbox{a}\]
 \[ a + \vbox{a}\]
