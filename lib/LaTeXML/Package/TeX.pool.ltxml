@@ -524,8 +524,6 @@ DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
 DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
 DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 
-# This is probably the safest default, until we fully deal with the I/O macros
-DefConditional('\ifeof Number', sub { 1; });
 DefConditionalI('\iftrue',  undef, sub { 1; });
 DefConditionalI('\iffalse', undef, sub { 0; });
 
@@ -908,6 +906,7 @@ sub do_def {
     $body = Expand($body); }
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
+  AfterAssignment();
   return; }
 
 DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0, 0, @_); }, locked => 1);
@@ -943,10 +942,6 @@ DefPrimitiveI('\outer',  undef, sub { $STATE->setPrefix('outer');  return; }, is
 #    | <token variable><equals><token variable>
 # <at clause> = at <dimen> | scaled <number> | <optional spaces>
 # <code assignment> = <codename><8bit><equals><number>
-
-DefMacro('\read Number SkipKeyword:to Token', sub {
-    my ($gullet, $fh, $token) = @_;
-    DefMacroI($token, undef, Tokens()); });
 
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
@@ -1844,16 +1839,86 @@ DefPrimitive('\errmessage{}', sub {
     print STDERR ToString(Expand($stuff)) . ": " . ToString(Expand(Tokens(T_CS('\the'), T_CS('\errhelp')))) . "\n";
     return; });
 
-## I'm thinking we want to mostly ignore the I/O stuff.
-## Generally, it's used to move info around for multiple passes
-## of aux, index, etc.
-DefPrimitive('\openin Number SkipMatch:= TeXFileName',  undef);
-DefPrimitive('\openout Number SkipMatch:= TeXFileName', undef);
-DefPrimitive('\closein Number',                         undef);
-DefPrimitive('\closeout Number',                        undef);
-DefPrimitive('\immediate',                              undef);
-# \immediate\write<number><general text>
-DefPrimitive('\write Number {}', undef);
+# TeX I/O primitives
+DefPrimitive('\openin Number SkipMatch:= SkipSpaces TeXFileName', sub {
+    my ($stomach, $port, $filename) = @_;
+    # possibly should close $port if it's already been opened?
+    $port     = ToString($port);
+    $filename = ToString($filename);
+    # Rely on FindFile to enforce any access restrictions
+    if (my $path = FindFile($filename)) {
+      my $mouth = LaTeXML::Core::Mouth->create($path,
+        content => LookupValue($path . '_contents'));
+      AssignValue('input_file:' . $port => $mouth, 'global'); }
+    return; });
+
+DefPrimitive('\closein Number', sub {
+    my ($stomach, $port, $filename) = @_;
+    #   close the mouth (if any) and clear the variable
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      $mouth->finish;
+      AssignValue('input_file:' . $port => undef, 'global'); }
+    return; });
+
+DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
+    my ($stomach, $port, $token) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      $stomach->bgroup;
+      AssignValue(PRESERVE_NEWLINES => 2);
+      my @tokens = ();
+      my $EOL = Token("\n", CC_SPACE);
+      my ($t, $cc, $level) = (undef, 0, 0);
+      while ($t = $mouth->readToken) {
+        push(@tokens, $t);
+        $level++ if $cc == CC_BEGIN;
+        $level-- if $cc == CC_END;
+        last if ((($cc = $t->getCatcode) == CC_SPACE) && ($t->getString eq "\n")) && !$level; }
+      $stomach->egroup;
+      # I'm unclear whether there should be a trailing $EOL on the last line, but apparently not?
+      @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
+      DefMacroI($token, undef, Tokens(@tokens)); }
+    return; });
+
+DefConditional('\ifeof Number', sub {
+    my ($gullet, $port) = @_;
+    $port = ToString($port);
+    if (my $mouth = LookupValue('input_file:' . $port)) {
+      return !$mouth->hasMoreInput; }
+    else {
+      return 1; } });
+
+# For output files, we'll write the data to a cached internal copy
+# rather than to the actual file system.
+DefPrimitive('\openout Number SkipMatch:= SkipSpaces TeXFileName', sub {
+    my ($stomach, $port, $filename) = @_;
+    $port     = ToString($port);
+    $filename = ToString($filename);
+    AssignValue('output_file:' . $port  => $filename, 'global');
+    AssignValue($filename . '_contents' => "",        'global');
+    return; });
+
+DefPrimitive('\closeout Number', sub {
+    my ($stomach, $port) = @_;
+    $port = ToString($port);
+    AssignValue('output_file:' . $port => undef, 'global');
+    return; });
+
+DefPrimitive('\write Number {}', sub {
+    my ($stomach, $port, $tokens) = @_;
+    $port = ToString($port);
+    if (my $filename = LookupValue('output_file:' . $port)) {
+      my $handle   = $filename . '_contents';
+      my $contents = LookupValue($handle);
+      AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
+    else {
+      print STDERR UnTeX($tokens) . "\n"; }
+    return; });
+
+# Since we don't paginate, we're effectively always "shipping out",
+# so all operations are \immediate
+DefPrimitive('\immediate', undef);
 
 #======================================================================
 # Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
