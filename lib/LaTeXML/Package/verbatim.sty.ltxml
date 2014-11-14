@@ -46,7 +46,7 @@ DefMacro('\verbatim@font', '\normalfont\ttfamily\hyphenchar\font\m@ne\@noligs');
 DefMacro('\@verbatim',
   '\the\every@verbatim'
     . '\obeylines'
-    . '\let\do\@makeatother\dospecials'
+    . '\let\do\@makeother \dospecials'
     . '\verbatim@font');
 
 DefConstructor('\lx@verbatim@',
