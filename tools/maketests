@@ -24,6 +24,9 @@ use File::Spec::Functions;
 use Algorithm::Diff;
 
 #======================================================================
+# NOTE: Don't forget you can use
+#  make test TEST_FILES=t/sometestglob.t
+#======================================================================
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
 my ($doxml,     $dopdf, $docompare)   = ();
 my ($verbosity, $help,  $showversion) = (0);
@@ -111,6 +114,8 @@ sub maketest_daemon {
   $invocation .= " 2>$name.test.status ";
   chdir($dir);
   if (system($invocation) != 0) {
+    unlink "$name.test.xml"    if -e "$name.test.xml";
+    unlink "$name.test.status" if -e "$name.test.status";
     die "Failed to execute '$invocation': $!"; }
   if ($docompare) {
     print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
@@ -235,8 +240,8 @@ sub gen_pdf {
     $program = 'pdflatex' if /documentclass/; }
   close($IN);
   local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');
-  system($program, $name) == 0 or die "Couldn't run $program $name: $!";
-  system($program, $name) == 0 or die "Couldn't run $program $name: $!";
+  system($program, '-interaction=batchmode', $name) == 0 or die "Couldn't run $program $name: $!";
+  system($program, '-interaction=batchmode', $name) == 0 or die "Couldn't run $program $name: $!";
 
   # Now delete an new files except $name.pdf
   opendir($DIR, ".") or die "Cannot read directory $dir: $!";
