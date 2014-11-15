@@ -68,7 +68,10 @@ Common.attributes =
   ## These will only be effective when the target system supports CSS.
   attribute cssstyle { text }?,
 
-  RDF.attributes
+  RDF.attributes,
+
+  ## Language attribute
+  attribute xml:lang { text }?
 
 ## Attributes for elements that can be cross-referenced
 ## from inside or outside the document.

@@ -82,6 +82,11 @@ These will only be effective when the target system supports CSS.</a:documentati
       </attribute>
     </optional>
     <ref name="RDF.attributes"/>
+    <optional>
+      <attribute name="xml:lang">
+        <a:documentation>Language attribute</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="ID.attributes">
     <a:documentation>Attributes for elements that can be cross-referenced

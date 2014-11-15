@@ -27,6 +27,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   width CDATA #IMPLIED
@@ -74,6 +75,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   font CDATA #IMPLIED
@@ -109,6 +111,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   font CDATA #IMPLIED
@@ -144,6 +147,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -174,6 +178,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -206,6 +211,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED
@@ -242,6 +248,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   name CDATA #IMPLIED
@@ -266,6 +273,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   width CDATA #IMPLIED
   height CDATA #IMPLIED
   depth CDATA #IMPLIED
@@ -308,6 +316,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED
@@ -342,6 +351,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -371,7 +381,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bibref (ltx:bibrefphrase)*>
 <!ATTLIST ltx:bibref
@@ -392,6 +403,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   bibrefs CDATA #IMPLIED
   show CDATA #IMPLIED
@@ -426,7 +438,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:p (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                  |ltx:glossaryref|ltx:acronym|ltx:rule|ltx:anchor
@@ -455,6 +468,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   width CDATA #IMPLIED
@@ -514,6 +528,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -544,6 +559,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -570,7 +586,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:MathBranch (ltx:Math|ltx:tr|ltx:td)*>
 <!ATTLIST ltx:MathBranch
@@ -591,6 +608,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   format CDATA #IMPLIED>
 
 <!ELEMENT ltx:quote (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
@@ -621,6 +639,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
@@ -654,6 +673,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   width CDATA #IMPLIED
@@ -689,6 +709,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -717,6 +738,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -740,6 +762,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -763,6 +786,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -790,6 +814,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -817,6 +842,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -840,6 +866,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -863,6 +890,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -897,6 +925,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -932,6 +961,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED>
@@ -955,6 +985,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:inline-block (ltx:p|ltx:equation|ltx:equationgroup
@@ -986,6 +1017,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   width CDATA #IMPLIED
@@ -1038,6 +1070,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   font CDATA #IMPLIED
@@ -1064,7 +1097,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:graphics EMPTY>
 <!ATTLIST ltx:graphics
@@ -1085,6 +1119,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   imagesrc CDATA #IMPLIED
@@ -1136,6 +1171,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1164,6 +1200,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   see_also CDATA #IMPLIED
   style CDATA #IMPLIED>
 
@@ -1196,6 +1233,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   key CDATA #IMPLIED>
 
 <!ELEMENT ltx:indexsee (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -1226,6 +1264,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   key CDATA #IMPLIED
   name CDATA #IMPLIED>
 
@@ -1248,6 +1287,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   style CDATA #IMPLIED>
 
@@ -1281,6 +1321,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   key CDATA #IMPLIED>
 
 <!ELEMENT ltx:glossaryexpansion (#PCDATA|ltx:text|ltx:emph|ltx:del
@@ -1314,7 +1355,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:glossarydefinition (#PCDATA|ltx:text|ltx:emph|ltx:del
                                   |ltx:sub|ltx:sup|ltx:glossaryref
@@ -1348,6 +1390,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   key CDATA #IMPLIED>
 
 <!ELEMENT ltx:rdf (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
@@ -1379,7 +1422,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:ERROR (#PCDATA)*>
 <!ATTLIST ltx:ERROR
@@ -1399,7 +1443,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:resource (#PCDATA)*>
 <!ATTLIST ltx:resource
@@ -1420,6 +1465,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   src CDATA #IMPLIED
   type CDATA #IMPLIED
   media CDATA #IMPLIED>
@@ -1442,7 +1488,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:para (ltx:p|ltx:equation|ltx:equationgroup|ltx:quote
                     |ltx:block|ltx:listingblock|ltx:itemize
@@ -1471,6 +1518,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
@@ -1498,6 +1546,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   width CDATA #IMPLIED
@@ -1538,6 +1587,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1569,6 +1619,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1608,6 +1659,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1668,6 +1720,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1728,6 +1781,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1787,6 +1841,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -1837,6 +1892,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -1871,7 +1927,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:Math (ltx:XMath)*>
 <!ATTLIST ltx:Math
@@ -1892,6 +1949,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   imagesrc CDATA #IMPLIED
   imagewidth CDATA #IMPLIED
   imageheight CDATA #IMPLIED
@@ -1926,6 +1984,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -1948,6 +2007,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -1995,6 +2055,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2039,6 +2100,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2072,6 +2134,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2115,6 +2178,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2152,6 +2216,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2193,6 +2258,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2228,6 +2294,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2262,6 +2329,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   open CDATA #IMPLIED
   close CDATA #IMPLIED
@@ -2300,6 +2368,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
@@ -2325,6 +2394,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
@@ -2354,6 +2424,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
@@ -2379,6 +2450,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:tfoot (ltx:tr)*>
@@ -2400,6 +2472,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:tbody (ltx:tr)*>
@@ -2421,6 +2494,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED>
 
 <!ELEMENT ltx:tr (ltx:td)*>
@@ -2442,6 +2516,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
@@ -2476,6 +2551,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   backgroundcolor CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
@@ -2518,6 +2594,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   x CDATA #IMPLIED
@@ -2586,6 +2663,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2636,6 +2714,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2679,6 +2758,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2722,6 +2802,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2765,6 +2846,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2808,6 +2890,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2851,6 +2934,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2894,6 +2978,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2937,6 +3022,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -2980,6 +3066,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3023,6 +3110,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3066,6 +3154,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3109,6 +3198,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3155,6 +3245,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3198,6 +3289,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3253,6 +3345,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   x CDATA #IMPLIED
   y CDATA #IMPLIED
   r CDATA #IMPLIED
@@ -3322,6 +3415,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3357,6 +3451,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3397,6 +3492,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3436,6 +3532,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3475,6 +3572,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3513,6 +3611,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3549,6 +3648,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3584,6 +3684,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3613,6 +3714,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3645,6 +3747,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3686,6 +3789,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3723,6 +3827,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3760,6 +3865,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3789,6 +3895,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -3812,6 +3919,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -3843,7 +3951,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:glossary ((ltx:title|ltx:toctitle|ltx:creator)*,
                         ((ltx:para|ltx:theorem|ltx:proof|ltx:figure
@@ -3870,6 +3979,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -3899,6 +4009,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED>
 
@@ -3922,6 +4033,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   role CDATA #IMPLIED>
@@ -3954,6 +4066,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   font CDATA #IMPLIED
   fontsize CDATA #IMPLIED
   color CDATA #IMPLIED
@@ -3987,7 +4100,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:subtitle (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                         |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
@@ -4016,7 +4130,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:creator (ltx:personname|ltx:contact|ltx:inline-itemize
                        |ltx:inline-enumerate|ltx:inline-description
@@ -4041,6 +4156,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED
   before CDATA #IMPLIED
@@ -4075,6 +4191,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED>
@@ -4107,6 +4224,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
@@ -4140,6 +4258,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED>
 
@@ -4171,6 +4290,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ltx:acknowledgements (#PCDATA|ltx:text|ltx:emph|ltx:del
@@ -4203,6 +4323,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ltx:keywords (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -4233,6 +4354,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED>
 
 <!ELEMENT ltx:classification (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -4265,6 +4387,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED
   scheme CDATA #IMPLIED>
 
@@ -4293,6 +4416,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   labels CDATA #IMPLIED
@@ -4321,6 +4445,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   name CDATA #IMPLIED
   role CDATA #IMPLIED
   select CDATA #IMPLIED
@@ -4344,7 +4469,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:tocentry (ltx:ref|ltx:toclist)*>
 <!ATTLIST ltx:tocentry
@@ -4364,7 +4490,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:biblist (ltx:bibentry|ltx:bibitem)*>
 <!ATTLIST ltx:biblist
@@ -4384,7 +4511,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bibitem (ltx:bibtag*,ltx:bibblock*)>
 <!ATTLIST ltx:bibitem
@@ -4405,6 +4533,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   key CDATA #IMPLIED>
@@ -4467,6 +4596,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   key CDATA #REQUIRED
@@ -4491,6 +4621,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:surname (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
@@ -4561,7 +4692,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-subtitle (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                             |ltx:sup|ltx:glossaryref|ltx:acronym
@@ -4591,7 +4723,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-key (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                        |ltx:glossaryref|ltx:acronym|ltx:rule|ltx:anchor
@@ -4620,7 +4753,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-type (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                         |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
@@ -4649,7 +4783,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-date (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                         |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
@@ -4679,6 +4814,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-publisher (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -4709,7 +4845,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-organization (#PCDATA|ltx:text|ltx:emph|ltx:del
                                 |ltx:sub|ltx:sup|ltx:glossaryref
@@ -4740,7 +4877,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-place (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                          |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
@@ -4770,7 +4908,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-related (ltx:bib-name|ltx:bib-title|ltx:bib-subtitle
                            |ltx:bib-key|ltx:bib-type|ltx:bib-date
@@ -4798,6 +4937,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   type CDATA #IMPLIED
   role CDATA #IMPLIED
   bibrefs CDATA #IMPLIED>
@@ -4830,6 +4970,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-edition (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -4860,7 +5001,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-status (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                           |ltx:sup|ltx:glossaryref|ltx:acronym|ltx:rule
@@ -4890,7 +5032,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-identifier (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                               |ltx:sup|ltx:glossaryref|ltx:acronym
@@ -4922,6 +5065,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED
@@ -4957,6 +5101,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED
@@ -4991,7 +5136,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-language (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
                             |ltx:sup|ltx:glossaryref|ltx:acronym
@@ -5021,7 +5167,8 @@
   rev CDATA #IMPLIED
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
-  content CDATA #IMPLIED>
+  content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-url (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub|ltx:sup
                        |ltx:glossaryref|ltx:acronym|ltx:rule|ltx:anchor
@@ -5051,6 +5198,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   idref IDREF #IMPLIED
   labelref CDATA #IMPLIED
   href CDATA #IMPLIED>
@@ -5084,6 +5232,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-note (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -5114,6 +5263,7 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED>
 
 <!ELEMENT ltx:bib-data (#PCDATA|ltx:text|ltx:emph|ltx:del|ltx:sub
@@ -5144,5 +5294,6 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
+  xml:lang CDATA #IMPLIED
   role CDATA #IMPLIED
   type CDATA #IMPLIED>
