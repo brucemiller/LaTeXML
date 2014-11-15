@@ -20,6 +20,11 @@ use LaTeXML::Common::Dimension;
 use List::Util qw(min max sum);
 use base qw(LaTeXML::Common::Object);
 
+# Note that this has evolved way beynond just "font",
+# but covers text properties (or even display properties) in general
+# including basic font information, color & background color
+# as well as encoding and language information.
+
 # NOTE: This is now in Common that it may evolve to be useful in Post processing...
 
 my $DEFFAMILY     = 'serif';      # [CONSTANT]
@@ -186,12 +191,14 @@ sub new {
   my $bg         = $options{background};
   my $opacity    = $options{opacity};
   my $encoding   = $options{encoding};
+  my $language   = $options{language};
   my $forcebold  = $options{forcebold};
   my $forceshape = $options{forceshape};
   return $class->new_internal(
     $family, $series, $shape, $size,
     $color, $bg, $opacity,
-    $encoding, $forcebold, $forceshape); }
+    $encoding,  $language,
+    $forcebold, $forceshape); }
 
 sub new_internal {
   my ($class, @components) = @_;
@@ -200,12 +207,12 @@ sub new_internal {
 sub textDefault {
   my ($self) = @_;
   return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, $DEFSIZE,
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef, undef); }
 
 sub mathDefault {
   my ($self) = @_;
   return $self->new_internal('math', $DEFSERIES, 'italic', $DEFSIZE,
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef, undef); }
 
 # Accessors
 sub getFamily     { my ($self) = @_; return $$self[0]; }
@@ -216,6 +223,7 @@ sub getColor      { my ($self) = @_; return $$self[4]; }
 sub getBackground { my ($self) = @_; return $$self[5]; }
 sub getOpacity    { my ($self) = @_; return $$self[6]; }
 sub getEncoding   { my ($self) = @_; return $$self[7]; }
+sub getLanguage   { my ($self) = @_; return $$self[8]; }
 
 sub toString {
   my ($self) = @_;
@@ -224,7 +232,7 @@ sub toString {
 # Perhaps it is more useful to list only the non-default components?
 sub stringify {
   my ($self) = @_;
-  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc) = @$self;
+  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang) = @$self;
   $fam = 'serif' if $fam && ($fam eq 'math');
   return 'Font[' . join(',', grep { $_ }
       (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
@@ -256,12 +264,12 @@ sub match {
 
 sub makeConcrete {
   my ($self, $concrete) = @_;
-  my ($family,  $series,  $shape,  $size,  $color,  $bg,  $opacity,  $encoding)  = @$self;
-  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding) = @$concrete;
+  my ($family,  $series,  $shape,  $size,  $color,  $bg,  $opacity,  $encoding,  $lang)  = @$self;
+  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding, $olang) = @$concrete;
   return (ref $self)->new_internal(
     $family || $ofamily, $series || $oseries, $shape || $oshape, $size || $osize,
     $color || $ocolor, $bg || $obg, (defined $opacity ? $opacity : $oopacity),
-    $encoding || $oencoding); }
+    $encoding || $oencoding, $lang || $olang); }
 
 sub isDiff {
   my ($x, $y) = @_;
@@ -277,8 +285,8 @@ sub isDiff {
 #    properties => { %fontproperties }
 sub relativeTo {
   my ($self, $other) = @_;
-  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
-  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
   my @diffs = (
@@ -304,12 +312,15 @@ sub relativeTo {
     (isDiff($opa, $oopa)
       ? (opacity => { value => $opa, properties => { opacity => $opa } })
       : ()),
+    (isDiff($lang, $olang)
+      ? ('xml:lang' => { value => $lang, properties => { language => $lang } })
+      : ()),
     ); }
 
 sub distance {
   my ($self, $other) = @_;
-  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc)  = @$self;
-  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc) = @$other;
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
   return
@@ -321,6 +332,7 @@ sub distance {
     + (isDiff($bkg, $obkg) ? 1 : 0)
     + (isDiff($opa, $oopa) ? 1 : 0)
 ##  + (isDiff($enc,$oenc)  ? 1 : 0)
+    + (isDiff($lang, $olang) ? 1 : 0)
     ; }
 
 # This matches fonts when both are converted to strings (toString),
@@ -490,27 +502,29 @@ sub merge {
   my $bg         = $options{background};
   my $opacity    = $options{opacity};
   my $encoding   = $options{encoding};
+  my $language   = $options{language};
   my $forcebold  = $options{forcebold};
   my $forceshape = $options{forceshape};
 
   # Fallback to positional invocation:
-  $family     = $$self[0] unless defined $family;
-  $series     = $$self[1] unless defined $series;
-  $shape      = $$self[2] unless defined $shape;
-  $size       = $$self[3] unless defined $size;
-  $color      = $$self[4] unless defined $color;
-  $bg         = $$self[5] unless defined $bg;
-  $opacity    = $$self[6] unless defined $opacity;
-  $encoding   = $$self[7] unless defined $encoding;
-  $forcebold  = $$self[8] unless defined $forcebold;
-  $forceshape = $$self[9] unless defined $forceshape;
+  $family     = $$self[0]  unless defined $family;
+  $series     = $$self[1]  unless defined $series;
+  $shape      = $$self[2]  unless defined $shape;
+  $size       = $$self[3]  unless defined $size;
+  $color      = $$self[4]  unless defined $color;
+  $bg         = $$self[5]  unless defined $bg;
+  $opacity    = $$self[6]  unless defined $opacity;
+  $encoding   = $$self[7]  unless defined $encoding;
+  $language   = $$self[8]  unless defined $language;
+  $forcebold  = $$self[9]  unless defined $forcebold;
+  $forceshape = $$self[10] unless defined $forceshape;
 
   if (my $scale = $options{scale}) {
     $size = lookupFontSize($scale * $font_size{$size}); }
 
   return (ref $self)->new_internal($family, $series, $shape, $size,
-    $color,    $bg,        $opacity,
-    $encoding, $forcebold, $forceshape); }
+    $color, $bg, $opacity,
+    $encoding, $language, $forcebold, $forceshape); }
 
 # Instanciate the font for a particular class of symbols.
 # NOTE: This works in `normal' latex, but probably needs some tunability.
@@ -524,7 +538,7 @@ sub specialize {
   my ($self, $string) = @_;
   return $self unless defined $string;
   my ($family, $series, $shape, $size, $color, $bg, $opacity,
-    $encoding, $forcebold, $forceshape) = @$self;
+    $encoding, $language, $forcebold, $forceshape) = @$self;
   $series = 'bold' if $forcebold;
   if (($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)) {    # Latin Letter
     $shape = 'italic' if !$shape && !$family; }
@@ -549,8 +563,8 @@ sub specialize {
     elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } }
 
   return (ref $self)->new_internal($family, $series, $shape, $size,
-    $color,    $bg,        $opacity,
-    $encoding, $forcebold, $forceshape); }
+    $color, $bg, $opacity,
+    $encoding, $language, $forcebold, $forceshape); }
 
 #**********************************************************************
 1;
