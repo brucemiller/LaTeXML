@@ -320,6 +320,12 @@
     </xsl:attribute>
   </xsl:template>
 
+  <xsl:template match="@xml:lang" mode='copy-attribute'>
+    <xsl:attribute name="{f:if($USE_XMLID,'xml:lang','lang')}">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
+  </xsl:template>
+
   <!-- this is risky, assuming we know which are urls...-->
   <xsl:template match="@href | @src | @action" mode='copy-attribute'>
     <xsl:attribute name="{local-name()}">
