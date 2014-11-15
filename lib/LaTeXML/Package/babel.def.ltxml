@@ -51,5 +51,106 @@ DefPrimitiveI('\guillemotright', undef, UTF(0xBB));
 
 # And just shutup about hyphenation patterns
 DefMacro('\@nopatterns{}', '');
+
+# This is a guess of the languages (and sometimes dialects)
+# represented in the various *.ldf found on my system at this time.
+our $bbl_language_map = {
+  albanian        => 'sq',       # albanian
+  acadian         => 'fr-CA',    # frenchb; Should this get a more specific region?
+  afrikaans       => 'af',       # dutch
+  american        => 'en-US',    # english
+  australian      => 'en-AU',    # english
+  austrian        => 'de-AT',    # germanb
+  bahasa          => 'in',       # bahasai
+  bahasai         => 'in',       # bahasai
+  bahasam         => 'ms',       # bahasam
+  basque          => 'eu',       # basque
+  breton          => 'br',       # breton
+  bulgarian       => 'bg',       # bulgarian
+  brazil          => 'pt-BR',    # portuges
+  brazilian       => 'pt-BR',    # portuges
+  british         => 'en-GB',    # english',
+  canadian        => 'en-CA',    # english
+  canadien        => 'fr-CA',    # frenchb
+  catalan         => 'ca',       # catalan
+  croatian        => 'hr',       # croatian
+  czech           => 'cs',       # czech
+  danish          => 'da',       # danish
+  dutch           => 'nl',       # dutch
+  english         => 'en',       # english
+  esperanto       => 'eo',       # esperanto
+  estonian        => 'et',       # estonian
+  finnish         => 'fi',       # finnish
+  francais        => 'fr',       # frenchb
+  french          => 'fr',       # frenchb
+  frenchb         => 'fr',       # frenchb
+  friulan         => 'fur',      # friulan
+  galician        => 'gl',       # galician
+  georgian        => 'ka',       # georgian
+  german          => 'de',       # germanb
+  germanb         => 'de',       # germanb
+  ngermanb        => 'de',       # ngermanb
+  greek           => 'el',       # greek
+  hebrew          => 'he',       # hebrew
+  hindi           => 'hi',       # hindi
+  hungarian       => 'hu',       # magyar
+  icelandic       => 'is',       # icelandic
+  indon           => 'in',       # bahasai
+  indonesian      => 'in',       # bahasai
+  interlingua     => 'ia',       # interlingua
+  irish           => 'ga',       # irish
+  italian         => 'it',       # italian
+  kurmanji        => 'kmr',      # kurmanji (Northern Kurdish)
+  latin           => 'la',       # latin
+  lowersorbian    => 'dsb',      # lsorbian
+  malay           => 'ms',       # bahasam
+  meyalu          => 'ms',       # bahasam
+  naustrian       => 'de-AT',    # naustrian
+  newzealand      => 'en-NZ',    # english
+  ngermanb        => 'de',       # ngermanb
+  ngerman         => 'de',       # ngerman
+  norsk           => 'nn',       # norsk
+  nswissgerman    => 'gsw',      # nswissgerman
+  nynorsk         => 'nn',       # norsk
+  piedmontese     => 'pms',      # piedmontese (Piemontese)
+  polish          => 'pl',       # polish
+  polutonikogreek => 'el',       # greek
+  portuges        => 'pt',       # portuges
+  portuguese      => 'pt',       # portuges
+  romanian        => 'ro',       # romanian
+  romansh         => 'rm',       # romansh
+  russian         => 'ru',       # russianb
+  russianb        => 'ru',       # russianb
+  samin           => 'se',       # samin (Northern Sami)
+  scottish        => 'gd',       # scottish
+  serbianc        => 'sr',       # serbianc
+  serbian         => 'sr',       # serbian
+  slovak          => 'sk',       # slovak
+  slovene         => 'sl',       # slovene
+  spanish         => 'es',       # spanish
+  swedish         => 'sv',       # swedish
+  swissgerman     => 'gsw',      # swissgerman
+  thai            => 'th',       # thai
+  turkish         => 'tr',       # turkish
+  UKenglish       => 'en-GB',    # english
+  ukraineb        => 'uk',       # ukraineb
+  ukrainian       => 'uk',       # ukraineb
+  usorbian        => 'hsb',      # usorbian
+  uppersorbian    => 'hsb',      # usorbian
+  USenglish       => 'en-US',    # english
+  vietnamese      => 'vi',       # vietnamese
+  vietnam         => 'vi',       # vietnam
+  welsh           => 'cy',       # welsh
+};
+
+Let('\ltx@save@bbl@switch', '\bbl@switch');
+DefMacro('\bbl@switch{}', '\ltx@bbl@switch{#1}\ltx@save@bbl@switch{#1}');
+DefPrimitive('\ltx@bbl@switch{}', sub {
+    my ($stomach, $language) = @_;
+    $language = ToString(Expand($language));
+    my $iso = $$bbl_language_map{$language};
+    MergeFont(language => $iso) if $iso;
+    return; });
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
