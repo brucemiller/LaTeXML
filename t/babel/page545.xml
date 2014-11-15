@@ -6,20 +6,29 @@
   <resource src="LaTeXML.css" type="text/css" class="ltx_align_left"/>
   <resource src="ltx-article.css" type="text/css" class="ltx_align_left"/>
   <para xml:id="p1" class="ltx_align_left">
-    <p>The expansion of fixed document element names
+    <p>
+      <text xml:lang="en">The expansion of fixed document element names
 depends on the language, e.g., in English
-we have “References” or “Chapter”.</p>
+we have “References” or “Chapter”.</text>
+    </p>
   </para>
   <para xml:id="p2" class="ltx_align_left">
-    <p>Auf Deutsch ergibt sich
-“Literatur” oder “Kapitel”.</p>
+    <p>
+      <text xml:lang="de">Auf Deutsch ergibt sich
+“Literatur” oder “Kapitel”.</text>
+    </p>
   </para>
   <para xml:id="p3" class="ltx_align_left">
-    <p>Voice en
-français: “Références” ou “Chapitre”.</p>
+    <p>
+      <text xml:lang="fr">Voice en
+français: “Références” ou “Chapitre”.</text>
+    </p>
   </para>
   <para xml:id="p4" class="ltx_align_left">
-    <p>But in short
-phrases “Références” does not change!</p>
+    <p>
+      <text xml:lang="en">But in short
+phrases “Références” does not change!<text xml:lang="fr">
+<text xml:lang="de"></text></text></text>
+    </p>
   </para>
 </document>

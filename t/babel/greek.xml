@@ -6,19 +6,27 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>This is a test of typesetting ancient Greek with LaTeX:</p>
+    <p>
+      <text xml:lang="en">This is a test of typesetting ancient Greek with LaTeX:</text>
+    </p>
   </para>
   <para xml:id="p2">
-    <p>’Εν ἀρχῇ ἦν ‛ο λ´ογος…</p>
+    <p>
+      <text xml:lang="el">’Εν ἀρχῇ ἦν ‛ο λ´ογος…</text>
+    </p>
   </para>
   <para xml:id="p3">
-    <p>Here’s the correspondance between ”greek” and ”latin” encoding for TeX:<break/><text font="typewriter">a b g d e z h j i k l m n x o p r s t u f q y w c</text> <break/>α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ ο π ρ ς τ υ φ χ ψ ω ς</p>
+    <p>
+      <text xml:lang="en">Here’s the correspondance between ”greek” and ”latin” encoding for TeX:<break/><text font="typewriter">a b g d e z h j i k l m n x o p r s t u f q y w c</text> <break/><text xml:lang="el">α β γ δ ε ζ η ϑ ι ϰ λ μ ν ξ ο π ρ ς τ υ φ χ ψ ω ς</text></text>
+    </p>
   </para>
   <para xml:id="p4">
-    <p>A simple example how to get accents and spirits: <break/><text font="typewriter">'a `a  a &gt;a &lt;a a| &gt; a| "i "'i</text> <break/>ά ὰ ᾶ ἀ ἁ ᾳ ᾆ ϊ ΐ</p>
+    <p>
+      <text xml:lang="en">A simple example how to get accents and spirits: <break/><text font="typewriter">'a `a  a &gt;a &lt;a a| &gt; a| "i "'i</text> <break/><text xml:lang="el">ά ὰ ᾶ ἀ ἁ ᾳ ᾆ ϊ ΐ</text></text>
+    </p>
   </para>
   <para xml:id="p5">
-    <tabular vattach="middle">
+    <tabular vattach="middle" xml:lang="el">
       <tbody>
         <tr>
           <td/>
