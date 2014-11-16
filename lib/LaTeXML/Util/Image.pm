@@ -49,12 +49,12 @@ sub image_size {
   my ($pathname) = @_;
   my ($w, $h, $t) = imgsize($pathname);
   return ($w, $h) if $w && $h;
-  if ((-f $pathname) && image_can_image()) {    # try harder!
-    my $image = image_read($pathname);
+  if (image_can_image()) {    # try harder!
+    my $image = image_read($pathname) or return;
     return image_getvalue($image, 'width', 'height'); } }
 
 # This will be set once we've found an Image processing library to use [Daemon safe]
-our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
+our $IMAGECLASS;              # cached class if we found one that works. [CONFIGURABLE?]
 my @MagickClasses = (qw(Graphics::Magick Image::Magick));    # CONSTANT
 
 sub image_classes {
