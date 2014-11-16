@@ -367,12 +367,12 @@ sub _prepare_options {
     $$opts{$_} = pathname_canonical($$opts{$_}) if defined $$opts{$_};
   }
 
-  if (! defined $$opts{whatsin}) {
+  if (!defined $$opts{whatsin}) {
     if ($$opts{preamble} || $$opts{postamble}) {
       # Preamble or postamble imply a fragment whatsin
       $$opts{whatsin} = 'fragment'; }
-    else { # Default input chunk is a document
-      $$opts{whatsin}  = 'document'; }}
+    else {    # Default input chunk is a document
+      $$opts{whatsin} = 'document'; } }
   $$opts{whatsout} = 'document' unless defined $$opts{whatsout};
   $$opts{type}     = 'auto'     unless defined $$opts{type};
   unshift(@{ $$opts{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($$opts{type} eq 'BibTeX');
