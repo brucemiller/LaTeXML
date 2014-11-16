@@ -174,17 +174,22 @@ sub getopt_specification {
 our @GETOPT_KEYS = keys %{ (getopt_specification())[0] };
 
 sub read {
-  my ($self, $argref) = @_;
+  my ($self, $argref, %read_options) = @_;
   my $opts = $$self{opts};
   local @ARGV = @$argref;
   my ($spec) = getopt_specification(options => $opts);
-  GetOptions(%{$spec}) or pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-    -input => pod_where({ -inc => 1 }, __PACKAGE__),
-    -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
-
-  pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-    -input => pod_where({ -inc => 1 }, __PACKAGE__),
-    -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT) if $$opts{help};
+  my $silent = %read_options && $read_options{silent};
+  my $getOptions_success = GetOptions(%{$spec});
+  if (!$getOptions_success && !$silent) {
+    pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+  }
+  if (!$silent && $$opts{help}) {
+    pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT);
+  }
 
   # Check that destination is valid before wasting any time...
   if ($$opts{destination}) {
@@ -201,13 +206,13 @@ sub read {
     $$opts{type} = 'BibTeX' if ($$opts{source} && ($$opts{source} =~ /$is_bibtex/)); }
   if (!$$opts{whatsin}) {
     $$opts{whatsin} = 'archive' if ($$opts{source} && ($$opts{source} =~ /$is_archive/)); }
-  return;
+  return $getOptions_success;
 }
 
 sub read_keyvals {
-  my ($self, $opts) = @_;
+  my ($self, $conversion_options, %read_options) = @_;
   my $cmdopts = [];
-  while (my ($key, $value) = splice(@$opts, 0, 2)) {
+  while (my ($key, $value) = splice(@$conversion_options, 0, 2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
     next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
     $key = "--$key" unless $key =~ /^\-\-/;
@@ -215,17 +220,21 @@ sub read_keyvals {
     CORE::push @$cmdopts, "$key$value";
   }
   # Read into a Config object:
-  return $self->read($cmdopts); }
+  return $self->read($cmdopts, %read_options); }
 
 sub scan_to_keyvals {
-  my ($self, $argref) = @_;
+  my ($self, $argref, %read_options) = @_;
   local @ARGV = @$argref;
   my ($spec, $keyvals) = getopt_specification(type => 'keyvals');
-  GetOptions(%$spec) or pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-    -input => pod_where({ -inc => 1 }, __PACKAGE__),
-    -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+  my $silent = %read_options && $read_options{silent};
+  my $getOptions_success = GetOptions(%$spec);
+  if (!$getOptions_success && !$silent) {
+    pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+  }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
-  return $keyvals;
+  return $getOptions_success && $keyvals;
 }
 
 ###########################################
