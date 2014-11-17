@@ -197,6 +197,8 @@ sub read {
   if ($$opts{showversion}) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
 
   $$opts{source} = $ARGV[0] unless $$opts{source};
+  # Special source-based guessing needs to happen here,
+  #   as we won't have access to the source file/literal/resource later on:
   if (!$$opts{type} || ($$opts{type} eq 'auto')) {
     $$opts{type} = 'BibTeX' if ($$opts{source} && ($$opts{source} =~ /$is_bibtex/)); }
   if (!$$opts{whatsin}) {
@@ -365,7 +367,12 @@ sub _prepare_options {
     $$opts{$_} = pathname_canonical($$opts{$_}) if defined $$opts{$_};
   }
 
-  $$opts{whatsin}  = 'document' unless defined $$opts{whatsin};
+  if (!defined $$opts{whatsin}) {
+    if ($$opts{preamble} || $$opts{postamble}) {
+      # Preamble or postamble imply a fragment whatsin
+      $$opts{whatsin} = 'fragment'; }
+    else {    # Default input chunk is a document
+      $$opts{whatsin} = 'document'; } }
   $$opts{whatsout} = 'document' unless defined $$opts{whatsout};
   $$opts{type}     = 'auto'     unless defined $$opts{type};
   unshift(@{ $$opts{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($$opts{type} eq 'BibTeX');
