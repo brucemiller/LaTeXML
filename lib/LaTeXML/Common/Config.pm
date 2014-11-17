@@ -560,6 +560,7 @@ sub _read_options_file {
   my ($file) = @_;
   my $opts = [];
   my $OPT;
+  print STDERR "(Loading profile $file...";
   unless (open($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
@@ -600,6 +601,7 @@ sub _read_options_file {
         "Unrecognized configuration data '$line'"); }
   }
   close $OPT;
+  print STDERR " )\n";
   return $opts; }
 
 1;
