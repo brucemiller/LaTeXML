@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>A<Math mode="inline" xml:id="p1.m1" tex="{}^{c}" text="^c"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p2">
+    <p>A<Math mode="inline" xml:id="p2.m1" tex="{}_{d}" text="_d"><XMath><XMApp role="FLOATSUBSCRIPT" scriptpos="2"><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p3">
+    <p>A<Math mode="inline" xml:id="p3.m1" tex="{}^{c}_{d}" text="^ c absent _ d"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/><XMTok meaning="absent"/><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p4">
+    <p>A<Math mode="inline" xml:id="p4.m1" tex="{}_{d}^{c}" text="_ d absent ^ c"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="pre2"/><XMTok meaning="absent"/><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p5">
+    <p><Math mode="inline" xml:id="p5.m1" tex="{}^{a}A" text="^ a A"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p6">
+    <p><Math mode="inline" xml:id="p6.m1" tex="{}_{b}A" text="_ b A"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="pre2"/><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p7">
+    <p><Math mode="inline" xml:id="p7.m1" tex="{}^{a}_{b}A" text="^ a _ b A"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="pre2"/><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p8">
+    <p><Math mode="inline" xml:id="p8.m1" tex="{}_{b}^{a}A" text="_ b ^ a A"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="pre2"/><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+  </para>
+  <para xml:id="p9">
+    <p><Math mode="inline" xml:id="p9.m1" tex="{}_{b}^{a}A^{c}_{d}" text="_ b ^ a (A ^ c) _ d"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="pre2"/><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post2"/><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok role="UNKNOWN" font="italic">A</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+  </para>
+</document>
