@@ -144,8 +144,10 @@ sub convert {
   my $opts    = $$self{opts};
   my $runtime = $$self{runtime};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
-  print STDERR "\n$LaTeXML::IDENTITY\n" if $$opts{verbosity} >= 0;
-  print STDERR "processing started " . localtime() . "\n" if $$opts{verbosity} >= 0;
+  if ($$opts{verbosity} >= 0) {
+    print STDERR "$LaTeXML::IDENTITY\n";
+    print STDERR "invoked as [$0 " . join(' ', @ARGV) . "]\n" if $$opts{verbosity} >= 1;
+    print STDERR "processing started " . localtime() . "\n"; }
 
   # 1.3 Prepare for What's IN:
   # We use a new temporary variable to avoid confusion with daemon caching
@@ -622,7 +624,7 @@ sub new_latexml {
 
   # TODO: Do again, need to do this in a GOOD way as well:
   $latexml->digestFile($_, noinitialize => 1) foreach (@str_pre);
-
+  print STDERR "\n\n";    # Flush a pair of newlines to delimit the initalization
   return $latexml;
 }
 
