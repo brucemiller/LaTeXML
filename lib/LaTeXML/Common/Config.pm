@@ -357,7 +357,7 @@ sub _prepare_options {
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }    #Backwards compatible
-  $$opts{verbosity} = 10    unless defined $$opts{verbosity};
+  $$opts{verbosity} = 0     unless defined $$opts{verbosity};
   $$opts{preload}   = []    unless defined $$opts{preload};
   $$opts{paths}     = ['.'] unless defined $$opts{paths};
   @{ $$opts{paths} } = map { pathname_canonical($_) } @{ $$opts{paths} };
