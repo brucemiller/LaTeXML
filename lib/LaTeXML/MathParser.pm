@@ -437,16 +437,24 @@ sub parse_kludge {
 
 sub parse_kludgeScripts_rec {
   my ($self, $a, $b, @more) = @_;
-  if (!defined $b) {
+  if ($$a[1] =~ /^FLOAT(SUB|SUPER)SCRIPT$/) {    # a Floating script? maybe pre-script
+    if (!defined $b) {                           # with nothing behind? => script on nothing
+      return ($$a[0]); }                         # but just leave it alone.
+    elsif ($$b[1] =~ /^POST(SUB|SUPER)SCRIPT$/) {    # followed by another script?
+      if (@more) {    # followed by a something? => Combined pre sub & super
+        my ($base, @rest) = $self->parse_kludgeScripts_rec(@more);
+        return (NewScript(NewScript($base, $$b[0], 'pre'), $$a[0], 'pre'), @rest); }
+      else {          # else floating sub & super
+        return (NewScript(NewScript(Absent(), $$b[0], 'post'), $$a[0], 'post')); } }
+    else {            # else just prescript on whatever follows
+      my ($base, @rest) = $self->parse_kludgeScripts_rec($b, @more);
+      return (NewScript($base, $$a[0], 'pre'), @rest); } }
+  elsif (!defined $b) {    # isolated thing?
     return ($$a[0]); }
-  elsif ($$a[1] =~ /^FLOAT(SUB|SUPER)SCRIPT$/) {
-    # A floating script is applied to the following thing as a pre-script.
-    my ($base, @rest) = $self->parse_kludgeScripts_rec($b, @more);
-    return (NewScript($base, $$a[0]), @rest); }
   elsif ($$b[1] =~ /^POST(SUB|SUPER)SCRIPT$/) {
     # or a postscript is applied to the preceding thing.
     return $self->parse_kludgeScripts_rec([NewScript($$a[0], $$b[0]), ''], @more); }
-  else {
+  else {                   # else skip over a and continue
     return ($$a[0], $self->parse_kludgeScripts_rec($b, @more)); } }
 
 # sub parse_kludge {
