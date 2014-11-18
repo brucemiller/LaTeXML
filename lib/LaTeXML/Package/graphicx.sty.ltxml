@@ -36,6 +36,7 @@ DefMacro('\includegraphics OptionalMatch:* []',
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
   "<ltx:graphics graphic='#path' candidates='#candidates' options='#2?#1(,clip=true)'/>",
   alias      => '\includegraphics',
+  sizer      => \&image_graphicx_sizer,
   properties => sub {
     my ($stomach, $starred, $kv, $path) = @_;
     $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
@@ -46,8 +47,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     $options .= ',clip=true' if $starred;
     (path => $path,
       candidates => join(',', @candidates),
-      options => $options,
-      sizer => sub { \&image_graphicx_sizer }); });
+      options => $options); });
 
 #**********************************************************************
 1;
