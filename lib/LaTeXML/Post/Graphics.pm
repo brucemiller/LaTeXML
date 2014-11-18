@@ -246,7 +246,10 @@ sub transformGraphic {
 
     NoteProgressDetailed(" [Destination $absdest]");
     ($width, $height) = image_graphicx_trivial($source, $transform, ddpt => $$self{ddpt});
-    return unless $width && $height;
+    if (!($width && $height)) {
+      Warn('expected', 'image', undef,
+        "Couldn't get usable image for $source");
+      return; }
     pathname_copy($source, $absdest)
       or Warn('I/O', $absdest, undef, "Couldn't copy $source to $absdest", "Response was: $!");
     NoteProgressDetailed(" [Copied to $dest for $width x $height]"); }
@@ -257,7 +260,10 @@ sub transformGraphic {
     NoteProgressDetailed(" [Destination $absdest]");
     ($image, $width, $height) = image_graphicx_complex($source, $transform,
       ddpt => $$self{ddpt}, background => $$self{background}, %properties);
-    return unless $image && $width && $height;
+    if (!($image && $width && $height)) {
+      Warn('expected', 'image', undef,
+        "Couldn't get usable image for $source");
+      return; }
     NoteProgressDetailed(" [Writing to $absdest]");
     image_write($image, $absdest) or return; }
 
