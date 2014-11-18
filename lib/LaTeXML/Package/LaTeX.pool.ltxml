@@ -4194,6 +4194,7 @@ RawTeX(<<'EOTeX');
 \newwrite\@unused
 \newwrite\@mainaux
 \newwrite\@partaux
+\let\@auxout=\@mainaux
 \openout\@mainaux\jobname.aux
 \newcount\@clubpenalty
 \@clubpenalty \clubpenalty
