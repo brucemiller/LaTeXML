@@ -50,9 +50,12 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 #======================================================================
 # Ioan Sucan suggests switching this to '\\' for windows, but notes
 # that it works as it is, so we'll leave it (for now).
-my $SEP         = '/';                          # [CONSTANT]
-my $LITERAL_RE  = '(?:literal)(?=:)';           # [CONSTANT]
-my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';    # [CONSTANT]
+### my $SEP         = '/';                          # [CONSTANT]
+# Some indicators that this is not sufficient? (calls to libraries/externals???)
+# PRELIMINARY test, probably need to be even more careful
+my $SEP         = ($^O =~ /^(MSWin32|NetWare)$/ ? '\\' : '/');    # [CONSTANT]
+my $LITERAL_RE  = '(?:literal)(?=:)';                             # [CONSTANT]
+my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';                      # [CONSTANT]
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -89,6 +92,8 @@ sub pathname_split {
 
 use Carp;
 
+# This likely needs portability work!!! (particularly regarding urls, separators, ...)
+# AND, care about symbolic links and collapsing ../ !!!
 sub pathname_canonical {
   my ($pathname) = @_;
   if ($pathname =~ /^($LITERAL_RE)/) {
@@ -98,6 +103,7 @@ sub pathname_canonical {
   #  File::Spec->canonpath($pathname); }
   $pathname =~ s|^~|$ENV{HOME}|;
   # We CAN canonicalize urls, but we need to be careful about the // before host!
+  # OHHH, but we DON'T want \ for separator!
   my $urlprefix = undef;
   if ($pathname =~ s|^($PROTOCOL_RE//[^/]*)/|/|) {
     $urlprefix = $1; }
@@ -163,7 +169,7 @@ sub pathname_is_contained {
   my $rel = pathname_canonical(pathname_relative(pathname_absolute($pathname),
       pathname_absolute($base)));
   # If the relative pathname starts with "../" that it apparently is NOT underneath base!
-  return ($rel =~ m|^\.\./| ? undef : $rel); }
+  return ($rel =~ m|^\.\.(?:/\|\Q$SEP\E)| ? undef : $rel); }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # If $pathname is an absolute, non-URL pathname,
@@ -251,7 +257,7 @@ sub pathname_copy {
 
 # This is presumably daemon safe...
 my @INSTALLDIRS = grep { (-f "$_.pm") && (-d $_) }
-  map { pathname_canonical("$_/LaTeXML") } @INC;    # [CONSTANT]
+  map { pathname_canonical($_ . $SEP . 'LaTeXML') } @INC;    # [CONSTANT]
 
 sub pathname_installation {
   return $INSTALLDIRS[0]; }
