@@ -143,9 +143,19 @@ our $bbl_language_map = {
   welsh           => 'cy',       # welsh
 };
 
-Let('\ltx@save@bbl@switch', '\bbl@switch');
-DefMacro('\bbl@switch{}', '\ltx@bbl@switch{#1}\ltx@save@bbl@switch{#1}');
-DefPrimitive('\ltx@bbl@switch{}', sub {
+Let('\ltx@save@bbl@switch',      '\bbl@switch');
+Let('\ltx@save@select@language', '\select@language');
+# Redefine \bbl@switch, or \select@language to call our own language switcher
+# Careful: \bbl@switch is only used in newer babels(?)
+RawTeX(<<'EoTeX');
+\ifdefined{bbl@switch}
+  \def\bbl@switch#1{\ltx@bbl@select@language{#1}\ltx@save@bbl@switch{#1}}
+\else
+  \def\select@language#1{\ltx@bbl@select@language{#1}\ltx@save@select@language{#1}}
+\fi
+EoTeX
+
+DefPrimitive('\ltx@bbl@select@language{}', sub {
     my ($stomach, $language) = @_;
     $language = ToString(Expand($language));
     my $iso = $$bbl_language_map{$language};
