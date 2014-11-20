@@ -10,10 +10,10 @@
 \usepackage{tocbibind}
 \usepackage{wrapfig}
 % Should the additional keywords be indexed?
-\lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\small,%
+\lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\iflatexml\else\small\fi,%
    morekeywords={latexml,latexmlpost,latexmlmath},
    moredelim=[is][\itshape]{\%}{\%}}
-\lstdefinestyle{latexml}{basicstyle=\small\ttfamily,language=Perl,%
+\lstdefinestyle{latexml}{basicstyle=\ttfamily\iflatexml\else\small\fi,language=Perl,%
    morekeywords={CC_ESCAPE,CC_BEGIN,CC_END,CC_MATH,CC_ALIGN,CC_EOL,CC_PARAM,CC_SUPER,%
      CC_SUB,CC_IGNORE,CC_SPACE,CC_LETTER,CC_OTHER,CC_ACTIVE,CC_COMMENT,CC_INVALID,CC_CS,CC_NOTEXPANDED,%
      T_BEGIN,T_END,T_MATH,T_ALIGN,T_PARAM,T_SUB,T_SUPER,T_SPACE,T_LETTER,T_OTHER,T_ACTIVE,T_COMMENT,T_CS,T_CR,%
@@ -669,7 +669,8 @@ and by defining rewrite rules to be applied to the constructed document tree.
 The top-level class, \pod{LaTeXML}, manages the processing, providing several methods
 for converting a \TeX\ document or string into an \XML\ document, with varying degrees
 of postprocessing and writing the document to file.
-It binds a \ltxpod{Core::State} object (to \ltxcode|$STATE|) to maintain the current state
+It binds a \ltxpod{Core::State} object (to \ltxcode|$STATE|)%$
+to maintain the current state
 of bindings for control sequence definitions and emulates \TeX's scoping rules.
 The processing is broken into the following stages
 \begin{description}
@@ -863,7 +864,8 @@ as discussed in \ref{customization.latexmlpost.xslt}.
 %%%----------------------------------------------------------------------
 \section{latexml Customization}\label{customization.latexml}
 This layer of customization deals with modifying the way a \LaTeX\ document
-is transformed into \LaTeXML's \XML.
+is transformed into \LaTeXML's \XML, primarily through defining the way
+that control sequences are handled.
 In \ref{usage.conversion.loading} the loading of various bindings was
 described.  The facilities described in the following subsections
 apply in all such cases, whether used to customize the processing
@@ -937,6 +939,9 @@ or alternatively
   DefMacro('\mybold{}', sub {
     Invocation(T_CS('\textbf'),$_[1]); });
 \end{lstlisting}
+Generally, the body of the macro should \emph{not} involve side-effects, assignments
+or other changes to state other than reading \ltxpod{Core::Token}'s from the \ltxpod{Core::Gullet};
+of course, the macro may expand into control sequences which do have side-effects.
 
 Functions that are useful for dealing with \ltxpod{Core::Token}s and writing macros
 include the following:
@@ -1135,14 +1140,16 @@ Here are a couple of trivial examples of constructors:
 
 \par\noindent\ltxcode|DefConstructor($prototype,$replacement,%options)|
 \par
-The  \ltxcode|$replacement| for a constructor describes the \XML\ to
+The  \ltxcode|$replacement| for a constructor describes the \XML\ to %$
 be generated during the construction phase. It can either be a string
 representing the \XML\ as a pattern (described below), or a
 subroutine \ltxcode|CODE($document,$arg1,...%props)|
 receiving the arguments and properties from the \ltxpod{Core::Whatsit};
 it would invoke the methods of \ltxpod{Core::Document} to construct the desired \XML.
+
 The pattern as illustrated above, simply represents a serialization of the
-desired \XML.  In addition to literal replacement, the following may appear:
+desired \XML, with extensions to allow substituting arguments or other data into the pattern.
+In addition to literal replacement, the following may appear:
 \begin{itemize}
 \item \ltxcode|#1,#2,...#name| inserts the construction of the argument
 or property in the \XML;
@@ -1156,6 +1163,14 @@ or property \ltxcode|#name| or invoking a function;
 the replacement is allowed to \emph{float} up the current tree to whereever
 it might be allowed.
 \end{itemize}
+
+A subroutine used as the \ltxcode|$replacement|, %$
+allows programmatic insertion of \XML\ into, or modification of, the document being constructed.
+Although one could use LibXML's DOM API to manipulate the document tree,
+it is \emph{strongly} recommended to use \ltxpod{Core::Document}'s API whereever possible
+as it maintains consistency and manages namespace prefixes.
+This is particularly true for insertion of new content, setting attributes and
+finding existing nodes in the tree using XPath. 
 
 Options:
 \begin{itemize}
