@@ -161,8 +161,8 @@ sub getTypeProperties {
 sub setGraphicSrc {
   my ($self, $node, $src, $width, $height) = @_;
   $node->setAttribute('imagesrc',    $src);
-  $node->setAttribute('imagewidth',  $width);
-  $node->setAttribute('imageheight', $height);
+  $node->setAttribute('imagewidth',  $width) if defined $width;
+  $node->setAttribute('imageheight', $height) if defined $height;
   return; }
 
 sub processGraphic {
@@ -196,13 +196,15 @@ sub transformGraphic {
   my $type = $properties{destination_type} || $srctype;
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
-    if ($prev =~ /^(.*?)\|(\d+)\|(\d+)$/) {
+    if ($prev =~ /^(.*?)\|(\d*)\|(\d*)$/) {
       my ($cached, $width, $height) = ($1, $2, $3);
+      $width  = undef unless $width;
+      $height = undef unless $height;
       # If so, check that it is still there, up to date, etc.
       if ((!defined $dest) || ($cached eq $dest)) {
         my $absdest = pathname_absolute($cached, $doc->getDestinationDirectory);
         if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
-          NoteProgressDetailed(" [Reuse $cached @ $width x $height]");
+          NoteProgressDetailed(" [Reuse $cached @ " . ($width || '?') . " x " . ($height || '?') . "]");
           return ($cached, $width, $height); } } } }
   # Trivial scaling case: Use original image with (at most) different width & height.
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
@@ -247,12 +249,17 @@ sub transformGraphic {
     NoteProgressDetailed(" [Destination $absdest]");
     ($width, $height) = image_graphicx_trivial($source, $transform, ddpt => $$self{ddpt});
     if (!($width && $height)) {
-      Warn('expected', 'image', undef,
-        "Couldn't get usable image for $source");
-      return; }
+      if (!image_can_image()) {
+        Warn('imageprocessing', 'imagesize', undef,
+          "No image processing module found for image sizing",
+          "Will omit image size for $source",
+          "Please install one of: " . join(',', image_classes())); }
+      else {
+        Warn('expected', 'image', undef,
+          "Couldn't get usable image size for $source"); } }
     pathname_copy($source, $absdest)
       or Warn('I/O', $absdest, undef, "Couldn't copy $source to $absdest", "Response was: $!");
-    NoteProgressDetailed(" [Copied to $dest for $width x $height]"); }
+    NoteProgressDetailed(" [Copied to $dest @ " . ($width || '?') . " x " . ($height || '?') . "]"); }
   else {
     # With a complex transformation, we really needs a new name (well, don't we?)
     $dest = $self->generateResourcePathname($doc, $node, $source, $type) unless $dest;
@@ -267,7 +274,7 @@ sub transformGraphic {
     NoteProgressDetailed(" [Writing to $absdest]");
     image_write($image, $absdest) or return; }
 
-  $doc->cacheStore($key, "$dest|$width|$height");
+  $doc->cacheStore($key, "$dest|" . ($width || '') . '|' . ($height || ''));
   NoteProgressDetailed(" [done with $key]");
   return ($dest, $width, $height); }
 
