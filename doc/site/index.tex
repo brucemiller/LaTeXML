@@ -328,7 +328,9 @@ and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}
 \paragraph{Installing prebuilt}\label{install.windows}
 There is currently no prebuilt \LaTeXML\ for Windows,
 but it should install cleanly under \href{http://strawberryperl.com}{Strawberry Perl}'s CPAN.
-Install the \TeX-system of your choice (if desired), and then install LaTeXML using:
+Install the \TeX-system of your choice (if desired),
+ImageMagick (if you want to try; see \ref{install.windows.imagemagick})
+and then install LaTeXML using:
 \begin{lstlisting}[style=shell]
 cpan LaTeXML
 \end{lstlisting}
@@ -340,8 +342,9 @@ you're on your own, there!  You may  have better luck with \texttt{Graphics::Mag
 
 \paragraph{Installing prerequisites}\label{install.windows.prereq}\\
 Install \href{http://strawberryperl.com}{Strawberry Perl}, and
-the \TeX-system of your choice (if desired), and then install the 
-additional prerequisites as
+the \TeX-system of your choice (if desired), 
+ImageMagick (if you want to try; see \ref{install.windows.imagemagick}),
+and then install the additional prerequisites as
 \begin{lstlisting}[style=shell]
 cpan Image::Size Parse::RecDescent UUID::Tiny
 \end{lstlisting}
@@ -349,6 +352,27 @@ Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired,
 but note that the \texttt{dmake} command should be used in place of \texttt{make}.
+
+\paragraph{Installing ImageMagick under Windows}\label{install.windows.imagemagick}
+In principle, you should be able to install the binary from ImageMagick
+and then install the Perl binding using CPAN; unfortunately, it seems that the
+CPAN version seldom matches the binary or fails for other reasons.  What
+should work the following:
+
+Download and install the main ImageMagick binary appropriate for your Windows system
+from \href{http://imagemagick.org/script/binary-releases.php#windows}{ImageMagick}.
+Then fetch the \texttt{PerlMagick} tarball \emph{with the same version} from
+\href{http://imagemagick.com/download/perl/}{ImageMagick/perl}.
+Use the following commands to compile and install the PerlMagick,
+with X.XX being the version you downloaded:
+\begin{lstlisting}[style=shell]
+tar -zxvf PerlMagick-X.XX.tar.gz
+cd PerlMagick-X.XX
+perl Makefile.PL
+dmake
+dmake test
+dmake install
+\end{lstlisting}
 
 \subsection{CPAN installation}\label{install.cpan}
 The following command will install \LaTeXML\ and its Perl prerequisites,
