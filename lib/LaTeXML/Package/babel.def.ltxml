@@ -148,11 +148,11 @@ Let('\ltx@save@select@language', '\select@language');
 # Redefine \bbl@switch, or \select@language to call our own language switcher
 # Careful: \bbl@switch is only used in newer babels(?)
 RawTeX(<<'EoTeX');
-\ifdefined{bbl@switch}
-  \def\bbl@switch#1{\ltx@bbl@select@language{#1}\ltx@save@bbl@switch{#1}}
-\else
+\@ifundefined{bbl@switch}{
   \def\select@language#1{\ltx@bbl@select@language{#1}\ltx@save@select@language{#1}}
-\fi
+}{
+  \def\bbl@switch#1{\ltx@bbl@select@language{#1}\ltx@save@bbl@switch{#1}}
+}
 EoTeX
 
 DefPrimitive('\ltx@bbl@select@language{}', sub {
