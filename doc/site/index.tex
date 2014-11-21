@@ -137,8 +137,8 @@ Note that there is \emph{no} implied endorsement of any of these systems.
 \paragraph{Prerequisites}\label{prerequisites}
 \LaTeXML\ requires several Perl modules to do it's job.  Most
 are automatically installed by the platform-specific installation or CPAN.
-However, CPAN will not install the required C libraries needed for
-\texttt{XML::LibXML} and \texttt{XML::LibXSLT}.
+However, CPAN will \emph{not} install the required C libraries needed for
+\texttt{XML::LibXML}, and \texttt{XML::LibXSLT}.
 If \texttt{libxml2} and \texttt{libxslt} are are not already installed,
 follow the instructions at \href{http://www.xmlsoft.org}{XMLSoft} to
 download and install the most recent versions of \texttt{libxml2} and \texttt{libxslt}.
@@ -163,14 +163,19 @@ So if you are going to install \TeX, install it first!
 When they are present \LaTeXML\ is able to carry out more image processing,
 such as transformations by the \texttt{graphicx} package, and conversion of math to images;
 otherwise, some such operations will not be supported.
-Unfortunately, it is sometimes a difficult package to install.
-Follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
+
+Please do \emph{not} try to install \texttt{Image::Magick} from CPAN, however:
+the module there seldom matches the underlying \texttt{ImageMagick} library.
+It is recommended to install the Perl binding for \texttt{Image::Magick} from
+the same source as the library was obtained, either from your system's repository,
+or from the \href{http://www.imagemagick.org/}{ImageMagick} site, itself.
+In the latter case, follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
 to download and install the latest version of ImageMagick being sure to enable
 and build the Perl binding along with it.
 
 \item[Graphics::Magick] is an \emph{alternative} to \texttt{Image::Magick} that \LaTeXML\ will
 use if is found on the system; it may (or may not ) be easier to install, although it
-is less available.
+is less widely available.
 
 \item[UUID::Tiny] generates unique identifiers that can be used to make better ePub documents
   (it can be installed using \htmlref{CPAN}{install.cpan.prereq}).
@@ -329,7 +334,7 @@ and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}
 There is currently no prebuilt \LaTeXML\ for Windows,
 but it should install cleanly under \href{http://strawberryperl.com}{Strawberry Perl}'s CPAN.
 Install the \TeX-system of your choice (if desired),
-ImageMagick (if you want to try; see \ref{install.windows.imagemagick})
+ImageMagick (see \ref{install.windows.imagemagick})
 and then install LaTeXML using:
 \begin{lstlisting}[style=shell]
 cpan LaTeXML
