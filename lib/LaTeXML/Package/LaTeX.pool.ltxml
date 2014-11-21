@@ -3740,17 +3740,17 @@ DefPrimitive('\not@math@alphabet@@ {}', sub {
     return; });
 
 # These DO immediately effect the font!
-DefMacroI('\mdseries', undef, '\not@math@alphabet@@\mddefault\fontseries{\mddefault}\selectfont');
-DefMacroI('\bfseries', undef, '\not@math@alphabet@@\bfdefault\fontseries{\bfdefault}\selectfont');
+DefMacroI('\mdseries', undef, '\not@math@alphabet@@{\mddefault}\fontseries{\mddefault}\selectfont');
+DefMacroI('\bfseries', undef, '\not@math@alphabet@@{\bfdefault}\fontseries{\bfdefault}\selectfont');
 
-DefMacroI('\rmfamily', undef, '\not@math@alphabet@@\rmdefault\fontfamily{\rmdefault}\selectfont');
-DefMacroI('\sffamily', undef, '\not@math@alphabet@@\sfdefault\fontfamily{\sfdefault}\selectfont');
-DefMacroI('\ttfamily', undef, '\not@math@alphabet@@\ttdefault\fontfamily{\ttdefault}\selectfont');
+DefMacroI('\rmfamily', undef, '\not@math@alphabet@@{\rmdefault}\fontfamily{\rmdefault}\selectfont');
+DefMacroI('\sffamily', undef, '\not@math@alphabet@@{\sfdefault}\fontfamily{\sfdefault}\selectfont');
+DefMacroI('\ttfamily', undef, '\not@math@alphabet@@{\ttdefault}\fontfamily{\ttdefault}\selectfont');
 
-DefMacroI('\upshape', undef, '\not@math@alphabet@@\updefault\fontshape{\updefault}\selectfont');
-DefMacroI('\itshape', undef, '\not@math@alphabet@@\itdefault\fontshape{\itdefault}\selectfont');
-DefMacroI('\slshape', undef, '\not@math@alphabet@@\sldefault\fontshape{\sldefault}\selectfont');
-DefMacroI('\scshape', undef, '\not@math@alphabet@@\scdefault\fontshape{\scdefault}\selectfont');
+DefMacroI('\upshape', undef, '\not@math@alphabet@@{\updefault}\fontshape{\updefault}\selectfont');
+DefMacroI('\itshape', undef, '\not@math@alphabet@@{\itdefault}\fontshape{\itdefault}\selectfont');
+DefMacroI('\slshape', undef, '\not@math@alphabet@@{\sldefault}\fontshape{\sldefault}\selectfont');
+DefMacroI('\scshape', undef, '\not@math@alphabet@@{\scdefault}\fontshape{\scdefault}\selectfont');
 
 DefMacroI('\normalfont', undef,
   '\fontfamily{\rmdefault}\fontseries{\mddefault}\fontshape{\updefault}\selectfont');
