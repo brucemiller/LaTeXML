@@ -366,8 +366,8 @@ sub processNode {
 
 sub maybeSetMathImage {
   my ($self, $math, $conversion) = @_;
-  if (($$conversion{mimetype} =~ /^image\//)    # Got an image?
-    && !$math->getAttribute('imagesrc')) {      # and it's the first one
+  if ((($$conversion{mimetype} || '') =~ /^image\//)    # Got an image?
+    && !$math->getAttribute('imagesrc')) {              # and it's the first one
     if (my $src = $$conversion{src}) {
       $math->setAttribute(imagesrc    => $src);
       $math->setAttribute(imagewidth  => $$conversion{width});
