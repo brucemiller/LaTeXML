@@ -77,8 +77,8 @@ sub ProcessSVG {
   my $newNode = convertNode($newSVG, $node);
   if (%::DEFS) {
     my $defnode = $newSVG->addNewChild($svgURI, 'defs');
-    foreach my $def (values %::DEFS) {
-      $defnode->appendChild($def);
+    foreach my $key (sort keys %::DEFS) {
+      $defnode->appendChild($::DEFS{$key});
     }
   }
   copy_attributes_except($newSVG, $node, qw(tex baseline));
@@ -247,7 +247,7 @@ sub convertText {
     $::FONTSTACK[0]{$type} = $font if $font;
   }
   my %Font = %{ $::FONTSTACK[0] };
-  foreach my $attr (keys %Font) {
+  foreach my $attr (sort keys %Font) {
     next if $newNode->hasAttribute($attr);
     $newNode->setAttribute($attr => $Font{$attr}) if $Font{$attr}; }
 
