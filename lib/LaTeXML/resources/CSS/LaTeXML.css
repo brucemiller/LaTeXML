@@ -93,6 +93,13 @@ td.ltx_subfloat { width:50%; }
 /* theorems, figure, tables, floats captions.. */
 /*======================================================================
  Blocks, Lists, Floats */
+.ltx_p,
+.ltx_quote,
+.ltx_block,
+.ltx_listingblock,
+.ltx_para
+  { display: block; }
+
 .ltx_align_left     {text-align:left; }
 .ltx_align_right    {text-align:right; }
 .ltx_align_center   {text-align:center; }
@@ -132,6 +139,12 @@ tr > td.ltx_eqn_left_padleft,
 tr > td.ltx_eqn_right_padright { min-width:2em; }
 tr > td.ltx_eqn_left_padright,
 tr > td.ltx_eqn_right_padleft  { width:100%; }
+
+.ltx_itemize,
+.ltx_enumerate,
+.ltx_description
+   { display:block; }
+.ltx_item { display: list-item; }
 
 /* Position the tag to look like a normal item bullet. */
 li.ltx_item > .ltx_tag {
@@ -200,7 +213,12 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 /*======================================================================
  Borders and such */
-table { border-collapse:collapse; }
+.ltx_tabular { display:table; border-collapse:collapse; }
+span.ltx_tabular { display:inline-table; border-collapse:collapse; }
+.ltx_thead,
+.ltx_tbody   { display:table-row-group; }
+.ltx_tr      { display:table-row; }
+.ltx_td      { display:table-cell; }
 
 .ltx_framed  { border:1px solid black;}
 .ltx_tabular td, .ltx_tabular th { padding:0.1em 0.5em; }
