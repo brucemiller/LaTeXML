@@ -4129,21 +4129,21 @@ DefConstructorI('\@math@enskip', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enskip',
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
-DefPrimitiveI('\@text@enskip', undef, "\x{2000}", alias => '\enskip');
+DefPrimitiveI('\@text@enskip', undef, "\x{2002}", alias => '\enskip');
 
 DefMacroI('\enspace', undef, '\ifmmode\@math@espace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enspace',
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
-DefPrimitiveI('\@text@enspace', undef, "\x{2000}", alias => '\enspace');
+DefPrimitiveI('\@text@enspace', undef, "\x{2002}", alias => '\enspace');
 
 DefMacroI('\quad', undef, '\ifmmode\@math@quad\else\@text@quad\fi');
 DefConstructorI('\@math@quad', undef,
   "<ltx:XMHint name='quad' width='#width'/>",
   alias => '\quad',
   properties => { isSpace => 1, width => sub { Dimension('1em'); } });
-DefPrimitiveI('\@text@quad', undef, "\x{2001}", alias => '\quad');
+DefPrimitiveI('\@text@quad', undef, "\x{2003}", alias => '\quad');
 
 # Conceivably should be treated as punctuation! (but maybe even \quad should !?!)
 DefMacroI('\qquad', undef, '\ifmmode\@math@qquad\else\@text@qquad\fi');
@@ -4151,7 +4151,7 @@ DefConstructorI('\@math@qquad', undef,
   "<ltx:XMHint name='qquad' width='#width'/>",
   alias => '\qquad',
   properties => { isSpace => 1, width => sub { Dimension('2em'); } });
-DefPrimitiveI('\@text@qquad', undef, "\x{2001}\x{2001}", alias => '\qquad');
+DefPrimitiveI('\@text@qquad', undef, "\x{2003}\x{2003}", alias => '\qquad');
 
 DefMacroI('\thinspace', undef, '\ifmmode\@math@thinspace\else\@text@thinspace\fi');
 DefConstructorI('\@math@thinspace', undef,
@@ -4167,7 +4167,7 @@ DefConstructorI('\@math@negthinspace', undef,
   properties => { isSpace => 1, width => sub { Dimension('-0.16667em'); } });
 DefPrimitiveI('\@text@negthinspace', undef, "", alias => '\negthinspace');
 
-DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#width'/>)(\x{2001})",
+DefConstructor('\hglue Glue', "?#isMath(<ltx:XMHint name='hglue' width='#width'/>)(\x{2003})",
   properties => sub { (isSpace => 1, width => $_[1]); });
 DefPrimitive('\vglue Glue', undef);
 DefPrimitiveI('\topglue',          undef, undef);
