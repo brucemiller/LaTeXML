@@ -193,6 +193,37 @@
   </func:function>
 
   <!-- ======================================================================
+       CONTEXT
+       Note that LaTeXML's schema (modeled after latex) is more permissive about
+       'miscellaneous' elements (such as tables, inline-blocks, etc) within
+       inline context than HTML/HTML5. More than a validity problem, HTML5 parsers
+       will rewrite the DOM to suit itself, resulting in flawed display.
+       Virtually all LaTeXML templates take a 'context' parameter that should be either
+       'inline' or (currently) anything else. Templates that generate elements
+       that only accept inline markup should pass $context 'inline' to templates
+       called or applied within.  Any block level templates (that expect to be
+       used in such a context) should accomodate by using
+       f:blockelement($context,'element')
+       where 'element' is the html element they would normally generate.
+       If this is used in an inline context, 'span' will be used instead,
+       maintaining validity and avoiding DOM rewrites.
+       Presumably there will be an appropriate class ltx_XXX css on the element
+       which will set the display property appropriately.
+  -->
+  <func:function name="f:blockelement">
+    <xsl:param name="context"/>
+    <xsl:param name="blocktag"/>
+    <xsl:choose>
+      <xsl:when test="$context = 'inline'">
+        <func:result>span</func:result>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result><xsl:value-of select="$blocktag"/></func:result>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
+  <!-- ======================================================================
        Dimension utilities
        [hopefully only see units of px or pt?
   -->
@@ -259,20 +290,24 @@
   </xsl:template>
 
   <!-- This copies WHATEVER, in WHATEVER namespace.
-       It's useful for MathML's annotation-xml, or SVG's foreignObject.
+       It's useful for MathML's annotation-xml, or SVG's foreignObject or similar.
        We use local-name() & namespace to try avoid namespace prefixes.
        But note that namespaced attributes WILL still be preserved.
        INCLUDING xml:id; not sure if html5 really accepts that,
        but it doesn't really accept arbitrary annotations, anyway.
 
-       Perhaps this should be smart about svg in mathml or vice-versa?
+       If copy-foreign templates hit latexml, svg or mathml,
+       they'll resume with the normal templates.
   -->
   <xsl:template match="*" mode='copy-foreign'>
+    <xsl:param name="context"/>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates mode='copy-foreign'/>
+      <xsl:apply-templates mode='copy-foreign'>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
@@ -293,7 +328,10 @@
 
   <!-- Embedded latexml, however, gets treated with the usual templates! -->
   <xsl:template match="ltx:*" mode='copy-foreign'>
-    <xsl:apply-templates/>
+    <xsl:param name="context"/>
+    <xsl:apply-templates>
+      <xsl:with-param name="context"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <!-- However, XMath elements appearing in an annotation (eg) should also be copied literally-->

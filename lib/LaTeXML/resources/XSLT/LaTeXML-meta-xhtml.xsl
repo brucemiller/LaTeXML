@@ -25,20 +25,31 @@
        ltx:note, ltx:indexmark, ltx:rdf, ltx:ERROR
        ====================================================================== -->
 
+  <!-- Only a few generated elements need $context switches.
+       See the CONTEXT discussion in LaTeXML-common -->
+
   <!-- normally hidden, but should be exposable various ways.
        The role will likely distinguish various modes of footnote, endnote,
        and other annotation -->
   <xsl:template match="ltx:note">
+    <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:call-template name="note-mark"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:call-template name="note-mark">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:call-template>
       <xsl:element name="span" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_note_outer</xsl:attribute>
         <xsl:element name="span" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_note_content</xsl:attribute>
-          <xsl:call-template name="note-mark"/>
+          <xsl:call-template name="note-mark">
+            <xsl:with-param name="context" select="$innercontext"/>
+          </xsl:call-template>
           <xsl:if test="not(@role = 'footnote')">
             <xsl:element name="span" namespace="{$html_ns}">
               <xsl:attribute name="class">ltx_note_type</xsl:attribute>
@@ -46,8 +57,12 @@
               <xsl:text>: </xsl:text>
             </xsl:element>
           </xsl:if>
-          <xsl:apply-templates/>
-          <xsl:apply-templates select="." mode="end"/>
+          <xsl:apply-templates>
+            <xsl:with-param name="context" select="$innercontext"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="end">
+            <xsl:with-param name="context" select="$innercontext"/>
+          </xsl:apply-templates>
         </xsl:element>
       </xsl:element>
     </xsl:element>
@@ -65,12 +80,20 @@
 
   <!-- Actually, this ought to be annoyingly visible -->
   <xsl:template match="ltx:ERROR">
+    <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
@@ -79,23 +102,38 @@
 
   <!-- but the phrases it contains may be used in back-ref situations -->
   <xsl:template match="ltx:indexphrase">
+    <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <!-- Typically will end up with css display:none -->
   <xsl:template match="ltx:rdf">
-    <xsl:element name="div" namespace="{$html_ns}">
+    <xsl:param name="context"/>
+    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates/>
-      <xsl:apply-templates select="." mode="end"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
   </xsl:template>

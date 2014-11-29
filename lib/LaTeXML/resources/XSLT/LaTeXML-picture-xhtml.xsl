@@ -134,7 +134,7 @@
       </xsl:for-each>
       <xsl:choose>
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
-        <xsl:when test="local-name()='foreignObject-xml'
+        <xsl:when test="local-name()='foreignObject'
                         and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
           <xsl:apply-templates mode='copy-foreign'/>
         </xsl:when>

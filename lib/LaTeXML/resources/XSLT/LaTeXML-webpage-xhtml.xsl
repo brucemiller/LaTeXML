@@ -33,6 +33,10 @@
   <xsl:param name="HEAD_TITLE_PREFIX"></xsl:param>
   <xsl:param name="HEAD_TITLE_SHOW_CONTEXT">true</xsl:param>
 
+  <!-- We don't really anticipate page structure appearing in inline contexts,
+       so we pretty much ignore the $context switches.
+       See the CONTEXT discussion in LaTeXML-common -->
+
   <!--  ======================================================================
        The Page
        ====================================================================== -->
@@ -114,20 +118,44 @@
     <!-- must have a title, even empty, for validity! -->
     <xsl:element name="title" namespace="{$html_ns}">
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
-      <xsl:if test="*/ltx:title">
-        <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>
-        <xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
-          <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
-            <xsl:text>&#x2023; </xsl:text>
-            <xsl:value-of select="@title"/>
-          </xsl:for-each>
-        </xsl:if>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="*/ltx:title | */ltx:caption">
+          <xsl:choose>
+            <xsl:when test="*/ltx:toctitle">
+              <xsl:apply-templates select="*/ltx:toctitle[1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="*/ltx:title">
+              <xsl:apply-templates select="*/ltx:title[1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="*/ltx:toccaption">
+              <xsl:apply-templates select="*/ltx:toccaption[1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="*/ltx:caption">
+              <xsl:apply-templates select="*/ltx:caption[1]" mode="visible-text"/>
+            </xsl:when>
+          </xsl:choose>
+<!--          <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>-->
+          <xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
+            <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
+              <xsl:text>&#x2023; </xsl:text>
+              <xsl:value-of select="@title"/>
+            </xsl:for-each>
+          </xsl:if>
+        </xsl:when>
+        <!-- Must have _something_ for validity? -->
+        <xsl:when test="not($HEAD_TITLE_PREFIX)">
+          <xsl:text>Untitled Document</xsl:text>
+        </xsl:when>
+      </xsl:choose>
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="text()" mode="visible-text"><xsl:value-of select="."/></xsl:template>
-  <xsl:template match="*" mode="visible-text"><xsl:apply-templates mode="visible-text"/></xsl:template>
+  <xsl:template match="text()" mode="visible-text">
+    <xsl:value-of select="."/>
+  </xsl:template>
+  <xsl:template match="*" mode="visible-text">
+    <xsl:apply-templates mode="visible-text"/>
+  </xsl:template>
   <xsl:template match="ltx:indexphrase" mode="visible-text"/>
 
   <xsl:template match="ltx:tag" mode="visible-text">
@@ -496,71 +524,101 @@
 
   <!-- explictly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
-    <xsl:apply-templates mode="short"/>
+    <xsl:param name="context"/>
+    <xsl:apply-templates mode="short">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="ltx:TOC[@format='veryshort']">
-    <xsl:apply-templates mode="veryshort"/>
+    <xsl:param name="context"/>
+    <xsl:apply-templates mode="veryshort">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
 
   </xsl:template>
 
   <xsl:template match="ltx:TOC">
+    <xsl:param name="context"/>
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:if test="@name">
         <xsl:element name="h6" namespace="{$html_ns}">
-          <xsl:apply-templates select="@name"/>
+          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:apply-templates select="@name">
+            <xsl:with-param name="context" select="$innercontext"/>
+          </xsl:apply-templates>
           <xsl:text>:</xsl:text>
         </xsl:element>
       </xsl:if>
-      <xsl:apply-templates/>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:toclist" mode="short">
+    <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_toc_compact</xsl:attribute>
       <xsl:text>&#x0A;&#x2666; </xsl:text>
-      <xsl:apply-templates mode="short"/>
+      <xsl:apply-templates mode="short">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toclist" mode="veryshort">
+    <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_toc_verycompact</xsl:attribute>
       <xsl:text>&#x2666;</xsl:text>
-      <xsl:apply-templates mode="veryshort"/>
+      <xsl:apply-templates mode="veryshort">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:toclist">
+    <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="ul" namespace="{$html_ns}">
       <xsl:call-template name='add_id'/>
       <xsl:call-template name='add_attributes'/>
-      <xsl:apply-templates/>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry">
+    <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="li" namespace="{$html_ns}">
       <xsl:call-template name='add_id'/>
       <xsl:call-template name='add_attributes'/>
-      <xsl:apply-templates/>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry" mode="short">
-    <xsl:apply-templates/>
+    <xsl:param name="context"/>
+    <xsl:apply-templates>
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
     <xsl:text> &#x2666; </xsl:text>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry" mode="veryshort">
-    <xsl:apply-templates/>
+    <xsl:param name="context"/>
+    <xsl:apply-templates>
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
     <xsl:text>&#x2666;</xsl:text>
   </xsl:template>
 
