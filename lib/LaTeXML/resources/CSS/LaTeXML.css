@@ -262,20 +262,6 @@ span.ltx_tabular { display:inline-table; border-collapse:collapse; }
 
 /*======================================================================
  Low-level Basics */
-/* NOTE: These should be using rems; [ie.: what happens when you nest .tiny in .tiny?????] */
-.ltx_font_TINY       { font-size:50%; }
-.ltx_font_Tiny       { font-size:60%; }
-.ltx_font_tiny       { font-size:65%; }
-.ltx_font_script     { font-size:70%; }
-.ltx_font_footnote   { font-size:80%; }
-.ltx_font_small      { font-size:90%; }
-.ltx_font_normal     { font-size:100%; }
-.ltx_font_large      { font-size:120%; }
-.ltx_font_Large      { font-size:140%; }
-.ltx_font_LARGE      { font-size:170%; }
-.ltx_font_huge       { font-size:200%; }
-.ltx_font_Huge       { font-size:250%; }
-.ltx_font_HUGE       { font-size:300%; }
 .ltx_font_serif      { font-family: serif; }
 .ltx_font_sansserif  { font-family: sans-serif; }
 .ltx_font_typewriter { font-family: monospace; }
