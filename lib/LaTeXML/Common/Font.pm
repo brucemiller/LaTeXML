@@ -30,11 +30,12 @@ use base qw(LaTeXML::Common::Object);
 my $DEFFAMILY     = 'serif';      # [CONSTANT]
 my $DEFSERIES     = 'medium';     # [CONSTANT]
 my $DEFSHAPE      = 'upright';    # [CONSTANT]
-my $DEFSIZE       = 'normal';     # [CONSTANT]
 my $DEFCOLOR      = 'black';      # [CONSTANT]
 my $DEFBACKGROUND = 'white';      # [CONSTANT]
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
+
+sub DEFSIZE { return $STATE->lookupValue('NOMINAL_FONT_SIZE') || 10; }
 
 #======================================================================
 # Mappings from various forms of names or component names in TeX
@@ -119,28 +120,27 @@ sub lookupFontShape {
   my ($shapecode) = @_;
   return $font_shape{ ToString($shapecode) }; }
 
-# Decode a font size in points into a "logical" size.
-# associate a logical size with all pt sizes (/10) below the given number.
-my @font_size_map = (0.60 => 'tiny', 0.75 => 'script', 0.85 => 'footnote', 0.95 => 'small',
-  1.10 => 'normal', 1.30 => 'large', 1.55 => 'Large', 1.85 => 'LARGE',
-  2.25 => 'huge', 1000.0 => 'Huge');
-# abstract font size in pts.
+# Symbolic font sizes, relative to the NOMINAL_FONT_SIZE (often 10)
+# extended logical font sizes, based on nominal document size of 10pts
+# Possibly should simply use absolute font point sizes, as declared in class...
 my %font_size = (
-  tiny   => 5,  script => 7,  footnote => 8,  small => 9,
-  normal => 10, large  => 12, Large    => 14, LARGE => 17,
-  huge   => 20, Huge   => 25);
+  tiny   => 0.5, SMALL => 0.7, Small => 0.8,  small => 0.9,
+  normal => 1.0, large => 1.2, Large => 1.44, LARGE => 1.728,
+  huge => 2.074, Huge => 2.488,
+  big => 1.2, Big => 1.6, bigg => 2.1, Bigg => 2.6,
+);
 
-sub lookupFontSize {
+sub rationalizeFontSize {
   my ($size) = @_;
-  if (defined $size) {
-    my $scaled = $size / 10.0;     # ASSUMED nominal font 10pt!!! Set from doc!!!
-    my @map    = @font_size_map;
-    while (@map) {
-      return shift(@map) if ($scaled <= shift(@map));
-      shift(@map); }
-    return 'Huge'; }
-  else {
-    return 'normal'; } }
+  return unless defined $size;
+  if (my $symbolic = $font_size{$size}) {
+    return $symbolic * DEFSIZE(); }
+  return $size; }
+
+# convert to percent
+sub relativeFontSize {
+  my ($newsize, $oldsize) = @_;
+  return int(100 * $newsize / $oldsize) . '%'; }
 
 my $FONTREGEXP
   = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
@@ -159,7 +159,7 @@ sub decodeFontname {
     $size = 1 unless defined $size;
     $size = $at if defined $at;
     $size *= $scaled if defined $scaled;
-    $props{size} = lookupFontSize($size);
+    $props{size} = $size;
     # Experimental Hack !?!?!?
     $props{encoding} = 'OT1' unless defined $props{encoding};
     return %props; }
@@ -195,7 +195,7 @@ sub new {
   my $forcebold  = $options{forcebold};
   my $forceshape = $options{forceshape};
   return $class->new_internal(
-    $family, $series, $shape, $size,
+    $family, $series, $shape, rationalizeFontSize($size),
     $color, $bg, $opacity,
     $encoding,  $language,
     $forcebold, $forceshape); }
@@ -206,12 +206,12 @@ sub new_internal {
 
 sub textDefault {
   my ($self) = @_;
-  return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, $DEFSIZE,
+  return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, DEFSIZE(),
     $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef, undef); }
 
 sub mathDefault {
   my ($self) = @_;
-  return $self->new_internal('math', $DEFSERIES, 'italic', $DEFSIZE,
+  return $self->new_internal('math', $DEFSERIES, 'italic', DEFSIZE(),
     $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef, undef); }
 
 # Accessors
@@ -238,7 +238,7 @@ sub stringify {
       (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
     (isDiff($ser, $DEFSERIES)     ? ($ser) : ()),
     (isDiff($shp, $DEFSHAPE)      ? ($shp) : ()),
-    (isDiff($siz, $DEFSIZE)       ? ($siz) : ()),
+    (isDiff($siz, DEFSIZE())      ? ($siz) : ()),
     (isDiff($col, $DEFCOLOR)      ? ($col) : ()),
     (isDiff($bkg, $DEFBACKGROUND) ? ($bkg) : ()),
     (isDiff($opa, $DEFOPACITY)    ? ($opa) : ())) . ']'; }
@@ -301,7 +301,8 @@ sub relativeTo {
             (isDiff($shp, $oshp) ? (shape  => $shp) : ()) } })
       : ()),
     (isDiff($siz, $osiz)
-      ? (fontsize => { value => $siz, properties => { size => $siz } })
+###      ? (fontsize => { value => $siz, properties => { size => $siz } })
+      ? (fontsize => { value => relativeFontSize($siz, $osiz), properties => { size => $siz } })
       : ()),
     (isDiff($col, $ocol)
       ? (color => { value => $col, properties => { color => $col } })
@@ -384,7 +385,7 @@ sub computeStringSize {
   my ($self, $string) = @_;
   my $size = $self->getSize;
   my $u    = (defined $string
-    ? ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535 * length($string)
+    ? (($self->getSize || DEFSIZE()) || 10) * 65535 * length($string)
     : 0);
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
@@ -392,7 +393,7 @@ sub computeStringSize {
 sub getNominalSize {
   my ($self) = @_;
   my $size = $self->getSize;
-  my $u = ($font_size{ $self->getSize || $DEFSIZE } || 10) * 65535;
+  my $u = (($self->getSize || DEFSIZE()) || 10) * 65535;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
@@ -497,7 +498,7 @@ sub merge {
   my $family     = $options{family};
   my $series     = $options{series};
   my $shape      = $options{shape};
-  my $size       = $options{size};
+  my $size       = rationalizeFontSize($options{size});
   my $color      = $options{color};
   my $bg         = $options{background};
   my $opacity    = $options{opacity};
@@ -520,7 +521,7 @@ sub merge {
   $forceshape = $$self[10] unless defined $forceshape;
 
   if (my $scale = $options{scale}) {
-    $size = lookupFontSize($scale * $font_size{$size}); }
+    $size = $scale * $size; }
 
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
@@ -592,8 +593,9 @@ The attributes are
           fraktur, script
  series : medium, bold
  shape  : upright, italic, slanted, smallcaps
- size   : tiny, footnote, small, normal, large,
-          Large, LARGE, huge, Huge
+ size   : TINY, Tiny, tiny, SMALL, Small, small,
+          normal, Normal, large, Large, LARGE,
+          huge, Huge, HUGE, gigantic, Gigantic, GIGANTIC
  color  : any named color, default is black
 
 They are usually merged against the current font, attempting to mimic the,
