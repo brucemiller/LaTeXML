@@ -436,9 +436,6 @@
     <xsl:if test="@font">
       <xsl:value-of select="concat(' ',f:class-pref('ltx_font_',@font))"/>
     </xsl:if>
-    <xsl:if test="@fontsize">
-      <xsl:value-of select="concat(' ',f:class-pref('ltx_font_',@fontsize))"/>
-    </xsl:if>
     <xsl:if test="@role">
       <xsl:value-of select="concat(' ',f:class-pref('ltx_role_',@role))"/>
     </xsl:if>
@@ -481,6 +478,9 @@
   </xsl:template>
 
   <xsl:template match="*" mode="styling">
+    <xsl:if test="@fontsize">
+      <xsl:value-of select="concat('font-size:',@fontsize,';')"/>
+    </xsl:if>
     <xsl:if test="@width"  ><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
     <xsl:if test="@height" >
       <xsl:choose>
