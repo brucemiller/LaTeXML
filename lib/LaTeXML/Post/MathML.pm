@@ -269,11 +269,6 @@ my %mathvariants = (    # CONSTANT
 # The font differences (from the containing context) have been deciphered
 # into font, size and color attributes.  The font should match
 # one of the above... (?)
-my %sizes = (    # CONSTANT
-  tiny => 'small', script => 'small', footnote => 'small', small => 'small',
-  normal => 'normal',
-  large => 'big', Large => 'big', LARGE => 'big', huge => 'big', Huge => 'big',
-  big => '1.2em', Big => '1.6em', bigg => '2.1em', Bigg => '2.6em');
 
 # Given a font string (joining the components)
 # reduce it to a "sane" font.  Note that MathML uses a single mathvariant
@@ -689,8 +684,8 @@ sub stylizeContent {
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size ? ($stretchyhack
-        ? (minsize => $sizes{$size}, maxsize => $sizes{$size})
-        : (mathsize => $sizes{$size}))
+        ? (minsize => $size, maxsize => $size)
+        : (mathsize => $size))
       : ()),
     ($color    ? (mathcolor      => $color)             : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
@@ -1257,6 +1252,7 @@ DefMathML('Apply:ADDOP:?', \&pmml_infix, undef);
 
 DefMathML("Token:MULOP:?", \&pmml_mo,    undef);
 DefMathML('Apply:MULOP:?', \&pmml_infix, undef);
+# REALLY shouldn't conflate "divide" with MULOP, here... Use FRACOP
 DefMathML('Apply:?:divide', sub {
     my ($op, $num, $den, @more) = @_;
     my $style     = $op->getAttribute('mathstyle');
@@ -1276,6 +1272,14 @@ DefMathML('Apply:?:divide', sub {
       return ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()),
           ($color ? (mathcolor => $color) : ()) },
         pmml_smaller($num), pmml_smaller($den)]; } });
+
+DefMathML('Apply:FRACOP:?', sub {
+    my ($op, $num, $den, @more) = @_;
+    my $thickness = $op->getAttribute('thickness');
+    my $color = $op->getAttribute('color') || $LaTeXML::MathML::COLOR;
+    return ['m:mfrac', { ($thickness ? (linethickness => $thickness) : ()),
+        ($color ? (mathcolor => $color) : ()) },
+      pmml_smaller($num), pmml_smaller($den)]; });
 
 DefMathML('Apply:MODIFIEROP:?', \&pmml_infix, undef);
 DefMathML("Token:MODIFIEROP:?", \&pmml_mo,    undef);
