@@ -162,7 +162,7 @@ DefMacro('\newline', "\n");
 DefPrimitiveI('\textfonti', undef, '',
   font => { family => 'serif', series => 'medium', shape => 'upright' });
 DefPrimitiveI('\textfontii', undef, '',
-  font => { family => 'serif', series => 'medium', shape => 'upright', size => 'small' });
+  font => { family => 'serif', series => 'medium', shape => 'upright', size => 9 });
 
 DefConstructor('\spreadlines Dimension', '');
 

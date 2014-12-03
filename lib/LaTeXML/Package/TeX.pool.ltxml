@@ -4065,16 +4065,18 @@ DefPrimitiveI('\sl', undef, undef,
 DefPrimitiveI('\sc', undef, undef,
   font => { shape => 'smallcaps', family => 'serif', series => 'medium' });
 
-DefPrimitiveI('\tiny',         undef, undef, font => { size => 'tiny' });
-DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 'script' });
-DefPrimitiveI('\footnotesize', undef, undef, font => { size => 'footnote' });
-DefPrimitiveI('\small',        undef, undef, font => { size => 'small' });
-DefPrimitiveI('\normalsize',   undef, undef, font => { size => 'normal' });
-DefPrimitiveI('\large',        undef, undef, font => { size => 'large' });
-DefPrimitiveI('\Large',        undef, undef, font => { size => 'Large' });
-DefPrimitiveI('\LARGE',        undef, undef, font => { size => 'LARGE' });
-DefPrimitiveI('\huge',         undef, undef, font => { size => 'huge' });
-DefPrimitiveI('\Huge',         undef, undef, font => { size => 'Huge' });
+# Ideally, we should set these sizes from class files
+AssignValue(NOMINAL_FONT_SIZE => 10);
+DefPrimitiveI('\tiny',         undef, undef, font => { size => 5 });
+DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 7 });
+DefPrimitiveI('\footnotesize', undef, undef, font => { size => 8 });
+DefPrimitiveI('\small',        undef, undef, font => { size => 9 });
+DefPrimitiveI('\normalsize',   undef, undef, font => { size => 10 });
+DefPrimitiveI('\large',        undef, undef, font => { size => 12 });
+DefPrimitiveI('\Large',        undef, undef, font => { size => 14.4 });
+DefPrimitiveI('\LARGE',        undef, undef, font => { size => 17.28 });
+DefPrimitiveI('\huge',         undef, undef, font => { size => 20.74 });
+DefPrimitiveI('\Huge',         undef, undef, font => { size => 29.8 });
 
 DefPrimitiveI('\mit', undef, undef, requireMath => 1, font => { family => 'italic' });
 
@@ -4731,7 +4733,7 @@ DefMathI('\spadesuit',   undef, "\x{2660}");
 
 #----------------------------------------------------------------------
 DefMath('\smallint', "\x{222B}", meaning => 'integral', role => 'INTOP',
-  font => { size => 'small' }, scriptpos => \&doScriptpos, mathstyle => 'text');    # INTEGRAL
+  font => { size => 9 }, scriptpos => \&doScriptpos, mathstyle => 'text');    # INTEGRAL
 
 #----------------------------------------------------------------------
 # Actually LaTeX; Table 3.8. Variable-sized Symbols, p.44.

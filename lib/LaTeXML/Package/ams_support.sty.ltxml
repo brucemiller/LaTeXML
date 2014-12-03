@@ -39,20 +39,15 @@ ProcessOptions();
 # #======================================================================
 # % Font size commands:
 
-our %fontup = ('tiny' => 'script', 'script' => 'footnote', 'footnote' => 'small', 'small' => 'normal',
-'normal' => 'large', 'large' => 'Large', 'Large' => 'LARGE', 'LARGE' => 'huge', 'huge' => 'Huge', 'Huge' => 'Huge');
-our %fontdn = ('tiny' => 'tiny', 'script' => 'tiny', 'footnote' => 'script', 'small' => 'footnote', 'normal' => 'small',
-'large' => 'normal', 'Large' => 'large', 'LARGE' => 'Large', 'huge' => 'LARGE', 'Huge' => 'huge', 'Huge' => 'Huge');
-
-DefPrimitiveI('\larger',  undef, '', font => { size => $fontup{ LookupValue('font')->getSize } });
-DefPrimitiveI('\smaller', undef, '', font => { size => $fontdn{ LookupValue('font')->getSize } });
+DefPrimitiveI('\larger',  undef, '', font => { scale => 1.2 });
+DefPrimitiveI('\smaller', undef, '', font => { size  => 1 / 1.2 });
 
 # \@xsetfontize
-DefPrimitiveI('\TINY', undef, '', font => { size => 'TINY' });
-DefPrimitiveI('\Tiny', undef, '', font => { size => 'Tiny' });
+DefPrimitiveI('\TINY', undef, '', font => { size => 3 });
+DefPrimitiveI('\Tiny', undef, '', font => { size => 4 });
 Let('\SMALL', '\scriptsize');
 Let('\Small', '\footnotesize');
-DefPrimitiveI('\HUGE', undef, '', font => { size => 'HUGE' });
+DefPrimitiveI('\HUGE', undef, '', font => { size => 29.8 });
 Let('\upn', '\textup');
 
 # #======================================================================
