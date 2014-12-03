@@ -43,11 +43,6 @@ our %EXPORT_TAGS = (constructors
       &SawNotation &IsNotationAllowed
       &isMatchingClose &Fence)]);
 
-my $DEFAULT_FONT = LaTeXML::Common::Font->new(    # [CONSTANT]
-  family => 'serif',   series     => 'medium',
-  shape  => 'upright', size       => 'normal',
-  color  => 'black',   background => 'white', opacity => 1);
-
 # ================================================================================
 sub new {
   my ($class, %options) = @_;
@@ -134,7 +129,7 @@ sub token_prettyname {
   if (defined $name) { }
   elsif ($name = $node->textContent) {
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
-    my %attr = $font->relativeTo($DEFAULT_FONT);
+    my %attr = $font->relativeTo(LaTeXML::Common::Font->textDefault);
     my $desc = join(' ', map { ToString($attr{$_}{value}) } keys %attr);
     $name .= "{$desc}" if $desc; }
   else {
@@ -853,7 +848,9 @@ sub New {
     my $value = p_getValue($attributes{$key});
     $attr{$key} = $value if defined $value; }
   if (!$attr{font}) {
-    $attr{font} = ($content && $content =~ /\S/ ? $DEFAULT_FONT->specialize($content) : LaTeXML::Common::Font->new()); }
+    $attr{font} = ($content && $content =~ /\S/
+      ? LaTeXML::Common::Font->textDefault->specialize($content)
+      : LaTeXML::Common::Font->new()); }
   return ['ltx:XMTok', {%attr}, ($content ? ($content) : ())]; }
 
 # Some handy shorthands.
