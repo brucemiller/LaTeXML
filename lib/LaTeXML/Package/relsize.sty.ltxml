@@ -1,0 +1,43 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  relsize                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+DefPrimitive('\relsize{}', sub {
+    my ($stomach, $size) = @_;
+    MergeFont(scale => 1.2**ToString(Digest($size))); });
+
+DefPrimitive('\relscale{}', sub {
+    my ($stomach, $size) = @_;
+    MergeFont(scale => ToString(Digest($size))); });
+
+DefMacro('\textscale{}{}', '\begingroup\relscale{#1}#2\endgroup');
+
+DefMacro('\larger Optional:1',         '\relsize{+#1}');
+DefMacro('\smaller Optional:1',        '\relsize{-#1}');
+DefMacro('\textlarger Optional:1 {}',  '{\relsize{+#1}#2}');
+DefMacro('\textsmaller Optional:1 {}', '{\relsize{-#1}#2}');
+
+DefMacro('\RSpercentTolerance', '');
+DefMacro('\RSsmallest',         '999pt');
+DefMacro('\RSlargest',          '1pt');
+
+DefMacro('\mathlarger Optional:1',  '\relsize{+#1}');
+DefMacro('\mathsmaller Optional:1', '\relsize{-#1}');
+
+#**********************************************************************
+1;

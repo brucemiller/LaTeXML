@@ -1,0 +1,99 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  a0poster                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequirePackage('a0size');
+DefConditional('\ifportrait');
+DefConditional('\ifanullb');
+DefConditional('\ifanull');
+DefConditional('\ifaeins');
+DefConditional('\ifazwei');
+DefConditional('\ifadrei');
+DefConditional('\ifposterdraft');
+DeclareOption('a0b',         sub { Digest('\anullbtrue'); });
+DeclareOption('a0',          sub { Digest('\anulltrue \anullbfalse'); });
+DeclareOption('a1',          sub { Digest('\aeinstrue \anullbfalse'); });
+DeclareOption('a2',          sub { Digest('\azweitrue \anullbfalse'); });
+DeclareOption('a3',          sub { Digest('\adreitrue \anullbfalse'); });
+DeclareOption('landscape',   sub { Digest('\portraitfalse'); });
+DeclareOption('portrait',    sub { Digest('\portraittrue'); });
+DeclareOption('draft',       sub { Digest('\posterdrafttrue'); });
+DeclareOption('posterdraft', sub { Digest('\posterdrafttrue'); });
+DeclareOption('final',       sub { Digest('\posterdraftfalse'); });
+
+ExecuteOptions('landscape', 'a0b', 'final');
+ProcessOptions();
+LoadClass('article');
+
+RawTeX(<<'EoTeX');
+\ifanullb
+  \setlength { \paperwidth }{ 119 cm }
+  \setlength { \paperheight }{ 87 cm }
+  \setlength { \textwidth }{ 114 cm }
+  \setlength { \textheight }{ 87 cm }
+\else \ifanull
+  \setlength { \paperwidth }{ 118.82 cm }
+  \setlength { \paperheight }{ 83.96 cm }
+  \setlength { \textwidth }{ 114.82 cm }
+  \setlength { \textheight }{ 79.96 cm }
+\else \ifaeins
+  \setlength { \paperwidth }{ 83.96 cm }
+  \setlength { \paperheight }{ 59.4 cm }
+  \setlength { \textwidth }{ 79.96 cm }
+  \setlength { \textheight }{ 55.4 cm }
+\else \ifazwei
+  \setlength { \paperwidth }{ 59.4 cm }
+  \setlength { \paperheight }{ 41.98 cm }
+  \setlength { \textwidth }{ 55.4 cm }
+  \setlength { \textheight }{ 37.98 cm }
+\else \ifadrei
+  \setlength { \paperwidth }{ 41.98 cm }
+  \setlength { \paperheight }{ 29.7 cm }
+  \setlength { \textwidth }{ 37.98 cm }
+  \setlength { \textheight }{ 25.7 cm }
+\else \relax
+\fi\fi\fi\fi\fi
+
+\ifportrait
+  \newdimen \tausch
+  \setlength { \tausch }{ \paperwidth }
+  \setlength { \paperwidth }{ \paperheight }
+  \setlength { \paperheight }{ \tausch }
+  \setlength { \tausch }{ \textwidth }
+  \setlength { \textwidth }{ \textheight }
+  \setlength { \textheight }{ \tausch }
+\else \relax
+\fi
+EoTeX
+
+#**********************************************************************
+AssignValue(NOMINAL_FONT_SIZE => 25);
+DefPrimitiveI('\tiny',         undef, undef, font => { size => 12 });
+DefPrimitiveI('\scriptsize',   undef, undef, font => { size => 14.4 });
+DefPrimitiveI('\footnotesize', undef, undef, font => { size => 17.28 });
+DefPrimitiveI('\small',        undef, undef, font => { size => 20.74 });
+DefPrimitiveI('\normalsize',   undef, undef, font => { size => 25 });
+DefPrimitiveI('\large',        undef, undef, font => { size => 29.86 });
+DefPrimitiveI('\Large',        undef, undef, font => { size => 35.83 });
+DefPrimitiveI('\LARGE',        undef, undef, font => { size => 43 });
+DefPrimitiveI('\huge',         undef, undef, font => { size => 51.6 });
+DefPrimitiveI('\Huge',         undef, undef, font => { size => 61.92 });
+DefPrimitiveI('\veryHuge',     undef, undef, font => { size => 74.3 });
+DefPrimitiveI('\VeryHuge',     undef, undef, font => { size => 89.16 });
+DefPrimitiveI('\VERYHuge',     undef, undef, font => { size => 107 });
+
+#**********************************************************************
+1;
