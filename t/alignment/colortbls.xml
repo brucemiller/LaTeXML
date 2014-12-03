@@ -55,7 +55,7 @@
               <text backgroundcolor="#CCCCCC">one</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text backgroundcolor="#333333" color="#FFFFFF">two</text>
+              <text color="#FFFFFF" backgroundcolor="#333333">two</text>
             </td>
           </tr>
           <tr>
@@ -63,7 +63,7 @@
               <text backgroundcolor="#CCCCCC">three</text>
             </td>
             <td align="center" border="r" backgroundcolor="#333333">
-              <text color="#FFFFFF" backgroundcolor="#333333">four</text>
+              <text backgroundcolor="#333333" color="#FFFFFF">four</text>
             </td>
           </tr>
         </tbody>
@@ -73,12 +73,12 @@
       <tabular>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text fontsize="large" backgroundcolor="#00FFFF" font="bold">A long table example</text>
+            <text fontsize="120%" font="bold" backgroundcolor="#00FFFF">A long table example</text>
           </td>
         </tr>
         <tr>
           <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
-            <text color="#FFFFFF" backgroundcolor="#FF00FF">First two columns</text>
+            <text backgroundcolor="#FF00FF" color="#FFFFFF">First two columns</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
             <text backgroundcolor="#FF00FF" color="#FFFFFF">Third column</text>
@@ -86,7 +86,7 @@
         </tr>
         <tr>
           <td align="center" colspan="2" thead="true" backgroundcolor="#FF00FF">
-            <text backgroundcolor="#FF00FF" color="#FFFFFF">p-type</text>
+            <text color="#FFFFFF" backgroundcolor="#FF00FF">p-type</text>
           </td>
           <td align="center" thead="true" backgroundcolor="#FF00FF">
             <text color="#FFFFFF" backgroundcolor="#FF00FF">D-type (<text font="sansserif">dcolumn</text>)</text>
@@ -94,7 +94,7 @@
         </tr>
         <tr>
           <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">P-column</text>
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">P-column</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and another one</text>
@@ -124,7 +124,7 @@
         </tr>
         <tr>
           <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">Some long text in the first column</text>
+            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">Some long text in the first column</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
@@ -139,7 +139,7 @@
         </tr>
         <tr>
           <td align="justify" width="56.9pt" backgroundcolor="#FF0000">
-            <text class="ltx_align_left" color="#FFFFFF" backgroundcolor="#FF0000">aaa</text>
+            <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
             <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">and some long text in the second column</text>
@@ -188,7 +188,7 @@
 large entries in one column.</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">bbb</text>
+            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">bbb</text>
           </td>
           <td align="char:⋅" backgroundcolor="#FFFF00">
             <Math mode="inline" xml:id="S2.T1.m7" tex="\pagecolor{yellow}1\cdot 345" text="1.345">
@@ -218,7 +218,7 @@ large entries in one column.</text>
             <text class="ltx_align_left" backgroundcolor="#FF0000" color="#FFFFFF">aaa</text>
           </td>
           <td align="justify" width="85.4pt" backgroundcolor="#0000FF">
-            <text class="ltx_align_left" backgroundcolor="#0000FF" color="#FFFF00">Depending on your driver you may get unsightly gaps or lines
+            <text class="ltx_align_left" color="#FFFF00" backgroundcolor="#0000FF">Depending on your driver you may get unsightly gaps or lines
 where the ‘screens’ used to produce different shapes interact
 badly. You may want to cause adjacent panels of the same colour by
 specifying a larger overhang
@@ -254,7 +254,7 @@ or by adding some negative space (in a ”“noalign” between rows.</text>
         </tr>
         <tr>
           <td align="center" colspan="3" thead="true" backgroundcolor="#00FFFF">
-            <text backgroundcolor="#00FFFF" fontsize="large" font="bold">The End</text>
+            <text fontsize="120%" font="bold" backgroundcolor="#00FFFF">The End</text>
           </td>
         </tr>
       </tabular>
