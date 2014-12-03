@@ -153,13 +153,9 @@ Fontable.attributes =
   ## and can thus be effected by CSS.
   attribute font { text }?,
 
-  ## Indicates the text size to use. The values are modeled after the
-  ## more abstract \LaTeX\ font size switches, rather than point-sizes.
-  ## The values are open-ended for extensibility;
-  ## In postprocessing, these values are carried to the \attr{class} attribute,
-  ## and can thus be effected by CSS.
-  attribute fontsize { "Huge" | "huge" | "LARGE" | "Large" | "large" | "normal"
-                      | "small" | "footnote" | "tiny" | text }?
+  ## Indicates the text size to use, as a length, as in CSS.
+  ## Normally, this should be a percentage value relative to the containing element.
+  attribute fontsize { Length.type }?
 
 ## Attributes for elements that draw something, text or otherwise, that can be colored.
 Colorable.attributes =

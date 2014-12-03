@@ -192,23 +192,9 @@ and can thus be effected by CSS.</a:documentation>
     </optional>
     <optional>
       <attribute name="fontsize">
-        <a:documentation>Indicates the text size to use. The values are modeled after the
-more abstract \LaTeX\ font size switches, rather than point-sizes.
-The values are open-ended for extensibility;
-In postprocessing, these values are carried to the \attr{class} attribute,
-and can thus be effected by CSS.</a:documentation>
-        <choice>
-          <value>Huge</value>
-          <value>huge</value>
-          <value>LARGE</value>
-          <value>Large</value>
-          <value>large</value>
-          <value>normal</value>
-          <value>small</value>
-          <value>footnote</value>
-          <value>tiny</value>
-          <text/>
-        </choice>
+        <a:documentation>Indicates the text size to use, as a length, as in CSS.
+Normally, this should be a percentage value relative to the containing element.</a:documentation>
+        <ref name="Length.type"/>
       </attribute>
     </optional>
   </define>
