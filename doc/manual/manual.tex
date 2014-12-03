@@ -1000,7 +1000,7 @@ Here are a few primitives from \texttt{TeX.pool}:
   DefPrimitiveI('\batchmode',     undef,undef);
   DefPrimitiveI('\OE', undef, "\x{0152}");
   DefPrimitiveI('\tiny',        undef, undef,
-    font=>{size=>'tiny'});
+    font=>{size=>5});
 \end{lstlisting}
 
 Other than for implementing \TeX's own primitives,
@@ -2298,9 +2298,9 @@ The basic strategy is the following:
       \texttt{caligraphic}, \texttt{fraktur}, \texttt{script};
     \item[\textit{series}]:  \texttt{bold}, \texttt{medium};
     \item[\textit{shape}]:   \texttt{upright}, \texttt{italic}, \texttt{slanted}, \texttt{smallcaps};
-    \item[\textit{size}]: \texttt{TINY}, \texttt{Tiny}, \texttt{tiny}, \texttt{script},
-                 \texttt{footnote}, \texttt{small}, \texttt{normal}, \texttt{large},
-                 \texttt{Large}, \texttt{LARGE}, \texttt{huge}, \texttt{Huge}, \texttt{HUGE}.
+    % \item[\textit{size}]: \texttt{TINY}, \texttt{Tiny}, \texttt{tiny}, \texttt{script},
+    %              \texttt{footnote}, \texttt{small}, \texttt{normal}, \texttt{large},
+    %              \texttt{Large}, \texttt{LARGE}, \texttt{huge}, \texttt{Huge}, \texttt{HUGE}.
   \end{description}
   These sets are open-ended.
 \item[\texttt{ltx\_align\_}\textit{alignment}] where \textit{alignment}
