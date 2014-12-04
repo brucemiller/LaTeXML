@@ -199,6 +199,7 @@ sub computeSize {
     for (my $i = 0 ; $i < $ncols ; $i++) {
       my $cell = $cols[$i];
       next if $$cell{skipped};
+      next unless $$cell{boxes};
       my ($w, $h, $d) = $$cell{boxes}->getSize(align => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach});
       if (($$cell{span} || 1) == 1) {
