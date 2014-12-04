@@ -2517,7 +2517,8 @@ sub tabularBindings {
 
 # Keyvals are for attributes for the alignment.
 # Typical keys are width, vattach,...
-DefPrimitive('\@tabular@bindings AlignmentTemplate OptionalKeyVals', sub {
+DefKeyVal('tabular', 'width', 'Dimension');
+DefPrimitive('\@tabular@bindings AlignmentTemplate OptionalKeyVals:tabular', sub {
     my ($stomach, $template, $attributes) = @_;
     my %attr = ($attributes ? $attributes->getPairs : ());
     if (my $va = $attr{vattach}) {
