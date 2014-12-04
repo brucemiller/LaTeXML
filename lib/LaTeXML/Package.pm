@@ -464,7 +464,7 @@ sub CleanID {
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $key =~ s/\s//sg;
   # Remove common idiom:
-  $key =~ s/\${}\^{(.*?)}\$/$1/g;
+  $key =~ s/\$\{\}\^\{(.*?)\}\$/$1/g;
   # transform some forbidden chars
   $key =~ s/:/../g;                        # No colons!
   $key =~ s/@/-at-/g;
