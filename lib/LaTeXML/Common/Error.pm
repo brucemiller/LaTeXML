@@ -82,10 +82,10 @@ sub Error {
   my ($category, $object, $where, $message, @details) = @_;
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if ($state->lookupValue('STRICT')) {
+  if ($state && $state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
-    $state->noteStatus('error');
+    $state && $state->noteStatus('error');
     print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
