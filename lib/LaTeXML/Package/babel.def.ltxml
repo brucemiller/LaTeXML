@@ -149,7 +149,9 @@ Let('\ltx@save@select@language', '\select@language');
 # Careful: \bbl@switch is only used in newer babels(?)
 RawTeX(<<'EoTeX');
 \@ifundefined{bbl@switch}{
+  \let\ltx@orig@foreign@language\foreign@language
   \def\select@language#1{\ltx@bbl@select@language{#1}\ltx@save@select@language{#1}}
+  \def\foreign@language#1{\ltx@orig@foreign@language{#1}\ltx@bbl@select@language{#1}}
 }{
   \def\bbl@switch#1{\ltx@bbl@select@language{#1}\ltx@save@bbl@switch{#1}}
 }
@@ -161,6 +163,22 @@ DefPrimitive('\ltx@bbl@select@language{}', sub {
     my $iso = $$bbl_language_map{$language};
     MergeFont(language => $iso) if $iso;
     return; });
+
+# pretend we've got hyphenation patterns for ANY language.
+DefMacro('\iflanguage{}{}{}', <<'EoTeX');
+\expandafter\ifx\csname l@#1\endcsname\relax
+  \expandafter\def\csname l@#1\endcsname{\lx@next@languagenumber}\fi
+\ifnum\csname l@#1\endcsname=\language
+  \expandafter\@firstoftwo
+\else
+  \expandafter\@secondoftwo
+\fi
+EoTeX
+
+DefMacro('\lx@next@languagenumber',sub {
+  my $l = LookupValue('LastLanguageNumber') || 0;
+  AssignValue(LastLanguageNumber => $l+1, 'global');
+  Explode($l); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
