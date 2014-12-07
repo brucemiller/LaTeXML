@@ -143,42 +143,37 @@ our $bbl_language_map = {
   welsh           => 'cy',       # welsh
 };
 
-Let('\ltx@save@bbl@switch',      '\bbl@switch');
-Let('\ltx@save@select@language', '\select@language');
-# Redefine \bbl@switch, or \select@language to call our own language switcher
-# Careful: \bbl@switch is only used in newer babels(?)
+Let('\ltx@save@bbl@switch',       '\bbl@switch');
+Let('\ltx@save@select@language',  '\select@language');
+Let('\ltx@save@foreign@language', '\foreign@language');
+# Overkill; redefine ALL these since we never know which one will
+# be used in various babel versions.
+# \bbl@switch is only used in newer babels(?)
 RawTeX(<<'EoTeX');
-\@ifundefined{bbl@switch}{
-  \let\ltx@orig@foreign@language\foreign@language
-  \def\select@language#1{\ltx@bbl@select@language{#1}\ltx@save@select@language{#1}}
-  \def\foreign@language#1{\ltx@orig@foreign@language{#1}\ltx@bbl@select@language{#1}}
-}{
-  \def\bbl@switch#1{\ltx@bbl@select@language{#1}\ltx@save@bbl@switch{#1}}
-}
+\def\select@language#1{\ltx@save@select@language{#1}\ltx@bbl@select@language{#1}}
+\def\foreign@language#1{\ltx@save@foreign@language{#1}\ltx@bbl@select@language{#1}}
+\def\bbl@switch#1{\ltx@save@bbl@switch{#1}\ltx@bbl@select@language{#1}}
 EoTeX
 
 DefPrimitive('\ltx@bbl@select@language{}', sub {
     my ($stomach, $language) = @_;
     $language = ToString(Expand($language));
     my $iso = $$bbl_language_map{$language};
+    Info('language', $language, $stomach, "LANGUAGE=$language ($iso)");
     MergeFont(language => $iso) if $iso;
     return; });
 
 # pretend we've got hyphenation patterns for ANY language.
-DefMacro('\iflanguage{}{}{}', <<'EoTeX');
+DefMacro('\iflanguage{}', <<'EoTeX');
 \expandafter\ifx\csname l@#1\endcsname\relax
-  \expandafter\def\csname l@#1\endcsname{\lx@next@languagenumber}\fi
+  \expandafter\newlanguage\csname l@#1\endcsname\fi
+\expandafter\edef\expandafter\@@@@lang\expandafter{\csname l@#1\endcsname}
 \ifnum\csname l@#1\endcsname=\language
   \expandafter\@firstoftwo
 \else
   \expandafter\@secondoftwo
 \fi
 EoTeX
-
-DefMacro('\lx@next@languagenumber',sub {
-  my $l = LookupValue('LastLanguageNumber') || 0;
-  AssignValue(LastLanguageNumber => $l+1, 'global');
-  Explode($l); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
