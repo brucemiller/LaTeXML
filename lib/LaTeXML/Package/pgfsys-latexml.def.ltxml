@@ -53,7 +53,7 @@ DefMacro('\lxSVG@picture', sub {
     AssignValue('pgf_SVGpath' => '');
     (T_CS('\begingroup'), T_CS('\lxSVG@installcommands')); });
 
-DefMacro('\endlxSVG@picture', sub { T_CS('\endgroup'); });
+DefMacro('\endlxSVG@picture', '\endgroup');
 
 DefConstructor('\lxSVG@pgfsys@insertpicture{}',
   '<ltx:picture>' .
@@ -117,7 +117,8 @@ DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
         _noautoclose => '1');
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
-    else { $doc->absorb($box); } });
+    else { $doc->absorb($box); } },
+  alias => '\raise');
 
 DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
@@ -127,14 +128,16 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
         _noautoclose => '1');
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
-    else { $doc->absorb($box); } });
+    else { $doc->absorb($box); } },
+  alias => '\lower');
 
 DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text',
         'xoffset'      => $skip->pxValue . 'px',
-        '_noautoclose' => '0'); } });
+        '_noautoclose' => '0'); } },
+  alias => '\hskip');
 
 # Like regular \hbox, \vbox, but we don't want any extra element around it.
 DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
@@ -142,6 +145,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   sizer        => '#2',
+  alias        => '\hbox',
   beforeDigest => sub { reenterTextMode(); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
@@ -155,6 +159,7 @@ DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
 
 DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
   sizer       => '#2',
+  alias       => '\vbox',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $spec = $whatsit->getArg(1);
@@ -195,8 +200,9 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
       transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')',
       class     => 'ltx_svg_fog');
     my $strokeattr = $doc->findnode('ancestor-or-self::*/@stroke', $doc->getElement);
-    my $sw         = $doc->openElement('svg:switch');
-    my $fo         = $doc->openElement('svg:foreignObject',
+    my $sw = $doc->openElement('svg:switch');
+    my ($ww, $hh, $dd) = $box->getSize;
+    my $fo = $doc->openElement('svg:foreignObject',
       width    => $w->pxValue,
       height   => $h->add($d)->pxValue,
       overflow => 'visible',
@@ -469,6 +475,7 @@ DefConstructor('\lxSVG@pgfsys@endgroup@',
 #=====================================================================
 # Implementation
 
+# these need to arrange for proper reversion!
 DefMacro('\pgfsys@setlinewidth{}',  '\lxSVG@pgfsys@begingroup{stroke-width={#1}}');
 DefMacro('\pgfsys@buttcap',         '\lxSVG@pgfsys@begingroup{stroke-linecap=butt}');
 DefMacro('\pgfsys@roundcap',        '\lxSVG@pgfsys@begingroup{stroke-linecap=round}');
@@ -627,7 +634,10 @@ DefPrimitive('\lxSVG@internal@restoregcount', sub {
 
 DefMacro('\pgfsys@beginscope', sub {
     (T_CS('\lxSVG@internal@savegcount'), T_CS('\begingroup'),
-      T_CS('\lxSVG@pgfsys@begingroup'), T_BEGIN, T_END); });
+      # Is this really needed? A <g> w/ no attributes??
+      #     T_CS('\lxSVG@pgfsys@begingroup'), T_BEGIN, T_END
+    );
+});
 
 DefMacro('\pgfsys@endscope', sub {
     my @toks = ();
@@ -697,11 +707,10 @@ DefPrimitive('\lxSVG@pgfsys@sh@color{Float}{Float}{Float}', sub {
     AssignValue(pgf_sh_color => Color('rgb', map { $_->valueOf } @_[1 .. $#_]));
     return; });
 
-DefMacro('\lxSVG@pgfsys@sh@interval@{Dimension}',
+DefMacro('\lxSVG@pgfsys@sh@interval@{}',
   '\lxSVG@pgfsys@sh@stashstop{\lxSVG@pgfsys@sh@stop{#1}{\pgf@sys@shading@end@pos}}');
 DefPrimitive('\lxSVG@pgfsys@sh@stashstop{}', sub {
-    my $stops = LookupValue('pgf_sh_stops');
-    AssignValue('pgf_sh_stops' => [($stops ? @$stops : ()), Digest($_[1])]);
+    PushValue('pgf_sh_stops' => Digest($_[1]));
     return; });
 
 DefConstructor('\lxSVG@pgfsys@sh@stop{Dimension}{Dimension}',
@@ -784,7 +793,8 @@ DefConstructor('\lxSVG@pgfsys@sh@insert{Dimension}{Dimension}{}',
     x => sub { $_[1]->ptValue; },
     y => sub { $_[2]->ptValue; } });
 
-DefMacro('\lxSVG@process{Dimension}{Dimension}',
+# \lxSVG@process{Dimension}{Dimension}
+DefMacro('\lxSVG@process{}{}',
   '\ifdim\pgf@picmaxx<#1\global\pgf@picmaxx=#1\fi'
     . '\ifdim\pgf@picmaxy<#2\global\pgf@picmaxy=#2\fi'
     . '\ifdim\pgf@picminx>#1\global\pgf@picminx=#1\fi'
@@ -820,7 +830,8 @@ DefMacro('\pgfsys@shadingoutsidepgfpicture{}', <<'EoTeX');
   \endgroup
 EoTeX
 
-DefMacro('\pgfsys@horishading{}{Dimension}{}', sub {
+# \pgfsys@horishading{}{Dimension}{}
+DefMacro('\pgfsys@horishading{}{}{}', sub {
     my ($gullet, $name, $height, $specs) = @_;
     (Invocation(T_CS('\pgf@parsefunc'), $specs),
       T_CS('\lxSVG@pgfsys@sh@create'),
@@ -829,7 +840,8 @@ DefMacro('\pgfsys@horishading{}{Dimension}{}', sub {
       Invocation(T_CS('\lxSVG@pgfsys@sh@defstripes'),
         $name, Number(0))); });
 
-DefMacro('\pgfsys@vertshading{}{Dimension}{}', sub {
+## \pgfsys@vertshading{}{Dimension}{}
+DefMacro('\pgfsys@vertshading{}{}{}', sub {
     my ($gullet, $name, $height, $specs) = @_;
     (Invocation(T_CS('\pgf@parsefunc'), $specs),
       T_CS('\lxSVG@pgfsys@sh@create'),
@@ -1063,7 +1075,8 @@ DefMacroI('\lxSVG@alignment@align', undef,
     . '\@alignment@align@marker'
     . '\@open@column\@open@inner@column');
 
-DefMacro('\lxSVG@alignment@newline OptionalMatch:* [Dimension]',
+# \lxSVG@alignment@newline OptionalMatch:* [Dimension]
+DefMacro('\lxSVG@alignment@newline OptionalMatch:* []',
   # almost works; except at the END of the \matrix !!!
   '\pgfmatrixendrow'
     . '\@close@inner@column\@close@column\@close@row'
