@@ -110,16 +110,22 @@ sub rotatedProperties {
     ytranslate  => $ysh,
     ); }
 
-DefConstructor('\rotatebox{Float} Digested',
+# NOTE: Need to implement the origin of rotation!
+# [code so far only reads them]
+DefKeyVal('Grot', 'origin', '');            # c,l,r,t,b,B
+DefKeyVal('Grot', 'x',      'Dimension');
+DefKeyVal('Grot', 'y',      'Dimension');
+DefKeyVal('Grot', 'units',  '');
+DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} Digested',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
     . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
-    . "#2"
+    . "#3"
     . "</ltx:inline-block>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getArg(2))); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getArg(2), $whatsit->getArg(3))); });
 
 DefConstructor('\reflectbox Digested',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
