@@ -103,7 +103,7 @@ sub combineParallel {
   my $id  = $xmath->getAttribute('fragid');
   my @alt = ();
   foreach my $secondary (@secondaries) {
-    my $mimetype = $$secondary{mimetype};
+    my $mimetype = $$secondary{mimetype} || 'unknown';
     my $encoding = $ENCODINGS{$mimetype} || $mimetype;
     if ($mimetype =~ /^application\/mathml/) {    # Some flavor of MathML? simple case
       push(@alt, ['m:annotation-xml', { encoding => $encoding },
@@ -958,6 +958,7 @@ sub pmml_text_aux {
       # So, let's just include the raw latexml markup, let the xslt convert it
       # And hope that the ultimate agent can deal with it!
       my ($ignore, %mmlattr) = stylizeContent($node, 0, %attr);
+      delete $mmlattr{stretchy};    # not useful (not too sure
       Warn('unexpected', 'nested-math', $node,
         "We're getting m:math nested within an m:mtext")
         if $LaTeXML::Post::DOCUMENT->findnodes('.//ltx:Math', $node);
