@@ -65,22 +65,22 @@ sub combineParallel {
   my $id   = $xmath->getAttribute('fragid');
   my @attr = ();
   foreach my $secondary (@secondaries) {
-    my $type = $$secondary{mimetype};
-    if ($$secondary{mimetype} eq $omMimeType) {    # Another OpenMath object?
+    my $mimetype = $$secondary{mimetype} || 'unknown';
+    if ($mimetype eq $omMimeType) {    # Another OpenMath object?
       push(@attr,
-        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        ['om:OMS', { cd => "Alternate", name => $mimetype }],
         $$secondary{xml}); }
-    elsif (my $xml = $$secondary{xml}) {           # Or some other XML object?
-                                                   # ORRRR should this be in other order?
+    elsif (my $xml = $$secondary{xml}) {    # Or some other XML object?
+                                            # ORRRR should this be in other order?
       push(@attr,
-        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        ['om:OMS', { cd => "Alternate", name => $mimetype }],
         ['om:OMFOREIGN', {}, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)]); }
     # What do do with src?
 ##    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
-##      push(@wsecondaries, ['m:annotation', { encoding => $$secondary{mimetype}, src => $src }]); }
-    elsif (my $string = $$secondary{string}) {     # simple string data?
+##      push(@wsecondaries, ['m:annotation', { encoding => $mimetype, src => $src }]); }
+    elsif (my $string = $$secondary{string}) {    # simple string data?
       push(@attr,
-        ['om:OMS', { cd => "Alternate", name => $$secondary{mimetype} }],
+        ['om:OMS', { cd => "Alternate", name => $mimetype }],
         ['om:OMSTR', {}, $string]); }
     # anything else ignore?
   }
@@ -89,9 +89,9 @@ sub combineParallel {
   if (my $tex = $math && isElementNode($math) && $math->getAttribute('tex')) {
     push(@attr,
       ['om:OMS', { cd => 'Alternate', name => 'TeX' }],
-      ['om:OMFOREIGN', {}, $tex]); }               # Should this simply be OMSTR ???
+      ['om:OMFOREIGN', {}, $tex]); }              # Should this simply be OMSTR ???
   return { processor => $self,
-    mimetype => 'application/openmath+xml',
+    mimetype => $omMimeType,
     xml => ['om:OMATTR', {}, @attr, $$primary{xml}] }; }
 
 sub getQName {
