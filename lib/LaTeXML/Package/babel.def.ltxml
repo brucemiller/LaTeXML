@@ -159,7 +159,6 @@ DefPrimitive('\ltx@bbl@select@language{}', sub {
     my ($stomach, $language) = @_;
     $language = ToString(Expand($language));
     my $iso = $$bbl_language_map{$language};
-    Info('language', $language, $stomach, "LANGUAGE=$language ($iso)");
     MergeFont(language => $iso) if $iso;
     return; });
 
