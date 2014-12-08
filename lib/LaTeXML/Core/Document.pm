@@ -683,7 +683,7 @@ sub maybeCloseElement {
 
 # This closes all nodes until $node becomes the current point.
 sub closeToNode {
-  my ($self, $node) = @_;
+  my ($self, $node, $ifopen) = @_;
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
@@ -696,7 +696,8 @@ sub closeToNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext); }
+      "Currently in " . $self->getInsertionContext) unless $ifopen;
+    return; }
   else {                            # Found node.
     Error('malformed', $model->getNodeQName($node), $self,
       "Closing " . Stringify($node) . " whose open descendents do not auto-close",
