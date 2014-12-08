@@ -111,7 +111,7 @@ sub UnTeX {
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
   my $length = 0;
-  #  my $level = 0;
+  my $level  = 0;
   my ($prevs, $prevcc) = ('', CC_COMMENT);
   while (@tokens) {
     my $token = shift(@tokens);
@@ -122,7 +122,7 @@ sub UnTeX {
       while (@tokens && ($tokens[0]->getCatcode == CC_LETTER)) {
         $s .= shift(@tokens)->getString; } }
     my $l = length($s);
-    #    if($cc == CC_BEGIN){ $level++; }
+    if ($cc == CC_BEGIN) { $level++; }
     # Seems a reasonable & safe time to line break, for readability, etc.
     if (($cc == CC_SPACE) && ($s eq "\n")) {    # preserve newlines already present
       if ($length > 0) {
@@ -142,8 +142,11 @@ sub UnTeX {
       $string .= "%\n" . $s; $length = $l; }                      # with %, so that it "disappears"
     else {
       $string .= $s; $length += $l; }
-    #    if($cc == CC_END  ){ $level--; }
+    if ($cc == CC_END) { $level--; }
     $prevs = $s; $prevcc = $cc; }
+  # Patch up nesting for valid TeX !!!
+  if ($level > 0) { $string = $string . ('}' x $level); }
+  elsif ($level < 0) { $string = ('{' x -$level) . $string; }
   return $string; }
 
 #======================================================================
