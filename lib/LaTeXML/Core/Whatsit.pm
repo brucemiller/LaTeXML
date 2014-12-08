@@ -106,8 +106,7 @@ sub getBody {
 sub setBody {
   my ($self, @body) = @_;
   my $trailer = pop(@body);
-##  $$self{properties}{body} = List(@body, mode => $self->isMath ? 'math' : 'text');
-  $$self{properties}{body} = LaTeXML::Core::List->new(@body);    # Don't want collapse if singlet!
+  $$self{properties}{body} = List(@body);
   $$self{properties}{body}->setProperty(mode => 'math') if $self->isMath;
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
