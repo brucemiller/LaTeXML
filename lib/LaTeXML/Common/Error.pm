@@ -46,7 +46,8 @@ sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {
+##  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {
+  if (!$LaTeXML::Common::Error::InHandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
       $LaTeXML::BAILOUT = 1;
@@ -64,6 +65,7 @@ sub Fatal {
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
   local $LaTeXML::Common::Error::InHandler = 1;
+  local $$SIG{__DIE__} = undef;
   die $message; }
 
 sub checkRecursiveError {
