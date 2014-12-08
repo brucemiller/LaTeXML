@@ -1657,8 +1657,8 @@ sub insertBlock {
     else {
       push(@newnodes, shift(@nodes)); } }
 
-  # Close everything back up to the originally open element.
-  $document->closeToNode($context);
+  # Close everything back up to the originally open element (but only if still open!)
+  $document->closeToNode($context, 1);
 
   # Check if the ltx:inline-block container is really needed.
   if ($newblock) {
@@ -2641,21 +2641,25 @@ DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noin
 
 # Remember; \par _closes_, not opens, paragraphs!
 # Here, we want to close both an open p and para (if either are open).
-DefConstructorI('\par', undef,
-  sub {
+DefConstructorI('\par', undef, sub {
     my ($document, %props) = @_;
-    $document->maybeCloseElement('ltx:p');
-    if (my $c = $props{class}) {
-      my $node = $document->getElement;
-      if ($document->getNodeQName($node) eq 'ltx:para') {    # Only set on the para about to close!
-        $document->setAttribute($node, class => $c); } }
-    $document->maybeCloseElement('ltx:para'); },
+    if ($props{inPreamble}) { }
+    else {
+      $document->maybeCloseElement('ltx:p');
+      if (my $c = $props{class}) {
+        my $node = $document->getElement;
+        if ($document->getNodeQName($node) eq 'ltx:para') {    # Only set on the para about to close!
+          $document->setAttribute($node, class => $c); } }
+      $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
-    if (my $c = LookupValue('next_para_class')) {
-      $_[1]->setProperty(class => $c);
-      AssignValue(next_para_class => undef); }
-    Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
-        T_CS('\LTX@clear@vadjust@afterpar'))); },
+    if (LookupValue('inPreamble')) {
+      $_[1]->setProperty(inPreamble => 1); }
+    else {
+      if (my $c = LookupValue('next_para_class')) {
+        $_[1]->setProperty(class => $c);
+        AssignValue(next_para_class => undef); }
+      Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
+          T_CS('\LTX@clear@vadjust@afterpar'))); } },
   alias => "\\par\n");
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
@@ -3665,7 +3669,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
   reversion => sub {
     my ($whatsit) = @_;
     (Revert($whatsit->getProperty('top')),
-      $whatsit->getArg(1),
+      $whatsit->getArg(1)->unlist,
       Revert($whatsit->getProperty('bottom'))); });
 
 DefMacro('\choose',
@@ -4273,7 +4277,6 @@ DefPrimitiveI('\narrower', undef, undef);
 # rather than directly drop it into the digested stream.
 # When we begin constructing the document, all accumulated material is output.
 # See LaTeX.ltxml for usage.
-
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 AssignValue(frontmatter => {}, 'global');
