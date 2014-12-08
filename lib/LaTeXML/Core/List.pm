@@ -35,8 +35,9 @@ sub List {
   if ((scalar(@boxes) >= 2) && ($boxes[-2] eq 'mode')
     && (($boxes[-1] eq 'math') || ($boxes[-1] eq 'text'))) {
     $mode = pop(@boxes); pop(@boxes); }
+  @boxes = grep { defined $_ } @boxes;    # strip out undefs
   if (scalar(@boxes) == 1) {
-    return $boxes[0]; }    # Simplify!
+    return $boxes[0]; }                   # Simplify!
   else {
     my $list = LaTeXML::Core::List->new(@boxes);
     $list->setProperty(mode => $mode) if $mode eq 'math';
