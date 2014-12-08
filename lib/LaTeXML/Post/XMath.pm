@@ -60,9 +60,10 @@ sub combineParallel {
   my $id  = $xmath->getAttribute('fragid');
   my @alt = ();
   foreach my $secondary (@secondaries) {
-    if ($$secondary{mimetype} =~ $lxMimeType) {    # XMath
+    my $mimetype = $$secondary{mimetype} || 'unknown';
+    if ($mimetype eq $lxMimeType) {    # XMath
       push(@alt, $$secondary{xml}); }
-    elsif (my $xml = $$secondary{xml}) {           # Other XML? may need wrapping.
+    elsif (my $xml = $$secondary{xml}) {    # Other XML? may need wrapping.
       push(@alt, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)); }
     #    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
     #      push(@alt, ['ltx:graphic', { src => $src }]); }
