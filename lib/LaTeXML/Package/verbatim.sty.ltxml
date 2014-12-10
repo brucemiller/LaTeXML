@@ -89,7 +89,7 @@ DefMacro('\verbatim@', sub {
     # Note: This should allow a regexp, since there can be spaces between \end and { !!!
     my @lines = ();
     while (defined(my $line = $gullet->readRawLine)) {
-      if ($line =~ /^(.*)\\end\s*{\Q$env\E}(.*)$/) {
+      if ($line =~ /^(.*)\\end\s*\{\Q$env\E\}(.*)$/) {
         push(@lines, $1);
         Info('unexpected', 'stuff', $gullet, "Characters dropped after '\\end{$env}'") if $2;
         last; }

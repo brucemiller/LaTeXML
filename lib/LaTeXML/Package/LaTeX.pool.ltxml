@@ -1295,7 +1295,7 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
       my $gullet = $stomach->getGullet;
       while (defined(my $line = $gullet->readRawLine)) {
 
-        if ($line =~ /^(.*?)\\end{verbatim}(.*?)$/) {
+        if ($line =~ /^(.*?)\\end\{verbatim\}(.*?)$/) {
           push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
           last; }
         push(@lines, $line . "\n"); }
@@ -3013,7 +3013,7 @@ sub process_index_phrases {
         pop(@tokens);    # Remove the extra "!" stopbit.
         my $extra = ToString(Tokens(@tokens));
         if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
-        elsif ($extra =~ /^seealso\s*{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
+        elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
         elsif ($extra eq '(') { }                                            # ?
         elsif ($extra eq ')') { }                                            # ?
         else                  { $style = $index_style{$extra} || $extra; }

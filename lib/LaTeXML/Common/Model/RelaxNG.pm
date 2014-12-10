@@ -535,7 +535,7 @@ sub documentModules {
       "\\end{schemamodule}"); }
   foreach my $name (keys %{ $$self{defined_patterns} }) {
     if ($$self{defined_patterns}{$name} < 0) {
-      $docs =~ s/\\patternadd{$name}/\\patterndefadd{$name}/s; } }
+      $docs =~ s/\\patternadd\{$name\}/\\patterndefadd{$name}/s; } }
   return $docs; }
 
 sub cleanTeX {

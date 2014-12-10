@@ -69,7 +69,7 @@ foreach my $symbol (@symbols) {
 foreach my $spec (@unknowns) {
   my $symbol = $spec;
   my $font;
-  $font = $1 if $symbol =~ s/{([\w\s]*)}$//;
+  $font = $1 if $symbol =~ s/\{([\w\s]*)\}$//;
   collect_matches("Unknown \"$spec\"",
     # Find Math containing an XMTok, with role=UNKNOWN
     "//ltx:Math[descendant::ltx:XMTok[\@role='UNKNOWN']"
