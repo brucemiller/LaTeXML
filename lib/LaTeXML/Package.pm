@@ -512,7 +512,7 @@ sub CleanURL {
   my ($url) = @_;
   $url = ToString($url);
   $url =~ s/^\s+//s; $url =~ s/\s+$//s;    # Trim leading/trailing, in any case
-  $url =~ s/\\~{}/~/g;
+  $url =~ s/\\~\{\}/~/g;
   return $url; }
 
 #======================================================================
