@@ -202,7 +202,7 @@ sub computeSize {
       next unless $$cell{boxes};
       my ($w, $h, $d) = $$cell{boxes}->getSize(align => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach});
-      if (($$cell{span} || 1) == 1) {
+      if (($$cell{colspan} || 1) == 1) {
         $colwidths[$i] = max($colwidths[$i], $w->valueOf); }
       else { }    # Could check afterwards that spanned columns are wide enough?
       if (($$cell{rowspan} || 1) == 1) {
@@ -247,7 +247,7 @@ sub beAbsorbed {
       $$cell{cell} = &{ $$self{openColumn} }($document,
         align => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach},
-        (($$cell{span}    || 1) != 1 ? (colspan => $$cell{span})    : ()),
+        (($$cell{colspan} || 1) != 1 ? (colspan => $$cell{colspan}) : ()),
         (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan}) : ()),
         ($border      ? (border => $border) : ()),
         ($$cell{head} ? (thead  => 'true')  : ()));
@@ -355,8 +355,15 @@ sub normalizeAlignment {
   # Mark any cells that are covered by rowspans
   for (my $i = 0 ; $i < scalar(@rows) ; $i++) {
     my @row = @{ $rows[$i]->{columns} };
+
     for (my $j = 0 ; $j < scalar(@row) ; $j++) {
       my $col = $row[$j];
+      # scan the row for spanned columns that contain spanned rows!
+      if (my $nc = $$col{colspan} || 1) {
+        if ($nc > 1) {
+          foreach (my $jj = $j + 1 ; $jj < $j + $nc ; $jj++) {
+            if (my $nr = $row[$jj]{rowspan}) {
+              $$col{rowspan} = $nr; } } } }
       my $nr = $$col{rowspan} || 1;
       if ($nr > 1) {
         my $nc = $$col{colspan} || 1;
@@ -561,7 +568,7 @@ sub collect_alignment_rows {
   for (my $r = 0 ; $r < $nrows ; $r++) {
     for (my $c = 0 ; $c < $ncols ; $c++) {
       my $rs = $rows[$r][$c]{rowspan} || 1;
-      my $cs = $rows[$r][$c]{span}    || 1;    # NOT colspan!!!!!!
+      my $cs = $rows[$r][$c]{colspan} || 1;
       my $ca = $rows[$r][$c]{align};
       my $cc = $rows[$r][$c]{content_class};
       my $cl = $rows[$r][$c]{content_length};
@@ -611,7 +618,7 @@ sub collect_alignment_rows {
           . ' ' . $$col{content_length}
           . ' ' . $$col{border} . "=>" . join('', grep { $$col{$_} } qw(t r b l))
           . (($$col{rowspan} || 1) > 1 ? " rowspan=" . $$col{rowspan} : '')
-          . (($$col{span}    || 1) > 1 ? " colspan=" . $$col{span}    : '')
+          . (($$col{colspan} || 1) > 1 ? " colspan=" . $$col{colspan} : '')
           . "\n"; } } }
   return @rows; }
 

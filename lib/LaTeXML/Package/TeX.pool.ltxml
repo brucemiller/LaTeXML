@@ -2349,7 +2349,7 @@ DefConstructor('\@@default@open@row SkipSpaces DigestedBody',
 # Column
 # Here, a column represents 1 or more "inner columns".
 # inner columns can be separated by \span's yielding a single column with
-# rowspan > 1. Also, inner columns recognize \omit which removes the
+# colspan > 1. Also, inner columns recognize \omit which removes the
 # before & after tokens which would otherwise wrap the inner column.
 
 DefPrimitiveI('\@tabular@begin@heading', undef, sub { AssignValue(IN_TABULAR_HEAD => 1, 'global'); });
@@ -2418,12 +2418,12 @@ DefPrimitive('\@@open@column SkipSpaces DigestedBody', sub {
     $boxes = List(@boxes, mode => ($boxes->isMath ? 'math' : 'text'));
 
     # record relevant info in the Alignment.
-    $$colspec{align}  = $align;
-    $$colspec{border} = $border = ($$colspec{border} || '') . $border;
-    $$colspec{boxes}  = $boxes;
-    $$colspec{span}   = $n1 - $n0 + 1;
-    $$colspec{empty}  = 1 if $empty;
-    $$colspec{head}   = LookupValue('IN_TABULAR_HEAD');
+    $$colspec{align}   = $align;
+    $$colspec{border}  = $border = ($$colspec{border} || '') . $border;
+    $$colspec{boxes}   = $boxes;
+    $$colspec{colspan} = $n1 - $n0 + 1;
+    $$colspec{empty}   = 1 if $empty;
+    $$colspec{head}    = LookupValue('IN_TABULAR_HEAD');
     for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {
       my $c = $alignment->getColumn($i);
       $$c{skipped} = 1 if $c; }
