@@ -83,8 +83,8 @@ sub outerWrapper {
       alttext => $math->getAttribute('tex'),
       @img },
     $mml];
-  if (my $id = $xmath->getAttribute('fragid')) {               # Associate id's, but DONT crossref
-    $wrapped = $self->associateID($wrapped, $id, 1); }
+  # Associate the generated node with the source XMath node, but don't cross-reference
+  $self->associateNode($wrapped, $xmath, 1);
   return $wrapped; }
 
 # Map mimetype to Official MathML encodings
@@ -139,11 +139,6 @@ sub combineParallel {
 sub getQName {
   my ($node) = @_;
   return $LaTeXML::Post::DOCUMENT->getQName($node); }
-
-# Hook for subclasses to annotate the transformation.
-sub augmentNode {
-  my ($self, $node, $mathml) = @_;
-  return $mathml; }
 
 # Add a cross-reference linkage (eg. xref) onto $node to refer to the given $id.
 # (presumably $id is the id of a node created by another Math Postprocessor
@@ -341,12 +336,9 @@ sub pmml {
   if (getQName($node) eq 'ltx:XMRef') {
     $refr = $node;
     $node = realize($node); }
-  # Inherit the current "Source ID", if we are not visible to content
-  # otherwise, use the XM-node's id (fragid, actually; ugh)
-  local $LaTeXML::MathML::SOURCEID = ($node->getAttribute('_cvis')
-      && $node->getAttribute('fragid'))
-    || $LaTeXML::MathML::SOURCEID;
-
+  # Establish the source XMath node to be used for associating generated MathML
+  # A bit of heuristic is used (see the code)
+  local $LaTeXML::MathML::SOURCENODE = findPresentationSourceNode($node);
   # Bind any other style information from the refering node or the current node
   # so that any tokens synthesized from strings recover that style.
   local $LaTeXML::MathML::SIZE  = _getattr($refr, $node, 'fontsize') || $LaTeXML::MathML::SIZE;
@@ -356,7 +348,6 @@ sub pmml {
   local $LaTeXML::MathML::OPACITY = _getattr($refr, $node, 'opacity') || $LaTeXML::MathML::OPACITY;
   my $result = pmml_internal($node);
   # Let customization annotate the result.
-  $result = $LaTeXML::Post::MATHPROCESSOR->augmentNode($node, $result);
   # Now possibly wrap the result in a row, enclose, etc, if needed
   my $o = _getattr($refr, $node, 'open');
   my $c = _getattr($refr, $node, 'close');
@@ -380,9 +371,31 @@ sub pmml {
   if ($cl && ((ref $result) eq 'ARRAY')) {                      # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
-  # Finally, associate the result with the source id, for cross-linking between parallel markup.
-  $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
+  # Associate the generated node with the source XMath node.
+  $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $LaTeXML::MathML::SOURCENODE);
   return $result; }
+
+sub first_element {
+  my ($node) = @_;
+  my $c = $node->firstChild;
+  while ($c) {
+    return $c if $c->nodeType == XML_ELEMENT_NODE;
+    $c = $c->nextSibling; }
+  return; }
+
+# Establish the source XMath node to be used for associating generated MathML
+sub findPresentationSourceNode {
+  my ($node) = @_;
+  # if it is visible from the content side, we'll consider it the source.
+  return $node if $node->getAttribute('_cvis');
+  # Otherwise, dig a bit deeper if it seems to be an applied token.
+  if ((getQName($LaTeXML::MathML::SOURCENODE) || 'unknown') eq 'ltx:XMDual') {
+    my $sn = first_element($LaTeXML::MathML::SOURCENODE);
+    my $q = getQName($sn) || 'unknown';
+    return $sn if $q eq 'ltx:XMTok';
+    if ($q eq 'ltx:XMApp') {
+      return first_element($sn); } }
+  return $LaTeXML::MathML::SOURCENODE; }
 
 sub _getattr {
   my ($refr, $node, $attribute) = @_;
@@ -985,11 +998,12 @@ sub cmml {
   my ($node) = @_;
   if (getQName($node) eq 'ltx:XMRef') {
     $node = realize($node); }
-  local $LaTeXML::MathML::SOURCEID = ($node->getAttribute('_pvis')
-      && $node->getAttribute('fragid'))
-    || $LaTeXML::MathML::SOURCEID;
+  # Establish the source XMath node to be used for associating generated MathML
+  local $LaTeXML::MathML::SOURCENODE = ($node->getAttribute('_pvis') && $node)
+    || $LaTeXML::MathML::SOURCENODE;
   my $result = cmml_internal($node);
-  $LaTeXML::Post::MATHPROCESSOR->associateID($result, $LaTeXML::MathML::SOURCEID);
+  # Associate the generated node with the source XMath node.
+  $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $LaTeXML::MathML::SOURCENODE);
   return $result; }
 
 sub cmml_internal {

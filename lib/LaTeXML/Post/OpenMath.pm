@@ -49,8 +49,8 @@ sub preprocess {
 sub outerWrapper {
   my ($self, $doc, $xmath, $om) = @_;
   my $wrapped = ['om:OMOBJ', {}, $om];
-  if (my $id = $xmath->getAttribute('fragid')) {        # Associate id's, but DONT crossref
-    $wrapped = $self->associateID($wrapped, $id, 1); }
+  # Associate the generated node with the source XMath node; but don't cross-reference
+  $self->associateNode($wrapped, $xmath, 1);
   return $wrapped; }
 
 sub convertNode {
@@ -118,9 +118,8 @@ sub om_expr {
   # Get the real node, first.
   $node = $LaTeXML::Post::DOCUMENT->realizeXMNode($node);
   my $result = om_expr_aux($node);
-  # map any ID here, as well, BUT, since we follow split/scan, use the fragid, not xml:id!
-  if (my $id = $node->getAttribute('fragid')) {
-    $result = $LaTeXML::Post::MATHPROCESSOR->associateID($result, $id); }
+  # Associate the generated node with the source XMath node.
+  $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $node);
   return $result; }
 
 # Is it clear that we should just getAttribute('role'),

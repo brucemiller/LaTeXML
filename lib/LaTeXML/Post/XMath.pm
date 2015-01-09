@@ -48,7 +48,6 @@ sub convertNode {
   my $idsuffix = $self->IDSuffix;
   return { processor => $self, encoding => $lxMimeType, mimetype => $lxMimeType,
     xml => ($idsuffix
-        # Should we be trying to call/mimic associateID ?
       ? ['ltx:XMath', {}, map { $doc->cloneNode($_, $idsuffix) } element_nodes($xmath)]
         # If no idsuffix, we're actually just PRESERVING the xmath,
         # so we shouldn't need any cloning or id munging (!?!?!?!)
