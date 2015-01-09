@@ -85,13 +85,18 @@ sub show {
   my ($self) = @_;
   my $string = "ObjectDB Entry for: $$self{key}\n";
   foreach my $attr (grep { $_ ne 'key' } keys %{$self}) {
-    $string .= wrap(sprintf(' %16s : ', $attr), (' ' x 20), showvalue($self->getValue($attr))) . "\n"; }
+    my $label = sprintf(' %16s : ', $attr);
+    my $value = showvalue($self->getValue($attr));
+    # hack around bug in Text::Wrap 2012.0818
+    my $line;
+    eval { $line = wrap($label, (' ' x 20), $value); };
+    $string .= (defined $line ? $line : $label . $value) . "\n"; }
   return $string; }
 
 sub showvalue {
   my ($value) = @_;
   if ((ref $value) =~ /^XML::/) {
-    return $value->toString; }
+    return $value->toString(1); }
   elsif (ref $value eq 'HASH') {
     return "{" . join(', ', map { "$_=>" . showvalue($$value{$_}) } keys %$value) . "}"; }
   elsif (ref $value eq 'ARRAY') {
