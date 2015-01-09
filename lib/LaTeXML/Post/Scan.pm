@@ -149,7 +149,8 @@ sub noteLabels {
 sub cleanNode {
   my ($self, $doc, $node) = @_;
   return $node unless $node;
-  my $cleaned = $node->cloneNode(1);
+  # Clone the node, and get the ID's unique (at least) within the originating document
+  my $cleaned = $doc->cloneNode($node);
   # Remove indexmark (anything else ?)
   map { $_->parentNode->removeChild($_) } $doc->findnodes('.//ltx:indexmark', $cleaned);
   return $cleaned; }
@@ -309,6 +310,7 @@ sub bibref_handler {
 sub indexmark_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   # Get the actual phrases, and any see_also phrases (if any)
+  # Do these need ->cleanNode ???
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
   my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
@@ -326,6 +328,7 @@ sub glossarymark_handler {
   my $id = $node->getAttribute('xml:id');
   my $role = $node->getAttribute('role') || '';
   # Get the actual phrases, and any see_also phrases (if any)
+  # Do these need ->cleanNode ???
   my $phrase     = $doc->findnode('ltx:glossaryphrase',     $node);
   my $expansion  = $doc->findnode('ltx:glossaryexpansion',  $node);
   my $definition = $doc->findnode('ltx:glossarydefinition', $node);
@@ -360,6 +363,7 @@ sub bibitem_handler {
     my $key = $node->getAttribute('key');
     $key = lc($key) if $key;
     $$self{db}->register("BIBLABEL:$key", id => orNull($id)) if $key;
+    # Do these need ->cleanNode ???
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id), bibkey => orNull($key),
       location    => orNull($doc->siteRelativeDestination),
       pageid      => orNull($self->pageID($doc)),
