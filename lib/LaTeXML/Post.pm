@@ -310,8 +310,6 @@ sub process {
     if ($proc1 && $proc2) {
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
-  $doc->unmarkXMNodeVisibility;
-
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -415,37 +413,39 @@ sub IDSuffix {
 sub rawIDSuffix {
   return ''; }
 
-# Given an array-represented XML $node, add an id attribute to the node
-# and all children w/o id's (stopping when id encountered).
-# The id will be derived from $sourceid using the appropriate IDSuffix,
-# and bumping the id counter to avoid conflicts with any other node derived
-# from that same source id.
-# Moreover, unless $noxref, the new ids will be recorded as having been generated from $sourceid,
-# so that cross-referencing in parallel markup can be effected.
-sub associateID {
-  my ($self, $node, $sourceid, $noxref) = @_;
-  return $node unless $sourceid && ref $node;
-  # or if already has an id (do we still need bookkeeping?)
-  return if (ref $node eq 'ARRAY' ? $$node[1]{'xml:id'} : $node->getAttribute('xml:id'));
-  my $id = $sourceid . $self->IDSuffix;
-  if (my $ctr = $$self{convertedID_counter}{$sourceid}++) {
-    $id = LaTeXML::Post::uniquifyID($sourceid, $ctr, $self->IDSuffix); }
-  push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref;
-  if (ref $node eq 'ARRAY') {    # Array represented
-    $$node[1]{'xml:id'} = $id;
-    map { $self->associateID_aux($_, $sourceid, $noxref) } @$node[2 .. $#$node]; }
-  else {                         # LibXML node
-    $node->setAttribute('xml:id' => $id);
-    map { $self->associateID_aux($_, $sourceid, $noxref) } $node->childNodes; }
-  return $node; }
+# Associate a generated Math node (MathML, OpenMath,...) with the XMath node
+# that is it's source.  If the XMath node has an id, then id's will be added
+# to the generated node to enable cross-referencing.
+sub associateNode {
+  my ($self, $node, $sourcenode, $noxref) = @_;
+  return unless $sourcenode && ref $node;
+  # Check if already associated with a source node
+  my $isarray = ref $node eq 'ARRAY';
+  if ($isarray) {
+    return if $$node[1]{'_sourced'};
+    $$node[1]{'_sourced'} = 1; }
+  else {
+    return if $node->getAttribute('_sourced');
+    $node->setAttribute('_sourced' => 1); }
+  if (my $sourceid = $sourcenode->getAttribute('fragid')) {    # If source has ID
+    my $id = $sourceid . $self->IDSuffix;
+    if (my $ctr = $$self{convertedID_counter}{$sourceid}++) {
+      $id = LaTeXML::Post::uniquifyID($sourceid, $ctr, $self->IDSuffix); }
+    if ($isarray) {
+      $$node[1]{'xml:id'} = $id; }
+    else {
+      $node->setAttribute('xml:id' => $id); }
+    push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; }
+  $self->associateNodeHook($node, $sourcenode, $noxref);
+  if ($isarray) {                                              # Array represented
+    map { $self->associateNode($_, $sourcenode, $noxref) } @$node[2 .. $#$node]; }
+  else {                                                       # LibXML node
+    map { $self->associateNode($_, $sourcenode, $noxref) } element_nodes($node); }
+  return; }
 
-sub associateID_aux {
-  my ($self, $node, $sourceid, $noxref) = @_;
-  if (!ref $node) { }
-  elsif (ref $node eq 'ARRAY') {    # Array represented
-    $self->associateID($node, $sourceid, $noxref); }
-  elsif ($node->nodeType == XML_ELEMENT_NODE) {
-    $self->associateID($node, $sourceid, $noxref); }
+# Customization hook for adding other attributes to the generated math nodes.
+sub associateNodeHook {
+  my ($self, $node, $sourcenode, $noxref) = @_;
   return; }
 
 # Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
@@ -786,6 +786,7 @@ sub addNodes {
         if ($attributes) {
           foreach my $key (sort keys %$attributes) {
             next unless defined $$attributes{$key};
+            next if $key =~ /^_/;    # Ignore internal attributes
             my ($attrprefix, $attrname) = $key =~ /^(.*):(.*)$/;
             my $value = $$attributes{$key};
             if ($key eq 'xml:id') {
@@ -804,12 +805,14 @@ sub addNodes {
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
+        # Note: this isn't actually much slower than $node->appendChild($child) !
         my $new = $node->addNewChild($child->namespaceURI, $child->localname);
         foreach my $attr ($child->attributes) {
           my $atype = $attr->nodeType;
           if ($atype == XML_ATTRIBUTE_NODE) {
             my $key = $attr->nodeName;
-            if ($key eq 'xml:id') {
+            if ($key =~ /^_/) { }    # don't copy internal attributes
+            elsif ($key eq 'xml:id') {
               my $value = $attr->getValue;
               my $old;
               if ((defined($old = $$self{idcache}{$value}))    # if xml:id was already used
@@ -952,14 +955,6 @@ sub markXMNodeVisibility_aux {
   else {
     foreach my $child (element_nodes($node)) {
       $self->markXMNodeVisibility_aux($child, $cvis, $pvis); } }
-  return; }
-
-sub unmarkXMNodeVisibility {
-  my ($self) = @_;
-  foreach my $math ($self->findnodes('//ltx:XMath')) {
-    foreach my $node ($self->findnodes('descendant-or-self::*[@_pvis or //@_cvis]', $math)) {
-      $node->removeAttribute('_pvis');
-      $node->removeAttribute('_cvis'); } }
   return; }
 
 #======================================================================
