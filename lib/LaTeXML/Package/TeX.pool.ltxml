@@ -5456,10 +5456,10 @@ DefMathI('\limsup', undef, "lim sup", role => 'LIMITOP', meaning => 'limit-supre
   scriptpos => \&doScriptpos);
 DefMathI('\ln',  undef, "ln",  role => 'OPFUNCTION', meaning => 'natural-logarithm');
 DefMathI('\log', undef, "log", role => 'OPFUNCTION', meaning => 'logarithm');
-DefMathI('\max', undef, "max", role => 'LIMITOP', meaning => 'maximum',
+DefMathI('\max', undef, "max", role => 'OPFUNCTION', meaning => 'maximum',
   scriptpos => \&doScriptpos);
 
-DefMathI('\min', undef, "min", role => 'LIMITOP', meaning => 'minimum',
+DefMathI('\min', undef, "min", role => 'OPFUNCTION', meaning => 'minimum',
   scriptpos => \&doScriptpos);
 DefMathI('\Pr',  undef, "Pr",  role => 'OPFUNCTION',   scriptpos => \&doScriptpos);
 DefMathI('\sec', undef, "sec", role => 'TRIGFUNCTION', meaning   => 'secant');
