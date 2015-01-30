@@ -191,11 +191,12 @@ sub read {
       -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT);
   }
 
-  # Check that destination is valid before wasting any time...
-  if ($$opts{destination}) {
-    $$opts{destination} = pathname_canonical($$opts{destination});
-    if (my $dir = pathname_directory($$opts{destination})) {
-      pathname_mkdir($dir) or croak "Couldn't create destination directory $dir: $!"; } }
+  # Check that options for system I/O (destination and log) are valid before wasting any time...
+  foreach my $IO_option(qw(destination log)) {
+    if ($$opts{$IO_option}) {
+      $$opts{$IO_option} = pathname_canonical($$opts{$IO_option});
+      if (my $dir = pathname_directory($$opts{$IO_option})) {
+        pathname_mkdir($dir) or croak "Couldn't create $IO_option directory $dir: $!"; } } }
   # Removed math formats are irrelevant for conversion:
   delete $$opts{removed_math_formats};
 
