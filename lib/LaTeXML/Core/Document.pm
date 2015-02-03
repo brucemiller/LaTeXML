@@ -1221,6 +1221,16 @@ sub getNodeFont {
   return (($t == XML_ELEMENT_NODE) && $$self{node_fonts}{ $node->getAttribute('_font') })
     || LaTeXML::Common::Font->textDefault(); }
 
+sub getNodeLanguage {
+  my ($self, $node) = @_;
+  my ($font, $lang);
+  while ($node && ($node->nodeType == XML_ELEMENT_NODE)
+    && !(($lang = $node->getAttribute('xml:lang'))
+      || (($font = $$self{node_fonts}{ $node->getAttribute('_font') })
+        && ($lang = $font->getLanguage)))) {
+    $node = $node->parentNode; }
+  return $lang || 'en'; }
+
 sub decodeFont {
   my ($self, $fontid) = @_;
   return $$self{node_fonts}{$fontid} || LaTeXML::Common::Font->textDefault(); }
