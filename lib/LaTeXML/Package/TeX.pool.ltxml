@@ -3062,60 +3062,52 @@ sub addColumnToMathFork {
     $document->setAttribute($td, align => $align); }
   if (my $colspan = $cell->getAttribute('colspan')) {
     $document->setAttribute($td, colspan => $colspan); }
+  # Remove the _Capture_ from the document; parts will get cloned &/or reinserted
+  $cell->unbindNode;
   # Usually, we will have captured a single ltx:Math node, but occasionally text?
   foreach my $node ($cell->childNodes) {
-    # We MOVE the node from the _Capture_ ($cell) to the td
-    #    $td->appendChild($node);
-    ### No, there's some segfault issue in libxml unless we clone the node!?!?!?!
-    #    $td->appendChild($node->cloneNode(1));
-    ### BUT, do in stages, since we need to remake the id associations in the document!
-    my $copy = $node->cloneNode(1);
-    $td->appendChild($copy);
-    # remake id associations AFTER inserting back into the document! (whew!!!)
-    foreach my $n ($document->findnodes('descendant-or-self::*[@xml:id]', $copy)) {
-      my $id = $n->getAttribute('xml:id');
-      $document->unRecordID($id);
-      $document->recordID($id, $n); }
+    # Add a Clone of the cell's contents to the main branch (This will get modified id's)
+    local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
     # Usually, an ltx:Math element will be the complete content of the _Capture_ (cell)
     my $type = $document->getNodeQName($node);
+    my $box;
     if ($type eq 'ltx:Math') {
       if (my $xmath = $document->getFirstChildElement($node)) {
         # But we CLONE the contents of it's ltx:XMath onto the end of
         # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
-        { local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
-          $document->appendClone($document->getFirstChildElement($main),
-            $document->getChildElements($xmath)); }
+        $document->appendClone($document->getFirstChildElement($main),
+          $document->getChildElements($xmath));
         # Add the boxes from this cell to the previously collected ones in the main branch.
-        my $box = MathWhatsit($document->getNodeBox($main)->getBody,
-          $document->getNodeBox($node)->getBody);
-        $document->setNodeBox($main,             $box);
-        $document->setNodeBox($main->firstChild, $box);    # And also to the XMath element!
-      } }
+        $box = $document->getNodeBox($node)->getBody; } }
     # The next two cases are unusual (slightly unexpected?),
     # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
     elsif ($type eq 'ltx:text') {
       next if $node->textContent eq '';
-      my $string = $node->textContent;
       my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
       $document->appendClone($txt, $node);
-      my $box = MathWhatsit($document->getNodeBox($main)->getBody, $document->getNodeBox($node));
-      $document->setNodeBox($main,             $box);
-      $document->setNodeBox($main->firstChild, $box);    # And also to the XMath element!
-      $document->closeElementAt($txt); }
+      $document->closeElementAt($txt);
+      $box = $document->getNodeBox($node); }
     elsif ($type eq '#PCDATA') {
       my $string = $node->textContent;
       next if $string eq '';
       my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
       $txt->appendText($string);
-      my $box = MathWhatsit($document->getNodeBox($main)->getBody, Box($string));
-      $document->setNodeBox($main,             $box);
-      $document->setNodeBox($main->firstChild, $box);    # And also to the XMath element!
-      $document->closeElementAt($txt); }
+      $document->closeElementAt($txt);
+      $box = Box($string); }
     else {
-      Warn('unexpected', $type, $cell, "Don't know how to synthesize equation with $type in column");
-    } }
+      Warn('unexpected', $type, $cell,
+        "Don't know how to synthesize equation with $type in column"); }
+    # Add the boxes from this cell to the previously collected ones in the main branch.
+    if ($box) {
+      my $composed = MathWhatsit($document->getNodeBox($main)->getBody, $box);
+      $document->setNodeBox($main,             $composed);
+      $document->setNodeBox($main->firstChild, $composed); }    # And also to the XMath element!
+        # Finally MOVE (really copy) the node from the _Capture_ ($cell) to the td (in the fork)
+        # this keeps the same IDs as original; (& appendTree may remove id's from $node!)
+    $document->unRecordNodeIDs($node);
+    $document->appendTree($td, $node); }
   # We can now remove the _Capture_ (and anything still in it?)
-  $cell->unbindNode;
+  #  $cell->unbindNode;
   $document->closeElementAt($td);
   return; }
 
@@ -3170,6 +3162,7 @@ sub equationgroupJoinRows {
   # Scan equations to see which ones likely are continuations of previous
   my ($main, $branch) = openMathFork($document, $equation);
   foreach my $eq (@equations) {
+    # remove equation; parts will be added in by adding to mathfork (hopefully taking care of ids)
     $eq->unbindNode;
     my $tr = $document->openElementAt($branch, 'ltx:tr');
     my @cells = $document->findnodes('ltx:_Capture_', $eq);
@@ -5003,6 +4996,7 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
       $doc->closeElement('ltx:XMApp'); }
     else {
       # For simple tokens, we'll modify the relevant content & attributes
+      # [children removed, id's presumably ignorable]
       map { $_->unbindNode() } $thing->childNodes;
       my $new = defined $NOTS{$text} ? $NOTS{$text} : $text . "\x{0338}";
       $thing->appendText($new);
