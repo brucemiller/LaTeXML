@@ -530,6 +530,7 @@ sub rearrangeLoneAMSAligned {
     my ($array, @morenodes) = $document->getChildElements($document->getFirstChildElement($math));
     if ($array && !scalar(@morenodes) && ($document->getNodeQName($array) eq 'ltx:XMArray')
       && (($array->getAttribute('name') || '') eq 'aligned')) {
+      # we unbind, even though we're going to add the inner XM nodes BACK into the DOM.
       $math->unbindNode;
       my $equationgroup = $document->renameNode($equation, 'ltx:equationgroup');
       foreach my $mtr ($document->findnodes('ltx:XMRow', $array)) {
@@ -552,12 +553,14 @@ sub rearrangeLoneAMSAligned {
                 _box => MathWhatsit(Digest(T_CS('\displaystyle')),
                   $document->getNodeBox($stuff)));
               my $xmath = $document->openElementAt($imath, 'ltx:XMath');
+              # Clone the math nodes from the original equation but morphing the ID's
               { local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
                 $document->appendClone($xmath, $stuff->childNodes); }
               $document->closeElementAt($xmath);
               $document->closeElementAt($imath); }
             $document->closeElementAt($td); }
-          # Finally, move the contents of the cells into the main branch!!!
+          # Finally, MOVE the contents of the cells into the MAIN branch!!!
+          # keeping the original ID's [This should be OK, due to moving the nodes, not recreating]
           map { $main->firstChild->appendChild($_) } map { $_->childNodes } @cells;
           # and synthesize a box from the lhs & rhs.
           $document->setNodeBox($main, MathWhatsit(map { $document->getNodeBox($_) } @cells));
