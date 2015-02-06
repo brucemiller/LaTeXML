@@ -1530,6 +1530,10 @@ sub appendTree {
         my $tag = $self->getNodeQName($child);
         my %attributes = map { $_->nodeType == XML_ATTRIBUTE_NODE ? ($_->nodeName => $_->getValue) : () }
           $child->attributes;
+        # DANGER: REMOVE the xml:id attribute from $child!!!!
+        # This protects against some versions of XML::LibXML that warn against duplicate id's
+        # Hopefully, you shouldn't be using the node any more
+        $child->removeAttribute('xml:id') if $attributes{'xml:id'};
         my $new = $self->openElementAt($node, $tag, %attributes);
         $self->appendTree($new, $child->childNodes); }
       elsif ($type == XML_DOCUMENT_FRAG_NODE) {
