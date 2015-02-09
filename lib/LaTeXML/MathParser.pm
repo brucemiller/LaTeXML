@@ -254,13 +254,24 @@ sub parse_rec {
       $result = [element_nodes($node)]->[0]; }
     else {                        # Replace the whole node for XMArg, XMWrap; preserve some attributes
       NoteProgressDetailed($TAG_FEEDBACK{$tag} || '.');
-      # Copy all attributes (Annotate will sort out)
+      # Copy all attributes
       my $resultid = p_getAttribute($result, 'xml:id');
       my %attr = map { (getQName($_) => $_->getValue) }
         grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes;
-      $result = Annotate($result, %attr);
+      # add to result, even allowing modification of xml node, since we're committed.
+      # [Annotate converts node to array which messes up clearing the id!]
+      my $isarr = ref $result eq 'ARRAY';
+      my $rtag = ($isarr ? $$result[0] : $document->getNodeQName($result));
+      foreach my $key (keys %attr) {
+        next unless $document->canHaveAttribute($rtag, $key);
+        my $value = $attr{$key};
+        if ($key eq 'xml:id') {    # Since we're moving the id...bookkeeping
+          $document->unRecordID($value);
+          $node->removeAttribute('xml:id'); }
+        if ($isarr) { $$result[1]{$key} = $value; }
+        else { $document->setAttribute($result, $key => $value); } }
       $result = $document->replaceTree($result, $node);
-      my $newid = p_getAttribute($result, 'xml:id');
+      my $newid = $attr{'xml:id'};
       # Danger: the above code replaced the id on the parsed result with the one from XMArg,..
       # If there are any references to $resultid, we need to point them to $newid!
       if ($resultid && $newid && ($resultid ne $newid)) {
