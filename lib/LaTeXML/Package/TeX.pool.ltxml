@@ -3146,7 +3146,8 @@ sub equationgroupJoinRows {
   foreach my $eq (@equations) {
     if (my $l = $eq->getAttribute('labels')) {
       $labels = ($labels ? "$labels $l" : $l); }
-    $id      = $eq->getAttribute('xml:id')         if $eq->hasAttribute('xml:id');
+    $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
+    $eq->removeAttribute('xml:id') if $id;
     $refnum  = $eq->getAttribute('refnum')         if $eq->hasAttribute('refnum');
     $frefnum = $eq->getAttribute('frefnum')        if $eq->hasAttribute('frefnum');
     $rrefnum = $eq->getAttribute('rrefnum')        if $eq->hasAttribute('rrefnum');
