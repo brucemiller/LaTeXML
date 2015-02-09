@@ -356,6 +356,11 @@ sub processNode {
   if (my $xml = $$conversion{xml}) {
     $$conversion{xml} = $self->outerWrapper($doc, $xmath, $xml); }
   $doc->removeNodes($xmath);
+  # NOTE: we've got to remove the id's from XMath,
+  # else (some versions) of libxml2 complain!
+  # [if we're preserving XMath, it should have been cloned?]
+  map { $_->removeAttribute('xml:id') }
+    $doc->findnodes('descendant-or-self::*[@xml:id]', $xmath);
   $doc->removeBlankNodes($math);
   if (my $new = $$conversion{xml}) {
     $doc->addNodes($math, $new); }
