@@ -8,6 +8,6 @@ latexml_tests("t/babel",
 	      requires=>{'*'=>['babel.sty','babel.def'],
 			 numprints=>'numprint.sty',
 			 german=>'germanb.ldf',
-			 greek=>'greek.ldf',
+			 greek=>['greek.ldf','lgrenc.def'],
 			 french=>['frenchb.ldf','numprint.sty'],
                          page545=>['germanb.ldf','frenchb.ldf']});
