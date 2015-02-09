@@ -49,6 +49,7 @@ sub copy_some_attributes {
   foreach my $key (@attributes) {
     my $value = $from->getAttribute($key);
     if (defined $value) {
+      $from->removeAttribute($key) if $key eq 'xml:id';
       $to->setAttribute($key, $value); } }
   return; }
 
@@ -58,6 +59,7 @@ sub copy_attributes_except {
   foreach my $attr ($from->attributes) {
     my $key = $attr->getName;
     next if $excluded{$key};
+    $from->removeAttribute($key) if $key eq 'xml:id';
     $to->setAttribute($key, $from->getAttribute($key)); }
   return; }
 
@@ -81,7 +83,7 @@ sub ProcessSVG {
       $defnode->appendChild($::DEFS{$key});
     }
   }
-  copy_attributes_except($newSVG, $node, qw(tex baseline));
+  copy_attributes_except($newSVG, $node, qw(tex baseline xml:id));
   makeViewBox($newSVG);
   simplifyGroups($newSVG);
   $node->replaceNode($newSVG);
