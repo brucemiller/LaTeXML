@@ -797,5 +797,6 @@ Deyan Ginev <deyan.ginev@nist.gov>
 
 Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
+You may consider this as released under the CC0 License.
 
 =cut
