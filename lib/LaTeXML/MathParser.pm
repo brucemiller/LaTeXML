@@ -262,10 +262,20 @@ sub parse_rec {
       # [Annotate converts node to array which messes up clearing the id!]
       my $isarr = ref $result eq 'ARRAY';
       my $rtag = ($isarr ? $$result[0] : $document->getNodeQName($result));
+      # Make sure font is "Appropriate", if we're creating a new token (yuck)
+      if ($isarr && $attr{_font} && ($rtag eq 'ltx:XMTok')) {
+        my $content = join('', @$result[2 .. $#$result]);
+        if ((!defined $content) || ($content eq '')) {
+          delete $attr{_font}; }    # No font needed
+        elsif (my $font = $document->decodeFont($attr{_font})) {
+          delete $attr{_font};
+          $attr{font} = $font->specialize($content); } }
+      else {
+        delete $attr{_font}; }
       foreach my $key (keys %attr) {
-        next unless $document->canHaveAttribute($rtag, $key);
+        next unless ($key =~ /^_/) || $document->canHaveAttribute($rtag, $key);
         my $value = $attr{$key};
-        if ($key eq 'xml:id') {    # Since we're moving the id...bookkeeping
+        if ($key eq 'xml:id') {     # Since we're moving the id...bookkeeping
           $document->unRecordID($value);
           $node->removeAttribute('xml:id'); }
         if ($isarr) { $$result[1]{$key} = $value; }
