@@ -359,7 +359,7 @@ sub processNode {
   # NOTE: Unless XMath is the primary, (preserving the XMath, w/no IDSuffix)
   # we've got to remove the id's from the XMath, since the primary will get same id's
   # and (some versions) of libxml2 complain!
-  if ($$conversion{mimetype} ne 'application/x-latexml') {
+  if ($$conversion{mimetype} && ($$conversion{mimetype} ne 'application/x-latexml')) {
     map { $_->removeAttribute('xml:id') }
       $doc->findnodes('descendant-or-self::*[@xml:id]', $xmath); }
   $doc->removeBlankNodes($math);
