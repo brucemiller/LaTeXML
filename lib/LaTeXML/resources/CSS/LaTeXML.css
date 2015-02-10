@@ -144,7 +144,9 @@ tr > td.ltx_eqn_right_padleft  { width:100%; }
 .ltx_enumerate,
 .ltx_description
    { display:block; }
-.ltx_item { display: list-item; }
+.ltx_itemize .ltx_item,
+.ltx_enumerate .ltx_item
+   { display: list-item; }
 
 /* Position the tag to look like a normal item bullet. */
 li.ltx_item > .ltx_tag {
