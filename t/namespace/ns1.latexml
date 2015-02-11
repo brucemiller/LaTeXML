@@ -1,4 +1,7 @@
+# -*- mode: Perl -*-
+package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #======================================================================
@@ -8,13 +11,13 @@ use LaTeXML::Package;
 # Case 1: The DTD and code use no Namespaces.
 # The XML output should also have no namespaces.
 #======================================================================
-DocType("song","-//NIST LaTeXML//LaTeXML Poem",'ns1.dtd');
+DocType("song", "-//NIST LaTeXML//LaTeXML Poem", 'ns1.dtd');
 
-Tag('song',  autoOpen=>1, autoClose=>1);
-Tag('verse', autoOpen=>1, autoClose=>1);
-Tag('line',  autoOpen=>1, autoClose=>1);
-DefConstructor('\bigskip',"<verse>");
-DefConstructor('\par',sub{ $_[0]->maybeCloseElement('line'); });
+Tag('song',  autoOpen => 1, autoClose => 1);
+Tag('verse', autoOpen => 1, autoClose => 1);
+Tag('line',  autoOpen => 1, autoClose => 1);
+DefConstructor('\bigskip', "<verse>");
+DefConstructor('\par', sub { $_[0]->maybeCloseElement('line'); });
 
 #**********************************************************************
 1;

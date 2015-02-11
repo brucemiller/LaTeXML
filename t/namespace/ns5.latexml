@@ -1,4 +1,7 @@
+# -*- mode: Perl -*-
+package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 #======================================================================
@@ -10,17 +13,16 @@ use LaTeXML::Package;
 # The code will use the prefix similar but different namespace prefixes
 #======================================================================
 
-RegisterNamespace(incode=>"http://inner.com/");
-RegisterNamespace(outcode=>"http://outer.com/");
+RegisterNamespace(incode  => "http://inner.com/");
+RegisterNamespace(outcode => "http://outer.com/");
 
-DocType("outcode:song","-//NIST LaTeXML//LaTeXML Poem",'ns5.dtd');
+DocType("outcode:song", "-//NIST LaTeXML//LaTeXML Poem", 'ns5.dtd');
 
-Tag('outcode:song',  autoOpen=>1, autoClose=>1);
-Tag('outcode:verse', autoOpen=>1, autoClose=>1);
-Tag('incode:line',  autoOpen=>1, autoClose=>1);
-DefConstructor('\bigskip',"<outcode:verse>");
-DefConstructor('\par',sub{ $_[0]->maybeCloseElement('incode:line'); });
-
+Tag('outcode:song',  autoOpen => 1, autoClose => 1);
+Tag('outcode:verse', autoOpen => 1, autoClose => 1);
+Tag('incode:line',   autoOpen => 1, autoClose => 1);
+DefConstructor('\bigskip', "<outcode:verse>");
+DefConstructor('\par', sub { $_[0]->maybeCloseElement('incode:line'); });
 
 #**********************************************************************
 1;
