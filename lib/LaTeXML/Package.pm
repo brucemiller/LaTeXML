@@ -377,10 +377,13 @@ sub DigestText {
 sub DigestLiteral {
   my (@stuff) = @_;
 # Perhaps should do StartSemiverbatim, but is it safe to push a frame? (we might cover over valid changes of state!)
+  my $stomach = $STATE->getStomach;
+  $stomach->beginMode('text');
   my $font = LookupValue('font');
   AssignValue(font => $font->merge(encoding => 'ASCII'), 'local');  # try to stay as ASCII as possible
   my $value = $STATE->getStomach->digest(Tokens(map { (ref $_ ? $_ : Tokenize($_)) } @stuff));
   AssignValue(font => $font);
+  $stomach->endMode('text');
   return $value; }
 
 sub DigestIf {
@@ -705,7 +708,7 @@ sub RefStepID {
     Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
     scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
-  return (id => ToString(Digest(T_CS("\\the$ctr\@ID")))); }
+  return (id => ToString(DigestLiteral(T_CS("\\the$ctr\@ID")))); }
 
 sub ResetCounter {
   my ($ctr) = @_;
