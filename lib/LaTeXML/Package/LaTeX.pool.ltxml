@@ -1829,7 +1829,7 @@ DefPrimitiveI('\operator@font', undef, undef,
 
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 
-DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
+DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
@@ -1837,19 +1837,19 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [][]{}', sub {
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
-DefPrimitive('\CheckCommand OptionalMatch:* DefToken [][]{}', undef);
+DefPrimitive('\CheckCommand OptionalMatch:* DefToken [Number][]{}', undef);
 
-DefPrimitive('\renewcommand OptionalMatch:* DefToken [][]{}', sub {
+DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
-DefPrimitive('\providecommand OptionalMatch:* DefToken [][]{}', sub {
+DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     return unless isDefinable($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # Need to figure out exactly what `robust' means to LaTeXML...
-DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [][]{}', sub {
+DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -1870,7 +1870,7 @@ sub ignoredDefinition {
 # It may be that we've already defined it to expand into the above conditional.
 # But more importantly, we don't want to override a hand-written definition (if any).
 #------------------------------------------------------------
-DefPrimitive('\DeclareTextCommand DefToken {}[][]{}', sub {
+DefPrimitive('\DeclareTextCommand DefToken {}[Number][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
@@ -1884,7 +1884,7 @@ DefPrimitive('\DeclareTextCommand DefToken {}[][]{}', sub {
 
 DefMacro('\DeclareTextCommandDefault DefToken', '\DeclareTextCommand{#1}{?}');
 
-DefPrimitive('\ProvideTextCommand DefToken {}[][]{}', sub {
+DefPrimitive('\ProvideTextCommand DefToken {}[Number][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
@@ -2003,7 +2003,7 @@ DefPrimitive('\TextSymbolUnavailable{}',     undef);
 # Note that \env & \endenv defined by \newenvironment CAN be
 # invoked directly.
 
-DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
+DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
     $name = ToString($name);
     Info('ignore', $name, $stomach,
@@ -2012,7 +2012,7 @@ DefPrimitive('\newenvironment OptionalMatch:* {}[][]{}{}', sub {
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef, $end); });
 
-DefPrimitive('\renewenvironment OptionalMatch:* {}[][]{}{}', sub {
+DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
     $name = ToString($name);
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);

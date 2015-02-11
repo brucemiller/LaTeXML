@@ -36,7 +36,7 @@ DefColumnType('b{Dimension}', sub {
       align => 'justify', width => $_[1], vattach => 'bottom'); return; });
 
 # NOTE:  Come back & check this; is the arglist right??
-DefPrimitive('\newcolumntype{}[][]{}', sub {
+DefPrimitive('\newcolumntype{}[Number][]{}', sub {
     my ($stomach, $char, $nargs, $opt, $replacement) = @_;
     DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement); });
 
