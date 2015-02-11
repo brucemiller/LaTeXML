@@ -104,6 +104,7 @@ sub fitToWidth {
   my @n;
   local $LaTeXML::Post::MathML::Linebreaker::MATH  = $math;
   local $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef;
+  local @LaTeXML::Post::MathML::Linebreaker::CLOSE = ();
   local $LaTeXML::DISPLAYSTYLE                     = $displaystyle || 0;
   local $LaTeXML::SCRIPTLEVEL                      = 0;
 
@@ -112,7 +113,6 @@ sub fitToWidth {
     $LaTeXML::Post::MathML::Linebreaker::PUNCT = $n[1]; }
 
   # Compute the possible layouts
-###  print STDERR "\nStarting layout of $mml\n" if $DEBUG;
   print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
   my $layouts = layout($mml, $width, 0, 1);
   if ($DEBUG) {
@@ -143,7 +143,6 @@ sub bestFitToWidth {
     $mml = $n[0]; }
 
   # Compute the possible layouts
-###  print STDERR "\nStarting layout of $mml\n" if $DEBUG;
   print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
   my @layouts = @{ layout($mml, $width, 0, 1) };
 
@@ -211,7 +210,6 @@ sub Warn {
     $p = $p->parentNode; }
   my $id = $p && $p->getAttribute('xml:id') || '?';
   my $nm = $p && $p->getAttribute('refnum') || '';
-##  print STDERR "Warning in MathML::Linebreaker for math in $nm (id=$id):\n  $message\n"; }
   LaTeXML::Post::Info('unexpected', 'toowide', "id=$id", $message);
   return; }
 
@@ -231,51 +229,73 @@ sub Warn {
 sub applyLayout_rec {
   my ($layout) = @_;
   return unless $$layout{hasbreak};
+  my $node     = $$layout{node};
+  my @children = nodeChildren($node);
+
+  # Check for opening/closing delimiters that may need special treatment.
+  my $close;
+  if ((nodeName($node) eq 'm:mrow') && $$layout{hasbreak}) {
+    my $size = ($$layout{rowheight} + $$layout{rowdepth}) . "em";
+    if (isFence($children[0])) {
+      #      if(($children[0][1]{stretchy}||'true') eq 'true'){ # If delimiter WAS stretchy.
+      if (!($children[0][1]{size} || $children[0][1]{maxsize} || $children[0][1]{minsize})) { # If delimiter WAS stretchy.
+        $children[0][1]{stretchy} = undef;
+        $children[0][1]{minsize}  = $size;
+        $children[0][1]{maxsize}  = $size; } }
+    if (isFence($children[-1])) {
+      if (!$$layout{breakset}) {    # If we're breaking HERE, not sure what we should do special?
+        $close = $children[-1]; }
+##      if(($children[-1][1]{stretchy}||'true') eq 'true'){ # If delimiter WAS stretchy.
+      if (!($children[-1][1]{size} || $children[-1][1]{maxsize} || $children[-1][1]{minsize})) { # If delimiter WAS stretchy.
+        $children[-1][1]{stretchy} = undef;
+        $children[-1][1]{minsize}  = $size;
+        $children[-1][1]{maxsize}  = $size; } }
+  }
   # Do children first, so if there is punctuation & last child breaks, it can take up the punct.
   if ($$layout{children}) {
     my @children_layout = @{ $$layout{children} };
     my $lastchild       = pop(@children_layout);
     { local $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef;    # Hide from all but last child
+      local @LaTeXML::Post::MathML::Linebreaker::CLOSE = ();       # Hide from all but last child
       map { applyLayout_rec($_) } @children_layout; }
-    # Now, do last child; Maybe it will absorb the punctuation!
-    applyLayout_rec($lastchild); }
-  # Now break up the current level.
-  my $node     = $$layout{node};
-  my @children = nodeChildren($node);
+    # Now, do last child; Maybe it will absorb the closing & punctuation!
+    if ($close) {
+      unshift(@LaTeXML::Post::MathML::Linebreaker::CLOSE, $close);
+      applyLayout_rec($lastchild);
+      # If the close was taken up by a child, remove it here.
+      if (!grep { $_ eq $close } @LaTeXML::Post::MathML::Linebreaker::CLOSE) {
+        # print STDERR "MOVING CLOSE $close\n";
+        pop(@$node); }
+      else {
+        shift(@LaTeXML::Post::MathML::Linebreaker::CLOSE); } }
+    else {
+      applyLayout_rec($lastchild); } }
   if (my $breakset = $$layout{breakset}) {
     applyLayout_break($breakset, $layout, $node, @children);
   }
-  # If this is a row, and there are breaks _underneath_, adjust any fences! (make stretchy!)
-  elsif ((nodeName($node) eq 'm:mrow') && $$layout{hasbreak}) {
-    if (isFence($children[0])) {
-      $children[0][1]{stretchy}  = 'true';
-      $children[0][1]{symmetric} = 'false'; }
-    if (isFence($children[-1])) {
-      $children[-1][1]{stretchy}  = 'true';
-      $children[-1][1]{symmetric} = 'false'; }
-  }
-  # HACK: If this is an mfenced whose single mrow child was linebroken,
-  # we'll want to replace the fences with explicit mo with symmetric=false.
-  # Otherwise, the alignment to "baseline 1" creates a HUGE empty space on top!
-  elsif ((nodeName($node) eq 'm:mfenced')
-    && (nodeName($children[0]) eq 'm:mrow')
-    && $$layout{children} && (@{ $$layout{children} } == 1) && $$layout{children}[0]{breakset}) {
-    # (or could remove the mfenced & reuse the redundant m:row???)
-    splice(@$node, 0, 2, 'm:mrow', {}, ['m:mo', { symmetric => 'false' }, getAttribute($node, 'open')]);
-    push(@$node, ['m:mo', { symmetric => 'false' }, getAttribute($node, 'close')]); }
   return; }
 
 sub applyLayout_break {
   my ($breakset, $layout, $node, @children) = @_;
-  #    print "Applying ".layoutDescriptor($layout)."\n";
   # If this is a fenced row, we've got to manually fixup the fence size!
+  my $sawfences;
   if (nodeName($node) eq 'm:mrow') {
+    # Really should only set size here if it had been stretchy!
+    my $size = ($$layout{rowheight} + $$layout{rowdepth}) . "em";
     if (isFence($children[0])) {
-      ## $children[0][1]{mathsize}=$$layout{rowheight}."em";
-      $children[0][1]{symmetric} = 'false'; }
+      ## $children[0][1]{mathsize}=$size;
+      $sawfences = 1;
+      ###      $children[0][1]{symmetric} = 'false';
+      $children[0][1]{minsize} = $size;
+      $children[0][1]{maxsize} = $size;
+    }
     if (isFence($children[-1])) {
       ## $children[-1][1]{mathsize}=$$layout{rowheight}."em";
-      $children[-1][1]{symmetric} = 'false'; }
+      $sawfences = 1;
+      #      $children[-1][1]{symmetric} = 'false';
+      $children[-1][1]{minsize} = $size;
+      $children[-1][1]{maxsize} = $size;
+    }
   }
   my @rows = split_row($breakset, @children);
   # Replace any "converted" leading operators (ie. invisible times => \times)
@@ -284,6 +304,10 @@ sub applyLayout_break {
     my $newop;
     if ((nodeName($op) eq 'm:mo') && ($newop = $CONVERTOPS{ textContent($op) })) {
       splice(@$op, 2, scalar(@$op) - 2, $newop); } }
+  if (@LaTeXML::Post::MathML::Linebreaker::CLOSE) {
+    $rows[-1] = [@{ $rows[-1] }, @LaTeXML::Post::MathML::Linebreaker::CLOSE];
+    @LaTeXML::Post::MathML::Linebreaker::CLOSE = (); }
+
   if ($LaTeXML::Post::MathML::Linebreaker::PUNCT) {
     $rows[-1] = [@{ $rows[-1] }, $LaTeXML::Post::MathML::Linebreaker::PUNCT];
     $LaTeXML::Post::MathML::Linebreaker::PUNCT = undef; }
@@ -554,12 +578,16 @@ sub asRow {
     LaTeXML::Post::Fatal('unexpected', $invalid[0], $node,
       "Math row has non-element: " . nodeName($node)); }
 
-  # fences will be handled separately
-  my ($open, $close);
+  # Since we can't vertically align independently on both sides of an mtable,
+  # we're forbidding breaks in children that won't appear at the END of their line.
+  # A trailing close delimiter (handled specially, anyway) would thus inhibit
+  # a break in the preceding child, so we pretend it isn't there at all.
+  my $hasfences = 0;
   if (@children && isFence($children[0])) {
-    $open = shift(@children); }
+    $hasfences = 1; }
   if (@children && isFence($children[-1])) {
-    $close = pop(@children); }
+    $hasfences = 1;
+    pop(@children); }
 
   my $n = scalar(@children);
   if (!$n) {
@@ -645,7 +673,7 @@ BREAKSET: while (1) {
         if (($$layout{width} < $target) && ($breakpenalty > $$layout{penalty})) {    #
           last BREAKSET; } } }
   LAYOUT: foreach my $children_layout (@children_layouts) {
-      my ($width, $height, $depth, $penalty, $indent, $rowheight) = (0, 0, 0, 0, 0, 0);
+      my ($width, $height, $depth, $penalty, $indent, $rowheight, $rowdepth) = (0, 0, 0, 0, 0, 0, 0);
       #      $penalty = sum(map { $$_[2] } @$breakset);
       $penalty = $breakpenalty;    # penalty due to breaks, we may add more!
                                    # Last (best) layout, for comparison & pruning
@@ -670,12 +698,10 @@ BREAKSET: while (1) {
             # [next layout? or next breakset???]
             next LAYOUT; }
 
-###          $h = max($h, $$child_layout{height});
-###          $d = max($d, $$child_layout{depth});
-          my $tmp = $$child_layout{height};
-          $h   = $tmp if $tmp > $h;
-          $tmp = $$child_layout{depth};
-          $d   = $tmp if $tmp > $d;
+          $h         = max($h,         $$child_layout{height});
+          $d         = max($d,         $$child_layout{depth});
+          $rowheight = max($rowheight, $$child_layout{rowheight} || $$child_layout{height});
+          $rowdepth  = max($rowdepth,  $$child_layout{rowdepth} || $$child_layout{depth});
         }
         # Then combine the lines
         $width = max($width, $w + $indent);
@@ -684,12 +710,14 @@ BREAKSET: while (1) {
           $height = $h;
           $depth  = $d; }
         else {
-          $depth += $h + $d; }
-        $rowheight = max($rowheight, $h + $d); }
+          $depth += $h + $d; } }
       push(@layouts, { node => $node, type => $type,
           penalty     => $penalty,
           width       => $width, height => $height, depth => $depth,
-          indentation => $indentation, rowheight => $rowheight, lhs_pos => $lhs_pos,
+          indentation => $indentation,
+          rowheight => ($hasfences ? 1.2 * $rowheight : $rowheight),
+          rowdepth  => ($hasfences ? 1.2 * $rowdepth  : $rowdepth),
+          lhs_pos   => $lhs_pos,
           (scalar(@$breakset) ? (breakset => $breakset) : ()),
           hasbreak => scalar(@$breakset) || scalar(grep { $$_{hasbreak} } @$children_layout),
           children => [@$children_layout],
@@ -709,8 +737,6 @@ BREAKSET: while (1) {
 ##  map { $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea) } @layouts if $maxarea > $minarea;
 
   @layouts = prunesort($target, @layouts);
-
-##  print STDERR "",("  " x $level), $type," pruned $pruned\n" if $pruned && ($DEBUG>1);
   Warn("Row (" . nodeName($node) . ") got no layouts!") unless @layouts;
   return [@layouts]; }
 
@@ -788,13 +814,17 @@ my @SIZE = (    # [CONSTANT]
 # TODO for mo:  largeop ?
 sub simpleSize {
   my ($node, $target, $level, $demerits) = @_;
-  my $content     = textContent($node);
-  my $scriptlevel = min(0, max($LaTeXML::SCRIPTLEVEL + ($LaTeXML::DISPLAYSTYLE ? 1 : 0), 3));
+  my $content = textContent($node);
+###  my $scriptlevel = min(0, max($LaTeXML::SCRIPTLEVEL + ($LaTeXML::DISPLAYSTYLE ? -1 : 0), 3));
+  my $scriptlevel = min(0, max($LaTeXML::SCRIPTLEVEL, 3));
   my $len         = length($content);
   my $size        = $SIZE[$scriptlevel];
   return [{ node => $node, type => nodeName($node), penalty => 0,
-      width => $len * $size, height => $size,
-      depth => 0 }]; }
+      #      width => $len * $size, height => $size, depth => 0,
+      #      width => 0.75 * $len * $size, height => 0.7 * $size, depth => 0.2 * $size
+      width => $len * $size, height => 0.7 * $size, depth => 0.2 * $size
+
+    }]; }
 
 sub layout_mi     { my (@args) = @_; return simpleSize(@args); }
 sub layout_mo     { my (@args) = @_; return simpleSize(@args); }
@@ -839,13 +869,16 @@ sub layout_mfrac {
   my ($node, $target, $level, $demerits) = @_;
   # No break of mfrac itself
   # 2 children; break of children is poor
+  local $LaTeXML::SCRIPTLEVEL = ($LaTeXML::DISPLAYSTYLE
+    ? $LaTeXML::SCRIPTLEVEL
+    : $LaTeXML::SCRIPTLEVEL + 1);
   local $LaTeXML::DISPLAYSTYLE = 0;
   return [map {
       { node => $node, type => 'mfrac',
         penalty  => $$_[0]->{penalty} + $$_[1]->{penalty},
         width    => max($$_[0]->{width}, $$_[1]->{width}),
-        height   => $$_[0]->{height} + $$_[0]->{depth} + 1,
-        depth    => $$_[1]->{height} + $$_[1]->{depth},
+        height   => $$_[0]->{height} + $$_[0]->{depth} + 0.1 + 0.5,    # (1ex)
+        depth    => $$_[1]->{height} + $$_[1]->{depth} - 0.5,
         hasbreak => $$_[0]->{hasbreak} || $$_[1]->{hasbreak},
         children => $_ } }
       multiplex(map { layout($_, $target, $level + 1, $demerits * $POORBREAK_FACTOR) }
