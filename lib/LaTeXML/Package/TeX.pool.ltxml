@@ -1,4 +1,4 @@
-# -*- CPERL -*-
+# -*- mode: PERL -*-
 # /=====================================================================\ #
 # |  TeX                                                                | #
 # | Core TeX Implementation for LaTeXML                                 | #
@@ -633,7 +633,10 @@ DefMacro('\csname CSName', sub {
     $token; });
 
 DefPrimitive('\endcsname', sub {
-    Error('unexpected', '\endcsname', $_[0], "Extra \\endcsname"); return; });
+    my ($stomach) = @_;
+    Error('unexpected', '\endcsname', $_[0], "Extra \\endcsname",
+      $stomach->getGullet->showUnexpected);
+    return; });
 
 DefMacro('\expandafter Token Token', sub {
     my ($gullet, $tok, $xtok) = @_;
