@@ -66,8 +66,10 @@ closedir($DIR);
 my $classes  = join(', ', grep { $_ } map { s/\.cls$// && $_ } @bindings);
 my $packages = join(', ', grep { $_ } map { s/\.sty$// && $_ } @bindings);
 
+my $texversion = $version;
+$texversion =~ s/\_/\\_/g;
 saveData("$MANDIR/release.tex",
-  "\\def\\CurrentVersion{$version}\n"
+  "\\def\\CurrentVersion{$texversion}\n"
     . "\\def\\CurrentClasses{$classes}\n"
     . "\\def\\CurrentPackages{$packages}\n");
 
