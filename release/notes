@@ -1,11 +1,39 @@
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Steps for making a new release
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+* get happy with the code
+* choose new version
+* make test release(s) to CPAN
+* make & upload tarball to CPAN
+* make rpm
+* make deb
+* make portfile
+* update links in install
+* rebuild site
+* release
 
 #======================================================================
+About Version Numbers
+#======================================================================
+There's loads of contradictory advice for Perl version numbers out there!
+I insist on "dotted-decimal" version numbers ie. 1.2.3
+So then, the seemingly recommended form to use is:
+  use version; our $VERSION = version->declare("v1.2.3");
+However, then "make dist" leads to the UGLY
+  module-v1.2.3-tar.gz
+So, hopefully, I can get away with:
+  use version; our $VERSION = version->declare("1.2.3");
+
+#======================================================================
+Get Happy
+#======================================================================
+obviously make, make test, re-run dlmf, check, etc.
+
+#======================================================================
+Choose new version
+#======================================================================
 # Last changes:
-# * Adjust $LaTeXML::VERSION in LaTeXML/Version.in
+# * Adjust VERSION in LaTeXML.pm
 # * add an entry to Changes
 make
 make test
@@ -17,21 +45,35 @@ git push
 git tag -a vX.X.X -m "Release X.X.X" <commitid>
 git push --tags
 
-#======================================================================
+#----------------------------------------------------------------------
 # After preparing whatever tarballs & binaries you want:
 doc/makesite
 # to regenerate site w/current versions
 
 #======================================================================
+Make Test relese to CPAN
+#======================================================================
+* See http://www.cpan.org/modules/04pause.html
+* use a version number like:  0.8.1_1
+* Log into https://pause.perl.org/
+
+* watch cpantesters
+http://www.cpantesters.org/distro/L/LaTeXML.html
+#======================================================================
 # Make the tarball
+#======================================================================
 make distclean
 perl Makefile.PL
 make dist
 
+* check the tarball with clamscans
+
 # We now have LaTeXML-x.x.x.tar.gz
 # Copy to <site>/releases
+
 #======================================================================
 # Make RPM's
+#======================================================================
 # * Possibly make LaTeXML.spec (see below)
 #   Edit LaTeXML.spec for current version
 # * Make the source rpm:
@@ -48,7 +90,7 @@ mock --rebuild ~/rpmbuild/SRPMS/LaTeXML-X.X.X-1.fcXX.src.rpm
 
 # Copy the rpms to <site>/releases
 
-#======================================================================
+#----------------------------------------------------------------------
 # Make an rpm specfile: LaTeXML.spec
 
 cpanspec --noprefix --packager="Bruce Miller <bruce.miller@nist.gov>" LaTeXML-X.X.X..tar.gz
@@ -99,17 +141,24 @@ clamscan  --tempdir=/dev/shm --recursive  --max-recursion=128 --cross-fs=no  --i
 
 #======================================================================
 # Make MacPorts Portfile for MacOS
+#======================================================================
 # Maintainer: adfernandes@?  but appears to have quit?
+# Latest was checked in by mojca@...
 
  * Change version number
  * recompute checksums
  * copy resulting Portfile as <site>/releases/Portfile-<version>
 
 #======================================================================
-# Debian port
+# Make Debian port
+#======================================================================
 # Debian Developer: Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
 
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+OLD NOTES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #======================================================================
 # To test an installation, try:
 
