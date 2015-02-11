@@ -1,4 +1,3 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Core::KeyVals                                             | #
 # | Support for key-value pairs for LaTeXML                             | #

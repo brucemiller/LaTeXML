@@ -1,4 +1,3 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Util::Pathname                                            | #
 # | Pathname Utilities for LaTeXML                                      | #

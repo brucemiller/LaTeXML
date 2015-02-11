@@ -1,4 +1,3 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Package                                                   | #
 # | Exports of Defining forms for Package writers                       | #

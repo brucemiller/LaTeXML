@@ -1,4 +1,3 @@
-# -*- CPERL -*-
 # /=====================================================================\ #
 # |  LaTeXML::Core::Array                                               | #
 # | Support for Lists or Arrays of digestable stuff for LaTeXML         | #
