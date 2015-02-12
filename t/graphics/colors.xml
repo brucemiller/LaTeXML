@@ -80,7 +80,7 @@ vs. <text color="#E6E6E6">Light</text></p>
       <p>vs. <text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p3">
-      <p><text framecolor="#0000FF" framed="rectangle" backgroundcolor="#FF0000" color="#00FF00">Green in Red surrounded by Blue</text></p>
+      <p><text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S5.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" color="#FFFF00" backgroundcolor="#00FFFF">Yellow in Cyan surrounded by Magenta</text></p>
@@ -94,9 +94,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic" color="#FF0000">R</XMTok>
+              <XMTok role="UNKNOWN" color="#FF0000" font="italic">R</XMTok>
               <XMTok role="UNKNOWN" font="italic" color="#00FF00">G</XMTok>
-              <XMTok role="UNKNOWN" color="#0000FF" font="italic">B</XMTok>
+              <XMTok role="UNKNOWN" font="italic" color="#0000FF">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -110,7 +110,7 @@ vs. <text color="#E6E6E6">Light</text></p>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" font="italic" backgroundcolor="#FF0000">R</XMTok>
               <XMTok role="UNKNOWN" backgroundcolor="#00FF00" font="italic">G</XMTok>
-              <XMTok role="UNKNOWN" font="italic" backgroundcolor="#0000FF">B</XMTok>
+              <XMTok role="UNKNOWN" backgroundcolor="#0000FF" font="italic">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -123,13 +123,13 @@ vs. <text color="#E6E6E6">Light</text></p>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMText>
-                <text framecolor="#00FF00" framed="rectangle" color="#FF0000" backgroundcolor="#0000FF">R</text>
+                <text framecolor="#00FF00" framed="rectangle" backgroundcolor="#0000FF" color="#FF0000">R</text>
               </XMText>
               <XMText>
                 <text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">G</text>
               </XMText>
               <XMText>
-                <text framecolor="#FF0000" framed="rectangle" color="#0000FF" backgroundcolor="#00FF00">B</text>
+                <text framecolor="#FF0000" framed="rectangle" backgroundcolor="#00FF00" color="#0000FF">B</text>
               </XMText>
             </XMApp>
           </XMath>
@@ -387,16 +387,16 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
           </tr>
           <tr>
             <td align="left" thead="true">
-              <text color="#4019FF">RoyalPurple</text>
+              <text color="#401AFF">RoyalPurple</text>
             </td>
             <td align="left" border="r">
-              <text backgroundcolor="#4019FF">RoyalPurple</text>
+              <text backgroundcolor="#401AFF">RoyalPurple</text>
             </td>
             <td align="left" thead="true">
-              <text color="#190DF5">BlueViolet</text>
+              <text color="#1A0DF5">BlueViolet</text>
             </td>
             <td align="left">
-              <text backgroundcolor="#190DF5">BlueViolet</text>
+              <text backgroundcolor="#1A0DF5">BlueViolet</text>
             </td>
           </tr>
           <tr>
