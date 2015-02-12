@@ -52,15 +52,18 @@ sub hsb {
   elsif ($i == 7) { return LaTeXML::Common::Color->new('hsb', 0, 0, $b); } }
 
 my @hex = qw(0 1 2 3 4 5 6 7 8 9 A B C D E F);    # [CONSTANT]
-
+# Some annoyance here to get reproducibility
+# (some perls use long double)
 sub hex2 {
   my ($n) = @_;
-  return $hex[int($n / 16)] . $hex[$n % 16]; }
+  my $ss = "" . ($n * 255 + 0.5);    # convert to string so Perl deals with epsilon
+  my $nn = $ss;
+  return $hex[int($nn / 16)] . $hex[$nn % 16]; }
 
 sub toHex {
   my ($self) = @_;
   my ($model, $r, $g, $b) = @$self;
-  return '#' . hex2(int($r * 255 + 0.5)) . hex2(int($g * 255 + 0.5)) . hex2(int($b * 255 + 0.5)); }
+  return '#' . hex2($r) . hex2($g) . hex2($b); }
 
 #======================================================================
 1;

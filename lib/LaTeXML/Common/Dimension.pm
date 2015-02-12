@@ -53,6 +53,7 @@ sub pointformat {
   # there's TeX code that depends on getting enough precision
   # If you use %.5f, tikz (for example) will sometimes hang trying to do arithmetic!
   # But see toAttribute for friendlier forms....
+  # [do we need the juggling in attributeFormat to be reproducible?]
   my $s = sprintf("%.6f", ($sp / 65536));
   $s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
@@ -61,13 +62,10 @@ sub pointformat {
 
 # When saved in an attribute, however, we can afford to lose
 # a lot of useless precision. Keeping only 1 decimal; do we even need that?
+# HOWEVER, we DO want it to be reproducible, for testing purposes...
 sub attributeformat {
   my ($sp) = @_;
-  my $s = sprintf("%.1f", ($sp / 65536));
-  $s =~ s/0+$// if $s =~ /\./;
-  #  $s =~ s/\.$//;
-  $s =~ s/\.$/.0/;
-  return $s . 'pt'; }
+  return ($sp == 0.0 ? "0.0pt" : sprintf("%.1fpt", int(10 * $sp / 65536 + $sp / abs($sp * 2)) / 10)); }
 
 #======================================================================
 1;
