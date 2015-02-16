@@ -127,7 +127,7 @@ sub record_revision {
   ## This command is appropriate for svn
   ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
   ## This command is appropriate for git (I think)
-  if (system("git --version") == 0) {    # can run git? if so, try to determine the revision
+  if ((-d '.git') && (system("git --version") == 0) ) {    # If a git checkout & can run git?
     $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
