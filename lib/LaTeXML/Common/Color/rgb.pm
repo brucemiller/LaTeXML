@@ -52,12 +52,10 @@ sub hsb {
   elsif ($i == 7) { return LaTeXML::Common::Color->new('hsb', 0, 0, $b); } }
 
 my @hex = qw(0 1 2 3 4 5 6 7 8 9 A B C D E F);    # [CONSTANT]
-# Some annoyance here to get reproducibility
-# (some perls use long double)
+
 sub hex2 {
   my ($n) = @_;
-  my $ss = "" . ($n * 255 + 0.5);    # convert to string so Perl deals with epsilon
-  my $nn = $ss;
+  my $nn = LaTeXML::Common::Number::roundto($n * 255, 0);
   return $hex[int($nn / 16)] . $hex[$nn % 16]; }
 
 sub toHex {
