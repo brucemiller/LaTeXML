@@ -60,12 +60,9 @@ sub pointformat {
   $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
   return $s . 'pt'; }
 
-# When saved in an attribute, however, we can afford to lose
-# a lot of useless precision. Keeping only 1 decimal; do we even need that?
-# HOWEVER, we DO want it to be reproducible, for testing purposes...
 sub attributeformat {
   my ($sp) = @_;
-  return ($sp == 0.0 ? "0.0pt" : sprintf("%.1fpt", int(10 * $sp / 65536 + $sp / abs($sp * 2)) / 10)); }
+  return sprintf('%.1fpt', LaTeXML::Common::Number::roundto($sp / 65536, 1)); }
 
 #======================================================================
 1;
