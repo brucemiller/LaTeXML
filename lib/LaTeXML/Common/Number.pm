@@ -42,23 +42,30 @@ sub toString {
 
 my @SCALES = (1, 10, 100, 1000, 10000, 100000);
 
-sub ptValue {
-  my ($self, $prec) = @_;
+# smallest number that makes a difference added to 1 in Perl's float format.
+my $EPSILON = 1.0;
+while (1.0 + $EPSILON / 2 != 1) {
+  $EPSILON /= 2.0; }
+
+# Round $number to $prec decimals (0...6)
+# attempting to do so portably.
+sub roundto {
+  my ($number, $prec) = @_;
   $prec = 2 unless defined $prec;
   $prec = 0 if $prec < 0;
   $prec = 5 if $prec > 5;
   my $scale = $SCALES[$prec];
-  my $h     = $$self[0] * $scale / 65536;
-  return int($h < 0 ? $h - 0.5 : $h + 0.5) / $scale; }
+  # scale to integer, w/some slop in case arbitrarily close to an integer...
+  my $n = $number * $scale * (1 + 100 * $EPSILON);
+  return int($n < -$EPSILON ? $n - 0.5 : ($n > $EPSILON ? $n + 0.5 : 0.0)) / $scale; }
+
+sub ptValue {
+  my ($self, $prec) = @_;
+  return roundto($$self[0] / 65536, $prec); }
 
 sub pxValue {
   my ($self, $prec) = @_;
-  $prec = 2 unless defined $prec;
-  $prec = 0 if $prec < 0;
-  $prec = 5 if $prec > 5;
-  my $scale = $SCALES[$prec];
-  my $h = $$self[0] * $scale / 65536 * ($STATE->lookupValue('DPI') || 100 / 72.27);
-  return int($h < 0 ? $h - 0.5 : $h + 0.5) / $scale; }
+  return roundto($$self[0] / 65536 * ($STATE->lookupValue('DPI') || 100 / 72.27), $prec); }
 
 sub unlist {
   my ($self) = @_;
