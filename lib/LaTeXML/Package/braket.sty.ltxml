@@ -1,0 +1,117 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  braket                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+DefMath('\bra{}', '\langle#1|',            meaning => 'bra');
+DefMath('\Bra{}', '\left\langle#1\right|', meaning => 'bra');
+DefMath('\ket{}', '|#1\\rangle',           meaning => 'ket');
+DefMath('\Ket{}', '\left|#1\right\rangle', meaning => 'ket');
+
+#======================================================================
+# note that braket.sty makes | active, so it can end up || or \middle, or whatever
+# but we actually want to do parsing so we can recognize the arguments.
+sub splitBraketArg {
+  my ($arg, $maxbars) = @_;
+  my @tokens = $arg->unlist;
+  my @args   = ();
+  my $codes  = '';
+  my $vbar   = T_OTHER('|');
+  my $dbar   = T_CS('\|');
+  my @next   = ();
+  while (my $t = shift(@tokens)) {
+
+    if ($maxbars && Equals($t, $vbar)) {
+      if (@tokens && Equals($tokens[0], $vbar)) {
+        shift(@tokens);
+        $codes .= 'D'; }
+      else {
+        $codes .= 'V'; }
+      $maxbars--;
+      push(@args, Tokens(@next));
+      @next = (); }
+    elsif ($maxbars && Equals($t, $dbar)) {
+      $maxbars--;
+      $codes .= 'D';
+      push(@args, Tokens(@next));
+      @next = (); }
+    else {
+      push(@next, $t); } }
+  push(@args, Tokens(@next));
+  return ($codes, @args); }
+
+#======================================================================
+DefMacro('\braket{}', sub {
+    my ($gullet, $arg) = @_;
+    my ($codes, @args) = splitBraketArg($arg, 2);
+    my $n = scalar(@args);
+    return Invocation(T_CS('\lx@braket@' . $codes), @args)->unlist; });
+DefMacro('\Braket{}', sub {
+    my ($gullet, $arg) = @_;
+    my ($codes, @args) = splitBraketArg($arg, 2);
+    my $n = scalar(@args);
+    return Invocation(T_CS('\lx@Braket@' . $codes), @args)->unlist; });
+
+DefMath('\lx@braket@{}', '\langle#1\rangle',            meaning => 'expectation');
+DefMath('\lx@Braket@{}', '\left\langle#1\right\rangle', meaning => 'expectation');
+
+# seperate macros since single vs double bars could have different meanings?
+#(but we assume the same for now)
+DefMath('\lx@braket@V{}{}', '\langle#1\,|\,#2\rangle',  meaning => 'inner-product');
+DefMath('\lx@braket@D{}{}', '\langle#1\,\|\,#2\rangle', meaning => 'inner-product');
+DefMath('\lx@Braket@V{}{}', '\left\langle#1\,\middle|\,#2\right\rangle', meaning => 'inner-product');
+DefMath('\lx@Braket@D{}{}', '\left\langle#1\,\middle\|\,#2\right\rangle', meaning => 'inner-product');
+
+DefMath('\lx@braket@VV{}{}{}', '\langle#1\,|#2\,|\,#3\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@braket@VD{}{}{}', '\langle#1\,|\,#2\,\|\,#3\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@braket@DV{}{}{}', '\langle#1\,\|\,#2\,|\,#3\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@braket@DD{}{}{}', '\langle#1\,\|\,#2\,\|\,#3\rangle',
+  meaning => 'quantum-operator-product');
+
+DefMath('\lx@Braket@VV{}{}{}', '\left\langle#1\,\middle|\,#2\,\middle|\,#3\right\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@Braket@VD{}{}{}', '\left\langle#1\,\middle|\,#2\,\middle\|\,#3\right\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@Braket@DV{}{}{}', '\left\langle#1\,\middle\|\,#2\,\middle|\,#3\right\rangle',
+  meaning => 'quantum-operator-product');
+DefMath('\lx@Braket@DD{}{}{}', '\left\langle#1\,\middle\|\,#2\,\middle\|\,#3\right\rangle',
+  meaning => 'quantum-operator-product');
+
+#======================================================================
+DefMacro('\set{}', sub {
+    my ($gullet, $arg) = @_;
+    my ($codes, @args) = splitBraketArg($arg, 1);
+    my $n = scalar(@args);
+    return Invocation(T_CS('\lx@set@' . $codes), @args)->unlist; });
+DefMacro('\Set{}', sub {
+    my ($gullet, $arg) = @_;
+    my ($codes, @args) = splitBraketArg($arg, 1);
+    my $n = scalar(@args);
+    return Invocation(T_CS('\lx@Set@' . $codes), @args)->unlist; });
+
+DefMath('\lx@set@{}', '\{#1\}',            meaning => 'set');
+DefMath('\lx@Set@{}', '\left\{#1\right\}', meaning => 'set');
+
+DefMath('\lx@set@V{}{}', '\{#1\;|\;#2\}',                    meaning => 'set');
+DefMath('\lx@set@D{}{}', '\{#1\;\|\;#2\}',                   meaning => 'set');
+DefMath('\lx@Set@V{}{}', '\left\{#1\;\middle|\;#2\right\}',  meaning => 'set');
+DefMath('\lx@Set@D{}{}', '\left\{#1\;\middle\|\;#2\right\}', meaning => 'set');
+
+#======================================================================
+1;
