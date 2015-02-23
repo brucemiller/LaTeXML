@@ -131,8 +131,10 @@ sub RDFTriple {
 #======================================================================
 # Adding RDF Attributes to arbitrary LaTeXML Markup.
 
-# \lxRDFa{keywordpairs} "RDF attributes"
-#    Add any RDF attributes to the _current_ node.
+# \lxRDFa[xpath]{keywordpairs} "RDF attributes"
+#    Add any RDF attributes to a node.
+# If xpath is given, the RDF attributes are added to the node
+# indicated by the xpath expression, otherwise to the current node.
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
@@ -152,9 +154,11 @@ DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
     $document->setNode($save); });
 
 #======================================================================
-# \lxRDF{keyvals}[content]  "Add RDF triple"
-# Add an RDF triple to the document.
-# Create an (invisible) metadata container, with the given RDF attributes.
+# \lxRDF[content]{keyvals}  "Add RDF triple"
+#   Add an ltx:rdf element to the document.
+# If content is given, it provides the content of the element,
+# otherwise an invisible metadata container is created.
+# In either case, with the given RDF attributes.
 # This can appear anywhere in the document, including in the preamble.
 
 # This version of \lxRDF is for use in the preamble.
