@@ -400,7 +400,9 @@ sub formatBibEntry {
       @rfnames = $keytag->childNodes; }
     my $aa;
     if (scalar(@rfnames) > 1) {
-      $aa = join('', map { substr($_->textContent, 0, 1); } @rfnames); }
+      $aa = join('', map { substr($_->textContent, 0, 1); } @rfnames); 
+      if (length($aa)>3) {
+        $aa = substr($aa, 0, 3)."+"; } }
     else {
       $aa = uc(substr($rfnames[0]->textContent, 0, 3)); }
     my $yrtext = (@year ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
