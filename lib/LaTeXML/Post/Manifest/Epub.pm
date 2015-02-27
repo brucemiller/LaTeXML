@@ -12,6 +12,7 @@
 package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
+use File::Find qw(find);
 
 our $uuid_tiny_installed;
 
@@ -40,8 +41,6 @@ sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
   return $self; }
-
-use Data::Dumper;
 
 sub initialize {
   my ($self, $doc) = @_;
@@ -183,23 +182,30 @@ sub finalize {
   my ($self) = @_;
   #Index all CSS files (written already)
   my $OPS_directory = $$self{OPS_directory};
-  my $OPS_FH;
-  opendir($OPS_FH, $OPS_directory)
-    or Fatal('I/O', $OPS_directory, undef, "Couldn't open '$OPS_directory' for reading: $_");
-  my @files = readdir($OPS_FH);
-  closedir $OPS_FH;
-  my @styles = grep { /\.css$/ && -f pathname_concat($OPS_directory, $_) } @files;
-  my @images = grep { /\.png$/ && -f pathname_concat($OPS_directory, $_) } @files;
+  my @styles=();
+  my @images=();
+  find({no_chdir=>1, wanted=>sub {
+    my $OPS_abspath = $_;
+    if (-f $OPS_abspath) {
+      my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
+      push(@styles, $OPS_pathname) if ($OPS_pathname =~ /\.css$/);
+      push(@images, $OPS_pathname) if ($OPS_pathname =~ /\.png$/); }
+  }}, $OPS_directory);
+
   my $manifest = $$self{opf_manifest};
   # TODO: Other externals are future work
   foreach my $style (@styles) {
+    my $style_id = $style;
+    $style_id =~ s|/|-|g; # NCName required for id; no slashes
     my $style_item = $manifest->addNewChild(undef, 'item');
-    $style_item->setAttribute('id',         $style);
+    $style_item->setAttribute('id',         "$style_id");
     $style_item->setAttribute('href',       "$style");
     $style_item->setAttribute('media-type', 'text/css'); }
   foreach my $image (@images) {
+    my $image_id = $image;
+    $image_id =~ s|/|-|g; # NCName required for id; no slashes
     my $image_item = $manifest->addNewChild(undef, 'item');
-    $image_item->setAttribute('id',         $image);
+    $image_item->setAttribute('id',         "$image_id");
     $image_item->setAttribute('href',       "$image");
     $image_item->setAttribute('media-type', 'image/png'); }
 
