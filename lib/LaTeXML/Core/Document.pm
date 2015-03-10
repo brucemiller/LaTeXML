@@ -1161,7 +1161,9 @@ sub markXMNodeVisibility_aux {
     #    $self->markXMNodeVisibility_aux($self->realizeXMNode($node),$cvis,$pvis); }
     my $id = $node->getAttribute('idref');
     if (!$id) {
-      Warn('expected', 'id', $self, "Missing id on ltx:XMRef");
+      my $key = $node->getAttribute('_xmkey');
+      Warn('expected', 'id', $self, "Missing idref on ltx:XMRef",
+        ($key ? ("_xmkey is $key") : ()));
       return; }
     my $reffed = $self->lookupID($id);
     if (!$reffed) {
