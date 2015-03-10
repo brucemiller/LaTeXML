@@ -1,3 +1,28 @@
+0.8.1 2015-02-17
+     - Generate "span soup" for inline blocks, when otherwise would produce invalid HTML5.
+     - Can use svg as math ouput format.
+     - listings from the listings package provides link to downloadable raw data 
+     - implemented low-level TeX input/ouptut primitives
+     - more consistent handling of math spacing, delimiter sizes,
+       equation positioning and alignment; improved linebreaking layout
+     - parallel math markup w/cross-referencing
+     - math grammar enhancements
+     - language support (xml:lang & (slightly) internationalized number recognition)
+     - font size handling more consistent with CSS
+     - New fallback for unknown classes "OmniBus.cls" mimics common frontmatter markup.
+     - improved package option handling
+     - improved documentation
+     - improved portability (Windows, Perl versions)
+     - various other bugs & fidelity improvements
+     - New bindings:
+       a0poster.cls, a0size.sty, braket.sty, crop.sty, epsf.tex, ellipsis.sty,
+       fancyhdr.sty, floatpag.sty, ifthen.sty, lineno.sty, listingsutf8.sty,
+       pgfplots.sty, relsize.sty, type1cm.sty, xargs.sty
+
+    Thanks: Deyan Ginev, Michael Brade, Joe Cornelli, dpantele, Giovanni,
+       Kim Phillip Jablonski, Bernhard Kleine, Lukas Kohlhase, Michael Kohlhase,
+       Silviu Opreah, Antonio Sanchez, Moritz Schubotz, Rainere Silva, Frederic Wang & Others.
+
 0.8.0 2014-05-05
      - Too many changes to enumerate...
      - Generates HTML5, ePub
