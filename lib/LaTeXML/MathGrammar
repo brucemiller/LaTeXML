@@ -276,6 +276,8 @@ Factor  :
         | NUMBER   addScripts[$item[1]]
         | SCRIPTOPEN scriptFactorOpen[$item[1]]
         | OPEN factorOpen[$item[1]]
+        # handle INTOP seperately, since it recognizes d as diff
+        | preScripted['INTOP'] addIntOpArgs[$item[1]]
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
@@ -284,11 +286,11 @@ Factor  :
           VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
               addScripts[Fence($item[2],$item[3],$item[4])]
         | { ($forbidVertBar ? undef : IsNotationAllowed('QM')); }
-          VERTBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
+          MIDBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
               addScripts[InterpretDelimited(New('ket'),
                     Annotate($item[2],role=>'OPEN'),$item[3],Annotate($item[4],role=>'CLOSE'))] # ket
         | { IsNotationAllowed('QM'); }
-          LANGLE ketExpression VERTBAR maybeBra[$item[2],$item[3],$item[4]]
+          LANGLE ketExpression MIDBAR maybeBra[$item[2],$item[3],$item[4]]
         | { IsNotationAllowed('QM'); }
           LANGLE absExpression RANGLE
                addScripts[Fence(Annotate($item[2],role=>'OPEN'),
@@ -365,7 +367,7 @@ maybeBraket :
                                    Annotate($arg[0],role=>'OPEN'),$arg[1],
                                    Annotate($arg[2],role=>'MIDDLE'),
                                    $arg[3],Annotate($item[1],role=>'CLOSE'))]
-        | VERTBAR ketExpression RANGLE { SawNotation('QM'); }
+        | MIDBAR ketExpression RANGLE { SawNotation('QM'); }
               addScripts[InterpretDelimited(New('quantum-operator-product',undef), # Is this a good representation?
                             Annotate($arg[0],role=>'OPEN'),$arg[1],
                                      Annotate($arg[2],role=>'CLOSE'),
@@ -591,6 +593,34 @@ moreOpArgFactors :
         | Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
         | { $arg[0]; }
 
+# addIntOpArgs[$bigop]; Add following Term to a INTOP as integrand, if present.
+# The main point here is to recognize a "d" as a diff operator.
+# This is insufficient, in general, because the "d" may be contained within
+# a subexpression, particularly a fraction; the top-level parsing needs to be able
+# to parse subexpressions within a context, and yet, needs to parse the subexpressions
+# beforehand to (potentially) determine the role of the subexpression!
+addIntOpArgs :
+          /^\Z/ { $arg[0];}   # short circuit!
+        # Is the APPLYOP getting "lost" here?
+        | APPLYOP(?) IntFactor moreIntOpArgFactors[$item[2]] { Apply($arg[0],$item[3]);}
+        | { $arg[0]; }
+
+# moreIntOpArgFactors[$factor1] : Similar to moreOpArgFactors, 
+#   but recognizing d as diff
+moreIntOpArgFactors :
+          /^\Z/ { $arg[0];}   # short circuit!
+        | MulOp IntFactor moreIntOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
+        | IntFactor moreIntOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
+        | { $arg[0]; }
+
+IntFactor :
+          diffd ATOM_OR_ID { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
+        | diffd UNKNOWN    { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
+        | Factor           { $item[1]; }
+
+diffd :
+          /UNKNOWN:d:\d+/           { Lookup($item[1]); }
+        | /ID:d:\d+/                { Lookup($item[1]); }
 
 # Punctuation separating function arguments; things marked MIDDLE could
 # also separate arguments
@@ -708,6 +738,9 @@ LANGLE          : /RELOP:less-than:\d+/         { Lookup($item[1]); }
                 | /OPEN:langle:\d+/             { Lookup($item[1]); }
 RANGLE          : /RELOP:greater-than:\d+/      { Lookup($item[1]); }
                 | /CLOSE:rangle:\d+/            { Lookup($item[1]); }
+MIDBAR          : /VERTBAR:\S*:\d+/             { Lookup($item[1]); }
+                | /MIDDLE:\|:\d+/               { Lookup($item[1]); }
+                | /MIDDLE:parallel-to:\d+/      { Lookup($item[1]); }
 LBRACE          : /OPEN:\{:\d+/                 { Lookup($item[1]); }
 RBRACE          : /CLOSE:\}:\d+/                { Lookup($item[1]); }
 METARELOP       : /METARELOP:\S*:\d+/           { Lookup($item[1]); }
