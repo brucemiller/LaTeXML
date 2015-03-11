@@ -1172,7 +1172,9 @@ sub dualize_arglist {
   return ([@cargs], [@pargs]); }
 
 # Given a list of XML nodes (either libxml nodes, or array representations)
-# ensure each has an ID, and return a list of ltx:XMRef's to those nodes.
+# return a list of XMRef's referring to those nodes;
+# ensure each source node has an ID (if already instanciated as XML)
+# or _xmkey if still in array rep. since it will get an ID later, and the connection re-made)
 # Note that ltx:XMHint nodes are ephemeral and shouldn't be ref'd!
 # likewise, we avoid creating XMRefs to XMRefs
 sub createXMRefs {
@@ -1189,14 +1191,21 @@ sub createXMRefs {
       push(@refs, [$qname, {%attr}]); }
     # Likewise, clone an XMRef (w/o any attributes or id ?) rather than create an XMRef to an XMRef.
     elsif ($qname eq 'ltx:XMRef') {
-      push(@refs, [$qname, { idref => $arg->getAttribute('idref'), _box => $box }]); }
+      push(@refs, [$qname, { _xmkey => $arg->getAttribute('_xmkey'),
+            idref => $arg->getAttribute('idref'), _box => $box }]); }
     else {
-      my $id = ($isarray ? $$arg[1]{'xml:id'} : $arg->getAttribute('xml:id'));
-      if (!$id) {
-        $id = ToString(getXMArgID());
-        if ($isarray) { $$arg[1]{'xml:id'} = $id; }
-        else { $document->setAttribute($arg, 'xml:id' => $id); } }
-      push(@refs, ['ltx:XMRef', { 'idref' => $id, _box => $box }]); } }
+      if (my $id = ($isarray ? $$arg[1]{'xml:id'} : $arg->getAttribute('xml:id'))) {
+        # $arg already has id, so refer to it.
+        push(@refs, ['ltx:XMRef', { 'idref' => $id, _box => $box }]); }
+      elsif ($isarray) {
+        # $arg is not yet instanciated, so hasn't had chance to get auto-id; use _xmkey
+        my $key = ToString(getXMArgID());
+        $$arg[1]{'_xmkey'} = $key;
+        push(@refs, ['ltx:XMRef', { '_xmkey' => $key, _box => $box }]); }
+      else {
+        # If arg is already XML, it's too late to get automatic ID's
+        GenerateID($document, $arg, undef, '');
+        push(@refs, ['ltx:XMRef', { 'idref' => $arg->getAttribute('xml:id'), _box => $box }]); } } }
   return @refs; }
 
 # DefMath Define a Mathematical symbol or function.
@@ -1352,8 +1361,6 @@ sub defmath_dual {
     $options{scope});
   # Make the presentation macro.
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
-  $presentation = Invocation(T_CS('\@ASSERT@MEANING'), T_OTHER($options{meaning}), $presentation)
-    if $options{meaning};
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
