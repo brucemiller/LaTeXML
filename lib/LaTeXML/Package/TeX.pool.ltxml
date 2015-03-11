@@ -5981,30 +5981,33 @@ DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
     Revert(LookupValue('xref:' . ToString($_[1]))); },
   sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
 
-# Connect up the XMArg/XMRef pairs (actually can be multiple XMRef's)
-# We want to set the idref of the XMRef's to point to the id of the XMArg,
-# but we don't generally know which ones have been computed first
+# Connect up the XMRef/XMwhatever pairs (actually can be multiple XMRef's)
+# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
+# but usually the XMRef is created first, and we want to let the referred to element
+# get it's id computed by whatever means it prefers.
 # so we have to work both ways (use state to record associations, to avoid expensive xpath)
-Tag('ltx:XMArg', 'afterOpen:late' => sub {
+Tag('ltx:*', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
-      GenerateID($document, $node, undef, 'xm');    # Generate id if none already.
-      my $id = $node->getAttribute('xml:id');
-      AssignValue('xmkey:' . $key => $id, 'global');    # for future use by XMRef
-            # but if we came after any XMRef's record their idref's as well.
-      if (my $referrers = LookupValue('xmkey_referrers:' . $key)) {
-        map { $document->setAttribute($_, idref => $id) } @$referrers;
-        AssignValue('xmkey_referrers:' . $key, undef, 'global'); }
+      my $qname = $document->getNodeQName($node);
+      # If this is an XMRef w/o idref & referred node already has id; update the XMRef
+      if ($qname eq 'ltx:XMRef') {
+        if (!$node->getAttribute('idref')) {    # If not yet set
+          if (my $id = LookupValue('xmkey:' . $key)) {    # If XMArg already has an id
+            $document->setAttribute($node, idref => $id); }    # Note that id here
+          else {
+            PushValue('xmkey_referrers:' . $key, $node); } } }    # else, note that we still need an i
+          # If this is any other node w/_xmkey, make sure it has an id
+          # and record it on the corresponding XMRef
+      elsif ($qname =~ /^ltx:XM/) {
+        GenerateID($document, $node, undef, '');    # Generate id if none already.
+        my $id = $node->getAttribute('xml:id');
+        AssignValue('xmkey:' . $key => $id, 'global');    # for future use by XMRef
+              # but if we came after any XMRef's record their idref's as well.
+        if (my $referrers = LookupValue('xmkey_referrers:' . $key)) {
+          map { $document->setAttribute($_, idref => $id) } @$referrers;
+          AssignValue('xmkey_referrers:' . $key, undef, 'global'); } }
 } });
-Tag('ltx:XMRef', 'afterOpen:late' => sub {
-    my ($document, $node) = @_;
-    if (my $key = $node->getAttribute('_xmkey')) {
-      if (!$node->getAttribute('idref')) {    # If not yet set
-        if (my $id = LookupValue('xmkey:' . $key)) {    # If XMArg already has an id
-          $document->setAttribute($node, idref => $id); }    # Note that id here
-        else {
-          PushValue('xmkey_referrers:' . $key, $node); } } }    # else, note that we still need an idref!
-});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
