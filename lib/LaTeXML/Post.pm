@@ -280,6 +280,13 @@ sub process {
   $self->preprocess($doc, @maths);
   if ($$self{parallel}) {
     my @secondaries = @{ $$self{secondary_processors} };
+    # What's the right test for when cross-referencing should be done?
+    # For now: only when the primary and some secondary can cross-ref
+    # (otherwise, end up with peculiar structures?)
+    my ($proc1, @ignore) = grep { $_->can('addCrossref') } @secondaries;
+    if ($self->can('addCrossref') && $proc1) {
+      $$self{crossreferencing}  = 1;     # We'll need ID's!
+      $$proc1{crossreferencing} = 1; }
     my $f;
     LaTeXML::Post::NoteProgressDetailed(" [parallel " .
         join(',', map { (($f = $_) =~ s/^LaTeXML::Post::// ? $f : $f) } map { ref $_ } @secondaries) . "]");
@@ -408,45 +415,78 @@ sub combineParallel {
 # When converting an XMath node (with an id) to some other format,
 # we will generate an id for the new node.
 # This method returns a suffix to be added to the XMath id.
-# The suffix comes from:
-#  * When the node is in the n-th MathBranch of a MathFork, it gets ".fork<n>"
-#  * When the format is not the primary format, it gets a suffix based on type (eg. ".pmml")
+# The primary format gets the id's unchanged, but secondary ones get a suffix (eg. ".pmml")
 sub IDSuffix {
   my ($self) = @_;
-####  ($LaTeXML::Post::MathProcessor::FORK ? ".fork".$LaTeXML::Post::MathProcessor::FORK : '') .
   return ($$self{is_secondary} ? $self->rawIDSuffix : ''); }
 
 sub rawIDSuffix {
   return ''; }
 
-# Associate a generated Math node (MathML, OpenMath,...) with the XMath node
-# that is it's source.  If the XMath node has an id, then id's will be added
-# to the generated node to enable cross-referencing.
+# In order to do cross-referencing betweeen formats, and to relate semantic/presentation
+# information to content/presentation nodes (resp), we want to associate each
+# generated node (MathML, OpenMath,...) with a "source" XMath node "responsible" for it's generation.
+# This is often the "current" XMath node that was being converted, but sometimes
+# * the containing XMDual (which makes more sense when we've generated a "container")
+# * the containing XMDual's semantic operator (makes more sense when we're generating
+#   tokens that are only visible from the presentation branch)
 sub associateNode {
-  my ($self, $node, $sourcenode, $noxref) = @_;
-  return unless $sourcenode && ref $node;
+  my ($self, $node, $currentnode, $noxref) = @_;
+  return unless $currentnode && ref $node;
+  my $document = $LaTeXML::Post::DOCUMENT;
   # Check if already associated with a source node
   my $isarray = ref $node eq 'ARRAY';
+  # What kind of branch are we generating?
+  my $ispresentation = $self->rawIDSuffix eq '.pmml';    # TEMPORARY HACK: BAAAAD method!
+  my $iscontainer    = 0;
   if ($isarray) {
     return if $$node[1]{'_sourced'};
-    $$node[1]{'_sourced'} = 1; }
+    $$node[1]{'_sourced'} = 1;
+    my ($tag, $attr, @children) = @$node;
+    $iscontainer = grep { ref $_ } @children; }
   else {
     return if $node->getAttribute('_sourced');
-    $node->setAttribute('_sourced' => 1); }
-  if (my $sourceid = $sourcenode->getAttribute('fragid')) {    # If source has ID
-    my $id = $sourceid . $self->IDSuffix;
-    if (my $ctr = $$self{convertedID_counter}{$sourceid}++) {
-      $id = LaTeXML::Post::uniquifyID($sourceid, $ctr, $self->IDSuffix); }
-    if ($isarray) {
-      $$node[1]{'xml:id'} = $id; }
+    $node->setAttribute('_sourced' => 1);
+    $iscontainer = scalar(element_nodes($node)); }
+  my $sourcenode = $currentnode;
+  # If the generated node is a "container" (non-token!), use the container as source
+  if ($iscontainer) {
+    if (my $container = $document->findnode('ancestor-or-self::ltx:XMDual[1]', $sourcenode)) {
+      $sourcenode = $container; } }
+  # If the current node is appropriately visible, use it.
+  elsif ($currentnode->getAttribute(($ispresentation ? '_cvis' : '_pvis'))) { }
+  # Else (current node isn't visible); try to find content OPERATOR
+  elsif (my $container = $document->findnode('ancestor-or-self::ltx:XMDual[1]', $sourcenode)) {
+    my ($op) = element_nodes($container);
+    my $q = $document->getQName($op) || 'unknown';
+    if ($q eq 'ltx:XMTok') { }
+    elsif ($q eq 'ltx:XMApp') {
+      ($op) = element_nodes($op);
+      if ($document->getQName($op) eq 'ltx:XMRef') {
+        $op = $document->realizeXMNode($op); } }
+    if ($op && !$op->getAttribute('_pvis')) {
+      $sourcenode = $op; }
     else {
-      $node->setAttribute('xml:id' => $id); }
-    push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; }
+      $sourcenode = $container; } }
+  # If we're intending to cross-reference, then source & generated nodes will need ID's
+  if ($$self{crossreferencing}) {
+    if (!$noxref && !$sourcenode->getAttribute('fragid')) {    # If no ID, but need one
+      $document->generateNodeID($sourcenode, ''); }
+    if (my $sourceid = $sourcenode->getAttribute('fragid')) {    # If source has ID
+      my $nodeid = $currentnode->getAttribute('fragid') || $sourceid;
+      my $id = $nodeid . $self->IDSuffix;
+      if (my $ctr = $$self{convertedID_counter}{$nodeid}++) {
+        $id = LaTeXML::Post::uniquifyID($nodeid, $ctr, $self->IDSuffix); }
+      if ($isarray) {
+        $$node[1]{'xml:id'} = $id; }
+      else {
+        $node->setAttribute('xml:id' => $id); }
+      push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; } }
   $self->associateNodeHook($node, $sourcenode, $noxref);
-  if ($isarray) {                                              # Array represented
-    map { $self->associateNode($_, $sourcenode, $noxref) } @$node[2 .. $#$node]; }
-  else {                                                       # LibXML node
-    map { $self->associateNode($_, $sourcenode, $noxref) } element_nodes($node); }
+  if ($isarray) {                                                # Array represented
+    map { $self->associateNode($_, $currentnode, $noxref) } @$node[2 .. $#$node]; }
+  else {                                                         # LibXML node
+    map { $self->associateNode($_, $currentnode, $noxref) } element_nodes($node); }
   return; }
 
 # Customization hook for adding other attributes to the generated math nodes.
@@ -454,21 +494,41 @@ sub associateNodeHook {
   my ($self, $node, $sourcenode, $noxref) = @_;
   return; }
 
+sub shownode {
+  my ($node) = @_;
+  my $ref = ref $node;
+  if ($ref eq 'ARRAY') {
+    my ($tag, $attr, @children) = @$node;
+    return '[' . $tag . ',{' . join(',', map { $_ . '=>' . $$attr{$_} } sort keys %$attr) . '},'
+      . join(',', map { shownode($_) } @children) . ']'; }
+  elsif ($ref =~ /^XML/) {
+    return $node->toString; }
+  else {
+    return "$node"; } }
+
 # Add backref linkages (eg. xref) onto the nodes that $self created (converted from XMath)
 # to reference those that $otherprocessor created.
 # NOTE: Subclass MUST define addCrossref($node,$xref_id) to add the
 # id of the "Other Interesting Node" to the (array represented) xml $node
 # in whatever fashion the markup for that processor uses.
+#
+# This may be another useful place to add a hook?
+# It would provide the list of cross-refenced nodes in document order
+# This would allow deciding whether or not to copy foreign attributes or other interesting things
 sub addCrossrefs {
   my ($self, $doc, $otherprocessor) = @_;
   my $selfs_map  = $$self{convertedIDs};
   my $others_map = $$otherprocessor{convertedIDs};
   foreach my $xid (keys %$selfs_map) {    # For each XMath id that $self converted
     if (my $other_ids = $$others_map{$xid}) {    # Did $other also convert those ids?
-      if (my $xref_id = $other_ids && $$other_ids[0]) {    # get (first) id $other created from $xid.
-        foreach my $id (@{ $$selfs_map{$xid} }) {          # look at each node $self created from $xid
-          if (my $node = $doc->findNodeByID($id)) {        # If we find a node,
-            $self->addCrossref($node, $xref_id); } } } } }    # add a crossref from it to $others's node
+      my $xref_id = $$other_ids[0];
+      if (scalar(@$other_ids) > 1) {             # Find 1st in document order! (inefficient?)
+        my $n = $doc->findnode('descendant-or-self::*['
+            . join(' or ', map { '@xml:id="' . $_ . '"' } @$other_ids) . ']');
+        $xref_id = $n->getAttribute('xml:id'); }
+      foreach my $id (@{ $$selfs_map{$xid} }) {    # look at each node $self created from $xid
+        if (my $node = $doc->findNodeByID($id)) {    # If we find a node,
+          $self->addCrossref($node, $xref_id); } } } }    # add a crossref from it to $others's node
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
