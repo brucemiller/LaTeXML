@@ -114,10 +114,10 @@
               <XMApp>
                 <XMTok meaning="times" role="MULOP">×</XMTok>
                 <XMDual>
-                  <XMRef idref="XM1"/>
+                  <XMRef idref="S1.Ex6.m1.1"/>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMApp xml:id="XM1">
+                    <XMApp xml:id="S1.Ex6.m1.1">
                       <XMTok meaning="times" role="MULOP">×</XMTok>
                       <XMTok role="ID" font="italic">a</XMTok>
                       <XMTok role="ID" font="italic">b</XMTok>
@@ -126,10 +126,10 @@
                   </XMWrap>
                 </XMDual>
                 <XMDual>
-                  <XMRef idref="XM2"/>
+                  <XMRef idref="S1.Ex6.m1.2"/>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMApp xml:id="XM2">
+                    <XMApp xml:id="S1.Ex6.m1.2">
                       <XMTok meaning="times" role="MULOP">×</XMTok>
                       <XMTok role="ID" font="italic">c</XMTok>
                       <XMTok role="ID" font="italic">d</XMTok>
@@ -145,16 +145,16 @@
           <Math mode="display" xml:id="S1.Ex7.m1" tex="((a\times b)\times(c\times d))" text="a * b * c * d">
             <XMath>
               <XMDual>
-                <XMRef idref="XM6"/>
+                <XMRef idref="S1.Ex7.m1.1"/>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMApp xml:id="XM6">
+                  <XMApp xml:id="S1.Ex7.m1.1">
                     <XMTok meaning="times" role="MULOP">×</XMTok>
                     <XMDual>
-                      <XMRef idref="XM4"/>
+                      <XMRef idref="S1.Ex7.m1.1.1"/>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMApp xml:id="XM4">
+                        <XMApp xml:id="S1.Ex7.m1.1.1">
                           <XMTok meaning="times" role="MULOP">×</XMTok>
                           <XMTok role="ID" font="italic">a</XMTok>
                           <XMTok role="ID" font="italic">b</XMTok>
@@ -163,10 +163,10 @@
                       </XMWrap>
                     </XMDual>
                     <XMDual>
-                      <XMRef idref="XM5"/>
+                      <XMRef idref="S1.Ex7.m1.1.2"/>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMApp xml:id="XM5">
+                        <XMApp xml:id="S1.Ex7.m1.1.2">
                           <XMTok meaning="times" role="MULOP">×</XMTok>
                           <XMTok role="ID" font="italic">c</XMTok>
                           <XMTok role="ID" font="italic">d</XMTok>
@@ -306,11 +306,11 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="absolute-value"/>
-                <XMRef idref="XM7"/>
+                <XMRef idref="S3.Ex14.m1.1"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                <XMTok role="ID" xml:id="XM7" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S3.Ex14.m1.1" font="italic">a</XMTok>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
               </XMWrap>
             </XMDual>
@@ -323,11 +323,11 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="norm"/>
-                <XMRef idref="XM8"/>
+                <XMRef idref="S3.Ex15.m1.1"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="OPEN">||</XMTok>
-                <XMTok role="ID" xml:id="XM8" font="italic">a</XMTok>
+                <XMTok role="ID" xml:id="S3.Ex15.m1.1" font="italic">a</XMTok>
                 <XMTok role="CLOSE">||</XMTok>
               </XMWrap>
             </XMDual>
@@ -342,11 +342,11 @@
               <XMDual>
                 <XMApp>
                   <XMTok meaning="absolute-value"/>
-                  <XMRef idref="XM9"/>
+                  <XMRef idref="S3.Ex16.m1.1"/>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                  <XMTok role="ID" xml:id="XM9" font="italic">a</XMTok>
+                  <XMTok role="ID" xml:id="S3.Ex16.m1.1" font="italic">a</XMTok>
                   <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                 </XMWrap>
               </XMDual>
@@ -361,11 +361,11 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="absolute-value"/>
-                <XMRef idref="XM10"/>
+                <XMRef idref="S3.Ex17.m1.1"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                <XMApp xml:id="XM10">
+                <XMApp xml:id="S3.Ex17.m1.1">
                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
@@ -382,21 +382,21 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="absolute-value"/>
-                <XMRef idref="XM13"/>
+                <XMRef idref="S3.Ex18.m1.2"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                <XMApp xml:id="XM13">
+                <XMApp xml:id="S3.Ex18.m1.2">
                   <XMTok meaning="minus" role="ADDOP">-</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMDual>
                     <XMApp>
                       <XMTok meaning="absolute-value"/>
-                      <XMRef idref="XM12"/>
+                      <XMRef idref="S3.Ex18.m1.1"/>
                     </XMApp>
                     <XMWrap>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                      <XMTok role="ID" xml:id="XM12" font="italic">b</XMTok>
+                      <XMTok role="ID" xml:id="S3.Ex18.m1.1" font="italic">b</XMTok>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                     </XMWrap>
                   </XMDual>
@@ -418,31 +418,31 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="absolute-value"/>
-                <XMRef idref="XM16"/>
+                <XMRef idref="S4.Ex19.m1.3"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                <XMApp xml:id="XM16">
+                <XMApp xml:id="S4.Ex19.m1.3">
                   <XMTok meaning="minus" role="ADDOP">-</XMTok>
                   <XMDual>
                     <XMApp>
                       <XMTok meaning="absolute-value"/>
-                      <XMRef idref="XM14"/>
+                      <XMRef idref="S4.Ex19.m1.1"/>
                     </XMApp>
                     <XMWrap>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                      <XMTok role="ID" xml:id="XM14" font="italic">a</XMTok>
+                      <XMTok role="ID" xml:id="S4.Ex19.m1.1" font="italic">a</XMTok>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                     </XMWrap>
                   </XMDual>
                   <XMDual>
                     <XMApp>
                       <XMTok meaning="absolute-value"/>
-                      <XMRef idref="XM15"/>
+                      <XMRef idref="S4.Ex19.m1.2"/>
                     </XMApp>
                     <XMWrap>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                      <XMTok role="ID" xml:id="XM15" font="italic">b</XMTok>
+                      <XMTok role="ID" xml:id="S4.Ex19.m1.2" font="italic">b</XMTok>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                     </XMWrap>
                   </XMDual>
@@ -459,20 +459,20 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="absolute-value"/>
-                <XMRef idref="XM19"/>
+                <XMRef idref="S4.Ex20.m1.2"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                <XMApp xml:id="XM19">
+                <XMApp xml:id="S4.Ex20.m1.2">
                   <XMTok meaning="minus" role="ADDOP">-</XMTok>
                   <XMDual>
                     <XMApp>
                       <XMTok meaning="absolute-value"/>
-                      <XMRef idref="XM18"/>
+                      <XMRef idref="S4.Ex20.m1.1"/>
                     </XMApp>
                     <XMWrap>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                      <XMTok role="ID" xml:id="XM18" font="italic">a</XMTok>
+                      <XMTok role="ID" xml:id="S4.Ex20.m1.1" font="italic">a</XMTok>
                       <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                     </XMWrap>
                   </XMDual>
@@ -494,11 +494,11 @@
                 <XMDual>
                   <XMApp>
                     <XMTok meaning="absolute-value"/>
-                    <XMRef idref="XM20"/>
+                    <XMRef idref="S4.Ex21.m1.1"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-                    <XMTok role="ID" xml:id="XM20" font="italic">a</XMTok>
+                    <XMTok role="ID" xml:id="S4.Ex21.m1.1" font="italic">a</XMTok>
                     <XMTok role="VERTBAR" stretchy="false">|</XMTok>
                   </XMWrap>
                 </XMDual>

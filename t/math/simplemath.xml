@@ -30,14 +30,14 @@
             <XMTok role="ID" font="italic">b</XMTok>
             <XMDual>
               <XMApp>
-                <XMRef idref="XM1"/>
-                <XMRef idref="XM2"/>
+                <XMRef idref="S0.Ex2.m1.1"/>
+                <XMRef idref="S0.Ex2.m1.2"/>
               </XMApp>
               <XMApp>
-                <XMTok role="FUNCTION" xml:id="XM1" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S0.Ex2.m1.1" font="italic">f</XMTok>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok meaning="123" role="NUMBER" xml:id="XM2">123</XMTok>
+                  <XMTok meaning="123" role="NUMBER" xml:id="S0.Ex2.m1.2">123</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMApp>
@@ -60,14 +60,14 @@
             </XMApp>
             <XMDual>
               <XMApp>
-                <XMRef idref="XM3"/>
-                <XMRef idref="XM4"/>
+                <XMRef idref="S0.Ex3.m1.1"/>
+                <XMRef idref="S0.Ex3.m1.2"/>
               </XMApp>
               <XMApp>
-                <XMTok role="FUNCTION" xml:id="XM3" font="italic">f</XMTok>
+                <XMTok role="FUNCTION" xml:id="S0.Ex3.m1.1" font="italic">f</XMTok>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMApp xml:id="XM4">
+                  <XMApp xml:id="S0.Ex3.m1.2">
                     <XMTok meaning="plus" role="ADDOP">+</XMTok>
                     <XMTok role="ID" font="italic">a</XMTok>
                     <XMTok role="ID" font="italic">b</XMTok>
@@ -91,10 +91,10 @@
               <XMTok meaning="1" role="NUMBER">1</XMTok>
             </XMApp>
             <XMDual>
-              <XMRef idref="XM5"/>
+              <XMRef idref="S0.Ex4.m1.1"/>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="false">(</XMTok>
-                <XMApp xml:id="XM5">
+                <XMApp xml:id="S0.Ex4.m1.1">
                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok role="ID" font="italic">a</XMTok>
                   <XMTok role="ID" font="italic">b</XMTok>
@@ -131,28 +131,28 @@
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMDual>
                 <XMApp>
-                  <XMRef idref="XM6"/>
-                  <XMRef idref="XM7"/>
+                  <XMRef idref="S1.Ex6.m1.1"/>
+                  <XMRef idref="S1.Ex6.m1.2"/>
                 </XMApp>
                 <XMApp>
-                  <XMTok role="FUNCTION" xml:id="XM6" font="italic">a</XMTok>
+                  <XMTok role="FUNCTION" xml:id="S1.Ex6.m1.1" font="italic">a</XMTok>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMTok role="ID" xml:id="XM7" font="italic">x</XMTok>
+                    <XMTok role="ID" xml:id="S1.Ex6.m1.2" font="italic">x</XMTok>
                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                   </XMWrap>
                 </XMApp>
               </XMDual>
               <XMDual>
                 <XMApp>
-                  <XMRef idref="XM8"/>
-                  <XMRef idref="XM9"/>
+                  <XMRef idref="S1.Ex6.m1.3"/>
+                  <XMRef idref="S1.Ex6.m1.4"/>
                 </XMApp>
                 <XMApp>
-                  <XMTok role="FUNCTION" xml:id="XM8" font="italic">b</XMTok>
+                  <XMTok role="FUNCTION" xml:id="S1.Ex6.m1.3" font="italic">b</XMTok>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMTok role="ID" xml:id="XM9" font="italic">x</XMTok>
+                    <XMTok role="ID" xml:id="S1.Ex6.m1.4" font="italic">x</XMTok>
                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                   </XMWrap>
                 </XMApp>

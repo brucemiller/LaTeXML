@@ -55,10 +55,10 @@
       <Math mode="display" tex="\pmatrix{a&amp;b\cr c&amp;d}" text="matrix[[a, b], [c, d]]">
         <XMath>
           <XMDual>
-            <XMRef idref="xm1"/>
+            <XMRef idref="id1"/>
             <XMWrap>
               <XMTok role="OPEN">(</XMTok>
-              <XMArray meaning="matrix" xml:id="xm1">
+              <XMArray meaning="matrix" xml:id="id1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -93,10 +93,10 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">s</XMTok>
               <XMDual>
-                <XMRef idref="XM7"/>
+                <XMRef idref="id7"/>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="XM7" font="italic">x</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="id7" font="italic">x</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMDual>
@@ -104,11 +104,11 @@
             <XMDual>
               <XMApp>
                 <XMTok meaning="cases"/>
-                <XMRef idref="XM2"/>
-                <XMRef idref="XM3"/>
-                <XMRef idref="XM4"/>
-                <XMRef idref="XM5"/>
-                <XMRef idref="XM6"/>
+                <XMRef idref="id2"/>
+                <XMRef idref="id3"/>
+                <XMRef idref="id4"/>
+                <XMRef idref="id5"/>
+                <XMRef idref="id6"/>
                 <XMText>
                   <text font="italic">otherwise</text>
                 </XMText>
@@ -118,24 +118,24 @@
                 <XMArray>
                   <XMRow>
                     <XMCell align="left">
-                      <XMApp xml:id="XM2">
+                      <XMApp xml:id="id2">
                         <XMTok meaning="plus" role="ADDOP">+</XMTok>
                         <XMTok meaning="1" role="NUMBER">1</XMTok>
                       </XMApp>
                     </XMCell>
                     <XMCell align="left">
-                      <XMText xml:id="XM3">whatever</XMText>
+                      <XMText xml:id="id3">whatever</XMText>
                     </XMCell>
                   </XMRow>
                   <XMRow>
                     <XMCell align="left">
-                      <XMApp xml:id="XM4">
+                      <XMApp xml:id="id4">
                         <XMTok meaning="minus" role="ADDOP">-</XMTok>
                         <XMTok meaning="1" role="NUMBER">1</XMTok>
                       </XMApp>
                     </XMCell>
                     <XMCell align="left">
-                      <XMApp xml:id="XM5">
+                      <XMApp xml:id="id5">
                         <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
                         <XMTok role="UNKNOWN" font="italic">x</XMTok>
                         <XMTok meaning="0" role="NUMBER">0</XMTok>
@@ -144,7 +144,7 @@
                   </XMRow>
                   <XMRow>
                     <XMCell align="left">
-                      <XMTok meaning="0" role="NUMBER" xml:id="XM6">0</XMTok>
+                      <XMTok meaning="0" role="NUMBER" xml:id="id6">0</XMTok>
                     </XMCell>
                     <XMCell/>
                   </XMRow>
@@ -269,10 +269,10 @@
               </XMCell>
               <XMCell align="left">
                 <XMDual>
-                  <XMRef idref="XM8"/>
+                  <XMRef idref="id8"/>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMTok role="UNKNOWN" xml:id="XM8" font="italic">x</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="id8" font="italic">x</XMTok>
                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                   </XMWrap>
                 </XMDual>
@@ -320,10 +320,10 @@
               </XMCell>
               <XMCell align="left">
                 <XMDual>
-                  <XMRef idref="XM9"/>
+                  <XMRef idref="id9"/>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMTok role="UNKNOWN" xml:id="XM9" font="italic">x</XMTok>
+                    <XMTok role="UNKNOWN" xml:id="id9" font="italic">x</XMTok>
                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                   </XMWrap>
                 </XMDual>

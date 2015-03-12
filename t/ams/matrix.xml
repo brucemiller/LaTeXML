@@ -31,10 +31,10 @@
       <Math mode="display" xml:id="S0.Ex2.m1" tex="\begin{pmatrix}a&amp;b\\&#10;c\\&#10;\end{pmatrix}" text="matrix[[a, b], [c]]">
         <XMath>
           <XMDual>
-            <XMRef idref="S0.Ex2.m1.xm1"/>
+            <XMRef idref="S0.Ex2.m1.1"/>
             <XMWrap>
               <XMTok role="OPEN">(</XMTok>
-              <XMArray meaning="matrix" xml:id="S0.Ex2.m1.xm1">
+              <XMArray meaning="matrix" xml:id="S0.Ex2.m1.1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -59,10 +59,10 @@
       <Math mode="display" xml:id="S0.Ex3.m1" tex="\begin{bmatrix}a&amp;b\\&#10;c\\&#10;\end{bmatrix}" text="matrix[[a, b], [c]]">
         <XMath>
           <XMDual>
-            <XMRef idref="S0.Ex3.m1.xm1"/>
+            <XMRef idref="S0.Ex3.m1.1"/>
             <XMWrap>
               <XMTok role="OPEN">[</XMTok>
-              <XMArray meaning="matrix" xml:id="S0.Ex3.m1.xm1">
+              <XMArray meaning="matrix" xml:id="S0.Ex3.m1.1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -87,10 +87,10 @@
       <Math mode="display" xml:id="S0.Ex4.m1" tex="\begin{Bmatrix}a&amp;b\\&#10;c\\&#10;\end{Bmatrix}" text="matrix[[a, b], [c]]">
         <XMath>
           <XMDual>
-            <XMRef idref="S0.Ex4.m1.xm1"/>
+            <XMRef idref="S0.Ex4.m1.1"/>
             <XMWrap>
               <XMTok role="OPEN">{</XMTok>
-              <XMArray meaning="matrix" xml:id="S0.Ex4.m1.xm1">
+              <XMArray meaning="matrix" xml:id="S0.Ex4.m1.1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -117,11 +117,11 @@
           <XMDual>
             <XMApp>
               <XMTok meaning="determinant"/>
-              <XMRef idref="S0.Ex5.m1.xm1"/>
+              <XMRef idref="S0.Ex5.m1.1"/>
             </XMApp>
             <XMWrap>
               <XMTok role="VERTBAR">|</XMTok>
-              <XMArray meaning="matrix" xml:id="S0.Ex5.m1.xm1">
+              <XMArray meaning="matrix" xml:id="S0.Ex5.m1.1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -148,11 +148,11 @@
           <XMDual>
             <XMApp>
               <XMTok meaning="norm"/>
-              <XMRef idref="S0.Ex6.m1.xm1"/>
+              <XMRef idref="S0.Ex6.m1.1"/>
             </XMApp>
             <XMWrap>
               <XMTok role="VERTBAR">∥</XMTok>
-              <XMArray meaning="matrix" xml:id="S0.Ex6.m1.xm1">
+              <XMArray meaning="matrix" xml:id="S0.Ex6.m1.1">
                 <XMRow>
                   <XMCell align="center">
                     <XMTok role="UNKNOWN" font="italic">a</XMTok>
@@ -182,12 +182,12 @@
                 <XMTok role="UNKNOWN" font="italic" fontsize="70%">a</XMTok>
               </XMCell>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic" fontsize="70%">b</XMTok>
+                <XMTok role="UNKNOWN" fontsize="70%" font="italic">b</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic" fontsize="70%">c</XMTok>
+                <XMTok role="UNKNOWN" fontsize="70%" font="italic">c</XMTok>
               </XMCell>
             </XMRow>
           </XMArray>

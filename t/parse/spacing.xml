@@ -53,17 +53,17 @@
           <XMDual>
             <XMApp>
               <XMTok meaning="list"/>
-              <XMRef idref="XM1"/>
-              <XMRef idref="XM2"/>
+              <XMRef idref="S0.Ex4.m1.1"/>
+              <XMRef idref="S0.Ex4.m1.2"/>
             </XMApp>
             <XMWrap>
-              <XMApp xml:id="XM1">
+              <XMApp xml:id="S0.Ex4.m1.1">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="UNKNOWN" font="italic">a</XMTok>
                 <XMTok role="UNKNOWN" font="italic">b</XMTok>
               </XMApp>
               <XMTok name="quad" role="PUNCT" font="italic"> </XMTok>
-              <XMApp xml:id="XM2">
+              <XMApp xml:id="S0.Ex4.m1.2">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok role="UNKNOWN" font="italic">c</XMTok>
                 <XMTok role="UNKNOWN" font="italic">d</XMTok>
@@ -76,7 +76,7 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex5">
-      <Math mode="display" xml:id="S0.Ex5.m1" tex="\int_{0}^{\infty}f(x)dx" text="((integral _ 0) ^ infinity)@(f * x * d * x)">
+      <Math mode="display" xml:id="S0.Ex5.m1" tex="\int_{0}^{\infty}f(x)dx" text="((integral _ 0) ^ infinity)@(f * x * differential-d@(x))">
         <XMath>
           <XMApp>
             <XMApp>
@@ -92,22 +92,24 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
               <XMDual>
-                <XMRef idref="XM3"/>
+                <XMRef idref="S0.Ex5.m1.1"/>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="XM3" font="italic">x</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex5.m1.1" font="italic">x</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMApp>
+                <XMTok meaning="differential-d" role="DIFFOP" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
             </XMApp>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex6">
-      <Math mode="display" xml:id="S0.Ex6.m1" tex="\int_{0}^{\infty}f(x)\,dx" text="((integral _ 0) ^ infinity)@(f * x * d * x)">
+      <Math mode="display" xml:id="S0.Ex6.m1" tex="\int_{0}^{\infty}f(x)\,dx" text="((integral _ 0) ^ infinity)@(f * x * differential-d@(x))">
         <XMath>
           <XMApp>
             <XMApp>
@@ -123,15 +125,17 @@
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMTok possibleFunction="yes" role="UNKNOWN" font="italic">f</XMTok>
               <XMDual>
-                <XMRef idref="XM4"/>
+                <XMRef idref="S0.Ex6.m1.1"/>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok role="UNKNOWN" xml:id="XM4" font="italic">x</XMTok>
+                  <XMTok role="UNKNOWN" xml:id="S0.Ex6.m1.1" font="italic">x</XMTok>
                   <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok role="UNKNOWN" font="italic">d</XMTok>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMApp>
+                <XMTok meaning="differential-d" role="DIFFOP" font="italic">d</XMTok>
+                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              </XMApp>
             </XMApp>
           </XMApp>
         </XMath>
