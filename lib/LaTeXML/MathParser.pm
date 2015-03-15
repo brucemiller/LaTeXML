@@ -1144,8 +1144,9 @@ sub ApplyNary {
       # Check that ops are used in same way.
       && !(grep { (p_getAttribute($rop, $_) || '<none>') ne (p_getAttribute($rop1, $_) || '<none>') }
         qw(mathstyle))    # Check ops are used in similar way
-                          # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
-      && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(open close enclose))) {
+          # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
+          # Especially an ID! (but really only important if the id is referenced somewhere?)
+      && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(open close enclose xml:id))) {
       # Note that $op1 GOES AWAY!!!
       ReplacedBy($op1, $rop);
       push(@args, @args1); }
@@ -1168,9 +1169,12 @@ sub ApplyNary {
 sub ReplacedBy {
   my ($lostnode, $keepnode) = @_;
   if (my $lostid = p_getAttribute($lostnode, 'xml:id')) {
+    # Could be we want to generate an id for $keepnode, here?
     if (my $keepid = p_getAttribute($keepnode, 'xml:id')) {
       # print STDERR "LOST $lostid use instead $keepid\n";
-      $$LaTeXML::MathParser::LOSTNODES{$lostid} = $keepid; } }
+      $$LaTeXML::MathParser::LOSTNODES{$lostid} = $keepid; }
+    else {
+      print STDERR "LOST $lostid but no replacement!\n"; } }
   return; }
 
 # ================================================================================
