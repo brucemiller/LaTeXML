@@ -100,6 +100,7 @@ td.ltx_subfloat { width:50%; }
 .ltx_para
   { display: block; }
 
+/* alignment within blocks */
 .ltx_align_left     {text-align:left; }
 .ltx_align_right    {text-align:right; }
 .ltx_align_center   {text-align:center; }
@@ -117,29 +118,32 @@ td.ltx_align_right,  th.ltx_align_right,
 td.ltx_align_center, th.ltx_align_center { white-space:nowrap; }
 
 .ltx_inline-block { display:inline-block; }
-div.ltx_equation { display:block; width:95%; text-align:center; }
-/*.ltx_equation span.ltx_refnum.ltx_left { position:absolute; left:2em; }
-.ltx_equation span.ltx_refnum.ltx_right { position:absolute; right:2em; }
-*/
+
+/* equations in non-aligned mode (not normally used) */
+.ltx_eqn_div { display:block; width:95%; text-align:center; }
+
+/* equations in aligned mode (aligning tags, etc as well as equations) */
+.ltx_eqn_table { display:table; width:100%; }
+.ltx_eqn_row { display:table-row; }
+.ltx_eqn_cell{ display:table-cell; width:auto; }
+
 .ltx_tag_equation.ltx_align_left { position:absolute; left:3em; }
 .ltx_tag_equation.ltx_align_right { position:absolute; right:3em; }
 
-.ltx_equation td { width:auto; }
-table.ltx_equation,
-table.ltx_equationgroup { width:100%; }
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
 table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
-td.ltx_eqn_eqno { max-width:0em; overflow:visible; }
-td.ltx_eqn_eqno.ltx_align_right .ltx_tag { float:right; }
 
-/* Hide this from IE */
-tr > td.ltx_eqn_center_padleft,
-tr > td.ltx_eqn_center_padright { width:50%; }
-tr > td.ltx_eqn_left_padleft,
-tr > td.ltx_eqn_right_padright { min-width:2em; }
-tr > td.ltx_eqn_left_padright,
-tr > td.ltx_eqn_right_padleft  { width:100%; }
+.ltx_eqn_eqno { max-width:0em; overflow:visible; }
+.ltx_eqn_eqno.ltx_align_right .ltx_tag { float:right; }
 
+.ltx_eqn_center_padleft,
+.ltx_eqn_center_padright { width:50%; }
+.ltx_eqn_left_padleft,
+.ltx_eqn_right_padright { min-width:2em; }
+.ltx_eqn_left_padright,
+.ltx_eqn_right_padleft  { width:100%; }
+
+/* Various lists */
 .ltx_itemize,
 .ltx_enumerate,
 .ltx_description
@@ -161,8 +165,11 @@ dl.ltx_description dt { margin-right:0.5em; float:left;
 dl.ltx_description dd { margin-left:5em; }
 dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
+/* Theorems */
 .ltx_theorem  {margin:1em 0em 1em 0em; }
 .ltx_title_theorem { font-size:100%; }
+
+/* Bibliographies */
 .ltx_bibliography dt { margin-right:0.5em; float:left; }
 .ltx_bibliography dd { margin-left:3em; }
 /*.ltx_biblist { list-style-type:none; }*/
@@ -174,8 +181,11 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_bib_journal  { font-style:italic; }
 .ltx_bib_volume { font-weight:bold; }
 
+/* Indices */
 .ltx_indexlist li { list-style-type:none;  }
 .ltx_indexlist { margin-left:1em; padding-left:1em;}
+
+/* Listings */
 .ltx_listing td.ltx_linenumber,
 .ltx_listingblock td.ltx_linenumber
    { width:3em; text-align:right;}
