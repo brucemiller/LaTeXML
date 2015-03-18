@@ -73,7 +73,7 @@
 .ltx_authors_1line .ltx_author_notes span { display:none; }
 .ltx_authors_1line .ltx_author_notes:hover span {
        display:block; position:absolute; z-index:10;
-       background:#E0E0E0; border:3px outset gray;
+       background:white; border:3px outset gray;
        text-align:left; }  
 
 /* add class=ltx_authors_multiline to get authors & affliations on separate lines*/
@@ -252,12 +252,14 @@ span.ltx_tabular { display:inline-table; border-collapse:collapse; }
 .ltx_note_content { display:none; }
 /*right:5%;  */
 .ltx_note_content {
-     max-width: 70%; font-size:80%; left:15%;
+     max-width: 70%; font-size:90%; left:15%;
      text-align:left;
-     background:#E0E0E0; border:3px outset gray; }
+     background-color: white; 
+     padding: 0.5em 1em 0.5em 1.5em; border:3px outset gray; }
 .ltx_note_mark    { color:blue; }
 .ltx_note_type    { font-weight: bold; }
 .ltx_note { display:inline-block; text-indent:0; } /* So we establish containing block */
+.ltx_note_content .ltx_note_mark { position:absolute; left:0.2em; top:-0.1em; }
 .ltx_note:hover .ltx_note_content 
    { display:block; position:absolute; z-index:10; }
 
