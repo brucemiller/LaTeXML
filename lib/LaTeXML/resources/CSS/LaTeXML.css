@@ -24,10 +24,10 @@
 
 .ltx_page_header:after,
 .ltx_page_footer:after,
-.ltx_page_content:after { content:"."; display:block; height:0; clear:both; visibility:hidden; }
-
-.ltx_page_footer:before
- { content:"."; display:block; height:0; clear:both; visibility:hidden; }
+.ltx_page_content:after {
+    content:"."; display:block; height:0; clear:both; visibility:hidden; }
+.ltx_page_footer:before {
+    content:"."; display:block; height:0; clear:both; visibility:hidden; }
 
 .ltx_page_logo     { font-size:80%; margin-top: 5px; clear:both; float:right; }
 .ltx_page_logo a   { font-variant: small-caps; }
@@ -72,9 +72,9 @@
 .ltx_authors_1line .ltx_author_notes:before { content:"*"; color:blue;}
 .ltx_authors_1line .ltx_author_notes span { display:none; }
 .ltx_authors_1line .ltx_author_notes:hover span {
-       display:block; position:absolute; z-index:10;
-       background:white; border:3px outset gray;
-       text-align:left; }  
+    display:block; position:absolute; z-index:10;
+    background:white; text-align:left;
+    border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray; }
 
 /* add class=ltx_authors_multiline to get authors & affliations on separate lines*/
 .ltx_authors_multiline .ltx_creator,
@@ -82,8 +82,7 @@
 .ltx_authors_multiline .ltx_author_after,
 .ltx_authors_multiline .ltx_author_notes,
 .ltx_authors_multiline .ltx_author_notes .ltx_contact {
-        display:block; }
-
+    display:block; }
 
 /*======================================================================
   Para level */
@@ -97,18 +96,18 @@ td.ltx_subfloat { width:50%; }
 .ltx_quote,
 .ltx_block,
 .ltx_listingblock,
-.ltx_para
-  { display: block; }
+.ltx_para {
+    display: block; }
 
 /* alignment within blocks */
-.ltx_align_left     {text-align:left; }
-.ltx_align_right    {text-align:right; }
-.ltx_align_center   {text-align:center; }
-.ltx_align_justify  {text-align:justify; }
-.ltx_align_top      {vertical-align:top; }
-.ltx_align_bottom   {vertical-align:bottom; }
-.ltx_align_middle   {vertical-align:middle; }
-.ltx_align_baseline {vertical-align:baseline; }
+.ltx_align_left     { text-align:left; }
+.ltx_align_right    { text-align:right; }
+.ltx_align_center   { text-align:center; }
+.ltx_align_justify  { text-align:justify; }
+.ltx_align_top      { vertical-align:top; }
+.ltx_align_bottom   { vertical-align:bottom; }
+.ltx_align_middle   { vertical-align:middle; }
+.ltx_align_baseline { vertical-align:baseline; }
 
 .ltx_align_floatleft  { float:left; }
 .ltx_align_floatright { float:right; }
@@ -124,10 +123,10 @@ td.ltx_align_center, th.ltx_align_center { white-space:nowrap; }
 
 /* equations in aligned mode (aligning tags, etc as well as equations) */
 .ltx_eqn_table { display:table; width:100%; }
-.ltx_eqn_row { display:table-row; }
-.ltx_eqn_cell{ display:table-cell; width:auto; }
+.ltx_eqn_row   { display:table-row; }
+.ltx_eqn_cell  { display:table-cell; width:auto; }
 
-.ltx_tag_equation.ltx_align_left { position:absolute; left:3em; }
+.ltx_tag_equation.ltx_align_left  { position:absolute; left:3em; }
 .ltx_tag_equation.ltx_align_right { position:absolute; right:3em; }
 
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
@@ -137,7 +136,7 @@ table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2e
 .ltx_eqn_eqno.ltx_align_right .ltx_tag { float:right; }
 
 .ltx_eqn_center_padleft,
-.ltx_eqn_center_padright { width:50%; }
+.ltx_eqn_center_padright { width:50%; min-width:2em;}
 .ltx_eqn_left_padleft,
 .ltx_eqn_right_padright { min-width:2em; }
 .ltx_eqn_left_padright,
@@ -146,16 +145,16 @@ table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2e
 /* Various lists */
 .ltx_itemize,
 .ltx_enumerate,
-.ltx_description
-   { display:block; }
+.ltx_description {
+    display:block; }
 .ltx_itemize .ltx_item,
-.ltx_enumerate .ltx_item
-   { display: list-item; }
+.ltx_enumerate .ltx_item {
+    display: list-item; }
 
 /* Position the tag to look like a normal item bullet. */
 li.ltx_item > .ltx_tag {
-   display:inline-block; margin-left:-1.5em; min-width:1.5em;
-   text-align:right; }
+    display:inline-block; margin-left:-1.5em; min-width:1.5em;
+    text-align:right; }
 .ltx_item .ltx_tag + .ltx_para,
 .ltx_item .ltx_tag + .ltx_para .ltx_p  { display:inline; }
 
@@ -187,8 +186,8 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 /* Listings */
 .ltx_listing td.ltx_linenumber,
-.ltx_listingblock td.ltx_linenumber
-   { width:3em; text-align:right;}
+.ltx_listingblock td.ltx_linenumber {
+    width:3em; text-align:right;}
 
 .ltx_parbox {text-indent:0em; }
 
@@ -255,13 +254,15 @@ span.ltx_tabular { display:inline-table; border-collapse:collapse; }
      max-width: 70%; font-size:90%; left:15%;
      text-align:left;
      background-color: white; 
-     padding: 0.5em 1em 0.5em 1.5em; border:3px outset gray; }
+     padding: 0.5em 1em 0.5em 1.5em;
+     border: 1px solid black; border-radius: 0 5px 5px 5px; box-shadow: 5px 5px 10px gray; }
 .ltx_note_mark    { color:blue; }
 .ltx_note_type    { font-weight: bold; }
 .ltx_note { display:inline-block; text-indent:0; } /* So we establish containing block */
 .ltx_note_content .ltx_note_mark { position:absolute; left:0.2em; top:-0.1em; }
-.ltx_note:hover .ltx_note_content 
-   { display:block; position:absolute; z-index:10; }
+.ltx_note:hover .ltx_note_content,
+.ltx_note .ltx_note_content:hover {
+   display:block; position:absolute; z-index:10; }
 
 .ltx_ERROR        { color:red; }
 .ltx_rdf          { display:none; }
