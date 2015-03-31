@@ -951,6 +951,19 @@ one or more tags such as \texttt{ltx:chapter} separated by \texttt{|}
       </attribute>
     </optional>
     <optional>
+      <attribute name="scope">
+        <a:documentation>indicates the scope set of elements to include:
+\texttt{current} (default) is all in current document;
+\texttt{global} indicates all in the document set;
+otherwise an xml:id</a:documentation>
+        <choice>
+          <value>current</value>
+          <value>global</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="format">
         <a:documentation>indicates how to format the listing</a:documentation>
         <choice>

@@ -545,6 +545,12 @@ TOC_attributes =
    ## (suggestive of an xpath expression).
    attribute select { text }?,
 
+   ## indicates the scope set of elements to include:
+   ## \texttt{current} (default) is all in current document;
+   ## \texttt{global} indicates all in the document set;
+   ## otherwise an xml:id
+   attribute scope { ("current" | "global" | text) }?,
+
    ## indicates how to format the listing
    attribute format { ("normal" | "short" | "veryshort" | text) }?
 
