@@ -519,12 +519,12 @@ DefConstructorI('\tableofcontents', undef,
 
 DefMacroI('\listfigurename', undef, 'List of Figures');
 DefConstructorI('\listoffigures', undef,
-  "<ltx:TOC role='figures' select='ltx:figure' name='#name'/>",
+  "<ltx:TOC role='figures' select='ltx:figure' name='#name' scope='global'/>",
   properties => sub { (name => Digest(T_CS('\listfigurename'))); });
 
 DefMacroI('\listtablename', undef, 'List of Tables');
 DefConstructorI('\listoftables', undef,
-  "<ltx:TOC role='tables' select='ltx:table' name='#name'/>",
+  "<ltx:TOC role='tables' select='ltx:table' name='#name' scope='global'/>",
   properties => sub { (name => Digest(T_CS('\listtablename'))); });
 
 DefPrimitive('\addcontentsline{}{}{}', undef);
