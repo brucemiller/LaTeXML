@@ -192,9 +192,14 @@ sub generateMessage {
 #======================================================================
 # Given a base id, a counter (eg number of duplications of id) and a suffix,
 # create a (hopefully) unique id
+# $suffix can be a string to append to the id,
+# or a function of the id, to modify
 sub uniquifyID {
   my ($baseid, $counter, $suffix) = @_;
-  return $baseid . radix_alpha($counter) . ($suffix || ''); }
+  my $id = $baseid . radix_alpha($counter);
+  return (defined $suffix
+    ? (ref $suffix eq 'CODE' ? &$suffix($id) : $id . $suffix)
+    : $id); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::Processor;
@@ -848,7 +853,12 @@ sub addNodes {
         my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
         my $nsuri = $prefix && $$self{namespaces}{$prefix};
         LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
-        my $new = $node->addNewChild($nsuri, $localname);
+        my $new;
+        if (ref $node eq 'LibXML::XML::Document') {
+          $new = $node->createElementNS($nsuri, $localname);
+          $node->setDocumentElement($new); }
+        else {
+          $new = $node->addNewChild($nsuri, $localname); }
         if ($attributes) {
           foreach my $key (sort keys %$attributes) {
             next unless defined $$attributes{$key};
@@ -872,7 +882,14 @@ sub addNodes {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
         # Note: this isn't actually much slower than $node->appendChild($child) !
-        my $new = $node->addNewChild($child->namespaceURI, $child->localname);
+        my $nsuri     = $child->namespaceURI;
+        my $localname = $child->localname;
+        my $new;
+        if (ref $node eq 'LibXML::XML::Document') {
+          $new = $node->createElementNS($nsuri, $localname);
+          $node->setDocumentElement($new); }
+        else {
+          $new = $node->addNewChild($nsuri, $localname); }
         foreach my $attr ($child->attributes) {
           my $atype = $attr->nodeType;
           if ($atype == XML_ATTRIBUTE_NODE) {
@@ -918,11 +935,12 @@ sub removeNodes {
         if ($$self{idcache}{$id}) {
           delete $$self{idcache}{$id}; } }
       $self->removeNodes(@n); }
-    elsif (($ref =~ /^XML::LibXML::/) && ($node->nodeType == XML_ELEMENT_NODE)) {
-      foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]", $node)) {
-        my $id = $idd->getAttribute('xml:id');
-        if ($$self{idcache}{$id}) {
-          delete $$self{idcache}{$id}; } }
+    elsif ($ref =~ /^XML::LibXML::/) {
+      if ($node->nodeType == XML_ELEMENT_NODE) {
+        foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]", $node)) {
+          my $id = $idd->getAttribute('xml:id');
+          if ($$self{idcache}{$id}) {
+            delete $$self{idcache}{$id}; } } }
       $node->unlinkNode; } }
   return; }
 
@@ -962,31 +980,45 @@ sub prependNodes {
 # $document->cloneNode($node) or ->cloneNode($node,$idsuffix)
 # This clones the node and adjusts any xml:id's within it to be unique.
 # Any idref's to those ids will be changed to the new id values.
-# If $idsuffix is supplied, the ids will have that suffix appended to the ids.
+# If $idsuffix is supplied, it can be a simple string to append to the ids;
+# else can be a function of the id to modify it.
 # Then each $id is checked to see whether it is unique; If needed,
 # one or more letters are appended, until a new id is found.
 sub cloneNode {
-  my ($self, $node, $idsuffix) = @_;
+  my ($self, $node, $idsuffix, %options) = @_;
   return $node unless ref $node;
-  my $copy = $node->cloneNode(1);
-  $idsuffix = '' unless defined $idsuffix;
+  my $copy    = $node->cloneNode(1);
+  my $nocache = $options{nocache};
+####  $idsuffix = '' unless defined $idsuffix;
   # Find all id's defined in the copy and change the id.
   my %idmap = ();
   foreach my $n ($self->findnodes('descendant-or-self::*[@xml:id]', $copy)) {
-    my $id    = $n->getAttribute('xml:id');
-    my $newid = $id . $idsuffix;
-    if (defined $$self{idcache}{$newid}) {    # Duplicated ID ?!?!
+    my $id = $n->getAttribute('xml:id');
+###    my $newid = $id . $idsuffix;
+    my $newid = (defined $idsuffix
+      ? (ref $idsuffix eq 'CODE' ? &$idsuffix($id) : $id . $idsuffix)
+      : $id);
+    if (!$nocache && defined $$self{idcache}{$newid}) {    # Duplicated ID ?!?!
       $newid = LaTeXML::Post::uniquifyID($id, ++$$self{idcache_clashes}{$id}, $idsuffix); }
     $idmap{$id} = $newid;
-    $$self{idcache}{$newid} = $n;
+    $$self{idcache}{$newid} = $n unless $nocache;
     $n->setAttribute('xml:id' => $newid);
-    if (my $fragid = $n->getAttribute('fragid')) {    # GACK!!
+    if (my $fragid = $n->getAttribute('fragid')) {         # GACK!!
       $n->setAttribute(fragid => substr($newid, length($id) - length($fragid))); } }
 
   # Now, replace all REFERENCES to those modified ids.
   foreach my $n ($self->findnodes('descendant-or-self::*[@idref]', $copy)) {
     if (my $id = $idmap{ $n->getAttribute('idref') }) {
-      $n->setAttribute(idref => $id); } }             # use id or fragid?
+      $n->setAttribute(idref => $id); } }                  # use id or fragid?
+      # Finally, we probably shouldn't have any labels attributes in here either
+  foreach my $n ($self->findnodes('descendant-or-self::*[@labels]', $copy)) {
+    $n->removeAttribute('labels'); }
+  # And, if we're relocating the node across documents,
+  # we may need to patch relative pathnames!
+  # ????? Something to think about in the future...
+  #  if(my $base = $options{basepathname}){
+  #    foreach my $n ($self->findnodes('descendant::*/@graphic or descendant::*/@href', $copy)) {
+  #      $n->setvalue(relocate($n->value,$base)); }}
   return $copy; }
 
 sub cloneNodes {
