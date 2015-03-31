@@ -166,6 +166,15 @@ sub getParentPage {
     && ($x = $x->getValue('pageid')) && ($x = $$self{db}->lookup("ID:" . $x))
     && $x; }
 
+sub getRootPage {
+  my ($self, $entry) = @_;
+  my $x    = $entry;
+  my $root = $entry;
+  while (($x = $x->getValue('parent')) && ($x = $$self{db}->lookup("ID:" . $x))
+    && ($x = $x->getValue('pageid')) && ($x = $$self{db}->lookup("ID:" . $x))) {
+    $root = $x; }
+  return $root; }
+
 # Assuming this entry is for a page, find the closest descendants that are (distinct) pages
 sub getChildPages {
   my ($self, $entry) = @_;
@@ -197,13 +206,17 @@ sub fill_in_tocs {
       : $normaltoctypes);
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
-    my $format = $toc->getAttribute('format');
-
+    my $scope  = $toc->getAttribute('scope') || 'current';
+    my $format = $toc->getAttribute('format') || 'normal';
+    if ($scope eq 'global') {
+      if (my $entry = $$self{db}->lookup("ID:" . $id)) {
+        if (my $root = $self->getRootPage($entry)) {
+          $id = $root->getValue('pageid'); } } }
     my @list = ();
-    if (!$format || ($format eq 'normal')) {
-      @list = $self->gentoc($id, $types); }
+    if (!$format || ($format =~ /^normal/)) {
+      @list = $self->gentoc($doc, $id, $types); }
     elsif ($format eq 'context') {
-      @list = $self->gentoc_context($id, $types); }
+      @list = $self->gentoc_context($doc, $id, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
   NoteProgressDetailed(" [Filled in $n TOCs]");
   return; }
@@ -217,17 +230,21 @@ sub fill_in_tocs {
 #   $depth   : only to the specific depth
 #
 sub gentoc {
-  my ($self, $id, $types, $localto, $selfid) = @_;
+  my ($self, $doc, $id, $types, $localto, $selfid) = @_;
+  my $show = 'toctitle';
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map { $self->gentoc($_, $types, $localto, $selfid) }
+      @kids = map { $self->gentoc($doc, $_, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     if ($$types{$type}) {
       my $typename = $type; $typename =~ s/^ltx://;
+      my $thumbnail = $entry->getValue('thumbnail');
       return (['ltx:tocentry', (defined $selfid && ($selfid eq $id) ? { class => 'ltx_ref_self' } : {}),
-          ['ltx:ref', { show => 'toctitle', idref => $id }],
+          ($thumbnail ? (['ltx:block', { class => 'ltx_thumbnail' },
+                $self->prepRefText($doc, $thumbnail)]) : ()),
+          ['ltx:ref', { show => $show, idref => $id }],
           (@kids ? (['ltx:toclist', { class => "ltx_toc_$typename" }, @kids]) : ())]); }
     else {
       return @kids; } }
@@ -238,10 +255,10 @@ sub gentoc {
 # but also shows the page in the context of it's siblings & ancestors.
 # This is useful for putting in a navigation bar.
 sub gentoc_context {
-  my ($self, $id, $types) = @_;
+  my ($self, $doc, $id, $types) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($id, $types, $entry->getValue('location') || '', $id);
+    my @navtoc = $self->gentoc($doc, $id, $types, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
