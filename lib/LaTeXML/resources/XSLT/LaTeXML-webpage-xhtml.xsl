@@ -535,7 +535,13 @@
     <xsl:apply-templates mode="veryshort">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
+  </xsl:template>
 
+  <xsl:template match="ltx:TOC[@format='normal2']">
+    <xsl:param name="context"/>
+    <xsl:apply-templates mode="normal2">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template match="ltx:TOC">
@@ -592,6 +598,28 @@
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:toclist" mode="normal2">
+    <xsl:param name="context"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:apply-templates select="." mode="twocolumn">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  <xsl:template match="ltx:toclist" mode="twocolumn">
+    <xsl:param name="context"/>
+    <xsl:param name="items"    select="ltx:tocentry"/>
+    <xsl:param name="lines"    select="descendant::ltx:tocentry"/>
+    <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
+    <xsl:param name="miditem"
+               select="count($lines[position() &lt; $halflines]/ancestor::ltx:tocentry[parent::ltx:toclist[parent::ltx:TOC]]) + 1"/>
+    <xsl:call-template name="split-columns">
+      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="wrapper" select="'ul'"/>
+      <xsl:with-param name="items"   select="$items"/>
+      <xsl:with-param name="miditem" select="$miditem"/>
+    </xsl:call-template>
   </xsl:template>
 
   <xsl:template match="ltx:tocentry">
