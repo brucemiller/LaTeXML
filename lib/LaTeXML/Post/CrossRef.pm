@@ -237,19 +237,26 @@ sub gentoc {
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
       @kids = map { $self->gentoc($doc, $_, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
-    my $type = $entry->getValue('type');
-    if ($$types{$type}) {
-      my $typename = $type; $typename =~ s/^ltx://;
-      my $thumbnail = $entry->getValue('thumbnail');
-      return (['ltx:tocentry', (defined $selfid && ($selfid eq $id) ? { class => 'ltx_ref_self' } : {}),
-          ($thumbnail ? (['ltx:block', { class => 'ltx_thumbnail' },
-                $self->prepRefText($doc, $thumbnail)]) : ()),
-          ['ltx:ref', { show => $show, idref => $id }],
-          (@kids ? (['ltx:toclist', { class => "ltx_toc_$typename" }, @kids]) : ())]); }
+    if ($$types{ $entry->getValue('type') }) {
+      return $self->gentocentry($doc, $entry, $selfid, $show, @kids); }
     else {
       return @kids; } }
   else {
     return (); } }
+
+sub gentocentry {
+  my ($self, $doc, $entry, $selfid, $show, @children) = @_;
+  my $id        = $entry->getValue('id');
+  my $type      = $entry->getValue('type');
+  my $typename  = $type; $typename =~ s/^ltx://;
+  my $thumbnail = $entry->getValue('thumbnail');
+  return (['ltx:tocentry',
+      { class => "ltx_tocentry_$typename"
+          . (defined $selfid && ($selfid eq $id) ? ' ltx_ref_self' : "") },
+      ($thumbnail ? (['ltx:block', { class => 'ltx_thumbnail' },
+            $self->prepRefText($doc, $thumbnail)]) : ()),
+      ['ltx:ref', { show => $show, idref => $id }],
+      (@children ? (['ltx:toclist', { class => "ltx_toclist_$typename" }, @children]) : ())]); }
 
 # Generate a "context" TOC, that shows what's on the current page,
 # but also shows the page in the context of it's siblings & ancestors.
@@ -262,18 +269,15 @@ sub gentoc_context {
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
-      @navtoc = map { ($_ eq $id
+      @navtoc =
+        map { ($_->getValue('id') eq $id
           ? @navtoc
-          : ['ltx:tocentry', {},
-            ['ltx:ref', { idref => $_, show => 'toctitle' }]]) }
-        grep { $$normaltoctypes{ $$self{db}->lookup("ID:$_")->getValue('type') } }
+          : $self->gentocentry($doc, $_, undef, 'toctitle')) }
+        grep { $$normaltoctypes{ $_->getValue('type') } }
+        map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
-      my $type = $entry->getValue('type');
-      if ($$types{$type}) {
-        my $typename = $type; $typename =~ s/^ltx://;
-        @navtoc = (['ltx:tocentry', {},
-            ['ltx:ref', { show => 'toctitle', idref => $p_id }],
-            (@navtoc ? (['ltx:toclist', { class => "ltx_toc_$typename" }, @navtoc]) : ())]); }
+      if ($$types{ $entry->getValue('type') }) {
+        @navtoc = ($self->gentocentry($doc, $entry, undef, 'toctitle', @navtoc)); }
       $id = $p_id; }
     return @navtoc; }
   else {
