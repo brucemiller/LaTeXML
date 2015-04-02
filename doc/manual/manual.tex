@@ -2348,15 +2348,16 @@ The basic strategy is the following:
    \texttt{status}, \texttt{pages}, \texttt{language}, \texttt{publisher},
    \texttt{place}, \texttt{status}, \texttt{crossref}, \texttt{external}, \texttt{cited}
    and \emph{others}.
-\item[\texttt{ltx\_toc\_}\textit{item}]
+\item[\texttt{ltx\_toclist\_}\textit{type}, \texttt{ltx\_tocentry\_}\textit{type}]
   reflects the levels of Table of Contents lists:
-  they carry the  \texttt{ltx\_toclist} class, from the element used to represent them,
-  and also \texttt{ltx\_toc\_}\textit{section} naming the sectional unit for 
+  they carry the \texttt{ltx\_toclist} class, from the element used to represent them,
+  and also \texttt{ltx\_toclist\_}\textit{section} naming the sectional unit for 
   which this list applies to assist in styling.  A nested TOC for a chapter might
-  thus have \texttt{ul}'s carrying \texttt{ltx\_toc\_chapter} and \texttt{ltx\_toc\_section}.
+  thus have \texttt{ul}'s carrying \texttt{ltx\_toclist\_chapter} and \texttt{ltx\_toclist\_section}.
   Additionally, \texttt{ltx\_toc\_compact} and \texttt{ltx\_toc\_verycompact} can
   be added to style compact and very compact styles (eg single line).
-  Note that the generated \texttt{li} items will have class \texttt{ltx\_tocentry}.
+  Note that the generated \texttt{li} items will have class \texttt{ltx\_tocentry}
+  and \texttt{ltx\_tocentry\_}\textit{type}, for the type of the entry.
 \item[\texttt{ltx\_ref\_}\textit{item}]
   hypertext links, whether within or across documents, whether created from
   \verb|\ref| or \verb|\href|, will get \texttt{ltx\_ref} and, sometimes, extra classes applied.
