@@ -34,6 +34,7 @@ sub create {
     $options{shortsource} = "$name.$ext";
     return $class->new($options{content}, %options); }
   elsif ($source =~ s/^literal://) {    # we've supplied literal data
+    $options{source} = 'Literal String' unless defined $options{source};
     return $class->new($source, %options); }
   elsif (!defined $source) {
     return $class->new('', %options); }
