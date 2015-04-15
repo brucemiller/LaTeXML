@@ -1895,7 +1895,7 @@ on the appropriate representation.
 =item C<< $document->setAttribute($node,$key,$value); >>
 
 Sets the attribute C<$key> to C<$value> on C<$node>.
-This method is prefered over the direct LibXML one, since it
+This method is preferred over the direct LibXML one, since it
 takes care of decoding namespaces (if C<$key> is a qname),
 and also manages recording of xml:id's.
 

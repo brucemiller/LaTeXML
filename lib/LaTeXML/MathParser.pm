@@ -1010,7 +1010,7 @@ my %balanced = (    # [CONSTANT]
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
   "\x{2329}" => "\x{232A}",    # angle brackets; NOT mathematical, but balance in case they show up.
-  "\x{27E8}" => "\x{27E9}",    # angle brackets (prefered)
+  "\x{27E8}" => "\x{27E9}",    # angle brackets (preferred)
   "\x{2225}" => "\x{2225}",    # lVert, rVert
 );
 # For enclosing a single object
@@ -1320,7 +1320,7 @@ Create a new C<XMApp> node representing the application of the node
 C<$op> to the arguments found in C<@stuff>.  C<@stuff> are 
 delimited arguments in the sense that the leading and trailing nodes
 should represent open and close delimiters and the arguments are
-seperated by punctuation nodes.  The text of these delimiters and
+separated by punctuation nodes.  The text of these delimiters and
 punctuation are used to annotate the operator node with
 C<argopen>, C<argclose> and C<separator> attributes.
 

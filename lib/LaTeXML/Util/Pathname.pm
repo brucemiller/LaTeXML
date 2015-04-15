@@ -344,7 +344,7 @@ C<LaTeXML::Util::Pathname>  - portable pathname and file-system utilities
 =head1 DESCRIPTION
 
 This module combines the functionality L<File::Spec> and L<File::Basename> to
-give a consistent set of filename utilties for LaTeXML.
+give a consistent set of filename utilities for LaTeXML.
 A pathname is represented by a simple string.
 
 =head2 Pathname Manipulations
