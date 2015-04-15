@@ -248,9 +248,10 @@ sub get_embeddable {
     foreach ($doc->getDocumentElement->getNamespaces) {
       $embeddable->setNamespace($_->getData, $_->getLocalName, 0);
     }
-    # Also, copy the prefix attribute, for RDFa:
-    my $prefix = $doc->getDocumentElement->getAttribute('prefix');
-    $embeddable->setAttribute('prefix', $prefix) if ($prefix);
+    # Also, copy RDFa attributes:
+    foreach my $rdfa_attr(qw(prefix property content resource about typeof rel rev datatype)) {
+      if (my $rdfa_value = $doc->getDocumentElement->getAttribute($rdfa_attr)) {
+        $embeddable->setAttribute($rdfa_attr, $rdfa_value); } }
   }
   return $embeddable || $doc; }
 
