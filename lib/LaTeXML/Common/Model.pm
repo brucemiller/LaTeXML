@@ -297,12 +297,12 @@ sub getXPath {
 
 sub getTags {
   my ($self) = @_;
-  return keys %{ $$self{tagprop} }; }
+  return sort keys %{ $$self{tagprop} }; }
 
 sub getTagContents {
   my ($self, $tag) = @_;
   my $h = $$self{tagprop}{$tag}{model};
-  return $h ? keys %$h : (); }
+  return $h ? sort keys %$h : (); }
 
 sub addTagContent {
   my ($self, $tag, @elements) = @_;
@@ -313,7 +313,7 @@ sub addTagContent {
 sub getTagAttributes {
   my ($self, $tag) = @_;
   my $h = $$self{tagprop}{$tag}{attributes};
-  return $h ? keys %$h : (); }
+  return $h ? sort keys %$h : (); }
 
 sub addTagAttribute {
   my ($self, $tag, @attributes) = @_;
