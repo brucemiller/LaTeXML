@@ -317,6 +317,8 @@ sub fill_in_refs {
         }
         else {
           $self->note_missing('warn', 'Target for Label', $label);
+          my $cl = $ref->getAttribute('class');
+          $ref->setAttribute(class => ($cl ? $cl . ' ltx_missing_label' : 'ltx_missing_label'));
           if (!$ref->textContent) {
             $doc->addNodes($ref, $label);    # Just to reassure (?) readers.
             $ref->setAttribute(broken => 1); }
@@ -401,37 +403,41 @@ sub make_bibcite {
                                            # Collect all the data from the bibliography
   my @data    = ();
   foreach my $key (@keys) {
-    if (my $bentry = $$self{db}->lookup("BIBLABEL:$key")) {
-      if (my $id = $bentry->getValue('id')) {
-        if (my $entry = $$self{db}->lookup("ID:$id")) {
-          my $authors  = $entry->getValue('authors');
-          my $fauthors = $entry->getValue('fullauthors');
-          my $keytag   = $entry->getValue('keytag');
-          my $year     = $entry->getValue('year');
-          my $typetag  = $entry->getValue('typetag');
-          my $number   = $entry->getValue('number');
-          my $title    = $entry->getValue('title');
-          my $refnum   = $entry->getValue('refnum');        # This come's from the \bibitem, w/o BibTeX
-          my ($rawyear, $suffix);
+    my ($bentry, $id, $entry);
+    if (($bentry = $$self{db}->lookup("BIBLABEL:$key"))
+      && ($id    = $bentry->getValue('id'))
+      && ($entry = $$self{db}->lookup("ID:$id"))) {
+      my $authors  = $entry->getValue('authors');
+      my $fauthors = $entry->getValue('fullauthors');
+      my $keytag   = $entry->getValue('keytag');
+      my $year     = $entry->getValue('year');
+      my $typetag  = $entry->getValue('typetag');
+      my $number   = $entry->getValue('number');
+      my $title    = $entry->getValue('title');
+      my $refnum   = $entry->getValue('refnum');        # This come's from the \bibitem, w/o BibTeX
+      my ($rawyear, $suffix);
 
-          if ($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/) {
-            ($rawyear, $suffix) = ($1, $2); }
-          $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
-                                                                                         # fullnames ?
-          push(@data, { authors => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
-              fullauthors => [$doc->trimChildNodes($fauthors || $authors || $keytag)],
-              authortext => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
-              year => [$doc->trimChildNodes($year || $typetag)],
-              rawyear => $rawyear,
-              suffix  => $suffix,
-              number  => [$doc->trimChildNodes($number)],
-              refnum  => [$doc->trimChildNodes($refnum)],
-              title   => [$doc->trimChildNodes($title || $keytag)],
-              attr    => { idref => $id,
-                href => orNull($self->generateURL($doc, $id)),
-                ($title ? (title => orNull($title->textContent)) : ()) } }); } } }
+      if ($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/) {
+        ($rawyear, $suffix) = ($1, $2); }
+      $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
+                                                                                     # fullnames ?
+      push(@data, { authors => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
+          fullauthors => [$doc->trimChildNodes($fauthors || $authors || $keytag)],
+          authortext => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
+          year => [$doc->trimChildNodes($year || $typetag)],
+          rawyear => $rawyear,
+          suffix  => $suffix,
+          number  => [$doc->trimChildNodes($number)],
+          refnum  => [$doc->trimChildNodes($refnum)],
+          title   => [$doc->trimChildNodes($title || $keytag)],
+          attr    => { idref => $id,
+            href => orNull($self->generateURL($doc, $id)),
+            ($title ? (title => orNull($title->textContent)) : ()) } }); }
     else {
-      $self->note_missing('warn', 'Entry for citation', $key); } }
+      $self->note_missing('warn', 'Entry for citation', $key);
+      push(@data, { refnum => [$key], title => [$key],
+          attr => { idref => $key, title => $key, class => "ltx_missing_citation" } });
+    } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs      = ();
   my $saveshow  = $show;
