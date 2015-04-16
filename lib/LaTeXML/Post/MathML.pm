@@ -695,7 +695,7 @@ my %fences = (                                                    # CONSTANT
   '(' => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
   "\`" => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
-  "\x{27E8}" => 1, "\x{27E9}" => 1,                                      # angle brackets (prefered)
+  "\x{27E8}" => 1, "\x{27E9}" => 1,                                      # angle brackets (preferred)
   "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
 
 my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);                 # CONSTANT

@@ -2995,7 +2995,7 @@ This is used by environments and math.
 =item C<nargs=E<gt>I<nargs>>
 
 This gives a number of args for cases where it can't be infered directly
-from the I<prototype> (eg. when more args are explictly read by hooks).
+from the I<prototype> (eg. when more args are explicitly read by hooks).
 
 =back
 
@@ -3160,7 +3160,7 @@ but it applies to the C<\begin{environment}> control sequence.
 
 This hook is similar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\begin{environment}> control sequence.
-The Whatsit is the one for the begining control sequence,
+The Whatsit is the one for the beginning control sequence,
 but represents the environment as a whole.
 Note that although the arguments and properties are present in
 the Whatsit, the body of the environment is I<not> yet available!
@@ -3183,7 +3183,7 @@ This option supplies a hook to be executed during digestion
 after the ending control sequence has been digested (and all the 4
 other digestion hook have executed) and after
 the body of the environment has been obtained.
-The Whatsit is the (usefull) one representing the whole
+The Whatsit is the (useful) one representing the whole
 environment, and it now does have the body and trailer available,
 stored as a properties.
 
