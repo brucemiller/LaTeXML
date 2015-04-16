@@ -429,9 +429,13 @@ sub make_bibcite {
               title   => [$doc->trimChildNodes($title || $keytag)],
               attr    => { idref => $id,
                 href => orNull($self->generateURL($doc, $id)),
-                ($title ? (title => orNull($title->textContent)) : ()) } }); } } }
+                ($title ? (title => orNull($title->textContent)) : ()) } }); } }
+      else {
+        $self->note_missing('warn', 'Entry for citation', $key);
+        push(@data, { refnum => [$key], title => [$key], attr => { idref => $key, title => $key, class => "ltx_missing_citation" } }); } }
     else {
-      $self->note_missing('warn', 'Entry for citation', $key); } }
+      $self->note_missing('warn', 'Entry for citation', $key);
+      push(@data, { refnum => [$key], title => [$key], attr => { idref => $key, title => $key, class => "ltx_missing_citation" } }); } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs      = ();
   my $saveshow  = $show;
