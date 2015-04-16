@@ -522,7 +522,7 @@
 
   <xsl:strip-space elements="ltx:TOC ltx:toclist ltx:tocentry"/>
 
-  <!-- explictly requested TOC -->
+  <!-- explicitly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">

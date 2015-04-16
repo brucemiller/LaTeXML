@@ -155,7 +155,7 @@ C<LaTeXML::Core::Definition::Constructor>  - Control sequence definitions.
 
 This class represents control sequences that contribute arbitrary XML fragments
 to the document tree.  During digestion, a C<LaTeXML::Core::Definition::Constuctor> records the arguments 
-used in the invokation to produce a L<LaTeXML::Core::Whatsit>.  The resulting L<LaTeXML::Core::Whatsit>
+used in the invocation to produce a L<LaTeXML::Core::Whatsit>.  The resulting L<LaTeXML::Core::Whatsit>
 (usually) generates an XML document fragment when absorbed by an instance of L<LaTeXML::Core::Document>.
 Additionally, a C<LaTeXML::Core::Definition::Constructor> may have beforeDigest and afterDigest daemons
 defined which are executed for side effect, or for adding additional boxes to the output.
