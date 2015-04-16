@@ -437,7 +437,8 @@ sub rawIDSuffix {
 #   tokens that are only visible from the presentation branch)
 sub associateNode {
   my ($self, $node, $currentnode, $noxref) = @_;
-  return unless $currentnode && ref $node;
+  my $r = ref $node;
+  return unless $currentnode && $r && ($r eq 'ARRAY' || $r eq 'XML::LibXML::Element');
   my $document = $LaTeXML::Post::DOCUMENT;
   # Check if already associated with a source node
   my $isarray = ref $node eq 'ARRAY';
