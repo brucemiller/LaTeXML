@@ -1697,7 +1697,7 @@ DefMathML('Apply:?:hack-definite-integral', undef,
       ['m:int'],
       ['m:bvar',     {}, cmml($variable)],
       ['m:lowlimit', {}, cmml($lower)],
-      ['m:lowupper', {}, cmml($upper)],
+      ['m:uplimit',  {}, cmml($upper)],
       cmml($integrand)]; });
 
 #================================================================================
