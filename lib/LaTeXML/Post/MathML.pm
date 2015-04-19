@@ -472,13 +472,9 @@ sub pmml_internal {
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
-    my @c = $node->childNodes;
-    # HEURISTIC? To remove leading & trailing blanknodes
-    if ($c[0] && ($c[0]->nodeType == XML_TEXT_NODE) && ($c[0] =~ /^\s*$/)) {
-      shift(@c); }
-    if ($c[-1] && ($c[-1]->nodeType == XML_TEXT_NODE) && ($c[-1] =~ /^\s*$/)) {
-      pop(@c); }
-    return pmml_row(map { pmml_text_aux($_) } @c); }
+    return ['m:mtext', {},
+      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
+        $node->childNodes)]; }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -1013,6 +1009,10 @@ sub cmml_internal {
     return &{ lookupContent('Hint', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMArray') {
     return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
+  elsif ($tag eq 'ltx:XMText') {
+    return ['m:mtext', {},
+      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
+        $node->childNodes)]; }
   else {
     return ['m:mtext', {}, $node->textContent]; } }
 
