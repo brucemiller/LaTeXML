@@ -271,12 +271,14 @@ use LaTeXML::Common::XML;
 #    $self->rawIDSuffix returns a short string to append to id's for nodes
 #        using this markup.
 
-# Top level processing finds and converts all math nodes.
+# Top level processing finds and converts all top-level math nodes.
+# Any nested mathnodes would only appear within ltx:XMText;
+# postprocessors must handle nested math as appropriate (but see convertXMTextContent)
 # Invokes preprocess on each before doing the conversion in case
 # analysis is needed.
 sub toProcess {
   my ($self, $doc) = @_;
-  return $doc->findnodes('//ltx:Math'); }
+  return $doc->findnodes('//ltx:Math[not(ancestor::ltx:Math)]'); }
 
 sub process {
   my ($self, $doc, @maths) = @_;
@@ -416,6 +418,53 @@ sub combineParallel {
     "Abstract package: combining parallel markup has not been defined for this MathProcessor",
     "dropping the extra markup from: " . join(',', map { $$_{processor} } @secondaries));
   return $primary; }
+
+# A helper for converting XMText
+# ltx:XMText escapes back to general ltx markup; the only element within XMath that does.
+# BUT it can contain nested ltx:Math!
+# When converting to (potentially parallel markup, coarse-grained),
+# the non-math needs to be duplicated, but with the ID's modified,
+# AND the nested math needs to be converted to ONLY the current target's markup
+# NOT parallel within each nested math, although it should still be cross-referencable to others!
+# moreover, the math will need the outerWrapper.
+my $NBSP = pack('U', 0xA0);    # CONSTANT
+
+sub convertXMTextContent {
+  my ($self, $doc, @nodes) = @_;
+  my @result = ();
+  foreach my $node (@nodes) {
+    if ($node->nodeType == XML_TEXT_NODE) {
+      my $string = $node->textContent;
+      $string =~ s/^\s/$NBSP/; $string =~ s/\s$/$NBSP/;    # should we???
+      push(@result, $string); }
+    else {
+      my $tag = $doc->getQName($node);
+      if ($tag eq 'ltx:XMath') {
+        my $conversion = $self->convertNode($doc, $node);
+        my $xml = $$conversion{xml};
+        # And if no xml ????
+        push(@result, $self->outerWrapper($doc, $node, $xml)); }
+      else {
+        my %attr = ();
+        foreach my $attr ($node->attributes) {
+          my $atype = $attr->nodeType;
+          if ($atype == XML_ATTRIBUTE_NODE) {
+            my $key   = $attr->nodeName;
+            my $value = $attr->getValue;
+            if    ($key =~ /^_/)     { }    # don't copy internal attributes ???
+            elsif ($key eq 'xml:id') { }    # ignore; we'll handle fragid???
+            elsif ($key eq 'fragid') {
+              my $id = $value . $self->IDSuffix;
+              if (my $ctr = $$self{convertedID_counter}{$value}++) {
+                $id = LaTeXML::Post::uniquifyID($value, $ctr, $self->IDSuffix); }
+              $attr{'xml:id'} = $id; }
+            else {
+              $attr{$key} = $attr->value;
+            } } }
+        # Probably should invoke associateNode ???
+        push(@result,
+          [$tag, {%attr}, $self->convertXMTextContent($doc, $node->childNodes)]); } } }
+  return @result; }
 
 # When converting an XMath node (with an id) to some other format,
 # we will generate an id for the new node.
