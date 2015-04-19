@@ -149,10 +149,8 @@ sub om_expr_aux {
       return ['om:OMATTR', {},
         ['om:OMATP', { cd => 'OMDoc', name => 'verbalizes' },
           ['om:FOREIGN', { encoding => 'mtext' },
-            # Could have Math inside, which should get converted...
-            #                map { ($_->nodeType eq XML_TEXT_NODE ? $_->toString : om_expr($_)) }
-            #                  $node->childNodes ]],
-            $node->childNodes]],
+            $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
+              $node->childNodes)]],
         ['om:OMS', { cd => 'OMDoc', name => 'infObj' }]] }
     else {
       return ['om:OMSTR', {}, $node->textContent]; } }
