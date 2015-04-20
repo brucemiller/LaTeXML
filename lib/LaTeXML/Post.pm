@@ -84,8 +84,7 @@ our %note_timers = ();
 sub NoteBegin {
   my ($op) = @_;
   if (getVerbosity() >= 0) {
-    my $proc = ($LaTeXML::Post::PROCESSOR && (ref $LaTeXML::Post::PROCESSOR)) || '';
-    $proc =~ s/^LaTeXML::Post:://;
+    my $proc = $LaTeXML::Post::PROCESSOR && $LaTeXML::Post::PROCESSOR->getName || '';
     my $doc = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination) || '';
     # Note when this processor started on this document doing this operation.
     my $key = $proc . ' ' . $doc . ' ' . $op;
@@ -101,9 +100,9 @@ sub NoteBegin {
 sub NoteEnd {
   my ($op) = @_;
   if (getVerbosity() >= 0) {
-    my $p = ($LaTeXML::Post::PROCESSOR && (ref $LaTeXML::Post::PROCESSOR)) || '';
-    my $d = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination) || '';
-    my $key = $p . ' ' . $d . ' ' . $op;
+    my $proc = $LaTeXML::Post::PROCESSOR && $LaTeXML::Post::PROCESSOR->getName || '';
+    my $doc = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination) || '';
+    my $key = $proc . ' ' . $doc . ' ' . $op;
     if (my $start = $note_timers{$key}) {
       undef $note_timers{$key};
       my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
@@ -216,7 +215,13 @@ sub new {
   $$self{verbosity}          = 0 unless defined $$self{verbosity};
   $$self{resource_directory} = $options{resource_directory};
   $$self{resource_prefix}    = $options{resource_prefix};
+  my $name = $class; $name =~ s/^LaTeXML::Post:://;
+  $$self{name} = $name;
   return $self; }
+
+sub getName {
+  my ($self) = @_;
+  return $$self{name}; }
 
 # Return the nodes to be processed; by default the document element.
 # This allows processors to focus on specific kinds of nodes,
@@ -294,9 +299,6 @@ sub process {
     if ($self->can('addCrossref') && $proc1) {
       $$self{crossreferencing}  = 1;     # We'll need ID's!
       $$proc1{crossreferencing} = 1; }
-    my $f;
-    LaTeXML::Post::NoteProgressDetailed(" [parallel " .
-        join(',', map { (($f = $_) =~ s/^LaTeXML::Post::// ? $f : $f) } map { ref $_ } @secondaries) . "]");
     foreach my $proc (@secondaries) {
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       $proc->preprocess($doc, @maths); } }
@@ -306,12 +308,14 @@ sub process {
   ## Do in reverse, since (in LaTeXML) we allow math nested within text within math.
   ## So, we want to converted any nested expressions first, so they get carried along
   ## with the outer ones.
+  my $n = 0;
   foreach my $math (reverse(@maths)) {
     # If parent is MathBranch, which branch number is it?
     # (note: the MathBranch will be in a ltx:MathFork, with a ltx:Math being 1st child)
     my @preceding = $doc->findnodes("parent::ltx:MathBranch/preceding-sibling::*", $math);
     local $LaTeXML::Post::MathProcessor::FORK = scalar(@preceding);
-    $self->processNode($doc, $math); }
+    $self->processNode($doc, $math);
+    $n++; }
 
   # Experimentally, cross reference ??? (or clearer name?)
   if ($$self{parallel}) {
@@ -324,6 +328,7 @@ sub process {
     if ($proc1 && $proc2) {
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
+  NoteProgressDetailed(" [converted $n Maths]");
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -333,7 +338,8 @@ sub setParallel {
   if (@moreprocessors) {
     $$self{parallel} = 1;
     map { $$_{is_secondary} = 1 } @moreprocessors;    # Mark the others as secondary
-    $$self{secondary_processors} = [@moreprocessors]; }
+    $$self{secondary_processors} = [@moreprocessors];
+    $$self{name} .= '[w/' . join('+', map { $_->getName } @moreprocessors) . ']'; }
   else {
     $$self{parallel} = 0; }
   return; }
