@@ -51,6 +51,10 @@
                                         and ltx:XMTok[2][@role='NUMBER']]]">
         <xsl:value-of select="concat('&#x2212;',ltx:XMath/ltx:XMApp/ltx:XMTok[2]/text())"/>
       </xsl:when>
+      <!-- If we reach any Math nested within Math, just copy as-is (should be appropriate target)-->
+      <xsl:when test="ancestor::ltx:Math">
+        <xsl:apply-templates mode='copy-foreign'/>
+      </xsl:when>
       <!-- Or use images for math (Ugh!)-->
       <xsl:when test="@imagesrc">
         <xsl:apply-templates select="." mode="as-image"/>
@@ -60,7 +64,6 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-
 
   <xsl:template match="ltx:Math" mode="as-image">
     <xsl:element name="img" namespace="{$html_ns}">
@@ -128,13 +131,6 @@
         <xsl:when test="local-name()='annotation-xml'                              
                         and not(namespace-uri(child::*) = $MathML_NAMESPACE)">
           <xsl:apply-templates mode='copy-foreign'/>
-        </xsl:when>
-        <!-- mtext processes content in the model of the containing document -->
-        <xsl:when test="local-name()='mtext'
-                        and namespace-uri() = $MathML_NAMESPACE">
-          <xsl:apply-templates>
-            <xsl:with-param name="context" select="'inline'"/>
-          </xsl:apply-templates>
         </xsl:when>
         <!-- otherwise, process more mathml -->
         <xsl:otherwise>
