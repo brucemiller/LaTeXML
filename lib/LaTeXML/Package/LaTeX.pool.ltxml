@@ -3955,13 +3955,27 @@ sub isDefinable {
   my $name = $token->getString; $name =~ s/^\\//;
   my $endmeaning = LookupMeaning(T_CS('\end' . $name));
   return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
-      && ((!defined $endmeaning) || ($endmeaning eq LookupMeaning(T_CS('\relax'))))
+      && ($name !~ /^end/)
       && (($name ne 'relax') && ($name !~ /^end/))); }
 
 DefMacro('\@ifdefinable Token {}', sub {
     my ($gullet, $token, $if) = @_;
-    (isDefinable($token) ? $if->unlist : ()); });
+    if (isDefinable($token)) {
+      return $if->unlist }
+    else {
+      my ($slash, @s) = ExplodeText($token->toString);
+      DefMacroI('\reserved@a', undef, Tokens(@s));
+      return (T_CS('\@notdefinable')); } });
 
+DefMacroI('\@notdefinable', undef,
+  '\@latex@error{%
+   Command \@backslashchar\reserved@a\space
+   already defined.
+   Or name \@backslashchar\@qend... illegal,
+   see p.192 of the manual}');
+
+DefMacroI('\@qend',   undef, Tokens(Explode('end')));
+DefMacroI('\@qrelax', undef, Tokens(Explode('relax')));
 DefMacroI('\@spaces', undef, '\space\space\space\space');
 Let('\@sptoken', T_SPACE);
 
