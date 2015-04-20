@@ -3953,9 +3953,7 @@ sub isDefinable {
   my ($token) = @_;
   my $meaning = LookupMeaning($token);
   my $name = $token->getString; $name =~ s/^\\//;
-  my $endmeaning = LookupMeaning(T_CS('\end' . $name));
   return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
-      && ($name !~ /^end/)
       && (($name ne 'relax') && ($name !~ /^end/))); }
 
 DefMacro('\@ifdefinable Token {}', sub {
