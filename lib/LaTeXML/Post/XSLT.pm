@@ -34,6 +34,7 @@ sub new {
   my $stylesheet = $options{stylesheet};
   Error('expected', 'stylesheet', undef, "No stylesheet specified!") unless $stylesheet;
   if (!ref $stylesheet) {
+    $$self{name} .= '[using ' . $stylesheet . ']';
     my $pathname = pathname_find($stylesheet,
       types => ['xsl'], installation_subdir => 'resources/XSLT',
       paths => $$self{searchpaths} || ['.']);
