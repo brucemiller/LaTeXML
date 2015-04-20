@@ -322,14 +322,14 @@
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates mode='copy-foreign'/>
+      <xsl:apply-templates select="." mode='copy-foreign'/>
     </xsl:element>
   </xsl:template>
 
   <!-- Embedded latexml, however, gets treated with the usual templates! -->
   <xsl:template match="ltx:*" mode='copy-foreign'>
     <xsl:param name="context"/>
-    <xsl:apply-templates>
+    <xsl:apply-templates select="." >
       <xsl:with-param name="context"/>
     </xsl:apply-templates>
   </xsl:template>
