@@ -69,9 +69,9 @@ sub loadSchema {
 
   # The resulting @schema should contain the "start" of the grammar.
   my ($startcontent) = $self->extractContent('#Document', @schema);
-  $$self{model}->addTagContent('#Document', keys %$startcontent);
+  $$self{model}->addTagContent('#Document', sort keys %$startcontent);
   if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
-    print STDERR "========================\nStart\n" . join(', ', keys %$startcontent) . "\n"; }
+    print STDERR "========================\nStart\n" . join(', ', sort keys %$startcontent) . "\n"; }
 
   # NOTE: Do something automatic about this too!?!
   # We'll need to generate namespace prefixes for all namespaces found in the doc!
@@ -85,8 +85,8 @@ sub loadSchema {
       next; }
     my @body = @{ $$self{elements}{$tag} };
     my ($content, $attributes) = $self->extractContent($tag, @body);
-    $$self{model}->addTagContent($tag, keys %$content);
-    $$self{model}->addTagAttribute($tag, keys %$attributes); }
+    $$self{model}->addTagContent($tag, sort keys %$content);
+    $$self{model}->addTagAttribute($tag, sort keys %$attributes); }
   # Extract definitions of symbols that define Schema Classes, too
   foreach my $symbol (sort keys %{ $$self{defs} }) {
     if ($symbol =~ /^grammar\d+:(.+?)\.class$/) {
@@ -351,7 +351,7 @@ sub scanNameClass {
     my %names = ();
     foreach my $choice ($node->childNodes) {
       map { $names{$_} = 1 } $self->scanNameClass($choice, $ns); }
-    return ($names{ANY} ? ('ANY') : keys %names); }
+    return ($names{ANY} ? ('ANY') : sort keys %names); }
   else {
     my $op = $node->nodeName;
     Fatal('misdefined', $op, undef,
@@ -533,7 +533,7 @@ sub documentModules {
       "\\begin{schemamodule}{$name}",
       (map { $self->toTeX($_) } @content),
       "\\end{schemamodule}"); }
-  foreach my $name (keys %{ $$self{defined_patterns} }) {
+  foreach my $name (sort keys %{ $$self{defined_patterns} }) {
     if ($$self{defined_patterns}{$name} < 0) {
       $docs =~ s/\\patternadd\{$name\}/\\patterndefadd{$name}/s; } }
   return $docs; }
