@@ -1101,8 +1101,10 @@ DefRegister('\catcode Number', Number(0),
   setter => sub { AssignCatcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
 # # Only used for active math characters, so far
 DefRegister('\mathcode Number', Number(0),
-  getter => sub { my $code = $STATE->lookupMathcode(chr($_[0]->valueOf));
-    Number(defined $code ? $code : 0); },
+  getter => sub {
+    my $ch   = $_[0]->valueOf;
+    my $code = $STATE->lookupMathcode(chr($ch));
+    Number(defined $code ? $code : $ch); },    # defaults to the char's code itself(?)
   setter => sub { $STATE->assignMathcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
 # Not used anywhere (yet)
 DefRegister('\sfcode Number', Number(0),
@@ -1444,9 +1446,14 @@ sub decodeMathChar {
   my $font  = LookupValue('fontinfo_' . $fam . '_text')
     || LookupValue('fontinfo_' . $fam . '_script')
     || LookupValue('fontinfo_' . $fam . '_scriptscript');
+  my $char = chr($n);
+  # If no specific class, Lookup properties from a DefMath?
+  my $charinfo = LookupValue('math_token_attributes_' . $char);
   my $fontinfo = LookupValue('fontinfo_' . ToString($font));
-  return ($mathclassrole[$class],
-    ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n))); }
+  my $role     = $mathclassrole[$class];
+  $role = $$charinfo{role} if (!defined $role) && $charinfo;
+  return ($role,
+    ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
 
 DefConstructor('\mathchar Number',
   "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
@@ -1470,7 +1477,9 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
       sizer => '#1',
       properties => { role => $role, glyph => $glyph,
         font => sub { LookupValue('font')->specialize($glyph); } },
-      reversion => '\mathchar' . $value->valueOf . '\relax',
+      #       reversion => '\mathchar' . $value->valueOf . '\relax',
+      # revert to the plain glyph if it seems plausible? (this helps \left,\right, eg)
+      reversion => (ord($glyph) < 128 ? $glyph : '\mathchar' . $value->valueOf . '\relax'),
     ) if $glyph;
     $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
     AfterAssignment();
@@ -3859,8 +3868,8 @@ our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
 # If we could accommodate multiple roles, maybe a separate role could be set on the tokens
 # (a period could be a PERIOD or a DECIMAL_SEPARATOR, eg)
 
-my %decimal_separator   = (en => '.', de => ',', fr => ',', nl => ',', pt => ',');
-my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.');
+my %decimal_separator   = (en => '.', de => ',', fr => ',', nl => ',', pt => ',', es => ',');
+my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.', es => '.');
 DefMathLigature(sub { my ($document, @nodes) = @_;
     my $lang = $document->getNodeLanguage($nodes[-1]);
     $lang =~ s/-\w+$// if $lang;    # strip off region code, if any.
