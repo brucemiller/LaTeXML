@@ -3727,6 +3727,7 @@ Let('\normalshape',  '\upshape');
 DefMacro('\f@family', 'cm');
 DefMacro('\f@series', '');
 DefMacro('\f@shape',  '');
+DefMacro('\f@size',   '');
 
 # These do NOT immediately effect the font!
 DefMacro('\fontfamily{}', '\edef\f@family{#1}');
@@ -4322,7 +4323,10 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
     my ($gullet, $token, $if, $else) = @_;
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
-    (LaTeXML::Core::Definition::Expandable::substituteTokens(XEquals($token, $next) ? $if : $else), $next); });
+    # use \egroup for $next, if we've fallen off end?
+    (LaTeXML::Core::Definition::Expandable::substituteTokens(
+        XEquals($token, (defined $next ? $next : T_END)) ? $if : $else),
+      (defined $next ? ($next) : ())); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
 Let('\@ifnext',           '\@ifnextchar');    # ????
 
