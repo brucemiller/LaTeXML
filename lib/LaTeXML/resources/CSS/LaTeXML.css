@@ -277,16 +277,23 @@ span.ltx_tabular { display:inline-table; border-collapse:collapse; }
 
 /*======================================================================
  Low-level Basics */
+/* Note that LaTeX(ML)'s font model doesn't map quite exactly to CSS's */
+/* Font Families => font-family */
 .ltx_font_serif      { font-family: serif; }
 .ltx_font_sansserif  { font-family: sans-serif; }
 .ltx_font_typewriter { font-family: monospace; }
+/* dingbats should be converted to unicode? */
+/* Math font families handled within math: script, symbol, fraktur, blackboard ? */
+/* Font Series => font-weight */
 .ltx_font_bold       { font-weight: bold; }
 .ltx_font_medium     { font-weight: normal; }
-.ltx_font_italic     { font-style: italic; }
-.ltx_font_upright    { font-style: normal; }
-.ltx_font_slanted    { font-style: oblique; }
-.ltx_font_smallcaps  { font-variant: small-caps; }
+/* Font Shapes => font-style or font-variant */
+.ltx_font_italic     { font-style: italic; font-variant:normal; }
+.ltx_font_upright    { font-style: normal; font-variant:normal; }
+.ltx_font_slanted    { font-style: oblique; font-variant:normal; }
+.ltx_font_smallcaps  { font-variant: small-caps; font-style:normal; }
 .ltx_font_oldstyle   { font-variant: oldstyle-nums;  /* experimental css3 ? Doesn't seem to work!*/
+                       font-style:normal; 
                        -moz-font-feature-settings: "onum";
                        -ms-font-feature-settings: "onum";
                        -webkit-font-feature-settings: "onum";
