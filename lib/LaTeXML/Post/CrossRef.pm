@@ -386,8 +386,7 @@ sub fill_in_bibrefs {
 sub make_bibcite {
   my ($self, $doc, $bibref) = @_;
 
-  # NOTE: bibkeys are downcased when we look them up!
-  my @keys         = map { lc($_) } grep { $_ } split(/,/, $bibref->getAttribute('bibrefs'));
+  my @keys         = grep { $_ } split(/,/, $bibref->getAttribute('bibrefs'));
   my $show         = $bibref->getAttribute('show');
   my @preformatted = $bibref->childNodes();
   if ($show && ($show eq 'none') && !@preformatted) {
@@ -404,7 +403,8 @@ sub make_bibcite {
   my @data    = ();
   foreach my $key (@keys) {
     my ($bentry, $id, $entry);
-    if (($bentry = $$self{db}->lookup("BIBLABEL:$key"))
+    # NOTE: bibkeys are downcased when we look them up!
+    if (($bentry = $$self{db}->lookup("BIBLABEL:".lc($key)))
       && ($id    = $bentry->getValue('id'))
       && ($entry = $$self{db}->lookup("ID:$id"))) {
       my $authors  = $entry->getValue('authors');
