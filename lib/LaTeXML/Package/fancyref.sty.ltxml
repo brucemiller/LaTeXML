@@ -1,0 +1,26 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  fancyref                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Documentation: http://ctan.mirrorcatalogs.com/macros/latex/contrib/fancyref/fancyref.pdf
+
+# Partial implementation, no prefix parsing yet:
+DefMacro('\fref[]{}', 'figure~\ref{#2}');
+DefMacro('\Fref[]{}', 'Figure~\ref{#2}');
+
+# #======================================================================
+1;
