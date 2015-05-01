@@ -322,7 +322,7 @@
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates select="." mode='copy-foreign'/>
+      <xsl:apply-templates mode='copy-foreign'/>
     </xsl:element>
   </xsl:template>
 
