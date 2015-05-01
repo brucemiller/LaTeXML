@@ -128,8 +128,9 @@ td_attributes =
   ## for borders or doubled borders on any side of the cell.
   attribute border { text }?,
 
-  ## whether this cell corresponds to a table head or foot.
-  attribute thead {xsd:boolean}?
+  ## whether this cell corresponds to a table row or column heading or both
+  ## (whether in head or foot).
+  attribute thead { "column" | "column row" | "row"}?
 
 ## Content model for \elementref{td}.
 td_model =  Flow.model
