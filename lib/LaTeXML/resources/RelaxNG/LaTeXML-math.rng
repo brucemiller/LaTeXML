@@ -613,8 +613,12 @@ for borders or doubled borders on any side of the cell.</a:documentation>
     </optional>
     <optional>
       <attribute name="thead">
-        <a:documentation>whether this cell corresponds to a table head or foot.</a:documentation>
-        <data type="boolean"/>
+        <a:documentation>whether this cell corresponds to a table row or column heading or both</a:documentation>
+        <choice>
+          <value>column</value>
+          <value>column row</value>
+          <value>row</value>
+        </choice>
       </attribute>
     </optional>
   </define>
