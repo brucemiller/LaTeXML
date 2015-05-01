@@ -1,0 +1,112 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  deluxetable.sty.ltxml                                              | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# 2.15.1 The deluxetable Environment
+# \begin{deluxetable}{cols}
+#    preamble
+#    \startdata
+#    data
+#    \enddata
+#    \tablenotetext,\tablecomments,\tablerefs
+# \end{deluxetable}
+
+DefMacro('\dummytable', '\refstepcounter{table}');
+
+DefMacroI(T_CS('\begin{deluxetable}'), "{}",
+  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable}'), undef, '\end{table}');
+
+DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
+  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
+DefMacroI(T_CS('\end{deluxetable*}'), undef, '\end{table}');
+
+DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
+    AssignValue('@deluxetable@template', $_[1]); });
+
+DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
+DefMacro('\enddata', '\\\\\hline\@finish@alignment\@end@deluxetabular\egroup');
+
+DefPrimitive('\@deluxetable@bindings', sub {
+    alignmentBindings(LookupValue('@deluxetable@template'), 'text'); });
+DefConstructor('\@@deluxetabular DigestedBody',
+  '#1',
+  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
+  beforeDigest => sub { $_[0]->bgroup; },
+  mode         => 'text');
+DefPrimitive('\@end@deluxetabular', sub { $_[0]->egroup; });
+
+#======================================================================
+# 2.15.2 Preamble to the deluxetable
+
+DefMacro('\tabletypesize{}',       '');                    # Ignorable
+DefMacro('\rotate',                '');                    # Ignorable ?
+DefMacro('\tabletail{}',           '');                    # analog to head? but its ignored!!
+DefMacro('\tablewidth{Dimension}', '');                    # Ignorable?
+DefMacro('\tableheadfrac{}',       '');                    # Ignorable
+DefMacro('\tablenum{}',            '\def\thetable{#1}');
+# Note: This needs an UnRefStepCounter('table');
+
+DefMacro('\tablecolumns{Number}', '');                     # Ignorable ???
+
+Let('\tablecaption', '\caption');
+
+DefMacro('\tablehead{}',
+  '\def\@deluxetable@header{\@tabular@begin@heading#1\\\\\hline\@tabular@end@heading}');
+DefMacro('\colhead{}',
+  '\multicolumn{1}{c}{#1}');
+
+DefMacro('\nl',          '\\\\[0pt]');                     # Obsolete form
+DefMacro('\nextline',    '\\\\[0pt]');                     # Obsolete form
+DefMacro('\tablevspace', '\\\\[0pt]');                     # Obsolete form
+DefMacro('\tablebreak',  '\\\\[0pt]');                     # Obsolete form
+
+#======================================================================
+# 2.15.3 Content of deluxetable
+
+DefMacro('\tablebreak', '');    # Ignorable; we're not splitting tables.
+DefMacro('\nodata',     '');    # Ignorable
+
+DefMacro('\cutinhead{}', '\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
+DefMacro('\sidehead{}',  '\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
+
+DefMacro('\tableline', '\hline');
+
+DefConstructor('\tablenotemark{}',
+  "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
+  mode => 'text');
+DefConstructor('\tablenotetext{}{}',
+  "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
+  mode => 'text');
+
+DefMacro('\tablerefs{}',     'References. -- #1');
+DefMacro('\tablecomments{}', 'Note. -- #1');
+
+#======================================================================
+# Other esoterica
+
+# Not sure here, probably needs some css magic?
+DefMacro('\ulap{}', '#1');
+DefMacro('\dlap{}', '#1');
+
+# MISSING, but any usage here would fail, anyway...
+# \appdef, \appgdef, \prepdef
+#======================================================================
+1;
