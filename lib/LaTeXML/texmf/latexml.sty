@@ -87,6 +87,29 @@
 \excludecomment{lxFooter}
 
 \def\lxKeywords#1{}
+%======================================================================
+% Table beautification.
+% Low-level support to mark column and row headers.
+% This really calls for styling, but why should we get into that game?
+% There are many other packages for that.
+
+% To mark the table head/foot (table column headers)
+% Put this before first table heading row
+\def\lxBeginTableHead{}
+% put this after the \\ ending the table heading.
+\def\lxEndTableHead{}
+% Ditto for table foot (last rows in table)
+\def\lxBeginTableFoot{}
+\def\lxEndTableFoot{}
+
+% To mark an individual cell as a column header
+\def\lxTableColumnHead{}
+% To mark an individual cell as a row header
+\def\lxTableRowHead{}
+% Easy way to mark a whole column as row headers:
+%  \usepackage{array}
+% then put this in the column spec
+%  >{\lxTableRowHead}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Declarative information for Mathematics
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

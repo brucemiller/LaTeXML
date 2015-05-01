@@ -70,7 +70,7 @@ DefMacro('\LXMRef{}', '\@XMRef{#1}');
 Let('\lxAddClass', '\@ADDCLASS');
 
 DefConstructor('\lxAddClass Semiverbatim', sub {
-    addClass($_[0]->getElement, ToString($_[1])); });
+    $_[0]->addClass($_[0]->getElement, ToString($_[1])); });
 
 DefConstructor('\lxWithClass Semiverbatim {}', sub {
     my ($document, $class, $box) = @_;
@@ -81,7 +81,7 @@ DefConstructor('\lxWithClass Semiverbatim {}', sub {
     push(@nodes, $document->absorb($box));
     @nodes = $document->filterChildren($document->filterDeletions(@nodes));
     $document->closeToNode($context);
-    addClass($nodes[0], ToString($class)) if @nodes; });
+    $document->addClass($nodes[0], ToString($class)) if @nodes; });
 
 #======================================================================
 # links
@@ -145,6 +145,39 @@ DefEnvironment('{lxFooter}', sub { },
     PushValue('navigation',
       ['ltx:inline-para', { class => 'ltx_page_footer' }, $whatsit->getBody]);
     return; });
+
+#======================================================================
+
+# Table beautification.
+# Low-level support to mark column and row headers.
+# This really calls for styling, but why should we get into that game?
+# There are many other packages for that.
+
+# To mark the table head/foot (table column headers)
+# Put this before first table heading row
+DefMacroI('\lxBeginTableHead', undef, '\@tabular@begin@heading');
+# put this after the \\ ending the table heading.
+DefMacroI('\lxEndTableHead', undef, '\@tabular@end@heading');
+
+# Ditto for table foot (last rows in table)
+DefMacroI('\lxBeginTableFoot', undef, '\@tabular@begin@heading');
+# put this after the \\ ending the table heading.
+DefMacroI('\lxEndTableFoot', undef, '\@tabular@end@heading');
+
+# To mark an individual cell as a column header
+DefMacroI('\lxTableColumnHead', undef, sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->currentColumn->{thead}{column} = 1; }
+    return; });
+# To mark an individual cell as a row header
+DefMacroI('\lxTableRowHead', undef, sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->currentColumn->{thead}{row} = 1; }
+    return; });
+# Easy way to mark a whole column as row headers:
+#  \usepackage{array}
+# then put this in the column spec
+#  >{\lxTableRowHead}
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Declarative information for Mathematics
