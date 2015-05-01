@@ -106,7 +106,7 @@ DefConstructor('\ltx@mark@units{}', sub {
         && (!($role = $node->getAttribute('role'))
           || ($role eq 'ID') || ($role eq 'UNKNOWN')
           || ($role eq 'FLOATSUPERSCRIPT'))) {    # This covers things like primes(?)
-        addClass($node, 'ltx_unit'); } } },
+        $document->addClass($node, 'ltx_unit'); } } },
   reversion => '#1');
 
 #======================================================================
