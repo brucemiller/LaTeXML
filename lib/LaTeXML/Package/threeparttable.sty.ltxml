@@ -1,0 +1,38 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  threeparttable                                                     | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+DefMacro('\TPTminimum',      '4em');
+DefMacro('\TPTrlap{}',       '#1');
+DefMacro('\TPTtagStyle{}',   '#1');
+DefMacro('\TPTnoteLabel{}',  '\tnote{#1}\hfil');
+DefMacro('\TPTnoteSettings', '');
+DefMacro('\TPToverlap',      '');
+
+DefMacro('\TPTdoTablenotes', '');    # ?
+
+# We SHOULD be playing games to link up the \tnote to the item...
+
+DefMacro('\tnote{}', '\TPToverlap{\textsuperscript{\TPTtagStyle{#1}}}');
+DefEnvironment('{threeparttable}', '#body');
+# optional keyvals: para,flushleft, online, normal
+DefMacroI('\begin{tablenotes}', '[]',  '\begin{itemize}');
+DefMacroI('\end{tablenotes}',   undef, '\end{itemize}');
+
+DefEnvironment('{measuredfigure}', '#body');
+#======================================================================
+1;
