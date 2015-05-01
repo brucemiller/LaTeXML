@@ -249,8 +249,8 @@ sub beAbsorbed {
         vattach => $$cell{vattach},
         (($$cell{colspan} || 1) != 1 ? (colspan => $$cell{colspan}) : ()),
         (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan}) : ()),
-        ($border      ? (border => $border) : ()),
-        ($$cell{head} ? (thead  => 'true')  : ()));
+        ($border ? (border => $border) : ()),
+        ($$cell{thead} ? (thead => join(' ', sort keys %{ $$cell{thead} })) : ()));
       if (!$empty) {
         local $LaTeXML::BOX = $$cell{boxes};
         $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;    # Hacky!
@@ -263,16 +263,19 @@ sub beAbsorbed {
     &{ $$self{closeRow} }($document); }
   my $node = &{ $$self{closeContainer} }($document);
 
+  # If we're not nested inside another tabular
+  # [This should be an afterConstruct somewhere?]
   # If requested to guess headers & we're not nested inside another tabular
-  # This should be an afterConstruct somewhere?
-  if ($self->getProperty('guess_headers')
-    && !$document->findnodes("ancestor::ltx:tabular", $node)) {
-    # If no cells are already marked as being thead, apply heuristic
-    if (!$document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node)) {
+  if (!$document->findnodes("ancestor::ltx:tabular", $node)) {
+##    my $hashead = $document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node);
+    my $hashead = $document->findnodes('descendant::ltx:td[@thead]', $node);
+    # If requested && no cells are already marked as being thead, apply heuristic
+    if ($self->getProperty('guess_headers') && !$hashead) {
       guess_alignment_headers($document, $node, $self); }
     # Otherwise, if not a math array, group thead & tbody rows
-    elsif (!$body->isMath) {    # in case already marked w/thead|tbody
+    elsif ($hashead && !$body->isMath) {    # in case already marked w/thead|tbody
       alignment_regroup_rows($document, $node); } }
+
   return $node; }
 
 # Deprecated
@@ -474,12 +477,12 @@ sub guess_alignment_headers {
     push(@cols, [map { $$_[$c] } @rows]); }
 
   # Attempt to recognize header lines.
-  if (alignment_characterize_lines(0, 0, @rows)) { }
+  if (alignment_characterize_lines($document, 0, 0, @rows)) { }
   # This usually does something unpleasant
 ##  else {
 ##    print STDERR "Retry characterizing lines in reverse\n" if $LaTeXML::Core::Alignment::DEBUG;
 ##    $reversed=alignment_characterize_lines(0,1,reverse(@rows)); }
-  alignment_characterize_lines(1, 0, @cols);
+  alignment_characterize_lines($document, 1, 0, @cols);
   # Did we go overboard?
   my %n = (h => 0, d => 0);
   foreach my $r (@rows) {
@@ -487,6 +490,7 @@ sub guess_alignment_headers {
       $n{ $$c{cell_type} }++; } }
   print STDERR "$n{h} header, $n{d} data cells\n" if $LaTeXML::Core::Alignment::DEBUG;
   if ($n{d} == 1) {    # Or any other heuristic?
+    $n{h} = 0;
     foreach my $r (@rows) {
       foreach my $c (@$r) {
         $$c{cell_type} = 'd';
@@ -495,33 +499,43 @@ sub guess_alignment_headers {
   # But not if it's a math array, or if reversed (since browsers get confused?)
   if (!$ismath && !$reversed) {
     alignment_regroup_rows($document, $table); }
+  if ($n{h}) {    # Found some headers?
+    $document->addClass($table, 'ltx_guessed_headers'); }
+
   # Debugging report!
   summarize_alignment([@rows], [@cols]) if $LaTeXML::Core::Alignment::DEBUG;
   return; }
 
 #======================================================================
-# Regroup the rows into thead & tbody
-# (not messing with tfoot, ATM; HTML4 wants it ONLY after the thead; HTML5 also allows at end!)
+# Regroup the rows into thead, tbody & tfoot
 # Any leading rows, all of whose cells have attribute thead should be in thead.
 # UNLESS any of them have a rowspan that extends PAST the end of the thead!!!!
+# trailing rows marked as thead go into tfoot.
 sub alignment_regroup_rows {
   my ($document, $table) = @_;
   my @rows     = $document->findnodes("ltx:tr", $table);
   my @heads    = ();
   my $maxreach = 0;
+  # Scan initial rows as potential thead
   while (@rows) {
     my @cells = $document->findnodes('ltx:td', $rows[0]);
     # Non header cells, done.
-    last if scalar(grep { (!$_->getAttribute('thead'))
-          && (($_->getAttribute('class') || '') !~ /\bthead\b/) }
-        @cells);
+    last if scalar(grep { (!$_->getAttribute('thead')) } @cells);
     push(@heads, shift(@rows));
     my $line = scalar(@heads);
     $maxreach = max($maxreach, map { ($_->getAttribute('rowspan') || 0) + $line } @cells); }
   if ($maxreach > scalar(@heads)) {    # rowspan crossed over thead boundary!
     unshift(@rows, @heads); @heads = (); }
+  # scan trailing rows as potential tfoot
+  my @foots = ();
+  while (@rows) {
+    my @cells = $document->findnodes('ltx:td', $rows[-1]);
+    # Non header cells, done.
+    last if scalar(grep { (!$_->getAttribute('thead')) } @cells);
+    push(@foots, pop(@rows)); }
   $document->wrapNodes('ltx:thead', @heads) if @heads;
   $document->wrapNodes('ltx:tbody', @rows)  if @rows;
+  $document->wrapNodes('ltx:tfoot', @foots) if @foots;
   return; }
 
 #======================================================================
@@ -673,8 +687,10 @@ my $MAX_ALIGNMENT_HEADER_LINES = 4;    # [CONSTANT]
 # Both header lines and data lines can consist of several neighboring lines.
 # Check that header lines are `similar' to each other.  So, the strategy is to look
 # for a `hump' in the line differences and consider blocks containing these lines to be potential headers.
+my @axisname = ('column', 'row');
+
 sub alignment_characterize_lines {
-  my ($axis, $reversed, @lines) = @_;
+  my ($document, $axis, $reversed, @lines) = @_;
   my $n = scalar(@lines);
   return if $n < 2;
   local @::TABLINES = @lines;
@@ -732,7 +748,7 @@ sub alignment_characterize_lines {
               && ((($i == 0) && !$$cell{ ($axis == 0 ? 'l' : 't') })
                 || (($i == $nn) && !$$cell{ ($axis == 0 ? 'r' : 'b') }))) { }
             else {
-              $$cell{cell}->setAttribute(thead => 'true'); } }
+              $document->addSSValues($$cell{cell}, thead => $axisname[$axis]); } }
           $i++; } }
       return 1; } }
   return; }
