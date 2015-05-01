@@ -404,7 +404,7 @@ sub make_bibcite {
   foreach my $key (@keys) {
     my ($bentry, $id, $entry);
     # NOTE: bibkeys are downcased when we look them up!
-    if (($bentry = $$self{db}->lookup("BIBLABEL:".lc($key)))
+    if (($bentry = $$self{db}->lookup("BIBLABEL:" . lc($key)))
       && ($id    = $bentry->getValue('id'))
       && ($entry = $$self{db}->lookup("ID:$id"))) {
       my $authors  = $entry->getValue('authors');
@@ -421,9 +421,11 @@ sub make_bibcite {
         ($rawyear, $suffix) = ($1, $2); }
       $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
                                                                                      # fullnames ?
-      push(@data, { authors => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
+      push(@data, {
+          key         => $key,
+          authors     => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
           fullauthors => [$doc->trimChildNodes($fauthors || $authors || $keytag)],
-          authortext => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
+          authortext  => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
           year => [$doc->trimChildNodes($year || $typetag)],
           rawyear => $rawyear,
           suffix  => $suffix,
@@ -435,7 +437,7 @@ sub make_bibcite {
             ($title ? (title => orNull($title->textContent)) : ()) } }); }
     else {
       $self->note_missing('warn', 'Entry for citation', $key);
-      push(@data, { refnum => [$key], title => [$key],
+      push(@data, { key => $key, refnum => [$key], title => [$key], year => [],
           attr => { idref => $key, title => $key, class => "ltx_missing_citation" } });
     } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
@@ -460,7 +462,9 @@ sub make_bibcite {
       elsif ($show =~ s/^phrase(\d)//i) {
         push(@stuff, $phrases[$1 - 1]->childNodes) if $phrases[$1 - 1]; }
       elsif ($show =~ s/^year//i) {
-        if (@{ $$datum{year} }) {
+        if (!$$datum{year}) {
+          $self->note_missing('warn', 'Date for citation', $$datum{key}); }
+        elsif (@{ $$datum{year} }) {
           push(@stuff, ['ltx:ref', $$datum{attr}, @{ $$datum{year} }]);
           $didref = 1;
           while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
