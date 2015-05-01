@@ -1059,6 +1059,24 @@ sub setAttribute {
         $node->setAttribute($name => $value); } } }    # redundant case...
   return; }
 
+sub addSSValues {
+  my ($self, $node, $key, $values) = @_;
+  $values = $values->toAttribute if ref $values;
+  if ((defined $values) && ($values ne '')) {          # Skip if `empty'; but 0 is OK!
+    my @values = split(/\s/, $values);
+    if (my $oldvalues = $node->getAttribute($key)) {    # previous values?
+      my @old = split(/\s/, $oldvalues);
+      foreach my $new (@values) {
+        push(@old, $new) unless grep { $_ eq $new } @old; }
+      $self->setAttribute($node, $key => join(' ', sort @old)); }
+    else {
+      $self->setAttribute($node, $key => join(' ', sort @values)); } }
+  return; }
+
+sub addClass {
+  my ($self, $node, $class) = @_;
+  return $self->addSSValues($node, class => $class); }
+
 #**********************************************************************
 # Association of nodes and ids (xml:id)
 
