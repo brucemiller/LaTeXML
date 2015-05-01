@@ -159,6 +159,9 @@ DefEnvironment('{plate*}[]',
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
   afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
 
+DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
+DefMacro('\platenum{}',            '\def\theplate{#1}');
+
 #======================================================================
 # 2.9 Acknowledgements
 
@@ -347,102 +350,16 @@ DefMacro('\figcaption', sub {
 
 #======================================================================
 # 2.15 Tables
-
-DefMacro('\dummytable', '\refstepcounter{table}');
-
-#======================================================================
-# 2.15.1 The deluxetable Environment
-# \begin{deluxetable}{cols}
-#    preamble
-#    \startdata
-#    data
-#    \enddata
-#    \tablenotetext,\tablecomments,\tablerefs
-# \end{deluxetable}
-
-DefMacroI(T_CS('\begin{deluxetable}'), "{}",
-  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable}'), undef, '\end{table}');
-
-DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
-  '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable*}'), undef, '\end{table}');
-
-DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
-    AssignValue('@deluxetable@template', $_[1]); });
-
-DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@alignment\hline\hline\@deluxetable@header');
-DefMacro('\enddata', '\hline\@finish@alignment\@end@deluxetabular\egroup');
-
-DefPrimitive('\@deluxetable@bindings', sub {
-    alignmentBindings(LookupValue('@deluxetable@template'), 'text'); });
-DefConstructor('\@@deluxetabular DigestedBody',
-  '#1',
-  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
-  beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
-DefPrimitive('\@end@deluxetabular', sub { $_[0]->egroup; });
-
-#======================================================================
-# 2.15.2 Preamble to the deluxetable
-
-DefMacro('\tabletypesize{}',       '');                    # Ignorable
-DefMacro('\rotate',                '');                    # Ignorable ?
-DefMacro('\tabletail{}',           '');
-DefMacro('\tablewidth{Dimension}', '');                    # Ignorable?
-DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
-DefMacro('\tablenum{}',            '\def\thetable{#1}');
-# Note: This needs an UnRefStepCounter('table');
-DefMacro('\platenum{}', '\def\theplate{#1}');
-
-DefMacro('\tablecolumns{Number}', '');                     # Ignorable ???
-
-Let('\tablecaption', '\caption');
-
-DefMacro('\tablehead{}', '\def\@deluxetable@header{#1\\\\\hline}');
-DefMacro('\colhead{}',   '#1');
-
-# Mark the existing rows as being headers
-DefPrimitive('\@mark@tableheader', sub {
-    my $alignment = LookupValue('Alignment');
-    foreach my $row ($alignment->rows) {
-      map { $$_{head} = 1 } $row->columns; }
-    return; });
-
-DefMacro('\nl',          '\\\\[0pt]');    # Obsolete form
-DefMacro('\nextline',    '\\\\[0pt]');    # Obsolete form
-DefMacro('\tablevspace', '\\\\[0pt]');    # Obsolete form
-DefMacro('\tablebreak',  '\\\\[0pt]');    # Obsolete form
-
-#======================================================================
-# 2.15.3 Content of deluxetable
+RequirePackage('deluxetable');
 
 DefMacro('\phn',   '\phantom{0}');
 DefMacro('\phd',   '\phantom{.}');
 DefMacro('\phs',   '\phantom{+}');
 DefMacro('\phm{}', '\phantom{string}');
 
-DefMacro('\tablebreak', '');    # Ignorable; we're not splitting tables.
-DefMacro('\nodata',     '');    # Ignorable
-
-DefMacro('\cutinhead{}', '\hline\multicolumn{\@alignment@ncolumns}{c}{#1}\\\\\hline');
-DefMacro('\sidehead{}',  '\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hline');
-
 #======================================================================
 # 2.15.4 The table Environment
 # normal LaTeX
-
-DefMacro('\tableline', '\hline');
-
-DefConstructor('\tablenotemark{}',
-  "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
-  mode => 'text');
-DefConstructor('\tablenotetext{}{}',
-  "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
-  mode => 'text');
-
-DefMacro('\tablerefs{}',     'References. -- #1');
-DefMacro('\tablecomments{}', 'Note. -- #1');
 
 #======================================================================
 # 2.17 Miscellaneous
