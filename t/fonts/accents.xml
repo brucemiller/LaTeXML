@@ -7,22 +7,22 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Testing Accents</title>
     <para xml:id="S1.p1">
-      <tabular vattach="middle">
+      <tabular vattach="middle" class="ltx_guessed_headers">
         <thead>
           <tr>
-            <td border="r" thead="true"/>
-            <td align="center" thead="true">a</td>
-            <td align="center" thead="true">o</td>
-            <td align="center" thead="true">A</td>
-            <td align="center" thead="true">O</td>
-            <td align="center" thead="true">ı</td>
-            <td align="center" border="r" thead="true">ao</td>
-            <td thead="true"/>
+            <td border="r" thead="column row"/>
+            <td align="center" thead="column">a</td>
+            <td align="center" thead="column">o</td>
+            <td align="center" thead="column">A</td>
+            <td align="center" thead="column">O</td>
+            <td align="center" thead="column">ı</td>
+            <td align="center" border="r" thead="column">ao</td>
+            <td thead="column"/>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="center" border="r t" thead="true">‘</td>
+            <td align="center" border="r t" thead="row">‘</td>
             <td align="center" border="t">à</td>
             <td align="center" border="t">ò</td>
             <td align="center" border="t">À</td>
@@ -32,7 +32,7 @@
             <td align="center" border="t">à</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">’</td>
+            <td align="center" border="r" thead="row">’</td>
             <td align="center">á</td>
             <td align="center">ó</td>
             <td align="center">Á</td>
@@ -42,7 +42,7 @@
             <td align="center">á</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">
+            <td align="center" border="r" thead="row">
               <verbatim font="typewriter">^</verbatim>
             </td>
             <td align="center">â</td>
@@ -54,7 +54,7 @@
             <td align="center">â</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">”</td>
+            <td align="center" border="r" thead="row">”</td>
             <td align="center">ä</td>
             <td align="center">ö</td>
             <td align="center">Ä</td>
@@ -64,7 +64,7 @@
             <td align="center">ä</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">
+            <td align="center" border="r" thead="row">
               <verbatim font="typewriter">~</verbatim>
             </td>
             <td align="center">ã</td>
@@ -76,7 +76,7 @@
             <td align="center">ã</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">=</td>
+            <td align="center" border="r" thead="row">=</td>
             <td align="center">ā</td>
             <td align="center">ō</td>
             <td align="center">Ā</td>
@@ -86,7 +86,7 @@
             <td align="center">ā</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">.</td>
+            <td align="center" border="r" thead="row">.</td>
             <td align="center">ȧ</td>
             <td align="center">ȯ</td>
             <td align="center">Ȧ</td>
@@ -96,7 +96,7 @@
             <td align="center">ȧ</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">u</td>
+            <td align="center" border="r" thead="row">u</td>
             <td align="center">ă</td>
             <td align="center">ŏ</td>
             <td align="center">Ă</td>
@@ -106,7 +106,7 @@
             <td align="center">ǎ</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">v</td>
+            <td align="center" border="r" thead="row">v</td>
             <td align="center">ǎ</td>
             <td align="center">ǒ</td>
             <td align="center">Ǎ</td>
@@ -116,7 +116,7 @@
             <td align="center">â</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">H</td>
+            <td align="center" border="r" thead="row">H</td>
             <td align="center">a̋</td>
             <td align="center">ő</td>
             <td align="center">A̋</td>
@@ -126,7 +126,7 @@
             <td align="center">a̋</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">t</td>
+            <td align="center" border="r" thead="row">t</td>
             <td align="center">a͡</td>
             <td align="center">o͡</td>
             <td align="center">A͡</td>
@@ -136,7 +136,7 @@
             <td/>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">c</td>
+            <td align="center" border="r" thead="row">c</td>
             <td align="center">a̧</td>
             <td align="center">o̧</td>
             <td align="center">A̧</td>
@@ -146,7 +146,7 @@
             <td align="center">a̧</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">d</td>
+            <td align="center" border="r" thead="row">d</td>
             <td align="center">ạ</td>
             <td align="center">ọ</td>
             <td align="center">Ạ</td>
@@ -156,7 +156,7 @@
             <td align="center">ạ</td>
           </tr>
           <tr>
-            <td align="center" border="r" thead="true">b</td>
+            <td align="center" border="r" thead="row">b</td>
             <td align="center">a̱</td>
             <td align="center">o̱</td>
             <td align="center">A̱</td>

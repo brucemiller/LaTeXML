@@ -67,17 +67,17 @@
       <caption><tag close=". ">Figure 1</tag>A Figure</caption>
     </figure>
     <table frefnum="Table 1" refnum="1" xml:id="S1.T1">
-      <tabular vattach="middle" class="ltx_centering">
+      <tabular vattach="middle" class="ltx_centering ltx_guessed_headers">
         <thead>
           <tr>
-            <td align="right" border="r" thead="true">Heading</td>
-            <td align="center" thead="true">Foo</td>
-            <td align="center" thead="true">Bar</td>
+            <td align="right" border="r" thead="column row">Heading</td>
+            <td align="center" thead="column">Foo</td>
+            <td align="center" thead="column">Bar</td>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="right" border="r t" thead="true">a</td>
+            <td align="right" border="r t" thead="row">a</td>
             <td align="center" border="t">
               <Math mode="inline" xml:id="S1.T1.m1" tex="x" text="x">
                 <XMath>
@@ -98,7 +98,7 @@
             </td>
           </tr>
           <tr>
-            <td align="right" border="r" thead="true">b</td>
+            <td align="right" border="r" thead="row">b</td>
             <td align="center">
               <Math mode="inline" xml:id="S1.T1.m3" tex="y^{2}" text="y ^ 2">
                 <XMath>

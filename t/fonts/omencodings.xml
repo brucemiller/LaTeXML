@@ -5,10 +5,10 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular vattach="middle">
+    <tabular vattach="middle" class="ltx_guessed_headers">
       <tbody>
         <tr>
-          <td border="r" thead="true"/>
+          <td border="r" thead="row"/>
           <td align="center">´0</td>
           <td align="center">´1</td>
           <td align="center">´2</td>
@@ -19,7 +19,7 @@
           <td align="center">´7</td>
         </tr>
         <tr>
-          <td align="right" border="r t" thead="true">´0</td>
+          <td align="right" border="r t" thead="row">´0</td>
           <td align="center" border="t">Γ</td>
           <td align="center" border="t">Δ</td>
           <td align="center" border="t">Θ</td>
@@ -30,7 +30,7 @@
           <td align="center" border="t">Υ</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´1</td>
+          <td align="right" border="r" thead="row">´1</td>
           <td align="center">Φ</td>
           <td align="center">Ψ</td>
           <td align="center">Ω</td>
@@ -41,7 +41,7 @@
           <td align="center">ϵ</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´2</td>
+          <td align="right" border="r" thead="row">´2</td>
           <td align="center">ζ</td>
           <td align="center">η</td>
           <td align="center">θ</td>
@@ -52,7 +52,7 @@
           <td align="center">ν</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´3</td>
+          <td align="right" border="r" thead="row">´3</td>
           <td align="center">ξ</td>
           <td align="center">π</td>
           <td align="center">ρ</td>
@@ -63,7 +63,7 @@
           <td align="center">χ</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´4</td>
+          <td align="right" border="r" thead="row">´4</td>
           <td align="center">ψ</td>
           <td align="center">ω</td>
           <td align="center">ε</td>
@@ -74,7 +74,7 @@
           <td align="center">φ</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´5</td>
+          <td align="right" border="r" thead="row">´5</td>
           <td align="center">↼</td>
           <td align="center">↽</td>
           <td align="center">⇀</td>
@@ -85,7 +85,7 @@
           <td align="center">◁</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´6</td>
+          <td align="right" border="r" thead="row">´6</td>
           <td align="center">0</td>
           <td align="center">1</td>
           <td align="center">2</td>
@@ -96,7 +96,7 @@
           <td align="center">7</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´7</td>
+          <td align="right" border="r" thead="row">´7</td>
           <td align="center">8</td>
           <td align="center">9</td>
           <td align="center">.</td>
@@ -107,7 +107,7 @@
           <td align="center">⋆</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´10</td>
+          <td align="right" border="r" thead="row">´10</td>
           <td align="center">∂</td>
           <td align="center">A</td>
           <td align="center">B</td>
@@ -118,7 +118,7 @@
           <td align="center">G</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´11</td>
+          <td align="right" border="r" thead="row">´11</td>
           <td align="center">H</td>
           <td align="center">I</td>
           <td align="center">J</td>
@@ -129,7 +129,7 @@
           <td align="center">O</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´12</td>
+          <td align="right" border="r" thead="row">´12</td>
           <td align="center">P</td>
           <td align="center">Q</td>
           <td align="center">R</td>
@@ -140,7 +140,7 @@
           <td align="center">W</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´13</td>
+          <td align="right" border="r" thead="row">´13</td>
           <td align="center">X</td>
           <td align="center">Y</td>
           <td align="center">Z</td>
@@ -151,7 +151,7 @@
           <td align="center">⌢</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´14</td>
+          <td align="right" border="r" thead="row">´14</td>
           <td align="center">ℓ</td>
           <td align="center">a</td>
           <td align="center">b</td>
@@ -162,7 +162,7 @@
           <td align="center">g</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´15</td>
+          <td align="right" border="r" thead="row">´15</td>
           <td align="center">h</td>
           <td align="center">i</td>
           <td align="center">j</td>
@@ -173,7 +173,7 @@
           <td align="center">o</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´16</td>
+          <td align="right" border="r" thead="row">´16</td>
           <td align="center">p</td>
           <td align="center">q</td>
           <td align="center">r</td>
@@ -184,7 +184,7 @@
           <td align="center">w</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´17</td>
+          <td align="right" border="r" thead="row">´17</td>
           <td align="center">x</td>
           <td align="center">y</td>
           <td align="center">z</td>
@@ -198,23 +198,23 @@
     </tabular>
   </para>
   <para xml:id="p2">
-    <tabular vattach="middle">
+    <tabular vattach="middle" class="ltx_guessed_headers">
       <thead>
         <tr>
-          <td border="r" thead="true"/>
-          <td align="center" thead="true">´0</td>
-          <td align="center" thead="true">´1</td>
-          <td align="center" thead="true">´2</td>
-          <td align="center" thead="true">´3</td>
-          <td align="center" thead="true">´4</td>
-          <td align="center" thead="true">´5</td>
-          <td align="center" thead="true">´6</td>
-          <td align="center" thead="true">´7</td>
+          <td border="r" thead="column row"/>
+          <td align="center" thead="column">´0</td>
+          <td align="center" thead="column">´1</td>
+          <td align="center" thead="column">´2</td>
+          <td align="center" thead="column">´3</td>
+          <td align="center" thead="column">´4</td>
+          <td align="center" thead="column">´5</td>
+          <td align="center" thead="column">´6</td>
+          <td align="center" thead="column">´7</td>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td align="right" border="r t" thead="true">´0</td>
+          <td align="right" border="r t" thead="row">´0</td>
           <td align="center" border="t">-</td>
           <td align="center" border="t">⋅</td>
           <td align="center" border="t">×</td>
@@ -225,7 +225,7 @@
           <td align="center" border="t">∓</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´1</td>
+          <td align="right" border="r" thead="row">´1</td>
           <td align="center">⊕</td>
           <td align="center">⊖</td>
           <td align="center">⊗</td>
@@ -236,7 +236,7 @@
           <td align="center">∙</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´2</td>
+          <td align="right" border="r" thead="row">´2</td>
           <td align="center">≍</td>
           <td align="center">≡</td>
           <td align="center">⊆</td>
@@ -247,7 +247,7 @@
           <td align="center">⪰</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´3</td>
+          <td align="right" border="r" thead="row">´3</td>
           <td align="center">∼</td>
           <td align="center">≈</td>
           <td align="center">⊂</td>
@@ -258,7 +258,7 @@
           <td align="center">≻</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´4</td>
+          <td align="right" border="r" thead="row">´4</td>
           <td align="center">←</td>
           <td align="center">→</td>
           <td align="center">↑</td>
@@ -269,7 +269,7 @@
           <td align="center">≃</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´5</td>
+          <td align="right" border="r" thead="row">´5</td>
           <td align="center">⇐</td>
           <td align="center">⇒</td>
           <td align="center">⇑</td>
@@ -280,7 +280,7 @@
           <td align="center">∝</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´6</td>
+          <td align="right" border="r" thead="row">´6</td>
           <td align="center">′</td>
           <td align="center">∞</td>
           <td align="center">∈</td>
@@ -291,7 +291,7 @@
           <td align="center">↦</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´7</td>
+          <td align="right" border="r" thead="row">´7</td>
           <td align="center">∀</td>
           <td align="center">∃</td>
           <td align="center">¬</td>
@@ -302,7 +302,7 @@
           <td align="center">⊥</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´10</td>
+          <td align="right" border="r" thead="row">´10</td>
           <td align="center">ℵ</td>
           <td align="center">𝒜</td>
           <td align="center">ℬ</td>
@@ -313,7 +313,7 @@
           <td align="center">𝒢</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´11</td>
+          <td align="right" border="r" thead="row">´11</td>
           <td align="center">ℋ</td>
           <td align="center">ℐ</td>
           <td align="center">𝒥</td>
@@ -324,7 +324,7 @@
           <td align="center">𝒪</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´12</td>
+          <td align="right" border="r" thead="row">´12</td>
           <td align="center">𝒫</td>
           <td align="center">𝒬</td>
           <td align="center">ℛ</td>
@@ -335,7 +335,7 @@
           <td align="center">𝒲</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´13</td>
+          <td align="right" border="r" thead="row">´13</td>
           <td align="center">𝒳</td>
           <td align="center">𝒴</td>
           <td align="center">𝒵</td>
@@ -346,7 +346,7 @@
           <td align="center">∨</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´14</td>
+          <td align="right" border="r" thead="row">´14</td>
           <td align="center">⊢</td>
           <td align="center">⊣</td>
           <td align="center">⌊</td>
@@ -357,7 +357,7 @@
           <td align="center">}</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´15</td>
+          <td align="right" border="r" thead="row">´15</td>
           <td align="center">⟨</td>
           <td align="center">⟩</td>
           <td align="center">|</td>
@@ -368,7 +368,7 @@
           <td align="center">≀</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´16</td>
+          <td align="right" border="r" thead="row">´16</td>
           <td align="center">√</td>
           <td align="center">∐</td>
           <td align="center">∇</td>
@@ -379,7 +379,7 @@
           <td align="center">⊒</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´17</td>
+          <td align="right" border="r" thead="row">´17</td>
           <td align="center">§</td>
           <td align="center">†</td>
           <td align="center">‡</td>
@@ -393,23 +393,23 @@
     </tabular>
   </para>
   <para xml:id="p3">
-    <tabular vattach="middle">
+    <tabular vattach="middle" class="ltx_guessed_headers">
       <thead>
         <tr>
-          <td border="r" thead="true"/>
-          <td align="center" thead="true">´0</td>
-          <td align="center" thead="true">´1</td>
-          <td align="center" thead="true">´2</td>
-          <td align="center" thead="true">´3</td>
-          <td align="center" thead="true">´4</td>
-          <td align="center" thead="true">´5</td>
-          <td align="center" thead="true">´6</td>
-          <td align="center" thead="true">´7</td>
+          <td border="r" thead="column row"/>
+          <td align="center" thead="column">´0</td>
+          <td align="center" thead="column">´1</td>
+          <td align="center" thead="column">´2</td>
+          <td align="center" thead="column">´3</td>
+          <td align="center" thead="column">´4</td>
+          <td align="center" thead="column">´5</td>
+          <td align="center" thead="column">´6</td>
+          <td align="center" thead="column">´7</td>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td align="right" border="r t" thead="true">´0</td>
+          <td align="right" border="r t" thead="row">´0</td>
           <td align="center" border="t">(</td>
           <td align="center" border="t">)</td>
           <td align="center" border="t">[</td>
@@ -420,7 +420,7 @@
           <td align="center" border="t">⌉</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´1</td>
+          <td align="right" border="r" thead="row">´1</td>
           <td align="center">{</td>
           <td align="center">}</td>
           <td align="center">⟨</td>
@@ -431,7 +431,7 @@
           <td align="center">\</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´2</td>
+          <td align="right" border="r" thead="row">´2</td>
           <td align="center">(</td>
           <td align="center">)</td>
           <td align="center">(</td>
@@ -442,7 +442,7 @@
           <td align="center">⌋</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´3</td>
+          <td align="right" border="r" thead="row">´3</td>
           <td align="center">⌈</td>
           <td align="center">⌉</td>
           <td align="center">{</td>
@@ -453,7 +453,7 @@
           <td align="center">\</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´4</td>
+          <td align="right" border="r" thead="row">´4</td>
           <td align="center">(</td>
           <td align="center">)</td>
           <td align="center">[</td>
@@ -464,7 +464,7 @@
           <td align="center">⌉</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´5</td>
+          <td align="right" border="r" thead="row">´5</td>
           <td align="center">{</td>
           <td align="center">}</td>
           <td align="center">⟨</td>
@@ -475,7 +475,7 @@
           <td align="center">\</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´6</td>
+          <td align="right" border="r" thead="row">´6</td>
           <td align="center">⎛</td>
           <td align="center">⎞</td>
           <td align="center">⎡</td>
@@ -486,7 +486,7 @@
           <td align="center">⎥</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´7</td>
+          <td align="right" border="r" thead="row">´7</td>
           <td align="center">⎧</td>
           <td align="center">⎫</td>
           <td align="center">⎩</td>
@@ -497,7 +497,7 @@
           <td align="center">⏐</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´10</td>
+          <td align="right" border="r" thead="row">´10</td>
           <td align="center">⎝</td>
           <td align="center">⎠</td>
           <td align="center">⎜</td>
@@ -508,7 +508,7 @@
           <td align="center">⊔</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´11</td>
+          <td align="right" border="r" thead="row">´11</td>
           <td align="center">∮</td>
           <td align="center">∮</td>
           <td align="center">⊙</td>
@@ -519,7 +519,7 @@
           <td align="center">⊗</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´12</td>
+          <td align="right" border="r" thead="row">´12</td>
           <td align="center">∑</td>
           <td align="center">∏</td>
           <td align="center">∫</td>
@@ -530,7 +530,7 @@
           <td align="center">∨</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´13</td>
+          <td align="right" border="r" thead="row">´13</td>
           <td align="center">∑</td>
           <td align="center">∏</td>
           <td align="center">∫</td>
@@ -541,7 +541,7 @@
           <td align="center">∨</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´14</td>
+          <td align="right" border="r" thead="row">´14</td>
           <td align="center">∐</td>
           <td align="center">∐</td>
           <td align="center">^</td>
@@ -552,7 +552,7 @@
           <td align="center">~</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´15</td>
+          <td align="right" border="r" thead="row">´15</td>
           <td align="center">[</td>
           <td align="center">]</td>
           <td align="center">⌊</td>
@@ -563,7 +563,7 @@
           <td align="center">}</td>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´16</td>
+          <td align="right" border="r" thead="row">´16</td>
           <td align="center">⎷</td>
           <td align="center">⎷</td>
           <td align="center">⎷</td>
@@ -574,7 +574,7 @@
           <td align="center"/>
         </tr>
         <tr>
-          <td align="right" border="r" thead="true">´17</td>
+          <td align="right" border="r" thead="row">´17</td>
           <td align="center">↑</td>
           <td align="center">↓</td>
           <td align="center"/>
