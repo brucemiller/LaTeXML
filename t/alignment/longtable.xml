@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="array"?>
 <?latexml package="longtable"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
@@ -9,62 +11,66 @@
     <caption><tag close=": ">Table 1</tag>The ISOGRK3 entity set</caption>
     <toccaption><tag close=" ">1</tag>The ISOGRK3 entity set</toccaption>
     <tabular>
-      <tr>
-        <td align="left" thead="true">
-          <text font="bold">Entity</text>
-        </td>
-        <td align="left" thead="true">
-          <text font="bold">Unicode Name</text>
-        </td>
-        <td align="left" thead="true">
-          <text font="bold">Unicode</text>
-        </td>
-      </tr>
-      <tr>
-        <td border="t" thead="true"/>
-        <td border="t" thead="true"/>
-        <td border="t" thead="true"/>
-      </tr>
-      <tr>
-        <td align="left">alpha</td>
-        <td align="left">GREEK SMALL LETTER ALPHA</td>
-        <td align="left">03B1</td>
-      </tr>
-      <tr>
-        <td align="left">beta</td>
-        <td align="left">GREEK SMALL LETTER BETA</td>
-        <td align="left">03B2</td>
-      </tr>
-      <tr>
-        <td align="left">chi</td>
-        <td align="left">GREEK SMALL LETTER CHI</td>
-        <td align="left">03C7</td>
-      </tr>
-      <tr>
-        <td align="left">Delta</td>
-        <td align="left">GREEK CAPITAL LETTER DELTA</td>
-        <td align="left">0394</td>
-      </tr>
-      <tr>
-        <td align="left">delta</td>
-        <td align="left">GREEK SMALL LETTER DELTA</td>
-        <td align="left">03B4</td>
-      </tr>
-      <tr>
-        <td align="left">epsi</td>
-        <td align="left">GREEK SMALL LETTER EPSILON</td>
-        <td align="left">03B5</td>
-      </tr>
-      <tr>
-        <td align="left">epsis</td>
-        <td align="left">GREEK LUNATE EPSILON SYMBOL</td>
-        <td align="left">03F5</td>
-      </tr>
-      <tr>
-        <td border="b"/>
-        <td border="b"/>
-        <td border="b"/>
-      </tr>
+      <thead>
+        <tr>
+          <td align="left" thead="column row">
+            <text font="bold">Entity</text>
+          </td>
+          <td align="left" thead="column">
+            <text font="bold">Unicode Name</text>
+          </td>
+          <td align="left" thead="column">
+            <text font="bold">Unicode</text>
+          </td>
+        </tr>
+        <tr>
+          <td border="t" thead="column row"/>
+          <td border="t" thead="column"/>
+          <td border="t" thead="column"/>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td align="left" thead="row">alpha</td>
+          <td align="left">GREEK SMALL LETTER ALPHA</td>
+          <td align="left">03B1</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">beta</td>
+          <td align="left">GREEK SMALL LETTER BETA</td>
+          <td align="left">03B2</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">chi</td>
+          <td align="left">GREEK SMALL LETTER CHI</td>
+          <td align="left">03C7</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">Delta</td>
+          <td align="left">GREEK CAPITAL LETTER DELTA</td>
+          <td align="left">0394</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">delta</td>
+          <td align="left">GREEK SMALL LETTER DELTA</td>
+          <td align="left">03B4</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">epsi</td>
+          <td align="left">GREEK SMALL LETTER EPSILON</td>
+          <td align="left">03B5</td>
+        </tr>
+        <tr>
+          <td align="left" thead="row">epsis</td>
+          <td align="left">GREEK LUNATE EPSILON SYMBOL</td>
+          <td align="left">03F5</td>
+        </tr>
+        <tr>
+          <td border="b" thead="row"/>
+          <td border="b"/>
+          <td border="b"/>
+        </tr>
+      </tbody>
     </tabular>
   </table>
 </document>
