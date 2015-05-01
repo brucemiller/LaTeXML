@@ -451,9 +451,10 @@ sub pmml_internal {
         my $a  = $col->getAttribute('align');
         my $b  = $col->getAttribute('border');
         my $bc = ($b ? join(' ', map { 'ltx_border_' . $_ } split(/\s/, $b)) : $b);
-        my $h  = (($col->getAttribute('thead') || '') eq 'true') && 'thead';
+        my $th = $col->getAttribute('thead');
+        my $hc = ($th ? join(' ', map { 'ltx_th_' . $_ } split(/\s/, $th)) : '');
         my $cl = $col->getAttribute('class');
-        my $c  = ($bc ? ($h ? "$bc $h" : $bc) : $h);
+        my $c  = ($bc ? ($hc ? "$bc $hc" : $bc) : $hc);
         my $cs = $col->getAttribute('colspan');
         my $rs = $col->getAttribute('rowspan');
         push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
