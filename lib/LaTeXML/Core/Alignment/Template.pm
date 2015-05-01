@@ -76,7 +76,7 @@ sub addColumn {
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
   $$col{before}          = Tokens(@before);
   $$col{after}           = Tokens() unless $properties{after};
-  $$col{head}            = $properties{head};
+  $$col{thead}           = $properties{thead};
   $$col{empty}           = 1;
   $$self{save_between}   = [];
   $$self{save_before}    = [];
