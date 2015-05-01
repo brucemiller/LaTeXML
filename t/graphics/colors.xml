@@ -80,7 +80,7 @@ vs. <text color="#E6E6E6">Light</text></p>
       <p>vs. <text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
     </para>
     <para xml:id="S5.p3">
-      <p><text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">Green in Red surrounded by Blue</text></p>
+      <p><text framecolor="#0000FF" framed="rectangle" backgroundcolor="#FF0000" color="#00FF00">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S5.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" color="#FFFF00" backgroundcolor="#00FFFF">Yellow in Cyan surrounded by Magenta</text></p>
@@ -95,8 +95,8 @@ vs. <text color="#E6E6E6">Light</text></p>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMTok role="UNKNOWN" color="#FF0000" font="italic">R</XMTok>
-              <XMTok role="UNKNOWN" font="italic" color="#00FF00">G</XMTok>
-              <XMTok role="UNKNOWN" font="italic" color="#0000FF">B</XMTok>
+              <XMTok role="UNKNOWN" color="#00FF00" font="italic">G</XMTok>
+              <XMTok role="UNKNOWN" color="#0000FF" font="italic">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -108,9 +108,9 @@ vs. <text color="#E6E6E6">Light</text></p>
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok role="UNKNOWN" font="italic" backgroundcolor="#FF0000">R</XMTok>
+              <XMTok role="UNKNOWN" backgroundcolor="#FF0000" font="italic">R</XMTok>
               <XMTok role="UNKNOWN" backgroundcolor="#00FF00" font="italic">G</XMTok>
-              <XMTok role="UNKNOWN" backgroundcolor="#0000FF" font="italic">B</XMTok>
+              <XMTok role="UNKNOWN" font="italic" backgroundcolor="#0000FF">B</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -123,13 +123,13 @@ vs. <text color="#E6E6E6">Light</text></p>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
               <XMText>
-                <text framecolor="#00FF00" framed="rectangle" backgroundcolor="#0000FF" color="#FF0000">R</text>
+                <text framecolor="#00FF00" framed="rectangle" color="#FF0000" backgroundcolor="#0000FF">R</text>
               </XMText>
               <XMText>
                 <text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">G</text>
               </XMText>
               <XMText>
-                <text framecolor="#FF0000" framed="rectangle" backgroundcolor="#00FF00" color="#0000FF">B</text>
+                <text framecolor="#FF0000" framed="rectangle" color="#0000FF" backgroundcolor="#00FF00">B</text>
               </XMText>
             </XMApp>
           </XMath>
@@ -145,16 +145,16 @@ vs. <text color="#03FF7A">JungleGreen</text>
 vs. <text color="#03FF7A">JungleGreen</text></p>
     </para>
     <para xml:id="S7.p2">
-      <tabular vattach="middle">
+      <tabular vattach="middle" class="ltx_guessed_headers">
         <tbody>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#D9FF4F">GreenYellow</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#D9FF4F">GreenYellow</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FFFF00">Yellow</text>
             </td>
             <td align="left">
@@ -162,13 +162,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FFE629">Goldenrod</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FFE629">Goldenrod</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FFB529">Dandelion</text>
             </td>
             <td align="left">
@@ -176,13 +176,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FFAD7A">Apricot</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FFAD7A">Apricot</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF804D">Peach</text>
             </td>
             <td align="left">
@@ -190,13 +190,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF8A80">Melon</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF8A80">Melon</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF9400">YellowOrange</text>
             </td>
             <td align="left">
@@ -204,13 +204,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF6321">Orange</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF6321">Orange</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF7D00">BurntOrange</text>
             </td>
             <td align="left">
@@ -218,13 +218,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#C20300">Bittersweet</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#C20300">Bittersweet</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF3B21">RedOrange</text>
             </td>
             <td align="left">
@@ -232,13 +232,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#A60000">Mahogany</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#A60000">Mahogany</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#AD0000">Maroon</text>
             </td>
             <td align="left">
@@ -246,13 +246,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#B80000">BrickRed</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#B80000">BrickRed</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF0000">Red</text>
             </td>
             <td align="left">
@@ -260,13 +260,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF0080">OrangeRed</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF0080">OrangeRed</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF00DE">RubineRed</text>
             </td>
             <td align="left">
@@ -274,13 +274,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF0A9C">WildStrawberry</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF0A9C">WildStrawberry</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF789E">Salmon</text>
             </td>
             <td align="left">
@@ -288,13 +288,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF5EFF">CarnationPink</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF5EFF">CarnationPink</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF00FF">Magenta</text>
             </td>
             <td align="left">
@@ -302,13 +302,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF30FF">VioletRed</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#FF30FF">VioletRed</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF2EFF">Rhodamine</text>
             </td>
             <td align="left">
@@ -316,13 +316,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#A314FA">Mulberry</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#A314FA">Mulberry</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#9600A8">RedViolet</text>
             </td>
             <td align="left">
@@ -330,13 +330,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#7303EB">Fuchsia</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#7303EB">Fuchsia</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FF85FF">Lavender</text>
             </td>
             <td align="left">
@@ -344,13 +344,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#E069FF">Thistle</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#E069FF">Thistle</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#AD5CFF">Orchid</text>
             </td>
             <td align="left">
@@ -358,13 +358,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#9933CC">DarkOrchid</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#9933CC">DarkOrchid</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#8C24FF">Purple</text>
             </td>
             <td align="left">
@@ -372,13 +372,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#8000FF">Plum</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#8000FF">Plum</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#361FFF">Violet</text>
             </td>
             <td align="left">
@@ -386,13 +386,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#401AFF">RoyalPurple</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#401AFF">RoyalPurple</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#1A0DF5">BlueViolet</text>
             </td>
             <td align="left">
@@ -400,13 +400,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#6E73FF">Periwinkle</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#6E73FF">Periwinkle</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#616EC4">CadetBlue</text>
             </td>
             <td align="left">
@@ -414,13 +414,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#59DEFF">CornflowerBlue</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#59DEFF">CornflowerBlue</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#007091">MidnightBlue</text>
             </td>
             <td align="left">
@@ -428,13 +428,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#0F75FF">NavyBlue</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#0F75FF">NavyBlue</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#0080FF">RoyalBlue</text>
             </td>
             <td align="left">
@@ -442,13 +442,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#0000FF">Blue</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#0000FF">Blue</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#0FE3FF">Cerulean</text>
             </td>
             <td align="left">
@@ -456,13 +456,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#00FFFF">Cyan</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#00FFFF">Cyan</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#0AFFFF">ProcessBlue</text>
             </td>
             <td align="left">
@@ -470,13 +470,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#61FFE0">SkyBlue</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#61FFE0">SkyBlue</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#26FFCC">Turquoise</text>
             </td>
             <td align="left">
@@ -484,13 +484,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#1FFAA3">TealBlue</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#1FFAA3">TealBlue</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#2EFFB3">Aquamarine</text>
             </td>
             <td align="left">
@@ -498,13 +498,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#26FFAB">BlueGreen</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#26FFAB">BlueGreen</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#00FF80">Emerald</text>
             </td>
             <td align="left">
@@ -512,13 +512,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#03FF7A">JungleGreen</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#03FF7A">JungleGreen</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#4FFF80">SeaGreen</text>
             </td>
             <td align="left">
@@ -526,13 +526,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#00FF00">Green</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#00FF00">Green</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#00E000">ForestGreen</text>
             </td>
             <td align="left">
@@ -540,13 +540,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#00BF29">PineGreen</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#00BF29">PineGreen</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#80FF00">LimeGreen</text>
             </td>
             <td align="left">
@@ -554,13 +554,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#8FFF42">YellowGreen</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#8FFF42">YellowGreen</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#BDFF3D">SpringGreen</text>
             </td>
             <td align="left">
@@ -568,13 +568,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#009900">OliveGreen</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#009900">OliveGreen</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#8C0000">RawSienna</text>
             </td>
             <td align="left">
@@ -582,13 +582,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#4D0000">Sepia</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#4D0000">Sepia</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#660000">Brown</text>
             </td>
             <td align="left">
@@ -596,13 +596,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#DB9470">Tan</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#DB9470">Tan</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#808080">Gray</text>
             </td>
             <td align="left">
@@ -610,13 +610,13 @@ vs. <text color="#03FF7A">JungleGreen</text></p>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#000000">Black</text>
             </td>
             <td align="left" border="r">
               <text backgroundcolor="#000000">Black</text>
             </td>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text color="#FFFFFF">White</text>
             </td>
             <td align="left">

@@ -147,13 +147,13 @@ No blend: <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0p
   <section refnum="7" xml:id="S7">
     <title><tag close=" ">7</tag>Boxes</title>
     <para xml:id="S7.p1">
-      <p><text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
+      <p><text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
     </para>
     <para xml:id="S7.p2">
-      <p>vs. <text color="#E6E6E6" backgroundcolor="#808080">Light within Gray</text></p>
+      <p>vs. <text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
     </para>
     <para xml:id="S7.p3">
-      <p><text framecolor="#0000FF" framed="rectangle" color="#00FF00" backgroundcolor="#FF0000">Green in Red surrounded by Blue</text></p>
+      <p><text framecolor="#0000FF" framed="rectangle" backgroundcolor="#FF0000" color="#00FF00">Green in Red surrounded by Blue</text></p>
     </para>
     <para xml:id="S7.p4">
       <p><text framecolor="#FF00FF" framed="rectangle" backgroundcolor="#00FFFF" color="#FFFF00">Yellow in Cyan surrounded by Magenta</text></p>
@@ -192,13 +192,13 @@ A=100*13 = 1300pt;</p>
   <section refnum="9" xml:id="S9">
     <title><tag close=" ">9</tag>Colored Tables</title>
     <para xml:id="S9.p1">
-      <tabular vattach="middle">
+      <tabular vattach="middle" class="ltx_guessed_headers">
         <thead>
           <tr backgroundcolor="#BFFFBF">
-            <td align="left" border="t" thead="true">
+            <td align="left" border="t" thead="column">
               <text backgroundcolor="#BFFFBF">test</text>
             </td>
-            <td align="left" border="t" thead="true">
+            <td align="left" border="t" thead="column">
               <text backgroundcolor="#BFFFBF">row 1</text>
             </td>
           </tr>
@@ -268,20 +268,20 @@ test</text>
   <section refnum="10" xml:id="S10">
     <title><tag close=" ">10</tag>Color Compararisons</title>
     <para xml:id="S10.p1">
-      <tabular vattach="middle">
+      <tabular vattach="middle" class="ltx_guessed_headers">
         <tbody>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif bold" fontsize="90%">color</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif bold">color</text>
             </td>
             <td align="left">
               <text fontsize="90%" font="sansserif bold">rgb</text>
             </td>
             <td align="left">
-              <text font="sansserif bold" fontsize="90%">cmyk</text>
+              <text fontsize="90%" font="sansserif bold">cmyk</text>
             </td>
             <td align="left">
-              <text fontsize="90%" font="sansserif bold">hsb</text>
+              <text font="sansserif bold" fontsize="90%">hsb</text>
             </td>
             <td align="left">
               <text font="sansserif bold" fontsize="90%">HTML</text>
@@ -291,244 +291,244 @@ test</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">red</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">red</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF0000">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FF0000" font="sansserif">XX</text>
               <text fontsize="90%" font="sansserif"> 1 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF0000">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF0000" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0 1 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF0000">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FF0000">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF0000" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> FF0000</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FF0000" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> FF0000</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#4D4D4D" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.3</text>
+              <text fontsize="90%" font="sansserif"> 0.3</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">green</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FF00" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FF00" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FF00" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FF00" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 1 0 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FF00">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.3333 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FF00" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.3333 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FF00" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FF00" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 00FF00</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#969696" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#969696" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.59</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">blue</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#0000FF" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#0000FF">XX</text>
               <text font="sansserif" fontsize="90%"> 1 1 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.6667 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#0000FF" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.6667 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#0000FF">XX</text>
-              <text font="sansserif" fontsize="90%"> 0000FF</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0000FF</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#1C1C1C" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.11</text>
+              <text fontsize="90%" font="sansserif"> 0.11</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">cyan</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FFFF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 1 1</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">cyan</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FFFF" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 1 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#00FFFF">XX</text>
               <text font="sansserif" fontsize="90%"> 1 0 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FFFF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.5 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FFFF" font="sansserif">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.5 1 1</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FFFF" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 00FFFF</text>
+              <text font="sansserif" fontsize="90%"> 00FFFF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#B3B3B3" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#B3B3B3">XX</text>
               <text fontsize="90%" font="sansserif"> 0.7</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">magenta</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF00FF">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 0 1</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">magenta</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FF00FF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 1 0 0</text>
+              <text font="sansserif" fontsize="90%"> 1 0 1</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF00FF" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.8333 1 1</text>
+              <text fontsize="90%" font="sansserif"> 0 1 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF00FF">XX</text>
-              <text font="sansserif" fontsize="90%"> FF00FF</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF00FF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.8333 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#696969" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FF00FF">XX</text>
+              <text fontsize="90%" font="sansserif"> FF00FF</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#696969" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0.41</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">yellow</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFF00" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFF00" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 1 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFF00" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 1 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFF00" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 1 0</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFF00" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0.1667 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFF00" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFF00" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> FFFF00</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#E3E3E3">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#E3E3E3" font="sansserif">XX</text>
               <text fontsize="90%" font="sansserif"> 0.89</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">orange</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF8000" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 0.5 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF8000">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0.5 1 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF7F00">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.0833 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF8000" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 1 0.5 0</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF8000" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0.5 1 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF7F00" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.0833 1 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FF8000" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> FF8000</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#989898">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.595</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#989898" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.595</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">violet</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">violet</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#800080" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#800080">XX</text>
               <text fontsize="90%" font="sansserif"> 0.5 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#800080">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0.5 0 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#800080">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0.5 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#7F0080" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#7F0080" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.8333 1 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#800080" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 800080</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#800080" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 800080</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#343434" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.205</text>
+              <text fontsize="90%" font="sansserif"> 0.205</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">purple</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">purple</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BF0040" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.75 0 0.25</text>
+              <text fontsize="90%" font="sansserif"> 0.75 0 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BF0040" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BF0040" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0 0.75 0.5 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BF0040" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BF0040" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.9444 1 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#BF0040">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BF0040" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> BF0040</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#404040" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.2525</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#404040">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.2525</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">brown</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#BF8040">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.75 0.5 0.25</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">brown</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BF8040" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.75 0.5 0.25</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BF8040" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0.25 0.5 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BF7F40" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#BF7F40">XX</text>
               <text font="sansserif" fontsize="90%"> 0.0833 0.6667 0.75</text>
             </td>
             <td align="left">
@@ -541,82 +541,82 @@ test</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">pink</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFBFBF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 0.75 0.75</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFBFBF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0.25 0.25 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFBFBF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0.25 1</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">pink</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFBFBF" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> FFBFBF</text>
+              <text fontsize="90%" font="sansserif"> 1 0.75 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#D2D2D2">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.825</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FFBFBF">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0.25 0.25 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFBFBF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0.25 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFBFBF" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> FFBFBF</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#D2D2D2" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.825</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">olive</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">olive</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808000" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 0.5 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#808000" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 0.5 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808000" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 1 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808000" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 1 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#7F8000">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.1667 1 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#7F8000">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.1667 1 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#808000">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808000" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 808000</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#636363" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.39</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#636363">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.39</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">black</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#000000" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#000000" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#000000">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#000000" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0</text>
+              <text fontsize="90%" font="sansserif"> 000000</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 000000</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#000000">XX</text>
-              <text fontsize="90%" font="sansserif"> 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">darkgray</text>
             </td>
             <td align="left">
@@ -624,440 +624,440 @@ test</text>
               <text fontsize="90%" font="sansserif"> 0.25 0.25 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#404040">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0 0.75</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#404040" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#404040" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0.25</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#404040" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0.25</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#404040">XX</text>
+              <text fontsize="90%" font="sansserif"> 404040</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 404040</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#404040">XX</text>
               <text font="sansserif" fontsize="90%"> 0.25</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">gray</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">gray</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.5 0.5 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#808080">XX</text>
               <text fontsize="90%" font="sansserif"> 0 0 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#808080">XX</text>
               <text fontsize="90%" font="sansserif"> 0 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 808080</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#808080" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 808080</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#808080">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.5</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">lightgray</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BFBFBF" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.75 0.75 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#BFBFBF">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0 0.25</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BFBFBF" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#BFBFBF">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BFBFBF" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> BFBFBF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BFBFBF" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BFBFBF" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0.75</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">white</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FFFFFF">XX</text>
-              <text fontsize="90%" font="sansserif"> 1 1 1</text>
-            </td>
-            <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFFFF" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 1</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> FFFFFF</text>
+              <text font="sansserif" fontsize="90%"> 1 1 1</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFFFF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 1</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFFFF" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> FFFFFF</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 1</text>
             </td>
           </tr>
           <tr>
-            <td align="left" border="t" thead="true">
-              <text font="sansserif" fontsize="90%">-red</text>
+            <td align="left" border="t" thead="row">
+              <text fontsize="90%" font="sansserif">-red</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FFFF">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#00FFFF">XX</text>
               <text fontsize="90%" font="sansserif"> 0 1 1</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FFFF">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FFFF" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 1 0 0 0</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FFFF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FFFF" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 1 1</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#00FFFF" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#00FFFF">XX</text>
               <text fontsize="90%" font="sansserif"> 00FFFF</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#B3B3B3" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#B3B3B3" font="sansserif">XX</text>
               <text fontsize="90%" font="sansserif"> 0.7</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">-green</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">-green</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF00FF">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 0 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF00FF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 1 0 1</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FF00FF" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0 1 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF00FF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF00FF" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.8333 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF00FF">XX</text>
-              <text fontsize="90%" font="sansserif"> FF00FF</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FF00FF">XX</text>
+              <text font="sansserif" fontsize="90%"> FF00FF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#696969" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#696969" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.41</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">-blue</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFF00" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 1 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFF00" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 1 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FFFF00">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.1667 1 1</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">-blue</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFF00" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 1 1 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFF00" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 1 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FFFF00">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.1667 1 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFF00" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> FFFF00</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#E3E3E3" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#E3E3E3" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0.89</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">-cyan</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FF0000">XX</text>
-              <text fontsize="90%" font="sansserif"> 1 0 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF0000" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 1 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF0000" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF0000" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0 1 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FF0000" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FF0000">XX</text>
               <text font="sansserif" fontsize="90%"> 0 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FF0000" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FF0000">XX</text>
               <text fontsize="90%" font="sansserif"> FF0000</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#4D4D4D" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.3</text>
+              <text fontsize="90%" font="sansserif"> 0.3</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">-magenta</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FF00">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#00FF00">XX</text>
               <text fontsize="90%" font="sansserif"> 0 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FF00" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#00FF00" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 1 0 1 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FF00">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.3333 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#00FF00" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.3333 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#00FF00">XX</text>
-              <text fontsize="90%" font="sansserif"> 00FF00</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#00FF00">XX</text>
+              <text font="sansserif" fontsize="90%"> 00FF00</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#969696" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#969696">XX</text>
               <text fontsize="90%" font="sansserif"> 0.59</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-yellow</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-yellow</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#0000FF" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#0000FF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 1 1 0 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#0000FF">XX</text>
+              <text fontsize="90%" font="sansserif"> 1 1 0 0</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#0000FF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.6667 1 1</text>
+              <text font="sansserif" fontsize="90%"> 0.6667 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#0000FF" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0000FF" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0000FF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#1C1C1C" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#1C1C1C">XX</text>
               <text font="sansserif" fontsize="90%"> 0.11</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-orange</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-orange</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#0080FF">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0.5 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#0080FF">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0.5 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#0080FF" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 1 0.5 0 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#0080FF">XX</text>
+              <text font="sansserif" fontsize="90%"> 1 0.5 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0080FF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#0080FF">XX</text>
               <text font="sansserif" fontsize="90%"> 0.5833 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#0080FF">XX</text>
-              <text fontsize="90%" font="sansserif"> 0080FF</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#0080FF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0080FF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#676767" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.405</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#676767">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.405</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-violet</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-violet</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#80FF80" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 1 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#80FF80">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 1 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#80FF80" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#80FF80" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.5 0 0.5 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#80FF80" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.3333 0.5 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#80FF80" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.3333 0.5 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#80FF80" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#80FF80">XX</text>
               <text font="sansserif" fontsize="90%"> 80FF80</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#CBCBCB" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#CBCBCB">XX</text>
               <text fontsize="90%" font="sansserif"> 0.795</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">-purple</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#40FFBF">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.25 1 0.75</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#40FFBF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.75 0 0.25 0</text>
-            </td>
-            <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#40FFBF" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.25 1 0.75</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#40FFBF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.75 0 0.25 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#40FFBF" font="sansserif" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.4444 0.75 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#40FFBF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 40FFBF</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#40FFBF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 40FFBF</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BFBFBF" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.7475</text>
+              <text fontsize="90%" font="sansserif"> 0.7475</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">-brown</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">-brown</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#4080BF">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.25 0.5 0.75</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#4080BF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.25 0.5 0.75</text>
+              <text font="sansserif" fontsize="90%"> 0.5 0.25 0 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#4080BF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 0.25 0 0.25</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#4080BF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.5833 0.6667 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#4080BF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.5833 0.6667 0.75</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#4080BF" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 4080BF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#4080BF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 4080BF</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#737373" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#737373">XX</text>
               <text fontsize="90%" font="sansserif"> 0.4525</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text fontsize="90%" font="sansserif">-pink</text>
+            <td align="left" thead="row">
+              <text font="sansserif" fontsize="90%">-pink</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#004040">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0.25 0.25</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#004040" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0.25 0.25</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#004040" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.25 0 0 0.75</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#004040">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 1 0.25</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#004040" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.25 0 0 0.75</text>
+              <text fontsize="90%" font="sansserif"> 004040</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#004040">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 1 0.25</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#004040" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 004040</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#2D2D2D" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#2D2D2D" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0.175</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-olive</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#8080FF" fontsize="90%">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.5 0.5 1</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#8080FF">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 0.5 0 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#8080FF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.6667 0.5 1</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-olive</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#8080FF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 8080FF</text>
+              <text font="sansserif" fontsize="90%"> 0.5 0.5 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#8E8E8E" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.555</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#8080FF" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 0.5 0 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#8080FF" font="sansserif">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.6667 0.5 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#8080FF">XX</text>
+              <text font="sansserif" fontsize="90%"> 8080FF</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#8E8E8E" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.555</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">-black</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FFFFFF">XX</text>
-              <text fontsize="90%" font="sansserif"> 1 1 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 1 1 1</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#FFFFFF">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFFFF" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FFFFFF" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 1</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#FFFFFF" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> FFFFFF</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FFFFFF">XX</text>
-              <text fontsize="90%" font="sansserif"> 1</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FFFFFF" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 1</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text font="sansserif" fontsize="90%">-darkgray</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.75 0.75 0.75</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#BFBFBF">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.75 0.75 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0 0.25</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#BFBFBF" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0 0.25</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0.75</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#BFBFBF">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0.75</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#BFBFBF" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#BFBFBF" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> BFBFBF</text>
             </td>
             <td align="left">
@@ -1066,82 +1066,82 @@ test</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">-gray</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#808080" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.5 0.5 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.5 0.5 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#808080" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0 0 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0.5</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#808080" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#808080" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 808080</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#808080">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.5</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#808080" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.5</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">-lightgray</text>
             </td>
             <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.25 0.25 0.25</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0 0.75</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#404040" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0.25</text>
+            </td>
+            <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#404040" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.25 0.25 0.25</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0 0.75</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0.25</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#404040" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 404040</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#404040" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#404040" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0.25</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-white</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-white</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#000000">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0 0</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#000000" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0 0 0 1</text>
-            </td>
-            <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0 0 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#000000">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#000000" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0 0 0 1</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#000000">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0 0</text>
+            </td>
+            <td align="left">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#000000" font="sansserif">XX</text>
               <text fontsize="90%" font="sansserif"> 000000</text>
             </td>
             <td align="left">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#000000" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0</text>
+              <text font="sansserif" fontsize="90%"> 0</text>
             </td>
           </tr>
           <tr>
-            <td align="left" border="t" thead="true">
+            <td align="left" border="t" thead="row">
               <text font="sansserif" fontsize="90%">JungleGreen</text>
             </td>
             <td align="left" border="t">
@@ -1149,36 +1149,36 @@ test</text>
               <text font="sansserif" fontsize="90%"> 0.01 1 0.48</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#03FF7A" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.99 0 0.52 0</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#03FF7A" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.99 0 0.52 0</text>
+            </td>
+            <td align="left" border="t">
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#03FF7A">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.4125 0.99 1</text>
             </td>
             <td align="left" border="t">
               <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#03FF7A" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.4125 0.99 1</text>
+              <text font="sansserif" fontsize="90%"> 03FF7A</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#03FF7A" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 03FF7A</text>
-            </td>
-            <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#A5A5A5">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#A5A5A5" fontsize="90%">XX</text>
               <text font="sansserif" fontsize="90%"> 0.6458</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
+            <td align="left" thead="row">
               <text fontsize="90%" font="sansserif">DarkOrchid</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#9933CC">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.6 0.2 0.8</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#9933CC" font="sansserif">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.6 0.2 0.8</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#9933CC" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#9933CC" font="sansserif" fontsize="90%">XX</text>
               <text fontsize="90%" font="sansserif"> 0.4 0.8 0.2 0</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#9933CC" fontsize="90%">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#9933CC" font="sansserif">XX</text>
               <text font="sansserif" fontsize="90%"> 0.7778 0.75 0.8</text>
             </td>
             <td align="left">
@@ -1186,57 +1186,57 @@ test</text>
               <text fontsize="90%" font="sansserif"> 9933CC</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#626262" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.386</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#626262" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.386</text>
             </td>
           </tr>
           <tr>
-            <td align="left" border="t" thead="true">
+            <td align="left" border="t" thead="row">
               <text fontsize="90%" font="sansserif">-JungleGreen</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" fontsize="90%" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.99 0 0.52</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.99 0 0.52</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#FC0085" font="sansserif">XX</text>
-              <text font="sansserif" fontsize="90%"> 0 0.99 0.47 0.01</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0 0.99 0.47 0.01</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#FC0085">XX</text>
-              <text font="sansserif" fontsize="90%"> 0.9125 1 0.99</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" font="sansserif" fontsize="90%">XX</text>
+              <text fontsize="90%" font="sansserif"> 0.9125 1 0.99</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> FC0085</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#FC0085" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> FC0085</text>
             </td>
             <td align="left" border="t">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#5A5A5A" fontsize="90%" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#5A5A5A">XX</text>
               <text font="sansserif" fontsize="90%"> 0.3542</text>
             </td>
           </tr>
           <tr>
-            <td align="left" thead="true">
-              <text font="sansserif" fontsize="90%">-DarkOrchid</text>
+            <td align="left" thead="row">
+              <text fontsize="90%" font="sansserif">-DarkOrchid</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" fontsize="90%" backgroundcolor="#66CC33">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#66CC33">XX</text>
               <text font="sansserif" fontsize="90%"> 0.4 0.8 0.2</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" font="sansserif" backgroundcolor="#66CC33" fontsize="90%">XX</text>
-              <text fontsize="90%" font="sansserif"> 0.4 0 0.6 0.2</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#66CC33" font="sansserif">XX</text>
+              <text font="sansserif" fontsize="90%"> 0.4 0 0.6 0.2</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#66CC33" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#66CC33">XX</text>
               <text font="sansserif" fontsize="90%"> 0.2778 0.75 0.8</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#66CC33" fontsize="90%" font="sansserif">XX</text>
-              <text fontsize="90%" font="sansserif"> 66CC33</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" backgroundcolor="#66CC33" font="sansserif" fontsize="90%">XX</text>
+              <text font="sansserif" fontsize="90%"> 66CC33</text>
             </td>
             <td align="left">
-              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" backgroundcolor="#9D9D9D" font="sansserif">XX</text>
+              <text framecolor="black" framed="rectangle" class="ltx_phantom" fontsize="90%" font="sansserif" backgroundcolor="#9D9D9D">XX</text>
               <text fontsize="90%" font="sansserif"> 0.614</text>
             </td>
           </tr>

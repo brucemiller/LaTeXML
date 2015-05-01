@@ -5,11 +5,11 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular vattach="middle">
+    <tabular vattach="middle" class="ltx_guessed_headers">
       <thead>
         <tr>
-          <td align="left" thead="true">?</td>
-          <td align="left" border="r" thead="true">
+          <td align="left" thead="column row">?</td>
+          <td align="left" border="r" thead="column">
             <Math mode="inline" xml:id="p1.m1" tex="\mathaccent 23{u}_{s}" text="(˚@(u)) _ s">
               <XMath>
                 <XMApp>
@@ -23,12 +23,12 @@
               </XMath>
             </Math>
           </td>
-          <td thead="true"/>
+          <td thead="column"/>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m2" tex="\acute{a}" text="acute@(a)">
               <XMath>
                 <XMApp>
@@ -65,7 +65,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m5" tex="\bar{a}" text="bar@(a)">
               <XMath>
                 <XMApp>
@@ -102,7 +102,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m8" tex="\breve{a}" text="breve@(a)">
               <XMath>
                 <XMApp>
@@ -139,7 +139,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m11" tex="\check{a}" text="check@(a)">
               <XMath>
                 <XMApp>
@@ -176,7 +176,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m14" tex="\ddot{a}" text="ddot@(a)">
               <XMath>
                 <XMApp>
@@ -213,7 +213,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m17" tex="\dot{a}" text="dot@(a)">
               <XMath>
                 <XMApp>
@@ -250,7 +250,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m20" tex="\grave{a}" text="grave@(a)">
               <XMath>
                 <XMApp>
@@ -287,7 +287,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m23" tex="\hat{a}" text="hat@(a)">
               <XMath>
                 <XMApp>
@@ -324,7 +324,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m26" tex="\tilde{a}" text="tilde@(a)">
               <XMath>
                 <XMApp>
@@ -361,7 +361,7 @@
           </td>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m29" tex="\vec{a}" text="vec@(a)">
               <XMath>
                 <XMApp>
@@ -398,7 +398,7 @@
           </td>
         </tr>
         <tr>
-          <td thead="true"/>
+          <td thead="row"/>
           <td align="left" border="r">
             <Math mode="inline" xml:id="p1.m32" tex="\mathaccent 28695{a}" text="˚@(a)">
               <XMath>
@@ -412,7 +412,7 @@
           <td/>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m33" tex="\widetilde{aaa}" text="widetilde@(a * a * a)">
               <XMath>
                 <XMApp>
@@ -445,7 +445,7 @@
           <td/>
         </tr>
         <tr>
-          <td align="left" thead="true">
+          <td align="left" thead="row">
             <Math mode="inline" xml:id="p1.m35" tex="\widehat{aaa}" text="widehat@(a * a * a)">
               <XMath>
                 <XMApp>
