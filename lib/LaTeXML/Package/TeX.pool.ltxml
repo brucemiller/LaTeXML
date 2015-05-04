@@ -1640,6 +1640,7 @@ sub insertBlock {
   # but those seem a bad idea, because we may want a vbox inside a p, or....]
   my $newblock = undef;
   my $unwrap   = 0;
+  my $is_inline = delete $blockattr{inline};
   map { ($blockattr{$_} || delete $blockattr{$_}) } keys %blockattr;
   my $hasattr = scalar(keys %blockattr);
   if ($hasattr || !$document->canContainSomehow($context, 'ltx:p') || $document->canContain($context, '#PCDATA')) {
@@ -1670,7 +1671,10 @@ sub insertBlock {
       push(@newnodes, shift(@nodes)); } }
 
   # Close everything back up to the originally open element (but only if still open!)
-  $document->closeToNode($context, 1);
+  if (!$is_inline) {
+    $document->closeToNode($context, 1); }
+  else {
+    $document->closeToNode($newblock->parentNode, 1); }
 
   # Check if the ltx:inline-block container is really needed.
   if ($newblock) {
