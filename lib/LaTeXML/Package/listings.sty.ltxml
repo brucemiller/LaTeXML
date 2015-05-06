@@ -1296,8 +1296,8 @@ sub lstLoadConfiguration {
   AssignValue(LST_LANGUAGE_FILES => [lstSplit(Digest(T_CS('\lstlanguagefiles')))], 'global');
   # Now, if you want to read in all definitions immediately, you could do this (Daemon?)
   # otherwise, they'll be read in whenever missing languages are used.
-##  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
-##    InputDefinitions($file,noerror=>1); }
+  while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
+    InputDefinitions($file,noerror=>1); }
   return; }
 
 lstLoadConfiguration();
