@@ -34,6 +34,13 @@ DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
 DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
 DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });
 
+DeclareOption('safeio',sub{
+  foreach my $macro(qw(input @@input @iinput include InputIfFileExists openin verbatiminput)) {
+    DefMacroI("\\$macro", undef, '\relax', locked => 1);
+  }
+  return;
+});
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty
