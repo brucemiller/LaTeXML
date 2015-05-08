@@ -3397,6 +3397,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     insertBlock($document, $props{body},
       width   => $width,
       vattach => $vattach,
+      inline  => 1,
       class   => 'ltx_minipage');
     return; },
   mode => 'text',
