@@ -3044,9 +3044,7 @@ DefConstructor('\@indexseealso{}',
     key => sub { CleanIndexKey($_[1]); } });
 
 DefConstructor('\glossary{}',
-  "<ltx:glossarymark>"
-    . "<ltx:glossaryphrase key='#key'>#1</ltx:glossaryphrase>"
-    . "</ltx:glossarymark>",
+  "<ltx:glossaryphrase role='glossary' key='#key'>#1</ltx:glossaryphrase>",
   properties => { key => sub { CleanIndexKey($_[1]); } },
   sizer => 0);
 
