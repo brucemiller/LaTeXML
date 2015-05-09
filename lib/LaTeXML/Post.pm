@@ -441,7 +441,7 @@ sub convertXMTextContent {
   foreach my $node (@nodes) {
     if ($node->nodeType == XML_TEXT_NODE) {
       my $string = $node->textContent;
-      $string =~ s/^\s/$NBSP/; $string =~ s/\s$/$NBSP/;    # should we???
+      $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/;    # should we???
       push(@result, $string); }
     else {
       my $tag = $doc->getQName($node);
@@ -1080,6 +1080,24 @@ sub cloneNode {
 sub cloneNodes {
   my ($self, @nodes) = @_;
   return map { $self->cloneNode($_) } @nodes; }
+
+sub addSSValues {
+  my ($self, $node, $key, $values) = @_;
+  $values = $values->toAttribute if ref $values;
+  if ((defined $values) && ($values ne '')) {    # Skip if `empty'; but 0 is OK!
+    my @values = split(/\s/, $values);
+    if (my $oldvalues = $node->getAttribute($key)) {    # previous values?
+      my @old = split(/\s/, $oldvalues);
+      foreach my $new (@values) {
+        push(@old, $new) unless grep { $_ eq $new } @old; }
+      $node->setAttribute($key => join(' ', sort @old)); }
+    else {
+      $node->setAttribute($key => join(' ', sort @values)); } }
+  return; }
+
+sub addClass {
+  my ($self, $node, $class) = @_;
+  return $self->addSSValues($node, class => $class); }
 
 #======================================================================
 # DUPLICATED from Core::Document...(see discussion there)
