@@ -47,13 +47,13 @@ sub new {
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
   $self->registerHandler('ltx:note'          => \&note_handler);
 
-  $self->registerHandler('ltx:bibitem'       => \&bibitem_handler);
-  $self->registerHandler('ltx:bibentry'      => \&bibentry_handler);
-  $self->registerHandler('ltx:indexmark'     => \&indexmark_handler);
-  $self->registerHandler('ltx:glossarymark'  => \&glossarymark_handler);
-  $self->registerHandler('ltx:glossaryentry' => \&glossarymark_handler);
-  $self->registerHandler('ltx:ref'           => \&ref_handler);
-  $self->registerHandler('ltx:bibref'        => \&bibref_handler);
+  $self->registerHandler('ltx:bibitem'        => \&bibitem_handler);
+  $self->registerHandler('ltx:bibentry'       => \&bibentry_handler);
+  $self->registerHandler('ltx:indexmark'      => \&indexmark_handler);
+  $self->registerHandler('ltx:glossaryphrase' => \&glossaryphrase_handler);
+  $self->registerHandler('ltx:glossaryentry'  => \&glossaryentry_handler);
+  $self->registerHandler('ltx:ref'            => \&ref_handler);
+  $self->registerHandler('ltx:bibref'         => \&bibref_handler);
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
 
@@ -155,6 +155,32 @@ sub cleanNode {
   map { $_->parentNode->removeChild($_) } $doc->findnodes('.//ltx:indexmark', $cleaned);
   return $cleaned; }
 
+# Assumes $node has been cloned, if needed.
+our $TOCTEXT_MAX_LENGTH = 6;
+
+sub truncateNode {
+  my ($self, $doc, $node) = @_;
+  return $node unless $node;
+  my @children = $node->childNodes;
+  my $n        = $TOCTEXT_MAX_LENGTH;
+  my $trunc    = 0;
+  while ($n && @children) {
+    my $c = shift(@children);
+    if ($c->nodeType == XML_TEXT_NODE) {
+      my $s = $c->textContent;
+      my @w = split(/\s/, $s);
+      if (scalar(@w) > $n) {
+        $c->setData(join(' ', @w[0 .. $n]));
+        $trunc = 1; $n = 0; }
+      else {
+        $n--; } }
+    else {
+      $n--; } }
+  if ($trunc || @children) {
+    map { $node->removeChild($_) } @children;    # Remove any remaining children.
+    $node->appendText("\x{2026}"); }
+  return $node; }
+
 sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
@@ -203,8 +229,10 @@ sub captioned_handler {
       rrefnum  => orNull($node->getAttribute('rrefnum')),
       caption  => orNull($self->cleanNode($doc,
           $doc->findnode('descendant::ltx:caption', $node))),
-      toccaption => orNull($self->cleanNode($doc,
-          $doc->findnode('descendant::ltx:toccaption', $node))));
+###      toccaption => orNull($self->cleanNode($doc,
+###          $doc->findnode('descendant::ltx:toccaption', $node))));
+      toccaption => orNull($self->truncateNode($doc, $self->cleanNode($doc,
+            $doc->findnode('descendant::ltx:toccaption', $node)))));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -323,26 +351,42 @@ sub indexmark_handler {
   return; }
 
 # This handles glossarymark and glossaryentry
-sub glossarymark_handler {
+sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id = $node->getAttribute('xml:id');
-  my $role = $node->getAttribute('role') || '';
+  my $id   = $node->getAttribute('xml:id');
+  my $role = $node->getAttribute('role') || 'glossary';
+  my $key  = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
-  my $phrase     = $doc->findnode('ltx:glossaryphrase',     $node);
-  my $expansion  = $doc->findnode('ltx:glossaryexpansion',  $node);
+  my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
   my $definition = $doc->findnode('ltx:glossarydefinition', $node);
-  if (my $glosskey = $phrase->getAttribute('key')) {
-    my $key = join(':', 'GLOSSARY', $role, $glosskey);
-    my $entry = $$self{db}->lookup($key)
-      || $$self{db}->register($key, phrase => orNull($phrase), expansion => orNull($expansion), definition => orNull($definition));
-    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
+  my $gkey = join(':', 'GLOSSARY', $role, $key);
+  my $entry = $$self{db}->lookup($gkey)
+    || $$self{db}->register($gkey, definition => orNull($definition));
+  $entry->setValues(map { ('phrase:' . ($_->getAttribute('show') || 'label') => $_) } @phrases);
+  $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
+
   if ($id) {
+    $entry->setValues(id => $id);
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
       fragid   => orNull($self->inPageID($doc, $id))); }
+  # Scan content, since could contain other interesting stuff...
+  $self->scanChildren($doc, $node, $id || $parent_id);
+  return; }
+
+sub glossaryphrase_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id = $node->getAttribute('xml:id');
+  # Only register if key given; otherwise assumed contained within glossaryentry
+  if (my $key = $node->getAttribute('key')) {
+    my $role = $node->getAttribute('role') || 'glossary';
+    my $show = $node->getAttribute('show') || '';
+    my $gkey = join(':', 'GLOSSARY', $role, $key);
+    my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
+    $entry->setValues('phrase:' . $show => $node); }
   # Scan content, since could contain other interesting stuff...
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
