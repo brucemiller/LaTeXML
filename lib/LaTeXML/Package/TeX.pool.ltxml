@@ -1621,7 +1621,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     return; });
 
 # This attempts to be a generalize vbox construction;
-# It tries to figure out whether an ltx:inline-block is needed,
+# It tries to figure out whether an ltx:inline-block or ltx:para is needed,
 # and attempts to figure out whether sequences of the inserted content
 # need to be explicitly wrapped in some kind of block element (presumably ltx:p).
 # It returns the inserted inner blocks,
@@ -1669,9 +1669,13 @@ sub insertBlock {
     else {
       push(@newnodes, shift(@nodes)); } }
 
-  # Close everything back up to the originally open element (but only if still open!)
-  $document->closeToNode($context, 1);
-
+  # If we've inserted a wrapper element, close all open elements up to it's parent
+  # It may have auto-opened some element to contain it, but leave that open for following material
+  # Otherwise, close everything back up to the originally open element (but only if still open!)
+  if ($newblock) {
+    $document->closeToNode($newblock->parentNode, 1); }
+  else {
+    $document->closeToNode($context, 1); }
   # Check if the ltx:inline-block container is really needed.
   if ($newblock) {
     my @rows = $newblock->childNodes;
