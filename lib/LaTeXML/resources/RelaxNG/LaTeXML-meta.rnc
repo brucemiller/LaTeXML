@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## Meta elements are generally hidden;
 ## they can appear in both inline and block contexts.
-Meta.class   |= note | indexmark | glossarymark | rdf | ERROR | resource | navigation
+Meta.class   |= note | indexmark | glossaryphrase | rdf | ERROR | resource | navigation
 
 #======================================================================
 
@@ -95,25 +95,6 @@ indexsee_attributes =
 ## Content model for \elementref{indexsee}.
 indexsee_model = Inline.model
 
-#======================================================================
-glossarymark =
-## Metadata to record an glossary position. The content is 
-## a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.
-element glossarymark { glossarymark_attributes, glossarymark_model }
-
-## Attributes for \elementref{glossarymark}.
-glossarymark_attributes =
-  Common.attributes,
-
-  ## The kind of \elementref{glossary} this mark belongs to.
-  attribute role { text }?,
-
-  ## NOTE: describe this.
-  attribute style { text }?
-
-## Content model for \elementref{glossarymark}.
-glossarymark_model = glossaryphrase, glossarydefinition?
-
 #----------------------------------------------------------------------
 
 glossaryphrase =
@@ -123,26 +104,17 @@ element glossaryphrase { glossaryphrase_attributes, glossaryphrase_model }
 ## Attributes for \elementref{glossaryphrase}.
 glossaryphrase_attributes =
   Common.attributes,
-
+  IDREF.attributes,
+  
+  ## The kind of \elementref{glossary} this mark belongs to.
+  attribute role { text }?,
   ## a flattened form of the phrase for generating an \attr{ID}.
-  attribute key { text }?
+  attribute key { text }?,
+  ## a keyword naming the format of this phrase (to match \attr{show} in \elementref{glossaryref}).
+  attribute show { text }?
 
 ## Content model for \elementref{glossaryphrase}.
 glossaryphrase_model = Inline.model
-
-#----------------------------------------------------------------------
-
-glossaryexpansion =
-## The expansion of the \elementref{glossaryphrase} within an
-## \elementref{glossarymark} or \elementref{glossaryentry},
-## particularly when used for acronyms.
-element glossaryexpansion { glossaryexpansion_attributes, glossaryexpansion_model }
-
-## Attributes for \elementref{glossaryexpansion}.
-glossaryexpansion_attributes =  Common.attributes
-
-## Content model for \elementref{glossaryexpansion}.
-glossaryexpansion_model = Inline.model
 
 #----------------------------------------------------------------------
 

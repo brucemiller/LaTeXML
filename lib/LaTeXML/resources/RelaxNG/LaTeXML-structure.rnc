@@ -304,7 +304,7 @@ glossary_model = SectionalFrontMatter.class*, glossary.body.class*
 
 glossarylist =
 ## A glossary list typically generated during postprocessing
-## from the collection of \elementref{glossarymark} in the document
+## from the collection of \elementref{glossaryphrase}'s in the document
 ## (or document collection).
 element glossarylist { glossarylist_attributes, glossarylist_model }
 
@@ -312,6 +312,8 @@ element glossarylist { glossarylist_attributes, glossarylist_model }
 glossarylist_attributes = Common.attributes, ID.attributes
 
 ## Content model for \elementref{glossarylist}.
+## The model allows loose \elementref{glossaryphrase}'s for data definitions,
+## but they are not displayed as part of the list.
 glossarylist_model = glossaryentry*
 
 #----------------------------------------------------------------------
@@ -325,10 +327,12 @@ element glossaryentry { glossaryentry_attributes, glossaryentry_model }
 ## Attributes for \elementref{glossaryentry}.
 glossaryentry_attributes = Common.attributes, ID.attributes,
   ## The kind of glossary
-  attribute role { text }?
+  attribute role { text }?,
+  ## a flattened form of the phrase for generating an \attr{ID}.
+  attribute key { text }?
 
 ## Content model for \elementref{glossaryentry}.
-glossaryentry_model = glossaryphrase, glossaryexpansion?, glossarydefinition*, indexrefs?
+glossaryentry_model = glossaryphrase, glossarydefinition*, indexrefs?
 
 #======================================================================
 
