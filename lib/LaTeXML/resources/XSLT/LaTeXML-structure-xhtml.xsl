@@ -690,7 +690,7 @@
           <xsl:apply-templates select="." mode="begin">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
-          <xsl:apply-templates>
+          <xsl:apply-templates select="ltx:glossaryentry">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
@@ -723,7 +723,7 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="ltx:glossaryphrase">
+      <xsl:apply-templates select="ltx:glossaryphrase[@show='label']">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>

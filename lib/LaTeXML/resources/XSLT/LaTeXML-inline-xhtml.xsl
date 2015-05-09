@@ -144,10 +144,30 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:template match="ltx:glossaryref[@href] | ltx:acronym[@href]">
+    <xsl:param name="context"/>
+    <xsl:element name="a" namespace="{$html_ns}">
+      <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+      <xsl:apply-templates select="." mode="inner">
+        <xsl:with-param name="context" select="context"/>
+      </xsl:apply-templates>
+    </xsl:element>
+  </xsl:template>
+
   <xsl:template match="ltx:glossaryref | ltx:acronym">
     <xsl:param name="context"/>
-    <xsl:element name="abbr" namespace="{$html_ns}">
+    <xsl:apply-templates select="." mode="inner">
+      <xsl:with-param name="context" select="context"/>
+    </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template match="ltx:glossaryref | ltx:acronym" mode="inner">
+    <xsl:param name="context"/>
+    <xsl:element name="{f:if(contains(@show,'short'),'abbr','span')}" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:if test="@href">
+        <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
+      </xsl:if>
       <xsl:attribute name="title"><xsl:value-of select="@title"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
