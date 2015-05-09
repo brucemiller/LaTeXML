@@ -1,0 +1,28 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  slashed                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Unlikely we can do anything with the spacing fine-tuning,
+# so we'll just ignore this...
+DefMacro('\declareslashed{}{}{}{}{}', '');
+DefMacro('\sla@{}{}{}{}{}',           '\lx@slashed{#5}');
+# Let the \not handler in TeX.pool take care of this....
+DefMacro('\lx@slashed{}', '\not{#1}');
+Let('\slashed', '\lx@slashed');
+
+#======================================================================
+1;
