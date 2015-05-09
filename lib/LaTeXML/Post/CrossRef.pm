@@ -323,6 +323,7 @@ sub fill_in_refs {
             $doc->addNodes($ref, $label);    # Just to reassure (?) readers.
             $ref->setAttribute(broken => 1); }
         } } }
+
     if ($id) {
       $n++;
       if (!$ref->getAttribute('href')) {
@@ -697,30 +698,44 @@ sub fillInGlossaryRef {
       my $title = $entry->getValue('expansion');
       if (!$ref->getAttribute('title') && $title) {
         $ref->setAttribute(title => $title->textContent); }
+      if (my $id = $entry->getValue('id')) {
+        $ref->setAttribute(idref => $id); }
       if (!$ref->textContent && !element_nodes($ref)) {
-        $doc->addNodes($ref, $self->generateGlossaryRefTitle($doc, $entry, $show)); }
-    } }
+        my @stuff = $self->generateGlossaryRefTitle($doc, $entry, $show);
+        if (@stuff) {
+          $doc->addNodes($ref, @stuff); }
+        else {
+          $self->note_missing('warn', "Glossary ($role) contents ($show) for key", $key);
+          $doc->addNodes($ref, $key);
+          $doc->addClass($ref, 'ltx_missing'); } } }
+    else {
+      $self->note_missing('warn', "Glossary ($role) Entry for key", $key); }
+    if (!$ref->textContent && !element_nodes($ref)) {
+      $doc->addNodes($ref, $key);
+      $doc->addClass($ref, 'ltx_missing'); } }
   NoteProgressDetailed(" [Filled in $n glossaryrefs]");
   return; }
 
 sub generateGlossaryRefTitle {
   my ($self, $doc, $entry, $show) = @_;
-  my @stuff = ();
-  my $OK    = 0;
-  while ($show) {
-    if ($show =~ s/^short//) {
-      if (my $phrase = $entry->getValue('phrase')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_glossary_short' },
-            $self->prepRefText($doc, $phrase)]); } }
-    elsif ($show =~ s/^long//) {
-      if (my $phrase = $entry->getValue('expansion')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_glossary_long' },
-            $self->prepRefText($doc, $phrase)]); } }
-    elsif ($show =~ s/^(.)//) {
-      push(@stuff, $1); } }
-  return ($OK ? @stuff : ()); }
+  my $phrases = $entry->getValue('phrases');
+  my @stuff   = ();
+  if (my $phrase = $entry->getValue('phrase:' . $show)) {
+    push(@stuff, ['ltx:text', { class => 'ltx_glossary_' . $show },
+        $self->prepRefText($doc, $phrase)]); }
+  elsif ($show =~ /^(\w+)-plural$/) {
+    my $sh = $1;
+    if (my $phrase = $entry->getValue('phrase:' . $sh)) {
+      push(@stuff, ['ltx:text', { class => 'ltx_glossary_' . $show },
+          $self->prepRefText($doc, $phrase), 's']); } }
+  elsif ($show =~ /^(\w+)-indefinite$/) {
+    my $sh = $1;
+    if (my $phrase = $entry->getValue('phrase:' . $sh)) {
+      my $s = $phrase->textContent;
+      my $art = ($s =~ /^[aeiou]/i ? 'an ' : 'a ');
+      push(@stuff, ['ltx:text', { class => 'ltx_glossary_' . $show },
+          $art, $self->prepRefText($doc, $phrase)]); } }
+  return @stuff; }
 
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
