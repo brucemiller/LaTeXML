@@ -803,7 +803,9 @@ sub getInsertionCandidates {
   $first = $first->parentNode if $first && $first->getType == XML_TEXT_NODE;
   my $isCapture = $first && ($first->localname || '') eq '_Capture_';
   push(@nodes, $first) if $first && $first->getType != XML_DOCUMENT_NODE && !$isCapture;
-  $node = $node->lastChild if $node && $node->hasChildNodes;
+  # This includes the CHILDREN of the current node.
+  # Is this correct? perhaps for attribute, less obviously correct for an element
+###  $node = $node->lastChild if $node && $node->hasChildNodes;
   while ($node && ($node->nodeType != XML_DOCUMENT_NODE)) {
     my $n = $node;
     while ($n) {
