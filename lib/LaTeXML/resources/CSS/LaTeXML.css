@@ -224,8 +224,8 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 /*======================================================================
  Borders and such */
-.ltx_tabular { display:table; border-collapse:collapse; }
-span.ltx_tabular { display:inline-table; border-collapse:collapse; }
+.ltx_tabular { display:inline-table; border-collapse:collapse; }
+.ltx_tabular.ltx_centering { display:table; }
 .ltx_thead,
 .ltx_tfoot,
 .ltx_tbody   { display:table-row-group; }
@@ -269,7 +269,7 @@ span.ltx_tabular { display:inline-table; border-collapse:collapse; }
 
 .ltx_ERROR        { color:red; }
 .ltx_rdf          { display:none; }
-
+.ltx_missing      { color:red;} 
 /*======================================================================
  SVG (pgf/tikz ?) basics */
 
@@ -313,7 +313,6 @@ cite                 { font-style: normal; }
 /*.ltx_inline-block.ltx_centering,*/
 /* Hmm.... is this right in general? */
 .ltx_centering  { display:block; margin:auto; text-align:center; }
-table.ltx_centering { display:table; } /*!!! */
 
 /* .ltx_phantom handled in xslt */
 
