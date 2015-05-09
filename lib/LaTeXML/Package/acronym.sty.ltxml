@@ -15,48 +15,32 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Note that this binding is really insufficient
-#**********************************************************************
+#======================================================================
 DefMacro('\acsfont{}',  '#1');
 DefMacro('\acffont{}',  '#1');
 DefMacro('\acfsfont{}', '#1');
 
-DefMacro('\ac{}', '\@AC@if{#1}{\acs{#1}}{\acf{#1}}');
-DefConstructor('\acs{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='short'/>",
-  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
-DefConstructor('\acl{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='long'/>",
-  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
-DefConstructor('\acf{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='long (short)'/>",
-  afterDigest => sub { AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
+DefConditional('\ifAC@footnote');
+DefConditional('\ifAC@nohyperlinks');
+DefConditional('\ifAC@printonlyused');
+DefConditional('\ifAC@withpage');
+DefConditional('\ifAC@smaller');
+DefConditional('\ifAC@dua');    # dua = don't use acronmyms
+DefConditional('\ifAC@nolist');
+DefConditional('\ifAC@starred');
 
-DefEnvironment('{acronym}',
-  "<ltx:glossary role='acronym' class='ltx_acronym'>"
-    . "<ltx:glossarylist>"
-    . "#body"
-    . "</ltx:glossarylist>"
-    . "</ltx:glossary>",
-  beforeDigest => sub { Let('\acro', '\@acro@item');
-    Let('\acrodef', '\@acro@item'); });
+DefMacro('\AC@placelabel{}', '');
+#======================================================================
+# Whether an acronym is used or not
+DefPrimitive('\lx@AC@used{}', sub {
+    AssignValue('ACROUSED@' . ToString($_[1]) => 1, 'global'); });
+DefPrimitive('\AC@logged{}', sub { });    # ???
 
-DefConstructor('\@acro@item{}[]{}',
-  "<ltx:glossaryentry role='acronym'>"
-    . "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
-    . "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
-    . "<ltx:glossarydefinition>");
+DefMacro('\acused{}',      '\AC@logged{#1}');
+DefMacro('\acronymused{}', '\AC@logged{#1}');
+DefMacro('\acresetall',    '');                 # ????
 
-Tag('ltx:glossarydefinition', autoClose => 1);
-Tag('ltx:glossaryentry',      autoClose => 1);
-
-DefConstructor('\acrodef{}[]{}',
-  "<ltx:glossarymark role='acronym'>"
-    . "<ltx:glossaryphrase key='#1'>?#2(#2)(#1)</ltx:glossaryphrase>"
-    . "<ltx:glossaryexpansion>#3</ltx:glossaryexpansion>"
-    . "</ltx:glossarymark>");
-
-DefMacro('\@AC@if{}{}{}', sub {
+DefMacro('\lx@AC@if{}{}{}', sub {
     my ($gullet, $id, $short, $long) = @_;
     my $key = 'ACROUSED@' . ToString($_[1]);
     if (LookupValue($key)) {
@@ -65,5 +49,152 @@ DefMacro('\@AC@if{}{}{}', sub {
       AssignValue($key => 1, 'global');
       $long->unlist; } });
 
-#**********************************************************************
+#======================================================================
+# Acronyms in the Text
+
+# NOTE: replacement of acronyms (short, long, whatever) should EXCLUDE \acroextra
+# BUT those should be present in an acronym list!
+# Acronym lists can (optionally) only include the acronyms actually used in the text!
+DefConstructor('\AC@acs{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='short'/>");
+DefConstructor('\AC@acl{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='long'/>");
+DefConstructor('\AC@acsp{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='short-plural'/>");
+DefConstructor('\AC@aclp{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='long-plural'/>");
+DefConstructor('\AC@acsi{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='short-indefinite'/>");
+DefConstructor('\AC@aclI{}',
+  "<ltx:glossaryref role='acronym' key='#1' show='long-indefinite'/>");
+
+# Short form
+DefMacro('\acs OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acsa');
+DefMacro('\acsa{}',              '\@acs{#1}');
+DefMacro('\@acs{}',              '\acsfont{\AC@acs{#1}}\ifAC@starred\else\AC@logged{#1}\fi');
+
+# Long form
+DefMacro('\acl OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@acl');
+DefMacro('\@acl{}',              '\acsfont{\AC@acl{#1}}\ifAC@starred\else\AC@logged{#1}\fi');
+
+# Full form: Long (short)
+DefMacro('\acf OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acfa');
+DefMacro('\acfa{}',              '\@acf{#1}');
+DefMacro('\@acf{}',
+  '\ifAC@footnote\acsfont{\AC@acs{#1}}\footnote{\AC@placelabel{#1} \AC@acl{#1}}
+  \else\acffont{\AC@placelabel{#1} \AC@acl{#1} \acfsfont{(\acsfont{\AC@acs{#1}})}}\fi
+  \ifAC@starred\else\AC@logged{#1}\fi');
+
+# Italicized long (short)
+
+DefMacro('\acfi OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acfia');
+DefMacro('\acfia{}',              '{\itshape\AC@acl{#1} }(\ifAC@starred\acs*{#1}\else\acs{#1}\fi)');
+
+# Auto form
+DefMacro('\ac OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@ac');
+DefMacro('\@ac{}',
+  '\lx@AC@if{#1}{\ifAC@starred\acs*{#1}\else\acs{#1}\fi}{\ifAC@starred\acf*{#1}\else\acf{#1}\fi}');
+
+# Indefinite article form
+DefMacro('\iac OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@iac');
+DefMacro('\Iac OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@Iac');
+
+DefMacro('\@iac{}', '\@iaci{#1} \ifAC@starred\ac*{#1}\else\ac{#1}\fi');
+DefMacro('\@Iac{}', '\@firstupper{\@iaci{#1}} \ifAC@starred\ac*{#1}\else\ac{#1}\fi');
+# \@firstupper
+# \newcommand*{\@iaci}[1]{%
+#    \ifcsname fn@#1@IL\endcsname
+#      \ifAC@dua
+#         \csname fn@#1@IL\endcsname%
+#      \else
+#         \expandafter\ifx\csname ac@#1\endcsname\AC@used%
+#         \csname fn@#1@IS\endcsname%
+#       \else
+#         \csname fn@#1@IL\endcsname%
+#       \fi
+#      \fi
+#    \else
+#    a%
+#    \fi
+
+# Plural forms
+DefMacro('\acsp OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acspa');
+DefMacro('\acspa{}',              '\@acsp{#1}');
+DefMacro('\@acsp{}',              '\acsfont{\AC@acsp{#1}}\ifAC@starred\else\AC@logged{#1}\fi');
+
+DefMacro('\aclp OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@aclp');
+DefMacro('\@aclp{}',              '\AC@aclp{#1}\ifAC@starred\else\AC@logged{#1}\fi');
+
+DefMacro('\acfp OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acfpa');
+DefMacro('\acfpa{}',              '\@acfp{#1}');
+DefMacro('\@acfp{}',
+  '\ifAC@footnote\acsfont{\AC@acsp{#1}}\footnote{\AC@placelabel{#1} \AC@aclp{#1}}
+ \else\acffont{\AC@placelabel{#1} \AC@aclp{#1} \acfsfont{(\acsfont{\AC@acsp{#1}})}}\fi
+  \ifAC@starred\else\AC@logged{#1}\fi');
+
+DefMacro('\acp OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\@acp');
+DefMacro('\@acp{}', '\lx@AC@if{#1}{\AC@acsp{#1}}{\AC@aclp{#1}}\ifAC@starred\else\AC@logged{#1}\fi');
+
+DefMacro('\acsu OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acsua');
+DefMacro('\acsua{}',              '\ifAC@starred\acs*{#1}\else\acs{#1}\fi\acused{#1}');
+DefMacro('\aclu OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\aclua');
+DefMacro('\aclua{}',              '\ifAC@starred\acl*{#1}\else\acl{#1}\fi\acused{#1}');
+
+#======================================================================
+# Defining Acronyms
+DefEnvironment('{acronym}[]',
+  "<ltx:glossary role='acronym' class='ltx_acronym'>"
+    . "<ltx:glossarylist>"
+    . "#body"
+    . "</ltx:glossarylist>"
+    . "</ltx:glossary>",
+  beforeDigest => sub { Let('\acro', '\lx@acro@item');
+    Let('\acrodef', '\lx@acro@item'); });
+
+DefMacro('\acroextra{}', '#1');
+
+DefMacro('\lx@acro@phrase{}{}{}', '{\let\acroextra\@gobble\lx@@acro@phrase{#1}{#2}{#3}}');
+# Let this float up, since it can be used within a glossarylist, but shouldn't end up there.
+DefConstructor('\lx@@acro@phrase{}{}{}',
+  "^ <ltx:glossaryphrase role='acronym' show='#1' key='#2'>#3</ltx:glossaryphrase>");
+
+# \lx@acro@item{key}{short}{long}
+DefMacro('\lx@acro@item{}[]{}',
+  '\lx@acro@@item{#1}{\ifx.#2.#1\else#2\fi}{#3}');
+DefMacro('\lx@acro@@item{}{}{}',
+  '\lx@acro@@@item{#1}{#2}{#3}{{\let\acroextra\@gobble #2}}{{\let\acroextra\@gobble #3}}');
+DefConstructor('\lx@acro@@@item{}{}{}{}{}',
+  "<ltx:glossaryentry role='acronym' key='#1'>"
+    . "<ltx:glossaryphrase show='label'>#2</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase show='short'>#4</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase show='long'>#5</ltx:glossaryphrase>"
+    . "<ltx:glossarydefinition>#3</ltx:glossarydefinition>"
+    . "</ltx:glossaryentry>");
+Tag('ltx:glossaryentry', afterClose => sub { GenerateID(@_, ''); });
+
+# Should these be allowed inside ltx:glossarylist, or float outside it?
+DefConstructor('\acrodef{}[]{}',
+  "<ltx:glossaryphrase role='acronym' key='#1' show='short'>?#2(#2)(#1)</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='acronym' key='#1' show='long'>#3</ltx:glossaryphrase>");
+
+Let('\newacro', '\acrodef');
+Let('\acro',    '\acrodef');
+
+# The following define additional forms of the acronym expansions.
+# They should be recorded in the document & scanned in post-processing,
+# but need not appear within the acronym glossary.
+# Non-standard definite articles
+DefMacro('\acrodefindefinite{}{}{}',
+  '\lx@acro@phrase{short-indefinite}{#1}{#2}\lx@acro@phrase{long-indefinite}{#1}{#3}');
+
+Let('\acroindefinite',    '\acrodefindefinite');
+Let('\newacroindefinite', '\acrodefindefinite');
+
+# Non-standard plural forms
+DefMacro('\acrodefplural{}[]{}',
+  '\lx@acro@phrase{short-plural}{#1}{\ifx.#2.#1\else#2\fi}\lx@acro@phrase{long-plural}{#1}{#3}');
+
+Let('\acroplural',    '\acrodefplural');
+Let('\newacroplural', '\acrodefplural');
+#======================================================================
 1;
