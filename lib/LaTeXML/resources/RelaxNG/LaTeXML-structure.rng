@@ -553,7 +553,7 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
   <define name="glossarylist">
     <element name="glossarylist">
       <a:documentation>A glossary list typically generated during postprocessing
-from the collection of \elementref{glossarymark} in the document
+from the collection of \elementref{glossaryphrase}'s in the document
 (or document collection).</a:documentation>
       <ref name="glossarylist_attributes"/>
       <ref name="glossarylist_model"/>
@@ -565,7 +565,9 @@ from the collection of \elementref{glossarymark} in the document
     <ref name="ID.attributes"/>
   </define>
   <define name="glossarylist_model">
-    <a:documentation>Content model for \elementref{glossarylist}.</a:documentation>
+    <a:documentation>Content model for \elementref{glossarylist}.
+The model allows loose \elementref{glossaryphrase}'s for data definitions,
+but they are not displayed as part of the list.</a:documentation>
     <zeroOrMore>
       <ref name="glossaryentry"/>
     </zeroOrMore>
@@ -589,13 +591,15 @@ and references to points in the document where the phrase was found.</a:document
         <a:documentation>The kind of glossary</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="glossaryentry_model">
     <a:documentation>Content model for \elementref{glossaryentry}.</a:documentation>
     <ref name="glossaryphrase"/>
-    <optional>
-      <ref name="glossaryexpansion"/>
-    </optional>
     <zeroOrMore>
       <ref name="glossarydefinition"/>
     </zeroOrMore>

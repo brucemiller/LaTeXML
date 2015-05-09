@@ -19,7 +19,7 @@ they can appear in both inline and block contexts.</a:documentation>
     <choice>
       <ref name="note"/>
       <ref name="indexmark"/>
-      <ref name="glossarymark"/>
+      <ref name="glossaryphrase"/>
       <ref name="rdf"/>
       <ref name="ERROR"/>
       <ref name="resource"/>
@@ -140,36 +140,6 @@ used to crossreference.</a:documentation>
     <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
-  <!-- ====================================================================== -->
-  <define name="glossarymark">
-    <element name="glossarymark">
-      <a:documentation>Metadata to record an glossary position. The content is 
-a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.</a:documentation>
-      <ref name="glossarymark_attributes"/>
-      <ref name="glossarymark_model"/>
-    </element>
-  </define>
-  <define name="glossarymark_attributes">
-    <a:documentation>Attributes for \elementref{glossarymark}.</a:documentation>
-    <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="role">
-        <a:documentation>The kind of \elementref{glossary} this mark belongs to.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="style">
-        <a:documentation>NOTE: describe this.</a:documentation>
-      </attribute>
-    </optional>
-  </define>
-  <define name="glossarymark_model">
-    <a:documentation>Content model for \elementref{glossarymark}.</a:documentation>
-    <ref name="glossaryphrase"/>
-    <optional>
-      <ref name="glossarydefinition"/>
-    </optional>
-  </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossaryphrase">
     <element name="glossaryphrase">
@@ -181,32 +151,25 @@ a \elementref{glossaryphrase}, with a possible \elementref{glossarydefinition}.<
   <define name="glossaryphrase_attributes">
     <a:documentation>Attributes for \elementref{glossaryphrase}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="IDREF.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>The kind of \elementref{glossary} this mark belongs to.</a:documentation>
+      </attribute>
+    </optional>
     <optional>
       <attribute name="key">
         <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="show">
+        <a:documentation>a keyword naming the format of this phrase (to match \attr{show} in \elementref{glossaryref}).</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="glossaryphrase_model">
     <a:documentation>Content model for \elementref{glossaryphrase}.</a:documentation>
-    <ref name="Inline.model"/>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="glossaryexpansion">
-    <element name="glossaryexpansion">
-      <a:documentation>The expansion of the \elementref{glossaryphrase} within an
-\elementref{glossarymark} or \elementref{glossaryentry},
-particularly when used for acronyms.</a:documentation>
-      <ref name="glossaryexpansion_attributes"/>
-      <ref name="glossaryexpansion_model"/>
-    </element>
-  </define>
-  <define name="glossaryexpansion_attributes">
-    <a:documentation>Attributes for \elementref{glossaryexpansion}.</a:documentation>
-    <ref name="Common.attributes"/>
-  </define>
-  <define name="glossaryexpansion_model">
-    <a:documentation>Content model for \elementref{glossaryexpansion}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
