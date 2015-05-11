@@ -134,18 +134,21 @@ DefMacro('\cite[] Semiverbatim', sub {
     $post = undef unless $post && $post->unlist;
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('cite')),
         Tokens($open,
           Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef),
           ($post ? ($ns, T_SPACE, $post) : ()),
           $close)); }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('cite')),
         Tokens(Invocation(T_CS('\textsuperscript'),
             Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys,
               undef, undef)),
           ($post ? (T_SPACE, $post) : ()))); }
     else {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('cite')),
         Invocation(T_CS('\@@bibref'),
           Tokens(Explode("Authors Phrase1YearPhrase2")),
           $keys,
@@ -164,6 +167,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
     my $author = ($star ? "FullAuthors" : "Authors");
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citet')),
         Tokens(($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'),
             Tokens(Explode("$author Phrase1NumberPhrase2")),
@@ -173,6 +177,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
           ($post ? ($ns->unlist, T_SPACE, $post->unlist) : ()))); }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citet')),
         Tokens(($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'),
             Tokens(Explode("$author Phrase1SuperPhrase2")),
@@ -180,6 +185,7 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
           ($post ? ($ns, T_SPACE, $post->unlist) : ()))); }
     else {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citet')),
         Invocation(T_CS('\@@bibref'),
           Tokens(Explode("$author Phrase1YearPhrase2")),
           $keys,
@@ -201,16 +207,19 @@ DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
 
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citep')),
         Tokens($open, ($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef),
           ($post ? ($ns, T_SPACE, $post) : ()), $close)); }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citep')),
         Tokens(($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'), Tokens(Explode("Super")), $keys, undef, undef),
           ($post ? (T_SPACE, $post) : ()))); }
     else {
       Invocation(T_CS('\@@cite'),
+        Tokens(Explode('citep')),
         Tokens($open->unlist, ($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'),
             Tokens(Explode("${author}Phrase1Year")),
@@ -242,6 +251,7 @@ DefMacro('\citealp OptionalMatch:* [][] Semiverbatim', sub {
 DefMacro('\citenum Semiverbatim', sub {
     my ($gullet, $keys) = @_;
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citenum')),
       Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef)); });
 
 # Sorta right, but would like to avoid the nested <ltx:cite>!
@@ -252,22 +262,26 @@ DefMacro('\citeauthor OptionalMatch:* Semiverbatim', sub {
     my ($gullet, $star, $keys) = @_;
     my $author = ($star ? "FullAuthors" : "Authors");
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citeauthor')),
       Invocation(T_CS('\@@bibref'), Tokens(Explode($author)), $keys, undef, undef)); });
 
 DefMacro('\citefullauthor Semiverbatim', sub {
     my ($gullet, $star, $keys) = @_;
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citefullauthor')),
       Invocation(T_CS('\@@bibref'), Tokens(Explode("FullAuthors")), $keys, undef, undef)); });
 
 DefMacro('\citeyear Semiverbatim', sub {
     my ($gullet, $keys) = @_;
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citeyear')),
       Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef)); });
 
 DefMacro('\citeyearpar Semiverbatim', sub {
     my ($gullet, $keys) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citeyearpar')),
       Tokens($open,
         Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef),
         $close)); });
@@ -300,6 +314,7 @@ DefMacro('\citetalias Semiverbatim', sub {
     my ($gullet, $key) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citealias')),
       Invocation(T_CS('\@@bibref'),
         Tokens(Explode("Phrase1")),
         $key,
@@ -309,6 +324,7 @@ DefMacro('\citepalias Semiverbatim', sub {
     my ($gullet, $key) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('citepalias')),
       Tokens($open,
         Invocation(T_CS('\@@bibref'),
           Tokens(Explode("Phrase1")),
