@@ -1,0 +1,55 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  rotate                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+RequirePackage('graphicx');
+
+# l=left, r=right, u=upsidedown, f=flip
+# \rotate[l]{stuff}
+DefConstructor('\rotate Optional:l Digested',
+  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
+    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
+    . " xscale='#xscale' yscale='#yscale'"
+    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#2"
+    . "</ltx:inline-block>",
+  properties => sub {
+    my ($stomach, $rot, $box) = @_;
+    $rot = ToString($rot) || 'l';
+    if ($rot eq 'l') {
+      rotatedProperties(-90, $box); }
+    elsif ($rot eq 'r') {
+      rotatedProperties(90, $box); }
+    else {
+      my $xscale = 1;
+      my $yscale = 1;
+      if   ($rot eq 'u') { $yscale = -1; }
+      else               { $xscale = -1; }
+      my ($w, $h, $d) = $box->getSize;
+      return () unless $w;
+      (width => $w,    #$w->multiply($xscale),
+        height => $h->multiply($yscale),
+        depth  => $d->multiply($yscale),
+        xscale => $xscale,
+        yscale => $yscale,
+        #        xtranslate => $w->multiply((1 - $xscale) / 2),
+        ytranslate => $h->add($d)->multiply(($yscale - 1) / 2)); } },
+
+  mode => 'text');
+#======================================================================
+1;
+

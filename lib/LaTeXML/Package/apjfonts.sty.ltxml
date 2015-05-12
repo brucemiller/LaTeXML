@@ -1,0 +1,36 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  apjfonts                                                           | #
+# | Support for various AAS styles/classes for LaTeXML                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Mostly font changing, but a few extras...
+
+DefMath('\varGamma',   "\x{0393}", font => { shape => 'italic' });
+DefMath('\varSigma',   "\x{03A3}", font => { shape => 'italic' });
+DefMath('\varDelta',   "\x{0394}", font => { shape => 'italic' });
+DefMath('\varUpsilon', "\x{03A5}", font => { shape => 'italic' });
+DefMath('\varTheta',   "\x{0398}", font => { shape => 'italic' });
+DefMath('\varPhi',     "\x{03A6}", font => { shape => 'italic' });
+DefMath('\varLambda',  "\x{039B}", font => { shape => 'italic' });
+DefMath('\varPsi',     "\x{03A8}", font => { shape => 'italic' });
+DefMath('\varXi',      "\x{039E}", font => { shape => 'italic' });
+DefMath('\varOmega',   "\x{03A9}", font => { shape => 'italic' });
+DefMath('\varPi',      "\x{03A0}", font => { shape => 'italic' });
+
+DefMath('\omicron', "\x{03BF}");    # GREEK SMALL LETTER OMICRON
+DefMath('\barbar',  UTF(0xAF));
+#======================================================================
+1;
