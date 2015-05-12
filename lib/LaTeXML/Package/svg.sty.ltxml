@@ -1,0 +1,57 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  svg                                                                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+RequirePackage('graphicx');
+RequirePackage('xcolor');
+RequirePackage('transparent');
+RequirePackage('import');
+# xkeyval
+# subfig
+
+# Since we've already arranged for graphicx to accept svg, we're pretty much done.
+# There are some new options...
+DefKeyVal('Gin', 'pdf',      '', 'true');    # Ignored...
+DefKeyVal('Gin', 'eps',      '', 'true');
+DefKeyVal('Gin', 'png',      '', 'true');
+DefKeyVal('Gin', 'clean',    '', 'true');
+DefKeyVal('Gin', 'exclude',  '', 'true');
+DefKeyVal('Gin', 'pretex',   '', 'true');
+DefKeyVal('Gin', 'postex',   '', '');
+DefKeyVal('Gin', 'preamble', '', '');
+DefKeyVal('Gin', 'end',      '', '');
+DefKeyVal('Gin', 'inkscape', '', '');
+DefKeyVal('Gin', 'pdflatex', '', '');
+DefKeyVal('Gin', 'pdftops',  '', '');
+DefKeyVal('Gin', 'convert',  '', '');
+
+# This should set graphicspath...
+DefKeyVal('Gin', 'svgpath', '', '');
+# DefConstructor('\graphicspath DirectoryList', sub {
+#     my ($document, $paths) = @_;
+#     foreach my $dir ($paths->getValues) {
+#       my $path = pathname_absolute(pathname_canonical(ToString($dir)));
+#       $document->insertPI('latexml', graphicspath => $path); } });
+
+DefMacro('lx@svg@options', '');
+DefMacro('\setsvg{}',      '\gdef\lx@svg@options{#1}');
+
+# Note that various sizing & rescaling are not yet supported by the Post::Graphics,
+# although it oughtn't to be so hard; just adjust the attributes on the outer svg:svg?
+DefMacro('\includesvg[]{}', '\includegraphics[\lx@svg@options,#1]{#2}');
+
+#======================================================================
+1;

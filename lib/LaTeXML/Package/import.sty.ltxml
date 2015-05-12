@@ -1,0 +1,49 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  svg                                                                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+#======================================================================
+# Make sure any future I/O security checks these changes to SEARCHPATHS!
+DefPrimitive('\lx@set@path OptionalMatch:* {}', sub {
+    my ($stomach, $star, $path) = @_;
+    $path = ToString(Expand($path));
+    if ($star) {    # * omits TEXINPUTS!
+      AssignValue(SEARCHPATHS => [pathname_canonical($path)]); }
+    else {
+      AssignValue(SEARCHPATHS => [pathname_canonical($path), @{ LookupValue('SEARCHPATHS') }]); }
+    return; });
+
+DefPrimitive('\lx@append@path OptionalMatch:* {}', sub {
+    my ($stomach, $star, $path) = @_;
+    $path = ToString(Expand($path));
+    if (my @paths = @{ LookupValue('SEARCHPATHS') }) {
+      my $newpath = shift(@paths) . $path;
+      if ($star) {    # * omits TEXINPUTS!
+        AssignValue(SEARCHPATHS => [pathname_canonical($newpath)]); }
+      else {
+        AssignValue(SEARCHPATHS => [@{ pathname_canonical($newpath) }, @paths]); } }
+    return; });
+
+DefMacro('\import OptionalMatch:* {}{}',       '{\lx@set@path #1{#2} \input{#3}}');
+DefMacro('\includefrom OptionalMatch:* {}',    '{\lx@set@path #1{#2} \include{#3}}');
+DefMacro('\subimport OptionalMatch:* {}{}',    '{\lx@append@path #1{#2} \input{#3}}');
+DefMacro('\subincludefrom OptionalMatch:* {}', '{\lx@append@path #1{#2} \include{#3}}');
+Let('\inputfrom',    '\import');
+Let('\subinputfrom', '\subimport');
+
+#======================================================================
+1;
+

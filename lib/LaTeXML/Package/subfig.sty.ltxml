@@ -1,0 +1,115 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  subfig.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+# Needs RequirePackage('caption'); but not yet implemented.
+# This is a rough draft of subfig with some missing or somewhat broken functionality
+# The markup isn't as semantic as it could be which leads to some conflicts
+# Eg there's a single \subfloat which the examples encourage you eg to mix
+# both figures and tables as subfloats of (eg) a table.
+# Also, there is some magic used to finagle counters that doesn't always quite work.
+# Eg. \ContinuedFloat leads to duplicated ids.
+#======================================================================
+DefPrimitive('\refstepcounter@noreset{}', sub {
+    RefStepCounter(ToString(Expand($_[1])), 1); return; });
+
+# \newsubfloat[kv]{floatname}
+DefPrimitive('\newsubfloat[]{}', sub {
+    my ($stomach, $kv, $name) = @_;
+    $name = ToString($name);
+    my $type = ($name =~ /figure/ ? 'ltx:figure'
+      : ($name =~ /table/ ? 'ltx:table'
+        : 'ltx:float'));
+    NewCounter('sub' . $name, $name, idprefix => 'sf', idwithin => $name);
+    NewCounter('sub' . $name . '@save');
+    DefMacro('\thesub' . $name,   '\alph{sub' . $name . '}');
+    DefMacro('\fnum@sub' . $name, '(\thesub' . $name . ')');
+    DefMacro('\p@sub' . $name,    '(\thesub' . $name . ')');
+    # subcaption above or below?
+    # Crazy stuff; if the outer float hasn't seen it's caption yet,
+    # we've got to temporarily step it's counter, WITHOUT resetting the subcounter!
+    DefMacroI('\lx@subfloat@' . $name, '[][]{}',
+#            '\begin{lx@subfloat@@'.$name.'}#3\ifx.#2.\caption{}\else\caption{#2}\fi\end{lx@subfloat@@'.$name.'}');
+      '\iflx@donecaption\else\refstepcounter@noreset{\@captype}\fi'
+        . '\begin{lx@subfloat@@' . $name . '}#3\caption{#1}\end{lx@subfloat@@' . $name . '}'
+        . '\iflx@donecaption\else\addtocounter{\@captype}{\m@ne}\fi');
+    # \ext@sub<name>, \l@sub<name>, \c@lofdepth,
+    DefEnvironment('{lx@subfloat@@' . $name . '}',
+      "<$type refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+        . "#body"
+        . "</$type>",
+      beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },
+      afterDigest => sub {
+        RescueCaptionCounters('sub' . $name, $_[1]);
+        SetCounter('sub' . $name . '@save', CounterValue('sub' . $name));
+      });
+    return; });
+
+# \DeclareCaptionListOfFormat{kv}{code}
+DefMacro('\DeclareCaptionListOfFormat{}{}', '');
+# \DeclareSubrefFormat{kv}{code}
+DefMacro('\DeclareSubrefFormat{}{}', '');
+
+# \subfloat[kv][caption]{body}
+DefMacro('\subfloat',
+  '\ifx\@captype\@undefined
+    \@latex@error{\noexpand\subfloat outside float}\@ehd
+     \expandafter\@gobble
+  \else
+    \expandafter\@firstofone
+  \fi
+  {\sf@subfloat}');
+# \caption@settype from caption.sty
+DefMacro('\sf@subfloat',
+  #'\@ifundefined{caption@setfloattype}{\caption@settype\@captype}{\caption@setfloattype\@captype}
+  #\caption@settype{subfloat}
+  #\caption@settype{sub\@captype}
+  #\let\sf@oldlabel=\label
+  #\let\label=\subfloat@label
+  #'\refstepcounter{sub\@captype}
+  #'\setcounter{sub\@captype @save}{\value{sub\@captype}}
+  '\csname lx@subfloat@\@captype\endcsname');
+
+# DefMacro('\subfloat@label',...);
+
+# \subref*{label}
+DefMacro('\subref',       '\@ifstar\sf@@subref\sf@subref');
+DefMacro('\sf@subref{}',  '\ref{sub@#1}');
+DefMacro('\sf@@subref{}', '\pageref{sub@#1}');
+
+# \ContinuedFloat
+# This doesn't quite succeed, since the id ends up duplicated on the second float
+DefMacro('\ContinuedFloat', sub {
+    my $captype = ToString(Expand(T_CS('\@captype')));
+    AddToCounter($captype, Number(-1));
+    SetCounter('sub' . $captype, CounterValue('sub' . $captype . '@save'));
+    return; });
+
+# \listsubcaptions
+DefMacro('\listsubcaptions', '');    # ??
+# \captionsetup[var]{kv}
+DefMacro('\captionsetup[]{}', '');    # ??
+# \clearcaptionsetup{subfloat}
+DefMacro('\clearcaptionsetup{}', '');    # ??
+
+DefConditional('\ifmaincaptiontop');
+
+RawTeX(<<'EoTeX');
+\@ifundefined{c@subfigure}{\newsubfloat{figure}}{}
+\@ifundefined{c@subtable}{\newsubfloat{table}}{}
+EoTeX
+#======================================================================
+1;

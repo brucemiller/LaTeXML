@@ -1,0 +1,94 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  subfloat                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+# Note that here, subfigures is a container for figures
+# rather than a sub-figure within a figure!
+DefMacro('\subfiguresbegin', '\begin{subfigures}');
+DefMacro('\subfiguresend',   '\end{subfigures}');
+DefMacro('\subtablesbegin',  '\begin{subtables}');
+DefMacro('\subtablesend',    '\end{subtables}');
+
+NewCounter('subfloatfigure', 'figure', idprefix => 'sf', idwithin => 'figure');
+NewCounter('subfloattable',  'table',  idprefix => 'st', idwithin => 'table');
+DefMacro('\thesubfloatfigure', '\themainfigure\alph{subfloatfigure}');
+DefMacro('\thesubfloattable',  '\themaintable\alph{subfloattable}');
+DefMacroI('\subfloatfigurename', undef, 'Figure');
+DefMacroI('\subfloattablename',  undef, 'Table');
+
+#DefMacro('\thesubfigure', '\alph{subfigure}');
+#DefMacro('\thesubtable',  '\alph{subtable}');
+
+DefMacro('\fnum@subfigure', '(\thesubfigure)');
+
+DefEnvironment('{subfigures}',
+  "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+    . "#body"
+    . "</ltx:figure>",
+  properties => sub { RefStepCounter('figure'); },    # No caption (?)
+  beforeDigest => sub {
+    Let('\themainfigure', '\thefigure');
+    DefMacroI('\@captype', undef, 'figure');
+    # redefine figure!
+    DefEnvironment('{figure}[]',
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+        . "#body"
+        . "</ltx:figure>",
+      properties => { layout => 'vertical' },
+      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloatfigure'); },
+      afterDigest => sub { RescueCaptionCounters('subfloatfigure', $_[1]); });
+    DefEnvironment('{figure*}[]',
+"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+        . "#body"
+        . "</ltx:figure>",
+      properties => { layout => 'vertical' },
+      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloatfigure'); },
+      afterDigest => sub { RescueCaptionCounters('subfloatfigure', $_[1]); });
+
+  },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); }
+);
+
+DefMacro('\fnum@subtable', '(\thesubtable)');
+DefEnvironment('{subtables}',
+  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+    . "#body"
+    . "</ltx:table>",
+  properties => sub { RefStepCounter('table'); },    # No caption (?)
+  beforeDigest => sub {
+    Let('\themaintable', '\thetable');
+    DefMacroI('\@captype', undef, 'table');
+    # redefine table!
+    DefEnvironment('{table}[]',
+"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+        . "#body"
+        . "</ltx:table>",
+      properties => { layout => 'vertical' },
+      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloattable'); },
+      afterDigest => sub { RescueCaptionCounters('subfloattable', $_[1]); });
+    DefEnvironment('{table*}[]',
+"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+        . "#body"
+        . "</ltx:table>",
+      properties => { layout => 'vertical' },
+      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloattable'); },
+      afterDigest => sub { RescueCaptionCounters('subfloattable', $_[1]); });
+
+  },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+
+#======================================================================
+1;
