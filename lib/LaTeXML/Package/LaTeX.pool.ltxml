@@ -2870,7 +2870,7 @@ AssignValue(CITE_SEPARATOR      => T_OTHER(','));
 AssignValue(CITE_YY_SEPARATOR   => T_OTHER(','));
 AssignValue(CITE_NOTE_SEPARATOR => T_OTHER(','));
 
-DefConstructor('\@@cite{}', "<ltx:cite>#1</ltx:cite>",
+DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:cite>",
   mode => 'text');
 
 # \@@bibref{what to show}{bibkeys}{phrase1}{phrase2}
@@ -2891,6 +2891,7 @@ DefMacro('\cite[] Semiverbatim', sub {
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
     $post = undef unless $post && $post->unlist;
     Invocation(T_CS('\@@cite'),
+      Tokens(Explode('cite')),
       Tokens($open,
         Invocation(T_CS('\@@bibref'), Tokens(Explode("Refnum")), $keys, undef, undef),
         ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
