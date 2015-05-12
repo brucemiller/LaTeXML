@@ -451,6 +451,12 @@ sub make_bibcite {
     $show = $saveshow;
     if (($show eq 'none') && @preformatted) {
       @stuff = @preformatted; $show = ''; }
+    elsif ($$datum{attr}{class} && ($$datum{attr}{class} eq 'ltx_missing_citation')) {
+      @stuff = (['ltx:ref', $$datum{attr}, $$datum{key} ]);
+      $didref = 1;
+      $show = '';
+    }
+
     while ($show) {
       if ($show =~ s/^authors?//i) {
         push(@stuff, $doc->cloneNodes(@{ $$datum{authors} })); }
