@@ -157,10 +157,12 @@ Or, should caption be used for theorem and proof?</a:documentation>
     </optional>
   </define>
   <define name="figure_model">
-    <a:documentation>Content model for \elementref{figure}.</a:documentation>
+    <a:documentation>Content model for \elementref{figure}; allow nested figures, etc for "sub" floats.</a:documentation>
     <zeroOrMore>
       <choice>
         <ref name="figure"/>
+        <ref name="table"/>
+        <ref name="float"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
       </choice>
@@ -197,6 +199,8 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <zeroOrMore>
       <choice>
         <ref name="table"/>
+        <ref name="figure"/>
+        <ref name="float"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
       </choice>
@@ -232,6 +236,8 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{float}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="float"/>
+        <ref name="figure"/>
         <ref name="float"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
