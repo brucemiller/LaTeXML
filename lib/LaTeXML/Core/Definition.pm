@@ -97,9 +97,9 @@ sub startProfiling {
   my ($cs) = @_;
   my $name = $cs->getCSName;
   my $entry = $STATE->lookupMapping('runtime_profile', $name);
-  # [#calls, total time, starts of pending calls...]
+  # [#calls, max_depth, total time, starts of pending calls...]
   if (!defined $entry) {
-    $entry = [0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
+    $entry = [0, 0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
   $$entry[0]++;    # One more call.
   push(@$entry, [Time::HiRes::gettimeofday]);    # started new call
   return; }
@@ -110,29 +110,37 @@ sub stopProfiling {
   $cs = $cs->getString if $cs->getCatcode == CC_MARKER;    # Special case for macros!!
   my $name = $cs->getCSName;
   if (my $entry = $STATE->lookupMapping('runtime_profile', $name)) {
-    if (scalar(@$entry) > 2) {
-      # Hopefully we're the pop gets the corresponding start time!?!?!
-      $$entry[1] += Time::HiRes::tv_interval(pop(@$entry), [Time::HiRes::gettimeofday]); } }
+    my $depth = scalar(@$entry) - 3;
+    if ($depth > $$entry[1]) { $$entry[1] = $depth; }
+    if ($depth == 1) {    # Since time is inclusive, only accumulate outer call
+                          # Hopefully we're the pop gets the corresponding start time!?!?!
+      $$entry[2] += Time::HiRes::tv_interval(pop(@$entry), [Time::HiRes::gettimeofday]); }
+    elsif ($depth) {      # but remove maker for inner calls.
+      pop(@$entry); } }
   return; }
 
-our $MAX_PROFILE_ENTRIES = 50;                             # [CONSTANT]
+our $MAX_PROFILE_ENTRIES = 50;    # [CONSTANT]
 # Print out profiling information, if any was collected
 sub showProfile {
   if (my $profile = $STATE->lookupValue('runtime_profile')) {
     my @cs         = keys %$profile;
     my @unfinished = ();
     foreach my $cs (@cs) {
-      push(@unfinished, $cs) if scalar(@{ $$profile{$cs} }) > 2; }
+      push(@unfinished, $cs) if scalar(@{ $$profile{$cs} }) > 3; }
 
     my @frequent = sort { $$profile{$b}[0] <=> $$profile{$a}[0] } @cs;
     @frequent = @frequent[0 .. $MAX_PROFILE_ENTRIES];
-    my @expensive = sort { $$profile{$b}[1] <=> $$profile{$a}[1] } @cs;
+    my @deepest = sort { $$profile{$b}[1] <=> $$profile{$a}[1] } @cs;
+    @deepest = @deepest[0 .. $MAX_PROFILE_ENTRIES];
+    my @expensive = sort { $$profile{$b}[2] <=> $$profile{$a}[2] } @cs;
     @expensive = @expensive[0 .. $MAX_PROFILE_ENTRIES];
     print STDERR "\nProfiling results:\n";
     print STDERR "Most frequent:\n   "
       . join(', ', map { $_ . ':' . $$profile{$_}[0] } @frequent) . "\n";
+    print STDERR "Deepest :\n   "
+      . join(', ', map { $_ . ':' . $$profile{$_}[1] } @deepest) . "\n";
     print STDERR "Most expensive (inclusive):\n   "
-      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[1]) } @expensive) . "\n";
+      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[2]) } @expensive) . "\n";
 
     if (@unfinished) {
       print STDERR "The following were never marked as done:\n  " . join(', ', @unfinished) . "\n"; }
