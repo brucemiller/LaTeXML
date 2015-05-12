@@ -2680,8 +2680,10 @@ DefConstructorI('\par', undef, sub {
   alias => "\\par\n");
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
-DefConstructorI('\inner@par', undef,
-  sub { $_[0]->maybeCloseElement('ltx:p'); });
+DefConstructorI('\inner@par', undef, sub {
+    if ($_[0]->maybeCloseElement('ltx:p')) { }
+    elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
+      $_[0]->insertElement('ltx:break'); } });
 
 Tag('ltx:para', autoClose => 1, autoOpen => 1);
 
