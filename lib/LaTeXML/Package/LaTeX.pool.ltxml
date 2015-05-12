@@ -2235,8 +2235,9 @@ DefMacroI('\fnum@table',  undef, '\tablename\nobreakspace\thetable');
 DefMacro('\format@title@figure{}', '\@tag[][: ]{\fnum@figure}#1');
 DefMacro('\format@title@table{}',  '\@tag[][: ]{\fnum@table}#1');
 
+DefConditional('\iflx@donecaption');
 DefMacro('\caption',
-  '\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
+'\lx@donecaptiontrue\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
 DefMacro('\@caption{}[]{}',
   '\@@add@caption@counters'
     . '\@@toccaption{\format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
