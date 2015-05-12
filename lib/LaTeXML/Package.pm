@@ -640,23 +640,24 @@ sub AddToCounter {
   return; }
 
 sub StepCounter {
-  my ($ctr) = @_;
+  my ($ctr, $noreset) = @_;
   my $value = CounterValue($ctr);
   AssignValue("\\c\@$ctr" => $value->add(Number(1)), 'global');
   AfterAssignment();
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
     scope => 'global');
   # and reset any within counters!
-  if (my $nested = LookupValue("\\cl\@$ctr")) {
-    foreach my $c ($nested->unlist) {
-      ResetCounter(ToString($c)); } }
+  if (!$noreset) {
+    if (my $nested = LookupValue("\\cl\@$ctr")) {
+      foreach my $c ($nested->unlist) {
+        ResetCounter(ToString($c)); } } }
   DigestIf(T_CS("\\the$ctr"));
   return; }
 
 # HOW can we retract this?
 sub RefStepCounter {
-  my ($ctr) = @_;
-  StepCounter($ctr);
+  my ($ctr, $noreset) = @_;
+  StepCounter($ctr, $noreset);
   my $iddef = LookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
 
