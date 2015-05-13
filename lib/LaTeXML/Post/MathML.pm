@@ -78,9 +78,12 @@ sub outerWrapper {
       'altimg-width'  => $math->getAttribute('imagewidth'),
       'altimg-height' => $math->getAttribute('imageheight'),
       'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
+  my @rdfa = map {my $val = ($math->getAttribute($_)||$xmath->getAttribute($_)); $val ? ($_ => $val) : ()}
+    qw(about resource property rel rev typeof datatype content);
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
       alttext => $math->getAttribute('tex'),
+      @rdfa,
       @img },
     $mml];
   # Associate the generated node with the source XMath node, but don't cross-reference
