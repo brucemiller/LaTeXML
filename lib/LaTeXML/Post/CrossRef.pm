@@ -201,9 +201,18 @@ sub fill_in_tocs {
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')) {
     $n++;
     my $selector = $toc->getAttribute('select');
-    my $types    = ($selector
-      ? { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }
-      : $normaltoctypes);
+    # my $types    = ($selector
+    #   ? { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }
+    #   : $normaltoctypes);
+    my $types = {};
+    if ($selector) {
+      foreach my $type (split(/\s*\|\s*/, $selector)) {
+        if ($type =~ s/\?$//) {
+          $$types{$type} = 'optional'; }
+        else {
+          $$types{$type} = 1; } } }
+    else {
+      $types = $normaltoctypes; }
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
     my $scope  = $toc->getAttribute('scope') || 'current';
@@ -237,8 +246,11 @@ sub gentoc {
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
       @kids = map { $self->gentoc($doc, $_, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
-    if ($$types{ $entry->getValue('type') }) {
-      return $self->gentocentry($doc, $entry, $selfid, $show, @kids); }
+    my $type = $entry->getValue('type');
+    if (my $code = $$types{$type}) {
+      return (($code eq 'optional') && !@kids
+        ? ()    # Prune optional nodes w/no children
+        : $self->gentocentry($doc, $entry, $selfid, $show, @kids)); }
     else {
       return @kids; } }
   else {
