@@ -49,6 +49,8 @@ my $mmlURI = "http://www.w3.org/1998/Math/MathML";    # CONSTANT
 #  plane1  : use Unicode plane 1 characters for math letters
 #  hackplane1 : use a hybrid of plane1 for script and fraktur,
 #               otherwise regular chars with mathvariant
+#  nestmath : allow m:math to be nested within m:mtext
+#             otherwise flatten to m:mrow sequence of m:mtext and other math bits.
 #  usemfenced : whether to use mfenced instead of mrow
 #          this would be desired for MathML-CSS profile,
 #          but (I think) mrow usually gets better handling in firefox,..?
@@ -62,6 +64,7 @@ sub preprocess {
   # Set up rational, modern, defaults.
   $$self{hackplane1} = 0 unless $$self{hackplane1};
   $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
+  $$self{nestmath} = 0 unless $$self{nestmath};
   $doc->adjust_latexml_doctype('MathML');    # Add MathML if LaTeXML dtd.
   $doc->addNamespace($mmlURI, 'm');
   return; }
@@ -404,6 +407,8 @@ my $NBSP = pack('U', 0xA0);    # CONSTANT
 sub pmml_internal {
   my ($node) = @_;
   return ['m:merror', {}, ['m:mtext', {}, "Missing Subexpression"]] unless $node;
+  my $self = $LaTeXML::Post::MATHPROCESSOR;
+  my $doc  = $LaTeXML::Post::DOCUMENT;
   my $tag  = getQName($node);
   my $role = $node->getAttribute('role');
   if ($tag eq 'ltx:XMath') {
@@ -473,9 +478,11 @@ sub pmml_internal {
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
-    return ['m:mtext', {},
-      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
-        $node->childNodes)]; }
+    if (!$$self{nestmath}) {
+      my @c = $node->childNodes;
+      return pmml_row(map { pmml_text_aux($_) } @c); }
+    else {
+      return ['m:mtext', {}, $self->convertXMTextContent($doc, $node->childNodes)]; } }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -658,6 +665,8 @@ sub stylizeContent {
     $class = ($class ? $class . ' ' : '') . 'ltx_font_mathscript'; }
   elsif (($font =~ /fraktur/) && ($text =~ /^[\+\-\d\.]*$/)) {    # fraktur number?
     $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
+  elsif ($font =~ /smallcaps/) {
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
 
   # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
   # Only upper & lower case latin & greek, and also numerals can be mapped.
