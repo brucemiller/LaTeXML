@@ -35,19 +35,34 @@ sub extractTeX {
   my ($self, $doc, $node) = @_;
   my $tex = $self->cleanTeX($node->getAttribute('tex') || '');
   $tex =~ s/\n//gs;    # trim stray CR's
+  my $adjustments = '';
   if (my $u = $node->getAttribute('unitlength')) {
-    $tex = "\\setlength{\\unitlength}{$u}" . $tex; }
+    $adjustments .= "\\setlength{\\unitlength}{$u}"; }
   # xunitlength, yunitlength for pstricks???
-  return "\\beginPICTURE $tex\\endPICTURE"; }
+  if (my $s = $node->getAttribute('scale')) {
+    $adjustments .= "\\scalePicture{$s}"; }
+  return "\\beginPICTURE $adjustments $tex\\endPICTURE"; }
 
 sub process {
   my ($self, $doc, @nodes) = @_;
   return $self->generateImages($doc, @nodes); }
 
+sub setTeXImage {
+  my ($self, $doc, $node, $path, $width, $height, $depth) = @_;
+  $self->SUPER::setTeXImage($doc, $node, $path, $width, $height, $depth);
+  # Since the width & height attributes can get exposed in the XSLT (CSS)
+  # adjust them to match the size actually computed
+  $node->setAttribute(width  => $width . "pt");
+  $node->setAttribute(height => $height . "pt");
+  return; }
+
 # Definitions needed for processing inline & display picture images
 sub preamble {
   my ($self, $doc) = @_;
   return <<'EOPreamble';
+\def\scalePicture#1{\setlength{\unitlength}{#1 \unitlength}
+\@tempdimb\f@size\p@ \@tempdimb#1\@tempdimb
+   \fontsize{\strip@pt\@tempdimb}{\strip@pt\@tempdimb}\selectfont}
 \def\beginPICTURE{\lxBeginImage}
 \def\endPICTURE{\lxEndImage\lxShowImage}
 EOPreamble
