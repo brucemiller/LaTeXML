@@ -78,7 +78,7 @@ sub revert {
 
 sub toString {
   my ($self) = @_;
-  return $$self[0]; }
+  return $$self[0] // ''; }
 
 # Methods for overloaded operators
 sub stringify {
