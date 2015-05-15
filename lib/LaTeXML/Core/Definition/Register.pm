@@ -52,7 +52,7 @@ sub setValue {
 sub invoke {
   my ($self, $stomach) = @_;
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my $gullet = $stomach->getGullet;
   my @args   = $self->readArguments($gullet);
@@ -64,7 +64,7 @@ sub invoke {
   if (my $after = $STATE->lookupValue('afterAssignment')) {
     $STATE->assignValue(afterAssignment => undef, 'global');
     $gullet->unread($after); }    # primitive returns boxes, so these need to be digested!
-  LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return; }
 
 #===============================================================================

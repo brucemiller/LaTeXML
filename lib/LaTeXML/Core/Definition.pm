@@ -93,58 +93,89 @@ sub invocation {
 
 # Start profiling $CS (typically $LaTeXML::CURRENT_TOKEN)
 # Call from within ->invoke.
+# $mode = expand | digest | absorb
 sub startProfiling {
-  my ($cs) = @_;
+  my ($cs, $mode) = @_;
   my $name = $cs->getCSName;
   my $entry = $STATE->lookupMapping('runtime_profile', $name);
-  # [#calls, max_depth, total time, starts of pending calls...]
+  # [#calls, max_depth, inclusive_time, exclusive_time, #pending
+  #   starts of pending calls...]
   if (!defined $entry) {
-    $entry = [0, 0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
-  $$entry[0]++;    # One more call.
-  push(@$entry, [Time::HiRes::gettimeofday]);    # started new call
+    $entry = [0, 0, 0, 0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
+  $$entry[0]++ unless $mode eq 'absorb';    # One more call.
+  $$entry[4]++;    # One more pending...
+                   #print STDERR "START PROFILE $mode of ".ToString($cs)."\n";
+  $STATE->pushValue('runtime_stack', [$name, $mode, [Time::HiRes::gettimeofday], $entry]);
   return; }
 
-# Stop profiling $CS, if it was being profiled.
+# Stop profiling $CS.
+# Complication w/Macros: If the expansion of a macro contains CS's that read tokens,
+# the end MARKER of macros may get read before the macro's effects have really been processed.
+# So we need to ignore a stop on a macro that isn't at the top of the stack,
+# and conversely, automatically stop a macro that is at the top above a CS that is being stopped.
 sub stopProfiling {
-  my ($cs) = @_;
+  my ($cs, $mode) = @_;
   $cs = $cs->getString if $cs->getCatcode == CC_MARKER;    # Special case for macros!!
-  my $name = $cs->getCSName;
-  if (my $entry = $STATE->lookupMapping('runtime_profile', $name)) {
-    my $depth = scalar(@$entry) - 3;
-    if ($depth > $$entry[1]) { $$entry[1] = $depth; }
-    if ($depth == 1) {    # Since time is inclusive, only accumulate outer call
-                          # Hopefully we're the pop gets the corresponding start time!?!?!
-      $$entry[2] += Time::HiRes::tv_interval(pop(@$entry), [Time::HiRes::gettimeofday]); }
-    elsif ($depth) {      # but remove maker for inner calls.
-      pop(@$entry); } }
+  my $name      = $cs->getCSName;
+  my $stack     = $STATE->lookupValue('runtime_stack');
+  my $currdepth = scalar(@$stack);
+  my $prevdepth = $STATE->lookupValue('runtime_maxdepth') || '0';
+  $STATE->assignValue('runtime_maxdepth' => $currdepth, 'global') if $currdepth > $prevdepth;
+  while (@{$stack}) {
+    my ($top, $topmode, $t0, $entry) = @{ $$stack[-1] };
+    if ((($top ne $name) || ($topmode ne $mode)) && ($topmode ne 'expand')) {
+      return if $mode eq 'expand';                         # No error (yet) if this is a macro end marker.
+      print STDERR "\nPROFILE Error: ending $mode of $name but stack holds "
+        . join(',', map { $$_[0] . '(' . $$_[1] . ')' } @$stack) . ", $top ($topmode)\n";
+      return; }
+    pop($stack);
+    my $duration = Time::HiRes::tv_interval($t0, [Time::HiRes::gettimeofday]);
+    my $depth = $$entry[4];
+    if ($depth > $$entry[1]) {
+      $$entry[1] = $depth; }
+    $$entry[2] += $duration if $depth == 1;    # add to inclusive time only in uppermost call
+    $$entry[3] += $duration;                   # add to exclusive time (see below)
+    $$entry[4]--;
+    if (my $caller = $$stack[-1]) {
+      my ($callername, $callermode, $callerstart, $callerentry) = @$caller;
+      $$callerentry[3] -= $duration; }         # Remove our cost from caller's exclusive time.
+    return if $top eq $name; }
+  print STDERR "\nPROFILE Error: ending $mode of $name but stack is empty\n"
+    unless $mode eq 'expand';
   return; }
 
-our $MAX_PROFILE_ENTRIES = 50;    # [CONSTANT]
+our $MAX_PROFILE_ENTRIES = 30;                 # [CONSTANT]
+
 # Print out profiling information, if any was collected
 sub showProfile {
   if (my $profile = $STATE->lookupValue('runtime_profile')) {
-    my @cs         = keys %$profile;
-    my @unfinished = ();
-    foreach my $cs (@cs) {
-      push(@unfinished, $cs) if scalar(@{ $$profile{$cs} }) > 3; }
-
+    my @cs    = keys %$profile;
+    my $calls = 0;
+    map { $calls += $$profile{$_}[0] } @cs;
+    my $depth = $STATE->lookupValue('runtime_maxdepth');
     my @frequent = sort { $$profile{$b}[0] <=> $$profile{$a}[0] } @cs;
     @frequent = @frequent[0 .. $MAX_PROFILE_ENTRIES];
     my @deepest = sort { $$profile{$b}[1] <=> $$profile{$a}[1] } @cs;
     @deepest = @deepest[0 .. $MAX_PROFILE_ENTRIES];
-    my @expensive = sort { $$profile{$b}[2] <=> $$profile{$a}[2] } @cs;
-    @expensive = @expensive[0 .. $MAX_PROFILE_ENTRIES];
+    my @inclusive = sort { $$profile{$b}[2] <=> $$profile{$a}[2] } @cs;
+    @inclusive = @inclusive[0 .. $MAX_PROFILE_ENTRIES];
+    my @exclusive = sort { $$profile{$b}[3] <=> $$profile{$a}[3] } @cs;
+    @exclusive = @exclusive[0 .. $MAX_PROFILE_ENTRIES];
     print STDERR "\nProfiling results:\n";
+    print STDERR "Total calls: $calls; Maximum depth: $depth\n";
     print STDERR "Most frequent:\n   "
       . join(', ', map { $_ . ':' . $$profile{$_}[0] } @frequent) . "\n";
     print STDERR "Deepest :\n   "
       . join(', ', map { $_ . ':' . $$profile{$_}[1] } @deepest) . "\n";
-    print STDERR "Most expensive (inclusive):\n   "
-      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[2]) } @expensive) . "\n";
+    print STDERR "Most expensive inclusive:\n   "
+      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[2]) } @inclusive) . "\n";
+    print STDERR "Most expensive exclusive:\n   "
+      . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[3]) } @exclusive) . "\n";
 
-    if (@unfinished) {
-      print STDERR "The following were never marked as done:\n  " . join(', ', @unfinished) . "\n"; }
-  }
+    my $stack = $STATE->lookupValue('runtime_stack');
+    if (@$stack) {
+      print STDERR "The following were never marked as done:\n  "
+        . join(', ', map { $$_[0] . '(' . $$_[1] . ')' } @$stack) . "\n"; } }
   return; }
 
 #===============================================================================

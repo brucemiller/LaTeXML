@@ -212,7 +212,7 @@ sub readToken {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token); } }
+      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token if defined $token;
   while (defined($token = $$self{mouth}->readToken())
     && ($cc = $$token[1])
@@ -220,7 +220,7 @@ sub readToken {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }     # What to do with comments???
     elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token); } }
+      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token; }
 
 # Unread tokens are assumed to be not-yet expanded.
@@ -257,7 +257,7 @@ sub readXToken {
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token); }
+      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     elsif (defined($defn = $STATE->lookupDefinition($token)) && $defn->isExpandable
       && ($toplevel || !$defn->isProtected)) { # is this the right logic here? don't expand unless digesting?
       local $LaTeXML::CURRENT_TOKEN = $token;
@@ -285,8 +285,8 @@ sub readRawLine {
   my @tokens = @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;            # Remove
-    map { LaTeXML::Core::Definition::stopProfiling($_) } @markers; }
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
+    map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
   # of the current line from the Mouth (NOT reading a new line)

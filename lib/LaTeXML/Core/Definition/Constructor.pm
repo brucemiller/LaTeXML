@@ -77,7 +77,7 @@ sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my @pre = $self->executeBeforeDigest($stomach);
 
@@ -108,14 +108,13 @@ sub invoke {
 
   # Now create the Whatsit, itself.
   my $whatsit = LaTeXML::Core::Whatsit->new($self, [@args], %props);
-
   # Call any 'After' code.
   my @post = $self->executeAfterDigest($stomach, $whatsit);
   if (my $cap = $$self{captureBody}) {
     $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
 
   my @postpost = $self->executeAfterDigestBody($stomach, $whatsit);
-  LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return (@pre, $whatsit, @post, @postpost); }
 
 # Similar to executeAfterDigest

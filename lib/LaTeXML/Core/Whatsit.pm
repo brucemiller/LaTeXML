@@ -203,9 +203,9 @@ sub beAbsorbed {
   # Hopefully the csname is the same that was charged in the digestioned phase!
   my $defn = $self->getDefinition;
   my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
-  LaTeXML::Core::Definition::startProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::startProfiling($profiled, 'absorb') if $profiled;
   my @result = $defn->doAbsorbtion($document, $self);
-  LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::stopProfiling($profiled, 'absorb') if $profiled;
   return @result; }
 
 sub computeSize {

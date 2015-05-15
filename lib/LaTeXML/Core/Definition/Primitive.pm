@@ -50,7 +50,7 @@ sub executeAfterDigest {
 sub invoke {
   my ($self, $stomach) = @_;
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   if ($STATE->lookupValue('TRACINGCOMMANDS')) {
     print STDERR '{' . $self->getCSName . "}\n"; }
@@ -59,7 +59,7 @@ sub invoke {
     &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
     $self->executeAfterDigest($stomach));
 
-  LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return @result; }
 
 sub equals {

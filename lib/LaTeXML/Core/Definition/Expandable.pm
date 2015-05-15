@@ -61,7 +61,7 @@ sub doInvocation {
   my $expansion = $self->getExpansion;
   my $r;
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled) if $profiled;
+  LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
   my @result;
   if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
     if (ref $expansion eq 'CODE') {
@@ -94,10 +94,7 @@ sub doInvocation {
               ? Tokens($_)
               : Tokens(Revert($_)))) }
           @args)); }
-  # This would give (something like) "inclusive time"
-  #  LaTeXML::Core::Definition::stopProfiling($profiled) if $profiled;
-  # This gives (something like) "exclusive time"
-  # but requires dubious Gullet support!
+  # Getting exclusive requires dubious Gullet support!
   push(@result, T_MARKER($profiled)) if $profiled;
   return @result; }
 
