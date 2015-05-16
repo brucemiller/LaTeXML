@@ -80,6 +80,7 @@ sub Equals {
 # Note that this is not necessarily the original TeX.
 sub Revert {
   my ($thing) = @_;
+  no warnings 'recursion';
   return (defined $thing
     ? (ref $thing ? map { $_->unlist } $thing->revert
       : LaTeXML::Core::Token::Explode($thing))    # Ugh!!

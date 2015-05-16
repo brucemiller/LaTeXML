@@ -65,7 +65,7 @@ sub unlist {
 
 sub revert {
   my ($self) = @_;
-  return map { Revert($_) } $self->unlist; }
+  return map { $_->revert } $self->unlist; }
 
 sub toString {
   my ($self) = @_;
@@ -89,6 +89,7 @@ sub equals {
 
 sub beAbsorbed {
   my ($self, $document) = @_;
+  no warnings 'recursion';
   return map { $document->absorb($_) } $self->unlist; }
 
 sub computeSize {

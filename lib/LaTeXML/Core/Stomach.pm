@@ -72,6 +72,7 @@ sub getBoxingLevel {
 
 sub digestNextBody {
   my ($self, $terminal) = @_;
+  no warnings 'recursion';
   my $startloc  = $self->getLocator;
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
@@ -91,6 +92,7 @@ sub digestNextBody {
 # Returns a List containing the digested material.
 sub digest {
   my ($self, $tokens) = @_;
+  no warnings 'recursion';
   return unless defined $tokens;
   return
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
@@ -124,6 +126,7 @@ my $MAXSTACK = 200;    # [CONSTANT]
 # Overly complex, but want to avoid recursion/stack
 sub invokeToken {
   my ($self, $token) = @_;
+  no warnings 'recursion';
 INVOKE:
   push(@{ $$self{token_stack} }, $token);
   if (scalar(@{ $$self{token_stack} }) > $MAXSTACK) {

@@ -419,6 +419,7 @@ sub finalize_rec {
 # font, mode, etc, are in %props.
 sub absorb {
   my ($self, $box, %props) = @_;
+  no warnings 'recursion';
   # Nothing? Skip it
   if (!defined $box) {
     return; }
