@@ -34,6 +34,9 @@ DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
 DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
 DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });
 
+DeclareOption('profiling',   sub { AssignValue('PROFILING' => 1, 'global'); });
+DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty
