@@ -128,7 +128,7 @@ sub stopProfiling {
       print STDERR "\nPROFILE Error: ending $mode of $name but stack holds "
         . join(',', map { $$_[0] . '(' . $$_[1] . ')' } @$stack) . ", $top ($topmode)\n";
       return; }
-    pop($stack);
+    pop(@$stack);
     my $duration = Time::HiRes::tv_interval($t0, [Time::HiRes::gettimeofday]);
     my $depth = $$entry[4];
     if ($depth > $$entry[1]) {
