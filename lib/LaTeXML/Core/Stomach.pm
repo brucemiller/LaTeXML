@@ -84,7 +84,7 @@ sub digestNextBody {
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc))
     if $terminal && !Equals($token, $terminal);
-  push(@LaTeXML::LIST, undef) unless $token;                      # Dummy `trailer' if none explicit.
+  push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
 
 # Digest a list of tokens independent from any current Gullet.
