@@ -317,7 +317,7 @@ sub applyLayout_break {
   # (but we haven't recorded that anywhere!)
   splice(@$node, 2, scalar(@children),
     ($$layout{lhs_pos}
-      ? ["m:mtable", { align => 'baseline 1', columnalign => 'left',
+      ? ["m:mtable", { align => 'baseline 1', columnalign => 'left', columnspacing => '0.1em',
           ($$layout{displaystyle} ? (displaystyle => 'true') : ()) },
         ["m:mtr", {},
           ["m:mtd", {}, @firstrow[0 .. $$layout{lhs_pos} - 1]],
