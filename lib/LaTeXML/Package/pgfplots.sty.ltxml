@@ -21,12 +21,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Pre-define since pgf's version uses low-level \openin
-# which isn't yet supported.
-DefMacro('\pgfplots@iffileexists{}{}{}',
-  '\IfFileExists{}{}{}',
-  locked => 1);
-
+DefMacroI('\pgfplots@iffileexists', undef, '\IfFileExists', locked => 1);
 InputDefinitions('pgfplots', type => 'sty', noltxml => 1);
 
 1;
