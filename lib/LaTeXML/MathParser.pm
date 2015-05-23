@@ -73,7 +73,9 @@ sub parseMath {
           keys %{ $$self{passed} }) . "\n");
     if (my @unk = keys %{ $$self{unknowns} }) {
       NoteProgress("Symbols assumed as simple identifiers (with # of occurences):\n   "
-          . join(', ', map { "'$_' ($$self{unknowns}{$_})" } sort @unk) . "\n"); }
+          . join(', ', map { "'$_' ($$self{unknowns}{$_})" } sort @unk) . "\n");
+      if (!$STATE->lookupValue('MATHPARSER_SPECULATE')) {
+        NoteProgress("Set MATHPARSER_SPECULATE to speculate on possible notations.\n"); } }
     if (my @funcs = keys %{ $$self{maybe_functions} }) {
       NoteProgress("Possibly used as functions?\n  "
           . join(', ', map { "'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)" }
@@ -599,6 +601,15 @@ sub parse_internal {
   local %LaTeXML::MathParser::SEEN_NOTATIONS       = ();
   local %LaTeXML::MathParser::DISALLOWED_NOTATIONS = ();
   local $LaTeXML::MathParser::MAX_ABS_DEPTH        = 1;
+  # "Speculative" mode is disabled by default (set MATHPARSER_SPECULATE).
+  # It causes the parser to explore possible undeclared notatations,
+  # like possible functions (the only one, so far)
+  # These extra grammar rules can be costly in corner cases.
+  # This should be disabled when speed (but feedback) is essential
+  if ($STATE->lookupValue('MATHPARSER_SPECULATE')) {
+    $LaTeXML::MathParser::DISALLOWED_NOTATIONS{MaybeFunctions} = 0; }
+  else {
+    $LaTeXML::MathParser::DISALLOWED_NOTATIONS{MaybeFunctions} = 1; }
   my $unparsed = $lexemes;
   my $result   = $$self{internalparser}->$rule(\$unparsed);
   if (((!defined $result) || $unparsed)    # If parsing Failed

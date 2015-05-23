@@ -492,7 +492,7 @@ maybeArgs :
 doubtArgs :
           /^\Z/ { $arg[0];}   # short circuit!
         | APPLYOP requireArgs[$arg[0]]
-        | OPEN forbidArgs[$arg[0],$item[1]]
+        | { IsNotationAllowed('MaybeFunctions'); } OPEN forbidArgs[$arg[0],$item[2]]
         | { $arg[0]; }
 
 # forbidArgs[$unknown,$open]; Got a suspicious pattern: an unknown and open. 
