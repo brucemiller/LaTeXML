@@ -89,6 +89,18 @@ DefConstructor('\@listings@inline Semiverbatim {}',
   "<ltx:text class='#1'>#2</ltx:text>",
   reversion => '\lstinline#1#2#3#2');    # ??????
 
+sub listingsReadRawLines {
+  my ($gullet, $environment) = @_;
+  my @lines = ();
+  my ($line);
+  $gullet->readRawLine;                  # Ignore 1st line (following \begin{...}
+  while (defined($line = $gullet->readRawLine)) {
+    if ($line =~ /^\s*\\end\{\Q$environment\E\}(.*?)$/) {
+      $gullet->unread(Tokenize($2), T_CR);    # put BACK what follows the \end{whatever}
+      last; }
+    push(@lines, $line); }
+  return @lines; }
+
 # Not a regular environment, since we're going to read the body verbatim!
 DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
   sub {
@@ -96,12 +108,7 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
     $STATE->getStomach->bgroup;
     AssignValue(current_environment => 'lstlisting');
     DefMacroI('@currenvir', undef, 'lstlisting');
-    my @lines = ();
-    my ($line);
-    $gullet->readRawLine;                # Ignore 1st line (following \begin{...}
-    while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\\end{lstlisting}\s*$/)) {
-      push(@lines, $line); }
-    my $text = join("\n", @lines);
+    my $text = join("\n", listingsReadRawLines($gullet, 'lstlisting'));
     lstActivate($keyvals);
     my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
     $STATE->getStomach->egroup;
@@ -849,18 +856,12 @@ DefKeyVal('LST', 'morefvcmdparams', '');
 DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
     my ($stomach, $name, $n, $opt, $start, $end) = @_;
     $name = ToString($name);
-    my $endmark = '\end{' . $name . '}';
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt),
       sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
         Digest(Tokens(LaTeXML::Core::Definition::Expandable::substituteTokens($start, @args)));
-        my @lines = ();
-        my ($line);
-        $gullet->readRawLine;    # Ignore 1st line (following \begin{...}
-        while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\Q$endmark\E\s*$/)) {
-          push(@lines, $line); }
-        my $text = join("\n", @lines);
+        my $text = join("\n", listingsReadRawLines($gullet, $name));
         my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
         push(@expansion, LaTeXML::Core::Definition::Expandable::substituteTokens($end, @args));
         $STATE->getStomach->egroup;
@@ -1298,8 +1299,8 @@ sub lstLoadConfiguration {
   # Now, if you want to read in all definitions immediately, you could do this (on preload)
   # otherwise, they'll be read in whenever missing languages are used.
   if (LookupValue('InitialPreloads')) {
-    while(my $file = ShiftValue('LST_LANGUAGE_FILES')){
-      InputDefinitions($file,noerror=>1); } }
+    while (my $file = ShiftValue('LST_LANGUAGE_FILES')) {
+      InputDefinitions($file, noerror => 1); } }
   return; }
 
 lstLoadConfiguration();
