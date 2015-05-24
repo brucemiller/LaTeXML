@@ -5,4 +5,5 @@ pmml =
 cmml = 
 om = 
 xmath =
+mathtex =
 format = xhtml

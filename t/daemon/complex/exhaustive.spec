@@ -19,3 +19,4 @@ post =
 pmml = 
 cmml =
 xmath =
+mathtex =
