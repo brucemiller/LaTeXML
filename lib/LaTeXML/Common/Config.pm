@@ -105,6 +105,8 @@ sub getopt_specification {
     "nocontentmathml|nocmml"      => sub { _removeMathFormat($opts, 'cmml'); },
     "noopenmath|noom"             => sub { _removeMathFormat($opts, 'om'); },
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
+    "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
+    "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
     "parallelmath"                => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
@@ -192,7 +194,7 @@ sub read {
   }
 
   # Check that options for system I/O (destination and log) are valid before wasting any time...
-  foreach my $IO_option(qw(destination log)) {
+  foreach my $IO_option (qw(destination log)) {
     if ($$opts{$IO_option}) {
       $$opts{$IO_option} = pathname_canonical($$opts{$IO_option});
       if (my $dir = pathname_directory($$opts{$IO_option})) {
@@ -802,6 +804,8 @@ latexmls/latexmlc [options]
  --openmath         converts math to OpenMath
  --keepXMath        keeps the XMath of a formula as a MathML
                     annotation-xml element
+ --mathtex          adds TeX annotation to parallel markup
+ --nomathtex        disables the above (default)
  --nocomments       omit comments from the output
  --inputencoding=enc specify the input encoding.
  --VERSION          show version number.

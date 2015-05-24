@@ -134,6 +134,8 @@ GetOptions("quiet" => sub { $verbosity--; },
   "parallelmath!"               => \$parallelmath,
   "keepXMath"                   => sub { addMathFormat('XMath'); },
   "nokeepXMath"                 => sub { removeMathFormat('XMath'); },
+  "mathtex"                     => sub { addMathFormat('mathtex'); },
+  "nomathtex"                   => sub { removeMathFormat('mathtex'); },
   # For graphics: vaguely similar issues, but more limited.
   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
   # picture/pstricks images can be converted to png or possibly svg.
@@ -368,7 +370,9 @@ if (!$prescan) {
         require LaTeXML::Post::MathImages;
         push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag, imagetype => 'svg',
             %OPTIONS)); }
-
+      elsif ($fmt eq 'mathtex') {
+        require LaTeXML::Post::TeXMath;
+        push(@mprocs, LaTeXML::Post::TeXMath->new(%OPTIONS)); }
     }
     my $main = shift(@mprocs);
     $main->setParallel(@mprocs);
@@ -577,6 +581,8 @@ latexmlpost [options] I<xmlfile>
  --om                    alias for --openmath
  --keepXMath             preserves the intermediate XMath
                          representation (default is to remove)
+ --mathtex               adds TeX annotation to parallel markup
+ --nomathtex             disables the above (default)
  --plane1                use plane-1 unicode for symbols
                          (default, if needed)
  --noplane1              do not use plane-1 unicode

@@ -456,6 +456,9 @@ sub convert_post {
           push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $$opts{mathimagemag},
               imagetype => 'svg',
               %PostOPS)); }
+        elsif ($fmt eq 'mathtex') {
+          require LaTeXML::Post::TeXMath;
+          push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
       }
       ###    $keepXMath  = 0 unless defined $keepXMath;
       ### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
