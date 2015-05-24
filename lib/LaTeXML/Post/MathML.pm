@@ -81,7 +81,7 @@ sub outerWrapper {
       'altimg-width'  => $math->getAttribute('imagewidth'),
       'altimg-height' => $math->getAttribute('imageheight'),
       'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
-  my @rdfa = map {my $val = ($math->getAttribute($_)||$xmath->getAttribute($_)); $val ? ($_ => $val) : ()}
+  my @rdfa = map { my $val = ($math->getAttribute($_) || $xmath->getAttribute($_)); $val ? ($_ => $val) : () }
     qw(about resource property rel rev typeof datatype content);
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
@@ -123,10 +123,6 @@ sub combineParallel {
       push(@alt, ['m:annotation', { encoding => $encoding }, $string]); }
     # anything else ignore?
   }
-  # Perhaps should be it's own processor?
-  my $math = $xmath->parentNode;
-  if (my $tex = $math && isElementNode($math) && $math->getAttribute('tex')) {
-    push(@alt, ['m:annotation', { encoding => 'application/x-tex' }, $tex]); }
   return { processor => $self, mimetype => $$primary{mimetype},
     xml => ['m:semantics', {}, $$primary{xml}, @alt] }; }
 

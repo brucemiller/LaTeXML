@@ -84,12 +84,6 @@ sub combineParallel {
         ['om:OMSTR', {}, $string]); }
     # anything else ignore?
   }
-  # Throw in a TeX encoding, for good measure. Should be own processor?
-  my $math = $xmath->parentNode;
-  if (my $tex = $math && isElementNode($math) && $math->getAttribute('tex')) {
-    push(@attr,
-      ['om:OMS', { cd => 'Alternate', name => 'TeX' }],
-      ['om:OMFOREIGN', {}, $tex]); }              # Should this simply be OMSTR ???
   return { processor => $self,
     mimetype => $omMimeType,
     xml => ['om:OMATTR', {}, @attr, $$primary{xml}] }; }
