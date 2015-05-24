@@ -187,6 +187,7 @@
   <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
     <xsl:param name="context"/>
     <xsl:element name="object" namespace="{$html_ns}">
+      <xsl:attribute name="type">image/svg+xml</xsl:attribute>
       <xsl:attribute name="data"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
