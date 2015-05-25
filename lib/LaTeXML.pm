@@ -209,7 +209,7 @@ sub convert {
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
   my $convert_eval_return = eval {
-    local $SIG{'ALRM'} = sub { die "Fatal:conversion:timeout Conversion timed out after " . $$opts{timeout} . " seconds!\n"; };
+    $$latexml{timeout} = $$opts{timeout}; # For reporting purposes
     alarm($$opts{timeout});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,

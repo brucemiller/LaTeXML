@@ -227,8 +227,10 @@ sub withState {
   # And, set fancy error handler for ANY die!
   # Could be useful to distill the more common messages so they provide useful build statistics?
   local $SIG{__DIE__} = sub { LaTeXML::Common::Error::perl_die_handler(@_); };
-  local $SIG{INT} = sub { LaTeXML::Common::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
+  local $SIG{INT} = sub { undef $SIG{__DIE__}; LaTeXML::Common::Error::Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
   local $SIG{__WARN__} = sub { LaTeXML::Common::Error::perl_warn_handler(@_); };
+  local $SIG{ALRM} = sub { undef $SIG{__DIE__}; LaTeXML::Common::Error::Fatal('conversion','timeout', undef, "Conversion timed out after " . $$self{timeout} . " seconds!\n"); };
+
   local $LaTeXML::DUAL_BRANCH = '';
 
   return &$closure($STATE); }
