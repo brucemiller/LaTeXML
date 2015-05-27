@@ -103,8 +103,9 @@ sub initialize_session {
     $latexml = new_latexml($$self{opts});
     1;
   };
+  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
-  if ($@) {    #Fatal occured!
+  if ($@) {                                                   #Fatal occured!
     print STDERR "$@\n";
     print STDERR "\nInitialization complete: " . $latexml->getStatusMessage . ". Aborting.\n" if defined $latexml;
     # Close and restore STDERR to original condition.
@@ -209,7 +210,9 @@ sub convert {
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
   my $convert_eval_return = eval {
-    local $SIG{'ALRM'} = sub { die "Fatal:conversion:timeout Conversion timed out after " . $$opts{timeout} . " seconds!\n"; };
+    # Should be this, but is overridden by withState.
+    #local $SIG{'ALRM'} = sub { LaTeXML::Common::Error::Fatal('conversion','timeout',
+    # "Conversion timed out after " . $$opts{timeout} . " seconds!\n"); };
     alarm($$opts{timeout});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
@@ -231,6 +234,7 @@ sub convert {
     1;
   };
   # 2.2 Bookkeeping in case fatal errors occurred
+  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
   my $eval_report = $@;
   $$runtime{status}      = $latexml->getStatusMessage;
@@ -238,7 +242,7 @@ sub convert {
   $$runtime{status_data}->{$_} = $$latexml{state}->{status}->{$_} foreach (qw(warning error fatal));
   # End daemon run, by popping frame:
   $latexml->withState(sub {
-      my ($state) = @_;    # Remove current state frame
+      my ($state) = @_;                                       # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
       $$state{status} = {};
@@ -287,6 +291,7 @@ sub convert {
       1;
     };
     # 3.1 Bookkeeping if a post-processing Fatal error occurred
+    ## $$latexml{state}->noteStatus('fatal') if $latexml && $@; # Fatal Error?
     local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
       if ((!$post_eval_return) && (!$@));
     if ($@) {    #Fatal occured!
