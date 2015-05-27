@@ -88,31 +88,37 @@ binmode(STDERR, ":encoding(UTF-8)");
 
 $mode = 'BibTeX' if !defined $mode && ($source =~ /\.bib$/);
 $mode = 'TeX' unless defined $mode;
+
 # ========================================
 # First read and digest whatever we're given.
 my $digested;
-
-if ($source eq '-') {
-  { local $/ = undef;
-    $source = "literal:" . <>; } }
-
-$digested = $latexml->digestFile($source, mode => $mode,
-  preamble => $preamble, postamble => $postamble);
-
-# ========================================
-# Now, convert to DOM and output, if desired.
-
 my $serialized;
-if ($digested) {
-  $latexml->withState(sub {
-      if ($format eq 'tex') {
-        $serialized = LaTeXML::Core::Token::UnTeX($digested); }
-      elsif ($format eq 'box') {
-        $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
-      else {
-        my $dom = $latexml->convertDocument($digested);
-        $serialized = $dom->toString(1);
-      } }); }
+
+eval {
+  if ($source eq '-') {
+    { local $/ = undef;
+      $source = "literal:" . <>; } }
+
+  $digested = $latexml->digestFile($source, mode => $mode,
+    preamble => $preamble, postamble => $postamble);
+
+  # ========================================
+  # Now, convert to DOM and output, if desired.
+
+  if ($digested) {
+    $latexml->withState(sub {
+        if ($format eq 'tex') {
+          $serialized = LaTeXML::Core::Token::UnTeX($digested); }
+        elsif ($format eq 'box') {
+          $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
+        else {
+          my $dom = $latexml->convertDocument($digested);
+          $serialized = $dom->toString(1);
+        } }); }
+};
+if ($@) {    # Fatal error?
+  $$latexml{state}->noteStatus('fatal');
+  print STDERR $@; }
 $latexml->showProfile();    # Show profile (if any)
 
 print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
