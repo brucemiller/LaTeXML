@@ -36,7 +36,6 @@ sub new {
   if (!$options{nocatalogs}) {
     $schemadoc = eval {
       no warnings 'all';
-      local $SIG{'__DIE__'} = undef;
       $xmlparser->parseFile($name); }; }
 
   if (!$schemadoc) {

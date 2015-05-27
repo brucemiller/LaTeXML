@@ -66,7 +66,7 @@ sub image_can_image {
     foreach my $class (@MagickClasses) {
       my $module = $class . ".pm";
       $module =~ s/::/\//g;
-      my $object = eval { local $SIG{__DIE__} = undef; require $module; $class->new(); };
+      my $object = eval { require $module; $class->new(); };
       if ($object) {
         $IMAGECLASS = $class;
         last; } } }
