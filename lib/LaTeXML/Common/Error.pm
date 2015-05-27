@@ -44,28 +44,31 @@ sub Stringify {
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
+  # We'll assume that if the DIE handler is bound (presumably to this function)
+  # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
+  my $inhandler = !$SIG{__DIE__};
+  my $ineval    = $^S;
+  $SIG{__DIE__} = undef;    # SHOULD have been localized by caller!
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-##  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {
-  if (!$LaTeXML::Common::Error::InHandler) {
+  if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
-    $state && $state->noteStatus('fatal');
+    $state->noteStatus('fatal') if $state && !$ineval;
     $message
       = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
       # ?!?!?!?!?!
       # or just verbosity code >>>1 ???
       @details,
       ($verbosity > 0 ? ("Stack Trace:", stacktrace()) : ()));
-    # We're about to DIE, which will bypass the usual status message, so add it here.
-    $message .= $state->getStatusMessage if $state;
+    # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
+    $message .= $state->getStatusMessage if $state && !$ineval;
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
-  local $LaTeXML::Common::Error::InHandler = 1;
-  local $$SIG{__DIE__} = undef;
+  # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
   die $message; }
 
 sub checkRecursiveError {
@@ -212,7 +215,8 @@ sub generateMessage {
   my $docloc = getLocation($where);
 
   # $message and each of @extra should be single lines
-  ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
+  $message =~ s/\n/ /g;    # Flatten $message, but split the @extra's
+  @extra = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } @extra;
   # The initial portion of the message will consist of:
   $message = '' unless defined $message;
   my @lines = (
