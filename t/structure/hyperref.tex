@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage{hyperref}
+\begin{document}
+\section{Introduction}\label{sec:intro}
+\section{Motivation}\label{sec:motivation}
+\section{Conclusion}\label{sec:conclusion}
+
+\subsection{nameref}\label{subsec:nameref}
+Nameref for sections \nameref{sec:intro} and \nameref{sec:motivation}.
+
+And subsections \nameref{subsec:nameref} and \nameref{subsec:autoref}.
+
+\subsection{autoref}\label{subsec:autoref}
+Autoref for \autoref{sec:intro} and \autoref{sec:motivation}.
+
+And also \autoref{subsec:nameref} and \autoref{subsec:autoref}.
+
+These two should fail gracefully: \nameref{sec:fail} and \autoref{sec:fail}.
+
+\end{document}
