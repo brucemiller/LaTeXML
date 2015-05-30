@@ -31,9 +31,9 @@ DefConstructor('\rotate Optional:l Digested',
     my ($stomach, $rot, $box) = @_;
     $rot = ToString($rot) || 'l';
     if ($rot eq 'l') {
-      rotatedProperties(-90, $box); }
+      rotatedProperties($box, -90); }
     elsif ($rot eq 'r') {
-      rotatedProperties(90, $box); }
+      rotatedProperties($box, 90); }
     else {
       my $xscale = 1;
       my $yscale = 1;

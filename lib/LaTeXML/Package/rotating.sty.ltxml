@@ -40,7 +40,7 @@ DefEnvironment('{sideways}',
     . "</ltx:inline-block>",
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{turn}{Float}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
@@ -51,7 +51,7 @@ DefEnvironment('{turn}{Float}',
     . "</ltx:inline-block>",
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, $whatsit->getArg(1))); });
 
 DefEnvironment('{rotate}{Float}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
@@ -62,7 +62,7 @@ DefEnvironment('{rotate}{Float}',
     . "</ltx:inline-block>",
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getArg(1), $whatsit->getBody, 1)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, $whatsit->getArg(1), smash => 1)); });
 
 # \turnbox{angle}{stuff}
 # Same as graphics' \rotatebox ?
@@ -75,7 +75,7 @@ DefConstructor('\turnbox{Float} Digested',
     . "</ltx:inline-block>",
   properties => sub {
     my ($stomach, $angle, $box) = @_;
-    rotatedProperties($angle, $box); },
+    rotatedProperties($box, $angle); },
   mode => 'text');
 
 #======================================================================
@@ -104,7 +104,7 @@ DefEnvironment('{sidewaysfigure}[]',
     return; },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaysfigure*}[]',
 "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
@@ -119,7 +119,7 @@ DefEnvironment('{sidewaysfigure*}[]',
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable}[]',
   "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
@@ -134,7 +134,7 @@ DefEnvironment('{sidewaystable}[]',
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable*}[]',
   "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
@@ -149,7 +149,7 @@ DefEnvironment('{sidewaystable*}[]',
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties(90, $whatsit->getBody)); });
+    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 # This is likely to be totally wrong.
 # This way puts the caption where it can't be!
