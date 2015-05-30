@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Package;
 
 RequirePackage('url');
+RequirePackage('nameref');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Follow hyperref's manual.pdf
@@ -188,10 +189,9 @@ DefMacroI('\phantomsection', undef, '');
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
-DefMacro('\autoref Semiverbatim', '\ref{#1}');
 DefConstructor('\autoref Semiverbatim',
-  "<ltx:ref show='type refnum' labelref='#label'/>",
-  properties => sub { (label => CleanLabel($_[2])); });
+  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label'/>",
+  properties => sub { (label => CleanLabel($_[1])); });
 
 # Covered in LaTeX.pool, but non-ref character is ignored.
 # \ref*{label}

@@ -1250,6 +1250,10 @@ sub trimChildNodes {
   elsif (!ref $node) {
     return ($node); }
   elsif (my @children = $node->childNodes) {
+    if (($self->getQName($node) eq 'ltx:title') && # Trim tags from titles
+      ($children[0]->nodeType == XML_ELEMENT_NODE) && ($self->getQName($children[0]) eq 'ltx:tag')) {
+      shift @children;
+    }
     if ($children[0]->nodeType == XML_TEXT_NODE) {
       my $s = $children[0]->data;
       $s =~ s/^\s+//;
