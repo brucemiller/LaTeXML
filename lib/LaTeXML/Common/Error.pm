@@ -215,8 +215,9 @@ sub generateMessage {
   my $docloc = getLocation($where);
 
   # $message and each of @extra should be single lines
-  $message =~ s/\n/ /g;    # Flatten $message, but split the @extra's
-  @extra = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } @extra;
+  @extra = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
+  # make 1st line be 1st line of message
+  $message =~ s/\n.*//g;
   # The initial portion of the message will consist of:
   $message = '' unless defined $message;
   my @lines = (
