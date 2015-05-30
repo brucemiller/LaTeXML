@@ -133,7 +133,7 @@
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes">
           <xsl:if test="@thead">
-            <xsl:value-of select="concat('ltx_th ',f:class-pref('ltx_th_',@thead))"/>
+            <xsl:value-of select="concat('ltx_th_',f:class-pref('ltx_th_',@thead))"/>
           </xsl:if>
           <xsl:if test="@thead and @border">
             <xsl:text> </xsl:text>
@@ -141,6 +141,15 @@
           <xsl:if test="@border">
             <xsl:value-of select="f:class-pref('ltx_border_',@border)"/>
           </xsl:if>
+          <!-- attempt to simulate rowspan when simulating table.
+               Actually, I think we need empty <td> for the spanned cells! -->
+          <xsl:if test="@rowspan and $context = 'inline'">
+            <xsl:if test="@thead or @border">
+              <xsl:text> </xsl:text>
+            </xsl:if>
+            <xsl:text>ltx_rowspan</xsl:text>
+          </xsl:if>
+
         </xsl:with-param>
         <xsl:with-param name="extra_style">
           <xsl:if test="starts-with(@align,'char:')">
