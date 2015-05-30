@@ -33,15 +33,18 @@
 
   <!-- Note that html does NOT have an inline-block element; so we must
        continue in an inline context (probably generating span's inside),
-       but CSS will hopefully set appropriate display properties. -->
+       but CSS will hopefully set appropriate display properties.
+       BUT, let's only do that if we're actually in an inline context!
+       In block context, just make a div-->
   <xsl:template match="ltx:inline-block">
     <xsl:param name="context"/>
     <!-- bug in libxslt!?!?!? putting these in the 'correct' place gives redefinition error! -->
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <xsl:when test="@angle | @xtranslate | @ytranslate | @xscale | @yscale ">
-        <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+        <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+          <!--<xsl:variable name="innercontext" select="'inline'"/>--><!-- override -->
+          <xsl:variable name="innercontext" select="$context"/><!-- override -->
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes">
             <xsl:with-param name="extra_classes" select="'ltx_transformed_outer'"/>
