@@ -184,7 +184,9 @@
 <!--    <xsl:text>(</xsl:text>-->
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:attribute name="class">ltx_tag ltx_tag_<xsl:value-of select="local-name(..)"/></xsl:attribute>
+      <xsl:attribute name="class">ltx_tag ltx_tag_<xsl:value-of select="local-name(..)"/>
+      ltx_eqn_eqno ltx_align_middle
+      <xsl:value-of select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'ltx_align_left','ltx_align_right')"/></xsl:attribute>
       <xsl:choose>
         <xsl:when test="../ltx:tag">
           <xsl:apply-templates select="../ltx:tag">    
