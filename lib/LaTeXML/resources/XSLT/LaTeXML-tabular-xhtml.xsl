@@ -133,7 +133,7 @@
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes">
           <xsl:if test="@thead">
-            <xsl:value-of select="concat('ltx_th_',f:class-pref('ltx_th_',@thead))"/>
+            <xsl:value-of select="concat('ltx_th ',f:class-pref('ltx_th_',@thead))"/>
           </xsl:if>
           <xsl:if test="@thead and @border">
             <xsl:text> </xsl:text>
