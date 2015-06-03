@@ -70,6 +70,8 @@ DefMacro('\thesubsubsection', '');
 DefMacro('\theparagraph',     '');
 DefMacro('\thesubparagraph',  '');
 
+DefMacro('\chaptermark{}', '');
+
 NewCounter('equation',       'chapter',  idprefix => 'E');
 NewCounter('@equationgroup', 'document', idprefix => 'EG', idwithin => 'section');
 NewCounter('figure',         'chapter',  idprefix => 'F');
