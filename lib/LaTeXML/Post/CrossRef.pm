@@ -464,9 +464,9 @@ sub make_bibcite {
     if (($show eq 'none') && @preformatted) {
       @stuff = @preformatted; $show = ''; }
     elsif ($$datum{attr}{class} && ($$datum{attr}{class} eq 'ltx_missing_citation')) {
-      @stuff = (['ltx:ref', $$datum{attr}, $$datum{key} ]);
+      @stuff  = (['ltx:ref', $$datum{attr}, $$datum{key}]);
       $didref = 1;
-      $show = '';
+      $show   = '';
     }
 
     while ($show) {
@@ -608,7 +608,7 @@ sub generateRef_aux {
   my ($self, $doc, $entry, $show) = @_;
   my @stuff = ();
   my $OK    = 0;
-  $show =~ s/typerefnum\s*title/title/;    # Same thing NOW!!!
+  #??  $show =~ s/typerefnum\s*title/title/;    # Same thing NOW!!!
   while ($show) {
     if ($show =~ s/^type(\.?\s*)refnum(\.?\s*)//) {
       if (my $frefnum = $entry->getValue('frefnum') || $entry->getValue('refnum')) {
