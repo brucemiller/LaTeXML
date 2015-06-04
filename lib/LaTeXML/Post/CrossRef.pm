@@ -223,7 +223,7 @@ sub fill_in_tocs {
           $id = $root->getValue('pageid'); } } }
     my @list = ();
     if (!$format || ($format =~ /^normal/)) {
-      @list = $self->gentoc($doc, $id, $types); }
+      @list = $self->gentoc($doc, $id, $types, 1); }
     elsif ($format eq 'context') {
       @list = $self->gentoc_context($doc, $id, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
@@ -239,18 +239,21 @@ sub fill_in_tocs {
 #   $depth   : only to the specific depth
 #
 sub gentoc {
-  my ($self, $doc, $id, $types, $localto, $selfid) = @_;
+  my ($self, $doc, $id, $types, $strict, $localto, $selfid) = @_;
   my $show = 'toctitle';
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map { $self->gentoc($doc, $_, $types, $localto, $selfid) }
+      @kids = map { $self->gentoc($doc, $_, $types, $strict, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     if (my $code = $$types{$type}) {
-      return (($code eq 'optional') && !@kids
-        ? ()    # Prune optional nodes w/no children
-        : $self->gentocentry($doc, $entry, $selfid, $show, @kids)); }
+      if ($strict && !$entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
+        return (); }
+      elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
+        return (); }
+      else {
+        return $self->gentocentry($doc, $entry, $selfid, $show, @kids); } }
     else {
       return @kids; } }
   else {
@@ -277,7 +280,7 @@ sub gentoc_context {
   my ($self, $doc, $id, $types) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($doc, $id, $types, $entry->getValue('location') || '', $id);
+    my @navtoc = $self->gentoc($doc, $id, $types, 0, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
