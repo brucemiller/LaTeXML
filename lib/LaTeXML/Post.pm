@@ -111,16 +111,18 @@ sub NoteEnd {
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
+  my $inhandler = !$SIG{__DIE__};
+  my $ineval    = $^S;
+  $SIG{__DIE__} = undef;    # SHOULD have been localized by caller!
   my $verbosity = getVerbosity();
-  if (!$LaTeXML::Common::Error::InHandler && defined($^S)) {    # Careful about recursive call!
-    $LaTeXML::POST && $$LaTeXML::POST{status}{fatal}++;
+  if (!$inhandler) {
+    $LaTeXML::POST && $$LaTeXML::POST{status}{fatal}++ if !$ineval;
     $message
       = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
       @details);
   }
-  else {    # If we ARE in a recursive call, the actual message is $details[0]
+  else {                    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
-  local $LaTeXML::Common::Error::InHandler = 1;
   if ($verbosity > 1) {
     require Carp;
     Carp::croak $message; }
@@ -1250,7 +1252,7 @@ sub trimChildNodes {
   elsif (!ref $node) {
     return ($node); }
   elsif (my @children = $node->childNodes) {
-    if (($self->getQName($node) eq 'ltx:title') && # Trim tags from titles
+    if (($self->getQName($node) eq 'ltx:title') &&    # Trim tags from titles
       ($children[0]->nodeType == XML_ELEMENT_NODE) && ($self->getQName($children[0]) eq 'ltx:tag')) {
       shift @children;
     }
