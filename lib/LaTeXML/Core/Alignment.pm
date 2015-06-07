@@ -24,7 +24,6 @@ use List::Util qw(max sum);
 use base qw(LaTeXML::Core::Whatsit);
 use base qw(Exporter);
 our @EXPORT = (qw(
-    &constructAlignment
     &ReadAlignmentTemplate &MatrixTemplate));
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -277,24 +276,6 @@ sub beAbsorbed {
       alignment_regroup_rows($document, $node); } }
 
   return $node; }
-
-# Deprecated
-sub constructAlignment {
-  my ($document, $body, %props) = @_;
-  Info('deprecated', 'constructAlignment', $document,
-    "The sub constructAlignment is a deprecated way to create Alignments",
-    "See LaTeX.pool {tabular} for the new way.");
-  my $alignment;
-  # Find the alignment that is embedded somewhere within body!
-  # See \@open@alignment for where this gets set into the Whatsit!
-  while (!($alignment = $body->getProperty('alignment'))) {
-    ($body) = grep { $_->getProperty('alignment') } $body->unlist; }
-  $$alignment{isMath} = 1 if $body->isMath;
-  # Merge the specified props with what's already in the Alignment
-  if (my $attr = $props{attributes}) {
-    map { $$alignment{properties}{attributes}{$_} = $$attr{$_} } keys %$attr; }
-  map { $$alignment{properties}{$_} = $props{$_} } grep { $_ ne 'attributes' } keys %props;
-  return $alignment->beAbsorbed($document); }
 
 #======================================================================
 # Normalize an alignment before construction
