@@ -55,10 +55,11 @@ DefMacro('\lxSVG@picture', sub {
 
 DefMacro('\endlxSVG@picture', '\endgroup');
 
+# use overflow visible since we haven't got a good estimate of the TRUE size of the thing!
 DefConstructor('\lxSVG@pgfsys@insertpicture{}',
   '<ltx:picture>' .
     '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
-    . 'viewBox="#minx #miny #pxwidth #pxheight">'
+    . 'viewBox="#minx #miny #pxwidth #pxheight" overflow="visible">'
     . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
     . '#1'
     . '</svg:g>'
@@ -113,12 +114,13 @@ DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text',
-        yoffset      => $dim->multiply(-1)->pxValue . 'px',
+        yoffset      => $dim->negate->pxValue . 'px',
         _noautoclose => '1');
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
     else { $doc->absorb($box); } },
-  alias => '\raise');
+  alias => '\raise',
+  sizer => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); });
 
 DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
@@ -129,7 +131,8 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
     else { $doc->absorb($box); } },
-  alias => '\lower');
+  alias => '\lower',
+  sizer => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); });
 
 DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
@@ -191,29 +194,33 @@ DefMacro('\pgfsys@endpicture',   '');
 # Note that this is overly generous with svg:foreignObject.
 # It is used to recursively contain svg:svg elements
 # also simple strings end up there (they _could_ have exotic latexml attributes...)
-DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}', sub {
-    my ($doc, $w, $h, $d, $box, %prop) = @_;
+DefConstructor('\pgfsys@hbox{Number}', sub {
+    my ($doc, $boxnumber, %prop) = @_;
+    my $box = $prop{thebox};
+    return unless $box;
+    my $font = $box->getFont;
+    my ($w, $h, $d) = $box->getSize;
+    my ($fw, $fh, $fd) = $font && $font->getNominalSize;
+    # Fishing for the correct y position (maybe w/o the depth?)
+    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
+                           # But if the box's height has been set to 0, still need adjustment; Use font?
+    $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
-      # transform => 'matrix(1 0 0 -1 0 ' . $h->add($d)->pxValue . ')',
-      # Sometimes, this SEEMS it would be the more correct vertical translation (w/o the depth!)??
-      # but maybe that's just the bad size info we have?
-      transform => 'matrix(1 0 0 -1 0 ' . $h->pxValue . ')',
+      transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
       class     => 'ltx_svg_fog');
-    my $strokeattr = $doc->findnode('ancestor-or-self::*/@stroke', $doc->getElement);
-    my $sw = $doc->openElement('svg:switch');
-    my ($ww, $hh, $dd) = $box->getSize;
-    my $fo = $doc->openElement('svg:foreignObject',
-      width    => $w->pxValue,
-      height   => $h->add($d)->pxValue,
+    my $strokeattr = $doc->findnode('ancestor-or-self::*[@stroke][1]/@stroke', $doc->getElement);
+    my $sw         = $doc->openElement('svg:switch');
+    my $H          = $h->add($d)->pxValue;
+    my $fo         = $doc->openElement('svg:foreignObject',
+      # often the size is set to 0, which inhibits display COMPLETELY!
+      # Using 100% works, though, and seems apparently best to use for height all the time(?)
+      width => $w->pxValue || '100%',
+      height   => '100%',
       overflow => 'visible',
       color    => $strokeattr && $strokeattr->getValue);
     my $p = $doc->openElement('ltx:p');
     $doc->absorb($box);
     $doc->maybeCloseElement('ltx:text');
-    # $doc->closeElement('ltx:p');
-    # $doc->closeElement('svg:foreignObject');
-    # $doc->closeElement('svg:switch');
-    # $doc->closeElement('svg:g');
     # If the nodes we just created are still there & open (see halign)
     # then close them now.
     $doc->maybeCloseElement('ltx:p');
@@ -235,45 +242,11 @@ DefConstructor('\lxSVG@pgfsys@foreignObject{Dimension}{Dimension}{Dimension}{}',
           } } } }
     # Could conceivably be simplifying ltx:text ???
   },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(thebox => LookupValue('box' . $whatsit->getArg(1)->valueOf)); }
 );
 
-# this puts an \hbox into the picture,
-# but it should set wd,ht,dp to 0!!! ???
-DefMacro('\pgfsys@hbox{Number}', sub {
-    my $box   = 'box' . $_[1]->valueOf;
-    my $stuff = LookupValue($box);
-    return if !$stuff;
-    my ($w, $h, $d) = $stuff->getSize();
-    Invocation(T_CS('\lxSVG@pgfsys@foreignObject'), $w, $h, $d,
-      Invocation(T_CS('\box'), $_[1])); });
-
-# # Can we do it this way? More latexmly
-# # We're going to have to come back and add the size, however,
-# Tag('svg:switch',autoOpen=>1,autoClose=>1);
-# Tag('svg:foreignObject',autoOpen=>1,autoClose=>1,
-# ##  afterOpen=>sub {
-# ##    $_[0]->openElement('ltx:p'); }, # inf recursion w/o this???
-#   afterClose=>sub {
-#     my($doc,$fo)=@_;
-#     if(my $box = $doc->getNodeBox($fo)){
-#       my($w,$h,$d)=$box->getSize;
-#       $doc->setAttribute($fo, width=>$w->pxValue) if $w;
-#       $doc->setAttribute($fo, height=>$h->pxValue) if $h; }}
-# );
-
-# DefMacro('\pgfsys@hbox{Number}', sub {
-#   Invocation(T_CS('\box'), $_[1]); });
-
-# DefMacro('\pgfsys@hbox{Number}', '\pgfsys@@hbox{\box #1}');
-# DefConstructor('\pgfsys@@hbox{}', '<ltx:p>#1</ltx:p>');
-
-#DefConstructor('\maybepicture', sub {
-#  my ($doc) = @_;
-#  if ($doc->isOpen('svg:foreignObject')) {
-#    $doc->openElement('svg:svg');
-#  return; }
-#});
-#RawTeX('\expandafter\def\expandafter\node\expandafter{\expandafter\maybepicture\node');
 #====================================================================#
 #= 2. Path construction =============================================#
 #====================================================================#
