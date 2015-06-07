@@ -227,14 +227,14 @@ sub getLanguage   { my ($self) = @_; return $$self[8]; }
 
 sub toString {
   my ($self) = @_;
-  return "Font[" . join(',', map { (defined $_ ? $_ : '*') } @{$self}) . "]"; }
+  return "Font[" . join(',', map { (defined $_ ? ToString($_) : '*') } @{$self}) . "]"; }
 
 # Perhaps it is more useful to list only the non-default components?
 sub stringify {
   my ($self) = @_;
   my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang) = @$self;
   $fam = 'serif' if $fam && ($fam eq 'math');
-  return 'Font[' . join(',', grep { $_ }
+  return 'Font[' . join(',', map { Stringify($_) } grep { $_ }
       (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
     (isDiff($ser, $DEFSERIES)     ? ($ser) : ()),
     (isDiff($shp, $DEFSHAPE)      ? ($shp) : ()),
