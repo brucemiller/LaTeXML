@@ -93,6 +93,11 @@ sub toString {
   my ($model, @comp) = @$self;
   return $model . "(" . join(',', @comp) . ")"; }
 
+sub stringify {
+  my ($self) = @_;
+  my ($model, @comp) = @$self;
+  return "Color::" . $model . "(" . join(',', @comp) . ")"; }
+
 sub toHex {
   my ($self) = @_;
   return $self->rgb->toHex; }
