@@ -29,6 +29,13 @@ DefMacro('\pgfsysdriver', 'pgfsys-latexml.def');    # and we'll load the .ltxml!
 InputDefinitions('pgf', type => 'sty', noltxml => 1)
   || Warn(":missing:pgf.sty Couldn't find pgf.sty");
 
+# This is very probably the wrong way to do this,
+# but it seems that pgfstrokecolor is the color used for default drawing, text, etc.
+Let('\pgfsetcolor@orig', '\pgfsetcolor');
+DefMacro('\pgfsetcolor{}', '\pgfsetcolor@orig{#1}\lxSVG@set@color');
+DefPrimitive('\lxSVG@set@color', sub {
+    MergeFont(color => LookupValue('color_pgfstrokecolor')); });
+
 # This makes this conditional always true;  Why???
 DefConditionalI('\ifpgf@relevantforpicturesize', undef, sub { 1; });
 DefMacroI('\pgf@relevantforpicturesizefalse', undef, '');
