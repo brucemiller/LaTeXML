@@ -650,7 +650,7 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $xtok); } });
 
 # Insert magic token that Gullet knows not to expand the next one.
-DefMacroI('\noexpand', undef, sub { Token('', CC_NOTEXPANDED); });
+DefMacroI('\noexpand', undef, Token('', CC_NOTEXPANDED));
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
