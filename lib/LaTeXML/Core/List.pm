@@ -87,6 +87,7 @@ sub equals {
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
+# NOTE: No longer used; Document->absorb bypasses this for stack efficiency.
 sub beAbsorbed {
   my ($self, $document) = @_;
   no warnings 'recursion';
