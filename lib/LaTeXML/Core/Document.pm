@@ -418,38 +418,46 @@ sub finalize_rec {
 # $box can also be a plain string which will be inserted according to whatever
 # font, mode, etc, are in %props.
 sub absorb {
-  my ($self, $box, %props) = @_;
+  my ($self, $object, %props) = @_;
   no warnings 'recursion';
   # Nothing? Skip it
-  if (!defined $box) {
-    return; }
-  # A Proper Box or List or Whatsit? It will handle it.
-  elsif (ref $box) {
-    local $LaTeXML::BOX = $box;
-    # [ATTEMPT to] only record if we're running in NON-VOID context.
-    # [but wantarray seems defined MUCH more than I would have expected!?]
-    if ($LaTeXML::RECORDING_CONSTRUCTION || defined wantarray) {
-      my @n = ();
-      { local $LaTeXML::RECORDING_CONSTRUCTION = 1;
-        local @LaTeXML::CONSTRUCTED_NODES = ();
-        $box->beAbsorbed($self);
-        @n = @LaTeXML::CONSTRUCTED_NODES; }    # These were created just now
-      map { $self->recordConstructedNode($_) } @n;    # record these for OUTER caller!
-      return @n; }                                    # but return only the most recent set.
+  my @boxes   = ($object);
+  my @results = ();
+  while (@boxes) {
+    my $box = shift(@boxes);
+    next unless defined $box;
+    # Simply unwind Lists to avoid unneccessary recursion; This occurs quite frequently!
+    if (((ref $box) || 'nothing') eq 'LaTeXML::Core::List') {
+      unshift(@boxes, $box->unlist);
+      next; }
+    # A Proper Box or Whatsit? It will handle it.
+    if (ref $box) {
+      local $LaTeXML::BOX = $box;
+      # [ATTEMPT to] only record if we're running in NON-VOID context.
+      # [but wantarray seems defined MUCH more than I would have expected!?]
+      if ($LaTeXML::RECORDING_CONSTRUCTION || defined wantarray) {
+        my @n = ();
+        { local $LaTeXML::RECORDING_CONSTRUCTION = 1;
+          local @LaTeXML::CONSTRUCTED_NODES = ();
+          $box->beAbsorbed($self);
+          @n = @LaTeXML::CONSTRUCTED_NODES; }    # These were created just now
+        map { $self->recordConstructedNode($_) } @n;    # record these for OUTER caller!
+        push(@results, @n); }                           # but return only the most recent set.
+      else {
+        push(@results, $box->beAbsorbed($self)); } }
+    # Else, plain string in text mode.
+    elsif (!$props{isMath}) {
+      push(@results, $self->openText($box, $props{font} || ($LaTeXML::BOX && $LaTeXML::BOX->getFont))); }
+    # Or plain string in math mode.
+    # Note text nodes can ONLY appear in <XMTok> or <text>!!!
+    # Have we already opened an XMTok? Then insert into it.
+    elsif ($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME) {
+      push(@results, $self->openMathText_internal($box)); }
+    # Else create the XMTok now.
     else {
-      return $box->beAbsorbed($self); } }
-  # Else, plain string in text mode.
-  elsif (!$props{isMath}) {
-    return $self->openText($box, $props{font} || ($LaTeXML::BOX && $LaTeXML::BOX->getFont)); }
-  # Or plain string in math mode.
-  # Note text nodes can ONLY appear in <XMTok> or <text>!!!
-  # Have we already opened an XMTok? Then insert into it.
-  elsif ($$self{model}->getNodeQName($$self{node}) eq $MATH_TOKEN_NAME) {
-    return $self->openMathText_internal($box); }
-  # Else create the XMTok now.
-  else {
-    # Odd case: constructors that work in math & text can insert raw strings in Math mode.
-    return $self->insertMathToken($box, font => $props{font}); } }
+      # Odd case: constructors that work in math & text can insert raw strings in Math mode.
+      push(@results, $self->insertMathToken($box, font => $props{font})); } }
+  return @results; }
 
 # Note that a box has been absorbed creating $node;
 # This does book keeping so that we can return the sequence of nodes
