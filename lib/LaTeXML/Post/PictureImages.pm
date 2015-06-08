@@ -25,6 +25,17 @@ sub new {
 
 #======================================================================
 
+sub find_documentclass_and_packages {
+  my ($self,      $doc)      = @_;
+  my ($classdata, @packages) = $self->SUPER::find_documentclass_and_packages($doc);
+  # If we haven't already included graphics or graphicx
+  if (!grep { /graphic(:?s|x)/ } @packages) {
+    # and if a picture has @scale
+    if ($doc->findnodes('//ltx:picture[@scale]')) {
+      # Then load graphicx as well
+      push(@packages, ['graphicx', '']); } }
+  return ($classdata, @packages); }
+
 # Return the list of Picture nodes.
 sub toProcess {
   my ($self, $doc) = @_;
@@ -35,13 +46,12 @@ sub extractTeX {
   my ($self, $doc, $node) = @_;
   my $tex = $self->cleanTeX($node->getAttribute('tex') || '');
   $tex =~ s/\n//gs;    # trim stray CR's
-  my $adjustments = '';
   if (my $u = $node->getAttribute('unitlength')) {
-    $adjustments .= "\\setlength{\\unitlength}{$u}"; }
+    $tex = "\\setlength{\\unitlength}{$u}" . $tex; }
   # xunitlength, yunitlength for pstricks???
   if (my $s = $node->getAttribute('scale')) {
-    $adjustments .= "\\scalePicture{$s}"; }
-  return "\\beginPICTURE $adjustments $tex\\endPICTURE"; }
+    $tex = "\\scalebox{$s}{$tex}"; }
+  return "\\beginPICTURE $tex\\endPICTURE"; }
 
 sub process {
   my ($self, $doc, @nodes) = @_;
