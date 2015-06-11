@@ -747,4 +747,5 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:template match="ltx:glossaryphrase[@role='acronym']"/>
 </xsl:stylesheet>
