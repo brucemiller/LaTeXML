@@ -4322,20 +4322,28 @@ AssignValue(frontmatter => {}, 'global');
 
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
-# \@add@frontmatter{tag}[attributes]{content}
-DefPrimitive('\@add@frontmatter {} OptionalKeyVals {}', sub {
-    my ($stomach, $tag, $keys, $tokens) = @_;
+# \@add@frontmatter[keys]{tag}[attributes]{content}
+# keys can have
+#   replace (to replace the current entry, if any)
+#   ifnew   (only add if no previous entry)
+DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
+    my ($stomach, $keys, $tag, $attr, $tokens) = @_;
     # Digest this as if we're already in the document body!
-    my $inpreamble = LookupValue('inPreamble');
+    my $frontmatter = LookupValue('frontmatter');
+    my $inpreamble  = LookupValue('inPreamble');
     AssignValue(inPreamble => 0);
     # Be careful since the contents may also want to add frontmatter
     # (which should be inside or after this one!)
     # So, we append this entry before digesting
     $tag = ToString($tag);
+    if ($keys && $keys->hasKey('replace') && $$frontmatter{$tag}) {    # if replace and previous entries
+      $$frontmatter{$tag} = []; }                                      # Remove previous entries
+    if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {      # if ifnew and previous entries
+      return; }                                                        # Skip this one.
     my $entry = [$tag, undef, 'to-be-filled-in'];
-    push(@{ LookupValue('frontmatter')->{$tag} }, $entry);
-    if ($keys) {
-      $$entry[1] = { $keys->beDigested($stomach)->getHash }; }
+    push(@{ $$frontmatter{$tag} }, $entry);
+    if ($attr) {
+      $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
     $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
     AssignValue(inPreamble => $inpreamble);
     return; });
