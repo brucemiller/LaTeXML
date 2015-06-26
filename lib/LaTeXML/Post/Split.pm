@@ -114,7 +114,7 @@ sub processPages {
       $doc->removeNodes(shift(@removed));
       my $id = $page->getAttribute('xml:id');
       my $tocentry = ['ltx:tocentry', {},
-        ['ltx:ref', { idref => $id, show => 'fulltitle' }]];
+        ['ltx:ref', { idref => $id, show => 'toctitle' }]];
       push(@toc, $tocentry);
       # Due to the way document building works, we remove & process children pages
       # BEFORE processing this page.

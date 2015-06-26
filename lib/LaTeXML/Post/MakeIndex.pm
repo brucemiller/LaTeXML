@@ -249,8 +249,8 @@ sub seealsoSearch_aux {
 sub makeIndexRefs {
   my ($self, $doc, $id, @styles) = @_;
   return ((($styles[0] || 'normal') ne 'normal')
-    ? ['ltx:text', { font => $styles[0] }, ['ltx:ref', { idref => $id }]]
-    : ['ltx:ref', { idref => $id }]); }
+    ? ['ltx:text', { font => $styles[0] }, ['ltx:ref', { idref => $id, show => 'typerefnum' }]]
+    : ['ltx:ref', { idref => $id, show => 'typerefnum' }]); }
 
 # ================================================================================
 sub conjoin {
