@@ -25,8 +25,11 @@ sub new {
   $$self{db}       = $options{db};
   $$self{urlstyle} = $options{urlstyle};
 ##  $$self{toc_show} = ($options{number_sections} ? "typerefnum title" : "title");
-  $$self{toc_show}       = 'toctitle';
-  $$self{ref_show}       = ($options{number_sections} ? "typerefnum" : "title");
+  # Default format for ltx:ref's within TOC's
+  $$self{toc_show} = 'toctitle';
+  # Default format for regular ltx:ref's
+  # [BTW: Does number_sections really still make sense?]
+  $$self{ref_show} = ($options{number_sections} ? "refnum" : "title");
   $$self{min_ref_length} = (defined $options{min_ref_length} ? $options{min_ref_length} : 1);
   $$self{ref_join} = (defined $options{ref_join} ? $options{ref_join} : " \x{2023} "); # or " in " or ... ?
   $$self{navigation_toc} = $options{navigation_toc};
@@ -240,7 +243,7 @@ sub fill_in_tocs {
 #
 sub gentoc {
   my ($self, $doc, $id, $types, $strict, $localto, $selfid) = @_;
-  my $show = 'toctitle';
+  my $show = $$self{toc_show};
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
@@ -278,6 +281,7 @@ sub gentocentry {
 # This is useful for putting in a navigation bar.
 sub gentoc_context {
   my ($self, $doc, $id, $types) = @_;
+  my $show = $$self{toc_show};
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
     my @navtoc = $self->gentoc($doc, $id, $types, 0, $entry->getValue('location') || '', $id);
@@ -287,12 +291,12 @@ sub gentoc_context {
       @navtoc =
         map { ($_->getValue('id') eq $id
           ? @navtoc
-          : $self->gentocentry($doc, $_, undef, 'toctitle')) }
+          : $self->gentocentry($doc, $_, undef, $show)) }
         grep { $$normaltoctypes{ $_->getValue('type') } }
         map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
       if ($$types{ $entry->getValue('type') }) {
-        @navtoc = ($self->gentocentry($doc, $entry, undef, 'toctitle', @navtoc)); }
+        @navtoc = ($self->gentocentry($doc, $entry, undef, $show, @navtoc)); }
       $id = $p_id; }
     return @navtoc; }
   else {
@@ -323,13 +327,10 @@ sub fill_in_refs {
     my $id   = $ref->getAttribute('idref');
     my $show = $ref->getAttribute('show');
     $show = $$self{ref_show} unless $show;
-    $show = $$self{toc_show} if ($show eq 'fulltitle') || ($show =~ /.+title|title.+/);
     if (!$id) {
       if (my $label = $ref->getAttribute('labelref')) {
         my $entry;
-        if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
-          $show =~ s/^type//;       # Since author may have put explicit \S\ref... in!
-        }
+        if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) { }
         else {
           $self->note_missing('warn', 'Target for Label', $label);
           my $cl = $ref->getAttribute('class');
@@ -611,29 +612,45 @@ sub generateRef_aux {
   my ($self, $doc, $entry, $show) = @_;
   my @stuff = ();
   my $OK    = 0;
-  #??  $show =~ s/typerefnum\s*title/title/;    # Same thing NOW!!!
   while ($show) {
     if ($show =~ s/^type(\.?\s*)refnum(\.?\s*)//) {
-      if (my $frefnum = $entry->getValue('frefnum') || $entry->getValue('refnum')) {
+      if (my $frefnum = $entry->getValue('refnum')) {
+        $frefnum = $entry->getValue('frefnum') || $frefnum;
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' }, $self->prepRefText($doc, $frefnum)]); } }
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
+            $self->prepRefText($doc, $frefnum)]); } }
     elsif ($show =~ s/^rrefnum(\.?\s*)//) {
       if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('refnum')) {
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' }, $self->prepRefText($doc, $refnum)]); } }
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
+            $self->prepRefText($doc, $refnum)]); } }
     elsif ($show =~ s/^refnum(\.?\s*)//) {
       if (my $refnum = $entry->getValue('refnum')) {
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' }, $self->prepRefText($doc, $refnum)]); } }
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
+            $self->prepRefText($doc, $refnum)]); } }
     elsif ($show =~ s/^toctitle//) {
       if (my $title = $entry->getValue('toctitle') || $entry->getValue('title')
         || $entry->getValue('toccaption')) {
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' }, $self->prepRefText($doc, $title)]); } }
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
+            $self->prepRefText($doc, $title)]); } }
     elsif ($show =~ s/^title//) {
       if (my $title = $entry->getValue('title') || $entry->getValue('toccaption')) {    # !!!
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' }, $self->prepRefText($doc, $title)]); } }
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
+            $self->prepRefText($doc, $title)]); } }
+    elsif ($show =~ s/^rawtoctitle//) {
+      if (my $title = $entry->getValue('toctitle') || $entry->getValue('title')
+        || $entry->getValue('toccaption')) {
+        $OK = 1;
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
+            $self->prepRawRefText($doc, $title)]); } }
+    elsif ($show =~ s/^rawtitle//) {
+      if (my $title = $entry->getValue('title') || $entry->getValue('toccaption')) {    # !!!
+        $OK = 1;
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
+            $self->prepRawRefText($doc, $title)]); } }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
   return ($OK ? @stuff : ()); }
@@ -641,6 +658,15 @@ sub generateRef_aux {
 sub prepRefText {
   my ($self, $doc, $title) = @_;
   return $doc->cloneNodes($doc->trimChildNodes($self->fillInTitle($doc, $title))); }
+
+sub prepRawRefText {
+  my ($self, $doc, $title) = @_;
+  my $node = $self->prepRefText($doc, $title);
+  if ($doc->getQName($node) =~ /^ltx:(?:toc)title$/) {    # Trim tags from titles
+    my ($first) = element_nodes($node);
+    if ($first && ($doc->getQName($first) eq 'ltx:tag')) {
+      $node->removeChild($first); } }
+  return $node; }
 
 # Generate a title string for ltx:ref
 sub generateTitle {
@@ -689,15 +715,13 @@ sub fillInTitle {
     next if $ref->textContent;
     my $show = $ref->getAttribute('show');
     $show = $$self{ref_show} unless $show;
-    $show = $$self{toc_show} if $show eq 'fulltitle';
     my $refentry;
     if (my $id = $ref->getAttribute('idref')) {
       $refentry = $$self{db}->lookup("ID:$id"); }
     elsif (my $label = $ref->getAttribute('labelref')) {
       $refentry = $$self{db}->lookup($label);
       if ($id = $refentry->getValue('id')) {
-        $refentry = $$self{db}->lookup("ID:$id"); }
-      $show =~ s/^type//; }    # Since author may have put explicit \S\ref... in!
+        $refentry = $$self{db}->lookup("ID:$id"); } }
     if ($refentry) {
       $doc->replaceNode($ref, $self->generateRef_aux($doc, $refentry, $show)); } }
   # Fill in (replace, actually) any embedded citations.
