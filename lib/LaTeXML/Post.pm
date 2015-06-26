@@ -1252,10 +1252,6 @@ sub trimChildNodes {
   elsif (!ref $node) {
     return ($node); }
   elsif (my @children = $node->childNodes) {
-    if (($self->getQName($node) eq 'ltx:title') &&    # Trim tags from titles
-      ($children[0]->nodeType == XML_ELEMENT_NODE) && ($self->getQName($children[0]) eq 'ltx:tag')) {
-      shift @children;
-    }
     if ($children[0]->nodeType == XML_TEXT_NODE) {
       my $s = $children[0]->data;
       $s =~ s/^\s+//;
@@ -1273,7 +1269,7 @@ sub trimChildNodes {
 sub addNavigation {
   my ($self, $relation, $id) = @_;
   return if $self->findnode('//ltx:navigation/ltx:ref[@rel="' . $relation . '"][@idref="' . $id . '"]');
-  my $ref = ['ltx:ref', { idref => $id, rel => $relation, show => 'fulltitle' }];
+  my $ref = ['ltx:ref', { idref => $id, rel => $relation, show => 'toctitle' }];
   if (my $nav = $self->findnode('//ltx:navigation')) {
     $self->addNodes($nav, $ref); }
   else {
