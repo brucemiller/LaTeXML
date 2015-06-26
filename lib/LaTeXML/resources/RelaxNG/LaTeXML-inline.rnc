@@ -122,10 +122,9 @@ glossaryref_attributes =
   ## postprocessing, if it is empty.
   ## It consists of the words
   ##   \texttt{type} (standing for the object type, eg. Ch.),
-  ##   \texttt{refnum} and \texttt{title}
-  ## mixed with arbitrary characters. The 
-  ## It can also be \texttt{fulltitle}, which indicates the title 
-  ## with prefix and type if section numbering is enabled.
+  ##   \texttt{refnum} and \texttt{title} (including type and refnum)
+  ## or \texttt{toctitle} (for the shortform of the title)
+  ## mixed with arbitrary characters.
   attribute show { text }?
 
 ## Content model for \elementref{glossaryref}.
@@ -184,10 +183,9 @@ ref_attributes =
   ## postprocessing, if it is empty.
   ## It consists of the words
   ##   \texttt{type} (standing for the object type, eg. Ch.),
-  ##   \texttt{refnum} and \texttt{title}
-  ## mixed with arbitrary characters. The 
-  ## It can also be \texttt{fulltitle}, which indicates the title 
-  ## with prefix and type if section numbering is enabled.
+  ##   \texttt{refnum} and \texttt{title} (including type and refnum)
+  ## or \texttt{toctitle} (for the shortform of the title)
+  ## mixed with arbitrary characters.
   attribute show { text }?,
 
   ## gives a longer form description of the target,
