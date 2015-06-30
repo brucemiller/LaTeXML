@@ -374,6 +374,10 @@ sub popFrame {
         map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
   return; }
 
+sub getFrameDepth {
+  my ($self) = @_;
+  return scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }) - 1; }
+
 #======================================================================
 # This is primarily about catcodes, but a bit more...
 
