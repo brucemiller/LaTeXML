@@ -2717,10 +2717,10 @@ DefMacro('\bibliography Semiverbatim', sub {
     for my $bf (split(',', UnTeX($bib_files))) {
       push(
         @tokens,
-        Tokenize(
-          '\csname lx@ifusebbl\endcsname{' . $bf . '}' .
-            '{\csname lx@bblbibliography\endcsname{' . $bf . '}}' .
-            '{\csname @bibliography\endcsname{' . $bf . '}}')); }
+        TokenizeInternal(
+          '\lx@ifusebbl{' . $bf . '}' .
+            '{\lx@bblbibliography{' . $bf . '}}' .
+            '{\@bibliography{' . $bf . '}}')); }
 
     return @tokens; });
 
