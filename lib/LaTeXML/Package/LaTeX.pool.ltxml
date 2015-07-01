@@ -2710,32 +2710,22 @@ sub beginBibliography {
   setupPseudoBibitem();
   return; }
 
-DefMacro('\bibliography Semiverbatim', sub {
-    my ($gullet, $bib_files) = @_;
-
-    my @tokens;
-    for my $bf (split(',', UnTeX($bib_files))) {
-      push(
-        @tokens,
-        TokenizeInternal(
-          '\lx@ifusebbl{' . $bf . '}' .
-            '{\lx@bblbibliography{' . $bf . '}}' .
-            '{\@bibliography{' . $bf . '}}')); }
-
-    return @tokens; });
-
+DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
 DefMacro('\lx@ifusebbl{}{}{}', sub {
-    my ($gullet, $bib_file, $bbl_clause, $bib_clause) = @_;
+    my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
 
-    $bib_file = UnTeX($bib_file);
-    if (not $bib_file =~ /\.bib$/) {
-      $bib_file .= '.bib'; }
-    my $path = FindFile($bib_file);
+    my $bbl_path = FindFile(ToString(Expand(T_CS('\jobname'))) . '.bbl');
+    if (not $bbl_path) {
+      return $bib_clause->unlist; }
 
-    if ($path) {
-      $bib_clause->unlist; }
-    else {
-      $bbl_clause->unlist; } });
+    for my $bf (split(',', UnTeX($bib_files))) {
+      if (not $bf =~ /\.bib$/) {
+        $bf .= '.bib'; }
+      my $path = FindFile($bf);
+      if (not $path) {
+        return $bbl_clause->unlist; } }
+
+    return $bib_clause->unlist; });
 DefMacro('\lx@bblbibliography Semiverbatim', sub {
     my ($gullet, $bib_file) = @_;
     return (T_CS('\input'), T_BEGIN, Tokenize('\jobname.bbl'), T_END); });
