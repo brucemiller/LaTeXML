@@ -374,6 +374,13 @@ sub popFrame {
         map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
   return; }
 
+# Determine depth of group nesting created by {,},\bgroup,\egroup,\begingroup,\endgroup
+# by counting all frames which are not Daemon frames (and thus don't possess _FRAME_LOCK_).
+# This may give incorrect results for some special environments (e.g. minipage)
+sub getFrameDepth {
+  my ($self) = @_;
+  return scalar(grep { not defined $$_{_FRAME_LOCK_} } @{ $$self{undo} }) - 1; }
+
 #======================================================================
 # This is primarily about catcodes, but a bit more...
 
