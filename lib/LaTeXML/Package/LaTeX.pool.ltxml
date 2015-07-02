@@ -2713,12 +2713,16 @@ sub beginBibliography {
 DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
 DefMacro('\lx@ifusebbl{}{}{}', sub {
     my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
+    $bib_files = ToString($bib_files);
+
+    if (not $bib_files) {
+      return; }
 
     my $bbl_path = FindFile(ToString(Expand(T_CS('\jobname'))) . '.bbl');
     if (not $bbl_path) {
       return $bib_clause->unlist; }
 
-    for my $bf (split(',', UnTeX($bib_files))) {
+    for my $bf (split(',', $bib_files)) {
       if (not $bf =~ /\.bib$/) {
         $bf .= '.bib'; }
       my $path = FindFile($bf);
@@ -2726,9 +2730,6 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
         return $bbl_clause->unlist; } }
 
     return $bib_clause->unlist; });
-DefMacro('\lx@bblbibliography Semiverbatim', sub {
-    my ($gullet, $bib_file) = @_;
-    return (T_CS('\input'), T_BEGIN, Tokenize('\jobname.bbl'), T_END); });
 DefConstructor('\@bibliography Semiverbatim',
   "<ltx:bibliography files='#1' xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
