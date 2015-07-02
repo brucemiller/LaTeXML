@@ -197,7 +197,7 @@ DefOpenMath('Token:?:?', sub {
       my $cd = $token->getAttribute('omcd') || 'latexml';
       return ['om:OMS', { name => $meaning, cd => $cd }]; }
     else {
-      my ($name, %mmlattr) = LaTeXML::Post::MathML::stylizeContent($token, 1);
+      my ($name, %mmlattr) = LaTeXML::Post::MathML::stylizeContent($token, 'om:OMV');
       if (my $mv = $mmlattr{mathvariant}) {
         $name = $mv . "-" . $name; }
       return ['om:OMV', { name => $name }]; } });
