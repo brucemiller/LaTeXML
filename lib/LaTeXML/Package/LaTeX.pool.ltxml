@@ -2713,7 +2713,7 @@ sub beginBibliography {
 DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
 DefMacro('\lx@ifusebbl{}{}{}', sub {
     my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
-    $bib_files = ToString($bib_files);
+    $bib_files = ToString(Expand($bib_files));
 
     return unless $bib_files;
 
