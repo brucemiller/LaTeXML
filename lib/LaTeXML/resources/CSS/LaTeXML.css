@@ -122,7 +122,7 @@ td.ltx_subfloat { width:50%; }
 .ltx_eqn_div { display:block; width:95%; text-align:center; }
 
 /* equations in aligned mode (aligning tags, etc as well as equations) */
-.ltx_eqn_table { display:table; width:100%; }
+.ltx_eqn_table { display:table; width:100%; border-collapse:collapse; }
 .ltx_eqn_row   { display:table-row; }
 .ltx_eqn_cell  { display:table-cell; width:auto; }
 
