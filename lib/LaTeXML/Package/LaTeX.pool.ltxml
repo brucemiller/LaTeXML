@@ -2714,7 +2714,6 @@ DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\
 DefMacro('\lx@ifusebbl{}{}{}', sub {
     my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
     $bib_files = ToString(Expand($bib_files));
-
     return unless $bib_files;
 
     my $bbl_path = FindFile(ToString(Expand(T_CS('\jobname'))), type => 'bbl');
