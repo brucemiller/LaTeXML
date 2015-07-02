@@ -2717,12 +2717,10 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
 
     return unless $bib_files;
 
-    my $bbl_path     = FindFile(ToString(Expand(T_CS('\jobname'))) . '.bbl');
+    my $bbl_path = FindFile(ToString(Expand(T_CS('\jobname'))), type => 'bbl');
     my $has_all_bibs = 1;
     for my $bf (split(',', $bib_files)) {
-      if (not $bf =~ /\.bib$/) {
-        $bf .= '.bib'; }
-      my $path = FindFile($bf);
+      my $path = FindFile($bf, type => 'bib');
       if (not $path) {
         $has_all_bibs = 0;
         last; } }
