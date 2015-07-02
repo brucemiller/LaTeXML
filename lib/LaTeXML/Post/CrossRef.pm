@@ -330,7 +330,8 @@ sub fill_in_refs {
     if (!$id) {
       if (my $label = $ref->getAttribute('labelref')) {
         my $entry;
-        if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) { }
+        if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
+	    $ref->setAttribute(idref => $id); }
         else {
           $self->note_missing('warn', 'Target for Label', $label);
           my $cl = $ref->getAttribute('class');
@@ -369,7 +370,7 @@ sub fill_in_RDFa_refs {
         if (my $label = $ref->getAttribute($key . 'labelref')) {
           my $entry;
           if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
-          }
+	      $ref->setAttribute($key . 'idref' => $id); }
           else {
             $self->note_missing('warn', "Target for $key Label", $label);
           } } }
