@@ -2715,8 +2715,7 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
     my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
     $bib_files = ToString($bib_files);
 
-    if (not $bib_files) {
-      return; }
+    return unless $bib_files;
 
     my $bbl_path     = FindFile(ToString(Expand(T_CS('\jobname'))) . '.bbl');
     my $has_all_bibs = 1;
