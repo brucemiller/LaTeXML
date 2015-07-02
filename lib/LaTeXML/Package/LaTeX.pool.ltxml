@@ -2719,17 +2719,19 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
       return; }
 
     my $bbl_path = FindFile(ToString(Expand(T_CS('\jobname'))) . '.bbl');
-    if (not $bbl_path) {
-      return $bib_clause->unlist; }
-
+    my $has_all_bibs = 1;
     for my $bf (split(',', $bib_files)) {
       if (not $bf =~ /\.bib$/) {
         $bf .= '.bib'; }
       my $path = FindFile($bf);
       if (not $path) {
-        return $bbl_clause->unlist; } }
+        $has_all_bibs = 0;
+        last; } }
 
-    return $bib_clause->unlist; });
+    if ($has_all_bibs or not $bbl_path) {
+      return $bib_clause->unlist; }
+    else {
+      return $bbl_clause->unlist; } });
 DefConstructor('\@bibliography Semiverbatim',
   "<ltx:bibliography files='#1' xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
