@@ -2637,13 +2637,12 @@ DefPrimitive('\nofiles', undef);
 #======================================================================
 
 # \label attaches a label to the nearest parent that can accept a labels attribute
+# but only those that have an xml:id (but should this require a refnum and/or title ???)
 # Note that latex essentially allows redundant labels, but we can record only one!!!
-# No; next version. Find nearest that can accept a refnum attribute.
-# Or, better yet (more latex-like??) nearest that HAS a refnum!?!
 DefConstructor('\label Semiverbatim', sub {
     my ($document, $olabel, %props) = @_;
     my $label = $props{label};
-    if (my $savenode = $document->floatToAttribute('labels')) {
+    if (my $savenode = $document->floatToLabel) {
       my $node = $document->getNode;
       my %labels = map { ($_ => 1) } $label, split(/\s+/, $node->getAttribute('labels') || '');
       $document->setAttribute($node, labels => join(' ', sort keys %labels));
