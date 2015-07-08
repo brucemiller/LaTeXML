@@ -827,7 +827,7 @@ sub getInsertionCandidates {
   push(@nodes, $first) if $isCapture;
   return @nodes; }
 
-# The following two "floatTo" operations find an appropriate point
+# The following "floatTo" operations find an appropriate point
 # within the document tree preceding the current insertion point.
 # They return undef (& issue a warning) if such a point cannot be found.
 # Otherwise, they move the current insertion point to the appropriate node,
@@ -867,6 +867,27 @@ sub floatToAttribute {
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node can get attribute '$key'",
+      $self->getInsertionContext());
+    return; } }
+
+# find a node that can accept a label.
+# A bit more than just whether the element can have the attribute, but
+# whether it has an id (and ideally either a refnum or title)
+sub floatToLabel {
+  my ($self) = @_;
+  my $key = 'labels';
+  my @candidates = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  # Should we only accept a node that already has an id, or should we create an id?
+  while (@candidates
+    && !($self->canHaveAttribute($candidates[0], $key)
+      && $candidates[0]->hasAttribute('xml:id'))) {
+    shift(@candidates); }
+  if (my $n = shift(@candidates)) {
+    my $savenode = $$self{node};
+    $self->setNode($n);
+    return $savenode; }
+  else {
+    Warn('malformed', $key, $self, "No open node with an xml:id can get attribute '$key'",
       $self->getInsertionContext());
     return; } }
 
