@@ -2649,7 +2649,7 @@ DefConstructor('\label Semiverbatim', sub {
       my %labels = map { ($_ => 1) } $label, split(/\s+/, $node->getAttribute('labels') || '');
       $document->setAttribute($node, labels => join(' ', sort keys %labels));
       $document->setNode($savenode); } },
-  reversion   => '',
+  reversion   => '\label{#1}',
   properties  => { alignmentSkippable => 1 },
   afterDigest => sub {
     my $label = CleanLabel(ToString($_[1]->getArg(1)));
