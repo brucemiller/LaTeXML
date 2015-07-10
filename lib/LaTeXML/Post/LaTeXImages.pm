@@ -82,7 +82,13 @@ sub new {
   my $fmt = '%';
   if ($$self{use_dvisvgm}) {
     # img name uses 2 digits for page; what happens at 100?
-    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
+    ##    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
+    # dvisvgm currently creates glyph descriptions w/ unicode attribute having the wrong codepoint
+    # firefox, chromium use this codepoint instead of the glyph "drawing"
+    # a later version of dvisvgm should do better at synthesizing the unicode?
+    # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
+    # Also, increase the bounding box from min by 1pt
+    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=1pt --mag=$mag --no-fonts -o imgx-${fmt}p";
     $$self{dvicmd_output_name} = 'imgx-%02d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
