@@ -1529,9 +1529,7 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # not the numbering of the equationgroup itself.
 DefPrimitiveI('\@equationgroup@number', undef, sub { AssignValue(EQUATIONGROUP_NUMBER => '_AUTO_'); });
 DefPrimitiveI('\@equationgroup@nonumber', undef, sub { AssignValue(EQUATIONGROUP_NUMBER => 0); });
-DefPrimitiveI('\nonumber', undef, sub {
- AssignValue(EQUATIONROW_NUMBER => 0, 'global');
- Box(undef, undef, undef, T_CS('\nonumber'), alignmentSkippable => 1);});
+DefPrimitiveI('\nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0, 'global'); });
 
 # Alternate versions of alignment open/close@row that deal with numbering.
 # Depending on how an eqnarray ends, we might end up with an empty equation, which will be deleted.
