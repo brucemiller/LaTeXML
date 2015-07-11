@@ -2709,7 +2709,26 @@ sub beginBibliography {
   setupPseudoBibitem();
   return; }
 
-DefMacro('\bibliography Semiverbatim', '\ifx.#1.\else\@bibliography{#1}\fi');
+DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
+DefMacro('\lx@ifusebbl{}{}{}', sub {
+    my ($gullet, $bib_files, $bbl_clause, $bib_clause) = @_;
+    $bib_files = ToString(Expand($bib_files));
+    return unless $bib_files;
+    my $jobname = ToString(Expand(T_CS('\jobname')));
+
+    my $bbl_path = FindFile($jobname, type => 'bbl');
+    my $missing_bibs = '';
+    for my $bf (split(',', $bib_files)) {
+      my $bib_path = FindFile($bf, type => 'bib');
+      if (not $bib_path) {
+        $missing_bibs .= ',' unless length($missing_bibs) == 0;
+        $missing_bibs .= $bf; } }
+
+    if (length($missing_bibs) == 0 or not $bbl_path) {
+      return $bib_clause->unlist; }
+    else {
+      Info('expected', $missing_bibs, $_[0], "Couldn't find all bib files, using " . $jobname . ".bbl instead");
+      return $bbl_clause->unlist; } });
 DefConstructor('\@bibliography Semiverbatim',
   "<ltx:bibliography files='#1' xml:id='#id' "
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
