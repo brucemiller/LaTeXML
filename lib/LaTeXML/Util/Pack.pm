@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Util::Pathname;
 use File::Spec::Functions qw(catfile);
 use File::Path qw(rmtree);
+use File::Slurp qw(read_file);
 use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
@@ -210,7 +211,13 @@ sub get_math {
   if (!$math_count) {
     return get_embeddable($doc); }
   elsif ($math_count == 1) {
-    return $mnodes[0]; }
+    # A bit unusual, but if the math has an SVG/other image representation in an external file,
+    # we really just want to return the contents of that file
+    if (my $image_src = $mnodes[0]->getAttribute('imagesrc')) {
+      my $image_content = read_file(pathname_find($image_src));
+      return $image_content; }
+    else {
+      return $mnodes[0]; } }
   elsif ($math_count > 1) {
     my $math       = $mnodes[0];
     my $math_found = 0;
