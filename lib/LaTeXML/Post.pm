@@ -1255,11 +1255,17 @@ sub trimChildNodes {
     if ($children[0]->nodeType == XML_TEXT_NODE) {
       my $s = $children[0]->data;
       $s =~ s/^\s+//;
-      $children[0]->setData($s); }
+      if ($s) {
+        $children[0]->setData($s); }
+      else {
+        shift(@children); } }
     if ($children[-1]->nodeType == XML_TEXT_NODE) {
       my $s = $children[-1]->data;
       $s =~ s/\s+$//;
-      $children[-1]->setData($s); }
+      if ($s) {
+        $children[-1]->setData($s); }
+      else {
+        pop(@children); } }
     return @children; }
   else {
     return (); } }
