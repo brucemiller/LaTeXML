@@ -477,11 +477,11 @@ sub pmml_internal {
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
+    my @c = $doc->trimChildNodes($node);
     if (!$$self{nestmath}) {
-      my @c = $node->childNodes;
       return pmml_row(map { pmml_text_aux($_) } @c); }
     else {
-      return ['m:mtext', {}, $self->convertXMTextContent($doc, $node->childNodes)]; } }
+      return ['m:mtext', {}, $self->convertXMTextContent($doc, @c)]; } }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
