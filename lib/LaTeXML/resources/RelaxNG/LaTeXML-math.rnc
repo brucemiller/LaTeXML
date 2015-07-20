@@ -375,8 +375,13 @@ XMArray_attributes =
   attribute vattach { "top" | "middle" | "bottom" | "baseline" }?,
 
   ## the desired width of the array.
-  attribute width { Length.type }?
+  attribute width { Length.type }?,
 
+  ## the spacing between rows
+  attribute rowsep { Length.type}?,
+
+  ## the spacing between columns
+  attribute colsep { Length.type}?
 
 ## Content model for \elementref{XMArray}.
 XMArray_model = XMRow*

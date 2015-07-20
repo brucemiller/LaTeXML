@@ -48,6 +48,18 @@ The model is basically a copy of HTML4's table.</a:documentation>
         <ref name="Length.type"/>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="rowsep">
+        <a:documentation>the spacing between rows</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="colsep">
+        <a:documentation>the spacing between columns</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
   </define>
   <define name="tabular_model">
     <a:documentation>Content model for \elementref{tabular}.</a:documentation>

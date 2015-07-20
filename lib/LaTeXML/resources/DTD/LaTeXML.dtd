@@ -2297,7 +2297,9 @@
   meaning CDATA #IMPLIED
   omcd CDATA #IMPLIED
   vattach (top|middle|bottom|baseline) #IMPLIED
-  width CDATA #IMPLIED>
+  width CDATA #IMPLIED
+  rowsep CDATA #IMPLIED
+  colsep CDATA #IMPLIED>
 
 <!ELEMENT ltx:XMRow (ltx:XMCell)*>
 <!ATTLIST ltx:XMRow
@@ -2379,7 +2381,9 @@
   xml:id ID #IMPLIED
   fragid CDATA #IMPLIED
   vattach (top|middle|bottom) #IMPLIED
-  width CDATA #IMPLIED>
+  width CDATA #IMPLIED
+  rowsep CDATA #IMPLIED
+  colsep CDATA #IMPLIED>
 
 <!ELEMENT ltx:thead (ltx:tr)*>
 <!ATTLIST ltx:thead
