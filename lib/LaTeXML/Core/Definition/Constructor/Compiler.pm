@@ -156,6 +156,7 @@ sub translate_value {
     else {
       $value = "\$arg$n" } }
   elsif (s/^\#([\w\-_]+)//) { $value = "\$prop{'$1'}"; }    # Recognize #prop for whatsit properties
+  elsif (s/^\#\#//)         { $value = "'#'"; }
   elsif (s/$TEXT_RE//so) { $value = "'" . slashify($1) . "'"; }
   return $value; }
 
