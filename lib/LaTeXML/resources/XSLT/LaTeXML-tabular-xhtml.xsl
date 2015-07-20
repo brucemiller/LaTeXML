@@ -149,7 +149,6 @@
             </xsl:if>
             <xsl:text>ltx_rowspan</xsl:text>
           </xsl:if>
-
         </xsl:with-param>
         <xsl:with-param name="extra_style">
           <xsl:if test="starts-with(@align,'char:')">
@@ -157,6 +156,20 @@
             <xsl:value-of select="substring-after(@align,'char:')"/>
             <xsl:text>";</xsl:text>
           </xsl:if>
+          <xsl:choose>
+            <xsl:when test="ancestor::ltx:tabular[@rowsep and @colsep]">
+              <xsl:value-of select="concat('padding:',ancestor::ltx:tabular/@rowsep,' ',
+                                    ancestor::ltx:tabular/@colsep,';')"/>
+            </xsl:when>
+            <xsl:when test="ancestor::ltx:tabular/@rowsep">
+              <xsl:value-of select="concat('padding-top:',ancestor::ltx:tabular/@rowsep,';')"/>
+              <xsl:value-of select="concat('padding-bottom:',ancestor::ltx:tabular/@rowsep,';')"/>
+            </xsl:when>
+            <xsl:when test="ancestor::ltx:tabular/@colsep">
+              <xsl:value-of select="concat('padding-left:',ancestor::ltx:tabular/@colsep,';')"/>
+              <xsl:value-of select="concat('padding-right:',ancestor::ltx:tabular/@colsep,';')"/>
+            </xsl:when>
+          </xsl:choose>
         </xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@colspan">
