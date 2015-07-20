@@ -51,7 +51,7 @@ our @EXPORT = (qw(&DefExpandable
     &DefMacro &DefMacroI
     &DefConditional &DefConditionalI &IfCondition &SetCondition
     &DefPrimitive  &DefPrimitiveI
-    &DefRegister &DefRegisterI
+    &DefRegister &DefRegisterI &LookupRegister &AssignRegister
     &DefConstructor &DefConstructorI
     &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
@@ -1071,6 +1071,28 @@ sub DefRegisterI {
       readonly     => $options{readonly}),
     'global');
   return; }
+
+sub LookupRegister {
+  my ($cs, @parameters) = @_;
+  my $defn;
+  $cs = T_CS($cs) unless ref $cs;
+  if (($defn = $STATE->lookupDefinition($cs)) && $defn->isRegister) {
+    return $defn->valueOf(@parameters); }
+  else {
+    Error('expected', 'register', $STATE->getStomach,
+      "The control sequence " . ToString($cs) . " is not a register");
+    return; } }
+
+sub AssignRegister {
+  my ($cs, $value, @parameters) = @_;
+  my $defn;
+  $cs = T_CS($cs) unless ref $cs;
+  if (($defn = $STATE->lookupDefinition($cs)) && $defn->isRegister) {
+    return $defn->setValue($value, @parameters); }
+  else {
+    Error('expected', 'register', $STATE->getStomach,
+      "The control sequence " . ToString($cs) . " is not a register");
+    return; } }
 
 sub flatten {
   my (@stuff) = @_;
