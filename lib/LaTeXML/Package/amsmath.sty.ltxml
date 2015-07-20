@@ -374,7 +374,7 @@ DefPrimitive('\@amsalign@bindings', sub {
     my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
     amsalignBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]),
-      attributes => { class => 'ltx_eqn_align' });
+      attributes => { class => 'ltx_eqn_align', colsep => '0pt' });
 });
 
 # Each equation row (except intertext) consists of pairs (LHS, =RHS); group accordingly.
@@ -513,8 +513,9 @@ sub amsAlignedBindings {
       T_CS('\displaystyle')) };
   my $col2 = { before => Tokens(T_CS('\displaystyle')),
     after => Tokens(T_CS('\hfil')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
-  alignmentBindings($template, undef, attributes => { name => 'aligned' });
+  my $col3 = { before => Tokenize('\hspace{1em}') };
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
+  alignmentBindings($template, undef, attributes => { name => 'aligned', colsep => '0pt' });
   Let("\\\\", '\@alignment@newline@noskip');
   return; }
 
