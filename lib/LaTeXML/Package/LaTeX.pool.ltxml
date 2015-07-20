@@ -1617,7 +1617,9 @@ sub eqnarrayBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      attributes => { class => 'ltx_eqn_eqnarray' }));
+      attributes => { class => 'ltx_eqn_eqnarray',
+        # UGH! \arraycolsep * 2
+        colsep => LookupRegister('\arraycolsep')->multiply(2) }));
 
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
@@ -2455,6 +2457,7 @@ DefPrimitiveI('\@tabbing@hfil',       undef, undef);
 DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
+# Should there be some rowsep/colsep set here?
 sub tabbingBindings {
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(
@@ -2504,9 +2507,21 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 # attributes to all cells.  For HTML, CSS will be necessary to display them.
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
+DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
+DefRegister('\tabcolsep',            Dimension('6pt'));
+DefMacroI('\arraystretch', undef, "1");
+
 sub tabularBindings {
   my ($template, %properties) = @_;
   $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
+  if (!defined $properties{attributes}{colsep}) {
+    my $sep = LookupRegister('\tabcolsep');
+    if ($sep->valueOf != LookupRegister('\lx@default@tabcolsep')->valueOf) {
+      $properties{attributes}{colsep} = $sep; } }
+  if (!defined $properties{attributes}{rowsep}) {
+    my $str = ToString(Expand(T_CS('\arraystretch')));
+    if ($str != 1) {
+      $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   alignmentBindings($template, 'text', %properties);
   # Do like AddToMacro, but NOT global!
   foreach my $name ('@row@before', '@row@after', '@column@before', '@column@after') {
@@ -2561,8 +2576,9 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
   sizer        => '#3',
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    LookupValue('Alignment')->setProperties(
-      attributes => { vattach => translateAttachment($whatsit->getArg(1)) }); },
+    my $attr = LookupValue('Alignment')->getProperty('attributes');
+    $$attr{vattach} = translateAttachment($whatsit->getArg(1));
+    return; },
   mode => 'text');
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
@@ -2595,12 +2611,11 @@ DefConstructor('\cline{}', '',
 
 DefConstructorI('\vline', undef, "",    # ???
   properties => { isVerticalRule => 1 },);
-DefRegister('\arraycolsep',    Dimension('5pt'));
-DefRegister('\tabcolsep',      Dimension('6pt'));
-DefRegister('\arrayrulewidth', Dimension('0.4pt'));
-DefRegister('\doublerulesep',  Dimension('2pt'));
+DefRegister('\lx@default@arraycolsep', Dimension('5pt'));
+DefRegister('\arraycolsep',            Dimension('5pt'));
+DefRegister('\arrayrulewidth',         Dimension('0.4pt'));
+DefRegister('\doublerulesep',          Dimension('2pt'));
 DefMacro('\extracolsep{}', Tokens());
-DefMacroI('\arraystretch',   undef, "1");
 DefMacroI('\tabularnewline', undef, Tokens());
 
 #======================================================================
@@ -2608,9 +2623,16 @@ DefMacroI('\tabularnewline', undef, Tokens());
 
 DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     my ($stomach, $pos, $template) = @_;
-    alignmentBindings($template, 'math',
-      attributes => { vattach => translateAttachment($pos),
-        role => 'ARRAY' });
+    my $attr = { vattach => translateAttachment($pos),
+      role => 'ARRAY' };
+    # Determine column and row separations, if non default
+    my $colsep = LookupRegister('\arraycolsep');
+    if ($colsep->valueOf != LookupRegister('\lx@default@arraycolsep')->valueOf) {
+      $$attr{colsep} = $colsep; }
+    my $str = ToString(Expand(T_CS('\arraystretch')));
+    if ($str != 1) {
+      $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
+    alignmentBindings($template, 'math', attributes => $attr);
     return; });
 
 DefMacro('\array[]{}',
