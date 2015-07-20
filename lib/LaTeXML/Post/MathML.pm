@@ -444,11 +444,14 @@ sub pmml_internal {
   elsif ($tag eq 'ltx:XMArray') {
     my $style   = $node->getAttribute('mathstyle');
     my $vattach = $node->getAttribute('vattach');
+    my $rowsep  = $node->getAttribute('rowsep') || '0pt';
+    my $colsep  = $node->getAttribute('colsep') || '5pt';
     $vattach = 'axis' if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
     my $styleattr = $style && $stylemap{$LaTeXML::MathML::STYLE}{$style};
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
     my @rows = ();
+
     foreach my $row (element_nodes($node)) {
       my @cols = ();
       foreach my $col (element_nodes($row)) {
@@ -471,6 +474,8 @@ sub pmml_internal {
 ### Either it should scale with font size, or be recorded when creating the alignment!
 ####    my $result = ['m:mtable', { rowspacing => "0.2ex", columnspacing => "0.4em", align => $vattach }, @rows];
     my $result = ['m:mtable', { ($vattach ne 'axis' ? (align => $vattach) : ()),
+        ($rowsep ? (rowspacing    => $rowsep) : ()),
+        ($colsep ? (columnspacing => $colsep) : ()),
         # Mozilla seems to need some encouragement?
         ($LaTeXML::MathML::STYLE eq 'display' ? (displaystyle => 'true') : ()) },
       @rows];
