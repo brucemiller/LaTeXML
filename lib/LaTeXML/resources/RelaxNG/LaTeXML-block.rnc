@@ -229,7 +229,10 @@ element item { item_attributes, item_model }
 item_attributes =
   Common.attributes,
   Labelled.attributes,
-  Backgroundable.attributes
+  Backgroundable.attributes,
+
+  ## the vertical spacing between items
+  attribute itemsep { Length.type}?
 
 ## Content model for \elementref{item}.
 item_model =   tag?, Para.model

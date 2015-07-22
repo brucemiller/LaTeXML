@@ -338,6 +338,12 @@ which represents the term being described in each \elementref{item}.</a:document
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="itemsep">
+        <a:documentation>the vertical spacing between items</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
   </define>
   <define name="item_model">
     <a:documentation>Content model for \elementref{item}.</a:documentation>
