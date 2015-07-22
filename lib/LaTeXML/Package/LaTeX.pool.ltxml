@@ -1025,20 +1025,30 @@ DefMacro('\@itemlabel', '');         # Maybe needs to be same as \item will be u
 # by determining the right counter (level)
 # and binding the right \item ( \$type@item, if $type is defined)
 sub beginItemize {
-  my ($type, $counter) = @_;
+  my ($type, $counter, $nolevel) = @_;
   $counter = '@@item' unless $counter;
   my $level = LookupValue('itemlevel') + 1;
-  AssignValue(itemlevel => $level);
+  AssignRegister('\itemsep' => LookupRegister('\lx@default@itemsep'));
+  AssignValue(itemlevel         => $level);
+  AssignValue(itemization_items => 0);
   my $postfix = ToString(Tokens(roman($level)));
+  my $usecounter = ($nolevel ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
-  AssignValue(itemcounter => $counter . $postfix);
-  ResetCounter($counter . $postfix);
+  DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
+  AssignValue(itemcounter => $usecounter);
+  ResetCounter($usecounter);
   return RefStepCounter('@itemize' . $postfix); }
 
 # Create id, and refnum attributes for an itemize type \item
 sub RefStepItemCounter {
-  my ($tag) = @_;
+  my ($tag)   = @_;
   my $counter = LookupValue('itemcounter');
+  my $n       = LookupValue('itemization_items');
+  AssignValue(itemization_items => $n + 1);
+  my %attr = ();
+  my $sep  = LookupRegister('\itemsep');
+  if (($n > 0) && ($sep->valueOf != LookupRegister('\lx@default@itemsep')->valueOf)) {
+    $attr{itemsep} = $sep; }
   if (defined $tag) {
     my @props     = RefStepID($counter);
     my $refnum    = Digest(Tokens(T_BEGIN, $tag->unlist, T_END));
@@ -1046,9 +1056,9 @@ sub RefStepItemCounter {
     my $s_refnum  = ToString($refnum);
     my $s_frefnum = ToString($frefnum);
     return (@props, refnum => $refnum,
-      ($frefnum && (!$refnum || ($s_frefnum ne $s_refnum)) ? (frefnum => $frefnum) : ())); }
+      ($frefnum && (!$refnum || ($s_frefnum ne $s_refnum)) ? (frefnum => $frefnum) : ()), %attr); }
   else {
-    return RefStepCounter($counter); } }
+    return (RefStepCounter($counter), %attr); } }
 
 # The following two aren't used here; they're defined here so they
 # can be used in paralist.sty, enumerate.sty (perhaps others?)
@@ -1106,7 +1116,7 @@ sub setEnumerationStyle {
 # unless the optional tag argument was given!
 # We'll make the <ltx:tag> from either the optional arg, or from \labelitemi..
 DefConstructor('\itemize@item OptionalUndigested',
-  "<ltx:item xml:id='#id' ?#1(refnum='#refnum')>"
+  "<ltx:item xml:id='#id' ?#1(refnum='#refnum') itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@itemize@item OptionalUndigested',
@@ -1115,7 +1125,7 @@ DefConstructor('\inline@itemize@item OptionalUndigested',
   properties => sub { RefStepItemCounter($_[1]); });
 
 DefConstructor('\enumerate@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@enumerate@item OptionalUndigested',
@@ -1124,7 +1134,7 @@ DefConstructor('\inline@enumerate@item OptionalUndigested',
   properties => sub { RefStepItemCounter($_[1]); });
 
 DefConstructor('\description@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@description@item OptionalUndigested',
@@ -1196,16 +1206,28 @@ DefMacroI('\fnum@@@desciv',  undef, '{\descriptionlabel{}}');
 #======================================================================
 # C.6.3 The list and trivlist environments.
 #======================================================================
-# These are unlikely to generate what is wanted, but list, trivlist
-# don't give enough idea of the logical structure.
-# And, they can contain \item, so we need some list-like structure.
-# \begin{list}{number counter}{prelim}
-DefEnvironment('{list}{}{}',
-  "<ltx:itemize>#body</ltx:itemize>",
-  properties => sub { beginItemize('list'); });
+# Generic lists are given a way to format the item label, and presumably
+# a counter.
+
+DefConditional('\if@nmbrlist');
+DefMacro('\@listctr', '');
+DefPrimitive('\usecounter{}', sub {
+    my ($stomach, $counter) = @_;
+    $counter = ToString(Expand($counter));
+    beginItemize('list', $counter, ($counter ? 1 : 0));
+    return; });
+
+DefMacro('\list{}{}',
+'\let\@listctr\@empty#2\ifx\@listctr\@empty\usecounter{}\fi\expandafter\def\csname fnum@\@listctr\endcsname{#1}\lx@list');
+DefMacro('\endlist', '\endlx@list');
+
+DefConstructor('\lx@list DigestedBody',
+  "<ltx:itemize>#1</ltx:itemize>",
+  beforeDigest => sub { $_[0]->bgroup; });
+DefPrimitive('\endlx@list', sub { $_[0]->egroup; });
 
 DefConstructor('\list@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 
@@ -1222,47 +1244,43 @@ DefEnvironment('{trivlist}',
   properties => sub { beginItemize('trivlist'); });
 
 DefConstructor('\trivlist@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
     . "<ltx:tag>#refnum</ltx:tag>",    # At least an empty tag!
   properties => sub { ($_[1] ? (refnum => Digest(Expand($_[1]))) : ()); });
 
-DefRegister('\topsep'           => Glue(0));
-DefRegister('\partopsep'        => Glue(0));
-DefRegister('\itemsep'          => Glue(0));
-DefRegister('\parsep'           => Glue(0));
-DefRegister('\@topsep'          => Glue(0));
-DefRegister('\@topsepadd'       => Glue(0));
-DefRegister('\@outerparskip'    => Glue(0));
-DefRegister('\leftmargin'       => Dimension(0));
-DefRegister('\rightmargin'      => Dimension(0));
-DefRegister('\listparindent'    => Dimension(0));
-DefRegister('\itemindent'       => Dimension(0));
-DefRegister('\labelwidth'       => Dimension(0));
-DefRegister('\labelsep'         => Dimension(0));
-DefRegister('\@totalleftmargin' => Dimension(0));
-DefRegister('\leftmargini'      => Dimension(0));
-DefRegister('\leftmarginii'     => Dimension(0));
-DefRegister('\leftmarginiii'    => Dimension(0));
-DefRegister('\leftmarginiv'     => Dimension(0));
-DefRegister('\leftmarginv'      => Dimension(0));
-DefRegister('\leftmarginvi'     => Dimension(0));
-DefRegister('\@listdepth'       => Number(0));
-DefRegister('\@itempenalty'     => Number(0));
-DefRegister('\@beginparpenalty' => Number(0));
-DefRegister('\@endparpenalty'   => Number(0));
-DefRegister('\labelwidthi'      => Dimension(0));
-DefRegister('\labelwidthii'     => Dimension(0));
-DefRegister('\labelwidthiii'    => Dimension(0));
-DefRegister('\labelwidthiv'     => Dimension(0));
-DefRegister('\labelwidthv'      => Dimension(0));
-DefRegister('\labelwidthvi'     => Dimension(0));
+DefRegister('\topsep'             => Glue(0));
+DefRegister('\partopsep'          => Glue(0));
+DefRegister('\lx@default@itemsep' => Glue(0));
+DefRegister('\itemsep'            => Glue(0));
+DefRegister('\parsep'             => Glue(0));
+DefRegister('\@topsep'            => Glue(0));
+DefRegister('\@topsepadd'         => Glue(0));
+DefRegister('\@outerparskip'      => Glue(0));
+DefRegister('\leftmargin'         => Dimension(0));
+DefRegister('\rightmargin'        => Dimension(0));
+DefRegister('\listparindent'      => Dimension(0));
+DefRegister('\itemindent'         => Dimension(0));
+DefRegister('\labelwidth'         => Dimension(0));
+DefRegister('\labelsep'           => Dimension(0));
+DefRegister('\@totalleftmargin'   => Dimension(0));
+DefRegister('\leftmargini'        => Dimension(0));
+DefRegister('\leftmarginii'       => Dimension(0));
+DefRegister('\leftmarginiii'      => Dimension(0));
+DefRegister('\leftmarginiv'       => Dimension(0));
+DefRegister('\leftmarginv'        => Dimension(0));
+DefRegister('\leftmarginvi'       => Dimension(0));
+DefRegister('\@listdepth'         => Number(0));
+DefRegister('\@itempenalty'       => Number(0));
+DefRegister('\@beginparpenalty'   => Number(0));
+DefRegister('\@endparpenalty'     => Number(0));
+DefRegister('\labelwidthi'        => Dimension(0));
+DefRegister('\labelwidthii'       => Dimension(0));
+DefRegister('\labelwidthiii'      => Dimension(0));
+DefRegister('\labelwidthiv'       => Dimension(0));
+DefRegister('\labelwidthv'        => Dimension(0));
+DefRegister('\labelwidthvi'       => Dimension(0));
 
 DefRegister('\@itemdepth' => Number(0));
-
-# NOTE: Eventually use \makelabel to construct the list ?
-#\makelabel{label}
-# Could do something with this, but it's a headache.
-DefPrimitive('\usecounter{}', undef);
 
 #======================================================================
 # C.6.4 Verbatim
