@@ -126,8 +126,11 @@ td.ltx_subfloat { width:50%; }
 .ltx_eqn_row   { display:table-row; }
 .ltx_eqn_cell  { display:table-cell; width:auto; }
 
-.ltx_tag_equation.ltx_align_left  { position:absolute; left:3em; }
-.ltx_tag_equation.ltx_align_right { position:absolute; right:3em; }
+.ltx_tag_equationgroup.ltx_align_left,
+.ltx_tag_equation.ltx_align_left{ position:absolute; left:3em; }
+.ltx_tag_equationgroup.ltx_align_right,
+.ltx_tag_equation.ltx_align_right{ position:absolute; right:3em; }
+
 
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
 table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
