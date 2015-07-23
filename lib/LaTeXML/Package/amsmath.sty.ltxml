@@ -670,7 +670,7 @@ DefEnvironment('{subequations}',
 # Section 4.1 Matrices
 
 # set up a general macro to support variations on matrix environments (see mathtools)
-# \lx@ams@matrix{kevayls}{left}{right}[alignment] body
+# \lx@ams@matrix{keyvals} body
 # keys are
 #  name  : the name of the environment (for reversion)
 #  datameaning: the (presumed) meaning of the array construct
@@ -678,6 +678,7 @@ DefEnvironment('{subequations}',
 #  style : (display|text|script|scriptscript)
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
+#  alignment: the alignment of the columnns (default "c")
 DefMacro('\lx@ams@matrix {}',
   '\lx@gen@matrix@bindings{#1}\lx@ams@matrix@{#1}\@start@alignment');
 DefMacro('\lx@end@ams@matrix',
