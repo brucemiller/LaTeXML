@@ -3296,7 +3296,7 @@ DefRegister('\fill', Glue(0, '1fill'));
 # C.13.2 Space
 #======================================================================
 DefMacro('\hspace  OptionalMatch:* {Dimension}',
-  '\ifmmode\@math@hskip{#2}\else\@text@hskip{#2}\fi');
+  '\ifmmode\@math@hskip #2\relax\else\@text@hskip #2\relax\fi');
 
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);

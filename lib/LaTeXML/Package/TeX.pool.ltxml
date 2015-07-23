@@ -2750,15 +2750,15 @@ sub DimensionToSpaces {
     return Box((UTF(0xA0) x $n)); } }
 
 DefPrimitiveI('\noboundary', undef, undef);
-DefMacro('\hskip Glue',   '\ifmmode\@math@hskip{#1}\else\@text@hskip{#1}\fi');
-DefMacro('\mskip MuGlue', '\ifmmode\@math@hskip{#1}\else\@text@hskip{#1}\fi');
+DefMacro('\hskip Glue',   '\ifmmode\@math@hskip #1\relax\else\@text@hskip #1\relax\fi');
+DefMacro('\mskip MuGlue', '\ifmmode\@math@hskip #1\relax\else\@text@hskip #1\relax\fi');
 
-DefConstructor('\@math@hskip {Dimension}',
+DefConstructor('\@math@hskip Dimension',
   "<ltx:XMHint width='#1'/>",
   alias => '\hskip',
   properties => sub { (width => $_[1], isSpace => 1); }
 );
-DefPrimitive('\@text@hskip {Dimension}', sub {
+DefPrimitive('\@text@hskip Dimension', sub {
     my ($stomach, $length) = @_;
     DimensionToSpaces($length); },
   alias => '\hskip');
