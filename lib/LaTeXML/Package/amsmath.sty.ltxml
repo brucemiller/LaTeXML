@@ -228,7 +228,8 @@ DefConstructor('\@@multline DigestedBody',
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
-  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
+  afterConstruct => sub {
+     rearrangeAMSMultiline($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -243,11 +244,11 @@ DefConstructor('\@@multlinestar DigestedBody',
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
-  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
+  afterConstruct => sub {
+     rearrangeAMSMultiline($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 sub rearrangeAMSMultiline {
-  my ($document) = @_;
-  my $array      = $document->getNode->lastChild->lastChild->lastChild->lastChild;
+  my ($document, $array) = @_;
   my @rows       = element_nodes($array);
   # Adjust the alignment of the 1st & last rows
   map { $_->setAttribute(align => 'left'); } element_nodes($rows[0]);
