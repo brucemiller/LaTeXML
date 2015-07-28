@@ -442,6 +442,7 @@ sub pmml_internal {
   elsif ($tag eq 'ltx:XMHint') {
     return &{ lookupPresenter('Hint', $role, $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMArray') {
+    my $width   = $node->getAttribute('width');
     my $style   = $node->getAttribute('mathstyle');
     my $vattach = $node->getAttribute('vattach');
     my $rowsep  = $node->getAttribute('rowsep') || '0pt';
@@ -476,6 +477,7 @@ sub pmml_internal {
     my $result = ['m:mtable', { ($vattach ne 'axis' ? (align => $vattach) : ()),
         ($rowsep ? (rowspacing    => $rowsep) : ()),
         ($colsep ? (columnspacing => $colsep) : ()),
+        ($width  ? (width => $width) : ()),
         # Mozilla seems to need some encouragement?
         ($LaTeXML::MathML::STYLE eq 'display' ? (displaystyle => 'true') : ()) },
       @rows];
