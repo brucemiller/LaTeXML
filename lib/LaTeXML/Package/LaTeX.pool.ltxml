@@ -2582,12 +2582,6 @@ sub translateAttachment {
   return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
 DefConstructor('\@@tabular[] Undigested DigestedBody',
-  '#2',
-  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
-  beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
-
-DefConstructor('\@@tabular[] Undigested DigestedBody',
   '#3',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
   beforeDigest => sub { $_[0]->bgroup; },
