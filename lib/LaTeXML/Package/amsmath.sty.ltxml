@@ -224,7 +224,7 @@ DefConstructor('\@@multline DigestedBody',
   properties   => sub { RefStepCounter('equation') },
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultlineBindings(); },
+    amsMultirowBindings(( name => 'multline' )); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
@@ -240,7 +240,7 @@ DefConstructor('\@@multlinestar DigestedBody',
   mode         => 'display_math',
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultlineBindings(); },
+    amsMultirowBindings(( name => 'multline' )); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
@@ -261,12 +261,14 @@ sub rearrangeAMSMultiline {
     $array);
   return; }
 
-sub amsMultlineBindings {
+sub amsMultirowBindings {
+  my (%properties) = @_;
   # Need to arrange left, centered*, right alignment!
   my $col1 = { before => Tokens(T_CS('\hfil'),
       T_CS('\displaystyle')) };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  alignmentBindings($template, undef, attributes => { name => 'multline' });
+
+  alignmentBindings($template, undef, attributes => { %properties });
   Let("\\\\", '\@alignment@newline@noskip');
   return; }
 #======================================================================
