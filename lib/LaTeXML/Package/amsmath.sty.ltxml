@@ -229,7 +229,7 @@ DefConstructor('\@@multline DigestedBody',
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
-     rearrangeAMSMultiline($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
+     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, ( '0' => 'left' ,'-1' => 'right' )); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -245,14 +245,21 @@ DefConstructor('\@@multlinestar DigestedBody',
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
-     rearrangeAMSMultiline($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
+     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, ( '0' => 'left' ,'-1' => 'right' )); });
 
-sub rearrangeAMSMultiline {
-  my ($document, $array) = @_;
+sub rearrangeAMSMultirow {
+  my ($document, $array, %align_spec) = @_;
   my @rows       = element_nodes($array);
-  # Adjust the alignment of the 1st & last rows
-  map { $_->setAttribute(align => 'left'); } element_nodes($rows[0]);
-  map { $_->setAttribute(align => 'right'); } element_nodes($rows[-1]);
+
+  # Adjust alignment of rows
+  if (defined $align_spec{'default'}) {
+    for my $i (0 .. $#rows) {
+      map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); } }
+  delete $align_spec{'default'};
+
+  for my $i (keys %align_spec) {
+      map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); }
+
   my @stuff = extractXMArrayCells($document, $array);
   $document->replaceTree(['ltx:XMDual', {},
       ['ltx:XMWrap', { rule => 'Anything,' },
