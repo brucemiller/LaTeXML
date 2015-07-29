@@ -485,7 +485,7 @@ DefConstructor('\@@gathered DigestedBody',
   '#1',
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsGatheredBindings(); },
+    amsMultirowBindings(); },
   reversion      => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub {
     my ($document) = @_;
@@ -498,16 +498,6 @@ DefConstructor('\@@gathered DigestedBody',
         $array],
       $array);
     return; });
-
-sub amsGatheredBindings {
-  # single column, centered
-  my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle')),
-    after => Tokens(T_CS('\hfil')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  alignmentBindings($template, undef, attributes => { name => 'gathered' });
-  Let("\\\\", '\@alignment@newline@noskip');
-  return; }
 
 DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned');
