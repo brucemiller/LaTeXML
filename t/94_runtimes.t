@@ -5,11 +5,11 @@
 use LaTeXML::Util::Test;
 
 # For each test $name there should be $name.xml and $name.log
-# (the latter from a previous `good' run of 
+# (the latter from a previous `good' run of
 #  latexmlc {$triggers} $name
 #).
 
-latexml_tests('t/daemon/runtimes');
-
+latexml_tests('t/daemon/runtimes',
+  requires => { timeout => 'needs to be rewritten' });
 #**********************************************************************
 1;
