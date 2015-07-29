@@ -128,6 +128,7 @@ if (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
   open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
+  binmode($OUTPUT, ":encoding(UTF-8)");
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
