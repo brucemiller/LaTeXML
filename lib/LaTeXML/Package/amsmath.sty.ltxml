@@ -254,8 +254,8 @@ sub rearrangeAMSMultirow {
   # Adjust alignment of rows
   if (defined $align_spec{'default'}) {
     for my $i (0 .. $#rows) {
-      map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); } }
-  delete $align_spec{'default'};
+      map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
+    delete $align_spec{'default'}; }
 
   for my $i (keys %align_spec) {
       map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); }
