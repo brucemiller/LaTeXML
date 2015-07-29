@@ -229,7 +229,7 @@ DefConstructor('\@@multline DigestedBody',
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, ( '0' => 'left' ,'-1' => 'right' )); });
+     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, rowalignment => { '0' => 'left' ,'-1' => 'right' }); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -245,20 +245,24 @@ DefConstructor('\@@multlinestar DigestedBody',
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, ( '0' => 'left' ,'-1' => 'right' )); });
+     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, rowalignment => { '0' => 'left' ,'-1' => 'right' }); });
 
+# Adjust multirow environments to their special needs
+# $array must be an ltx:XMArray
 sub rearrangeAMSMultirow {
-  my ($document, $array, %align_spec) = @_;
+  my ($document, $array, %options) = @_;
   my @rows       = element_nodes($array);
 
   # Adjust alignment of rows
-  if (defined $align_spec{'default'}) {
-    for my $i (0 .. $#rows) {
-      map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
-    delete $align_spec{'default'}; }
+  if (defined $options{rowalignment}) {
+    my %align_spec = %{ $options{rowalignment} };
+    if (defined $align_spec{'default'}) {
+      for my $i (0 .. $#rows) {
+        map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
+      delete $align_spec{'default'}; }
 
-  for my $i (keys %align_spec) {
-      map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); }
+    for my $i (keys %align_spec) {
+      map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); } }
 
   my @stuff = extractXMArrayCells($document, $array);
   $document->replaceTree(['ltx:XMDual', {},
