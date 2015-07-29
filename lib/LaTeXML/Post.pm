@@ -636,6 +636,7 @@ sub new {
     else {
       $data{siteDirectory} = $data{destinationDirectory}; } }
 
+  $xmldoc = $xmldoc->getDocument if ref $xmldoc eq 'LaTeXML::Core::Document';
   $data{document} = $xmldoc;
   if (!$xmldoc || !($xmldoc->documentElement)) {
     Fatal('expected', 'document', undef, "Document has no root element"); }
@@ -1245,6 +1246,9 @@ sub initial {
   $string =~ s/^[^a-zA-Z]*// if $force;
   return ($string =~ /^([a-zA-Z])/ ? uc($1) : '*'); }
 
+# This would typically be called to normalize the leading/trailing whitespace of nodes
+# that take mixed markup. WE SHOULDN'T BE DOING THIS. We need to NOT add "ignorable whitespace"
+# to nodes that CAN HAVE mixed content. otherwise we don't know if it is ignorable!
 sub trimChildNodes {
   my ($self, $node) = @_;
   if (!$node) {
