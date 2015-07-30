@@ -3068,8 +3068,8 @@ sub process_index_phrases {
         my $extra = ToString(Tokens(@tokens));
         if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
         elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
-        elsif ($extra eq '(') { }                                            # ?
-        elsif ($extra eq ')') { }                                            # ?
+        elsif ($extra eq '(') { $style = 'rangestart'; } # ?
+        elsif ($extra eq ')') { $style = 'rangeend'; }	 # ?
         else                  { $style = $index_style{$extra} || $extra; }
         @tokens = (); } }
     elsif (!@phrase && ($string =~ /\s/)) { }                                # Skip leading whitespace
