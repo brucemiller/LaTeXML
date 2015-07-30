@@ -568,9 +568,9 @@ sub getStatusMessage {
   my ($self) = @_;
   my $status = $$self{status};
   my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''))
+  push(@report, colored("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning'))
     if $$status{warning};
-  push(@report, "$$status{error} error" . ($$status{error} > 1 ? 's' : ''))
+  push(@report, colored("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error'))
     if $$status{error};
   push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''))
 
@@ -583,7 +583,7 @@ sub getStatusMessage {
   push(@report, scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
       . "[" . join(', ', @miss) . "]")
     if @miss;
-  return join('; ', @report) || 'No obvious problems'; }
+  return join('; ', @report) || colored('No obvious problems', 'success'); }
 
 sub getStatusCode {
   my ($self) = @_;

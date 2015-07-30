@@ -22,12 +22,15 @@ our @EXPORT = (
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
   qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  # Colored-logging related functions
+  qw(&colored)
 );
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
 
+coloralias('success', 'green');
 coloralias('info', 'blue');
 coloralias('warning', 'yellow');
 coloralias('error', 'red');
