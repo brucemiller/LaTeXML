@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
   <define name="Misc.class" combine="choice">
     <a:documentation> Miscellaneous (Misc) elements are (typically) visible
 elements which don't have clear inline or block character;

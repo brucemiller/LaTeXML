@@ -84,7 +84,9 @@ element equationgroup { equationgroup_attributes, equationgroup_model }
 equationgroup_attributes =
   Common.attributes,
   Labelled.attributes,
-  Backgroundable.attributes
+  Backgroundable.attributes,
+  ## the spacing between rows (equations, intertext,...)
+  attribute rowsep { Length.type}?
 
 ## Content model for \elementref{equationgroup}.
 equationgroup_model = (equationgroup | equation | p | Meta.class | EquationMeta.class)*

@@ -158,6 +158,7 @@ if ($result) {
       print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1;
     }
+    binmode($output_handle, ":encoding(UTF-8)");
     print $output_handle $result;
     close $output_handle;
   } else { print STDOUT $result, "\n"; }    #Output to STDOUT

@@ -52,8 +52,9 @@ sub new {
 # Basic Accessors
 
 # This will be a node of type XML_DOCUMENT_NODE
-sub getDocument { my ($self) = @_; return $$self{document}; }
-sub getModel    { my ($self) = @_; return $$self{model}; }
+sub getDocument     { my ($self) = @_; return $$self{document}; }
+sub getModel        { my ($self) = @_; return $$self{model}; }
+sub documentElement { my ($self) = @_; return $$self{document}->documentElement; }
 
 # Get the node representing the current insertion point.
 # The node will have nodeType of
@@ -338,7 +339,8 @@ sub finalize {
     local $LaTeXML::FONT = $self->getNodeFont($root);
     $self->finalize_rec($root);
     set_RDFa_prefixes($self->getDocument, $STATE->lookupValue('RDFa_prefixes')); }
-  return $$self{document}; }
+  #  return $$self{document}; }
+  return $self; }
 
 sub finalize_rec {
   my ($self, $node) = @_;
@@ -397,6 +399,95 @@ sub finalize_rec {
     my $n = $attr->nodeName;
     $node->removeAttribute($n) if $n =~ /^_/; }
   return; }
+
+#======================================================================
+# Experimental Serializer
+# inserts formatting whitespace ONLY where allowed by the schema
+#======================================================================
+use Encode;
+
+sub toString {
+  #sub serialize {
+  my ($self, $format) = @_;
+  # This line is to use libxml2's built-in serializer w/indentation heuristic.
+  # Apparently, libxml2 is giving us "binary" or byte strings which we'd prefer to have as text.
+  #  return decode('UTF-8',$self->getDocument->toString($format)); }
+  # This uses our own serializer emulating libxml2's heuristic indentation.
+  return $self->serialize_aux($self->getDocument, 0, 0, 1); }
+# This uses our own serializer w/ correct indentation rules.
+#  return $self->serialize_aux($self->getDocument, 0, 0, 0); }
+
+# We ought to try for something close to C14N (http://www.w3.org/TR/xml-c14n),
+# but keep XML declaration, comments and don't convert empty elements.
+sub serialize_aux {
+  my ($self, $node, $depth, $noindent, $heuristic) = @_;
+  my $type   = $node->nodeType;
+  my $model  = $$self{model};
+  my $indent = ('  ' x $depth);
+  if ($type == XML_DOCUMENT_NODE) {
+    my @children = $node->childNodes;
+    return join('', '<?xml version="1.0" encoding="UTF-8"?>', "\n",
+      (map { serialize_aux($self, $_, $depth, $noindent, $heuristic) } @children)); }
+  elsif ($type == XML_ELEMENT_NODE) {
+    my $tag      = $model->getNodeDocumentQName($node);
+    my @children = $node->childNodes;
+    # since we're pretty-printing, we _could_ wrap attributes to nominal line length!
+    my @anodes = $node->attributes;
+    my %nsnodes = map { $model->getNodeDocumentQName($_) => serialize_attr($_->nodeValue) }
+      grep { $_->nodeType == XML_NAMESPACE_DECL } @anodes;
+    my %atnodes = map { $model->getNodeDocumentQName($_) => serialize_attr($_->nodeValue) }
+      grep { $_->nodeType == XML_ATTRIBUTE_NODE } @anodes;
+    my $start = join(' ',
+      # start of tag
+      '<' . $tag,
+      # Namespace declarations
+      (map { $_ . '="' . $nsnodes{$_} . '"' } sort keys %nsnodes),
+      # Regular attributes
+      (map { $_ . '="' . $atnodes{$_} . '"' } sort keys %atnodes)
+    );
+    my $noindent_children = ($heuristic
+        # This emulates libxml2's heuristic
+        #     ? $noindent || grep { $_->nodeType != XML_ELEMENT_NODE } @children
+      ? $noindent || grep { $_->nodeType == XML_TEXT_NODE } @children
+        # This is the "Correct" way to determine whether to add indentation
+      : $model->canContain($self->getNodeQName($node), '#PCDATA'));
+    return join('',
+      ($noindent ? '' : $indent), $start,
+      (scalar(@children)    # with contents.
+        ? ('>', ($noindent_children ? '' : "\n"),
+          (map { serialize_aux($self, $_, $depth + 1, $noindent_children, $heuristic) } @children),
+          ($noindent_children ? '' : $indent), '</' . $tag . '>', ($noindent ? '' : "\n"))
+        : ('/>' . ($noindent ? '' : "\n")))); }    # empty element.
+  elsif ($type == XML_TEXT_NODE) {                 # NO indentation!
+    return serialize_string($node->textContent); }
+  elsif ($type == XML_PI_NODE) {
+    # should code this by hand, as well...
+    return join('', ($noindent ? '' : $indent), $node->toString, ($noindent ? '' : "\n")); }
+  elsif ($type == XML_COMMENT_NODE) {
+    return join('', '<!-- ', serialize_string($node->textContent), '-->'); }
+  else {
+    return ''; } }
+
+sub serialize_string {
+  my ($string) = @_;
+  # Basic entities
+  $string =~ s/&/&amp;/g;
+  $string =~ s/>/&gt;/g;
+  $string =~ s/</&lt;/g;
+  # Remove dis-allowed code-points.
+#  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19}|\x{D800}-\x{DFFF}|\x{FFFE}-\x{FFFF})//g;
+  # Hmm... the upper ranges gives warning in some Perls...
+  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19})//g;
+  return $string; }
+
+sub serialize_attr {
+  my ($string) = @_;
+  $string = serialize_string($string);
+  # And escape any remaining special code points
+  $string =~ s/"/&quot;/g;
+  $string =~ s/\n/&#10;/gs;
+  $string =~ s/\t/&#9;/gs;
+  return $string; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Document construction at the Current Insertion Point.

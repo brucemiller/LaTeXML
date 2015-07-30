@@ -148,6 +148,7 @@ sub pack_collection {
       push @packed_docs, get_embeddable($doc); }
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
+      print STDERR "REQUESTING MATH\n";
       push @packed_docs, get_math($doc); }
     else { push @packed_docs, $doc; } }
   return @packed_docs; }
@@ -209,18 +210,21 @@ sub get_math {
   my $math_count = scalar(@mnodes);
   if (!$math_count) {
     return get_embeddable($doc); }
-  elsif ($math_count == 1) {
-    return $mnodes[0]; }
-  elsif ($math_count > 1) {
-    my $math       = $mnodes[0];
+  my $math = $mnodes[0];
+  if ($math_count > 1) {
     my $math_found = 0;
     while ($math_found != $math_count) {
       $math_found = $math->findnodes('.' . $math_xpath)->size;
       $math_found++ if ($math->localname =~ /^math$/i);
       $math = $math->parentNode if ($math_found != $math_count);
     }
-    $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$');
-    return $math; } }
+    $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$'); }
+  if ($math) {
+    # Copy over document namespace declarations:
+    # NOTE: This copies ALL the namespaces, not just the needed ones!
+    foreach ($doc->getDocumentElement->getNamespaces) {
+      $math->setNamespace($_->getData, $_->getLocalName, 0); } }
+  return $math; }
 
 sub get_embeddable {
   my ($doc) = @_;
@@ -249,7 +253,7 @@ sub get_embeddable {
       $embeddable->setNamespace($_->getData, $_->getLocalName, 0);
     }
     # Also, copy RDFa attributes:
-    foreach my $rdfa_attr(qw(prefix property content resource about typeof rel rev datatype)) {
+    foreach my $rdfa_attr (qw(prefix property content resource about typeof rel rev datatype)) {
       if (my $rdfa_value = $doc->getDocumentElement->getAttribute($rdfa_attr)) {
         $embeddable->setAttribute($rdfa_attr, $rdfa_value); } }
   }

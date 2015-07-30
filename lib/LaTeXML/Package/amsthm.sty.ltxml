@@ -107,7 +107,7 @@ DefMacroI('\thmheadnl', undef, Tokens());
 
 AssignValue('QED@stack', []);
 DefMacro('\pushQED{}', sub { PushValue('QED@stack', $_[1]); });
-DefMacro('\popQED{}', sub { (PopValue('QED@stack')); });
+DefMacro('\popQED', sub { (PopValue('QED@stack')); });
 
 # Should mark this as somehow ignorable for math,
 # but we DO want to keep it in the formula...
