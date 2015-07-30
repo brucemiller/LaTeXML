@@ -91,6 +91,11 @@ DefMacroI('\@ams@newline', undef, sub {
 
 sub amsalignBindings {
   my ($template, %properties) = @_;
+
+  my $cur_jot = LookupRegister('\jot');
+  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+    $properties{rowsep} = $cur_jot; }
+
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => $template,
       openContainer => sub { my %attr = RefStepID('@equationgroup');
@@ -201,6 +206,19 @@ sub extractXMArrayCells {
   return @contents; }
 
 #======================================================================
+# A utility for handling different alignment strategies centrally
+sub amsAlignmentBindings {
+  my($template, %properties) = @_;
+
+  my $cur_jot = LookupRegister('\jot');
+  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+    $properties{rowsep} = $cur_jot; }
+
+  alignmentBindings($template, undef, attributes => { %properties });
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
+
+#======================================================================
 # Section 3.3 Split equations without alignment
 
 # Multiline is for SINGLE equations,
@@ -274,13 +292,11 @@ sub rearrangeAMSMultirow {
 
 sub amsMultirowBindings {
   my (%properties) = @_;
-  # Need to arrange left, centered*, right alignment!
   my $col1 = { before => Tokens(T_CS('\hfil'),
       T_CS('\displaystyle')) };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
 
-  alignmentBindings($template, undef, attributes => { %properties });
-  Let("\\\\", '\@alignment@newline@noskip');
+  amsAlignmentBindings($template, %properties);
   return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
@@ -519,8 +535,7 @@ sub amsAlignedBindings {
     after => Tokens(T_CS('\hfil')) };
   my $col3 = { before => Tokenize('\hspace{1em}') };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
-  alignmentBindings($template, undef, attributes => { name => 'aligned', colsep => '0pt' });
-  Let("\\\\", '\@alignment@newline@noskip');
+  amsAlignmentBindings($template, ( name => 'aligned', colsep => '0pt' ));
   return; }
 
 # If an aligned is the only child of an equation,
