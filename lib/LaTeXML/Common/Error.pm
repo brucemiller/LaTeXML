@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 ##use LaTeXML::Common::Object;
 use Time::HiRes;
+use Term::ANSIColor qw(colored coloralias colorstrip);
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
@@ -22,6 +23,14 @@ our @EXPORT = (
   # Progress reporting
   qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
 );
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Color setup
+$Term::ANSIColor::AUTORESET = 1;
+
+coloralias('info', 'blue');
+coloralias('warning', 'yellow');
+coloralias('error', 'red');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
@@ -91,7 +100,7 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
+    print STDERR generateMessage(colored("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
   if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
@@ -104,7 +113,7 @@ sub Warn {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
-  print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colored("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details)
     if $verbosity >= -1;
   return; }
@@ -116,7 +125,7 @@ sub Info {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage("Info:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colored("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details)
     if $verbosity >= 0;
   return; }
