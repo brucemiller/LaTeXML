@@ -1624,6 +1624,12 @@ sub eqnarrayBindings {
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
   my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
+
+  my %properties = (class => 'ltx_eqn_eqnarray', colsep => LookupRegister('\arraycolsep')->multiply(2));
+  my $cur_jot = LookupRegister('\jot');
+  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+    $properties{rowsep} = $cur_jot; }
+
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
       openContainer => sub { my %attr = RefStepID('@equationgroup');
@@ -1635,9 +1641,7 @@ sub eqnarrayBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      attributes => { class => 'ltx_eqn_eqnarray',
-        # UGH! \arraycolsep * 2
-        colsep => LookupRegister('\arraycolsep')->multiply(2) }));
+      attributes => { %properties }));
 
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
