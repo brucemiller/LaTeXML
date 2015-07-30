@@ -244,10 +244,11 @@ DefConstructor('\@@multline DigestedBody',
     $_[0]->bgroup;
     amsMultirowBindings(( name => 'multline' )); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, rowalignment => { '0' => 'left' ,'-1' => 'right' }); });
+     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -260,26 +261,27 @@ DefConstructor('\@@multlinestar DigestedBody',
     $_[0]->bgroup;
     amsMultirowBindings(( name => 'multline' )); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild, rowalignment => { '0' => 'left' ,'-1' => 'right' }); });
+     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 # Adjust multirow environments to their special needs
 # $array must be an ltx:XMArray
 sub rearrangeAMSMultirow {
-  my ($document, $array, %options) = @_;
+  my ($document, $whatsit, $array) = @_;
   my @rows       = element_nodes($array);
 
   # Adjust alignment of rows
-  if (defined $options{rowalignment}) {
-    my %align_spec = %{ $options{rowalignment} };
+  if (defined (my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
+    my %align_spec = %{ $rowalignment };
     if (defined $align_spec{'default'}) {
       for my $i (0 .. $#rows) {
         map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
       delete $align_spec{'default'}; }
 
-    for my $i (keys %align_spec) {
+    for my $i (sort (keys %align_spec)) {
       map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); } }
 
   my @stuff = extractXMArrayCells($document, $array);
