@@ -94,7 +94,7 @@ sub amsalignBindings {
 
   my $cur_jot = LookupRegister('\jot');
   if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
-    $properties{rowsep} = $cur_jot; }
+    $properties{attributes}{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => $template,
@@ -106,7 +106,7 @@ sub amsalignBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => {%properties}));
+      properties => { %properties }));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
   Let('\cr',         '\@alignment@cr');
