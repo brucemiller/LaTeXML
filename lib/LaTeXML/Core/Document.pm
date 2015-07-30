@@ -475,7 +475,9 @@ sub serialize_string {
   $string =~ s/>/&gt;/g;
   $string =~ s/</&lt;/g;
   # Remove dis-allowed code-points.
-  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19}|\x{D800}-\x{DFFF}|\x{FFFE}-\x{FFFF})//g;
+#  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19}|\x{D800}-\x{DFFF}|\x{FFFE}-\x{FFFF})//g;
+  # Hmm... the upper ranges gives warning in some Perls...
+  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19})//g;
   return $string; }
 
 sub serialize_attr {
