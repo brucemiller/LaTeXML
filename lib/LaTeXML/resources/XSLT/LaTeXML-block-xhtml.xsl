@@ -885,6 +885,12 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
       </xsl:if>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_cell'"/>
+	<xsl:with-param name="extra_style">
+          <xsl:if test="ancestor::ltx:equationgroup/@rowsep">
+              <xsl:value-of select="concat('padding-top:',ancestor::ltx:equationgroup/@rowsep,';')"/>
+              <xsl:value-of select="concat('padding-bottom:',ancestor::ltx:equationgroup/@rowsep,';')"/>
+            </xsl:if>
+	  </xsl:with-param>
       </xsl:call-template>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
