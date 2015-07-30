@@ -24,7 +24,7 @@ our @EXPORT = (
   qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
 );
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
 
