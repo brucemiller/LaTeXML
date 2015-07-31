@@ -42,6 +42,7 @@ sub colorizeString {
     case 'info' { return BLUE $string }
     case 'warning' { return YELLOW $string }
     case 'error' { return RED $string }
+    case 'fatal' { return BOLD RED $string }
     else { return $string } } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -79,7 +80,7 @@ sub Fatal {
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
     $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'), $where, $message, 1,
       # ?!?!?!?!?!
       # or just verbosity code >>>1 ???
       @details,
