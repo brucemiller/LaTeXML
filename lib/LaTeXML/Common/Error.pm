@@ -15,7 +15,8 @@ use warnings;
 use LaTeXML::Global;
 ##use LaTeXML::Common::Object;
 use Time::HiRes;
-use Term::ANSIColor qw(colored coloralias colorstrip);
+use Switch;
+use Term::ANSIColor qw(:constants);
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
@@ -35,14 +36,13 @@ sub colorizeString {
   my ($string, $alias) = @_;
   return $string unless $COLORIZED_LOGGING;
 
-  my $out = colored($string, $alias);
-  return $out; }
-
-coloralias('details', 'bold');
-coloralias('success', 'green');
-coloralias('info', 'blue');
-coloralias('warning', 'yellow');
-coloralias('error', 'red');
+  switch ($alias) {
+    case 'details' { return BOLD $string }
+    case 'success' { return GREEN $string }
+    case 'info' { return BLUE $string }
+    case 'warning' { return YELLOW $string }
+    case 'error' { return RED $string }
+    else { return $string } } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
