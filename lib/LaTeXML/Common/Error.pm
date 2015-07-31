@@ -21,14 +21,22 @@ our @EXPORT = (
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
-  qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
   # Colored-logging related functions
-  qw(&colored)
+  qw(&colorizeString)
 );
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
+our $COLORIZED_LOGGING = 1;
+
+sub colorizeString {
+  my ($string, $alias) = @_;
+  return $string unless $COLORIZED_LOGGING;
+
+  my $out = colored($string, $alias);
+  return $out; }
 
 coloralias('success', 'green');
 coloralias('info', 'blue');
@@ -103,7 +111,7 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    print STDERR generateMessage(colored("Error:" . $category . ":" . ToString($object), 'error'),
+    print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
   if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
@@ -116,7 +124,7 @@ sub Warn {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
-  print STDERR generateMessage(colored("Warning:" . $category . ":" . ToString($object), 'warning'),
+  print STDERR generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details)
     if $verbosity >= -1;
   return; }
@@ -128,7 +136,7 @@ sub Info {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage(colored("Info:" . $category . ":" . ToString($object), 'info'),
+  print STDERR generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details)
     if $verbosity >= 0;
   return; }
