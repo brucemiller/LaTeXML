@@ -576,12 +576,12 @@ sub getStatusMessage {
 
     if $$status{fatal};
   my @undef = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  push(@report, scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-      . "[" . join(', ', @undef) . "]")
+  push(@report, colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+      . "[" . join(', ', @undef) . "]", 'details'))
     if @undef;
   my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  push(@report, scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-      . "[" . join(', ', @miss) . "]")
+  push(@report, colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+      . "[" . join(', ', @miss) . "]", 'details'))
     if @miss;
   return join('; ', @report) || colorizeString('No obvious problems', 'success'); }
 

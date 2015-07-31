@@ -38,6 +38,7 @@ sub colorizeString {
   my $out = colored($string, $alias);
   return $out; }
 
+coloralias('details', 'bold');
 coloralias('success', 'green');
 coloralias('info', 'blue');
 coloralias('warning', 'yellow');
