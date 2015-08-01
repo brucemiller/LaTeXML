@@ -477,18 +477,18 @@ sub pmml_internal {
     my $result = ['m:mtable', { ($vattach ne 'axis' ? (align => $vattach) : ()),
         ($rowsep ? (rowspacing    => $rowsep) : ()),
         ($colsep ? (columnspacing => $colsep) : ()),
-        ($width  ? (width => $width) : ()),
+        ($width  ? (width         => $width)  : ()),
         # Mozilla seems to need some encouragement?
         ($LaTeXML::MathML::STYLE eq 'display' ? (displaystyle => 'true') : ()) },
       @rows];
     $result = ['m:mstyle', {@$styleattr}, $result] if $styleattr;
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
-    my @c = $doc->trimChildNodes($node);
+    my @c = $node->childNodes;
     if (!$$self{nestmath}) {
       return pmml_row(map { pmml_text_aux($_) } @c); }
     else {
-      return ['m:mtext', {}, $self->convertXMTextContent($doc, @c)]; } }
+      return ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; } }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -938,7 +938,7 @@ sub pmml_text_aux {
   my $type = $node->nodeType;
   if ($type == XML_TEXT_NODE) {
     my ($string, %mmlattr) = stylizeContent($node, 'm:mtext', %attr);
-    $string =~ s/^\s/$NBSP/; $string =~ s/\s$/$NBSP/;
+    $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/;
     return ['m:mtext', {%mmlattr}, $string]; }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
     return map { pmml_text_aux($_, %attr) } $node->childNodes; }
@@ -1028,7 +1028,7 @@ sub cmml_internal {
     return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMText') {
     return ['m:mtext', {},
-      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
+      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 1,
         $node->childNodes)]; }
   else {
     return ['m:mtext', {}, $node->textContent]; } }
