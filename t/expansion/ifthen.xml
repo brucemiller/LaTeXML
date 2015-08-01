@@ -6,18 +6,97 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>23 is odd <break/>42 is even <break/>!42 is odd <break/>23 &amp;&amp; !42 true <break/>23 &amp;&amp; 33 true <break/>23 <Math mode="inline" xml:id="p1.m1" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math><Math mode="inline" xml:id="p1.m2" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math> 42 true <break/>23 &amp;&amp; !42 &amp;&amp; 13 true <break/>\foobar is undefined <break/>! \string is undefined <break/>21 = 21 : true <break/>42 <Math mode="inline" xml:id="p1.m3" tex="&gt;" text="&gt;"><XMath><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok></XMath></Math> 21 : true <break/>-3 <Math mode="inline" xml:id="p1.m4" tex="&lt;" text="less"><XMath><XMTok meaning="less-than" role="RELOP">&lt;</XMTok></XMath></Math> 21 : true <break/>1 = 1 &amp;&amp; 2 = 2 : true <break/>1 = 2 &amp;&amp; 2 = 2 : false <break/>1 = 2 <Math mode="inline" xml:id="p1.m5" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math><Math mode="inline" xml:id="p1.m6" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math> ! 2 = 2 : false <break/>
+    <p>23 is odd <break/>42 is even <break/>!42 is odd <break/>23 &amp;&amp; !42 true <break/>23 &amp;&amp; 33 true <break/>23 <Math mode="inline" tex="|" text="|" xml:id="p1.m1">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math><Math mode="inline" tex="|" text="|" xml:id="p1.m2">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math> 42 true <break/>23 &amp;&amp; !42 &amp;&amp; 13 true <break/>\foobar is undefined <break/>! \string is undefined <break/>21 = 21 : true <break/>42 <Math mode="inline" tex="&gt;" text="&gt;" xml:id="p1.m3">
+        <XMath>
+          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+        </XMath>
+      </Math> 21 : true <break/>-3 <Math mode="inline" tex="&lt;" text="less" xml:id="p1.m4">
+        <XMath>
+          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+        </XMath>
+      </Math> 21 : true <break/>1 = 1 &amp;&amp; 2 = 2 : true <break/>1 = 2 &amp;&amp; 2 = 2 : false <break/>1 = 2 <Math mode="inline" tex="|" text="|" xml:id="p1.m5">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math><Math mode="inline" tex="|" text="|" xml:id="p1.m6">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math> ! 2 = 2 : false <break/>
 
 myBool is true <break/>
 myBool is false <break/>
 
-myOtherBool is true <break/>myBool <Math mode="inline" xml:id="p1.m7" tex="\&amp;\&amp;" text="list@(and, and)"><XMath><XMDual><XMApp><XMTok meaning="list"/><XMRef idref="p1.m7.1"/><XMRef idref="p1.m7.2"/></XMApp><XMWrap><XMTok meaning="and" role="ADDOP" xml:id="p1.m7.1">&amp;</XMTok><XMTok role="PUNCT">⁣</XMTok><XMTok meaning="and" role="ADDOP" xml:id="p1.m7.2">&amp;</XMTok></XMWrap></XMDual></XMath></Math> myOtherBool is false <break/>myBool <Math mode="inline" xml:id="p1.m8" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math><Math mode="inline" xml:id="p1.m9" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math> myOtherBool is true <break/>nay
+myOtherBool is true <break/>myBool <Math mode="inline" tex="\&amp;\&amp;" text="list@(and, and)" xml:id="p1.m7">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="p1.m7.1"/>
+              <XMRef idref="p1.m7.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok meaning="and" role="ADDOP" xml:id="p1.m7.1">&amp;</XMTok>
+              <XMTok role="PUNCT">⁣</XMTok>
+              <XMTok meaning="and" role="ADDOP" xml:id="p1.m7.2">&amp;</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math> myOtherBool is false <break/>myBool <Math mode="inline" tex="|" text="|" xml:id="p1.m8">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math><Math mode="inline" tex="|" text="|" xml:id="p1.m9">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math> myOtherBool is true <break/>nay
 yay
 yay
 nay
  YAY
-NAY <break/>1 = 1 &amp;&amp; hello = hello yay <break/>1 = 1 &amp;&amp; hello = hello <Math mode="inline" xml:id="p1.m10" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math><Math mode="inline" xml:id="p1.m11" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math> 2 <Math mode="inline" xml:id="p1.m12" tex="&lt;" text="less"><XMath><XMTok meaning="less-than" role="RELOP">&lt;</XMTok></XMath></Math> -1 yay <break/>1 = 1 &amp;&amp; hello = hello &amp;&amp; 2 <Math mode="inline" xml:id="p1.m13" tex="&lt;" text="less"><XMath><XMTok meaning="less-than" role="RELOP">&lt;</XMTok></XMath></Math> -1 nay <break/>
-c- cc- ccc- cccc- ccccc- cccccc-  <break/>( 23 ) is odd <break/>( 1 = 1 ) : true <break/>!( 1 <Math mode="inline" xml:id="p1.m14" tex="&gt;" text="&gt;"><XMath><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok></XMath></Math> 2 ) : true <break/>23 &amp;&amp; ( 1 = 2 ) : false <break/>23 &amp;&amp; ! ( 1 = 2 ) &amp;&amp; ( 3 <Math mode="inline" xml:id="p1.m15" tex="&gt;" text="&gt;"><XMath><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok></XMath></Math> 2 <Math mode="inline" xml:id="p1.m16" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math><Math mode="inline" xml:id="p1.m17" tex="|" text="|"><XMath><XMTok role="VERTBAR" stretchy="false">|</XMTok></XMath></Math> 4 = 2 ) true <break/>! ( ( 42 ) ) : true <break/>( !42 ) : true <break/>( ! ( 42 ) ) : true <break/>( ! ( ! ( !42 ) ) ) : true <break/>T
+NAY <break/>1 = 1 &amp;&amp; hello = hello yay <break/>1 = 1 &amp;&amp; hello = hello <Math mode="inline" tex="|" text="|" xml:id="p1.m10">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math><Math mode="inline" tex="|" text="|" xml:id="p1.m11">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math> 2 <Math mode="inline" tex="&lt;" text="less" xml:id="p1.m12">
+        <XMath>
+          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+        </XMath>
+      </Math> -1 yay <break/>1 = 1 &amp;&amp; hello = hello &amp;&amp; 2 <Math mode="inline" tex="&lt;" text="less" xml:id="p1.m13">
+        <XMath>
+          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+        </XMath>
+      </Math> -1 nay <break/>
+c- cc- ccc- cccc- ccccc- cccccc-  <break/>( 23 ) is odd <break/>( 1 = 1 ) : true <break/>!( 1 <Math mode="inline" tex="&gt;" text="&gt;" xml:id="p1.m14">
+        <XMath>
+          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+        </XMath>
+      </Math> 2 ) : true <break/>23 &amp;&amp; ( 1 = 2 ) : false <break/>23 &amp;&amp; ! ( 1 = 2 ) &amp;&amp; ( 3 <Math mode="inline" tex="&gt;" text="&gt;" xml:id="p1.m15">
+        <XMath>
+          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+        </XMath>
+      </Math> 2 <Math mode="inline" tex="|" text="|" xml:id="p1.m16">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math><Math mode="inline" tex="|" text="|" xml:id="p1.m17">
+        <XMath>
+          <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+        </XMath>
+      </Math> 4 = 2 ) true <break/>! ( ( 42 ) ) : true <break/>( !42 ) : true <break/>( ! ( 42 ) ) : true <break/>( ! ( ! ( !42 ) ) ) : true <break/>T
 F
 T
 T</p>

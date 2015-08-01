@@ -8,16 +8,12 @@
   <para xml:id="p1">
     <inline-enumerate xml:id="I1">
       <inline-item frefnum="a)" refnum="a" xml:id="I1.i1">
-        <tag>
-          <text font="italic">a)</text>
-        </tag>
+        <tag><text font="italic">a)</text></tag>
         <text>first thing and
 </text>
       </inline-item>
       <inline-item frefnum="b)" refnum="b" xml:id="I1.i2">
-        <tag>
-          <text font="italic">b)</text>
-        </tag>
+        <tag><text font="italic">b)</text></tag>
         <text>second thing.
 </text>
       </inline-item>
@@ -98,40 +94,32 @@
   <para xml:id="p6">
     <itemize xml:id="I6">
       <item xml:id="I6.i1">
-        <tag>
-          <Math mode="inline" xml:id="I6.i1.m1" tex="\star" text="star">
+        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i1.m1">
             <XMath>
               <XMTok name="star" role="MULOP">⋆</XMTok>
             </XMath>
-          </Math>
-        </tag>
+          </Math></tag>
         <para xml:id="I6.i1.p1">
           <p>one</p>
         </para>
       </item>
       <item xml:id="I6.i2">
-        <tag>
-          <Math mode="inline" xml:id="I6.i2.m1" tex="\star" text="star">
+        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i2.m1">
             <XMath>
               <XMTok name="star" role="MULOP">⋆</XMTok>
             </XMath>
-          </Math>
-        </tag>
+          </Math></tag>
         <para xml:id="I6.i2.p1">
           <p>two</p>
           <itemize xml:id="I6.I1">
             <item xml:id="I6.I1.i1">
-              <tag>
-                <text font="bold">–</text>
-              </tag>
+              <tag><text font="bold">–</text></tag>
               <para xml:id="I6.I1.i1.p1">
                 <p>one</p>
               </para>
             </item>
             <item xml:id="I6.I1.i2">
-              <tag>
-                <text font="bold">–</text>
-              </tag>
+              <tag><text font="bold">–</text></tag>
               <para xml:id="I6.I1.i2.p1">
                 <p>two</p>
               </para>
@@ -140,13 +128,11 @@
         </para>
       </item>
       <item xml:id="I6.i3">
-        <tag>
-          <Math mode="inline" xml:id="I6.i3.m1" tex="\star" text="star">
+        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i3.m1">
             <XMath>
               <XMTok name="star" role="MULOP">⋆</XMTok>
             </XMath>
-          </Math>
-        </tag>
+          </Math></tag>
         <para xml:id="I6.i3.p1">
           <p>three</p>
         </para>
@@ -156,17 +142,13 @@
   <para xml:id="p7">
     <enumerate xml:id="I7">
       <item frefnum="-a-" refnum="a" xml:id="I7.i1">
-        <tag>
-          <text font="bold">-a-</text>
-        </tag>
+        <tag><text font="bold">-a-</text></tag>
         <para xml:id="I7.i1.p1">
           <p>one</p>
         </para>
       </item>
       <item frefnum="-b-" refnum="b" xml:id="I7.i2">
-        <tag>
-          <text font="bold">-b-</text>
-        </tag>
+        <tag><text font="bold">-b-</text></tag>
         <para xml:id="I7.i2.p1">
           <p>two</p>
           <enumerate xml:id="I7.I1">
@@ -186,9 +168,7 @@
         </para>
       </item>
       <item frefnum="-c-" refnum="c" xml:id="I7.i3">
-        <tag>
-          <text font="bold">-c-</text>
-        </tag>
+        <tag><text font="bold">-c-</text></tag>
         <para xml:id="I7.i3.p1">
           <p>three</p>
         </para>
@@ -214,27 +194,29 @@
   <para xml:id="p9">
     <description xml:id="I9">
       <item frefnum="$\{$do$\}$ " refnum="do" xml:id="I9.ix1">
-        <tag>
-          <Math mode="inline" xml:id="I9.ix1.m1" tex="\{" text="{">
+        <tag><Math mode="inline" tex="\{" text="{" xml:id="I9.ix1.m1">
             <XMath>
               <XMTok role="OPEN" stretchy="false">{</XMTok>
             </XMath>
-          </Math>
-          <text font="italic">do<Math mode="inline" xml:id="I9.ix1.m2" tex="\}" text="}"><XMath><XMTok role="CLOSE" stretchy="false" font="upright">}</XMTok></XMath></Math> </text>
-        </tag>
+          </Math><text font="italic">do<Math mode="inline" tex="\}" text="}" xml:id="I9.ix1.m2">
+              <XMath>
+                <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+              </XMath>
+            </Math> </text></tag>
         <para xml:id="I9.ix1.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
       <item frefnum="$\{$re$\}$ " refnum="re" xml:id="I9.ix2">
-        <tag>
-          <Math mode="inline" xml:id="I9.ix2.m1" tex="\{" text="{">
+        <tag><Math mode="inline" tex="\{" text="{" xml:id="I9.ix2.m1">
             <XMath>
               <XMTok role="OPEN" stretchy="false">{</XMTok>
             </XMath>
-          </Math>
-          <text font="italic">re<Math mode="inline" xml:id="I9.ix2.m2" tex="\}" text="}"><XMath><XMTok role="CLOSE" stretchy="false" font="upright">}</XMTok></XMath></Math> </text>
-        </tag>
+          </Math><text font="italic">re<Math mode="inline" tex="\}" text="}" xml:id="I9.ix2.m2">
+              <XMath>
+                <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+              </XMath>
+            </Math> </text></tag>
         <para xml:id="I9.ix2.p1">
           <p>a pocket full of sun</p>
         </para>
@@ -244,37 +226,29 @@
   <para xml:id="p10">
     <description xml:id="I10">
       <item frefnum="$\{$$\}$ " refnum="1" xml:id="I10.i1">
-        <tag>
-          <Math mode="inline" xml:id="I10.i1.m1" tex="\{" text="{">
+        <tag><Math mode="inline" tex="\{" text="{" xml:id="I10.i1.m1">
             <XMath>
               <XMTok role="OPEN" stretchy="false">{</XMTok>
             </XMath>
-          </Math>
-          <Math mode="inline" xml:id="I10.i1.m2" tex="\}" text="}">
+          </Math><Math mode="inline" tex="\}" text="}" xml:id="I10.i1.m2">
             <XMath>
               <XMTok role="CLOSE" stretchy="false">}</XMTok>
             </XMath>
-          </Math>
-          <text font="italic"> </text>
-        </tag>
+          </Math><text font="italic"> </text></tag>
         <para xml:id="I10.i1.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
       <item frefnum="$\{$$\}$ " refnum="2" xml:id="I10.i2">
-        <tag>
-          <Math mode="inline" xml:id="I10.i2.m1" tex="\{" text="{">
+        <tag><Math mode="inline" tex="\{" text="{" xml:id="I10.i2.m1">
             <XMath>
               <XMTok role="OPEN" stretchy="false">{</XMTok>
             </XMath>
-          </Math>
-          <Math mode="inline" xml:id="I10.i2.m2" tex="\}" text="}">
+          </Math><Math mode="inline" tex="\}" text="}" xml:id="I10.i2.m2">
             <XMath>
               <XMTok role="CLOSE" stretchy="false">}</XMTok>
             </XMath>
-          </Math>
-          <text font="italic"> </text>
-        </tag>
+          </Math><text font="italic"> </text></tag>
         <para xml:id="I10.i2.p1">
           <p>a pocket full of sun</p>
         </para>
@@ -284,9 +258,7 @@
   <para xml:id="p11">
     <enumerate xml:id="I11">
       <item frefnum="-a-" refnum="a" xml:id="I11.i1">
-        <tag>
-          <text font="bold">-a-</text>
-        </tag>
+        <tag><text font="bold">-a-</text></tag>
         <para xml:id="I11.i1.p1">
           <p>one</p>
         </para>
@@ -298,9 +270,7 @@
         </para>
       </item>
       <item frefnum="-b-" refnum="b" xml:id="I11.i2">
-        <tag>
-          <text font="bold">-b-</text>
-        </tag>
+        <tag><text font="bold">-b-</text></tag>
         <para xml:id="I11.i2.p1">
           <p>three</p>
         </para>
