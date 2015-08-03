@@ -242,7 +242,7 @@ DefConstructor('\@@multline DigestedBody',
   properties   => sub { RefStepCounter('equation') },
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultirowBindings(( name => 'multline' )); },
+    amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
@@ -259,7 +259,7 @@ DefConstructor('\@@multlinestar DigestedBody',
   mode         => 'display_math',
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultirowBindings(( name => 'multline' )); },
+    amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
@@ -293,12 +293,17 @@ sub rearrangeAMSMultirow {
   return; }
 
 sub amsMultirowBindings {
-  my (%properties) = @_;
-  my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
+  my ($properties, %options) = @_;
+  my $before = $options{before_row} if defined $options{before_row};
+  my $after = $options{after_row} if defined $options{after_row};
 
-  amsAlignmentBindings($template, %properties);
+  my $col1 = { before => Tokens(T_CS('\hfil'),
+      T_CS('\displaystyle'),
+      T_CS('\text'), T_BEGIN, ($before ? $before : ()), T_END),
+    after => Tokens(T_CS('\text'), T_BEGIN, ($after ? $after : ()), T_END) };
+
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
+  amsAlignmentBindings($template, %{ $properties });
   return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
