@@ -1635,6 +1635,7 @@ sub eqnarrayBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      properties => { preserve_structure => 1 },
       attributes => { class => 'ltx_eqn_eqnarray',
         # UGH! \arraycolsep * 2
         colsep => LookupRegister('\arraycolsep')->multiply(2) }));
@@ -3068,8 +3069,8 @@ sub process_index_phrases {
         my $extra = ToString(Tokens(@tokens));
         if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
         elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
-        elsif ($extra eq '(') { $style = 'rangestart'; } # ?
-        elsif ($extra eq ')') { $style = 'rangeend'; }	 # ?
+        elsif ($extra eq '(') { $style = 'rangestart'; }                     # ?
+        elsif ($extra eq ')') { $style = 'rangeend'; }                       # ?
         else                  { $style = $index_style{$extra} || $extra; }
         @tokens = (); } }
     elsif (!@phrase && ($string =~ /\s/)) { }                                # Skip leading whitespace
