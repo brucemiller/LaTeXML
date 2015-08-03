@@ -4257,6 +4257,86 @@ DefMacroI('\@tempc',  undef, '');
 DefMacroI('\@gtempa', undef, '');
 
 RawTeX(<<'EOTeX');
+\long\def \loop #1\repeat{%
+  \def\iterate{#1\relax  % Extra \relax
+               \expandafter\iterate\fi
+               }%
+  \iterate
+  \let\iterate\relax
+}
+\newdimen\@ydim 							%Seems kind of useless, since it's just reserving the space for @ydim
+\let\@@hyph=\-   							%Very primitive and the only place that it shows up 
+\let\@@italiccorr=\/							%Is never redefined or anything
+\let\@@underline\underline						%Is defined at toplevel once.
+\newbox\@arstrutbox							%First newbox. Thought I might include, can't hurt.
+\newbox\@begindvibox							
+\newcount\@botnum							%Finally a count
+\newdimen\@botroom							%A corresponding new dimension 
+\newcount\@chclass							%new count 
+\newcount\@chnum							%new count
+\newdimen\@clnht							%New dimension
+\newdimen\@clnwd							%New dimension, seems to be the width counterpart to @clnht
+\newdimen\@colht							%Also new dimension
+\newcount\@colnum							%New counter 
+\newdimen\@colroom							%Now dimension
+\newbox\@curfield							%New dimension 
+\newbox\@curline							%New dimension 
+\newcount\@currtype							%New counter 
+\newcount\@curtab							%New counter 
+\newcount\@curtabmar							%New counter
+\newbox\@dashbox							%New box
+\newcount\@dashcnt							%New counter 
+\newdimen\@dashdim							%New dimension 
+\newcount\@dbltopnum							%New counter
+\newdimen\@dbltoproom							%New dimension
+\let\@dischyph=\-							%Similar to \@@hyph above. Later also \let\-\@dischyph
+\newcount\@enumdepth \@enumdepth = 0					%New counter, which is initially set to a value. Probably can leave out the last part
+\newcount\@floatpenalty							%New counter
+\newdimen\@fpmin							%New dimension
+\newcount \@fpstype							%New counter
+\newcount\@highpenalty							%New counter
+\newcount\@hightab							%New counter
+\newbox\@holdpg								%New box
+\newinsert \@kludgeins							%Don't know what this is, but it is using the new stuff 
+\newcount\@lastchclass							%New counter
+\newbox\@leftcolumn							%New box
+\newbox\@linechar							%New box
+\newdimen\@linelen							%New dimension
+\newcount\@lowpenalty							%New counter
+\newdimen\@maxdepth							%New dimension 
+\newcount\@medpenalty							%New counter
+\newdimen\@mparbottom \@mparbottom\z@					%New dimension, initial set to z@
+\newinsert\@mpfootins							%Again newinsert. 
+\newcount\@mplistdepth							%New counter
+\newcount\@multicnt							%New counter
+\newcount\@nxttabmar							%New counter
+\newbox\@outputbox							%New box
+\newdimen\@pagedp							%New dimension
+\newdimen\@pageht							%New dimension
+\newbox\@picbox								%New box
+\newdimen\@picht							%new dimension
+\newdimen \@reqcolroom							%new dimension
+\newskip\@rightskip \@rightskip \z@skip					%New skip, I think it's the first one
+\newcount\@savsf							%New counter
+\newdimen\@savsk							%New dimension
+\newcount\@secpenalty							%New counter
+\def\@sqrt[#1]{\root #1\of}						%Very short definition of \@sqrt, is never redefined and seems to be some kind of alias.
+\newbox\@tabfbox							%New box 
+\newcount\@tabpush							%New counter
+\newdimen \@textfloatsheight						%New dimension
+\newdimen\@textmin							%New dimension
+\newcount\@topnum							%New counter
+\newdimen\@toproom							%New dimension
+\newcount\@xarg								%New counter
+\newdimen\@xdim								%New dimension
+\newcount\@yarg								%New counter
+\newdimen\@ydim								%New dimension
+\newcount\@yyarg							%New counter
+\newtoks\every@math@size						%first time \newtoks
+\newif \if@fcolmade							%newif 
+\newdimen\lower@bound							%New dimension
+\newcount\par@deathcycles						%New counter. Name is very metal =P. 
+\newdimen\upper@bound							%new dimension
 \newif\if@insert
 \newif\if@colmade
 \newif\if@specialpage   \@specialpagefalse
