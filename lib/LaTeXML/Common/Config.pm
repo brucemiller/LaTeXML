@@ -426,6 +426,7 @@ sub _prepare_options {
     || ($$opts{stylesheet})
     || $$opts{is_html}
     || $$opts{is_xhtml}
+    || (($$opts{format}||'') eq 'jats')
     || ($$opts{whatsout} && ($$opts{whatsout} ne 'document'))
   );
 # || ... || ... || ...
@@ -463,7 +464,8 @@ sub _prepare_options {
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
-      $$opts{picimages} = 1 if ($$opts{format} eq "html4") && !defined $$opts{picimages};
+      $$opts{picimages} = 1 if (($$opts{format} eq "html4")||($$opts{format} eq "jats"))
+	  && !defined $$opts{picimages};
     }
     # Split sanity:
     if ($$opts{split}) {
@@ -515,6 +517,7 @@ sub _prepare_options {
       elsif ($$opts{format} eq "html4")       { $$opts{stylesheet} = "LaTeXML-html4.xsl"; }
       elsif ($$opts{format} =~ /^epub|mobi$/) { $$opts{stylesheet} = "LaTeXML-epub3.xsl"; }
       elsif ($$opts{format} eq "html5")       { $$opts{stylesheet} = "LaTeXML-html5.xsl"; }
+      elsif ($$opts{format} eq "jats")       { $$opts{stylesheet} = "LaTeXML-jats.xsl"; }
       elsif ($$opts{format} eq "xml")         { delete $$opts{stylesheet}; }
       else                                    { croak("Unrecognized target format: " . $$opts{format}); }
     }
@@ -531,7 +534,7 @@ sub _prepare_options {
     $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
           # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} })))
-      && ($$opts{is_html} || $$opts{is_xhtml})) {
+      && ($$opts{is_html} || $$opts{is_xhtml} || ($$opts{format} eq 'jats'))) {
       CORE::push @{ $$opts{math_formats} }, 'pmml';
     }
     # use parallel markup if there are multiple formats requested.
