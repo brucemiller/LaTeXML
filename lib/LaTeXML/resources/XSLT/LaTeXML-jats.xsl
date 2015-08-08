@@ -8,7 +8,8 @@
 |  Public domain software, produced as part of work done by the       |
 |  United States Government & not subject to copyright in the US.     |
 |=====================================================================|
-| Thanks to Lukas Kohlhase                                            |
+| Thanks to Lukas Kohlhase formerly of Jacobs University, Bremen      |
+| and Viacheslav Zholudev from ResearchGate;                          |
 | Released to the Public Domain                                       |
 |=====================================================================|
 | Bruce Miller <bruce.miller@nist.gov>                        #_#     |
@@ -16,16 +17,13 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-   xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
-   version="1.0"
-   exclude-result-prefixes="ltx str m xlink xhtml"
-   xmlns:str="http://exslt.org/strings"
-   xmlns:m="http://www.w3.org/1998/Math/MathML"
-   xmlns:xhtml="http://www.w3.org/1999/xhtml"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:exsl="http://exslt.org/common"
-   extension-element-prefixes="exsl" >
+   version     ="1.0"
+   xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
+   xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
+   xmlns:str   ="http://exslt.org/strings"
+   xmlns:m     ="http://www.w3.org/1998/Math/MathML"
+   xmlns:xlink ="http://www.w3.org/1999/xlink"
+   exclude-result-prefixes="ltx str m xlink">
 
   <xsl:import href="LaTeXML-tabular-xhtml.xsl"/>
   <xsl:import href="LaTeXML-common.xsl"/>
