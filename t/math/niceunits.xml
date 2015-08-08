@@ -8,28 +8,20 @@
   <section refnum="1" xml:id="S1">
     <title><tag close=" ">1</tag>Examples</title>
     <para xml:id="S1.p1">
-      <p>
-        <text font="sansserif bold">m</text>
-      </p>
+      <p><text font="sansserif bold">m</text></p>
     </para>
     <para xml:id="S1.p2">
-      <p>
-        <Math mode="inline" xml:id="S1.p2.m1" tex="\mathrm{m}" text="m">
+      <p><Math mode="inline" tex="\mathrm{m}" text="m" xml:id="S1.p2.m1">
           <XMath>
             <XMTok role="UNKNOWN">m</XMTok>
           </XMath>
-        </Math>
-        <text font="sansserif bold"></text>
-      </p>
+        </Math><text font="sansserif bold"></text></p>
     </para>
     <para xml:id="S1.p3">
-      <p>
-        <text font="sansserif bold">1 m</text>
-      </p>
+      <p><text font="sansserif bold">1 m</text></p>
     </para>
     <para xml:id="S1.p4">
-      <p>
-        <Math mode="inline" xml:id="S1.p4.m1" tex="1\,\mathrm{m}" text="1 * m">
+      <p><Math mode="inline" tex="1\,\mathrm{m}" text="1 * m" xml:id="S1.p4.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -37,13 +29,10 @@
               <XMTok role="UNKNOWN">m</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold"></text>
-      </p>
+        </Math><text font="sansserif bold"></text></p>
     </para>
     <para xml:id="S1.p5">
-      <p>
-        <Math mode="inline" xml:id="S1.p5.m1" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s">
+      <p><Math mode="inline" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s" xml:id="S1.p5.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
@@ -51,13 +40,10 @@
               <XMTok role="UNKNOWN">s</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold"></text>
-      </p>
+        </Math><text font="sansserif bold"></text></p>
     </para>
     <para xml:id="S1.p6">
-      <p>
-        <Math mode="inline" xml:id="S1.p6.m1" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s">
+      <p><Math mode="inline" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s" xml:id="S1.p6.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
@@ -65,18 +51,21 @@
               <XMTok role="UNKNOWN">s</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold"></text>
-      </p>
+        </Math><text font="sansserif bold"></text></p>
     </para>
     <para xml:id="S1.p7">
-      <p>
-        <text font="sansserif bold">1 <Math mode="inline" xml:id="S1.p7.m1" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP"/><XMTok role="UNKNOWN" font="serif medium">m</XMTok><XMTok role="UNKNOWN" font="serif medium">s</XMTok></XMApp></XMath></Math></text>
-      </p>
+      <p><text font="sansserif bold">1 <Math mode="inline" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s" xml:id="S1.p7.m1">
+            <XMath>
+              <XMApp>
+                <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
+                <XMTok font="serif medium" role="UNKNOWN">m</XMTok>
+                <XMTok font="serif medium" role="UNKNOWN">s</XMTok>
+              </XMApp>
+            </XMath>
+          </Math></text></p>
     </para>
     <para xml:id="S1.p8">
-      <p>
-        <Math mode="inline" xml:id="S1.p8.m1" tex="1\,\nicefrac{\mathrm{m}}{\mathrm{s}}" text="1 * (m / s)">
+      <p><Math mode="inline" tex="1\,\nicefrac{\mathrm{m}}{\mathrm{s}}" text="1 * (m / s)" xml:id="S1.p8.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -88,18 +77,21 @@
               </XMApp>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold"></text>
-      </p>
+        </Math><text font="sansserif bold"></text></p>
     </para>
     <para xml:id="S1.p9">
-      <p>
-        <text font="sansserif bold italic" fontsize="70%">1 <Math mode="inline" xml:id="S1.p9.m1" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s"><XMath><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP"/><XMTok role="UNKNOWN" fontsize="142%" font="serif medium upright">m</XMTok><XMTok role="UNKNOWN" fontsize="142%" font="serif medium upright">s</XMTok></XMApp></XMath></Math></text>
-      </p>
+      <p><text font="sansserif bold italic" fontsize="70%">1 <Math mode="inline" tex="\nicefrac{\mathrm{m}}{\mathrm{s}}" text="m / s" xml:id="S1.p9.m1">
+            <XMath>
+              <XMApp>
+                <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
+                <XMTok font="serif medium upright" fontsize="142%" role="UNKNOWN">m</XMTok>
+                <XMTok font="serif medium upright" fontsize="142%" role="UNKNOWN">s</XMTok>
+              </XMApp>
+            </XMath>
+          </Math></text></p>
     </para>
     <para xml:id="S1.p10">
-      <p>
-        <Math mode="inline" xml:id="S1.p10.m1" tex="1\,\nicefrac{\mathrm{m}}{\mathrm{s}}" text="1 * (m / s)">
+      <p><Math mode="inline" tex="1\,\nicefrac{\mathrm{m}}{\mathrm{s}}" text="1 * (m / s)" xml:id="S1.p10.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -111,13 +103,10 @@
               </XMApp>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold italic" fontsize="70%"></text>
-      </p>
+        </Math><text font="sansserif bold italic" fontsize="70%"></text></p>
     </para>
     <para xml:id="S1.p11">
-      <p>
-        <Math mode="inline" xml:id="S1.p11.m1" tex="\nicefrac{{1}}{{2}}" text="1 / 2">
+      <p><Math mode="inline" tex="\nicefrac{{1}}{{2}}" text="1 / 2" xml:id="S1.p11.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
@@ -125,13 +114,10 @@
               <XMTok meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold italic" fontsize="70%"></text>
-      </p>
+        </Math><text font="sansserif bold italic" fontsize="70%"></text></p>
     </para>
     <para xml:id="S1.p12">
-      <p>
-        <Math mode="inline" xml:id="S1.p12.m1" tex="\nicefrac{{1}}{{2}}" text="1 / 2">
+      <p><Math mode="inline" tex="\nicefrac{{1}}{{2}}" text="1 / 2" xml:id="S1.p12.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
@@ -139,41 +125,29 @@
               <XMTok meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold italic" fontsize="70%"></text>
-      </p>
+        </Math><text font="sansserif bold italic" fontsize="70%"></text></p>
     </para>
     <para xml:id="S1.p13">
-      <p>
-        <Math mode="inline" xml:id="S1.p13.m1" tex="\nicefrac{\texttt{1}}{\texttt{2}}" text="[1] / [2]">
+      <p><Math mode="inline" tex="\nicefrac{\texttt{1}}{\texttt{2}}" text="[1] / [2]" xml:id="S1.p13.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
-              <XMText>
-                <text font="typewriter bold italic" fontsize="70%">1</text>
-              </XMText>
-              <XMText>
-                <text fontsize="70%" font="typewriter bold italic">2</text>
-              </XMText>
+              <XMText><text font="typewriter bold italic" fontsize="70%">1</text></XMText>
+              <XMText><text font="typewriter bold italic" fontsize="70%">2</text></XMText>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold italic" fontsize="70%"></text>
-      </p>
+        </Math><text font="sansserif bold italic" fontsize="70%"></text></p>
     </para>
     <para xml:id="S1.p14">
-      <p>
-        <Math mode="inline" xml:id="S1.p14.m1" tex="\nicefrac{\mathcal{A}}{\mathcal{B}}" text="A / B">
+      <p><Math mode="inline" tex="\nicefrac{\mathcal{A}}{\mathcal{B}}" text="A / B" xml:id="S1.p14.m1">
           <XMath>
             <XMApp>
               <XMTok mathstyle="inline" meaning="divide" role="MULOP"/>
-              <XMTok role="UNKNOWN" font="caligraphic">A</XMTok>
-              <XMTok role="UNKNOWN" font="caligraphic">B</XMTok>
+              <XMTok font="caligraphic" role="UNKNOWN">A</XMTok>
+              <XMTok font="caligraphic" role="UNKNOWN">B</XMTok>
             </XMApp>
           </XMath>
-        </Math>
-        <text font="sansserif bold italic" fontsize="70%"></text>
-      </p>
+        </Math><text font="sansserif bold italic" fontsize="70%"></text></p>
     </para>
   </section>
 </document>

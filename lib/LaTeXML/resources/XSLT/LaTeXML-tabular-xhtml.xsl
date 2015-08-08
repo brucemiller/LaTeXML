@@ -158,12 +158,12 @@
           </xsl:if>
           <xsl:choose>
             <xsl:when test="ancestor::ltx:tabular[@rowsep and @colsep]">
-              <xsl:value-of select="concat('padding:',ancestor::ltx:tabular/@rowsep,' ',
+              <xsl:value-of select="concat('padding:',f:half(ancestor::ltx:tabular/@rowsep),' ',
                                     ancestor::ltx:tabular/@colsep,';')"/>
             </xsl:when>
             <xsl:when test="ancestor::ltx:tabular/@rowsep">
-              <xsl:value-of select="concat('padding-top:',ancestor::ltx:tabular/@rowsep,';')"/>
-              <xsl:value-of select="concat('padding-bottom:',ancestor::ltx:tabular/@rowsep,';')"/>
+              <xsl:value-of select="concat('padding-top:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
+              <xsl:value-of select="concat('padding-bottom:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
             </xsl:when>
             <xsl:when test="ancestor::ltx:tabular/@colsep">
               <xsl:value-of select="concat('padding-left:',ancestor::ltx:tabular/@colsep,';')"/>

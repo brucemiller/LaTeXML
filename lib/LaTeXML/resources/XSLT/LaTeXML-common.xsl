@@ -244,6 +244,14 @@
       </func:result>
   </func:function>
 
+  <func:function name="f:half">
+    <xsl:param name="value"/>
+    <func:result>
+      <xsl:value-of select="concat(f:dimpx($value) div 2,'px')"/>
+      </func:result>
+  </func:function>
+
+
   <func:function name="f:dimpx">
     <xsl:param name="value"/>
     <func:result>

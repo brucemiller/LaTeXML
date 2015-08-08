@@ -241,14 +241,21 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_framed  { border:1px solid black;}
 .ltx_tabular .ltx_td,
 .ltx_tabular .ltx_th { padding:0.1em 0.5em; }
+/* regular lines */
 .ltx_border_t  { border-top:1px solid black; }
 .ltx_border_r  { border-right:1px solid black; }
 .ltx_border_b  { border-bottom:1px solid black; }
 .ltx_border_l  { border-left:1px solid black; }
+/* double lines */
 .ltx_border_tt { border-top:3px double black; }
 .ltx_border_rr { border-right:3px double black; }
 .ltx_border_bb { border-bottom:3px double black; }
 .ltx_border_ll { border-left:3px double black; }
+/* Light lines */
+.ltx_border_T  { border-top:1px solid gray; }
+.ltx_border_R  { border-right:1px solid gray; }
+.ltx_border_B  { border-bottom:1px solid gray; }
+.ltx_border_L  { border-left:1px solid gray; }
 
 /*======================================================================
  Misc */

@@ -186,9 +186,7 @@ sub makeIndexEntry {
   my @links   = ();
   # Note sort of keys here is questionable!
   if (keys %$refs) {
-    push(@links, ['ltx:text', {}, ' '],
-      conjoin(map { $self->makeIndexRefs($doc, $_, sort alphacmp keys %{ $$refs{$_} }) }
-          sort alphacmp keys %$refs)); }
+    push(@links, ['ltx:text', {}, ' '], $self->combineIndexEntries($doc,$refs) ); }
   if ($seealso) {
     my %saw = ();
     foreach my $see (@$seealso) {
@@ -216,6 +214,33 @@ sub makeIndexEntry {
     ['ltx:indexphrase', {}, $doc->trimChildNodes($$tree{phrase})],
     (@links ? (['ltx:indexrefs', {}, @links]) : ()),
     $self->makeIndexList($doc, $allkeys, $allphrases, $tree)]; }
+
+sub combineIndexEntries {
+  my($self, $doc, $refs) = @_;
+  my @ids = sort alphacmp keys %$refs;
+  my @links = ();
+  while(@ids){
+    my $id = shift(@ids);
+    my $entry = $$refs{$id};
+    if($$entry{rangestart}){
+      my $startid = $id;
+      my $endid = $id;
+      my $lvl = 1;
+      while(@ids){
+	$endid = shift(@ids);
+	$lvl-- if $$refs{$endid}{rangestart};
+	$lvl-- if $$refs{$endid}{rangeend};
+	last unless $lvl; }
+      push(@links,
+	   ['ltx:text',{},
+	    $self->makeIndexRefs($doc, $startid,
+				 grep { $_ ne 'rangestart' } sort keys %$entry),
+	    "\x{2014}",
+	    $self->makeIndexRefs($doc, $endid,
+				 grep { $_ ne 'rangeend' } sort keys %{ $$refs{$endid} })]); }
+    else {
+      push(@links,$self->makeIndexRefs($doc, $id, sort keys %$entry)); } }
+  return conjoin(@links); }
 
 # Fishing expedition: Try to find what a See Also phrase might refer to
 # [They don't necessarily match in obvious ways]

@@ -3,32 +3,24 @@
 <?latexml package="babel" options="french,english"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
-  <resource src="LaTeXML.css" type="text/css" class="ltx_align_left"/>
-  <resource src="ltx-article.css" type="text/css" class="ltx_align_left"/>
-  <para xml:id="p1" class="ltx_align_left">
-    <p>
-      <text xml:lang="en">The expansion of fixed document element names
+  <resource class="ltx_align_left" src="LaTeXML.css" type="text/css"/>
+  <resource class="ltx_align_left" src="ltx-article.css" type="text/css"/>
+  <para class="ltx_align_left" xml:id="p1">
+    <p><text xml:lang="en">The expansion of fixed document element names
 depends on the language, e.g., in English
-we have “References” or “Chapter”.</text>
-    </p>
+we have “References” or “Chapter”.</text></p>
   </para>
-  <para xml:id="p2" class="ltx_align_left">
-    <p>
-      <text xml:lang="de">Auf Deutsch ergibt sich
-“Literatur” oder “Kapitel”.</text>
-    </p>
+  <para class="ltx_align_left" xml:id="p2">
+    <p><text xml:lang="de">Auf Deutsch ergibt sich
+“Literatur” oder “Kapitel”.</text></p>
   </para>
-  <para xml:id="p3" class="ltx_align_left">
-    <p>
-      <text xml:lang="fr">Voice en
-français: “Références” ou “Chapitre”.</text>
-    </p>
+  <para class="ltx_align_left" xml:id="p3">
+    <p><text xml:lang="fr">Voice en
+français: “Références” ou “Chapitre”.</text></p>
   </para>
-  <para xml:id="p4" class="ltx_align_left">
-    <p>
-      <text xml:lang="en">But in short
+  <para class="ltx_align_left" xml:id="p4">
+    <p><text xml:lang="en">But in short
 phrases “Références” does not change!<text xml:lang="fr">
-<text xml:lang="de"></text></text></text>
-    </p>
+<text xml:lang="de"></text></text></text></p>
   </para>
 </document>

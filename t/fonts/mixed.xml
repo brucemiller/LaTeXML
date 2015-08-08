@@ -9,7 +9,7 @@
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" xml:id="S0.Ex1.m1" tex="a+\textbf{bf},b+\textit{it},c+\textbf{{bfit}}" text="list@(a + [bf], b + [it], c + [bfit])">
+      <Math mode="display" tex="a+\textbf{bf},b+\textit{it},c+\textbf{{bfit}}" text="list@(a + [bf], b + [it], c + [bfit])" xml:id="S0.Ex1.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -21,26 +21,20 @@
             <XMWrap>
               <XMApp xml:id="S0.Ex1.m1.1">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMText>
-                  <text font="bold">bf</text>
-                </XMText>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMText><text font="bold">bf</text></XMText>
               </XMApp>
               <XMTok role="PUNCT">,</XMTok>
               <XMApp xml:id="S0.Ex1.m1.2">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMText>
-                  <text font="italic">it</text>
-                </XMText>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMText><text font="italic">it</text></XMText>
               </XMApp>
               <XMTok role="PUNCT">,</XMTok>
               <XMApp xml:id="S0.Ex1.m1.3">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                <XMText>
-                  <text font="bold italic">bfit</text>
-                </XMText>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                <XMText><text font="bold italic">bfit</text></XMText>
               </XMApp>
             </XMWrap>
           </XMDual>
@@ -48,7 +42,7 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" xml:id="S0.Ex2.m1" tex="a+\mathbf{bf},b+\mathit{it},c+\mathbf{\mathit{bfit}}" text="list@(a + bf, b + it, c + bfit)">
+      <Math mode="display" tex="a+\mathbf{bf},b+\mathit{it},c+\mathbf{\mathit{bfit}}" text="list@(a + bf, b + it, c + bfit)" xml:id="S0.Ex2.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -60,20 +54,20 @@
             <XMWrap>
               <XMApp xml:id="S0.Ex2.m1.1">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" font="bold">bf</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="bold" role="UNKNOWN">bf</XMTok>
               </XMApp>
               <XMTok role="PUNCT">,</XMTok>
               <XMApp xml:id="S0.Ex2.m1.2">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                <XMTok role="UNKNOWN" font="italic">it</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">it</XMTok>
               </XMApp>
               <XMTok role="PUNCT">,</XMTok>
               <XMApp xml:id="S0.Ex2.m1.3">
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
-                <XMTok role="UNKNOWN" font="italic">bfit</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" role="UNKNOWN">bfit</XMTok>
               </XMApp>
             </XMWrap>
           </XMDual>

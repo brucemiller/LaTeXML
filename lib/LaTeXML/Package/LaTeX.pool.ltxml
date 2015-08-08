@@ -3074,8 +3074,8 @@ sub process_index_phrases {
         my $extra = ToString(Tokens(@tokens));
         if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
         elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
-        elsif ($extra eq '(') { }                                            # ?
-        elsif ($extra eq ')') { }                                            # ?
+        elsif ($extra eq '(') { $style = 'rangestart'; }                     # ?
+        elsif ($extra eq ')') { $style = 'rangeend'; }                       # ?
         else                  { $style = $index_style{$extra} || $extra; }
         @tokens = (); } }
     elsif (!@phrase && ($string =~ /\s/)) { }                                # Skip leading whitespace
@@ -4262,6 +4262,84 @@ DefMacroI('\@tempc',  undef, '');
 DefMacroI('\@gtempa', undef, '');
 
 RawTeX(<<'EOTeX');
+\long\def \loop #1\repeat{%
+  \def\iterate{#1\relax  % Extra \relax
+               \expandafter\iterate\fi
+               }%
+  \iterate
+  \let\iterate\relax
+}
+\newdimen\@ydim 							
+\let\@@hyph=\-   							%Very primitive and the only place that it shows up 
+\newbox\@arstrutbox							
+\newbox\@begindvibox							
+\newcount\@botnum							
+\newdimen\@botroom							 
+\newcount\@chclass							 
+\newcount\@chnum							
+\newdimen\@clnht							
+\newdimen\@clnwd							
+\newdimen\@colht							
+\newcount\@colnum							 
+\newdimen\@colroom							
+\newbox\@curfield							 
+\newbox\@curline							 
+\newcount\@currtype							 
+\newcount\@curtab							 
+\newcount\@curtabmar							
+\newbox\@dashbox							
+\newcount\@dashcnt							 
+\newdimen\@dashdim							 
+\newcount\@dbltopnum							
+\newdimen\@dbltoproom							
+\let\@dischyph=\-							%Similar to \@@hyph above. Later also \let\-\@dischyph
+\newcount\@enumdepth 
+\newcount\@floatpenalty							
+\newdimen\@fpmin							
+\newcount \@fpstype							
+\newcount\@highpenalty							
+\newcount\@hightab							
+\newbox\@holdpg								
+\newinsert \@kludgeins							%Don't know what this is, but it is using the new stuff 
+\newcount\@lastchclass							
+\newbox\@leftcolumn							
+\newbox\@linechar							
+\newdimen\@linelen							
+\newcount\@lowpenalty							
+\newdimen\@maxdepth							 
+\newcount\@medpenalty							
+\newdimen\@mparbottom \@mparbottom\z@					%New dimension, initial set to z@
+\newinsert\@mpfootins							 
+\newcount\@mplistdepth							
+\newcount\@multicnt							
+\newcount\@nxttabmar							
+\newbox\@outputbox							
+\newdimen\@pagedp							
+\newdimen\@pageht							
+\newbox\@picbox								
+\newdimen\@picht							
+\newdimen \@reqcolroom							
+\newskip\@rightskip \@rightskip \z@skip					
+\newcount\@savsf							
+\newdimen\@savsk							
+\newcount\@secpenalty							
+\def\@sqrt[#1]{\root #1\of}						%Very short definition of \@sqrt, is never redefined and seems to be some kind of alias.
+\newbox\@tabfbox							
+\newcount\@tabpush							
+\newdimen \@textfloatsheight						
+\newdimen\@textmin							
+\newcount\@topnum							
+\newdimen\@toproom							
+\newcount\@xarg								
+\newdimen\@xdim								
+\newcount\@yarg								
+\newdimen\@ydim								
+\newcount\@yyarg							
+\newtoks\every@math@size						%first time \newtoks
+\newif \if@fcolmade							 
+\newdimen\lower@bound							
+\newcount\par@deathcycles						 
+\newdimen\upper@bound							
 \newif\if@insert
 \newif\if@colmade
 \newif\if@specialpage   \@specialpagefalse

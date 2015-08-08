@@ -413,9 +413,9 @@ sub toString {
   # Apparently, libxml2 is giving us "binary" or byte strings which we'd prefer to have as text.
   #  return decode('UTF-8',$self->getDocument->toString($format)); }
   # This uses our own serializer emulating libxml2's heuristic indentation.
-  return $self->serialize_aux($self->getDocument, 0, 0, 1); }
-# This uses our own serializer w/ correct indentation rules.
-#  return $self->serialize_aux($self->getDocument, 0, 0, 0); }
+  #  return $self->serialize_aux($self->getDocument, 0, 0, 1); }
+  # This uses our own serializer w/ correct indentation rules.
+  return $self->serialize_aux($self->getDocument, 0, 0, 0); }
 
 # We ought to try for something close to C14N (http://www.w3.org/TR/xml-c14n),
 # but keep XML declaration, comments and don't convert empty elements.
@@ -474,9 +474,9 @@ sub serialize_string {
   $string =~ s/&/&amp;/g;
   $string =~ s/>/&gt;/g;
   $string =~ s/</&lt;/g;
-  # Remove dis-allowed code-points.
-#  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19}|\x{D800}-\x{DFFF}|\x{FFFE}-\x{FFFF})//g;
-  # Hmm... the upper ranges gives warning in some Perls...
+ # Remove dis-allowed code-points.
+ #  $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19}|\x{D800}-\x{DFFF}|\x{FFFE}-\x{FFFF})//g;
+ # Hmm... the upper ranges gives warning in some Perls...
   $string =~ s/(?:\x{00}-\x{08}|\x{0B}|\x{0C}|\x{0D}-\x{19})//g;
   return $string; }
 

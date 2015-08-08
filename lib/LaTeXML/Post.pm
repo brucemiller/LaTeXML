@@ -438,12 +438,13 @@ sub combineParallel {
 my $NBSP = pack('U', 0xA0);    # CONSTANT
 
 sub convertXMTextContent {
-  my ($self, $doc, @nodes) = @_;
+  my ($self, $doc, $convertspaces, @nodes) = @_;
   my @result = ();
   foreach my $node (@nodes) {
     if ($node->nodeType == XML_TEXT_NODE) {
       my $string = $node->textContent;
-      $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/;    # should we???
+      if ($convertspaces) {
+        $string =~ s/^\s+/$NBSP/; $string =~ s/\s+$/$NBSP/; }
       push(@result, $string); }
     else {
       my $tag = $doc->getQName($node);
@@ -471,7 +472,7 @@ sub convertXMTextContent {
             } } }
         # Probably should invoke associateNode ???
         push(@result,
-          [$tag, {%attr}, $self->convertXMTextContent($doc, $node->childNodes)]); } } }
+          [$tag, {%attr}, $self->convertXMTextContent($doc, $convertspaces, $node->childNodes)]); } } }
   return @result; }
 
 # When converting an XMath node (with an id) to some other format,
