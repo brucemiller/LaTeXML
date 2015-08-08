@@ -38,7 +38,7 @@ sub readKeyVals {
   while (1) {
     $gullet->skipSpaces;
     # Read the keyword.
-    my ($ktoks, $delim) = $gullet->readUntil($assign, $punct, $close);
+    my ($ktoks, $delim) = readKeyValsKeyword($gullet, $close);
     Error('expected', $close, $gullet,
       "Fell off end expecting " . Stringify($close) . " while reading KeyVal key",
       "key started at $startloc")
@@ -80,6 +80,19 @@ sub readKeyVals {
   return LaTeXML::Core::KeyVals->new($keyset, [@kv],
     open  => $open,  close  => $close,
     punct => $punct, assign => $assign); }
+
+# Read a keyvals keyword: tokens DO get expanded!
+# read until we find =, comma or the end delimiter of the keyvals (typically } or ])
+sub readKeyValsKeyword {
+  my ($gullet, $close) = @_;
+  $gullet->skipSpaces;
+  my @delim = ($close, T_OTHER('='), T_OTHER(','));
+  my @tokens = ();
+  my $token;
+  while ($token = $gullet->readXToken) {
+    last if grep { $token->equals($_) } @delim;
+    push(@tokens, $token) unless $$token[1] == CC_SPACE; }    # remove or normalize?
+  return (Tokens(@tokens), $token); }
 
 #======================================================================
 # The Data object representing the KeyVals
