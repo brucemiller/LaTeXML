@@ -140,6 +140,20 @@ DefParameterType('Optional', sub {
         T_OTHER(']')); }
     else { (); } });
 
+# This is a peculiar type of argument of the form
+#   <general text> = <filler>{<balanced text><right brace>
+# however, <filler> does get expanded while searching for the initial {
+# which IS required in contrast to a general argument; ie a single token is not correct.
+DefParameterType('GeneralText', sub {
+    my ($gullet) = @_;
+    my $open = $gullet->readXToken;
+    if ($open->equals(T_BEGIN)) {
+      return $gullet->readBalanced; }
+    else {
+      Error('expected', '{', $gullet,
+        "Expected <general text> here");
+      return $open; } });
+
 DefParameterType('Until', sub {
     my ($gullet, $until) = @_;
     $gullet->readUntil($until); },
@@ -1136,7 +1150,7 @@ foreach my $letter (ord('A') .. ord('Z')) {
 DefRegister('\hyphenchar{}', Number(ord('-')));
 DefRegister('\skewchar{}',   Number(0));          # no idea what the default is here
 
-DefMacro('\hyphenation{}', Tokens());             # Well, what ?
+DefMacro('\hyphenation GeneralText', Tokens());
 
 # <font> = <fontdef token> | \font | <family member>
 # <family member> = <font range><4bit>
@@ -1823,7 +1837,6 @@ DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment => $_[1
 # \aftergroup saves ALL tokens (from repeated calls) to be executed IN ORDER after the next egroup or }
 DefPrimitive('\aftergroup Token', sub { PushValue(afterGroup => $_[1]); });
 
-# upper & lower case, actually expand (?)
 # \uppercase<general text>, \lowercase<general text>
 sub ucToken {
   my ($token) = @_;
@@ -1835,15 +1848,13 @@ sub lcToken {
   my $code = $STATE->lookupLCcode($token->getString);
   return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
 
-DefMacro('\uppercase', sub {
-    my ($gullet) = @_;
-    my $t = $gullet->readToken(0);
-    (Equals($t, T_BEGIN) ? map { ucToken($_) } $gullet->readBalanced->unlist : ucToken($t)); });
+DefMacro('\uppercase GeneralText', sub {
+    my ($gullet, $tokens) = @_;
+    return map { ucToken($_) } $tokens->unlist; });
 
-DefMacro('\lowercase', sub {
-    my ($gullet) = @_;
-    my $t = $gullet->readToken(0);
-    (Equals($t, T_BEGIN) ? map { lcToken($_) } $gullet->readBalanced->unlist : lcToken($t)); });
+DefMacro('\lowercase GeneralText', sub {
+    my ($gullet, $tokens) = @_;
+    return map { lcToken($_) } $tokens->unlist; });
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
