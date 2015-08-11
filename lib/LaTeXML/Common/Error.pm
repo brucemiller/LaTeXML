@@ -29,7 +29,7 @@ our @EXPORT = (
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
-our $COLORIZED_LOGGING = 1;
+our $COLORIZED_LOGGING = -t STDERR;
 
 sub bold_red { BOLD RED shift; }
 our %color_scheme = (
