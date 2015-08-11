@@ -31,14 +31,13 @@ our @EXPORT = (
 $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = -t STDERR;
 
-sub bold_red { BOLD RED shift; }
 our %color_scheme = (
   details => \&BOLD,
   success => \&GREEN,
   info => \&BLUE,
   warning => \&YELLOW,
-  error => \&RED,
-  fatal => \&bold_red
+  error => sub { BOLD RED shift; },
+  fatal => sub { BOLD RED UNDERLINE shift; }
 );
 
 sub colorizeString {
