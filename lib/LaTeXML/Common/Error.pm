@@ -31,24 +31,22 @@ our @EXPORT = (
 $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = 1;
 
+sub bold_red { BOLD RED shift; }
+our %color_scheme = (
+  details => \&BOLD,
+  success => \&GREEN,
+  info => \&BLUE,
+  warning => \&YELLOW,
+  error => \&RED,
+  fatal => \&bold_red
+);
+
 sub colorizeString {
   my ($string, $alias) = @_;
   return $string unless $COLORIZED_LOGGING;
 
-  if ($alias eq 'details') {
-    return BOLD $string; }
-  elsif ($alias eq 'success') {
-    return GREEN $string; }
-  elsif ($alias eq 'info') {
-    return BLUE $string; }
-  elsif ($alias eq 'warning') {
-    return YELLOW $string; }
-  elsif ($alias eq 'error') {
-    return RED $string; }
-  elsif ($alias eq 'fatal') {
-    return BOLD RED $string; }
-  else {
-    return $string; } }
+  my $spec = $color_scheme{$alias};
+  return (ref $spec) ? $spec->($string) : &$spec($string); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
