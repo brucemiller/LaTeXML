@@ -43,10 +43,7 @@ our %color_scheme = (
 
 sub colorizeString {
   my ($string, $alias) = @_;
-  return $string unless $COLORIZED_LOGGING;
-
-  my $spec = $color_scheme{$alias};
-  return (ref $spec) ? $spec->($string) : &$spec($string); }
+  return $COLORIZED_LOGGING ? &{$color_scheme{$alias}}($string) : $string; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
