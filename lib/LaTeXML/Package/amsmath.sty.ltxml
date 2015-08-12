@@ -309,8 +309,8 @@ sub rearrangeAMSMultirow {
 
 sub amsMultirowBindings {
   my ($properties, %options) = @_;
-  my $before = $options{before_row} if defined $options{before_row};
-  my $after = $options{after_row} if defined $options{after_row};
+  my $before = $options{before_row};
+  my $after = $options{after_row};
 
   my $col1 = { before => Tokens(T_CS('\hfil'),
       T_CS('\displaystyle'),
