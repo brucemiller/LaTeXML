@@ -30,6 +30,7 @@ sub Number {
 
 sub new {
   my ($class, $number) = @_;
+  $number = ToString($number) if ref $number;
   return bless [$number || "0"], $class; }
 
 sub valueOf {

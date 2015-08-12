@@ -30,6 +30,7 @@ sub Dimension {
 sub new {
   my ($class, $sp) = @_;
   $sp = "0" unless $sp;
+  $sp = ToString($sp) if ref $sp;
   if ($sp =~ /^(-?\d*\.?\d*)([a-zA-Z][a-zA-Z])$/) {    # Dimensions given.
     $sp = $1 * $STATE->convertUnit($2); }
   return bless [$sp || "0"], $class; }
