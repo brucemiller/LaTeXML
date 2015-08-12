@@ -91,6 +91,11 @@ DefMacroI('\@ams@newline', undef, sub {
 
 sub amsalignBindings {
   my ($template, %properties) = @_;
+
+  my $cur_jot = LookupRegister('\jot');
+  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+    $properties{attributes}{rowsep} = $cur_jot; }
+
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => $template,
       openContainer => sub { my %attr = RefStepID('@equationgroup');
@@ -101,7 +106,7 @@ sub amsalignBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => {%properties}));
+      properties => { %properties }));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
   Let('\cr',         '\@alignment@cr');
@@ -201,6 +206,19 @@ sub extractXMArrayCells {
   return @contents; }
 
 #======================================================================
+# A utility for handling different alignment strategies centrally
+sub amsAlignmentBindings {
+  my($template, %properties) = @_;
+
+  my $cur_jot = LookupRegister('\jot');
+  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+    $properties{rowsep} = $cur_jot; }
+
+  alignmentBindings($template, undef, attributes => { %properties });
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
+
+#======================================================================
 # Section 3.3 Split equations without alignment
 
 # Multiline is for SINGLE equations,
@@ -224,11 +242,13 @@ DefConstructor('\@@multline DigestedBody',
   properties   => sub { RefStepCounter('equation') },
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultlineBindings(); },
+    amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline}#1\end{multline}',
-  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
+  afterConstruct => sub {
+     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -239,19 +259,46 @@ DefConstructor('\@@multlinestar DigestedBody',
   mode         => 'display_math',
   beforeDigest => sub {
     $_[0]->bgroup;
-    amsMultlineBindings(); },
+    amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion => '\begin{multline*}#1\end{multline*}',
-  afterConstruct => sub { rearrangeAMSMultiline($_[0]); });
+  afterConstruct => sub {
+     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
-sub rearrangeAMSMultiline {
-  my ($document) = @_;
-  my $array      = $document->getNode->lastChild->lastChild->lastChild->lastChild;
+# Adjust multirow environments to their special needs
+# $array must be an ltx:XMArray
+DefKeyVal('multirow', 'width', 'Dimension');
+DefKeyVal('multirow', 'rowsep', 'Dimension');
+
+DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVals', sub {
+    my ($stomach, $attributes, $options) = @_;
+    my %attr = $attributes->getPairs;
+
+    if (my $va = $attr{vattach}) {
+      $attr{vattach} = translateAttachment($va) || ToString($va); }
+    if ($attr{width} && $attr{width}->valueOf == 0) {
+      delete $attr{width}; }
+
+    amsMultirowBindings(\%attr, ($options ? $options->getPairs : ()));
+    return; });
+
+sub rearrangeAMSMultirow {
+  my ($document, $whatsit, $array) = @_;
   my @rows       = element_nodes($array);
-  # Adjust the alignment of the 1st & last rows
-  map { $_->setAttribute(align => 'left'); } element_nodes($rows[0]);
-  map { $_->setAttribute(align => 'right'); } element_nodes($rows[-1]);
+
+  # Adjust alignment of rows
+  if (defined (my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
+    my %align_spec = %{ $rowalignment };
+    if (defined $align_spec{'default'}) {
+      for my $i (0 .. $#rows) {
+        map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
+      delete $align_spec{'default'}; }
+
+    for my $i (sort (keys %align_spec)) {
+      map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); } }
+
   my @stuff = extractXMArrayCells($document, $array);
   $document->replaceTree(['ltx:XMDual', {},
       ['ltx:XMWrap', { rule => 'Anything,' },
@@ -260,13 +307,18 @@ sub rearrangeAMSMultiline {
     $array);
   return; }
 
-sub amsMultlineBindings {
-  # Need to arrange left, centered*, right alignment!
+sub amsMultirowBindings {
+  my ($properties, %options) = @_;
+  my $before = $options{before_row} if defined $options{before_row};
+  my $after = $options{after_row} if defined $options{after_row};
+
   my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle')) };
+      T_CS('\displaystyle'),
+      ($before ? (T_CS('\text'), T_BEGIN, $before, T_END) : ())),
+    after => Tokens(($after ? (T_CS('\text'), T_BEGIN, $after, T_END) : ())) };
+
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  alignmentBindings($template, undef, attributes => { name => 'multline' });
-  Let("\\\\", '\@alignment@newline@noskip');
+  amsAlignmentBindings($template, %{ $properties });
   return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
@@ -464,36 +516,15 @@ DefMacro('\endxxalignat',
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
 # We'll just create an XMDual to contain the whole results, and the aligned structure.
-DefMacro('\gathered',    '\@@gathered\@start@alignment');
+DefMacro('\gathered[]',  '\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
 DefMacro('\endgathered', '\@finish@alignment\@end@gathered');
 DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsGatheredBindings(); },
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
   reversion      => '\begin{gathered}#1\end{gathered}',
-  afterConstruct => sub {
-    my ($document) = @_;
-    my $array = $document->getNode->lastChild;
-    # Insert a \qquad between the rows to encourage the parser to see them as separate eqns.
-    my @stuff = extractXMArrayCells($document, $array);
-    $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMWrap', { rule => 'Anything,' },
-          createXMRefs($document, @stuff)],
-        $array],
-      $array);
-    return; });
-
-sub amsGatheredBindings {
-  # single column, centered
-  my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle')),
-    after => Tokens(T_CS('\hfil')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  alignmentBindings($template, undef, attributes => { name => 'gathered' });
-  Let("\\\\", '\@alignment@newline@noskip');
-  return; }
+  afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned');
@@ -515,8 +546,7 @@ sub amsAlignedBindings {
     after => Tokens(T_CS('\hfil')) };
   my $col3 = { before => Tokenize('\hspace{1em}') };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
-  alignmentBindings($template, undef, attributes => { name => 'aligned', colsep => '0pt' });
-  Let("\\\\", '\@alignment@newline@noskip');
+  amsAlignmentBindings($template, ( name => 'aligned', colsep => '0pt' ));
   return; }
 
 # If an aligned is the only child of an equation,

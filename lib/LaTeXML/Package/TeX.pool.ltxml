@@ -4054,6 +4054,7 @@ DefRegister('\normalbaselineskip'       => Glue('12pt'));
 DefRegister('\normallineskip'           => Glue('1pt'));
 DefRegister('\normallineskiplimit'      => Dimension('0pt'));
 DefRegister('\jot'                      => Dimension('3pt'));
+DefRegister('\lx@default@jot'           => LookupRegister('\jot'));
 DefRegister('\interdisplaylinepenalty'  => Number(100));
 DefRegister('\interfootnotelinepenalty' => Number(100));
 
