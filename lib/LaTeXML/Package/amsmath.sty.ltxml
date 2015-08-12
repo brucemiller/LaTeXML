@@ -509,18 +509,9 @@ DefConstructor('\@@gathered DigestedBody',
   beforeDigest => sub {
     $_[0]->bgroup;
     amsMultirowBindings(); },
+  afterDigest => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
   reversion      => '\begin{gathered}#1\end{gathered}',
-  afterConstruct => sub {
-    my ($document) = @_;
-    my $array = $document->getNode->lastChild;
-    # Insert a \qquad between the rows to encourage the parser to see them as separate eqns.
-    my @stuff = extractXMArrayCells($document, $array);
-    $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMWrap', { rule => 'Anything,' },
-          createXMRefs($document, @stuff)],
-        $array],
-      $array);
-    return; });
+  afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
 DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned');
