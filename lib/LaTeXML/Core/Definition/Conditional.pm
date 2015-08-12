@@ -64,7 +64,8 @@ sub invoke_conditional {
   my @args = $self->readArguments($gullet);
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . "} [#$ifid]\n" if $tracing;
+  print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;
+  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   if (my $test = $self->getTest) {
     my $result = &$test($gullet, @args);
     if ($result) {

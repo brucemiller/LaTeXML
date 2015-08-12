@@ -50,13 +50,14 @@ sub executeAfterDigest {
 sub invoke {
   my ($self, $stomach) = @_;
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
-
-  if ($STATE->lookupValue('TRACINGCOMMANDS')) {
-    print STDERR '{' . $self->getCSName . "}\n"; }
-  my @result = (
-    $self->executeBeforeDigest($stomach),
-    &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
+  print STDERR '{' . $self->tracingCSName . "}\n" if $tracing;
+  my @result = ($self->executeBeforeDigest($stomach));
+  my @args   = $self->readArguments($stomach->getGullet);
+  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  push(@result,
+    &{ $$self{replacement} }($stomach, @args),
     $self->executeAfterDigest($stomach));
 
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;

@@ -47,6 +47,12 @@ sub setValue {
   &{ $$self{setter} }($value, @args);
   return; }
 
+sub addValue {
+  my ($self, $value, @args) = @_;
+  my $oldvalue = &{ $$self{getter} }(@args);
+  &{ $$self{setter} }($oldvalue->add($value), @args);
+  return; }
+
 # No before/after daemons ???
 # (other than afterassign)
 sub invoke {

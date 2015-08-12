@@ -67,10 +67,8 @@ sub doInvocation {
     if (ref $expansion eq 'CODE') {
       # Harder to emulate \tracingmacros here.
       @result = &$expansion($gullet, @args);
-      print STDERR "\n" . ToString($self->getCSName) . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
-      my $i = 1;
-      foreach my $arg (@args) {
-        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; } }
+      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
+      print STDERR $self->tracingArgs(@args) . "\n" if @args; }
     else {
       # for "real" macros, make sure all args are Tokens
       my @targs = map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
@@ -79,10 +77,9 @@ sub doInvocation {
             ? Tokens($_)
             : Tokens(Revert($_)))) }
         @args;
-      print STDERR "\n" . ToString($self->getCSName) . ' -> ' . tracetoString($expansion) . "\n";
-      my $i = 1;
-      foreach my $arg (@targs) {
-        print STDERR '#' . $i++ . '<-' . ToString($arg) . "\n"; }
+      print STDERR "\n" . $self->tracingCSName
+        . ' -> ' . tracetoString($expansion) . "\n";
+      print STDERR $self->tracingArgs(@targs) . "\n" if @args;
       @result = substituteTokens($expansion, @targs); } }
   else {
     @result = (ref $expansion eq 'CODE'
