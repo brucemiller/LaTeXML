@@ -68,12 +68,12 @@ sub parseMath {
 
     NoteProgress("\nMath parsing succeeded:"
         . join('', map { "\n   $_: "
-            . $$self{passed}{$_} . "/" . ($$self{passed}{$_} + $$self{failed}{$_}) }
+            . colorizeString($$self{passed}{$_} . "/" . ($$self{passed}{$_} + $$self{failed}{$_}), ($$self{failed}{$_} == 0 ? 'success' : 'warning')) }
           grep { $$self{passed}{$_} + $$self{failed}{$_} }
           keys %{ $$self{passed} }) . "\n");
     if (my @unk = keys %{ $$self{unknowns} }) {
       NoteProgress("Symbols assumed as simple identifiers (with # of occurences):\n   "
-          . join(', ', map { "'$_' ($$self{unknowns}{$_})" } sort @unk) . "\n");
+          . join(', ', map { "'" . colorizeString("$_", 'warning') . "' ($$self{unknowns}{$_})" } sort @unk) . "\n");
       if (!$STATE->lookupValue('MATHPARSER_SPECULATE')) {
         NoteProgress("Set MATHPARSER_SPECULATE to speculate on possible notations.\n"); } }
     if (my @funcs = keys %{ $$self{maybe_functions} }) {
