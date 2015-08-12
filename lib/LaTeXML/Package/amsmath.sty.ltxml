@@ -269,6 +269,21 @@ DefConstructor('\@@multlinestar DigestedBody',
 
 # Adjust multirow environments to their special needs
 # $array must be an ltx:XMArray
+DefKeyVal('multirow', 'width', 'Dimension');
+DefKeyVal('multirow', 'rowsep', 'Dimension');
+
+DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVals', sub {
+    my ($stomach, $attributes, $options) = @_;
+    my %attr = $attributes->getPairs;
+
+    if (my $va = $attr{vattach}) {
+      $attr{vattach} = translateAttachment($va) || ToString($va); }
+    if ($attr{width} && $attr{width}->valueOf == 0) {
+      delete $attr{width}; }
+
+    amsMultirowBindings(\%attr, ($options ? $options->getPairs : ()));
+    return; });
+
 sub rearrangeAMSMultirow {
   my ($document, $whatsit, $array) = @_;
   my @rows       = element_nodes($array);
@@ -501,14 +516,12 @@ DefMacro('\endxxalignat',
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
 # We'll just create an XMDual to contain the whole results, and the aligned structure.
-DefMacro('\gathered',    '\@@gathered\@start@alignment');
+DefMacro('\gathered[]',  '\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
 DefMacro('\endgathered', '\@finish@alignment\@end@gathered');
 DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsMultirowBindings(); },
+  beforeDigest => sub { $_[0]->bgroup; },
   afterDigest => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
   reversion      => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
