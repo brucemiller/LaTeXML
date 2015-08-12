@@ -299,8 +299,8 @@ sub amsMultirowBindings {
 
   my $col1 = { before => Tokens(T_CS('\hfil'),
       T_CS('\displaystyle'),
-      T_CS('\text'), T_BEGIN, ($before ? $before : ()), T_END),
-    after => Tokens(T_CS('\text'), T_BEGIN, ($after ? $after : ()), T_END) };
+      ($before ? (T_CS('\text'), T_BEGIN, $before, T_END) : ())),
+    after => Tokens(($after ? (T_CS('\text'), T_BEGIN, $after, T_END) : ())) };
 
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
   amsAlignmentBindings($template, %{ $properties });
