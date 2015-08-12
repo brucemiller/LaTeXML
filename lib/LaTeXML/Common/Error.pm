@@ -15,13 +15,34 @@ use warnings;
 use LaTeXML::Global;
 ##use LaTeXML::Common::Object;
 use Time::HiRes;
+use Term::ANSIColor qw(:constants);
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
-  qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  # Colored-logging related functions
+  qw(&colorizeString)
 );
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Color setup
+$Term::ANSIColor::AUTORESET = 1;
+our $COLORIZED_LOGGING = -t STDERR;
+
+our %color_scheme = (
+  details => \&BOLD,
+  success => \&GREEN,
+  info => \&BLUE,
+  warning => \&YELLOW,
+  error => sub { BOLD RED shift; },
+  fatal => sub { BOLD RED UNDERLINE shift; }
+);
+
+sub colorizeString {
+  my ($string, $alias) = @_;
+  return $COLORIZED_LOGGING ? &{$color_scheme{$alias}}($string) : $string; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Note: The exported symbols should ultimately be exported as part
@@ -58,7 +79,7 @@ sub Fatal {
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
     $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'), $where, $message, 1,
       # ?!?!?!?!?!
       # or just verbosity code >>>1 ???
       @details,
@@ -91,7 +112,7 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
+    print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
   if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
@@ -104,7 +125,7 @@ sub Warn {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
-  print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details)
     if $verbosity >= -1;
   return; }
@@ -116,7 +137,7 @@ sub Info {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage("Info:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details)
     if $verbosity >= 0;
   return; }

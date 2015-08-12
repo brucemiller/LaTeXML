@@ -568,22 +568,22 @@ sub getStatusMessage {
   my ($self) = @_;
   my $status = $$self{status};
   my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''))
+  push(@report, colorizeString("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning'))
     if $$status{warning};
-  push(@report, "$$status{error} error" . ($$status{error} > 1 ? 's' : ''))
+  push(@report, colorizeString("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error'))
     if $$status{error};
   push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''))
 
     if $$status{fatal};
   my @undef = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  push(@report, scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-      . "[" . join(', ', @undef) . "]")
+  push(@report, colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+      . "[" . join(', ', @undef) . "]", 'details'))
     if @undef;
   my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  push(@report, scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-      . "[" . join(', ', @miss) . "]")
+  push(@report, colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+      . "[" . join(', ', @miss) . "]", 'details'))
     if @miss;
-  return join('; ', @report) || 'No obvious problems'; }
+  return join('; ', @report) || colorizeString('No obvious problems', 'success'); }
 
 sub getStatusCode {
   my ($self) = @_;
