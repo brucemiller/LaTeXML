@@ -82,7 +82,7 @@ sub latexml_ok {
   my ($texpath, $xmlpath, $name) = @_;
   if (my $texstrings = process_texfile($texpath, $name)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name)) {
-      return is_strings($xmlstrings, $texstrings, $name); } } }
+      return is_strings($texstrings, $xmlstrings, $name); } } }
 
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
