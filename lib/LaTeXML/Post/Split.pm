@@ -96,7 +96,13 @@ sub prenamePages {
 sub processPages {
   my ($self, $doc, @entries) = @_;
   my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
-  my @docs   = ();
+  # Before any document surgery, copy inheritable attributes.
+  foreach my $entry (@entries) {
+    my $node = $$entry{node};
+    foreach my $attr (qw(xml:lang backgroundcolor)) {
+      if (my $anc = $doc->findnode('ancestor-or-self::*[@' . $attr . '][1]', $node)) {
+        $node->setAttribute($attr => $anc->getAttribute($attr)); } } }
+  my @docs = ();
   while (@entries) {
     my $parent = $entries[0]->{node}->parentNode;
     # Remove $page & ALL following siblings (backwards).
