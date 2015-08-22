@@ -34,6 +34,7 @@ my $DEFCOLOR      = 'black';      # [CONSTANT]
 my $DEFBACKGROUND = 'white';      # [CONSTANT]
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
+my $DEFLANGUAGE   = 'en';
 
 sub DEFSIZE { return $STATE->lookupValue('NOMINAL_FONT_SIZE') || 10; }
 
@@ -207,12 +208,12 @@ sub new_internal {
 sub textDefault {
   my ($self) = @_;
   return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, $DEFLANGUAGE, undef, undef); }
 
 sub mathDefault {
   my ($self) = @_;
   return $self->new_internal('math', $DEFSERIES, 'italic', DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, $DEFLANGUAGE, undef, undef); }
 
 # Accessors
 sub getFamily     { my ($self) = @_; return $$self[0]; }
