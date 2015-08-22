@@ -1395,7 +1395,9 @@
   typeof CDATA #IMPLIED
   datatype CDATA #IMPLIED
   content CDATA #IMPLIED
-  xml:lang CDATA #IMPLIED>
+  xml:lang CDATA #IMPLIED
+  xml:id ID #IMPLIED
+  fragid CDATA #IMPLIED>
 
 <!ELEMENT ltx:resource (#PCDATA)*>
 <!ATTLIST ltx:resource

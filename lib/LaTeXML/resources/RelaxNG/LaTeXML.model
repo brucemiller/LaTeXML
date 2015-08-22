@@ -87,7 +87,7 @@ subsection.body:=(ltx:ERROR,ltx:TOC,ltx:figure,ltx:float,ltx:glossaryphrase,ltx:
 subsubsection.body:=(ltx:ERROR,ltx:TOC,ltx:figure,ltx:float,ltx:glossaryphrase,ltx:indexmark,ltx:listing,ltx:navigation,ltx:note,ltx:pagination,ltx:para,ltx:paragraph,ltx:proof,ltx:rdf,ltx:resource,ltx:sidebar,ltx:slide,ltx:subparagraph,ltx:table,ltx:theorem)
 #Document{}(ltx:document)
 ANY{}(ANY)
-ltx:ERROR{about,aboutidref,aboutlabelref,class,content,cssstyle,datatype,prefix,property,rel,resource,resourceidref,resourcelabelref,rev,typeof,vocab,xml:lang}(#PCDATA)
+ltx:ERROR{about,aboutidref,aboutlabelref,class,content,cssstyle,datatype,fragid,prefix,property,rel,resource,resourceidref,resourcelabelref,rev,typeof,vocab,xml:id,xml:lang}(#PCDATA)
 ltx:Math{about,aboutidref,aboutlabelref,backgroundcolor,class,content,content-tex,cssstyle,datatype,description,fragid,imagedepth,imageheight,imagesrc,imagewidth,mode,prefix,property,rel,resource,resourceidref,resourcelabelref,rev,tex,text,typeof,vocab,xml:id,xml:lang}(ltx:XMath)
 ltx:MathBranch{about,aboutidref,aboutlabelref,class,content,cssstyle,datatype,format,prefix,property,rel,resource,resourceidref,resourcelabelref,rev,typeof,vocab,xml:lang}(ltx:Math,ltx:td,ltx:tr)
 ltx:MathFork{about,aboutidref,aboutlabelref,class,content,cssstyle,datatype,prefix,property,rel,resource,resourceidref,resourcelabelref,rev,typeof,vocab,xml:lang}(ltx:Math,ltx:MathBranch,ltx:text)
