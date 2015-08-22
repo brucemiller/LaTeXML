@@ -281,7 +281,9 @@ DefEnvironment('{document}', sub {
   afterDigestBegin => sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     if (my $ops = LookupValue('@at@begin@document')) {
-      Digest(Tokens(@$ops)); }
+      my @boxes = Digest(Tokens(@$ops));
+      $_[1]->setFont(LookupValue('font'));                     # Start w/ whatever font was selected.
+      return @boxes; }
     else {
       return; } },
   beforeDigestEnd => sub {
@@ -1626,8 +1628,8 @@ sub eqnarrayBindings {
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
 
   my %attributes = (
-    'class' => 'ltx_eqn_eqnarray',
-    'colsep' => LookupRegister('\arraycolsep')->multiply(2) );
+    'class'  => 'ltx_eqn_eqnarray',
+    'colsep' => LookupRegister('\arraycolsep')->multiply(2));
   my $cur_jot = LookupRegister('\jot');
   if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
     $attributes{rowsep} = $cur_jot; }
@@ -1643,7 +1645,7 @@ sub eqnarrayBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => { preserve_structure => 1, attributes => { %attributes } }));
+      properties => { preserve_structure => 1, attributes => {%attributes} }));
 
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
