@@ -336,7 +336,7 @@ sub finalize {
   my ($self) = @_;
   $self->pruneXMDuals;
   if (my $root = $self->getDocument->documentElement) {
-    local $LaTeXML::FONT = $self->getNodeFont($root);
+    local $LaTeXML::FONT = LaTeXML::Common::Font->textDefault;
     $self->finalize_rec($root);
     set_RDFa_prefixes($self->getDocument, $STATE->lookupValue('RDFa_prefixes')); }
   #  return $$self{document}; }
