@@ -689,7 +689,7 @@ sub generateTitle {
     $title = getTextContent($doc, $title) if $title && ref $title;
     $title =~ s/^\s+//s if $title;    # Trim leading whitespace
     $title =~ s/\s+$//s if $title;    # and trailing
-    $title =~ s/\s+/ /s if $title;    # and normalize all other whitespace.
+    $title =~ s/\s+/ /gs if $title;    # and normalize all other whitespace.
     if ($title) {
       $string .= $$self{ref_join} if $string;
       $string .= $title; }
