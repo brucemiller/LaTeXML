@@ -2163,7 +2163,7 @@ sub defineNewTheorem {
         frefnum   => Digest(Tokens(T_CS('\fnum@' . $thmset))),
         title     => $title,
         titlefont => $title->getFont,
-        class     => 'ltx_theorem_' . CleanIndexKey($thmset),
+        class     => 'ltx_theorem_' . CleanClassName($thmset),
         ); },
     scope => 'global');
   return; }
@@ -3090,20 +3090,28 @@ sub process_index_phrases {
 
 DefMacro('\index{}', \&process_index_phrases);
 
+Tag('ltx:indexphrase',    afterClose => \&addIndexPhraseKey);
+Tag('ltx:glossaryphrase', afterClose => \&addIndexPhraseKey);
+### ltx:indexsee does NOT get a key (at this stage)!
+
+sub addIndexPhraseKey {
+  my ($document, $node) = @_;
+  if (!$node->getAttribute('key')) {
+    $node->setAttribute(key => CleanIndexKey($node->textContent)); }
+  return; }
+
 DefConstructor('\@index[]{}', "^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
   mode => 'text', reversion => '', sizer => 0);
 DefConstructor('\@indexphrase[]{}',
   "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
-  properties => { key => sub { CleanIndexKey($_[1]) || CleanIndexKey($_[2]); } });
-
+  properties => { key => sub { CleanIndexKey($_[1]); } });
 DefConstructor('\@indexsee{}',
   "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
-  properties => { name => sub { DigestIf('\seename') },
-    key => sub { CleanIndexKey($_[1]); } });
+  properties => { name => sub { DigestIf('\seename') } });
+
 DefConstructor('\@indexseealso{}',
   "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
-  properties => { name => sub { DigestIf('\alsoname') },
-    key => sub { CleanIndexKey($_[1]); } });
+  properties => { name => sub { DigestIf('\alsoname') } });
 
 DefConstructor('\glossary{}',
   "<ltx:glossaryphrase role='glossary' key='#key'>#1</ltx:glossaryphrase>",
