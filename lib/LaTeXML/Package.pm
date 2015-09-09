@@ -102,7 +102,7 @@ our @EXPORT = (qw(&DefExpandable
     ),
 
   # Random low-level token or string operations.
-  qw(&CleanID &CleanLabel &CleanIndexKey &CleanBibKey &NormalizeBibKey &CleanURL
+  qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
     &UTF
     &roman &Roman),
   # Math & font state.
@@ -490,11 +490,23 @@ sub CleanIndexKey {
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
        # We don't want accented chars (do we?) but we need to decompose the accents!
-  $key = NFD($key);
-  $key =~ s/[^a-zA-Z0-9]//g;
+## No, leave in the unicode at this point (strip them later)
+##  $key = NFD($key);
+##  $key =~ s/[^a-zA-Z0-9]//g;
   $key = NFC($key);    # just to be safe(?)
 ## Shouldn't be case insensitive?
 ##  $key =~ tr|A-Z|a-z|;
+  $key =~ s/[\.\,\;]+$//;    # Remove trailing punctuation
+  return $key; }
+
+sub CleanClassName {
+  my ($key) = @_;
+  $key = ToString($key);
+  $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
+       # We don't want accented chars (do we?) but we need to decompose the accents!
+  $key = NFD($key);
+  $key =~ s/[^a-zA-Z0-9]//g;
+  $key = NFC($key);    # just to be safe(?)
   return $key; }
 
 sub CleanBibKey {
