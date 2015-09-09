@@ -582,7 +582,7 @@
        Indices
        ====================================================================== -->
 
-  <xsl:strip-space elements="ltx:indexlist ltx:indexentry ltx:indexrefs"/>
+  <xsl:strip-space elements="ltx:indexlist ltx:indexentry"/>
 
   <xsl:template match="ltx:indexlist">
     <xsl:param name="context"/>
