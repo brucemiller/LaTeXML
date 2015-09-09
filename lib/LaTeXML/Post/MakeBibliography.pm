@@ -274,7 +274,7 @@ sub getBibEntries {
   # Finally, sort the bibentries according to author+year+title+bibkey
   # If any neighboring entries have same author+year, set a suffix: a,b,...
   # Actually, it isn't so much if they are adjacent; if author+year isn't unique, need a suffix
-  my @sortkeys = sort keys %$included;
+  my @sortkeys = $doc->unisort(keys %$included);
   my %suffixes = ();
   while (my $sortkey = shift(@sortkeys)) {
     #    my $i=0;
@@ -314,7 +314,7 @@ sub makeBibliographyList {
   $id .= ".L1";
   $id .= ".$initial" if $initial;
   return ['ltx:biblist', { 'xml:id' => $id },
-    map { $self->formatBibEntry($doc, $$entries{$_}) } sort keys %$entries]; }
+    map { $self->formatBibEntry($doc, $$entries{$_}) } $doc->unisort(keys %$entries)]; }
 
 # ================================================================================
 sub formatBibEntry {
