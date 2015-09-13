@@ -139,14 +139,16 @@ if ((!$sock) && $local && ($expire == -1)) {
 # Special features for latexmls:
 if ($log) {
   if ($opts->get('log')) {
-    my $clog = $opts->get('log');
-    my $log_handle;
-    if (!open($log_handle, ">", $clog)) {
-      print STDERR "Fatal:IO:forbidden Couldn't open log file $clog : $!\n";
-      exit 1;
+    if ($opts->get('whatsout') !~ /^archive/) { # archives only have the archive file
+      my $clog = $opts->get('log');
+      my $log_handle;
+      if (!open($log_handle, ">", $clog)) {
+        print STDERR "Fatal:IO:forbidden Couldn't open log file $clog : $!\n";
+        exit 1;
+      }
+      print $log_handle $log;
+      close $log_handle;
     }
-    print $log_handle $log;
-    close $log_handle;
   } else { print STDERR $log, "\n"; }    #STDERR log otherwise
 }
 
