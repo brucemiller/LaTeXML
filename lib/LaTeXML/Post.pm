@@ -1279,9 +1279,13 @@ sub trimChildNodes {
 sub unisort {
   my ($self, @keys) = @_;
   # Attempt to use Unicode::Collate, if available.
+  # Use the language from the document.
+  # But put uppercase first; more consistent w/makeindex.
   my $lang = $self->getDocumentElement->getAttribute('xml:lang') || 'en';
   my $collator = eval { require 'Unicode/Collate/Locale.pm';
-    Unicode::Collate::Locale->new(locale => $lang); };
+    Unicode::Collate::Locale->new(locale => $lang,
+      variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
+      upper_before_lower => 1); };
   if ($collator) {
     #    print STDERR "UNICODE SORTING using locale='$lang'\n";
     return $collator->sort(@keys); }
