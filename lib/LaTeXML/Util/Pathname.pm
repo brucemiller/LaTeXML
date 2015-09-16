@@ -200,10 +200,9 @@ sub pathname_cwd {
   if (my $cwd = cwd()) {
     return pathname_canonical($cwd); }
   else {
-    Fatal('expected', 'cwd', undef,
-      "Could not determine current working directory (cwd)",
-      "Perhaps a problem with Perl's locale settings?");
-    return; } }
+    # Fatal not imported
+    die "INTERNAL: Could not determine current working directory (cwd)"
+      . "Perhaps a problem with Perl's locale settings?"; } }
 
 sub pathname_chdir {
   my ($directory) = @_;
