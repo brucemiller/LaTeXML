@@ -40,7 +40,6 @@ use HTTP::Request;
 use JSON::XS qw(decode_json);
 
 binmode(STDERR, ":encoding(UTF-8)");
-binmode(STDOUT, ":encoding(UTF-8)");
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
@@ -156,12 +155,15 @@ if ($result) {
     my $output_handle;
     if (!open($output_handle, ">", $opts->get('destination'))) {
       print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
-      exit 1;
-    }
-    binmode($output_handle, ":encoding(UTF-8)");
+      exit 1; }
+    if ($opts->get('whatsout') !~ /^archive/) { # If we're not outputing binary data, encode to UTF-8
+      binmode($output_handle, ":encoding(UTF-8)"); }
     print $output_handle $result;
     close $output_handle;
-  } else { print STDOUT $result, "\n"; }    #Output to STDOUT
+  } else { 
+    if ($opts->get('whatsout') !~ /^archive/) { # If we're not outputing binary data, encode to UTF-8
+      binmode(STDOUT, ":encoding(UTF-8)"); }
+    print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 
 # Print summary, if requested, to STDERR
