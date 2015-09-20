@@ -25,7 +25,7 @@ foreach my $option (qw(preprint final review
   symbold ussrhead nameyear doublespacing reviewcopy)) {
   DeclareOption($option, undef); }
 
-DeclareOption('times', sub { AddToMacro(T_CS('\elsarticle.cls-hook'), '\RequirePackage{txfonts}'); });
+DeclareOption('times', sub { AddToMacro(T_CS('\elsarticle.cls-h@@k'), '\RequirePackage{txfonts}'); });
 
 DeclareOption("seceqn", sub { AssignValue('@seceqn' => 1); });
 DeclareOption("secthm", sub { AssignValue('@secthm' => 1); });
