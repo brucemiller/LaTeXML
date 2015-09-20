@@ -191,6 +191,40 @@ sub generateMessage {
   return "\n" . join("\n\t", @lines) . "\n"; }
 
 #======================================================================
+# "Global" Post processing services
+#======================================================================
+
+# Return a sorter appropriate for lang (if Unicode::Collate::Locale available),
+# or an undifferentiated Unicode sorter (if only Unicode::Collate is available),
+# or just a dumb stand-in for perl's sort
+sub getsorter {
+  my($self, $lang) =@_;
+  my $collator;
+  if($collator = $$self{collatorcache}{$lang}){ }
+  elsif($collator = eval {
+    require 'Unicode/Collate/Locale.pm';
+    Unicode::Collate::Locale->new(
+      locale     => $lang,
+      variable   => 'non-ignorable',    # I think; at least space shouldn't be ignored
+      upper_before_lower => 1); }){ }
+  elsif($collator = eval {
+    require 'Unicode/Collate.pm';
+    Unicode::Collate->new(
+      variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
+      upper_before_lower => 1); }){
+    Info('expected','Unicode::Collate::Locale',undef,
+         "No Unicode::Collate::Locale found;",
+         "using Unicode::Collate; ignoring language='$lang'"); }
+  else {
+    # Otherwise, just use primitive codepoint ordering.
+    $collator = LaTeXML::Post::DumbCollator->new();
+    Info('expected','Unicode::Collate::Locale',undef,
+         "No Unicode::Collate::Locale or Unicode::Collate",
+         "using perl's sort; ignoring language='$lang'"); }
+  $$self{collatorcache}{$lang} = $collator;
+  return $collator; }
+
+#======================================================================
 # Given a base id, a counter (eg number of duplications of id) and a suffix,
 # create a (hopefully) unique id
 # $suffix can be a string to append to the id,
@@ -201,6 +235,18 @@ sub uniquifyID {
   return (defined $suffix
     ? (ref $suffix eq 'CODE' ? &$suffix($id) : $id . $suffix)
     : $id); }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+package LaTeXML::Post::DumbCollator;
+use strict;
+
+sub new {
+  my ($class) =@_;
+  return bless {}, $class; }
+
+sub sort {
+  my ($self, @things) = @_;
+  return (sort @things); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::Processor;
@@ -1278,20 +1324,9 @@ sub trimChildNodes {
 
 sub unisort {
   my ($self, @keys) = @_;
-  # Attempt to use Unicode::Collate, if available.
-  # Use the language from the document.
-  # But put uppercase first; more consistent w/makeindex.
+  # Get a (possibly cached) sorter from POST appropriate for this document's language
   my $lang = $self->getDocumentElement->getAttribute('xml:lang') || 'en';
-  my $collator = eval { require 'Unicode/Collate/Locale.pm';
-    Unicode::Collate::Locale->new(locale => $lang,
-      variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
-      upper_before_lower => 1); };
-  if ($collator) {
-    #    print STDERR "UNICODE SORTING using locale='$lang'\n";
-    return $collator->sort(@keys); }
-  else {
-    # Otherwise, just use primitive codepoint ordering.
-    return (sort @keys); } }
+  return $LaTeXML::POST->getsorter($lang)->sort(@keys); }
 
 #======================================================================
 
