@@ -85,10 +85,22 @@ foreach my $file (@files) {
     print "Showing unimplemented symbols for package $file\n";
     if (my $pkg = StylePackage->new($file, searchpaths => [@searchpaths])) {
       if (my $ipkg = ImplementationPackage->new($file, searchpaths => [@searchpaths])) {
-        $pkg->subtract($ipkg);
-        $pkg->cleanup($cumulative, $internal);
-        $pkg->convertEnvironments;
-        $pkg->show; } } }
+        # $pkg->subtract($ipkg);
+        # $pkg->cleanup($cumulative, $internal);
+        # $pkg->convertEnvironments;
+        # $pkg->show; } } }
+        print "Symbols missing from LaTeXML:\n";
+        my $sdiff = $pkg->clone->subtract($ipkg);
+        $sdiff->cleanup($cumulative, $internal);
+        $sdiff->convertEnvironments;
+        $sdiff->show;
+        print "Extra Symbols in LaTeXML:\n";
+        my $idiff = $ipkg->clone->subtract($pkg);
+        $idiff->cleanup($cumulative, $internal);
+        $idiff->convertEnvironments;
+        $idiff->show;
+      } } }
+
   elsif ($show eq 'signature') {
     if (my $pkg = StylePackage->new($file, searchpaths => [@searchpaths])) {
       $cumulative = 1 unless defined $cumulative;    # default IS cumulative
@@ -368,6 +380,9 @@ sub scan_internal {
       $self->noteInclusion($1 || $2); }
     elsif (/\\(?:input)\s+(.*?)(?:\s|\\relax|}|$)/o) {
       $self->noteInclusion($1); }
+    # DLMF functions
+    if (/\\defSpecFun$ARGREGEXP/) {
+      $$self{symbols}{"\\$1"} = 1; }
     # Environments
     if (/\\(?:re)?newenvironment\s*\*?\s*$BRACEREGEXP/o) {
       $$self{symbols}{ "\\" . $1 }    = 1;
@@ -376,6 +391,9 @@ sub scan_internal {
     if (/\\Provides(Class|Package)\s*$BRACEREGEXP/o) {
       $$self{declared_type} = $1;
       $$self{declared_as}   = $2; }
+    if (/\\(?:include|exclude)comment$ARGREGEXP/) {
+      $$self{symbols}{ "\\" . $1 }    = 1;
+      $$self{symbols}{ "\\end" . $1 } = 1; }
   }
   close($STYLE_FH);
   return; }
