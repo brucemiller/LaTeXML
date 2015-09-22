@@ -45,7 +45,7 @@
                        | ltx:section | ltx:subsection | ltx:subsubsection
                        | ltx:paragraph | ltx:subparagraph
                        | ltx:bibliography | ltx:appendix | ltx:index | ltx:glossary
-                       | ltx:slide | ltx:sidebar">
+                       | ltx:slide">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if($USE_HTML5,f:if(local-name(.) = 'document','article','section'),'div')}"
@@ -58,6 +58,28 @@
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- same, but move author to end -->
+  <xsl:template match="ltx:sidebar">
+    <xsl:param name="context"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="{f:if($USE_HTML5,'article','div')}"
+                 namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="*[not(./ltx:creator)]">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:call-template name="sidebarauthordate"/>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -348,16 +370,18 @@
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
     </xsl:element>
-    <!-- include parent's author, subtitle & date (if any)-->
-    <xsl:call-template name="authors">
-      <xsl:with-param name="context" select="$context"/>
-    </xsl:call-template>
+    <!-- include parent's subtitle, author & date (if any)-->
     <xsl:apply-templates select="../ltx:subtitle" mode="intitle">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
-    <xsl:apply-templates select="../ltx:date" mode="intitle">
-      <xsl:with-param name="context" select="$context"/>
-    </xsl:apply-templates>
+    <xsl:if test="not(parent::ltx:sidebar)">
+      <xsl:call-template name="authors">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:call-template>
+      <xsl:apply-templates select="../ltx:date" mode="intitle">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+    </xsl:if>
     <xsl:apply-templates select="." mode="end">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
@@ -365,6 +389,25 @@
     <xsl:apply-templates select="parent::*" mode="auto-toc">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template name="sidebarauthordate">
+    <xsl:param name="context"/>
+    <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_sidebar_authors</xsl:attribute>
+        <xsl:if test="ltx:creator[@role='author']">
+          <xsl:text>&#x0A;</xsl:text>
+          <xsl:element name="div" namespace="{$html_ns}">
+            <xsl:attribute name="class">ltx_authors</xsl:attribute>
+            <xsl:apply-templates select="ltx:creator[@role='author']" mode="intitle">
+              <xsl:with-param name="context" select="$context"/>
+            </xsl:apply-templates>
+          </xsl:element>
+        </xsl:if>
+      <xsl:apply-templates select="ltx:date" mode="intitle">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+    </xsl:element>
   </xsl:template>
 
   <!-- try to accomodate multiple authors in single block, vs each one as a block -->
