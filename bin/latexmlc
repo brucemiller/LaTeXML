@@ -137,9 +137,11 @@ if ((!$sock) && $local && ($expire == -1)) {
 ### Common treatment of output:
 
 # Special features for latexmls:
+my $whatsout = $opts->get('whatsout');
+my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 if ($log) {
   if ($opts->get('log')) {
-    if ($opts->get('whatsout') !~ /^archive/) { # archives only have the archive file
+    if (!$is_archive) { # archives only have the archive file
       my $clog = $opts->get('log');
       my $log_handle;
       if (!open($log_handle, ">", $clog)) {
@@ -158,12 +160,12 @@ if ($result) {
     if (!open($output_handle, ">", $opts->get('destination'))) {
       print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1; }
-    if ($opts->get('whatsout') !~ /^archive/) { # If we're not outputing binary data, encode to UTF-8
+    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
       binmode($output_handle, ":encoding(UTF-8)"); }
     print $output_handle $result;
     close $output_handle;
   } else { 
-    if ($opts->get('whatsout') !~ /^archive/) { # If we're not outputing binary data, encode to UTF-8
+    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
       binmode(STDOUT, ":encoding(UTF-8)"); }
     print STDOUT $result, "\n"; }    #Output to STDOUT
 }
