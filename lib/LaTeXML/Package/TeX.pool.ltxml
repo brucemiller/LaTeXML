@@ -199,9 +199,7 @@ DefParameterType('MuGlue', sub { $_[0]->readMuGlue; });
 # used for the last TeX-style delimited argument
 DefParameterType('UntilBrace', sub {
     my ($gullet) = @_;
-    my $value = $gullet->readUntil(T_BEGIN);
-    $gullet->unread(T_BEGIN);
-    $value; });
+    $gullet->readUntilBrace; });
 
 # Yet another special case: Require a { but do not read it!!!
 DefParameterType('RequireBrace', sub {
@@ -424,19 +422,43 @@ DefParameterType('DigestedBody', sub {
 # A comma separated List;
 # You can also write CommaList:Dimension to read a list of dimensions
 # [Note that this should act like Semiverbatim if the supplied type does! Ugh]
+# DefParameterType('CommaList', sub {
+#     my ($gullet, $type) = @_;
+#     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList");
+#     if ($gullet->ifNext(T_BEGIN)) {
+#       $gullet->readToken;
+#       my @items = ();
+#       my ($item, $delim);
+#       while ((($item, $delim) = $gullet->readUntil(T_END, T_OTHER(','))) && defined $item) {
+#         if ($typedef) {
+#           ($item) = $typedef->reparseArgument($gullet, $item); }
+#         push(@items, $item);
+#         last if Equals($delim, T_END); }
+#       LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type, values => [@items]); }
+#     else {    # If no brace, just read one item or token, but still make Array!
+#       my ($item) = ($typedef ? $typedef->readArguments($gullet, "CommaList") : ($gullet->readToken));
+#       LaTeXML::Core::Array->new(type => $type, values => [$item]); } });
+
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList");
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
-      my @items = ();
-      my ($item, $delim);
-      while ((($item, $delim) = $gullet->readUntil(T_END, T_OTHER(','))) && defined $item) {
-        if ($typedef) {
-          ($item) = $typedef->reparseArgument($gullet, $item); }
-        push(@items, $item);
-        last if Equals($delim, T_END); }
-      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type, values => [@items]); }
+      my @tokens = ();
+      my @items  = ();
+      my $comma  = T_OTHER(',');
+      while (my $token = $gullet->readToken) {
+        if ($token->equals(T_END)) {
+          push(@items, Tokens(@tokens));
+          last; }
+        elsif ($token->equals($comma)) {
+          push(@items, Tokens(@tokens)); @tokens = (); }
+        elsif ($token->equals(T_BEGIN)) {
+          push(@tokens, $token, $gullet->readBalanced->unlist, T_END); } }
+      if ($typedef) {
+        @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; }
+      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type,
+        values => [@items]); }
     else {    # If no brace, just read one item or token, but still make Array!
       my ($item) = ($typedef ? $typedef->readArguments($gullet, "CommaList") : ($gullet->readToken));
       LaTeXML::Core::Array->new(type => $type, values => [$item]); } });
@@ -460,21 +482,15 @@ DefParameterType('OptionalKeyVals', sub {
 #**********************************************************************
 # LaTeX has a very particular notion of "Undefined",
 # so let's get that squared away at the outset; it's useful for TeX, too!
-# Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax.
-# So, basically, undefined is whether something is \relax or not!
-# And it presumably has the side-effect of defining it as \relax as well!
-sub IsUndefined {
-  my ($name)  = @_;
-  my $cs      = T_CS('\\' . ToString($name));
-  my $meaning = LookupMeaning($cs);
-  my $undef = !(defined $meaning) || ($meaning eq $cs)
-    || ($meaning eq LookupMeaning(T_CS('\relax')));
-  Let($cs, '\relax') if $undef;    # Yuck, but traditional!
-  return $undef; }
-
+# Naturally, it uses \csname to check, which ends up DEFINING the possibly undefined macro as \relax
 DefMacro('\@ifundefined{}{}{}', sub {
     my ($gullet, $name, $if, $else) = @_;
-    (IsUndefined(Expand($name)) ? $if->unlist : $else->unlist); });
+    my $cs = T_CS('\\' . ToString(Expand($name)));
+    if (IsDefined($cs)) {
+      return $else->unlist; }
+    else {
+      Let($cs, '\relax');    # Yuck, but traditional!
+      return $if->unlist; } });
 
 #**********************************************************************
 # Expandable Primitives
@@ -562,11 +578,6 @@ DefMacroI('\jobname', undef, Tokens());    # Set to the filename by initializati
 
 DefMacroI('\fontname', undef, sub { Explode("fontname not implemented"); });
 
-# DefMacro('\meaning Token',sub {
-#   my($gullet,$tok)=@_;
-#   my $meaning = LookupMeaning($tok);
-#   ExplodeText(defined $meaning ? $meaning : 'undefined'); });
-
 our @CATCODE_MEANING = (
   "the escape character",      "begin-group character",
   "end-group character",       "math shift character",
@@ -584,10 +595,7 @@ DefMacro('\meaning Token', sub {
     if (my $definition = (Equals($tok, T_ALIGN) ? $tok : LookupMeaning($tok))) {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
-
-  #LaTeXML::Core::Definition::Expandable and LaTeXML::Core::Definition::Constructor = macro [What?!?!?!?!]
-  #LaTeXML::Core::Definition::Primitive and LaTeXML::Core::Token = letter/character [Um... No...]
-  # I don't understand what this is about
+      # I don't understand what this is about
       if (lc($type) =~ /primitive/) {
         $definition = $definition->getCS;
         $type       = ref $definition;
@@ -3300,7 +3308,7 @@ sub IsEmpty {
     return !grep { !IsEmpty($_) } $box->unlist; }
   elsif ($ref eq 'LaTeXML::Core::Whatsit') {
     return 1 if $box->getProperty('isSpace');    # A space-like Whatsit
-    if (($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
+    if (($box->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
       && !grep { !IsEmpty($_) } $box->getBody->unlist) {
       return 1; } }
   return 0; }
@@ -3320,7 +3328,7 @@ sub IsEmpty {
 #    || $box->getProperty('isSpace') # A space-like Whatsit
 #    || (($ref =~ /^LaTeXML::(Math)?Box$/) && ($box->getString =~ /^\s*$/)) # Space plain box
 #    || (($ref eq 'LaTeXML::Core::Whatsit') # Whatsit with nothing in it.
-#        && ($box->getDefinition eq $STATE->lookupMeaning(T_BEGIN))
+#        && ($box->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
 #        && !grep(!IsEmpty($_), $box->getBody->unlist)));
 
 # ##print STDERR "Box ".Stringify($box)." is empty: ".($is ? "yes":"no")."\n";
