@@ -135,11 +135,8 @@ INVOKE:
       "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
   local $LaTeXML::CURRENT_TOKEN = $token;
   my @result  = ();
-  my $meaning = ($token->isExecutable
-      || ($STATE->lookupValue('IN_MATH')
-      && (($STATE->lookupMathcode($token->getString) || 0) == 0x8000))
-    ? $STATE->lookupMeaning_internal($token)
-    : $token);
+  my $meaning = $STATE->lookupDigestableDefinition($token);
+
   if (!defined $meaning) {    # Supposedly executable token, but no definition!
     @result = $self->invokeToken_undefined($token); }
   elsif ($meaning->isaToken) {    # Common case
