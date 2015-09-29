@@ -34,7 +34,7 @@ sub create {
     $options{shortsource} = "$name.$ext";
     return $class->new($options{content}, %options); }
   elsif ($source =~ s/^literal://) {    # we've supplied literal data
-    $options{source} = "Literal String ".substr($source,0,10) unless defined $options{source};
+    $options{source} = "Literal String " . substr($source, 0, 10) unless defined $options{source};
     return $class->new($source, %options); }
   elsif (!defined $source) {
     return $class->new('', %options); }
@@ -245,19 +245,22 @@ my %LETTER = ();
 my %OTHER  = ();
 my %ACTIVE = ();
 
-# Dispatch table for catcodes.
+# # Dispatch table for catcodes.
+
+# Possibly want to think about caching (common) letters, etc to keep from
+# creating tokens like crazy... or making them more compact... or ???
 my @DISPATCH = (    # [CONSTANT]
   \&handle_escape,    # T_ESCAPE
-  T_BEGIN,            # T_BEGIN
-  T_END,              # T_END
-  T_MATH,             # T_MATH
-  T_ALIGN,            # T_ALIGN
-  \&handle_EOL,       # T_EOL
-  T_PARAM,            # T_PARAM
-  T_SUPER,            # T_SUPER
-  T_SUB,              # T_SUB
-  sub { undef; },     # T_IGNORE (we'll read next token)
-  \&handle_space,     # T_SPACE
+  sub { ($_[1] eq '{' ? T_BEGIN : Token($_[1], CC_BEGIN)) },    # T_BEGIN
+  sub { ($_[1] eq '}' ? T_END   : Token($_[1], CC_END)) },      # T_END
+  sub { ($_[1] eq '$' ? T_MATH  : Token($_[1], CC_MATH)) },     # T_MATH
+  sub { ($_[1] eq '&' ? T_ALIGN : Token($_[1], CC_ALIGN)) },    # T_ALIGN
+  \&handle_EOL,                                                 # T_EOL
+  sub { ($_[1] eq '#' ? T_PARAM : Token($_[1], CC_PARAM)) },    # T_PARAM
+  sub { ($_[1] eq '^' ? T_SUPER : Token($_[1], CC_SUPER)) },    # T_SUPER
+  sub { ($_[1] eq '_' ? T_SUB   : Token($_[1], CC_SUB)) },      # T_SUB
+  sub { undef; },                                               # T_IGNORE (we'll read next token)
+  \&handle_space,                                               # T_SPACE
   sub { $LETTER{ $_[1] } || ($LETTER{ $_[1] } = T_LETTER($_[1])); },    # T_LETTER
   sub { $OTHER{ $_[1] }  || ($OTHER{ $_[1] }  = T_OTHER($_[1])); },     # T_OTHER
   sub { $ACTIVE{ $_[1] } || ($ACTIVE{ $_[1] } = T_ACTIVE($_[1])); },    # T_ACTIVE
