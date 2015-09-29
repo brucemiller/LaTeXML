@@ -25,16 +25,22 @@ sub new {
   my ($class, $cs, $parameters, $expansion, %traits) = @_;
   $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Core::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
+  my $trivexpansion;
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     my $level = 0;
     foreach my $t ($expansion->unlist) {
       $level++ if $t->equals(T_BEGIN);
       $level-- if $t->equals(T_END); }
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
-      "Expansion is " . ToString($expansion)) if $level; }
+      "Expansion is " . ToString($expansion)) if $level;
+    # If expansion is Tokens, and no arguments, we're a "trivial macro"
+    if (!$parameters) {
+      $trivexpansion = Tokens(substituteTokens($expansion)); }
+  }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
-    locator     => "from " . $source->getLocator(-1),
-    isProtected => $STATE->getPrefix('protected'),
+    trivial_expansion => $trivexpansion,
+    locator           => "from " . $source->getLocator(-1),
+    isProtected       => $STATE->getPrefix('protected'),
     %traits }, $class; }
 
 sub isExpandable {
@@ -54,7 +60,10 @@ sub getExpansion {
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
   my ($self, $gullet) = @_;
-  return $self->doInvocation($gullet, $self->readArguments($gullet)); }
+  #  return $self->doInvocation($gullet, $self->readArguments($gullet)); }
+  # shortcut for "trivial" macros; but this bypasses tracing & profiling!!!!
+  return ($$self{trivial_expansion} ? $$self{trivial_expansion}->unlist
+    : $self->doInvocation($gullet, $self->readArguments($gullet))); }
 
 sub doInvocation {
   my ($self, $gullet, @args) = @_;
