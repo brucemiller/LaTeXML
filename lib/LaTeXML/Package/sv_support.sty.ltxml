@@ -156,7 +156,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
         . "</ltx:theorem>",
       beforeDigest => sub {
         my $stylecmd = T_CS('\th@' . $style);
-        if (!LookupDefinition($stylecmd)) {
+        if (!IsDefined($stylecmd)) {
           Warn('unexpected', $style, $_[0], "Unknown theoremstyle '$style'");
           $stylecmd = T_CS('\th@plain'); }
         Digest(Tokens($stylecmd)); },

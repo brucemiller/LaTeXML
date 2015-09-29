@@ -117,13 +117,13 @@ DefPrimitive('\bibentry@prepare Semiverbatim', sub {
     my $origtype   = $entry->getType;
     my $type       = $origtype;
     my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
+    if (IsDefined($alias_defn)) {
       $type = ToString(Digest($alias_defn)); }
 
     # invoke ALL entry preparers
     $stomach->bgroup;
     AssignValue('CURRENT@BIBKEY' => $key);
-    Digest(Tokens(grep { LookupDefinition($_) }
+    Digest(Tokens(grep { IsDefined($_) }
           T_CS('\bib@entry@' . $type . '@prepare'),
         ($origtype ne $type ? (T_CS('\bib@entry@' . $origtype . '@prepare')) : ()),
         T_CS('\bib@entry@default@prepare')));
@@ -137,14 +137,14 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
     my $origtype   = $entry->getType;
     my $type       = $origtype;
     my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
+    if (IsDefined($alias_defn)) {
       $type = ToString(Digest($alias_defn)); }
 
     my @tex = (join('', '\begin{bib@entry}{', $type, '}{', $key, '}'));
     # Add the most specific handler for each field
     foreach my $pair ($entry->getFields) {
       my ($field, $value) = @$pair;
-      my ($handler) = grep { LookupDefinition(T_CS('\\' . $_)) }
+      my ($handler) = grep { IsDefined(T_CS('\\' . $_)) }
         'bib@field@' . $type . '@' . $field,
         ($origtype ne $type
         ? ('bib@field@' . $origtype . '@' . $field) : ()),
@@ -154,7 +154,7 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
       else {
         push(@tex, join('', '\csname bib@field@default@default\endcsname{', $field, '}{', $value, '}')); } }
     # Add ALL entry completers
-    foreach my $completer (grep { LookupDefinition(T_CS('\\' . $_)) }
+    foreach my $completer (grep { IsDefined(T_CS('\\' . $_)) }
       'bib@entry@' . $type . '@complete',
       ($origtype ne $type
         ? ('bib@entry@' . $origtype . '@complete') : ()),

@@ -278,7 +278,7 @@ sub lstActivate {
       my ($key, $val) = (shift(@pairs), shift(@pairs));
       $val = lstUnGroup($val);
       my $cs = T_CS('\lst@@' . $key);
-      if (LookupDefinition($cs)) {
+      if (IsDefined($cs)) {
         $val = LookupValue('KEYVAL@LST@' . $key . '@default') unless $val;
         # Done for effect.
         Digest(Tokens($cs, ($val ? $val->unlist : Tokens()), T_CS('\end'))); }

@@ -189,7 +189,7 @@ DefPrimitive('\@appendix', sub {
     DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
     Let('\section',   '\appendix@section', 'global');
     Let('\@appendix', '\relax',            'global');
-    if (LookupDefinition(T_CS('\appendixname'))) {
+    if (IsDefined('\appendixname')) {
       Let('\sectionname', '\appendixname', 'global'); }
 });
 
