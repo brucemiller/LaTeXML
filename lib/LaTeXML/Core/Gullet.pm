@@ -408,6 +408,56 @@ sub readUntil {
     shift(@tokens); pop(@tokens); }
   return (wantarray ? (Tokens(@tokens), $found) : Tokens(@tokens)); }
 
+# $until is a Token or Tokens; read (balanced) until match
+# Common case is a single token!
+# This should be faster(?) but breaks something in nav1d  (revisit later)
+sub ZZZZreadUntil {
+  my ($self, $until) = @_;
+  my @until    = $until->unlist;
+  my $ntomatch = scalar(@until);
+  my ($ungrouped, @tokens) = (0);
+  while (my $token = $self->readToken) {
+    if (!$token) {
+      $self->unread(@tokens);
+      return; }    # Failed!
+    elsif ($token->equals($until[0])) {    # Match 1st token?
+      if ($ntomatch == 1) {                # Done
+        last; }
+      else {
+        my $matched = 1;
+        for (my $i = 1 ; $i < $ntomatch ; $i++) {    # Check for remaining tokens, if any
+          my $next = $self->readToken;
+          if (!$next || !$next->equals($until[$i])) {
+            $self->unread($next) if $next;
+            $self->unread(@until[1 .. $matched - 1]);
+            push(@tokens, $token);
+            $ungrouped = 1;
+            last; }
+          $matched++; }
+        if ($matched == $ntomatch) {                 # success
+          last; } } }
+    elsif ($$token[1] == CC_BEGIN) {
+      $ungrouped = 0 unless $ungrouped;
+      push(@tokens, $token, $self->readBalanced->unlist, T_END); }
+    else {
+      $ungrouped = 1;
+      push(@tokens, $token); } }
+  # strip outer braces for typical "delimited arg"
+  if (!$ungrouped && scalar(@tokens)) {
+    shift(@tokens); pop(@tokens); }
+  return Tokens(@tokens); }
+
+sub readUntilBrace {
+  my ($self) = @_;
+  my @tokens = ();
+  my $token;
+  while (defined($token = $self->readToken())) {
+    if ($$token[1] == CC_BEGIN) {    # INLINE Catcode
+      $self->unread($token);
+      last; }
+    push(@tokens, $token); }
+  return Tokens(@tokens); }
+
 #**********************************************************************
 # Higher-level readers: Read various types of things from the input:
 #  tokens, non-expandable tokens, args, Numbers, ...
