@@ -79,7 +79,6 @@ sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Core::Token'; }
 sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
 sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
-
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Core::Token'; }
 
@@ -274,18 +273,17 @@ sub beDigested {
 #======================================================================
 # Methods for overloaded ops.
 
-# Compare two tokens; They are equal if they both have same catcode,
-# and either the catcode is one of the primitive ones, or thier strings
-# are equal.
+# Compare two tokens; They are equal if they both have same catcode & string
+# [We pretend all SPACE's are the same, since we'd like to hide newline's in there!]
 # NOTE: That another popular equality checks whether the "meaning" (defn) are the same.
-# That is NOT done here; see Equals(x,y).
+# That is NOT done here; see Equals(x,y) and XEquals(x,y)
 sub equals {
   my ($a, $b) = @_;
   return
     (defined $b
       && (ref $a) eq (ref $b))
     && ($$a[1] == $$b[1])
-    && ($primitive_catcode[$$a[1]] || ($$a[0] eq $$b[0])); }
+    && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
 
 my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
