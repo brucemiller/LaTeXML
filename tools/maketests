@@ -135,7 +135,7 @@ sub maketest_daemon {
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
     ($ndiffs ? push(@FAIL, $name) : push(@PASS, $name)); }
-  else {
+  elsif ($doxml) {
     print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
     move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
     move("$name.test.status", "$name.status") if -e "$name.test.status"; }
