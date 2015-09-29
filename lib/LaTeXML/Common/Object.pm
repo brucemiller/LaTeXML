@@ -71,8 +71,8 @@ sub Equals {
        # Special cases? (should be methods, but that embeds State knowledge too low)
 
   if ($refa eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defa = $STATE->lookupDefinition($a);
-    my $defb = $STATE->lookupDefinition($b);
+    my $defa = $STATE->lookupMeaning($a);
+    my $defb = $STATE->lookupMeaning($b);
     return $defa && $defb && ($defa eq $defb); }
   return 0; }
 
