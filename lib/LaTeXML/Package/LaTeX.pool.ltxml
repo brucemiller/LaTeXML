@@ -135,11 +135,11 @@ Let('\@currenvline', '\@empty');
 DefMacro('\begin{}', sub {
     my ($gullet, $env) = @_;
     my $name = $env && ToString($env);
-    if (LookupDefinition(T_CS("\\begin{$name}"))) {
+    if (IsDefined("\\begin{$name}")) {
       T_CS("\\begin{$name}"); }    # Magic cs!
     else {
       my $token = T_CS("\\$name");
-      if (IsUndefined($name)) {
+      if (!IsDefined($token)) {
         my $undef = '{' . $name . '}';
         $STATE->noteStatus(undefined => $undef);
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
@@ -151,8 +151,8 @@ DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
     my $name = $env && ToString($env);
     my $t;
-    if (LookupDefinition($t = T_CS("\\end{$name}"))) { $t; }                         # Magic CS!
-    elsif (LookupDefinition($t = T_CS("\\end$name"))) { ($t, T_CS('\endgroup')); }
+    if (IsDefined($t = T_CS("\\end{$name}"))) { $t; }                         # Magic CS!
+    elsif (IsDefined($t = T_CS("\\end$name"))) { ($t, T_CS('\endgroup')); }
     else { (T_CS('\endgroup')); } });
 
 #======================================================================
@@ -1902,7 +1902,7 @@ DefPrimitive('\DeclareTextCommand DefToken {}[Number][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (!LookupDefinition($cs)) {    # If not already defined...
+    if (!IsDefined($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -1921,7 +1921,7 @@ DefPrimitive('\ProvideTextCommand DefToken {}[Number][]{}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    if (!LookupDefinition($ecs)) {    # If not already defined...
+    if (!IsDefined($ecs)) {    # If not already defined...
       DefMacroI($ecs, convertLaTeXArgs($nargs, $opt), $expansion); }
     return; });
 
@@ -2036,7 +2036,7 @@ DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     $name = ToString($name);
     Info('ignore', $name, $stomach,
       "Ignoring redefinition (\\newenvironment) of Environment '$name'")
-      if LookupDefinition(T_CS("\\$name"));
+      if IsDefined(T_CS("\\$name"));
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef, $end); });
 
@@ -2833,7 +2833,7 @@ DefConstructorI('\thebibliography', undef,
 DefConstructorI('\endthebibliography', undef,
   "</ltx:biblist></ltx:bibliography>",
   afterDigest => sub { my $t = T_CS('\@appendix');
-    Digest($t) if LookupDefinition($t);
+    Digest($t) if IsDefined($t);
     return; },
   locked => 1);
 # auto close the bibliography and contained biblist.
