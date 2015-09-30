@@ -17,22 +17,32 @@ use Time::HiRes;
 use LaTeXML::Util::Radix;
 use Encode;
 use base qw(Exporter);
-our @EXPORT = (qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd
-    &Fatal &Error &Warn &Info));
+use LaTeXML::Global;
+use LaTeXML::Common::Error;
+use LaTeXML::Core::State;
+our @EXPORT = (@LaTeXML::Common::Error::EXPORT);
 
 sub new {
   my ($class, %options) = @_;
   my $self = bless { status => {}, %options }, $class;
   $$self{verbosity} = 0 unless defined $$self{verbosity};
+  # TEMPORARY HACK!!!!
+  # Create a State object, essentially only to hold verbosity (for now)
+  # so that Errors can be reported, managed and recorded
+  # Eventually will be a "real" State (or other configuration object)
+  $$self{state} = LaTeXML::Core::State->new();
+  $$self{state}->assignValue(VERBOSITY => $$self{verbosity});
   return $self; }
 
 #======================================================================
 sub ProcessChain {
   my ($self, $doc, @postprocessors) = @_;
-  local $LaTeXML::POST = $self;
-  local $SIG{__DIE__} = sub { Fatal('perl', 'die', undef, "Perl died", @_); };
-  local $SIG{INT} = sub { Fatal('perl', 'interrupt', undef, "LaTeXML was interrupted", @_); };
-  local $SIG{__WARN__} = sub { Warn('perl', 'warn', undef, "Perl warning", @_); };
+  return $self->withState(sub {
+      return $self->ProcessChain_internal($doc, @postprocessors); }); }
+
+sub ProcessChain_internal {
+  my ($self, $doc, @postprocessors) = @_;
+  local $LaTeXML::POST           = $self;
   local $LaTeXML::Post::NOTEINFO = undef;
   local $LaTeXML::Post::DOCUMENT = $doc;
   my @docs = ($doc);
@@ -55,140 +65,32 @@ sub ProcessChain {
   NoteEnd("post-processing");
   return @docs; }
 
+## HACK!!!
+## This is a copy of withState from LaTeXML::Core.pm
+## This should eventually be in a higher level, common class
+## using a common State or configuration object
+## in order to wrap ALL processing.
+sub withState {
+  my ($self, $closure) = @_;
+  local $STATE = $$self{state};
+  # And, set fancy error handler for ANY die!
+  # Could be useful to distill the more common messages so they provide useful build statistics?
+  local $SIG{__DIE__} = sub { LaTeXML::Common::Error::perl_die_handler(@_); };
+  local $SIG{INT} = sub { LaTeXML::Common::Error::Fatal('perl', 'interrupt', undef,
+      "LaTeXML was interrupted", @_); };
+  local $SIG{__WARN__} = sub { LaTeXML::Common::Error::perl_warn_handler(@_); };
+  local $SIG{'ALRM'} = sub { LaTeXML::Common::Error::Fatal('perl', 'timeout', undef,
+      "Conversion timed out", @_); };
+  local $SIG{'TERM'} = sub { LaTeXML::Common::Error::Fatal('perl', 'terminate', undef,
+      "Conversion was terminated", @_); };
+
+  local $LaTeXML::DUAL_BRANCH = '';
+
+  return &$closure($STATE); }
+
 sub getStatusMessage {
   my ($self) = @_;
-  my $status = $$self{status};
-  my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '')) if $$status{warning};
-  push(@report, "$$status{error} error" .       ($$status{error} > 1 ? 's' : '')) if $$status{error};
-  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '')) if $$status{fatal};
-  return join('; ', @report) || 'No obvious problems'; }
-
-#======================================================================
-# Error & Progress reporting.
-# Designed to mimic Behaviour & API in Conversion phase.
-# [maybe will someday be (re)unified!]
-
-sub NoteProgress {
-  my (@messages) = @_;
-  print STDERR @messages if getVerbosity() >= 0;
-  return; }
-
-sub NoteProgressDetailed {
-  my (@messages) = @_;
-  print STDERR @messages if getVerbosity() >= 1;
-  return; }
-
-our %note_timers = ();
-
-sub NoteBegin {
-  my ($op) = @_;
-  if (getVerbosity() >= 0) {
-    my $proc = $LaTeXML::Post::PROCESSOR && $LaTeXML::Post::PROCESSOR->getName || '';
-    my $doc = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination) || '';
-    # Note when this processor started on this document doing this operation.
-    my $key = $proc . ' ' . $doc . ' ' . $op;
-    $note_timers{$key} = [Time::HiRes::gettimeofday];
-    my ($prevproc, $prevdoc, $prevop) = @{ $LaTeXML::NOTEINFO || ['', '', ''] };
-    my $msg = join(' ', ($proc && ($proc ne $prevproc) ? ($proc) : ()),
-      ($doc && ($doc ne $prevdoc) ? ($doc) : ()),
-      ($op  && ($op ne $prevop)   ? ($op)  : ()));
-    $LaTeXML::Post::NOTEINFO = [$proc, $doc, $op];
-    print STDERR "\n($msg..."; }
-  return; }
-
-sub NoteEnd {
-  my ($op) = @_;
-  if (getVerbosity() >= 0) {
-    my $proc = $LaTeXML::Post::PROCESSOR && $LaTeXML::Post::PROCESSOR->getName || '';
-    my $doc = ($LaTeXML::Post::DOCUMENT && $LaTeXML::Post::DOCUMENT->siteRelativeDestination) || '';
-    my $key = $proc . ' ' . $doc . ' ' . $op;
-    if (my $start = $note_timers{$key}) {
-      undef $note_timers{$key};
-      my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
-      print STDERR sprintf(" %.2f sec)", $elapsed); } }
-  return; }
-
-sub Fatal {
-  my ($category, $object, $where, $message, @details) = @_;
-  my $inhandler = !$SIG{__DIE__};
-  my $ineval    = $^S;
-  $SIG{__DIE__} = undef;    # SHOULD have been localized by caller!
-  my $verbosity = getVerbosity();
-  if (!$inhandler) {
-    $LaTeXML::POST && $$LaTeXML::POST{status}{fatal}++ if !$ineval;
-    $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
-      @details);
-  }
-  else {                    # If we ARE in a recursive call, the actual message is $details[0]
-    $message = $details[0] if $details[0]; }
-  if ($verbosity > 1) {
-    require Carp;
-    Carp::croak $message; }
-  else {
-    die $message; } }
-
-# Note that "100" is hardwired into TeX, The Program!!!
-our $MAXERRORS = 100;
-
-# Should be fatal if strict is set, else warn.
-sub Error {
-  my ($category, $object, $where, $message, @details) = @_;
-  $LaTeXML::POST && $$LaTeXML::POST{status}{error}++;
-  print STDERR generateMessage("Error:" . $category . ":" . ToString($object), $where, $message, 1, @details)
-    if getVerbosity() > -3;
-  Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!")
-    if $LaTeXML::POST && ($$LaTeXML::POST{status}{error} > $MAXERRORS);
-  return; }
-
-# Warning message; results may be OK, but somewhat unlikely
-sub Warn {
-  my ($category, $object, $where, $message, @details) = @_;
-  $LaTeXML::POST && $$LaTeXML::POST{status}{warning}++;
-  print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
-    $where, $message, 0, @details)
-    if getVerbosity() > -2;
-  return; }
-
-# Informational message; results likely unaffected
-# but the message may give clues about subsequent warnings or errors
-sub Info {
-  my ($category, $object, $where, $message, @details) = @_;
-  $LaTeXML::POST && $$LaTeXML::POST{status}{info}++;
-  print STDERR generateMessage("Info:" . $category . ":" . ToString($object), $where, $message, 0, @details)
-    if getVerbosity() > -1;
-  return; }
-
-#----------------------------------------------------------------------
-# Support for above.
-our %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);
-
-sub ToString {
-  my ($object) = @_;
-  my $r = ref $object;
-  return ($r && !$NOBLESS{$r} && $object->can('toString') ? $object->toString : "$object"); }
-
-sub getVerbosity {
-  return ($LaTeXML::POST && $$LaTeXML::POST{verbosity}) || 0; }
-
-# mockup similar to the one in Error.pm
-# We'll want to make that one do both, or maybe let this one do stack trace or...
-sub generateMessage {
-  my ($errorcode, $where, $message, $long, @extra) = @_;
-  my $docloc = join(' ', grep { $_ }
-      ($LaTeXML::Post::PROCESSOR
-      ? ("Postprocessing " . (ref $LaTeXML::Post::PROCESSOR))
-      : ()),
-    ($LaTeXML::Post::DOCUMENT
-      ? ($LaTeXML::Post::DOCUMENT->siteRelativeDestination)
-      : ()),
-    (defined $where ? (ToString($where)) : ()));
-  ($message, @extra) = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
-  my @lines = ($errorcode . ' ' . $message,
-    ($docloc ? ($docloc) : ()),
-    @extra);
-  return "\n" . join("\n\t", @lines) . "\n"; }
+  return $$self{state}->getStatusMessage; }
 
 #======================================================================
 # "Global" Post processing services
@@ -198,50 +100,38 @@ sub generateMessage {
 # or an undifferentiated Unicode sorter (if only Unicode::Collate is available),
 # or just a dumb stand-in for perl's sort
 sub getsorter {
-  my($self, $lang) =@_;
+  my ($self, $lang) = @_;
   my $collator;
-  if($collator = $$self{collatorcache}{$lang}){ }
-  elsif($collator = eval {
-    require 'Unicode/Collate/Locale.pm';
-    Unicode::Collate::Locale->new(
-      locale     => $lang,
-      variable   => 'non-ignorable',    # I think; at least space shouldn't be ignored
-      upper_before_lower => 1); }){ }
-  elsif($collator = eval {
-    require 'Unicode/Collate.pm';
-    Unicode::Collate->new(
-      variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
-      upper_before_lower => 1); }){
-    Info('expected','Unicode::Collate::Locale',undef,
-         "No Unicode::Collate::Locale found;",
-         "using Unicode::Collate; ignoring language='$lang'"); }
+  if ($collator = $$self{collatorcache}{$lang}) { }
+  elsif ($collator = eval {
+      require 'Unicode/Collate/Locale.pm';
+      Unicode::Collate::Locale->new(
+        locale             => $lang,
+        variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
+        upper_before_lower => 1); }) { }
+  elsif ($collator = eval {
+      require 'Unicode/Collate.pm';
+      Unicode::Collate->new(
+        variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
+        upper_before_lower => 1); }) {
+    Info('expected', 'Unicode::Collate::Locale', undef,
+      "No Unicode::Collate::Locale found;",
+      "using Unicode::Collate; ignoring language='$lang'"); }
   else {
     # Otherwise, just use primitive codepoint ordering.
     $collator = LaTeXML::Post::DumbCollator->new();
-    Info('expected','Unicode::Collate::Locale',undef,
-         "No Unicode::Collate::Locale or Unicode::Collate",
-         "using perl's sort; ignoring language='$lang'"); }
+    Info('expected', 'Unicode::Collate::Locale', undef,
+      "No Unicode::Collate::Locale or Unicode::Collate",
+      "using perl's sort; ignoring language='$lang'"); }
   $$self{collatorcache}{$lang} = $collator;
   return $collator; }
-
-#======================================================================
-# Given a base id, a counter (eg number of duplications of id) and a suffix,
-# create a (hopefully) unique id
-# $suffix can be a string to append to the id,
-# or a function of the id, to modify
-sub uniquifyID {
-  my ($baseid, $counter, $suffix) = @_;
-  my $id = $baseid . radix_alpha($counter);
-  return (defined $suffix
-    ? (ref $suffix eq 'CODE' ? &$suffix($id) : $id . $suffix)
-    : $id); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::DumbCollator;
 use strict;
 
 sub new {
-  my ($class) =@_;
+  my ($class) = @_;
   return bless {}, $class; }
 
 sub sort {
@@ -406,6 +296,8 @@ sub processNode {
   return unless $xmath;    # Nothing to convert if there's no XMath ... !
   local $LaTeXML::Post::MATHPROCESSOR = $self;
   my $conversion;
+  # XMath will be removed (LATER!), but mark its ids as reusable.
+  $doc->preremoveNodes($xmath);
   if ($$self{parallel}) {
     my $primary = $self->convertNode($doc, $xmath);
     my @secondaries = ();
@@ -509,13 +401,10 @@ sub convertXMTextContent {
             if    ($key =~ /^_/)     { }    # don't copy internal attributes ???
             elsif ($key eq 'xml:id') { }    # ignore; we'll handle fragid???
             elsif ($key eq 'fragid') {
-              my $id = $value . $self->IDSuffix;
-              if (my $ctr = $$self{convertedID_counter}{$value}++) {
-                $id = LaTeXML::Post::uniquifyID($value, $ctr, $self->IDSuffix); }
+              my $id = $doc->uniquifyID($value, $self->IDSuffix);
               $attr{'xml:id'} = $id; }
             else {
-              $attr{$key} = $attr->value;
-            } } }
+              $attr{$key} = $attr->value; } } }
         # Probably should invoke associateNode ???
         push(@result,
           [$tag, {%attr}, $self->convertXMTextContent($doc, $convertspaces, $node->childNodes)]); } } }
@@ -581,12 +470,10 @@ sub associateNode {
   # If we're intending to cross-reference, then source & generated nodes will need ID's
   if ($$self{crossreferencing}) {
     if (!$noxref && !$sourcenode->getAttribute('fragid')) {    # If no ID, but need one
-      $document->generateNodeID($sourcenode, ''); }
+      $document->generateNodeID($sourcenode, '', 1); }         # but the ID is reusable
     if (my $sourceid = $sourcenode->getAttribute('fragid')) {    # If source has ID
       my $nodeid = $currentnode->getAttribute('fragid') || $sourceid;
-      my $id = $nodeid . $self->IDSuffix;
-      if (my $ctr = $$self{convertedID_counter}{$nodeid}++) {
-        $id = LaTeXML::Post::uniquifyID($nodeid, $ctr, $self->IDSuffix); }
+      my $id = $document->uniquifyID($nodeid, $self->IDSuffix);
       if ($isarray) {
         $$node[1]{'xml:id'} = $id; }
       else {
@@ -647,6 +534,7 @@ package LaTeXML::Post::Document;
 use strict;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Util::Radix;
 use DB_File;
 use Unicode::Normalize;
 use LaTeXML::Post;          # to import error handling...
@@ -713,9 +601,10 @@ sub new {
   $data{searchpaths} = [@paths];
 
   my $self = bless {%data}, $class;
-  $$self{idcache} = {};
+  $$self{idcache}          = {};
+  $$self{idcache_reusable} = {};
+  $$self{idcache_reserve}  = {};
   foreach my $node ($self->findnodes("//*[\@xml:id]")) {
-###print STDERR "INIT $$self{destination} ID=".$node->getAttribute('xml:id')."\n";
     $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
   # Possibly disable permanent cache?
   ### NO this is NOT a safe way to do this....
@@ -973,10 +862,11 @@ sub addNodes {
             my $value = $$attributes{$key};
             if ($key eq 'xml:id') {
               if (defined $$self{idcache}{$value}) {    # Duplicated ID ?!?!
-                my $newid = LaTeXML::Post::uniquifyID($value, ++$$self{idcache_clashes}{$value});
-                print STDERR "Duplicated id=$value using $newid " . ($$self{destination} || '') . "\n";
+                my $newid = $self->uniquifyID($value);
+                Info('unexpected', 'duplicate_id', undef,
+                  "Duplicated id=$value using $newid " . ($$self{destination} || ''));
                 $value = $newid; }
-              $$self{idcache}{$value} = $new;
+              $self->recordID($value => $new);
               $new->setAttribute($key, $value); }
             elsif ($attrprefix && ($attrprefix ne 'xml')) {
               my $attrnsuri = $attrprefix && $$self{namespaces}{$attrprefix};
@@ -1006,10 +896,11 @@ sub addNodes {
               my $old;
               if ((defined($old = $$self{idcache}{$value}))    # if xml:id was already used
                 && !$old->isSameNode($child)) {                # and the node was a different one
-                my $newid = LaTeXML::Post::uniquifyID($value, ++$$self{idcache_clashes}{$value});
-                print STDERR "Duplicated id=$value using $newid " . ($$self{destination} || '') . "\n";
+                my $newid = $self->uniquifyID($value);
+                Info('unexpected', 'duplicate_id', undef,
+                  "Duplicated id=$value using $newid " . ($$self{destination} || ''));
                 $value = $newid; }
-              $$self{idcache}{$value} = $new;
+              $self->recordID($value => $new);
               $new->setAttribute($key, $value); }
             elsif (my $ns = $attr->namespaceURI) {
               $new->setAttributeNS($ns, $attr->name, $attr->getValue); }
@@ -1048,6 +939,25 @@ sub removeNodes {
           if ($$self{idcache}{$id}) {
             delete $$self{idcache}{$id}; } } }
       $node->unlinkNode; } }
+  return; }
+
+# These nodes will be removed, but later
+# So mark all id's in these trees as reusable
+sub preremoveNodes {
+  my ($self, @nodes) = @_;
+  foreach my $node (@nodes) {
+    my $ref = ref $node;
+    if (!$ref) { }
+    elsif ($ref eq 'ARRAY') {
+      my ($t, $a, @n) = @$node;
+      if (my $id = $$a{'xml:id'}) {
+        $$self{idcache_reusable}{$id} = 1; }
+      $self->preremoveNodes(@n); }
+    elsif ($ref =~ /^XML::LibXML::/) {
+      if ($node->nodeType == XML_ELEMENT_NODE) {
+        foreach my $idd ($self->findnodes("descendant-or-self::*[\@xml:id]", $node)) {
+          my $id = $idd->getAttribute('xml:id');
+          $$self{idcache_reusable}{$id} = 1; } } } }
   return; }
 
 sub removeBlankNodes {
@@ -1100,22 +1010,17 @@ sub cloneNode {
   my %idmap = ();
   foreach my $n ($self->findnodes('descendant-or-self::*[@xml:id]', $copy)) {
     my $id = $n->getAttribute('xml:id');
-###    my $newid = $id . $idsuffix;
-    my $newid = (defined $idsuffix
-      ? (ref $idsuffix eq 'CODE' ? &$idsuffix($id) : $id . $idsuffix)
-      : $id);
-    if (!$nocache && defined $$self{idcache}{$newid}) {    # Duplicated ID ?!?!
-      $newid = LaTeXML::Post::uniquifyID($id, ++$$self{idcache_clashes}{$id}, $idsuffix); }
+    my $newid = ($nocache ? $id : $self->uniquifyID($id, $idsuffix));
     $idmap{$id} = $newid;
-    $$self{idcache}{$newid} = $n unless $nocache;
+    $self->recordID($newid => $n) unless $nocache;
     $n->setAttribute('xml:id' => $newid);
-    if (my $fragid = $n->getAttribute('fragid')) {         # GACK!!
+    if (my $fragid = $n->getAttribute('fragid')) {    # GACK!!
       $n->setAttribute(fragid => substr($newid, length($id) - length($fragid))); } }
 
   # Now, replace all REFERENCES to those modified ids.
   foreach my $n ($self->findnodes('descendant-or-self::*[@idref]', $copy)) {
     if (my $id = $idmap{ $n->getAttribute('idref') }) {
-      $n->setAttribute(idref => $id); } }                  # use id or fragid?
+      $n->setAttribute(idref => $id); } }             # use id or fragid?
       # Finally, we probably shouldn't have any labels attributes in here either
   foreach my $n ($self->findnodes('descendant-or-self::*[@labels]', $copy)) {
     $n->removeAttribute('labels'); }
@@ -1346,12 +1251,14 @@ sub addNavigation {
 sub recordID {
   my ($self, $id, $node) = @_;
   # make an issue if already there?
-###print STDERR "REGISTER $$self{destination} ID=".$id."\n";
   $$self{idcache}{$id} = $node;
+  delete $$self{idcache_reserve}{$id};     # And no longer reserved
+  delete $$self{idcache_reusable}{$id};    #  or reusable
   return; }
 
 sub findNodeByID {
   my ($self, $id) = @_;
+  my $node = $$self{idcache}{$id};
   return $$self{idcache}{$id}; }
 
 sub realizeXMNode {
@@ -1359,6 +1266,7 @@ sub realizeXMNode {
   if ($self->getQName($node) eq 'ltx:XMRef') {
     my $id = $node->getAttribute('idref');
     if (my $realnode = $self->findNodeByID($id)) {
+      #print STDERR "REALIZE $id => $realnode\n";
       return $realnode; }
     else {
       Fatal("expected", $id, undef, "Cannot find a node with xml:id='$id'");
@@ -1366,11 +1274,23 @@ sub realizeXMNode {
   else {
     return $node; } }
 
+sub uniquifyID {
+  my ($self, $baseid, $suffix) = @_;
+  my $id = $baseid;
+  $id = (ref $suffix eq 'CODE' ? &$suffix($id) : $id . $suffix) if defined $suffix;
+  my $cachekey = $id;
+  while (($$self{idcache}{$id} || $$self{idcache_reserve}{$id}) && !$$self{idcache_reusable}{$id}) {
+    $id = $baseid . radix_alpha(++$$self{idcache_clashes}{$cachekey});
+    $id = (ref $suffix eq 'CODE' ? &$suffix($id) : $id . $suffix) if defined $suffix; }
+  delete $$self{idcache_reusable}{$id};    # $id is no longer reusable
+  $$self{idcache_reserve}{$id} = 1;        # and we'll consider it reserved until recorded.
+  return $id; }
+
 # Generate, add and register an xml:id for $node.
 # Unless it already has an id, the created id will
 # be "structured" relative to it's parent using $prefix
 sub generateNodeID {
-  my ($self, $node, $prefix) = @_;
+  my ($self, $node, $prefix, $reusable) = @_;
   my $id = $node->getAttribute('xml:id');
   return $id if $id;
   # Find the closest parent with an ID
@@ -1379,9 +1299,11 @@ sub generateNodeID {
     $parent = $parent->parentNode; }
   # Now find the next unused id relative to the parent id, as "prefix<number>"
   $pid .= '.' if $pid;
-  for ($n = 1 ; $$self{idcache}{ $id = $pid . $prefix . $n } ; $n++) { }
+  for ($n = 1 ; ($id = $pid . $prefix . $n)
+      && ($$self{idcache}{$id} || $$self{idcache_reserved}{$id}) ; $n++) { }
   $node->setAttribute('xml:id' => $id);
-  $$self{idcache}{$id} = $node;
+  $$self{idcache}{$id}          = $node;
+  $$self{idcache_reusable}{$id} = $reusable;
   # If we've already been scanned, and have fragid's, create one here, too.
   if (my $fragid = $parent && $parent->getAttribute('fragid')) {
     $node->setAttribute(fragid => $fragid . '.' . $prefix . $n); }
