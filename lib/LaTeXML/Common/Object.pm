@@ -25,38 +25,44 @@ our @EXPORT = (
 
 my %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);    # [CONSTANT]
 
+# Since the next two are used in debugging and error messages,
+# be careful to avoid recursive errors
 sub Stringify {
   my ($object) = @_;
-  if    (!defined $object)          { return 'undef'; }
-  elsif (!ref $object)              { return $object; }
-  elsif ($NOBLESS{ ref $object })   { return "$object"; }
-  elsif ($object->can('stringify')) { return $object->stringify; }
-  # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
-  elsif ($object->isa('XML::LibXML::Node')) {
-    if ($object->nodeType == XML_ELEMENT_NODE) {
-      my $tag        = $STATE->getModel->getNodeQName($object);
-      my $attributes = '';
-      foreach my $attr ($object->attributes) {
-        my $name = $attr->nodeName;
-        my $val  = $attr->getData;
-        $val = substr($val, 0, 30) . "..." if length($val) > 35;
-        $attributes .= ' ' . $name . "=\"" . $val . "\""; }
-      return "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
-    }
-    elsif ($object->nodeType == XML_TEXT_NODE) {
-      return "XMLText[" . $object->data . "]"; }
-    elsif ($object->nodeType == XML_DOCUMENT_NODE) {
-      return "XMLDocument[" . $$object . "]"; }
-    elsif ($object->nodeType == XML_DOCUMENT_FRAG_NODE) {
-      return "XMLFragment[" . join('', map { Stringify($_) } $object->childNodes) . "]"; }
-    else { return "$object"; } }
-  else { return "$object"; } }
+  my $string = eval {
+    if    (!defined $object)          { return 'undef'; }
+    elsif (!ref $object)              { return $object; }
+    elsif ($NOBLESS{ ref $object })   { return "$object"; }
+    elsif ($object->can('stringify')) { return $object->stringify; }
+    # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
+    elsif ($object->isa('XML::LibXML::Node')) {
+      if ($object->nodeType == XML_ELEMENT_NODE) {
+        my $tag        = $STATE->getModel->getNodeQName($object);
+        my $attributes = '';
+        foreach my $attr ($object->attributes) {
+          my $name = $attr->nodeName;
+          my $val  = $attr->getData;
+          $val = substr($val, 0, 30) . "..." if length($val) > 35;
+          $attributes .= ' ' . $name . "=\"" . $val . "\""; }
+        return "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
+      }
+      elsif ($object->nodeType == XML_TEXT_NODE) {
+        return "XMLText[" . $object->data . "]"; }
+      elsif ($object->nodeType == XML_DOCUMENT_NODE) {
+        return "XMLDocument[" . $$object . "]"; }
+      elsif ($object->nodeType == XML_DOCUMENT_FRAG_NODE) {
+        return "XMLFragment[" . join('', map { Stringify($_) } $object->childNodes) . "]"; }
+      else { return "$object"; } }
+    else { return "$object"; } };
+  return (defined $string ? $string : overload::StrVal($object)); }    # Fallback, if errors
 
 sub ToString {
   my ($object) = @_;
-  my $r;
-  return (defined $object
-    ? (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object") : ''); }
+  return '' unless defined $object;
+  my $string = eval {
+    my $r;
+    return (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object"); };
+  return (defined $string ? $string : overload::StrVal($object)); }    # Fallback, if errors
 
 # Just how deep of an equality test should this be?
 sub Equals {
