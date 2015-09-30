@@ -13,7 +13,7 @@ package LaTeXML::Common::Error;
 use strict;
 use warnings;
 use LaTeXML::Global;
-##use LaTeXML::Common::Object;
+use LaTeXML::Common::Object;
 use Time::HiRes;
 use Term::ANSIColor qw(:constants);
 use base qw(Exporter);
@@ -34,30 +34,15 @@ our $COLORIZED_LOGGING = -t STDERR;
 our %color_scheme = (
   details => \&BOLD,
   success => \&GREEN,
-  info => \&BLUE,
+  info    => \&BLUE,
   warning => \&YELLOW,
-  error => sub { BOLD RED shift; },
-  fatal => sub { BOLD RED UNDERLINE shift; }
+  error   => sub { BOLD RED shift; },
+  fatal   => sub { BOLD RED UNDERLINE shift; }
 );
 
 sub colorizeString {
   my ($string, $alias) = @_;
-  return $COLORIZED_LOGGING ? &{$color_scheme{$alias}}($string) : $string; }
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Note: The exported symbols should ultimately be exported as part
-# of LaTeXML::Common, or something like that, to be used BOTH in
-# Digestion & Post-Processing.
-# ======================================================================
-# We want LaTeXML::Global to import this package,
-# but we also want to use some of it's low-level functions.
-sub ToString {
-  my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::ToString($item, @more)); }
-
-sub Stringify {
-  my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::Stringify($item, @more)); }
+  return $COLORIZED_LOGGING ? &{ $color_scheme{$alias} }($string) : $string; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
