@@ -38,6 +38,12 @@ our $DPI            = 90;               # [CONSTANT]
 our $DOTS_PER_POINT = ($DPI / 72.0);    # [CONSTANT] Dots per point.
 our $BACKGROUND     = "#FFFFFF";        # [CONSTANT]
 
+# We also provide defaults for certain defensive environmental variables, if not yet set
+$ENV{MAGICK_DISK_LIMIT} = "2GiB" unless defined $ENV{MAGICK_DISK_LIMIT};
+$ENV{MAGICK_MEMORY_LIMIT} = "512MiB" unless defined $ENV{MAGICK_MEMORY_LIMIT};
+$ENV{MAGICK_MAP_LIMIT} = "1GiB" unless defined $ENV{MAGICK_MAP_LIMIT};
+$ENV{MAGICK_TIME_LIMIT} = "300" unless defined $ENV{MAGICK_TIME_LIMIT};
+
 # Note that Image::Size my, itself, use Image::Magick, if available,
 # as a fallback for getting image size & type!!!
 sub image_type {
