@@ -64,11 +64,10 @@ sub Fatal {
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
     $message
-      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'), $where, $message, 1,
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'), $where, $message, 2,
       # ?!?!?!?!?!
       # or just verbosity code >>>1 ???
-      @details,
-      ($verbosity > 0 ? ("Stack Trace:", stacktrace()) : ()));
+      @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     $message .= $state->getStatusMessage if $state && !$ineval;
   }
@@ -263,13 +262,16 @@ sub generateMessage {
 
   #----------------------------------------
   # Add Stack Trace, if that seems worthwhile.
-  if ($detail > -1) {
+  if (($detail > 1) && ($verbosity > 0)) {
+    push(@lines, "Stack Trace:", stacktrace()); }
+  elsif ($detail > -1) {
     my $nstack = ($detail > 1 ? undef : ($detail > 0 ? 4 : 1));
     if (my @objects = objectStack($nstack)) {
       my $top = shift(@objects);
-      push(@lines,   "In " . trim(ToString($top)) . ' ' . ToString(Locator($top)));
-      push(@objects, '...') if @objects && defined $nstack;
-      push(@lines,   join('', (map { ' <= ' . trim(ToString($_)) } @objects))) if @objects; } }
+      push(@lines, "In " . trim(Stringify($$top[0])) . ' ' . Stringify($$top[1]));
+      push(@objects, ['...']) if @objects && defined $nstack;
+      push(@lines, join('', (map { ' <= ' . trim(Stringify($$_[0])) } @objects))) if @objects;
+    } }
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
@@ -278,6 +280,8 @@ sub Locator {
   my ($object) = @_;
   return ($object && $object->can('getLocator') ? $object->getLocator : "???"); }
 
+# A more organized abstraction along there likes of $where->whereAreYou
+# might be useful?
 sub getLocation {
   my ($where) = @_;
   my $wheretype = ref $where;
@@ -301,6 +305,10 @@ sub getLocation {
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
     # (2) If gullet is the source, we probably want to include next token, etc or
     return $gullet->getLocator(); }
+  # # If in postprocessing
+  # if($LaTeXML::Post::PROCESSOR && $LaTeXML::Post::DOCUMENT){
+  #   return 'in '. $LaTeXML::Post::PROCESSOR->getName
+  #     . ' on '. $LaTeXML::Post::DOCUMENT->siteRelativeDestination; }
   return; }
 
 sub callerName {
@@ -406,9 +414,11 @@ sub objectStack {
       my $method = $info{sub};
       $method =~ s/^.*:://;
       if ($self->can($method)) {
-        next if @objects && ($self eq $objects[-1]);
-        next unless $self->can('getLocator');
-        push(@objects, $self);
+        next if @objects && ($self eq $objects[-1][0]);    # but don't duplicate
+        if ($self->can('getLocator')) {                    # Digestion object?
+          push(@objects, [$self, Locator($self)]); }
+        elsif ($self->isa('LaTeXML::Post::Processor') || $self->isa('LaTeXML::Post::Document')) {
+          push(@objects, [$self, '->' . $method]); }
         last if $maxdepth && (scalar(@objects) >= $maxdepth); } } }
   return @objects; }
 
