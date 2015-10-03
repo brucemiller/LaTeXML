@@ -17,6 +17,7 @@ use Time::HiRes;
 use LaTeXML::Util::Radix;
 use Encode;
 use base qw(Exporter);
+use base qw(LaTeXML::Common::Object);
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::State;
@@ -55,7 +56,9 @@ sub ProcessChain_internal {
       local $LaTeXML::Post::DOCUMENT = $doc;
       if (my @nodes = grep { $_ } $processor->toProcess($doc)) {    # If there are nodes to process
         my $n = scalar(@nodes);
-        my $msg = ($n > 1 ? "$n to process" : 'processing');
+        my $msg = join(' ', $processor->getName || '',
+          $doc->siteRelativeDestination || '',
+          ($n > 1 ? "$n to process" : 'processing'));
         NoteBegin($msg);
         push(@newdocs, $processor->process($doc, @nodes));
         NoteEnd($msg); }
@@ -142,9 +145,10 @@ sub sort {
 package LaTeXML::Post::Processor;
 use strict;
 use LaTeXML::Post;
-LaTeXML::Post->import();    # but that doesn't work, so do this, until we REORGANIZE
+use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Common::Object);
 
 # An Abstract Post Processor
 sub new {
@@ -200,7 +204,7 @@ sub generateResourcePathname {
 package LaTeXML::Post::MathProcessor;
 use strict;
 use LaTeXML::Post;
-LaTeXML::Post->import();    # but that doesn't work, so do this, until we REORGANIZE
+use LaTeXML::Common::Error;
 use base qw(LaTeXML::Post::Processor);
 use LaTeXML::Common::XML;
 
@@ -537,8 +541,9 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Util::Radix;
 use DB_File;
 use Unicode::Normalize;
-use LaTeXML::Post;          # to import error handling...
-LaTeXML::Post->import();    # but that doesn't work, so do this, until we REORGANIZE
+use LaTeXML::Post;                                        # to import error handling...
+use LaTeXML::Common::Error;
+use base qw(LaTeXML::Common::Object);
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
 our $XPATH = LaTeXML::Common::XML::XPath->new(ltx => $NSURI);
 
@@ -551,7 +556,14 @@ our $XPATH = LaTeXML::Common::XML::XPath->new(ltx => $NSURI);
 #   nocache = a boolean, disables storing of permanent LaTeXML.cache
 #     the cache is used to remember things like image conversions from previous runs.
 #   searchpaths = array of paths to search for other resources
+# Note that these may not be LaTeXML documents (maybe html or ....)
 sub new {
+  my ($class, $xmldoc, %options) = @_;
+  my $self = $class->new_internal($xmldoc, %options);
+  $self->setDocument_internal($xmldoc);
+  return $self; }
+
+sub new_internal {
   my ($class, $xmldoc, %options) = @_;
   my %data = ();
   if (ref $class) {    # Cloning!
@@ -570,45 +582,14 @@ sub new {
         unless pathname_is_contained($data{destinationDirectory}, $data{siteDirectory}); }
     else {
       $data{siteDirectory} = $data{destinationDirectory}; } }
-
-  $xmldoc = $xmldoc->getDocument if ref $xmldoc eq 'LaTeXML::Core::Document';
-  $data{document} = $xmldoc;
-  if (!$xmldoc || !($xmldoc->documentElement)) {
-    Fatal('expected', 'document', undef, "Document has no root element"); }
+  # Start, at least, with our own namespaces.
   $data{namespaces}    = { ltx    => $NSURI } unless $data{namespaces};
   $data{namespaceURIs} = { $NSURI => 'ltx' }  unless $data{namespaceURIs};
-
-  # Fetch any additional namespaces
-  foreach my $ns ($xmldoc->documentElement->getNamespaces) {
-    my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
-    if ($prefix) {
-      $data{namespaces}{$prefix} = $uri    unless $data{namespaces}{$prefix};
-      $data{namespaceURIs}{$uri} = $prefix unless $data{namespaceURIs}{$uri}; } }
-
-  # Extract data from latexml's ProcessingInstructions
-  # I'd like to provide structured access to the PI's for those modules that need them,
-  # but it isn't quite clear what that api should be.
-  $data{processingInstructions} =
-    [map { $_->textContent } $XPATH->findnodes('.//processing-instruction("latexml")', $xmldoc)];
-
-  # Combine specified paths with any from the PI's
-  my @paths = ();
-  @paths = @{ $data{searchpaths} } if $data{searchpaths};
-  foreach my $pi (@{ $data{processingInstructions} }) {
-    if ($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/) {
-      push(@paths, split(',', $2)); } }
-  push(@paths, pathname_absolute($data{sourceDirectory})) if $data{sourceDirectory};
-  $data{searchpaths} = [@paths];
+  $data{idcache}       = {};
+  $data{idcache_reusable} = {};
+  $data{idcache_reserve}  = {};
 
   my $self = bless {%data}, $class;
-  $$self{idcache}          = {};
-  $$self{idcache_reusable} = {};
-  $$self{idcache_reserve}  = {};
-  foreach my $node ($self->findnodes("//*[\@xml:id]")) {
-    $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
-  # Possibly disable permanent cache?
-  ### NO this is NOT a safe way to do this....
-  ### $$self{cache} = {} if $data{nocache};
   return $self; }
 
 sub newFromFile {
@@ -636,6 +617,132 @@ sub newFromSTDIN {
   my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseString($string), %options);
   $doc->validate if $$doc{validate};
   return $doc; }
+
+#======================================================================
+
+# This is for creating essentially "sub documents"
+# that are in some sense children of $self, possibly removed or cloned from it.
+# And they are presumably LaTeXML documents
+sub newDocument {
+  my ($self, $root, %options) = @_;
+  my $clone_suffix = $options{clone_suffix};
+  delete $options{clone_suffix};
+  my $doc = $self->new_internal(undef, %options);
+  $doc->setDocument_internal($root, clone_suffix => $clone_suffix);
+
+  if (my $root_id = $self->getDocumentElement->getAttribute('xml:id')) {
+    $$doc{split_from_id} = $root_id; }
+
+  # Copy any processing instructions.
+  foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")) {
+    $doc->getDocument->appendChild($pi->cloneNode); }
+
+  # And any resource elements
+  if (my @resources = $self->findnodes("descendant::ltx:resource")) {
+    $doc->addNodes($doc->getDocumentElement, @resources); }    # cloning, as needed...
+
+  # If new document has no date, try to add one
+  $doc->addDate($self);
+
+  # And copy class from the top-level document; This is risky...
+  # We want to preserve global document style information
+  # But some may refer specifically to the document, and NOT to the parts?
+  if (my $class = $self->getDocumentElement->getAttribute('class')) {
+    my $root   = $doc->getDocumentElement;
+    my $oclass = $root->getAttribute('class');
+    $root->setAttribute(class => ($oclass ? $oclass . ' ' . $class : $class)); }
+
+  # Finally, return the new document.
+  return $doc; }
+
+sub setDocument_internal {
+  my ($self, $root, %options) = @_;
+  # Build the document's XML
+  my $roottype = ref $root;
+  if ($roottype eq 'LaTeXML::Core::Document') {
+    $root     = $root->getDocument;
+    $roottype = ref $root; }
+  if (my $clone_suffix = $options{clone_suffix}) {
+    if ($roottype eq 'XML::LibXML::Document') {
+      Fatal('internal', 'unimplemented', undef,
+        "Have not yet implemented cloning for entire documents"); }
+    # Just make a clone, and then insert that.
+    $root = $self->cloneNode($root, $clone_suffix); }
+
+  if ($roottype eq 'XML::LibXML::Document') {
+    $$self{document} = $root;
+    foreach my $node ($self->findnodes("//*[\@xml:id]")) {    # Now record all ID's
+      $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
+    # Fetch any additional namespaces from the root
+    foreach my $ns ($root->documentElement->getNamespaces) {
+      my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
+      if ($prefix) {
+        $$self{namespaces}{$prefix} = $uri    unless $$self{namespaces}{$prefix};
+        $$self{namespaceURIs}{$uri} = $prefix unless $$self{namespaceURIs}{$uri}; } }
+
+    # Extract data from latexml's ProcessingInstructions
+    # I'd like to provide structured access to the PI's for those modules that need them,
+    # but it isn't quite clear what that api should be.
+    $$self{processingInstructions} =
+      [map { $_->textContent } $XPATH->findnodes('.//processing-instruction("latexml")', $root)];
+    # Combine specified paths with any from the PI's
+    my @paths = ();
+    @paths = @{ $$self{searchpaths} } if $$self{searchpaths};
+    foreach my $pi (@{ $$self{processingInstructions} }) {
+      if ($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/) {
+        push(@paths, split(',', $2)); } }
+    push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
+    $$self{searchpaths} = [@paths]; }
+  elsif ($roottype eq 'XML::LibXML::Element') {
+    $$self{document} = XML::LibXML::Document->new("1.0", "UTF-8");
+    # Assume we've got any namespaces already ?
+    if (my $parent = $self->findnode('ancestor::*[@id][1]', $root)) {
+      $$self{parent_id} = $parent->getAttribute('xml:id'); }
+    # if no cloning requested, we can just plug the node directly in.
+    # (otherwise, we should use addNodes?)
+    # Seems that only importNode (NOT adopt) works correctly,
+    # PROVIDED we also set the namespace.
+    $$self{document}->setDocumentElement($$self{document}->importNode($root));
+    #    $$self{document}->documentElement->setNamespace($root->namespaceURI, $root->prefix, 1);
+    $root->setNamespace($root->namespaceURI, $root->prefix, 1);
+    foreach my $node ($self->findnodes("//*[\@xml:id]")) {    # Now record all ID's
+      $$self{idcache}{ $node->getAttribute('xml:id') } = $node; } }
+  elsif ($roottype eq 'ARRAY') {
+    $$self{document} = XML::LibXML::Document->new("1.0", "UTF-8");
+    my ($tag, $attributes, @children) = @$root;
+    my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
+    my $nsuri = $$self{namespaces}{$prefix};
+    my $node = $$self{document}->createElementNS($nsuri, $localname);
+    $$self{document}->setDocumentElement($node);
+    map { $$attributes{$_} && $node->setAttribute($_ => $$attributes{$_}) } keys %$attributes
+      if $attributes;
+
+    if (my $id = $$attributes{'xml:id'}) {
+      $self->recordID($id => $node); }
+    $self->addNodes($node, @children); }
+  else {
+    Fatal('unexpected', $root, undef, "Dont know how to use '$root' as document element"); }
+  return $self; }
+
+our @MonthNames = (qw( January February March April May June
+    July August September October November December));
+
+sub addDate {
+  my ($self, $fromdoc) = @_;
+  if (!$self->findnodes('ltx:date', $self->getDocumentElement)) {
+    my @dates;
+    #  $fromdoc's document has some, so copy them.
+    if ($fromdoc && (@dates = $fromdoc->findnodes('ltx:date', $fromdoc->getDocumentElement))) {
+      $self->addNodes($self->getDocumentElement, @dates); }
+    else {
+      my ($sec, $min, $hour, $mday, $mon, $year) = localtime(time());
+      $self->addNodes($self->getDocumentElement,
+        ['ltx:date', { role => 'creation' },
+          $MonthNames[$mon] . " " . $mday . ", " . (1900 + $year)]); } }
+  return; }
+
+#======================================================================
+# Accessors
 
 sub getDocument {
   my ($self) = @_;
@@ -709,6 +816,10 @@ sub checkDestination {
       or return Fatal("I/O", $destdir, undef,
       "Could not create directory $destdir for $reldest: $!"); }
   return $dest; }
+
+sub stringify {
+  my ($self) = @_;
+  return 'Post::Document[' . $self->siteRelativeDestination . ']'; }
 
 #======================================================================
 sub validate {
@@ -1010,7 +1121,7 @@ sub cloneNode {
   my %idmap = ();
   foreach my $n ($self->findnodes('descendant-or-self::*[@xml:id]', $copy)) {
     my $id = $n->getAttribute('xml:id');
-    my $newid = ($nocache ? $id : $self->uniquifyID($id, $idsuffix));
+    my $newid = $self->uniquifyID($id, $idsuffix);
     $idmap{$id} = $newid;
     $self->recordID($newid => $n) unless $nocache;
     $n->setAttribute('xml:id' => $newid);
@@ -1082,93 +1193,6 @@ sub markXMNodeVisibility_aux {
   else {
     foreach my $child (element_nodes($node)) {
       $self->markXMNodeVisibility_aux($child, $cvis, $pvis); } }
-  return; }
-
-#======================================================================
-
-sub newDocument {
-  my ($self, $root, %options) = @_;
-  my $xmldoc = XML::LibXML::Document->new("1.0", "UTF-8");
-  my ($public_id, $system_id);
-  if (my $dtd = $$self{document}->internalSubset) {
-    if ($dtd->toString
-      =~ /^<!DOCTYPE\s+(\w+)\s+PUBLIC\s+(\"|\')([^\2]*)\2\s+(\"|\')([^\4]*)\4>$/) {
-      ($public_id, $system_id) = ($3, $5); } }
-  my $parent_id;
-  # Build the document's XML
-  if (ref $root eq 'ARRAY') {
-    my ($tag, $attributes, @children) = @$root;
-    my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
-    $xmldoc->createInternalSubset($localname, $public_id, $system_id) if $public_id;
-
-    my $nsuri = $$self{namespaces}{$prefix};
-    my $node = $xmldoc->createElementNS($nsuri, $localname);
-    $xmldoc->setDocumentElement($node);
-    map { $$attributes{$_} && $node->setAttribute($_ => $$attributes{$_}) } keys %$attributes
-      if $attributes;
-    # Note that $self is the "parent" document, not the document that we're about to make!
-    # We don't yet want to deal with ID caches (it will be built later with ->new)
-    my $savecache = $$self{idcache};
-    $$self{idcache} = {};
-    $self->addNodes($node, @children);
-    $$self{idcache} = $savecache; }    # Restore the cache;
-  elsif (ref $root eq 'XML::LibXML::Element') {
-    $parent_id = $self->findnode('ancestor::*[@id]', $root);
-    $parent_id = $parent_id->getAttribute('id') if $parent_id;
-    my $localname = $root->localname;
-    $xmldoc->createInternalSubset($localname, $public_id, $system_id) if $public_id;
-    # Make a copy of $root be the new element node, carefully w.r.t. namespaces.
-    # Seems that only importNode (not adopt) works correctly,
-    # PROVIDED we also set the namespace.
-    my $node = $xmldoc->importNode($root);
-    $xmldoc->setDocumentElement($node);
-    $xmldoc->documentElement->setNamespace($root->namespaceURI, $root->prefix, 1); }
-  else {
-    Fatal('unexpected', $root, undef, "Dont know how to use '$root' as document element"); }
-
-  my $root_id = $self->getDocumentElement->getAttribute('xml:id');
-  my $doc     = $self->new($xmldoc,
-    ($parent_id ? (parent_id     => $parent_id) : ()),
-    ($root_id   ? (split_from_id => $root_id)   : ()),
-    %options);
-
-  # Copy any processing instructions.
-  foreach my $pi ($self->findnodes(".//processing-instruction('latexml')")) {
-    $doc->getDocument->appendChild($pi->cloneNode); }
-
-  # And any resource elements
-  if (my @resources = $self->findnodes("descendant::ltx:resource")) {
-    $doc->addNodes($doc->getDocumentElement, @resources); }    # cloning, as needed...
-
-  # If new document has no date, try to add one
-  $doc->addDate($self);
-
-  # And copy class from the top-level document; This is risky...
-  # We want to preserve global document style information
-  # But some may refer specifically to the document, and NOT to the parts?
-  if (my $class = $self->getDocumentElement->getAttribute('class')) {
-    my $root   = $doc->getDocumentElement;
-    my $oclass = $root->getAttribute('class');
-    $root->setAttribute(class => ($oclass ? $oclass . ' ' . $class : $class)); }
-
-  # Finally, return the new document.
-  return $doc; }
-
-our @MonthNames = (qw( January February March April May June
-    July August September October November December));
-
-sub addDate {
-  my ($self, $fromdoc) = @_;
-  if (!$self->findnodes('ltx:date', $self->getDocumentElement)) {
-    my @dates;
-    #  $fromdoc's document has some, so copy them.
-    if ($fromdoc && (@dates = $fromdoc->findnodes('ltx:date', $fromdoc->getDocumentElement))) {
-      $self->addNodes($self->getDocumentElement, @dates); }
-    else {
-      my ($sec, $min, $hour, $mday, $mon, $year) = localtime(time());
-      $self->addNodes($self->getDocumentElement,
-        ['ltx:date', { role => 'creation' },
-          $MonthNames[$mon] . " " . $mday . ", " . (1900 + $year)]); } }
   return; }
 
 #======================================================================
