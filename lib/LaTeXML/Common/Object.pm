@@ -37,7 +37,9 @@ sub Stringify {
     # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
     elsif ($object->isa('XML::LibXML::Node')) {
       if ($object->nodeType == XML_ELEMENT_NODE) {
-        my $tag        = $STATE->getModel->getNodeQName($object);
+        my $model = $STATE && $STATE->getModel;
+        my $tag = ($model ? $model->getNodeQName($object)
+          : $object->nodeName);
         my $attributes = '';
         foreach my $attr ($object->attributes) {
           my $name = $attr->nodeName;
