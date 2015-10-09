@@ -1861,7 +1861,8 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'");
+        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        unless LookupValue(ToString($cs) . ':locked');
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -2034,9 +2035,12 @@ DefPrimitive('\TextSymbolUnavailable{}',     undef);
 DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
     $name = ToString($name);
-    Info('ignore', $name, $stomach,
-      "Ignoring redefinition (\\newenvironment) of Environment '$name'")
-      if IsDefined(T_CS("\\$name"));
+    if (IsDefined(T_CS("\\$name"))) {
+      Info('ignore', $name, $stomach,
+        "Ignoring redefinition (\\newenvironment) of Environment '$name'")
+        unless (LookupValue('\\' . $name . ':locked')
+        || LookupValue('\\begin{' . $name . '}:locked'));
+      return; }
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef, $end); });
 
