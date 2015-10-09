@@ -38,11 +38,17 @@ our $DPI            = 90;               # [CONSTANT]
 our $DOTS_PER_POINT = ($DPI / 72.0);    # [CONSTANT] Dots per point.
 our $BACKGROUND     = "#FFFFFF";        # [CONSTANT]
 
-# We also provide defaults for certain defensive environmental variables, if not yet set
-$ENV{MAGICK_DISK_LIMIT} = "2GiB" unless defined $ENV{MAGICK_DISK_LIMIT};
-$ENV{MAGICK_MEMORY_LIMIT} = "512MiB" unless defined $ENV{MAGICK_MEMORY_LIMIT};
-$ENV{MAGICK_MAP_LIMIT} = "1GiB" unless defined $ENV{MAGICK_MAP_LIMIT};
-$ENV{MAGICK_TIME_LIMIT} = "300" unless defined $ENV{MAGICK_TIME_LIMIT};
+# These environment variables can be used to limit the amount
+# of time & space used by ImageMagick.  They are particularly useful
+# when ghostscript becomes involved in converting postscript or pdf.
+# HOWEVER, there are indications that the time limit (at least)
+# is being measured against the whole latexml process, not just image processing.
+# Thus they aren't really that useful here.
+# They probably are useful in a server context, however, so I'll leave the comments.
+# $ENV{MAGICK_DISK_LIMIT} = "2GiB" unless defined $ENV{MAGICK_DISK_LIMIT};
+# $ENV{MAGICK_MEMORY_LIMIT} = "512MiB" unless defined $ENV{MAGICK_MEMORY_LIMIT};
+# $ENV{MAGICK_MAP_LIMIT} = "1GiB" unless defined $ENV{MAGICK_MAP_LIMIT};
+# $ENV{MAGICK_TIME_LIMIT} = "300" unless defined $ENV{MAGICK_TIME_LIMIT};
 
 # Note that Image::Size my, itself, use Image::Magick, if available,
 # as a fallback for getting image size & type!!!
