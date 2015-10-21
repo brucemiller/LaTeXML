@@ -27,18 +27,21 @@ sub new {
     # Abstract class constructor, we need to instantiate a specific manifest processor
     my $format = ucfirst(lc(delete $options{format}));
     local $@ = '';
-    my $eval_return = eval { require "LaTeXML/Post/Manifest/$format.pm"; 1; };
+    my $eval_return = eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
+      require "LaTeXML/Post/Manifest/$format.pm"; 1; };
     if ($eval_return && (!$@)) {
       $self = eval {
+        local $LaTeXML::IGNORE_ERRORS = 1;
         "LaTeXML::Post::Manifest::$format"->new(%options);
       };
       if (!$self) {
         Warn('misdefined', 'Manifest', undef,
-	     "Manifest post-processor '$format' could not be instanciated; Skipping", $@);
+          "Manifest post-processor '$format' could not be instanciated; Skipping", $@);
         $self = $class->SUPER::new(%options); } }
     else {
       Warn('missing', 'Manifest', undef,
-	   "No Manifest post-processor found for format $format; Skipping", $@);
+        "No Manifest post-processor found for format $format; Skipping", $@);
       $self = $class->SUPER::new(%options); } }
   else {
     # Called from a concrete manifest class

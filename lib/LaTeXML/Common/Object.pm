@@ -30,6 +30,7 @@ my %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);    
 sub Stringify {
   my ($object) = @_;
   my $string = eval {
+    local $LaTeXML::IGNORE_ERRORS = 1;
     if    (!defined $object)          { return 'undef'; }
     elsif (!ref $object)              { return $object; }
     elsif ($NOBLESS{ ref $object })   { return "$object"; }
@@ -62,6 +63,7 @@ sub ToString {
   my ($object) = @_;
   return '' unless defined $object;
   my $string = eval {
+    local $LaTeXML::IGNORE_ERRORS = 1;
     my $r;
     return (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object"); };
   return (defined $string ? $string : overload::StrVal($object)); }    # Fallback, if errors

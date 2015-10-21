@@ -78,7 +78,9 @@ sub image_can_image {
     foreach my $class (@MagickClasses) {
       my $module = $class . ".pm";
       $module =~ s/::/\//g;
-      my $object = eval { require $module; $class->new(); };
+      my $object = eval {
+        local $LaTeXML::IGNORE_ERRORS = 1;
+        require $module; $class->new(); };
       if ($object) {
         $IMAGECLASS = $class;
         last; } } }

@@ -16,7 +16,9 @@ use warnings;
 our $uuid_tiny_installed;
 
 BEGIN {
-  my $eval_return = eval { require UUID::Tiny; 1; };
+  my $eval_return = eval {
+    local $LaTeXML::IGNORE_ERRORS = 1;
+    require UUID::Tiny; 1; };
   if ($eval_return && (!$@)) {
     $uuid_tiny_installed = 1; } }
 
