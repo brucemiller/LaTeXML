@@ -52,9 +52,10 @@ sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
+  die $message if $LaTeXML::IGNORE_ERRORS;    # Short circuit, w/no formatting, if in probing eval
   my $inhandler = !$SIG{__DIE__};
-  my $ineval    = $^S;
-  $SIG{__DIE__} = undef;    # SHOULD have been localized by caller!
+  my $ineval    = 0;                          # whether we're in an eval should no longer matter!
+  local $SIG{__DIE__} = undef;                # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if (!$inhandler) {
@@ -69,7 +70,10 @@ sub Fatal {
       # or just verbosity code >>>1 ???
       @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
-    $message .= $state->getStatusMessage if $state && !$ineval;
+    # This really should be handled by the top-level program,
+    # after doing all processing within an eval
+    # BIZARRE: Note that die adds the "at <file> <line>" stuff IFF the message doesn't end w/ CR!
+    $message .= $state->getStatusMessage . "\n" if $state && !$ineval;
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
@@ -173,24 +177,35 @@ sub NoteEnd {
 my $quoted_re     = qr/\"([^\"]*)\"/;                                                   # [CONSTANT]
 my $cantcall_re   = qr/Can't call method/;                                              # [CONSTANT]
 my $cantlocate_re = qr/Can't locate object method/;                                     # [CONSTANT]
+my $undef_re      = qr/Undefined subroutine/;                                           # [CONSTANT]
 my $noself_re     = qr/on an undefined value|without a package or object reference/;    # [CONSTANT]
 my $via_re        = qr/via package/;                                                    # [CONSTANT]
-my $at_re         = qr/at (.*)/;                                                        # [CONSTANT]
+my $at_re         = qr/(at .*)/;                                                        # [CONSTANT]
 
 sub perl_die_handler {
   my (@line) = @_;
+  if ($LaTeXML::IGNORE_ERRORS) {    # Just get out now, if we're ignoring errors within an eval.
+    local $SIG{__DIE__} = undef;
+    die @line; }
   # We try to find a meaningful name for where the error occurred;
   # That's the thing that is "misdefined", after all.
   # Not completely sure we're looking in the right place up the stack, though.
-  if ($line[0] =~ /^$cantcall_re\s+$cantcall_re\s+($noself_re)\s+$at_re$/) {
+  if ($line[0] =~ /^$cantcall_re\s+$quoted_re\s+($noself_re)\s+$at_re$/) {
     my ($method, $kind, $where) = ($1, $2, $3);
-    Fatal('misdefined', callerName(2), $where, @line); }
-  elsif ($line[0] =~ /^$cantlocate_re\s+$quoted_re\s+$via_re\s+$quoted_re\s+$at_re$/) {
+    Fatal('misdefined', callerName(1), $where,
+      "Can't call method '$method' $kind", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^$undef_re\s+(\S+)\s+called $at_re$/) {
+    my ($function, $where) = ($1, $2);
+    Fatal('misdefined', callerName(1), $where,
+      "Undefined subroutine '$function' called", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^$cantlocate_re\s+$quoted_re\s+$via_re\s+$quoted_re\s+\(.*\)\s+$at_re/) {
     my ($method, $class, $where) = ($1, $2, $3);
-    Fatal('misdefined', callerName(2), $where, @line); }
-  elsif ($line[0] =~ /^Not an? (\w*) reference at (.*)$/) {
-    my ($type, $where) = ($1, $2);
-    Fatal('misdefined', callerName(2), $where, @line); }
+    Fatal('misdefined', callerName(1), $where,
+      "Can't locate method '$method' via '$class'", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^Can't use\s+(\w*)\s+\([^\)]*\) as (.*?) ref(?:\s+while "strict refs" in use)? at (.*)$/) {
+    my ($gottype, $wanttype, $where) = ($1, $2, $3);
+    Fatal('misdefined', callerName(1), $where,
+      "Can't use $gottype as $wanttype reference", @line[1 .. $#line]); }
   elsif ($line[0] =~ /^File (.*?) had an error:/) {
     my ($file) = ($1);
     Fatal('misdefined', $file, undef, @line); }
@@ -200,9 +215,38 @@ sub perl_die_handler {
 
 sub perl_warn_handler {
   my (@line) = @_;
-  Warn('perl', 'warn', undef, "Perl warning", @line);
+  return if $LaTeXML::IGNORE_ERRORS;
+  if ($line[0] =~ /^Use of uninitialized value (.*?)(\s?+in .*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
+    my ($what, $how, $where) = ($1 || 'value', $2, $3);
+    Warn('uninitialized', $what, $where, "Use of uninitialized value $what $how", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^(.*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
+    my ($warning, $where) = ($1, $2);
+    Warn('perl', 'warn', undef, $warning, $where, @line[1 .. $#line]); }
+  else {
+    Warn('perl', 'warn', undef, "Perl warning", @line); }
   return; }
 
+# The following handlers SHOULD report the problem,
+# even when within a "safe" eval that's ignoring errors.
+# Moreover, we'd really like to be able to throw all the way to
+# the top-level containing eval.  How to do that?
+sub perl_interrupt_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
+  return; }
+
+sub perl_timeout_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
+  return; }
+
+sub perl_terminate_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
+  return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
 # Synthesize an error message describing what happened, and where.
@@ -222,7 +266,8 @@ sub generateMessage {
   # $message and each of @extra should be single lines
   @extra = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
   # make 1st line be 1st line of message
-  $message =~ s/\n.*//g;
+  $message = shift(@extra);
+  #  $message =~ s/\n.*//g;
   # The initial portion of the message will consist of:
   $message = '' unless defined $message;
   my @lines = (
