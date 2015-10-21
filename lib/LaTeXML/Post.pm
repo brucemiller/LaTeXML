@@ -46,6 +46,7 @@ sub ProcessChain_internal {
   local $LaTeXML::POST           = $self;
   local $LaTeXML::Post::NOTEINFO = undef;
   local $LaTeXML::Post::DOCUMENT = $doc;
+
   my @docs = ($doc);
   NoteBegin("post-processing");
 
@@ -77,19 +78,19 @@ sub withState {
   my ($self, $closure) = @_;
   local $STATE = $$self{state};
   # And, set fancy error handler for ANY die!
-  # Could be useful to distill the more common messages so they provide useful build statistics?
-  local $SIG{__DIE__} = sub { LaTeXML::Common::Error::perl_die_handler(@_); };
-  local $SIG{INT} = sub { LaTeXML::Common::Error::Fatal('perl', 'interrupt', undef,
-      "LaTeXML was interrupted", @_); };
-  local $SIG{__WARN__} = sub { LaTeXML::Common::Error::perl_warn_handler(@_); };
-  local $SIG{'ALRM'} = sub { LaTeXML::Common::Error::Fatal('perl', 'timeout', undef,
-      "Conversion timed out", @_); };
-  local $SIG{'TERM'} = sub { LaTeXML::Common::Error::Fatal('perl', 'terminate', undef,
-      "Conversion was terminated", @_); };
+  local $SIG{__DIE__}  = \&LaTeXML::Common::Error::perl_die_handler;
+  local $SIG{INT}      = \&LaTeXML::Common::Error::perl_interrupt_handler;
+  local $SIG{__WARN__} = \&LaTeXML::Common::Error::perl_warn_handler;
+  local $SIG{'ALRM'}   = \&LaTeXML::Common::Error::perl_timeout_handler;
+  local $SIG{'TERM'}   = \&LaTeXML::Common::Error::perl_terminate_handler;
 
   local $LaTeXML::DUAL_BRANCH = '';
 
   return &$closure($STATE); }
+
+sub getStatusCode {
+  my ($self) = @_;
+  return $$self{state}->getStatusCode; }
 
 sub getStatusMessage {
   my ($self) = @_;
@@ -107,12 +108,14 @@ sub getsorter {
   my $collator;
   if ($collator = $$self{collatorcache}{$lang}) { }
   elsif ($collator = eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
       require 'Unicode/Collate/Locale.pm';
       Unicode::Collate::Locale->new(
         locale             => $lang,
         variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
         upper_before_lower => 1); }) { }
   elsif ($collator = eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
       require 'Unicode/Collate.pm';
       Unicode::Collate->new(
         variable           => 'non-ignorable',    # I think; at least space shouldn't be ignored
@@ -833,7 +836,9 @@ sub validate {
     my $rng = LaTeXML::Common::XML::RelaxNG->new($schema, searchpaths => [$self->getSearchPaths]);
     LaTeXML::Post::Error('I/O', $schema, undef, "Failed to load RelaxNG schema $schema" . "Response was: $@")
       unless $rng;
-    my $v = eval { $rng->validate($$self{document}); };
+    my $v = eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
+      $rng->validate($$self{document}); };
     LaTeXML::Post::Error("malformed", 'document', undef,
       "Document fails RelaxNG validation (" . $schema . ")",
       "Validation reports: " . $@) if $@ || !defined $v; }
@@ -844,11 +849,13 @@ sub validate {
         "Failed to load DTD " . $decldtd->publicId . " at " . $decldtd->systemId,
         "skipping validation"); }
     else {
-      my $v = eval { $$self{document}->validate($dtd); };
+      my $v = eval {
+        local $LaTeXML::IGNORE_ERRORS = 1;
+        $$self{document}->validate($dtd); };
       LaTeXML::Post::Error("malformed", 'document', undef,
         "Document failed DTD validation (" . $decldtd->systemId . ")",
         "Validation reports: " . $@) if $@ || !defined $v; } }
-  else {                                                      # Nothing found to validate with
+  else {    # Nothing found to validate with
     LaTeXML::Post::Warn("expected", 'schema', undef,
       "No Schema or DTD found for this document"); }
   return; }
