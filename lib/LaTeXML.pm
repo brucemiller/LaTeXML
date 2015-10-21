@@ -296,7 +296,7 @@ sub convert {
       if ((!$post_eval_return) && (!$@));
     if ($@) {    #Fatal occured!
       $$runtime{status_code} = 3;
-      $@ = 'Fatal:conversion:unknown '.$@ unless $@ =~ /^Fatal:/;
+      $@ = 'Fatal:conversion:unknown '.$@ unless $@ =~ /^\n?\S*Fatal:/s;
       print STDERR $@;
       #Since this is postprocessing, we don't need to do anything
       #   just avoid crashing...
