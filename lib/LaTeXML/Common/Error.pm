@@ -331,7 +331,7 @@ sub getLocation {
   my ($where) = @_;
   my $wheretype = ref $where;
   if ($wheretype && ($wheretype =~ /^XML::LibXML/)) {
-    my $box = $LaTeXML::DOCUMENT->getNodeBox($where);
+    my $box = $LaTeXML::DOCUMENT && $LaTeXML::DOCUMENT->getNodeBox($where);
     return Locator($box) if $box; }
   elsif ($wheretype && $where->can('getLocator')) {
     return $where->getLocator; }

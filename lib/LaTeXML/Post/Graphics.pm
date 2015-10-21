@@ -127,9 +127,9 @@ sub findGraphicFile {
     # Now, find the first image that is either the correct type,
     # or has the most desirable type mapping
     foreach my $path (@paths) {
-      my $type         = pathname_type($path);
-      my $props        = $$self{type_properties}{$type};
-      my $desirability = $$props{desirability} || ($type eq $$props{destination_type} ? 10 : 0);
+      my $type  = pathname_type($path);
+      my $props = $$self{type_properties}{$type};
+      my $desirability = $$props{desirability} || ($type eq ($$props{destination_type} || 'notype') ? 10 : 0);
       if ($desirability > $best) {
         $best     = $desirability;
         $bestpath = $path; } }

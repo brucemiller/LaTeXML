@@ -1221,11 +1221,11 @@ sub NewScript {
   my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l"),
     $base, Arg($script, 0));
   # Record whether this script was a floating one
-  $$app[1]{_wasfloat}  = 1   if $mode eq 'FLOAT';
-  $$app[1]{_bumplevel} = $l  if $bumped;
-  $$app[1]{scriptpos}  = $bx if $bx ne 'post';
-  $$app[1]{lpadding} = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
-  $$app[1]{rpadding} = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
+  $$app[1]{_wasfloat}  = 1  if $mode eq 'FLOAT';
+  $$app[1]{_bumplevel} = $l if $bumped;
+  $$app[1]{scriptpos} = $bx   if $bx   && ($bx ne 'post');
+  $$app[1]{lpadding}  = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
+  $$app[1]{rpadding}  = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
   return $app; }
 
 # Basically, like NewScript, but decorates an operator with sub/superscripts
