@@ -2697,6 +2697,7 @@ DefConstructorI('\par', undef, sub {
         AssignValue(next_para_class => undef); }
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
           T_CS('\LTX@clear@vadjust@afterpar'))); } },
+  properties => { alignmentSkippable => 1 },
   alias => "\\par\n");
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
