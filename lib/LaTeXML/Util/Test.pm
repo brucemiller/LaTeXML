@@ -48,7 +48,7 @@ sub latexml_tests {
         foreach my $name (@daemon_tests) {
           my $test = "$directory/$name";
         SKIP: {
-            skip("No file $test.xml and/or $$test.status", 1)
+            skip("No file $test.xml and/or $test.status", 1)
               unless ((-f "$test.xml") && (-f "$test.status"));
             next unless check_requirements($test, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
