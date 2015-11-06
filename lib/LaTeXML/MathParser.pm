@@ -125,6 +125,8 @@ sub clear {
   $$self{n_parsed}        = 0;
   return; }
 
+our %EXCLUDED_PRETTYNAME_ATTRIBUTES = (fontsize => 1, opacity => 1);
+
 sub token_prettyname {
   my ($node) = @_;
   my $name = $node->getAttribute('name');
@@ -132,7 +134,8 @@ sub token_prettyname {
   elsif ($name = $node->textContent) {
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
     my %attr = $font->relativeTo(LaTeXML::Common::Font->textDefault);
-    my $desc = join(' ', map { ToString($attr{$_}{value}) } keys %attr);
+    my $desc = join(' ', map { ToString($attr{$_}{value}) }
+        (grep { !$EXCLUDED_PRETTYNAME_ATTRIBUTES{$_} } (sort keys %attr)));
     $name .= "{$desc}" if $desc; }
   else {
     $name = Stringify($node); }    # what else ????
@@ -477,6 +480,7 @@ sub parse_kludgeScripts_rec {
   else {                   # else skip over a and continue
     return ($$a[0], $self->parse_kludgeScripts_rec($b, @more)); } }
 
+# OBSOLETE EXPLORATORY CODE; but there are some interesting ideas....
 # sub parse_kludge {
 #   my($self,$mathnode,$document)=@_;
 #   my @nodes = $self->filter_hints($document,$mathnode->childNodes);
@@ -574,7 +578,10 @@ sub parse_single {
     return; }
   # Success!
   else {
-    $result = Annotate($result, punctuation => $punct);
+    if ($punct) {    # create a trivial XMDual to treat the punctuation as presentation
+      $result = ['ltx:XMDual', {},
+        LaTeXML::Package::createXMRefs($document, $result),
+        ['ltx:XMWrap', {}, $result, $punct]]; }    # or perhaps: Apply, punctuated???
     if ($LaTeXML::MathParser::DEBUG) {
       print STDERR "\n=>" . ToString($result) . "\n"; }
     return $result; } }
@@ -712,7 +719,7 @@ my %PREFIX_ALIAS = (    # [CONSTANT]
 # Put infix, along with `binding power'
 my %IS_INFIX = (METARELOP => 1,    # [CONSTANT]
   RELOP         => 2,    ARROW       => 2,
-  ADDOP         => 10,   MULOP       => 100,
+  ADDOP         => 10,   MULOP       => 100, FRACOP => 100,
   SUPERSCRIPTOP => 1000, SUBSCRIPTOP => 1000);
 
 sub textrec {
@@ -930,12 +937,6 @@ sub Annotate {
     # Remove any attributes that aren't allowed!!!
     foreach my $k (keys %attrib) {
       delete $attrib{$k} unless $k =~ /^_/ || $LaTeXML::MathParser::DOCUMENT->canHaveAttribute($qname, $k); }
-    # Special treatment for some attributes:
-    # Combine opens & closes
-    foreach my $k (qw(open argopen)) {
-      $attrib{$k} = $attrib{$k} . $$node[1]{$k} if $attrib{$k} && $$node[1]{$k}; }
-    foreach my $k (qw(close argclose)) {
-      $attrib{$k} = $$node[1]{$k} . $attrib{$k} if $attrib{$k} && $$node[1]{$k}; }
     # Make sure font is "Appropriate", if we're creating a new token
     if ($attrib{_font} && ($qname eq 'ltx:XMTok')) {
       my $content = join('', @$node[2 .. $#$node]);
@@ -954,7 +955,8 @@ sub Annotate {
 # args may be array-rep or lexemes (or nodes?)
 sub Apply {
   my ($op, @args) = @_;
-  return ['ltx:XMApp', {}, $op, @args]; }
+  my $font = p_getAttribute($op, '_font');
+  return ['ltx:XMApp', { ($font ? (_font => $font) : ()) }, $op, @args]; }
 
 # Apply $op to a `delimited' list of arguments of the form
 #     open, expr (punct expr)* close
@@ -1157,7 +1159,7 @@ sub ApplyNary {
         qw(mathstyle))    # Check ops are used in similar way
           # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
           # Especially an ID! (but really only important if the id is referenced somewhere?)
-      && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(open close enclose xml:id))) {
+      && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(enclose xml:id))) {
       # Note that $op1 GOES AWAY!!!
       ReplacedBy($op1, $rop);
       push(@args, @args1); }
@@ -1331,9 +1333,7 @@ Create a new C<XMApp> node representing the application of the node
 C<$op> to the arguments found in C<@stuff>.  C<@stuff> are 
 delimited arguments in the sense that the leading and trailing nodes
 should represent open and close delimiters and the arguments are
-separated by punctuation nodes.  The text of these delimiters and
-punctuation are used to annotate the operator node with
-C<argopen>, C<argclose> and C<separator> attributes.
+separated by punctuation nodes.
 
 =item C<< $node = InterpretDelimited($op,@stuff); >>
 
@@ -1359,7 +1359,6 @@ delimiters, or if either is ".".
 Given a delimited sequence of nodes, starting and ending with open/close delimiters,
 and with intermediate nodes separated by punctuation or such, attempt to guess what
 type of thing is represented such as a set, absolute value, interval, and so on.
-If nothing specific is recognized, creates the application of C<FENCED> to the arguments.
 
 This would be a good candidate for customization!
 
