@@ -543,7 +543,8 @@ sub CleanURL {
 
 my $parameter_options = {    # [CONSTANT]
   nargs => 1, reversion => 1, optional => 1, novalue => 1,
-  semiverbatim => 1, undigested => 1 };
+  beforeDigest => 1, afterDigest => 1,
+  semiverbatim => 1, undigested  => 1 };
 
 sub DefParameterType {
   my ($type, $reader, %options) = @_;
@@ -1392,7 +1393,9 @@ sub defmath_common_constructor_options {
       operator_scriptpos => $options{operator_scriptpos},
       stretchy           => $options{stretchy},
       operator_stretchy  => $options{operator_stretchy},
-      font               => sub { LookupValue('font')->specialize($presentation); } },
+      font               => ($options{mathstyle}
+        ? sub { LookupValue('font')->merge(mathstyle => $options{mathstyle})->specialize($presentation); }
+        : sub { LookupValue('font')->specialize($presentation); }) },
     scope => $options{scope}); }
 
 # If the presentation is complex, and involves arguments,
@@ -3115,7 +3118,7 @@ adds a grammatical role attribute to the object; this specifies
 the grammatical role that the object plays in surrounding expressions.
 This direly needs documentation!
 
-=item C<mathstyle=E<gt>('display' | 'text' | 'inline')>
+=item C<mathstyle=E<gt>('display' | 'text' | 'script' | 'scriptscript')>
 
 Controls whether the this object will be presented in a specific
 mathstyle, or according to the current setting of C<mathstyle>.
