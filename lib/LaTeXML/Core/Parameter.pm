@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
+use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Common::Object);
 
 # sub new {
@@ -60,7 +61,7 @@ sub stringify {
   return $$self{spec}; }
 
 sub read {
-  my ($self, $gullet) = @_;
+  my ($self, $gullet, $fordefn) = @_;
   # For semiverbatim, I had messed with catcodes, but there are cases
   # (eg. \caption(...\label{badchars}}) where you really need to
   # cleanup after the fact!
@@ -75,6 +76,33 @@ sub read {
     && $value->can('neutralize');
   if ($$self{semiverbatim}) {
     $STATE->endSemiverbatim(); }
+  if ((!defined $value) && !$$self{optional}) {
+    Error('expected', $self, $gullet,
+      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
+      $gullet->showUnexpected);
+    $value = T_OTHER('missing'); }
+  return $value; }
+
+sub digest {
+  my ($self, $stomach, $value, $fordefn) = @_;
+  # If semiverbatim, Expand (before digest), so tokens can be neutralized; BLECH!!!!
+  if ($$self{semiverbatim}) {
+    $STATE->beginSemiverbatim();
+    if ((ref $value eq 'LaTeXML::Core::Token') || (ref $value eq 'LaTeXML::Core::Tokens')) {
+      $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+          my ($igullet) = @_;
+          $igullet->unread($value);
+          my @tokens = ();
+          while (defined(my $token = $igullet->readXToken(1, 1))) {
+            push(@tokens, $token); }
+          $value = Tokens(@tokens);
+          $value = $value->neutralize; }); } }
+  if (my $pre = $$self{beforeDigest}) {    # Done for effect only.
+    &$pre($stomach); }                     # maybe pass extras?
+  $value = $value->beDigested($stomach) if (ref $value) && !$$self{undigested};
+  if (my $post = $$self{afterDigest}) {    # Done for effect only.
+    &$post($stomach); }                    # maybe pass extras?
+  $STATE->endSemiverbatim() if $$self{semiverbatim};    # Corner case?
   return $value; }
 
 #======================================================================
