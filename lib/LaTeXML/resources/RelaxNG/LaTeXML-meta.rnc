@@ -98,7 +98,7 @@ indexsee_model = Inline.model
 #----------------------------------------------------------------------
 
 glossaryphrase =
-## A phrase being clarified within an \elementref{glossarymark} or \elementref{glossaryentry}
+## A phrase being clarified within an \elementref{glossaryentry}
 element glossaryphrase { glossaryphrase_attributes, glossaryphrase_model }
 
 ## Attributes for \elementref{glossaryphrase}.
@@ -119,7 +119,7 @@ glossaryphrase_model = Inline.model
 #----------------------------------------------------------------------
 
 glossarydefinition =
-## A definition within an \elementref{glossarymark} or \elementref{glossaryentry}
+## A definition within an \elementref{glossaryentry}
 element glossarydefinition { glossarydefinition_attributes, glossarydefinition_model }
 
 ## Attributes for \elementref{glossarydefinition}.

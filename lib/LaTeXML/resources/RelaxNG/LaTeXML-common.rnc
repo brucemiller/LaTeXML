@@ -189,12 +189,6 @@ Positionable.attributes =
   ## the desired depth of the box
   attribute depth { Length.type }?,
 
-  ## extra width beyond the boxes natural size.
-  attribute pad-width { Length.type }?,
-
-  ## extra height beyond the boxes natural size.
-  attribute pad-height { Length.type }?,
-
   ## horizontal shift the position of the box.
   attribute xoffset { Length.type }?,
 

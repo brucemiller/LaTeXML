@@ -143,7 +143,7 @@ used to crossreference.</a:documentation>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossaryphrase">
     <element name="glossaryphrase">
-      <a:documentation>A phrase being clarified within an \elementref{glossarymark} or \elementref{glossaryentry}</a:documentation>
+      <a:documentation>A phrase being clarified within an \elementref{glossaryentry}</a:documentation>
       <ref name="glossaryphrase_attributes"/>
       <ref name="glossaryphrase_model"/>
     </element>
@@ -175,7 +175,7 @@ used to crossreference.</a:documentation>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossarydefinition">
     <element name="glossarydefinition">
-      <a:documentation>A definition within an \elementref{glossarymark} or \elementref{glossaryentry}</a:documentation>
+      <a:documentation>A definition within an \elementref{glossaryentry}</a:documentation>
       <ref name="glossarydefinition_attributes"/>
       <ref name="glossarydefinition_model"/>
     </element>
