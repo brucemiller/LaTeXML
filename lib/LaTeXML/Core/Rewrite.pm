@@ -126,7 +126,6 @@ sub applyClause {
     print STDERR "Rewrite replace at " . $tree->toString . " using $pattern\n"
       if $LaTeXML::Core::Rewrite::DEBUG;
     my $parent = $tree->parentNode;
-
     # Remove & separate nodes to be replaced, and sibling nodes following them.
     my @following = ();    # Collect the matching and following nodes
     while (my $sib = $parent->lastChild) {
@@ -134,14 +133,13 @@ sub applyClause {
       unshift(@following, $sib);
       last if $$sib == $$tree; }
     my @replaced = map { shift(@following) } 1 .. $n_to_replace;    # Remove the nodes to be replaced
-
-    # Carry out the operation, inserting whatever nodes.
+          # Carry out the operation, inserting whatever nodes.
     $document->setNode($parent);
     my $point = $parent->lastChild;
-    &$pattern($document, @replaced);                                # Carry out the insertion.
+    &$pattern($document, @replaced);    # Carry out the insertion.
 
     # Now collect the newly inserted nodes and store in a _Capture_ node.
-    my @inserted = ();                                              # Collect the newly added nodes.
+    my @inserted = ();                  # Collect the newly added nodes.
     if ($point) {
       while (my $sib = $parent->lastChild) {
         $parent->removeChild($sib);
@@ -154,6 +152,9 @@ sub applyClause {
 
     # Now remove the insertion and replace with rewritten nodes and replace the following siblings.
     @inserted = $insertion->childNodes;
+    my $font = $document->getNodeFont($tree);    # the font of the matched node
+    foreach my $ins (@inserted) {    # Copy the non-semantic parts of font to the replacement
+      $document->setNodeFont($ins => $document->getNodeFont($ins)->mergePurestyle($font)); }
     $parent->removeChild($insertion);
     map { $parent->appendChild($_) } @inserted, @following;
   }
@@ -313,7 +314,7 @@ sub domToXPath {
   return "descendant-or-self::" . domToXPath_rec($document, $node); }
 
 # May need some work here;
-my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1);    # [CONSTANT]
+my %EXCLUDED_MATCH_ATTRIBUTES = (scriptpos => 1, 'xml:id' => 1, fontsize => 1);    # [CONSTANT]
 
 sub domToXPath_rec {
   my ($document, $node, @extra_predicates) = @_;
