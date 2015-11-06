@@ -383,6 +383,9 @@ sub finalize_rec {
     # On the other hand, if the font declaration has NOT been effected,
     # We'll need to put an extra wrapper around the text!
     elsif ($type == XML_TEXT_NODE) {
+      # Remove any pending declarations that can't be on $FONT_ELEMENT_NAME
+      foreach my $key (keys %pending_declaration) {
+        delete $pending_declaration{$key} unless $self->canHaveAttribute($FONT_ELEMENT_NAME, $key); }
       if ($self->canContain($qname, $FONT_ELEMENT_NAME)
         && scalar(keys %pending_declaration)) {
         # Too late to do wrapNodes?
@@ -1125,8 +1128,8 @@ sub autoCollapseChildren {
             $node->setAttribute($key, $class . ' ' . $val); }
           else {
             $node->setAttribute($key, $val); } }
-        # xoffset, yoffset, pad-width, pad-height should sum up, if present on both.
-        elsif ($key =~ /^(xoffset|yoffset|pad-height|pad-width)$/) {
+        # xoffset, yoffset should sum up, if present on both.
+        elsif ($key =~ /^(xoffset|yoffset)$/) {
           if (my $val2 = $node->getAttribute($key)) {
             my $v1 = $val =~ /^([\+\-\d\.]*)pt$/  && $1;
             my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
@@ -1357,8 +1360,7 @@ sub setNodeFont {
   $$self{node_fonts}{$fontid} = $font;
   if ($node->nodeType == XML_ELEMENT_NODE) {
     $node->setAttribute(_font => $fontid); }
-  else {
-    Warn('malformed', 'font', $node, "Can't set font on this node"); }
+  # otherwise, probably just ignorable?
   return; }
 
 sub getNodeFont {
