@@ -55,6 +55,10 @@ sub getFont {
   my ($self) = @_;
   return $$self[1]; }    # Return the font this box uses.
 
+sub setFont {
+  my ($self, $font) = @_;
+  return $$self[1] = $font; }
+
 sub isMath {
   my ($self) = @_;
   return ($$self[4]{mode} || 'text') eq 'math'; }
@@ -134,29 +138,40 @@ sub setProperties {
     $$self{properties}{$key} = $value if defined $value; }
   return; }
 
+# For the dimensions of boxes, we'll store the (lazily) computed size as:
+#    cwidth, cheight, cdepth
+# and the explicitly requested/assigned size as
+#    width, height, depth.
+# Generally speaking, an XML element should only get width, height, depth
+# attributes when they were explicitly set.
+# However, when requesting the size of a box, you'd get either (w/ explicit size overriding)
 sub getWidth {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
-  $self->computeSize(%options) unless defined $$props{width};
-  return $$props{width}; }
+  $self->computeSize(%options) unless (defined $$props{width}) or (defined $$props{cwidth});
+  return $$props{width} || $$props{cwidth}; }
 
 sub getHeight {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
-  $self->computeSize(%options) unless defined $$props{height};
-  return $$props{height}; }
+  $self->computeSize(%options) unless (defined $$props{height}) or (defined $$props{cheight});
+  return $$props{height} || $$props{cheight}; }
 
 sub getDepth {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
-  $self->computeSize(%options) unless defined $$props{depth};
-  return $$props{depth}; }
+  $self->computeSize(%options) unless (defined $$props{depth}) or (defined $$props{cdepth});
+  return $$props{depth} || $$props{cdepth}; }
 
 sub getTotalHeight {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
-  $self->computeSize(%options) unless defined $$props{height} && defined $$props{depth};
-  return $$props{height}->add($$props{depth}); }
+  $self->computeSize(%options)
+    unless ((defined $$props{height}) or (defined $$props{cheight}))
+    && ((defined $$props{depth}) or (defined $$props{cdepth}));
+  my $h = $$props{height} || $$props{cheight};
+  my $d = $$props{depth}  || $$props{cdepth};
+  return $h->add($d); }
 
 sub setWidth {
   my ($self, $width) = @_;
@@ -180,8 +195,13 @@ sub getSize {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
   $self->computeSize(%options)
-    unless (defined $$props{width}) && (defined $$props{height}) && (defined $$props{depth});
-  return ($$props{width}, $$props{height}, $$props{depth}); }
+    unless ((defined $$props{width}) or (defined $$props{cwidth}))
+    && ((defined $$props{height}) or (defined $$props{cheight}))
+    && ((defined $$props{depth})  or (defined $$props{cdepth}));
+
+  return ($$props{width} || $$props{cwidth},
+    $$props{height} || $$props{cheight},
+    $$props{depth}  || $$props{cdepth}); }
 
 # for debugging....
 sub showSize {
@@ -199,9 +219,9 @@ sub computeSize {
   $options{depth}  = $$props{depth}  if $$props{depth};
   my ($w, $h, $d) = ($$self[1]
       || LaTeXML::Common::Font->textDefault)->computeStringSize($$self[0], %options);
-  $$props{width}  = $w unless defined $$props{width};
-  $$props{height} = $h unless defined $$props{height};
-  $$props{depth}  = $d unless defined $$props{depth};
+  $$props{cwidth}  = $w unless defined $$props{width};
+  $$props{cheight} = $h unless defined $$props{height};
+  $$props{cdepth}  = $d unless defined $$props{depth};
   return; }
 
 #**********************************************************************
