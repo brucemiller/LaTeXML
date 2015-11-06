@@ -503,8 +503,6 @@
     <xsl:if test="@depth"  >
       <xsl:value-of select="concat('vertical-align:',f:negate(@depth),';')"/>
     </xsl:if>
-    <xsl:if test="@pad-width" ><xsl:value-of select="concat('height:',@pad-width,';')"/></xsl:if>
-    <xsl:if test="@pad-height"><xsl:value-of select="concat('height:',@pad-height,';')"/></xsl:if>
     <xsl:if test="@xoffset">
       <xsl:value-of select="concat('position:relative; left:',@xoffset,';')"/>
     </xsl:if>
