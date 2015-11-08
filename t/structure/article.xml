@@ -22,11 +22,17 @@
       <equation frefnum="(1)" refnum="1" xml:id="S1.E1">
         <Math mode="display" tex="a+b," text="a + b" xml:id="S1.E1.m1">
           <XMath>
-            <XMApp punctuation=",">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="S1.E1.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S1.E1.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -35,11 +41,17 @@
       <equation frefnum="(2)" refnum="2" xml:id="S1.E2">
         <Math mode="display" tex="c+d," text="c + d" xml:id="S1.E2.m1">
           <XMath>
-            <XMApp punctuation=",">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok font="italic" role="UNKNOWN">c</XMTok>
-              <XMTok font="italic" role="UNKNOWN">d</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="S1.E2.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S1.E2.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -71,7 +83,7 @@
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                     <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -83,7 +95,7 @@
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                     <XMTok font="italic" role="UNKNOWN">y</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -226,11 +238,17 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <equation frefnum="(3)" refnum="3" xml:id="S2.E3">
         <Math mode="display" tex="a+b," text="a + b" xml:id="S2.E3.m1">
           <XMath>
-            <XMApp punctuation=",">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="S2.E3.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S2.E3.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -239,11 +257,17 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <equation frefnum="(4)" refnum="4" xml:id="S2.E4">
         <Math mode="display" tex="c+d," text="c + d" xml:id="S2.E4.m1">
           <XMath>
-            <XMApp punctuation=",">
-              <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok font="italic" role="UNKNOWN">c</XMTok>
-              <XMTok font="italic" role="UNKNOWN">d</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMRef idref="S2.E4.m1.1"/>
+              <XMWrap>
+                <XMApp xml:id="S2.E4.m1.1">
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
@@ -275,7 +299,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                     <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -287,7 +311,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                     <XMTok font="italic" role="UNKNOWN">y</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>

@@ -9,7 +9,7 @@
     <title>Sideset</title>
     <para xml:id="S0.SS0.SSS0.Px1.p1">
       <equation xml:id="S0.Ex1">
-        <Math mode="display" xml:id="S0.Ex1.m1" tex="\sideset{}{{}^{\prime}}{\sum}_{i=1}^{\infty}S_{i}" text="((sum ^ prime) _ (i = 1)) ^ infinity * S _ i">
+        <Math mode="display" tex="\sideset{}{{}^{\prime}}{\sum}_{i=1}^{\infty}S_{i}" text="((sum ^ prime) _ (i = 1)) ^ infinity * S _ i" xml:id="S0.Ex1.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -20,27 +20,27 @@
                   <XMApp scriptpos="mid">
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                     <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                    <XMTok name="prime" role="SUPOP">′</XMTok>
+                    <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
                   </XMApp>
                   <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">i</XMTok>
-                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
                   </XMApp>
                 </XMApp>
-                <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
+                <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
-                <XMTok role="UNKNOWN" font="italic">S</XMTok>
-                <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                <XMTok font="italic" role="UNKNOWN">S</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex2">
-        <Math mode="display" xml:id="S0.Ex2.m1" tex="\sideset{{}_{a}}{{}_{c}}{\sum}x" text="_ a sum _ c * x">
+        <Math mode="display" tex="\sideset{{}_{a}}{{}_{c}}{\sum}x" text="_ a sum _ c * x" xml:id="S0.Ex2.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -49,17 +49,17 @@
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex3">
-        <Math mode="display" xml:id="S0.Ex3.m1" tex="\sideset{{}^{b}}{{}^{d}}{\sum}x" text="^ b sum ^ d * x">
+        <Math mode="display" tex="\sideset{{}^{b}}{{}^{d}}{\sum}x" text="^ b sum ^ d * x" xml:id="S0.Ex3.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -68,17 +68,17 @@
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex4">
-        <Math mode="display" xml:id="S0.Ex4.m1" tex="\sideset{{}_{a}}{{}^{d}}{\sum}x" text="_ a sum ^ d * x">
+        <Math mode="display" tex="\sideset{{}_{a}}{{}^{d}}{\sum}x" text="_ a sum ^ d * x" xml:id="S0.Ex4.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -87,17 +87,17 @@
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex5">
-        <Math mode="display" xml:id="S0.Ex5.m1" tex="\sideset{{}^{b}}{{}_{c}}{\sum}x" text="^ b sum _ c * x">
+        <Math mode="display" tex="\sideset{{}^{b}}{{}_{c}}{\sum}x" text="^ b sum _ c * x" xml:id="S0.Ex5.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -106,17 +106,17 @@
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex6">
-        <Math mode="display" xml:id="S0.Ex6.m1" tex="\sideset{{}_{a}^{b}}{{}_{c}^{d}}{\sum}x" text="(_ a ^ b sum _ c) ^ d * x">
+        <Math mode="display" tex="\sideset{{}_{a}^{b}}{{}_{c}^{d}}{\sum}x" text="(_ a ^ b sum _ c) ^ d * x" xml:id="S0.Ex6.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -129,21 +129,21 @@
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex7">
-        <Math mode="display" xml:id="S0.Ex7.m1" tex="\sideset{{}^{b}_{a}}{{}^{d}_{c}}{\sum}x" text="(^ b _ a sum ^ d) _ c * x">
+        <Math mode="display" tex="\sideset{{}^{b}_{a}}{{}^{d}_{c}}{\sum}x" text="(^ b _ a sum ^ d) _ c * x" xml:id="S0.Ex7.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -156,21 +156,21 @@
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex8">
-        <Math mode="display" xml:id="S0.Ex8.m1" tex="\sideset{{}_{a}{}^{b}}{{}_{c}{}^{d}}{\sum}x" text="(_ a ^ b sum _ c) ^ d * x">
+        <Math mode="display" tex="\sideset{{}_{a}{}^{b}}{{}_{c}{}^{d}}{\sum}x" text="(_ a ^ b sum _ c) ^ d * x" xml:id="S0.Ex8.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -183,21 +183,21 @@
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex9">
-        <Math mode="display" xml:id="S0.Ex9.m1" tex="\sideset{{}^{b}{}_{a}}{{}^{d}{}_{c}}{\sum}x" text="(^ b _ a sum ^ d) _ c * x">
+        <Math mode="display" tex="\sideset{{}^{b}{}_{a}}{{}^{d}{}_{c}}{\sum}x" text="(^ b _ a sum ^ d) _ c * x" xml:id="S0.Ex9.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -210,15 +210,15 @@
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
@@ -229,7 +229,7 @@
     <title>Classic</title>
     <para xml:id="S0.SS0.SSS0.Px2.p1">
       <equation xml:id="S0.Ex10">
-        <Math mode="display" xml:id="S0.Ex10.m1" tex="{}_{a}^{b}\sum_{c}^{d}x" text="(_ a ^ b (sum _ c) ^ d)@(x)">
+        <Math mode="display" tex="{}_{a}^{b}\sum_{c}^{d}x" text="(_ a ^ b (sum _ c) ^ d)@(x)" xml:id="S0.Ex10.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -241,21 +241,21 @@
                     <XMApp scriptpos="mid">
                       <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex11">
-        <Math mode="display" xml:id="S0.Ex11.m1" tex="{}^{b}_{a}\sum^{d}_{c}x" text="(^ b _ a (sum ^ d) _ c)@(x)">
+        <Math mode="display" tex="{}^{b}_{a}\sum^{d}_{c}x" text="(^ b _ a (sum ^ d) _ c)@(x)" xml:id="S0.Ex11.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -267,21 +267,21 @@
                     <XMApp scriptpos="mid">
                       <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex12">
-        <Math mode="display" xml:id="S0.Ex12.m1" tex="{}_{a}^{b}\sum\nolimits_{c}^{d}x" text="(_ a ^ b (sum _ c) ^ d)@(x)">
+        <Math mode="display" tex="{}_{a}^{b}\sum\nolimits_{c}^{d}x" text="(_ a ^ b (sum _ c) ^ d)@(x)" xml:id="S0.Ex12.m1">
           <XMath>
             <XMApp>
               <XMApp>
@@ -293,21 +293,21 @@
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex13">
-        <Math mode="display" xml:id="S0.Ex13.m1" tex="{}^{b}_{a}\sum\nolimits^{d}_{c}x" text="(^ b _ a (sum ^ d) _ c)@(x)">
+        <Math mode="display" tex="{}^{b}_{a}\sum\nolimits^{d}_{c}x" text="(^ b _ a (sum ^ d) _ c)@(x)" xml:id="S0.Ex13.m1">
           <XMath>
             <XMApp>
               <XMApp>
@@ -319,21 +319,21 @@
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP">∑</XMTok>
-                      <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex14">
-        <Math mode="display" xml:id="S0.Ex14.m1" tex="{}_{a}{}^{b}\sum{}_{c}{}^{d}x" text="(_ a ^ b sum)@(_ c ^ d x)">
+        <Math mode="display" tex="{}_{a}{}^{b}\sum{}_{c}{}^{d}x" text="(_ a ^ b sum)@(_ c ^ d x)" xml:id="S0.Ex14.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -341,25 +341,25 @@
                 <XMApp scriptpos="mid">
                   <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMApp>
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="pre3"/>
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
-                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex15">
-        <Math mode="display" xml:id="S0.Ex15.m1" tex="{}^{b}{}_{a}\sum{}^{d}{}_{c}x" text="(^ b _ a sum)@(^ d _ c x)">
+        <Math mode="display" tex="{}^{b}{}_{a}\sum{}^{d}{}_{c}x" text="(^ b _ a sum)@(^ d _ c x)" xml:id="S0.Ex15.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
@@ -367,18 +367,18 @@
                 <XMApp scriptpos="mid">
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
               </XMApp>
               <XMApp>
                 <XMTok role="SUPERSCRIPTOP" scriptpos="pre3"/>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
-                  <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -390,7 +390,7 @@
     <title>Multi</title>
     <para xml:id="S0.SS0.SSS0.Px3.p1">
       <equation xml:id="S0.Ex16">
-        <Math mode="display" xml:id="S0.Ex16.m1" tex="{}_{a}^{b}{}_{c}{}_{d}^{e}\sum\nolimits_{f}^{g}x" text="(_ a ^ b _ c _ d ^ e (sum _ f) ^ g)@(x)">
+        <Math mode="display" tex="{}_{a}^{b}{}_{c}{}_{d}^{e}\sum\nolimits_{f}^{g}x" text="(_ a ^ b _ c _ d ^ e (sum _ f) ^ g)@(x)" xml:id="S0.Ex16.m1">
           <XMath>
             <XMApp>
               <XMApp>
@@ -408,27 +408,27 @@
                           <XMApp>
                             <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                             <XMTok mathstyle="display" meaning="sum" role="SUMOP">∑</XMTok>
-                            <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">f</XMTok>
                           </XMApp>
-                          <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">g</XMTok>
                         </XMApp>
-                        <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
                       </XMApp>
-                      <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S0.Ex17">
-        <Math mode="display" xml:id="S0.Ex17.m1" tex="{}_{a}^{b}{}_{c}{}_{d}^{e}\sum\nolimits_{f}^{g}{}_{i}{}_{j}^{k}x" text="(_ a ^ b _ c _ d ^ e (sum _ f) ^ g)@(_ i _ j ^ k x)">
+        <Math mode="display" tex="{}_{a}^{b}{}_{c}{}_{d}^{e}\sum\nolimits_{f}^{g}{}_{i}{}_{j}^{k}x" text="(_ a ^ b _ c _ d ^ e (sum _ f) ^ g)@(_ i _ j ^ k x)" xml:id="S0.Ex17.m1">
           <XMath>
             <XMApp>
               <XMApp>
@@ -446,19 +446,19 @@
                           <XMApp>
                             <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                             <XMTok mathstyle="display" meaning="sum" role="SUMOP">∑</XMTok>
-                            <XMTok role="UNKNOWN" font="italic">f</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">f</XMTok>
                           </XMApp>
-                          <XMTok role="UNKNOWN" font="italic">g</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">g</XMTok>
                         </XMApp>
-                        <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
                       </XMApp>
-                      <XMTok role="UNKNOWN" font="italic">d</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
                     </XMApp>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMApp>
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="pre3"/>
@@ -466,12 +466,12 @@
                   <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
-                    <XMTok role="UNKNOWN" font="italic">x</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">k</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">k</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
                 </XMApp>
-                <XMTok role="UNKNOWN" font="italic">i</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
@@ -480,18 +480,18 @@
     </para>
     <para xml:id="S0.SS0.SSS0.Px3.p2">
       <equation xml:id="S0.Ex18">
-        <Math mode="display" xml:id="S0.Ex18.m1" tex="\sideset{u}{{}_{e}v}{\sum}x" text="u * sum _ e * v * x">
+        <Math mode="display" tex="\sideset{u}{{}_{e}v}{\sum}x" text="u * sum _ e * v * x" xml:id="S0.Ex18.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMTok role="UNKNOWN" font="italic">u</XMTok>
+              <XMTok font="italic" role="UNKNOWN">u</XMTok>
               <XMApp scriptpos="mid">
                 <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
                 <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                <XMTok role="UNKNOWN" font="italic">e</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">v</XMTok>
-              <XMTok role="UNKNOWN" font="italic">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">v</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
             </XMApp>
           </XMath>
         </Math>

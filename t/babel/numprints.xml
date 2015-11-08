@@ -32,7 +32,7 @@
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                       <XMTok meaning="10" role="NUMBER">10</XMTok>
-                      <XMTok meaning="123" role="NUMBER">123</XMTok>
+                      <XMTok fontsize="70%" meaning="123" role="NUMBER">123</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMWrap>
@@ -63,12 +63,12 @@
             </Math><Math mode="inline" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2" xml:id="S1.SS0.SSS0.Px5.p1.m2">
               <XMath>
                 <XMApp>
-                  <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
                   <XMTok class="ltx_unit" role="UNKNOWN">N</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                     <XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
@@ -374,12 +374,12 @@ vs.  <text class="ltx_number">123.—</text></p>
             </Math><Math mode="inline" tex="\mathrm{N/mm^{2}}" text="N / mm ^ 2" xml:id="S2.SS0.SSS0.Px6.p1.m2">
               <XMath>
                 <XMApp>
-                  <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
                   <XMTok class="ltx_unit" role="UNKNOWN">N</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                     <XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok>
-                    <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
@@ -391,13 +391,13 @@ vs.
               </XMath>
             </Math><Math mode="inline" tex="\color{blue}\mathrm{N/mm^{2}}" text="N / mm ^ 2" xml:id="S2.SS0.SSS0.Px6.p1.m4">
               <XMath>
-                <XMApp>
-                  <XMTok color="#0000FF" mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
-                  <XMTok color="#0000FF" role="UNKNOWN">N</XMTok>
+                <XMApp color="#0000FF">
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok role="UNKNOWN">N</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
-                    <XMTok color="#0000FF" role="UNKNOWN">mm</XMTok>
-                    <XMTok color="#0000FF" meaning="2" role="NUMBER">2</XMTok>
+                    <XMTok role="UNKNOWN">mm</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
@@ -433,13 +433,13 @@ vs.
                   <XMTok font="italic" meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" meaning="6" role="NUMBER">6</XMTok>
                   <XMApp class="ltx_unit" lpadding="-1.7pt" role="FLOATSUPERSCRIPT" scriptpos="2">
-                    <XMTok name="prime2">′′</XMTok>
+                    <XMTok fontsize="70%" name="prime2">′′</XMTok>
                   </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok meaning="6" role="NUMBER">6</XMTok>
                   <XMApp class="ltx_unit" role="FLOATSUPERSCRIPT" scriptpos="3">
-                    <XMTok name="prime2">′′</XMTok>
+                    <XMTok fontsize="70%" name="prime2">′′</XMTok>
                   </XMApp>
                 </XMWrap>
               </XMDual>
@@ -581,20 +581,20 @@ vs.
                     <XMTok font="italic" meaning="123.45e12" role="NUMBER">123.45e12</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m1.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m1.m1">
                             <XMath>
-                              <XMTok fontsize="111%" meaning="123" role="NUMBER">123</XMTok>
+                              <XMTok meaning="123" role="NUMBER">123</XMTok>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m1.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m1.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".45" role="NUMBER">.45</XMTok>
+                              <XMTok meaning=".45" role="NUMBER">.45</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="12" role="NUMBER">12</XMTok>
+                        <XMTok fontsize="70%" meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -606,22 +606,22 @@ vs.
                     <XMTok font="italic" meaning="123.45e12" role="NUMBER">123.45e12</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m2.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m2.m1">
                             <XMath>
-                              <XMTok fontsize="111%" meaning="123" role="NUMBER">123</XMTok>
+                              <XMTok meaning="123" role="NUMBER">123</XMTok>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m2.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m2.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".45" role="NUMBER">.45</XMTok>
+                              <XMTok meaning=".45" role="NUMBER">.45</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" fontsize="90%" width="18.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p3.m2.m3">
+                        <XMText><text align="right" fontsize="70%" width="9.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p3.m2.m3">
                               <XMath>
-                                <XMTok fontsize="111%" meaning="12" role="NUMBER">12</XMTok>
+                                <XMTok meaning="12" role="NUMBER">12</XMTok>
                               </XMath>
                             </Math></text><text align="left" width="0.0pt"/></XMText>
                       </XMApp>
@@ -635,24 +635,24 @@ vs.
                     <XMTok font="italic" meaning="123.45e12" role="NUMBER">123.45e12</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m3.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 123" text="123" xml:id="S3.p3.m3.m1">
                             <XMath>
-                              <XMTok fontsize="111%" meaning="123" role="NUMBER">123</XMTok>
+                              <XMTok meaning="123" role="NUMBER">123</XMTok>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m3.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}45" text=".45" xml:id="S3.p3.m3.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".45" role="NUMBER">.45</XMTok>
+                              <XMTok meaning=".45" role="NUMBER">.45</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" fontsize="90%" width="18.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p3.m3.m3">
+                        <XMText><text align="right" fontsize="70%" width="9.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p3.m3.m3">
                               <XMath>
-                                <XMTok fontsize="111%" meaning="12" role="NUMBER">12</XMTok>
+                                <XMTok meaning="12" role="NUMBER">12</XMTok>
                               </XMath>
-                            </Math></text><text align="left" width="12.0pt"/></XMText>
+                            </Math></text><text align="left" width="6.0pt"/></XMText>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -667,7 +667,7 @@ vs.
                     <XMTok font="italic" meaning="12345.678e123" role="NUMBER">12345.678e123</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m4.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m4.m1">
                             <XMath>
                               <XMDual>
                                 <XMApp>
@@ -676,22 +676,22 @@ vs.
                                   <XMRef idref="S3.p3.m4.m1.2"/>
                                 </XMApp>
                                 <XMWrap>
-                                  <XMTok fontsize="111%" meaning="12" role="NUMBER" xml:id="S3.p3.m4.m1.1">12</XMTok>
-                                  <XMTok fontsize="111%" role="PUNCT">,</XMTok>
-                                  <XMTok fontsize="111%" meaning="345" role="NUMBER" xml:id="S3.p3.m4.m1.2">345</XMTok>
+                                  <XMTok meaning="12" role="NUMBER" xml:id="S3.p3.m4.m1.1">12</XMTok>
+                                  <XMTok role="PUNCT">,</XMTok>
+                                  <XMTok meaning="345" role="NUMBER" xml:id="S3.p3.m4.m1.2">345</XMTok>
                                 </XMWrap>
                               </XMDual>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m4.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m4.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".678" role="NUMBER">.678</XMTok>
+                              <XMTok meaning=".678" role="NUMBER">.678</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="123" role="NUMBER">123</XMTok>
+                        <XMTok fontsize="70%" meaning="123" role="NUMBER">123</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -703,7 +703,7 @@ vs.
                     <XMTok font="italic" meaning="12345.678e123" role="NUMBER">12345.678e123</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m5.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m5.m1">
                             <XMath>
                               <XMDual>
                                 <XMApp>
@@ -712,24 +712,24 @@ vs.
                                   <XMRef idref="S3.p3.m5.m1.2"/>
                                 </XMApp>
                                 <XMWrap>
-                                  <XMTok fontsize="111%" meaning="12" role="NUMBER" xml:id="S3.p3.m5.m1.1">12</XMTok>
-                                  <XMTok fontsize="111%" role="PUNCT">,</XMTok>
-                                  <XMTok fontsize="111%" meaning="345" role="NUMBER" xml:id="S3.p3.m5.m1.2">345</XMTok>
+                                  <XMTok meaning="12" role="NUMBER" xml:id="S3.p3.m5.m1.1">12</XMTok>
+                                  <XMTok role="PUNCT">,</XMTok>
+                                  <XMTok meaning="345" role="NUMBER" xml:id="S3.p3.m5.m1.2">345</XMTok>
                                 </XMWrap>
                               </XMDual>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m5.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m5.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".678" role="NUMBER">.678</XMTok>
+                              <XMTok meaning=".678" role="NUMBER">.678</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" fontsize="90%" width="18.0pt"><Math mode="inline" tex="\scriptstyle 123" text="123" xml:id="S3.p3.m5.m3">
+                        <XMText><text align="right" fontsize="70%" width="9.0pt"><Math mode="inline" tex="\scriptstyle 123" text="123" xml:id="S3.p3.m5.m3">
                               <XMath>
-                                <XMTok fontsize="111%" meaning="123" role="NUMBER">123</XMTok>
+                                <XMTok meaning="123" role="NUMBER">123</XMTok>
                               </XMath>
                             </Math></text><text align="left" width="0.0pt"/></XMText>
                       </XMApp>
@@ -743,7 +743,7 @@ vs.
                     <XMTok font="italic" meaning="12345.678e123" role="NUMBER">12345.678e123</XMTok>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMText><text align="right" fontsize="90%" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m6.m1">
+                      <XMText><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p3.m6.m1">
                             <XMath>
                               <XMDual>
                                 <XMApp>
@@ -752,26 +752,26 @@ vs.
                                   <XMRef idref="S3.p3.m6.m1.2"/>
                                 </XMApp>
                                 <XMWrap>
-                                  <XMTok fontsize="111%" meaning="12" role="NUMBER" xml:id="S3.p3.m6.m1.1">12</XMTok>
-                                  <XMTok fontsize="111%" role="PUNCT">,</XMTok>
-                                  <XMTok fontsize="111%" meaning="345" role="NUMBER" xml:id="S3.p3.m6.m1.2">345</XMTok>
+                                  <XMTok meaning="12" role="NUMBER" xml:id="S3.p3.m6.m1.1">12</XMTok>
+                                  <XMTok role="PUNCT">,</XMTok>
+                                  <XMTok meaning="345" role="NUMBER" xml:id="S3.p3.m6.m1.2">345</XMTok>
                                 </XMWrap>
                               </XMDual>
                             </XMath>
-                          </Math></text><text align="left" fontsize="90%" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m6.m2">
+                          </Math></text><text align="left" width="30.0pt"><Math mode="inline" tex="\textstyle{.}678" text=".678" xml:id="S3.p3.m6.m2">
                             <XMath>
-                              <XMTok fontsize="111%" meaning=".678" role="NUMBER">.678</XMTok>
+                              <XMTok meaning=".678" role="NUMBER">.678</XMTok>
                             </XMath>
                           </Math></text></XMText>
                       <XMTok role="UNKNOWN">×</XMTok>
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" fontsize="90%" width="18.0pt"><Math mode="inline" tex="\scriptstyle 123" text="123" xml:id="S3.p3.m6.m3">
+                        <XMText><text align="right" fontsize="70%" width="9.0pt"><Math mode="inline" tex="\scriptstyle 123" text="123" xml:id="S3.p3.m6.m3">
                               <XMath>
-                                <XMTok fontsize="111%" meaning="123" role="NUMBER">123</XMTok>
+                                <XMTok meaning="123" role="NUMBER">123</XMTok>
                               </XMath>
-                            </Math></text><text align="left" width="12.0pt"/></XMText>
+                            </Math></text><text align="left" width="6.0pt"/></XMText>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -814,7 +814,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                        <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -839,7 +839,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                        <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -864,7 +864,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" width="6.0pt"><Math mode="inline" tex="\scriptstyle 3" text="3" xml:id="S3.p4.m3.m3">
+                        <XMText><text align="right" fontsize="70%" width="3.0pt"><Math mode="inline" tex="\scriptstyle 3" text="3" xml:id="S3.p4.m3.m3">
                               <XMath>
                                 <XMTok meaning="3" role="NUMBER">3</XMTok>
                               </XMath>
@@ -883,7 +883,7 @@ vs.
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                       <XMTok meaning="10" role="NUMBER">10</XMTok>
-                      <XMTok meaning="45.1" role="NUMBER">45.1</XMTok>
+                      <XMTok fontsize="70%" meaning="45.1" role="NUMBER">45.1</XMTok>
                     </XMApp>
                   </XMDual>
                 </XMath>
@@ -945,7 +945,7 @@ vs.
                     <XMApp>
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                       <XMTok meaning="10" role="NUMBER">10</XMTok>
-                      <XMTok meaning="45.1" role="NUMBER">45.1</XMTok>
+                      <XMTok fontsize="70%" meaning="45.1" role="NUMBER">45.1</XMTok>
                     </XMApp>
                   </XMDual>
                 </XMath>
@@ -1044,7 +1044,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="12" role="NUMBER">12</XMTok>
+                        <XMTok fontsize="70%" meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1095,7 +1095,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok font="bold" meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok font="bold" meaning="12" role="NUMBER">12</XMTok>
+                        <XMTok font="bold" fontsize="70%" meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1145,7 +1145,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m1.m3">
+                        <XMText><text align="right" fontsize="70%" width="6.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m1.m3">
                               <XMath>
                                 <XMTok meaning="12" role="NUMBER">12</XMTok>
                               </XMath>
@@ -1212,7 +1212,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="1" role="NUMBER">1</XMTok>
+                        <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1250,7 +1250,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMText><text align="right" width="12.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m4.m3">
+                        <XMText><text align="right" fontsize="70%" width="6.0pt"><Math mode="inline" tex="\scriptstyle 12" text="12" xml:id="S3.p6.m4.m3">
                               <XMath>
                                 <XMTok meaning="12" role="NUMBER">12</XMTok>
                               </XMath>
@@ -1320,7 +1320,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                         <XMTok meaning="10" role="NUMBER">10</XMTok>
-                        <XMTok meaning="12" role="NUMBER">12</XMTok>
+                        <XMTok fontsize="70%" meaning="12" role="NUMBER">12</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1348,19 +1348,19 @@ vs.
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMApp>
-                          <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                          <XMTok meaning="divide" role="MULOP">/</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">N</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
                         </XMApp>
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
-                          <XMTok meaning="2" role="NUMBER">2</XMTok>
+                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
                     <XMApp>
-                      <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                      <XMTok meaning="divide" role="MULOP">/</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMText rpadding="1.7pt"><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 12{,}345" text="list@(12, 345)" xml:id="S3.p7.m1.m1">
@@ -1388,7 +1388,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok>
-                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1405,19 +1405,19 @@ vs.
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMApp>
-                          <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                          <XMTok meaning="divide" role="MULOP">/</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">N</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
                         </XMApp>
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
-                          <XMTok meaning="2" role="NUMBER">2</XMTok>
+                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
                     <XMApp>
-                      <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                      <XMTok meaning="divide" role="MULOP">/</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMText rpadding="1.7pt"><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 12" text="12" xml:id="S3.p7.m2.m1">
@@ -1434,7 +1434,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok>
-                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>
@@ -1482,19 +1482,19 @@ vs.
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMApp>
-                          <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                          <XMTok meaning="divide" role="MULOP">/</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">N</XMTok>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
                         </XMApp>
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post8"/>
                           <XMTok class="ltx_unit" font="italic" role="UNKNOWN">m</XMTok>
-                          <XMTok meaning="2" role="NUMBER">2</XMTok>
+                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
                       </XMApp>
                     </XMApp>
                     <XMApp>
-                      <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                      <XMTok meaning="divide" role="MULOP">/</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMText rpadding="1.7pt"><text align="right" width="45.0pt"><Math mode="inline" tex="\textstyle 4" text="4" xml:id="S3.p7.m4.m1">
@@ -1511,7 +1511,7 @@ vs.
                       <XMApp>
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post9"/>
                         <XMTok class="ltx_unit" role="UNKNOWN">mm</XMTok>
-                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                     </XMApp>
                   </XMDual>

@@ -13,7 +13,7 @@
     </para>
     <para xml:id="S1.p2">
       <p>Note that the</p>
-      <p framed="rectangle" framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt">framed</p>
+      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">framed</p>
       <p>stuff is a block!</p>
     </para>
     <para xml:id="S1.p3">
@@ -23,7 +23,7 @@
       </inline-block>
     </para>
     <para xml:id="S1.p4">
-      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framed="rectangle" framecolor="#000000">And even stuff in multiple Paragraphs.</p>
+      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">And even stuff in multiple Paragraphs.</p>
     </para>
     <paragraph xml:id="S1.SS0.SSS0.Px1">
       <title>Does this work?</title>
@@ -35,7 +35,7 @@
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Variants</title>
     <para xml:id="S2.p1">
-      <p framed="rectangle" framecolor="#000000" cssstyle="padding-top:12pt;padding-bottom:12pt">This is stuff that’s framed, but would stay open at page breaks.
+      <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">This is stuff that’s framed, but would stay open at page breaks.
 This doesn’t make so much sense for LaTeXML, so it’s pretty much
 the same.</p>
     </para>
@@ -59,7 +59,7 @@ ending sharply at the margin.</p>
       <p framecolor="#000000" framed="left">This is with a left bar, like a changebar?</p>
     </para>
     <para xml:id="S2.p7">
-      <p framed="rectangle" framecolor="#8080BF" backgroundcolor="white"><text cssstyle="display:block;width:100%;" color="#FFFFFF" backgroundcolor="#8080BF">A Titled Frame</text>
+      <p backgroundcolor="white" framecolor="#8080BF" framed="rectangle"><text backgroundcolor="#8080BF" color="#FFFFFF" cssstyle="display:block;width:100%;">A Titled Frame</text>
 This is a titled frame.</p>
     </para>
   </section>

@@ -8,7 +8,7 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equation frefnum="(1)" refnum="1" xml:id="S0.E1">
-      <Math mode="display" xml:id="S0.E1.m1" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]]">
+      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]]" xml:id="S0.E1.m1">
         <XMath>
           <XMArray meaning="commutative-diagram">
             <XMRow>
@@ -17,39 +17,39 @@
                   <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
                   <XMApp>
                     <XMTok role="SUPERSCRIPTOP" scriptpos="post7"/>
-                    <XMTok role="UNKNOWN" font="italic">S</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">S</XMTok>
                     <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
-                      <XMTok role="UNKNOWN" font="caligraphic">W</XMTok>
-                      <XMTok name="Lambda" role="UNKNOWN">Λ</XMTok>
+                      <XMTok font="caligraphic" fontsize="70%" role="UNKNOWN">W</XMTok>
+                      <XMTok fontsize="50%" name="Lambda" role="UNKNOWN">Λ</XMTok>
                     </XMApp>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">T</XMTok>
                 </XMApp>
               </XMCell>
               <XMCell align="center">
                 <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid7"/>
                   <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">j</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">j</XMTok>
                 </XMApp>
               </XMCell>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                <XMTok font="italic" role="UNKNOWN">T</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>
               <XMCell align="center">
-                <XMTok name="downarrow" role="ARROW" fontsize="160%">↓</XMTok>
+                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
               </XMCell>
               <XMCell/>
               <XMCell align="center">
                 <XMApp role="ARROW">
-                  <XMTok name="downarrow" role="ARROW" fontsize="160%">↓</XMTok>
+                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                   <XMTok meaning="absent"/>
                   <XMApp>
                     <XMTok role="OPERATOR" scriptpos="post">End</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">P</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">P</XMTok>
                   </XMApp>
                 </XMApp>
               </XMCell>
@@ -59,20 +59,20 @@
             <XMRow>
               <XMCell align="center">
                 <XMApp>
-                  <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
                   <XMDual>
                     <XMRef idref="S0.E1.m1.1"/>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
                       <XMApp xml:id="S0.E1.m1.1">
                         <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
-                        <XMTok role="UNKNOWN" font="italic">S</XMTok>
-                        <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">S</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">T</XMTok>
                       </XMApp>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMDual>
-                  <XMTok role="UNKNOWN" font="italic">I</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">I</XMTok>
                 </XMApp>
               </XMCell>
               <XMCell align="center">
@@ -80,20 +80,20 @@
               </XMCell>
               <XMCell align="center">
                 <XMApp>
-                  <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
                   <XMDual>
                     <XMRef idref="S0.E1.m1.2"/>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
                       <XMApp xml:id="S0.E1.m1.2">
                         <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
-                        <XMTok role="UNKNOWN" font="italic">Z</XMTok>
-                        <XMTok role="UNKNOWN" font="italic">T</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">Z</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">T</XMTok>
                       </XMApp>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMDual>
-                  <XMTok role="UNKNOWN" font="italic">J</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
                 </XMApp>
               </XMCell>
             </XMRow>
@@ -102,7 +102,7 @@
       </Math>
     </equation>
     <equation frefnum="(2)" refnum="2" xml:id="S0.E2">
-      <Math mode="display" xml:id="S0.E2.m1" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, , uparrow, , uparrow, , downarrow, , ], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]]">
+      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, , uparrow, , uparrow, , downarrow, , ], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]]" xml:id="S0.E2.m1">
         <XMath>
           <XMArray meaning="commutative-diagram">
             <XMRow>
@@ -116,7 +116,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.1">cov</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.2" font="caligraphic">L</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.2">L</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -135,7 +135,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.3">non</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.4" font="caligraphic">K</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.4">K</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -154,7 +154,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.5">cf</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.6" font="caligraphic">K</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.6">K</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -173,7 +173,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.7">cf</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.8" font="caligraphic">L</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.8">L</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -182,19 +182,19 @@
             </XMRow>
             <XMRow>
               <XMCell align="center">
-                <XMTok name="downarrow" role="ARROW" fontsize="160%">↓</XMTok>
+                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
               </XMCell>
               <XMCell/>
               <XMCell align="center">
-                <XMTok name="uparrow" role="ARROW" fontsize="160%">↑</XMTok>
+                <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
               </XMCell>
               <XMCell/>
               <XMCell align="center">
-                <XMTok name="uparrow" role="ARROW" fontsize="160%">↑</XMTok>
+                <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
               </XMCell>
               <XMCell/>
               <XMCell align="center">
-                <XMTok name="downarrow" role="ARROW" fontsize="160%">↓</XMTok>
+                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
               </XMCell>
               <XMCell/>
               <XMCell/>
@@ -210,7 +210,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.9">add</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.10" font="caligraphic">L</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.10">L</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -229,7 +229,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.11">add</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.12" font="caligraphic">K</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.12">K</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -248,7 +248,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.13">cov</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.14" font="caligraphic">K</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.14">K</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
@@ -267,7 +267,7 @@
                     <XMTok role="OPERATOR" scriptpos="post" xml:id="S0.E2.m1.15">non</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok role="UNKNOWN" xml:id="S0.E2.m1.16" font="caligraphic">L</XMTok>
+                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.16">L</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
