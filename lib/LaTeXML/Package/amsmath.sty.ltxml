@@ -106,7 +106,7 @@ sub amsalignBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => { %properties }));
+      properties => {%properties}));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
   Let('\cr',         '\@alignment@cr');
@@ -208,13 +208,13 @@ sub extractXMArrayCells {
 #======================================================================
 # A utility for handling different alignment strategies centrally
 sub amsAlignmentBindings {
-  my($template, %properties) = @_;
+  my ($template, %properties) = @_;
 
   my $cur_jot = LookupRegister('\jot');
   if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
     $properties{rowsep} = $cur_jot; }
 
-  alignmentBindings($template, undef, attributes => { %properties });
+  alignmentBindings($template, undef, attributes => {%properties});
   Let("\\\\", '\@alignment@newline@noskip');
   return; }
 
@@ -244,11 +244,11 @@ DefConstructor('\@@multline DigestedBody',
     $_[0]->bgroup;
     amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
-    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
-  reversion => '\begin{multline}#1\end{multline}',
+  reversion      => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 DefConstructor('\@@multlinestar DigestedBody',
   "<ltx:equation>"
@@ -261,15 +261,15 @@ DefConstructor('\@@multlinestar DigestedBody',
     $_[0]->bgroup;
     amsMultirowBindings({ name => 'multline' }); },
   afterDigest => sub {    # Nasty trick required to make "body" be the arg.
-    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left' ,'-1' => 'right' });
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
-  reversion => '\begin{multline*}#1\end{multline*}',
+  reversion      => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
-     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
 
 # Adjust multirow environments to their special needs
 # $array must be an ltx:XMArray
-DefKeyVal('multirow', 'width', 'Dimension');
+DefKeyVal('multirow', 'width',  'Dimension');
 DefKeyVal('multirow', 'rowsep', 'Dimension');
 
 DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVals', sub {
@@ -286,11 +286,11 @@ DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVa
 
 sub rearrangeAMSMultirow {
   my ($document, $whatsit, $array) = @_;
-  my @rows       = element_nodes($array);
+  my @rows = element_nodes($array);
 
   # Adjust alignment of rows
-  if (defined (my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
-    my %align_spec = %{ $rowalignment };
+  if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
+    my %align_spec = %{$rowalignment};
     if (defined $align_spec{'default'}) {
       for my $i (0 .. $#rows) {
         map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
@@ -310,7 +310,7 @@ sub rearrangeAMSMultirow {
 sub amsMultirowBindings {
   my ($properties, %options) = @_;
   my $before = $options{before_row};
-  my $after = $options{after_row};
+  my $after  = $options{after_row};
 
   my $col1 = { before => Tokens(T_CS('\hfil'),
       T_CS('\displaystyle'),
@@ -318,7 +318,7 @@ sub amsMultirowBindings {
     after => Tokens(($after ? (T_CS('\text'), T_BEGIN, $after, T_END) : ())) };
 
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  amsAlignmentBindings($template, %{ $properties });
+  amsAlignmentBindings($template, %{$properties});
   return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
@@ -516,14 +516,14 @@ DefMacro('\endxxalignat',
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
 # We'll just create an XMDual to contain the whole results, and the aligned structure.
-DefMacro('\gathered[]',  '\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
+DefMacro('\gathered[]', '\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
 DefMacro('\endgathered', '\@finish@alignment\@end@gathered');
 DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
-  reversion      => '\begin{gathered}#1\end{gathered}',
+  reversion => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
@@ -546,7 +546,7 @@ sub amsAlignedBindings {
     after => Tokens(T_CS('\hfil')) };
   my $col3 = { before => Tokenize('\hspace{1em}') };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
-  amsAlignmentBindings($template, ( name => 'aligned', colsep => '0pt' ));
+  amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
   return; }
 
 # If an aligned is the only child of an equation,
@@ -924,24 +924,25 @@ DefConstructor('\underset{}{}',
 
 # Section 4.11.1 The \frac, \dfrac, and \tfrac commands
 
-DefConstructor('\tfrac{}{}',
+DefConstructor('\tfrac ScriptStyle ScriptStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='text'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
-DefConstructor('\dfrac{}{}',
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); });
+DefConstructor('\dfrac TextStyle TextStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='display'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeDFrac, afterDigest => \&afterDFrac);
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); });
+# NOTE: this should be simpler (maybe macro)... it should NOT use the regular sizer!!!
 DefConstructor('\ifrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
+    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'>/</ltx:XMTok>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
+  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
 DefMath('\binom{}{}', '{\left({{#1}\atop{#2}}\right)}',
@@ -968,14 +969,14 @@ DefMacro('\lx@genfrac{}{}{}{}{}{}',
 DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
   "?#needXMDual(<ltx:XMDual>"
     . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='#meaning' role='#role'/>"
+    . "<ltx:XMRef _xmkey='#xmkey0'/>"
     . "<ltx:XMRef _xmkey='#xmkey1'/>"
     . "<ltx:XMRef _xmkey='#xmkey2'/>"
     . "</ltx:XMApp>"
     . "<ltx:XMWrap>"
     . "#open)()"
     . "<ltx:XMApp>"
-    . "<ltx:XMTok role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
+    . "<ltx:XMTok  _xmkey='#xmkey0' role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
     . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
     . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>"
@@ -997,18 +998,20 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
     my ($stomach, $whatsit) = @_;
     my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
     $stylecode = $stylecode->valueOf if defined $stylecode;
-    my $mathstyle = (!defined $stylecode ? LookupValue('mathstyle')
+    my $mathstyle = (!defined $stylecode
+      ? LookupValue('font')->getMathstyle
       : ($stylecode == 0 ? 'display'
         : ($stylecode == 1 ? 'text'
           : ($stylecode == 2 ? 'script'
             : 'scriptscript'))));
     $stomach->bgroup;
-    AssignValue(mathstyle => $LaTeXML::Package::Pool::mathstylemap{$mathstyle});
+    MergeFont(mathstyle => $mathstyle);
+    MergeFont(fraction  => 1);
     my $numer = Digest($stomach->getGullet->readArg);
     my $denom = Digest($stomach->getGullet->readArg);
     $stomach->egroup;
-    my $role = ($thickness && ($thickness->valueOf == 0) ? 'STACKED' : 'MULOP');
-    my $meaning = ($role eq 'MULOP' ? 'divide' : undef);
+    my $meaning = ($thickness && ($thickness->valueOf == 0) ? undef : 'divide');
+    my $role = 'FRACOP';
     $whatsit->setProperties(
       open      => $open,
       close     => $close,
@@ -1021,6 +1024,7 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
 
     if ($open || $close) {
       $whatsit->setProperties(needXMDual => 1,
+        xmkey0 => LaTeXML::Package::getXMArgID(),
         xmkey1 => LaTeXML::Package::getXMArgID(),
         xmkey2 => LaTeXML::Package::getXMArgID()); }
 
@@ -1032,18 +1036,23 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
 # XMDual doesn't seem quite appropriate, since the args (denominators) get
 # divided up so oddly in the inline case.
 # I've left it to a special case in conversion to pmml.
-DefConstructor('\cfrac{}{}',
+DefMacro('\cfrac', '\lx@savecfrac@mathstyle\let\cfrac=\lx@inner@cfrac\lx@inner@cfrac');
+DefPrimitive('\lx@savecfrac@mathstyle', sub {
+    AssignValue(cfracmathstyle => LookupValue('font')->getMathstyle); });
+DefConstructor('\lx@inner@cfrac InFractionStyle InFractionStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok name='cfrac' mathstyle='#mathstyle' meaning='continued-fraction'/>"
+    . "<ltx:XMTok name='#name' mathstyle='#mathstyle' meaning='continued-fraction'/>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
+  alias        => '\cfrac',
   beforeDigest => sub {
     $_[0]->bgroup;
-    AssignValue(mathstyle => 'text'); },
+    MergeFont(mathstyle => LookupValue('cfracmathstyle')); },
   afterDigest => sub {
     $_[0]->egroup;
-    $_[1]->setProperties(mathstyle => LookupValue('CFRACSTYLE')); });
+    $_[1]->setProperties(name => (LookupValue('CFRACSTYLE') eq 'inline' ? 'cfrac-inline' : 'cfrac'),
+      mathstyle => LookupValue('cfracmathstyle')); });
 
 AssignValue(CFRACSTYLE => 'display');
 # This should get incorporated into any \cfrac's that are constructed in scope.
@@ -1097,24 +1106,18 @@ DefMath('\pod{}', '(#1)', role => 'MODIFIER',   meaning => 'modulo');    # Well,
 # Section 7.1 Multiline subscripts and superscripts
 #  \substack, \begin{subarray}
 # These make the combining operator be list, but often formulae would be better
-DefConstructor('\substack{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok name='list' role='STACKED'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg>"
-    . "</ltx:XMApp>",
-  bounded => 1, beforeDigest => sub { DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-      "</ltx:XMArg><ltx:XMArg>",
-      reversion => Tokens(T_CS("\\\\"), T_CR));
-    Let('\cr', "\\\\"); });
+DefMacro('\substack{}', '\begin{subarray}{c}#1\end{subarray}');
 DefEnvironment('{subarray}{}',
-  "<ltx:XMApp>"
-    . "<ltx:XMTok name='list' role='STACKED' class='ltx_align_#1'/>"
-    . "<ltx:XMArg>#body</ltx:XMArg>"
-    . "</ltx:XMApp>",
+  "<ltx:XMArray mathstyle='script' name='list' class='ltx_align_#1' rowsep='#rowsep'>"
+    . "<ltx:XMRow><ltx:XMCell><ltx:XMArg>#body</ltx:XMArg></ltx:XMCell></ltx:XMRow>"
+    . "</ltx:XMArray>",
+  properties => { rowsep => Dimension('0') },
   beforeDigest => sub { DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-      "</ltx:XMArg><ltx:XMArg>",
+      "</ltx:XMArg></ltx:XMCell></ltx:XMRow><ltx:XMRow><ltx:XMCell><ltx:XMArg>",
       reversion => Tokens(T_CS("\\\\"), T_CR));
-    Let('\cr', "\\\\"); });
+    Let('\cr', "\\\\");
+    MergeFont(mathstyle => 'script');
+  });
 
 #======================================================================
 # Section 7.2 the \sideset command

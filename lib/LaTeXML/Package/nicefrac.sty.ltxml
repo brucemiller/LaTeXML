@@ -22,11 +22,10 @@ DefMacro('\@UnitsNiceFrac[]{}{}',
 # copy of \ifrac from amsmath
 DefConstructor('\ltx@nicefrac@ifrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
+    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'>/</ltx:XMTok>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac,
-  alias => '\nicefrac');
+  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
 
 DefMacro('\@UnitsUglyFrac[]{}{}',
   '\ifmmode\frac{#1{#2}}{#1{#2}}\else#1{#2}/#1{#2}\fi');
