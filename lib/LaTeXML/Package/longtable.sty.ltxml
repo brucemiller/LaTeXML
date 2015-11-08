@@ -134,7 +134,6 @@ DefPrimitive('\@longtable@@caption{}', sub {
     return; });
 DefPrimitive('\@longtable@@toccaption{}', sub {
     AssignValue(LONGTABLE_TOCCAPTION => Digest($_[1]), 'global');
-    LookupValue('Alignment')->removeRow;    # Remove the "row" this was in, too.
     return; });
 
 #======================================================================
