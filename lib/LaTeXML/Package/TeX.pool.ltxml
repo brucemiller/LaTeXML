@@ -479,6 +479,69 @@ DefParameterType('OptionalKeyVals', sub {
       ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); },
   optional => 1);
 
+# Not sure that this is the most elegant solution, but...
+# What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
+DefParameterType('DisplayStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'display'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('TextStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'text'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('ScriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'script'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('ScriptscriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'scriptscript'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+# Perverse naming convention: not script style, but in the style of a script relative to current.
+DefParameterType('InScriptStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(scripted => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+# NOTE: the various parameter features don't combine easily!!
+# I need a ScriptStyleUntil for \root!!!
+# I also need to redo fractions using these new types....
+DefParameterType('OptionalInScriptStyle', sub {
+    $_[0]->readOptional; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(scripted => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  optional => 1,
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+DefParameterType('InFractionStyle', sub {
+    $_[0]->readArg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(fraction => 1); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 #**********************************************************************
 # LaTeX has a very particular notion of "Undefined",
 # so let's get that squared away at the outset; it's useful for TeX, too!
@@ -1610,8 +1673,8 @@ sub REF {
   return $thing && $$thing{$key}; }
 
 DefConstructor('\hbox BoxSpecification HBoxContents', sub {
-    # "<ltx:text width='&REF(#1,to)' pad-width='&REF(#1,spread)' _noautoclose='1'>#2</ltx:text>",
-    my ($document, $spec, $contents) = @_;
+    # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
+    my ($document, $spec, $contents, %props) = @_;
     my $model   = $document->getModel;
     my $context = $document->getElement;
     my $current = $context;
@@ -1622,8 +1685,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $vmode  = $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
     my $node   = $document->openElement($newtag, _noautoclose => 1,
-      width       => orNull(GetKeyVal($spec, 'to')),
-      'pad-width' => orNull(GetKeyVal($spec, 'spread')));
+      width => $props{width});
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -1652,7 +1714,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
   # Create something like:
-  # "<ltx:inline-block vattach='$vattach' height='..' pad-height='..'>#2</ltx:inline-block>"
+  # "<ltx:inline-block vattach='$vattach' height='#height'>#2</ltx:inline-block>"
   my $model   = $document->getModel;
   my $context = $document->getElement;    # Where we originally start inserting.
 
@@ -1716,19 +1778,33 @@ sub insertBlock {
 
 DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    insertBlock($document, $contents, vattach => 'bottom',
-      height       => orNull(GetKeyVal($spec, 'to')),
-      'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  sizer => '#2',
-  mode  => 'text');
+    my @block = insertBlock($document, $contents, vattach => 'bottom'); },
+  sizer       => '#2',
+  mode        => 'text',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $h = GetKeyVal($spec, 'to')) {
+      $whatsit->setHeight($h); }
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setHeight($box->getHeight->add($s)); }
+    return; });
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
-    insertBlock($document, $contents, vattach => 'top',
-      height       => orNull(GetKeyVal($spec, 'to')),
-      'pad-height' => orNull(GetKeyVal($spec, 'spread'))); },
-  sizer => '#2',
-  mode  => 'text');
+    insertBlock($document, $contents, vattach => 'top'); },
+  sizer       => '#2',
+  mode        => 'text',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $spec = $whatsit->getArg(1);
+    my $box  = $whatsit->getArg(2);
+    if (my $h = GetKeyVal($spec, 'to')) {
+      $whatsit->setHeight($h); }
+    elsif (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setHeight($box->getHeight->add($s)); }
+    return; });
 
 DefParameterType('RuleSpecification', sub {
     my ($gullet) = @_;
@@ -2627,12 +2703,13 @@ DefConstructor('\halign BoxSpecification',
     my $spec = $whatsit->getArg(1);
     alignmentBindings($template, undef,
       attributes => {
-        width       => orNull(GetKeyVal($spec, 'to')),
-        'pad-width' => orNull(GetKeyVal($spec, 'spread')) });
+        width => orNull(GetKeyVal($spec, 'to')) });
     $stomach->bgroup;    # This will be closed by the \halign's closing }
     $gullet->unread(T_CS('\@start@alignment'));
     $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
-  });
+    if (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setWidth($whatsit->getBody->getWidth->add($s)); }
+    return; });
 
 # Cleanup the pre & post tokens for halign columns in math mode.
 # If a pair of $..$ enclose stuff that is "OK" in math mode, we don't need the $.
@@ -3292,9 +3369,6 @@ DefConstructor('\@@eqno{}', "^ refnum='#eqnum'",
 # This may combine, in the parser, with the following object to generate
 # a prescript.
 
-our %scriptstylemap = (display => 'script', text => 'script',
-  script => 'scriptscript', scriptscript => 'scriptscript');
-
 # Note that this is also being used by alignment.
 sub IsEmpty {
   my ($box) = @_;
@@ -3348,7 +3422,8 @@ sub scriptHandler {
   my ($stomach, $op) = @_;
   my $gullet = $stomach->getGullet;
   $gullet->skipSpaces;
-  my $style    = LookupValue('mathstyle');         # Bump the math style smaller.
+  my $font     = LookupValue('font');
+  my $style    = $font->getMathstyle;
   my @putback  = ();
   my $nscripts = 0;
   if (defined $style) {
@@ -3382,7 +3457,7 @@ sub scriptHandler {
         last; } }
     push(@LaTeXML::LIST, @putback);
 
-    AssignValue(mathstyle => $scriptstylemap{$style});
+    MergeFont(scripted => 1);
     # Now, get following boxes (may have to process several tokens!)
     my @stuff = ();
     while (my $tok = $gullet->readXToken(0)) {
@@ -3394,14 +3469,15 @@ sub scriptHandler {
     my $level  = $stomach->getBoxingLevel;
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
-        locator => $gullet->getLocator,
-        font    => $script->getFont, isMath => 1,
-        level   => $level,
-        scriptSizer($script, $base, $prevscript, $op)))
+        locator    => $gullet->getLocator,
+        font       => $script->getFont, isMath => 1,
+        level      => $level,
+        base       => $base,                           # for sizing/positioning
+        prevscript => $prevscript))
       unless IsEmpty($script);
-    AssignValue(mathstyle => $style);        # revert
+    AssignValue(font => $font);                        # revert
     return @stuff; }
-  else {                                     # Non math use of _ ??
+  else {                                               # Non math use of _ ??
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
@@ -3438,6 +3514,7 @@ sub scriptSizer {
   my ($script, $base, $prev, $op, $pos) = @_;
 
   # NOTE: Currently, the mathstyle is NOT reflected in the font of the script!!!!
+  # Or is it now ?????
   # [unless it's different from the 'expected' style!!!]
   my ($ws, $hs, $ds) = map { $_->valueOf } $script->getSize;
   $ws *= 0.8; $hs *= 0.8; $ds *= 0.8;    # HACK!@!!
@@ -3463,35 +3540,41 @@ sub scriptSizer {
       $d = $hs / 2 + $ds; } }
   $w = Dimension($w); $h = Dimension($h); $d = Dimension($d);
   #  print STDERR " ==> ".ToString($w).' x '.ToString($h).' + '.ToString($d)."\n";
-  return (width => $w, height => $h, depth => $d); }
+  return ($w, $h, $d); }
 
 # NOTE: The When reverting these, the
-DefConstructor('\@@POSTSUPERSCRIPT{}',
+DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
   "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  reversion => sub { (T_SUPER, revertScript($_[1])); });
-
-DefConstructor('\@@POSTSUBSCRIPT{}',
+  reversion => sub { (T_SUPER, revertScript($_[1])); },
+  sizer => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+      $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
+DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
   "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  reversion => sub { (T_SUB, revertScript($_[1])); });
-DefConstructor('\@@FLOATINGSUPERSCRIPT{}',
+  reversion => sub { (T_SUB, revertScript($_[1])); },
+  sizer => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+      $_[0]->getProperty('prevscript'),
+      'SUBSCRIPT', 'post'); });
+DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
   "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); });
-DefConstructor('\@@FLOATINGSUBSCRIPT{}',
+  reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
+  sizer => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
+DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
   "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); });
+  reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
+  sizer => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
 
 ## NOTE: Strictly speaking, these two should examine the scriptpos
 # attribute of the base (it may have \limits,\nolimits)
 ## OR, alternatively, there could be separate \@OVERSCRIPT/\@UNDERSCRIPT macros ?
-DefConstructor('\@SUPERSCRIPT{}{}',
+DefConstructor('\@SUPERSCRIPT{} InScriptStyle',
   "?#2(<ltx:XMApp>"
     . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
@@ -3504,10 +3587,10 @@ DefConstructor('\@SUPERSCRIPT{}{}',
       ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel,
-      scriptSizer($_[2], $_[1], undef, 'SUPERSCRIPT', 'post')); });
+    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUPERSCRIPT', 'post'); });
 
-DefConstructor('\@SUBSCRIPT{}{}',
+DefConstructor('\@SUBSCRIPT{} InScriptStyle',
   "?#2(<ltx:XMApp>"
     . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
@@ -3520,8 +3603,8 @@ DefConstructor('\@SUBSCRIPT{}{}',
       ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel,
-      scriptSizer($_[2], $_[1], undef, 'SUBSCRIPT', 'post')); });
+    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUBSCRIPT', 'post'); });
 
 DefMacroI('\'', undef, sub {
     my ($gullet) = @_;
@@ -3544,8 +3627,6 @@ DefMacroI('\'', undef, sub {
 
 # After digesting the \choose (or whatever), grab the previous and following material
 # and store as args in the whatsit.
-our %mathstylemap = (display => 'text', text => 'script',
-  script => 'scriptscript', scriptscript => 'scriptscript');
 
 # Increment the mathstyle stored in any boxes & whatsits.
 # The tricky part is to know when NOT to increment!
@@ -3554,8 +3635,10 @@ our %mathstylemap = (display => 'text', text => 'script',
 # WONT be adjusted!
 # We don't have a clear API to find the displayable Boxes within;
 # and we don't have a good handle on grouping...
+
+# ARGH!!!!!!!!! RETHINK!!!!!!
 sub adjustMathstyle {
-  my ($adjusted, @boxes) = @_;
+  my ($outerstyle, $adjusted, @boxes) = @_;
   foreach my $box (@boxes) {
     next unless defined $box;
     next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
@@ -3566,28 +3649,35 @@ sub adjustMathstyle {
     next   if $box->getProperty('own_mathstyle');
 
     if ($r eq 'LaTeXML::Core::Box') {
-      if (my $style = $box->getProperty('mathstyle')) {
-        if (my $newstyle = $mathstylemap{$style}) {
-          $box->setProperty(mathstyle => $newstyle); } } }
+      adjustMathStyle_internal($outerstyle, $box); }
     elsif ($r eq 'LaTeXML::Core::List') {
-      adjustMathstyle($adjusted, $box->unlist); }
+      adjustMathstyle($outerstyle, $adjusted, $box->unlist); }
     elsif ($r eq 'LaTeXML::Core::Whatsit') {
-      if (my $style = $box->getProperty('mathstyle')) {
-        if (my $newstyle = $mathstylemap{$style}) {
-          $box->setProperty(mathstyle => $newstyle); } }
+      my $style = adjustMathStyle_internal($outerstyle, $box) || $outerstyle;
       # now recurse on contained boxes (args AND properties!)
-      adjustMathstyle($adjusted, $box->getArgs);
-      adjustMathstyle($adjusted, values %{ $box->getPropertiesRef }); } }
+      adjustMathstyle($style, $adjusted, $box->getArgs);
+      adjustMathstyle($style, $adjusted, values %{ $box->getPropertiesRef }); } }
   return; }
 
-sub computeFracSize {
-  my ($whatsit) = @_;
-  my $top       = $whatsit->getProperty('top');
-  my $bot       = $whatsit->getProperty('bottom');
-  my $w         = $top->getWidth->larger($bot->getWidth);
-  my $d         = $bot->getTotalHeight->multiply(0.5);
-  my $h         = $top->getTotalHeight->add($d);
-  $whatsit->setProperties(width => $w, height => $h, depth => $d);
+# Heursitic;
+# we're wanting to adjust the style AS IF the numerator had been already in the next mathstyle
+# This isn't the same as just shifting the mathstyle!
+# we're sorta trying to infer WHY the box has a given style...?
+our %mathstyle_adjust_map = (
+  display => { display => 'text', text => 'script', script => 'script', scriptscript => 'scriptscript' },
+  text => { display => 'text', text => 'script', script => 'scriptscript', scriptscript => 'scriptscript' },
+  script => { display => 'display', text => 'text', script => 'scriptscript', scriptscript => 'scriptscript' },
+  scriptscript => { display => 'display', text => 'text', script => 'scriptscript', scriptscript => 'scriptscript' });
+
+sub adjustMathStyle_internal {
+  my ($outerstyle, $box) = @_;
+  if (my $font = $box->getFont) {
+    my $origstyle = $font->getMathstyle;
+    my $newstyle  = $mathstyle_adjust_map{$outerstyle}{$origstyle};
+    $box->setFont($font->merge(mathstyle => $newstyle));
+    if (my $recstyle = $box->getProperty('mathstyle')) {    # And adjust here, if recorded.
+      $box->setProperty(mathstyle => $newstyle);
+      return $newstyle; } }
   return; }
 
 sub fracSizer {
@@ -3597,69 +3687,20 @@ sub fracSizer {
   my $h = $numerator->getTotalHeight->add($d);
   return ($w, $h, $d); }
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Some of this obsolete?
-
-# Support here: Used by LaTeX, amsmath, but also amstex
-sub beforeFrac {
-  my ($stomach) = @_;
-  $stomach->bgroup;
-  AssignValue(mathstyle => $mathstylemap{ LookupValue('mathstyle') });
-  return; }
-
-sub afterFrac {
-  my ($stomach, $whatsit) = @_;
-  $whatsit->setProperty(top    => $whatsit->getArg(1));
-  $whatsit->setProperty(bottom => $whatsit->getArg(2));
-  computeFracSize($whatsit);
-  $stomach->egroup;
-  $whatsit->setProperty(mathstyle => LookupValue('mathstyle'));
-  return; }
-
-# Needed by amsmath (at least)
-sub beforeTFrac {
-  my ($stomach) = @_;
-  $stomach->bgroup; AssignValue(mathstyle => 'text');
-  beforeFrac($stomach);
-  return; }
-
-sub afterTFrac {
-  my ($stomach, $whatsit) = @_;
-  afterFrac($stomach, $whatsit);
-  $whatsit->setProperty(own_mathstyle => 1);
-  $stomach->egroup;
-  return; }
-
-sub beforeDFrac {
-  my ($stomach) = @_;
-  $stomach->bgroup; AssignValue(mathstyle => 'display');
-  beforeFrac($stomach);
-  return; }
-
-sub afterDFrac {
-  my ($stomach, $whatsit) = @_;
-  afterFrac($stomach, $whatsit);
-  $whatsit->setProperty(own_mathstyle => 1);
-  $stomach->egroup;
-  return; }
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# New version!
-
 # \lx@generalized@over{reversion}{keyvals}{top}{bottom}
 # keyvals: role,meaning, left,right, thickness
 DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
   "?#needXMDual("
     . "<ltx:XMDual>"
     . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='#meaning' role='#role'/>"
+    . "<ltx:XMRef _xmkey='#xmkey0'/>"
     . "<ltx:XMRef _xmkey='#xmkey1'/>"
     . "<ltx:XMRef _xmkey='#xmkey2'/>"
     . "</ltx:XMApp>"
     . "<ltx:XMWrap>"
     . "#left)()"
     . "<ltx:XMApp>"
-    . "<ltx:XMTok role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
+    . "<ltx:XMTok _xmkey='#xmkey0' role='#role' meaning='#meaning' mathstyle='#mathstyle' thickness='#thickness'/>"
     . "<ltx:XMArg _xmkey='#xmkey1'>#top</ltx:XMArg>"
     . "<ltx:XMArg _xmkey='#xmkey2'>#bottom</ltx:XMArg>"
     . "</ltx:XMApp>"
@@ -3673,30 +3714,38 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     # (there could be a \displaystyle INSIDE the numerator, but that's not the one we want)
     # Of course the group that started the numerator may be the start of the Math, itself!
     # AND, the numerator, which was already digested, needs it's mathstyle ADJUSTED
-    my $style = ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
-      ? $STATE->lookupValue('mathstyle')            # then just use whatever style we've got
-      : ($STATE->isValueBound('mathstyle', 0)       # else if style was set in numerator
-          && $STATE->valueInFrame('mathstyle', 1))
-        || $STATE->lookupValue('mathstyle')         # then just use whatever style we've got
+    my $font = ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+      ? $STATE->lookupValue('font')                # then just use whatever font we've got
+      : ($STATE->isValueBound('font', 0)           # else if font was set in numerator
+          && $STATE->valueInFrame('font', 1))
+        || $STATE->lookupValue('font')             # then just use whatever font we've got
     );
-    my $newstyle = $mathstylemap{$style};
-    AssignValue(mathstyle => $mathstylemap{$style});    # Bump the style smaller.
-         # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
+    my $style     = $font->getMathstyle;
+    my $role      = ToString($kv->getValue('role'));
+    my $meaning   = ToString($kv->getValue('meaning'));
+    my $thickness = ToString($kv->getValue('thickness'));
+    $role = 'FRACOP' unless $role;
+    $meaning = 'divide' if (!$meaning) && ($thickness ne '0');
+    # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
     my @top = $stomach->regurgitate;
     # really have to pass +/-1, +/-2 etc..!
-    adjustMathstyle({}, @top);
-
+    adjustMathstyle($style, {}, @top);
+    MergeFont(fraction => 1);
     my @bot = $stomach->digestNextBody();
     my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
-    $whatsit->setProperties(top => List(@top, mode => 'math'),
+    $whatsit->setProperties(
+      top    => List(@top, mode => 'math'),
       bottom => List(@bot, mode => 'math'),
+      role   => $role,
+      meaning   => $meaning,
+      thickness => $thickness,
       mathstyle => $style);
     if ($kv->getValue('left') || $kv->getValue('right')) {
       $whatsit->setProperties(needXMDual => 1,
+        xmkey0 => LaTeXML::Package::getXMArgID(),
         xmkey1 => LaTeXML::Package::getXMArgID(),
         xmkey2 => LaTeXML::Package::getXMArgID()); }
-    AssignValue(mathstyle => $style);    # Revert the style
-    return $closing; },                  # and leave the closing bit, whatever it is.
+    return $closing; },    # and leave the closing bit, whatever it is.
   properties => sub { %{ $_[2]->getKeyVals }; },
   sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   reversion => sub {
@@ -3706,24 +3755,24 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
       Revert($whatsit->getProperty('bottom'))); });
 
 DefMacro('\choose',
-  '\lx@generalized@over{\choose}{meaning=binomial,role=STACKED,left=\@left(,right=\@right)}');
+  '\lx@generalized@over{\choose}{meaning=binomial,thickness=0,left=\@left(,right=\@right)}');
 DefMacro('\brace',
-  '\lx@generalized@over{\brace}{role=STACKED,left=\@left\{,right=\@right\}}');
+  '\lx@generalized@over{\brace}{thickness=0,left=\@left\{,right=\@right\}}');
 DefMacro('\brack',
-  '\lx@generalized@over{\brack}{role=STACKED,left=\@left[,right=\@right]}');
+  '\lx@generalized@over{\brack}{thickness=0,left=\@left[,right=\@right]}');
 DefMacro('\atop',
-  '\lx@generalized@over{\atop}{role=STACKED}');
+  '\lx@generalized@over{\atop}{thickness=0}');
 DefMacro('\atopwithdelims Token Token',
-  '\lx@generalized@over{\atopwithdelims #1 #2}{role=STACKED,left={\@left#1},right={\@right#2}}');
+  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0,left={\@left#1},right={\@right#2}}');
 DefMacro('\over',
-  '\lx@generalized@over{\over}{meaning=divide,role=MULOP}');
+  '\lx@generalized@over{\over}{meaning=divide}');
 DefMacro('\overwithdelims Token Token',
-'\lx@generalized@over{\overwithdelims #1 #2}{left={\@left#1},right={\@right#2},meaning=divide,role=MULOP}');
+  '\lx@generalized@over{\overwithdelims #1 #2}{left={\@left#1},right={\@right#2},meaning=divide}');
 # My thinking was that this is a "fraction" providing the dimension is > 0!
 DefMacro('\above Dimension',
-  '\lx@generalized@over{\above #1}{meaning=divide,thickness=#1,role=MULOP}');
+  '\lx@generalized@over{\above #1}{meaning=divide,thickness=#1}');
 DefMacro('\abovewithdelims Token Token Dimension',
-'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3,role=MULOP}');
+'\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3}');
 
 #======================================================================
 DefConstructorI('\cal', undef, '',
@@ -3788,21 +3837,21 @@ DefConstructor('\@ASSERT@MEANING{}{}', '#2',
 #======================================================================
 # Properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
-DefMathI('=', undef, '=', role => 'RELOP',   meaning => 'equals');
-DefMathI('+', undef, '+', role => 'ADDOP',   meaning => 'plus');
-DefMathI('-', undef, '-', role => 'ADDOP',   meaning => 'minus');
-DefMathI('*', undef, '*', role => 'MULOP',   meaning => 'times');
-DefMathI('/', undef, '/', role => 'MULOP',   meaning => 'divide', mathstyle => 'inline');
-DefMathI('!', undef, '!', role => 'POSTFIX', meaning => 'factorial');
+DefMathI('=', undef, '=', role => 'RELOP',   meaning  => 'equals');
+DefMathI('+', undef, '+', role => 'ADDOP',   meaning  => 'plus');
+DefMathI('-', undef, '-', role => 'ADDOP',   meaning  => 'minus');
+DefMathI('*', undef, '*', role => 'MULOP',   meaning  => 'times');
+DefMathI('/', undef, '/', role => 'MULOP',   meaning  => 'divide');
+DefMathI('!', undef, '!', role => 'POSTFIX', meaning  => 'factorial');
 DefMathI(',', undef, ',', role => 'PUNCT');
 DefMathI('.', undef, '.', role => 'PERIOD');
 DefMathI(';', undef, ';', role => 'PUNCT');
-DefMathI('(', undef, '(', role => 'OPEN', stretchy => 'false');
-DefMathI(')', undef, ')', role => 'CLOSE', stretchy => 'false');
-DefMathI('[', undef, '[', role => 'OPEN', stretchy => 'false');
-DefMathI(']', undef, ']', role => 'CLOSE', stretchy => 'false');
+DefMathI('(', undef, '(', role => 'OPEN',    stretchy => 'false');
+DefMathI(')', undef, ')', role => 'CLOSE',   stretchy => 'false');
+DefMathI('[', undef, '[', role => 'OPEN',    stretchy => 'false');
+DefMathI(']', undef, ']', role => 'CLOSE',   stretchy => 'false');
 DefMathI('|', undef, '|', role => 'VERTBAR', stretchy => 'false');
-DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');      # Seems like good default role
+DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');    # Seems like good default role
 DefMathI('<', undef, '<', role => 'RELOP', meaning => 'less-than');
 DefMathI('>', undef, '>', role => 'RELOP', meaning => 'greater-than');
 
@@ -4809,10 +4858,10 @@ DefMath('\smallint', "\x{222B}", meaning => 'integral', role => 'INTOP',
 # Actually LaTeX; Table 3.8. Variable-sized Symbols, p.44.
 #----------------------------------------------------------------------
 sub doScriptpos {
-  return (LookupValue('mathstyle') eq 'display' ? 'mid' : 'post'); }
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'mid' : 'post'); }
 
 sub doVariablesizeOp {
-  return (LookupValue('mathstyle') eq 'display' ? 'display' : 'text'); }
+  return (LookupValue('font')->getMathstyle eq 'display' ? 'display' : 'text'); }
 
 DefMathI('\sum', undef, "\x{2211}",
   role      => 'SUMOP',
@@ -4905,7 +4954,7 @@ DefConstructorI('\displaylimits', undef, sub {
       $document->setAttribute($node, scriptpos => 'mid'); }
     else {
       $node->removeAttribute('scriptpos'); } },
-  properties => sub { (mathstyle => LookupValue('mathstyle')); });
+  properties => sub { (mathstyle => LookupValue('font')->getMathstyle); });
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
 #----------------------------------------------------------------------
@@ -5161,7 +5210,6 @@ DefConstructorI('\ldots', undef,
           series => 'medium', shape => 'upright')->specialize("\x{2026}"))
       : ()); });    # Since not DefMath!
 # And so can \vdots
-# DefMathI('\vdots',undef,"\x{22EE}", role=>'ID'); # VERTICAL ELLIPSIS
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   properties => sub {
@@ -5209,7 +5257,7 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
 #----------------------------------------------------------------------
 # LaTeX; Table 3.11. Math Mode Accents, p.50.
 # Are these all TeX (or LaTeX)?
-
+# Note that most of these should NOT be stretchy, by default!
 DefMath('\hat Digested', UTF(0x5E),
   operator_role => 'OVERACCENT', operator_stretchy => 'false');
 DefMath('\check Digested', "\x{02C7}",
@@ -5450,7 +5498,7 @@ DefConstructor('\mathchoice{}{}{}{}', sub {
         : ($style eq 'script' ? $s
           : $ss)));
     $document->absorb($choice); },
-  properties => { mathstyle => sub { LookupValue('mathstyle'); } });
+  properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
 DefMacro('\mathpalette{}{}',
   '\mathchoice{#1\displaystyle{#2}}{#1\textstyle{#2}}'
@@ -5474,7 +5522,7 @@ DefConstructor('\smash{}', "#1");                         # well, what?
 # TeX Book, Appendix B. p. 361
 
 # This is actually LaTeX's definition, but let's just do it this way.
-DefConstructor('\sqrt[] Digested',
+DefConstructor('\sqrt OptionalInScriptStyle Digested',
   "?#1(<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>)"
@@ -5786,17 +5834,17 @@ DefConstructor('\@', '');
 # Math style.
 # Also record that this explicitly sets the mathstyle (support for \over, etal)
 DefPrimitiveI('\displaystyle', undef, sub {
-    Box(undef, undef, undef, T_CS('\displaystyle'), explicit_mathstyle => 1); },
-  afterDigest => sub { AssignValue(mathstyle => 'display'); });
+    MergeFont(mathstyle => 'display');
+    Box(undef, undef, undef, T_CS('\displaystyle'), explicit_mathstyle => 1); });
 DefPrimitiveI('\textstyle', undef, sub {
-    Box(undef, undef, undef, T_CS('\textstyle'), explicit_mathstyle => 1); },
-  afterDigest => sub { AssignValue(mathstyle => 'text'); });
+    MergeFont(mathstyle => 'text');
+    Box(undef, undef, undef, T_CS('\textstyle'), explicit_mathstyle => 1); });
 DefPrimitiveI('\scriptstyle', undef, sub {
-    Box(undef, undef, undef, T_CS('\scriptstyle'), explicit_mathstyle => 1); },
-  afterDigest => sub { AssignValue(mathstyle => 'script'); });
+    MergeFont(mathstyle => 'script');
+    Box(undef, undef, undef, T_CS('\scriptstyle'), explicit_mathstyle => 1); });
 DefPrimitiveI('\scriptscriptstyle', undef, sub {
-    Box(undef, undef, undef, T_CS('\scriptscriptstyle'), explicit_mathstyle => 1); },
-  afterDigest => sub { AssignValue(mathstyle => 'scriptscript'); });
+    MergeFont(mathstyle => 'scriptscript');
+    Box(undef, undef, undef, T_CS('\scriptscriptstyle'), explicit_mathstyle => 1); });
 
 #======================================================================
 
@@ -6080,6 +6128,8 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
           my $attr = $attribute->nodeName;
           $document->setAttribute($node, $attr => $attribute->getValue)
             unless ($attr eq 'xml:id') || $attr =~ /^_/; } }
+      # But keep $node's font from being overwritten.
+      $document->setNodeFont($wrap, $document->getNodeFont($node));
       ## WHY THIS????
       $document->getNode->appendChild($node); } });
 #======================================================================
