@@ -220,8 +220,9 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     my ($w, $h, $d) = $box->getSize;
     my ($fw, $fh, $fd) = $font && $font->getNominalSize;
     # Fishing for the correct y position (maybe w/o the depth?)
-    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
-                           # But if the box's height has been set to 0, still need adjustment; Use font?
+    #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
+    my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
+           # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
       transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
@@ -978,14 +979,15 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     my $spec = $whatsit->getArg(1);
     tikzAlignmentBindings($template, undef,
       attributes => {
-        width       => orNull(GetKeyVal($spec, 'to')),
-        'pad-width' => orNull(GetKeyVal($spec, 'spread')) });
+        width => orNull(GetKeyVal($spec, 'to')) });
     $stomach->bgroup;    # This will be closed by the \halign's closing }
                          # but tikz is sticking in an extra \begingroup ????
                          #    $stomach->begingroup;
     $gullet->unread(T_CS('\@start@alignment'));
     $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
-  });
+    if (my $s = GetKeyVal($spec, 'spread')) {
+      $whatsit->setWidth($whatsit->getBody->getWidth->add($s)); }
+    return; });
 
 sub tikzAlignmentBindings {
   my ($template, $mode) = @_;
