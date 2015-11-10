@@ -323,13 +323,15 @@ sub beginMode {
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont => $curfont, 'local');
     $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
-        color => $curfont->getColor, size => $curfont->getSize,
+        color => $curfont->getColor, background=> $curfont->getBackground,
+        size => $curfont->getSize,
         mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
   else {
     # When entering text mode, we should set the font to the text font in use before the math
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
-        color => $curfont->getColor, size => $curfont->getSize), 'local'); }
+        color => $curfont->getColor, background => $curfont->getBackground,
+	size => $curfont->getSize), 'local'); }
   return; }
 
 sub endMode {
