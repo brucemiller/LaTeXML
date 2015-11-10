@@ -426,10 +426,9 @@ our %mathstylesize = (display => 1, text => 1,
 sub computeStringSize {
   my ($self, $string) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $u = (defined $string
-    ? $size * 65535 * length($string)
-    : 0);
-  return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
+  my $l = (defined $string ? length($string) : 0);
+  my $u = $size * 65535;
+  return (Dimension(0.75 * $u * $l), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Get nominal width, height base ?
 sub getNominalSize {
