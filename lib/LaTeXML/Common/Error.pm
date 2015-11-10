@@ -103,7 +103,7 @@ sub Error {
     print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
-  if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
+  if ($state && ($state->getStatus('error') || 0) > $MAXERRORS) {
     Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!"); }
   return; }
 
