@@ -546,6 +546,7 @@ sub needsMathstyle {
 # Use mpadded instead of mrow if size has been given
 sub pmml_mayberesize {
   my ($node, $result) = @_;
+  return $result unless ref $node;
   my $width  = $node->getAttribute('width');
   my $height = $node->getAttribute('height');
   my $depth  = $node->getAttribute('depth');
@@ -560,7 +561,7 @@ sub pmml_mayberesize {
     my $attr = $$result[1];
     $$attr{width}   = $width  if $width;
     $$attr{height}  = $height if $height;
-    $$attr{depth}   = $height if $depth;
+    $$attr{depth}   = $depth  if $depth;
     $$attr{lspace}  = $xoff   if $xoff;
     $$attr{voffset} = $yoff   if $yoff; }
   return $result; }
@@ -781,13 +782,15 @@ my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);                 # CONST
 sub pmml_mi {
   my ($item, %attr) = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mi', %attr);
-  return ['m:mi', {%mmlattr}, $text]; }
+  #  return ['m:mi', {%mmlattr}, $text]; }
+  return pmml_mayberesize($item, ['m:mi', {%mmlattr}, $text]); }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my ($item, %attr) = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mn', %attr);
-  return ['m:mn', {%mmlattr}, $text]; }
+  #  return ['m:mn', {%mmlattr}, $text]; }
+  return pmml_mayberesize($item, ['m:mn', {%mmlattr}, $text]); }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
@@ -804,22 +807,24 @@ sub pmml_mo {
     || ((ref $item) && $item->getAttribute('rpadding'))
     || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
   my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
-  return ['m:mo', { %mmlattr,
-      ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
-      ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-      ($islargeop ? (largeop   => 'true') : ()),
-      ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
-             # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
-             # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
-             # Just assume something between mediummathspace = 4/18em = 2.222pt
-             # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
-      ($lpad ? (lspace => max(0, (2.5 + getXMHintSpacing($lpad))) . 'pt') : ()),
-      ($rpad ? (rspace => max(0, (2.5 + getXMHintSpacing($rpad))) . 'pt') : ()),
-      # If an operator has specifically located it's scripts,
-      # don't let mathml move them.
-      (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
-        ? (movablelimits => 'false') : ()) },
-    $text]; }
+  return
+    pmml_mayberesize($item,
+    ['m:mo', { %mmlattr,
+        ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
+        ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
+        ($islargeop ? (largeop   => 'true') : ()),
+        ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
+               # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
+               # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
+               # Just assume something between mediummathspace = 4/18em = 2.222pt
+               # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
+        ($lpad ? (lspace => max(0, (2.5 + getXMHintSpacing($lpad))) . 'pt') : ()),
+        ($rpad ? (rspace => max(0, (2.5 + getXMHintSpacing($rpad))) . 'pt') : ()),
+        # If an operator has specifically located it's scripts,
+        # don't let mathml move them.
+        (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
+          ? (movablelimits => 'false') : ()) },
+      $text]); }
 
 sub pmml_bigop {
   my ($op) = @_;
