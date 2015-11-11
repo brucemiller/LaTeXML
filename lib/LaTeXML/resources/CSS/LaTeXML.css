@@ -256,6 +256,13 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_border_R  { border-right:1px solid gray; }
 .ltx_border_B  { border-bottom:1px solid gray; }
 .ltx_border_L  { border-left:1px solid gray; }
+/* Framing */
+.ltx_framed_rectangle { border-style:solid; border-width:1px; }
+.ltx_framed_top       { border-top-style:solid; border-top-width:1px; }
+.ltx_framed_left      { border-left-style:solid; border-left-width:1px; }
+.ltx_framed_right     { border-right-style:solid; border-right-width:1px; }
+.ltx_framed_bottom,
+.ltx_framed_underline { border-bottom-style:solid; border-bottom-width:1px; }
 
 /*======================================================================
  Misc */
