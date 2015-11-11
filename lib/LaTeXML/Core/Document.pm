@@ -1331,10 +1331,26 @@ sub pruneXMDuals {
   foreach my $dual (reverse $self->findnodes('descendant-or-self::ltx:XMDual')) {
     my ($content, $presentation) = element_nodes($dual);
     if (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $content)) {    # content never seen
-      $self->replaceTree($presentation, $dual); }
+      $self->collapseXMDual($dual, $presentation); }
     elsif (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $presentation)) {    # pres.
-      $self->replaceTree($content, $dual); }
+      $self->collapseXMDual($dual, $content); }
   }
+  return; }
+
+# Replace an XMDual with one of its branches
+sub collapseXMDual {
+  my ($self, $dual, $branch) = @_;
+  # The other branch is not visible, nor referenced,
+  # but the dual may have an id and be referenced
+  if (my $dualid = $dual->getAttribute('xml:id')) {
+    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
+    if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
+      foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
+        $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
+    else {
+      $branch->setAttribute('xml:id' => $dualid);            # Just use same ID on the branch
+      $self->recordID($dualid => $branch); } }
+  $self->replaceTree($branch, $dual);
   return; }
 
 #**********************************************************************
