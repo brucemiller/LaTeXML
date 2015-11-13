@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Make the latexml run
+perl -d:NYTProf `dirname $0`/../blib/script/latexml $@
+
+# analyze the profile
+nytprofhtml
+
+# and let the user know.
+echo "See nytprof/index.html"
