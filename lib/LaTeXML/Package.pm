@@ -1726,12 +1726,10 @@ sub FindFile_aux {
   my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
-  my $candidates = join(' ',
-    ((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
+  my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
-  if ($kpsewhich && (my $result = `"$kpsewhich" $candidates`)) {
-    if ($result =~ /^\s*(.+?)\s*\n/s) {
-      return $1; } }
+  if (my $result = pathname_kpsewhich(@candidates)) {
+    return $result; }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
   return; }
