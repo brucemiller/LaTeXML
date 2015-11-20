@@ -306,6 +306,19 @@ sub assignDelcode {
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
 
+our @active_or_cs = (
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 1, 0, 0,
+  1, 0);
+our @letter_or_other = (
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 1,
+  1, 0, 0, 0,
+  0, 0);
+
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
 # Any other token is returned as is.
@@ -313,7 +326,7 @@ sub lookupMeaning {
   my ($self, $token) = @_;
   my $e;
   if (my $cs = $token
-    && (($$token[1] == CC_ACTIVE) || ($$token[1] == CC_CS))
+    && $active_or_cs[$$token[1]]
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
@@ -330,22 +343,73 @@ sub assignMeaning {
 # Since we're not doing digestion here, we don't need to handle mathactive,
 # nor cs let to executable tokens
 # This returns a definition object, or undef
+
+# merge of @executable_catcode & @PRIMITIVE_NAME
+our @executable_primitive_name = (    # [CONSTANT]
+  undef,       'Begin', 'End', 'Math',
+  'Align',     undef,   undef, 'Superscript',
+  'Subscript', undef,   undef, undef,
+  undef,       undef,   undef, undef,
+  undef,       undef);
+
 sub lookupDefinition {
   my ($self, $token) = @_;
   return unless $token;
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc   = $$token[1];
-  my $name = $$token[0];
+  my $cc = $$token[1];
   my $lookupname =
-    ((($cc == CC_ACTIVE) || ($cc == CC_CS))
-    ? $name
-    : $LaTeXML::Core::Token::PRIMITIVE_NAME[$cc]);
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
-    && $defn->isa('LaTeXML::Core::Definition')) {
+    # Can only be a token or definition; we want defns!
+    && ((ref $defn) ne 'LaTeXML::Core::Token')) {
+    return $defn; }
+  return; }
+
+# identical, but for return test; used by skipConditionalBody
+sub lookupConditional {
+  my ($self, $token) = @_;
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  my $lookupname =
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
+  if ($lookupname
+    && ($entry = $$self{meaning}{$lookupname})
+    && ($defn  = $$entry[0])
+    # Can only be a token or definition; we only want defns that have conditional_type
+    && ((ref $defn) ne 'LaTeXML::Core::Token')) {
+    return $$defn{conditional_type}; }
+  return; }
+
+# Identical but inlined return tests for efficiency; used by readXToken
+sub lookupExpandable {
+  my ($self, $token, $toplevel) = @_;
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  my $lookupname =
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
+  if ($lookupname
+    && ($entry = $$self{meaning}{$lookupname})
+    && ($defn  = $$entry[0])
+    # Can only be a token or definition; we want defns!
+    && ((ref $defn) ne 'LaTeXML::Core::Token')
+    && $$defn{isExpandable}
+    && ($toplevel || !$$defn{isProtected})) { # is this the right logic here? don't expand unless digesting?
     return $defn; }
   return; }
 
@@ -363,17 +427,16 @@ sub lookupDigestableDefinition {
   my $cc   = $$token[1];
   my $name = $$token[0];
   my $lookupname =
-    ((($cc == CC_ACTIVE) || ($cc == CC_CS)
-        || ((($cc == CC_LETTER) || ($cc == CC_OTHER))
-        && $self->lookupValue('IN_MATH')
+    (($active_or_cs[$cc]
+        || ($letter_or_other[$cc] && $self->lookupValue('IN_MATH')
         && (($self->lookupMathcode($name) || 0) == 0x8000)))
     ? $name
-    : $LaTeXML::Core::Token::PRIMITIVE_NAME[$cc]);
+    : $executable_primitive_name[$cc]);
   if ($lookupname && ($entry = $$self{meaning}{$lookupname})
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
-    if ($defn->isa('LaTeXML::Core::Token')
-      && ($lookupname = $LaTeXML::Core::Token::PRIMITIVE_NAME[$$defn[1]])
+    if (((ref $defn) eq 'LaTeXML::Core::Token')
+      && ($lookupname = $executable_primitive_name[$$defn[1]])
       && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
