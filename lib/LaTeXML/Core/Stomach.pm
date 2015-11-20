@@ -154,7 +154,7 @@ INVOKE:
   # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
   elsif ($meaning->isExpandable) {
     my $gullet = $$self{gullet};
-    $gullet->unread($meaning->invoke($gullet));
+    $gullet->unread(@{ $meaning->invoke($gullet) });
     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
     pop(@{ $$self{token_stack} });
     goto INVOKE; }
@@ -323,7 +323,7 @@ sub beginMode {
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont => $curfont, 'local');
     $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
-        color => $curfont->getColor, background=> $curfont->getBackground,
+        color => $curfont->getColor, background => $curfont->getBackground,
         size => $curfont->getSize,
         mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
   else {
@@ -331,7 +331,7 @@ sub beginMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-	size => $curfont->getSize), 'local'); }
+        size => $curfont->getSize), 'local'); }
   return; }
 
 sub endMode {
