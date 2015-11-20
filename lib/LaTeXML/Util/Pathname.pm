@@ -30,9 +30,10 @@ use strict;
 use warnings;
 use File::Spec;
 use File::Copy;
+use File::Which;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find &pathname_findall
+our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -328,6 +329,46 @@ sub candidate_pathnames {
       else {
         push(@paths, pathname_concat($dir, $name . $ext)); } } }
   return @paths; }
+
+#======================================================================
+our $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
+our $kpse_cache = undef;
+
+sub pathname_kpsewhich {
+  my (@candidates) = @_;
+  #  my $file = join(' ',@candidates);
+  #  if ($kpsewhich && (my $result = `"$kpsewhich" $file`)) {
+  #    if ($result =~ /^\s*(.+?)\s*\n/s) {
+  #      return $1; } }
+  build_kpse_cache() unless $kpse_cache;
+  foreach my $file (@candidates) {
+    if (my $result = $$kpse_cache{$file}) {
+      return $result; } }
+  return; }
+
+sub build_kpse_cache {
+  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`;
+  $texmf =~ s/^\s*\\\{(.+?)}\s*\n/$1/s;
+  my @dirs = split(/,/, $texmf);
+  foreach my $dir (@dirs) {
+    $dir =~ s/^!!//;
+    # Presumably if no ls-R, we can ignore the directory?
+    if (-f "$dir/ls-R") {
+      my $LSR;
+      my $subdir;
+      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
+      while (<$LSR>) {
+        chop;
+        next unless $_;
+        if (/^%/) { }
+        elsif (/^(.*?):$/) {    # Move to a new subdirectory
+          $subdir = $1; }
+        else {
+          # Is it safe to use '/' here?
+          my $sep = '/';
+          $$kpse_cache{$_} = join($sep, $dir, $subdir, $_); } }
+      close($LSR); } }
+  return; }
 
 #======================================================================
 1;
