@@ -77,14 +77,13 @@ sub Equals {
   my $refb = (ref $b) || '_notype_';
   return 0 if $refa ne $refb;                    # same type?
   return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa};    # Deep comparison of builtins?
-  return 1 if $a->equals($b);                                     # semi-shallow comparison?
-       # Special cases? (should be methods, but that embeds State knowledge too low)
+        # Special cases? (should be methods, but that embeds State knowledge too low)
 
   if ($refa eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defa = $STATE->lookupMeaning($a);
-    my $defb = $STATE->lookupMeaning($b);
-    return $defa && $defb && ($defa eq $defb); }
-  return 0; }
+    my $defa = $STATE->lookupMeaning($a) || $a;
+    my $defb = $STATE->lookupMeaning($b) || $b;
+    return $defa->equals($defb); }
+  return $a->equals($b); }                  # semi-shallow comparison?
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
