@@ -27,12 +27,8 @@ sub new {
   my $source = $STATE->getStomach->getGullet->getMouth;
   my $trivexpansion;
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
-    my $level = 0;
-    foreach my $t ($expansion->unlist) {
-      $level++ if $t->equals(T_BEGIN);
-      $level-- if $t->equals(T_END); }
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
-      "Expansion is " . ToString($expansion)) if $level;
+      "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # If expansion is Tokens, and no arguments, we're a "trivial macro"
     if (!$parameters) {
       $trivexpansion = Tokens(substituteTokens($expansion)); }
@@ -41,6 +37,7 @@ sub new {
     trivial_expansion => $trivexpansion,
     locator           => "from " . $source->getLocator(-1),
     isProtected       => $STATE->getPrefix('protected'),
+    isExpandable      => 1,
     %traits }, $class; }
 
 sub isExpandable {
@@ -60,10 +57,11 @@ sub getExpansion {
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
   my ($self, $gullet) = @_;
-  #  return $self->doInvocation($gullet, $self->readArguments($gullet)); }
   # shortcut for "trivial" macros; but this bypasses tracing & profiling!!!!
-  return ($$self{trivial_expansion} ? $$self{trivial_expansion}->unlist
-    : $self->doInvocation($gullet, $self->readArguments($gullet))); }
+  if (my $triv = $$self{trivial_expansion}) {
+    return $triv; }
+  else {
+    return $self->doInvocation($gullet, $self->readArguments($gullet)); } }
 
 sub doInvocation {
   my ($self, $gullet, @args) = @_;
@@ -76,6 +74,7 @@ sub doInvocation {
     if (ref $expansion eq 'CODE') {
       # Harder to emulate \tracingmacros here.
       @result = &$expansion($gullet, @args);
+      # CHECK @result HERE TOO!!!!
       print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
       print STDERR $self->tracingArgs(@args) . "\n" if @args; }
     else {
@@ -91,18 +90,27 @@ sub doInvocation {
       print STDERR $self->tracingArgs(@targs) . "\n" if @args;
       @result = substituteTokens($expansion, @targs); } }
   else {
-    @result = (ref $expansion eq 'CODE'
-      ? &$expansion($gullet, @args)
-      : substituteTokens($expansion,
+    if (ref $expansion eq 'CODE') {
+      my $t;
+      # Check the result from code calls.
+      @result = map { (($t = ref $_) eq 'LaTeXML::Core::Token' ? $_
+          : ($t eq 'LaTeXML::Core::Tokens' ? @$_
+            : (Error('misdefined', $self, undef,
+                "Expected a Token in expansion of " . ToString($self),
+                "got " . Stringify($_)), ()))) }
+        &$expansion($gullet, @args); }
+    else {
+      # but for tokens, make sure args are proper Tokens (lists)
+      @result = substituteTokens($expansion,
         map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
             ? $_
             : ($r && ($r eq 'LaTeXML::Core::Token')
               ? Tokens($_)
               : Tokens(Revert($_)))) }
-          @args)); }
+          @args); } }
   # Getting exclusive requires dubious Gullet support!
   push(@result, T_MARKER($profiled)) if $profiled;
-  return @result; }
+  return [@result]; }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
