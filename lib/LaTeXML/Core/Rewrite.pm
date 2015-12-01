@@ -131,33 +131,31 @@ sub applyClause {
     while (my $sib = $parent->lastChild) {
       $parent->removeChild($sib);
       unshift(@following, $sib);
-      last if $$sib == $$tree; }
+      last if $tree->isSameNode($sib); }
     my @replaced = map { shift(@following) } 1 .. $n_to_replace;    # Remove the nodes to be replaced
-          # Carry out the operation, inserting whatever nodes.
+    map { $document->unRecordNodeIDs($_) } @replaced;
+    # Carry out the operation, inserting whatever nodes.
     $document->setNode($parent);
     my $point = $parent->lastChild;
-    &$pattern($document, @replaced);    # Carry out the insertion.
+    &$pattern($document, @replaced);                                # Carry out the insertion.
 
-    # Now collect the newly inserted nodes and store in a _Capture_ node.
-    my @inserted = ();                  # Collect the newly added nodes.
+    # Now collect the newly inserted nodes for any needed patching
+    my @inserted = ();                                              # Collect the newly added nodes.
     if ($point) {
-      while (my $sib = $parent->lastChild) {
-        $parent->removeChild($sib);
-        unshift(@inserted, $sib);
-        last if $$sib == $$point; } }
+      my @sibs = $parent->childNodes;
+      while (my $sib = pop(@sibs)) {
+        last if $$sib == $$point;
+        unshift(@inserted, $sib); } }
     else {
       @inserted = $parent->childNodes; }
-    my $insertion = $document->openElement('_Capture_', font => $document->getNodeFont($parent));
-    map { $insertion->appendChild($_) } @inserted;
 
-    # Now remove the insertion and replace with rewritten nodes and replace the following siblings.
-    @inserted = $insertion->childNodes;
-    my $font = $document->getNodeFont($tree);    # the font of the matched node
+    # Now make any adjustments to the new nodes
+    map { $document->recordNodeIDs($_) } @inserted;
+    my $font = $document->getNodeFont($tree);                       # the font of the matched node
     foreach my $ins (@inserted) {    # Copy the non-semantic parts of font to the replacement
       $document->setNodeFont($ins => $document->getNodeFont($ins)->mergePurestyle($font)); }
-    $parent->removeChild($insertion);
-    map { $parent->appendChild($_) } @inserted, @following;
-  }
+    # Now, replace the following nodes.
+    map { $parent->appendChild($_) } @following; }
   elsif ($op eq 'action') {
     print STDERR "Rewrite action at " . $tree->toString . " using $pattern\n"
       if $LaTeXML::Core::Rewrite::DEBUG;
