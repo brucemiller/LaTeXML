@@ -1213,7 +1213,7 @@ sub recordID {
     if (!$node->isSameNode($prev)) {
       my $badid = $id;
       $id = $self->modifyID($id);
-      Info('malformed', 'id', $node, "Duplicated attribute xml:id",
+      Fatal('malformed', 'id', $node, "Duplicated attribute xml:id",
         "Using id='$id' on " . Stringify($node),
         "id='$badid' already set on " . Stringify($prev)); } }
   $$self{idstore}{$id} = $node;
@@ -1227,7 +1227,7 @@ sub unRecordID {
 # These are used to record or unrecord, in bulk, all the ids within a node (tree).
 sub recordNodeIDs {
   my ($self, $node) = @_;
-  foreach my $idnode ($self->findnodes('descendent-or-self::*[@xml:id]', $node)) {
+  foreach my $idnode ($self->findnodes('descendant-or-self::*[@xml:id]', $node)) {
     if (my $id = $idnode->getAttribute('xml:id')) {
       my $newid = $self->recordID($id, $idnode);
       $idnode->setAttribute('xml:id' => $newid) if $newid ne $id; } }
@@ -1699,7 +1699,9 @@ sub appendTree {
         # DANGER: REMOVE the xml:id attribute from $child!!!!
         # This protects against some versions of XML::LibXML that warn against duplicate id's
         # Hopefully, you shouldn't be using the node any more
-        $child->removeAttribute('xml:id') if $attributes{'xml:id'};
+        if (my $id = $attributes{'xml:id'}) {
+          $child->removeAttribute('xml:id');
+          $self->unRecordID($id); }
         my $new = $self->openElementAt($node, $tag, %attributes);
         $self->appendTree($new, $child->childNodes); }
       elsif ($type == XML_DOCUMENT_FRAG_NODE) {
