@@ -108,6 +108,9 @@ element glossaryref { glossaryref_attributes, glossaryref_model }
 glossaryref_attributes =
   Common.attributes,
   Refable.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes,
 
   ## should be used to identifier used for the glossaryref.
   attribute key { text }?,
@@ -178,6 +181,9 @@ element ref { ref_attributes, ref_model }
 ref_attributes =
   Common.attributes,
   Refable.attributes,
+  Fontable.attributes,
+  Colorable.attributes,
+  Backgroundable.attributes,
 
   ## a pattern encoding how the text content should be filled in during
   ## postprocessing, if it is empty.
