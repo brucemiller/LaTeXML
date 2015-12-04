@@ -698,9 +698,12 @@ DefMacro('\meaning Token', sub {
 
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
-    my ($token, @toks) = ();
+##    my ($token, @toks) = ();
+    my $token;
+    my $cs = '\\';
+    my $s;
     # keep newlines from having \n inside!
-    while (($token = $gullet->readXToken(0)) && ($token->getString ne '\endcsname')) {
+    while (($token = $gullet->readXToken(0)) && (($s = $token->getString) ne '\endcsname')) {
       my $cc = $token->getCatcode;
       if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
@@ -709,8 +712,10 @@ DefParameterType('CSName', sub {
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-      push(@toks, ($cc == CC_SPACE ? T_SPACE : $token)); }
-    T_CS("\\" . ToString(Tokens(@toks))); });
+##      push(@toks, ($cc == CC_SPACE ? T_SPACE : $token)); }
+      $cs .= ($cc == CC_SPACE ? ' ' : $s); }
+##    T_CS("\\" . ToString(Tokens(@toks))); });
+    T_CS($cs); });
 
 DefMacro('\csname CSName', sub {
     my ($gullet, $token) = @_;
@@ -5308,14 +5313,16 @@ DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math
 # rather than the individual tokens.
 # This meaning is handled in MathParser (for now)
 
-DefConstructorI('\{', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='OPEN' stretchy='#stretchy'>{</ltx:XMTok>)({)",
-  properties => { font => sub { LookupValue('font')->specialize("{"); },    # Since not DefMath!
-    stretchy => 'false' });
-DefConstructorI('\}', undef,
-  "?#isMath(<ltx:XMTok font='#font' role='CLOSE' stretchy='#stretchy'>}</ltx:XMTok>)(})",
-  properties => { font => sub { LookupValue('font')->specialize("}"); },    # Since not DefMath!
-    stretchy => 'false' });
+DefMacroI('\{', undef, '\ifmmode\lx@math@lbrace\else\lx@text@lbrace\fi');
+DefMacroI('\}', undef, '\ifmmode\lx@math@rbrace\else\lx@text@rbrace\fi');
+DefMathI('\lx@math@lbrace', undef, '{', role => 'OPEN',  stretchy => 'false', alias => '\{');
+DefMathI('\lx@math@rbrace', undef, '}', role => 'CLOSE', stretchy => 'false', alias => '\}');
+DefPrimitiveI('\lx@text@lbrace', undef, '{', alias => '\{',
+  #  font => { specialize => "{" });
+  font => { shape => 'upright' }, bounded => 1);    # Since not DefMath!
+DefPrimitiveI('\lx@text@rbrace', undef, '}', alias => '\}',
+  #  font => { specialize => "}" });    # Since not DefMath!
+  font => { shape => 'upright' }, bounded => 1);    # Since not DefMath!
 Let('\lbrace', '\{');
 Let('\lbrack', T_OTHER('['));
 Let('\rbrace', '\}');
@@ -5402,34 +5409,40 @@ DefConstructor('\right@hidden@egroup', '',
 DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
 
 DefConstructor('\@left Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
+  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+    . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
     my $delim = ToString($arg);
-    if ($delim eq '.') { }
+    if ($delim eq '.') {
+      $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{lrole},
         char => $$entry{char},
         name => $$entry{name});
       $whatsit->setFont($arg->getFont()); }
-    elsif (($arg->getProperty('role') || '') eq 'OPEN') { }
+    elsif (($arg->getProperty('role') || '') eq 'OPEN') {
+      $arg->setProperty(stretchy => 'true'); }
     else {
       Warn('unexpected', $delim, $stomach,
         "Missing delimiter; '.' inserted"); }
     return; },
   alias => '\left');
 DefConstructor('\@right Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)(<ltx:XMHint/>)",
+  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+    . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
     my $delim = ToString($arg);
-    if ($delim eq '.') { }
+    if ($delim eq '.') {
+      $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{rrole},
         char => $$entry{char},
         name => $$entry{name});
       $whatsit->setFont($arg->getFont()); }
-    elsif (($arg->getProperty('role') || '') eq 'CLOSE') { }
+    elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
+      $arg->setProperty(stretchy => 'true'); }
     else {
       Warn('unexpected', $delim, $stomach,
         "Missing delimiter; '.' inserted)"); }
@@ -5879,8 +5892,9 @@ DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times
 # NOTE that \mathord and \mathbin aren't really right here.
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
-DefConstructor('\mathord{}',   "<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathop{}',    "<ltx:XMWrap role='BIGOP'>#1</ltx:XMWrap>", bounded => 1);
+DefConstructor('\mathord{}', "<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>", bounded => 1);
+DefConstructor('\mathop{}', "<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>",
+  bounded => 1, properties => { scriptpos => \&doScriptpos });
 DefConstructor('\mathbin{}',   "<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>", bounded => 1);
 DefConstructor('\mathrel{}',   "<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded => 1);
 DefConstructor('\mathopen{}',  "<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>", bounded => 1);
