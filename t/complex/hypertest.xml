@@ -23,15 +23,15 @@
     </para>
     <para xml:id="S2.p2">
       <p>Special characters still neutralized:
-<ref class="ltx_url" href="http://example.com/foo_bar"><text font="typewriter">http://example.com/foo_bar</text></ref>,
-<ref class="ltx_url" href="http://example.com/foo#bar"><text font="typewriter">http://example.com/foo#bar</text></ref>,
-<ref class="ltx_url" href="http://example.com/foo&amp;bar"><text font="typewriter">http://example.com/foo&amp;bar</text></ref>.</p>
+<ref class="ltx_url" font="typewriter" href="http://example.com/foo_bar">http://example.com/foo_bar</ref>,
+<ref class="ltx_url" font="typewriter" href="http://example.com/foo#bar">http://example.com/foo#bar</ref>,
+<ref class="ltx_url" font="typewriter" href="http://example.com/foo&amp;bar">http://example.com/foo&amp;bar</ref>.</p>
     </para>
     <para xml:id="S2.p3">
-      <p>But macros expanded: <ref class="ltx_url" href="http://localhost/dir/index.html"><text font="typewriter">http://localhost/dir/index.html</text></ref>.</p>
+      <p>But macros expanded: <ref class="ltx_url" font="typewriter" href="http://localhost/dir/index.html">http://localhost/dir/index.html</ref>.</p>
     </para>
     <para xml:id="S2.p4">
-      <p>And, you get this: <ref class="ltx_url" href="http://example.com/{̃}user"><text font="typewriter">http://example.com/{̃}user</text></ref></p>
+      <p>And, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/{̃}user">http://example.com/{̃}user</ref></p>
     </para>
   </section>
   <rdf about="" content="An Author" property="dcterms:creator"/>

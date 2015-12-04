@@ -6,9 +6,9 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>Text <ref class="ltx_url" href="http://foo/bar"><text font="typewriter">http://foo/bar</text></ref>
+    <p>Text <ref class="ltx_url" font="typewriter" href="http://foo/bar">http://foo/bar</ref>
 and
-<ref class="ltx_url" href="http://foo/baz%bar"><text font="typewriter">http://foo/baz%bar</text></ref>
+<ref class="ltx_url" font="typewriter" href="http://foo/baz%bar">http://foo/baz%bar</ref>
 done.</p>
   </para>
   <para xml:id="p2">
