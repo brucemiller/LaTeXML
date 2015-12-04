@@ -2717,9 +2717,9 @@ Tag('ltx:*', 'afterClose:late' => sub {
 
 # These will get filled in during postprocessing.
 # * is added to accommodate hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[2])); });
-DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",    # Same??
+DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>", # Same??
   properties => sub { (label => CleanLabel($_[2])); });
 #======================================================================
 # C.11.3 Bibliography and Citation

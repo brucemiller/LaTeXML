@@ -196,7 +196,7 @@ DefMacroI('\phantomsection', undef, '');
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
 DefConstructor('\autoref Semiverbatim',
-  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label'/>",
+  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[1])); });
 
 # Covered in LaTeX.pool, but non-ref character is ignored.
