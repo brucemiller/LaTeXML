@@ -64,10 +64,11 @@ DefMacroI('\AmS',     undef, "AmS");
 Let('\notag', '\nonumber');
 
 ## Seemingly wants digested arg? (ie. expanded before seeing arg)
-### DefConstructor('\tag OptionalMatch:* {}', '',
-DefConstructor('\tag OptionalMatch:* Digested', '',
+DefMacro('\tag OptionalMatch:* {}',
+  '\ifx#1*\lx@tag{#2}\else{\def\theequation{#2}\lx@tag{\fnum@equation}}\fi');
+DefConstructor('\lx@tag Digested', '',
   afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(2), 'global'); },
+    AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(1), 'global'); },
   reversion => '',        # normally should disappear?
   mode      => 'text');
 
@@ -671,7 +672,7 @@ DefPrimitive('\numberwithin[]{}{}', sub {
 });
 
 # Section 3.11.2 Cross references to equation numbers
-DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label'/>)",
+DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
   properties => sub { (label => CleanLabel($_[1])); });
 DefMacro('\thetag{}', '{\rm #1}');
 
@@ -1073,10 +1074,10 @@ DefConstructor('\smash[]{}', "#2");    # well, what?
 # Redefinitions(?) of \bigl, \bigr, \Bigl,\Bigr, \biggl, \biggr, \Biggl, \Biggr
 
 # Section 4.14.2 Vertical bar notations
-DefMath('\lvert', '|',        role => 'OPEN');
-DefMath('\lVert', "\x{2225}", role => 'OPEN');     # PARALLEL TO
-DefMath('\rvert', '|',        role => 'CLOSE');
-DefMath('\rVert', "\x{2225}", role => 'CLOSE');    # PARALLEL TO
+DefMath('\lvert', '|',        role => 'OPEN',  stretchy => 'false');
+DefMath('\lVert', "\x{2225}", role => 'OPEN',  stretchy => 'false');    # PARALLEL TO
+DefMath('\rvert', '|',        role => 'CLOSE', stretchy => 'false');
+DefMath('\rVert', "\x{2225}", role => 'CLOSE', stretchy => 'false');    # PARALLEL TO
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 5  Operator names
