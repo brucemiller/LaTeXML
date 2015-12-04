@@ -471,6 +471,7 @@ sub pmml_internal {
     my $rowsep  = $node->getAttribute('rowsep') || '0pt';
     my $colsep  = $node->getAttribute('colsep') || '5pt';
     $vattach = 'axis' if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
+    $vattach = 'bottom1' if $vattach && ($vattach eq 'top');
     my $ostyle = $LaTeXML::MathML::STYLE;
     local $LaTeXML::MathML::STYLE
       = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
@@ -1023,6 +1024,7 @@ sub pmml_text_aux {
     if (my $bgcolor = $node->getAttribute('backgroundcolor')) { $attr{backgroundcolor} = $bgcolor; }
     if (my $opacity = $node->getAttribute('opacity'))         { $attr{opacity}         = $opacity; }
     my $tag = getQName($node);
+
     if ($tag eq 'ltx:Math') {
       # [NOTE BUG!!! we're not passing through the context... (but maybe pick it up anyway)]
       # If XMath still there, convert it now.
@@ -1033,7 +1035,8 @@ sub pmml_text_aux {
         return $mml->childNodes; }
       else {    # ???
         return (); } }
-    elsif ($tag eq 'ltx:text') {    # ltx:text element is fine, if we can manage the attributes!
+    elsif (($tag eq 'ltx:text')    # ltx:text element is fine, if we can manage the attributes!
+      && (!grep { $node->hasAttribute($_) } qw(framed framecolor))) {
       return map { pmml_text_aux($_, %attr) } $node->childNodes; }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
@@ -1231,8 +1234,7 @@ DefMathML('Apply:OVERACCENT:?', sub {
     my ($accent, $base) = @_;
     if (getQName($base) eq 'ltx:XMApp') {
       my ($xaccent, $xbase) = element_nodes($base);
-      if ((getQName($xaccent) eq 'ltx:XMTok')
-        && (($xaccent->getAttribute('role') || '') eq 'UNDERACCENT')) {
+      if (($xaccent->getAttribute('role') || '') eq 'UNDERACCENT') {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($xaccent), pmml($accent)]; } }
     return ['m:mover', { accent => 'true' }, pmml($base), pmml($accent)]; });
@@ -1241,8 +1243,7 @@ DefMathML('Apply:UNDERACCENT:?', sub {
     my ($accent, $base) = @_;
     if (getQName($base) eq 'ltx:XMApp') {
       my ($xaccent, $xbase) = element_nodes($base);
-      if ((getQName($xaccent) eq 'ltx:XMTok')
-        && (($xaccent->getAttribute('role') || '') eq 'OVERACCENT')) {
+      if (($xaccent->getAttribute('role') || '') eq 'OVERACCENT') {
         return ['m:munderover', { accent => 'true', accentunder => 'true' },
           pmml($xbase), pmml_scriptsize($accent), pmml($xaccent)]; } }
     return ['m:munder', { accentunder => 'true' }, pmml($base), pmml($accent)]; });
