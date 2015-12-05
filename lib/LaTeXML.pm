@@ -103,6 +103,7 @@ sub initialize_session {
     $latexml = new_latexml($$self{opts});
     1;
   };
+  ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
   if ($@) {                                                   #Fatal occured!
@@ -234,7 +235,9 @@ sub convert {
     1;
   };
   # 2.2 Bookkeeping in case fatal errors occurred
-  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
+  ### Note: this cause double counting if LaTeXML has already handled it.
+  ### But leaving it might might miss errors that sneak through (can that happen?)
+  ####  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
   my $eval_report = $@;
   $$runtime{status}      = $latexml->getStatusMessage;
@@ -291,7 +294,9 @@ sub convert {
       1;
     };
     # 3.1 Bookkeeping if a post-processing Fatal error occurred
-    ## $$latexml{state}->noteStatus('fatal') if $latexml && $@; # Fatal Error?
+    ### Note: this cause double counting if LaTeXML has already handled it.
+    ### But leaving it might might miss errors that sneak through (can that happen?)
+    ### $$latexml{state}->noteStatus('fatal') if $latexml && $@; # Fatal Error?
     local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
       if ((!$post_eval_return) && (!$@));
     if ($@) {    #Fatal occured!
