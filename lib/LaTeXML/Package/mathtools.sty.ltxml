@@ -1,0 +1,799 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  mathtools                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+######################################################
+
+###########
+# Options #
+###########
+
+# handle special mathtools options
+foreach my $option (qw(fixamsmath donotfixamsmathbugs allowspaces disallowspaces)) {
+  DeclareOption($option, undef); }
+
+# pass all other options to amsmath
+DeclareOption(undef, sub {
+    PassOptions('amsmath', 'sty', ToString(Digest(T_CS('\CurrentOption')))); });
+ProcessOptions();
+RequirePackage('amsmath', withoptions => 1);
+
+##########
+# Macros #
+##########
+
+# 3
+
+# Note: showonlyrefs doesn't work, as it requires a 2-pass process
+DefPrimitive('\mathtoolsset RequiredKeyVals', sub {
+    my ($stomach, $keyval) = @_;
+    my @pairs = $keyval->getPairs();
+    while (@pairs) {
+      my ($key, $val) = (shift(@pairs), shift(@pairs));
+      $val = $val ? ToString($val) : '\@mt@true';
+      DefMacro('\csname @mt@mathtoolsset@' . $key . '\endcsname', $val); }
+    return; });
+
+#Lookup function for mathtoolsset
+DefMacro('\@mt@getmtoption{}', '\ifcsname @mt@mathtoolsset@#1\endcsname'
+    . '\expandafter\let\expandafter\@mt@currentvalue\csname @mt@mathtoolsset@#1\endcsname\else'
+    . '\let\@mt@currentvalue\relax\fi'
+    . '\@mt@currentvalue');
+
+## 3.1
+
+# ?
+DefConstructor('\mathmbox {}', "#1");
+
+# NOTE: Optional argument is one of \displaystyle,... !!!
+DefConstructor('\mathllap [] {}',
+  "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(xoffset => $whatsit->getWidth->negate);
+    $whatsit->setWidth(Dimension(0));
+    return; });
+DefConstructor('\mathrlap [] {}',
+  "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setWidth(Dimension(0));
+    return; });
+
+DefConstructor('\mathclap [] {}',
+  "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $whatsit->setProperty(xoffset => $whatsit->getWidth->multiply(-0.5));
+    $whatsit->setWidth(Dimension(0));
+    return; });
+# ? related ?
+DefConstructor('\clap {}',              "#1");
+DefConstructor('\mathmakebox [] [] {}', "#3");
+# Ignoring cramped, for now?
+DefConstructor('\cramped [] {}', "#2");
+
+# Same as \mathllap, etc (but also cramped!)
+Let('\crampedllap', '\mathllap');
+Let('\crampedrlap', '\mathrlap');
+Let('\crampedclap', '\mathclap');
+
+# another variant?
+# This has to destructure the argument to recognize where operators and scripts are!!!
+# Can be: \mathop? op \limits? suborsup suporsub?
+# where suborsup and suporsub would be _{arg} or ^{arg}
+#DefConstructor('\smashoperator [] {}', "#2");
+DefMacro('\smashoperator [] {}', '\lx@smashoperator{#1}#2{}{}{}{}{}{}\end');
+DefMacro('\lx@smashoperator{} {}{}{}{}{}{} Until:\end', sub {
+    my ($gullet, $align, @body) = @_;
+    my ($op, $sub, $sup);
+    # in equality tests, note that the args are Tokens(), not single Token's!
+    if (@body && $body[0]->equals(Tokens(T_CS('\mathop')))) {
+      $op = Tokens(shift(@body), shift(@body)); }
+    else {
+      $op = shift(@body); }
+    if (@body && $body[0]->equals(Tokens(T_CS('\limits')))) {
+      shift(@body); }
+    while (@body && $body[0]->unlist) {
+      my $script = shift(@body);
+      if ($script->equals(Tokens(T_SUB)) && !$sub) {
+        $sub = shift(@body); }
+      elsif ($script->equals(Tokens(T_SUPER)) && !$sup) {
+        $sup = shift(@body); }
+      else {
+        Error('expected', 'sub-superscripts', "\\smashoperator expected sub and superscripts",
+          "Got " . ToString($script)); } }
+    Invocation(T_CS('\lx@@smashoperator'), $align, $op, $sub || Tokens(), $sup || Tokens())->unlist; });
+
+DefConstructor('\lx@@smashoperator{}{} InScriptStyle InScriptStyle',
+  "<ltx:XMApp role='SUMOP' rpadding='#rpadding' lpadding='#lpadding' scriptpos='mid'>"
+    . "?#sub(<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>)()"
+    . "?#both(<ltx:XMApp scriptpos='mid'>)()"
+    . "?#sup(<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>)()"
+    . "#2"
+    . "?#sup(<ltx:XMArg rule='Superscript' width='#supwidth' xoffset='#supoffset'>#sup</ltx:XMArg>)()"
+    . "?#both(</ltx:XMApp>)()"
+    . "?#sub(<ltx:XMArg rule='Subscript' width='#subwidth' xoffset='#suboffset'>#sub</ltx:XMArg>)()"
+    . "</ltx:XMApp>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($align, $op, $sub, $sup) = $whatsit->getArgs;
+    my $opw   = $op->getWidth;
+    my $width = $opw;
+    $align = ToString($align) || 'lr';
+    if ($sub->unlist) {
+      my $w = $sub->getWidth;
+      $whatsit->setProperties(sub => $sub,
+        suboffset => $w->multiply(-0.5),
+        subwidth  => Dimension(0));
+      $sub->setWidth(Dimension(0));
+      $width = $width->larger($w); }
+    if ($sup->unlist) {
+      my $w = $sup->getWidth;
+      $whatsit->setProperties(sup => $sup,
+        supoffset => $w->multiply(-0.5),
+        supwidth  => Dimension(0));
+      $sup->setWidth(Dimension(0));
+      $width = $width->larger($w); }
+    my $pad = $width->subtract($opw)->multiply(0.5);
+    if ($pad->valueOf > 0) {
+      if ($align eq 'l') {
+        $whatsit->setProperties(rpadding => $pad); }
+      elsif ($align eq 'r') {
+        $whatsit->setProperties(lpadding => $pad); } }
+    $whatsit->setProperties(both => (scalar($sub->unlist) && scalar($sup->unlist)),
+      scriptpos => "mid" . $stomach->getBoxingLevel);
+    return; },
+  reversion => '\smashoperator[#1]{#2_{#3}^{#4}}');    # not exactly, but...
+
+# \adjustlimits \lim_{somelimit} \lim_{somelimit}
+DefConstructor('\adjustlimits {} DefToken InScriptStyle {} DefToken InScriptStyle',
+  "<ltx:XMApp>"
+    . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='mid'/>"
+    . "<ltx:XMArg depth='#limdepth'>#1</ltx:XMArg>"
+    . "<ltx:XMArg height='#subheight'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='mid'/>"
+    . "<ltx:XMArg depth='#limdepth'>#4</ltx:XMArg>"
+    . "<ltx:XMArg height='#subheight'>#6</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub {
+    my ($lim1, $op1, $sub1, $lim2, $op2, $sub2) = $_[1]->getArgs;
+    my $d1 = $lim1->getDepth;
+    my $d2 = $lim2->getDepth;
+    my $h1 = $sub1->getHeight;
+    my $h2 = $sub2->getHeight;
+    $_[1]->setProperties(limdepth => ($d1->valueOf > $d2->valueOf ? $d1 : $d2),
+      subheight => ($h1->valueOf > $h2->valueOf ? $h1 : $h2));
+    return; });
+
+DefConstructor('\SwapAboveDisplaySkip', "");
+
+## 3.2
+sub defMTTagForm {
+  my ($stomach, $name, $style, $open, $close) = @_;
+  my $cs = T_CS('\@MTStag@' . $name);
+  DefMacroI('\fnum@equation@MT@' . $name, undef,
+    Tokens(T_BEGIN, $open->unlist,
+      ($style ? $style->unlist : ()), T_BEGIN,
+      T_CS('\theequation'),
+      T_END, $close->unlist, T_END),
+    scope => 'global');
+  DefMacroI('\ref@equation@MT@' . $name, 'Semiverbatim',
+    Tokens(T_BEGIN, $open->unlist,
+      ($style ? $style->unlist : ()), T_BEGIN,
+      #T_OTHER('*'),
+      T_CS('\ref'), T_BEGIN, T_PARAM, T_OTHER(1), T_END,
+      T_END, $close->unlist, T_END),
+    scope => 'global');
+  DefMacroI($cs, undef, sub {
+      DefMacroI('\fnum@equation', undef, T_CS('\fnum@equation@MT@' . $name), scope => 'global');
+      DefMacroI('\eqref', 'Semiverbatim',
+        Tokens(T_CS('\ref@equation@MT@' . $name), T_BEGIN, T_PARAM, T_OTHER(1), T_END),
+        scope => 'global'); });
+  return; }
+
+DefPrimitive('\newtagform {} [] {} {}', sub {
+    my ($stomach, $name, $style, $open, $close) = @_;
+    $name = ToString($name);
+    my $cs = T_CS('\@MTStag@' . $name);
+    if (!isDefinable($cs)) {
+      Error('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\newtagform) of '$name'");
+      return; }
+    defMTTagForm($stomach, $name, $style, $open, $close); });
+
+DefPrimitive('\renewtagform {} [] {} {}', sub {
+    my ($stomach, $name, $style, $open, $close) = @_;
+    defMTTagForm($stomach, ToString($name), $style, $open, $close); });
+
+DefMacro('\usetagform {}', '\csname @MTStag@#1\endcsname');
+
+RawTeX('\newtagform{default}{(}{)}');
+
+Let('\refeq', '\ref');
+DefMacro('\noeqref{}', '');
+
+## 3.3
+
+DefConstructor('\xleftrightarrow[]{}',    # not centered anymore
+  "?#1("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftrightarrow' role='METARELOP' stretchy='true'>\x{2194}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftrightarrow' role='METARELOP'>\x{2194}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xLeftarrow[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xLeftarrow' role='ARROW' stretchy='true'>\x{21D0}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xLeftarrow' role='ARROW'>\x{21D0}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xRightarrow[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xRightarrow' role='ARROW' stretchy='true'>\x{21D2}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xRightarrow' role='ARROW'>\x{21D2}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xLeftrightarrow[]{}',    # looks stretched
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xLeftrightarrow' role='ARROW' stretchy='true'>\x{21D4}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xLeftrightarrow' role='ARROW'>\x{21D4}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xhookleftarrow[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xhookleftarrow' role='ARROW' stretchy='true'>\x{21A9}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xhookleftarrow' role='ARROW'>\x{21A9}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xhookrightarrow[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xhookrightarrow' role='ARROW' stretchy='true'>\x{21AA}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xhookrightarrow' role='ARROW'>\x{21AA}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xmapsto[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xmapsto' role='ARROW' stretchy='true'>\x{21A6}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xmapsto' role='ARROW'>\x{21A6}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xrightharpoondown[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightharpoondown' role='ARROW' stretchy='true'>\x{21C1}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightharpoondown' role='ARROW' stretchy='true'>\x{21C1}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xrightharpoonup[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightharpoonup' role='ARROW' stretchy='true'>\x{21C0}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightharpoonup' role='ARROW'>\x{21C0}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xleftharpoondown[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftharpoondown' role='ARROW' stretchy='true'>\x{21BD}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xlefttharpoondown' role='ARROW'>\x{21BD}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xleftharpoonup[]{}',
+  "?#1("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftharpoonup' role='ARROW' stretchy='true'>\x{21BC}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='ARROW'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftharpoonup' role='ARROW'>\x{21BC}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xrightleftharpoons[]{}',
+  "?#1("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightleftharpoons' role='METARELOP' stretchy='true'>\x{21CC}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xrightleftharpoons' role='METARELOP'>\x{21CC}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefConstructor('\xleftrightharpoons[]{}',
+  "?#1("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap>"
+    . "<ltx:XMApp>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftrightharpoons' role='METARELOP' stretchy='true'>\x{21CB}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . "</ltx:XMApp>"
+    . ")("
+    . "<ltx:XMApp role='METARELOP'>"
+    . "<ltx:XMWrap role='OVERACCENT'>#2</ltx:XMWrap>"
+    . "<ltx:XMTok name='xleftrightharpoons' role='METARELOP'>\x{21CB}</ltx:XMTok>"
+    . "</ltx:XMApp>"
+    . ")",
+  properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
+
+DefMacro('\overbracket [] [] {}', '\@overbracket {#3}'); # args: [<rule thickness>] [<bracket height>] {<arg>}
+DefMacro('\underbracket [] [] {}', '\@underbracket {#3}');
+DefMath('\@overbracket Digested', "\x{FE48}", operator_role => 'OVERACCENT', scriptpos => 'mid',
+  alias => '\overbracket');
+DefMath('\@underbracket Digested', "\x{FE47}", operator_role => 'UNDERACCENT', scriptpos => 'mid',
+  alias => '\underbracket');
+Let('\LaTeXunderbrace', '\underbrace');
+Let('\LaTeXoverbrace',  '\overbrace');
+
+## 3.4
+# starred normal matrices
+DefMacro('\csname matrix*\endcsname []', '\lx@ams@matrix{name=matrix,datameaning=matrix,alignment=#1}');
+DefMacro('\csname endmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname pmatrix*\endcsname []', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,alignment=#1,left=\@left(,right=\@right)}');
+DefMacro('\csname endpmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname bmatrix*\endcsname []', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,alignment=#1,left=\@left[,right=\@right]}');
+DefMacro('\csname endbmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname Bmatrix*\endcsname []', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,alignment=#1,left=\@left\{,right=\@right\}}');
+DefMacro('\csname endBmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname vmatrix*\endcsname []', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,alignment=#1,left=\@left|,right=\@right|}');
+DefMacro('\csname endvmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname Vmatrix*\endcsname []', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,alignment=#1,left=\@left\|,right=\@right\|}');
+DefMacro('\csname endVmatrix*\endcsname', '\lx@end@ams@matrix');
+
+# starred small matrices
+DefMacroI('\@smallmatrix@star@tmp', 'RequiredKeyVals', sub {
+    my ($gullet, $kv) = @_;
+    my %dict = $kv->getPairs;
+
+    my $alignment = (defined $dict{alignment}) ? ToString($dict{alignment}) : ToString(Digest('\@mt@getmtoption{smallmatrix-align}'));
+
+    my $delimitermeaning = (defined $dict{delimitermeaning}) ? ToString($dict{delimitermeaning}) : '';
+    my $left             = (defined $dict{left})             ? ToString($dict{left})             : '';
+    my $right            = (defined $dict{right})            ? ToString($dict{right})            : '';
+
+    return TokenizeInternal('\lx@ams@matrix{'
+        . 'name=' . ToString($dict{name}) . ','
+        . 'datameaning=' . ToString($dict{datameaning}) . ','
+        . 'style=' . ToString($dict{style})
+        . (($delimitermeaning ne '') ? (',delimitermeaning=' . $delimitermeaning) : '')
+        . (($left ne '')             ? (',left=' . $left)                         : '')
+        . (($right ne '')            ? (',right=' . $right)                       : '')
+        . (($alignment ne '')        ? (',alignment=' . $alignment)               : '')
+        . '}'); });
+
+DefMacro('\csname smallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=matrix,datameaning=matrix,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname psmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right),style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endpsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=bmatrix,datameaning=matrix,left=\@left[,right=\@right],style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endbsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname Bsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Bmatrix,datameaning=matrix,left=\@left\{,right=\@right\},style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endBsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\@left|,right=\@right|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endvsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+DefMacro('\csname Vsmallmatrix*\endcsname []', '\@smallmatrix@star@tmp{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\@left\|,right=\@right\|,style=\scriptsize,\ifx/#1/\else alignment=#1,\fi}');
+DefMacro('\csname endVsmallmatrix*\endcsname', '\lx@end@ams@matrix');
+
+# non-starred small matrices
+DefMacro('\psmallmatrix', '\lx@ams@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right),style=\scriptsize}');
+DefMacro('\endpsmallmatrix', '\lx@end@ams@matrix');
+
+DefMacro('\bsmallmatrix', '\lx@ams@matrix{name=bmatrix,datameaning=matrix,left=\@left[,right=\@right],style=\scriptsize}');
+DefMacro('\endbsmallmatrix', '\lx@end@ams@matrix');
+
+DefMacro('\Bsmallmatrix', '\lx@ams@matrix{name=Bmatrix,datameaning=matrix,left=\@left\{,right=\@right\},style=\scriptsize}');
+DefMacro('\endBsmallmatrix', '\lx@end@ams@matrix');
+
+DefMacro('\vsmallmatrix', '\lx@ams@matrix{name=vmatrix,delimitermeaning=determinant,datameaning=matrix,left=\@left|,right=\@right|,style=\scriptsize}');
+DefMacro('\endvsmallmatrix', '\lx@end@ams@matrix');
+
+DefMacro('\Vsmallmatrix', '\lx@ams@matrix{name=Vmatrix,delimitermeaning=norm,datameaning=matrix,left=\@left\|,right=\@right\|,style=\scriptsize}');
+DefMacro('\endVsmallmatrix', '\lx@end@ams@matrix');
+
+# {multlined}
+DefConstructor('\@@multlined DigestedBody',
+  "#1",
+  beforeDigest => sub {
+    AssignValue('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center', '0' => 'left', '-1' => 'right' });
+    $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => LookupValue('MULTIROW_ALIGNMENT_RULE'));
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  afterConstruct => sub {
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
+  reversion => '\begin{multlined}#1{multlined}');
+
+DefMacroI('\@multlined@tmp', 'RequiredKeyVals', sub {
+    my ($gullet, $kv) = @_;
+    my %dict = $kv->getPairs;
+
+    my $vattach = (defined $dict{vattach}) ? ToString($dict{vattach}) : ToString(Digest('\@mt@getmtoption{multlined-pos}'));
+    my $width = (defined $dict{width}) ? ToString($dict{width}) : ToString(Digest('\@mt@getmtoption{multlined-width}'));
+
+    return TokenizeInternal('\@ams@multirow@bindings{'
+        . 'name=multlined'
+        . (($vattach ne '') ? (',vattach=' . $vattach) : '')
+        . (($width ne '')   ? (',width=' . $width)     : '')
+        . '}'); });
+DefMacroI('\multlined', '[][]', '\@multlined@tmp{'
+    . 'name=multlined,'
+    . '\ifx/#1/\else vattach=#1,\fi'
+    . '\ifx/#2/\else width=#2,\fi'
+    . '}\@@multlined\@start@alignment');
+DefMacroI('\endmultlined', undef, '\@finish@alignment\@end@multlined');
+DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
+
+# Is currently ignore the shoving dimension
+DefMacro('\@MT@shove{}', sub {
+    my ($gullet, $shove_dir) = @_;
+    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber - 1;
+    my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE');
+
+    $$rowalignment{$cur_row_num} = ToString($shove_dir);
+    return; });
+
+DefMacro('\shoveright[]{}', '\@MT@shove{right}#2');
+DefMacro('\shoveleft[]{}',  '\@MT@shove{left}#2');
+
+# cases
+DefMacro('\dcases',
+  '\lx@ams@cases{name=dcases,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=math}');
+DefMacro('\enddcases',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname dcases*\endcsname',
+  '\lx@ams@cases{name=dcases,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=text}');
+DefMacro('\csname enddcases*\endcsname',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname rcases\endcsname',
+  '\lx@ams@cases{name=rcases,meaning=cases,right=\@right\},style=\textstyle,conditionmode=math}');
+DefMacro('\csname endrcases\endcsname',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname rcases*\endcsname',
+  '\lx@ams@cases{name=rcases,meaning=cases,right=\@right\},style=\textstyle,conditionmode=text}');
+DefMacro('\csname endrcases*\endcsname',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname drcases\endcsname',
+  '\lx@ams@cases{name=drcases,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=math}');
+DefMacro('\csname enddrcases\endcsname',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname drcases*\endcsname',
+  '\lx@ams@cases{name=drcases,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
+DefMacro('\csname enddrcases*\endcsname',
+  '\lx@end@ams@cases');
+
+DefMacro('\csname cases*\endcsname',
+  '\lx@ams@cases{name=cases,meaning=cases,left=\@left\{,style=\textstyle,conditionmode=text}');
+DefMacro('\csname endcases*\endcsname',
+  '\lx@end@ams@cases');
+
+# TODO: Make this actually shift the equation
+DefMacro('\MoveEqLeft[]', T_ALIGN);
+
+# TODO: Properly implement \Aboxed
+DefMacro('\Aboxed{}', '#1');
+
+# TODO: Make this actually do something
+DefMacro('\ArrowBetweenLines[]',                   '');
+DefMacro('\csname ArrowBetweenLines*\endcsname[]', '');
+DefMacro('\vdotswithin{}',                         '');
+DefMacro('\shortvdotswithin{}',                    '');
+DefMacro('\csname shortvdotswithin*\endcsname{}',  '');
+DefMacro('\MTFlushSpaceAbove',                     '');
+DefMacro('\MTFlushSpaceBelow',                     '');
+
+## 3.5
+Let('\shortintertext', '\@ams@intertext');
+
+## 3.6
+
+DefPrimitive('\DeclarePairedDelimiter DefToken {}{}', sub {
+    my ($gullet, $cs, $ldel, $rdel) = @_;
+    my $cmd = substr(ToString($cs), 1);
+
+    DefMacroI('\MT@delim@' . $cmd . '@star@wrapper',   '{}{}{}', '#1#2#3');
+    DefMacroI('\MT@delim@' . $cmd . '@nostar@wrapper', '{}{}{}', '#1#2#3');
+
+    DefMacroI('\MT@delim@' . $cmd . '@star', '{}',
+'\MT@delim@' . $cmd . '@star@wrapper{\left' . ToString($ldel) . '}{#1}{\right' . ToString($rdel) . '}');
+    DefMacroI('\MT@delim@' . $cmd . '@nostar', '[]{}',
+      '\MT@delim@' . $cmd . '@nostar@wrapper{#1' . ToString($ldel) . '}{#2}{#1' . ToString($rdel) . '}');
+
+    DefMacroI($cs, undef, '\@ifstar{\MT@delim@' . $cmd . '@star}{\MT@delim@' . $cmd . '@nostar}'); });
+
+DefPrimitive('\DeclarePairedDelimiterX DefToken [] {} {} {}', sub {
+    my ($stomach, $cs, $nargs, $ldel, $rdel, $body) = @_;
+
+    # fix $nargs
+    $nargs = $nargs->toString if ref $nargs;
+    $nargs = 0 unless $nargs;
+
+    DefMacroI(T_CS(ToString($cs) . '@inner'), join('', map { '{}' } (1 .. $nargs)),
+      Tokens($body->unlist, T_CS($cs . '@after')));
+    DefMacroI($cs, 'OptionalMatch:* []', sub {
+        my ($gullet, $star, $opt) = @_;
+        return (($star ? T_CS('\left') : ((defined $opt) ? $opt->unlist : ())),
+          $ldel->unlist,
+          T_CS('\def'), T_CS('\delimsize'), T_BEGIN, ($opt ? $opt->unlist : ($star ? T_CS('\middle') : ())), T_END,
+          T_CS('\def'), T_CS($cs . '@after'), T_BEGIN, ($star ? T_CS('\right') : ((defined $opt) ? $opt->unlist : ())), $rdel->unlist, T_END,
+          T_CS(ToString($cs) . '@inner')); }); });
+
+DefPrimitive('\DeclarePairedDelimiterXPP DefToken [] {} {} {} {} {}', sub {
+    my ($stomach, $cs, $nargs, $precode, $ldel, $rdel, $postcode, $body) = @_;
+
+    # fix $nargs
+    $nargs = $nargs->toString if ref $nargs;
+    $nargs = 0 unless $nargs;
+
+    DefMacroI(T_CS(ToString($cs) . '@inner'), join('', map { '{}' } (1 .. $nargs)),
+      Tokens($body->unlist, T_CS($cs . '@after'), $postcode->unlist));
+    DefMacroI($cs, 'OptionalMatch:* []', sub {
+        my ($gullet, $star, $opt) = @_;
+        return ($precode->unlist,
+          ($star ? T_CS('\left') : ((defined $opt) ? $opt->unlist : ())),
+          $ldel->unlist,
+          T_CS('\def'), T_CS('\delimsize'), T_BEGIN, ($opt ? $opt->unlist : ($star ? T_CS('\middle') : ())), T_END,
+          T_CS('\def'), T_CS($cs . '@after'), T_BEGIN, ($star ? T_CS('\right') : ((defined $opt) ? $opt->unlist : ())), $rdel->unlist, T_END,
+          T_CS(ToString($cs) . '@inner')); }); });
+
+# only applies to macros defined with \DeclarePairedDelimiter
+DefPrimitive('\reDeclarePairedDelimiterInnerWrapper DefToken {} {}', sub {
+    my ($stomach, $cs, $nstar, $body) = @_;
+    DefMacroI('\MT@delim@' . (substr(ToString($cs), 1)) . '@' . ToString($nstar) . '@wrapper', '{}{}{}', $body); });
+
+## 3.7
+
+DefMath('\lparen', '(', role => 'OPEN',  stretchy => 'false');
+DefMath('\rparen', ')', role => 'CLOSE', stretchy => 'false');
+
+DefMathI('\vcentcolon',    undef, ':', role => 'RELOP');
+DefMathI('\ordinarycolon', undef, ':', role => 'RELOP');
+
+DefMath('\dblcolon', "::", role => 'RELOP');
+# taken from txfonts.sty.ltxml
+DefMath('\coloneqq',    "\x{2254}",   role => 'RELOP');
+DefMath('\Coloneqq',    "\x{2A74}",   role => 'RELOP');
+DefMath('\coloneq',     ":-",         role => 'RELOP');
+DefMath('\Coloneq',     "::-",        role => 'RELOP');
+DefMath('\eqqcolon',    "\x{2255}",   role => 'RELOP');
+DefMath('\Eqqcolon',    "=::",        role => 'RELOP');
+DefMath('\eqcolon',     "-:",         role => 'RELOP');
+DefMath('\Eqcolon',     "-::",        role => 'RELOP');
+DefMath('\colonapprox', ":\x{2248}",  role => 'RELOP');
+DefMath('\Colonapprox', "::\x{2248}", role => 'RELOP');
+DefMath('\colonsim',    ":\x{223C}",  role => 'RELOP');
+DefMath('\Colonsim',    "::\x{223C}", role => 'RELOP');
+
+DefMathI('\nuparrow', undef, UTF(0x2909), role => 'ARROW'); # could not find arrow with vertical line
+DefMathI('\ndownarrow', undef, UTF(0x2908), role => 'ARROW');    # see above
+DefMathI('\bigtimes', undef, UTF(0xD7), role => 'MULOP', meaning => 'times', font => { size => 'Big' }, scriptpos => \&doScriptpos);
+
+# 4
+
+## 4.2
+
+DefMathI('\prescript', '{}{}{}', '{}^{\@mt@getmtoption{prescript-sup-format}{#1}}_{\@mt@getmtoption{prescript-sub-format}{#2}}{\@mt@getmtoption{prescript-arg-format}{#3}}', scriptpos => 'pre');
+
+## 4.4
+DefMacroI('\begin{spreadlines}', '{Dimension}', '\begingroup\jot=#1\relax');
+DefMacroI('\end{spreadlines}',   undef,         '\endgroup');
+
+## 4.5
+
+DefConstructor('\@@lgathered DigestedBody',
+  "#1",
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'left' });
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  afterConstruct => sub {
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
+  reversion => '\begin{lgathered}#1\end{lgathered}');
+
+DefMacroI('\lgathered', '[]', '\@ams@multirow@bindings{name=lgathered,vattach=#1}\@@lgathered\@start@alignment');
+DefMacroI('\endlgathered', undef, '\@finish@alignment\@end@gathered');
+
+DefConstructor('\@@rgathered DigestedBody',
+  "#1",
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'right' });
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  afterConstruct => sub {
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
+  reversion => '\begin{rgathered}#1\end{rgathered}');
+
+DefMacroI('\rgathered', '[]', '\@ams@multirow@bindings{name=rgathered,vattach=#1}\@@rgathered\@start@alignment');
+DefMacroI('\endrgathered', undef, '\@finish@alignment\@end@gathered');
+
+DefConstructor('\@@newgathered@dummy DigestedBody',
+  '#1',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $array = $document->getNode->lastChild;
+    # Insert a \qquad between the rows to encourage the parser to see them as separate eqns.
+    my @stuff = extractXMArrayCells($document, $array);
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMWrap', { rule => 'Anything,' },
+          createXMRefs($document, @stuff)],
+        $array],
+      $array);
+    return; },
+  reversion => '');
+
+DefMacro('\newgathered{}{}{}{}', sub {
+    my ($gullet, $name, $pre_line, $post_line, $after) = @_;
+    $name = ToString($name);
+
+    DefMacroI('\\' . $name, undef, '\@ams@multirow@bindings{name=' . $name . '}[before_row=' . UnTeX($pre_line) . ',after_row=' . UnTeX($post_line) . ']\@@newgathered@dummy\@start@alignment');
+    DefMacroI('\end' . $name, undef, Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
+Let('\renewgathered', '\newgathered');
+
+## 4.6
+
+DefMacro('\splitfrac{}{}',
+'\@ams@multirow@bindings{name=splitfrac}\@@multlined\@start@alignment #1 \\\\ #2 \@finish@alignment\@end@multline');
+DefMacro('\splitdfrac{}{}',
+'\displaystyle\@ams@multirow@bindings{name=splitdfrac}\@@multlined\@start@alignment #1 \\\\ #2 \@finish@alignment\@end@multline');
+
+######################################################
+
+1;
+
+# vim: ft=perl: expandtab:
