@@ -2051,6 +2051,12 @@ sub InputDefinitions {
 
   my $filename = $name;
   $filename .= '.' . $options{type} if $options{type};
+  if ($options{options} && scalar(@{ $options{options} })) {
+    if (my $prevoptions = LookupValue($filename . '_loaded_with_options')) {
+      my $curroptions = join(',', @{ $options{options} });
+      Error('unexpected', 'options', $STATE->getStomach->getGullet,
+        "Option clash for file $filename with options '$curroptions'",
+        "previously loaded with '$prevoptions'") unless $curroptions eq $prevoptions; } }
   if (my $file = FindFile($filename, type => $options{type},
       notex => $options{notex}, noltxml => $options{noltxml})) {
     if ($options{handleoptions}) {
@@ -2074,6 +2080,8 @@ sub InputDefinitions {
       DefMacroI(T_CS('\opt@' . $name . '.' . $astype), undef,
         Tokens(Explode(join(',', @{ LookupValue('opt@' . $name . "." . $astype) }))));
     }
+    AssignValue($filename . '_loaded_with_options' => join(',', @{ $options{options} }), 'global')
+      if $options{options};
 
     my ($fdir, $fname, $ftype) = pathname_split($file);
     if ($ftype eq 'ltxml') {
