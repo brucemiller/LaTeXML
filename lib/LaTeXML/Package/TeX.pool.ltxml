@@ -555,6 +555,13 @@ DefMacro('\@ifundefined{}{}{}', sub {
       Let($cs, '\relax');    # Yuck, but traditional!
       return $if->unlist; } });
 
+sub isDefinable {
+  my ($token) = @_;
+  my $meaning = LookupMeaning($token);
+  my $name = $token->getString; $name =~ s/^\\//;
+  return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
+      && (($name ne 'relax') && ($name !~ /^end/))); }
+
 #**********************************************************************
 # Expandable Primitives
 # See The TeXBook, Ch. 20, Definitions (also called Macros) pp. 212--215

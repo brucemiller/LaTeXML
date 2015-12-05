@@ -4032,13 +4032,6 @@ RawTeX(<<'EoTeX');
 \def\@carcube#1#2#3#4\@nil{#1#2#3}
 EoTeX
 
-sub isDefinable {
-  my ($token) = @_;
-  my $meaning = LookupMeaning($token);
-  my $name = $token->getString; $name =~ s/^\\//;
-  return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
-      && (($name ne 'relax') && ($name !~ /^end/))); }
-
 DefMacro('\@ifdefinable Token {}', sub {
     my ($gullet, $token, $if) = @_;
     if (isDefinable($token)) {
