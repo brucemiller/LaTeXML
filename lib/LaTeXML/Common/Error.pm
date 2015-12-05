@@ -55,7 +55,9 @@ sub Fatal {
   die $message if $LaTeXML::IGNORE_ERRORS;    # Short circuit, w/no formatting, if in probing eval
   my $inhandler = !$SIG{__DIE__};
   my $ineval    = 0;                          # whether we're in an eval should no longer matter!
-  local $SIG{__DIE__} = undef;                # Avoid recursion while preparing the message.
+  # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
+  # It should be safe so long as the caller has bound it and rebinds it if necessary.
+  $SIG{__DIE__} = 'DEFAULT';                # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if (!$inhandler) {
@@ -65,10 +67,8 @@ sub Fatal {
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
     $message
-      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'), $where, $message, 2,
-      # ?!?!?!?!?!
-      # or just verbosity code >>>1 ???
-      @details);
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
+                        $where, $message, 2, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     # This really should be handled by the top-level program,
     # after doing all processing within an eval
