@@ -52,14 +52,23 @@ sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
-  die $message if $LaTeXML::IGNORE_ERRORS;    # Short circuit, w/no formatting, if in probing eval
+  die $message if $LaTeXML::IGNORE_ERRORS    # Short circuit, w/no formatting, if in probing eval
+    || (($SIG{__DIE__} eq 'DEFAULT') && $^S);    # Also missing class when parsing bindings(?!?!)
+
+  # print STDERR "\nHANDLING FATAL:"
+  #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
+  #   ." handler=".($SIG{__DIE__}||'<none>')
+  #   ." parsing=".($^S||'<no>')
+  #   ."\n";
   my $inhandler = !$SIG{__DIE__};
-  my $ineval    = 0;                          # whether we're in an eval should no longer matter!
+  my $ineval    = 0;                # whether we're in an eval should no longer matter!
+
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
-  $SIG{__DIE__} = 'DEFAULT';                # Avoid recursion while preparing the message.
+  $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+
   if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
@@ -68,7 +77,7 @@ sub Fatal {
     $state->noteStatus('fatal') if $state && !$ineval;
     $message
       = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
-                        $where, $message, 2, @details);
+      $where, $message, 2, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     # This really should be handled by the top-level program,
     # after doing all processing within an eval
@@ -202,6 +211,10 @@ sub perl_die_handler {
     my ($method, $class, $where) = ($1, $2, $3);
     Fatal('misdefined', callerName(1), $where,
       "Can't locate method '$method' via '$class'", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^Can't locate \S* in \@INC \(you may need to install the (\S*) module\) \(\@INC contains: ([^\)]*)\) $at_re$/) {
+    my ($class, $inc, $where) = ($1, $2);
+    Fatal('misdefined', callerName(1), $where,
+      "Can't locate class '$class' (not installed or misspelled?)", @line[1 .. $#line]); }
   elsif ($line[0] =~ /^Can't use\s+(\w*)\s+\([^\)]*\) as (.*?) ref(?:\s+while "strict refs" in use)? at (.*)$/) {
     my ($gottype, $wanttype, $where) = ($1, $2, $3);
     Fatal('misdefined', callerName(1), $where,
