@@ -248,7 +248,10 @@ sub parse_rec {
   my $tag = getQName($node);
   if (my $requested_rule = $node->getAttribute('rule')) {
     $rule = $requested_rule; }
-  if (my $result = $self->parse_single($node, $document, $rule)) {
+  if ($rule eq 'kludge') {
+    $self->parse_kludge($node, $document);
+    return; }
+  elsif (my $result = $self->parse_single($node, $document, $rule)) {
     $$self{passed}{$tag}++;
     if ($tag eq 'ltx:XMath') {    # Replace the content of XMath with parsed result
       NoteProgress('[' . ++$$self{n_parsed} . ']');
