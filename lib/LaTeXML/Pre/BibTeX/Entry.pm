@@ -12,6 +12,7 @@
 package LaTeXML::Pre::BibTeX::Entry;
 use strict;
 use warnings;
+use List::Util qw(min max);
 
 sub new {
   my ($class, $type, $key, $fields, $rawfields) = @_;
@@ -58,7 +59,7 @@ sub prettyPrint {
   my ($self) = @_;
   return join(",\n",
     "@" . $$self{type} . "{" . $$self{key},
-    (map { (" " x (10 - length($$_[0]))) . $$_[0] . " = {" . $$_[1] . "}" }
+    (map { (" " x max(1, (10 - length($$_[0])))) . $$_[0] . " = {" . $$_[1] . "}" }
         @{ $$self{fieldlist} })
     ) . "}\n"; }
 
