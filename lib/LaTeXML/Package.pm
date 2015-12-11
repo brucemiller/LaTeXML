@@ -1289,7 +1289,8 @@ my $math_options = {    # [CONSTANT]
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
   stretchy     => 1, operator_stretchy  => 1,
-  beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1 };
+  beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
+  hide_content_reversion => 1 };
 my $simpletoken_options = {    # [CONSTANT]
   name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
@@ -1418,7 +1419,13 @@ sub defmath_dual {
         my ($self, @args) = @_;
         my ($cargs, $pargs) = dualize_arglist($presentation, @args);
         Invocation(T_CS('\DUAL'),
-          ($options{role} ? T_OTHER($options{role}) : undef),
+          Tokens(
+            ($options{role}
+              ? (T_OTHER('role'), T_OTHER('='), T_OTHER($options{role})) : ()),
+            ($options{role} && $options{hide_content_reversion} ? (T_OTHER(',')) : ()),
+            ($options{hide_content_reversion}
+              ? (T_OTHER('hide_content_reversion'), T_OTHER('='), T_OTHER('true')) : ())),
+
           Invocation($cont_cs, @$cargs),
           Invocation($pres_cs, @$pargs))->unlist; }),
     $options{scope});
