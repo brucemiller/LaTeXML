@@ -54,8 +54,9 @@ sub compileConstructor {
     . "1;\n";
 ###print STDERR "Compilation of \"$replacement\" => \n$code\n";
 
-  my $result = eval $code;
-  Fatal('misdefined', $name, $constructor,
+  my $result;
+  eval { local $LaTeXML::IGNORE_ERRORS = 1; $result = eval $code; };
+  Fatal('misdefined', $name, $cs,
     "Compilation of constructor code for '$name' failed",
     "\"$replacement\" => $code", $@) if !$result || $@;
   return \&$name; }
