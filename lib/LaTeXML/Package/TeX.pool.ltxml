@@ -477,7 +477,8 @@ DefParameterType('OptionalKeyVals', sub {
     $keyset = ToString($keyset);
     return ($gullet->ifNext(T_OTHER('['))
       ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); },
-  optional => 1);
+  optional => 1,
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Not sure that this is the most elegant solution, but...
 # What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
@@ -6013,15 +6014,17 @@ DefMacro('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim', sub {
 # LaTeXML Specific.
 # Support for Declarations & Presentation/Semantic Duality
 #**********************************************************************
-DefConstructor('\DUAL[]{}{}',
-  "<ltx:XMDual ?#1(role='#1')>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+DefConstructor('\DUAL OptionalKeyVals {}{}',
+  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
   reversion => sub {
     my ($whatsit) = @_;
-    my ($role, $content, $presentation) = $whatsit->getArgs;
+    my ($kv, $content, $presentation) = $whatsit->getArgs;
+    my $role = GetKeyVal($kv, 'role');
     if (!$LaTeXML::DUAL_BRANCH) {
       $whatsit->getDefinition->invocation($role, $content,
         $presentation); }
-    elsif ($LaTeXML::DUAL_BRANCH eq 'content') {
+    elsif (($LaTeXML::DUAL_BRANCH eq 'content')
+      || !GetKeyVal($kv, 'hide_content_reversion')) {
       Revert($content); }
     elsif ($LaTeXML::DUAL_BRANCH eq 'presentation') {
       Revert($presentation); }
@@ -6058,6 +6061,9 @@ DefConstructor('\@MAYBEAPPLY{}{}',
   reversion => '#1#2');
 DefConstructor('\@WRAP{}',  "<ltx:XMWrap>#1</ltx:XMWrap>", reversion => '#1');
 DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
+DefConstructor('\lx@kludged{}',
+  "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
+  reversion => '#1');
 DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
   '#3',
   afterConstruct => sub {
@@ -6072,6 +6078,47 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
 DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
 DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
 DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+
+# We OUGHT to be able to do this using \llap,\rlap,\hss...
+DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
+DefConstructor('\lx@math@tweaked RequiredKeyVals {}',
+  "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    $whatsit->setProperties($kv->getPairs);
+    $whatsit->setFont($body->getFont);
+    return; },
+  reversion => '#2');
+
+DefConstructor('\lx@text@tweaked RequiredKeyVals {}',
+  "<ltx:text _noautoclose='1' xoffset='#xoffset'>#2</ltx:text>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    $whatsit->setProperties($kv->getPairs); });
+
+DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
+
+sub reportNoUnicode {
+  my ($cs) = @_;
+  $cs = ToString($cs);
+  if (!LookupMapping('missing_unicode' => $cs)) {
+    Warn('expected', 'unicode', $cs,
+      "There's no Unicode equivalent for the symbol '$cs'");
+    AssignMapping('missing_unicode' => $cs => 1); }
+  return; }
+# Slightly contrived so that this can be used within a DefMath
+# and still declare & get the semantic properties.
+DefPrimitive('\lx@math@nounicode DefToken', sub {
+    my ($stomach, $cs) = @_;
+    reportNoUnicode($cs);
+    Box(ToString($cs), undef, undef, $cs, class => 'ltx_nounicode'); });
+
+DefConstructor('\lx@text@nounicode DefToken',
+  "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
+  afterDigest => sub {
+    reportNoUnicode(ToString($_[1]->getArg(0))); });
 
 # These are used (primarily?) within XMDual
 # The XMDual represents both a content & presentation representation of some
@@ -6154,7 +6201,8 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
       # But keep $node's font from being overwritten.
       $document->setNodeFont($wrap, $document->getNodeFont($node));
       ## WHY THIS????
-      $document->getNode->appendChild($node); } });
+      $document->getNode->appendChild($node);
+} });
 #======================================================================
 
 sub aligningEnvironment {
