@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="soul"?>
+<?latexml package="color"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><text cssstyle="letter-spacing:3.46px;">letterspacing</text></p>
+  </para>
+  <para xml:id="p2">
+    <p><text cssstyle="letter-spacing:5.53px;">example</text></p>
+  </para>
+  <para xml:id="p3">
+    <p><text cssstyle="letter-spacing:9.69px;" font="bold">bold example</text></p>
+  </para>
+  <para xml:id="p4">
+    <p><text cssstyle="letter-spacing:3.87px;" font="smallcaps">CAPITALS, Small Capitals</text></p>
+  </para>
+  <para xml:id="p5">
+    <p><text framed="underline">underlining</text></p>
+  </para>
+  <para xml:id="p6">
+    <p><text cssstyle="text-decoration:line-through; text-decoration-color:">overstriking</text></p>
+  </para>
+  <para xml:id="p7">
+    <p><text backgroundcolor="#FFFF00">highlighting</text></p>
+  </para>
+  <para xml:id="p8">
+    <p><text framecolor="#FF0000" framed="underline">red underlining</text></p>
+  </para>
+  <para xml:id="p9">
+    <p><text cssstyle="text-decoration:line-through; text-decoration-color:rgb(0,0,1)">blue overstriking</text></p>
+  </para>
+  <para xml:id="p10">
+    <p><text backgroundcolor="#00FF00">green highlighting</text></p>
+  </para>
+</document>

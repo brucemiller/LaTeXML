@@ -1,0 +1,196 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  stmaryd                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+
+DefMathI('\Yup',    undef, "\x{2144}",               role => 'RELOP');
+DefMathI('\Ydown',  undef, '\lx@nounicode{\Ydown}',  role => 'RELOP');
+DefMathI('\Yleft',  undef, '\lx@nounicode{\Yleft}',  role => 'RELOP');
+DefMathI('\Yright', undef, '\lx@nounicode{\Yright}', role => 'RELOP');
+
+DefMathI('\baro', undef, "\x{233D}", role => 'RELOP',
+  meaning => 'apl-reversal');
+DefMathI('\bbslash', undef, "\x{244a}", role => 'RELOP');
+DefMathI('\binampersand', undef, UTF(0x26), role => 'RELOP',
+  meaning => 'additive-conjunction');
+DefMathI('\bindnasrepma', undef, "\x{214b}", role => 'RELOP',
+  meaning => 'multiplicative-disjunction');
+DefMathI('\boxast',              undef, "\x{29C6}",                            role => 'BINOP');
+DefMathI('\boxbar',              undef, "\x{25eb}",                            role => 'RELOP');
+DefMathI('\boxbox',              undef, "\x{29C8}",                            role => 'BINOP');
+DefMathI('\boxbslash',           undef, "\x{29C5}",                            role => 'BINOP');
+DefMathI('\boxcircle',           undef, "\x{29C7}",                            role => 'BINOP');
+DefMathI('\boxdot',              undef, "\x{22A1}",                            role => 'MULOP');
+DefMathI('\boxempty',            undef, "\x{25a1}",                            role => 'RELOP');
+DefMathI('\boxslash',            undef, "\x{29C4}",                            role => 'BINOP');
+DefMathI('\curlyveedownarrow',   undef, '\lx@nounicode{\curlyveedownarrow}',   role => 'ARROW');
+DefMathI('\curlyveeuparrow',     undef, '\lx@nounicode{\curlyveeuparrow}',     role => 'ARROW');
+DefMathI('\curlywedgedownarrow', undef, '\lx@nounicode{\curlywedgedownarrow}', role => 'ARROW');
+DefMathI('\curlywedgeuparrow',   undef, '\lx@nounicode{\curlywedgeuparrow}',   role => 'ARROW');
+DefMathI('\fatbslash',           undef, '\lx@nounicode{\fatbslash}',           role => 'ARROW');
+DefMathI('\fatsemi',             undef, "\x{2a1f}",                            role => 'RELOP');
+DefMathI('\fatslash',            undef, '\lx@nounicode{\fatslash}',            role => 'ARROW');
+DefMathI('\interleave',          undef, "\x{2af4}",                            role => 'RELOP');
+DefMathI('\leftslice',           undef, "\x{2aa6}",                            role => 'RELOP');
+DefMathI('\merge',               undef, "\x{2a07}",                            role => 'RELOP');
+DefMathI('\minuso',              undef, "\x{29b5}",                            role => 'RELOP');
+DefMathI('\moo',                 undef, '\lx@nounicode{\moo}');
+DefMathI('\obar',                undef, "\x{29B6}",                            role => 'RELOP');
+DefMathI('\oblong',              undef, "\x{2395}",                            role => 'RELOP');
+DefMathI('\obslash',             undef, "\x{29B8}",                            role => 'RELOP');
+DefMathI('\ogreaterthan',        undef, "\x{29C1}",                            role => 'RELOP');
+DefMathI('\olessthan',           undef, "\x{29C0}",                            role => 'RELOP');
+DefMathI('\ovee',                undef, "\x{2228}\x{20DD}",                    role => 'RELOP');
+DefMathI('\owedge',              undef, "\x{2227}\x{20DD}",                    role => 'RELOP');
+DefMathI('\rightslice',          undef, "\x{2aa7}",                            role => 'RELOP');
+DefMathI('\sslash',              undef, "\x{2AFD}",                            role => 'RELOP');
+DefMathI('\talloblong',          undef, "\x{2AFF}",                            role => 'RELOP');
+DefMathI('\varbigcirc',          undef, "\x{25EF}",                            role => 'MULOP');
+DefMathI('\varcurlyvee',         undef, "\x{22CE}",                            role => 'RELOP');
+DefMathI('\varcurlywedge',       undef, "\x{22CF}",                            role => 'RELOP');
+DefMathI('\varoast',             undef, "\x{229B}",                            role => 'MULOP');
+DefMathI('\varobar',             undef, "\x{29B6}",                            role => 'RELOP');
+DefMathI('\varobslash',          undef, "\x{29B8}",                            role => 'MULOP');
+DefMathI('\varocircle',          undef, "\x{229A}",                            role => 'MULOP');
+DefMathI('\varodot',             undef, "\x{2299}",                            role => 'MULOP');
+DefMathI('\varogreaterthan',     undef, "\x{29C1}",                            role => 'RELOP');
+DefMathI('\varolessthan',        undef, "\x{29C0}",                            role => 'RELOP');
+DefMathI('\varominus',           undef, "\x{2296}",                            role => 'ADDOP');
+DefMathI('\varoplus', undef, "\x{2295}", role => 'ADDOP',
+  meaning => 'additive-disjunction');
+DefMathI('\varoslash', undef, "\x{2298}", role => 'RELOP');
+DefMathI('\varotimes', undef, "\x{2297}", role => 'MULOP',
+  meaning => 'multiplicative-conjunction');
+DefMathI('\varovee',   undef, "\x{2228}\x{20DD}", role => 'RELOP');
+DefMathI('\varowedge', undef, "\x{2227}\x{20DD}", role => 'RELOP');
+DefMathI('\vartimes',  undef, UTF(0xD7),          role => 'MULOP');
+
+DefMathI('\bigbox',          undef, "\x{25a1}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigcurlywedge',   undef, "\x{22CF}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigcurlyvee',     undef, "\x{22CE}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\biginterleave',   undef, "\x{2AFC}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigparallel',     undef, "\x{2016}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigsqcap',        undef, "\x{2293}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigtriangledown', undef, "\x{25BD}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigtriangleup',   undef, "\x{25B3}", font => { size => 'Big' }, role => 'BIGOP');
+
+DefMathI('\inplus',                undef, "\x{2A2D}", role => 'RELOP');
+DefMathI('\niplus',                undef, "\x{2A2E}", role => 'RELOP');
+DefMathI('\ntrianglelefteqslant',  undef, "\x{22EC}", role => 'RELOP');
+DefMathI('\ntrianglerighteqslant', undef, "\x{22ED}", role => 'RELOP');
+
+# NOTE: Using ems and exs(and bypassing LaTeXML's Dimension) gives more consistent spacing
+# across Firefox & MathJax.
+DefMathI('\subsetplus', undef,
+  '\lx@kludged{\subset{\scriptscriptstyle\lx@tweaked{width=0pt,xoffset=-0.8em,yoffset=0.3ex}{+}}}',
+  role    => 'RELOP',
+  meaning => 'subset-plus');
+DefMathI('\subsetpluseq', undef,
+  '\lx@kludged{\subseteq{\scriptscriptstyle\lx@tweaked{width=0pt,xoffset=-0.8em,yoffset=0.5ex}{+}}}',
+  role    => 'RELOP',
+  meaning => 'subset-equals-plus');
+DefMathI('\supsetplus', undef,
+  '\lx@kludged{\supset{\scriptscriptstyle\lx@tweaked{width=0pt,xoffset=-1em,yoffset=0.3ex}{+}}}',
+  role    => 'RELOP',
+  meaning => 'superset-plus');
+DefMathI('\supsetpluseq', undef,
+  '\lx@kludged{\supseteq{\scriptscriptstyle\lx@tweaked{width=0pt,xoffset=-1em,yoffset=0.5ex}{+}}}',
+  role    => 'RELOP',
+  meaning => 'superset-equals-plus');
+
+DefMathI('\nplus', undef,
+  '\lx@kludged{\cap{\scriptscriptstyle\lx@tweaked{width=0pt,xoffset=-0.75em,yoffset=0.2ex}{+}}}',
+  role    => 'ADDOP',
+  meaning => 'intersection-plus');
+DefMathI('\bignplus', undef,
+  '\lx@kludged{\bigcap\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.6em,yoffset=0.2ex}{+}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.3em,yoffset=0.2ex}{+}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.3em,yoffset=0.2ex}{+}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.3em,yoffset=0.2ex}{+}}}',
+  # Probaby should get the script sizes & positions right...
+  role      => 'ADDOP',
+  meaning   => 'intersection-plus',
+  mathstyle => \&doVariablesizeOp);
+
+DefMathI('\trianglelefteqslant',  undef, "\x{22B4}",                  role => 'RELOP');
+DefMathI('\trianglerighteqslant', undef, "\x{22B5}",                  role => 'RELOP');
+DefMathI('\arrownot',             undef, '\lx@tweaked{width=0pt}{/}', role => 'RELOP');    # ??
+DefMathI('\longarrownot',         undef, '\lx@tweaked{width=0pt}{/}', role => 'RELOP');    # ??
+DefMathI('\Arrownot',             undef, '\lx@tweaked{width=0pt}{/}', role => 'RELOP');    # ??
+DefMathI('\Longarrownot',         undef, '\lx@tweaked{width=0pt}{/}', role => 'RELOP');    # ??
+DefMathI('\mapsfromchar',         undef, '|',                         role => 'RELOP');
+DefMathI('\Mapsfromchar',         undef, '|',                         role => 'RELOP');
+DefMathI('\Mapstochar',           undef, '|',                         role => 'RELOP');
+DefMathI('\Longmapsfrom',         undef, "\x{27FD}",                  role => 'ARROW');
+DefMathI('\Longmapsto',           undef, "\x{27FE}",                  role => 'ARROW');
+DefMathI('\Mapsfrom',             undef, "\x{2906}",                  role => 'ARROW');
+DefMathI('\Mapsto',               undef, "\x{2907}",                  role => 'ARROW');
+DefMathI('\leftarrowtriangle',    undef, "\x{21FD}",                  role => 'ARROW');
+# Not quite right verticality...
+DefMathI('\leftrightarroweq',       undef, '\stackrel{\leftrightarrow}{-}', role => 'ARROW');
+DefMathI('\leftrightarrowtriangle', undef, "\x{21FF}",                      role => 'ARROW');
+DefMathI('\lightning',              undef, "\x{21AF}",                      role => 'ARROW');
+DefMathI('\longmapsfrom',           undef, "\x{27FB}",                      role => 'ARROW');
+DefMathI('\mapsfrom',               undef, "\x{21A4}",                      role => 'ARROW');
+DefMathI('\nnearrow',               undef, '\lx@nounicode{\nnearrow}',      role => 'ARROW');
+DefMathI('\nnwarrow',               undef, '\lx@nounicode{\nnwarrow}',      role => 'ARROW');
+DefMathI('\rightarrowtriangle',     undef, "\x{21FE}",                      role => 'ARROW');
+DefMathI('\rrparenthesis',          undef, "\x{2988}",                      role => 'ARROW');
+DefMathI('\shortdownarrow',         undef, "\x{2193}",                      role => 'ARROW');
+DefMathI('\shortleftarrow',         undef, "\x{2190}",                      role => 'ARROW');
+DefMathI('\shortrightarrow',        undef, "\x{2192}",                      role => 'ARROW');
+DefMathI('\shortuparrow',           undef, "\x{2191}",                      role => 'ARROW');
+DefMathI('\ssearrow',               undef, '\lx@nounicode{\ssearrow}',      role => 'ARROW');
+DefMathI('\sswarrow',               undef, '\lx@nounicode{\sswarrow}',      role => 'ARROW');
+DefMathI('\Lbag', undef, "\x{27C5}",
+  #         font => {},
+  role => 'OPEN');    # adjust font somehow
+DefMathI('\Rbag', undef, "\x{27C6}",
+  #  font => {},
+  role => 'CLOSE');    # see above
+DefMathI('\lbag',      undef, "\x{27C5}", role => 'OPEN');
+DefMathI('\llbracket', undef, "\x{27E6}", role => 'OPEN');
+DefMathI('\llceil', undef,
+  '\lx@kludged{\lx@tweaked{width=0pt,xoffset=0.3em}{\lceil}\lceil}',
+  role => 'OPEN');
+DefMathI('\rrceil', undef,
+  '\lx@kludged{\rceil\lx@tweaked{width=0pt,xoffset=-0.3em}{\rceil}}',
+  role => 'CLOSE');
+DefMathI('\llfloor', undef,
+  '\lx@kludged{\lx@tweaked{width=0pt,xoffset=0.3em}{\lfloor}\lfloor}',
+  role => 'OPEN');
+DefMathI('\rrfloor', undef,
+  '\lx@kludged{\rfloor\lx@tweaked{width=0pt,xoffset=-0.31em}{\rfloor}}',
+  role => 'CLOSE');
+DefMathI('\llparenthesis', undef, "\x{2987}", role => 'OPEN');
+DefMathI('\rrparenthesis', undef, "\x{2988}", role => 'CLOSE');
+DefMathI('\rbag',          undef, "\x{27C6}", role => 'CLOSE');
+DefMathI('\rrbracket',     undef, "\x{27E7}", role => 'CLOSE');
+
+DefPrimitive('\varcopyright', UTF(0xA9));
+
+#======================================================================
+1;
+
+# vim: ft=perl: noexpandtab:

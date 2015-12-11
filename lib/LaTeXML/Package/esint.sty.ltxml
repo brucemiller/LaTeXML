@@ -1,0 +1,201 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  esint                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+
+DefMathI('\iintop', undef, "\x{222C}",
+  role      => 'INTOP',
+  meaning   => 'double-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iint', undef, "\x{222C}",
+  role      => 'INTOP',
+  meaning   => 'double-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiintop', undef, "\x{222D}",
+  role      => 'INTOP',
+  meaning   => 'triple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiint', undef, "\x{222D}",
+  role      => 'INTOP',
+  meaning   => 'triple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiiintop', undef, "\x{2A0C}",
+  role      => 'INTOP',
+  meaning   => 'quadruple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiiint', undef, "\x{2A0C}",
+  role      => 'INTOP',
+  meaning   => 'quadruple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\dotsintop', undef,
+  '\lx@kludged{\int\lx@tweaked{width=0.4em,xoffset=-0.3em,yoffset=0.4ex}{\ldots}\int}',
+  role      => 'INTOP',
+  meaning   => 'multiple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\dotsint', undef,
+  '\lx@kludged{\int\lx@tweaked{width=0.4em,xoffset=-0.3em,yoffset=0.4ex}{\ldots}\int}',
+  role      => 'INTOP',
+  meaning   => 'multiple-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\ointop', undef, "\x{222E}",
+  role      => 'INTOP',
+  meaning   => 'contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oint', undef, "\x{222E}",
+  role      => 'INTOP',
+  meaning   => 'contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oiintop', undef, "\x{222F}",
+  role      => 'INTOP',
+  meaning   => 'surface-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oiint', undef, "\x{222F}",
+  role      => 'INTOP',
+  meaning   => 'surface-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varoiintop', undef, "\x{222F}",
+  role      => 'INTOP',
+  meaning   => 'surface-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varoiint', undef, "\x{222F}",
+  role      => 'INTOP',
+  meaning   => 'surface-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\sqintop', undef, "\x{2A16}",
+  role      => 'INTOP',
+  meaning   => 'quaternion-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\sqint', undef, "\x{2A16}",
+  role      => 'INTOP',
+  meaning   => 'quaternion-integral',
+  mathstyle => \&doVariablesizeOp);
+
+DefPrimitive('\lx@esint@box', "\x{25AD}");
+DefMathI('\sqiintop', undef,
+  '\lx@kludged{\iint\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.2em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}}',
+  role      => 'INTOP',
+  meaning   => 'quaternion-double-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\sqiint', undef,
+  '\lx@kludged{\iint\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.2em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.0em}{\lx@esint@box}}}',
+  role      => 'INTOP',
+  meaning   => 'quaternion-double-integral',
+  mathstyle => \&doVariablesizeOp);
+
+DefMathI('\ointctrclockwiseop', undef, "\x{2233}",
+  role      => 'INTOP',
+  meaning   => 'counterclockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\ointctrclockwise', undef, "\x{2233}",
+  role      => 'INTOP',
+  meaning   => 'counterclockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\ointclockwiseop', undef, "\x{2232}",
+  role      => 'INTOP',
+  meaning   => 'clockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\ointclockwise', undef, "\x{2232}",
+  role      => 'INTOP',
+  meaning   => 'clockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varointclockwiseop', undef, "\x{2232}",
+  role      => 'INTOP',
+  meaning   => 'clockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varointclockwise', undef, "\x{2232}",
+  role      => 'INTOP',
+  meaning   => 'clockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varointctrclockwiseop', undef, "\x{2233}",
+  role      => 'INTOP',
+  meaning   => 'counterclockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\varointctrclockwise', undef, "\x{2233}",
+  role      => 'INTOP',
+  meaning   => 'counterclockwise-contour-integral',
+  mathstyle => \&doVariablesizeOp);
+
+# Possibly for integral averages?
+DefMathI('\fintop', undef, "\x{2A0F}",
+  role      => 'INTOP',
+  meaning   => 'average-integral',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\fint', undef, "\x{2A0F}",
+  role      => 'INTOP',
+  meaning   => 'average-integral',
+  mathstyle => \&doVariablesizeOp);
+
+# No unicode for these, nor even for the overlaid bumpy part!
+# Also only guessing what kind of meaning they have
+DefPrimitive('\lx@esint@landup',   "-\x{25E0}-");
+DefPrimitive('\lx@esint@landdown', "-\x{25E1}-");
+DefMathI('\landupintop', undef,
+  '\lx@kludged{\int{\scriptscriptstyle\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.1em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}}}',
+  role      => 'INTOP',
+  meaning   => 'contour-integral-around-above',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\landupint', undef,
+  '\lx@kludged{\int{\scriptscriptstyle\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.1em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landup}}}}',
+  role      => 'INTOP',
+  meaning   => 'contour-integral-around-above',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\landdownintop', undef,
+  '\lx@kludged{\int{\scriptscriptstyle\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.1em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}}}',
+  role      => 'INTOP',
+  meaning   => 'contour-integral-around-below',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\landdownint', undef,
+  '\lx@kludged{\int{\scriptscriptstyle\mathchoice'
+    . '{\lx@tweaked{width=0pt,xoffset=-1.1em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}'
+    . '{\lx@tweaked{width=0pt,xoffset=-0.9em,yoffset=0.2ex}{\lx@esint@landdown}}}}',
+  role      => 'INTOP',
+  meaning   => 'contour-integral-around-below',
+  mathstyle => \&doVariablesizeOp);
+
+#======================================================================
+
+1;
+
+# vim: ft=perl: noexpandtab:

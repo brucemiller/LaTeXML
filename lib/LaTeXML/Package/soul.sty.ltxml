@@ -1,0 +1,116 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  soul                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+# Space-Out and UnderLine package
+# Shouldn't actually require color,
+# but not sure how to make things work without it...
+#RequirePackage('color');
+
+#======================================================================
+# letterspacing
+
+DefPrimitive('\sodef DefToken {} {Dimension}{Dimension}{Dimension}', sub {
+    my ($stomach, $cs, $font, $letterspace, $innerspace, $outerspace) = @_;
+    my $name = ToString($cs); $name =~ s/^\\//;
+    DefConstructorI($cs, '{}',
+      "<ltx:text cssstyle='letter-spacing:#spacing;' _noautoclose='1'>#1</ltx:text>",
+      properties => { spacing => $letterspace->pxValue . 'px' },
+      bounded => 1, beforeDigest => sub { Digest($font); });
+    return; });
+
+RawTeX(<<'EoTeX');
+\sodef\textso{}{0.25em}{0.65em}{.55em}
+\sodef\sloppyword{}{0em}{.33em}{.33em}
+EoTeX
+
+DefMacro('\resetso', '\sodef\so{}{0.25em}{0.65em}{.55em}');
+
+#======================================================================
+# We'll make do simply with small caps (same as \textsc)
+# and leave any fine-typesetting to the user agent
+DefMacro('\capsfont', '\scshape');
+RawTeX(<<'EoTeX');
+\sodef\textcaps{\capsfont}{0.28em}{0.37em}{.37em}
+EoTeX
+
+# Ignore the rest of this...
+# This defines spacing to use for particular fonts(?)
+DefMacro('\capsdef {} {Dimension}{Dimension}{Dimension}', undef);
+DefMacro('\capssave{}',                                   undef);
+DefMacro('\capsselect{}',                                 undef);
+DefMacro('\capsreset',                                    undef);
+
+#======================================================================
+# Support for working with or without the color package loaded.
+sub getSOULcolor {
+  my ($name) = @_;
+  if (LookupValue('color.sty.ltxml_loaded')) {
+    if (my $color = ToString(LookupValue($name))) {
+      return ParseColor(undef, $color); } } }
+#======================================================================
+# underline
+# (should set framecolor from \setulcolor)
+DefConstructor('\textul{}',
+  "<ltx:text framed='underline' framecolor='#framecolor'_noautoclose='1'>#1</ltx:text>",
+  properties => { framecolor => sub { getSOULcolor('soul_ul_color'); } });
+
+# Customizing underlines
+DefPrimitive('\setulcolor{}', sub { AssignValue(soul_ul_color => ToString($_[1])); });
+
+DefMacro('\setul{Dimension}{Dimension}', undef);
+DefMacro('\resetul',                     undef);
+DefMacro('\setuldepth{}',                undef);
+DefMacro('\setuloverlap{Dimension}',     undef);
+
+#======================================================================
+# strike-out
+# Hmm... Ideally, this would be framed=linethrough (or something), which in css=>text-decoration
+# but then how to make framecolor end up as text-decoration-color?
+DefConstructor('\textst{}',
+"<ltx:text cssstyle='text-decoration:line-through; text-decoration-color:#framecolor'_noautoclose='1'>#1</ltx:text>",
+  properties => { framecolor => sub { getSOULcolor('soul_strike_color'); } });
+# Customizing strikeout
+DefPrimitive('\setstcolor{}', sub { AssignValue(soul_strike_color => $_[1]); });
+
+#======================================================================
+# highlighting (use highlight color (background?), if loaded, else underline)
+DefMacro('\texthl', '\@ifpackageloaded{color}{\lx@texthl@color}{\textul}');
+DefConstructor('\lx@texthl@color{}',
+  "<ltx:text _noautoclose='1'>#1</ltx:text>",
+  bounded => 1, beforeDigest => sub { MergeFont(background => getSOULcolor('soul_hl_color')); });
+# Customizing highlight
+AssignValue(soul_hl_color => 'yellow');
+DefPrimitive('\sethlcolor{}', sub { AssignValue(soul_hl_color => $_[1]); });
+
+#======================================================================
+Let('\so',   '\textso');
+Let('\caps', '\textcaps');
+Let('\ul',   '\textul');
+Let('\st',   '\textst');
+Let('\hl',   '\texthl');
+#======================================================================
+# ignorable commands?
+DefMacro('\soulomit{}', '#1');
+
+# record an accent
+DefMacro('\soulaccent{}', undef);
+# register a command
+DefMacro('\soulregister{}{}', undef);
+Let('\soulfont', '\soulregister');
+
+1;
