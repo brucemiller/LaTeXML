@@ -86,6 +86,8 @@
 
 /*======================================================================
   Para level */
+.ltx_float {
+    margin: 1ex 3em 1ex 3em; }    
 td.ltx_subfigure,
 td.ltx_subtable,
 td.ltx_subfloat { width:50%; }
@@ -95,7 +97,6 @@ td.ltx_subfloat { width:50%; }
 .ltx_p,
 .ltx_quote,
 .ltx_block,
-.ltx_listingblock,
 .ltx_para {
     display: block; }
 
@@ -188,10 +189,27 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_indexlist { margin-left:1em; padding-left:1em;}
 
 /* Listings */
-.ltx_listing td.ltx_linenumber,
-.ltx_listingblock td.ltx_linenumber {
-    width:3em; text-align:right;}
-
+.ltx_listing {
+    display:block;
+    margin: 1ex 3em 1ex 3em;
+    overflow-x:auto; }
+.ltx_float .ltx_listing {
+    margin: 0; }
+.ltx_listingline { white-space:nowrap; min-height:1em; }
+.ltx_lst_numbers_left .ltx_listingline .ltx_tag {
+    background-color:transparent;
+    margin-left:-3em; width:2.5em;
+    position:absolute; 
+    text-align:right; }
+.ltx_lst_numbers_right .ltx_listingline .ltx_tag {
+    background-color:transparent;
+    width:2.5em;
+    position:absolute; right:3em;
+    text-align:right; }
+/*
+    position:absolute; left:0em;
+    max-width:0em; text-align:right; }
+*/
 .ltx_parbox {text-indent:0em; }
 
 /* NOTE that it is CRITICAL to put position:relative outside & absolute inside!!
@@ -263,6 +281,10 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_framed_right     { border-right-style:solid; border-right-width:1px; }
 .ltx_framed_bottom,
 .ltx_framed_underline { border-bottom-style:solid; border-bottom-width:1px; }
+.ltx_framed_topbottom { border-top-style:solid; border-top-width:1px;
+                        border-bottom-style:solid; border-bottom-width:1px; }
+.ltx_framed_leftright { border-left-style:solid; border-left-width:1px;
+                        border-right-style:solid; border-right-width:1px; }
 
 /*======================================================================
  Misc */
