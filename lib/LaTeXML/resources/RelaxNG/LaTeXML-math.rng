@@ -301,16 +301,6 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
         <a:documentation>The name of the kind of hint.</a:documentation>
       </attribute>
     </optional>
-    <optional>
-      <attribute name="width">
-        <a:documentation>The width of the space, if any.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="height">
-        <a:documentation>The height of the space, if any.</a:documentation>
-      </attribute>
-    </optional>
   </define>
   <define name="XMHint_model">
     <a:documentation>Content model for \elementref{XMHint}.</a:documentation>
@@ -477,23 +467,6 @@ such as the OpenMath name.</a:documentation>
     <optional>
       <attribute name="omcd">
         <a:documentation>The OpenMath CD for which \attr{meaning} is a symbol.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="vattach">
-        <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
-        <choice>
-          <value>top</value>
-          <value>middle</value>
-          <value>bottom</value>
-          <value>baseline</value>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="width">
-        <a:documentation>the desired width of the array.</a:documentation>
-        <ref name="Length.type"/>
       </attribute>
     </optional>
     <optional>

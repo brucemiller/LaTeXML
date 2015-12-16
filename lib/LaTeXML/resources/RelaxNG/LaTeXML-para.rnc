@@ -16,7 +16,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 Para.class |=
      para
    | theorem | proof
-   | figure | table | float | listing | pagination
+   | figure | table | float | pagination
 # allow pagination here, to avoid unnecessary extra para!
 
 ## Additionally, it defines these miscellaneous elements that can appear
@@ -144,7 +144,7 @@ table_model = (table | figure | float | Block.model | Caption.class)*
 #======================================================================
 
 float =
-## A generic float, possibly captioned, something other than a table, figure or listing
+## A generic float, possibly captioned, something other than a table or figure
 element float { float_attributes, float_model }
 
 ## Attributes for \elementref{float}.
@@ -155,6 +155,8 @@ float_attributes =
   Transformable.attributes,
   Backgroundable.attributes,
 
+  ## The kind of float; could be something like a listing, or some other thing
+  attribute role { text }?,
   ## the vertical floating placement parameter that determines where the object is displayed.
   attribute placement { text }?,
   ## raw data related to the float
@@ -162,27 +164,6 @@ float_attributes =
 
 ## Content model for \elementref{float}.
 float_model = (float | figure | float | Block.model | Caption.class)*
-
-#======================================================================
-
-listing =
-## A Listing, possibly captioned.
-element listing { listing_attributes, listing_model }
-
-## Attributes for \elementref{listing}.
-listing_attributes = 
-  Common.attributes,
-  Labelled.attributes,
-  Positionable.attributes,
-  Backgroundable.attributes,
-
-  ## the floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
-  ## raw data related to the float; presumably the unformatted listing itself
-  attribute data { text }?
-
-## Content model for \elementref{listing}.
-listing_model = (Block.model | Caption.class)*
 
 #======================================================================
 

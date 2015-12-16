@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The block module defines the following `physical' block elements.
 Block.class |= 
-   p | equation | equationgroup | quote | block | listingblock
+   p | equation | equationgroup | quote | block | listing
  | itemize | enumerate | description | pagination
 
 ## These are inline forms of logical lists
@@ -160,21 +160,36 @@ block_model = Inline.model
 
 #======================================================================
 
-listingblock =
-## An in-block Listing, without caption
-element listingblock { listingblock_attributes, listingblock_model }
+listing =
+## An Listing, (without caption: see \elementref{float})
+element listing { listing_attributes, listing_model }
 
-## Attributes for \elementref{listingblock}.
-listingblock_attributes =
+## Attributes for \elementref{listing}.
+listing_attributes =
   Common.attributes,
   Labelled.attributes,
+  Positionable.attributes,
   Backgroundable.attributes,
   ## raw data related to the listing; presumably the unformatted listing
   attribute data { text }?
 
-## Content model for \elementref{listingblock}.
-listingblock_model = Block.model*
+## Content model for \elementref{listing}.
+listing_model = listingline*
 
+#======================================================================
+listingline =
+## a line in a listing
+element listingline { listingline_attributes, listingline_model }
+
+## Attributes for \elementref{listingline}
+listingline_attributes =
+  Common.attributes,
+  ID.attributes
+
+## Content model for \elementref{listingline}
+listingline_model =
+  tag?, Inline.model
+  
 #======================================================================
 
 itemize =

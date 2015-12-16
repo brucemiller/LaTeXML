@@ -208,13 +208,7 @@ XMHint_attributes =
   ID.attributes,
   
   ## The name of the kind of hint.
-  attribute name { text }?,
-
-  ## The width of the space, if any.
-  attribute width { text }?,
-
-  ## The height of the space, if any.
-  attribute height { text }?
+  attribute name { text }?
 
 ## Content model for \elementref{XMHint}.
 XMHint_model = empty
@@ -339,12 +333,6 @@ XMArray_attributes =
 
   ## The OpenMath CD for which \attr{meaning} is a symbol.
   attribute omcd { text }?,
-
-  ## which row's baseline aligns with the container's baseline.
-  attribute vattach { "top" | "middle" | "bottom" | "baseline" }?,
-
-  ## the desired width of the array.
-  attribute width { Length.type }?,
 
   ## the spacing between rows
   attribute rowsep { Length.type}?,
