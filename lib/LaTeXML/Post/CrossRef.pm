@@ -250,7 +250,8 @@ sub gentoc {
       @kids = map { $self->gentoc($doc, $_, $types, $strict, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
-    if (my $code = $$types{$type}) {
+    my $role = $entry->getValue('role');
+    if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
       if ($strict && !$entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
         return (); }
       elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
@@ -687,8 +688,8 @@ sub generateTitle {
         || $entry->getValue('frefnum') || $entry->getValue('refnum'));
     #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc, $title) if $title && ref $title;
-    $title =~ s/^\s+//s if $title;    # Trim leading whitespace
-    $title =~ s/\s+$//s if $title;    # and trailing
+    $title =~ s/^\s+//s  if $title;    # Trim leading whitespace
+    $title =~ s/\s+$//s  if $title;    # and trailing
     $title =~ s/\s+/ /gs if $title;    # and normalize all other whitespace.
     if ($title) {
       $string .= $$self{ref_join} if $string;

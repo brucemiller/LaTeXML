@@ -222,6 +222,7 @@ sub captioned_handler {
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -253,6 +254,7 @@ sub labelled_handler {
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -277,6 +279,7 @@ sub note_handler {
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -371,6 +374,7 @@ sub glossaryentry_handler {
   if ($id) {
     $entry->setValues(id => $id);
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($role),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
