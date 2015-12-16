@@ -24,7 +24,7 @@
   <!-- ======================================================================
        Various Block-level elements:
        ltx:p, ltx:equation, ltx:equationgroup, ltx:quote, ltx:block,
-       ltx:listingblock, ltx:itemize, ltx:enumerate, ltx:description
+       ltx:listing, ltx:itemize, ltx:enumerate, ltx:description
        ====================================================================== -->
 
   <!-- Most of these templates generate block-level elements but may appear
@@ -93,9 +93,9 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:strip-space elements="ltx:listingblock"/>
+  <xsl:strip-space elements="ltx:listing"/>
 
-  <xsl:template match="ltx:listingblock">
+  <xsl:template match="ltx:listing">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
@@ -115,13 +115,13 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:listingblock" mode="classes">
+  <xsl:template match="ltx:listing" mode="classes">
     <xsl:param name="context"/>
     <xsl:apply-imports/>
     <xsl:text> ltx_listing</xsl:text>
   </xsl:template>
 
-  <xsl:template match="ltx:listingblock[@data]" mode="begin">
+  <xsl:template match="ltx:listing[@data]" mode="begin">
     <xsl:param name="context"/>
     <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_listing_data</xsl:attribute>
@@ -135,6 +135,26 @@
     </xsl:element>
   </xsl:template>
 
+
+  <xsl:template match="ltx:listingline">
+    <xsl:param name="context"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+
+  </xsl:template>
   <!-- ======================================================================
        Equation structures
        ====================================================================== -->

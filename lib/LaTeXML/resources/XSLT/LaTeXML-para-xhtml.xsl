@@ -99,9 +99,9 @@
        Floating things; Figures & Tables
        ====================================================================== -->
 
-  <xsl:strip-space elements="ltx:figure ltx:table ltx:float ltx:listing"/>
+  <xsl:strip-space elements="ltx:figure ltx:table ltx:float"/>
 
-  <xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing">
+  <xsl:template match="ltx:figure | ltx:table | ltx:float">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
@@ -137,20 +137,20 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="ltx:figure | ltx:table | ltx:float | ltx:listing" mode="inner">
+  <xsl:template match="ltx:figure | ltx:table | ltx:float" mode="inner">
     <xsl:param name="context"/>
     <xsl:apply-templates select="." mode="begin">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics) > 1">
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:graphics) > 1">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="table" namespace="{$html_ns}">
           <!-- maybe even more, like display:table ? or some class ? -->
           <xsl:attribute name="style">width:100%;</xsl:attribute>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="tr" namespace="{$html_ns}">
-            <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:listing | ltx:graphics">
+            <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics">
               <xsl:text>&#x0A;</xsl:text>
               <xsl:element name="td" namespace="{$html_ns}">
                 <xsl:attribute name="class">
@@ -199,21 +199,5 @@
   </xsl:template>
 
   <xsl:template match="ltx:toccaption"/>
-
-  <xsl:template match="ltx:listing[@data]/ltx:caption" mode="end">
-    <xsl:param name="context"/>
-    <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-      <xsl:attribute name="class">ltx_listing_data</xsl:attribute>
-      <xsl:element name="a" namespace="{$html_ns}">
-        <xsl:attribute name="href">
-<!--          <xsl:value-of select="concat('data:text/plain;base64,',@data)"/>-->
-          <xsl:value-of select="concat('data:text/plain,',../@data)"/>
-        </xsl:attribute>
-        <xsl:attribute name="title">Listing</xsl:attribute>
-        <xsl:text>&#x2B07;</xsl:text>
-      </xsl:element>
-    </xsl:element>
-  </xsl:template>
 
 </xsl:stylesheet>
