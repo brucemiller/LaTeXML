@@ -30,116 +30,94 @@ use LaTeXML::Package;
 RequireResource('ltx-listings.css');
 
 #======================================================================
-# Note that listings.sty uses a couple of textcomp characters
-# (\textquotesingle, \textasciigrave)
-# when the upquote option is used.
-# However, we haven't mapped those to anything useful, anyway...
-our %lst_charmapping = ('#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T_CS('\&'),
-  ## "'"=>T_CS('\textquotesingle'),
-  "'" => Tokens(T_CS('\char'), T_OTHER('3'), T_OTHER('9')),
-  '*' => T_CS('\textasteriskcentered'),
-  # ??  '-'=>$-$ ??
-  '<' => T_CS('\textless'), '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
-  '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
-  ### '`'=>T_CS('\textasciigrave'),
-  '`' => T_OTHER(UTF(0x60)),
-  '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
-  '|' => T_CS('\textbar'),
-  '~' => T_CS('\textasciitilde'),
-);
-
-sub lstRescan {
-  my ($tokens) = @_;
-  return (defined $tokens
-    ? Tokens(map { $lst_charmapping{ $_->getString } || $_ } $tokens->unlist)
-    : undef); }
-
-#======================================================================
-# 4.2 Typesetting listings
+# Top-level listings commands
 #======================================================================
 
 # Set various Listings keys
 DefPrimitive('\lstset RequiredKeyVals:LST', sub { lstActivate($_[1]); return; });
-
+AssignValue(LISTINGS_PREAMBLE        => []);
+AssignValue(LISTINGS_PREAMBLE_BEFORE => []);
+AssignValue(LISTINGS_POSTAMBLE       => []);
 our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
 DefMacro('\lstinline OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
-    my $mouth = $gullet->getMouth;
-    my ($init, $body);
     # get opening delim from gullet, before cattable swap,
     # in case token was already peeked for the optional args!
-    $init = $gullet->readToken;
-    my $close = (Equals($init, T_BEGIN) ? T_END : $init);
-    { local $STATE = $EMPTY_CATTABLE;
-      $body = $mouth->readTokens($close); }    # till same char (ignoring catcode!!)
-    $STATE->getStomach->bgroup;
+    my $init = $gullet->readToken;
+    my $body = listingsReadRawString($gullet, (Equals($init, T_BEGIN) ? T_END : $init));
+    $STATE->getStomach->bgroup;    # To localize activation
     lstActivate($keyvals);
-    my @expansion = lstProcessInline(ToString($body));
-    $STATE->getStomach->egroup;
-    @expansion; });
+    return (
+      @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
+      lstProcessInline($body),
+      @{ LookupValue('LISTINGS_POSTAMBLE') },
+      T_END); });                  # to balance ->bgroup
 
 sub lstProcessInline {
   my ($text) = @_;
   return Invocation(T_CS('\@listings@inline'),
-    listingsSemantics(),
     lstProcess('inline', $text)); }
 
-DefConstructor('\@listings@inline Semiverbatim {}',
-  "<ltx:text class='#1'>#2</ltx:text>",
-  reversion => '\lstinline#1#2#3#2');    # ??????
-
-sub listingsReadRawLines {
-  my ($gullet, $environment) = @_;
-  my @lines = ();
-  my ($line);
-  $gullet->readRawLine;                  # Ignore 1st line (following \begin{...}
-  while (defined($line = $gullet->readRawLine)) {
-    if ($line =~ /^\s*\\end\{\Q$environment\E\}(.*?)$/) {
-      $gullet->unread(Tokenize($2), T_CR);    # put BACK what follows the \end{whatever}
-      last; }
-    push(@lines, $line); }
-  return @lines; }
+DefConstructor('\@listings@inline {}',
+  "<ltx:text class='ltx_lstlisting'>#1</ltx:text>",
+  reversion => '\lstinline#{1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
-DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST',
-  sub {
+DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
     $STATE->getStomach->bgroup;
     AssignValue(current_environment => 'lstlisting');
     DefMacroI('@currenvir', undef, 'lstlisting');
-    my $text = join("\n", listingsReadRawLines($gullet, 'lstlisting'));
+    my $text = listingsReadRawLines($gullet, 'lstlisting');
     lstActivate($keyvals);
-    my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
-    $STATE->getStomach->egroup;
-    @expansion; });
+    return lstProcessDisplay(lstGetTokens('name'), $text); });
 
 DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     my ($gullet, $keyvals, $file) = @_;
-    my $filename = ToString(Expand($file));
-    my $path     = FindFile($filename);
-    my $text;
-    my $LST_FH;
-    if ($path && open($LST_FH, '<', $path)) {
-      { local $/ = undef;
-        $text = <$LST_FH>;
-        close($LST_FH); } }
-    else {
-      Error('I/O', $filename, $gullet, "Can't read listings file '$filename'", $!); }
+    my $text = listingsReadRawFile($gullet, $file);
     $STATE->getStomach->bgroup;
     lstActivate($keyvals);
     AssignValue('LST@toctitle', $file);    # so it shows up in list of..
-    my @expansion = lstProcessBlock($file, $text);
-    $STATE->getStomach->egroup;
-    @expansion; });
+    return lstProcessDisplay($file, $text); });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
-AssignValue(lstlisting_data_counter => 0);
+AssignValue(LISTINGS_DATA_COUNTER => 0);
+
+# Defining new listing environments
+DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
+    my ($stomach, $name, $n, $opt, $start, $end) = @_;
+    $name = ToString($name);
+    DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
+        my ($gullet, @args) = @_;
+        $STATE->getStomach->bgroup;
+        PushValue(LISTINGS_POSTAMBLE => LaTeXML::Core::Definition::Expandable::substituteTokens($end, @args));
+        # This will typically have \lstset, equivalent of lstActivate
+        Digest(Tokens(LaTeXML::Core::Definition::Expandable::substituteTokens($start, @args)));
+        my $text = listingsReadRawLines($gullet, $name);
+        return lstProcessDisplay(lstGetTokens('name'), $text); });
+});
 
 sub lstProcessBlock {
   my ($name, $text) = @_;
+  # store the data to be placed in the listing
+  my $c = LookupValue('LISTINGS_DATA_COUNTER') + 1;
+  AssignValue('LISTINGS_DATA_COUNTER' => $c, 'global');
+  # NOTE: Since # is normally valid in a url, we need to encode '#' in the data (?)
+  my $data = $text;
+  #  $text =~ s/#/&
+  AssignValue('LISTINGS_DATA_' . $c => $text, 'global');
+  return (
+    @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
+    Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text)),
+    @{ LookupValue('LISTINGS_POSTAMBLE') },
+    T_END); }
+
+sub lstProcessDisplay {
+  my ($name, $text) = @_;
   # Hmm.. should locally define \lstname to be either name or the file...
-  my @body = (Invocation(T_CS('\@listings@inner'), lstProcess('block', $text)));
+  my @body = (lstProcessBlock($name, $text));
+  # Figure out whether the display is numbered, or has a caption or titles.
   my @caption = ();
   my ($numbered, $labelled, $caption, $x);
   if (($x = lstGetTokens('caption')) && scalar($x->unlist)) {
@@ -165,20 +143,16 @@ sub lstProcessBlock {
   # We go a bit (a bit too far?) to try to treat this as a separate Para level object
   # (if with captions or titled),
   # or as an in-block item (within a logical paragraph)
-  my $c = LookupValue('lstlisting_data_counter') + 1;
-  AssignValue('lstlisting_data_counter' => $c,    'global');
-  AssignValue('lstlisting_data_' . $c   => $text, 'global');
 
   return (
     ($numbered || $caption ? (T_CS('\par')) : ()),
     T_BEGIN,
     ($name ? (T_CS('\def'), T_CS('\lstname'), T_BEGIN, $name->unlist, T_END) : ()),
-    Invocation(($numbered ? T_CS('\@listings')
-        : ($caption ? T_CS('\@@listings')
-          : T_CS('\@@listings@inblock'))),
-      listingsSemantics(),
-      T_OTHER($c),
-      Tokens(@body)),
+    ($numbered
+      ? Invocation(T_CS('\@listings'), Tokens(@body))
+      : ($caption
+        ? Invocation(T_CS('\@@listings'), Tokens(@body))
+        : @body)),
     T_END); }
 
 DefMacro('\lstlisting@makecaption[]{}',
@@ -196,58 +170,102 @@ DefMacro('\lstlisting@maketitle{}',
 DefMacro('\lstlisting@maketoctitle{}',
   '\@@toccaption{#1}');
 
-DefConstructor('\@listings@inner {}', "<ltx:tabular>#1</ltx:tabular>");
-
 # Numbered form,  with caption
 # \@listings <classes> <formatted>
-DefConstructor('\@listings Semiverbatim {} {}',
-  "<ltx:listing xml:id='#id' refnum='#refnum' class='#1' data='#data'>"
-    . "#3"
-    . "</ltx:listing>",
+DefConstructor('\@listings {}',
+  "<ltx:float role='listing' xml:id='#id' refnum='#refnum' class='ltx_lstlisting'>#1</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2))));
     RescueCaptionCounters('lstlisting', $whatsit); });
 
 # Unnumbered form, but with caption
 # \@listings <classes> <formatted>
-DefConstructor('\@@listings Semiverbatim {} {}',
-  "<ltx:listing xml:id='#id' class='#1' data='#data'>#3</ltx:listing>",
+DefConstructor('\@@listings {}',
+  "<ltx:float role='listing' xml:id='#id' class='ltx_lstlisting'>#1</ltx:float>",
   properties => sub { RefStepID('lstlisting'); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2))));
     RescueCaptionCounters('lstlisting', $whatsit); });
 
-# Unnumbered, no caption
-# \@@listingsblock <classes> <formatted>
-DefConstructor('\@@listings@inblock Semiverbatim {} {}',
-  "<ltx:listingblock xml:id='#id' class='#1' data='#data'>#3</ltx:listingblock>",
-  properties => sub { RefStepID('lstlisting'); },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
+DefConstructor('\@@listings@block {} {}',
+  "<ltx:listing class='ltx_lstlisting' data='#data'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(data => LookupValue('lstlisting_data_' . ToString($whatsit->getArg(2)))); });
+    $whatsit->setProperty(data => LookupValue('LISTINGS_DATA_' . ToString($whatsit->getArg(1)))); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Low Level String stuff
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Read raw string until closing $until.
+# Note that this does NOT balance groups, even if $until is '}'!
+sub listingsReadRawString {
+  my ($gullet, $until) = @_;
+  local $STATE = $EMPTY_CATTABLE;
+  my @tokens = ();
+  while (defined(my $token = $gullet->readToken())) {
+    last if $until and $token->getString eq $until->getString;
+    push(@tokens, $token); }
+  while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
+    pop(@tokens); }
+  return ToString(Tokens(@tokens)); }
+
+# Read raw strings for environment, until matching \end{$environment}
+sub listingsReadRawLines {
+  my ($gullet, $environment) = @_;
+  my @lines = ();
+  my ($line);
+  $gullet->readRawLine;                                       # Ignore 1st line (following \begin{...}
+  while (defined($line = $gullet->readRawLine)) {
+    if ($line =~ /^\s*\\end\{\Q$environment\E\}(.*?)$/) {
+      $gullet->unread(Tokenize($2), T_CR);                    # put BACK what follows the \end{whatever}
+      last; }
+    push(@lines, $line); }
+  return join("\n", @lines); }
+
+sub listingsReadRawFile {
+  my ($gullet, $file) = @_;
+  my $filename = ToString(Expand($file));
+  my $path     = FindFile($filename);
+  my $text;
+  my $LST_FH;
+  if ($path && open($LST_FH, '<', $path)) {
+    { local $/ = undef;
+      $text = <$LST_FH>;
+      close($LST_FH); } }
+  else {
+    Error('I/O', $filename, $gullet, "Can't read listings file '$filename'", $!); }
+  return $text; }
 
 #======================================================================
-# extract some minimal bit of "semantics" from the keywords or other bound formatting
-# To end up as the class attribute of the (various) listings element.
-# This is not nearly extensible enough (in any sensible way).
-# Because of the peculiar timing of the evaluation of keywords and body,
-# this is a bit hard to get at.
-sub listingsSemantics {
-  my @items = ('ltx_lstlisting');
-  if (my $lang = ToString(LookupValue('LST@language'))) {
-    $lang = "$2_$1" if $lang =~ /^\[([^\]]*)\](.*)$/;
-    push(@items, "ltx_lst_language_$lang"); }
+# Note that listings.sty uses a couple of textcomp characters
+# (\textquotesingle, \textasciigrave)
+# when the upquote option is used.
+# However, we haven't mapped those to anything useful, anyway...
+our %lst_charmapping = ('#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T_CS('\&'),
+  ## "'"=>T_CS('\textquotesingle'),
+  "'" => Tokens(T_CS('\char'), T_OTHER('3'), T_OTHER('9')),
+  '*' => T_CS('\textasteriskcentered'),
+  # ??  '-'=>$-$ ??
+  '<' => T_CS('\textless'), '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
+  '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
+  ### '`'=>T_CS('\textasciigrave'),
+  '`' => T_OTHER(UTF(0x60)),
+  '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
+  '|' => T_CS('\textbar'),
+  '~' => T_CS('\textasciitilde'),
+);
 
-  return Tokens((@items ? Explode(join(' ', @items)) : ())); }
+sub lstRescan {
+  my ($tokens) = @_;
+  return (defined $tokens
+    ? Tokens(map { $lst_charmapping{ $_->getString } || $_ } $tokens->unlist)
+    : undef); }
 
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Managing the sets of keyvals that compose a Listings Style or Language.
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Assign (locally) all values or effects from a Listings keyvals
 # Note that we operate on the Pairs form of keyvals to preserve order, repetition
 #
@@ -360,12 +378,15 @@ sub lstSetClassStyle {
   my $classes = LookupValue('LST_CLASSES');
   if ($style) {
     my $stylestring = ToString($style);
+    $stylestring =~ s/^\s+//s; $stylestring =~ s/\s+$//s;
     if ($stylestring =~ s/style(\d*)$/s$1/) {    # If names a style, convert it into the class name
       delete $$classes{$class}{begin};           # remove explicit styling
       $props{class} = $stylestring; }            # add indirect to class.
     else {
       delete $$classes{$class}{class};
       $props{begin} = $style; } }                # Otherwise, presumably TeX
+  if ($class =~ /^(\w+?)s?$/) {
+    $props{cssclass} = $1; }
   map { $$classes{$class}{$_} = $props{$_} } keys %props;
   return; }
 
@@ -405,66 +426,87 @@ sub lstDeleteClassWords {
 #   nested      : allows comments to be nested
 sub lstAddDelimiter {
   my ($kind, $type, $style, $delims, %keys) = @_;
-  my $delimlist = LookupValue('LST_DELIMITERS');
   $type = ToString($type);
-  my $invisible = ($type =~ s/i//);
+  my $delimlist = LookupValue('LST_DELIMITERS');
+  my $invisible = ($type =~ s/(?<=^(?=bd|b|d|l|s|n))i$//);
   my $quoted;
-  my ($open, $close);
-  if (($type eq 's') || ($type eq 'n')) {
-    # Here's the goofy thing: there may or may be {} in delimiters;
-    # And, when there's 2 delimiters, it could even be is: open}{close
-    # we'll hope there're no extra braces!
-    # If type eq 'n', comments are allowed to nest!!!
-    my @t = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
-    my @t1 = ();
-    if (scalar(@t) == 2) {
-      @t1 = ($t[0]); @t = ($t[1]); }
-    else {
-      while (@t && !Equals($t[0], T_END)) { push(@t1, shift(@t)); }
-      @t = grep { !Equals($_, T_END) } @t; }                  # Remove any remaining T_END
-    $open  = Tokens(@t1);
-    $close = Tokens(@t); }
-  else {
-    $open  = $delims;
-    $close = $open; }
+  my ($open, $close, $openre, $closere, $cssclass);
 
-  my $openre  = lstRegexp($open);
-  my $closere = lstRegexp($close);
   if ($type eq 'b') {    # Balanced; same delim open & close; but not when slashed
+    $open = $close = $delims;
+    $openre  = lstRegexp($open);
     $closere = "(?<!\\\\)$openre";
     $quoted  = "\\\\\\$openre"; }
   elsif ($type eq 'd') {    # Doubled: same delim open & close; but not when doubled.
+    $open = $close = $delims;
+    $openre  = lstRegexp($open);
     $closere = "(?<!$openre)$openre(?!$openre)";
     $quoted  = $openre . $openre; }
   elsif ($type eq 'bd') {    # Doubled: same delim open & close; not when doubled OR slashed
+    $open = $close = $delims;
+    $openre  = lstRegexp($open);
     $closere = "(?<!\\\\|$openre)$openre(?!$openre)";
     $quoted  = "\\\\\\$openre|$openre$openre"; }
   elsif ($type eq 'l') {     # Line: close is till end of line
+    $open    = $delims;
+    $openre  = lstRegexp($open);
     $close   = undef;
     $closere = "(?=\n)"; }
-  elsif ($type eq 's') { }                       # String: different open & close
-  elsif ($type eq 'n') { $keys{nested} = 1; }    # like String, but allows nesting!!!
-
+  elsif ($type eq 's') {     # String: different open & close
+    ($open, $close) = lst_splitDelimiters($delims);
+    $openre  = lstRegexp($open);
+    $closere = lstRegexp($close); }
+  elsif ($type eq 'n') {     # like String, but allows nesting!!!
+    ($open, $close) = lst_splitDelimiters($delims);
+    $openre       = lstRegexp($open);
+    $closere      = lstRegexp($close);
+    $keys{nested} = 1; }
+  # Special case? Maybe we have to deal with lstmisc.sty and understand "aspects"???
+  elsif ($type eq 'directive') {
+    $kind    = $type . 's';
+    $open    = $delims;
+    $openre  = lstRegexp($open);
+    $closere = "(?=\\W)"; }        # ? word boundary but appearing at beginning of string!
+  else {                           # ??? What should be default? (same as 'directive'???)
+    $open   = $delims;
+    $openre = lstRegexp($open); }
   if (my $openstring = lstDeslash($open)) {
-# print STDERR "DELIMITER: \"".ToString($delims)."\" => ".ToString($open)." ; open=$openre  close=>$closere\n";
-# The styling can be a class name, or markup
-    my $class;
+    # The styling can be a class name, or markup
+    my $class       = $kind;
     my $stylestring = ToString($style);
+    my $styleTeX;
     if ($stylestring =~ s/style(\d*)$/s$1/) {    # Names the style associated with a class.
       $class = $stylestring; }
     else {                                       # Otherwise, assume it is markup.
-      $class = $kind . ToString($open) . ToString($close); # Create an artificial class for this delimiter.
-      lstSetClassStyle($class, undef, begin => $style); }
+      $styleTeX = $style; }
     if (!$invisible) {
       my $oldclass = $class;
       $class = $class . ToString($open) . ToString($close); # Create an artificial class for this delimiter.
-      lstSetClassStyle($class, undef, begin => lstRescan($open), end => lstRescan($close), class => $oldclass); }
+      my $openTeX = ($styleTeX ? Tokens($styleTeX->unlist, lstRescan($open)) : lstRescan($open));
+      lstSetClassStyle($class, undef, begin => $openTeX, end => lstRescan($close),
+        class => $oldclass, cssclass => $cssclass); }
     # NOT DONE:
     #   invisibility of the whole delimited expression
     #   nestability.
-    $$delimlist{$openstring} = { open => $openre, close => $closere, class => $class, quoted => $quoted, %keys };
-  }
+    $$delimlist{$openstring} = { open => $openre, close => $closere, class => $class,
+      quoted => $quoted, %keys }; }
   return; }
+
+# Helper for lstAddDelimiter:
+# Here's the goofy thing: there may or may be {} in delimiters;
+# And, when there's 2 delimiters, it could even be is: open}{close
+# we'll hope there're no extra braces!
+# If type eq 'n', comments are allowed to nest!!!
+sub lst_splitDelimiters {
+  my ($delims) = @_;
+  my @t = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
+  my @t1 = ();
+  if (scalar(@t) == 2) {
+    @t1 = ($t[0]); @t = ($t[1]); }
+  else {
+    while (@t && !Equals($t[0], T_END)) { push(@t1, shift(@t)); }
+    @t = grep { !Equals($_, T_END) } @t; }                  # Remove any remaining T_END
+  return (Tokens(@t1), Tokens(@t)); }                       # return open & close
 
 # Set character classes
 sub lstSetCharacterClass {
@@ -477,6 +519,10 @@ sub lstSetCharacterClass {
     delete $$charslist{other}{$char};
     $$charslist{$class}{$char} = 1; }
   return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# The various parameters
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #======================================================================
 # 4.3 Space and placement
@@ -550,7 +596,16 @@ sub lstActivateLanguage {
 
 DefKeyVal('LST', 'language', '');
 DefMacro('\lst@@language [] Until:\end', sub {
-    lstActivateLanguage($_[2], $_[1]); return; });
+    lstActivateLanguage($_[2], $_[1]);
+    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@language'));
+    return; });
+DefConstructor('\lst@@@set@language', sub {
+    my ($document, %props) = @_;
+    if (my $lang = $props{language}) {
+      $lang = "$2_$1" if $lang =~ /^\[([^\]]*)\](.*)$/;
+      $_[0]->addClass($_[0]->getElement, 'ltx_lst_language_' . $lang); } },
+  properties => { language => sub { lstGetLiteral('language'); } });
+
 DefKeyVal('LST', 'alsolanguage', '');
 DefMacro('\lst@@alsolanguage [] Until:\end', sub {
     lstActivateLanguage($_[2], $_[1]); return; });
@@ -659,7 +714,16 @@ DefKeyVal('LST', 'formfeed',         '');
 # 4.8 Line numbers
 #======================================================================
 # Done...
-DefKeyVal('LST', 'numbers',          '');            # none | left | right
+DefKeyVal('LST', 'numbers', '');    # none | left | right
+DefPrimitive('\lst@@numbers Until:\end', sub {
+    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@numbers')); });
+
+DefConstructor('\lst@@@set@numbers', sub {
+    my ($document, %props) = @_;
+    if (($props{position} || 'none') ne 'none') {
+      $_[0]->addClass($_[0]->getElement, 'ltx_lst_numbers_' . $props{position}); } },
+  properties => { position => sub { lstGetLiteral('numbers'); } });
+
 DefKeyVal('LST', 'stepnumber',       'Number');
 DefKeyVal('LST', 'numberfirstline',  '', 'true');
 DefKeyVal('LST', 'numberstyle',      '');
@@ -681,8 +745,9 @@ DefKeyVal('LST', 'nolol',   '', 'true');       # Ignorable
 
 DefMacroI('\lstlistlistingname', undef, 'Listings');
 DefConstructorI('\lstlistoflistings', undef,
-  "<ltx:TOC role='listings' select='ltx:listing' name='#name'/>",
-  properties => sub { (name => DigestIf('\lstlistlistingname')); });
+  "<ltx:TOC role='listings' select='role:listing' name='#name'/>",
+  properties => sub { (
+      name => DigestIf('\lstlistlistingname')); });
 
 DefMacroI('\lstlistingname', undef, 'Listing');
 DefMacro('\thelstlisting', '\arabic{lstlisting}');
@@ -711,6 +776,15 @@ DefKeyVal('LST', 'breakautoindent', '', 'true');
 #======================================================================
 # Mosly ignorable, but some could be used
 DefKeyVal('LST', 'frame', ''); # none | leftline | topline | bottomline | lines | single | shadowbox
+our %frames = (none => undef, leftline => 'left', topline => 'top', bottomline => 'bottom',
+  lines => 'topbottom', single => 'rectangle', shadowbox => 'rectangle');
+DefPrimitive('\lst@@frame Until:\end', sub {
+    my $name = ToString(Digest($_[1]));
+    AssignValue(LISTINGS_FRAME => $frames{$name});
+    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame')); });
+DefConstructor('\lst@@@set@frame', "^framed='#frame'",
+  properties => { frame => sub { LookupValue('LISTINGS_FRAME'); } });
+
 DefKeyVal('LST', 'framearound',        '');            # t|f * 4
 DefKeyVal('LST', 'framesep',           'Dimension');
 DefKeyVal('LST', 'rulesep',            'Dimension');
@@ -720,9 +794,36 @@ DefKeyVal('LST', 'framexrightmargin',  'Dimension');
 DefKeyVal('LST', 'framextopmargin',    'Dimension');
 DefKeyVal('LST', 'framexbottommargin', 'Dimension');
 DefKeyVal('LST', 'backgroundcolor',    '');
-DefKeyVal('LST', 'rulecolor',          '');
-DefKeyVal('LST', 'fillcolor',          '');
-DefKeyVal('LST', 'rulesepcolor',       '');
+
+sub lstExtractColor {
+  my ($stomach, $cmd) = @_;
+  my $color;
+  $stomach->bgroup;
+  if ($cmd->unlist) {
+    Digest($cmd);
+    $color = LookupValue('font')->getColor; }
+  $stomach->egroup;
+  return $color; }
+
+DefPrimitive('\lst@@backgroundcolor Until:\end', sub {
+    my ($stomach, $cmd) = @_;
+    AssignValue(LISTINGS_BACKGROUND => lstExtractColor($stomach, $cmd));
+    PushValue(LISTINGS_PREAMBLE_BEFORE => T_CS('\lst@@@set@background')); });
+
+DefPrimitive('\lst@@@set@background', sub {
+    MergeFont(background => LookupValue('LISTINGS_BACKGROUND')); });
+
+DefKeyVal('LST', 'rulecolor', '');
+DefPrimitive('\lst@@rulecolor Until:\end', sub {
+    my ($stomach, $cmd) = @_;
+    AssignValue(LISTINGS_RULECOLOR => lstExtractColor($stomach, $cmd));
+    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@rulecolor')); });
+
+DefConstructor('\lst@@@set@rulecolor', "^framecolor='#color'",
+  properties => { color => sub { LookupValue('LISTINGS_RULECOLOR'); } });
+
+DefKeyVal('LST', 'fillcolor',    '');
+DefKeyVal('LST', 'rulesepcolor', '');
 
 #======================================================================
 # 4.12 Indexing
@@ -851,24 +952,6 @@ DefKeyVal('LST', 'fvcmdparams',     '');
 DefKeyVal('LST', 'morefvcmdparams', '');
 
 #======================================================================
-# 4.16 Environments
-#======================================================================
-DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
-    my ($stomach, $name, $n, $opt, $start, $end) = @_;
-    $name = ToString($name);
-    DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt),
-      sub {
-        my ($gullet, @args) = @_;
-        $STATE->getStomach->bgroup;
-        Digest(Tokens(LaTeXML::Core::Definition::Expandable::substituteTokens($start, @args)));
-        my $text = join("\n", listingsReadRawLines($gullet, $name));
-        my @expansion = lstProcessBlock(lstGetTokens('name'), $text);
-        push(@expansion, LaTeXML::Core::Definition::Expandable::substituteTokens($end, @args));
-        $STATE->getStomach->egroup;
-        @expansion; });
-});
-
-#======================================================================
 # 4.17 Language definitions
 #======================================================================
 
@@ -994,7 +1077,9 @@ DefKeyVal('LST', 'podcomment',              '', 'true');
 
 DefPrimitive('\lstloadlanguages Semiverbatim', undef);
 
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# The listing parser
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Process the listing
 #   The listing is supplied as a list of strings
 #   The result is a Tokens containing the formatted results
@@ -1064,6 +1149,7 @@ sub lstProcess {
   local $LaTeXML::emptyfrom = undef;
   local @LaTeXML::lsttokens = (T_BEGIN);
 
+  lstProcessPush(@{ LookupValue('LISTINGS_PREAMBLE') });
   lstProcessPush(lstGetTokens('basicstyle')->unlist);
 
   while ($LaTeXML::listing && !&$linetest($LaTeXML::linenum)) {    # Ignore initial lines?
@@ -1093,7 +1179,7 @@ sub lstProcessStartLine {
   my $numpos = ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
   $LaTeXML::linestart = scalar(@LaTeXML::lsttokens); # Remember where line started, for potential truncation
   lstProcessPush(T_CS('\@lst@startline'),
-    T_BEGIN, ($numpos eq 'left') ? lstDoNumber($LaTeXML::listing =~ /^\s*?\n/s) : (), T_END);
+    T_BEGIN, ($numpos ne 'none') ? lstDoNumber($LaTeXML::listing =~ /^\s*?\n/s) : (), T_END);
   return; }
 
 sub lstProcessEndLine {
@@ -1101,13 +1187,11 @@ sub lstProcessEndLine {
     $LaTeXML::emptyfrom = $LaTeXML::linestart unless $LaTeXML::emptyfrom; }
   else {
     $LaTeXML::emptyfrom = undef; }
-  my $numpos = ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
-  lstProcessPush(T_CS('\@lst@endline'),
-    T_BEGIN, ($numpos eq 'right') ? lstDoNumber() : (), T_END);
+  lstProcessPush(T_CS('\@lst@endline'));
   return; }
 
 sub lstProcess_internal {
-  my ($end_re) = @_;
+  my ($end_re, $outerclass) = @_;
   my $numpos     = ((lstGetNumber('stepnumber') == 0) ? 'none' : lstGetLiteral('numbers'));
   my $words      = LookupValue('LST_WORDS');
   my $delimiters = LookupValue('LST_DELIMITERS');
@@ -1145,21 +1229,19 @@ sub lstProcess_internal {
         local $LaTeXML::SPACE = ($classname && ($classname =~ /^string/) && lstGetBoolean('showstringspaces')
           ? T_CS('\@lst@visible@space') : $LaTeXML::SPACE);
         # Recurse [note that eval should make the individual tokens tokenize as usual!]
-        lstProcess_internal($$delim{close}); }
+        lstProcess_internal($$delim{close}, $classname); }
       lstProcessPush(lstClassEnd($classname)); }
     # Identifiers (possibly keywords, or other classes)
     elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
       $LaTeXML::colnum += length($1);    # ?
       my $word      = $1;
       my $lookup    = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
-      my $classname = $$words{$lookup}{class};
-      my @w         = map { lstRescan($_) } Explode($word);             # rescan??
+      my $classname = $$words{$lookup}{class} || ($outerclass ? undef : 'identifiers');
+      my @tokens    = map { lstRescan($_) } Explode($word);                               # rescan??
       if (my $indexname = $$words{$lookup}{index} || lstClassProperty($classname, 'index')) { # Should be indexed?
         if (my $index = $indexname && $$classes{$indexname}) {
-          lstProcessPush($$index{begin}->unlist, T_BEGIN, @w, T_END); } }
-      lstProcessPush(lstClassBegin($classname),
-        Invocation(T_CS('\@listingKeyword'), Tokens($classname ? Explode($classname) : ()), Tokens(@w)),
-        lstClassEnd($classname)); }
+          lstProcessPush($$index{begin}->unlist, T_BEGIN, @tokens, T_END); } }
+      lstProcessPush(lstClassBegin($classname), @tokens, lstClassEnd($classname)); }
 
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
     # Perhaps a special keywords_re : otherkeywords | keywordprefix$LaTeXML::ID_RE => keyword
@@ -1191,12 +1273,12 @@ sub lstProcess_internal {
       my $tabsize = lstGetNumber('tabsize') || 1;
       foreach my $c (split(//, $s)) {
         $n += ($c eq ' ' ? 1 : ($tabsize - (($LaTeXML::colnum + $n) % $tabsize))); }
-      lstProcessPush(Invocation(T_CS('\@listingKeyword'), T_OTHER('space'),
-          Tokens(map { $LaTeXML::SPACE } 1 .. $n))->unlist);
+      lstProcessPush(lstClassBegin('spaces'), (map { $LaTeXML::SPACE } 1 .. $n), lstClassEnd('spaces'));
       $LaTeXML::colnum += $n; }
     # Quoted are typically quoted delimiters.
     elsif ($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//) { # Something quoted.
       lstProcessPush(T_OTHER($1));
+
       $LaTeXML::colnum += length($1); }
     else {
       if ($LaTeXML::listing =~ s/^(.)//s) {    # Anything else, just pass through.
@@ -1205,25 +1287,41 @@ sub lstProcess_internal {
   }
   return; }
 
-DefConstructor('\@listingKeyword {}{}',
+DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class'>#2</ltx:text>)(#2)",
-  properties => { class => sub { my $c = ToString($_[1]);
-      $c =~ s/s$//;
-      $c; } });
+  properties => { class => sub {
+      my $classname = ToString($_[1]);
+      my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
+      my $cssclass  = $class && $$class{cssclass};
+      $cssclass; } });
+
+DefConstructor('\@listingGroup Semiverbatim {}',
+  "<ltx:text class='#1'>#2</ltx:text>");
 
 sub lstClassBegin {
   my ($classname) = @_;
-  my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
-  return ($class
-    ? (T_BEGIN, lstClassBegin($$class{class}), ($$class{begin} ? $$class{begin}->unlist : ()))
-    : ()); }
+  my @open        = ();
+  my %classes     = ();
+  if (($classname || '') eq 'spaces') { $classes{space} = 1; }
+  while (my $class = $classname && LookupValue('LST_CLASSES')->{$classname}) {
+    if (my $css = $$class{cssclass}) {
+      $classes{$css} = 1; }
+    if (my $begin = $$class{begin}) {
+      #      push(@open,$begin->unlist); }
+      unshift(@open, $begin->unlist); }
+    $classname = $$class{class}; }
+  return (T_BEGIN, T_CS('\@listingGroup'),
+    T_BEGIN, T_OTHER(join(' ', map { 'ltx_lst_' . $_ } sort keys %classes)), T_END,
+    T_BEGIN, @open); }
 
 sub lstClassEnd {
   my ($classname) = @_;
-  my $class = $classname && LookupValue('LST_CLASSES')->{$classname};
-  return ($class
-    ? (($$class{end} ? $$class{end}->unlist : ()), lstClassEnd($$class{class}), T_END)
-    : ()); }
+  my @close = ();
+  while (my $class = $classname && LookupValue('LST_CLASSES')->{$classname}) {
+    if (my $end = $$class{end}) {
+      push(@close, $end->unlist); }
+    $classname = $$class{class}; }
+  return (@close, T_END, T_END); }
 
 sub lstClassProperty {
   my ($classname, $property) = @_;
@@ -1232,13 +1330,11 @@ sub lstClassProperty {
       ? $$class{$property}
       : lstClassProperty($$class{class}, $property))); }
 
-DefConstructor('\@lst@startline{}',
-  "<ltx:tr>#1<ltx:td><ltx:text class='ltx_lst_line'>");
-DefConstructor('\@lst@endline{}',
-  "</ltx:text></ltx:td>#1</ltx:tr>");
+DefConstructor('\@lst@startline{}',  "<ltx:listingline>#1");
+DefConstructor('\@lst@endline',      "</ltx:listingline>");
+DefConstructor('\@lst@linenumber{}', "<ltx:tag>#1</ltx:tag>");
+
 DefConstructor('\@lst@visible@space', "\x{2423}");
-DefConstructor('\@lst@linenumber{}',
-  "<ltx:td class='ltx_lst_linenum'>#1</ltx:td>");
 
 sub lstDoNumber {
   my ($isempty) = @_;
@@ -1251,7 +1347,9 @@ sub lstDoNumber {
   else {
     return Invocation(T_CS('\@lst@linenumber'), Tokens()); } }
 
-#======================================================================
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Configuration
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Initialize the various parameters...
 
 RawTeX(<<'EoTeX');
@@ -1305,6 +1403,6 @@ sub lstLoadConfiguration {
 
 lstLoadConfiguration();
 
-#**********************************************************************
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
 
