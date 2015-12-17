@@ -1213,7 +1213,7 @@ sub recordID {
     if (!$node->isSameNode($prev)) {
       my $badid = $id;
       $id = $self->modifyID($id);
-      Fatal('malformed', 'id', $node, "Duplicated attribute xml:id",
+      Info('malformed', 'id', $node, "Duplicated attribute xml:id",
         "Using id='$id' on " . Stringify($node),
         "id='$badid' already set on " . Stringify($prev)); } }
   $$self{idstore}{$id} = $node;
