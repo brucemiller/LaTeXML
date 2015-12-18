@@ -1,0 +1,25 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  balance.sty.ltxml                                                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# This package is used to control balancing between columns when in 2 column mode.
+# Since we're leaving any column handling to the eventual agent,
+# there's nothing to do here.
+
+DefMacroI('\balance',   undef, undef);
+DefMacroI('\nobalance', undef, undef);
+#======================================================================
+1;
