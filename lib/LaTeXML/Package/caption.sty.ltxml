@@ -59,7 +59,7 @@ DefMacro('\caption',
  \@ifundefined{@captype}
     {\@@generic@caption}
     {\@ifstar{\@scaption}{\expandafter\@caption\expandafter{\@captype}}}');
-DefMacro('\@scaption {}', '\@@add@caption@counters\@@caption{#1}');
+DefMacro('\@scaption {}', '\@@caption{#1}');
 
 # This is a horrible thing that fakes a caption anywhere.
 # It isn't necessarily in a figure or any float, so it can't really match our schema
