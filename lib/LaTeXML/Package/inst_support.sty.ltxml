@@ -42,12 +42,12 @@ use LaTeXML::Package;
 DefMacro('\author{}', sub {
     map { (T_CS('\@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
 
-DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' mark='#1'/>");
+DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' _mark='#1'/>");
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
 DefConstructor('\@inst{}',
-  "^<ltx:contact role='institutemark' mark='#1'/>"
-    . "<ltx:contact role='emailmark' mark='#1'/>");
+  "^<ltx:contact role='institutemark' _mark='#1'/>"
+    . "<ltx:contact role='emailmark' _mark='#1'/>");
 DefMacro('\inst{}', sub {
     map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
 
@@ -81,11 +81,11 @@ sub relocateInstitute {
     if (my $mark = $instnode->getAttribute('mark')) {
       # Find authors with same mark.
       my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")) {
+      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@_mark='$mark']")) {
         foreach my $author (@authors) {
           $document->appendClone($author, $instnode->childNodes);
           $author->setAttribute(role => 'institute');
-          $author->removeAttribute('mark'); }
+          $author->removeAttribute('_mark'); }
         $instnode->parentNode->removeChild($instnode); }
       # Not sure if this is right; find authors WITHOUT a contact mark.
       elsif (@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")) {
@@ -98,11 +98,11 @@ sub relocateInstitute {
     if (my $mark = $instnode->getAttribute('mark')) {
       # Find authors with same mark.
       my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='emailmark'][\@mark='$mark']")) {
+      if (@authors = $document->findnodes(".//ltx:contact[\@role='emailmark'][\@_mark='$mark']")) {
         foreach my $author (@authors) {
           $document->appendClone($author, $instnode->childNodes);
           $author->setAttribute(role => 'email');
-          $author->removeAttribute('mark'); }
+          $author->removeAttribute('_mark'); }
         $instnode->parentNode->removeChild($instnode); }
     } }
   return; }
