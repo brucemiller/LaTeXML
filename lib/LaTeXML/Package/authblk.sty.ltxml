@@ -1,0 +1,70 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  authblk.sty.ltxml                                                  | #
+# | Support for various AAS styles/classes for LaTeXML                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# NOTE: preliminary implementation focusing on the logic;
+# We currently don't layout the author/afflition block quite the way authblk does:
+#  * don't combine authors with same affiliation,
+#  * don't use marks to associate the author/affiliation
+
+DefMacro('\Affilfont', '\normalfont');
+DefMacro('\Authfont',  '\normalfont');
+DefMacro('\Authsep',   ',');
+DefMacro('\Authand',   ' and ');
+DefMacro('\Authands',  ', and ');
+DefMacro('\authorcr',  '\\\\\Authfont');
+DefConditional('\ifnewaffil');
+NewCounter('@affil');
+DefMacro('\the@affil', 'affil\arabic{@affil}');
+DefMacro('\author[]{}', sub {
+    return map { Invocation(T_CS('\@author'), $_[1], Tokens(@$_)) }
+      SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
+
+DefMacro('\@author[]{}',
+  '\@add@frontmatter{ltx:creator}[role=author]'
+    . '{\@personname{#2}\@authormark{\if.#1.\the@affil\else#1\fi}}');
+
+DefConstructor('\@authormark{}',
+  "^<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>",
+  properties => sub { (mark => ToString($_[1])); });
+
+DefConstructor('\affil[]{}',
+  "^ <ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $mark = $whatsit->getArg(1);
+    if (!defined $mark) {
+      $mark = Digest(T_CS('\the@affil'));    # get mark
+      StepCounter('@affil'); }               # and THEN step counter!
+    $whatsit->setProperty(mark => ToString($mark));
+    return; });
+
+Tag('ltx:note', afterClose => \&authblkRelocateAffil);
+
+sub authblkRelocateAffil {
+  my ($document, $affilnode) = @_;
+  if (($affilnode->getAttribute('role') || '') eq 'affiliationtext') {
+    if (my $mark = $affilnode->getAttribute('mark')) {
+      # Find authors with same mark.
+      my @authors = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark='$mark']");
+      foreach my $author (@authors) {
+        $document->appendClone($author, $affilnode->childNodes);
+        $author->setAttribute(role => 'affiliation'); }
+      $affilnode->parentNode->removeChild($affilnode); } }
+  return; }
+
+#======================================================================
+1;

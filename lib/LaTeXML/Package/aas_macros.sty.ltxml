@@ -1,0 +1,91 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  aas_macros.sty.ltxml                                               | #
+# | Support for various AAS styles/classes for LaTeXML                  | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# AAS : American Astronomical Society
+# Subset of AAS macros from aasguide
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# 2.13.4 Abbreviations for Journal Names
+
+Let('\jnl@stye', '\rm');
+DefMacro('\ref@jnl{}', '{\jnl@style#1}');
+
+DefMacro('\aj',    '\ref@jnl{AJ}');              # Astronomical Journal
+DefMacro('\actaa', '\ref@jnl{Acta Astron.}');    # Acta Astronomica
+DefMacro('\araa',  '\ref@jnl{ARA\&A}');          # Annual Review of Astron and Astrophys
+DefMacro('\apj',   '\ref@jnl{ApJ}');             # Astrophysical Journal
+DefMacro('\apjl',  '\ref@jnl{ApJ}');             # Astrophysical Journal, Letters
+DefMacro('\apjs',  '\ref@jnl{ApJS}');            # Astrophysical Journal, Supplement
+DefMacro('\ao',    '\ref@jnl{Appl.~Opt.}');      # Applied Optics
+DefMacro('\apss',  '\ref@jnl{Ap\&SS}');          # Astrophysics and Space Science
+DefMacro('\aap',   '\ref@jnl{A\&A}');            # Astronomy and Astrophysics
+DefMacro('\aapr',  '\ref@jnl{A\&A~Rev.}');       # Astronomy and Astrophysics Reviews
+DefMacro('\aaps',  '\ref@jnl{A\&AS}');           # Astronomy and Astrophysics, Supplement
+DefMacro('\azh',   '\ref@jnl{AZh}');             # Astronomicheskii Zhurnal
+DefMacro('\baas',  '\ref@jnl{BAAS}');            # Bulletin of the AAS
+DefMacro('\bac', '\ref@jnl{Bull. astr. Inst. Czechosl.}'); # Bulletin of the Astronomical Institutes of Czechoslovakia
+DefMacro('\caa', '\ref@jnl{Chinese Astron. Astrophys.}');  # Chinese Astronomy and Astrophysics
+DefMacro('\cjaa', '\ref@jnl{Chinese J. Astron. Astrophys.}'); # Chinese Journal  of Astronomy and Astrophysics
+DefMacro('\icarus', '\ref@jnl{Icarus}');                      # Icarus
+DefMacro('\jcap', '\ref@jnl{J. Cosmology Astropart. Phys}'); # Journal of Cosmology and Astroparticle Physics
+DefMacro('\jrasc',  '\ref@jnl{JRASC}');               # Journal of the RAS of Canada
+DefMacro('\memras', '\ref@jnl{MmRAS}');               # Memoirs of the RAS
+DefMacro('\mnras',  '\ref@jnl{MNRAS}');               # Monthly Notices of the RAS
+DefMacro('\na',     '\ref@jnl{New A}');               # New Astronomy
+DefMacro('\nar',    '\ref@jnl{New A Rev.}');          # New Astronomy Review
+DefMacro('\pra',    '\ref@jnl{Phys.~Rev.~A}');        # Physical Review A: General Physics
+DefMacro('\prb',    '\ref@jnl{Phys.~Rev.~B}');        # Physical Review B: Solid State
+DefMacro('\prc',    '\ref@jnl{Phys.~Rev.~C}');        # Physical Review C
+DefMacro('\prd',    '\ref@jnl{Phys.~Rev.~D}');        # Physical Review D
+DefMacro('\pre',    '\ref@jnl{Phys.~Rev.~E}');        # Physical Review E
+DefMacro('\prl',    '\ref@jnl{Phys.~Rev.~Lett.}');    # Physical Review Letters
+DefMacro('\pasa',   '\ref@jnl{PASA}');                # Publications of the Astron. Soc. Australia
+DefMacro('\pasp',   '\ref@jnl{PASP}');                # Publications of the ASP
+DefMacro('\pasj',   '\ref@jnl{PASJ}');                # Publications of the ASJ
+DefMacro('\qjras',  '\ref@jnl{QJRAS}');               # Quarterly Journal of the RAS
+DefMacro('\rmxaa', '\ref@jnl{Rev. Mexicana Astron. Astrofis.}'); # Revista Mexicana de Astronomia y Astrofisica
+DefMacro('\skytel',  '\ref@jnl{S\&T}');                        # Sky and Telescope
+DefMacro('\solphys', '\ref@jnl{Sol.~Phys.}');                  # Solar Physics
+DefMacro('\sovast',  '\ref@jnl{Soviet~Ast.}');                 # Soviet Astronomy
+DefMacro('\ssr',     '\ref@jnl{Space~Sci.~Rev.}');             # Space Science Reviews
+DefMacro('\zap',     '\ref@jnl{ZAp}');                         # Zeitschrift fuer Astrophysik
+DefMacro('\nat',     '\ref@jnl{Nature}');                      # Nature
+DefMacro('\iaucirc', '\ref@jnl{IAU~Circ.}');                   # IAU Cirulars
+DefMacro('\aplett',  '\ref@jnl{Astrophys.~Lett.}');            # Astrophysics Letters
+DefMacro('\apspr',   '\ref@jnl{Astrophys.~Space~Phys.~Res.}'); # Astrophysics Space Physics Research
+DefMacro('\bain', '\ref@jnl{Bull.~Astron.~Inst.~Netherlands}'); # Bulletin Astronomical Institute of the Netherlands
+DefMacro('\fcp',  '\ref@jnl{Fund.~Cosmic~Phys.}');              # Fundamental Cosmic Physics
+DefMacro('\gca',  '\ref@jnl{Geochim.~Cosmochim.~Acta}');        # Geochimica Cosmochimica Acta
+DefMacro('\grl',  '\ref@jnl{Geophys.~Res.~Lett.}');             # Geophysics Research Letters
+DefMacro('\jcp',  '\ref@jnl{J.~Chem.~Phys.}');                  # Journal of Chemical Physics
+DefMacro('\jgr',  '\ref@jnl{J.~Geophys.~Res.}');                # Journal of Geophysics Research
+DefMacro('\jqsrt', '\ref@jnl{J.~Quant.~Spec.~Radiat.~Transf.}'); # Journal of Quantitiative Spectroscopy and Radiative Trasfer
+DefMacro('\memsai',   '\ref@jnl{Mem.~Soc.~Astron.~Italiana}');   # Mem. Societa Astronomica Italiana
+DefMacro('\nphysa',   '\ref@jnl{Nucl.~Phys.~A}');                # Nuclear Physics A
+DefMacro('\physrep',  '\ref@jnl{Phys.~Rep.}');                   # Physics Reports
+DefMacro('\physscr',  '\ref@jnl{Phys.~Scr}');                    # Physica Scripta
+DefMacro('\planss',   '\ref@jnl{Planet.~Space~Sci.}');           # Planetary Space Science
+DefMacro('\procspie', '\ref@jnl{Proc.~SPIE}');                   # Proceedings of the SPIE
+Let('\astap',   '\aap');
+Let('\apjlett', '\apjl');
+Let('\apjsupp', '\apjs');
+Let('\applopt', '\ao');
+
+#======================================================================
+1;
