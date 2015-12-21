@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="mathbbol" options="bbgreekl"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\Langle\Eins\Rangle,\qquad\Lbrack\Eins\Rbrack,\qquad\Lparen\Eins\Rparen," xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMWrap>
+            <XMDual role="OPEN">
+              <XMTok name="Langle" role="OPEN"/>
+              <XMTok font="blackboard" meaning="less-than" role="RELOP">&lt;</XMTok>
+            </XMDual>
+            <XMDual role="UNKNOWN" xml:id="S0.Ex1.m1.1">
+              <XMTok name="Eins" role="UNKNOWN"/>
+              <XMTok font="blackboard" meaning="1" role="NUMBER">1</XMTok>
+            </XMDual>
+            <XMDual role="CLOSE">
+              <XMTok name="Rangle" role="CLOSE"/>
+              <XMTok font="blackboard" meaning="greater-than" role="RELOP">&gt;</XMTok>
+            </XMDual>
+          </XMWrap>
+          <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+          <XMWrap>
+            <XMDual role="OPEN">
+              <XMTok name="Lbrack" role="OPEN"/>
+              <XMTok font="blackboard" role="OPEN" stretchy="false">[</XMTok>
+            </XMDual>
+            <XMDual role="UNKNOWN">
+              <XMTok name="Eins" role="UNKNOWN"/>
+              <XMTok font="blackboard" meaning="1" role="NUMBER">1</XMTok>
+            </XMDual>
+            <XMDual role="CLOSE">
+              <XMTok name="Rbrack" role="CLOSE"/>
+              <XMTok font="blackboard" role="CLOSE" stretchy="false">]</XMTok>
+            </XMDual>
+          </XMWrap>
+          <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+          <XMWrap>
+            <XMDual role="OPEN">
+              <XMTok name="Lparen" role="OPEN"/>
+              <XMTok font="blackboard" role="OPEN" stretchy="false">(</XMTok>
+            </XMDual>
+            <XMDual role="UNKNOWN">
+              <XMTok name="Eins" role="UNKNOWN"/>
+              <XMTok font="blackboard" meaning="1" role="NUMBER">1</XMTok>
+            </XMDual>
+            <XMDual role="CLOSE">
+              <XMTok name="Rparen" role="CLOSE"/>
+              <XMTok font="blackboard" role="CLOSE" stretchy="false">)</XMTok>
+            </XMDual>
+          </XMWrap>
+          <XMTok role="PUNCT">,</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\bbalpha,\bbbeta,\bbeta\bbchi,\bbdelta,\bbespilon,\bbgamma,\bbiota,\bbkappa,%&#10;\bblambda,\bbmu,\bbnu,\bbomega,\bbphi,\bbpi,\bbpsi,\bbrho,\bbsigma,\bbtau,%&#10;\bbtheta,\bbupsilon,\bbxi,\bbzeta" text="list@(bbalpha, bbbeta, bbeta * bbchi, bbdelta, bbespilon, bbgamma, bbiota, bbkappa, bblambda, bbmu, bbnu, bbomega, bbphi, bbpi, bbpsi, bbrho, bbsigma, bbtau, bbtheta, bbupsilon, bbxi, bbzeta)" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex2.m1.1"/>
+              <XMRef idref="S0.Ex2.m1.2"/>
+              <XMRef idref="S0.Ex2.m1.22"/>
+              <XMRef idref="S0.Ex2.m1.3"/>
+              <XMRef idref="S0.Ex2.m1.4"/>
+              <XMRef idref="S0.Ex2.m1.5"/>
+              <XMRef idref="S0.Ex2.m1.6"/>
+              <XMRef idref="S0.Ex2.m1.7"/>
+              <XMRef idref="S0.Ex2.m1.8"/>
+              <XMRef idref="S0.Ex2.m1.9"/>
+              <XMRef idref="S0.Ex2.m1.10"/>
+              <XMRef idref="S0.Ex2.m1.11"/>
+              <XMRef idref="S0.Ex2.m1.12"/>
+              <XMRef idref="S0.Ex2.m1.13"/>
+              <XMRef idref="S0.Ex2.m1.14"/>
+              <XMRef idref="S0.Ex2.m1.15"/>
+              <XMRef idref="S0.Ex2.m1.16"/>
+              <XMRef idref="S0.Ex2.m1.17"/>
+              <XMRef idref="S0.Ex2.m1.18"/>
+              <XMRef idref="S0.Ex2.m1.19"/>
+              <XMRef idref="S0.Ex2.m1.20"/>
+              <XMRef idref="S0.Ex2.m1.21"/>
+            </XMApp>
+            <XMWrap>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.1">
+                <XMTok name="bbalpha" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="alpha" role="UNKNOWN">α</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.2">
+                <XMTok name="bbbeta" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="beta" role="UNKNOWN">β</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex2.m1.22">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual role="UNKNOWN">
+                  <XMTok name="bbeta" role="UNKNOWN"/>
+                  <XMTok font="blackboard" name="beta" role="UNKNOWN">β</XMTok>
+                </XMDual>
+                <XMDual role="UNKNOWN">
+                  <XMTok name="bbchi" role="UNKNOWN"/>
+                  <XMTok font="blackboard" name="chi" role="UNKNOWN">χ</XMTok>
+                </XMDual>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.3">
+                <XMTok name="bbdelta" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="delta" role="UNKNOWN">δ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.4">
+                <XMTok name="bbespilon" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="epsilon" role="UNKNOWN">ϵ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.5">
+                <XMTok name="bbgamma" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="gamma" role="UNKNOWN">γ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.6">
+                <XMTok name="bbiota" role="UNKNOWN"/>
+                <XMTok font="blackboard" role="UNKNOWN">i</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.7">
+                <XMTok name="bbkappa" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="kappa" role="UNKNOWN">κ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.8">
+                <XMTok name="bblambda" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="lambda" role="UNKNOWN">λ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.9">
+                <XMTok name="bbmu" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="mu" role="UNKNOWN">μ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.10">
+                <XMTok name="bbnu" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="nu" role="UNKNOWN">ν</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.11">
+                <XMTok name="bbomega" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="omega" role="UNKNOWN">ω</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.12">
+                <XMTok name="bbphi" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="phi" role="UNKNOWN">ϕ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.13">
+                <XMTok name="bbpi" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="pi" role="UNKNOWN">π</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.14">
+                <XMTok name="bbpsi" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="psi" role="UNKNOWN">ψ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.15">
+                <XMTok name="bbrho" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="rho" role="UNKNOWN">ρ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.16">
+                <XMTok name="bbsigma" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="sigma" role="UNKNOWN">σ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.17">
+                <XMTok name="bbtau" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="tau" role="UNKNOWN">τ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.18">
+                <XMTok name="bbtheta" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="theta" role="UNKNOWN">θ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.19">
+                <XMTok name="bbupsilon" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="upsilon" role="UNKNOWN">υ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.20">
+                <XMTok name="bbxi" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="xi" role="UNKNOWN">ξ</XMTok>
+              </XMDual>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMDual role="UNKNOWN" xml:id="S0.Ex2.m1.21">
+                <XMTok name="bbzeta" role="UNKNOWN"/>
+                <XMTok font="blackboard" name="zeta" role="UNKNOWN">ζ</XMTok>
+              </XMDual>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

@@ -1,0 +1,401 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | marvosym.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Quite a few of these are pretty abusive matches of Unicode to
+# Martin Vogel's presumed intentions....
+
+#======================================================================
+# Communication
+#DefMacro('\Pickup', '\lx@nounicode{\Pickup}');
+DefPrimitive('\Pickup',     "\x{26AA}\x{0327}");
+DefPrimitive('\Letter',     "\x{1F582}");
+DefPrimitive('\Mobilefone', "\x{1F4F1}");
+DefPrimitive('\Telefon',    "\x{260E}");
+DefMacro('\fax', '\lx@nounicode{\fax}');
+DefPrimitive('\fax', "FAX", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefMacro('\FAX', '\lx@framed{\fax}');
+DefPrimitive('\Fax',        "\x{1F4E0}");
+DefPrimitive('\Faxmachine', "\x{1F4E0}");
+DefPrimitive('\Email',      "\x{1F584}");
+DefPrimitive('\Lightning',  "\x{21AF}");
+DefPrimitive('\EmailCT',    "\x{2607}"); Let('\Emailct', '\EmailCT');
+
+#======================================================================
+# Engineering
+DefMacro('\Beam', '\lx@nounicode{\Beam}');
+# DefPrimitive('\Beam',"\x{25B3}\x{030A}");
+#030A ring above.
+#  0320 minus below
+#  0332 low line
+#DefMacro('\Bearing', '\lx@nounicode{\Bearing}');
+DefPrimitive('\Bearing', "\x{25B5}\x{030A}");
+#DefMacro('\LooseBearing', '\lx@nounicode{\LooseBearing}');
+DefPrimitive('\LooseBearing', "\x{25B5}\x{030A}\x{0332}");
+Let('\Loosebearing', '\LooseBearing');
+DefMacro('\FixedBearing', '\lx@nounicode{\FixedBearing}');
+# DefPrimitive('\FixedBearing',"\x{}");
+Let('\Fixedbearing', '\FixedBearing');
+DefPrimitive('\LeftTorque',  "\x{2938}"); Let('\Lefttorque',  '\LeftTorque');
+DefPrimitive('\RightTorque', "\x{2939}"); Let('\Righttorque', '\RightTorque');
+DefMacro('\Lineload', '\lx@nounicode{\Lineload}');
+# DefPrimitive('\Lineload',"\x{}");
+DefPrimitive('\MVArrowDown', "\x{2193}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+Let('\Force', '\MVArrowDown');
+
+DefMacro('\Octosteel', '\lx@nounicode{\Octosteel}');
+# DefPrimitive('\Octosteel',"\x{}");
+Let('\OktoSteel', '\Octosteel');
+DefPrimitive('\HexaSteel',   "\x{2B23}"); Let('\Hexasteel',   '\HexaSteel');
+DefPrimitive('\SquareSteel', "\x{25FC}"); Let('\Squaresteel', '\SquareSteel');
+DefPrimitive('\RectSteel',   "\x{25AE}"); Let('\Rectsteel',   '\RectSteel');
+DefPrimitive('\Circsteel',   "\x{26AB}"); Let('\CircSteel',   '\Circsteel');
+DefPrimitive('\SquarePipe',  "\x{25FB}"); Let('\Squarepipe',  '\SquarePipe');
+DefPrimitive('\RectPipe',    "\x{25AF}"); Let('\Rectpipe',    '\RectPipe');
+DefPrimitive('\CircPipe',    "\x{26AA}"); Let('\Circpipe',    '\CircPipe');
+
+DefPrimitive('\lx@mvs@LSteel',                "\x{2517}");
+DefPrimitive('\lx@mvs@RoundedLSteel',         "\x{2514}");
+DefPrimitive('\lx@mvs@TSteel',                "\x{2533}");
+DefPrimitive('\lx@mvs@RoundedTSteel',         "\x{252C}");
+DefPrimitive('\lx@mvs@TTSteel@bottom',        "\x{253B}");
+DefPrimitive('\lx@mvs@RoundedTTSteel@bottom', "\x{2534}");
+DefMacro('\LSteel',        '\lx@tweaked{yoffset=-0.5ex}{\lx@mvs@LSteel}');
+DefMacro('\RoundedLSteel', '\lx@tweaked{yoffset=-0.5ex}{\lx@mvs@RoundedLSteel}');
+DefMacro('\TSteel',        '\lx@tweaked{yoffset=0.5ex}{\lx@mvs@TSteel}');
+DefMacro('\RoundedTSteel', '\lx@tweaked{yoffset=0.5ex}{\lx@mvs@RoundedTSteel}');
+DefMacro('\TTSteel',
+  '\lx@tweaked{yoffset=0.5ex}{\lx@mvs@TSteel}'
+    . '\lx@tweaked{xoffset=-0.6em,yoffset=-0.5ex}{\lx@mvs@TTSteel@bottom}');
+DefMacro('\RoundedTTSteel',
+  '\lx@tweaked{yoffset=0.5ex}{\lx@mvs@RoundedTSteel}'
+    . '\lx@tweaked{xoffset=-0.6em,yoffset=-0.5ex}{\lx@mvs@RoundedTTSteel@bottom}');
+DefPrimitive('\FlatSteel', "\x{2501}");
+DefPrimitive('\Valve',     "\x{25B6}\x{25C0}");
+Let('\Lsteel',         '\LSteel');
+Let('\RoundedLsteel',  '\RoundedLSteel');
+Let('\Tsteel',         '\TSteel');
+Let('\RoundedTsteel',  '\RoundedTSteel');
+Let('\TTsteel',        '\TTSteel');
+Let('\RoundedTTsteel', '\RoundedTTSteel');
+Let('\Flatsteel',      '\FlatSteel');
+#======================================================================
+# Information
+DefMacro('\Industry', '\lx@nounicode{\Industry}');
+# DefPrimitive('\Industry',"\x{}");
+DefPrimitive('\Coffeecup',    "\x{2615}");
+DefPrimitive('\LeftScissors', "\x{2702}");
+DefPrimitive('\CuttingLine',  "\x{2504}");
+DefMacro('\RightScissors', '\lx@hflipped{\LeftScissors}');
+# Bizzarre!! yes, they're switched!
+Let('\Rightscissors', '\LeftScissors');
+Let('\Leftscissors',  '\RightScissors');
+DefPrimitive('\Football', "\x{26BD}");
+DefPrimitive('\Bicycle',  "\x{1F6B2}");
+
+DefPrimitive('\lx@mvs@Info', "\x{2139}");
+DefMacro('\Info', '\lx@framed{\lx@mvs@Info}');
+DefPrimitive('\ClockLogo', "\x{23F2}"); Let('\Clocklogo', '\ClockLogo');
+Let('\CutLine', '\CuttingLine');
+Let('\Cutline', '\CuttingLine');
+Let('\Kutline', '\CuttingLine');
+
+DefPrimitive('\lx@mvs@CutLeft', "\x{2701}");
+DefMacro('\CutLeft',  '\lx@mvs@CutLeft\lx@tweaked{xoffset=-0.8em,yoffset=-0.4ex}{\CutLine}');
+DefMacro('\CutRight', '\lx@hflipped{\CutLeft}');
+#DefMacro('\CutRight', '\lx@nounicode{\CutRight}');
+# DefPrimitive('\CutRight',"\x{}");
+
+# Bizzarre!! yes, they're switched!
+Let('\Cutright', '\CutLeft');
+Let('\Cutleft',  '\CutRight');
+
+DefPrimitive('\Wheelchair', "\x{267F}");
+DefPrimitive('\Gentsroom',  "\x{1F6B9}");
+DefPrimitive('\Ladiesroom', "\x{1F6BA}");
+
+DefPrimitive('\Checkedbox',   "\x{2611}");
+DefPrimitive('\CrossedBox',   "\x{2612}"); Let('\Crossedbox', '\CrossedBox');
+DefPrimitive('\HollowBox',    "\x{2610}");
+DefPrimitive('\PointingHand', "\x{261E}"); Let('\Pointinghand', '\PointingHand');
+DefPrimitive('\WritingHand',  "\x{270D}"); Let('\Writinghand', '\WritingHand');
+DefPrimitive('\MineSign',     "\x{2692}");
+DefPrimitive('\Recycling',    "\x{2672}");
+DefMacro('\PackingWaste', '\lx@nounicode{\PackingWaste}');
+# DefPrimitive('\PackingWaste',"\x{}");
+
+#======================================================================
+# Laundry
+DefPrimitive('\lx@mvs@crossout', "\x{2573}");
+
+DefMacro('\WashCotton', '\lx@nounicode{\WashCotton}');
+# DefPrimitive('\WashCotton',"\x{}");
+DefMacro('\WashSynthetics', '\lx@nounicode{\WashSynthetics}');
+# DefPrimitive('\WashSynthetics',"\x{}");
+DefMacro('\WashWool', '\lx@nounicode{\WashWool}');
+# DefPrimitive('\WashWool',"\x{}");
+DefMacro('\HandWash', '\lx@nounicode{\HandWash}');
+# DefPrimitive('\HandWash',"\x{}");
+DefMacro('\Handwash', '\lx@nounicode{\Handwash}');
+DefMacro('\NoWash',   '\lx@nounicode{\Handwash}');
+Let('\Dontwash', '\NoWash');
+DefPrimitive('\Tumbler', "\x{29C7}");
+DefMacro('\NoTumbler', '\Tumbler\lx@tweaked{xoffset=-0.8em}{\lx@mvs@crossout}');
+DefPrimitive('\lx@mvs@ChemicalCleaning', "\x{25EF}");
+DefMacro('\NoChemicalCleaning', '\lx@mvs@ChemicalCleaning\lx@tweaked{xoffset=-0.8em}{\lx@mvs@crossout}');
+DefPrimitive('\Bleech', "\x{25B3}");
+DefMacro('\NoBleech', '\Bleech\lx@tweaked{xoffset=-0.8em}{\lx@mvs@crossout}');
+DefPrimitive('\CleaningA', "\x{24B6}");
+DefPrimitive('\CleaningP', "\x{24C5}");
+DefMacro('\CleaningPP', '\underline{\CleaningP}');
+DefPrimitive('\CleaningF', "\x{24BB}");
+DefMacro('\CleaningFF', '\underline{\CleaningF}');
+
+DefMacro('\Ironing', '\lx@nounicode{\Ironing}');
+# DefPrimitive('\Ironing',"\x{}");
+DefMacro('\ironing', '\lx@nounicode{\ironing}');
+# DefPrimitive('\ironing',"\x{}");
+DefMacro('\IRONING', '\lx@nounicode{\IRONING}');
+# DefPrimitive('\IRONING',"\x{}");
+DefMacro('\IroningI', '\lx@nounicode{\IroningI}');
+# DefPrimitive('\IroningI',"\x{}");
+DefMacro('\IroningII', '\lx@nounicode{\IroningII}');
+# DefPrimitive('\IroningII',"\x{}");
+DefMacro('\IroningIII', '\lx@nounicode{\IroningIII}');
+# DefPrimitive('\IroningIII',"\x{}");
+DefMacro('\NoIroning', '\lx@nounicode{\NoIroning}');
+# DefPrimitive('\NoIroning',"\x{}");
+
+DefMacro('\AtNinetyFive', '\lx@nounicode{\AtNinetyFive}');
+# DefPrimitive('\AtNinetyFive',"\x{}");
+DefMacro('\ShortNinetyFive', '\lx@nounicode{\ShortNinetyFive}');
+# DefPrimitive('\ShortNinetyFive',"\x{}");
+DefMacro('\AtSixty', '\lx@nounicode{\AtSixty}');
+# DefPrimitive('\AtSixty',"\x{}");
+DefMacro('\ShortSixty', '\lx@nounicode{\ShortSixty}');
+# DefPrimitive('\ShortSixty',"\x{}");
+DefMacro('\ShortFifty', '\lx@nounicode{\ShortFifty}');
+# DefPrimitive('\ShortFifty',"\x{}");
+DefMacro('\AtForty', '\lx@nounicode{\AtForty}');
+# DefPrimitive('\AtForty',"\x{}");
+DefMacro('\ShortForty', '\lx@nounicode{\ShortForty}');
+# DefPrimitive('\ShortForty',"\x{}");
+DefMacro('\SpecialForty', '\lx@nounicode{\SpecialForty}');
+# DefPrimitive('\SpecialForty',"\x{}");
+DefMacro('\ShortThirty', '\lx@nounicode{\ShortThirty}');
+# DefPrimitive('\ShortThirty',"\x{}");
+
+#======================================================================
+# Currency
+DefPrimitive('\EUR',    "\x{20AC}", bounded => 1, font => { family => 'sansserif' });
+DefPrimitive('\EURdig', "\x{20AC}", bounded => 1, font => { family => 'sansserif' });
+DefPrimitive('\EURhv', "\x{20AC}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\EURcr', "\x{20AC}");
+DefPrimitive('\EURtm', "\x{20AC}", bounded => 1, font => { series => 'bold' });
+Let('\EurDig', '\EURdig');
+Let('\EurHv',  '\EURhv');
+Let('\EurCr',  '\EURcr');
+Let('\EurTm',  '\EURtm');
+DefPrimitive('\Ecommerce',     "\x{212E}");
+DefPrimitive('\EstimatedSign', "\x{212E}");
+DefPrimitive('\Shilling',      UTF(0xDF));
+DefMacro('\Denarius', '\lx@nounicode{\Denarius}');
+# DefPrimitive('\Denarius',"\x{}");
+DefMacro('\Deleatur', '\lx@nounicode{\Deleatur}');
+# DefPrimitive('\Deleatur',"\x{}");
+DefMacro('\Pfund', '\lx@nounicode{\Pfund}');
+DefPrimitive('\EyesDollar', "\x{1F4B2}");
+DefPrimitive('\Florin',     "\x{0192}");
+
+#======================================================================
+# Safety
+DefMacro('\Stopsign', '\lx@nounicode{\Stopsign}');
+# DefPrimitive('\Stopsign',"\x{}");
+DefPrimitive('\CESign', "C\x{03F5}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+Let('\CEsign', '\CESign');
+DefMacro('\Estatically', '\lx@nounicode{\Estatically}');
+# DefPrimitive('\Estatically',"\x{}");
+DefMacro('\Explosionsafe', '\lx@nounicode{\Explosionsafe}');
+# DefPrimitive('\Explosionsafe',"\x{}");
+#DefMacro('\Laserbeam', '\lx@nounicode{\Laserbeam}');
+DefPrimitive('\lx@mvs@laser', "\x{2739}");
+DefMacro('\Laserbeam', '\lx@mvs@laser\lx@tweaked{xoffset=-0.2em}{\@@emdash}');
+DefPrimitive('\Biohazard',     "\x{2623}");
+DefPrimitive('\Radioactivity', "\x{2622}");
+DefMacro('\BSEFree', '\lx@nounicode{\BSEFree}');
+# DefPrimitive('\BSEFree',"\x{}");
+DefMacro('\BSEfree', '\lx@nounicode{\BSEfree}');
+# DefPrimitive('\BSEfree',"\x{}");
+
+#======================================================================
+# Navigation
+DefPrimitive('\RewindToIndex',  "|\x{25C0}");
+DefPrimitive('\RewindToStart',  "|\x{25C0}\x{25C0}");
+DefPrimitive('\Rewind',         "\x{25C0}");
+DefPrimitive('\Forward',        "\x{25B6}");
+DefPrimitive('\ForwardToEnd',   "\x{25B6}|");
+DefPrimitive('\ForwardToIndex', "\x{25B6}\x{25B6}|");
+DefPrimitive('\MoveUp',         "\x{25B2}");
+DefPrimitive('\MoveDown',       "\x{25BC}");
+DefPrimitive('\ToTop',          "\x{25B2}\x{0305}");
+DefPrimitive('\ToBottom',       "\x{25BC}\x{0332}");
+
+#======================================================================
+# Computers
+DefPrimitive('\ComputerMouse', "\x{1F5B0}");
+DefMacro('\SerialInterface', '\lx@nounicode{\SerialInterface}');
+# DefPrimitive('\SerialInterface',"\x{}");
+DefPrimitive('\Keyboard', "\x{2328}");
+DefMacro('\SerialPort', '\lx@nounicode{\SerialPort}');
+# DefPrimitive('\SerialPort',"\x{}");
+DefMacro('\ParallelPort', '\lx@nounicode{\ParallelPort}');
+# DefPrimitive('\ParallelPort',"\x{}");
+DefPrimitive('\Printer', "\x{1F5A8}");
+
+#======================================================================
+# Numbers
+DefPrimitive('\MVZero',  "0", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVOne',   "1", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVTwo',   "2", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVThree', "3", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVFour',  "4", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVFive',  "5", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVSix',   "6", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVSeven', "7", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVEight', "8", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVNine',  "9", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+
+#======================================================================
+# Maths
+DefPrimitive('\MVRightBracket', ")", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVLeftBracket', "(", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVComma',    ",", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVPeriod',   ".", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVMinus',    "-", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVPlus',     "+", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVDivision', "/", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MVMultiplication', UTF(0xD7), bounded => 1, font => { family => 'sansserif', series => 'bold' });
+
+DefPrimitive('\Conclusion', "\x{21D2}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\Equivalence', "\x{21D4}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\barOver', "\x{203E}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\BarOver', "\x{203E}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\lx@mvs@rightarrow', "\x{2192}");
+DefMacro('\arrowOver', '\lx@tweaked{yoffset=0.5ex}{\lx@mvs@rightarrow}');
+DefMacro('\ArrowOver', '\lx@tweaked{yoffset=0.7ex}{\lx@mvs@rightarrow}');
+Let('\Vectorarrow',     '\arrowOver');
+Let('\Vectorarrowhigh', '\ArrowOver');
+DefMacro('\StrikingThrough', '\lx@nounicode{\StrikingThrough}');
+DefPrimitive('\StrikingThrough', "/", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\MultiplicationDot', UTF(0xB7), bounded => 1, font => { family => 'sansserif', series => 'bold' });
+Let('\Squaredot', '\MultiplicationDot');
+
+DefPrimitive('\LessOrEqual', "\x{2264}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\LargerOrEqual', "\x{2265}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\AngleSign', "\x{2222}"); Let('\Anglesign', '\AngleSign');
+DefPrimitive('\Corresponds', "\x{2259}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\Congruent', "\x{2261}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\NotCongruent', "\x{2262}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\Divides', "\x{2044}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\DividesNot', "\x{2044}\x{20D2}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+
+#======================================================================
+# Biology
+DefPrimitive('\Female',        "\x{2640}");
+DefPrimitive('\Male',          "\x{2642}");
+DefPrimitive('\Hermaphrodite', "\x{26A5}");
+DefPrimitive('\Neutral',       "\x{26AC}");
+
+DefPrimitive('\FEMALE',        "\x{2640}");    # Should be filled!
+DefPrimitive('\MALE',          "\x{2642}");    # Should be filled!
+DefPrimitive('\HERMAPHRODITE', "\x{26A5}");    # Should be filled in
+
+DefPrimitive('\FemaleFemale', "\x{26A2}");
+DefPrimitive('\MaleMale',     "\x{26A3}");
+DefPrimitive('\FemaleMale',   "\x{26A4}");
+
+#======================================================================
+# Astronomy
+DefPrimitive('\Sun',     "\x{2609}");
+DefPrimitive('\Moon',    "\x{263D}");
+DefPrimitive('\Mercury', "\x{263F}");
+DefPrimitive('\Venus',   "\x{2640}");
+DefPrimitive('\Mars',    "\x{2642}");
+DefPrimitive('\Jupiter', "\x{2643}");
+DefPrimitive('\Saturn',  "\x{2644}");
+DefPrimitive('\Uranus',  "\x{2645}");
+DefPrimitive('\Neptune', "\x{2646}");
+DefPrimitive('\Pluto',   "\x{2647}");
+DefPrimitive('\Earth',   "\x{2641}");
+
+#======================================================================
+# Astrology
+DefPrimitive('\Aries',       "\x{2648}");
+DefPrimitive('\Taurus',      "\x{2649}");
+DefPrimitive('\Gemini',      "\x{264A}");
+DefPrimitive('\Cancer',      "\x{264B}");
+DefPrimitive('\Leo',         "\x{264C}");
+DefPrimitive('\Virgo',       "\x{264D}");
+DefPrimitive('\Libra',       "\x{264E}");
+DefPrimitive('\Scorpio',     "\x{264F}");
+DefPrimitive('\Sagittarius', "\x{2650}");
+DefPrimitive('\Capricorn',   "\x{2651}");
+DefPrimitive('\Aquarius',    "\x{2652}");
+DefPrimitive('\Pisces',      "\x{2653}");
+
+DefMacro('\Zodiac{}',
+  '\ifcase#1\or\Aries\or\Taurus\or\Gemini\or\Cancer\or\Leo\or\Virgo'
+    . '\or\Libra\or\Scorpio\or\Sagittarius\or\Capricorn\or\Aquarius\or\Pisces\else???\fi');
+
+#======================================================================
+# Others
+DefPrimitive('\YinYang', "\x{262F}"); Let('\Yingyang', '\YinYang');
+DefPrimitive('\MVRightArrow', "\x{2192}", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+Let('\MVRightarrow', '\MVRightArrow');
+DefPrimitive('\MVAt',   "@",  bounded => 1, font => { family => 'sansserif', series => 'bold' });
+DefPrimitive('\BOLogo', "BO", bounded => 1, font => { family => 'sansserif', series => 'bold' });
+Let('\BOLogoL',  '\BOLogo');
+Let('\BOLogoP',  '\BOLogo');
+Let('\FHBOlogo', '\BOLogo');
+DefPrimitive('\Mundus',    "\x{1F30D}");
+DefPrimitive('\Cross',     "\x{2020}");
+DefPrimitive('\CeltCross', "\x{1F548}"); Let('\Celtcross', '\CeltCross');
+DefPrimitive('\Ankh',      "\x{2625}");
+
+DefPrimitive('\Heart',     "\x{2661}");
+DefPrimitive('\CircledA',  "\x{24B6}");
+DefPrimitive('\Bouquet',   "\x{1F395}");
+DefPrimitive('\Frowny',    "\x{2639}");
+DefPrimitive('\Smiley',    "\x{263A}");
+DefPrimitive('\PeaceDove', "\x{1F54A}");
+DefMacro('\Bat', '\lx@nounicode{\Bat}');
+# DefPrimitive('\Bat',"\x{}");
+DefPrimitive('\WomanFace', "\x{1F469}"); Let('\Womanface',   '\WomanFace');
+DefPrimitive('\ManFace',   "\x{1F468}"); Let('\MartinVogel', '\ManFace');     # !!!!!
+
+#======================================================================
+# Leftovers
+# I assume these are low-level accessors into the font.
+# We'd need to set up a font table, but let's not bother for now...
+DefMacro('\mvchr', '\lx@nounicode{\mvchr}');
+# DefPrimitive('\mvchr',"\x{}");
+DefMacro('\mvs', '\lx@nounicode{\mvs}');
+# DefPrimitive('\mvs',"\x{}");
+DefMacro('\textmvs', '\lx@nounicode{\textmvs}');
+# DefPrimitive('\textmvs',"\x{}");
+#======================================================================
+1;
