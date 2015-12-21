@@ -356,5 +356,23 @@ cite                 { font-style: normal; }
 /* Hmm.... is this right in general? */
 .ltx_centering  { display:block; margin:auto; text-align:center; }
 
+/* Dubious stuff */
+.ltx_hflipped {
+    display:inline-block;
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-fliter: "FlipH"; }
+.ltx_vflipped {
+    display:inline-block;
+    -moz-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    transform: scaleY(-1);
+    filter: FlipV;
+    -ms-fliter: "FlipV"; }
+
 /* .ltx_phantom handled in xslt */
 
