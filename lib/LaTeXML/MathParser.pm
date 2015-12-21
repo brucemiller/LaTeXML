@@ -548,17 +548,20 @@ sub parse_single {
   my @nodes = $self->filter_hints($document, $mathnode->childNodes);
 
   my ($punct, $result, $unparsed);
+  my @punct = ();
   # Extract trailing punctuation, if rule allows it.
   if ($rule =~ s/,$//) {
-    my ($x, $r) = ($nodes[-1]);
-    $punct = ($x && ($x = realizeXMNode($x)) && (getQName($x) eq 'ltx:XMTok')
-        && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT') || ($r eq 'PERIOD'))
-      ? pop(@nodes) : undef);
-    # Special case hackery, in case this thing is XMRef'd!!!
-    # We could just stick it on the end of the presentation,
-    # but it doesn't belong in the content at all!?!?
-    if (my $id = $punct && $punct->getAttribute('xml:id')) {
-      $$LaTeXML::MathParser::PUNCTUATION{$id} = $punct; }
+    # Collect ALL trailing PUNCT|PERIOD's...
+    my ($x, $r);
+    while (($x = $nodes[-1]) && ($x = realizeXMNode($x)) && (getQName($x) eq 'ltx:XMTok')
+      && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT') || ($r eq 'PERIOD'))) {
+      my $p = pop(@nodes);
+      # Special case hackery, in case this thing is XMRef'd!!!
+      # We could just stick it on the end of the presentation,
+      # but it doesn't belong in the content at all!?!?
+      if (my $id = $p->getAttribute('xml:id')) {
+        $$LaTeXML::MathParser::PUNCTUATION{$id} = $p; }
+      unshift(@punct, $p); }
   }
 
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
@@ -581,10 +584,10 @@ sub parse_single {
     return; }
   # Success!
   else {
-    if ($punct) {    # create a trivial XMDual to treat the punctuation as presentation
+    if (@punct) {    # create a trivial XMDual to treat the punctuation as presentation
       $result = ['ltx:XMDual', {},
         LaTeXML::Package::createXMRefs($document, $result),
-        ['ltx:XMWrap', {}, $result, $punct]]; }    # or perhaps: Apply, punctuated???
+        ['ltx:XMWrap', {}, $result, @punct]]; }    # or perhaps: Apply, punctuated???
     if ($LaTeXML::MathParser::DEBUG) {
       print STDERR "\n=>" . ToString($result) . "\n"; }
     return $result; } }
