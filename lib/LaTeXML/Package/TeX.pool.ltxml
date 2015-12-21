@@ -3970,6 +3970,7 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
     my ($n, $node, $string, $number, $w) = (0, undef, '', '', 0);
+    # NOTE: We're scanning chars from END!
     while ($node = pop(@nodes)) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
@@ -3978,6 +3979,8 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
         if ($r eq 'NUMBER') {
           $string = $text . $string;
           $number = $node->getAttribute('meaning') . $number; }
+        elsif (!$n) {    # any following cases are not allowed as LAST char
+          last; }
         # if thousands separator (but NOT simultaneously PUNCT!!!! Be paranoid about lists)
         elsif (($text eq $thou) && ($r ne 'PUNCT')) {
           $string = $text . $string; }    # Add to string, but omit from number
@@ -6092,13 +6095,19 @@ DefConstructor('\lx@math@tweaked RequiredKeyVals {}',
   reversion => '#2');
 
 DefConstructor('\lx@text@tweaked RequiredKeyVals {}',
-  "<ltx:text _noautoclose='1' xoffset='#xoffset'>#2</ltx:text>",
+  "<ltx:text _noautoclose='1' %&GetKeyVals(#1)>#2</ltx:text>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($kv,      $body)    = $whatsit->getArgs;
     $whatsit->setProperties($kv->getPairs); });
 
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
+
+DefConstructor('\lx@framed[]{}',
+  "<ltx:text framed='#frame' _noautoclose='1'>#2</ltx:text>",
+  properties => { frame => sub { ToString($_[1] || 'rectangle'); } });
+DefConstructor('\lx@hflipped{}',
+  "<ltx:text class='ltx_hflipped' _noautoclose='1'>#1</ltx:text>");
 
 sub reportNoUnicode {
   my ($cs) = @_;
