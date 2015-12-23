@@ -1080,7 +1080,7 @@ sub DefRegisterI {
   my $setter = $options{setter}
     || ($options{readonly}
     ? sub { my ($v, @args) = @_;
-      Error('unexpected', $name, $STATE->getStomach,
+      Warn('unexpected', $name, $STATE->getStomach,
         "Can't assign to register $name"); return; }
     : sub { my ($v, @args) = @_;
       AssignValue(join('', $name, map { ToString($_) } @args) => $v); });
@@ -1100,9 +1100,9 @@ sub LookupRegister {
   if (($defn = $STATE->lookupDefinition($cs)) && $defn->isRegister) {
     return $defn->valueOf(@parameters); }
   else {
-    Error('expected', 'register', $STATE->getStomach,
-      "The control sequence " . ToString($cs) . " is not a register");
-    return; } }
+    Warn('expected', 'register', $STATE->getStomach,
+      "The control sequence " . ToString($cs) . " is not a register"); }
+  return; }
 
 sub AssignRegister {
   my ($cs, $value, @parameters) = @_;
@@ -1111,7 +1111,7 @@ sub AssignRegister {
   if (($defn = $STATE->lookupDefinition($cs)) && $defn->isRegister) {
     return $defn->setValue($value, @parameters); }
   else {
-    Error('expected', 'register', $STATE->getStomach,
+    Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register");
     return; } }
 
@@ -1252,8 +1252,9 @@ sub createXMRefs {
       push(@refs, [$qname, {%attr}]); }
     # Likewise, clone an XMRef (w/o any attributes or id ?) rather than create an XMRef to an XMRef.
     elsif ($qname eq 'ltx:XMRef') {
-      push(@refs, [$qname, { _xmkey => $arg->getAttribute('_xmkey'),
-            idref => $arg->getAttribute('idref'), _box => $box }]); }
+      my $key = ($isarray ? $$arg[1]{_xmkey} : $arg->getAttribute('_xmkey'));
+      my $id  = ($isarray ? $$arg[1]{idref}  : $arg->getAttribute('idref'));
+      push(@refs, [$qname, { _xmkey => $key, idref => $id, _box => $box }]); }
     else {
       if (my $id = ($isarray ? $$arg[1]{'xml:id'} : $arg->getAttribute('xml:id'))) {
         # $arg already has id, so refer to it.
