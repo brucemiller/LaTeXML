@@ -1049,7 +1049,7 @@ sub RefStepItemCounter {
   AssignValue(itemization_items => $n + 1);
   my %attr = ();
   my $sep  = LookupRegister('\itemsep');
-  if (($n > 0) && ($sep->valueOf != LookupRegister('\lx@default@itemsep')->valueOf)) {
+  if (($n > 0) && $sep && ($sep->valueOf != LookupRegister('\lx@default@itemsep')->valueOf)) {
     $attr{itemsep} = $sep; }
   if (defined $tag) {
     my @props     = RefStepID($counter);
@@ -1631,7 +1631,7 @@ sub eqnarrayBindings {
     'class'  => 'ltx_eqn_eqnarray',
     'colsep' => LookupRegister('\arraycolsep')->multiply(2));
   my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
     $attributes{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
@@ -2547,7 +2547,7 @@ sub tabularBindings {
   $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
   if (!defined $properties{attributes}{colsep}) {
     my $sep = LookupRegister('\tabcolsep');
-    if ($sep->valueOf != LookupRegister('\lx@default@tabcolsep')->valueOf) {
+    if ($sep && ($sep->valueOf != LookupRegister('\lx@default@tabcolsep')->valueOf)) {
       $properties{attributes}{colsep} = $sep; } }
   if (!defined $properties{attributes}{rowsep}) {
     my $str = ToString(Expand(T_CS('\arraystretch')));
@@ -2585,14 +2585,6 @@ DefMacroI('\endtabular', undef, '\@finish@alignment\@end@tabular');
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
 # so make it Undigested here!
-
-# Convert a vertical positioning, optional argument.
-#  t = "top", b = "bottom"; default is "middle".
-# Note that the default for vattach attribute is "baseline".
-sub translateAttachment {
-  my ($pos) = @_;
-  $pos = ($pos ? ToString($pos) : '');
-  return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
 
 DefConstructor('\@@tabular[] Undigested DigestedBody',
   '#3',
@@ -2652,7 +2644,7 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
       role => 'ARRAY' };
     # Determine column and row separations, if non default
     my $colsep = LookupRegister('\arraycolsep');
-    if ($colsep->valueOf != LookupRegister('\lx@default@arraycolsep')->valueOf) {
+    if ($colsep && ($colsep->valueOf != LookupRegister('\lx@default@arraycolsep')->valueOf)) {
       $$attr{colsep} = $colsep; }
     my $str = ToString(Expand(T_CS('\arraystretch')));
     if ($str != 1) {
