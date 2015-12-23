@@ -94,7 +94,7 @@ sub amsalignBindings {
   my ($template, %properties) = @_;
 
   my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
     $properties{attributes}{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
@@ -212,7 +212,7 @@ sub amsAlignmentBindings {
   my ($template, %properties) = @_;
 
   my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf) {
+  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
     $properties{rowsep} = $cur_jot; }
 
   alignmentBindings($template, undef, attributes => {%properties});
@@ -990,10 +990,10 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
     my ($whatsit) = @_;
     my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
     (T_CS('\genfrac'),
-      T_BEGIN, Revert($open->getArg(1)),  T_END,    # Assumes wrapped in \@left/\@right!
-      T_BEGIN, Revert($close->getArg(1)), T_END,
-      T_BEGIN, ($thickness ? Revert($thickness) : ()), T_END,
-      T_BEGIN, ($stylecode ? Revert($stylecode) : ()), T_END,
+      T_BEGIN, ($open->unlist ? Revert($open->getArg(1)) : ()), T_END, # Assumes wrapped in \@left/\@right!
+      T_BEGIN, ($close->unlist ? Revert($close->getArg(1)) : ()), T_END,
+      T_BEGIN, ($thickness     ? Revert($thickness)        : ()), T_END,
+      T_BEGIN, ($stylecode     ? Revert($stylecode)        : ()), T_END,
       T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
       T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
   sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
