@@ -2426,6 +2426,15 @@ DefPrimitive('\@alignment@bindings AlignmentTemplate []', sub {
     my ($stomach, $template, $mode) = @_;
     alignmentBindings($template, $mode); });
 
+# Utility, not really TeX, but used by LaTeX, AmSTeX...
+# Convert a vertical positioning, optional argument.
+#  t = "top", b = "bottom"; default is "middle".
+# Note that the default for vattach attribute is "baseline".
+sub translateAttachment {
+  my ($pos) = @_;
+  $pos = ($pos ? ToString($pos) : '');
+  return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
+
 #----------------------------------------------------------------------
 # To recognize where rows & columns start and stop, we need to
 # recognize things that have expanded into &, \cr, etc.
@@ -5467,9 +5476,9 @@ DefConstructor('\Bigg Token', '#1', bounded => 1, font => { size => 'Bigg' });
 
 sub addDelimiterRole {
   my ($document, $role) = @_;
-  my $current    = $document->getNode;
-  my $delim      = $document->getLastChildElement($current) || $current;
-  my $delim_role = (($delim && $delim->getAttribute('role')) || '<none>');
+  my $current = $document->getNode;
+  my $delim = $document->getLastChildElement($current) || $current;
+  my $delim_role = (($delim && ($delim->nodeType == XML_ELEMENT_NODE) && $delim->getAttribute('role')) || '<none>');
   # if there is some delimiter-like role on the "delimiter", switch it, otherwise, leave it alone!
   if ($delim && ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR|<none>)$/)) {
     ## Maybe we shouldn't switch VERTBAR ?
