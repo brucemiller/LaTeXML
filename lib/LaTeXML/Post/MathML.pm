@@ -1543,17 +1543,6 @@ DefMathML('Apply:?:annotated', sub {
       ['m:mspace', { width => 'veryverythickmathspace' }],
       pmml($annotation)]; });
 
-DefMathML('Apply:?:evaluated-at', sub {
-    my ($op, $expr, $value1, $value2) = @_;
-    if ($value2) {
-      return ['m:msubsup', {},
-        pmml_parenthesize(pmml($expr), '', '|'),
-        pmml_scriptsize($value1), pmml_scriptsize($value2)]; }
-    else {
-      return ['m:msub', {},
-        pmml_parenthesize(pmml($expr), '', '|'),
-        pmml_scriptsize($value1)]; } });
-
 DefMathML("Token:?:sum",      undef, sub { return ['m:sum']; });
 DefMathML("Token:?:prod",     undef, sub { return ['m:prod']; });
 DefMathML("Token:?:limit",    undef, sub { return ['m:limit']; });
