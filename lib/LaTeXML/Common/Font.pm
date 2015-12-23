@@ -587,11 +587,11 @@ sub merge {
   if ($options{mathstyle}) {    # Also set the size from mathstyle
     $size = $stylesize{$mathstyle}; }
   elsif ($options{scripted}) {    # Or adjust both the mathstyle & size for scripts
-    $mathstyle = $scriptstylemap{$mathstyle};
-    $size      = $stylesize{$mathstyle}; }
+    $mathstyle = $scriptstylemap{ $mathstyle || 'display' };
+    $size      = $stylesize{ $mathstyle      || 'display' }; }
   elsif ($options{fraction}) {    # Or adjust both for fractions
-    $mathstyle = $fracstylemap{$mathstyle};
-    $size      = $stylesize{$mathstyle}; }
+    $mathstyle = $fracstylemap{ $mathstyle || 'display' };
+    $size      = $stylesize{ $mathstyle    || 'display' }; }
 
   my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
