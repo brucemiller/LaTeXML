@@ -164,7 +164,7 @@ DefPrimitiveI('\textfonti', undef, '',
 DefPrimitiveI('\textfontii', undef, '',
   font => { family => 'serif', series => 'medium', shape => 'upright', size => 9 });
 
-DefConstructor('\spreadlines Dimension', '');
+DefConstructor('\spreadlines {Dimension}', '');
 
 DefPrimitive('\pagebreak',      undef);
 DefPrimitive('\nopagebreak',    undef);
