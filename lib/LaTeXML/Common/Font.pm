@@ -580,7 +580,7 @@ sub merge {
   $encoding  = $$self[7] if (!defined $encoding);
   $language  = $$self[8] if (!defined $language);
   $mathstyle = $$self[9] if (!defined $mathstyle);
-  $force     = $$self[10] | $force;
+  $force = ($$self[10] || 0) | $force;
 
   if (my $scale = $options{scale}) {
     $size = $scale * $size; }
