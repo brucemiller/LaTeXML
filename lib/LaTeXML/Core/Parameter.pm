@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Common::Object);
 
