@@ -28,7 +28,7 @@ use base (qw(Exporter));
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
     &Annotate &InvisibleTimes &InvisibleComma
     &NewFormulae &NewFormula &NewList
-    &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited
+    &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
     &LeftRec
     &Arg &MaybeFunction
     &SawNotation &IsNotationAllowed
@@ -37,7 +37,7 @@ our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
       &Annotate &InvisibleTimes &InvisibleComma
       &NewFormulae &NewFormula &NewList
-      &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited
+      &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
       &LeftRec
       &Arg &MaybeFunction
       &SawNotation &IsNotationAllowed
@@ -170,10 +170,10 @@ sub getTokenMeaning {
   my ($node) = @_;
   my $x;
   $node = realizeXMNode($node);
-  return (defined($x = $node->getAttribute('meaning')) ? $x
-    : (defined($x = $node->getAttribute('name')) ? $x
-      : (($x = $node->textContent) ne '' ? $x
-        : (defined($x = $node->getAttribute('role')) ? $x
+  return (defined($x = p_getAttribute($node, 'meaning')) ? $x
+    : (defined($x = p_getAttribute($node, 'name')) ? $x
+      : (($x = (ref $node eq 'ARRAY' ? '' : $node->textContent)) ne '' ? $x
+        : (defined($x = p_getAttribute($node, 'role')) ? $x
           : undef)))); }
 
 sub node_location {
@@ -325,7 +325,21 @@ sub parse_children {
     elsif ($tag =~ /^ltx:(XMApp|XMArray|XMRow|XMCell)$/) {
       $self->parse_children($child, $document); }
     elsif ($tag eq 'ltx:XMDual') {
-      $self->parse_children($child, $document); } }
+      $self->parse_children($child, $document); }
+    ### Some day this may be needed? but not yet...
+   #     elsif ($tag eq 'ltx:XMRef') {
+   #       # We might be referencing something outside the current tree.
+   #       # but we'd like it's contents to be parsed before we start using it at this level.
+   #       # NOTE: Do we have to worry about things being parsed twice? (ie. when the other tree's done)
+   #       # if so, we probably want to mark things as having already been parsed.
+   #       my $refnode = realizeXMNode($child);
+   #       if(getQName($refnode) ne 'ltx:XMTok'){ # Anything referenced with structure...
+   #         print STDERR "PRE-PARSING Ref'd node: ".ToString($child)." == ".ToString($refnode). "\n";
+   # ##        $self->parse_rec($refnode,'Anything',$document);
+   #         $self->parse_children($refnode,$document);
+   #         print STDERR "NOW REFERENCES: ".ToString(realizeXMNode($child))."\n";
+   #  } }
+  }
   return; }
 
 my $HINT_PUNCT_THRESHOLD = 10.0;    # \quad or bigger becomes punctuation ? [CONSTANT]
@@ -564,16 +578,20 @@ sub parse_single {
       unshift(@punct, $p); }
   }
 
+  if ($LaTeXML::MathParser::DEBUG) {
+    $::RD_TRACE = 1;    # Turn on MathGrammar tracing
+                        #    my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
+    my $box = $document->getNodeBox($mathnode);
+    print STDERR "\n" . ('=' x 60) .
+      "\nParsing formula \"" . ToString($box) . "\""
+      . "\n from " . $box->getLocator
+      . "\n == \"" . join(' ', map { node_string($_, $document) } @nodes) . "\""
+      . "\n == " . ToString($mathnode)
+      . "\n"; }
+
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
     $result = $nodes[0] || Absent(); }
   else {
-    if ($LaTeXML::MathParser::DEBUG) {
-      $::RD_TRACE = 1;         # Turn on MathGrammar tracing
-      my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
-      print STDERR "\n" . ('=' x 40) .
-        "\nParsing formula \"" . ToString($box) . "\" from " . $box->getLocator
-        . "\n == \"" . join(' ', map { node_string($_, $document) } @nodes) . "\"\n"; }
-
     # Now do the actual parse.
     ($result, $unparsed) = $self->parse_internal($rule, @nodes); }
 
@@ -589,7 +607,7 @@ sub parse_single {
         LaTeXML::Package::createXMRefs($document, $result),
         ['ltx:XMWrap', {}, $result, @punct]]; }    # or perhaps: Apply, punctuated???
     if ($LaTeXML::MathParser::DEBUG) {
-      print STDERR "\n=>" . ToString($result) . "\n"; }
+      print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
 
 sub parse_internal {
@@ -645,7 +663,8 @@ sub parse_internal {
 sub getGrammaticalRole {
   my ($self, $node) = @_;
   $node = realizeXMNode($node);
-  my $role = $node->getAttribute('role');
+  #  my $role = $node->getAttribute('role');
+  my $role = p_getAttribute($node, 'role');
   if (!defined $role) {
     my $tag = getQName($node);
     if ($tag eq 'ltx:XMTok') {
@@ -730,6 +749,7 @@ my %IS_INFIX = (METARELOP => 1,    # [CONSTANT]
 
 sub textrec {
   my ($node, $outer_bp, $outer_name) = @_;
+  return '[missing]' unless defined $node;
   $node = realizeXMNode($node);
   my $tag = getQName($node);
   $outer_bp   = 0  unless defined $outer_bp;
@@ -914,11 +934,19 @@ sub InvisibleComma {
 # However, this is really only used to get the script out of a sub/super script
 sub Arg {
   my ($node, $n) = @_;
+  my $onode = $node;
+  $node = realizeXMNode($node);
   if (ref $node eq 'ARRAY') {
     return $$node[$n + 2]; }
   else {
     my @args = element_nodes($node);
-    return $args[$n]; } }    # will get cloned if/when needed.
+    my $nth  = $args[$n];
+    # Tricky case: if $node is an XMRef, we'll want to reference the SUB node too
+    # and not just use it directly; else that node will be duplicated in both branches of XMDual
+    if ($nth && !$node->isSameNode($onode)) {
+      return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $nth); }
+    else {
+      return $args[$n]; } } }    # will get cloned if/when needed.
 
 # Add more attributes to a node.
 # Values can be strings or nodes whose text content is used.
@@ -1245,6 +1273,20 @@ sub DecorateOperator {
   my $role    = p_getAttribute($op, 'role');
   my $meaning = p_getAttribute($op, 'meaning');
   return Annotate($decop, role => $role, meaning => $meaning); }
+
+sub NewEvalAt {
+  my ($base, $vertbar, $lower, $upper) = @_;
+  my $pres = ['ltx:XMWrap', {}, $base, Annotate($vertbar, role => 'CLOSE')];
+  $pres = NewScript($pres, $lower) if $lower;
+  $pres = NewScript($pres, $upper) if $upper;
+  return ['ltx:XMDual', {},
+    ['ltx:XMApp', {},
+      ['ltx:XMTok', { meaning => 'evaluated-at' }],
+      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT,
+        $base,
+        ($lower ? (Arg($lower, 0)) : ()),
+        ($upper ? (Arg($upper, 0)) : ()))],
+    $pres]; }
 
 # ================================================================================
 # A "notation" is a language construct or set thereof.
