@@ -1185,6 +1185,7 @@ sub markXMNodeVisibility {
 
 sub markXMNodeVisibility_aux {
   my ($self, $node, $cvis, $pvis) = @_;
+  return unless $node;
   my $qname = $self->getQName($node);
   return if (!$cvis || $node->getAttribute('_cvis')) && (!$pvis || $node->getAttribute('_pvis'));
   $node->setAttribute('_cvis' => 1) if $cvis;
