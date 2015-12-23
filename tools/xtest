@@ -92,6 +92,7 @@ foreach my $set (@testsets) {
           ($usesdtd ? ("--novalidate") : ()),
           "--dest=$dest",
           "--format=$type",
+          "--javascript=LaTeXML-maybeMathjax.js",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
           ($verbosity > 0 ? map { "--verbose" } 1 .. $verbosity
             : ($verbosity < 0 ? map { "--quiet" } 1 .. -$verbosity
@@ -139,7 +140,7 @@ th { font-weight:bold; }
 EOHead
 
   $FOOTER = <<'EOFoot';
-</table>;
+</table>
 </body>
 EOFoot
 }
