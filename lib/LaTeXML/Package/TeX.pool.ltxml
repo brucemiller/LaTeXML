@@ -3799,7 +3799,7 @@ DefMacro('\abovewithdelims Token Token Dimension',
 '\lx@generalized@over{\abovewithdelims #1 #2 #3}{left={\@left#1},right={\@right#2},meaning=divide,thickness=#3}');
 
 #======================================================================
-DefConstructorI('\cal', undef, '',
+DefPrimitiveI('\cal', undef, undef,
   font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
 
 # In principle, <ltx:emph> is a nice markup for emphasized.
