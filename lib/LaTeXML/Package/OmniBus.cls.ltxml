@@ -38,14 +38,18 @@ DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
 DefRegister('\authorrunning', Tokens());
+Let('\runningauthor', '\authorrunning');
+Let('\runauthor',     '\authorrunning');
 
 DefMacro('\runningtitle{}', Tokens());
+Let('\runninghead', '\runningtitle');
 DefMacro('\shortauthor{}',  Tokens());
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
 
 DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
-DefMacro('\email{}',   '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
+Let('\emailaddr', '\email');
 DefMacro('\ead{}[]',   '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
 DefMacro('\emailname', 'E-mail');
 DefMacro('\speaker{}', '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
