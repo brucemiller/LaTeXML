@@ -86,13 +86,21 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
-    my $name = ToString(Digest(T_CS('\@currname')));
-    my $type = ToString(Digest(T_CS('\@currext')));
+    my $name       = ToString(Digest(T_CS('\@currname')));
+    my $type       = ToString(Digest(T_CS('\@currext')));
+    my $hadmissing = 0;
     foreach my $option (@{ LookupValue('@unusedoptionlist') }) {
       if (FindFile($option, type => 'sty')) {
         RequirePackage($option); }
       else {
+        $hadmissing = 1;
         Info('unexpected', $option, $_[0], "Unexpected option '$option' passed to $name.$type"); } }
+    # Often, in compatibility mode, the options are used to load what are effectively
+    # document classes for specific journals, etc that introduce a bunch of new frontmatter!
+    # To try to recover from this, we'll go ahead & load the OmniBus class.
+    if ($hadmissing) {
+      Info('note', 'OmniBus', $_[0], "Loading OmniBus class to attempt to cover missing options");
+      LoadClass('OmniBus'); }
     AssignValue('@unusedoptionlist', []); });
 
 sub onlyPreamble {
