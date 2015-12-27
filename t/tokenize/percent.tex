@@ -1,11 +1,36 @@
-\documentclass%{foo}
-{article}
+\documentclass{art%ignore this}
+icle}
 \usepackage{url}
 \begin{document}
-Text \url{http://foo/bar}
-and
-\url{http://foo/baz%bar}
-done.
+\section{FooBar}\label{foo%ignore this too}
+bar}
+Methods~\cite{b1,%and, ignore, this, also}
+b2}, by the {\em ab initio} crystal-orbital Hartree-Fock (HF) 
+In section \ref{foo%same here}
+bar}
 
-Verbatim \verb%a_b% done.
+\url{http://foo.com/dont%00ignore this}
+and
+\url$http://foo.com/dont%00ignore this$
+However
+\url%http://foo.com/dont% ignore this either
+
+% Still a comment?
+
+\def\host{foo.com}
+Consider \verb%http://\host/page% versus \url%http://\host/page%.
+
+Consider \verb%a_b% versus \url%a_b%.
+
+When delimited, extra braces are allowed by verb, but not url.
+\verb#{{{{# versus ?? % \url#{{{{{{#.
+OTOH, neither allow extra braces when using braces.
+%Consider \verb{{{{} versus %\url{{{{{{}.
+
+\begin{thebibliography}{}
+\bibitem{b1}{C. W. Bunn, Trans. Faraday Society 35 (1939)482.}
+\bibitem{b2}{H. M. M. Shearer and V. Vand, 
+Acta Crystallogr. 9 (1956) 379; H. M. M. Shearer and P. W. Teare, ibid.
+12 (1959) 294. } 
+\end{thebibliography}
 \end{document}
