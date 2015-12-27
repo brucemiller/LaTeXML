@@ -1343,10 +1343,7 @@ DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
     my $mouth = $gullet->getMouth;
     my ($init, $body);
-    StartSemiverbatim();
-    AssignCatcode('\\', CC_OTHER);
-    AssignCatcode('{',  CC_OTHER);
-    AssignCatcode('}',  CC_OTHER);
+    StartSemiverbatim('%', '\\', '{', '}');
     $init = $mouth->readToken;
     $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
 
