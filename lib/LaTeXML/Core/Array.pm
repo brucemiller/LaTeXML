@@ -14,11 +14,16 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Core::Parameter;
 use base qw(LaTeXML::Common::Object);
+
+# This class represents (potentially) delimited lists of things;
+# currently it does not cover the actual parameter type/parser, just the result,
+# since there are a variety of syntaxes, commas or not, etc.
 
 # The following tokens (individual Token's or Tokens') describe how to revert the Array
 #   open,close and separator are the outermost delimiter and separator between items
-#   itemopen,itemclose are delimiters for each item
+#   itemopen,itemclose are delimiters for each item -- If any
 sub new {
   my ($class, %options) = @_;
   return bless { type => $options{type},
@@ -40,16 +45,10 @@ sub getValues {
 
 sub beDigested {
   my ($self, $stomach) = @_;
-  my @v = ();
+  my @v    = ();
+  my $type = $$self{type};
   foreach my $item (@{ $$self{values} }) {
-    # Yuck
-    my $typedef = $$self{type} && $STATE->lookupMapping('PARAMETER_TYPE', $$self{type});
-    my $dodigest = (ref $item) && (!$typedef || !$$typedef{undigested});
-    my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    $STATE->beginSemiverbatim() if $semiverb;
-    push(@v, ($dodigest ? $item->beDigested($stomach) : $item));
-    $STATE->endSemiverbatim() if $semiverb;
-  }
+    push(@v, ($type ? $type->digest($stomach, $item, undef) : ($item ? $item->beDigested($stomach) : $item))); }
   return (ref $self)->new(open => $$self{open}, close => $$self{close}, separator => $$self{separator},
     itemopen => $$self{itemopen}, itemclose => $$self{itemclose},
     type     => $$self{type},     values    => [@v]); }
