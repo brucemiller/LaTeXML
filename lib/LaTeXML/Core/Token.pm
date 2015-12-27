@@ -245,9 +245,9 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
 # I'm pretty sure we do NOT want to neutralize comments (turn them into CC_OTHER)
 # here, since if comments do get into the Tokens, that will introduce weird crap into the stream.
 sub neutralize {
-  my ($self) = @_;
-  my ($ch, $cc) = @$self;
-  return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') })
+  my ($self, @extraspecials) = @_;
+  my ($ch,   $cc)            = @$self;
+  return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
     ? T_OTHER($ch) : $self); }
 
 #======================================================================

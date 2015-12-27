@@ -83,8 +83,8 @@ sub beDigested {
   return $stomach->digest($self); }
 
 sub neutralize {
-  my ($self) = @_;
-  return Tokens(map { $_->neutralize } $self->unlist); }
+  my ($self, @extraspecials) = @_;
+  return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
 
 sub isBalanced {
   my ($self) = @_;
