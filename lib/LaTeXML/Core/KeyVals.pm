@@ -45,14 +45,10 @@ sub readKeyVals {
       unless $delim;
     my $key = ToString($ktoks); $key =~ s/\s//g;
     if ($key) {
-      my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
+      my $keydef = getKeyValDef($keyset, $key);
       my $value;
       if ($delim->equals($assign)) {    # Got =, so read the value
-                                        # WHOA!!! Secret knowledge!!!
-        my $type = ($keydef && (scalar(@$keydef) == 1) && $$keydef[0]{type}) || 'Plain';
-        my $typedef = $STATE->lookupMapping('PARAMETER_TYPES', $type);
-        $STATE->beginSemiverbatim() if $typedef && $$typedef{semiverbatim};
-
+        $keydef->setupCatcodes if $keydef;
         ## ($value,$delim)=$gullet->readUntil($punct,$close);
         # This is the core of $gullet->readUntil, but preserves braces needed by rare key types
         my ($tok, @toks) = ();
@@ -61,14 +57,10 @@ sub readKeyVals {
           push(@toks, $tok,
             ($tok->getCatcode == CC_BEGIN ? ($gullet->readBalanced->unlist, T_END) : ())); }
         $value = Tokens(@toks);
-        if (($type eq 'Plain') || ($typedef && $$typedef{undigested})) { }    # Fine as is.
-        elsif ($type eq 'Semiverbatim') {                                     # Needs neutralization
-          $value = $value->neutralize; }
-        else {
-          ($value) = $keydef->reparseArgument($gullet, $value) }
-        $STATE->endSemiverbatim() if $typedef && $$typedef{semiverbatim};
+        $value = $keydef->reparse($gullet, $value) if $keydef && $value;
+        $keydef->revertCatcodes if $keydef;
       }
-      else {                                                                  # Else, get default value.
+      else {                                              # Else, get default value.
         $value = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key . '@default'); }
       push(@kv, $key);
       push(@kv, $value); }
@@ -80,6 +72,10 @@ sub readKeyVals {
   return LaTeXML::Core::KeyVals->new($keyset, [@kv],
     open  => $open,  close  => $close,
     punct => $punct, assign => $assign); }
+
+sub getKeyValDef {
+  my ($keyset, $key) = @_;
+  return $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key); }
 
 # Read a keyvals keyword: tokens DO get expanded!
 # read until we find =, comma or the end delimiter of the keyvals (typically } or ])
@@ -167,16 +163,10 @@ sub beDigested {
   my @dkv    = ();
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
-    my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
-    my $dodigest = (ref $value) && (!$keydef || !$$keydef[0]{undigested});
-    # Yuck
-    my $type = ($keydef && (scalar(@$keydef) == 1) && $$keydef[0]{type}) || 'Plain';
-    my $typedef = $STATE->lookupMapping('PARAMETER_TYPES', $type);
-    my $semiverb = $dodigest && $typedef && $$typedef{semiverbatim};
-    $STATE->beginSemiverbatim() if $semiverb;
-    push(@dkv, $key, ($dodigest ? $value->beDigested($stomach) : $value));
-    $STATE->endSemiverbatim() if $semiverb;
-  }
+    my $keydef = getKeyValDef($keyset, $key);
+    push(@dkv, $key,
+      ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach)))
+      if $value; }
   return LaTeXML::Core::KeyVals->new($keyset, [@dkv],
     open  => $$self{open},  close  => $$self{close},
     punct => $$self{punct}, assign => $$self{assign}); }
@@ -188,12 +178,12 @@ sub revert {
   my @kv     = @{ $$self{keyvals} };
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
-    my $keydef = $STATE->lookupValue('KEYVAL@' . $keyset . '@' . $key);
+    my $keydef = getKeyValDef($keyset, $key);
     push(@tokens, $$self{punct}) if $$self{punct} && @tokens;
     push(@tokens, T_SPACE)       if @tokens;
     push(@tokens, Explode($key));
     push(@tokens, ($$self{assign} || T_SPACE)) if $value;
-    push(@tokens, ($keydef ? $keydef->revertArguments($value) : Revert($value))) if $value; }
+    push(@tokens, ($keydef ? $keydef->revert($value) : Revert($value))) if $value; }
   unshift(@tokens, $$self{open}) if $$self{open};
   push(@tokens, $$self{close}) if $$self{close};
   return @tokens; }
