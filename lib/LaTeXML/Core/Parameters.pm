@@ -53,11 +53,7 @@ sub revertArguments {
   my @tokens = ();
   foreach my $parameter (@$self) {
     next if $$parameter{novalue};
-    my $arg = shift(@args);
-    if (my $retoker = $$parameter{reversion}) {
-      push(@tokens, &$retoker($arg, @{ $$parameter{extra} || [] })); }
-    else {
-      push(@tokens, Revert($arg)) if ref $arg; } }
+    push(@tokens, $parameter->revert(shift(@args))); }
   return @tokens; }
 
 sub readArguments {
