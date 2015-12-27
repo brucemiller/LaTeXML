@@ -321,7 +321,7 @@ DefParameterType('DirectoryList', sub {
       else {
         Error('expected', '}', $gullet, "A closing } was supposed to be here"); }
       LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
-        type   => 'Semiverbatim',
+        type => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
         values => [@dirs]); }
     else {
       Error('expected', 'DirectoryList', $gullet, "A DirectoryList was supposed to be here"); } });
@@ -419,33 +419,13 @@ DefParameterType('DigestedBody', sub {
 ## DefParameterType('Length', sub {
 ##   my($gullet,$unit)=@_;
 
-# A comma separated List;
-# You can also write CommaList:Dimension to read a list of dimensions
-# [Note that this should act like Semiverbatim if the supplied type does! Ugh]
-# DefParameterType('CommaList', sub {
-#     my ($gullet, $type) = @_;
-#     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList");
-#     if ($gullet->ifNext(T_BEGIN)) {
-#       $gullet->readToken;
-#       my @items = ();
-#       my ($item, $delim);
-#       while ((($item, $delim) = $gullet->readUntil(T_END, T_OTHER(','))) && defined $item) {
-#         if ($typedef) {
-#           ($item) = $typedef->reparseArgument($gullet, $item); }
-#         push(@items, $item);
-#         last if Equals($delim, T_END); }
-#       LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type, values => [@items]); }
-#     else {    # If no brace, just read one item or token, but still make Array!
-#       my ($item) = ($typedef ? $typedef->readArguments($gullet, "CommaList") : ($gullet->readToken));
-#       LaTeXML::Core::Array->new(type => $type, values => [$item]); } });
-
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
-    my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList");
+    my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
+    my @items = ();
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
       my @tokens = ();
-      my @items  = ();
       my $comma  = T_OTHER(',');
       while (my $token = $gullet->readToken) {
         if ($token->equals(T_END)) {
@@ -456,12 +436,13 @@ DefParameterType('CommaList', sub {
         elsif ($token->equals(T_BEGIN)) {
           push(@tokens, $token, $gullet->readBalanced->unlist, T_END); } }
       if ($typedef) {
-        @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; }
-      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $type,
-        values => [@items]); }
-    else {    # If no brace, just read one item or token, but still make Array!
-      my ($item) = ($typedef ? $typedef->readArguments($gullet, "CommaList") : ($gullet->readToken));
-      LaTeXML::Core::Array->new(type => $type, values => [$item]); } });
+        @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; } }
+    else {
+      # If no brace, just read one item or token, but still make Array!
+      push(@items, ($typedef ? $typedef->readArguments($gullet, "CommaList")
+          : ($gullet->readToken))); }
+    LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $typedef,
+      values => [@items]); });
 
 DefParameterType('RequiredKeyVals', sub {
     my ($gullet, $keyset) = @_;
