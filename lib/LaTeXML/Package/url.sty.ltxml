@@ -48,8 +48,8 @@ DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
     my $mouth = $gullet->getMouth;
     my ($open, $close, $url);
+    StartSemiverbatim('%');
     $open = $gullet->readToken;
-    StartSemiverbatim();
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url = $gullet->readBalanced; }
