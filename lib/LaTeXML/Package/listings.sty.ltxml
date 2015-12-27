@@ -1236,12 +1236,13 @@ sub lstProcess_internal {
       $LaTeXML::colnum += length($1);    # ?
       my $word      = $1;
       my $lookup    = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
-      my $classname = $$words{$lookup}{class} || ($outerclass ? undef : 'identifiers');
+      my $classname = ($outerclass ? undef : $$words{$lookup}{class} || 'identifiers');
       my @tokens    = map { lstRescan($_) } Explode($word);                               # rescan??
       if (my $indexname = $$words{$lookup}{index} || lstClassProperty($classname, 'index')) { # Should be indexed?
         if (my $index = $indexname && $$classes{$indexname}) {
           lstProcessPush($$index{begin}->unlist, T_BEGIN, @tokens, T_END); } }
-      lstProcessPush(lstClassBegin($classname), @tokens, lstClassEnd($classname)); }
+      lstProcessPush(($classname ? (lstClassBegin($classname), @tokens, lstClassEnd($classname))
+          : @tokens)); }
 
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
     # Perhaps a special keywords_re : otherkeywords | keywordprefix$LaTeXML::ID_RE => keyword
