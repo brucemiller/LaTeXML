@@ -412,8 +412,12 @@ sub ReadParameters {
 # the value for specific keys.
 sub DefKeyVal {
   my ($keyset, $key, $type, $default) = @_;
-  my $paramlist = LaTeXML::Package::parseParameters($type, "KeyVal $key in set $keyset");
-  AssignValue('KEYVAL@' . $keyset . '@' . $key              => $paramlist);
+  my $paramlist = LaTeXML::Package::parseParameters($type || "{}", "KeyVal $key in set $keyset");
+  if (scalar(@$paramlist) != 1) {
+    Warn('unexpected', 'keyval', $key,
+      "Too many parameters in keyval $key (in set $keyset); taking only first", $paramlist); }
+  my $parameter = $$paramlist[0];
+  AssignValue('KEYVAL@' . $keyset . '@' . $key              => $parameter);
   AssignValue('KEYVAL@' . $keyset . '@' . $key . '@default' => Tokenize($default))
     if defined $default;
   return; }
@@ -817,7 +821,7 @@ sub RawTeX {
   return; }
 
 sub StartSemiverbatim {
-  $STATE->beginSemiverbatim;
+  $STATE->beginSemiverbatim(@_);
   return; }
 
 sub EndSemiverbatim {
