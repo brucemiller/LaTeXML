@@ -105,7 +105,7 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', '%', "'"]];
+  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode} = {};
@@ -502,13 +502,13 @@ sub getFrameDepth {
 # This is primarily about catcodes, but a bit more...
 
 sub beginSemiverbatim {
-  my ($self) = @_;
+  my ($self, @extraspecials) = @_;
   # Is this a good/safe enough shorthand, or should we really be doing beginMode?
   $self->pushFrame;
   $self->assignValue(MODE    => 'text');
   $self->assignValue(IN_MATH => 0);
   map { $self->assignCatcode($_ => CC_OTHER, 'local') }
-    @{ $self->lookupValue('SPECIALS') };
+    @{ $self->lookupValue('SPECIALS') }, @extraspecials;
   $self->assignMathcode('\'' => 0x8000, 'local');
   # try to stay as ASCII as possible
   $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local');
