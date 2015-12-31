@@ -1673,13 +1673,12 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $model   = $document->getModel;
     my $context = $document->getElement;
     my $current = $context;
-    my $tag     = $document->getNodeQName($current);
 
     # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
-    my $vmode  = $current->getAttribute('_vertical_mode_');
+    my $vmode = $current && $current->getAttribute('_vertical_mode_');
     my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
-    my $node   = $document->openElement($newtag, _noautoclose => 1,
+    my $node = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
     $document->absorb($contents);
     $document->closeNode($node); },
@@ -1828,7 +1827,8 @@ DefConstructor('\vrule RuleSpecification',
     $h -= $d if $h && $d;    # - ??
 
     if (my $alignment = LookupValue('Alignment')) {
-      if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
+      if (((!defined $h) && (!defined $w)) || ((defined $h) && ($h > 20))
+        || ((defined $h) && (defined $w) && ($h > 3 * $w))) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $whatsit->setProperty(isVerticalRule => 1) } }
     elsif ((defined $w) && ($w == 0)) {
@@ -1858,7 +1858,9 @@ DefConstructor('\hrule RuleSpecification',
     $h -= $d if $h && $d;    # - ??
 
     if (my $alignment = LookupValue('Alignment')) {
-      if (((!defined $h) && (!defined $w)) || ($h > 20) || ($h > 3 * $w)) {
+      # What is the intended logic here?
+      if (((!defined $h) && (!defined $w)) || ((defined $w) && ($w > 20))
+        || ((defined $h) && (defined $w) && ($w > 3 * $h))) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $alignment->addLine('t');
         $whatsit->setProperty(isHorizontalRule => 1) } }
@@ -2320,7 +2322,6 @@ DefConstructor('\@@LTX@noalign{}', sub {
       elsif ($box->getProperty('isSpace'))            { }
       elsif (IsEmpty($box))                           { }
       else {
-        print STDERR "Got Box: " . Stringify($box) . "\n";
         $empty = 0; last; } }
     if (my $alignment = LookupValue('Alignment')) {
       $alignment->currentRow->{empty} = $empty; }
@@ -5506,7 +5507,7 @@ Let('\Vert', '\|');
 # \choose, et al, already handle above.
 # Note that in TeX, all 4 args get digested(!)
 # and the choice is made when absorbing!
-DefConstructor('\mathchoice{}{}{}{}', sub {
+DefConstructor('\mathchoice Digested Digested Digested Digested', sub {
     my ($document, $d, $t, $s, $ss, %props) = @_;
     my $style = $props{mathstyle};
     my $choice = ($style eq 'display' ? $d
@@ -6191,12 +6192,28 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
   replace => sub { my ($document, $wrap) = @_;
     if (my $node = $document->getFirstChildElement($wrap)) {
       # Copy attributes but NOT internal ones,
+
       # NOR xml:id, else we get clashes
       foreach my $attribute ($wrap->attributes) {
         if ($attribute->nodeType == XML_ATTRIBUTE_NODE) {
           my $attr = $attribute->nodeName;
           $document->setAttribute($node, $attr => $attribute->getValue)
-            unless ($attr eq 'xml:id') || $attr =~ /^_/; } }
+            unless ($attr eq 'xml:id') || $attr =~ /^_/;
+          if ($attr =~ /^_/) { }
+          elsif ($attr eq 'xml:id') {
+            my $id = $attribute->getValue;
+            if (my $previd = $node->getAttribute('xml:id')) {    # Keep original id
+                  # but swap any references to the one on the wrapper!
+              foreach my $ref ($document->findnodes("//*[\@idref='$id']")) {
+                $ref->setAttribute(idref => $previd); }
+              $wrap->removeAttribute('xml"id');
+              $document->unRecordID($id); }
+            else {
+              $wrap->removeAttribute('xml:id');
+              $document->unRecordID($id);
+              $document->setAttribute($node, 'xml:id' => $id); } }
+          else {
+            $document->setAttribute($node, $attr => $attribute->getValue); } } }
       # But keep $node's font from being overwritten.
       $document->setNodeFont($wrap, $document->getNodeFont($node));
       ## WHY THIS????
@@ -6237,6 +6254,8 @@ sub setAlignOrClass {
 #======================================================================
 # A random collection of utility functions.
 # [maybe need to do some reorganization?]
+# Since this is used for textual tokens, typically to split author lists,
+# we don't split within braces or math
 sub SplitTokens {
   my ($tokens, @delims) = @_;
   my @items = ();
@@ -6255,6 +6274,12 @@ sub SplitTokens {
           $level++ if $cc == CC_BEGIN;
           $level-- if $cc == CC_END;
           push(@toks, $t); } }
+      elsif (Equals($t, T_MATH)) {
+        push(@toks, $t);
+        while (defined($t = shift(@tokens))) {
+          my $cc = $t->getCatcode;
+          push(@toks, $t);
+          last if $cc == CC_MATH; } }
       else {
         push(@toks, $t); } } }
   return (@items, [@toks]); }
