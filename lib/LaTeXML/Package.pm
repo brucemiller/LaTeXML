@@ -159,6 +159,8 @@ sub coerceCS {
 sub parsePrototype {
   my ($proto) = @_;
   my $oproto = $proto;
+  if (ref $proto eq 'LaTeXML::Core::Token') {
+    return ($proto, undef); }
   my $cs;
   if ($proto =~ s/^\\csname\s+(.*)\\endcsname//) {
     $cs = T_CS('\\' . $1); }
@@ -798,9 +800,12 @@ sub Invocation {
   if (my $defn = $STATE->lookupDefinition((ref $token ? $token : T_CS($token)))) {
     return Tokens($defn->invocation(@args)); }
   else {
-    Fatal('undefined', $token, undef,
+    Error('undefined', $token, undef,
       "Can't invoke " . Stringify($token) . "; it is undefined");
-    return Tokens(); } }
+    DefConstructorI($token, convertLaTeXArgs(scalar(@args), 0),
+      sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $token); });
+    return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
+##    return Tokens(); } }
 
 sub RawTeX {
   my ($text) = @_;
@@ -2162,7 +2167,14 @@ sub LoadClass {
     return $success; }
   else {
     $STATE->noteStatus(missing => $class . '.cls');
-    my $alternate = 'OmniBus';    # was 'article'
+    # Try guessing at an alternative class that we do have!
+    # Find all class bindings (pathname_name twice for .cls.ltxml!!!)
+    my @classes = sort { -(length($a) <=> length($b)) }
+      map { pathname_name($_) } map { pathname_name($_) }
+      pathname_findall('*', type => 'cls.ltxml', paths => LookupValue('SEARCHPATHS'),
+      installation_subdir => 'Package');
+    my ($best) = grep { $class =~ /^\Q$_\E/ } @classes;
+    my $alternate = $best || 'OmniBus';    # was 'article'
     Warn('missing_file', $class, $STATE->getStomach->getGullet,
       "Can't find binding for class $class (using $alternate)",
       maybeReportSearchPaths());
