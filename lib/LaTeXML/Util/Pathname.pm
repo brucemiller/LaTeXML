@@ -287,9 +287,10 @@ sub pathname_findall {
 sub candidate_pathnames {
   my ($pathname, %options) = @_;
   my @dirs = ();
-  $pathname = pathname_canonical($pathname);
-  my ($pathdir, $name, $type) = pathname_split($pathname);
+  $pathname = pathname_canonical($pathname) unless $pathname eq '*';
+  my ($pathdir, $name, $type) = ($pathname eq '*' ? (undef, '*', undef) : pathname_split($pathname));
   $name .= '.' . $type if $type;
+  # generate the set of search paths we'll use.
   if (pathname_is_absolute($pathname)) {
     push(@dirs, $pathdir); }
   else {
@@ -307,6 +308,8 @@ sub candidate_pathnames {
 
   # extract the desired extensions.
   my @exts = ();
+  if ($options{type}) {
+    push(@exts, '.' . $options{type}); }
   if ($options{types}) {
     foreach my $ext (@{ $options{types} }) {
       if ($ext eq '') { push(@exts, ''); }
@@ -322,8 +325,17 @@ sub candidate_pathnames {
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
     foreach my $ext (@exts) {
-      if ($ext eq '.*') {    # Unfortunately, we've got to test the file system NOW...
-        opendir(DIR, $dir) or next;    # ???
+      if ($name eq '*') {    # Unfortunately, we've got to test the file system NOW...
+        if ($ext eq '.*') {    # everything
+          opendir(DIR, $dir) or next;
+          push(@paths, map { pathname_concat($dir, $_) } grep { !/^\./ } readdir(DIR));
+          closedir(DIR); }
+        else {
+          opendir(DIR, $dir) or next;    # ???
+          push(@paths, map { pathname_concat($dir, $_) } grep { /\Q$ext\E$/ } readdir(DIR));
+          closedir(DIR); } }
+      elsif ($ext eq '.*') {             # Unfortunately, we've got to test the file system NOW...
+        opendir(DIR, $dir) or next;      # ???
         push(@paths, map { pathname_concat($dir, $_) } grep { /^\Q$name\E\.\w+$/ } readdir(DIR));
         closedir(DIR); }
       else {
