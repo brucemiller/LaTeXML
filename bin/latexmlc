@@ -24,7 +24,7 @@ use File::Which;
 BEGIN {
   if ($FindBin::RealBin =~ /^([^\0]+)\z/) {    # Valid Unix path TODO: Windows, revisit regexp
     $RealBin_safe = $1; }
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...'
+  die 'Fatal:I/O:tainted RealBin was tainted! Failing...'
     unless ($RealBin_safe && (-e catfile($RealBin_safe, 'latexmlc')));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
@@ -145,7 +145,7 @@ if ($log) {
       my $clog = $opts->get('log');
       my $log_handle;
       if (!open($log_handle, ">", $clog)) {
-        print STDERR "Fatal:IO:forbidden Couldn't open log file $clog : $!\n";
+        print STDERR "Fatal:I/O:forbidden Couldn't open log file $clog : $!\n";
         exit 1;
       }
       print $log_handle $log;
@@ -158,7 +158,7 @@ if ($result) {
   if ($opts->get('destination')) {
     my $output_handle;
     if (!open($output_handle, ">", $opts->get('destination'))) {
-      print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
+      print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1; }
     if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
       binmode($output_handle, ":encoding(UTF-8)"); }
