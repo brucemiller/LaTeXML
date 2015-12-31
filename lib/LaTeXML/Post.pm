@@ -1301,7 +1301,7 @@ sub realizeXMNode {
       #print STDERR "REALIZE $id => $realnode\n";
       return $realnode; }
     else {
-      Fatal("expected", $id, undef, "Cannot find a node with xml:id='$id'");
+      Fatal('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
       return; } }
   else {
     return $node; } }
