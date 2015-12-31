@@ -17,6 +17,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Gullet;
 use LaTeXML::Core::Box;
 use LaTeXML::Core::Comment;
@@ -190,13 +191,26 @@ sub invokeToken_undefined {
   my ($self, $token) = @_;
   my $cs = $token->getCSName;
   $STATE->noteStatus(undefined => $cs);
-  Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.");
   # To minimize chatter, go ahead and define it...
-  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
-      sub { makeError($_[0], 'undefined', $cs); }),
-    'global');
-  # and then invoke it.
-  return $self->invokeToken($token); }
+  if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
+    my $name = $1;
+    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
+      "Defining it now as with \\newif");
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
+    LaTeXML::Package::Let($token, T_CS('\iffalse'));
+    $self->getGullet->unread($token);    # Retry
+    return; }
+  else {
+    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
+      "Defining it now as <ltx:ERROR/>");
+    $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
+        sub { makeError($_[0], 'undefined', $cs); }),
+      'global');
+    # and then invoke it.
+    return $self->invokeToken($token); } }
 
 sub invokeToken_simple {
   my ($self, $token, $meaning) = @_;
