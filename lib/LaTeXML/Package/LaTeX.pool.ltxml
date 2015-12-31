@@ -2316,8 +2316,10 @@ Tag('ltx:figure', afterClose => sub { GenerateID(@_, 'fig'); });
 Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
 Tag('ltx:float',  afterClose => sub { GenerateID(@_, 'tab'); });
 
-DefConstructor('\@@caption{}', "<ltx:caption>#1</ltx:caption>");
-DefConstructor('\@@toccaption{}', "<ltx:toccaption>#1</ltx:toccaption>",
+# These may need to float up to where they're allowed,
+# or they may need to close <p> or similar.
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => '0');
 
 DefEnvironment('{figure}[]',
@@ -3403,10 +3405,10 @@ AssignValue(SAVEBOX => 100);
 DefPrimitive('\newsavebox DefToken', sub {
     my $n = LookupValue('SAVEBOX') + 1;
     AssignValue(SAVEBOX => $n, 'global');
-    DefRegister(ToString($_[1]) => Number($n));
+    DefRegisterI($_[1], undef, Number($n));
     AssignValue('box' . $n, List()); });
 
-DefPrimitive('\sbox Register {}', sub {
+DefPrimitive('\sbox {Register} {}', sub {
     my ($defn)   = @{ $_[1] };
     my $value    = $defn->valueOf()->valueOf;
     my $contents = Digest($_[2]);
