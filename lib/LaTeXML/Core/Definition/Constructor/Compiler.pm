@@ -38,7 +38,7 @@ sub compileConstructor {
   $name =~ s/\W//g;
   my $uid = refaddr $constructor;
   $name = "LaTeXML::Package::Pool::constructor_" . $name . '_' . $uid;
-  my $floats = ($replacement =~ s/^\^\s*//);                 # Grab float marker.
+  my $floats = ($replacement =~ s/^(\^+)\s*//) && $1;    # Grab float marker.
   my $body = translate_constructor($replacement, $floats);
   # Compile the constructor pattern into an anonymous sub that will construct the requested XML.
   my $code =
@@ -80,7 +80,11 @@ sub translate_constructor {
     elsif (s|^\s*<$QNAME_RE||so) {
       my ($tag, $av) = ($1, translate_avpairs());
       if ($float) {
-        $code .= "\$savenode=\$document->floatToElement('$tag');\n";
+        my $floattype = length($float);
+        if ($floattype == 1) {
+          $code .= "\$savenode=\$document->floatToElement('$tag');\n"; }
+        elsif ($floattype == 2) {
+          $code .= "\$savenode=\$document->floatToElement('$tag',1);\n"; }
         $float = undef; }
       $code .= "\$document->openElement('$tag'" . ($av ? ", $av" : '') . ");\n";
       $code .= "\$document->closeElement('$tag');\n" if s|^/||;    # Empty element.
