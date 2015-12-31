@@ -933,21 +933,26 @@ sub getInsertionCandidates {
 
 # Find a node in the document that can contain an element $qname
 sub floatToElement {
-  my ($self, $qname) = @_;
+  my ($self, $qname, $closeifpossible) = @_;
   my @candidates = getInsertionCandidates($$self{node});
+  my $closeable  = 1;
   while (@candidates && !$self->canContain($candidates[0], $qname)) {
+    $closeable &&= $self->canAutoClose($candidates[0]);
     shift(@candidates); }
   if (my $n = shift(@candidates)) {
-    my $savenode = $$self{node};
-    $self->setNode($n);
-    print STDERR "Floating from " . Stringify($savenode) . " to " . Stringify($n) . " for $qname\n"
-      if ($$savenode ne $$n) && $LaTeXML::Core::Document::DEBUG;
-    return $savenode; }
+    if ($closeifpossible && $closeable) {
+      $self->closeToNode($n); }
+    else {
+      my $savenode = $$self{node};
+      $self->setNode($n);
+      print STDERR "Floating from " . Stringify($savenode) . " to " . Stringify($n) . " for $qname\n"
+        if ($$savenode ne $$n) && $LaTeXML::Core::Document::DEBUG;
+      return $savenode; } }
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
       $self->getInsertionContext())
-      unless $self->canContainSomehow($$self{node}, $qname);
-    return; } }
+      unless $self->canContainSomehow($$self{node}, $qname); }
+  return; }
 
 # Find a node in the document that can accept the attribute $key
 sub floatToAttribute {
