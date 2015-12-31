@@ -31,10 +31,10 @@ sub unpack_source {
     $source =~ s/^literal\://;
     my $content_handle = IO::String->new($source);
     unless ($zip_handle->readFromFileHandle($content_handle) == AZ_OK) {
-      print STDERR "Fatal:IO:Archive Can't read in literal archive:\n $source\n"; } }
+      print STDERR "Fatal:I/O:Archive Can't read in literal archive:\n $source\n"; } }
   else {    # Otherwise, read in from file
     unless ($zip_handle->read($source) == AZ_OK) {
-      print STDERR "Fatal:IO:Archive Can't read in source archive: $source\n"; } }
+      print STDERR "Fatal:I/O:Archive Can't read in source archive: $source\n"; } }
   # Extract the Perl zip datastructure to the temporary directory
   foreach my $member ($zip_handle->memberNames()) {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
@@ -136,7 +136,7 @@ sub pack_collection {
     my $archive = get_archive($options{siteDirectory}, $whatsout);
   # TODO: Error API should be integrated once generalized to Util::
   #Fatal("I/O", $self, $docs[0], "Writing archive to IO::String handle failed") unless defined $archive;
-    print STDERR "Fatal:IO:Archive Writing archive to IO::String handle failed" unless defined $archive;
+    print STDERR "Fatal:I/O:Archive Writing archive to IO::String handle failed" unless defined $archive;
     return ($archive); }
   # Otherwise pack each document passed
   foreach my $doc (@docs) {
@@ -181,7 +181,7 @@ sub get_archive {
     open $FH, "<", $pathname
       # TODO: Switch to Error API
       #or Fatal('I/O', $pathname, undef, "File $pathname is not readable.");
-      or (print STDERR "Fatal:IO:$pathname File $pathname is not readable.");
+      or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");
     my $file_contents = <$FH>;
     close($FH);
     # Only compress the textual files

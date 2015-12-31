@@ -173,7 +173,7 @@ sub convert {
     if (!defined $source) {    # Unpacking failed to find a source
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory};
       my $log = $self->flush_log;
-      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }
+      return { result => undef, log => $log, status => "Fatal:I/O:Archive Can't detect a source TeX file!", status_code => 3 }; }
 # Destination magic: If we expect an archive on output, we need to invent the appropriate destination ourselves when not given.
 # Since the LaTeXML API never writes the final archive file to disk, we just use a pretend sourcename.zip:
     if (($$opts{whatsout} =~ /^archive/) && (!$$opts{destination})) {
@@ -245,7 +245,7 @@ sub convert {
   $$runtime{status_data}->{$_} = $$latexml{state}->{status}->{$_} foreach (qw(warning error fatal));
   # End daemon run, by popping frame:
   $latexml->withState(sub {
-      my ($state) = @_;                                       # Remove current state frame
+      my ($state) = @_;    # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
       $$state{status} = {};
@@ -301,7 +301,7 @@ sub convert {
       if ((!$post_eval_return) && (!$@));
     if ($@) {    #Fatal occured!
       $$runtime{status_code} = 3;
-      $@ = 'Fatal:conversion:unknown '.$@ unless $@ =~ /^\n?\S*Fatal:/s;
+      $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
       print STDERR $@;
       #Since this is postprocessing, we don't need to do anything
       #   just avoid crashing...
@@ -577,7 +577,7 @@ sub convert_post {
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }
-    else { print STDERR "Error:IO:log The target log file isn't contained in the destination directory!\n"; } }
+    else { print STDERR "Error:I/O:log The target log file isn't contained in the destination directory!\n"; } }
   # Handle the output packaging
 
   my ($postdoc) = pack_collection(collection => [@postdocs], whatsout => $$opts{whatsout}, format => $format, %PostOPS);
