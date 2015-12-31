@@ -600,7 +600,8 @@ sub readNormalInteger {
   elsif ($token->equals(T_OTHER("\""))) {                                   # Read Hex literal
     return Number(hex($self->readDigits('0-9A-F', 1))); }
   elsif ($token->equals(T_OTHER("\`"))) {                                   # Read Charcode
-    my $s = $self->readToken->getString;
+    my $next = $self->readToken;
+    my $s = ($next && $next->getString) || '';
     $s =~ s/^\\//;
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
   else {
