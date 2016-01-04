@@ -51,9 +51,17 @@ DefConstructor('\@inst{}',
 DefMacro('\inst{}', sub {
     map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
 
+Let('\at',      '\and');    # Actually this is different than \and, but...
+Let('\iand',    '\and');
+Let('\nand',    '\and');
+Let('\lastand', '\and');
+
 NewCounter('inst', 'document');
 DefMacro('\institute{}',
-'\bgroup\setcounter{inst}{1}\let\and\institute@and\let\email\@in@inst@email\@new@institute#1\@end@institute\egroup');
+  '\bgroup\setcounter{inst}{1}'
+    . '\let\and\institute@and\let\iand\institute@and\let\nand\institute@and\let\lastand\institute@and'
+    . '\let\at\institute@and'    # Actually something quite different...?
+    . '\let\email\@in@inst@email\@new@institute#1\@end@institute\egroup');
 DefMacro('\institute@and', '\@end@institute\stepcounter{inst}\@new@institute');
 DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{#1}\fi');
 
