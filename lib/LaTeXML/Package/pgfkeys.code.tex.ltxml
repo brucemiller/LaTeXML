@@ -174,7 +174,9 @@ DefMacro('\pgfkeysvaluerequired', '\pgfkeysvaluerequired',
 # (deals with /first char syntax/ stuff, affecting how key=value is parsed?)
 sub parsePGFKeys {
   my ($stomach, $keyvals) = @_;
-  my @tokens  = $keyvals->unlist;
+  my @tokens = $keyvals->unlist;
+  if (@tokens && ($tokens[0]->getCatcode == CC_BEGIN) && ($tokens[-1]->getCatcode == CC_END)) {
+    shift(@tokens); pop(@tokens); }    # unwrap
   my @results = ();
   while (@tokens) {
     while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip whitespace
