@@ -122,7 +122,7 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # Additional User Macros
 
 # \href{url}{text}
-DefConstructor('\href Semiverbatim  {}',
+DefConstructor('\href Verbatim  {}',
   "<ltx:ref href='#href'>#2</ltx:ref>",
   properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
 
