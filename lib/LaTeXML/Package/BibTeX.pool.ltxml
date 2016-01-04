@@ -100,7 +100,9 @@ LoadPool('LaTeX');
 # to get the string value (rather than digested value) for
 # the given field, or you may use it to test for the presence
 # of some other field.
-#
+# BUT: be careful, it looks up from a hash, and so doesn't work
+# correctly when there are multiple values for a given field!!!
+# [This may need to be revisited]
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Build a sequence of commands that will process the
@@ -161,7 +163,6 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
       'bib@entry@default@complete') {
       push(@tex, join('', '\csname ', $completer, '\endcsname')); }
     my $tex = join("\n", @tex, '\end{bib@entry}');
-
     $stomach->getGullet->openMouth(LaTeXML::Core::Mouth->new($tex));
     (); });
 
@@ -268,10 +269,12 @@ DefConstructor('\bib@@@name{}{}',
 # so that \bib@addto@related can capture it.
 DefConstructor('\bib@@@names{}', "#1");
 DefMacro('\bib@@names{}{}', sub {
-    my ($gullet, $field, $ignore) = @_;
+##    my ($gullet, $field, $ignore) = @_;
+    my ($gullet, $field, $names) = @_;
     (T_CS('\bib@@@names'), T_BEGIN,
       (map { Invocation(T_CS('\bib@@@name'), $field, $_) }
-          processBibNameList(currentBibEntryField(ToString($field)))),
+##          processBibNameList(currentBibEntryField(ToString($field)))),
+          processBibNameList(UnTeX($names))),
       T_END); });
 
 # Now, we define
