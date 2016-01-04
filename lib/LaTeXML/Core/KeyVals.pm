@@ -86,6 +86,7 @@ sub readKeyValsKeyword {
   my @tokens = ();
   my $token;
   while ($token = $gullet->readXToken) {
+    next if $token->equals(T_CS('\par'));    # sometimes extra blank lines...
     last if grep { $token->equals($_) } @delim;
     push(@tokens, $token) unless $$token[1] == CC_SPACE; }    # remove or normalize?
   return (Tokens(@tokens), $token); }
