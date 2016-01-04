@@ -23,7 +23,7 @@ use LaTeXML::Package;
 #======================================================================
 # 2.13.4 Abbreviations for Journal Names
 
-Let('\jnl@stye', '\rm');
+Let('\jnl@style', '\rm');
 DefMacro('\ref@jnl{}', '{\jnl@style#1}');
 
 DefMacro('\aj',    '\ref@jnl{AJ}');              # Astronomical Journal
