@@ -308,7 +308,7 @@ sub lstActivate {
 # Various helpers for dealing with the arguments to options.
 sub lstUnGroup {    # Strip outer {}, if any
   my ($tokens) = @_;
-  if ($tokens) {
+  if ($tokens && ref $tokens) {
     my @t = $tokens->unlist;
     if (Equals($t[0], T_BEGIN) && Equals($t[-1], T_END)) {
       $tokens = Tokens(@t[1 .. $#t - 1]); } }
@@ -1087,7 +1087,7 @@ sub lstProcess {
   my ($mode, $text) = @_;
 
   # === Return nothing if print is false
-  return Tokens() unless lstGetBoolean('print');
+  return Tokens() unless $text && lstGetBoolean('print');
 
 # === Possibly strip trailing blank lines.
 # NOTE: Not sure if this is supposed to trim from the whole listing, or the requested subset(s) of lines!
