@@ -243,6 +243,10 @@ DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
+# Is this an appropriate set?
+DefParameterType('Verbatim', sub { $_[0]->readArg; }, semiverbatim => ['%', '\\'],
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
 # Read an argument that will not be digested.
 DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
