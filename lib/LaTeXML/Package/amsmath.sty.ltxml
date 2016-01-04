@@ -434,16 +434,16 @@ DefPrimitive('\@amsalign@bindings', sub {
 sub rearrangeAMSAlign {
   my ($document, $equationgroup) = @_;
   foreach my $equation ($document->findnodes('ltx:equation', $equationgroup)) {
-    my @cells = $document->findnodes('ltx:_Capture_', $equation);
-    my @cell1cont = $document->getChildElements($cells[0]);
-    # Check if this equation is really an intertext
-    if ((scalar(@cells) == 1) && (scalar(@cell1cont) == 1)
-      && (($cell1cont[0]->getAttribute('class') || '') =~ /\b(ltx_intertext)\b/)) {
-      $equation->replaceNode($cell1cont[0]); }    # Replace equation with the block.
-    elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
-      $equationgroup->removeChild($equation); }
-    else {
-      equationgroupJoinCols($document, 2, $equation); } }
+    if (my @cells = $document->findnodes('ltx:_Capture_', $equation)) {
+      my @cell1cont = $document->getChildElements($cells[0]);
+      # Check if this equation is really an intertext
+      if ((scalar(@cells) == 1) && (scalar(@cell1cont) == 1)
+        && (($cell1cont[0]->getAttribute('class') || '') =~ /\b(ltx_intertext)\b/)) {
+        $equation->replaceNode($cell1cont[0]); }    # Replace equation with the block.
+      elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
+        $equationgroup->removeChild($equation); }
+      else {
+        equationgroupJoinCols($document, 2, $equation); } } }
   return; }
 
 #[Or should empty rows be removed? Numbered ones still show in print out!!!]
