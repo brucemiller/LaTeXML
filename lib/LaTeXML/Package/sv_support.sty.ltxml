@@ -37,12 +37,6 @@ DefConstructor('\@@@mail{}', "^ <ltx:contact role='address' name='#name'>#1</ltx
   properties => { (name => Digest(T_CS('\mailname'))) });
 DefMacro('\mail{}', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 
-# What's all this for?
-Let('\at',      '\and');
-Let('\iand',    '\and');
-Let('\nand',    '\and');
-Let('\lastand', '\and');
-
 DefMacro('\keywordname',  '\textbf{Keywords}');
 DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 DefMacro('\subclassname', '\textbf{Mathematics Subject Classification (2000)}');
@@ -138,7 +132,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 
     my $counter = $otherthmset || $thmset;
     my $swap    = LookupValue('thm@swap') eq 'S';
-    my $style   = LookupValue('\thm@style');
+    my $style   = ToString(LookupValue('\thm@style'));
 
     if (!$otherthmset) {
       NewCounter($counter, $reset,
@@ -185,7 +179,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       scope => 'global');
 });
 
-Let('\spdefaulttheorem', '\spnewtheoerem');
+Let('\spdefaulttheorem', '\spnewtheorem');
 
 RawTeX(<<'EOTeX');
 \def\theoremname{Theorem}
