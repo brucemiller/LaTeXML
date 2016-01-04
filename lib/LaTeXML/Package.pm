@@ -2312,6 +2312,7 @@ sub LookupColor {
 sub DefColor {
   my ($name, $color, $scope) = @_;
   #print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
+  return unless ref $color;
   my ($model, @spec) = @$color;
   $scope = 'global' if $STATE->lookupDefinition(T_CS('\ifglobalcolors')) && IfCondition(T_CS('\ifglobalcolors'));
   AssignValue('color_' . $name => $color, $scope);
