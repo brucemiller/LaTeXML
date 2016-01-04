@@ -260,8 +260,8 @@ sub DecodeColor {
   $expression = ToString($expression);
   my $prefix_re = qr/-/;    #
                             # [ <name> = . ==> current color; <name> = '' ==> white]
-  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
-  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
+  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
+  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   my $pct_capture_re = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   # <mix_expr>     : !<pct1>!<name1>!...<pctn>!(<namen>)?
@@ -338,7 +338,8 @@ sub DecodeColor {
   }
   else {
     Error('misdefined', $expression, $STATE->getStomach,
-      "syntax error in <color> expression '$expression'"); }
+      "syntax error in <color> expression '$expression'");
+    return Black; }
   return $color; }
 
 sub LookupXColor {
