@@ -107,7 +107,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 
     my $counter = $otherthmset || $thmset;
     my $swap    = LookupValue('thm@swap') eq 'S';
-    my $style   = LookupValue('\thm@style');
+    my $style   = ToString(LookupValue('\thm@style'));
 
     if (!$otherthmset) {
       NewCounter($counter, $reset,
