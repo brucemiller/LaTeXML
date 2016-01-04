@@ -1060,9 +1060,10 @@ sub RefStepItemCounter {
   if (($n > 0) && $sep && ($sep->valueOf != LookupRegister('\lx@default@itemsep')->valueOf)) {
     $attr{itemsep} = $sep; }
   if (defined $tag) {
+    my $ttag      = (ref $tag ? $tag : T_OTHER($tag));
     my @props     = RefStepID($counter);
-    my $refnum    = Digest(Tokens(T_BEGIN, $tag->unlist, T_END));
-    my $frefnum   = Digest(Tokens(T_BEGIN, Invocation(T_CS('\makelabel'), $tag), T_END));
+    my $refnum    = Digest(Tokens(T_BEGIN, $ttag->unlist, T_END));
+    my $frefnum   = Digest(Tokens(T_BEGIN, Invocation(T_CS('\makelabel'), $ttag), T_END));
     my $s_refnum  = ToString($refnum);
     my $s_frefnum = ToString($frefnum);
     return (@props, refnum => $refnum,
@@ -2733,6 +2734,13 @@ DefMacroI('\thebibliography@ID', undef, Tokens());
 # setting the ID, etc...
 sub beginBibliography {
   my ($whatsit) = @_;
+  beginBibliography_clean($whatsit);
+  # Fix for missing \bibitems!
+  setupPseudoBibitem();
+  return; }
+
+sub beginBibliography_clean {
+  my ($whatsit) = @_;
   # Try to compute a reasonable, but unique ID;
   # relative to the document's ID, if any.
   # But also, if there are multiple bibliographies,
@@ -2751,8 +2759,6 @@ sub beginBibliography {
   #  $whatsit->setProperty(sort=> ???
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
-  # Fix for missing \bibitems!
-  setupPseudoBibitem();
   return; }
 
 DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
@@ -3537,12 +3543,17 @@ sub ReadPair {
   else              { $itemreader = ResolveReader($itemtype); }
   if (!$itemreader) {
     Error('misdefined', $itemtype, $gullet, "Can't find reader for Pair items from '$itemtype'");
-    return; }
+    return Pair(Dimension(0), Dimension(0)); }    # Assume something like this?
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_OTHER('('))) {
     $gullet->readToken; $gullet->skipSpaces;
+    if ($gullet->ifNext(T_OTHER('!'))) {          # maybe only for pstricks???
+      Error('unexpected', 'postscript', $gullet,
+        "Cannot process escape to postscript");
+      $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
+      return Pair(Dimension(0), Dimension(0)); }
     my $x = &$itemreader($gullet, $xarg);
-    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
+    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
     my $y = &$itemreader($gullet, $yarg);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }
@@ -3852,9 +3863,9 @@ DefPrimitive('\selectfont', sub {
     else { Info('unexpected', $series, $_[0], "Unrecognized font series '$series'."); }
     if (my $sh = LaTeXML::Common::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
     else { Info('unexpected', $shape, $_[0], "Unrecognized font shape '$shape'."); }
-});
+    return; });
 
-DefMacro('\usefont{}{}{}{}{}',
+DefMacro('\usefont{}{}{}{}',
   '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
@@ -3906,7 +3917,7 @@ DefMacro('\textnormal{}', '\protect\ifmmode\textnormal@math{#1}\else{\normalfont
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructor(ToString($cmd) . "{}", "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode => 'text',
-      bounded => 1, beforeDigest => sub { Digest($font); }); });
+      bounded => 1, beforeDigest => sub { Digest($font); (); }); });
 
 DefPrimitive('\mathversion{}', sub {
     my ($stomach, $version) = @_;
