@@ -271,6 +271,14 @@ sub process {
     my ($proc1, $proc2, @ignore)
       = grep { $_->can('addCrossref') } $self, @{ $$self{secondary_processors} };
     if ($proc1 && $proc2) {
+      # First, prepare a list of all Math id's, in document order, to simplify crossreferencing
+      my $ids = {};
+      my $pos = 0;
+      foreach my $n ($doc->findnodes('descendant-or-self::ltx:Math/descendant::*[@xml:id]')) {
+        $$ids{ $n->getAttribute('xml:id') } = $pos++; }
+      $$proc1{crossreferencing_ids} = $ids;
+      $$proc2{crossreferencing_ids} = $ids;
+      # Now do cross referencing
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
   NoteProgressDetailed(" [converted $n Maths]");
@@ -523,13 +531,12 @@ sub addCrossrefs {
   my ($self, $doc, $otherprocessor) = @_;
   my $selfs_map  = $$self{convertedIDs};
   my $others_map = $$otherprocessor{convertedIDs};
-  foreach my $xid (keys %$selfs_map) {    # For each XMath id that $self converted
+  my $xrefids    = $$self{crossreferencing_ids};
+  foreach my $xid (keys %$selfs_map) {    # For each Math id that $self converted
     if (my $other_ids = $$others_map{$xid}) {    # Did $other also convert those ids?
       my $xref_id = $$other_ids[0];
-      if (scalar(@$other_ids) > 1) {             # Find 1st in document order! (inefficient?)
-        my $n = $doc->findnode('descendant-or-self::*['
-            . join(' or ', map { '@xml:id="' . $_ . '"' } @$other_ids) . ']');
-        $xref_id = $n->getAttribute('xml:id'); }
+      if (scalar(@$other_ids) > 1) {             # Find 1st in document order! (order is cached)
+        ($xref_id) = sort { $$xrefids{$a} <=> $$xrefids{$b} } @$other_ids; }
       foreach my $id (@{ $$selfs_map{$xid} }) {    # look at each node $self created from $xid
         if (my $node = $doc->findNodeByID($id)) {    # If we find a node,
           $self->addCrossref($node, $xref_id); } } } }    # add a crossref from it to $others's node
