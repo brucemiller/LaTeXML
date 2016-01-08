@@ -74,15 +74,11 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     $options = [($options ? split(/,\s*/, ToString($options)) : ())];
     # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
     # But, we'd prefer .cls, since we'll have better bindings.
-    # So, if we do NOT find a class file, but DO find style file, load the style file
-    if (my $stylefile = !FindFile($class, type => 'cls', notex => 1) && FindFile($class, type => 'sty')) {
-      LoadClass('article');    # Just to be safe, but w/o options ?
-          # Load the package (with options); note: we're pretending it's a class (to some extent!)
-      RequirePackage($class, options => $options, as_class => 1,
-        after => Tokens(T_CS('\compat@loadpackages'))); }
-    # Otherwise, try to load the class file (falling back to article, if necessary)
-    else {
-      LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages'))); }
+    # And in fact, nobody's likely to write a binding for a .sty that wants to be a class anyway.
+    # So, we'll just try for a .cls, punting to OmniBus if needed.
+    # If we start wanting to read style files by default, we'll still need to handle this
+    # specially, since class (or sty files pretending to be) cover so much more.
+    LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages')));
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
@@ -98,7 +94,7 @@ DefPrimitiveI('\compat@loadpackages', undef, sub {
     # Often, in compatibility mode, the options are used to load what are effectively
     # document classes for specific journals, etc that introduce a bunch of new frontmatter!
     # To try to recover from this, we'll go ahead & load the OmniBus class.
-    if ($hadmissing) {
+    if ($hadmissing && !LookupValue('OmniBus.cls_loaded')) {
       Info('note', 'OmniBus', $_[0], "Loading OmniBus class to attempt to cover missing options");
       LoadClass('OmniBus'); }
     AssignValue('@unusedoptionlist', []); });
@@ -2620,6 +2616,10 @@ DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
 Let('\multicolumn', '\@multicolumn');
 
 DefPrimitiveI('\hline', undef, undef);    # Redefined inside tabular
+# A weird bit that sometimes gets invoked by Cargo Cult programmers...
+# to \noalign in the defn of \hline! Bizarre! (see latex.ltx)
+# However, the really weird thing is the way this provides the } to close the argument
+DefMacroI('\@xhline', undef, '\ifnum0=`{\fi}');
 
 DefConstructor('\cline{}', '',
   afterDigest => sub {
