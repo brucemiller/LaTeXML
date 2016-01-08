@@ -2173,11 +2173,16 @@ sub LoadClass {
       map { pathname_name($_) } map { pathname_name($_) }
       pathname_findall('*', type => 'cls.ltxml', paths => LookupValue('SEARCHPATHS'),
       installation_subdir => 'Package');
-    my ($best) = grep { $class =~ /^\Q$_\E/ } @classes;
-    my $alternate = $best || 'OmniBus';    # was 'article'
-    Warn('missing_file', $class, $STATE->getStomach->getGullet,
-      "Can't find binding for class $class (using $alternate)",
-      maybeReportSearchPaths());
+    my ($alternate) = grep { $class =~ /^\Q$_\E/ } @classes;
+    if ($alternate) {
+      Warn('missing_file', $class, $STATE->getStomach->getGullet,
+        "Can't find binding for class $class (using $alternate)",
+        maybeReportSearchPaths()); }
+    else {
+      $alternate = 'OmniBus';
+      Error('missing_file', $class, $STATE->getStomach->getGullet,
+        "Can't find binding for class $class (using $alternate)",
+        maybeReportSearchPaths()); }
     if (my $success = InputDefinitions($alternate, type => 'cls', noerror => 1, handleoptions => 1, %options)) {
       return $success; }
     else {
