@@ -1,0 +1,58 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  algorithmic                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Read in the LaTeX definitions and redefine a few things strategically.
+InputDefinitions('algorithmic', type => 'sty', noltxml => 1);
+
+Let('\lx@orig@algorithmic', '\algorithmic');
+DefMacro('\algorithmic', '\lx@setup@algorithmic\lx@orig@algorithmic');
+DefPrimitive('\lx@setup@algorithmic', sub {
+    ResetCounter('ALC@line');
+    Let('\list',    '\lx@algorithmic@beginlist');
+    Let('\endlist', '\lx@algorithmic@endlist');
+    Let('\item',    '\lx@algorithmic@item');
+    Let('\hfill',   '\lx@algorithmic@hfill');
+});
+
+DefConstructor('\lx@algorithmic@beginlist{}{}', "<ltx:listing>",
+  afterDigest => sub { Let('\list', '\lx@algorithmic@beginlist@inner'); });    # NOT nested list!
+
+DefConstructor('\lx@algorithmic@endlist', "</ltx:listing>",
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
+
+DefConstructor('\lx@algorithmic@beginlist@inner{}{}', "",
+  afterDigest => sub { Let('\endlist', '\relax'); });                          # NOT nested list!
+
+DefMacro('\lx@algorithmic@item OptionalUndigested',
+  '\lx@algorithmic@item@@ [#1]\hskip\ALC@tlm\relax');
+
+# This imitates \item; just opens the ltx:listingline, but somebody's got to close it.
+DefConstructor('\lx@algorithmic@item@@ OptionalUndigested',
+  "<ltx:listingline xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
+    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+  properties => sub {
+    my $frefnum = Digest(T_CS('\ALC@lno'));
+    my $refnum  = Digest(T_CS('\theALC@line'));
+    my $id      = Digest(T_CS('\theALC@line@ID'));
+    (id => $id, refnum => $refnum, frefnum => $frefnum); },
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
+
+NewCounter('ALC@line', 'algorithm', idprefix => 'l');    # Assuming we're inside an {algorithm}!
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+
