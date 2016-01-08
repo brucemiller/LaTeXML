@@ -224,6 +224,25 @@ DefParameterType('XUntil', sub {
         push(@tokens, $token); } }
     Tokens(@tokens); });
 
+# This is sorta like readbalanced, but expands as it goes.
+# This appears to be needed by certain primitives (eg. \noalign ?)
+# and maybe what we should be using for some Digested ??
+DefParameterType('Expanded', sub {
+    my ($gullet) = @_;
+    my $token    = $gullet->readXToken(0);
+    my @tokens   = ($token);
+    if ($token->getCatcode == CC_BEGIN) {
+      my $level = 1;
+      while ($token = $gullet->readXToken(0)) {
+        push(@tokens, $token);
+        my $cc = $$token[1];
+        if ($cc == CC_END) {
+          $level--;
+          last unless $level; }
+        elsif ($cc == CC_BEGIN) {
+          $level++; } } }
+    return Tokens(@tokens); });
+
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
 
@@ -2301,7 +2320,9 @@ DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0
 # Unfortunately, the timing is wrong to remove them (until ALignment is processing)
 # MOREOVER, there're odd cases (\displaylines) where we apparently should be in an alignment,
 # but aren't, so more punting is in order!
-DefMacro('\noalign{}',
+# Note that \no align processes (at least expands) it's argument as it reads it;
+# See the peculiar construct in LaTeX for \hline and \@xhline
+DefMacro('\noalign Expanded',
   '\if@in@alignment'
     . '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline'
     . '\else#1\fi');
@@ -2846,13 +2867,15 @@ DefPrimitiveI('\end', undef, sub { $_[0]->getGullet->flush; return; });
 # a candidate for use by \hskip, \hspace, etc... ?
 sub DimensionToSpaces {
   my ($dimen) = @_;
-  my $pt = $dimen->ptValue;
-  if    ($pt < 1.5) { return; }
-  elsif ($pt < 2.5) { return Box("\x{2006}"); }
-  elsif ($pt < 3.5) { return Box("\x{2005}"); }
-  elsif ($pt < 5.0) { return Box("\x{2004}"); }
+  my $fs      = LookupValue('font')->getSize;    # 1 em
+  my $pt      = $dimen->ptValue;
+  my $ems     = $pt / $fs;
+  if    ($ems < 0.01) { return; }
+  elsif ($ems < 0.17) { return Box("\x{2006}"); }    # 6/em
+  elsif ($ems < 0.30) { return Box("\x{2005}"); }    # 4/em
+  elsif ($ems < 0.40) { return Box("\x{2004}"); }    # 3/em (same as nbsp?)
   else {
-    my $n = int(($pt + 9) / 10);    # 10pts per space...?
+    my $n = int(($ems + 0.3) / 0.333);               # 10pts per space...?
     return Box((UTF(0xA0) x $n)); } }
 
 DefPrimitiveI('\noboundary', undef, undef);
