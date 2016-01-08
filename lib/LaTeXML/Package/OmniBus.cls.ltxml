@@ -33,6 +33,13 @@ use LaTeXML::Package;
 LoadClass('article');
 ProcessOptions();
 
+# Various common things often defined or included by unique classes
+# \institute,, \inst  from inst_support
+RequirePackage('inst_support');
+RequirePackage('epsf');
+#RequirePackage('graphicx');
+#RequirePackage('natbib');
+
 DefEnvironment('{frontmatter}', '#body');
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
@@ -53,9 +60,6 @@ Let('\emailaddr', '\email');
 DefMacro('\ead{}[]',   '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
 DefMacro('\emailname', 'E-mail');
 DefMacro('\speaker{}', '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
-
-# \institute,, \inst  from inst_support
-RequirePackage('inst_support');
 
 # like from aas
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
