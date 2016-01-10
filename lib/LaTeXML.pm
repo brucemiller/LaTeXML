@@ -19,6 +19,7 @@ use File::Temp;
 File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
+use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
@@ -242,7 +243,7 @@ sub convert {
   my $eval_report = $@;
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
-  $$runtime{status_data}->{$_} = $$latexml{state}->{status}->{$_} foreach (qw(warning error fatal));
+
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
@@ -286,27 +287,8 @@ sub convert {
   # 3 If desired, post-process
   my $result = $dom;
   if ($$opts{post} && $dom && $dom->documentElement) {
-    my $post_eval_return = eval {
-      local $SIG{'ALRM'} = sub { die "alarm\n" };
-      alarm($$opts{timeout});
-      $result = $self->convert_post($dom);
-      alarm(0);
-      1;
-    };
-    # 3.1 Bookkeeping if a post-processing Fatal error occurred
-    ### Note: this cause double counting if LaTeXML has already handled it.
-    ### But leaving it might might miss errors that sneak through (can that happen?)
-    ### $$latexml{state}->noteStatus('fatal') if $latexml && $@; # Fatal Error?
-    local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
-      if ((!$post_eval_return) && (!$@));
-    if ($@) {    #Fatal occured!
-      $$runtime{status_code} = 3;
-      $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-      print STDERR $@;
-      #Since this is postprocessing, we don't need to do anything
-      #   just avoid crashing...
-      $result = undef; } }
-
+    $result = $self->convert_post($dom);
+  }
   # 4 Clean-up: undo everything we sandboxed
   if ($$opts{whatsin} =~ /^archive/) {
     rmtree($$opts{sourcedirectory});
@@ -366,6 +348,7 @@ sub convert_post {
   my ($xslt, $parallel, $math_formats, $format, $verbosity, $defaultresources, $embed) =
     map { $$opts{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
   $verbosity = $verbosity || 0;
+
   my %PostOPS = (verbosity => $verbosity,
     validate           => $$opts{validate},
     sourceDirectory    => $$opts{sourcedirectory},
@@ -375,6 +358,12 @@ sub convert_post {
     nocache            => 1,
     destination        => $$opts{destination},
     is_html            => $$opts{is_html});
+  # Compute destinationDirectory here, 
+  #   so that we don't depend on post-processing returning a usable Post::Document (Fatal-resilience)
+  if ($PostOPS{destination}) {
+    my ($dir, $name, $ext) = pathname_split($PostOPS{destination});
+    $PostOPS{destinationDirectory} = $dir || '.'; }
+
   #Postprocess
   $parallel = $parallel || 0;
 
@@ -556,8 +545,23 @@ sub convert_post {
 
   # Do the actual post-processing:
   my @postdocs;
-  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
-  @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);  
+  my $post_eval_return = eval {
+    local $SIG{'ALRM'} = sub { die "alarm\n" };
+    alarm($$opts{timeout});
+    @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+    alarm(0);
+    1;
+  };
+  # 3.1 Bookkeeping if a post-processing Fatal error occurred
+  local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
+    if ((!$post_eval_return) && (!$@));
+  if ($@) {    #Fatal occured!
+    $$runtime{status_code} = 3;
+    $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
+    print STDERR $@;
+    undef @postdocs; # Empty document for fatals, for sanity's sake
+  }
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
@@ -567,12 +571,15 @@ sub convert_post {
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
-    my $destination_directory = $postdocs[0]->getDestinationDirectory();
+    ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
+    ### my $destination_directory = $postdocs[0]->getDestinationDirectory();
+    my $destination_directory = $PostOPS{destinationDirectory};
     my $log_file = pathname_absolute($$opts{log}, $destination_directory);
     if (pathname_is_contained($log_file, $destination_directory)) {
       print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
       print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
-      print STDERR "Status:conversion:" . ($$self{runtime}->{status_code} || '0') . " \n";
+      my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
+      print STDERR "Status:conversion:" . $archive_log_status_code . " \n";
       open my $log_fh, '>', $log_file;
       print $log_fh $self->flush_log;
       close $log_fh;
@@ -584,13 +591,14 @@ sub convert_post {
 
   $DB->finish;
 
-  # TODO: Refactor once we know how to merge the core and post State objects
   # Merge postprocessing and main processing reports
-  foreach my $message_type (qw(warning error fatal)) {
-    my $count = $$latexmlpost{status}->{$message_type} || 0;
-    $$runtime{status_data}->{$message_type} += $count; }
-  $$runtime{status}      = getStatusMessage($$runtime{status_data});
-  $$runtime{status_code} = getStatusCode($$runtime{status_data});
+  ### HACKY until we use a single Core::State object, we'll just "wing it" for status messages:
+  my $post_status = $latexmlpost->getStatusMessage;
+  if ($post_status ne $$runtime{status}) { # Just so that we avoid double "No problem" reporting
+    $$runtime{status} .= "\n" . $post_status;
+  }
+  $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);
+  ### HACKY END
 
   print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
   print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
@@ -685,27 +693,6 @@ sub sanitize {
     });
     $$self{ready} = 0; }
   return; }
-
-sub getStatusMessage {
-  my ($status) = @_;
-  my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '')) if $$status{warning};
-  push(@report, "$$status{error} error" .       ($$status{error} > 1 ? 's' : '')) if $$status{error};
-  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '')) if $$status{fatal};
-  return join('; ', @report) || 'No obvious problems'; }
-
-sub getStatusCode {
-  my ($status) = @_;
-  my $code;
-  if ($$status{fatal} && $$status{fatal} > 0) {
-    $code = 3; }
-  elsif ($$status{error} && $$status{error} > 0) {
-    $code = 2; }
-  elsif ($$status{warning} && $$status{warning} > 0) {
-    $code = 1; }
-  else {
-    $code = 0; }
-  return $code; }
 
 1;
 
