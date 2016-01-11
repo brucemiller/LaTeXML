@@ -48,7 +48,7 @@ ProcessOptions();
 #======================================================================
 # From latexml.sty
 # [does this really belong here? or should this be disableable?]
-DefConstructor('\URL[] Semiverbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
+DefConstructor('\URL[] Verbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
   properties => sub { (href => CleanURL($_[2])); });
 DefMacro('\XML',      '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',     '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
