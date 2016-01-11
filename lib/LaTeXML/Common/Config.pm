@@ -385,7 +385,6 @@ sub _prepare_options {
       $$opts{whatsin} = 'fragment'; }
     else {    # Default input chunk is a document
       $$opts{whatsin} = 'document'; } }
-  $$opts{whatsout} = 'document' unless defined $$opts{whatsout};
   $$opts{type}     = 'auto'     unless defined $$opts{type};
   unshift(@{ $$opts{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($$opts{type} eq 'BibTeX');
 
@@ -393,9 +392,8 @@ sub _prepare_options {
   if ((!defined $$opts{extension}) && (defined $$opts{destination})) {
     if ($$opts{destination} =~ /\.([^.]+)$/) {
       $$opts{extension} = $1; } }
-  if ((!defined $$opts{format}) && (defined $$opts{destination})) {
-    if ($$opts{destination} =~ /\.([^.]+)$/) {
-      $$opts{format} = $1; } }
+  if ((!defined $$opts{format}) && (defined $$opts{extension})) {
+      $$opts{format} = $$opts{extension}; }
   if ((!defined $$opts{extension}) && (defined $$opts{format})) {
     if ($$opts{format} =~ /^html/) {
       $$opts{extension} = 'html'; }
@@ -403,6 +401,12 @@ sub _prepare_options {
       $$opts{extension} = 'xhtml'; }
     else {
       $$opts{extension} = 'xml'; } }
+  if (!defined $$opts{whatsout}) {
+    if ((defined $$opts{extension}) && ($$opts{extension} eq 'zip')) {
+      $$opts{whatsout} = 'archive';
+    } else {
+      $$opts{whatsout} = 'document';
+    } }
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
