@@ -37,6 +37,7 @@ use LaTeXML::Core::KeyVals;
 use LaTeXML::Core::Pair;
 use LaTeXML::Core::PairList;
 use LaTeXML::Common::Color;
+use LaTeXML::Common::Color::rgb;
 # Utitlities
 use LaTeXML::Util::Pathname;
 use LaTeXML::Util::WWW;
