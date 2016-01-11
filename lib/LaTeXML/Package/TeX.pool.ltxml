@@ -262,8 +262,20 @@ DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
-# Is this an appropriate set?
-DefParameterType('Verbatim', sub { $_[0]->readArg; }, semiverbatim => ['%', '\\'],
+# Be careful here: if % appears before the initial {, it's still a comment!
+# Also, note that non-typewriter fonts will mess up some chars on digestion!
+DefParameterType('Verbatim', sub {
+    my ($gullet) = @_;
+    $gullet->readUntil(T_BEGIN);
+    StartSemiverbatim('%', '\\');
+    my $arg = $gullet->readBalanced();
+    EndSemiverbatim();
+    return $arg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(family => 'typewriter'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read an argument that will not be digested.
