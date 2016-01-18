@@ -48,7 +48,7 @@ use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
 use base qw(Exporter);
-our @EXPORT = (qw(&DefExpandable
+our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
     &DefConditional &DefConditionalI &IfCondition &SetCondition
     &DefPrimitive  &DefPrimitiveI
@@ -882,6 +882,23 @@ sub forbidMath {
 #**********************************************************************
 # Definitions
 #**********************************************************************
+sub DefAutoload {
+  my ($cs, $defnfile) = @_;
+  my $csname = (ref $cs ? ToString($cs) : $cs);
+  $csname = '\\' . $csname unless $cs =~ /^\\/;
+  $cs     = T_CS($csname)  unless ref $cs;
+  if ($defnfile =~ /^(.*?)\.(pool|sty|cls)\.ltxml$/) {
+    my ($name, $type) = ($1, $2);
+    if (!LookupValue($name . '.' . $type . '_loaded')) {    # if already loaded, DONT redefine!
+      DefMacroI($cs, undef, sub {
+          $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
+          if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
+          elsif ($type eq 'cls')  { LoadClass($name); }
+          else                    { RequirePackage($name); }
+          ($cs); }); } }    # Then return the original cs, so that it's be re-tried.
+  else {
+    Warning('unexpected', $defnfile, undef, "Don't know how to autoload $csname from $defnfile"); }
+  return; }
 
 #======================================================================
 # Defining Expandable Control Sequences.
