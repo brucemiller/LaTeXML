@@ -68,6 +68,7 @@ DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{
 #should play similar game as with institute, relocate?
 ##DefConstructor('\@in@inst@email{}', "^<ltx:note role='email' name='#name'>#1</ltx:note>",
 ##  properties => sub { (name => Digest(T_CS('\emailname'))); });
+DefMacro('\emailname', 'E-mail');
 DefConstructor('\@in@inst@email{}',
   "<ltx:note role='email' name='#name' mark='#mark'>#1</ltx:note>",
   properties => sub { (name => Digest(T_CS('\emailname')),
