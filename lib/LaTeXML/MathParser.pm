@@ -59,6 +59,7 @@ sub parseMath {
   my ($self, $document, %options) = @_;
   local $LaTeXML::MathParser::DOCUMENT = $document;
   $self->clear;    # Not reentrant!
+  $self->cleanupScripts($document);
   if (my @math = $document->findnodes('descendant-or-self::ltx:XMath[not(ancestor::ltx:XMath)]')) {
     NoteBegin("Math Parsing"); NoteProgress(scalar(@math) . " formulae ...");
 #### SEGFAULT TEST
@@ -86,6 +87,39 @@ sub parseMath {
 #### SEGFAULT TEST
 ####    $document->doctest("OUT of scope",1);
   return $document; }
+
+# This is a rather peculiar cleanup that needs to be done to manage ids & idrefs
+# Before parsing, sub/superscripts are represented by an operator-less XMApp with the script
+# itself as the only child. Ideally, upon parsing these get merged, combined and disappear into
+# proper XMApp of an appropriate operator on the base and scripts.  Unless there is a parse
+# failure, in which case they remain.
+# The problem comes from various XMDual constructs where an XMRef refers to the script XMApp.
+# It can occur that one branch parses and the other fails: This can leave a reference to
+# the script XMApp which no longer exists!
+# To solve this, we find & replace all references to such script XMApps by an explicit XMApp
+# with the XMRef refering to the script itself, not the XMApp. (make sense?)
+sub cleanupScripts {
+  my ($self, $document) = @_;
+  foreach my $app ($document->findnodes(
+      'descendant-or-self::ltx:XMApp[@xml:id and contains(@role,"SCRIPT")]')) {
+    my $role  = $app->getAttribute('role');
+    my $appid = $app->getAttribute('xml:id');
+    if ($role =~ /^(?:PRE|POST|FLOAT)(:?SUB|SUPER)SCRIPT$/) {
+      my @refs = $document->findnodes("descendant-or-self::ltx:XMRef[\@idref = '$appid']");
+      if (scalar(@refs)) {
+#        print STDERR "\nREPLACING SCRIPT REF: found " . scalar(@refs) . " references to " . ToString($app) . "\n";
+        my $script = $app->firstChild;
+        my ($scriptref) = LaTeXML::Package::createXMRefs($document, $script);
+        $document->unRecordID($appid);    # no longer refers to the app
+        $app->removeAttribute('xml:id');
+        # Copy all attributes, EXCEPT xml:id
+        my %attr = map { (getQName($_) => $_->getValue) }
+          grep { $_->nodeType == XML_ATTRIBUTE_NODE } $app->attributes;
+        # Now, replace each ref to the script application by an application to a ref to the script.
+        foreach my $ref (@refs) {
+          $document->replaceTree(['ltx:XMApp', {%attr}, $scriptref], $ref); }
+      } } }
+  return; }
 
 sub getQName {
   my ($node) = @_;
