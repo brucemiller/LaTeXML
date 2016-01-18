@@ -37,8 +37,17 @@ ProcessOptions();
 # \institute,, \inst  from inst_support
 RequirePackage('inst_support');
 RequirePackage('epsf');
-#RequirePackage('graphicx');
-#RequirePackage('natbib');
+# One of the graphics|graphicx packages are often included, leading to undefined \includegraphics
+# However, they have different parameter patterns! But, graphicx seems to be included
+# by random cls files by over 10 to 1, so we'll just load graphicx and hope for the best.
+# The alternative would be to write a version that sniffed the arguments...
+RequirePackage('graphicx');
+
+# natbib is also often used, but reportedly clashes with cite.sty
+# We'll autoload natbib if it hasn't already been loaded, and if any of its obvious macros are used.
+foreach my $trigger (qw(citet citep citealt citealp citenum citeauthor citefullauthor
+  citeyear citeyearpar setcitestyle bibpunct)) {
+  DefAutoload($trigger, 'natbib.sty.ltxml'); }
 
 DefEnvironment('{frontmatter}', '#body');
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
