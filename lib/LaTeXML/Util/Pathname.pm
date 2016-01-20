@@ -359,7 +359,15 @@ sub pathname_kpsewhich {
   return; }
 
 sub build_kpse_cache {
+  # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`;
+  # These are directories which contain the tex related files we're interested in.
+  # (but they're typically below where the ls-R indexes are!)
+  my $texpaths = `"$kpsewhich" --show-path tex`; chomp($texpaths);
+  my @filters = ();
+  foreach my $path (split(/:+/, $texpaths)) {
+    $path =~ s/^!!//; $path =~ s|//+$|/|;
+    push(@filters, $path) if -d $path; }
   $texmf =~ s/^\s*\\\{(.+?)}\s*\n/$1/s;
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
@@ -368,14 +376,18 @@ sub build_kpse_cache {
     if (-f "$dir/ls-R") {
       my $LSR;
       my $subdir;
+      my $skip = 0;    # whether to skip entries in the current subdirectory.
       open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
       while (<$LSR>) {
         chop;
         next unless $_;
         if (/^%/) { }
         elsif (/^(.*?):$/) {    # Move to a new subdirectory
-          $subdir = $1; }
-        else {
+          $subdir = $1;
+          $subdir =~ s|^\./||;    # remove prefix
+          my $d = File::Spec->catdir($dir, $subdir);    # Hopefully OS safe, for comparison?
+          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; } # check if one of the TeX paths
+        elsif (!$skip) {
           # Is it safe to use '/' here?
           my $sep = '/';
           $$kpse_cache{$_} = join($sep, $dir, $subdir, $_); } }
