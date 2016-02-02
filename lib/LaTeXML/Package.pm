@@ -48,7 +48,7 @@ use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
 use base qw(Exporter);
-our @EXPORT = (qw(&DefExpandable
+our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
     &DefConditional &DefConditionalI &IfCondition &SetCondition
     &DefPrimitive  &DefPrimitiveI
@@ -882,6 +882,23 @@ sub forbidMath {
 #**********************************************************************
 # Definitions
 #**********************************************************************
+sub DefAutoload {
+  my ($cs, $defnfile) = @_;
+  my $csname = (ref $cs ? ToString($cs) : $cs);
+  $csname = '\\' . $csname unless $cs =~ /^\\/;
+  $cs     = T_CS($csname)  unless ref $cs;
+  if ($defnfile =~ /^(.*?)\.(pool|sty|cls)\.ltxml$/) {
+    my ($name, $type) = ($1, $2);
+    if (!LookupValue($name . '.' . $type . '_loaded')) {    # if already loaded, DONT redefine!
+      DefMacroI($cs, undef, sub {
+          $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
+          if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
+          elsif ($type eq 'cls')  { LoadClass($name); }
+          else                    { RequirePackage($name); }
+          ($cs); }); } }    # Then return the original cs, so that it's be re-tried.
+  else {
+    Warning('unexpected', $defnfile, undef, "Don't know how to autoload $csname from $defnfile"); }
+  return; }
 
 #======================================================================
 # Defining Expandable Control Sequences.
@@ -1772,6 +1789,7 @@ sub InputContent {
   if (my $path = FindFile($request, type => $options{type}, noltxml => 1)) {
     loadTeXContent($path); }
   elsif (!$options{noerror}) {
+    # Consider it an error if we can't find a file of Content (in contrast to Definitions)
     Error('missing_file', $request, $STATE->getStomach->getGullet,
       "Can't find TeX file $request",
       maybeReportSearchPaths()); }
@@ -1825,6 +1843,7 @@ sub Input {
       loadTeXContent($path); } }
   else {                                     # Couldn't find anything?
     $STATE->noteStatus(missing => $request);
+    # We presumably are trying to input Content; an error if we can't find it (contrast to Definitions)
     Error('missing_file', $request, $STATE->getStomach->getGullet,
       "Can't find TeX file $request",
       maybeReportSearchPaths()); }
@@ -2121,11 +2140,14 @@ sub InputDefinitions {
     return $file; }
   elsif (!$options{noerror}) {
     $STATE->noteStatus(missing => $name . ($options{type} ? '.' . $options{type} : ''));
-    Error('missing_file', $name, $STATE->getStomach->getGullet,
+    # We'll only warn about a missing file of definitions: it may be ignorable or never used.
+    # if there ARE problems, they'll likely produce their own errors!
+    Warn('missing_file', $name, $STATE->getStomach->getGullet,
       "Can't find "
         . ($options{notex} ? "binding for " : "")
         . (($options{type} && $definition_name{ $options{type} }) || 'definitions') . ' '
         . $name,
+      "Anticipate undefined macros or environments",
       maybeReportSearchPaths()); }
   return; }
 
@@ -2175,15 +2197,13 @@ sub LoadClass {
       pathname_findall('*', type => 'cls.ltxml', paths => LookupValue('SEARCHPATHS'),
       installation_subdir => 'Package');
     my ($alternate) = grep { $class =~ /^\Q$_\E/ } @classes;
-    if ($alternate) {
-      Warn('missing_file', $class, $STATE->getStomach->getGullet,
-        "Can't find binding for class $class (using $alternate)",
-        maybeReportSearchPaths()); }
-    else {
-      $alternate = 'OmniBus';
-      Error('missing_file', $class, $STATE->getStomach->getGullet,
-        "Can't find binding for class $class (using $alternate)",
-        maybeReportSearchPaths()); }
+    $alternate = 'OmniBus' unless $alternate;
+    # Only Warn for missing style/class: we'll punt with an alternative;
+    # there may come other errors from undefined macros, though.
+    Warn('missing_file', $class, $STATE->getStomach->getGullet,
+      "Can't find binding for class $class (using $alternate)",
+      "Anticipate undefined macros or environments",
+      maybeReportSearchPaths());
     if (my $success = InputDefinitions($alternate, type => 'cls', noerror => 1, handleoptions => 1, %options)) {
       return $success; }
     else {

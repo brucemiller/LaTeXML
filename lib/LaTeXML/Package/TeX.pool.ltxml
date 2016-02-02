@@ -6024,7 +6024,7 @@ foreach my $ltxtrigger (qw(documentclass
   NeedsTeXFormat ProvidesPackage RequirePackage ProvidesFile
   makeatletter makeatother
   typeout begin listfiles)) {
-  DefMacroI("\\" . $ltxtrigger, undef, sub { LoadPool("LaTeX"); (T_CS("\\$ltxtrigger")); }); }
+  DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
 
 # Seemingly good candidates to trigger AmSTeX ??
 foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
@@ -6032,7 +6032,7 @@ foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
   LimitsOnInts NoLimitsOnInts LimitsOnNames NoLimitsOnNames LimitsOnSums NoLimitsOnSums
   loadbold loadeufb loadeufm loadeurb loadeurm loadeusb
   loadeusm loadmathfont loadmsam loadmsbm)) {
-  DefMacroI("\\" . $amstrigger, undef, sub { LoadPool("AmSTeX"); (T_CS("\\$amstrigger")); }); }
+  DefAutoload($amstrigger, 'AmSTeX.pool.ltxml'); }
 
 # Darn; we need to be even more clever, since we need to simulate an amstex command, as well.
 # For example \documentstyle[...]{amsppt} must switch to AMSTeX mode, _NOT_ LaTeX mode!!!!

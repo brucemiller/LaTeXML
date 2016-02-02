@@ -163,7 +163,7 @@ float_attributes =
   attribute data { text }?
 
 ## Content model for \elementref{float}.
-float_model = (float | figure | float | Block.model | Caption.class)*
+float_model = (float | figure | table | Block.model | Caption.class)*
 
 #======================================================================
 
