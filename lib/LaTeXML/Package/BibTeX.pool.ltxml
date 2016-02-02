@@ -737,7 +737,7 @@ DefMacro('\bib@field@default@language',
   '\bib@@field{ltx:bib-language}');
 
 # url : specifies a URL where the work can be found.
-DefConstructor('\bib@field@default@url Semiverbatim',
+DefConstructor('\bib@field@default@url Verbatim',
   "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
 
 # enote : miscellaneous annotation
