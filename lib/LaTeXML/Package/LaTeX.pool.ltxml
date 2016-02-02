@@ -4288,7 +4288,7 @@ RawTeX(<<'EOTeX');
   \let\iterate\relax
 }
 \newdimen\@ydim 							
-\let\@@hyph=\-   							%Very primitive and the only place that it shows up 
+\let\@@hyph=\-
 \newbox\@arstrutbox							
 \newbox\@begindvibox							
 \newcount\@botnum							
@@ -4310,7 +4310,7 @@ RawTeX(<<'EOTeX');
 \newdimen\@dashdim							 
 \newcount\@dbltopnum							
 \newdimen\@dbltoproom							
-\let\@dischyph=\-							%Similar to \@@hyph above. Later also \let\-\@dischyph
+\let\@dischyph=\-
 \newcount\@enumdepth 
 \newcount\@floatpenalty							
 \newdimen\@fpmin							
@@ -4318,7 +4318,7 @@ RawTeX(<<'EOTeX');
 \newcount\@highpenalty							
 \newcount\@hightab							
 \newbox\@holdpg								
-\newinsert \@kludgeins							%Don't know what this is, but it is using the new stuff 
+\newinsert \@kludgeins
 \newcount\@lastchclass							
 \newbox\@leftcolumn							
 \newbox\@linechar							
@@ -4326,7 +4326,7 @@ RawTeX(<<'EOTeX');
 \newcount\@lowpenalty							
 \newdimen\@maxdepth							 
 \newcount\@medpenalty							
-\newdimen\@mparbottom \@mparbottom\z@					%New dimension, initial set to z@
+\newdimen\@mparbottom \@mparbottom\z@
 \newinsert\@mpfootins							 
 \newcount\@mplistdepth							
 \newcount\@multicnt							
@@ -4341,7 +4341,7 @@ RawTeX(<<'EOTeX');
 \newcount\@savsf							
 \newdimen\@savsk							
 \newcount\@secpenalty							
-\def\@sqrt[#1]{\root #1\of}						%Very short definition of \@sqrt, is never redefined and seems to be some kind of alias.
+\def\@sqrt[#1]{\root #1\of}
 \newbox\@tabfbox							
 \newcount\@tabpush							
 \newdimen \@textfloatsheight						
@@ -4353,7 +4353,7 @@ RawTeX(<<'EOTeX');
 \newcount\@yarg								
 \newdimen\@ydim								
 \newcount\@yyarg							
-\newtoks\every@math@size						%first time \newtoks
+\newtoks\every@math@size
 \newif \if@fcolmade							 
 \newdimen\lower@bound							
 \newcount\par@deathcycles						 
@@ -4401,9 +4401,6 @@ RawTeX(<<'EOTeX');
 \@centering = 0pt plus 1000pt
 \let\@eqnsel=\relax
 
-% Some control structure from latex.ltx
-% (amazing that it actually works!)
-% How much of this control struture will I need?
  \long\def\@whilenum#1\do #2{\ifnum #1\relax #2\relax\@iwhilenum{#1\relax
       #2\relax}\fi}
  \long\def\@iwhilenum#1{\ifnum #1\expandafter\@iwhilenum
