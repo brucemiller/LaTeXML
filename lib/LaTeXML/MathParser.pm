@@ -25,7 +25,7 @@ use LaTeXML::Common::Font;
 use LaTeXML::Common::XML;
 use base (qw(Exporter));
 
-our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
+our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
     &Annotate &InvisibleTimes &InvisibleComma
     &NewFormulae &NewFormula &NewList
     &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
@@ -34,7 +34,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
     &SawNotation &IsNotationAllowed
     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors
-    => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply
+    => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
       &NewFormulae &NewFormula &NewList
       &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
@@ -144,7 +144,10 @@ sub realizeXMNode {
     if (my $realnode = $doc->lookupID($idref)) {
       return $realnode; }
     else {
-      Error("expected", $idref, undef, "Cannot find a node with xml:id='$idref'");
+      Error("expected", 'id', undef, "Cannot find a node with xml:id='$idref'",
+        ($LaTeXML::MathParser::IDREFS{$idref}
+          ? "Previously bound to " . ToString($LaTeXML::MathParser::IDREFS{$idref})
+          : ()));
       return ['ltx:ERROR', {}, "Missing XMRef idref=$idref"]; } }
   else {
     return $node; } }
@@ -244,6 +247,11 @@ sub parse {
   local $LaTeXML::MathParser::XNODE       = $xnode;
   local $LaTeXML::MathParser::PUNCTUATION = {};
   local $LaTeXML::MathParser::LOSTNODES   = {};
+  local %LaTeXML::MathParser::IDREFS      = ();
+  # This bit for debugging....
+  foreach my $n ($document->findnodes("descendant-or-self::*[\@xml:id]", $xnode)) {
+    my $id = $n->getAttribute('xml:id');
+    $LaTeXML::MathParser::IDREFS{$id} = $n; }
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
     my $p = $xnode->parentNode;
@@ -262,8 +270,12 @@ sub parse {
       foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
         $document->replaceTree($r, $n); } }
     foreach my $id (keys %$LaTeXML::MathParser::LOSTNODES) {
+      my $repid = $$LaTeXML::MathParser::LOSTNODES{$id};
+      # but the replacement my have been replaced as well!
+      while (my $reprepid = $$LaTeXML::MathParser::LOSTNODES{$repid}) {
+        $repid = $reprepid; }
       foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
-        $document->setAttribute($n, idref => $$LaTeXML::MathParser::LOSTNODES{$id}); } }
+        $document->setAttribute($n, idref => $repid); } }
 
     $p->setAttribute('text', text_form($result)); }
   return; }
@@ -954,6 +966,29 @@ sub New {
       : LaTeXML::Common::Font->new()); }
   return ['ltx:XMTok', {%attr}, ($content ? ($content) : ())]; }
 
+# Like New(), but concatenating several symbols into one new one.
+# This accounts for the symbols "disappearing", being replaced by one,
+# and thus any references to the old one have to be adjusted ... or removed
+# I'm a little concerned that we should be defering this till a successful parse?
+sub CatSymbols {
+  my ($symbol1, $symbol2, $meaning, $content, %attributes) = @_;
+  my $new = New($meaning, $content, %attributes);
+  my $repl;
+  my $symbols = [$symbol1, $symbol2];
+  my $doc = $LaTeXML::MathParser::DOCUMENT;
+  foreach my $symbol (@$symbols) {
+    if (my $id = p_getAttribute(realizeXMNode($symbol), 'xml:id')) {
+      if (!$repl) {
+        my $newid = $doc->modifyID($id);
+        $$new[1]{'xml:id'} = $newid;
+        ReplacedBy($symbol, $new);
+        $repl = 1; }
+      else {
+        foreach my $r ($doc->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
+          $doc->removeNode($r); } }    # ? Hopefully this is safe.
+    } }
+  return $new; }
+
 # Some handy shorthands.
 sub Absent {
   return New('absent'); }
@@ -1202,7 +1237,7 @@ sub LeftRec {
     my $opname = p_getTokenMeaning(realizeXMNode($op));
     my @args   = ($arg1, shift(@more));
     while (@more && ($opname eq p_getTokenMeaning(realizeXMNode($more[0])))) {
-      ReplacedBy($more[0], $op);
+      ReplacedBy($more[0], $op, 1);
       shift(@more);
       push(@args, shift(@more)); }
     return LeftRec(Apply($op, @args), @more); }
@@ -1229,7 +1264,7 @@ sub ApplyNary {
           # Especially an ID! (but really only important if the id is referenced somewhere?)
       && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(enclose xml:id))) {
       # Note that $op1 GOES AWAY!!!
-      ReplacedBy($op1, $rop);
+      ReplacedBy($op1, $rop, 1);
       push(@args, @args1); }
     else {
       push(@args, $arg1); } }
@@ -1247,15 +1282,31 @@ sub ApplyNary {
 # This function records that replacement, and the top-level parser fixes up the tree.
 # NOTE: There may be cases (in the Grammar, eg) where punctuation & ApplyOp's
 # get lost completely? Watch out for this!
+# If $isdup, assume the two trees are equivalent structure,
+# and so mark corresponding internal nodes as "replaced" as well.
 sub ReplacedBy {
-  my ($lostnode, $keepnode) = @_;
+  my ($lostnode, $keepnode, $isdup) = @_;
+  return unless ref $lostnode && ref $keepnode;
   if (my $lostid = p_getAttribute($lostnode, 'xml:id')) {
     # Could be we want to generate an id for $keepnode, here?
     if (my $keepid = p_getAttribute($keepnode, 'xml:id')) {
-      # print STDERR "LOST $lostid use instead $keepid\n";
+      #      print STDERR "LOST $lostid use instead $keepid\n";
       $$LaTeXML::MathParser::LOSTNODES{$lostid} = $keepid; }
     else {
       print STDERR "LOST $lostid but no replacement!\n"; } }
+
+  # The following recurses into the two trees,
+  # This is on the assumption that they are "equivalent" trees
+  if ($isdup) {
+    my @lostkids = p_element_nodes($lostnode);
+    my @keepkids = p_element_nodes($keepnode);
+    my $n        = scalar(@lostkids);
+    my $m        = scalar(@keepkids);
+    if ($n != $m) {
+      Error("unexpected", "nodes", undef, "Nodes aren't the same structure");
+      $n = $m if $m < $n; }
+    foreach my $i (0 .. $n - 1) {
+      ReplacedBy($lostkids[$i], $keepkids[$i], $isdup); } }
   return; }
 
 # ================================================================================
@@ -1303,9 +1354,10 @@ sub NewScript {
 # but which will preserve the role (& meaning?)
 sub DecorateOperator {
   my ($op, $script) = @_;
-  my $decop = NewScript($op, $script);
-  my $role    = p_getAttribute($op, 'role');
-  my $meaning = p_getAttribute($op, 'meaning');
+  my $decop   = NewScript($op, $script);
+  my $rop     = realizeXMNode($op);
+  my $role    = p_getAttribute($rop, 'role');
+  my $meaning = p_getAttribute($rop, 'meaning');
   return Annotate($decop, role => $role, meaning => $meaning); }
 
 sub NewEvalAt {
