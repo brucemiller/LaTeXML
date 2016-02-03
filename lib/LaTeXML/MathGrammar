@@ -283,7 +283,9 @@ Factor  :
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
-              addScripts[Fence(New(undef,'||',role=>'OPEN'),$item[4],New(undef,'||',role=>'CLOSE'))]
+              addScripts[Fence(CatSymbols($item[2],$item[3],undef,'||',role=>'OPEN'),
+                $item[4],
+                CatSymbols($item[5],$item[6],undef,'||',role=>'CLOSE'))]
         | { ($forbidVertBar ? undef : 1); }
           VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
               addScripts[Fence($item[2],$item[3],$item[4])]
@@ -619,8 +621,12 @@ moreIntOpArgFactors :
         | { $arg[0]; }
 
 IntFactor :
-          diffd ATOM_OR_ID { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
-        | diffd UNKNOWN    { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
+##          diffd ATOM_OR_ID { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
+##        | diffd UNKNOWN    { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
+          diffd ATOM_OR_ID addScripts[$item[2]]
+           { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[3]); }
+        | diffd UNKNOWN addScripts[$item[2]]
+           { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[3]); }
         | Factor           { $item[1]; }
 
 diffd :
