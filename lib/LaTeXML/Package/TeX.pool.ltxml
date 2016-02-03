@@ -2085,8 +2085,11 @@ DefPrimitive('\mark{}', undef);
 # \insert<8bit><filler>{<vertical mode material>}
 DefPrimitive('\insert Number', undef);    # Just let the insertion get processed(?)
 # \vadjust<filler>{<vertical mode material>}
-DefMacroI('\LTX@vadjust@afterpar',       undef, '');
-DefMacroI('\LTX@clear@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{}');
+# Note: \vadjust ignores in vertical mode...
+# is it sufficient to just clear the macro to avoid recursion?
+# (we don't track horizontal/vertical mode)
+DefMacroI('\LTX@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{}');
+DefMacroI('\LTX@clear@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{\def\LTX@vadjust@afterpar{}}');
 DefPrimitive('\vadjust {}', sub {
     AddToMacro('\LTX@vadjust@afterpar', $_[1]->unlist);
     return; });
@@ -3374,8 +3377,11 @@ DefMacroI('\eqno', undef, sub {
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]'))
         || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
-        || (ToString($t) =~ /^\\(?:begin|end)\{/)) {    # any sort of environ begin or end???
-             #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
+        || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
+                                                     # This seems needed within AmSTeX environs
+        || Equals($t, T_CS('\@@close@inner@column'))
+        ) {
+        #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
         return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
       else {
         push(@stuff, $t); } } });
@@ -5136,8 +5142,12 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
     if ((!defined $text) || (length($text) != 1)) {      # Not simple char token.
       my $box = $doc->getNodeBox($not);
       $doc->openElement('ltx:XMApp', _box => $box);      # Wrap with a cancel op
-      $doc->insertMathToken(undef, role => 'ENCLOSE', enclose => 'updiagonalstrike',
+      my $strike = $doc->insertMathToken(undef, role => 'ENCLOSE', enclose => 'updiagonalstrike',
         meaning => 'not', _box => $box);
+      if (my $id = $not->getAttribute('xml:id')) {
+        $not->removeAttribute('xml:id');
+        $doc->unRecordID($id);
+        $doc->setAttribute($strike, 'xml:id' => $id); }
       $doc->getNode->appendChild($thing);
       $doc->closeElement('ltx:XMApp'); }
     else {
@@ -5151,7 +5161,12 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
       if (my $name = $thing->getAttribute('name') || $text) {
         $doc->setAttribute($thing, name => "not-$name"); }
       # and put the node back in
-      $doc->getNode->appendChild($thing); } });
+      $doc->getNode->appendChild($thing);
+      # Since the <not> element is disappearing, if it had an id that was referenced...!?!?
+      if (my $id = $not->getAttribute('xml:id')) {
+        foreach my $n ($doc->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
+          $doc->removeNode($n); } }    # ? Hopefully this is safe.
+} });
 
 #----------------------------------------------------------------------
 # \joinrel
