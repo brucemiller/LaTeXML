@@ -90,6 +90,10 @@ DefMacroI('\@ams@newline', undef, sub {
     else {
       (T_CS('\@alignment@newline@noskip'), $next); } });
 
+# Note that most of ams's alignment environments originate in AmSTeX.
+# To make \begin{foo}...\end{foo} also work as \foo...\endfoo within AmSTeX.pool,
+# we're wrapping an extra \@hidden@bgroup ... \@hidden@egroup around the
+# code imlementing these.
 sub amsalignBindings {
   my ($template, %properties) = @_;
 
@@ -201,6 +205,19 @@ sub extractXMArrayCells {
         # they're (presumably) only for positioning and interfere with interpretation of the whole.
         if (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
         if (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
+        # Some cultures duplicate an operator at the end of one row and beginning of next
+        # when we merge the cells together, this confuses the parser
+        if (my $prev = $contents[-1]) {
+          if (my $next = $nodes[0]) {
+            my $role;
+            if (($document->getNodeQName($prev) eq 'ltx:XMTok')
+              && ($document->getNodeQName($next) eq 'ltx:XMTok')
+              && (($role = ($prev->getAttribute('role') || '<none>'))
+                eq ($next->getAttribute('role') || '<none>'))
+              && (($prev->getAttribute('meaning') || '<none>') eq ($next->getAttribute('meaning') || '<none>'))
+              && ($role =~ /^(?:ADDOP|MULOP|RELOP)$/)
+              ) {
+              pop(@contents); } } }
         push(@contents, @nodes); }
       push(@contents, $intercolumn) if $intercolumn && @cells; }
     push(@contents, $interrow) if $interrow && @rows; }
@@ -227,10 +244,10 @@ sub amsAlignmentBindings {
 # Justifies the 1st line left, last line right, and middle ones centered.
 # Useful when you are trying to fit a long equation into a known space,
 # This preserves the splits and semantics by constructing an XMDual.
-DefMacro('\multline',                      '\@@multline\@start@alignment');
-DefMacro('\endmultline',                   '\@finish@alignment\@end@multline');
-DefMacro('\csname multline*\endcsname',    '\@@multlinestar\@start@alignment');
-DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline');
+DefMacro('\multline',                      '\@hidden@bgroup\@@multline\@start@alignment');
+DefMacro('\endmultline',                   '\@finish@alignment\@end@multline\@hidden@egroup');
+DefMacro('\csname multline*\endcsname',    '\@hidden@bgroup\@@multlinestar\@start@alignment');
+DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline\@hidden@egroup');
 DefPrimitive('\@end@multline', sub { $_[0]->egroup; });
 
 DefConstructor('\@@multline DigestedBody',
@@ -330,8 +347,8 @@ sub amsMultirowBindings {
 # and the alignment structure.
 # (\intertext?)
 
-DefMacro('\split',    '\@@split\@start@alignment');
-DefMacro('\endsplit', '\@finish@alignment\@end@split');
+DefMacro('\split',    '\@hidden@bgroup\@@split\@start@alignment');
+DefMacro('\endsplit', '\@finish@alignment\@end@split\@hidden@egroup');
 DefPrimitive('\@end@split', sub { $_[0]->egroup; });
 DefConstructor('\@@split DigestedBody',
   '#1',
@@ -396,14 +413,14 @@ sub rearrangeAMSGather {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\gather',
   '\ifmmode\let\endgather\endgathered\gathered\else'
-    . '\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endgather',
-  '\@finish@alignment\end@amsgather');
+  '\@finish@alignment\end@amsgather\@hidden@egroup');
 DefMacro('\csname gather*\endcsname',
   '\ifmmode\expandafter\let\csname endgather*\endcsname\endgathered\gathered\else'
-    . '\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endgather*\endcsname',
-  '\@finish@alignment\end@amsgather');
+  '\@finish@alignment\end@amsgather\@hidden@egroup');
 
 #======================================================================
 # Section 3.6 Equation groups with mutual alignment
@@ -452,58 +469,58 @@ sub rearrangeAMSAlign {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\align',
   '\ifmmode\let\endalign\endaligned\aligned\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endalign',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname align*\endcsname',
   '\ifmmode\expandafter\let\csname endalign*\endcsname\endaligned\aligned\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endalign*\endcsname',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 # flalign typesets in the full column width (seems perverse to me).
 # So, for the time being, it's treated exactly like align.
 DefMacro('\flalign',
   '\ifmmode\let\endfalign\endaligned\aligned\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endflalign',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname flalign*\endcsname',
   '\ifmmode\expandafter\let\csname endfalign*\endcsname\endaligned\aligned\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endflalign*\endcsname',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 # alignat doesn't stretch the columns out as much (?)
 # and takes the number of column pairs (which we don't need?)
 # We'll ignore these distinctions for now.
 DefMacro('\alignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endalignat',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname alignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endalignat*\endcsname',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endxalignat',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname xalignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
 DefMacro('\csname endxalignat*\endcsname',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xxalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
 DefMacro('\endxxalignat',
-  '\@finish@alignment\end@amsalign');
+  '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 #======================================================================
 # Section 3.7. Alignment building blocks
@@ -517,8 +534,8 @@ DefMacro('\endxxalignat',
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
 # We'll just create an XMDual to contain the whole results, and the aligned structure.
-DefMacro('\gathered[]', '\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
-DefMacro('\endgathered', '\@finish@alignment\@end@gathered');
+DefMacro('\gathered[]', '\@hidden@bgroup\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
+DefMacro('\endgathered', '\@finish@alignment\@end@gathered\@hidden@egroup');
 DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
@@ -527,10 +544,10 @@ DefConstructor('\@@gathered DigestedBody',
   reversion => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
-DefMacro('\aligned[]',     '\@@amsaligned\@start@alignment');
-DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned');
-DefMacro('\alignedat{}[]', '\@@amsaligned\@start@alignment');
-DefMacro('\endalignedat',  '\@finish@alignment\@end@amsaligned');
+DefMacro('\aligned[]',     '\@hidden@bgroup\@@amsaligned\@start@alignment');
+DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned\@hidden@egroup');
+DefMacro('\alignedat{}[]', '\@hidden@bgroup\@@amsaligned\@start@alignment');
+DefMacro('\endalignedat',  '\@finish@alignment\@end@amsaligned\@hidden@egroup');
 
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
