@@ -2090,8 +2090,8 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
     defineNewTheorem($stomach, $flag, $thmset, $otherthmset, $type, $reset);
     # Reset these!
     DefRegister('\thm@prework'  => Tokens());
-    DefRegister('\thm@postwork' => Tokens());
-});
+    DefRegister('\thm@postwork' => Tokens()); },
+  locked => 1);
 
 # Some packages may want to add '\thm@headfont'
 AssignValue(THEOREM_PARAMETERS => ['\thm@bodyfont', '\thm@headpunct',
