@@ -289,6 +289,42 @@ DefMacro('\spbreve',  "^{\\hbox{\\u{}}}");
 DefMacro('\spbar',    "^{-}");
 DefMacro('\spvec',    "^{\\rightarrow}");
 
+# \boldsymbol{}
+# Note this is really messed up.  \boldsymbol doesn't necessarily just expand,
+# it recognizes certain arguments specially.  Among other things this allows perversities like:
+#   \redefine\cdot{\boldsymbol\cdot}
+DefMathI('\lx@ams@boldsymbol@cdot', undef, "\x{22C5}", role => 'MULOP',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@prime', undef, "\x{2032}", role => 'SUPOP', locked => 1,
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@lbrack', undef, '[', role => 'OPEN', stretchy => 'false',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@rbrack', undef, ']', role => 'CLOSE', stretchy => 'false',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@lbrace', undef, '{', role => 'OPEN', stretchy => 'false', alias => '\{',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@rbrace', undef, '}', role => 'CLOSE', stretchy => 'false', alias => '\}',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@surd', undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@S', undef, UTF(0xa7),
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@P', undef, UTF(0xB6),
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@dag', undef, "\x{2020}",
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@ddag', undef, "\x{2021}",
+  bounded => 1, font => { forcebold => 1 });
+
+DefConstructor('\lx@ams@boldsymbol@{}', '#1',
+  bounded => 1, requireMath => 1, font => { forcebold => 1 });
+
+DefMacro('\boldsymbol DefToken', sub {
+    my ($gullet, $token) = @_;
+    my $name = ToString($token); $name =~ s/^\\//;
+    my $btoken = T_CS('\lx@ams@boldsymbol@' . $name);
+    return (IsDefined($btoken) ? ($btoken) : (T_CS('\lx@ams@boldsymbol@'), $token)); });
+
 # Ignore these?
 DefRegister('\buffer' => Dimension(0));
 DefMacro('\ChangeBuffer Dimension', '\buffer#2\relax');
