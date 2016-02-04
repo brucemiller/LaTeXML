@@ -1156,7 +1156,7 @@ sub isMatchingClose {
   my $oname  = p_getValue(realizeXMNode($open));
   my $cname  = p_getValue(realizeXMNode($close));
   my $expect = $balanced{$oname};
-  return (defined $expect) && ($expect eq $cname); }
+  return (defined $expect) && (defined $cname) && ($expect eq $cname); }
 
 # Given a delimited sequence: open expr (punct expr)* close
 # (OR, an empty sequence open close)
@@ -1236,7 +1236,7 @@ sub LeftRec {
     my $op     = shift(@more);
     my $opname = p_getTokenMeaning(realizeXMNode($op));
     my @args   = ($arg1, shift(@more));
-    while (@more && ($opname eq p_getTokenMeaning(realizeXMNode($more[0])))) {
+    while (@more && isSameExpr($op, $more[0])) {
       ReplacedBy($more[0], $op, 1);
       shift(@more);
       push(@args, shift(@more)); }
@@ -1255,13 +1255,9 @@ sub ApplyNary {
   if (p_getQName($arg1) eq 'ltx:XMApp') {
     my ($op1, @args1) = p_element_nodes($arg1);
     my $rop1 = realizeXMNode($op1);
-    if (((p_getTokenMeaning($rop1) || '__undef_meaning__') eq $opname)    # Same operator?
-      && ((p_getValue($rop1) || '__undef_content__') eq $opcontent)
-      # Check that ops are used in same way.
-      && !(grep { (p_getAttribute($rop, $_) || '<none>') ne (p_getAttribute($rop1, $_) || '<none>') }
-        qw(mathstyle))    # Check ops are used in similar way
-          # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
-          # Especially an ID! (but really only important if the id is referenced somewhere?)
+    if (isSameExpr($rop, $rop1)
+      # Check that arg1 isn't wrapped, fenced or enclosed in some restrictive way
+      # Especially an ID! (but really only important if the id is referenced somewhere?)
       && !(grep { p_getAttribute(realizeXMNode($arg1), $_) } qw(enclose xml:id))) {
       # Note that $op1 GOES AWAY!!!
       ReplacedBy($op1, $rop, 1);
@@ -1271,6 +1267,37 @@ sub ApplyNary {
   else {
     push(@args, $arg1); }
   return Apply($op, @args, $arg2); }
+
+# Usually we just expect to compare a token + to another.
+# but want (to some extent) to deal with embellished operators (eg. sub, sup...)
+# Rather involved if we want to try to do it "Right".
+sub isSameExpr {
+  my ($op1, $op2) = @_;
+  $op1 = realizeXMNode($op1);
+  $op2 = realizeXMNode($op2);
+  my $tag1 = getQName($op1);
+  my $tag2 = getQName($op2);
+  # Either both are tokens,
+  # OR both have structure, but then we need to compare the children!!!!
+  # First check, same top-level and critical attributes
+  return unless
+    ($tag1 eq $tag2)
+    && ((p_getTokenMeaning($op1) || '__undef_meaning__')
+    eq (p_getTokenMeaning($op2) || '__undef_meaning__'))
+    && ((p_getValue($op1) || '__undef_content__')
+    eq (p_getValue($op2) || '__undef_content__'))
+    # Check that ops are used in same way.
+    && ((p_getAttribute($op1, 'mathstyle') || '<none>')
+    eq (p_getAttribute($op2, 'mathstyle') || '<none>'));
+  if ($tag1 eq 'ltx:XMTok') { return 1; }    # If tokens, they match
+  else {
+    my @ch1 = p_element_nodes($op1);
+    my @ch2 = p_element_nodes($op2);
+    my $n   = scalar(@ch1);
+    return unless $n == scalar(@ch2);
+    foreach my $i (0 .. $n - 1) {
+      return unless isSameExpr($ch1[$i], $ch1[$i]); }
+    return 1; } }
 
 # There are several cases where parsing a formula will rearrange nodes
 # such that some nodes will no-longer be used.  For example, when
