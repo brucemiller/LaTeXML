@@ -358,7 +358,7 @@ DefMacroI('\thempfootnote', undef, '\arabic{mpfootnote}');
 DefConstructor('\footnote[]{}',
   "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
   mode => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(); Digest('\normalfont'); },
+  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
     ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\footnotemark[]',
@@ -3716,8 +3716,9 @@ DefConstructor('\bezier Number Pair Pair Pair',
 
 DefConstructor('\pic@makebox Pair []{}',
   "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
-  alias => '\makebox',
-  properties => sub { picProperties(size => picScale($_[1])); });
+  alias        => '\makebox',
+  beforeDigest => sub { reenterTextMode(); },
+  properties   => sub { picProperties(size => picScale($_[1])); });
 
 DefMacro('\pic@savebox DefToken Pair []{}', '\pic@@savebox{#1}{\pic@makebox #2[#3]{#4}}');
 DefPrimitive('\pic@@savebox DefToken {}', sub {
@@ -3730,8 +3731,9 @@ DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
 DefConstructor('\pic@framebox Pair []{}',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>"
     . "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
-  alias => '\framebox',
-  properties => sub { picProperties(size => picScale($_[1])); });
+  alias        => '\framebox',
+  beforeDigest => sub { reenterTextMode(); },
+  properties   => sub { picProperties(size => picScale($_[1])); });
 
 #DefConstructor('\pic@dashbox {Float} Pair [] {}',
 DefConstructor('\dashbox {Float} Pair [] {}',
