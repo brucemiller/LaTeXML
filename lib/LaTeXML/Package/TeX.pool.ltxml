@@ -1690,12 +1690,18 @@ DefParameterType('VBoxContents', sub {
 # This re-binds a number of important control sequences to their default text binding.
 # This is useful within common boxing or footnote macros that can appear within
 # alignments or special environments that have redefined many of these.
-##PushValue(TEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@textmode')]);
-PushValue(TEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@normalmode')]);
+AssignValue(TEXT_MODE_BINDINGS  => []);
+AssignValue(HTEXT_MODE_BINDINGS => []);
+AssignValue(VTEXT_MODE_BINDINGS => []);
+PushValue(HTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@textmode')]);
+PushValue(VTEXT_MODE_BINDINGS => [T_MATH, T_CS('\@dollar@in@normalmode')]);
 ###PushValue(TEXT_MODE_BINDINGS => [T_CS('\centerline'), T_CS('\relax')]);
 
 sub reenterTextMode {
-  map { Let($$_[0], $$_[1]) } @{ LookupValue('TEXT_MODE_BINDINGS') };
+  my ($verticalmode) = @_;
+  map { Let($$_[0], $$_[1]) }
+    @{ LookupValue(($verticalmode ? 'VTEXT_MODE_BINDINGS' : 'HTEXT_MODE_BINDINGS')) },
+    @{ LookupValue('TEXT_MODE_BINDINGS') };
   return }
 
 sub REF {
@@ -2961,16 +2967,24 @@ DefPrimitiveI(T_MATH, undef, sub {
     my $mode      = LookupValue('MODE');
     my $op        = '\@@BEGININLINEMATH';
     if ($mode eq 'display_math') {
-      if ($gullet->ifNext(T_MATH)) { $gullet->readToken; }
-      else { Fatal('expected', '$', $stomach, "Missing \$ closing display math."); }
-      $op = '\@@ENDDISPLAYMATH'; }
+      if ($gullet->ifNext(T_MATH)) {
+        $gullet->readToken;
+        $op = '\@@ENDDISPLAYMATH'; }
+      else {
+        # Avoid a Fatal, but we're likely in trouble.
+        # Should we switch to text mode? (LaTeX normally wouldn't)
+        # Did we miss something and would should have already been in text mode? Possibly...
+        Error('expected', '$', $stomach,
+          "Missing \$ closing display math.",
+          "Ignoring; expect to be in wrong math/text mode.");
+        $op = undef; } }
     elsif ($mode eq 'inline_math') {
       $op = '\@@ENDINLINEMATH'; }
     #  elsif(!LookupValue('Alignment') && $gullet->ifNext(T_MATH)){
     elsif ($gullet->ifNext(T_MATH)) {
       $gullet->readToken;
       $op = '\@@BEGINDISPLAYMATH'; }
-    $stomach->invokeToken(T_CS($op)); });
+    $stomach->invokeToken(T_CS($op)) if $op; });
 # Let this be the default, conventional $
 Let(T_CS('\@dollar@in@normalmode'), T_MATH);
 
@@ -3479,13 +3493,14 @@ sub scriptHandler {
   my $nscripts = 0;
   if (defined $style) {
     my $cs = '\@@FLOATING' . $op;
-    my ($prevscript, $base);
+    my ($prevscript, $prevspace, $base);
     # Check preceding boxes to determine possible attachment (floating vs post),
     # and whether there are conflicting preceding scripts, which is an error
     # Note that this analysis has to be done now (or sometime like it) before grouping lists go away;
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if ((ref $prev eq 'LaTeXML::Core::Whatsit') && $prev->getProperty('isSpace')) {
+        $prevspace = 1;    # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
@@ -3493,7 +3508,8 @@ sub scriptHandler {
       elsif (my $prevop = IsScript($prev)) {
         unshift(@putback, $prev);
         if ($$prevop[1] eq $op) {    # Whoops, duplicated; better use FLOATING
-          Error('unexpected', "double-" . lc($$prevop[1]), $stomach, "Double " . lc($$prevop[1]));
+          Error('unexpected', "double-" . lc($$prevop[1]), $stomach, "Double " . lc($$prevop[1]))
+            unless $prevspace;
           $cs = '\@@FLOATING' . $op;
           last; }
         else {                       # Else, is OK (so far) assume POST (it will stack previous script)
