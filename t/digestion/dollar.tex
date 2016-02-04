@@ -1,0 +1,40 @@
+\documentclass{article}
+\begin{document}
+
+\hbox{text $math$ text}
+
+\hbox{text $$alsotext$$ text}
+
+Footnote\footnote{text $math$ text}
+Another\footnote{text $$displayedmath$$ text}
+
+Note that dollar inside equation, etc.~fails.
+% \[ math {\rm $text$ } math \]
+
+% \[ math $$math$$ math \]
+
+\mbox{text $math$ text}
+
+\mbox{text $$alsotext$$ text}
+
+\[ a + \mbox{text $math$ text}  + c \]
+
+\[ a + \mbox{text $$alsotext$$ text}  + c \]
+
+\[ a + \makebox{text $math$ text}  + c \]
+
+\[ a + \makebox{text $$alsotext$$ text}  + c \]
+
+Base\raisebox{1em}{text $math$ text}
+
+Base\raisebox{1em}{text $$alsotext$$ text}
+
+Base\shortstack{text\\ $math$\\ text}
+
+Base\shortstack{text\\$$alsotext$$\\ text}
+
+
+\end{document}
+
+
+
