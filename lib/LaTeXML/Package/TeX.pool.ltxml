@@ -3739,8 +3739,8 @@ our %mathstyle_adjust_map = (
 sub adjustMathStyle_internal {
   my ($outerstyle, $box) = @_;
   if (my $font = $box->getFont) {
-    my $origstyle = $font->getMathstyle;
-    my $newstyle  = $mathstyle_adjust_map{$outerstyle}{$origstyle};
+    my $origstyle = $font->getMathstyle || 'display';
+    my $newstyle = $mathstyle_adjust_map{$outerstyle}{$origstyle};
     $box->setFont($font->merge(mathstyle => $newstyle));
     if (my $recstyle = $box->getProperty('mathstyle')) {    # And adjust here, if recorded.
       $box->setProperty(mathstyle => $newstyle);
