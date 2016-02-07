@@ -46,7 +46,7 @@ RequirePackage('graphicx');
 # natbib is also often used, but reportedly clashes with cite.sty
 # We'll autoload natbib if it hasn't already been loaded, and if any of its obvious macros are used.
 foreach my $trigger (qw(citet citep citealt citealp citenum citeauthor citefullauthor
-  citeyear citeyearpar setcitestyle bibpunct)) {
+  citeyear citeyearpar citeauthoryear setcitestyle bibpunct)) {
   DefAutoload($trigger, 'natbib.sty.ltxml'); }
 
 DefEnvironment('{frontmatter}', '#body');
