@@ -289,7 +289,7 @@ sub candidate_pathnames {
   my @dirs = ();
   $pathname = pathname_canonical($pathname) unless $pathname eq '*';
   my ($pathdir, $name, $type) = ($pathname eq '*' ? (undef, '*', undef) : pathname_split($pathname));
-  $name .= '.' . $type if $type;
+  $name .= '.' . $type if (defined $type) && ($type ne '');
   # generate the set of search paths we'll use.
   if (pathname_is_absolute($pathname)) {
     push(@dirs, $pathdir); }
