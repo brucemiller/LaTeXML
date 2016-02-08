@@ -443,11 +443,11 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 # \url{text}
 DefConstructor('\url Semiverbatim',
   "<ltx:ref href='#href'>#1</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # This should be in effect only after frontmatter
 # \email{address}
