@@ -191,7 +191,7 @@ sub transformGraphic {
   NoteProgressDetailed("\n[Processing $source as key=$key]");
 
   my %properties = $self->getTypeProperties($source, $transform);
-  return Warn('unexpected', $source, undef,
+  return Warn('unexpected', 'graphics_format', undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
