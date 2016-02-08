@@ -83,7 +83,7 @@ sub process {
       if (my $loc = $doc->siteRelativeDestination) {
         my $prevloc = $preventry->getValue('location');
         if ((defined $prevloc) && ($loc ne $prevloc)) {
-          Warn('unexpected', $id, undef,
+          Warn('unexpected', 'location', undef,
             "Using default ID='$id', "
               . "but there's an apparent conflict with location '$loc' and previous '$prevloc'"); } } }
     $root->setAttribute('xml:id' => $id); }
@@ -327,12 +327,12 @@ sub bibref_handler {
   # Don't scan refs from 'cited' bibblock
   if (!$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]', $node)) {
 #####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
-    my $keys = $node->getAttribute('bibrefs');
-    foreach my $bibkey (split(',', $keys)) {
-      if ($bibkey) {
-        $bibkey = lc($bibkey);    # NOW we downcase!
-        my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-        $entry->noteAssociation(referrers => $parent_id); } } }
+    if (my $keys = $node->getAttribute('bibrefs')) {
+      foreach my $bibkey (split(',', $keys)) {
+        if ($bibkey) {
+          $bibkey = lc($bibkey);    # NOW we downcase!
+          my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+          $entry->noteAssociation(referrers => $parent_id); } } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
   $self->default_handler($doc, $node, $tag, $parent_id);
   return; }
