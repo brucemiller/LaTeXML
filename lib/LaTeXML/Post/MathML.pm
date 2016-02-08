@@ -622,7 +622,7 @@ sub pmml_infix {
   else {
     ## push(@items, pmml(shift(@args)));
     # Experiment at flattening?
-    my $role = (ref $op ? getOperatorRole($op) : 'none');
+    my $role = (ref $op ? getOperatorRole($op) : 'none') || 'none';
     my $arg1 = realize(shift(@args));
     if (($role eq 'ADDOP')
       && (getQName($arg1) eq 'ltx:XMApp')
@@ -752,7 +752,7 @@ sub stylizeContent {
   if ($variant
     && ($plane1 || $plane1hack)
     && ($mapping = ($plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))) {
-    my @c = map { $$mapping{$_} } split(//, $text);
+    my @c = map { $$mapping{$_} } split(//, $text || '');
     if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
