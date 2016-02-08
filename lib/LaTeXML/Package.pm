@@ -1764,7 +1764,7 @@ sub FindFile_aux {
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
   if (my $result = pathname_kpsewhich(@candidates)) {
-    return $result; }
+    return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
   return; }
