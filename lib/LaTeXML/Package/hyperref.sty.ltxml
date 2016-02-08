@@ -124,7 +124,7 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # \href{url}{text}
 DefConstructor('\href Verbatim  {}',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # \url{url} from url.sty
 # Redefine \@url to sanitize the argument less
@@ -133,7 +133,7 @@ DefMacro('\@Url Token', sub {
     my $mouth = $gullet->getMouth;
     my ($open, $close, $url);
     $open = $gullet->readToken;
-    StartSemiverbatim();
+    StartSemiverbatim('%');
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url = $gullet->readBalanced; }
@@ -171,7 +171,7 @@ DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
 # 4 argument form
 DefConstructor('\hyperref@@iv Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#4</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1])
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1])
           . '#' . CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
