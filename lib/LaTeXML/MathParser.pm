@@ -1155,7 +1155,7 @@ sub isMatchingClose {
   my ($open, $close) = @_;
   my $oname  = p_getValue(realizeXMNode($open));
   my $cname  = p_getValue(realizeXMNode($close));
-  my $expect = $balanced{$oname};
+  my $expect = $oname && $balanced{$oname};
   return (defined $expect) && (defined $cname) && ($expect eq $cname); }
 
 # Given a delimited sequence: open expr (punct expr)* close
