@@ -244,7 +244,9 @@ sub amsAlignmentBindings {
 # Justifies the 1st line left, last line right, and middle ones centered.
 # Useful when you are trying to fit a long equation into a known space,
 # This preserves the splits and semantics by constructing an XMDual.
-DefMacro('\multline',                      '\@hidden@bgroup\@@multline\@start@alignment');
+DefMacro('\multline',
+  '\ifmmode \@hidden@bgroup\@@AmS@multline\@start@alignment'
+    . '\else\@hidden@bgroup\@@multline\@start@alignment\fi');
 DefMacro('\endmultline',                   '\@finish@alignment\@end@multline\@hidden@egroup');
 DefMacro('\csname multline*\endcsname',    '\@hidden@bgroup\@@multlinestar\@start@alignment');
 DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline\@hidden@egroup');
@@ -284,6 +286,20 @@ DefConstructor('\@@multlinestar DigestedBody',
   reversion      => '\begin{multline*}#1\end{multline*}',
   afterConstruct => sub {
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
+
+# A version for AmSTeX when it appears within math mode.
+DefConstructor('\@@AmS@multline DigestedBody',
+  "#body",
+  mode         => 'display_math',
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    amsMultirowBindings({ name => 'multline' }); },
+  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+    $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+  reversion      => '\multline#1\endmultline',
+  afterConstruct => sub {
+    rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 # Adjust multirow environments to their special needs
 # $array must be an ltx:XMArray
