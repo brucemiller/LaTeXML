@@ -34,7 +34,7 @@ DefPrimitive('\lx@append@path OptionalMatch:* {}', sub {
       if ($star) {    # * omits TEXINPUTS!
         AssignValue(SEARCHPATHS => [pathname_canonical($newpath)]); }
       else {
-        AssignValue(SEARCHPATHS => [@{ pathname_canonical($newpath) }, @paths]); } }
+        AssignValue(SEARCHPATHS => [pathname_canonical($newpath), @paths]); } }
     return; });
 
 DefMacro('\import OptionalMatch:* {}{}',       '{\lx@set@path #1{#2} \input{#3}}');
