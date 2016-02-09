@@ -353,6 +353,7 @@ sub pmml_scriptsize {
 
 sub pmml {
   my ($node) = @_;
+  return unless $node;
   # [since we follow split/scan, use the fragid, not xml:id! TO SOLVE LATER]
   # Do the core conversion.
   # Fetch the "real" node, if this is an XMRef to one; also use the OTHER's id!
@@ -401,12 +402,12 @@ sub first_element {
 
 sub _getattr {
   my ($refr, $node, $attribute) = @_;
-  return ($refr && $refr->getAttribute($attribute)) || $node->getAttribute($attribute); }
+  return ($refr && $refr->getAttribute($attribute)) || $node && $node->getAttribute($attribute); }
 
 sub _getspace {
   my ($refr, $node, $attribute) = @_;
-  my $refspace = $refr && $refr->getAttribute($attribute);
-  my $nodespace = $node->getAttribute($attribute);
+  my $refspace  = $refr && $refr->getAttribute($attribute);
+  my $nodespace = $node && $node->getAttribute($attribute);
   return ($refspace ? getXMHintSpacing($refspace) : 0)
     + ($nodespace ? getXMHintSpacing($nodespace) : 0); }
 
