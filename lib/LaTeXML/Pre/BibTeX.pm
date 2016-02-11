@@ -237,7 +237,9 @@ sub parseFieldName {
 sub parseMatch {
   my ($self, $delims) = @_;
   $self->skipWhite;
-  if ($$self{line} =~ s/^([\Q$delims\E])//) {
+  if (!$delims) {
+    return; }
+  elsif ($$self{line} =~ s/^([\Q$delims\E])//) {
     return $1; }
   else {
     Error('expected', $delims, undef, "Expected one of " . join(' ', split(//, $delims)));
