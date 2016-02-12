@@ -131,6 +131,7 @@ sub addLine {
 
 sub nextColumn {
   my ($self) = @_;
+  return unless $$self{current_row};
   my $colspec = $$self{current_row}->column(++$$self{current_column});
   if (!$colspec) {
     Error('unexpected', '&', $STATE->getStomach->getGullet, "Extra alignment tab '&'");
@@ -148,11 +149,11 @@ sub currentRowNumber {
 
 sub currentColumn {
   my ($self) = @_;
-  return $$self{current_row}->column($$self{current_column}); }
+  return $$self{current_row} && $$self{current_row}->column($$self{current_column}); }
 
 sub getColumn {
   my ($self, $n) = @_;
-  return $$self{current_row}->column($n); }
+  return $$self{current_row} && $$self{current_row}->column($n); }
 
 # Ugh... these take boxes; adding before/after columns takes tokens!
 sub addBeforeRow {
