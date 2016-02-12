@@ -38,13 +38,13 @@ sub executeBeforeDigest {
   my ($self, $stomach) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my $pre = $$self{beforeDigest};
-  return ($pre ? map { &$_($stomach) } @$pre : ()); }
+  return ($pre ? map { &$_($stomach) } grep { defined $_ } @$pre : ()); }
 
 sub executeAfterDigest {
   my ($self, $stomach, @whatever) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my $post = $$self{afterDigest};
-  return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
+  return ($post ? map { &$_($stomach, @whatever) } grep { defined $_ } @$post : ()); }
 
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
