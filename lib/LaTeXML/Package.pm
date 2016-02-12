@@ -52,7 +52,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
     &DefConditional &DefConditionalI &IfCondition &SetCondition
     &DefPrimitive  &DefPrimitiveI
-    &DefRegister &DefRegisterI &LookupRegister &AssignRegister
+    &DefRegister &DefRegisterI &LookupRegister &AssignRegister &LookupDimension
     &DefConstructor &DefConstructorI
     &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
@@ -1130,6 +1130,23 @@ sub LookupRegister {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register"); }
   return; }
+
+sub LookupDimension {
+  my ($cs) = @_;
+  my $defn;
+  $cs = T_CS($cs) unless ref $cs;
+  if (my $defn = $STATE->lookupDefinition($cs)) {
+    if ($defn->isRegister) {    # Easy (and proper) case.
+      return $defn->valueOf; }
+    else {
+      $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub { # start with empty mouth
+          my ($gullet) = @_;
+          $gullet->unread($cs);    # but put back tokens to be read
+          return $gullet->readDimension; }); } }
+  else {
+    Warn('expected', 'register', $STATE->getStomach,
+      "The control sequence " . ToString($cs) . " is not a register"); }
+  return Dimension(0); }
 
 sub AssignRegister {
   my ($cs, $value, @parameters) = @_;
