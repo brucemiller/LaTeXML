@@ -1034,7 +1034,7 @@ sub beginItemize {
   my ($type, $counter, $nolevel) = @_;
   $counter = '@@item' unless $counter;
   my $level = LookupValue('itemlevel') + 1;
-  AssignRegister('\itemsep' => LookupRegister('\lx@default@itemsep'));
+  AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
   AssignValue(itemlevel         => $level);
   AssignValue(itemization_items => 0);
   my $postfix = ToString(Tokens(roman($level)));
@@ -1052,8 +1052,8 @@ sub RefStepItemCounter {
   my $n       = LookupValue('itemization_items');
   AssignValue(itemization_items => $n + 1);
   my %attr = ();
-  my $sep  = LookupRegister('\itemsep');
-  if (($n > 0) && $sep && ($sep->valueOf != LookupRegister('\lx@default@itemsep')->valueOf)) {
+  my $sep  = LookupDimension('\itemsep');
+  if (($n > 0) && $sep && ($sep->valueOf != LookupDimension('\lx@default@itemsep')->valueOf)) {
     $attr{itemsep} = $sep; }
   if (defined $tag) {
     my $ttag      = (ref $tag ? $tag : T_OTHER($tag));
@@ -1631,9 +1631,9 @@ sub eqnarrayBindings {
 
   my %attributes = (
     'class'  => 'ltx_eqn_eqnarray',
-    'colsep' => LookupRegister('\arraycolsep')->multiply(2));
-  my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
+    'colsep' => LookupDimension('\arraycolsep')->multiply(2));
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
     $attributes{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
@@ -2550,8 +2550,8 @@ sub tabularBindings {
   my ($template, %properties) = @_;
   $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
   if (!defined $properties{attributes}{colsep}) {
-    my $sep = LookupRegister('\tabcolsep');
-    if ($sep && ($sep->valueOf != LookupRegister('\lx@default@tabcolsep')->valueOf)) {
+    my $sep = LookupDimension('\tabcolsep');
+    if ($sep && ($sep->valueOf != LookupDimension('\lx@default@tabcolsep')->valueOf)) {
       $properties{attributes}{colsep} = $sep; } }
   if (!defined $properties{attributes}{rowsep}) {
     my $str = ToString(Expand(T_CS('\arraystretch')));
@@ -2651,8 +2651,8 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     my $attr = { vattach => translateAttachment($pos),
       role => 'ARRAY' };
     # Determine column and row separations, if non default
-    my $colsep = LookupRegister('\arraycolsep');
-    if ($colsep && ($colsep->valueOf != LookupRegister('\lx@default@arraycolsep')->valueOf)) {
+    my $colsep = LookupDimension('\arraycolsep');
+    if ($colsep && ($colsep->valueOf != LookupDimension('\lx@default@arraycolsep')->valueOf)) {
       $$attr{colsep} = $colsep; }
     my $str = ToString(Expand(T_CS('\arraystretch')));
     if ($str != 1) {
@@ -3918,8 +3918,11 @@ DefMacro('\textnormal{}', '\protect\ifmmode\textnormal@math{#1}\else{\normalfont
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
-    DefConstructor(ToString($cmd) . "{}", "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode => 'text',
-      bounded => 1, beforeDigest => sub { Digest($font); (); }); });
+    DefConstructorI($cmd, "{}",
+      "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
+      mode => 'text', bounded => 1,
+      beforeDigest => sub { Digest($font); (); });
+    return; });
 
 DefPrimitive('\mathversion{}', sub {
     my ($stomach, $version) = @_;
