@@ -2609,7 +2609,8 @@ DefMacroI('\@close@inner@column', undef, '\@@eat@space\@inner@column@after\@@clo
 DefMacroI('\@inner@column@before', undef, '');
 DefMacroI('\@inner@column@after', undef, sub {
     my $alignment = LookupValue('Alignment');
-    ($alignment ? afterCellUnlist($alignment->currentColumn->{after}) : ()); });
+    my $column = $alignment && $alignment->currentColumn;
+    ($column ? afterCellUnlist($$column{after}) : ()); });
 
 DefPrimitiveI('\@@close@inner@column', undef, sub { $_[0]->egroup; });
 DefPrimitiveI('\@@open@inner@column', undef, sub {
@@ -2813,7 +2814,7 @@ DefConstructorI('\par', undef, sub {
       $document->maybeCloseElement('ltx:p');
       if (my $c = $props{class}) {
         my $node = $document->getElement;
-        if ($document->getNodeQName($node) eq 'ltx:para') {    # Only set on the para about to close!
+        if ($node && $document->getNodeQName($node) eq 'ltx:para') {  # Only set on the para about to close!
           $document->setAttribute($node, class => $c); } }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
@@ -3738,6 +3739,7 @@ our %mathstyle_adjust_map = (
 
 sub adjustMathStyle_internal {
   my ($outerstyle, $box) = @_;
+  $outerstyle = 'display' unless $outerstyle;
   if (my $font = $box->getFont) {
     my $origstyle = $font->getMathstyle || 'display';
     my $newstyle = $mathstyle_adjust_map{$outerstyle}{$origstyle};
