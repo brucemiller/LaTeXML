@@ -266,7 +266,6 @@ sub convert {
     my $log = $self->flush_log;
     $serialized = $dom if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
-    $self->sanitize($log);
 
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
@@ -321,7 +320,6 @@ sub convert {
   # 5.2 Finalize logging and return a response containing the document result, log and status
   print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . " \n";
   my $log = $self->flush_log;
-  $self->sanitize($log) if ($$runtime{status_code} == 3);
   return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
 
@@ -358,7 +356,7 @@ sub convert_post {
     nocache            => 1,
     destination        => $$opts{destination},
     is_html            => $$opts{is_html});
-  # Compute destinationDirectory here, 
+  # Compute destinationDirectory here,
   #   so that we don't depend on post-processing returning a usable Post::Document (Fatal-resilience)
   if ($PostOPS{destination}) {
     my ($dir, $name, $ext) = pathname_split($PostOPS{destination});
@@ -545,7 +543,7 @@ sub convert_post {
 
   # Do the actual post-processing:
   my @postdocs;
-  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);  
+  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
   my $post_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "alarm\n" };
     alarm($$opts{timeout});
@@ -682,23 +680,11 @@ sub flush_log {
   $$self{log} = q{};
   return $log; }
 
-sub sanitize {
-  my ($self, $log) = @_;
-  if ($log =~ m/^Fatal:internal/m) {
-    # TODO : Anything else? Clean up the whole stomach etc?
-    $$self{latexml}->withState(sub {
-        my ($state) = @_;                   # Remove current state frame
-        my $stomach = $state->getStomach;
-        undef $stomach;
-    });
-    $$self{ready} = 0; }
-  return; }
-
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -760,7 +746,7 @@ Supplies detailed information of the conversion log ($log),
 
 =item C<< $converter->initialize_session($opts); >>
 
-Given an options hash reference $opts, initializes a session by creating a new LaTeXML object 
+Given an options hash reference $opts, initializes a session by creating a new LaTeXML object
       with initialized state and loading a daemonized preamble (if any).
 
 Sets the "ready" flag to true, making a subsequent "convert" call immediately possible.
