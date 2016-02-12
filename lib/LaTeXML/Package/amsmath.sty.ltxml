@@ -97,8 +97,8 @@ DefMacroI('\@ams@newline', undef, sub {
 sub amsalignBindings {
   my ($template, %properties) = @_;
 
-  my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
     $properties{attributes}{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
@@ -228,8 +228,8 @@ sub extractXMArrayCells {
 sub amsAlignmentBindings {
   my ($template, %properties) = @_;
 
-  my $cur_jot = LookupRegister('\jot');
-  if ($cur_jot && ($cur_jot->valueOf != LookupRegister('\lx@default@jot')->valueOf)) {
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
     $properties{rowsep} = $cur_jot; }
 
   alignmentBindings($template, undef, attributes => {%properties});
@@ -578,7 +578,7 @@ sub amsAlignedBindings {
       T_CS('\displaystyle')) };
   my $col2 = { before => Tokens(T_CS('\displaystyle')),
     after => Tokens(T_CS('\hfil')) };
-  my $col3 = { before => Tokenize('\hspace{1em}') };
+  my $col3 = { before => Tokenize('\hskip 1em\relax') };
   my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
   amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
   return; }
