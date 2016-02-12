@@ -975,15 +975,24 @@ sub floatToAttribute {
 sub floatToLabel {
   my ($self) = @_;
   my $key = 'labels';
-  my @candidates = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  my @ancestors = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  my @candidates = @ancestors;
   # Should we only accept a node that already has an id, or should we create an id?
   while (@candidates
     && !($self->canHaveAttribute($candidates[0], $key)
       && $candidates[0]->hasAttribute('xml:id'))) {
     shift(@candidates); }
-  if (my $n = shift(@candidates)) {
+  my $node = shift(@candidates);
+  if (!$node) {    # No appropriate ancestor?
+    my $sib = $ancestors[0] && $ancestors[0]->lastChild;
+    if ($sib && $self->canHaveAttribute($sib, $key)
+      && $sib->hasAttribute('xml:id')) {
+      $node = $sib; }
+    elsif (@ancestors) {    # just take root element?
+      $node = $ancestors[-1]; } }
+  if ($node) {
     my $savenode = $$self{node};
-    $self->setNode($n);
+    $self->setNode($node);
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node with an xml:id can get attribute '$key'",
