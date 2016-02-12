@@ -272,6 +272,10 @@ sub exists {
   my ($self, $key) = @_;
   return exists $$self{opts}{$key}; }
 
+sub defined {
+  my ($self, $key) = @_;
+  return defined $$self{opts}{$key}; }
+
 sub keys {
   my ($self) = @_;
   return keys %{ $$self{opts} }; }
@@ -746,7 +750,7 @@ latexmls/latexmlc [options]
                     operates in. Useful when converting
                     documents that employ relative paths.
  --path=dir         adds dir to the paths searched for files,
-                    modules, etc; 
+                    modules, etc;
  --log=file         specifies log file (default: STDERR)
  --autoflush=count  Automatically restart the daemon after
                     "count" inputs. Good practice for vast
@@ -847,13 +851,13 @@ Requests the loading of an optional module or package.  This may be useful if th
 
 =item C<--preamble>=I<file>
 
-Requests the loading of a tex file with document frontmatter, to be read in before the converted document, 
+Requests the loading of a tex file with document frontmatter, to be read in before the converted document,
     but after all --preload entries.
 
 Note that the given file MUST contain \begin{document} or an equivalent environment start,
     when processing LaTeX documents.
 
-If the file does not contain content to appear in the final document, but only macro definitions and 
+If the file does not contain content to appear in the final document, but only macro definitions and
     setting of internal counters, it is more appropriate to use --preload instead.
 
 =item C<--postamble>=I<file>
