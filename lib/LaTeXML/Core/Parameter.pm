@@ -109,7 +109,12 @@ sub reparse {
   else {
     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
         my ($gulletx) = @_;
-        $gulletx->unread($tokens);                                         # but put back tokens to be read
+        my @tokens = $tokens->unlist;
+        if (@tokens    # Strip outer braces from dimensions & friends
+          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuDimension|MuGlue)$/)
+          && $tokens[0]->equals(T_BEGIN) && $tokens[-1]->equals(T_END)) {
+          shift(@tokens); pop(@tokens); }
+        $gulletx->unread(@tokens);    # but put back tokens to be read
         my $value = $self->read($gulletx);
         $gulletx->skipSpaces;
         return $value; }); } }
