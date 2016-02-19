@@ -40,6 +40,9 @@ sub unpack_source {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
   # Set $source to point to the main TeX file in that directory
   my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.tex$');
+  if (!@TeX_file_members) { # No .tex file? Try files without extensions!
+    @TeX_file_members = map { $_->fileName() } grep {!/\./ || /\.[^.]{4,}$/} $zip_handle->members();
+  }
   if (scalar(@TeX_file_members) == 1) {
     # One file, that's the input!
     $main_source = catfile($sandbox_directory, $TeX_file_members[0]); }
@@ -263,7 +266,7 @@ sub get_embeddable {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -296,7 +299,7 @@ In this regard, we implement a simplified form of the logic in
 Packs a collection of documents using the packing method specified via the 'whatsout' option.
     If 'fragment' or 'math' are chosen, each input document is transformed into
     an embeddable fragment or a single formula, respectively.
-    If 'archive' is chose, all input documents are written into an archive in the specified 'siteDirectory'. 
+    If 'archive' is chose, all input documents are written into an archive in the specified 'siteDirectory'.
     The name of the archive is provided by the 'destination' property of the first provided $document object.
     Each document is expected to be a LaTeXML::Post::Document object.
 
