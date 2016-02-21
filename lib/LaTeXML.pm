@@ -174,6 +174,7 @@ sub convert {
     if (!defined $source) {    # Unpacking failed to find a source
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory};
       my $log = $self->flush_log;
+      $log .= "\nFatal:invalid:Archive Can't detect a source TeX file!\nStatus:conversion:3\n";
       return { result => undef, log => $log, status => "Fatal:invalid:Archive Can't detect a source TeX file!", status_code => 3 }; }
 # Destination magic: If we expect an archive on output, we need to invent the appropriate destination ourselves when not given.
 # Since the LaTeXML API never writes the final archive file to disk, we just use a pretend sourcename.zip:
