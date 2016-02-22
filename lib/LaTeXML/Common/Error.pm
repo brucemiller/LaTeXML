@@ -34,7 +34,7 @@ our $COLORIZED_LOGGING = -t STDERR;
 our %color_scheme = (
   details => \&BOLD,
   success => \&GREEN,
-  info    => \&BLUE,
+  info    => \&BRIGHT_BLUE,
   warning => \&YELLOW,
   error   => sub { BOLD RED shift; },
   fatal   => sub { BOLD RED UNDERLINE shift; }
@@ -565,7 +565,7 @@ No user serviceable parts inside.  These symbols are not exported.
 
 Constructs an error or warning message based on the current stack and
 the current location in the document.
-C<$typ> is a short string characterizing the type of message, such as "Error".  
+C<$typ> is a short string characterizing the type of message, such as "Error".
 C<$msg> is the error message itself. If C<$lng> is true, will generate a
 more verbose message; this also uses the VERBOSITY set in the C<$STATE>.
 Longer messages will show a trace of the objects invoked on the stack,
