@@ -32,11 +32,11 @@ sub openFile {
   my ($self, $pathname) = @_;
   my $IN;
   if (!-r $pathname) {
-    Fatal('I/O', $pathname, $self, "File $pathname is not readable."); }
+    Fatal('I/O', 'unreadable', $self, "File $pathname is not readable."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
-    Fatal('I/O', $pathname, $self, "Input file $pathname appears to be binary."); }
+    Fatal('invalid', 'binary', $self, "Input file $pathname appears to be binary."); }
   open($IN, '<', $pathname)
-    || Fatal('I/O', $pathname, $self, "Can't open $pathname for reading", $!);
+    || Fatal('I/O', 'open', $self, "Can't open $pathname for reading", $!);
   $$self{IN}     = $IN;
   $$self{buffer} = [];
   return; }
@@ -88,7 +88,7 @@ sub stringify {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
