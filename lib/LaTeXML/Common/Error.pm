@@ -438,7 +438,7 @@ sub format_arg {
   elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
   else {                                                  # Otherwise, string, so quote
     $arg =~ s/'/\\'/g;                                    # Slashify '
-    $arg =~ s/([[:cntrl::]])/ "\\".chr(ord($1)+ord('A'))/ge;
+    $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }
 
