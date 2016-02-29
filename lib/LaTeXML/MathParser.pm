@@ -938,7 +938,7 @@ sub p_element_nodes {
     return (); }
   elsif (ref $item eq 'ARRAY') {
     my ($op, $attr, @args) = @$item;
-    return @args; }
+    return grep { ref $_ } @args; }
   elsif (ref $item eq 'XML::LibXML::Element') {
     return element_nodes($item); } }
 
@@ -1330,7 +1330,10 @@ sub ReplacedBy {
     my $n        = scalar(@lostkids);
     my $m        = scalar(@keepkids);
     if ($n != $m) {
-      Error("unexpected", "nodes", undef, "Nodes aren't the same structure");
+      Error("unexpected", "nodes", undef, "Nodes aren't the same structure ($n vs $m)",
+        "Old: " . printNode($lostnode),
+        "New: " . printNode($keepnode)
+      );
       $n = $m if $m < $n; }
     foreach my $i (0 .. $n - 1) {
       ReplacedBy($lostkids[$i], $keepkids[$i], $isdup); } }
