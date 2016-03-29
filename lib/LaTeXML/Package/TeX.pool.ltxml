@@ -3046,7 +3046,7 @@ Tag('ltx:Math', afterClose => \&add_body_TeX);
 Tag('ltx:Math', afterClose => \&cleanup_Math);
 
 # Cleanup ltx:Math elements; particularly if they aren't "really" math.
-# But note the oddity with class=ltx_markedasmath
+# But record the oddity with class=ltx_markedasmath
 sub cleanup_Math {
   my ($document, $mathnode) = @_;
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
@@ -3060,6 +3060,8 @@ sub cleanup_Math {
       $document->addClass($text, 'ltx_markedasmath');   # Now record that it originally was marked as math
       push(@texts, $text); }
     $document->replaceNode($mathnode, @texts); }        # and replace the whole Math with the pieces
+  else {                                                # Cleanup any remaining XMTexts
+    cleanup_XMText_outer($document, $mathnode); }
   return; }
 
 # Here's for an inverse case: when an XMText isn't "really" just text
@@ -3073,7 +3075,6 @@ sub cleanup_Math {
 # we would keep cleanup_Math from recognizing the trivial case of
 # a single ltx:tabular in an equation (perverse, but people do that).
 # So, we put this one on ltx:Math also, and scan for any contained XMText to fixup.
-Tag('ltx:Math', afterClose => \&cleanup_XMText_outer);
 
 sub cleanup_XMText_outer {
   my ($document, $mathnode) = @_;
@@ -3084,21 +3085,23 @@ sub cleanup_XMText_outer {
 sub cleanup_XMText {
   my ($document, $textnode) = @_;
   # We're really only interested in reducing nested math, right?
-  return unless $document->findnodes('descendant::ltx:Math', $textnode);
+  # But actually also collapsing ltx:XMText/ltx:text
   # Apply "outer" simplifications: remove ltx:text or ltx:p wrappings.
-  # probably should worry about preserving attributes??
   my $model = $document->getModel;
   # A single "simple" element, with a single child
   my %simple_element = ('ltx:text' => 1, 'ltx:p' => 1, 'ltx:inline-block' => 1);
   my @preserved = (qw(yoffset xoffset));
   my @children;
   while ((@children = $textnode->childNodes) && (scalar(@children) == 1)
-    && $document->findnodes('ltx:text[not(@yoffset) and not(@xoffset)]'
+    && $document->findnodes('ltx:text'
         . ' | ltx:inline-block[count(*)=1]'
         . ' | ltx:p',
       $textnode)) {
-    $document->setNodeFont($textnode, $document->getNodeFont($children[0]));
-    $document->unwrapNodes($children[0]); }
+    my $child = $children[0];
+    $document->setNodeFont($textnode, $document->getNodeFont($child));
+    foreach my $attr ($child->attributes) {    # Copy the child's attributes (should Merge!!)
+      $textnode->setAttribute($attr->nodeName => $attr->getValue); }
+    $document->unwrapNodes($child); }
 
   # Now apply a simplifying rule for nested Math
   # If the XMText contains a single Math, pull it's content up in
