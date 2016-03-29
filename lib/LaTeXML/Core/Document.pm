@@ -1115,7 +1115,8 @@ sub autoCollapseChildren {
   my $model = $$self{model};
   my $qname = $model->getNodeQName($node);
   my @c;
-  if ((scalar(@c = $node->childNodes) == 1)    # with single child
+  if (($qname ne 'ltx:_Capture_')
+    && (scalar(@c = $node->childNodes) == 1)                 # with single child
     && ($model->getNodeQName($c[0]) eq $FONT_ELEMENT_NAME)
     # AND, $node can have all the attributes that the child has (but at least 'font')
     && !(grep { !$model->canHaveAttribute($qname, $_) }
