@@ -521,10 +521,12 @@ sub pmml_internal {
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
+    my $result;
     if (!$$self{nestmath}) {
-      return pmml_row(map { pmml_text_aux($_) } @c); }
+      $result = pmml_row(map { pmml_text_aux($_) } @c); }
     else {
-      return ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; } }
+      $result = ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; }
+    return pmml_mayberesize($node, $result); }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -546,6 +548,7 @@ sub needsMathstyle {
   return; }
 
 # Use mpadded instead of mrow if size has been given
+# And maybe this is a convenient place to deal with frames?
 sub pmml_mayberesize {
   my ($node, $result) = @_;
   return $result unless ref $node;
@@ -566,6 +569,15 @@ sub pmml_mayberesize {
     $$attr{depth}   = $depth  if $depth;
     $$attr{lspace}  = $xoff   if $xoff;
     $$attr{voffset} = $yoff   if $yoff; }
+  if (my $frame = $node->getAttribute('framed')) {
+    my $attr  = $$result[1];
+    my $c     = $$attr{class};
+    my $class = 'ltx_framed_' . $frame;
+    $$attr{class} = ($c ? $c . ' ' . $class : $class);
+    if (my $color = $node->getAttribute('framecolor')) {
+      my $s     = $$attr{style};
+      my $style = 'border-color: ' . $color;
+      $$attr{style} = ($s ? $s . '; ' . $style : $style); } }
   return $result; }
 
 sub pmml_row {
@@ -1038,7 +1050,7 @@ sub pmml_text_aux {
         return (); } }
     elsif (($tag eq 'ltx:text')    # ltx:text element is fine, if we can manage the attributes!
       && (!grep { $node->hasAttribute($_) } qw(framed framecolor))) {
-      return map { pmml_text_aux($_, %attr) } $node->childNodes; }
+      return pmml_mayberesize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
       ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
