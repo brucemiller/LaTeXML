@@ -2985,12 +2985,12 @@ Then a switch of tag forms.</p>
                   <XMArray name="gathered" vattach="top">
                     <XMRow>
                       <XMCell align="center">
-                        <XMText xml:id="S6.Ex45.m1.1"><text framecolor="black" framed="rectangle" width="4cm">first</text></XMText>
+                        <XMText framecolor="black" framed="rectangle" width="4cm" xml:id="S6.Ex45.m1.1">first</XMText>
                       </XMCell>
                     </XMRow>
                     <XMRow>
                       <XMCell align="center">
-                        <XMText xml:id="S6.Ex45.m1.2"><text framecolor="black" framed="rectangle" width="4cm">last</text></XMText>
+                        <XMText framecolor="black" framed="rectangle" width="4cm" xml:id="S6.Ex45.m1.2">last</XMText>
                       </XMCell>
                     </XMRow>
                   </XMArray>
@@ -6263,7 +6263,7 @@ Then a switch of tag forms.</p>
             <text class="ltx_markedasmath">by foo</text>
             <MathBranch>
               <td align="right"/>
-              <td align="left">by foo</td>
+              <td align="left"><text class="ltx_markedasmath">by foo</text></td>
             </MathBranch>
           </MathFork>
         </equation>
@@ -6319,7 +6319,7 @@ Then a switch of tag forms.</p>
             <text class="ltx_markedasmath">by baz</text>
             <MathBranch>
               <td align="right"/>
-              <td align="left">by baz</td>
+              <td align="left"><text class="ltx_markedasmath">by baz</text></td>
             </MathBranch>
           </MathFork>
         </equation>
@@ -6383,7 +6383,7 @@ Then a switch of tag forms.</p>
             <text class="ltx_markedasmath">by Axiom 1.</text>
             <MathBranch>
               <td align="right"/>
-              <td align="left">by Axiom 1.</td>
+              <td align="left"><text class="ltx_markedasmath">by Axiom 1.</text></td>
             </MathBranch>
           </MathFork>
         </equation>
@@ -7080,21 +7080,21 @@ Then a switch of tag forms.</p>
       <equationgroup class="ltx_eqn_align" xml:id="S12.EGx10">
         <equation xml:id="S12.Ex84">
           <MathFork>
-            <text class="ltx_markedasmath">Part 1</text>
+            <text class="ltx_markedasmath" framecolor="black" framed="rectangle" width="10cm">Part 1</text>
             <MathBranch>
               <td align="right"/>
-              <td align="left">Part 1</td>
+              <td align="left"><text class="ltx_markedasmath" framecolor="black" framed="rectangle" width="10cm">Part 1</text></td>
             </MathBranch>
           </MathFork>
         </equation>
         <equation xml:id="S12.Ex85">
           <MathFork>
-            <Math tex="\displaystyle=2nd line" text="absent = [2nd line]" xml:id="S12.Ex85.m3">
+            <Math tex="\displaystyle=\framebox[8cm][c]{2nd line}" text="absent = [2nd line]" xml:id="S12.Ex85.m3">
               <XMath>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok meaning="absent"/>
-                  <XMText>2nd line</XMText>
+                  <XMText class="ltx_markedasmath" framecolor="black" framed="rectangle" width="8cm">2nd line</XMText>
                 </XMApp>
               </XMath>
             </Math>
@@ -7104,7 +7104,7 @@ Then a switch of tag forms.</p>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="left">2nd line</td>
+              <td align="left"><text class="ltx_markedasmath" framecolor="black" framed="rectangle" width="8cm">2nd line</text></td>
             </MathBranch>
           </MathFork>
         </equation>
@@ -7115,7 +7115,7 @@ Then a switch of tag forms.</p>
                 <XMApp>
                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                   <XMTok meaning="19" role="NUMBER">19</XMTok>
-                  <XMText><text framecolor="black" framed="rectangle" width="4cm"> last part</text></XMText>
+                  <XMText framecolor="black" framed="rectangle" width="4cm"> last part</XMText>
                 </XMApp>
               </XMath>
             </Math>
@@ -7129,7 +7129,7 @@ Then a switch of tag forms.</p>
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                      <XMText><text framecolor="black" framed="rectangle" width="4cm"> last part</text></XMText>
+                      <XMText framecolor="black" framed="rectangle" width="4cm"> last part</XMText>
                     </XMApp>
                   </XMath>
                 </Math></td>
@@ -7142,23 +7142,23 @@ Then a switch of tag forms.</p>
       <equationgroup class="ltx_eqn_align" xml:id="S12.EGx11">
         <equation frefnum="(27)" refnum="27" xml:id="S12.E27">
           <MathFork>
-            <Math tex="\displaystyle 1=\framebox[3cm]{2}" text="[1] = [2]" xml:id="S12.E27.m3">
+            <Math tex="\displaystyle\framebox[1.5cm]{1}=\framebox[3cm]{2}" text="[1] = [2]" xml:id="S12.E27.m3">
               <XMath>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMText>1</XMText>
-                  <XMText><text framecolor="black" framed="rectangle" width="3cm">2</text></XMText>
+                  <XMText class="ltx_markedasmath" framecolor="black" framed="rectangle" width="1.5cm">1</XMText>
+                  <XMText framecolor="black" framed="rectangle" width="3cm">2</XMText>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td align="right">1</td>
+              <td align="right"><text class="ltx_markedasmath" framecolor="black" framed="rectangle" width="1.5cm">1</text></td>
               <td align="left"><Math mode="inline" tex="\displaystyle=\framebox[3cm]{2}" text="absent = [2]" xml:id="S12.E27.m2">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok meaning="absent"/>
-                      <XMText><text framecolor="black" framed="rectangle" width="3cm">2</text></XMText>
+                      <XMText framecolor="black" framed="rectangle" width="3cm">2</XMText>
                     </XMApp>
                   </XMath>
                 </Math></td>
@@ -7167,23 +7167,23 @@ Then a switch of tag forms.</p>
         </equation>
         <equation frefnum="(28)" refnum="28" xml:id="S12.E28">
           <MathFork>
-            <Math tex="\displaystyle 3=\framebox[2cm]{4}" text="[3] = [4]" xml:id="S12.E28.m3">
+            <Math tex="\displaystyle\framebox[1.5cm]{3}=\framebox[2cm]{4}" text="[3] = [4]" xml:id="S12.E28.m3">
               <XMath>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
-                  <XMText>3</XMText>
-                  <XMText><text framecolor="black" framed="rectangle" width="2cm">4</text></XMText>
+                  <XMText class="ltx_markedasmath" framecolor="black" framed="rectangle" width="1.5cm">3</XMText>
+                  <XMText framecolor="black" framed="rectangle" width="2cm">4</XMText>
                 </XMApp>
               </XMath>
             </Math>
             <MathBranch>
-              <td align="right">3</td>
+              <td align="right"><text class="ltx_markedasmath" framecolor="black" framed="rectangle" width="1.5cm">3</text></td>
               <td align="left"><Math mode="inline" tex="\displaystyle=\framebox[2cm]{4}" text="absent = [4]" xml:id="S12.E28.m2">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok meaning="absent"/>
-                      <XMText><text framecolor="black" framed="rectangle" width="2cm">4</text></XMText>
+                      <XMText framecolor="black" framed="rectangle" width="2cm">4</XMText>
                     </XMApp>
                   </XMath>
                 </Math></td>
