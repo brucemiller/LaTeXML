@@ -507,12 +507,14 @@ sub associateNodeHook {
   return; }
 
 sub shownode {
-  my ($node) = @_;
+  my ($node, $level) = @_;
+  $level = 0 unless defined $level;
   my $ref = ref $node;
   if ($ref eq 'ARRAY') {
     my ($tag, $attr, @children) = @$node;
-    return '[' . $tag . ',{' . join(',', map { $_ . '=>' . $$attr{$_} } sort keys %$attr) . '},'
-      . join(',', map { shownode($_) } @children) . ']'; }
+    return "\n" . ('  ' x $level)
+      . '[' . $tag . ',{' . join(',', map { $_ . '=>' . $$attr{$_} } sort keys %$attr) . '},'
+      . join(',', map { shownode($_, $level + 1) } @children) . ']'; }
   elsif ($ref =~ /^XML/) {
     return $node->toString; }
   else {
