@@ -53,9 +53,10 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
 ### my $SEP         = '/';                          # [CONSTANT]
 # Some indicators that this is not sufficient? (calls to libraries/externals???)
 # PRELIMINARY test, probably need to be even more careful
-my $SEP         = ($^O =~ /^(MSWin32|NetWare)$/ ? '\\' : '/');    # [CONSTANT]
-my $LITERAL_RE  = '(?:literal)(?=:)';                             # [CONSTANT]
-my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';                      # [CONSTANT]
+my $SEP      = ($^O =~ /^(MSWin32|NetWare)$/ ? '\\' : '/');    # [CONSTANT]
+my $KPATHSEP = ($^O =~ /^(MSWin32|NetWare)$/ ? ';'  : ':');    # [CONSTANT]
+my $LITERAL_RE  = '(?:literal)(?=:)';                          # [CONSTANT]
+my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';                   # [CONSTANT]
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -360,15 +361,15 @@ sub pathname_kpsewhich {
 
 sub build_kpse_cache {
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
-  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`;
+  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
   my $texpaths = `"$kpsewhich" --show-path tex`; chomp($texpaths);
   my @filters = ();
-  foreach my $path (split(/:+/, $texpaths)) {
+  foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
-  $texmf =~ s/^\s*\\\{(.+?)}\s*\n/$1/s;
+  $texmf =~ s/^\s*\\\{(.+?)}\s*/$1/s;
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;
