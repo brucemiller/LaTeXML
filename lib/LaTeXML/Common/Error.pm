@@ -34,10 +34,10 @@ our $COLORIZED_LOGGING = -t STDERR;
 our %color_scheme = (
   details => \&BOLD,
   success => \&GREEN,
-  info    => \&BRIGHT_BLUE,
+  info    => (defined &BRIGHT_BLUE ? \&BRIGHT_BLUE : \&BRIGHT_BLUE),    # bright only recently defined
   warning => \&YELLOW,
-  error   => sub { BOLD RED shift; },
-  fatal   => sub { BOLD RED UNDERLINE shift; }
+  error => sub { BOLD RED shift; },
+  fatal => sub { BOLD RED UNDERLINE shift; }
 );
 
 sub colorizeString {
