@@ -53,10 +53,11 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
 ### my $SEP         = '/';                          # [CONSTANT]
 # Some indicators that this is not sufficient? (calls to libraries/externals???)
 # PRELIMINARY test, probably need to be even more careful
-my $SEP      = ($^O =~ /^(MSWin32|NetWare)$/ ? '\\' : '/');    # [CONSTANT]
-my $KPATHSEP = ($^O =~ /^(MSWin32|NetWare)$/ ? ';'  : ':');    # [CONSTANT]
-my $LITERAL_RE  = '(?:literal)(?=:)';                          # [CONSTANT]
-my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';                   # [CONSTANT]
+my $ISWINDOWS   = $^O =~ /^(MSWin|NetWare|cygwin)/i;
+my $SEP         = ($ISWINDOWS ? '\\' : '/');           # [CONSTANT]
+my $KPATHSEP    = ($ISWINDOWS ? ';' : ':');            # [CONSTANT]
+my $LITERAL_RE  = '(?:literal)(?=:)';                  # [CONSTANT]
+my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';           # [CONSTANT]
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -349,18 +350,21 @@ our $kpse_cache = undef;
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
-  #  my $file = join(' ',@candidates);
-  #  if ($kpsewhich && (my $result = `"$kpsewhich" $file`)) {
-  #    if ($result =~ /^\s*(.+?)\s*\n/s) {
-  #      return $1; } }
   build_kpse_cache() unless $kpse_cache;
   foreach my $file (@candidates) {
     if (my $result = $$kpse_cache{$file}) {
       return $result; } }
+  # If we've failed to read the cache, try directly calling kpsewhich
+  # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
+  my $files = join(' ', @candidates);
+  if ($kpsewhich && (my $result = `"$kpsewhich" $files`)) {
+    if ($result =~ /^\s*(.+?)\s*\n/s) {
+      return $1; } }
   return; }
 
 sub build_kpse_cache {
-  # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
+  $kpse_cache = {};    # At least we've tried.
+       # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
@@ -369,6 +373,7 @@ sub build_kpse_cache {
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
+  $texmf =~ s/^["']//; $texmf =~ s/["']$//;
   $texmf =~ s/^\s*\\\{(.+?)}\s*/$1/s;
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
@@ -386,8 +391,8 @@ sub build_kpse_cache {
         elsif (/^(.*?):$/) {    # Move to a new subdirectory
           $subdir = $1;
           $subdir =~ s|^\./||;    # remove prefix
-          my $d = File::Spec->catdir($dir, $subdir);    # Hopefully OS safe, for comparison?
-          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; } # check if one of the TeX paths
+          my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
+          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; }    # check if one of the TeX paths
         elsif (!$skip) {
           # Is it safe to use '/' here?
           my $sep = '/';
