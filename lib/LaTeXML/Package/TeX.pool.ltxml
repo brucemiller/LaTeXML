@@ -454,6 +454,7 @@ DefParameterType('DigestedBody', sub {
 ## DefParameterType('Length', sub {
 ##   my($gullet,$unit)=@_;
 
+# CommaList expects something like {balancedstuff,...}
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
@@ -470,7 +471,8 @@ DefParameterType('CommaList', sub {
           push(@items, Tokens(@tokens)); @tokens = (); }
         elsif ($token->equals(T_BEGIN)) {
           push(@tokens, $token, $gullet->readBalanced->unlist, T_END); }
-        else {push(@tokens, $token); }}
+        else {
+          push(@tokens, $token); } }
       if ($typedef) {
         @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; } }
     else {
