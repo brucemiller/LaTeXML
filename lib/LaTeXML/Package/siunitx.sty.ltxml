@@ -1,0 +1,118 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  siunitx                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+RequirePackage('textcomp');
+RequirePackage('SIunits');
+
+# I think we are finally able to process siunitx.sty directly
+# and more closely track development of siunitx.
+DefMacro('\si[]{}', '\ensuremath{#2}');
+DefMacro('\SI[]{}[]{}', '\ensuremath{#2 #3}');
+DefMacro('\SIrange[]{}{}{}','\ensuremath{#2{\unicode{x2013}}#3 #4}');
+DefMacro('\SIUnitSymbolAngstrom','\AA');
+DefMacro('\SIUnitSymbolArcminute','\'');
+DefMacro('\SIUnitSymbolArcsecond','\'\'');
+DefMacro('\SIUnitSymbolCelsius','\textcelsius');
+DefMacro('\SIUnitSymbolDegree','\textdegree');
+DefMacro('\SIUnitSymbolMicro','\textmu');
+DefMacro('\num{}','#1');
+
+DefMacro('\kilogram','\kilo \gram');
+DefMacro('\metre','m');
+DefMacro('\meter','\metre');
+DefMacro('\mole','mol');
+DefMacro('\second','s');
+DefMacro('\ampere','A');
+DefMacro('\kelvin','K');
+DefMacro('\candela','cd');
+DefMacro('\gram','g');
+DefMacro('\yocto','y');
+DefMacro('\zepto','z');
+DefMacro('\atto','a');
+DefMacro('\femto','f');
+DefMacro('\pico','p');
+DefMacro('\nano','n');
+# DefMacro('\micro','\SIUnitSymbolMicro');
+DefMacro('\milli','m');
+DefMacro('\centi','c');
+DefMacro('\deci','d');
+DefMacro('\deca','d');
+DefMacro('\deka','d');
+DefMacro('\hecto','h');
+DefMacro('\kilo','k');
+DefMacro('\mega','M');
+DefMacro('\giga','G');
+DefMacro('\tera','T');
+DefMacro('\peta','P');
+DefMacro('\exa','E');
+DefMacro('\zetta','Z');
+DefMacro('\yotta','Y');
+DefMacro('\becquerel','Bq');
+DefMacro('\celsius','\SIUnitSymbolCelsius');
+DefMacro('\degree','\SIUnitSymbolCelsius');
+DefMacro('\coulomb','C');
+DefMacro('\farad','F');
+# DefMacro('\gray','Gy');
+DefMacro('\hertz','Hz');
+DefMacro('\henry','H');
+DefMacro('\joule','J');
+DefMacro('\katal','kat');
+DefMacro('\lumen','lm');
+DefMacro('\lux','lx');
+DefMacro('\newton','N');
+DefMacro('\ohm','\SIUnitSymbolOhm');
+DefMacro('\pascal','Pa');
+DefMacro('\radian','rad');
+DefMacro('\siemens','S');
+DefMacro('\sievert','Sv');
+DefMacro('\steradian','sr');
+DefMacro('\tesla','T');
+DefMacro('\volt','V');
+DefMacro('\watt','W');
+DefMacro('\weber','Wb');
+DefMacro('\arcmin','\arcminute');
+DefMacro('\arcminute','\SIUnitSymbolArcminute');
+DefMacro('\arcsecond','\SIUnitSymbolArcsecond');
+DefMacro('\day','d');
+DefMacro('\degree','\SIUnitSymbolDegree');
+DefMacro('\hectare','ha');
+DefMacro('\hour','h');
+DefMacro('\litre','l');
+DefMacro('\liter','L');
+DefMacro('\minute','min');
+DefMacro('\percent','\char 37');
+DefMacro('\tonne','t');
+DefMacro('\astronomicalunit','ua');
+DefMacro('\atomicmassunit','u');
+DefMacro('\electronvolt','eV');
+DefMacro('\dalton','Da');
+DefMacro('\angstrom','\SIUnitSymbolAngstrom');
+DefMacro('\bar','bar');
+DefMacro('\barn','b');
+DefMacro('\bel','B');
+DefMacro('\decibel','\deci \bel');
+DefMacro('\knot','kn');
+DefMacro('\mm','mmHg');
+DefMacro('\nauticalmile','M');
+DefMacro('\neper','Np');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

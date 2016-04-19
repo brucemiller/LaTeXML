@@ -1,0 +1,29 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  csquotes                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+# I think we are finally able to process csquotes.sty directly
+# and more closely track development of csquotes.
+DefMacro('\enquote{}','``#1\'\'');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+
