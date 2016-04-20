@@ -154,7 +154,7 @@
   </xsl:template>
 
   <xsl:template match="text()" mode="visible-text">
-    <xsl:value-of select="."/>
+    <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
   <xsl:template match="*" mode="visible-text">
     <xsl:apply-templates mode="visible-text"/>
