@@ -42,6 +42,12 @@
 .ltx_figure  { text-align:center; margin:auto; margin:0.5em; }
 .ltx_table   { text-align:center; margin:auto; margin:0.5em; }
 
+/* experimental: flex model, to center short captions, justify long ones */
+.ltx_table,
+.ltx_figure { display:flex; flex-direction:column; align-items:center; }
+.ltx_table .ltx_caption,
+.ltx_figure .ltx_caption { text-align:justify; }
+
 /* first p in para gets indented */
 .ltx_para > .ltx_p:first-child { text-indent:2em; }
 /* except the initial in a section */
