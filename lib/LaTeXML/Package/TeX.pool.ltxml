@@ -2918,13 +2918,13 @@ DefPrimitive('\@text@hskip Glue', sub {
   alias => '\hskip');
 DefConstructor('\@math@mskip MuGlue',
   "<ltx:XMHint width='#1'/>",
-  alias => '\hskip',
+  alias => '\mskip',
   properties => sub { (width => $_[1], isSpace => 1); }
 );
 DefPrimitive('\@text@mskip MuGlue', sub {
     my ($stomach, $length) = @_;
     DimensionToSpaces($length); },
-  alias => '\hskip');
+  alias => '\mskip');
 
 DefPrimitiveI('\hss', undef, undef);
 DefConstructorI('\hfil', undef, "?#isMath(<ltx:XMHint name='hfil'/>)( )",
