@@ -46,6 +46,7 @@ sub unpack_source {
 
   # Heuristically determine the input (borrowed from arXiv::FileGuess)
   my %Main_TeX_likelihood;
+  my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
     # Read in the content
     $tex_file = catfile($sandbox_directory, $tex_file);
@@ -72,9 +73,22 @@ sub unpack_source {
       if (/(?:^|\r)\s*\\document(?:style|class)/) {
         $Main_TeX_likelihood{$tex_file} = 3; last TEX_FILE_TRAVERSAL; }    # LaTeX
       if (/(?:^|\r)\s*(?:\\font|\\magnification|\\input|\\def|\\special|\\baselineskip|\\begin)/) {
+        $maybe_tex = 1; }
+      if (/\\(?:input|include)(?:\s+|\{)([^ \}]+)/) {
         $maybe_tex = 1;
-        if (/\\input\s+amstex/) {
-          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; } }    # TeX Priority
+        # the argument of \input can't be the main file
+        # (it could in very elaborate multi-target setups, but we DON'T support those)
+        # so veto it.
+        my $vetoed_file = $1;
+        if ($vetoed_file eq 'amstex') { # TeX Priority
+          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }
+        if ($vetoed_file !~ /\./) {
+          $vetoed_file .= '.tex';
+        }
+        my $base = $tex_file;
+        $base =~ s/\/[^\/]+$//;
+        $vetoed_file = "$base/$vetoed_file";
+        push @vetoed, $vetoed_file; }
       if (/(?:^|\r)\s*\\(?:end|bye)(?:\s|$)/) {
         $maybe_tex_priority = 1; }
       if (/\\(?:end|bye)(?:\s|$)/) {
@@ -105,6 +119,10 @@ sub unpack_source {
       else {
         $Main_TeX_likelihood{$tex_file} = 0; }
     }
+  }
+  # Veto files that were e.g. arguments of \input macros
+  for my $filename(@vetoed) {
+    delete $Main_TeX_likelihood{$filename};
   }
   # The highest likelihood (>0) file gets to be the main source.
   my @files_by_likelihood = sort { $Main_TeX_likelihood{$b} <=> $Main_TeX_likelihood{$a} } grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
