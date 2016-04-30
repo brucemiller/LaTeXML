@@ -160,23 +160,39 @@ sub stringify {
 #**********************************************************************
 sub getLocator {
   my ($self, $length) = @_;
-  my ($l, $c) = ($$self{lineno}, $$self{colno});
-  if ($length && ($length < 0)) {
-    return "at $$self{shortsource}; line $l col $c"; }
-  elsif ($length && (defined $l || defined $c)) {
-    my $msg   = "at $$self{source}; line $l col $c";
-    my $chars = $$self{chars};
-    if (my $n = $$self{nchars}) {
-      $c = $n - 1 if $c >= $n;
-      my $c0 = ($c > 50      ? $c - 40 : 0);
-      my $cm = ($c < 1       ? 0       : $c - 1);
-      my $cn = ($n - $c > 50 ? $c + 40 : $n - 1);
-      my $p1 = ($c0 <= $cm ? join('', @$chars[$c0 .. $cm]) : ''); chomp($p1);
-      my $p2 = ($c <= $cn  ? join('', @$chars[$c .. $cn])  : ''); chomp($p2);
-      $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; }
-    return $msg; }
-  else {
-    return "at $$self{source}; line $l col $c"; } }
+  my ($l, $c, $lstart, $cstart) = ($$self{lineno}, $$self{colno});
+  # Make Xpointer style locator optional
+  if ($STATE->lookupValue('XPOINTER_LOCATORS')) {
+      #Deyan: Upgrade message to XPointer style
+      my $nc = $$self{nchars} - 1;    #There is always a weird (end of line?) char that gets counted
+      if ((defined $c) && ($c >= $nc)) {
+	  $lstart = $l;
+	  $cstart = $c - $nc;
+      } else {
+	  #Very rough and dirty approximation, not to be relied on.
+	  #One would need to keep all line lengths to properly establish the start and end
+	  # or just remember the initial char of the token's position
+	  $lstart = $l - 1;
+	  $cstart = $nc - $c;
+      }
+      return "$$self{source}#textrange(from=$lstart;$cstart,to=$l;$c)";
+  } else {
+      if ($length && ($length < 0)) {
+	  return "at $$self{shortsource}; line $l col $c"; }
+      elsif ($length && (defined $l || defined $c)) {
+	  my $msg   = "at $$self{source}; line $l col $c";
+	  my $chars = $$self{chars};
+	  if (my $n = $$self{nchars}) {
+	      $c = $n - 1 if $c >= $n;
+	      my $c0 = ($c > 50      ? $c - 40 : 0);
+	      my $cm = ($c < 1       ? 0       : $c - 1);
+	      my $cn = ($n - $c > 50 ? $c + 40 : $n - 1);
+	      my $p1 = ($c0 <= $cm ? join('', @$chars[$c0 .. $cm]) : ''); chomp($p1);
+	      my $p2 = ($c <= $cn  ? join('', @$chars[$c .. $cn])  : ''); chomp($p2);
+	      $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; }
+	  return $msg; }
+      else {
+	  return "at $$self{source}; line $l col $c"; }} }
 
 sub getSource {
   my ($self) = @_;

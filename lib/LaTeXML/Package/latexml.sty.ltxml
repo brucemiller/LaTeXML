@@ -44,6 +44,9 @@ DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
 
+DeclareOption('xpointer_locators', sub { AssignValue('XPOINTER_LOCATORS' => 1, 'global'); });
+DeclareOption('noxpointer_locators', sub { AssignValue('XPOINTER_LOCATORS' => 0, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty
