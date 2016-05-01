@@ -45,7 +45,7 @@ DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' 
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
 
 DeclareOption('xpointer_locators', sub { AssignValue('LOCATOR_STYLE' => 'xpointer', 'global'); });
-DeclareOption('locator_narrative', sub { AssignValue('LOCATOR_STYLE' => 'narrative', 'global'); });
+DeclareOption('narrative_locators', sub { AssignValue('LOCATOR_STYLE' => 'narrative', 'global'); });
 
 ProcessOptions();
 #======================================================================

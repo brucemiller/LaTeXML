@@ -160,8 +160,8 @@ sub stringify {
 #**********************************************************************
 sub getLocator {
   # Make Xpointer style locator optional
-  $STATE->assignValue('LOCATOR_STYLE' => 'narrative') unless $STATE->lookupValue('LOCATOR_STYLE');
-  if ($STATE->lookupValue('LOCATOR_STYLE') eq 'xpointer') {
+  my $locator_style = $STATE->lookupValue('LOCATOR_STYLE');
+  if ($locator_style && ($locator_style eq 'xpointer')) { 
       return get_locator_xpointer(@_);
   } else {
       return get_locator_narrative(@_);
