@@ -143,7 +143,7 @@ sub om_expr_aux {
       return ['om:OMATTR', {},
         ['om:OMATP', {},
           ['om:OMS', { cd => 'OMDoc', name => 'verbalizes' }],
-          ['om:FOREIGN', { encoding => 'mtext' },
+          ['om:OMFOREIGN', { encoding => 'mtext' },
             $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 0,
               $node->childNodes)]],
         ['om:OMS', { cd => 'OMDoc', name => 'infObj' }]] }
