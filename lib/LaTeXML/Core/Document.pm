@@ -1025,7 +1025,9 @@ sub openMathText_internal {
   my $font = $self->getNodeFont($node);
   $node->appendText($string);
   ##print STDERR "Trying Math Ligatures at \"$string\"\n";
-  $self->applyMathLigatures($node);
+  if (!$STATE->lookupValue('NOMATHPARSE')) {
+    $self->applyMathLigatures($node);
+  }
   return $node; }
 
 # New stategy (but inefficient): apply ligatures until one succeeds,
@@ -1740,7 +1742,7 @@ sub appendTree {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -1749,7 +1751,7 @@ C<LaTeXML::Core::Document> - represents an XML document under construction.
 =head1 DESCRIPTION
 
 A C<LaTeXML::Core::Document> represents an XML document being constructed by LaTeXML,
-and also provides the methods for constructing it.  
+and also provides the methods for constructing it.
 It extends L<LaTeXML::Common::Object>.
 
 LaTeXML will have digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
@@ -1775,7 +1777,7 @@ to the a Namespace URI that was registered for the DTD.
 
 The arguments named C<$node> are an XML::LibXML node.
 
-The methods here are grouped into three sections covering basic access to the 
+The methods here are grouped into three sections covering basic access to the
 document, insertion methods at the current insertion point,
 and less commonly used, lower-level, document manipulation methods.
 
@@ -1928,7 +1930,7 @@ and inserting the string C<$text> into it.
 =item C<< $document->openElement($qname,%attributes); >>
 
 Open an element, named C<$qname> and with the given attributes.
-This will be inserted into the current node while  performing 
+This will be inserted into the current node while  performing
 any required automatic opening and closing of intermedate nodes.
 The new element is returned, and also becomes the current insertion point.
 An error (fatal if in C<Strict> mode) is signalled if there is no allowed way
@@ -2004,7 +2006,7 @@ to what is allowed by the document model.
 
 Returns a list of elements where an arbitrary insertion might take place.
 Roughly this is a list starting with C<$node>,
-followed by its parent and the parents siblings (in reverse order), 
+followed by its parent and the parents siblings (in reverse order),
 followed by the grandparent and siblings (in reverse order).
 
 =item C<< $node = $document->floatToElement($qname); >>
