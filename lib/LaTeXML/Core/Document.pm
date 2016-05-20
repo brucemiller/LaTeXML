@@ -735,7 +735,7 @@ sub closeElement {
   if ($node->nodeType == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $qname, $self,
       "Attempt to close " . ($qname eq '#PCDATA' ? $qname : '</' . $qname . '>') . ", which isn't open",
-      "Currently in " . $self->getInsertionContext);
+      "Currently in " . $self->getInsertionContext(5));
     return; }
   else {                                         # Found node.
                                                  # Intervening non-auto-closeable nodes!!
@@ -799,7 +799,7 @@ sub closeToNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext) unless $ifopen;
+      "Currently in " . $self->getInsertionContext(5)) unless $ifopen;
     return; }
   else {                            # Found node.
     Error('malformed', $model->getNodeQName($node), $self,
@@ -821,7 +821,7 @@ sub closeNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext); }
+      "Currently in " . $self->getInsertionContext(5)); }
   else {                            # Found node.
                                     # Intervening non-auto-closeable nodes!!
     Error('malformed', $model->getNodeQName($node), $self,
@@ -895,7 +895,7 @@ sub find_insertion_point {
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
         ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here",
-        "Currently in " . $self->getInsertionContext);
+        "Currently in " . $self->getInsertionContext(5));
       return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
@@ -950,7 +950,7 @@ sub floatToElement {
       return $savenode; } }
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
-      $self->getInsertionContext())
+      $self->getInsertionContext(5))
       unless $self->canContainSomehow($$self{node}, $qname); }
   return; }
 
@@ -966,7 +966,7 @@ sub floatToAttribute {
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node can get attribute '$key'",
-      $self->getInsertionContext());
+      $self->getInsertionContext(5));
     return; } }
 
 # find a node that can accept a label.
@@ -996,7 +996,7 @@ sub floatToLabel {
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node with an xml:id can get attribute '$key'",
-      $self->getInsertionContext());
+      $self->getInsertionContext(5));
     return; } }
 
 sub openText_internal {

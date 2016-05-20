@@ -101,7 +101,12 @@ sub initialize_session {
   my $latexml;
   my $init_eval_return = eval {
     # Prepare LaTeXML object
+    local $SIG{'ALRM'} = sub { die "Fatal:conversion:init Failed to initialize LaTeXML state\n" };
+    alarm($$self{opts}{timeout});
+
     $latexml = new_latexml($$self{opts});
+
+    alarm(0);
     1;
   };
   ## NOTE: This will give double errors, if latexml has already handled it!
@@ -252,6 +257,11 @@ sub convert {
       $state->popDaemonFrame;
       $$state{status} = {};
   });
+  if ($LaTeXML::UNSAFE_FATAL) {
+    # If the conversion hit an unsafe fatal, we need to reinitialize
+    $LaTeXML::UNSAFE_FATAL = 0;
+    $$self{ready} = 0;
+  }
   if ($eval_report || ($$runtime{status_code} == 3)) {
     # Terminate immediately on Fatal errors
     $$runtime{status_code} = 3;
@@ -546,7 +556,7 @@ sub convert_post {
   my @postdocs;
   my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
   my $post_eval_return = eval {
-    local $SIG{'ALRM'} = sub { die "alarm\n" };
+   local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
     alarm($$opts{timeout});
     @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
     alarm(0);
