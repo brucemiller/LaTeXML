@@ -75,7 +75,7 @@ sub Fatal {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
-    my $detail_level = ($category eq 'timeout') ? 0 : 2;
+    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
       = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
       $where, $message, $detail_level, @details);
