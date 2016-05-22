@@ -75,9 +75,10 @@ sub Fatal {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
+    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
       = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
-      $where, $message, 2, @details);
+      $where, $message, $detail_level, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     # This really should be handled by the top-level program,
     # after doing all processing within an eval
