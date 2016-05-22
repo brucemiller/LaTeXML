@@ -898,7 +898,7 @@ sub find_insertion_point {
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
         ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here",
-        "Currently in " . $self->getInsertionContext(5));
+        "Currently in " . $self->getInsertionContext());
       return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
@@ -953,7 +953,7 @@ sub floatToElement {
       return $savenode; } }
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
-      $self->getInsertionContext(5))
+      $self->getInsertionContext())
       unless $self->canContainSomehow($$self{node}, $qname); }
   return; }
 
@@ -969,7 +969,7 @@ sub floatToAttribute {
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node can get attribute '$key'",
-      $self->getInsertionContext(5));
+      $self->getInsertionContext());
     return; } }
 
 # find a node that can accept a label.
@@ -999,7 +999,7 @@ sub floatToLabel {
     return $savenode; }
   else {
     Warn('malformed', $key, $self, "No open node with an xml:id can get attribute '$key'",
-      $self->getInsertionContext(5));
+      $self->getInsertionContext());
     return; } }
 
 sub openText_internal {
