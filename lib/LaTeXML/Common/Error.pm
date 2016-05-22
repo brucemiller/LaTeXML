@@ -50,6 +50,12 @@ sub colorizeString {
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
+
+  # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
+  if ((($category eq 'internal') && ($object eq '<recursion>')) ||
+    ($category eq 'too_many_errors')) {
+    $LaTeXML::UNSAFE_FATAL = 1; }
+
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
   die $message if $LaTeXML::IGNORE_ERRORS    # Short circuit, w/no formatting, if in probing eval
@@ -247,18 +253,21 @@ sub perl_warn_handler {
 sub perl_interrupt_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
   Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
   return; }
 
 sub perl_timeout_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
   Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
   return; }
 
 sub perl_terminate_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
   Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
   return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
