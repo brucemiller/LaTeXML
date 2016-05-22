@@ -53,6 +53,7 @@ sub new {
         @{ $options{graphicspaths} || [] }], 'global');
   $state->assignValue(INCLUDE_STYLES => $options{includeStyles} || 0, 'global');
   $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding}) if $options{inputencoding};
+  $state->assignValue(NOMATHPARSE => $options{nomathparse} || 0, 'global');
   return bless { state => $state,
     nomathparse => $options{nomathparse} || 0,
     preload => $options{preload},
@@ -280,7 +281,7 @@ sub writeDOM {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -302,11 +303,11 @@ But also see the convenient command line script L<latexml> which suffices for mo
 
 =item C<< my $latexml = LaTeXML::Core->new(%options); >>
 
-Creates a new LaTeXML object for transforming TeX files into XML. 
+Creates a new LaTeXML object for transforming TeX files into XML.
 
  verbosity  : Controls verbosity; higher is more verbose,
               smaller is quieter. 0 is the default.
- strict     : If true, undefined control sequences and 
+ strict     : If true, undefined control sequences and
               invalid document constructs give fatal
               errors, instead of warnings.
  includeComments : If false, comments will be excluded
@@ -332,7 +333,7 @@ B<OBSOLETE> Use C<$latexml->convertFile("literal:$string");> instead.
 
 =item C<< $latexml->writeDOM($doc,$name); >>
 
-Writes the XML document to $name.xml. 
+Writes the XML document to $name.xml.
 
 =item C<< $box = $latexml->digestFile($file); >>
 
@@ -353,7 +354,7 @@ returning the L<XML::LibXML::Document>.
 
 In the simplest case, LaTeXML will understand your source file and convert it
 automatically.  With more complicated (realistic) documents, you will likely
-need to make document specific declarations for it to understand local macros, 
+need to make document specific declarations for it to understand local macros,
 your mathematical notations, and so forth.  Before processing a file
 I<doc.tex>, LaTeXML reads the file I<doc.latexml>, if present.
 Likewise, the LaTeXML implementation of a TeX style file, say
@@ -381,7 +382,7 @@ variables, definitions, etc.
 
 =item  L<LaTeXML::Core::Token>, L<LaTeXML::Core::Mouth> and L<LaTeXML::Core::Gullet>
 
-deal with tokens, tokenization of strings and files, and 
+deal with tokens, tokenization of strings and files, and
 basic TeX sequences such as arguments, dimensions and so forth.
 
 =item L<LaTeXML::Core::Box> and  L<LaTeXML::Core::Stomach>
