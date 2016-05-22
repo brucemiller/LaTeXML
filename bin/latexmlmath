@@ -177,7 +177,7 @@ if ($mathimage) {
   if ($mathimage eq '-') {
     die "I dont really want to write the image to STDOUT, sorry!"; }
 
-  my ($result) = $post->ProcessChain($document,
+  my ($result) = $post->ProcessChain(cloneDoc($document),
     DirectMathImages->new(magnification => $mag,
       imagename => $mathimage, imagetype => $imagetype,
       %OPTIONS));
@@ -187,7 +187,7 @@ if ($mathsvg) {
   my $imagetype = 'svg';
   if ($mathsvg eq '-') {
     my ($fh, $tmpfile) = tempfile();
-    my ($result) = $post->ProcessChain($document,
+    my ($result) = $post->ProcessChain(cloneDoc($document),
       DirectMathImages->new(magnification => $mag,
         imagename => $tmpfile, imagetype => $imagetype,
         %OPTIONS));
@@ -199,7 +199,7 @@ if ($mathsvg) {
     unlink "$tmpfile.svg"; }
   else {
     $mathsvg =~ s/\.svg$//;
-    my ($result) = $post->ProcessChain($document,
+    my ($result) = $post->ProcessChain(cloneDoc($document),
       DirectMathImages->new(magnification => $mag,
         imagename => $mathsvg, imagetype => $imagetype,
         %OPTIONS)); }
@@ -207,7 +207,7 @@ if ($mathsvg) {
 
 if ($pmml) {
   require LaTeXML::Post::MathML::Presentation;
-  my ($result) = $post->ProcessChain($document,
+  my ($result) = $post->ProcessChain(cloneDoc($document),
     LaTeXML::Post::MathML::Presentation->new(
       (defined $linelength ? (linelength => $linelength) : ()),
       (defined $plane1     ? (plane1     => $plane1)     : ()),
@@ -217,19 +217,19 @@ if ($pmml) {
 
 if ($cmml) {
   require LaTeXML::Post::MathML::Content;
-  my ($result) = $post->ProcessChain($document,
+  my ($result) = $post->ProcessChain(cloneDoc($document),
     LaTeXML::Post::MathML::Content->new(%OPTIONS));
   outputXML($result->findnode('//m:math'), $cmml, $mmlURI); }
 
 if ($om) {
   require LaTeXML::Post::OpenMath;
-  my ($result) = $post->ProcessChain($document,
+  my ($result) = $post->ProcessChain(cloneDoc($document),
     LaTeXML::Post::OpenMath->new(%OPTIONS));
   outputXML($result->findnode('//om:OMOBJ'), $om, $omURI); }
 
 if ($xmath) {
   # extract the xmath
-  my ($result) = $post->ProcessChain($document);
+  my ($result) = $post->ProcessChain(cloneDoc($document));
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
 print STDERR "\nConversion complete\n" if $verbosity > -1;
@@ -238,8 +238,13 @@ print STDERR "\nConversion complete\n" if $verbosity > -1;
 # Helpers
 #======================================================================
 
+sub cloneDoc {
+  my ($document) = @_;
+  return $document->new($document->getDocumentElement->cloneNode(1)); }
+
 sub outputXML {
   my ($xml, $xmldestination, $defaulturi) = @_;
+  print STDERR "XML to $xmldestination :\n " . ($xml ? $xml->toString : '<<nothing>>') . "\n";
   # Need to move the node to a new document to set up namespaces
   my $newdoc = XML::LibXML::Document->new("1.0", "UTF-8");
   $newdoc->setDocumentElement($xml);
