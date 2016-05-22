@@ -735,7 +735,7 @@ sub closeElement {
   if ($node->nodeType == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $qname, $self,
       "Attempt to close " . ($qname eq '#PCDATA' ? $qname : '</' . $qname . '>') . ", which isn't open",
-      "Currently in " . $self->getInsertionContext(5));
+      "Currently in " . $self->getInsertionContext());
     return; }
   else {                                         # Found node.
                                                  # Intervening non-auto-closeable nodes!!
@@ -799,7 +799,7 @@ sub closeToNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext(5)) unless $ifopen;
+      "Currently in " . $self->getInsertionContext()) unless $ifopen;
     return; }
   else {                            # Found node.
     Error('malformed', $model->getNodeQName($node), $self,
@@ -821,7 +821,7 @@ sub closeNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext(5)); }
+      "Currently in " . $self->getInsertionContext()); }
   else {                            # Found node.
                                     # Intervening non-auto-closeable nodes!!
     Error('malformed', $model->getNodeQName($node), $self,
@@ -853,6 +853,9 @@ sub addAttribute {
 # if $levels is defined, show only that many levels
 sub getInsertionContext {
   my ($self, $levels) = @_;
+  if (! defined $levels) { # Default depth is based on verbosity
+    my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+    $levels = 5 if ($verbosity <= 1); }
   my $node = $$self{node};
   my $type = $node->nodeType;
   if (($type != XML_TEXT_NODE) && ($type != XML_ELEMENT_NODE) && ($type != XML_DOCUMENT_NODE)) {
