@@ -78,9 +78,9 @@ sub outerWrapper {
   if (my $src = $math->getAttribute('imagesrc')) {
     my $depth = $math->getAttribute('imagedepth');
     @img = (altimg => $src,
-      'altimg-width'  => $math->getAttribute('imagewidth'),
-      'altimg-height' => $math->getAttribute('imageheight'),
-      'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
+      'altimg-width'  => $math->getAttribute('imagewidth') . 'px',
+      'altimg-height' => $math->getAttribute('imageheight') . 'px',
+      'altimg-valign' => ($depth ? -$depth . 'px' : undef)); }        # Note the sign!
   my @rdfa = map { my $val = ($math->getAttribute($_) || $xmath->getAttribute($_)); $val ? ($_ => $val) : () }
     qw(about resource property rel rev typeof datatype content);
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
