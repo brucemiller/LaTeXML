@@ -350,6 +350,7 @@ our $kpse_cache = undef;
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
+  return unless $kpsewhich;
   build_kpse_cache() unless $kpse_cache;
   foreach my $file (@candidates) {
     if (my $result = $$kpse_cache{$file}) {
@@ -364,6 +365,7 @@ sub pathname_kpsewhich {
 
 sub build_kpse_cache {
   $kpse_cache = {};    # At least we've tried.
+  return unless $kpsewhich;
        # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
