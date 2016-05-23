@@ -240,11 +240,13 @@ print STDERR "\nConversion complete\n" if $verbosity > -1;
 
 sub cloneDoc {
   my ($document) = @_;
-  return $document->new($document->getDocumentElement->cloneNode(1)); }
+  my $clone = $document->getDocumentElement->cloneNode(1);
+  foreach my $pi ($document->findnodes(".//processing-instruction('latexml')")) {
+    $clone->appendChild($pi->cloneNode); }
+  return $document->new($clone); }
 
 sub outputXML {
   my ($xml, $xmldestination, $defaulturi) = @_;
-  print STDERR "XML to $xmldestination :\n " . ($xml ? $xml->toString : '<<nothing>>') . "\n";
   # Need to move the node to a new document to set up namespaces
   my $newdoc = XML::LibXML::Document->new("1.0", "UTF-8");
   $newdoc->setDocumentElement($xml);
