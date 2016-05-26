@@ -294,7 +294,7 @@ DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
 DefParameterType('DefToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readToken;
-    while ($token->equals(T_BEGIN)) {
+    while ($token && $token->equals(T_BEGIN)) {
       my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
       $token = shift(@toks);
       $gullet->unread(@toks); }
