@@ -18,12 +18,23 @@ use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use Scalar::Util qw(refaddr);
 
-my $VALUE_RE = "(\\#|\\&[\\w\\:]*\\()";    # [CONSTANT]
-my $COND_RE  = "\\?$VALUE_RE";             # [CONSTANT]
-                                           # Attempt to follow XML Spec, Appendix B
+# We recognize several special operators:
+#  #numberorname  accesses an argument to or property of the whatsit
+#  ?test(ifcase)(elsecase)  a conditional
+#  &function(args)  replaces by result of function call
+#  ^   floats
+# Each of these can be used literally, if DOUBLED (ie. ## )
+# (except ^ ??? ^^ means something special!)
+
+# These recognize the beginnings of value expressions, conditionals, ..
+my $VALUE_RE = "(\\#(?!\\#)|\\&(?!&)[\\w\\:]*\\()";    # [CONSTANT]
+my $COND_RE  = "\\?(?!\\?)$VALUE_RE";                  # [CONSTANT]
+                                                       # Attempt to follow XML Spec, Appendix B
 my $QNAME_RE = "((?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:)"    # [CONSTANT]
   . "(?:\\p{Ll}|\\p{Lu}|\\p{Lo}|\\p{Lt}|\\p{Nl}|_|:|\\p{M}|\\p{Lm}|\\p{Nd}|\\.|\\-)*)";
 my $TEXT_RE = "(.[^\\#<\\?\\)\\&\\,]*)";                             # [CONSTANT]
+# Duplicated special operators
+my $LITERAL_RE = "(\\#|\\?|\\&|\\^)\\1";
 
 sub compileConstructor {
   my ($constructor) = @_;
@@ -66,6 +77,7 @@ sub translate_constructor {
   my $code = '';
   local $_ = $constructor;
   while ($_) {
+    # ?test(ifclause)(elseclause)
     if (/^$COND_RE/so) {
       my ($bool, $if, $else) = parse_conditional();
       $code .= "if($bool){\n" . translate_constructor($if) . "}\n"
@@ -108,7 +120,7 @@ sub translate_constructor {
       else {    # attr value didn't match value pattern? treat whole thing as random text!
         $code .= "\$document->absorb('" . slashify($key) . "=',\%prop);\n"; } }
     # Else random text
-    elsif (s/^$TEXT_RE//so) {    # Else, just some text.
+    elsif ((s/^$LITERAL_RE//so) || (s/^$TEXT_RE//so)) {    # Else, just some text.
       $code .= "\$document->absorb('" . slashify($1) . "',\%prop);\n"; }
   }
   return $code; }
@@ -161,8 +173,7 @@ sub translate_value {
     else {
       $value = "\$arg$n" } }
   elsif (s/^\#([\w\-_]+)//) { $value = "\$prop{'$1'}"; }    # Recognize #prop for whatsit properties
-  elsif (s/^\#\#//)         { $value = "'#'"; }
-  elsif (s/$TEXT_RE//so) { $value = "'" . slashify($1) . "'"; }
+  elsif ((s/^$LITERAL_RE//so) || (s/$TEXT_RE//so)) { $value = "'" . slashify($1) . "'"; }
   return $value; }
 
 # Parse a delimited string from the constructor (in $_),
