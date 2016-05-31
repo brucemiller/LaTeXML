@@ -105,11 +105,7 @@ different kinds of proof.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the proof</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Data.attributes"/>
   </define>
   <define name="proof_model">
     <a:documentation>Content model for \elementref{proof}.</a:documentation>
@@ -144,14 +140,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the figure</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -182,14 +174,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the table; perhaps csv?</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -220,6 +208,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>The kind of float; could be something like a listing, or some other thing</a:documentation>
@@ -228,11 +217,6 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the float</a:documentation>
       </attribute>
     </optional>
   </define>

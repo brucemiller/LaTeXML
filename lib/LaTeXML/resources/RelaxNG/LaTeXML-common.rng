@@ -497,4 +497,22 @@ to be used instead of the content of the element itself;</a:documentation>
       </attribute>
     </optional>
   </define>
+  <define name="Data.attributes">
+    <a:documentation>Attributes for raw data storage</a:documentation>
+    <optional>
+      <attribute name="data">
+        <a:documentation>the data itself</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="datatype">
+        <a:documentation>the MIME type of the data</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="dataencoding">
+        <a:documentation>the encoding of the data (either empty, base64, or )</a:documentation>
+      </attribute>
+    </optional>
+  </define>
 </grammar>

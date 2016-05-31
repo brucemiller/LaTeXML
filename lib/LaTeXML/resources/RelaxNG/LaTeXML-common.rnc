@@ -338,6 +338,19 @@ RDF.attributes =
   ## to be used instead of the content of the element itself;
   attribute content { text }?
 
+## Attributes for raw data storage
+Data.attributes =
+  ## the data itself
+  attribute data { text }?,
+
+  ## the MIME type of the data
+  attribute datatype { text }?,
+
+  ## the encoding of the data (either empty, base64, or )
+  attribute dataencoding { text }?
+
+
+
 
 
 
