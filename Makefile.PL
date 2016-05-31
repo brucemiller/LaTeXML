@@ -58,6 +58,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'IO::String'        => 0,
     'JSON::XS'          => 0,
     'LWP'               => 0,
+    'MIME::Base64'      => 0,
     'Parse::RecDescent' => 0,
     'Pod::Parser'       => 0,   # for Pod::Find
     'Test::More'        => 0,
