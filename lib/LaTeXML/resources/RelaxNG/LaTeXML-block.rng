@@ -259,11 +259,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <ref name="Labelled.attributes"/>
     <ref name="Positionable.attributes"/>
     <ref name="Backgroundable.attributes"/>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the listing; presumably the unformatted listing</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Data.attributes"/>
   </define>
   <define name="listing_model">
     <a:documentation>Content model for \elementref{listing}.</a:documentation>

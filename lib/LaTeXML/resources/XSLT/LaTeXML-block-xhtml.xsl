@@ -126,10 +126,9 @@
     <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_listing_data</xsl:attribute>
       <xsl:element name="a" namespace="{$html_ns}">
-        <xsl:attribute name="href">
-<!--          <xsl:value-of select="concat('data:text/plain;base64,',@data)"/>-->
-          <xsl:value-of select="concat('data:text/plain,',@data)"/>
-        </xsl:attribute>
+        <xsl:call-template name="add_data_attribute">
+          <xsl:with-param name="name" select="'href'"/>
+        </xsl:call-template>
         <xsl:text>&#x2B07;</xsl:text>
       </xsl:element>
     </xsl:element>

@@ -652,6 +652,18 @@
     <xsl:copy-of select="exsl:node-set($dummy)/*/namespace::*"/>
   </xsl:template>
 
+  <!-- Add a data scheme url attribute (typically href) containing the data
+       stored in @data, according to @datatype and @dataencoding -->
+  <xsl:template name="add_data_attribute">
+    <xsl:param name="name"/>
+    <xsl:attribute name="{$name}">
+      <xsl:value-of select="concat('data:',
+                            f:if(@datatype,@datatype,'text/plain'),
+                            f:if(@dataencoding, concat(';',@dataencoding),''),
+                            ',',@data)"/>
+    </xsl:attribute>
+  </xsl:template>
+
 </xsl:stylesheet>
 
 

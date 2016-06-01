@@ -164,7 +164,7 @@ if ($result) {
       binmode($output_handle, ":encoding(UTF-8)"); }
     print $output_handle $result;
     close $output_handle;
-  } else { 
+  } else {
     if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
       binmode(STDOUT, ":encoding(UTF-8)"); }
     print STDOUT $result, "\n"; }    #Output to STDOUT
@@ -198,8 +198,8 @@ sub process_local {
   my $req_message_length = length($req_message);
   $req_route = "$req_address:$req_port" unless $req_route;
   my $payload = <<"PAYLOADEND";
-POST $route HTTP/1.0
-Host: $address:$req_port
+POST $req_route HTTP/1.0
+Host: $req_address:$req_port
 User-Agent: latexmlc
 Content-Type: application/x-www-form-urlencoded
 Content-Length: $req_message_length

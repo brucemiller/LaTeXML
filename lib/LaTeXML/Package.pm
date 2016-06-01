@@ -1514,7 +1514,9 @@ sub defmath_prim {
 sub defmath_cons {
   my ($cs, $paramlist, $presentation, %options) = @_;
   # do we need to do anything about digesting the presentation?
-  my $end_tok   = (defined $presentation ? '>' . ToString($presentation) . '</ltx:XMTok>' : "/>");
+  my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
+  $qpresentation =~ s/(\#|\&|\?|\\)/\\$1/g if $presentation;
+  my $end_tok   = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
   my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
@@ -1523,7 +1525,7 @@ sub defmath_cons {
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
-            . "($presentation)"
+            . "($qpresentation)"
           : "<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok")
         : "<ltx:XMApp role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
@@ -3556,7 +3558,7 @@ or it can be a code reference which is treated as a primitive for side-effect.
 If a package or class wants to accomodate options, it should start
 with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 
-=item C<PassOptions(I<name>, I<ext>, I<@options>); >>
+=item C<PassOptions(I<name>, I<ext>, I<@options>); >
 
 X<PassOptions>
 Causes the given I<@options> (strings) to be passed to the package
@@ -3576,7 +3578,7 @@ order they were used, like C<ProcessOptions*>.
 X<ExecuteOptions>
 Process the options given explicitly in I<@options>.
 
-=item C<AtBeginDocument(I<@stuff>); >>
+=item C<AtBeginDocument(I<@stuff>); >
 
 X<AtBeginDocument>
 Arranges for I<@stuff> to be carried out after the preamble, at the beginning of the document.
@@ -4010,7 +4012,7 @@ used for other definitions, except that macro being defined is a single characte
 The I<expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
 
-=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >>
+=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >
 
 X<DefKeyVal>
 Defines a keyword I<key> used in keyval arguments for the set I<keyset>.
@@ -4138,7 +4140,7 @@ tokens, or if defined, have the same definition.
 
 =over
 
-=item C<MergeFont(I<%fontspec>); >>
+=item C<MergeFont(I<%fontspec>); >
 
 X<MergeFont>
 Set the current font by merging the font style attributes with the current font.

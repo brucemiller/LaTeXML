@@ -37,8 +37,9 @@
      CheckOptions},
 }
 \lstdefinestyle{xml}{basicstyle=\small\sffamily,language=xml,escapechar=@}%
+\lstdefinestyle{inlinelatexml}{style=latexml,moredelim=[is][\itshape\small]{\%}{\%},escapechar=@}
 \newcommand{\shellcode}{\lstinline[style=shell]}
-\newcommand{\ltxcode}{\lstinline[style=latexml]}
+\newcommand{\ltxcode}{\lstinline[style=inlinelatexml]}
 \newcommand{\perlcode}{\lstinline[style=Perl]}
 \newcommand{\xmlcode}{\lstinline[style=xml]}
 
@@ -899,6 +900,7 @@ rather then in Perl. At the other end, constructors (eg. using \ltxcode|DefConst
 are usually defined by patterns of \XML.
 
 \subsection[Expansion]{Expansion \& Macros}\label{customization.latexml.expansion}
+\paragraph{\texttt{DefMacro}}
 Macros are defined using \texttt{DefMacro}, such as the pointless:
 \begin{lstlisting}[style=latexml]
   DefMacro('\mybold{}','\textbf{#1}');
@@ -943,6 +945,7 @@ Generally, the body of the macro should \emph{not} involve side-effects, assignm
 or other changes to state other than reading \ltxpod{Core::Token}'s from the \ltxpod{Core::Gullet};
 of course, the macro may expand into control sequences which do have side-effects.
 
+\paragraph{Tokens}
 Functions that are useful for dealing with \ltxpod{Core::Token}s and writing macros
 include the following:
 \begin{itemize}
@@ -976,7 +979,7 @@ include the following:
 \item \ltxcode|Expand($tokens| expands \ltxcode|$tokens| (a \ltxpod{Core::Tokens}), returning
   a \ltxpod{Core::Tokens}; there should be no expandable tokens in the result.
 \item \ltxcode|Invocation($cstoken,$arg,...)| Returns a \ltxpod{Core::Tokens} representing
-  the sequence needed to invoke \ltxcode|$cstoken| on the given arguments (each are
+  the sequence needed to invoke \ltxcode|$cstoken| on the given arguments (each are %$
   \ltxpod{Core::Tokens}, or undef for an unsupplied optional argument).
 \end{itemize}
 
@@ -1010,6 +1013,7 @@ is that primitives are processed after macro expansion,
 by the \ltxpod{Core::Stomach}.  They are most useful for
 side-effects, changing the \ltxpod{Core::State}.
 
+\paragraph{\texttt{DefPrimitive}}
 \par\noindent\ltxcode|DefPrimitive($prototype,$replacement,%options)|
 \par
 
@@ -1125,7 +1129,7 @@ but is covered in Chapter \ref{math}.
 Here are a couple of trivial examples of constructors:
 \begin{lstlisting}[style=latexml]
   DefConstructor('\emph{}',
-    "<ltx:emph>#1</ltx:emph>", mode=>'text');
+   "<ltx:emph>#1</ltx:emph>", mode=>'text');
   DefConstructor('\item[]',
     "<ltx:item>?#1(<ltx:tag>#1</ltx:tag>)");
   DefEnvironment('{quote}',   
@@ -1138,31 +1142,45 @@ Here are a couple of trivial examples of constructors:
       ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 \end{lstlisting}
 
+\paragraph{\texttt{DefConstructor}}
 \par\noindent\ltxcode|DefConstructor($prototype,$replacement,%options)|
 \par
-The  \ltxcode|$replacement| for a constructor describes the \XML\ to %$
+The \ltxcode|$replacement| for a constructor describes the \XML\ to %$
 be generated during the construction phase. It can either be a string
-representing the \XML\ as a pattern (described below), or a
+representing the \emph{XML pattern} (described below), or a
 subroutine \ltxcode|CODE($document,$arg1,...%props)|
 receiving the arguments and properties from the \ltxpod{Core::Whatsit};
 it would invoke the methods of \ltxpod{Core::Document} to construct the desired \XML.
 
-The pattern as illustrated above, simply represents a serialization of the
-desired \XML, with extensions to allow substituting arguments or other data into the pattern.
-In addition to literal replacement, the following may appear:
+At its simplest, the XML pattern is a just serialization of the desired \XML.
+For more expressivity, \XML\ trees, text content, attributes and attribute values can
+be effectively `interpolated' into the \XML\ being constructed by use of the following expressions:
 \begin{itemize}
-\item \ltxcode|#1,#2,...#name| inserts the construction of the argument
-or property in the \XML;
-\item \ltxcode|&function($a,$b,...)| invokes the named function on the
-given arguments and inserts its value in place;
-\item \ltxcode|?COND(pattern)| or \ltxcode|?COND(ifpattern)(elsepattern)|
-conditionally inserts the patterns depending on the result of the conditional.
-\texttt{COND} would typically be testing the presence of an argument, \ltxcode|#1|,
-or property \ltxcode|#name| or invoking a function;
-\item \ltxcode|^| if this appears at the beginning of the pattern,
-the replacement is allowed to \emph{float} up the current tree to whereever
-it might be allowed.
+\item \ltxcode|#1|,\ltxcode|#2|,\ldots \ltxcode|#%name%|
+   returns the construction of the numbered argument
+   or named property of the Whatsit;
+\item \ltxcode|&%function%(%arg1%,%arg2%,...)|
+   invokes the Perl \codevar{function} on the given arguments,
+   \codevar{arg1},\ldots, returning the result.
+   The arguments should be expressions for values, rather than \XML\ subtrees.
+\item \ltxcode|?%test%(%if pattern%)| 
+   or \ltxcode|?%test%(%if pattern%)(%else pattern%)|
+   returns the result of either the \codevar{if} or \codevar{else} pattern
+   depending on whether the result of \codevar{test} (typically also an expression) is non-empty;
+\item \verb|%|\ltxcode{%expression%}
+   returns a hash (or rather assumes the result is a hash or KeyVals object);
+   this is only allowed within an opening \XML\ tag, where all the key-value pairs are
+   inserted as attributes;
+\item \ltxcode|^|
+   if this appears at the beginning of the pattern,
+   the replacement is allowed to \emph{float} up the current tree to whereever it might be allowed;
 \end{itemize}
+In each case, the result of an expression is expected to be either an \XML\ tree,
+a string or a hash, depending on the context it was used in.  In particular,
+values of attributes are typically given by quoted strings, but expressions within those
+strings are interpolated into the computed attribute value.
+The special characters \verb|@ # ? %| which introduce these expressions can
+be escaped by preceding with a backslash, when the literal character is desired.
 
 A subroutine used as the \ltxcode|$replacement|, %$
 allows programmatic insertion of \XML\ into, or modification of, the document being constructed.
@@ -1239,6 +1257,7 @@ codepoint; this is useful for characters below \texttt{0x100} where
 Perl becomes confused about the encoding.
 \end{itemize}
 
+\paragraph{\texttt{DefEnvironment}}
 \par\noindent \ltxcode|DefEnvironment($prototypte,$replacement,%options)|
 \par Environments are largely a special case of constructors,
 but the prototype starts with \verb|{envname}|, rather than \verb|\cmd|,

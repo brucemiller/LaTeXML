@@ -170,8 +170,7 @@ listing_attributes =
   Labelled.attributes,
   Positionable.attributes,
   Backgroundable.attributes,
-  ## raw data related to the listing; presumably the unformatted listing
-  attribute data { text }?
+  Data.attributes
 
 ## Content model for \elementref{listing}.
 listing_model = listingline*

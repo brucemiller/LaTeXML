@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use MIME::Base64;
 
 #======================================================================
 # To the extent we succeed in doing all the pretty-printing...
@@ -60,7 +61,7 @@ sub lstProcessInline {
     lstProcess('inline', $text)); }
 
 DefConstructor('\@listings@inline {}',
-  "<ltx:text class='ltx_lstlisting'>#1</ltx:text>",
+  "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
   reversion => '\lstinline#{1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
@@ -102,11 +103,8 @@ sub lstProcessBlock {
   my ($name, $text) = @_;
   # store the data to be placed in the listing
   my $c = LookupValue('LISTINGS_DATA_COUNTER') + 1;
-  AssignValue('LISTINGS_DATA_COUNTER' => $c, 'global');
-  # NOTE: Since # is normally valid in a url, we need to encode '#' in the data (?)
-  my $data = $text;
-  #  $text =~ s/#/&
-  AssignValue('LISTINGS_DATA_' . $c => $text, 'global');
+  AssignValue('LISTINGS_DATA_COUNTER' => $c,    'global');
+  AssignValue('LISTINGS_DATA_' . $c   => $text, 'global');
   return (
     @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
     Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text)),
@@ -190,10 +188,12 @@ DefConstructor('\@@listings {}',
     RescueCaptionCounters('lstlisting', $whatsit); });
 
 DefConstructor('\@@listings@block {} {}',
-  "<ltx:listing class='ltx_lstlisting' data='#data'>#2</ltx:listing>",
+"<ltx:listing class='ltx_lstlisting' data='#data' datatype='#datatype' dataencoding='#dataencoding'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(data => LookupValue('LISTINGS_DATA_' . ToString($whatsit->getArg(1)))); });
+    # Could have some options about encoding?
+    my $data = encode_base64(LookupValue('LISTINGS_DATA_' . ToString($whatsit->getArg(1))));
+    $whatsit->setProperties(data => $data, datatype => 'text/plain', dataencoding => 'base64'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low Level String stuff
@@ -428,10 +428,10 @@ sub lstAddDelimiter {
   my ($kind, $type, $style, $delims, %keys) = @_;
   $type = ToString($type);
   my $delimlist = LookupValue('LST_DELIMITERS');
-  my $invisible = ($type =~ s/(?<=^(?=bd|b|d|l|s|n))i$//);
+  my $invisible = ($type =~ /^(?:bd|b|d|l|s|n)i$/) || ($type =~ /^i(?:bd|b|d|l|s|n)$/);
+  $type =~ s/i// if $invisible;
   my $quoted;
   my ($open, $close, $openre, $closere, $cssclass);
-
   if ($type eq 'b') {    # Balanced; same delim open & close; but not when slashed
     $open = $close = $delims;
     $openre  = lstRegexp($open);
@@ -479,12 +479,14 @@ sub lstAddDelimiter {
       $class = $stylestring; }
     else {                                       # Otherwise, assume it is markup.
       $styleTeX = $style; }
-    if (!$invisible) {
-      my $oldclass = $class;
-      $class = $class . ToString($open) . ToString($close); # Create an artificial class for this delimiter.
-      my $openTeX = ($styleTeX ? Tokens($styleTeX->unlist, lstRescan($open)) : lstRescan($open));
-      lstSetClassStyle($class, undef, begin => $openTeX, end => lstRescan($close),
-        class => $oldclass, cssclass => $cssclass); }
+    my $oldclass = $class;
+    $class = $class . ToString($open) . ToString($close); # Create an artificial class for this delimiter.
+    my $openTeX = ($styleTeX
+      ? ($invisible ? $styleTeX : Tokens($styleTeX->unlist, lstRescan($open)))
+      : ($invisible ? () : lstRescan($open)));
+    my $closeTeX = ($invisible ? () : lstRescan($close));
+    lstSetClassStyle($class, undef, begin => $openTeX, end => $closeTeX,    #end => lstRescan($close),
+      class => $oldclass, cssclass => $cssclass);
     # NOT DONE:
     #   invisibility of the whole delimited expression
     #   nestability.
@@ -1278,7 +1280,8 @@ sub lstProcess_internal {
       $LaTeXML::colnum += $n; }
     # Quoted are typically quoted delimiters.
     elsif ($LaTeXML::QUOTED_RE && $LaTeXML::listing =~ s/^($LaTeXML::QUOTED_RE)//) { # Something quoted.
-      lstProcessPush(T_OTHER($1));
+          # Don't just past together, and watch for leading \ (a common quoter)
+      lstProcessPush(map { ($_ eq '\\' ? T_CS('\textbackslash') : T_OTHER($_)) } split('', $1));
 
       $LaTeXML::colnum += length($1); }
     else {
@@ -1289,15 +1292,23 @@ sub lstProcess_internal {
   return; }
 
 DefConstructor('\@listingKeyword Semiverbatim {}',
-  "?#class(<ltx:text class='ltx_lst_#class'>#2</ltx:text>)(#2)",
+  "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
   properties => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
       my $cssclass  = $class && $$class{cssclass};
       $cssclass; } });
 
+# It's conceivable that a group is INTENDED to carry over across lines?
+# If so, we'd have to maintain a stack..
+# But we have to be careful about a group closing ltx:text that may have autoclosed on prev.line!
 DefConstructor('\@listingGroup Semiverbatim {}',
-  "<ltx:text class='#1'>#2</ltx:text>");
+  #   "<ltx:text class='#1'>#2</ltx:text>");
+  "<ltx:text class='#1'>#2",
+  # sorta like maybeCloseElement, except only if CURRENT
+  afterConstruct => sub { my ($doc) = @_;
+    if ($doc->getNodeQName($doc->getElement) eq 'ltx:text') {
+      $doc->closeElement('ltx:text'); } });
 
 sub lstClassBegin {
   my ($classname) = @_;
