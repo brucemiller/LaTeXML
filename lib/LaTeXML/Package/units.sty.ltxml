@@ -18,12 +18,31 @@ use LaTeXML::Package;
 # RequirePackage('ifthen');
 RequirePackage('nicefrac');
 
-# Would be VERY nice to force some semantics of unit-ness down to the math tokens!
-DefMacro('\unit[]{}',
-  '\ifx.#1.\else#1\ltx@units@spacing\fi\ifmmode\mathrm{#2}\else#2\fi');
+# in text mode, should be plain text, but let's be consistent putting it in math with text font.
+DefMacro('\unit [] {}',
+  '\ifx.#1.\else#1\ltx@units@spacing\fi'
+    . '\lx@units@assertunits{\ifmmode\mathrm{#2}\else $\nf@mathcopytextfont #2$\fi}');
 
-DefMacro('\unitfrac[]{}{}',
-  '\ifx.#1.\else#1\ltx@units@spacing\fi\nicefrac[\mathrm]{#2}{#3}');
+DefMacro('\unitfrac [] {}{}',
+  '\ifx.#1.\else#1\ltx@units@spacing\fi'
+    . '\lx@units@assertunits{\ifmmode\nicefrac[\mathrm]{#2}{#3}\else\nicefrac{#2}{#3}\fi}');
+
+DefConstructor('\lx@units@assertunits{}', '#1',
+  afterConstruct => sub {
+    my ($document) = @_;
+    units_assert_units($document, $document->getNode); },
+  reversion => '#1');
+
+# Try to force some semantics of unit-ness down to the math tokens!
+sub units_assert_units {
+  my ($document, $node) = @_;
+  my $qname = $document->getNodeQName($node);
+  if (($qname eq 'ltx:XMTok') && (($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')) {
+    $node->setAttribute(role => 'ID');
+    $document->addClass($node, 'ltx_unit'); }
+  elsif ($qname) {
+    map { units_assert_units($document, $_) } element_nodes($node); }
+  return; }
 
 DeclareOption('tight', sub { Let('\ltx@units@spacing', '\,'); });
 DeclareOption('loose', sub { Let('\ltx@units@spacing', '~'); });
