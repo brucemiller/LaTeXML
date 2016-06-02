@@ -293,10 +293,10 @@ my %mathvariants = (    # CONSTANT
 #  default values like medium or upright (unless that is the only component).
 sub mathvariantForFont {
   my ($font) = @_;
-  $font =~ s/slanted/italic/;    # equivalent in math
-  $font =~ s/serif\s//;          # Not needed (unless alone)
-  $font =~ s/\supright//;        # Not needed (unless 1st element)
-  $font =~ s/\smedium//;         # Not needed (unless 1st element)
+  $font =~ s/slanted/italic/;        # equivalent in math
+  $font =~ s/(?<!^)serif(?>!$)//;    # Not needed (unless alone)
+  $font =~ s/(?<!^)upright//;        # Not needed (unless 1st element)
+  $font =~ s/(?<!^)medium//;         # Not needed (unless 1st element)
   my $variant;
   return $variant if $variant = $mathvariants{$font};
   #  $font =~ s/\sitalic//;          # try w/o italic ?
