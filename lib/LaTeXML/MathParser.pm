@@ -1352,7 +1352,11 @@ sub NewScript {
   my $role;
   my $rbase   = realizeXMNode($base);
   my $rscript = realizeXMNode($script);
-  my ($bx, $bl) = (p_getAttribute($rbase,   'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
+  my $ibase   = $rbase;
+  # Get "inner" (content) base, if the base is a dual
+  if (p_getQName($rbase) eq 'ltx:XMDual') {
+    ($ibase) = p_element_nodes($rbase); }
+  my ($bx, $bl) = (p_getAttribute($ibase,   'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
   my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
