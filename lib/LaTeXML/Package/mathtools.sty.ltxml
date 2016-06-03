@@ -726,8 +726,19 @@ DefMathI('\bigtimes', undef, UTF(0xD7), role => 'MULOP', meaning => 'times', fon
 # 4
 
 ## 4.2
+# An XMDual is inappropriate here, since there's no discernable semantics,
+# plus it messes up formatting.
+# However, can we really guarantee that the parser will see this as prescripts???
+DefMacroI('\prescript', '{}{}{}',
+  '\@ams@prescript{#1}{#2}{#3}{'
+    . '{}^{\@mt@getmtoption{prescript-sup-format}{#1}}'
+    . '_{\@mt@getmtoption{prescript-sub-format}{#2}}'
+    . '{\@mt@getmtoption{prescript-arg-format}{#3}}'
+    . '}');
 
-DefMathI('\prescript', '{}{}{}', '{}^{\@mt@getmtoption{prescript-sup-format}{#1}}_{\@mt@getmtoption{prescript-sub-format}{#2}}{\@mt@getmtoption{prescript-arg-format}{#3}}', scriptpos => 'pre');
+# wrapper to get reversion
+DefConstructor('\@ams@prescript{}{}{}{}', '#4',
+  reversion => '\prescript{#1}{#2}{#3}');
 
 ## 4.4
 DefMacroI('\begin{spreadlines}', '{Dimension}', '\begingroup\jot=#1\relax');
