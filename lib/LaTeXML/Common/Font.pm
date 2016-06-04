@@ -551,6 +551,10 @@ our %stylesize = (display => 10, text => 10,
 # You must arrange this in the calls....
 sub merge {
   my ($self, %options) = @_;
+  # Evaluate any functional values given.
+  foreach my $k (keys %options) {
+    $options{$k} = &{ $options{$k} }() if ref $options{$k} eq 'CODE'; }
+
   my $family    = $options{family};
   my $series    = $options{series};
   my $shape     = $options{shape};
