@@ -287,10 +287,10 @@ DefPrimitiveI('\bbbz',   undef, "\x{2124}");
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Online material
-# Support for adsurl URLs containing unescaped % characters, e.g. %26  
-# in A&A URLs 
+# Support for adsurl URLs containing unescaped % characters, e.g. %26
+# in A&A URLs
 DefConstructor('\bib@field@default@adsurl Verbatim',
-"<ltx:bib-url href='#1'>ADS entry</ltx:bib-url>");
+  "<ltx:bib-url href='#1'>ADS entry</ltx:bib-url>");
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Astronomical objects
