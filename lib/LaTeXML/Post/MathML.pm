@@ -564,11 +564,19 @@ sub pmml_mayberesize {
     else {
       $result = ['m:mpadded', {}, $result]; }
     my $attr = $$result[1];
+    if ($yoff) {    # assume this means to move the BOX? (not just the contents?)
+      if (!$height) {
+        if ($yoff =~ /^-/) { $height = $yoff; }
+        else { $height = "+" . $yoff; } }
+      if (!$depth) {
+        if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
+        else { $depth = "-" . $yoff; } } }
     $$attr{width}   = $width  if $width;
     $$attr{height}  = $height if $height;
     $$attr{depth}   = $depth  if $depth;
     $$attr{lspace}  = $xoff   if $xoff;
     $$attr{voffset} = $yoff   if $yoff; }
+
   if (my $frame = $node->getAttribute('framed')) {
     my $attr  = $$result[1];
     my $c     = $$attr{class};
@@ -716,6 +724,12 @@ sub stylizeContent {
   $stretchy = undef if ($tag ne 'm:mo');                           # Only allowed on m:mo!
   $size     = undef if ($stretchy || 'false') eq 'true';           # Ignore size, if we're stretching.
   $size     = undef if $size && ($size eq $LaTeXML::MathML::SIZE);
+  # If requested relative size, and in script or scriptscript, we'll need to adjust the size
+  if ($size && ($size =~ /%$/) && ($LaTeXML::MathML::STYLE =~ /script/)) {
+    my $req = $size; $req =~ s/%$//;
+    my $ex = $stylesize{$LaTeXML::MathML::STYLE}; $ex =~ s/%$//;
+    $size = int(100 * $req / $ex) . '%'; }
+
   my $stretchyhack = undef;
 
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {                  # invisible
