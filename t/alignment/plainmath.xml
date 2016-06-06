@@ -57,7 +57,7 @@
           <XMDual>
             <XMRef idref="id1"/>
             <XMWrap>
-              <XMTok role="OPEN">(</XMTok>
+              <XMTok role="OPEN" stretchy="true">(</XMTok>
               <XMArray meaning="matrix" xml:id="id1">
                 <XMRow>
                   <XMCell align="center">
@@ -76,7 +76,7 @@
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="CLOSE">)</XMTok>
+              <XMTok role="CLOSE" stretchy="true">)</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
@@ -112,7 +112,7 @@
                 <XMText><text font="italic">otherwise</text></XMText>
               </XMApp>
               <XMWrap>
-                <XMTok role="OPEN">{</XMTok>
+                <XMTok role="OPEN" stretchy="true">{</XMTok>
                 <XMArray>
                   <XMRow>
                     <XMCell align="left">
