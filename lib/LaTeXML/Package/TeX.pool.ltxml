@@ -5508,7 +5508,7 @@ DefConstructor('\right@hidden@egroup', '',
 DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
 
 DefConstructor('\@left Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
@@ -5517,8 +5517,9 @@ DefConstructor('\@left Token',
       $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{lrole},
-        char => $$entry{char},
-        name => $$entry{name});
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
       $whatsit->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'OPEN') {
       $arg->setProperty(stretchy => 'true'); }
@@ -5528,7 +5529,7 @@ DefConstructor('\@left Token',
     return; },
   alias => '\left');
 DefConstructor('\@right Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
@@ -5537,8 +5538,9 @@ DefConstructor('\@right Token',
       $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{rrole},
-        char => $$entry{char},
-        name => $$entry{name});
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
       $whatsit->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
       $arg->setProperty(stretchy => 'true'); }
