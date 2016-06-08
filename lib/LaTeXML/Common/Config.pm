@@ -107,7 +107,7 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
-    "parallelmath"                => \$$opts{parallelmath},
+    "parallelmath!"                => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
     "xsltparameter=s"   => \@{ $$opts{xsltparameters} },
@@ -649,7 +649,7 @@ C<LaTeXML::Common::Config> - Configuration logic for LaTeXML
     use LaTeXML::Common::Config;
     my $config = LaTeXML::Common::Config->new(
               profile=>'name',
-              timeout=>number
+              timeout=>60,
               ... );
     $config->read(\@ARGV);
     $config->check;
@@ -734,95 +734,164 @@ Clones $config into a new LaTeXML::Common::Config object, $config_clone.
 latexmls/latexmlc [options]
 
  Options:
- --destination=file specifies destination file.
- --output=file      [obsolete synonym for --destination]
- --preload=module   requests loading of an optional module;
-                    can be repeated
- --preamble=file    loads a tex file containing document
-                    frontmatter. MUST include \begin{document}
-                    or equivalent
- --postamble=file   loads a tex file containing document
-                    backmatter. MUST include \end{document}
-                    or equivalent
- --includestyles    allows latexml to load raw *.sty file;
-                    by default it avoids this.
- --base=dir         sets the base directory that the server
-                    operates in. Useful when converting
-                    documents that employ relative paths.
- --path=dir         adds dir to the paths searched for files,
-                    modules, etc;
- --log=file         specifies log file (default: STDERR)
- --autoflush=count  Automatically restart the daemon after
-                    "count" inputs. Good practice for vast
-                    batch jobs. (default: 100)
- --timeout=secs     Timecap for conversions (default 600)
- --expire=secs      Timecap for server inactivity (default 600)
- --address=URL      Specify server address (default: localhost)
- --port=number      Specify server port (default: 3354)
- --documentid=id    assign an id to the document root.
- --quiet            suppress messages (can repeat)
- --verbose          more informative output (can repeat)
- --strict           makes latexml less forgiving of errors
- --bibtex           processes a BibTeX bibliography.
- --xml              requests xml output (default).
- --tex              requests TeX output after expansion.
- --box              requests box output after expansion
-                    and digestion.
- --format=name      requests "name" as the output format.
-                    Supported: tex,box,xml,html4,html5,xhtml
-                    html implies html5
- --noparse          suppresses parsing math (default: off)
- --parse=name       enables parsing math (default: on)
-                    and selects parser framework "name".
-                    Supported: Marpa, RecDescent
- --profile=name     specify profile as defined in
-                    LaTeXML::Common::Config
-                    Supported: standard|math|fragment|...
-                    (default: standard)
- --mode=name        Alias for profile
- --whatsin=chunk    Defines the provided input chunk,
-                    choose from document (default), fragment
-                    and formula
- --whatsout=chunk   Defines the expected output chunk,
-                    choose from document (default), fragment
-                    and formula
- --post             requests a followup post-processing
- --embed            requests an embeddable XHTML snippet
-                    (requires: --post,--profile=fragment)
-                    DEPRECATED: Use --whatsout=fragment
-                    TODO: Remove completely
- --stylesheet       specifies a stylesheet,
-                    to be used by the post-processor.
- --css=cssfile      adds a css stylesheet to html/xhtml
-                    (can be repeated)
+ --VERSION               show version number.
+ --help                  shows this help message.
+ --destination=file      specifies destination file.
+ --output=file           [obsolete synonym for --destination]
+ --preload=module        requests loading of an optional module;
+                         can be repeated
+ --preamble=file         loads a tex file containing document
+                         frontmatter. MUST include \begin{document}
+                         or equivalent
+ --postamble=file        loads a tex file containing document
+                         backmatter. MUST include \end{document}
+                         or equivalent
+ --includestyles         allows latexml to load raw *.sty file;
+                         by default it avoids this.
+ --base=dir              sets the base directory that the server
+                         operates in. Useful when converting
+                         documents that employ relative paths.
+ --path=dir              adds dir to the paths searched for files,
+                         modules, etc;
+ --log=file              specifies log file (default: STDERR)
+ --autoflush=count       Automatically restart the daemon after
+                         "count" inputs. Good practice for vast
+                         batch jobs. (default: 100)
+ --timeout=secs          Timecap for conversions (default 600)
+ --expire=secs           Timecap for server inactivity (default 600)
+ --address=URL           Specify server address (default: localhost)
+ --port=number           Specify server port (default: 3354)
+ --documentid=id         assign an id to the document root.
+ --quiet                 suppress messages (can repeat)
+ --verbose               more informative output (can repeat)
+ --strict                makes latexml less forgiving of errors
+ --bibtex                processes a BibTeX bibliography.
+ --xml                   requests xml output (default).
+ --tex                   requests TeX output after expansion.
+ --box                   requests box output after expansion
+                         and digestion.
+ --format=name           requests "name" as the output format.
+                         Supported: tex,box,xml,html4,html5,xhtml
+                         html implies html5
+ --noparse               suppresses parsing math (default: off)
+ --parse=name            enables parsing math (default: on)
+                         and selects parser framework "name".
+                         Supported: Marpa, RecDescent
+ --profile=name          specify profile as defined in
+                         LaTeXML::Common::Config
+                         Supported: standard|math|fragment|...
+                         (default: standard)
+ --mode=name             Alias for profile
+ --cache_key=name        Provides a name for the current option set,
+                         to enable daemonized conversions without
+                         needing re-initializing
+ --whatsin=chunk         Defines the provided input chunk,
+                         choose from document (default), fragment
+                         and formula
+ --whatsout=chunk        Defines the expected output chunk,
+                         choose from document (default), fragment
+                         and formula
+ --post                  requests a followup post-processing
+ --nopost                forbids followup post-processing
+ --validate, --novalidate Enables (the default) or disables
+                         validation of the source xml.
+ --omitdoctype           omits the Doctype declaration,
+ --noomitdoctype         disables the omission (the default)
+ --numbersections        enables (the default) the inclusion of
+                         section numbers in titles, crossrefs.
+ --nonumbersections      disables the above
+ --timestamp             provides a timestamp (typically a time and date)
+                         to be embedded in the comments
+ --embed                 requests an embeddable XHTML snippet
+                         (requires: --post,--profile=fragment)
+                         DEPRECATED: Use --whatsout=fragment
+                         TODO: Remove completely
+ --stylesheet            specifies a stylesheet,
+                         to be used by the post-processor.
+ --css=cssfile           adds a css stylesheet to html/xhtml
+                         (can be repeated)
  --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
+ --icon=iconfile         specify a file to use as a "favicon"
  --xsltparameter=name:value passes parameters to the XSLT.
+ --split                 requests splitting each document
+ --nosplit               disables the above (default)
+ --splitat               sets level to split the document
+ --splitpath=xpath       sets xpath expression to use for
+                         splitting (default splits at
+                         sections, if splitting is enabled)
+ --splitnaming=(id|idrelative|label|labelrelative) specifies
+                         how to name split files (idrelative).
+ --scan                  scans documents to extract ids,
+                         labels, etc.
+                         section titles, etc. (default)
+ --noscan                disables the above
+ --crossref              fills in crossreferences (default)
+ --nocrossref            disables the above
+ --urlstyle=(server|negotiated|file) format to use for urls
+                         (default server).
+ --navigationtoc=(context|none) generates a table of contents
+                         in navigation bar
+ --index                 requests creating an index (default)
+ --noindex               disables the above
+ --splitindex            Splits index into pages per initial.
+ --nosplitindex          disables the above (default)
+ --permutedindex         permutes index phrases in the index
+ --nopermutedindex       disables the above (default)
+ --bibliography=file     sets a bibliography file
+ --splitbibliography     splits the bibliography into pages per
+                         initial.
+ --nosplitbibliography   disables the above (default)
+ --prescan               carries out only the split (if
+                         enabled) and scan, storing
+                         cross-referencing data in dbfile
+                         (default is complete processing)
+ --dbfile=dbfile         sets file to store crossreferences
  --sitedirectory=dir     sets the base directory of the site
  --sourcedirectory=dir   sets the base directory of the
                          original TeX source
+ --source=input          as an alternative to passing the input as
+                         the last argument, after the option set
+                         you can also specify it as the value here.
+                         useful for predictable API calls
  --mathimages            converts math to images
                          (default for html4 format)
  --nomathimages          disables the above
  --mathimagemagnification=mag specifies magnification factor
- --plane1           use plane-1 unicode for symbols
-                    (default, if needed)
- --noplane1         do not use plane-1 unicode
- --pmml             converts math to Presentation MathML
-                    (default for xhtml and html5 formats)
- --cmml             converts math to Content MathML
- --openmath         converts math to OpenMath
- --keepXMath        keeps the XMath of a formula as a MathML
-                    annotation-xml element
- --mathtex          adds TeX annotation to parallel markup
- --nomathtex        disables the above (default)
- --nocomments       omit comments from the output
- --inputencoding=enc specify the input encoding.
- --VERSION          show version number.
- --debug=package    enables debugging output for the named
-                    package
- --help             shows this help message.
+ --presentationmathml    converts math to Presentation MathML
+                         (default for xhtml & html5 formats)
+ --pmml                  alias for --presentationmathml
+ --nopresentationmathml  disables the above
+ --linelength=n          formats presentation mathml to a
+                         linelength max of n characters
+ --contentmathml         converts math to Content MathML
+ --nocontentmathml       disables the above (default)
+ --cmml                  alias for --contentmathml
+ --openmath              converts math to OpenMath
+ --noopenmath            disables the above (default)
+ --om                    alias for --openmath
+ --keepXMath             preserves the intermediate XMath
+                         representation (default is to remove)
+ --mathtex               adds TeX annotation to parallel markup
+ --nomathtex             disables the above (default)
+ --parallelmath          use parallel math annotations (default)
+ --noparallelmath        disable parallel math annotations
+ --plane1                use plane-1 unicode for symbols
+                         (default, if needed)
+ --noplane1              do not use plane-1 unicode
+ --graphicimages         converts graphics to images (default)
+ --nographicimages       disables the above
+ --graphicsmap=type.type specifies a graphics file mapping
+ --pictureimages         converts picture environments to
+                         images (default)
+ --nopictureimages       disables the above
+ --svg                   converts picture environments to SVG
+ --nosvg                 disables the above (default)
+ --nocomments            omit comments from the output
+ --inputencoding=enc     specify the input encoding.
+ --debug=package         enables debugging output for the named
+                         package
 
 Note that the profiles come with a variety of preset options. To customize your
 own conversion setup, use --whatsin=math|fragment|document instead, respectively,
