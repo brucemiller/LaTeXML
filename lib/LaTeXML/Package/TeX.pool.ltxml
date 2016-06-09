@@ -3961,61 +3961,42 @@ sub TestNode {
     && ((!defined $content) || (($node->textContent || '') eq $content))
     && !grep { $node->getAttribute($_) ne $attrib{$_} } keys %attrib; }
 
+# Recognize !!
+DefMathLigature("!!" => "!!", role => 'POSTFIX', meaning => 'double-factorial');
+
 # Recognize :=
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', ':')
-      && TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-      (2, ":=", meaning => 'assign', role => 'RELOP'); } });
+DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
 
 # Recognize: <=, << and <<<
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', '<')) {
-      if (TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-        (2, "\x{2264}", role => 'RELOP', meaning => 'less-than-or-equals'); }
-      elsif (TestNode($nodes[-1], 'ltx:XMTok', '<')) {
-        (2, "\x{226A}", role => 'RELOP', meaning => 'much-less-than'); } } });
-# Note that << will already have been converted to \ll !!!
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', "\x{226A}")
-      && TestNode($nodes[-1], 'ltx:XMTok', '<')) {
-      (2, "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than'); } });
+# # Note that in <<<, the leading << will already have been converted to \ll !!!
+DefMathLigature("<="        => "\x{2264}", role => 'RELOP', meaning => 'less-than-or-equals');
+DefMathLigature("<<"        => "\x{226A}", role => 'RELOP', meaning => 'much-less-than');
+DefMathLigature("\x{226A}<" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than');
 
 # Recognize: >=, >> and >>>
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', '>')) {
-      if (TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-        (2, "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals'); }
-      elsif (TestNode($nodes[-1], 'ltx:XMTok', '>')) {
-        (2, "\x{226B}", role => 'RELOP', meaning => 'much-greater-than'); } } });
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', "\x{226B}")
-      && TestNode($nodes[-1], 'ltx:XMTok', '>')) {
-      (2, "\x{22D9}", role => 'RELOP', meaning => 'very-much-greater-than'); } });
+DefMathLigature(">="        => "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals');
+DefMathLigature(">>"        => "\x{226B}", role => 'RELOP', meaning => 'much-greater-than');
+DefMathLigature("\x{226B}>" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-greater-than');
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
 # well, maybe a letter followed by letters & digits?
-DefMathLigature(sub { my ($document, @nodes) = @_;
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
     my @chars = ();
-    my $font  = $document->getNodeFont($nodes[-1]);
+    my $font  = $document->getNodeFont($node);
     if ($font->isSticky) {
-      my $node;
       my $n      = 0;
       my $string = '';
       my $s      = '';
-      while (($node = pop(@nodes))
+      while ($node
         && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
         && ($document->getNodeFont($node)->equals($font))
         && (!$node->hasAttribute('name'))
         && ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
           || (($node->getAttribute('role') || 'UNKNOWN') eq 'NUMBER'))
         && (($s = $node->textContent . $s) =~ /^[0-9a-zA-Z]+$/)) {
-        $n++; $string = $s; }
+        $n++; $string = $s;
+        $node = $node->previousSibling; }
       (($string =~ /^[a-zA-Z]/) && ($n > 1) ? ($n, $string, role => 'UNKNOWN', meaning => undef) : undef);
 } });
 
@@ -4040,17 +4021,17 @@ our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
 
 my %decimal_separator   = (en => '.', de => ',', fr => ',', nl => ',', pt => ',', es => ',');
 my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.', es => '.');
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    my $lang = $document->getNodeLanguage($nodes[-1]);
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
+    my $lang = $document->getNodeLanguage($node);
     $lang =~ s/-\w+$// if $lang;    # strip off region code, if any.
     my $dec  = ($lang && $decimal_separator{$lang})   || '.';
     my $thou = ($lang && $thousands_separator{$lang}) || ',';
     my $decrole = ($dec eq '.' ? 'PERIOD' : '');
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
-    my ($n, $node, $string, $number, $w) = (0, undef, '', '', 0);
+    my ($n, $string, $number, $w) = (0, '', '', 0);
     # NOTE: We're scanning chars from END!
-    while ($node = pop(@nodes)) {
+    while ($node) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
         my $r = ($node->getAttribute('role') || '');
@@ -4080,7 +4061,7 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
           last; } }
       else {
         last; }
-      $n++; }
+      $n++; $node = $node->previousSibling; }
     if (($n > 1) && ($number =~ /\d/)) {
       ($n, $string, meaning => $number, role => 'NUMBER'); } });
 
@@ -5343,20 +5324,12 @@ DefConstructorI('\dots', undef,
 # Pretest for XMath to keep from interpreting math that the DOM may not allow!!
 ##DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'\cdot\cdot\cdot',replace=>'\cdots');
 
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 3)
-      && !grep { ($document->getModel->getNodeQName($_) ne 'ltx:XMTok') || ($_->textContent ne "\x{22C5}") }
-      @nodes[$#nodes - 2 .. $#nodes]) {
-      (3, "\x{22EF}", name => 'cdots', role => 'ID'); } });
+DefMathLigature("\x{22C5}\x{22C5}\x{22C5}" => "\x{22EF}", role => 'ID', name => 'cdots');
+
 DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
 
 #DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'...',replace=>'\ldots');
-
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) >= 3)
-      && !grep { ($document->getModel->getNodeQName($_) ne 'ltx:XMTok') || ($_->textContent ne ".") }
-      @nodes[$#nodes - 2 .. $#nodes]) {
-      (3, "\x{2026}", name => 'ldots', role => 'ID'); } });
+DefMathLigature("..." => "\x{2026}", role => 'ID', name => 'ldots');
 
 #----------------------------------------------------------------------
 # Math Accents.
