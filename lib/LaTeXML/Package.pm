@@ -2432,12 +2432,45 @@ sub DefLigature {
       %options });
   return; }
 
-my $math_ligature_options = {};    # [CONSTANT]
+my $old_math_ligature_options = {};                                                  # [CONSTANT]
+my $math_ligature_options = { matcher => 1, role => 1, name => 1, meaning => 1 };    # [CONSTANT]
 
 sub DefMathLigature {
-  my ($matcher, %options) = @_;
-  CheckOptions("DefMathLigature", $math_ligature_options, %options);
-  UnshiftValue('MATH_LIGATURES', { matcher => $matcher, %options });
+  if ((scalar(@_) % 2) == 1) {                                                       # Old style!
+    my ($matcher, %options) = @_;
+    Info('deprecated', 'ligature', undef, "Old style arguments to DefMathLigature; please update");
+    CheckOptions("DefMathLigature", $old_math_ligature_options, %options);
+    UnshiftValue('MATH_LIGATURES', { old_style => 1, matcher => $matcher }); }       # Install it...
+  else {                                                                             # new style!
+    my (%options) = @_;
+    my $matcher = $options{matcher};
+    delete $options{matcher};
+    my ($pattern) = grep { !$$math_ligature_options{$_} } keys %options;
+    my $replacement = $pattern && $options{$pattern};
+    delete $options{$pattern} if $replacement;
+    CheckOptions("DefMathLigature", $math_ligature_options, %options);    # Check remaining options
+    if ($matcher && $pattern) {
+      Error('misdefined', 'MathLigature', undef,
+        "DefMathLigature only gets one of matcher or pattern=>replacement keywords");
+      return; }
+    elsif ($pattern) {
+      my @chars    = reverse(split(//, $pattern));
+      my $ntomatch = scalar(@chars);
+      my %attr     = %options;
+      $matcher = sub {
+        my ($document, $node) = @_;
+        foreach my $char (@chars) {
+          return unless
+            ($node
+            && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
+            && (($node->textContent || '') eq $char));
+          $node = $node->previousSibling; }
+        return ($ntomatch, $replacement, %attr); }; }
+    elsif (!$matcher) {
+      Error('misdefined', 'MathLigature', undef,
+        "DefMathLigature missing matcher or pattern=>replacement keywords");
+      return; }
+    UnshiftValue('MATH_LIGATURES', { matcher => $matcher }); }    # Install it...
   return; }
 
 #======================================================================
@@ -3840,17 +3873,23 @@ is applied only when C<fontTest> returns true.
 Predefined Ligatures combine sequences of "." or single-quotes into appropriate
 Unicode characters.
 
-=item C<DefMathLigature(I<code>($document,@nodes));>
+=item C<DefMathLigature(I<$string>C<=>>I<$replacment>,I<%options>);>
 
 X<DefMathLigature>
-I<code> is called on each sequence of math nodes at a given level.  If they should
-be replaced, return a list of C<($n,$string,%attributes)> to replace
-the text content of the first node with C<$string> content and add the given attributes.
-The next C<$n-1> nodes are removed.  If no replacement is called for, CODE
-should return undef.
+A Math Ligature typically combines a sequence of math tokens (XMTok) into a single one.
+A simple example is
 
-Predefined Math Ligatures combine letter or digit Math Tokens (XMTok) into multicharacter
-symbols or numbers, depending on the font (non math italic).
+   DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
+
+replaces the two tokens for colon and equals by a token representing assignment.
+The options are those characterising an XMTok, namely: C<role>, C<meaning> and C<name>.
+
+For more complex cases (recognizing numbers, for example), you may supply a
+function C<matcher=>CODE($document,$node)>, which is passed the current document
+and the last math node in the sequence.  It should examine C<$node> and any preceding
+nodes (using C<previousSibling>) and return a list of C<($n,$string,%attributes)> to replace
+the C<$n> nodes by a new one with text content being C<$string> content and the given attributes.
+If no replacement is called for, CODE should return undef.
 
 =back
 
