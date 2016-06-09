@@ -853,7 +853,7 @@ sub addAttribute {
 # if $levels is defined, show only that many levels
 sub getInsertionContext {
   my ($self, $levels) = @_;
-  if (! defined $levels) { # Default depth is based on verbosity
+  if (!defined $levels) {    # Default depth is based on verbosity
     my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
     $levels = 5 if ($verbosity <= 1); }
   my $node = $$self{node};
@@ -1052,8 +1052,11 @@ sub applyMathLigatures {
 # Apply ligature operation to $node, presumed the last insertion into it's parent(?)
 sub applyMathLigature {
   my ($self, $node, $ligature) = @_;
-  my @sibs = $node->parentNode->childNodes;
-  my ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, @sibs);
+  my ($nmatched, $newstring, %attr);
+  if ($$ligature{old_style}) {    # Obsolete style (expensively) passes in ALL sibling nodes
+    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node->parentNode->childNodes); }
+  else {                          # New style gets node and should ask for $node->previousSibling
+    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node); }
   if ($nmatched) {
     my @boxes = ($self->getNodeBox($node));
     $node->firstChild->setData($newstring);
