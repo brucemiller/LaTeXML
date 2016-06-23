@@ -537,7 +537,7 @@ sub do_pages {
 sub do_crossref {
   my ($node, @stuff) = @_;
   return (['ltx:cite', {},
-      ['ltx:bibref', { bibrefs => $node->getAttribute('bibrefs'), show => 'refnum' }]]); }
+      ['ltx:bibref', { bibrefs => $node->getAttribute('bibrefs'), show => 'title, author' }]]); }
 
 my $LINKS =                                       # CONSTANT
   "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
@@ -627,10 +627,10 @@ sub do_links {
       ['ltx:bib-related[@bibrefs]', ' ', 'See ', 'crossref', \&do_crossref, ','],
       # if NO crossref, used embedded editors & booktitle.
       #      ['ltx:bib-related[@type="book"]/ltx:bib-title', ' ', 'in ', 'inbook',   \&do_title,    ',']
-      ['ltx:bib-related[@type="book"][not(../ltx:bib-related[@bibrefs])]/ltx:bib-name[@role="editor"]',
-        ' ', 'in ', 'editor', \&do_editorsA, ','],
-      ['ltx:bib-related[@type="book"][not(../ltx:bib-related[@bibrefs])]/ltx:bib-title',
-        ' ', '', 'inbook', \&do_title, ',']
+      ['ltx:bib-related[@type][not(../ltx:bib-related[@bibrefs])]/ltx:bib-title',
+        ' ', 'In ', 'inbook', \&do_title, ','],
+      ['ltx:bib-related[@type][not(../ltx:bib-related[@bibrefs])]/ltx:bib-name[@role="editor"]',
+        ' ', ' ', 'editor', \&do_editorsA, ','],
     ],
     [['ltx:bib-edition', '', '', 'edition', \&do_edition, ''],
       ['ltx:bib-name[@role="editor"]',                 ', ', '',      'editor',    \&do_editorsB, ''],
