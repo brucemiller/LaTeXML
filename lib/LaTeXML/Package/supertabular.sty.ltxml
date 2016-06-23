@@ -22,13 +22,13 @@ DefPrimitive('\@supertabular@bindings [Dimension] AlignmentTemplate', sub {
 
 # Environment \begin{supertabular}{pattern} ... \end{supertabular}
 DefMacro('\supertabular{}',
-  '\@supertabular@topcaption'
+  '\@supertabular@start'
     . '\@supertabular@bindings{#1}\@@supertabular{#1}\@start@alignment'
     . '\@supertabular@head');
 DefMacro('\endsupertabular',
   '\@supertabular@tail'
     . '\@finish@alignment\@end@tabular'
-    . '\@supertabular@bottomcaption');
+    . '\@supertabular@finish');
 
 DefConstructor('\@@supertabular Undigested DigestedBody',
   '#2',
@@ -38,13 +38,13 @@ DefConstructor('\@@supertabular Undigested DigestedBody',
 
 # Environment \begin{supertabular*}{width}{pattern} ... \end{supertabular*}
 DefMacro('\csname supertabular*\endcsname{Dimension}{}',
-  '\@supertabular@topcaption'
+  '\@supertabular@start'
     . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\@start@alignment'
     . '\@supertabular@head');
 DefMacro('\csname endsupertabular*\endcsname',
   '\@supertabular@tail'
     . '\@finish@alignment\@end@tabular'
-    . '\@supertabular@bottomcaption');
+    . '\@supertabular@finish');
 
 DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
   '#3',
@@ -58,23 +58,23 @@ DefConstructor('\@@supertabular@ {Dimension} Undigested DigestedBody',
 
 # Environment \begin{mpsupertabular}{pattern} ... \end{mpsupertabular}
 DefMacro('\mpsupertabular{}',
-  '\@supertabular@topcaption'
+  '\@supertabular@start'
     . '\@supertabular@bindings{#1}\@@supertabular{#1}\@start@alignment'
     . '\@supertabular@head');
 DefMacro('\endmpsupertabular',
   '\@supertabular@tail'
     . '\@finish@alignment\@end@tabular'
-    . '\@supertabular@bottomcaption');
+    . '\@supertabular@finish');
 
 # Environment \begin{mpsupertabular*}{width}{pattern} ... \end{mpsupertabular*}
 DefMacro('\csname mpsupertabular*\endcsname{Dimension}{}',
-  '\@supertabular@topcaption'
+  '\@supertabular@start'
     . '\@supertabular@bindings[#1]{#2}\@@supertabular@{#1}{#2}\@start@alignment'
     . '\@supertabular@head');
 DefMacro('\csname endmpsupertabular*\endcsname',
   '\@supertabular@tail'
     . '\@finish@alignment\@end@tabular'
-    . '\@supertabular@bottomcaption');
+    . '\@supertabular@finish');
 
 #======================================================================
 # Table headings/footers.
@@ -85,8 +85,6 @@ DefPrimitive('\tablehead{}',      sub { AssignValue(SUPERTABULAR_HEAD      => $_
 DefPrimitive('\tablefirsthead{}', sub { AssignValue(SUPERTABULAR_FIRSTHEAD => $_[1], 'global') });
 DefPrimitive('\tabletail{}',      sub { AssignValue(SUPERTABULAR_TAIL      => $_[1], 'global') });
 DefPrimitive('\tablelasttail{}',  sub { AssignValue(SUPERTABULAR_LASTTAIL  => $_[1], 'global') });
-
-# These insert the appropriate header/footer into the supertabular.
 
 # We're not going to break the table into pages, so just take the firsthead,
 # instead of head, if it was given.  Analogously for tail
@@ -121,6 +119,18 @@ DefMacro('\@supertabular@docaption', sub {
     my $cap    = LookupValue('SUPERTABULAR_CAPTION');
     my $toccap = LookupValue('SUPERTABULAR_TOCCAPTION');
     ($cap ? Invocation(T_CS('\@caption'), T_OTHER('table'), $toccap, $cap)->unlist : ()); });
+
+#======================================================================
+
+DefPrimitive('\@supertabular@clear', sub {
+    # Note that the captions get cleared, but not the heads/tails!
+    AssignValue(SUPERTABULAR_TOCCAPTION => undef, 'global');
+    AssignValue(SUPERTABULAR_CAPTION    => undef, 'global'); });
+
+DefMacro('\@supertabular@start',  '\begin{table}\@supertabular@topcaption');
+DefMacro('\@supertabular@finish', '\@supertabular@bottomcaption\end{table}\@supertabular@clear');
+
+# These insert the appropriate header/footer into the supertabular.
 
 #======================================================================
 
