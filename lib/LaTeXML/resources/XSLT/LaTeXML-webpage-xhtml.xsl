@@ -123,6 +123,9 @@
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
       <xsl:choose>
         <xsl:when test="*/ltx:title | */ltx:caption">
+          <xsl:if test="$HEAD_TITLE_PREFIX">
+            <xsl:text>: </xsl:text>
+          </xsl:if>
           <xsl:choose>
             <xsl:when test="*/ltx:toctitle">
               <xsl:apply-templates select="*/ltx:toctitle[1]" mode="visible-text"/>
