@@ -863,7 +863,7 @@ In such a case, you would also need to extend the \XSLT\ stylesheets,
 as discussed in \ref{customization.latexmlpost.xslt}.
 
 %%%----------------------------------------------------------------------
-\section{latexml Customization}\label{customization.latexml}
+\section{LaTeXML Customization}\label{customization.latexml}
 This layer of customization deals with modifying the way a \LaTeX\ document
 is transformed into \LaTeXML's \XML, primarily through defining the way
 that control sequences are handled.
@@ -900,7 +900,9 @@ rather then in Perl. At the other end, constructors (eg. using \ltxcode|DefConst
 are usually defined by patterns of \XML.
 
 \subsection[Expansion]{Expansion \& Macros}\label{customization.latexml.expansion}
-\paragraph{\texttt{DefMacro}}
+%\paragraph{\texttt{DefMacro}}
+\paragraph[DefMacro]{%
+   \texttt{DefMacro(\textit{\$prototype},\textit{\$replacement},\textit{\%options})}}
 Macros are defined using \texttt{DefMacro}, such as the pointless:
 \begin{lstlisting}[style=latexml]
   DefMacro('\mybold{}','\textbf{#1}');
@@ -945,7 +947,7 @@ Generally, the body of the macro should \emph{not} involve side-effects, assignm
 or other changes to state other than reading \ltxpod{Core::Token}'s from the \ltxpod{Core::Gullet};
 of course, the macro may expand into control sequences which do have side-effects.
 
-\paragraph{Tokens}
+\paragraph[Tokens, Catcodes,\ldots]{\texttt{Tokens}, Catcodes and friends}
 Functions that are useful for dealing with \ltxpod{Core::Token}s and writing macros
 include the following:
 \begin{itemize}
@@ -1013,10 +1015,8 @@ is that primitives are processed after macro expansion,
 by the \ltxpod{Core::Stomach}.  They are most useful for
 side-effects, changing the \ltxpod{Core::State}.
 
-\paragraph{\texttt{DefPrimitive}}
-\par\noindent\ltxcode|DefPrimitive($prototype,$replacement,%options)|
-\par
-
+\paragraph[DefPrimitive]{%
+  {\texttt{DefPrimitive(\textit{\$prototype},\textit{\$replacement},\texttt{\%options})}}}
 The replacement is either a string which will be used to create
 a Box in the current font, or can be code taking the \ltxpod{Core::Stomach}
 and the control sequence arguments as argument; like macros, these arguments
@@ -1047,6 +1047,11 @@ Options to DefPrimitive are:
 \end{itemize}
 
 % DefRegister ?
+\paragraph[DefRegister]{%
+    \textit{DefRegister(\ldots)}}
+Needs descrition!
+
+\paragraph[Other]{Other Utilities for Digestion}
 
 Other functions useful for dealing with digestion and state are important for
 writing before \& after daemons in constructors, as well as in Primitives;
@@ -1142,9 +1147,8 @@ Here are a couple of trivial examples of constructors:
       ($_[1] ? (refnum=>$_[1]) : RefStepCounter('footnote')) });
 \end{lstlisting}
 
-\paragraph{\texttt{DefConstructor}}
-\par\noindent\ltxcode|DefConstructor($prototype,$replacement,%options)|
-\par
+\paragraph[DefConstructor]{%
+   \texttt{DefConstructor(\textit{\$prototype},\textit{\$replacement},\textit{\%options})}}
 The \ltxcode|$replacement| for a constructor describes the \XML\ to %$
 be generated during the construction phase. It can either be a string
 representing the \emph{XML pattern} (described below), or a
@@ -1257,9 +1261,9 @@ codepoint; this is useful for characters below \texttt{0x100} where
 Perl becomes confused about the encoding.
 \end{itemize}
 
-\paragraph{\texttt{DefEnvironment}}
-\par\noindent \ltxcode|DefEnvironment($prototypte,$replacement,%options)|
-\par Environments are largely a special case of constructors,
+\paragraph[DefEnvironment]{%
+  \textit{DefEnvironment(\textit{\$prototype},\textit{\$replacement},\textit{\%options})}}
+Environments are largely a special case of constructors,
 but the prototype starts with \verb|{envname}|, rather than \verb|\cmd|,
 the replacement will also typically involve \verb|#body| representing
 the contents of the environment.
@@ -1306,18 +1310,25 @@ the element.
 \subsection{Rewriting}\label{customization.latexml.rewriting}
 The following functions are a bit tricky to use (and describe),
 but can be quite useful in some circumstances.
-\begin{itemize}
-\item \ltxcode|DefLigature($regexp,%options)| applies a regular expression
+
+\paragraph[DefLigature]{%
+    \texttt{DefLigature(\textit{\$regexp},\textit{\%options})}}
+applies a regular expression
 to substitute textnodes after they are closed; the only option is \ltxcode|fontTest=>$code|
 which restricts the ligature to text nodes where the current font passes \ltxcode|&$code($font)|.
-\item \ltxcode|DefMathLigature($code)| allows replacement of sequences of math nodes.
+
+\paragraph[DefMathLigature]{%
+    \texttt{DefMathLigature(\textit{\$code},\textit{\%options})}}
+allows replacement of sequences of math nodes.
 It applies \ltxcode|$code| to the current \ltxpod{Core::Document}
 and each sequence of math nodes encountered in the document; if a replacement should
 occur, \ltxcode|$code| should return a list of the form \ltxcode|($n,$string,%attributes)|
 in which case, the text content of the first node is replaced by \ltxcode|$string|,
 the given attributes are added, and the following \ltxcode|$n-1| nodes are removed.
-\item \ltxcode|DefRewrite(%spec)|, \ltxcode|DefMathRewrite(%spec)| defines document
-rewrite rules. These specifications describe what document nodes match:
+
+\paragraph[DefRewrite]{%
+  \textit{DefRewrite(\textit{\%spec})}}
+defines document rewrite rules. These specifications describe what document nodes match:
 \begin{itemize}
 \item \ltxcode|label=>$label| restricts to nodes contained within an element whose
   \attr{labels} includes \ltxcode|$label|;
@@ -1334,7 +1345,6 @@ The following specifications describe what to do with the matched nodes:
 \item \ltxcode|attributes=>{%attr}| adds the given attributes to the matching nodes;
 \item \ltxcode|replace=>$tex| replaces the matching nodes with the result
 of processing the \TeX\ string \ltxcode|$tex|.
-\end{itemize}
 \end{itemize}
 
 \subsection{Packages and Options}\label{customization.latexml.packages}
