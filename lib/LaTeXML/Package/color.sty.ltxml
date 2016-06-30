@@ -78,7 +78,9 @@ DefPrimitive('\color[]{}', sub {
     my $color = ParseColor($model, $spec);
     AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
     MergeFont(color => $color);
-    Box(undef, undef, undef, Invocation(T_CS('\color'), $model, $spec)); });
+    Box(undef, undef, undef,
+      Invocation(T_CS('\color'), T_OTHER('rgb'),    # Revert to ACTUAL color, not user's name
+        T_OTHER(join(',', $color->rgb->components)))); });
 
 #\pagecolor{name} or \pagecolor[model]{spec}
 DefPrimitive('\pagecolor[]{}', sub {
