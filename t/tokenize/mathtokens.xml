@@ -6,22 +6,22 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" xml:id="S0.Ex1.m1" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-equals abc not-equals abc * ldots">
+      <Math mode="display" tex="abc\not=\mathrm{abc}\not=\mathit{abc}\ldots" text="a * b * c not-equals abc not-equals abc * ldots" xml:id="S0.Ex1.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="multirelation"/>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" role="UNKNOWN">c</XMTok>
             </XMApp>
             <XMTok meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
             <XMTok role="UNKNOWN">abc</XMTok>
             <XMTok meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMTok role="UNKNOWN" font="italic">abc</XMTok>
+              <XMTok font="italic" role="UNKNOWN">abc</XMTok>
               <XMTok name="ldots" role="ID">…</XMTok>
             </XMApp>
           </XMApp>
@@ -29,26 +29,26 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" xml:id="S0.Ex2.m1" tex="\pi\approx 3.1415\;926" text="pi approximately-equals 3.1415926">
+      <Math mode="display" tex="\pi\approx 3.1415\;926" text="pi approximately-equals 3.1415926" xml:id="S0.Ex2.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="approximately-equals" name="approx" role="RELOP">≈</XMTok>
-            <XMTok name="pi" role="UNKNOWN" font="italic">π</XMTok>
+            <XMTok font="italic" name="pi" role="UNKNOWN">π</XMTok>
             <XMTok meaning="3.1415926" role="NUMBER">3.1415 926</XMTok>
           </XMApp>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
-      <Math mode="display" xml:id="S0.Ex3.m1" tex="a\cdot b\cdot c\cdot\cdot\cdot" text="(a cdot b cdot c) * cdots">
+      <Math mode="display" tex="a\cdot b\cdot c\cdot\cdot\cdot" text="(a cdot b cdot c) * cdots" xml:id="S0.Ex3.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp>
               <XMTok name="cdot" role="MULOP">⋅</XMTok>
-              <XMTok role="UNKNOWN" font="italic">a</XMTok>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
-              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" role="UNKNOWN">c</XMTok>
             </XMApp>
             <XMTok name="cdots" role="ID">⋯</XMTok>
           </XMApp>

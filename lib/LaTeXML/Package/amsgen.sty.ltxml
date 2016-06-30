@@ -1,0 +1,51 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  amsgen.sty.ltxml                                                   | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Hopefully the special nature of this is ignorable...
+DefMacro('\@saveprimitive{}{}', '\let#2#1');
+
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
+DefRegister('\@emptytoks' => Tokens());
+DefMacro('\@oparg #1[#2]', '\@ifnextchar[{#1}{#1[#2]}');
+
+DefMacro('\@ifempty {}', '\@xifempty#1@@..\@nil');
+RawTeX(<<'EoTeX');
+\def\@oparg#1[#2]{\@ifnextchar[{#1}{#1[#2]}}
+\long\def\@ifempty#1{\@xifempty#1@@..\@nil}
+\long\def\@xifempty#1#2@#3#4#5\@nil{%
+  \ifx#3#4\@xp\@firstoftwo\else\@xp\@secondoftwo\fi}
+\long\def\@ifnotempty#1{\@ifempty{#1}{}}
+EoTeX
+
+DefMacroI('\FN@',        undef, '\futurelet\@let@token');
+DefMacroI('\DN@',        undef, '\def\next@');
+DefMacroI('\RifM@',      undef, '\relax\ifmmode');
+DefMacroI('\setboxz@h',  undef, '\setbox\z@\hbox');
+DefMacroI('\wdz@',       undef, '\wd\z@');
+DefMacroI('\boxz@',      undef, '\box\z@');
+DefMacroI('\relaxnext@', undef, '\let\@let@token\relax');
+
+# Do we need to worry about the skip space issues...?
+Let('\new@ifnextchar', '\@ifnextchar');
+# \@ifstar already in LaTeX.pool
+DefRegister('\ex@' => Dimension('1pt'));    # Just fake it...
+# Hmm.... how should we detect whether there's already punctuation?
+DefMacro('\@addpunct{}', '#1');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

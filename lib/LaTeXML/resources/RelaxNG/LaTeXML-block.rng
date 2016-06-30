@@ -21,7 +21,7 @@
       <ref name="equationgroup"/>
       <ref name="quote"/>
       <ref name="block"/>
-      <ref name="listingblock"/>
+      <ref name="listing"/>
       <ref name="itemize"/>
       <ref name="enumerate"/>
       <ref name="description"/>
@@ -128,6 +128,12 @@ the processor will lift such elements out of math, when possible</a:documentatio
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="rowsep">
+        <a:documentation>the spacing between rows (equations, intertext,...)</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
   </define>
   <define name="equationgroup_model">
     <a:documentation>Content model for \elementref{equationgroup}.</a:documentation>
@@ -240,29 +246,46 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
-  <define name="listingblock">
-    <element name="listingblock">
-      <a:documentation>An in-block Listing, without caption</a:documentation>
-      <ref name="listingblock_attributes"/>
-      <ref name="listingblock_model"/>
+  <define name="listing">
+    <element name="listing">
+      <a:documentation>An Listing, (without caption: see \elementref{float})</a:documentation>
+      <ref name="listing_attributes"/>
+      <ref name="listing_model"/>
     </element>
   </define>
-  <define name="listingblock_attributes">
-    <a:documentation>Attributes for \elementref{listingblock}.</a:documentation>
+  <define name="listing_attributes">
+    <a:documentation>Attributes for \elementref{listing}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
+    <ref name="Positionable.attributes"/>
     <ref name="Backgroundable.attributes"/>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the listing; presumably the unformatted listing</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Data.attributes"/>
   </define>
-  <define name="listingblock_model">
-    <a:documentation>Content model for \elementref{listingblock}.</a:documentation>
+  <define name="listing_model">
+    <a:documentation>Content model for \elementref{listing}.</a:documentation>
     <zeroOrMore>
-      <ref name="Block.model"/>
+      <ref name="listingline"/>
     </zeroOrMore>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="listingline">
+    <element name="listingline">
+      <a:documentation>a line in a listing</a:documentation>
+      <ref name="listingline_attributes"/>
+      <ref name="listingline_model"/>
+    </element>
+  </define>
+  <define name="listingline_attributes">
+    <a:documentation>Attributes for \elementref{listingline}</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="listingline_model">
+    <a:documentation>Content model for \elementref{listingline}</a:documentation>
+    <optional>
+      <ref name="tag"/>
+    </optional>
+    <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->
   <define name="itemize">
@@ -338,6 +361,12 @@ which represents the term being described in each \elementref{item}.</a:document
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="itemsep">
+        <a:documentation>the vertical spacing between items</a:documentation>
+        <ref name="Length.type"/>
+      </attribute>
+    </optional>
   </define>
   <define name="item_model">
     <a:documentation>Content model for \elementref{item}.</a:documentation>

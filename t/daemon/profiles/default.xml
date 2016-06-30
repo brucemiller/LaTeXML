@@ -15,7 +15,15 @@
         <item xml:id="I1.i1">
           <tag>•</tag>
           <para xml:id="I1.i1.p1">
-            <p><Math mode="inline" xml:id="I1.i1.p1.m1" tex="a&gt;b" text="a &gt; b"><XMath><XMApp><XMTok meaning="greater-than" role="RELOP">&gt;</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+            <p><Math mode="inline" tex="a&gt;b" text="a &gt; b" xml:id="I1.i1.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
           </para>
         </item>
         <item xml:id="I1.i2">

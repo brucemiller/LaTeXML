@@ -34,9 +34,13 @@ my $DEFCOLOR      = 'black';      # [CONSTANT]
 my $DEFBACKGROUND = 'white';      # [CONSTANT]
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
+my $DEFLANGUAGE   = 'en';
 
 sub DEFSIZE { return $STATE->lookupValue('NOMINAL_FONT_SIZE') || 10; }
 
+my $FORCE_FAMILY = 0x1;
+my $FORCE_SERIES = 0x2;
+my $FORCE_SHAPE  = 0x4;
 #======================================================================
 # Mappings from various forms of names or component names in TeX
 # Given a font, we'd like to map it to the "logical" names derived from LaTeX,
@@ -180,25 +184,31 @@ sub lookupTeXFont {
 #======================================================================
 # NOTE:  Would it make sense to allow compnents to be `inherit' ??
 
-# Note: forcebold, forceshape are only useful for fonts in math
+# Note: forcefamily, forceseries, forceshape (& forcebold for compatibility)
+# are only useful for fonts in math; See the specialize method below.
 sub new {
   my ($class, %options) = @_;
-  my $family     = $options{family};
-  my $series     = $options{series};
-  my $shape      = $options{shape};
-  my $size       = $options{size};
-  my $color      = $options{color};
-  my $bg         = $options{background};
-  my $opacity    = $options{opacity};
-  my $encoding   = $options{encoding};
-  my $language   = $options{language};
-  my $forcebold  = $options{forcebold};
-  my $forceshape = $options{forceshape};
+  my $family    = $options{family};
+  my $series    = $options{series};
+  my $shape     = $options{shape};
+  my $size      = $options{size};
+  my $color     = $options{color};
+  my $bg        = $options{background};
+  my $opacity   = $options{opacity};
+  my $encoding  = $options{encoding};
+  my $language  = $options{language};
+  my $mathstyle = $options{mathstyle};
+  if ($options{forcebold}) {    # for compatibility
+    $series = 'bold'; $options{forceseries} = 1; }
+  my $force = 0
+    | ($options{forcefamily} ? $FORCE_FAMILY : 0)
+    | ($options{forceseries} ? $FORCE_SERIES : 0)
+    | ($options{forceshape}  ? $FORCE_SHAPE  : 0);
   return $class->new_internal(
     $family, $series, $shape, rationalizeFontSize($size),
     $color, $bg, $opacity,
     $encoding,  $language,
-    $forcebold, $forceshape); }
+    $mathstyle, $force); }
 
 sub new_internal {
   my ($class, @components) = @_;
@@ -207,12 +217,12 @@ sub new_internal {
 sub textDefault {
   my ($self) = @_;
   return $self->new_internal($DEFFAMILY, $DEFSERIES, $DEFSHAPE, DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, undef, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, $DEFENCODING, $DEFLANGUAGE, undef, 0); }
 
 sub mathDefault {
   my ($self) = @_;
   return $self->new_internal('math', $DEFSERIES, 'italic', DEFSIZE(),
-    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, undef, undef, undef); }
+    $DEFCOLOR, $DEFBACKGROUND, $DEFOPACITY, undef, $DEFLANGUAGE, 'text', 0); }
 
 # Accessors
 sub getFamily     { my ($self) = @_; return $$self[0]; }
@@ -224,6 +234,7 @@ sub getBackground { my ($self) = @_; return $$self[5]; }
 sub getOpacity    { my ($self) = @_; return $$self[6]; }
 sub getEncoding   { my ($self) = @_; return $$self[7]; }
 sub getLanguage   { my ($self) = @_; return $$self[8]; }
+sub getMathstyle  { my ($self) = @_; return $$self[9]; }
 
 sub toString {
   my ($self) = @_;
@@ -232,7 +243,7 @@ sub toString {
 # Perhaps it is more useful to list only the non-default components?
 sub stringify {
   my ($self) = @_;
-  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang) = @$self;
+  my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang, $mstyle) = @$self;
   $fam = 'serif' if $fam && ($fam eq 'math');
   return 'Font[' . join(',', map { Stringify($_) } grep { $_ }
       (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
@@ -241,7 +252,9 @@ sub stringify {
     (isDiff($siz, DEFSIZE())      ? ($siz) : ()),
     (isDiff($col, $DEFCOLOR)      ? ($col) : ()),
     (isDiff($bkg, $DEFBACKGROUND) ? ($bkg) : ()),
-    (isDiff($opa, $DEFOPACITY)    ? ($opa) : ())) . ']'; }
+    (isDiff($opa, $DEFOPACITY)    ? ($opa) : ()),
+    ($mstyle ? ($mstyle) : ()))
+    . ']'; }
 
 sub equals {
   my ($self, $other) = @_;
@@ -264,12 +277,12 @@ sub match {
 
 sub makeConcrete {
   my ($self, $concrete) = @_;
-  my ($family,  $series,  $shape,  $size,  $color,  $bg,  $opacity,  $encoding,  $lang)  = @$self;
-  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding, $olang) = @$concrete;
+  my ($family, $series, $shape, $size, $color, $bg, $opacity, $encoding, $lang, $mstyle) = @$self;
+  my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding, $olang, $omstyle) = @$concrete;
   return (ref $self)->new_internal(
     $family || $ofamily, $series || $oseries, $shape || $oshape, $size || $osize,
     $color || $ocolor, $bg || $obg, (defined $opacity ? $opacity : $oopacity),
-    $encoding || $oencoding, $lang || $olang); }
+    $encoding || $oencoding, $lang || $olang, $mstyle || $omstyle); }
 
 sub isDiff {
   my ($x, $y) = @_;
@@ -285,8 +298,8 @@ sub isDiff {
 #    properties => { %fontproperties }
 sub relativeTo {
   my ($self, $other) = @_;
-  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang)  = @$self;
-  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang) = @$other;
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang,  $mstyle)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang, $omstyle) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
   my @diffs = (
@@ -316,12 +329,18 @@ sub relativeTo {
     (isDiff($lang, $olang)
       ? ('xml:lang' => { value => $lang, properties => { language => $lang } })
       : ()),
+    ### Contemplate this: We do NOT want mathstyle showing up (automatically) in the attributes
+    ### So, we presumably want to ignore differences in mathstyle
+    ### They shouldn't (by themselves) affect the display?
+###    (isDiff($mstyle, $omstyle)
+###      ? ('mathstyle' => { value => $mstyle, properties => { mathstyle => $mstyle } })
+###      : ()),
     ); }
 
 sub distance {
   my ($self, $other) = @_;
-  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang)  = @$self;
-  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang) = @$other;
+  my ($fam,  $ser,  $shp,  $siz,  $col,  $bkg,  $opa,  $enc,  $lang,  $mstyle)  = @$self;
+  my ($ofam, $oser, $oshp, $osiz, $ocol, $obkg, $oopa, $oenc, $olang, $omstyle) = @$other;
   $fam  = 'serif' if $fam  && ($fam eq 'math');
   $ofam = 'serif' if $ofam && ($ofam eq 'math');
   return
@@ -334,6 +353,8 @@ sub distance {
     + (isDiff($opa, $oopa) ? 1 : 0)
 ##  + (isDiff($enc,$oenc)  ? 1 : 0)
     + (isDiff($lang, $olang) ? 1 : 0)
+    # Let's not consider mathstyle differences here, either.
+###    + (isDiff($mstyle, $omstyle) ? 1 : 0)
     ; }
 
 # This matches fonts when both are converted to strings (toString),
@@ -357,7 +378,7 @@ sub match_font {
       $regexp = $FONT_REGEXP_CACHE{$font1} = qr/$re/; } }
   return $font2 =~ /$regexp/; }
 
-sub font_match_xpaths {
+sub XXXfont_match_xpaths {
   my ($font) = @_;
   if ($font =~ /^Font\[(.*)\]$/) {
     my @comps = split(',', $1);
@@ -377,23 +398,51 @@ sub font_match_xpaths {
     return join(' and ', '@_font',
       map { "contains(\@_font,'$_')" } @frags); } }
 
+sub font_match_xpaths {
+  my ($font) = @_;
+  if ($font =~ /^Font\[(.*)\]$/) {
+    my ($family, $series, $shape, $size, $color, $bg, $opacity, $encoding, $language,
+      $mstyle, $force) = split(',', $1);
+    # Ignore differences in:
+    #    size, background, opacity, encoding, language(?), mathstyle,
+    # force bits assumed NOT relevant, also.
+    # For now, ignore color, too
+    my @frags = ();
+    push(@frags, '[' . $family . ',') if ($family ne '*');
+    push(@frags, ',' . $series . ',') if ($series ne '*');
+    push(@frags, ',' . $shape . ',')  if ($shape ne '*');
+    #    push(@frags, ',' . $color . ',')  if ($color ne '*');
+    return join(' and ', '@_font',
+      map { "contains(\@_font,'$_')" } @frags); } }
+
 # # Presumably a text font is "sticky", if used in math?
 # sub isSticky { return 1; }
 
+sub mergePurestyle {
+  my ($font, $other) = @_;
+  return $font->merge(
+    size       => $other->getSize,
+    color      => $other->getColor,
+    background => $other->getBackground,
+    opacity    => $other->getOpacity,
+    mathstyle  => $other->getMathstyle); }
 #======================================================================
+our %mathstylesize = (display => 1, text => 1,
+  script => 0.7, scriptscript => 0.5);
+
+# NOTE: that we assume the size has already been adjusted for mathstyle, if necessary.
 sub computeStringSize {
   my ($self, $string) = @_;
-  my $size = $self->getSize;
-  my $u    = (defined $string
-    ? (($self->getSize || DEFSIZE()) || 10) * 65535 * length($string)
-    : 0);
-  return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
+  my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
+  my $l = (defined $string ? length($string) : 0);
+  my $u = $size * 65535;
+  return (Dimension(0.75 * $u * $l), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Get nominal width, height base ?
 sub getNominalSize {
   my ($self) = @_;
-  my $size = $self->getSize;
-  my $u = (($self->getSize || DEFSIZE()) || 10) * 65535;
+  my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
+  my $u = $size * 65535;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
@@ -489,43 +538,76 @@ sub isSticky {
   my ($self) = @_;
   return $$self[0] && ($$self[0] =~ /^(?:serif|sansserif|typewriter)$/); }
 
+our %scriptstylemap = (display => 'script', text => 'script',
+  script => 'scriptscript', scriptscript => 'scriptscript');
+our %fracstylemap = (display => 'text', text => 'script',
+  script => 'scriptscript', scriptscript => 'scriptscript');
+our %stylesize = (display => 10, text => 10,
+  script => 7, scriptscript => 5);
+
 # NOTE: In math, NORMALLY, setting any one of
 #    family, series or shape
 # will, usually, automatically reset the others to thier defaults!
 # You must arrange this in the calls....
 sub merge {
   my ($self, %options) = @_;
-  my $family     = $options{family};
-  my $series     = $options{series};
-  my $shape      = $options{shape};
-  my $size       = rationalizeFontSize($options{size});
-  my $color      = $options{color};
-  my $bg         = $options{background};
-  my $opacity    = $options{opacity};
-  my $encoding   = $options{encoding};
-  my $language   = $options{language};
-  my $forcebold  = $options{forcebold};
-  my $forceshape = $options{forceshape};
+  # Evaluate any functional values given.
+  foreach my $k (keys %options) {
+    $options{$k} = &{ $options{$k} }() if ref $options{$k} eq 'CODE'; }
 
+  my $family    = $options{family};
+  my $series    = $options{series};
+  my $shape     = $options{shape};
+  my $size      = rationalizeFontSize($options{size});
+  my $color     = $options{color};
+  my $bg        = $options{background};
+  my $opacity   = $options{opacity};
+  my $encoding  = $options{encoding};
+  my $language  = $options{language};
+  my $mathstyle = $options{mathstyle};
+  if ($options{forcebold}) {    # for compatibility
+    $series = 'bold'; $options{forceseries} = 1; }
+  my $force = 0
+    | ($options{forcefamily} ? $FORCE_FAMILY : 0)
+    | ($options{forceseries} ? $FORCE_SERIES : 0)
+    | ($options{forceshape}  ? $FORCE_SHAPE  : 0);
+
+  my $oforce = $$self[10];
   # Fallback to positional invocation:
-  $family     = $$self[0]  unless defined $family;
-  $series     = $$self[1]  unless defined $series;
-  $shape      = $$self[2]  unless defined $shape;
-  $size       = $$self[3]  unless defined $size;
-  $color      = $$self[4]  unless defined $color;
-  $bg         = $$self[5]  unless defined $bg;
-  $opacity    = $$self[6]  unless defined $opacity;
-  $encoding   = $$self[7]  unless defined $encoding;
-  $language   = $$self[8]  unless defined $language;
-  $forcebold  = $$self[9]  unless defined $forcebold;
-  $forceshape = $$self[10] unless defined $forceshape;
+  $family = $$self[0] if (!defined $family) || ($oforce & $FORCE_FAMILY);
+  $series = $$self[1] if (!defined $series) || ($oforce & $FORCE_SERIES);
+  $shape  = $$self[2] if (!defined $shape)  || ($oforce & $FORCE_SHAPE);
+  $size   = $$self[3] if (!defined $size);
+  $color  = $$self[4] if (!defined $color);
+  $bg     = $$self[5] if (!defined $bg);
+  $opacity   = $$self[6] if (!defined $opacity);
+  $encoding  = $$self[7] if (!defined $encoding);
+  $language  = $$self[8] if (!defined $language);
+  $mathstyle = $$self[9] if (!defined $mathstyle);
+  $force = ($$self[10] || 0) | $force;
 
   if (my $scale = $options{scale}) {
     $size = $scale * $size; }
+  # Set the mathstyle, and also the size from the mathstyle
+  # But we may need to scale that size against the existing or requested size.
+  my $stylescale = ($$self[3] ? $$self[3] / $stylesize{ $$self[9] || 'display' } : 1);
+  if ($options{size}) { }    # Explicitly requested size, use it
+  elsif ($options{mathstyle}) {    # otherwise set the size from mathstyle
+    $size = $stylescale * $stylesize{$mathstyle}; }
+  elsif ($options{scripted}) {     # Or adjust both the mathstyle & size for scripts
+    $mathstyle = $scriptstylemap{ $mathstyle          || 'display' };
+    $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
+  elsif ($options{fraction}) {     # Or adjust both for fractions
+    $mathstyle = $fracstylemap{ $mathstyle            || 'display' };
+    $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
 
-  return (ref $self)->new_internal($family, $series, $shape, $size,
+  my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
-    $encoding, $language, $forcebold, $forceshape); }
+    $encoding,  $language,
+    $mathstyle, $force);
+  if (my $specialize = $options{specialize}) {
+    $newfont = $newfont->specialize($specialize); }
+  return $newfont; }
 
 # Instanciate the font for a particular class of symbols.
 # NOTE: This works in `normal' latex, but probably needs some tunability.
@@ -537,35 +619,35 @@ sub merge {
 # Use Unicode properties to determine font merging.
 sub specialize {
   my ($self, $string) = @_;
-  return $self unless defined $string;
+  return $self if !(defined $string) || ref $string;    # ?
   my ($family, $series, $shape, $size, $color, $bg, $opacity,
-    $encoding, $language, $forcebold, $forceshape) = @$self;
-  $series = 'bold' if $forcebold;
+    $encoding, $language, $mathstyle, $force) = @$self;
+  my $deffamily = ($force & $FORCE_FAMILY ? $family || $DEFFAMILY : $DEFFAMILY);
+  my $defseries = ($force & $FORCE_SERIES ? $series || $DEFSERIES : $DEFSERIES);
+  my $defshape  = ($force & $FORCE_SHAPE  ? $shape  || $DEFSHAPE  : $DEFSHAPE);
   if (($string =~ /^\p{Latin}$/) && ($string =~ /^\p{L}$/)) {    # Latin Letter
     $shape = 'italic' if !$shape && !$family; }
   elsif ($string =~ /^\p{Greek}$/) {                             # Single Greek character?
     if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
       if (!$family || ($family eq 'math')) {
-        $family = $DEFFAMILY;
-        $shape = $DEFSHAPE if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
+        $family = $deffamily;
+        $shape = $defshape if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
     else {    # Lowercase
-      $family = $DEFFAMILY if !$family || ($family ne $DEFFAMILY);
-      $shape  = 'italic'   if !$shape  || !$forceshape;              # always ?
-      if ($forcebold) { $series = 'bold'; }
-      elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } } }
-  elsif ($string =~ /^\p{N}$/) {                                     # Digit
+      $family = $deffamily if !$family || ($family ne $DEFFAMILY);
+      $shape  = 'italic'   if !$shape  || !($force & $FORCE_SHAPE);    # always ?
+      if ($series && ($series ne $DEFSERIES)) { $series = $defseries; }
+    } }
+  elsif ($string =~ /^\p{N}$/) {                                       # Digit
     if (!$family || ($family eq 'math')) {
-      $family = $DEFFAMILY;
-      $shape  = $DEFSHAPE; } }                                       # defaults, always.
-  else {                                                             # Other Symbol
-    $family = $DEFFAMILY;
-    $shape  = $DEFSHAPE;                                             # defaults, always.
-    if ($forcebold) { $series = 'bold'; }
-    elsif ($series && ($series ne $DEFSERIES)) { $series = $DEFSERIES; } }
-
+      $family = $deffamily;
+      $shape  = $defshape; } }                                         # defaults, always.
+  else {                                                               # Other Symbol
+    $family = $deffamily;
+    $shape  = $defshape;                                               # defaults, always.
+    if ($series && ($series ne $DEFSERIES)) { $series = $defseries; } }
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
-    $encoding, $language, $forcebold, $forceshape); }
+    $encoding, $language, $mathstyle, $force); }
 
 #**********************************************************************
 1;

@@ -5,13 +5,45 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <para xml:id="p1">
-    <p>Text <ref class="ltx_url" href="http://foo/bar"><text font="typewriter">http://foo/bar</text></ref>
+  <section labels="LABEL:foobar" refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>FooBar</title>
+    <para xml:id="S1.p1">
+      <p>Methods <cite class="ltx_citemacro_cite">[<bibref bibrefs="b1,b2" separator="," show="Refnum" yyseparator=","/>]</cite>, by the <text font="italic">ab initio</text> crystal-orbital Hartree-Fock (HF)
+In section <ref labelref="LABEL:foobar"/></p>
+    </para>
+    <para xml:id="S1.p2">
+      <p><ref class="ltx_url" font="typewriter" href="http://foo.com/dont%00ignore this">http://foo.com/dont%00ignore␣this</ref>
 and
-<ref class="ltx_url" href="http://foo/baz%bar"><text font="typewriter">http://foo/baz%bar</text></ref>
-done.</p>
-  </para>
-  <para xml:id="p2">
-    <p>Verbatim <verbatim font="typewriter">a_b</verbatim> done.</p>
-  </para>
+<ref class="ltx_url" font="typewriter" href="http://foo.com/dont%00ignore this">http://foo.com/dont%00ignore␣this</ref>
+However
+<ref class="ltx_url" font="typewriter" href="http://foo.com/dont">http://foo.com/dont</ref> ignore this either</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Consider <verbatim font="typewriter">http://\host/page</verbatim> versus <ref class="ltx_url" font="typewriter" href="http://\host/page">http://\host/page</ref>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Consider <verbatim font="typewriter">a_b</verbatim> versus <ref class="ltx_url" font="typewriter" href="a_b">a_b</ref>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>When delimited, extra braces are allowed by verb, but not url.
+<verbatim font="typewriter">{{{{</verbatim> versus ?? OTOH, neither allow extra braces when using braces.</p>
+    </para>
+  </section>
+  <bibliography xml:id="bib">
+    <title>References</title>
+    <biblist>
+      <bibitem key="b1" xml:id="bib.bib1">
+        <bibtag role="refnum">1</bibtag>
+        <bibblock>C. W. Bunn, Trans. Faraday Society 35 (1939)482.
+</bibblock>
+      </bibitem>
+      <bibitem key="b2" xml:id="bib.bib2">
+        <bibtag role="refnum">2</bibtag>
+        <bibblock>H. M. M. Shearer and V. Vand,
+Acta Crystallogr. 9 (1956) 379; H. M. M. Shearer and P. W. Teare, ibid.
+12 (1959) 294. 
+</bibblock>
+      </bibitem>
+    </biblist>
+  </bibliography>
 </document>

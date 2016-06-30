@@ -45,7 +45,8 @@ DefMacro('\startdata', '\bgroup\@deluxetable@bindings\@@deluxetabular\@start@ali
 DefMacro('\enddata', '\\\\\hline\@finish@alignment\@end@deluxetabular\egroup');
 
 DefPrimitive('\@deluxetable@bindings', sub {
-    alignmentBindings(LookupValue('@deluxetable@template'), 'text'); });
+    tabularBindings(LookupValue('@deluxetable@template')); });
+
 DefConstructor('\@@deluxetabular DigestedBody',
   '#1',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',

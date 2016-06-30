@@ -5,476 +5,404 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular vattach="middle" class="ltx_guessed_headers">
+    <tabular class="ltx_guessed_headers" vattach="middle">
       <thead>
         <tr>
           <td align="left" thead="column row">?</td>
-          <td align="left" border="r" thead="column">
-            <Math mode="inline" xml:id="p1.m1" tex="\mathaccent 23{u}_{s}" text="(˚@(u)) _ s">
+          <td align="left" border="r" thead="column"><Math mode="inline" tex="\mathaccent 23{u}_{s}" text="(˚@(u)) _ s" xml:id="p1.m1">
               <XMath>
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
                   <XMApp>
                     <XMTok role="OVERACCENT">˚</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">u</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">u</XMTok>
                   </XMApp>
-                  <XMTok role="UNKNOWN" font="italic">s</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">s</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
           <td thead="column"/>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m2" tex="\acute{a}" text="acute@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\acute{a}" text="acute@(a)" xml:id="p1.m2">
               <XMath>
                 <XMApp>
                   <XMTok name="acute" role="OVERACCENT">´</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m3" tex="\mathaccent 28691{a}" text="´@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28691{a}" text="´@(a)" xml:id="p1.m3">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">´</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m4" tex="\acute{abc}" text="acute@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\acute{abc}" text="acute@(a * b * c)" xml:id="p1.m4">
               <XMath>
                 <XMApp>
                   <XMTok name="acute" role="OVERACCENT">´</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m5" tex="\bar{a}" text="bar@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\bar{a}" text="bar@(a)" xml:id="p1.m5">
               <XMath>
                 <XMApp>
                   <XMTok name="bar" role="OVERACCENT" stretchy="false">¯</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m6" tex="\mathaccent 28694{a}" text="¯@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28694{a}" text="¯@(a)" xml:id="p1.m6">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">¯</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m7" tex="\bar{abc}" text="bar@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\bar{abc}" text="bar@(a * b * c)" xml:id="p1.m7">
               <XMath>
                 <XMApp>
                   <XMTok name="bar" role="OVERACCENT" stretchy="false">¯</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m8" tex="\breve{a}" text="breve@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\breve{a}" text="breve@(a)" xml:id="p1.m8">
               <XMath>
                 <XMApp>
                   <XMTok name="breve" role="OVERACCENT">˘</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m9" tex="\mathaccent 28693{a}" text="˘@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28693{a}" text="˘@(a)" xml:id="p1.m9">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">˘</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m10" tex="\breve{abc}" text="breve@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\breve{abc}" text="breve@(a * b * c)" xml:id="p1.m10">
               <XMath>
                 <XMApp>
                   <XMTok name="breve" role="OVERACCENT">˘</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m11" tex="\check{a}" text="check@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\check{a}" text="check@(a)" xml:id="p1.m11">
               <XMath>
                 <XMApp>
                   <XMTok name="check" role="OVERACCENT" stretchy="false">ˇ</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m12" tex="\mathaccent 28692{a}" text="ˇ@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28692{a}" text="ˇ@(a)" xml:id="p1.m12">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">ˇ</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m13" tex="\check{abc}" text="check@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\check{abc}" text="check@(a * b * c)" xml:id="p1.m13">
               <XMath>
                 <XMApp>
                   <XMTok name="check" role="OVERACCENT" stretchy="false">ˇ</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m14" tex="\ddot{a}" text="ddot@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\ddot{a}" text="ddot@(a)" xml:id="p1.m14">
               <XMath>
                 <XMApp>
                   <XMTok name="ddot" role="OVERACCENT">¨</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m15" tex="\mathaccent 28799{a}" text="¨@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28799{a}" text="¨@(a)" xml:id="p1.m15">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">¨</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m16" tex="\ddot{abc}" text="ddot@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\ddot{abc}" text="ddot@(a * b * c)" xml:id="p1.m16">
               <XMath>
                 <XMApp>
                   <XMTok name="ddot" role="OVERACCENT">¨</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m17" tex="\dot{a}" text="dot@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\dot{a}" text="dot@(a)" xml:id="p1.m17">
               <XMath>
                 <XMApp>
                   <XMTok name="dot" role="OVERACCENT">˙</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m18" tex="\mathaccent 28767{a}" text="˙@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28767{a}" text="˙@(a)" xml:id="p1.m18">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">˙</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m19" tex="\dot{abc}" text="dot@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\dot{abc}" text="dot@(a * b * c)" xml:id="p1.m19">
               <XMath>
                 <XMApp>
                   <XMTok name="dot" role="OVERACCENT">˙</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m20" tex="\grave{a}" text="grave@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\grave{a}" text="grave@(a)" xml:id="p1.m20">
               <XMath>
                 <XMApp>
                   <XMTok name="grave" role="OVERACCENT">`</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m21" tex="\mathaccent 28690{a}" text="`@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28690{a}" text="`@(a)" xml:id="p1.m21">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">`</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m22" tex="\grave{abc}" text="grave@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\grave{abc}" text="grave@(a * b * c)" xml:id="p1.m22">
               <XMath>
                 <XMApp>
                   <XMTok name="grave" role="OVERACCENT">`</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m23" tex="\hat{a}" text="hat@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\hat{a}" text="hat@(a)" xml:id="p1.m23">
               <XMath>
                 <XMApp>
                   <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m24" tex="\mathaccent 28766{a}" text="^@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28766{a}" text="^@(a)" xml:id="p1.m24">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">^</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m25" tex="\hat{abc}" text="hat@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\hat{abc}" text="hat@(a * b * c)" xml:id="p1.m25">
               <XMath>
                 <XMApp>
                   <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m26" tex="\tilde{a}" text="tilde@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\tilde{a}" text="tilde@(a)" xml:id="p1.m26">
               <XMath>
                 <XMApp>
                   <XMTok name="tilde" role="OVERACCENT" stretchy="false">~</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m27" tex="\mathaccent 28798{a}" text="~@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28798{a}" text="~@(a)" xml:id="p1.m27">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">~</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m28" tex="\tilde{abc}" text="tilde@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\tilde{abc}" text="tilde@(a * b * c)" xml:id="p1.m28">
               <XMath>
                 <XMApp>
                   <XMTok name="tilde" role="OVERACCENT" stretchy="false">~</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m29" tex="\vec{a}" text="vec@(a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\vec{a}" text="vec@(a)" xml:id="p1.m29">
               <XMath>
                 <XMApp>
                   <XMTok name="vec" role="OVERACCENT" stretchy="false">→</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m30" tex="\mathaccent 382{a}" text="→@(a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 382{a}" text="→@(a)" xml:id="p1.m30">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">→</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left">
-            <Math mode="inline" xml:id="p1.m31" tex="\vec{abc}" text="vec@(a * b * c)">
+            </Math></td>
+          <td align="left"><Math mode="inline" tex="\vec{abc}" text="vec@(a * b * c)" xml:id="p1.m31">
               <XMath>
                 <XMApp>
                   <XMTok name="vec" role="OVERACCENT" stretchy="false">→</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
         </tr>
         <tr>
           <td thead="row"/>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m32" tex="\mathaccent 28695{a}" text="˚@(a)">
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 28695{a}" text="˚@(a)" xml:id="p1.m32">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">˚</XMTok>
-                  <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
           <td/>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m33" tex="\widetilde{aaa}" text="widetilde@(a * a * a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\widetilde{aaa}" text="widetilde@(a * a * a)" xml:id="p1.m33">
               <XMath>
                 <XMApp>
                   <XMTok name="widetilde" role="OVERACCENT">~</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m34" tex="\mathaccent 869{aaa}" text="~@(a * a * a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 869{aaa}" text="~@(a * a * a)" xml:id="p1.m34">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">~</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
           <td/>
         </tr>
         <tr>
-          <td align="left" thead="row">
-            <Math mode="inline" xml:id="p1.m35" tex="\widehat{aaa}" text="widehat@(a * a * a)">
+          <td align="left" thead="row"><Math mode="inline" tex="\widehat{aaa}" text="widehat@(a * a * a)" xml:id="p1.m35">
               <XMath>
                 <XMApp>
                   <XMTok name="widehat" role="OVERACCENT">^</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
-          <td align="left" border="r">
-            <Math mode="inline" xml:id="p1.m36" tex="\mathaccent 866{aaa}" text="^@(a * a * a)">
+            </Math></td>
+          <td align="left" border="r"><Math mode="inline" tex="\mathaccent 866{aaa}" text="^@(a * a * a)" xml:id="p1.m36">
               <XMath>
                 <XMApp>
                   <XMTok role="OVERACCENT">^</XMTok>
                   <XMApp>
                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMApp>
                 </XMApp>
               </XMath>
-            </Math>
-          </td>
+            </Math></td>
           <td/>
         </tr>
       </tbody>

@@ -48,7 +48,7 @@ sub pgfkeyCS {
 sub pgfkeyLookup {
   my ($key) = @_;
   my $kcs = pgfkeyCS($key);
-  return (LookupMeaning($kcs) ? $kcs : ()); }
+  return (LookupDefinition($kcs) ? $kcs : ()); }
 
 # Expand like edef does (w.r.t \the)
 sub eExpand {
@@ -174,7 +174,9 @@ DefMacro('\pgfkeysvaluerequired', '\pgfkeysvaluerequired',
 # (deals with /first char syntax/ stuff, affecting how key=value is parsed?)
 sub parsePGFKeys {
   my ($stomach, $keyvals) = @_;
-  my @tokens  = $keyvals->unlist;
+  my @tokens = $keyvals->unlist;
+  if (@tokens && ($tokens[0]->getCatcode == CC_BEGIN) && ($tokens[-1]->getCatcode == CC_END)) {
+    shift(@tokens); pop(@tokens); }    # unwrap
   my @results = ();
   while (@tokens) {
     while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip whitespace
@@ -302,7 +304,7 @@ sub pgfAssignKey {
       if (pgfkeyLookup($cmdkey = '/handlers/' . $name . '/.@cmd')    # a command bound?
         && (!$restricted || ($handle eq 'all')
           || (($handle eq 'full') && !IfCondition(T_CS('\ifpgfkeysaddeddefaultpath')))
-          || LookupMeaning(T_CS('\pgfkey@excpt@' . $name))
+          || LookupDefinition(T_CS('\pgfkey@excpt@' . $name))
           || pgfkeyLookup($path) || pgfkeyLookup($path . '/.@cmd'))) {
         return if $filtered && testFilterPredicate($key, 3);
         print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 3)\n" if $PGFKEYS_DEBUG;

@@ -1,0 +1,22 @@
+#!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  kwalitee                                                           | #
+# | generate a cpants kwalitee report                                   | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use warnings;
+use Test::More;
+#BEGIN {
+#  plan skip_all =
+#
+use Test::Kwalitee 'kwalitee_ok';
+kwalitee_ok();
+done_testing;

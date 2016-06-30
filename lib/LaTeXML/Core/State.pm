@@ -93,6 +93,7 @@ sub new {
     undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
     stomach => $options{stomach}, model => $options{model} }, $class;
   $$self{value}{VERBOSITY} = [0];
+  $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
@@ -104,7 +105,7 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', '%', "'"]];
+  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode} = {};
@@ -305,43 +306,150 @@ sub assignDelcode {
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
 
-# Get the `Meaning' of a token.  For a control sequence or otherwise active token,
-# this may give the definition object or a regular token (if it was \let), or undef.
-# Otherwise, the token itself is returned.
+our @active_or_cs = (
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 1, 0, 0,
+  1, 0);
+our @letter_or_other = (
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 0, 1,
+  1, 0, 0, 0,
+  0, 0);
+
+# Get the `Meaning' of a token.  For active control sequence's
+# this may give the definition object (if defined) or another token (if \let) or undef
+# Any other token is returned as is.
 sub lookupMeaning {
   my ($self, $token) = @_;
+  my $e;
   if (my $cs = $token
-    && $LaTeXML::Core::Token::executable_catcode[$$token[1]]
-    && ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0])) {
+    && $active_or_cs[$$token[1]]
+    && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
 
-sub lookupMeaning_internal {
-  my ($self, $token) = @_;
-  my $e = $$self{meaning}{ $token->getCSName };
-  return $e && $$e[0]; }
-
+# $meaning should be a definition (for defining active control sequences)
+# or another token, for \let
 sub assignMeaning {
-  my ($self, $token, $definition, $scope) = @_;
-  assign_internal($self, 'meaning', $token->getCSName => $definition, $scope);
+  my ($self, $token, $meaning, $scope) = @_;
+  return if $token->equals($meaning);    # HACK!!!????
+  assign_internal($self, 'meaning', $token->getCSName => $meaning, $scope);
   return; }
+
+# used for expansion & various queries
+# Since we're not doing digestion here, we don't need to handle mathactive,
+# nor cs let to executable tokens
+# This returns a definition object, or undef
+
+# merge of @executable_catcode & @PRIMITIVE_NAME
+our @executable_primitive_name = (    # [CONSTANT]
+  undef,       'Begin', 'End', 'Math',
+  'Align',     undef,   undef, 'Superscript',
+  'Subscript', undef,   undef, undef,
+  undef,       undef,   undef, undef,
+  undef,       undef);
 
 sub lookupDefinition {
   my ($self, $token) = @_;
-  my $x;
-  return ($token
-      && $LaTeXML::Core::Token::executable_catcode[$$token[1]]
-      && ($x = $$self{meaning}{ ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]) }) && ($x = $$x[0])
-###            && $x->isaDefinition
-      && $x->isa('LaTeXML::Core::Definition')
-    ? $x : undef); }
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  my $lookupname =
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
+  if ($lookupname
+    && ($entry = $$self{meaning}{$lookupname})
+    && ($defn  = $$entry[0])
+    # Can only be a token or definition; we want defns!
+    && ((ref $defn) ne 'LaTeXML::Core::Token')) {
+    return $defn; }
+  return; }
+
+# identical, but for return test; used by skipConditionalBody
+sub lookupConditional {
+  my ($self, $token) = @_;
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  my $lookupname =
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
+  if ($lookupname
+    && ($entry = $$self{meaning}{$lookupname})
+    && ($defn  = $$entry[0])
+    # Can only be a token or definition; we only want defns that have conditional_type
+    && ((ref $defn) ne 'LaTeXML::Core::Token')) {
+    return $$defn{conditional_type}; }
+  return; }
+
+# Identical but inlined return tests for efficiency; used by readXToken
+sub lookupExpandable {
+  my ($self, $token, $toplevel) = @_;
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  my $lookupname =
+    ($active_or_cs[$cc]
+    ? $$token[0]
+    : $executable_primitive_name[$cc]);
+  if ($lookupname
+    && ($entry = $$self{meaning}{$lookupname})
+    && ($defn  = $$entry[0])
+    # Can only be a token or definition; we want defns!
+    && ((ref $defn) ne 'LaTeXML::Core::Token')
+    && $$defn{isExpandable}
+    && ($toplevel || !$$defn{isProtected})) { # is this the right logic here? don't expand unless digesting?
+    return $defn; }
+  return; }
+
+# used for digestion
+# This recognizes mathactive tokens in math mode
+# and also looks for cs that have been let to other `executable' tokens
+# This returns a definition object,
+# or a "self inserting" token.
+sub lookupDigestableDefinition {
+  my ($self, $token) = @_;
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc   = $$token[1];
+  my $name = $$token[0];
+  my $lookupname =
+    (($active_or_cs[$cc]
+        || ($letter_or_other[$cc] && $self->lookupValue('IN_MATH')
+        && (($self->lookupMathcode($name) || 0) == 0x8000)))
+    ? $name
+    : $executable_primitive_name[$cc]);
+  if ($lookupname && ($entry = $$self{meaning}{$lookupname})
+    && ($defn = $$entry[0])) {
+    # If a cs has been let to an executable token, lookup ITS defn.
+    if (((ref $defn) eq 'LaTeXML::Core::Token')
+      && ($lookupname = $executable_primitive_name[$$defn[1]])
+      && ($entry      = $$self{meaning}{$lookupname})) {
+      $defn = $$entry[0]; }
+    return $defn; }
+  return $token; }
 
 # And a shorthand for installing definitions
 sub installDefinition {
   my ($self, $definition, $scope) = @_;
   # Locked definitions!!! (or should this test be in assignMeaning?)
   # Ignore attempts to (re)define $cs from tex sources
-  my $cs = $definition->getCS->getCSName;
+  #  my $cs = $definition->getCS->getCSName;
+  my $token = $definition->getCS;
+  my $cs = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     if (my $s = $self->getStomach->getGullet->getSource) {
       # report if the redefinition seems to come from document source
@@ -351,6 +459,15 @@ sub installDefinition {
       return; } }
   assign_internal($self, 'meaning', $cs => $definition, $scope);
   return; }
+
+# NOTE: Common usage patterns seem to be to lookup
+#   expandable definitions
+#   register values
+#   conditionals
+#   digestibles
+# or just variants on testing defined-ness
+# May be will introduce more clarity (possibly efficiency)
+# to collect those more uniformly and implement here, or in Package
 
 #======================================================================
 
@@ -385,13 +502,13 @@ sub getFrameDepth {
 # This is primarily about catcodes, but a bit more...
 
 sub beginSemiverbatim {
-  my ($self) = @_;
+  my ($self, @extraspecials) = @_;
   # Is this a good/safe enough shorthand, or should we really be doing beginMode?
   $self->pushFrame;
   $self->assignValue(MODE    => 'text');
   $self->assignValue(IN_MATH => 0);
   map { $self->assignCatcode($_ => CC_OTHER, 'local') }
-    @{ $self->lookupValue('SPECIALS') };
+    @{ $self->lookupValue('SPECIALS') }, @extraspecials;
   $self->assignMathcode('\'' => 0x8000, 'local');
   # try to stay as ASCII as possible
   $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local');
@@ -568,22 +685,22 @@ sub getStatusMessage {
   my ($self) = @_;
   my $status = $$self{status};
   my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''))
+  push(@report, colorizeString("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning'))
     if $$status{warning};
-  push(@report, "$$status{error} error" . ($$status{error} > 1 ? 's' : ''))
+  push(@report, colorizeString("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error'))
     if $$status{error};
   push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''))
 
     if $$status{fatal};
   my @undef = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  push(@report, scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-      . "[" . join(', ', @undef) . "]")
+  push(@report, colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+        . "[" . join(', ', @undef) . "]", 'details'))
     if @undef;
   my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  push(@report, scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-      . "[" . join(', ', @miss) . "]")
+  push(@report, colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+        . "[" . join(', ', @miss) . "]", 'details'))
     if @miss;
-  return join('; ', @report) || 'No obvious problems'; }
+  return join('; ', @report) || colorizeString('No obvious problems', 'success'); }
 
 sub getStatusCode {
   my ($self) = @_;

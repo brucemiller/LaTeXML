@@ -10,22 +10,148 @@
       <p>beep hello, BEEP. beep.</p>
     </para>
     <para xml:id="S1.p2">
-      <p>1. <Math mode="inline" xml:id="S1.p2.m1" tex="a+b" text="a + b"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp></XMath></Math></p>
+      <p>1. <Math mode="inline" tex="a+b" text="a + b" xml:id="S1.p2.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
     </para>
     <para xml:id="S1.p3">
-      <p>2. <Math mode="inline" xml:id="S1.p3.m1" tex="a\choose b" text="binomial@(a, b)"><XMath><XMDual><XMApp><XMTok meaning="binomial" role="STACKED"/><XMRef idref="S1.p3.m1.1"/><XMRef idref="S1.p3.m1.2"/></XMApp><XMWrap><XMTok role="OPEN">(</XMTok><XMApp xml:id="S1.p3.m1.3"><XMTok mathstyle="text" meaning="binomial" role="STACKED"/><XMTok role="UNKNOWN" xml:id="S1.p3.m1.1" font="italic">a</XMTok><XMTok role="UNKNOWN" xml:id="S1.p3.m1.2" font="italic">b</XMTok></XMApp><XMTok role="CLOSE">)</XMTok></XMWrap></XMDual></XMath></Math></p>
+      <p>2. <Math mode="inline" tex="a\choose b" text="a binomial b" xml:id="S1.p3.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMRef idref="S1.p3.m1.1"/>
+                <XMRef idref="S1.p3.m1.2"/>
+                <XMRef idref="S1.p3.m1.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                <XMApp xml:id="S1.p3.m1.4">
+                  <XMTok mathstyle="text" meaning="binomial" role="FRACOP" thickness="0pt" xml:id="S1.p3.m1.1"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p3.m1.2">a</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p3.m1.3">b</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math></p>
     </para>
     <para xml:id="S1.p4">
-      <p>3. <Math mode="inline" xml:id="S1.p4.m1" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMDual><XMApp><XMTok meaning="binomial" role="STACKED"/><XMRef idref="S1.p4.m1.1"/><XMRef idref="S1.p4.m1.2"/></XMApp><XMWrap><XMTok role="OPEN">(</XMTok><XMApp xml:id="S1.p4.m1.3"><XMTok mathstyle="text" meaning="binomial" role="STACKED"/><XMTok role="UNKNOWN" xml:id="S1.p4.m1.1" font="italic">b</XMTok><XMTok role="UNKNOWN" xml:id="S1.p4.m1.2" font="italic">c</XMTok></XMApp><XMTok role="CLOSE">)</XMTok></XMWrap></XMDual><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
+      <p>3. <Math mode="inline" tex="a+{b\choose c}+d" text="a + b binomial c + d" xml:id="S1.p4.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="S1.p4.m1.1"/>
+                  <XMRef idref="S1.p4.m1.2"/>
+                  <XMRef idref="S1.p4.m1.3"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="true">(</XMTok>
+                  <XMApp xml:id="S1.p4.m1.4">
+                    <XMTok mathstyle="text" meaning="binomial" role="FRACOP" thickness="0pt" xml:id="S1.p4.m1.1"/>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p4.m1.2">b</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p4.m1.3">c</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok font="italic" role="UNKNOWN">d</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
     </para>
     <para xml:id="S1.p5">
-      <p>4. <Math mode="inline" xml:id="S1.p5.m1" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMDual><XMApp><XMTok meaning="binomial" role="STACKED"/><XMRef idref="S1.p5.m1.1"/><XMRef idref="S1.p5.m1.2"/></XMApp><XMWrap><XMTok role="OPEN">(</XMTok><XMApp xml:id="S1.p5.m1.3"><XMTok mathstyle="text" meaning="binomial" role="STACKED"/><XMTok role="UNKNOWN" xml:id="S1.p5.m1.1" font="italic">b</XMTok><XMTok role="UNKNOWN" xml:id="S1.p5.m1.2" font="italic">c</XMTok></XMApp><XMTok role="CLOSE">)</XMTok></XMWrap></XMDual><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
+      <p>4. <Math mode="inline" tex="a+{b\choose c}+d" text="a + b binomial c + d" xml:id="S1.p5.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="S1.p5.m1.1"/>
+                  <XMRef idref="S1.p5.m1.2"/>
+                  <XMRef idref="S1.p5.m1.3"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="true">(</XMTok>
+                  <XMApp xml:id="S1.p5.m1.4">
+                    <XMTok mathstyle="text" meaning="binomial" role="FRACOP" thickness="0pt" xml:id="S1.p5.m1.1"/>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p5.m1.2">b</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p5.m1.3">c</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok font="italic" role="UNKNOWN">d</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
     </para>
     <para xml:id="S1.p6">
-      <p>5. <Math mode="inline" xml:id="S1.p6.m1" tex="a+{b\choose c}+d" text="a + binomial@(b, c) + d"><XMath><XMApp><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMDual><XMApp><XMTok meaning="binomial" role="STACKED"/><XMRef idref="S1.p6.m1.1"/><XMRef idref="S1.p6.m1.2"/></XMApp><XMWrap><XMTok role="OPEN">(</XMTok><XMApp xml:id="S1.p6.m1.3"><XMTok mathstyle="text" meaning="binomial" role="STACKED"/><XMTok role="UNKNOWN" xml:id="S1.p6.m1.1" font="italic">b</XMTok><XMTok role="UNKNOWN" xml:id="S1.p6.m1.2" font="italic">c</XMTok></XMApp><XMTok role="CLOSE">)</XMTok></XMWrap></XMDual><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMath></Math></p>
+      <p>5. <Math mode="inline" tex="a+{b\choose c}+d" text="a + b binomial c + d" xml:id="S1.p6.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="S1.p6.m1.1"/>
+                  <XMRef idref="S1.p6.m1.2"/>
+                  <XMRef idref="S1.p6.m1.3"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="true">(</XMTok>
+                  <XMApp xml:id="S1.p6.m1.4">
+                    <XMTok mathstyle="text" meaning="binomial" role="FRACOP" thickness="0pt" xml:id="S1.p6.m1.1"/>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p6.m1.2">b</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="S1.p6.m1.3">c</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok font="italic" role="UNKNOWN">d</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
     </para>
     <para xml:id="S1.p7">
-      <p>6. <Math mode="inline" xml:id="S1.p7.m1" tex="a+b\choose c+d" text="binomial@(a + b, c + d)"><XMath><XMDual><XMApp><XMTok meaning="binomial" role="STACKED"/><XMRef idref="S1.p7.m1.1"/><XMRef idref="S1.p7.m1.2"/></XMApp><XMWrap><XMTok role="OPEN">(</XMTok><XMApp xml:id="S1.p7.m1.3"><XMTok mathstyle="text" meaning="binomial" role="STACKED"/><XMApp xml:id="S1.p7.m1.1"><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">a</XMTok><XMTok role="UNKNOWN" font="italic">b</XMTok></XMApp><XMApp xml:id="S1.p7.m1.2"><XMTok meaning="plus" role="ADDOP">+</XMTok><XMTok role="UNKNOWN" font="italic">c</XMTok><XMTok role="UNKNOWN" font="italic">d</XMTok></XMApp></XMApp><XMTok role="CLOSE">)</XMTok></XMWrap></XMDual></XMath></Math></p>
+      <p>6. <Math mode="inline" tex="a+b\choose c+d" text="(a + b) binomial (c + d)" xml:id="S1.p7.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMRef idref="S1.p7.m1.1"/>
+                <XMRef idref="S1.p7.m1.2"/>
+                <XMRef idref="S1.p7.m1.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                <XMApp xml:id="S1.p7.m1.4">
+                  <XMTok mathstyle="text" meaning="binomial" role="FRACOP" thickness="0pt" xml:id="S1.p7.m1.1"/>
+                  <XMApp xml:id="S1.p7.m1.2">
+                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                  </XMApp>
+                  <XMApp xml:id="S1.p7.m1.3">
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math></p>
     </para>
   </section>
 </document>

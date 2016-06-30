@@ -35,6 +35,7 @@ sub new {
   # But be careful calling C library; its failures are harder to trap w/eval
   if (!$options{nocatalogs}) {
     $schemadoc = eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
       no warnings 'all';
       $xmlparser->parseFile($name); }; }
 

@@ -141,9 +141,10 @@ sub om_expr_aux {
   elsif ($tag eq 'ltx:XMText') {
     if (scalar(element_nodes($node))) {    # If it has markup?
       return ['om:OMATTR', {},
-        ['om:OMATP', { cd => 'OMDoc', name => 'verbalizes' },
-          ['om:FOREIGN', { encoding => 'mtext' },
-            $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT,
+        ['om:OMATP', {},
+          ['om:OMS', { cd => 'OMDoc', name => 'verbalizes' }],
+          ['om:OMFOREIGN', { encoding => 'mtext' },
+            $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 0,
               $node->childNodes)]],
         ['om:OMS', { cd => 'OMDoc', name => 'infObj' }]] }
     else {

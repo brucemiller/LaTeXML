@@ -260,8 +260,8 @@ sub DecodeColor {
   $expression = ToString($expression);
   my $prefix_re = qr/-/;    #
                             # [ <name> = . ==> current color; <name> = '' ==> white]
-  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
-  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+/;
+  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
+  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   my $pct_capture_re = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   # <mix_expr>     : !<pct1>!<name1>!...<pctn>!(<namen>)?
@@ -338,7 +338,8 @@ sub DecodeColor {
   }
   else {
     Error('misdefined', $expression, $STATE->getStomach,
-      "syntax error in <color> expression '$expression'"); }
+      "syntax error in <color> expression '$expression'");
+    return Black; }
   return $color; }
 
 sub LookupXColor {
@@ -440,11 +441,12 @@ DefPrimitive('\colorlet[]{}[]{}', sub {
     return unless checkNoPostscript($type, '\colorlet');
     ($type, $name, $tomodel, $colordesc)
       = map { $_ && Expand($_) } $type, $name, $tomodel, $colordesc;
-    DefColor(ToString($name), ParseXColor(undef, $colordesc, $tomodel),
-      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    my $color = ParseXColor(undef, $colordesc, $tomodel);
+    DefColor(ToString($name), $color, (LookupValue('xglobal@' => 0) ? 'global' : undef));
     AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
-      Invocation(T_CS('\colorlet'), $type, $name, $tomodel, $colordesc)); });
+      Invocation(T_CS('\definecolor'), $type, $name,    # Revert to ACTUAL color, not user's name
+        T_OTHER('rgb'), T_OTHER(join(',', $color->rgb->components)))); });
 
 # \definecolorset[<type>]{<model_list>}{<head>}{<tail>}{<set_spec>}
 DefPrimitive('\definecolorset[]{}{}{}{}', sub {
@@ -544,7 +546,9 @@ DefPrimitive('\color[]{}', sub {
     DefColor('.', $color);
     AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
     MergeFont(color => $color);
-    (Box(undef, undef, undef, Invocation(T_CS('\color'), $models, $colororspecs)),
+    (Box(undef, undef, undef,
+        Invocation(T_CS('\color'), T_OTHER('rgb'),    # Revert to ACTUAL color, not user's name
+          T_OTHER(join(',', $color->rgb->components)))),
       Digest(T_CS('\XC@mcolor'))); });
 
 DefPrimitive('\set@color', sub {

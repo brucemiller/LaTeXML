@@ -22,7 +22,7 @@ use LaTeXML::Package;
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     my ($stomach, $star, $cs, $text) = @_;
     DefMathI($cs, undef, Invocation(T_CS('\operatorname'), $star, $text),
-      scriptpos => ($star ? 'mid' : 'post'),
+      scriptpos => ($star ? \&doScriptpos : 'post'),
       role => 'OPFUNCTION',    # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
       font => { family => 'serif', series => 'medium', shape => 'upright' }); });
 
@@ -35,13 +35,13 @@ DefMath('\projlim', "proj lim",
   role => 'LIMITOP', meaning => 'projective-limit',
   scriptpos => \&doScriptpos);
 
-DefMath('\varlimsup', '\overline{\lim}',
+DefMath('\varlimsup', '\overline{\operatorname{lim}}',
   role => 'LIMITOP', meaning => 'limit-supremum');
-DefMath('\varliminf', '\underline{\lim}',
+DefMath('\varliminf', '\underline{\operatorname{lim}}',
   role => 'LIMITOP', meaning => 'limit-infimum');
-DefMath('\varinjlim', '\underrightarrow{\lim}',
+DefMath('\varinjlim', '\underrightarrow{\operatorname{lim}}',
   role => 'LIMITOP', meaning => 'injective-limit');
-DefMath('\varprojlim', '\underleftarrow{\lim}',
+DefMath('\varprojlim', '\underleftarrow{\operatorname{lim}}',
   role => 'LIMITOP', meaning => 'projective-limit');
 
 # Hmm... OPERATOR or LIMITOP ??

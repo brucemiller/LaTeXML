@@ -74,25 +74,29 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     $options = [($options ? split(/,\s*/, ToString($options)) : ())];
     # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
     # But, we'd prefer .cls, since we'll have better bindings.
-    # So, if we do NOT find a class file, but DO find style file, load the style file
-    if (my $stylefile = !FindFile($class, type => 'cls', notex => 1) && FindFile($class, type => 'sty')) {
-      LoadClass('article');    # Just to be safe, but w/o options ?
-          # Load the package (with options); note: we're pretending it's a class (to some extent!)
-      RequirePackage($class, options => $options, as_class => 1,
-        after => Tokens(T_CS('\compat@loadpackages'))); }
-    # Otherwise, try to load the class file (falling back to article, if necessary)
-    else {
-      LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages'))); }
+    # And in fact, nobody's likely to write a binding for a .sty that wants to be a class anyway.
+    # So, we'll just try for a .cls, punting to OmniBus if needed.
+    # If we start wanting to read style files by default, we'll still need to handle this
+    # specially, since class (or sty files pretending to be) cover so much more.
+    LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages')));
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
-    my $name = ToString(Digest(T_CS('\@currname')));
-    my $type = ToString(Digest(T_CS('\@currext')));
+    my $name       = ToString(Digest(T_CS('\@currname')));
+    my $type       = ToString(Digest(T_CS('\@currext')));
+    my $hadmissing = 0;
     foreach my $option (@{ LookupValue('@unusedoptionlist') }) {
       if (FindFile($option, type => 'sty')) {
         RequirePackage($option); }
       else {
+        $hadmissing = 1;
         Info('unexpected', $option, $_[0], "Unexpected option '$option' passed to $name.$type"); } }
+    # Often, in compatibility mode, the options are used to load what are effectively
+    # document classes for specific journals, etc that introduce a bunch of new frontmatter!
+    # To try to recover from this, we'll go ahead & load the OmniBus class.
+    if ($hadmissing && !LookupValue('OmniBus.cls_loaded')) {
+      Info('note', 'OmniBus', $_[0], "Loading OmniBus class to attempt to cover missing options");
+      LoadClass('OmniBus'); }
     AssignValue('@unusedoptionlist', []); });
 
 sub onlyPreamble {
@@ -135,11 +139,11 @@ Let('\@currenvline', '\@empty');
 DefMacro('\begin{}', sub {
     my ($gullet, $env) = @_;
     my $name = $env && ToString($env);
-    if (LookupDefinition(T_CS("\\begin{$name}"))) {
+    if (IsDefined("\\begin{$name}")) {
       T_CS("\\begin{$name}"); }    # Magic cs!
     else {
       my $token = T_CS("\\$name");
-      if (IsUndefined($name)) {
+      if (!IsDefined($token)) {
         my $undef = '{' . $name . '}';
         $STATE->noteStatus(undefined => $undef);
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
@@ -151,8 +155,8 @@ DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
     my $name = $env && ToString($env);
     my $t;
-    if (LookupDefinition($t = T_CS("\\end{$name}"))) { $t; }                         # Magic CS!
-    elsif (LookupDefinition($t = T_CS("\\end$name"))) { ($t, T_CS('\endgroup')); }
+    if (IsDefined($t = T_CS("\\end{$name}"))) { $t; }                         # Magic CS!
+    elsif (IsDefined($t = T_CS("\\end$name"))) { ($t, T_CS('\endgroup')); }
     else { (T_CS('\endgroup')); } });
 
 #======================================================================
@@ -281,7 +285,9 @@ DefEnvironment('{document}', sub {
   afterDigestBegin => sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     if (my $ops = LookupValue('@at@begin@document')) {
-      Digest(Tokens(@$ops)); }
+      my @boxes = Digest(Tokens(@$ops));
+      $_[1]->setFont(LookupValue('font'));                     # Start w/ whatever font was selected.
+      return @boxes; }
     else {
       return; } },
   beforeDigestEnd => sub {
@@ -352,7 +358,7 @@ DefMacroI('\thempfootnote', undef, '\arabic{mpfootnote}');
 DefConstructor('\footnote[]{}',
   "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
   mode => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(); Digest('\normalfont'); },
+  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
     ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
 DefConstructor('\footnotemark[]',
@@ -673,7 +679,7 @@ DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
     my $name = ToString(Digest(T_CS('\@currname')));
     my $type = ToString(Digest(T_CS('\@currext')));
-    AddToMacro(T_CS("\\$name.$type-hook"), $code); });
+    AddToMacro(T_CS('\\' . $name . '.' . $type . '-h@@k'), $code); });
 
 DefMacro('\@ifpackageloaded', '\@ifl@aded\@pkgextension');
 DefMacro('\@ifclassloaded',   '\@ifl@aded\@clsextension');
@@ -1025,30 +1031,41 @@ DefMacro('\@itemlabel', '');         # Maybe needs to be same as \item will be u
 # by determining the right counter (level)
 # and binding the right \item ( \$type@item, if $type is defined)
 sub beginItemize {
-  my ($type, $counter) = @_;
+  my ($type, $counter, $nolevel) = @_;
   $counter = '@@item' unless $counter;
   my $level = LookupValue('itemlevel') + 1;
-  AssignValue(itemlevel => $level);
+  AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
+  AssignValue(itemlevel         => $level);
+  AssignValue(itemization_items => 0);
   my $postfix = ToString(Tokens(roman($level)));
+  my $usecounter = ($nolevel ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
-  AssignValue(itemcounter => $counter . $postfix);
-  ResetCounter($counter . $postfix);
+  DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
+  AssignValue(itemcounter => $usecounter);
+  ResetCounter($usecounter);
   return RefStepCounter('@itemize' . $postfix); }
 
 # Create id, and refnum attributes for an itemize type \item
 sub RefStepItemCounter {
-  my ($tag) = @_;
+  my ($tag)   = @_;
   my $counter = LookupValue('itemcounter');
+  my $n       = LookupValue('itemization_items');
+  AssignValue(itemization_items => $n + 1);
+  my %attr = ();
+  my $sep  = LookupDimension('\itemsep');
+  if (($n > 0) && $sep && ($sep->valueOf != LookupDimension('\lx@default@itemsep')->valueOf)) {
+    $attr{itemsep} = $sep; }
   if (defined $tag) {
+    my $ttag      = (ref $tag ? $tag : T_OTHER($tag));
     my @props     = RefStepID($counter);
-    my $refnum    = Digest(Tokens(T_BEGIN, $tag->unlist, T_END));
-    my $frefnum   = Digest(Tokens(T_BEGIN, Invocation(T_CS('\makelabel'), $tag), T_END));
+    my $refnum    = Digest(Tokens(T_BEGIN, $ttag->unlist, T_END));
+    my $frefnum   = Digest(Tokens(T_BEGIN, Invocation(T_CS('\makelabel'), $ttag), T_END));
     my $s_refnum  = ToString($refnum);
     my $s_frefnum = ToString($frefnum);
     return (@props, refnum => $refnum,
-      ($frefnum && (!$refnum || ($s_frefnum ne $s_refnum)) ? (frefnum => $frefnum) : ())); }
+      ($frefnum && (!$refnum || ($s_frefnum ne $s_refnum)) ? (frefnum => $frefnum) : ()), %attr); }
   else {
-    return RefStepCounter($counter); } }
+    return (RefStepCounter($counter), %attr); } }
 
 # The following two aren't used here; they're defined here so they
 # can be used in paralist.sty, enumerate.sty (perhaps others?)
@@ -1106,7 +1123,7 @@ sub setEnumerationStyle {
 # unless the optional tag argument was given!
 # We'll make the <ltx:tag> from either the optional arg, or from \labelitemi..
 DefConstructor('\itemize@item OptionalUndigested',
-  "<ltx:item xml:id='#id' ?#1(refnum='#refnum')>"
+  "<ltx:item xml:id='#id' ?#1(refnum='#refnum') itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@itemize@item OptionalUndigested',
@@ -1115,7 +1132,7 @@ DefConstructor('\inline@itemize@item OptionalUndigested',
   properties => sub { RefStepItemCounter($_[1]); });
 
 DefConstructor('\enumerate@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@enumerate@item OptionalUndigested',
@@ -1124,7 +1141,7 @@ DefConstructor('\inline@enumerate@item OptionalUndigested',
   properties => sub { RefStepItemCounter($_[1]); });
 
 DefConstructor('\description@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@description@item OptionalUndigested',
@@ -1196,16 +1213,28 @@ DefMacroI('\fnum@@@desciv',  undef, '{\descriptionlabel{}}');
 #======================================================================
 # C.6.3 The list and trivlist environments.
 #======================================================================
-# These are unlikely to generate what is wanted, but list, trivlist
-# don't give enough idea of the logical structure.
-# And, they can contain \item, so we need some list-like structure.
-# \begin{list}{number counter}{prelim}
-DefEnvironment('{list}{}{}',
-  "<ltx:itemize>#body</ltx:itemize>",
-  properties => sub { beginItemize('list'); });
+# Generic lists are given a way to format the item label, and presumably
+# a counter.
+
+DefConditional('\if@nmbrlist');
+DefMacro('\@listctr', '');
+DefPrimitive('\usecounter{}', sub {
+    my ($stomach, $counter) = @_;
+    $counter = ToString(Expand($counter));
+    beginItemize('list', $counter, ($counter ? 1 : 0));
+    return; });
+
+DefMacro('\list{}{}',
+'\let\@listctr\@empty#2\ifx\@listctr\@empty\usecounter{}\fi\expandafter\def\csname fnum@\@listctr\endcsname{#1}\lx@list');
+DefMacro('\endlist', '\endlx@list');
+
+DefConstructor('\lx@list DigestedBody',
+  "<ltx:itemize>#1</ltx:itemize>",
+  beforeDigest => sub { $_[0]->bgroup; });
+DefPrimitive('\endlx@list', sub { $_[0]->egroup; });
 
 DefConstructor('\list@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub { RefStepItemCounter($_[1]); });
 
@@ -1222,47 +1251,43 @@ DefEnvironment('{trivlist}',
   properties => sub { beginItemize('trivlist'); });
 
 DefConstructor('\trivlist@item OptionalUndigested',
-  "<ltx:item xml:id='#id' refnum='#refnum'>"
+  "<ltx:item xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
     . "<ltx:tag>#refnum</ltx:tag>",    # At least an empty tag!
   properties => sub { ($_[1] ? (refnum => Digest(Expand($_[1]))) : ()); });
 
-DefRegister('\topsep'           => Glue(0));
-DefRegister('\partopsep'        => Glue(0));
-DefRegister('\itemsep'          => Glue(0));
-DefRegister('\parsep'           => Glue(0));
-DefRegister('\@topsep'          => Glue(0));
-DefRegister('\@topsepadd'       => Glue(0));
-DefRegister('\@outerparskip'    => Glue(0));
-DefRegister('\leftmargin'       => Dimension(0));
-DefRegister('\rightmargin'      => Dimension(0));
-DefRegister('\listparindent'    => Dimension(0));
-DefRegister('\itemindent'       => Dimension(0));
-DefRegister('\labelwidth'       => Dimension(0));
-DefRegister('\labelsep'         => Dimension(0));
-DefRegister('\@totalleftmargin' => Dimension(0));
-DefRegister('\leftmargini'      => Dimension(0));
-DefRegister('\leftmarginii'     => Dimension(0));
-DefRegister('\leftmarginiii'    => Dimension(0));
-DefRegister('\leftmarginiv'     => Dimension(0));
-DefRegister('\leftmarginv'      => Dimension(0));
-DefRegister('\leftmarginvi'     => Dimension(0));
-DefRegister('\@listdepth'       => Number(0));
-DefRegister('\@itempenalty'     => Number(0));
-DefRegister('\@beginparpenalty' => Number(0));
-DefRegister('\@endparpenalty'   => Number(0));
-DefRegister('\labelwidthi'      => Dimension(0));
-DefRegister('\labelwidthii'     => Dimension(0));
-DefRegister('\labelwidthiii'    => Dimension(0));
-DefRegister('\labelwidthiv'     => Dimension(0));
-DefRegister('\labelwidthv'      => Dimension(0));
-DefRegister('\labelwidthvi'     => Dimension(0));
+DefRegister('\topsep'             => Glue(0));
+DefRegister('\partopsep'          => Glue(0));
+DefRegister('\lx@default@itemsep' => Glue(0));
+DefRegister('\itemsep'            => Glue(0));
+DefRegister('\parsep'             => Glue(0));
+DefRegister('\@topsep'            => Glue(0));
+DefRegister('\@topsepadd'         => Glue(0));
+DefRegister('\@outerparskip'      => Glue(0));
+DefRegister('\leftmargin'         => Dimension(0));
+DefRegister('\rightmargin'        => Dimension(0));
+DefRegister('\listparindent'      => Dimension(0));
+DefRegister('\itemindent'         => Dimension(0));
+DefRegister('\labelwidth'         => Dimension(0));
+DefRegister('\labelsep'           => Dimension(0));
+DefRegister('\@totalleftmargin'   => Dimension(0));
+DefRegister('\leftmargini'        => Dimension(0));
+DefRegister('\leftmarginii'       => Dimension(0));
+DefRegister('\leftmarginiii'      => Dimension(0));
+DefRegister('\leftmarginiv'       => Dimension(0));
+DefRegister('\leftmarginv'        => Dimension(0));
+DefRegister('\leftmarginvi'       => Dimension(0));
+DefRegister('\@listdepth'         => Number(0));
+DefRegister('\@itempenalty'       => Number(0));
+DefRegister('\@beginparpenalty'   => Number(0));
+DefRegister('\@endparpenalty'     => Number(0));
+DefRegister('\labelwidthi'        => Dimension(0));
+DefRegister('\labelwidthii'       => Dimension(0));
+DefRegister('\labelwidthiii'      => Dimension(0));
+DefRegister('\labelwidthiv'       => Dimension(0));
+DefRegister('\labelwidthv'        => Dimension(0));
+DefRegister('\labelwidthvi'       => Dimension(0));
 
 DefRegister('\@itemdepth' => Number(0));
-
-# NOTE: Eventually use \makelabel to construct the list ?
-#\makelabel{label}
-# Could do something with this, but it's a headache.
-DefPrimitive('\usecounter{}', undef);
 
 #======================================================================
 # C.6.4 Verbatim
@@ -1315,10 +1340,7 @@ DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
     my $mouth = $gullet->getMouth;
     my ($init, $body);
-    StartSemiverbatim();
-    AssignCatcode('\\', CC_OTHER);
-    AssignCatcode('{',  CC_OTHER);
-    AssignCatcode('}',  CC_OTHER);
+    StartSemiverbatim('%', '\\', '{', '}');
     $init = $mouth->readToken;
     $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
 
@@ -1606,6 +1628,14 @@ sub eqnarrayBindings {
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
   my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
     after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
+
+  my %attributes = (
+    'class'  => 'ltx_eqn_eqnarray',
+    'colsep' => LookupDimension('\arraycolsep')->multiply(2));
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
+    $attributes{rowsep} = $cur_jot; }
+
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
       openContainer => sub { my %attr = RefStepID('@equationgroup');
@@ -1617,7 +1647,7 @@ sub eqnarrayBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      attributes => { class => 'ltx_eqn_eqnarray' }));
+      properties => { preserve_structure => 1, attributes => {%attributes} }));
 
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
@@ -1743,12 +1773,13 @@ DefRegister('\mathindent' => Dimension(0));
 #======================================================================
 # sub, superscript and prime are in TeX.pool
 # Underlying support in TeX.pool.ltxml
-DefConstructor('\frac{}{}',
+DefConstructor('\frac InFractionStyle InFractionStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac);
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
+  properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
 # Ellipsis: See TeX.pool
 
@@ -1833,7 +1864,8 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'");
+        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        unless LookupValue(ToString($cs) . ':locked');
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -1874,7 +1906,7 @@ DefPrimitive('\DeclareTextCommand DefToken {}[Number][]{}', sub {
     my ($gullet, $cs, $encoding, $nargs, $opt, $expansion) = @_;
     my $css = ToString($cs);
     $encoding = ToString(Expand($encoding));
-    if (!LookupDefinition($cs)) {    # If not already defined...
+    if (!IsDefined($cs)) {    # If not already defined...
       DefMacroI($cs, undef,
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
@@ -1893,7 +1925,7 @@ DefPrimitive('\ProvideTextCommand DefToken {}[Number][]{}', sub {
 '\expandafter\ifx\csname\cf@encoding\string' . $css . '\endcsname\relax\csname?\string' . $css . '\endcsname'
           . '\else\csname\cf@encoding\string' . $css . '\endcsname\fi'); }
     my $ecs = T_CS('\\' . $encoding . $css);
-    if (!LookupDefinition($ecs)) {    # If not already defined...
+    if (!IsDefined($ecs)) {    # If not already defined...
       DefMacroI($ecs, convertLaTeXArgs($nargs, $opt), $expansion); }
     return; });
 
@@ -2005,16 +2037,19 @@ DefPrimitive('\TextSymbolUnavailable{}',     undef);
 
 DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
-    $name = ToString($name);
-    Info('ignore', $name, $stomach,
-      "Ignoring redefinition (\\newenvironment) of Environment '$name'")
-      if LookupDefinition(T_CS("\\$name"));
+    $name = ToString(Digest($name));
+    if (IsDefined(T_CS("\\$name"))) {
+      Info('ignore', $name, $stomach,
+        "Ignoring redefinition (\\newenvironment) of Environment '$name'")
+        unless (LookupValue('\\' . $name . ':locked')
+        || LookupValue('\\begin{' . $name . '}:locked'));
+      return; }
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef, $end); });
 
 DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
-    $name = ToString($name);
+    $name = ToString(Digest($name));
     DefMacroI(T_CS("\\$name"), convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef, $end); });
 
@@ -2024,16 +2059,17 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
 AssignValue('thm@swap' => 'N');
-DefRegister('\thm@style'       => Tokenize('plain'));
-DefRegister('\thm@headfont'    => Tokens(T_CS('\bfseries')));
-DefRegister('\thm@bodyfont'    => Tokens(T_CS('\itshape')));
-DefRegister('\thm@headpunct'   => Tokens());
-DefRegister('\thm@styling'     => Tokens());
-DefRegister('\thm@headstyling' => Tokens());
-DefRegister('\thm@prework'     => Tokens());
-DefRegister('\thm@postwork'    => Tokens());
-DefRegister('\thm@symbol'      => Tokens());
-DefRegister('\thm@numbering'   => Tokens(T_OTHER('arabic')));
+DefRegister('\thm@style'        => Tokenize('plain'));
+DefRegister('\thm@headfont'     => Tokens(T_CS('\bfseries')));
+DefRegister('\thm@bodyfont'     => Tokens(T_CS('\itshape')));
+DefRegister('\thm@headpunct'    => Tokens());
+DefRegister('\thm@styling'      => Tokens());
+DefRegister('\thm@headstyling'  => Tokens());
+DefRegister('\thm@prework'      => Tokens());
+DefRegister('\thm@postwork'     => Tokens());
+DefRegister('\thm@symbol'       => Tokens());
+DefRegister('\thm@numbering'    => Tokens(T_OTHER('arabic')));
+DefRegister('\thm@headformater' => undef);
 #  AssignValue('\thm@headfont' => T_CS('\bfseries'));
 #  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
 
@@ -2055,8 +2091,8 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
     defineNewTheorem($stomach, $flag, $thmset, $otherthmset, $type, $reset);
     # Reset these!
     DefRegister('\thm@prework'  => Tokens());
-    DefRegister('\thm@postwork' => Tokens());
-});
+    DefRegister('\thm@postwork' => Tokens()); },
+  locked => 1);
 
 # Some packages may want to add '\thm@headfont'
 AssignValue(THEOREM_PARAMETERS => ['\thm@bodyfont', '\thm@headpunct',
@@ -2105,9 +2141,16 @@ sub defineNewTheorem {
         ? (T_CS('\the' . $counter), ($type ? (T_SPACE) : ()), T_CS($thmname))
         : (T_CS($thmname), ($type ? (T_SPACE) : ()), T_CS('\the' . $counter)))),
     scope => 'global');
+  # amsthm allows you to define your own title formatter
+  # if there was one defined, use it, else define a new one.
+  my $headformatter = LookupValue('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
-    '\@tag{\csname fnum@' . $thmset . '\endcsname}'
-      . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct',
+    ($headformatter
+      ? Tokens($headformatter->unlist, T_BEGIN, ($type ? $type->unlist : ()), T_END,
+        T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
+        T_CS('\the'), T_CS('\thm@headpunct'))
+      : '\@tag{\csname fnum@' . $thmset . '\endcsname}'
+        . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct'),
     scope => 'global');
   DefEnvironment("{$thmset} OptionalUndigested",
     "<ltx:theorem xml:id='#id' class='#class'"
@@ -2124,8 +2167,8 @@ sub defineNewTheorem {
     beforeDigestEnd  => sub { Digest('\thm@doendmark'); },
     afterDigest      => sub { Digest('\the\thm@postwork'); },
     properties       => sub {
-      my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ()),
-        my $title = Digest(Tokens(T_BEGIN,
+      my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
+      my $title = Digest(Tokens(T_BEGIN,
           T_CS('\the'), T_CS('\thm@headfont'),
           T_CS('\the'), T_CS('\thm@headstyling'),
           T_CS('\format@title@' . $thmset),
@@ -2135,7 +2178,7 @@ sub defineNewTheorem {
         frefnum   => Digest(Tokens(T_CS('\fnum@' . $thmset))),
         title     => $title,
         titlefont => $title->getFont,
-        class     => 'ltx_theorem_' . CleanIndexKey($thmset),
+        class     => 'ltx_theorem_' . CleanClassName($thmset),
         ); },
     scope => 'global');
   return; }
@@ -2278,8 +2321,10 @@ Tag('ltx:figure', afterClose => sub { GenerateID(@_, 'fig'); });
 Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
 Tag('ltx:float',  afterClose => sub { GenerateID(@_, 'tab'); });
 
-DefConstructor('\@@caption{}', "<ltx:caption>#1</ltx:caption>");
-DefConstructor('\@@toccaption{}', "<ltx:toccaption>#1</ltx:toccaption>",
+# These may need to float up to where they're allowed,
+# or they may need to close <p> or similar.
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => '0');
 
 DefEnvironment('{figure}[]',
@@ -2455,6 +2500,7 @@ DefPrimitiveI('\@tabbing@hfil',       undef, undef);
 DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
+# Should there be some rowsep/colsep set here?
 sub tabbingBindings {
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(
@@ -2504,9 +2550,21 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 # attributes to all cells.  For HTML, CSS will be necessary to display them.
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
+DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
+DefRegister('\tabcolsep',            Dimension('6pt'));
+DefMacroI('\arraystretch', undef, "1");
+
 sub tabularBindings {
   my ($template, %properties) = @_;
   $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
+  if (!defined $properties{attributes}{colsep}) {
+    my $sep = LookupDimension('\tabcolsep');
+    if ($sep && ($sep->valueOf != LookupDimension('\lx@default@tabcolsep')->valueOf)) {
+      $properties{attributes}{colsep} = $sep; } }
+  if (!defined $properties{attributes}{rowsep}) {
+    my $str = ToString(Expand(T_CS('\arraystretch')));
+    if ($str != 1) {
+      $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   alignmentBindings($template, 'text', %properties);
   # Do like AddToMacro, but NOT global!
   foreach my $name ('@row@before', '@row@after', '@column@before', '@column@after') {
@@ -2540,20 +2598,6 @@ DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
 # so make it Undigested here!
 
-# Convert a vertical positioning, optional argument.
-#  t = "top", b = "bottom"; default is "middle".
-# Note that the default for vattach attribute is "baseline".
-sub translateAttachment {
-  my ($pos) = @_;
-  $pos = ($pos ? ToString($pos) : '');
-  return ($pos eq 't' ? 'top' : ($pos eq 'b' ? 'bottom' : 'middle')); }    # undef meaning 'baseline'
-
-DefConstructor('\@@tabular[] Undigested DigestedBody',
-  '#2',
-  reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
-  beforeDigest => sub { $_[0]->bgroup; },
-  mode         => 'text');
-
 DefConstructor('\@@tabular[] Undigested DigestedBody',
   '#3',
   reversion    => '\begin{tabular}[#1]{#2}#3\end{tabular}',
@@ -2561,8 +2605,9 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
   sizer        => '#3',
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    LookupValue('Alignment')->setProperties(
-      attributes => { vattach => translateAttachment($whatsit->getArg(1)) }); },
+    my $attr = LookupValue('Alignment')->getProperty('attributes');
+    $$attr{vattach} = translateAttachment($whatsit->getArg(1));
+    return; },
   mode => 'text');
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
@@ -2579,6 +2624,10 @@ DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
 Let('\multicolumn', '\@multicolumn');
 
 DefPrimitiveI('\hline', undef, undef);    # Redefined inside tabular
+# A weird bit that sometimes gets invoked by Cargo Cult programmers...
+# to \noalign in the defn of \hline! Bizarre! (see latex.ltx)
+# However, the really weird thing is the way this provides the } to close the argument
+DefMacroI('\@xhline', undef, '\ifnum0=`{\fi}');
 
 DefConstructor('\cline{}', '',
   afterDigest => sub {
@@ -2595,12 +2644,11 @@ DefConstructor('\cline{}', '',
 
 DefConstructorI('\vline', undef, "",    # ???
   properties => { isVerticalRule => 1 },);
-DefRegister('\arraycolsep',    Dimension('5pt'));
-DefRegister('\tabcolsep',      Dimension('6pt'));
-DefRegister('\arrayrulewidth', Dimension('0.4pt'));
-DefRegister('\doublerulesep',  Dimension('2pt'));
+DefRegister('\lx@default@arraycolsep', Dimension('5pt'));
+DefRegister('\arraycolsep',            Dimension('5pt'));
+DefRegister('\arrayrulewidth',         Dimension('0.4pt'));
+DefRegister('\doublerulesep',          Dimension('2pt'));
 DefMacro('\extracolsep{}', Tokens());
-DefMacroI('\arraystretch',   undef, "1");
 DefMacroI('\tabularnewline', undef, Tokens());
 
 #======================================================================
@@ -2608,9 +2656,16 @@ DefMacroI('\tabularnewline', undef, Tokens());
 
 DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     my ($stomach, $pos, $template) = @_;
-    alignmentBindings($template, 'math',
-      attributes => { vattach => translateAttachment($pos),
-        role => 'ARRAY' });
+    my $attr = { vattach => translateAttachment($pos),
+      role => 'ARRAY' };
+    # Determine column and row separations, if non default
+    my $colsep = LookupDimension('\arraycolsep');
+    if ($colsep && ($colsep->valueOf != LookupDimension('\lx@default@arraycolsep')->valueOf)) {
+      $$attr{colsep} = $colsep; }
+    my $str = ToString(Expand(T_CS('\arraystretch')));
+    if ($str != 1) {
+      $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
+    alignmentBindings($template, 'math', attributes => $attr);
     return; });
 
 DefMacro('\array[]{}',
@@ -2670,9 +2725,9 @@ Tag('ltx:*', 'afterClose:late' => sub {
 
 # These will get filled in during postprocessing.
 # * is added to accommodate hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[2])); });
-DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label'/>",    # Same??
+DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>", # Same??
   properties => sub { (label => CleanLabel($_[2])); });
 #======================================================================
 # C.11.3 Bibliography and Citation
@@ -2686,6 +2741,13 @@ DefMacroI('\thebibliography@ID', undef, Tokens());
 # This sub does things that would commonly be needed when starting a bibliography
 # setting the ID, etc...
 sub beginBibliography {
+  my ($whatsit) = @_;
+  beginBibliography_clean($whatsit);
+  # Fix for missing \bibitems!
+  setupPseudoBibitem();
+  return; }
+
+sub beginBibliography_clean {
   my ($whatsit) = @_;
   # Try to compute a reasonable, but unique ID;
   # relative to the document's ID, if any.
@@ -2705,8 +2767,6 @@ sub beginBibliography {
   #  $whatsit->setProperty(sort=> ???
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
-  # Fix for missing \bibitems!
-  setupPseudoBibitem();
   return; }
 
 DefMacro('\bibliography Semiverbatim', '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\@bibliography{#1}}');
@@ -2791,7 +2851,7 @@ DefConstructorI('\thebibliography', undef,
 DefConstructorI('\endthebibliography', undef,
   "</ltx:biblist></ltx:bibliography>",
   afterDigest => sub { my $t = T_CS('\@appendix');
-    Digest($t) if LookupDefinition($t);
+    Digest($t) if IsDefined($t);
     return; },
   locked => 1);
 # auto close the bibliography and contained biblist.
@@ -3034,8 +3094,8 @@ sub process_index_phrases {
         my $extra = ToString(Tokens(@tokens));
         if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
         elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
-        elsif ($extra eq '(') { }                                            # ?
-        elsif ($extra eq ')') { }                                            # ?
+        elsif ($extra eq '(') { $style = 'rangestart'; }                     # ?
+        elsif ($extra eq ')') { $style = 'rangeend'; }                       # ?
         else                  { $style = $index_style{$extra} || $extra; }
         @tokens = (); } }
     elsif (!@phrase && ($string =~ /\s/)) { }                                # Skip leading whitespace
@@ -3048,20 +3108,28 @@ sub process_index_phrases {
 
 DefMacro('\index{}', \&process_index_phrases);
 
+Tag('ltx:indexphrase',    afterClose => \&addIndexPhraseKey);
+Tag('ltx:glossaryphrase', afterClose => \&addIndexPhraseKey);
+### ltx:indexsee does NOT get a key (at this stage)!
+
+sub addIndexPhraseKey {
+  my ($document, $node) = @_;
+  if (!$node->getAttribute('key')) {
+    $node->setAttribute(key => CleanIndexKey($node->textContent)); }
+  return; }
+
 DefConstructor('\@index[]{}', "^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
   mode => 'text', reversion => '', sizer => 0);
 DefConstructor('\@indexphrase[]{}',
   "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
-  properties => { key => sub { CleanIndexKey($_[1]) || CleanIndexKey($_[2]); } });
-
+  properties => { key => sub { CleanIndexKey($_[1]); } });
 DefConstructor('\@indexsee{}',
   "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
-  properties => { name => sub { DigestIf('\seename') },
-    key => sub { CleanIndexKey($_[1]); } });
+  properties => { name => sub { DigestIf('\seename') } });
+
 DefConstructor('\@indexseealso{}',
   "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
-  properties => { name => sub { DigestIf('\alsoname') },
-    key => sub { CleanIndexKey($_[1]); } });
+  properties => { name => sub { DigestIf('\alsoname') } });
 
 DefConstructor('\glossary{}',
   "<ltx:glossaryphrase role='glossary' key='#key'>#1</ltx:glossaryphrase>",
@@ -3256,7 +3324,7 @@ DefRegister('\fill', Glue(0, '1fill'));
 # C.13.2 Space
 #======================================================================
 DefMacro('\hspace  OptionalMatch:* {Dimension}',
-  '\ifmmode\@math@hskip{#2}\else\@text@hskip{#2}\fi');
+  '\ifmmode\@math@hskip #2\relax\else\@text@hskip #2\relax\fi');
 
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);
@@ -3351,10 +3419,10 @@ AssignValue(SAVEBOX => 100);
 DefPrimitive('\newsavebox DefToken', sub {
     my $n = LookupValue('SAVEBOX') + 1;
     AssignValue(SAVEBOX => $n, 'global');
-    DefRegister(ToString($_[1]) => Number($n));
+    DefRegisterI($_[1], undef, Number($n));
     AssignValue('box' . $n, List()); });
 
-DefPrimitive('\sbox Register {}', sub {
+DefPrimitive('\sbox {Register} {}', sub {
     my ($defn)   = @{ $_[1] };
     my $value    = $defn->valueOf()->valueOf;
     my $contents = Digest($_[2]);
@@ -3483,12 +3551,17 @@ sub ReadPair {
   else              { $itemreader = ResolveReader($itemtype); }
   if (!$itemreader) {
     Error('misdefined', $itemtype, $gullet, "Can't find reader for Pair items from '$itemtype'");
-    return; }
+    return Pair(Dimension(0), Dimension(0)); }    # Assume something like this?
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_OTHER('('))) {
     $gullet->readToken; $gullet->skipSpaces;
+    if ($gullet->ifNext(T_OTHER('!'))) {          # maybe only for pstricks???
+      Error('unexpected', 'postscript', $gullet,
+        "Cannot process escape to postscript");
+      $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
+      return Pair(Dimension(0), Dimension(0)); }
     my $x = &$itemreader($gullet, $xarg);
-    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
+    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
     my $y = &$itemreader($gullet, $yarg);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }
@@ -3651,8 +3724,9 @@ DefConstructor('\bezier Number Pair Pair Pair',
 
 DefConstructor('\pic@makebox Pair []{}',
   "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
-  alias => '\makebox',
-  properties => sub { picProperties(size => picScale($_[1])); });
+  alias        => '\makebox',
+  beforeDigest => sub { reenterTextMode(); },
+  properties   => sub { picProperties(size => picScale($_[1])); });
 
 DefMacro('\pic@savebox DefToken Pair []{}', '\pic@@savebox{#1}{\pic@makebox #2[#3]{#4}}');
 DefPrimitive('\pic@@savebox DefToken {}', sub {
@@ -3665,8 +3739,9 @@ DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
 DefConstructor('\pic@framebox Pair []{}',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>"
     . "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
-  alias => '\framebox',
-  properties => sub { picProperties(size => picScale($_[1])); });
+  alias        => '\framebox',
+  beforeDigest => sub { reenterTextMode(); },
+  properties   => sub { picProperties(size => picScale($_[1])); });
 
 #DefConstructor('\pic@dashbox {Float} Pair [] {}',
 DefConstructor('\dashbox {Float} Pair [] {}',
@@ -3798,9 +3873,9 @@ DefPrimitive('\selectfont', sub {
     else { Info('unexpected', $series, $_[0], "Unrecognized font series '$series'."); }
     if (my $sh = LaTeXML::Common::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
     else { Info('unexpected', $shape, $_[0], "Unrecognized font shape '$shape'."); }
-});
+    return; });
 
-DefMacro('\usefont{}{}{}{}{}',
+DefMacro('\usefont{}{}{}{}',
   '\fontencoding{#1}\fontfamily{#2}\fontseries{#3}\fontshape{#4}\selectfont');
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
@@ -3851,8 +3926,11 @@ DefMacro('\textnormal{}', '\protect\ifmmode\textnormal@math{#1}\else{\normalfont
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
-    DefConstructor(ToString($cmd) . "{}", "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)", mode => 'text',
-      bounded => 1, beforeDigest => sub { Digest($font); }); });
+    DefConstructorI($cmd, "{}",
+      "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
+      mode => 'text', bounded => 1,
+      beforeDigest => sub { Digest($font); (); });
+    return; });
 
 DefPrimitive('\mathversion{}', sub {
     my ($stomach, $version) = @_;
@@ -3976,13 +4054,6 @@ RawTeX(<<'EoTeX');
 \def\@cdr#1#2\@nil{#2}
 \def\@carcube#1#2#3#4\@nil{#1#2#3}
 EoTeX
-
-sub isDefinable {
-  my ($token) = @_;
-  my $meaning = LookupMeaning($token);
-  my $name = $token->getString; $name =~ s/^\\//;
-  return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
-      && (($name ne 'relax') && ($name !~ /^end/))); }
 
 DefMacro('\@ifdefinable Token {}', sub {
     my ($gullet, $token, $if) = @_;
@@ -4222,6 +4293,84 @@ DefMacroI('\@tempc',  undef, '');
 DefMacroI('\@gtempa', undef, '');
 
 RawTeX(<<'EOTeX');
+\long\def \loop #1\repeat{%
+  \def\iterate{#1\relax  % Extra \relax
+               \expandafter\iterate\fi
+               }%
+  \iterate
+  \let\iterate\relax
+}
+\newdimen\@ydim 							
+\let\@@hyph=\-
+\newbox\@arstrutbox							
+\newbox\@begindvibox							
+\newcount\@botnum							
+\newdimen\@botroom							 
+\newcount\@chclass							 
+\newcount\@chnum							
+\newdimen\@clnht							
+\newdimen\@clnwd							
+\newdimen\@colht							
+\newcount\@colnum							 
+\newdimen\@colroom							
+\newbox\@curfield							 
+\newbox\@curline							 
+\newcount\@currtype							 
+\newcount\@curtab							 
+\newcount\@curtabmar							
+\newbox\@dashbox							
+\newcount\@dashcnt							 
+\newdimen\@dashdim							 
+\newcount\@dbltopnum							
+\newdimen\@dbltoproom							
+\let\@dischyph=\-
+\newcount\@enumdepth 
+\newcount\@floatpenalty							
+\newdimen\@fpmin							
+\newcount \@fpstype							
+\newcount\@highpenalty							
+\newcount\@hightab							
+\newbox\@holdpg								
+\newinsert \@kludgeins
+\newcount\@lastchclass							
+\newbox\@leftcolumn							
+\newbox\@linechar							
+\newdimen\@linelen							
+\newcount\@lowpenalty							
+\newdimen\@maxdepth							 
+\newcount\@medpenalty							
+\newdimen\@mparbottom \@mparbottom\z@
+\newinsert\@mpfootins							 
+\newcount\@mplistdepth							
+\newcount\@multicnt							
+\newcount\@nxttabmar							
+\newbox\@outputbox							
+\newdimen\@pagedp							
+\newdimen\@pageht							
+\newbox\@picbox								
+\newdimen\@picht							
+\newdimen \@reqcolroom							
+\newskip\@rightskip \@rightskip \z@skip					
+\newcount\@savsf							
+\newdimen\@savsk							
+\newcount\@secpenalty							
+\def\@sqrt[#1]{\root #1\of}
+\newbox\@tabfbox							
+\newcount\@tabpush							
+\newdimen \@textfloatsheight						
+\newdimen\@textmin							
+\newcount\@topnum							
+\newdimen\@toproom							
+\newcount\@xarg								
+\newdimen\@xdim								
+\newcount\@yarg								
+\newdimen\@ydim								
+\newcount\@yyarg							
+\newtoks\every@math@size
+\newif \if@fcolmade							 
+\newdimen\lower@bound							
+\newcount\par@deathcycles						 
+\newdimen\upper@bound							
 \newif\if@insert
 \newif\if@colmade
 \newif\if@specialpage   \@specialpagefalse
@@ -4265,9 +4414,6 @@ RawTeX(<<'EOTeX');
 \@centering = 0pt plus 1000pt
 \let\@eqnsel=\relax
 
-% Some control structure from latex.ltx
-% (amazing that it actually works!)
-% How much of this control struture will I need?
  \long\def\@whilenum#1\do #2{\ifnum #1\relax #2\relax\@iwhilenum{#1\relax
       #2\relax}\fi}
  \long\def\@iwhilenum#1{\ifnum #1\expandafter\@iwhilenum
@@ -4524,7 +4670,21 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 #**********************************************************************
-# Since \write does nothing... ?
-DefMacro('\protected@write{}{}{}', '');
+DefPrimitive('\protected@write Number {}{}', sub {
+    my ($stomach, $port, $prelude, $tokens) = @_;
+    $port = ToString($port);
+    $stomach->bgroup;
+    Let('\thepage', '\relax');
+    my @stuff = Digest($prelude);
+    Let('\protect', '\@unexpandable@protect');
+    if (my $filename = LookupValue('output_file:' . $port)) {
+      my $handle   = $filename . '_contents';
+      my $contents = LookupValue($handle);
+      AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
+    else {
+      print STDERR UnTeX($tokens) . "\n"; }
+    $stomach->egroup;
+    return @stuff; });
+
 #**********************************************************************
 1;

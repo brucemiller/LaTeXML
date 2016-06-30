@@ -245,6 +245,15 @@ elsif ($format eq 'xhtml') {
   $dographics = 1 unless defined $dographics;
   $is_html    = 0;
   $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
+elsif ($format eq 'jats') {
+  $extension = 'xml' unless defined $extension;
+  # Add pMML FIRST, unless already there, or was disabled.
+  # note that MathImages can supply altimg attributes
+  maybeAddMathFormat('pmml');
+  $dographics = 1 unless defined $dographics;
+  $picimages  = 1 unless defined $picimages;
+  $is_html    = 0;
+  $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
 elsif ($format eq 'xml') {
   $extension = 'xml' unless defined $extension; }
 else {
@@ -446,10 +455,13 @@ if (!$prescan) {
 # Figure how to define a Reader processor (?)
 # that initialize the thing by reading several files (the rest of the command line).
 my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
-$latexmlpost->ProcessChain($DOCUMENT, @procs);
-$DB->finish;
-print STDERR "\nPostprocessing complete: " . $latexmlpost->getStatusMessage . "\n";
-print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
+eval {
+  $latexmlpost->ProcessChain($DOCUMENT, @procs);
+  $DB->finish; };
+print STDERR $@ if $@;
+my $code = $latexmlpost->getStatusCode;
+print STDERR "\nPostprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $latexmlpost->getStatusMessage . "\n";
+print STDERR "processing " . ($code == 3 ? 'abandoned' : 'finished') . " " . localtime() . "\n" if $verbosity > -1;
 
 #======================================================================
 # helpers

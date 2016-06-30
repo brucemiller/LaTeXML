@@ -5,8 +5,9 @@ Changes
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
-README
+README.pod
 INSTALL
+INSTALL.SKIP
 LICENSE
 manual.pdf
 #==================================================
@@ -276,6 +277,7 @@ lib/LaTeXML/resources/XSLT/LaTeXML-picture-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-structure-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-tabular-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-webpage-xhtml.xsl
+lib/LaTeXML/resources/XSLT/LaTeXML-jats.xsl
 lib/LaTeXML/resources/CSS/LaTeXML.css
 lib/LaTeXML/resources/CSS/LaTeXML-marginpar.css
 lib/LaTeXML/resources/CSS/LaTeXML-navbar-left.css
@@ -313,15 +315,25 @@ lib/LaTeXML/Package/aastex.cls.ltxml
 lib/LaTeXML/Package/aastex.sty.ltxml
 lib/LaTeXML/Package/aasms.sty.ltxml
 lib/LaTeXML/Package/aaspp.sty.ltxml
+lib/LaTeXML/Package/aas_macros.sty.ltxml
 lib/LaTeXML/Package/aas_support.sty.ltxml
 lib/LaTeXML/Package/acronym.sty.ltxml
 lib/LaTeXML/Package/ae.sty.ltxml
 lib/LaTeXML/Package/afterpage.sty.ltxml
+lib/LaTeXML/Package/algc.sty.ltxml
+lib/LaTeXML/Package/algcompatible.sty.ltxml
+lib/LaTeXML/Package/algmatlab.sty.ltxml
+lib/LaTeXML/Package/algorithm.sty.ltxml
+lib/LaTeXML/Package/algorithmic.sty.ltxml
+lib/LaTeXML/Package/algorithmicx.sty.ltxml
+lib/LaTeXML/Package/algpascal.sty.ltxml
+lib/LaTeXML/Package/algpseudocode.sty.ltxml
 lib/LaTeXML/Package/alltt.sty.ltxml
 lib/LaTeXML/Package/amsart.cls.ltxml
 lib/LaTeXML/Package/amsbook.cls.ltxml
 lib/LaTeXML/Package/amsbsy.sty.ltxml
 lib/LaTeXML/Package/amscd.sty.ltxml
+lib/LaTeXML/Package/amsgen.sty.ltxml
 lib/LaTeXML/Package/ams_core.cls.ltxml
 lib/LaTeXML/Package/ams_support.sty.ltxml
 lib/LaTeXML/Package/amsfonts.sty.ltxml
@@ -341,9 +353,11 @@ lib/LaTeXML/Package/apjfonts.sty.ltxml
 lib/LaTeXML/Package/applemac.def.ltxml
 lib/LaTeXML/Package/array.sty.ltxml
 lib/LaTeXML/Package/article.cls.ltxml
+lib/LaTeXML/Package/authblk.sty.ltxml
 lib/LaTeXML/Package/avant.sty.ltxml
 lib/LaTeXML/Package/babel.sty.ltxml
 lib/LaTeXML/Package/babel.def.ltxml
+lib/LaTeXML/Package/balance.sty.ltxml
 lib/LaTeXML/Package/beton.sty.ltxml
 lib/LaTeXML/Package/BibTeX.pool.ltxml
 lib/LaTeXML/Package/bbold.sty.ltxml
@@ -353,6 +367,7 @@ lib/LaTeXML/Package/book.cls.ltxml
 lib/LaTeXML/Package/bookman.sty.ltxml
 lib/LaTeXML/Package/booktabs.sty.ltxml
 lib/LaTeXML/Package/braket.sty.ltxml
+lib/LaTeXML/Package/breakurl.sty.ltxml
 lib/LaTeXML/Package/calc.sty.ltxml
 lib/LaTeXML/Package/caption.sty.ltxml
 lib/LaTeXML/Package/cancel.sty.ltxml
@@ -390,6 +405,7 @@ lib/LaTeXML/Package/epsfig.sty.ltxml
 lib/LaTeXML/Package/epsf.sty.ltxml
 lib/LaTeXML/Package/epsf.tex.ltxml
 lib/LaTeXML/Package/epstopdf.sty.ltxml
+lib/LaTeXML/Package/esint.sty.ltxml
 lib/LaTeXML/Package/eTeX.pool.ltxml
 lib/LaTeXML/Package/eucal.sty.ltxml
 lib/LaTeXML/Package/eufrak.sty.ltxml
@@ -428,6 +444,7 @@ lib/LaTeXML/Package/hhline.sty.ltxml
 lib/LaTeXML/Package/html.sty.ltxml
 lib/LaTeXML/Package/hyperref.sty.ltxml
 lib/LaTeXML/Package/hyperxmp.sty.ltxml
+lib/LaTeXML/Package/ifluatex.sty.ltxml
 lib/LaTeXML/Package/ifpdf.sty.ltxml
 lib/LaTeXML/Package/ifthen.sty.ltxml
 lib/LaTeXML/Package/ifvtex.sty.ltxml
@@ -451,16 +468,20 @@ lib/LaTeXML/Package/lineno.sty.ltxml
 lib/LaTeXML/Package/listings.sty.ltxml
 lib/LaTeXML/Package/listingsutf8.sty.ltxml
 lib/LaTeXML/Package/llncs.cls.ltxml
+lib/LaTeXML/Package/lmodern.sty.ltxml
 lib/LaTeXML/Package/longtable.sty.ltxml
 lib/LaTeXML/Package/lscape.sty.ltxml
 lib/LaTeXML/Package/luximono.sty.ltxml
 lib/LaTeXML/Package/lxRDFa.sty.ltxml
 lib/LaTeXML/Package/makeidx.sty.ltxml
+lib/LaTeXML/Package/marvosym.sty.ltxml
+lib/LaTeXML/Package/mathbbol.sty.ltxml
 lib/LaTeXML/Package/mathpazo.sty.ltxml
 lib/LaTeXML/Package/mathpple.sty.ltxml
 lib/LaTeXML/Package/mathptm.sty.ltxml
 lib/LaTeXML/Package/mathptmx.sty.ltxml
 lib/LaTeXML/Package/mathrsfs.sty.ltxml
+lib/LaTeXML/Package/mathtools.sty.ltxml
 lib/LaTeXML/Package/mn.cls.ltxml
 lib/LaTeXML/Package/mn2e.cls.ltxml
 lib/LaTeXML/Package/mn2e_support.sty.ltxml
@@ -470,6 +491,7 @@ lib/LaTeXML/Package/multirow.sty.ltxml
 lib/LaTeXML/Package/nameref.sty.ltxml
 lib/LaTeXML/Package/natbib.sty.ltxml
 lib/LaTeXML/Package/newcent.sty.ltxml
+lib/LaTeXML/Package/newlfont.sty.ltxml
 lib/LaTeXML/Package/nicefrac.sty.ltxml
 lib/LaTeXML/Package/ngerman.sty.ltxml
 lib/LaTeXML/Package/ntheorem.sty.ltxml
@@ -489,6 +511,7 @@ lib/LaTeXML/Package/pifont.sty.ltxml
 lib/LaTeXML/Package/placeins.sty.ltxml
 lib/LaTeXML/Package/preview.sty.ltxml
 lib/LaTeXML/Package/psfig.sty.ltxml
+lib/LaTeXML/Package/psfig.tex.ltxml
 lib/LaTeXML/Package/pslatex.sty.ltxml
 lib/LaTeXML/Package/pspicture.sty.ltxml
 lib/LaTeXML/Package/pst-grad.sty.ltxml
@@ -509,9 +532,12 @@ lib/LaTeXML/Package/rotating.sty.ltxml
 lib/LaTeXML/Package/rsfs.sty.ltxml
 lib/LaTeXML/Package/scalefnt.sty.ltxml
 lib/LaTeXML/Package/setspace.sty.ltxml
+lib/LaTeXML/Package/showkeys.sty.ltxml
 lib/LaTeXML/Package/slashed.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
+lib/LaTeXML/Package/soul.sty.ltxml
 lib/LaTeXML/Package/srcltx.sty.ltxml
+lib/LaTeXML/Package/stmaryrd.sty.ltxml
 lib/LaTeXML/Package/subfig.sty.ltxml
 lib/LaTeXML/Package/subfigure.sty.ltxml
 lib/LaTeXML/Package/subfloat.sty.ltxml
@@ -533,6 +559,7 @@ lib/LaTeXML/Package/tocbibind.sty.ltxml
 lib/LaTeXML/Package/transparent.sty.ltxml
 lib/LaTeXML/Package/txfonts.sty.ltxml
 lib/LaTeXML/Package/t1enc.def.ltxml
+lib/LaTeXML/Package/t1enc.sty.ltxml
 lib/LaTeXML/Package/units.sty.ltxml
 lib/LaTeXML/Package/upgreek.sty.ltxml
 lib/LaTeXML/Package/upref.sty.ltxml
@@ -557,7 +584,9 @@ lib/LaTeXML/Package/amsb.fontmap.ltxml
 lib/LaTeXML/Package/ot4.fontmap.ltxml
 lib/LaTeXML/Package/ulem.sty.ltxml
 lib/LaTeXML/Package/utf8.def.ltxml
+lib/LaTeXML/Package/wasysym.sty.ltxml
 lib/LaTeXML/Package/xunicode.sty.ltxml
+
 #==================================================
 # TeX packages
 #==================================================
@@ -650,6 +679,9 @@ t/ams/cd.xml
 t/ams/genfracs.pdf
 t/ams/genfracs.tex
 t/ams/genfracs.xml
+t/ams/mathtools.pdf
+t/ams/mathtools.tex
+t/ams/mathtools.xml
 t/ams/sideset.pdf
 t/ams/sideset.tex
 t/ams/sideset.xml
@@ -686,6 +718,9 @@ t/digestion/box.xml
 t/digestion/def.pdf
 t/digestion/def.tex
 t/digestion/def.xml
+t/digestion/dollar.pdf
+t/digestion/dollar.tex
+t/digestion/dollar.xml
 t/digestion/chardefs.pdf
 t/digestion/chardefs.tex
 t/digestion/chardefs.xml
@@ -864,12 +899,21 @@ t/fonts/bbold.tex
 t/fonts/cancels.tex
 t/fonts/cancels.xml
 t/fonts/cancels.pdf
+t/fonts/esint.pdf
+t/fonts/esint.tex
+t/fonts/esint.xml
 t/fonts/fonts.pdf
 t/fonts/fonts.tex
 t/fonts/fonts.xml
+t/fonts/marvosym.pdf
+t/fonts/marvosym.xml
+t/fonts/marvosym.tex
 t/fonts/mathaccents.pdf
 t/fonts/mathaccents.xml
 t/fonts/mathaccents.tex
+t/fonts/mathbbol.pdf
+t/fonts/mathbbol.xml
+t/fonts/mathbbol.tex
 t/fonts/omencodings.pdf
 t/fonts/omencodings.tex
 t/fonts/omencodings.xml
@@ -879,6 +923,12 @@ t/fonts/mixed.xml
 t/fonts/mathcolor.pdf
 t/fonts/mathcolor.tex
 t/fonts/mathcolor.xml
+t/fonts/soul.pdf
+t/fonts/soul.tex
+t/fonts/soul.xml
+t/fonts/stmaryrd.pdf
+t/fonts/stmaryrd.tex
+t/fonts/stmaryrd.xml
 t/fonts/textcomp.pdf
 t/fonts/textcomp.tex
 t/fonts/textcomp.xml
@@ -888,6 +938,9 @@ t/fonts/textsymbols.xml
 t/fonts/ulem.pdf
 t/fonts/ulem.tex
 t/fonts/ulem.xml
+t/fonts/wasysym.pdf
+t/fonts/wasysym.tex
+t/fonts/wasysym.xml
 t/graphics/none.png
 t/graphics/colors.pdf
 t/graphics/colors.tex
@@ -931,6 +984,9 @@ t/math/arrows.xml
 t/math/choose.pdf
 t/math/choose.tex
 t/math/choose.xml
+t/math/fracs.pdf
+t/math/fracs.tex
+t/math/fracs.xml
 t/math/niceunits.pdf
 t/math/niceunits.tex
 t/math/niceunits.xml
@@ -1088,6 +1144,9 @@ t/tokenize/alltt.xml
 t/tokenize/comment.pdf
 t/tokenize/comment.tex
 t/tokenize/comment.xml
+t/tokenize/equality.pdf
+t/tokenize/equality.tex
+t/tokenize/equality.xml
 t/tokenize/ligatures.pdf
 t/tokenize/ligatures.tex
 t/tokenize/ligatures.xml
@@ -1160,5 +1219,5 @@ t/daemon/profiles/stex/stex.tex
 t/daemon/profiles/stex/stex.xml
 t/daemon/runtimes/timeout.spec
 t/daemon/runtimes/timeout.status
-t/daemon/runtimes/timeout.xml
+# t/daemon/runtimes/timeout.xml [intentionally omitted]
 

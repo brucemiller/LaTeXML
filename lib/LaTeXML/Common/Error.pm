@@ -13,30 +13,36 @@ package LaTeXML::Common::Error;
 use strict;
 use warnings;
 use LaTeXML::Global;
-##use LaTeXML::Common::Object;
+use LaTeXML::Common::Object;
 use Time::HiRes;
+use Term::ANSIColor qw(:constants);
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
-  qw( &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  # Colored-logging related functions
+  qw(&colorizeString)
 );
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Note: The exported symbols should ultimately be exported as part
-# of LaTeXML::Common, or something like that, to be used BOTH in
-# Digestion & Post-Processing.
-# ======================================================================
-# We want LaTeXML::Global to import this package,
-# but we also want to use some of it's low-level functions.
-sub ToString {
-  my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::ToString($item, @more)); }
+# Color setup
+$Term::ANSIColor::AUTORESET = 1;
+our $COLORIZED_LOGGING = -t STDERR;
 
-sub Stringify {
-  my ($item, @more) = @_;
-  return ($LaTeXML::BAILOUT ? "$item" : LaTeXML::Common::Object::Stringify($item, @more)); }
+our %color_scheme = (
+  details => \&BOLD,
+  success => \&GREEN,
+  info    => (defined &BRIGHT_BLUE ? \&BRIGHT_BLUE : \&BLUE),    # bright only recently defined
+  warning => \&YELLOW,
+  error => sub { BOLD RED shift; },
+  fatal => sub { BOLD RED UNDERLINE shift; }
+);
+
+sub colorizeString {
+  my ($string, $alias) = @_;
+  return $COLORIZED_LOGGING ? &{ $color_scheme{$alias} }($string) : $string; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
@@ -44,27 +50,46 @@ sub Stringify {
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
+
+  # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
+  if ((($category eq 'internal') && ($object eq '<recursion>')) ||
+    ($category eq 'too_many_errors')) {
+    $LaTeXML::UNSAFE_FATAL = 1; }
+
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
+  die $message if $LaTeXML::IGNORE_ERRORS    # Short circuit, w/no formatting, if in probing eval
+    || (($SIG{__DIE__} eq 'DEFAULT') && $^S);    # Also missing class when parsing bindings(?!?!)
+
+  # print STDERR "\nHANDLING FATAL:"
+  #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
+  #   ." handler=".($SIG{__DIE__}||'<none>')
+  #   ." parsing=".($^S||'<no>')
+  #   ."\n";
   my $inhandler = !$SIG{__DIE__};
-  my $ineval    = $^S;
-  $SIG{__DIE__} = undef;    # SHOULD have been localized by caller!
+  my $ineval    = 0;                # whether we're in an eval should no longer matter!
+
+  # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
+  # It should be safe so long as the caller has bound it and rebinds it if necessary.
+  $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+
   if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
+    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object), $where, $message, 1,
-      # ?!?!?!?!?!
-      # or just verbosity code >>>1 ???
-      @details,
-      ($verbosity > 0 ? ("Stack Trace:", stacktrace()) : ()));
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
+      $where, $message, $detail_level, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
-    $message .= $state->getStatusMessage if $state && !$ineval;
+    # This really should be handled by the top-level program,
+    # after doing all processing within an eval
+    # BIZARRE: Note that die adds the "at <file> <line>" stuff IFF the message doesn't end w/ CR!
+    $message .= $state->getStatusMessage . "\n" if $state && !$ineval;
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
@@ -91,10 +116,10 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    print STDERR generateMessage("Error:" . $category . ":" . ToString($object),
+    print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
-  if (!$state || ($state->getStatus('error') || 0) > $MAXERRORS) {
+  if ($state && ($state->getStatus('error') || 0) > $MAXERRORS) {
     Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!"); }
   return; }
 
@@ -104,7 +129,7 @@ sub Warn {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
-  print STDERR generateMessage("Warning:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details)
     if $verbosity >= -1;
   return; }
@@ -116,7 +141,7 @@ sub Info {
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage("Info:" . $category . ":" . ToString($object),
+  print STDERR generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details)
     if $verbosity >= 0;
   return; }
@@ -168,24 +193,39 @@ sub NoteEnd {
 my $quoted_re     = qr/\"([^\"]*)\"/;                                                   # [CONSTANT]
 my $cantcall_re   = qr/Can't call method/;                                              # [CONSTANT]
 my $cantlocate_re = qr/Can't locate object method/;                                     # [CONSTANT]
+my $undef_re      = qr/Undefined subroutine/;                                           # [CONSTANT]
 my $noself_re     = qr/on an undefined value|without a package or object reference/;    # [CONSTANT]
 my $via_re        = qr/via package/;                                                    # [CONSTANT]
-my $at_re         = qr/at (.*)/;                                                        # [CONSTANT]
+my $at_re         = qr/(at .*)/;                                                        # [CONSTANT]
 
 sub perl_die_handler {
   my (@line) = @_;
+  if ($LaTeXML::IGNORE_ERRORS) {    # Just get out now, if we're ignoring errors within an eval.
+    local $SIG{__DIE__} = undef;
+    die @line; }
   # We try to find a meaningful name for where the error occurred;
   # That's the thing that is "misdefined", after all.
   # Not completely sure we're looking in the right place up the stack, though.
-  if ($line[0] =~ /^$cantcall_re\s+$cantcall_re\s+($noself_re)\s+$at_re$/) {
+  if ($line[0] =~ /^$cantcall_re\s+$quoted_re\s+($noself_re)\s+$at_re$/) {
     my ($method, $kind, $where) = ($1, $2, $3);
-    Fatal('misdefined', callerName(2), $where, @line); }
-  elsif ($line[0] =~ /^$cantlocate_re\s+$quoted_re\s+$via_re\s+$quoted_re\s+$at_re$/) {
+    Fatal('misdefined', callerName(1), $where,
+      "Can't call method '$method' $kind", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^$undef_re\s+(\S+)\s+called $at_re$/) {
+    my ($function, $where) = ($1, $2);
+    Fatal('misdefined', callerName(1), $where,
+      "Undefined subroutine '$function' called", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^$cantlocate_re\s+$quoted_re\s+$via_re\s+$quoted_re\s+\(.*\)\s+$at_re/) {
     my ($method, $class, $where) = ($1, $2, $3);
-    Fatal('misdefined', callerName(2), $where, @line); }
-  elsif ($line[0] =~ /^Not an? (\w*) reference at (.*)$/) {
-    my ($type, $where) = ($1, $2);
-    Fatal('misdefined', callerName(2), $where, @line); }
+    Fatal('misdefined', callerName(1), $where,
+      "Can't locate method '$method' via '$class'", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^Can't locate \S* in \@INC \(you may need to install the (\S*) module\) \(\@INC contains: ([^\)]*)\) $at_re$/) {
+    my ($class, $inc, $where) = ($1, $2);
+    Fatal('misdefined', callerName(1), $where,
+      "Can't locate class '$class' (not installed or misspelled?)", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^Can't use\s+(\w*)\s+\([^\)]*\) as (.*?) ref(?:\s+while "strict refs" in use)? at (.*)$/) {
+    my ($gottype, $wanttype, $where) = ($1, $2, $3);
+    Fatal('misdefined', callerName(1), $where,
+      "Can't use $gottype as $wanttype reference", @line[1 .. $#line]); }
   elsif ($line[0] =~ /^File (.*?) had an error:/) {
     my ($file) = ($1);
     Fatal('misdefined', $file, undef, @line); }
@@ -195,9 +235,41 @@ sub perl_die_handler {
 
 sub perl_warn_handler {
   my (@line) = @_;
-  Warn('perl', 'warn', undef, "Perl warning", @line);
+  return if $LaTeXML::IGNORE_ERRORS;
+  if ($line[0] =~ /^Use of uninitialized value (.*?)(\s?+in .*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
+    my ($what, $how, $where) = ($1 || 'value', $2, $3);
+    Warn('uninitialized', $what, $where, "Use of uninitialized value $what $how", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^(.*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
+    my ($warning, $where) = ($1, $2);
+    Warn('perl', 'warn', undef, $warning, $where, @line[1 .. $#line]); }
+  else {
+    Warn('perl', 'warn', undef, "Perl warning", @line); }
   return; }
 
+# The following handlers SHOULD report the problem,
+# even when within a "safe" eval that's ignoring errors.
+# Moreover, we'd really like to be able to throw all the way to
+# the top-level containing eval.  How to do that?
+sub perl_interrupt_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
+  Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
+  return; }
+
+sub perl_timeout_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
+  Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
+  return; }
+
+sub perl_terminate_handler {
+  my (@line) = @_;
+  $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
+  $LaTeXML::UNSAFE_FATAL = 1;
+  Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
+  return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
 # Synthesize an error message describing what happened, and where.
@@ -217,7 +289,8 @@ sub generateMessage {
   # $message and each of @extra should be single lines
   @extra = grep { $_ ne '' } map { split("\n", $_) } grep { defined $_ } $message, @extra;
   # make 1st line be 1st line of message
-  $message =~ s/\n.*//g;
+  $message = shift(@extra);
+  #  $message =~ s/\n.*//g;
   # The initial portion of the message will consist of:
   $message = '' unless defined $message;
   my @lines = (
@@ -257,13 +330,16 @@ sub generateMessage {
 
   #----------------------------------------
   # Add Stack Trace, if that seems worthwhile.
-  if ($detail > -1) {
+  if (($detail > 1) && ($verbosity > 0)) {
+    push(@lines, "Stack Trace:", stacktrace()); }
+  elsif ($detail > -1) {
     my $nstack = ($detail > 1 ? undef : ($detail > 0 ? 4 : 1));
     if (my @objects = objectStack($nstack)) {
       my $top = shift(@objects);
-      push(@lines,   "In " . trim(ToString($top)) . ' ' . ToString(Locator($top)));
-      push(@objects, '...') if @objects && defined $nstack;
-      push(@lines,   join('', (map { ' <= ' . trim(ToString($_)) } @objects))) if @objects; } }
+      push(@lines, "In " . trim(Stringify($$top[0])) . ' ' . Stringify($$top[1]));
+      push(@objects, ['...']) if @objects && defined $nstack;
+      push(@lines, join('', (map { ' <= ' . trim(Stringify($$_[0])) } @objects))) if @objects;
+    } }
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
@@ -272,11 +348,13 @@ sub Locator {
   my ($object) = @_;
   return ($object && $object->can('getLocator') ? $object->getLocator : "???"); }
 
+# A more organized abstraction along there likes of $where->whereAreYou
+# might be useful?
 sub getLocation {
   my ($where) = @_;
   my $wheretype = ref $where;
   if ($wheretype && ($wheretype =~ /^XML::LibXML/)) {
-    my $box = $LaTeXML::DOCUMENT->getNodeBox($where);
+    my $box = $LaTeXML::DOCUMENT && $LaTeXML::DOCUMENT->getNodeBox($where);
     return Locator($box) if $box; }
   elsif ($wheretype && $where->can('getLocator')) {
     return $where->getLocator; }
@@ -295,6 +373,10 @@ sub getLocation {
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
     # (2) If gullet is the source, we probably want to include next token, etc or
     return $gullet->getLocator(); }
+  # # If in postprocessing
+  # if($LaTeXML::Post::PROCESSOR && $LaTeXML::Post::DOCUMENT){
+  #   return 'in '. $LaTeXML::Post::PROCESSOR->getName
+  #     . ' on '. $LaTeXML::Post::DOCUMENT->siteRelativeDestination; }
   return; }
 
 sub callerName {
@@ -366,7 +448,7 @@ sub format_arg {
   elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
   else {                                                  # Otherwise, string, so quote
     $arg =~ s/'/\\'/g;                                    # Slashify '
-    $arg =~ s/([[:cntrl::]])/ "\\".chr(ord($1)+ord('A'))/ge;
+    $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }
 
@@ -400,9 +482,11 @@ sub objectStack {
       my $method = $info{sub};
       $method =~ s/^.*:://;
       if ($self->can($method)) {
-        next if @objects && ($self eq $objects[-1]);
-        next unless $self->can('getLocator');
-        push(@objects, $self);
+        next if @objects && ($self eq $objects[-1][0]);    # but don't duplicate
+        if ($self->can('getLocator')) {                    # Digestion object?
+          push(@objects, [$self, Locator($self)]); }
+        elsif ($self->isa('LaTeXML::Post::Processor') || $self->isa('LaTeXML::Post::Document')) {
+          push(@objects, [$self, '->' . $method]); }
         last if $maxdepth && (scalar(@objects) >= $maxdepth); } } }
   return @objects; }
 
@@ -491,7 +575,7 @@ No user serviceable parts inside.  These symbols are not exported.
 
 Constructs an error or warning message based on the current stack and
 the current location in the document.
-C<$typ> is a short string characterizing the type of message, such as "Error".  
+C<$typ> is a short string characterizing the type of message, such as "Error".
 C<$msg> is the error message itself. If C<$lng> is true, will generate a
 more verbose message; this also uses the VERBOSITY set in the C<$STATE>.
 Longer messages will show a trace of the objects invoked on the stack,

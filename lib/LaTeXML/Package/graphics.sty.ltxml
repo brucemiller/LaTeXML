@@ -180,10 +180,17 @@ DefConstructor('\reflectbox Digested',
   mode => 'text');
 
 DefConstructor('\graphicspath DirectoryList', sub {
-    my ($document, $paths) = @_;
+    my ($document, $paths, %props) = @_;
+    foreach my $path (@{ $props{paths} }) {
+      $document->insertPI('latexml', graphicspath => $path); } },
+  properties => sub {
+    my ($stomach, $paths) = @_;
+    my @paths = ();
     foreach my $dir ($paths->getValues) {
       my $path = pathname_absolute(pathname_canonical(ToString($dir)));
-      $document->insertPI('latexml', graphicspath => $path); } });
+      push(@paths, $path);
+      PushValue(GRAPHICSPATHS => $path); }
+    return (path => [@paths]); });
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',

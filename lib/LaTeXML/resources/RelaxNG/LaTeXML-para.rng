@@ -22,7 +22,6 @@
       <ref name="figure"/>
       <ref name="table"/>
       <ref name="float"/>
-      <ref name="listing"/>
       <ref name="pagination"/>
     </choice>
   </define>
@@ -106,11 +105,7 @@ different kinds of proof.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Labelled.attributes"/>
     <ref name="Backgroundable.attributes"/>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the proof</a:documentation>
-      </attribute>
-    </optional>
+    <ref name="Data.attributes"/>
   </define>
   <define name="proof_model">
     <a:documentation>Content model for \elementref{proof}.</a:documentation>
@@ -145,14 +140,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the figure</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -183,14 +174,10 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
       <attribute name="placement">
         <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the table; perhaps csv?</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -209,7 +196,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
   <!-- ====================================================================== -->
   <define name="float">
     <element name="float">
-      <a:documentation>A generic float, possibly captioned, something other than a table, figure or listing</a:documentation>
+      <a:documentation>A generic float, possibly captioned, something other than a table or figure</a:documentation>
       <ref name="float_attributes"/>
       <ref name="float_model"/>
     </element>
@@ -221,14 +208,15 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <ref name="Positionable.attributes"/>
     <ref name="Transformable.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <ref name="Data.attributes"/>
     <optional>
-      <attribute name="placement">
-        <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
+      <attribute name="role">
+        <a:documentation>The kind of float; could be something like a listing, or some other thing</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the float</a:documentation>
+      <attribute name="placement">
+        <a:documentation>the vertical floating placement parameter that determines where the object is displayed.</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -238,41 +226,7 @@ Or, should caption be used for theorem and proof?</a:documentation>
       <choice>
         <ref name="float"/>
         <ref name="figure"/>
-        <ref name="float"/>
-        <ref name="Block.model"/>
-        <ref name="Caption.class"/>
-      </choice>
-    </zeroOrMore>
-  </define>
-  <!-- ====================================================================== -->
-  <define name="listing">
-    <element name="listing">
-      <a:documentation>A Listing, possibly captioned.</a:documentation>
-      <ref name="listing_attributes"/>
-      <ref name="listing_model"/>
-    </element>
-  </define>
-  <define name="listing_attributes">
-    <a:documentation>Attributes for \elementref{listing}.</a:documentation>
-    <ref name="Common.attributes"/>
-    <ref name="Labelled.attributes"/>
-    <ref name="Positionable.attributes"/>
-    <ref name="Backgroundable.attributes"/>
-    <optional>
-      <attribute name="placement">
-        <a:documentation>the floating placement parameter that determines where the object is displayed.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="data">
-        <a:documentation>raw data related to the float; presumably the unformatted listing itself</a:documentation>
-      </attribute>
-    </optional>
-  </define>
-  <define name="listing_model">
-    <a:documentation>Content model for \elementref{listing}.</a:documentation>
-    <zeroOrMore>
-      <choice>
+        <ref name="table"/>
         <ref name="Block.model"/>
         <ref name="Caption.class"/>
       </choice>

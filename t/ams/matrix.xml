@@ -7,20 +7,20 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" xml:id="S0.Ex1.m1" tex="\begin{matrix}a&amp;b\\&#10;c\\&#10;\end{matrix}" text="matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{matrix}a&amp;b\\&#10;c\\&#10;\end{matrix}" text="matrix[[a, b], [c]]" xml:id="S0.Ex1.m1">
         <XMath>
           <XMArray meaning="matrix">
             <XMRow>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
               </XMCell>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
               </XMCell>
             </XMRow>
           </XMArray>
@@ -28,91 +28,91 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex2">
-      <Math mode="display" xml:id="S0.Ex2.m1" tex="\begin{pmatrix}a&amp;b\\&#10;c\\&#10;\end{pmatrix}" text="matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{pmatrix}a&amp;b\\&#10;c\\&#10;\end{pmatrix}" text="matrix[[a, b], [c]]" xml:id="S0.Ex2.m1">
         <XMath>
           <XMDual>
             <XMRef idref="S0.Ex2.m1.1"/>
             <XMWrap>
-              <XMTok role="OPEN">(</XMTok>
+              <XMTok role="OPEN" stretchy="true">(</XMTok>
               <XMArray meaning="matrix" xml:id="S0.Ex2.m1.1">
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMCell>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="CLOSE">)</XMTok>
+              <XMTok role="CLOSE" stretchy="true">)</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex3">
-      <Math mode="display" xml:id="S0.Ex3.m1" tex="\begin{bmatrix}a&amp;b\\&#10;c\\&#10;\end{bmatrix}" text="matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{bmatrix}a&amp;b\\&#10;c\\&#10;\end{bmatrix}" text="matrix[[a, b], [c]]" xml:id="S0.Ex3.m1">
         <XMath>
           <XMDual>
             <XMRef idref="S0.Ex3.m1.1"/>
             <XMWrap>
-              <XMTok role="OPEN">[</XMTok>
+              <XMTok role="OPEN" stretchy="true">[</XMTok>
               <XMArray meaning="matrix" xml:id="S0.Ex3.m1.1">
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMCell>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="CLOSE">]</XMTok>
+              <XMTok role="CLOSE" stretchy="true">]</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex4">
-      <Math mode="display" xml:id="S0.Ex4.m1" tex="\begin{Bmatrix}a&amp;b\\&#10;c\\&#10;\end{Bmatrix}" text="matrix[[a, b], [c]]">
+      <Math mode="display" tex="\begin{Bmatrix}a&amp;b\\&#10;c\\&#10;\end{Bmatrix}" text="matrix[[a, b], [c]]" xml:id="S0.Ex4.m1">
         <XMath>
           <XMDual>
             <XMRef idref="S0.Ex4.m1.1"/>
             <XMWrap>
-              <XMTok role="OPEN">{</XMTok>
+              <XMTok role="OPEN" stretchy="true">{</XMTok>
               <XMArray meaning="matrix" xml:id="S0.Ex4.m1.1">
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMCell>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="CLOSE">}</XMTok>
+              <XMTok role="CLOSE" stretchy="true">}</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex5">
-      <Math mode="display" xml:id="S0.Ex5.m1" tex="\begin{vmatrix}a&amp;b\\&#10;c\\&#10;\end{vmatrix}" text="determinant@(matrix[[a, b], [c]])">
+      <Math mode="display" tex="\begin{vmatrix}a&amp;b\\&#10;c\\&#10;\end{vmatrix}" text="determinant@(matrix[[a, b], [c]])" xml:id="S0.Ex5.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -120,30 +120,30 @@
               <XMRef idref="S0.Ex5.m1.1"/>
             </XMApp>
             <XMWrap>
-              <XMTok role="VERTBAR">|</XMTok>
+              <XMTok role="VERTBAR" stretchy="true">|</XMTok>
               <XMArray meaning="matrix" xml:id="S0.Ex5.m1.1">
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMCell>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="VERTBAR">|</XMTok>
+              <XMTok role="VERTBAR" stretchy="true">|</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex6">
-      <Math mode="display" xml:id="S0.Ex6.m1" tex="\begin{Vmatrix}a&amp;b\\&#10;c\\&#10;\end{Vmatrix}" text="norm@(matrix[[a, b], [c]])">
+      <Math mode="display" tex="\begin{Vmatrix}a&amp;b\\&#10;c\\&#10;\end{Vmatrix}" text="norm@(matrix[[a, b], [c]])" xml:id="S0.Ex6.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -151,43 +151,43 @@
               <XMRef idref="S0.Ex6.m1.1"/>
             </XMApp>
             <XMWrap>
-              <XMTok role="VERTBAR">∥</XMTok>
+              <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
               <XMArray meaning="matrix" xml:id="S0.Ex6.m1.1">
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   </XMCell>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
                   </XMCell>
                 </XMRow>
                 <XMRow>
                   <XMCell align="center">
-                    <XMTok role="UNKNOWN" font="italic">c</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
                   </XMCell>
                 </XMRow>
               </XMArray>
-              <XMTok role="VERTBAR">∥</XMTok>
+              <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
             </XMWrap>
           </XMDual>
         </XMath>
       </Math>
     </equation>
     <equation xml:id="S0.Ex7">
-      <Math mode="display" xml:id="S0.Ex7.m1" tex="\begin{smallmatrix}a&amp;b\\&#10;c\\&#10;\end{smallmatrix}" text="Array[[a, b], [c]]">
+      <Math mode="display" tex="\begin{smallmatrix}a&amp;b\\&#10;c\\&#10;\end{smallmatrix}" text="Array[[a, b], [c]]" xml:id="S0.Ex7.m1">
         <XMath>
           <XMArray>
             <XMRow>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" font="italic" fontsize="70%">a</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
               </XMCell>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" fontsize="70%" font="italic">b</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
               </XMCell>
             </XMRow>
             <XMRow>
               <XMCell align="center">
-                <XMTok role="UNKNOWN" fontsize="70%" font="italic">c</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
               </XMCell>
             </XMRow>
           </XMArray>

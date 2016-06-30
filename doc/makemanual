@@ -63,8 +63,10 @@ my @bindings = sort grep { !/(?:_support\.|_core\.|\#)/ } grep { $_ }
   map { s/.ltxml$// && $_ } readdir($DIR);
 closedir($DIR);
 
-my $classes  = join(', ', grep { $_ } map { s/\.cls$// && $_ } @bindings);
+my $classes = join(', ', grep { $_ } map { s/\.cls$// && $_ } @bindings);
+$classes =~ s/(_)/\\_/gs;
 my $packages = join(', ', grep { $_ } map { s/\.sty$// && $_ } @bindings);
+$packages =~ s/(_)/\\_/gs;
 
 my $texversion = $version;
 $texversion =~ s/\_/\\_/g;

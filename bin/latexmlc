@@ -24,7 +24,7 @@ use File::Which;
 BEGIN {
   if ($FindBin::RealBin =~ /^([^\0]+)\z/) {    # Valid Unix path TODO: Windows, revisit regexp
     $RealBin_safe = $1; }
-  die 'Fatal:IO:tainted RealBin was tainted! Failing...'
+  die 'Fatal:I/O:tainted RealBin was tainted! Failing...'
     unless ($RealBin_safe && (-e catfile($RealBin_safe, 'latexmlc')));
 }
 # TODO: We probably want file cat for things like /../lib instead of spelling out a Unix path
@@ -40,7 +40,6 @@ use HTTP::Request;
 use JSON::XS qw(decode_json);
 
 binmode(STDERR, ":encoding(UTF-8)");
-binmode(STDOUT, ":encoding(UTF-8)");
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
@@ -138,16 +137,20 @@ if ((!$sock) && $local && ($expire == -1)) {
 ### Common treatment of output:
 
 # Special features for latexmls:
+my $whatsout = $opts->get('whatsout');
+my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 if ($log) {
   if ($opts->get('log')) {
-    my $clog = $opts->get('log');
-    my $log_handle;
-    if (!open($log_handle, ">", $clog)) {
-      print STDERR "Fatal:IO:forbidden Couldn't open log file $clog : $!\n";
-      exit 1;
+    if (!$is_archive) { # archives only have the archive file
+      my $clog = $opts->get('log');
+      my $log_handle;
+      if (!open($log_handle, ">", $clog)) {
+        print STDERR "Fatal:I/O:forbidden Couldn't open log file $clog : $!\n";
+        exit 1;
+      }
+      print $log_handle $log;
+      close $log_handle;
     }
-    print $log_handle $log;
-    close $log_handle;
   } else { print STDERR $log, "\n"; }    #STDERR log otherwise
 }
 
@@ -155,12 +158,16 @@ if ($result) {
   if ($opts->get('destination')) {
     my $output_handle;
     if (!open($output_handle, ">", $opts->get('destination'))) {
-      print STDERR "Fatal:IO:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
-      exit 1;
-    }
+      print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
+      exit 1; }
+    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
+      binmode($output_handle, ":encoding(UTF-8)"); }
     print $output_handle $result;
     close $output_handle;
-  } else { print STDOUT $result, "\n"; }    #Output to STDOUT
+  } else {
+    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
+      binmode(STDOUT, ":encoding(UTF-8)"); }
+    print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 
 # Print summary, if requested, to STDERR
@@ -191,8 +198,8 @@ sub process_local {
   my $req_message_length = length($req_message);
   $req_route = "$req_address:$req_port" unless $req_route;
   my $payload = <<"PAYLOADEND";
-POST $route HTTP/1.0
-Host: $address:$req_port
+POST $req_route HTTP/1.0
+Host: $req_address:$req_port
 User-Agent: latexmlc
 Content-Type: application/x-www-form-urlencoded
 Content-Length: $req_message_length

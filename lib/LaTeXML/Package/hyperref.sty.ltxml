@@ -122,9 +122,9 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # Additional User Macros
 
 # \href{url}{text}
-DefConstructor('\href Semiverbatim  {}',
+DefConstructor('\href Verbatim  {}',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # \url{url} from url.sty
 # Redefine \@url to sanitize the argument less
@@ -133,7 +133,7 @@ DefMacro('\@Url Token', sub {
     my $mouth = $gullet->getMouth;
     my ($open, $close, $url);
     $open = $gullet->readToken;
-    StartSemiverbatim();
+    StartSemiverbatim('%');
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url = $gullet->readBalanced; }
@@ -163,9 +163,15 @@ DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
   properties => sub { (id => CleanID(ToString($_[1]) . '.' . ToString($_[2]))); });
 
-DefConstructor('\hyperref Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
+DefMacro('\hyperref', '\@ifnextchar[\hyperref@@ii\hyperref@@iv');
+# 2 argument form
+DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
+  "<ltx:ref labelref='#label'>#2</ltx:ref>",
+  properties => sub { (label => CleanLabel($_[1])); });
+# 4 argument form
+DefConstructor('\hyperref@@iv Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#4</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1])
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1])
           . '#' . CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
@@ -190,7 +196,7 @@ DefMacroI('\phantomsection', undef, '');
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
 DefConstructor('\autoref Semiverbatim',
-  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label'/>",
+  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[1])); });
 
 # Covered in LaTeX.pool, but non-ref character is ignored.

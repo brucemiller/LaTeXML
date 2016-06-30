@@ -34,7 +34,7 @@ sub create {
     $options{shortsource} = "$name.$ext";
     return $class->new($options{content}, %options); }
   elsif ($source =~ s/^literal://) {    # we've supplied literal data
-    $options{source} = "Literal String ".substr($source,0,10) unless defined $options{source};
+    $options{source} = "Literal String " . substr($source, 0, 10) unless defined $options{source};
     return $class->new($source, %options); }
   elsif (!defined $source) {
     return $class->new('', %options); }
@@ -112,7 +112,7 @@ sub splitLines {
 # have to be converted to the proper accent control sequences!
 sub splitChars {
   my ($line) = @_;
-  return $line =~ m/\X/g; }
+  return [$line =~ m/\X/g]; }
 
 sub getNextLine {
   my ($self) = @_;
@@ -132,8 +132,8 @@ sub getNextChar {
   my ($self) = @_;
   if ($$self{colno} < $$self{nchars}) {
     my $ch = $$self{chars}[$$self{colno}++];
-    my $cc = $$STATE{catcode}{$ch}[0];         # $STATE->lookupCatcode($ch); OPEN CODED!
-    if ((defined $cc) && ($cc == CC_SUPER)     # Possible convert ^^x
+    my $cc = $$STATE{catcode}{$ch}[0] // CC_OTHER;    # $STATE->lookupCatcode($ch); OPEN CODED!
+    if (($cc == CC_SUPER)    # Possible convert ^^x
       && ($$self{colno} + 1 < $$self{nchars}) && ($ch eq $$self{chars}[$$self{colno}])) {
       my ($c1, $c2);
       if (($$self{colno} + 2 < $$self{nchars})    # ^^ followed by TWO LOWERCASE Hex digits???
@@ -148,8 +148,7 @@ sub getNextChar {
         $ch = chr($cn + ($cn > 64 ? -64 : 64));
         splice(@{ $$self{chars} }, $$self{colno} - 1, 3, $ch);
         $$self{nchars} -= 2; }
-      $cc = $STATE->lookupCatcode($ch); }
-    $cc = CC_OTHER unless defined $cc;
+      $cc = $STATE->lookupCatcode($ch) // CC_OTHER; }
     return ($ch, $cc); }
   else {
     return (undef, undef); } }
@@ -190,23 +189,22 @@ sub getSource {
 sub handle_escape {    # Read control sequence
   my ($self) = @_;
   # NOTE: We're using control sequences WITH the \ prepended!!!
-  my $cs = "\\";       # I need this standardized to be able to lookup tokens (A better way???)
-  my ($ch, $cc) = $self->getNextChar;
+  my ($ch, $cc) = getNextChar($self);
   # Knuth, p.46 says that Newlines are converted to spaces,
   # Bit I believe that he does NOT mean within control sequences
-  $cs .= $ch;
-  if ($cc == CC_LETTER) {    # For letter, read more letters for csname.
-    while ((($ch, $cc) = $self->getNextChar) && $ch && ($cc == CC_LETTER)) {
+  my $cs = "\\" . $ch;    # I need this standardized to be able to lookup tokens (A better way???)
+  if ($cc == CC_LETTER) { # For letter, read more letters for csname.
+    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_LETTER)) {
       $cs .= $ch; }
     $$self{colno}--; }
-  if ($cc == CC_SPACE) {     # We'll skip whitespace here.
-    while ((($ch, $cc) = $self->getNextChar) && $ch && ($cc == CC_SPACE)) { }
+  if ($cc == CC_SPACE) {    # We'll skip whitespace here.
+    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
     $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
-  if ($cc == CC_EOL) {       # If we've got an EOL
-                             # if in \read mode, leave the EOL to be turned into a T_SPACE
+  if ($cc == CC_EOL) {      # If we've got an EOL
+                            # if in \read mode, leave the EOL to be turned into a T_SPACE
     if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
-    else {                   # else skip it.
-      $self->getNextChar;
+    else {                  # else skip it.
+      getNextChar($self);
       $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
   return T_CS($cs); }
 
@@ -224,7 +222,7 @@ sub handle_space {
   my ($self) = @_;
   my ($ch, $cc);
   # Skip any following spaces!
-  while ((($ch, $cc) = $self->getNextChar) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) { }
+  while ((($ch, $cc) = getNextChar($self)) && $ch && (($cc == CC_SPACE) || ($cc == CC_EOL))) { }
   $$self{colno}-- if ($$self{colno} < $$self{nchars});
   return T_SPACE; }
 
@@ -245,19 +243,22 @@ my %LETTER = ();
 my %OTHER  = ();
 my %ACTIVE = ();
 
-# Dispatch table for catcodes.
+# # Dispatch table for catcodes.
+
+# Possibly want to think about caching (common) letters, etc to keep from
+# creating tokens like crazy... or making them more compact... or ???
 my @DISPATCH = (    # [CONSTANT]
   \&handle_escape,    # T_ESCAPE
-  T_BEGIN,            # T_BEGIN
-  T_END,              # T_END
-  T_MATH,             # T_MATH
-  T_ALIGN,            # T_ALIGN
-  \&handle_EOL,       # T_EOL
-  T_PARAM,            # T_PARAM
-  T_SUPER,            # T_SUPER
-  T_SUB,              # T_SUB
-  sub { undef; },     # T_IGNORE (we'll read next token)
-  \&handle_space,     # T_SPACE
+  sub { ($_[1] eq '{' ? T_BEGIN : Token($_[1], CC_BEGIN)) },    # T_BEGIN
+  sub { ($_[1] eq '}' ? T_END   : Token($_[1], CC_END)) },      # T_END
+  sub { ($_[1] eq '$' ? T_MATH  : Token($_[1], CC_MATH)) },     # T_MATH
+  sub { ($_[1] eq '&' ? T_ALIGN : Token($_[1], CC_ALIGN)) },    # T_ALIGN
+  \&handle_EOL,                                                 # T_EOL
+  sub { ($_[1] eq '#' ? T_PARAM : Token($_[1], CC_PARAM)) },    # T_PARAM
+  sub { ($_[1] eq '^' ? T_SUPER : Token($_[1], CC_SUPER)) },    # T_SUPER
+  sub { ($_[1] eq '_' ? T_SUB   : Token($_[1], CC_SUB)) },      # T_SUB
+  sub { undef; },                                               # T_IGNORE (we'll read next token)
+  \&handle_space,                                               # T_SPACE
   sub { $LETTER{ $_[1] } || ($LETTER{ $_[1] } = T_LETTER($_[1])); },    # T_LETTER
   sub { $OTHER{ $_[1] }  || ($OTHER{ $_[1] }  = T_OTHER($_[1])); },     # T_OTHER
   sub { $ACTIVE{ $_[1] } || ($ACTIVE{ $_[1] } = T_ACTIVE($_[1])); },    # T_ACTIVE
@@ -283,7 +284,7 @@ sub readToken {
         return; }
       # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
       $line =~ s/((\\ )*)\s*$/$1\r/s;
-      $$self{chars}  = [splitChars($line)];
+      $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
       while (($$self{colno} < $$self{nchars})
         # DIRECT ACCESS to $STATE's catcode table!!!
@@ -295,7 +296,7 @@ sub readToken {
         return T_COMMENT("**** $$self{shortsource} Line $$self{lineno} ****"); }
     }
     # ==== Extract next token from line.
-    my ($ch, $cc) = $self->getNextChar;
+    my ($ch, $cc) = getNextChar($self);
     my $token = $DISPATCH[$cc];
     $token = &$token($self, $ch) if ref $token eq 'CODE';
     return $token if defined $token;    # Else, repeat till we get something or run out.
@@ -337,7 +338,7 @@ sub readRawLine {
       $$self{chars} = []; $$self{nchars} = 0; $$self{colno} = 0; }
     else {
       $$self{lineno}++;
-      $$self{chars}  = [splitChars($line)];
+      $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
       $$self{colno}  = $$self{nchars}; } }
   $line =~ s/\s*$//s if defined $line;    # Is this right?

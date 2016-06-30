@@ -113,9 +113,12 @@ sub preprocess_linebreaking {
       $doc->replaceNode($math, ['ltx:MathFork', {}, $math,
           ['ltx:MathBranch', {},
             ['ltx:Math', { 'xml:id' => $id },
-              $self->outerWrapper($doc, $xmath, $pmml)]]]); }
+              $self->outerWrapper($doc, $xmath, $pmml)]]]);
+      # Now,RE-mark, since the insertion removed internal attributes!
+      $doc->markXMNodeVisibility; }
     # cache the converted pmml?
-    # [But note that applyLayout MODIFIED the orignal $pmml, so it may have linebreaks!]
+    # But note that applyLayout MAY have MODIFIED the orignal $pmml, so it may have linebreaks!
+    # but then, it will have a modified id, as well!!! (.mbr appended)
     if ($id) {
       $$doc{converted_pmml_cache}{$id} = $pmml; }
   }

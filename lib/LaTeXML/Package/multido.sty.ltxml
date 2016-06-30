@@ -62,6 +62,7 @@ DefMacro('\multido@@initvars@@{}', sub {
         $gullet->unread($variables);
         my @inits = ();
         my @steps = ();
+        $gullet->skipSpaces;
         while (my $var = $gullet->readToken) {
           if ($var->getCSName =~ /^\\(d|n|i|r)/i) {
             my $type = $1;
@@ -84,7 +85,8 @@ DefMacro('\multido@@initvars@@{}', sub {
             last unless $gullet->readKeyword(","); }
           else {
             Error('unexpected', $var, $gullet,
-              "Wrong format for multido variable '" . ToString($var) . "'"); } }
+              "Wrong format for multido variable '" . ToString($var) . "'"); }
+          $gullet->skipSpaces; }
         DefMacroI('\multido@stepvar', undef, Tokens(@steps));
         # Return the tokens to initialize the vars
         @inits; }); });

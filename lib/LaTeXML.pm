@@ -19,6 +19,7 @@ use File::Temp;
 File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
+use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
@@ -28,7 +29,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.1");
+use version; our $VERSION = version->declare("0.8.2_1");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
@@ -100,9 +101,15 @@ sub initialize_session {
   my $latexml;
   my $init_eval_return = eval {
     # Prepare LaTeXML object
+    local $SIG{'ALRM'} = sub { die "Fatal:conversion:init Failed to initialize LaTeXML state\n" };
+    alarm($$self{opts}{timeout});
+
     $latexml = new_latexml($$self{opts});
+
+    alarm(0);
     1;
   };
+  ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
   if ($@) {                                                   #Fatal occured!
@@ -172,7 +179,8 @@ sub convert {
     if (!defined $source) {    # Unpacking failed to find a source
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory};
       my $log = $self->flush_log;
-      return { result => undef, log => $log, status => "Fatal:IO:Archive Can't detect a source TeX file!", status_code => 3 }; }
+      $log .= "\nFatal:invalid:Archive Can't detect a source TeX file!\nStatus:conversion:3\n";
+      return { result => undef, log => $log, status => "Fatal:invalid:Archive Can't detect a source TeX file!", status_code => 3 }; }
 # Destination magic: If we expect an archive on output, we need to invent the appropriate destination ourselves when not given.
 # Since the LaTeXML API never writes the final archive file to disk, we just use a pretend sourcename.zip:
     if (($$opts{whatsout} =~ /^archive/) && (!$$opts{destination})) {
@@ -234,19 +242,26 @@ sub convert {
     1;
   };
   # 2.2 Bookkeeping in case fatal errors occurred
-  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
+  ### Note: this cause double counting if LaTeXML has already handled it.
+  ### But leaving it might might miss errors that sneak through (can that happen?)
+  ####  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
   my $eval_report = $@;
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
-  $$runtime{status_data}->{$_} = $$latexml{state}->{status}->{$_} foreach (qw(warning error fatal));
+
   # End daemon run, by popping frame:
   $latexml->withState(sub {
-      my ($state) = @_;                                       # Remove current state frame
+      my ($state) = @_;    # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
       $$state{status} = {};
   });
+  if ($LaTeXML::UNSAFE_FATAL) {
+    # If the conversion hit an unsafe fatal, we need to reinitialize
+    $LaTeXML::UNSAFE_FATAL = 0;
+    $$self{ready} = 0;
+  }
   if ($eval_report || ($$runtime{status_code} == 3)) {
     # Terminate immediately on Fatal errors
     $$runtime{status_code} = 3;
@@ -262,7 +277,6 @@ sub convert {
     my $log = $self->flush_log;
     $serialized = $dom if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
-    $self->sanitize($log);
 
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
@@ -283,28 +297,8 @@ sub convert {
   # 3 If desired, post-process
   my $result = $dom;
   if ($$opts{post} && $dom && $dom->documentElement) {
-    my $post_eval_return = eval {
-      local $SIG{'ALRM'} = sub { die "alarm\n" };
-      alarm($$opts{timeout});
-      $result = $self->convert_post($dom);
-      alarm(0);
-      1;
-    };
-    # 3.1 Bookkeeping if a post-processing Fatal error occurred
-    ## $$latexml{state}->noteStatus('fatal') if $latexml && $@; # Fatal Error?
-    local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
-      if ((!$post_eval_return) && (!$@));
-    if ($@) {    #Fatal occured!
-      $$runtime{status_code} = 3;
-      if ($@ =~ "Fatal:perl:die alarm") {    #Alarm handler: (treat timeouts as fatals)
-        print STDERR "Fatal:post:timeout Postprocessing timeout after "
-          . $$opts{timeout} . " seconds!\n"; }
-      else {
-        print STDERR "Fatal:post:generic Post-processor crashed! $@\n"; }
-      #Since this is postprocessing, we don't need to do anything
-      #   just avoid crashing...
-      $result = undef; } }
-
+    $result = $self->convert_post($dom);
+  }
   # 4 Clean-up: undo everything we sandboxed
   if ($$opts{whatsin} =~ /^archive/) {
     rmtree($$opts{sourcedirectory});
@@ -320,7 +314,7 @@ sub convert {
   # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
   undef $serialized;
   if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
-    if ($$opts{format} =~ 'x(ht)?ml') {
+    if (($$opts{format} =~ 'x(ht)?ml') || ($$opts{format} eq 'jats')) {
       $serialized = $result->toString(1); }
     elsif ($$opts{format} =~ /^html/) {
       if (ref($result) =~ '^LaTeXML::(Post::)?Document$') {    # Special for documents
@@ -337,7 +331,6 @@ sub convert {
   # 5.2 Finalize logging and return a response containing the document result, log and status
   print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . " \n";
   my $log = $self->flush_log;
-  $self->sanitize($log) if ($$runtime{status_code} == 3);
   return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
 
@@ -364,6 +357,7 @@ sub convert_post {
   my ($xslt, $parallel, $math_formats, $format, $verbosity, $defaultresources, $embed) =
     map { $$opts{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
   $verbosity = $verbosity || 0;
+
   my %PostOPS = (verbosity => $verbosity,
     validate           => $$opts{validate},
     sourceDirectory    => $$opts{sourcedirectory},
@@ -373,6 +367,12 @@ sub convert_post {
     nocache            => 1,
     destination        => $$opts{destination},
     is_html            => $$opts{is_html});
+  # Compute destinationDirectory here,
+  #   so that we don't depend on post-processing returning a usable Post::Document (Fatal-resilience)
+  if ($PostOPS{destination}) {
+    my ($dir, $name, $ext) = pathname_split($PostOPS{destination});
+    $PostOPS{destinationDirectory} = $dir || '.'; }
+
   #Postprocess
   $parallel = $parallel || 0;
 
@@ -555,7 +555,22 @@ sub convert_post {
   # Do the actual post-processing:
   my @postdocs;
   my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
-  @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+  my $post_eval_return = eval {
+   local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
+    alarm($$opts{timeout});
+    @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
+    alarm(0);
+    1;
+  };
+  # 3.1 Bookkeeping if a post-processing Fatal error occurred
+  local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
+    if ((!$post_eval_return) && (!$@));
+  if ($@) {    #Fatal occured!
+    $$runtime{status_code} = 3;
+    $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
+    print STDERR $@;
+    undef @postdocs; # Empty document for fatals, for sanity's sake
+  }
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
@@ -565,30 +580,34 @@ sub convert_post {
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
-    my $destination_directory = $postdocs[0]->getDestinationDirectory();
+    ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
+    ### my $destination_directory = $postdocs[0]->getDestinationDirectory();
+    my $destination_directory = $PostOPS{destinationDirectory};
     my $log_file = pathname_absolute($$opts{log}, $destination_directory);
     if (pathname_is_contained($log_file, $destination_directory)) {
       print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
       print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
-      print STDERR "Status:conversion:" . ($$self{runtime}->{status_code} || '0') . " \n";
+      my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
+      print STDERR "Status:conversion:" . $archive_log_status_code . " \n";
       open my $log_fh, '>', $log_file;
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }
-    else { print STDERR "Error:IO:log The target log file isn't contained in the destination directory!\n"; } }
+    else { print STDERR "Error:I/O:log The target log file isn't contained in the destination directory!\n"; } }
   # Handle the output packaging
 
   my ($postdoc) = pack_collection(collection => [@postdocs], whatsout => $$opts{whatsout}, format => $format, %PostOPS);
 
   $DB->finish;
 
-  # TODO: Refactor once we know how to merge the core and post State objects
   # Merge postprocessing and main processing reports
-  foreach my $message_type (qw(warning error fatal)) {
-    my $count = $$latexmlpost{status}->{$message_type} || 0;
-    $$runtime{status_data}->{$message_type} += $count; }
-  $$runtime{status}      = getStatusMessage($$runtime{status_data});
-  $$runtime{status_code} = getStatusCode($$runtime{status_data});
+  ### HACKY until we use a single Core::State object, we'll just "wing it" for status messages:
+  my $post_status = $latexmlpost->getStatusMessage;
+  if ($post_status ne $$runtime{status}) { # Just so that we avoid double "No problem" reporting
+    $$runtime{status} .= "\n" . $post_status;
+  }
+  $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);
+  ### HACKY END
 
   print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
   print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
@@ -650,6 +669,7 @@ sub bind_log {
     *STDERR_SAVED = *STDERR;
     *STDERR       = *$log_handle;
     binmode(STDERR, ':encoding(UTF-8)');
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
     $$self{log_handle} = $log_handle;
   }
   return; }
@@ -664,50 +684,18 @@ sub flush_log {
   if (!$LaTeXML::DEBUG) {
     close $$self{log_handle};
     delete $$self{log_handle};
-    *STDERR = *STDERR_SAVED;
+    *STDERR                                    = *STDERR_SAVED;
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
   }
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }
 
-sub sanitize {
-  my ($self, $log) = @_;
-  if ($log =~ m/^Fatal:internal/m) {
-    # TODO : Anything else? Clean up the whole stomach etc?
-    $$self{latexml}->withState(sub {
-        my ($state) = @_;                   # Remove current state frame
-        my $stomach = $state->getStomach;
-        undef $stomach;
-    });
-    $$self{ready} = 0; }
-  return; }
-
-sub getStatusMessage {
-  my ($status) = @_;
-  my @report = ();
-  push(@report, "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '')) if $$status{warning};
-  push(@report, "$$status{error} error" .       ($$status{error} > 1 ? 's' : '')) if $$status{error};
-  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '')) if $$status{fatal};
-  return join('; ', @report) || 'No obvious problems'; }
-
-sub getStatusCode {
-  my ($status) = @_;
-  my $code;
-  if ($$status{fatal} && $$status{fatal} > 0) {
-    $code = 3; }
-  elsif ($$status{error} && $$status{error} > 0) {
-    $code = 2; }
-  elsif ($$status{warning} && $$status{warning} > 0) {
-    $code = 1; }
-  else {
-    $code = 0; }
-  return $code; }
-
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -769,7 +757,7 @@ Supplies detailed information of the conversion log ($log),
 
 =item C<< $converter->initialize_session($opts); >>
 
-Given an options hash reference $opts, initializes a session by creating a new LaTeXML object 
+Given an options hash reference $opts, initializes a session by creating a new LaTeXML object
       with initialized state and loading a daemonized preamble (if any).
 
 Sets the "ready" flag to true, making a subsequent "convert" call immediately possible.

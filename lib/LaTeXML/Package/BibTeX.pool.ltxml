@@ -100,7 +100,9 @@ LoadPool('LaTeX');
 # to get the string value (rather than digested value) for
 # the given field, or you may use it to test for the presence
 # of some other field.
-#
+# BUT: be careful, it looks up from a hash, and so doesn't work
+# correctly when there are multiple values for a given field!!!
+# [This may need to be revisited]
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Build a sequence of commands that will process the
@@ -117,13 +119,13 @@ DefPrimitive('\bibentry@prepare Semiverbatim', sub {
     my $origtype   = $entry->getType;
     my $type       = $origtype;
     my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
+    if (IsDefined($alias_defn)) {
       $type = ToString(Digest($alias_defn)); }
 
     # invoke ALL entry preparers
     $stomach->bgroup;
     AssignValue('CURRENT@BIBKEY' => $key);
-    Digest(Tokens(grep { LookupDefinition($_) }
+    Digest(Tokens(grep { IsDefined($_) }
           T_CS('\bib@entry@' . $type . '@prepare'),
         ($origtype ne $type ? (T_CS('\bib@entry@' . $origtype . '@prepare')) : ()),
         T_CS('\bib@entry@default@prepare')));
@@ -137,14 +139,14 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
     my $origtype   = $entry->getType;
     my $type       = $origtype;
     my $alias_defn = T_CS('\bib@entry@' . $type . '@alias');
-    if (LookupDefinition($alias_defn)) {
+    if (IsDefined($alias_defn)) {
       $type = ToString(Digest($alias_defn)); }
 
     my @tex = (join('', '\begin{bib@entry}{', $type, '}{', $key, '}'));
     # Add the most specific handler for each field
     foreach my $pair ($entry->getFields) {
       my ($field, $value) = @$pair;
-      my ($handler) = grep { LookupDefinition(T_CS('\\' . $_)) }
+      my ($handler) = grep { IsDefined(T_CS('\\' . $_)) }
         'bib@field@' . $type . '@' . $field,
         ($origtype ne $type
         ? ('bib@field@' . $origtype . '@' . $field) : ()),
@@ -154,14 +156,13 @@ DefPrimitive('\bibentry@create Semiverbatim', sub {
       else {
         push(@tex, join('', '\csname bib@field@default@default\endcsname{', $field, '}{', $value, '}')); } }
     # Add ALL entry completers
-    foreach my $completer (grep { LookupDefinition(T_CS('\\' . $_)) }
+    foreach my $completer (grep { IsDefined(T_CS('\\' . $_)) }
       'bib@entry@' . $type . '@complete',
       ($origtype ne $type
         ? ('bib@entry@' . $origtype . '@complete') : ()),
       'bib@entry@default@complete') {
       push(@tex, join('', '\csname ', $completer, '\endcsname')); }
     my $tex = join("\n", @tex, '\end{bib@entry}');
-
     $stomach->getGullet->openMouth(LaTeXML::Core::Mouth->new($tex));
     (); });
 
@@ -268,10 +269,12 @@ DefConstructor('\bib@@@name{}{}',
 # so that \bib@addto@related can capture it.
 DefConstructor('\bib@@@names{}', "#1");
 DefMacro('\bib@@names{}{}', sub {
-    my ($gullet, $field, $ignore) = @_;
+##    my ($gullet, $field, $ignore) = @_;
+    my ($gullet, $field, $names) = @_;
     (T_CS('\bib@@@names'), T_BEGIN,
       (map { Invocation(T_CS('\bib@@@name'), $field, $_) }
-          processBibNameList(currentBibEntryField(ToString($field)))),
+##          processBibNameList(currentBibEntryField(ToString($field)))),
+          processBibNameList(UnTeX($names))),
       T_END); });
 
 # Now, we define
@@ -734,7 +737,7 @@ DefMacro('\bib@field@default@language',
   '\bib@@field{ltx:bib-language}');
 
 # url : specifies a URL where the work can be found.
-DefConstructor('\bib@field@default@url Semiverbatim',
+DefConstructor('\bib@field@default@url Verbatim',
   "<ltx:bib-url href='#1'>Link</ltx:bib-url>");
 
 # enote : miscellaneous annotation

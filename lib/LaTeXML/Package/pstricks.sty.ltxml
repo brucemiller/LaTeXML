@@ -441,9 +441,16 @@ sub trunc2 {
 # computes the value of the arc if framearc is to be used
 sub arcValue {
   my ($cs, $fa, $la) = map { LookupValue($_) } qw(\pscornersize \psframearc \pslinearc);
+  # This logic isn't right ($cs='relative' can't get methods!)
+  # but what WAS the intention???
+  # return ($cs && $fa)
+  #   ? ptValue(($cs eq 'relative')
+  #   ? ($cs->getX->smaller($cs->getY)->multiply($fa->multiply(0.5)))
+  #   : $la)
+  #   : undef; }
   return ($cs && $fa)
     ? ptValue(($cs eq 'relative')
-    ? ($cs->getX->smaller($cs->getY)->multiply($fa->multiply(0.5)))
+    ? $fa
     : $la)
     : undef; }
 

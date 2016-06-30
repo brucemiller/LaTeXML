@@ -89,7 +89,9 @@ sub show {
     my $value = showvalue($self->getValue($attr));
     # hack around bug in Text::Wrap 2012.0818
     my $line;
-    eval { $line = wrap($label, (' ' x 20), $value); };
+    eval {
+      local $LaTeXML::IGNORE_ERRORS = 1;
+      $line = wrap($label, (' ' x 20), $value); };
     $string .= (defined $line ? $line : $label . $value) . "\n"; }
   return $string; }
 

@@ -25,7 +25,7 @@ use LaTeXML::Package;
 # I have the suspicion that AAS style is strongly related to RevTeX,
 # but I don't see it ever made explicit.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+RequirePackage('aas_macros');
 #======================================================================
 # 2.1.3 Editorial Information
 
@@ -189,7 +189,7 @@ DefPrimitive('\@appendix', sub {
     DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
     Let('\section',   '\appendix@section', 'global');
     Let('\@appendix', '\relax',            'global');
-    if (LookupDefinition(T_CS('\appendixname'))) {
+    if (IsDefined('\appendixname')) {
       Let('\sectionname', '\appendixname', 'global'); }
 });
 
@@ -216,7 +216,7 @@ DefEnvironment('{mathletters}',
 # Basically, AMSMath's \tag ?
 DefConstructor('\eqnum {}', '',
   afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString(Digest($_[1])), 'global'); },
+    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
   mode => 'text');
 
 #======================================================================
@@ -249,69 +249,6 @@ DefConstructor('\endreferences',
   "</ltx:biblist></ltx:bibliography>");
 
 Let('\reference', '\bibitem');
-
-#======================================================================
-# 2.13.4 Abbreviations for Journal Names
-
-DefMacro('\aj',    '{AJ}');                            # Astronomical Journal
-DefMacro('\actaa', '{Acta Astron.}');                  # Acta Astronomica
-DefMacro('\araa',  '{ARA\&A}');                        # Annual Review of Astron and Astrophys
-DefMacro('\apj',   '{ApJ}');                           # Astrophysical Journal
-DefMacro('\apjl',  '{ApJ}');                           # Astrophysical Journal, Letters
-DefMacro('\apjs',  '{ApJS}');                          # Astrophysical Journal, Supplement
-DefMacro('\ao',    '{Appl.~Opt.}');                    # Applied Optics
-DefMacro('\apss',  '{Ap\&SS}');                        # Astrophysics and Space Science
-DefMacro('\aap',   '{A\&A}');                          # Astronomy and Astrophysics
-DefMacro('\aapr',  '{A\&A~Rev.}');                     # Astronomy and Astrophysics Reviews
-DefMacro('\aaps',  '{A\&AS}');                         # Astronomy and Astrophysics, Supplement
-DefMacro('\azh',   '{AZh}');                           # Astronomicheskii Zhurnal
-DefMacro('\baas',  '{BAAS}');                          # Bulletin of the AAS
-DefMacro('\caa',   '{Chinese Astron. Astrophys.}');    # Chinese Astronomy and Astrophysics
-DefMacro('\cjaa', '{Chinese J. Astron. Astrophys.}'); # Chinese Journal  of Astronomy and Astrophysics
-DefMacro('\icarus', '{Icarus}');                      # Icarus
-DefMacro('\jcap', '{J. Cosmology Astropart. Phys}'); # Journal of Cosmology and Astroparticle Physics
-DefMacro('\jrasc',  '{JRASC}');                      # Journal of the RAS of Canada
-DefMacro('\memras', '{MmRAS}');                      # Memoirs of the RAS
-DefMacro('\mnras',  '{MNRAS}');                      # Monthly Notices of the RAS
-DefMacro('\na',     '{New A}');                      # New Astronomy
-DefMacro('\nar',    '{New A Rev.}');                 # New Astronomy Review
-DefMacro('\pra',    '{Phys.~Rev.~A}');               # Physical Review A: General Physics
-DefMacro('\prb',    '{Phys.~Rev.~B}');               # Physical Review B: Solid State
-DefMacro('\prc',    '{Phys.~Rev.~C}');               # Physical Review C
-DefMacro('\prd',    '{Phys.~Rev.~D}');               # Physical Review D
-DefMacro('\pre',    '{Phys.~Rev.~E}');               # Physical Review E
-DefMacro('\prl',    '{Phys.~Rev.~Lett.}');           # Physical Review Letters
-DefMacro('\pasa',   '{PASA}');                       # Publications of the Astron. Soc. Australia
-DefMacro('\pasp',   '{PASP}');                       # Publications of the ASP
-DefMacro('\pasj',   '{PASJ}');                       # Publications of the ASJ
-DefMacro('\qjras',  '{QJRAS}');                      # Quarterly Journal of the RAS
-DefMacro('\rmxaa', '{Rev. Mexicana Astron. Astrofis.}'); # Revista Mexicana de Astronomia y Astrofisica
-DefMacro('\skytel',  '{S\&T}');                          # Sky and Telescope
-DefMacro('\solphys', '{Sol.~Phys.}');                    # Solar Physics
-DefMacro('\sovast',  '{Soviet~Ast.}');                   # Soviet Astronomy
-DefMacro('\ssr',     '{Space~Sci.~Rev.}');               # Space Science Reviews
-DefMacro('\zap',     '{ZAp}');                           # Zeitschrift fuer Astrophysik
-DefMacro('\nat',     '{Nature}');                        # Nature
-DefMacro('\iaucirc', '{IAU~Circ.}');                     # IAU Cirulars
-DefMacro('\aplett',  '{Astrophys.~Lett.}');              # Astrophysics Letters
-DefMacro('\apspr',   '{Astrophys.~Space~Phys.~Res.}');   # Astrophysics Space Physics Research
-DefMacro('\bain', '{Bull.~Astron.~Inst.~Netherlands}'); # Bulletin Astronomical Institute of the Netherlands
-DefMacro('\fcp',  '{Fund.~Cosmic~Phys.}');              # Fundamental Cosmic Physics
-DefMacro('\gca',  '{Geochim.~Cosmochim.~Acta}');        # Geochimica Cosmochimica Acta
-DefMacro('\grl',  '{Geophys.~Res.~Lett.}');             # Geophysics Research Letters
-DefMacro('\jcp',  '{J.~Chem.~Phys.}');                  # Journal of Chemical Physics
-DefMacro('\jgr',  '{J.~Geophys.~Res.}');                # Journal of Geophysics Research
-DefMacro('\jqsrt', '{J.~Quant.~Spec.~Radiat.~Transf.}'); # Journal of Quantitiative Spectroscopy and Radiative Trasfer
-DefMacro('\memsai',   '{Mem.~Soc.~Astron.~Italiana}');   # Mem. Societa Astronomica Italiana
-DefMacro('\nphysa',   '{Nucl.~Phys.~A}');                # Nuclear Physics A
-DefMacro('\physrep',  '{Phys.~Rep.}');                   # Physics Reports
-DefMacro('\physscr',  '{Phys.~Scr}');                    # Physica Scripta
-DefMacro('\planss',   '{Planet.~Space~Sci.}');           # Planetary Space Science
-DefMacro('\procspie', '{Proc.~SPIE}');                   # Proceedings of the SPIE
-Let('\astap',   '\aap');
-Let('\apjlett', '\apjl');
-Let('\apjsupp', '\apjs');
-Let('\applopt', '\ao');
 
 #======================================================================
 # 2.14.1 Electronic Art
@@ -393,12 +330,12 @@ DefPrimitiveI('\tbond', undef, "\x{2261}");
 # \case{1}{2} == textstyle fraction
 # AND, apparently allowed in text mode!
 DefMacro('\case{}{}', '\ensuremath{\text@frac{#1}{#2}}');
-DefConstructor('\text@frac{}{}',
+DefConstructor('\text@frac ScriptStyle ScriptStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='text'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeTFrac, afterDigest => \&afterTFrac);
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); });
 Let('\slantfrac', '\case');
 #======================================================================
 # 2.17.4 Astronomical Symbols
@@ -506,11 +443,11 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 # \url{text}
 DefConstructor('\url Semiverbatim',
   "<ltx:ref href='#href'>#1</ltx:ref>",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[1]))); });
+  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # This should be in effect only after frontmatter
 # \email{address}

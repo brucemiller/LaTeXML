@@ -38,6 +38,11 @@ our $GLUE_re = qr/(\+?\-?$num_re)($unit_re)($plus_re)?($minus_re)?/;    # [CONST
 
 sub new {
   my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;
+  $sp = ToString($sp) if ref $sp;
+  $plus = ToString($plus) if ref $plus;
+  $pfill = ToString($pfill) if ref $pfill;
+  $minus = ToString($minus) if ref $minus;
+  $mfill = ToString($mfill) if ref $mfill;
   if ((!defined $plus) && (!defined $pfill) && (!defined $minus) && (!defined $mfill)) {
     if ($sp =~ /^(\d*\.?\d*)$/) { }
     elsif ($sp =~ /^$GLUE_re$/) {

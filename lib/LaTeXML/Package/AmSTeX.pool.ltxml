@@ -144,7 +144,7 @@ DefMacro('\abstract Until:\endabstract', '\@add@frontmatter{ltx:abstract}{#1}');
 DefMacro('\nofrills', '');
 
 DefPrimitive('\comment', sub {
-    my ($stomach, $line);
+    my ($stomach, $line) = @_;
     my $gullet = $stomach->getGullet;
     $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
     while (defined($line = $gullet->readRawLine) && ($line ne '\endcomment')) {
@@ -164,7 +164,7 @@ DefPrimitiveI('\textfonti', undef, '',
 DefPrimitiveI('\textfontii', undef, '',
   font => { family => 'serif', series => 'medium', shape => 'upright', size => 9 });
 
-DefConstructor('\spreadlines Dimension', '');
+DefConstructor('\spreadlines {Dimension}', '');
 
 DefPrimitive('\pagebreak',      undef);
 DefPrimitive('\nopagebreak',    undef);
@@ -247,12 +247,13 @@ DefMacro('\undersetbrace Until:\to {}', '\underbrace{#2}^{#1}');
 Let('\overarrow',  '\overrightarrow');
 Let('\underarrow', '\underrightarrow');
 
-DefConstructor('\frac{}{}',
+DefConstructor('\frac InFractionStyle InFractionStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='#mathstyle'/>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-);
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
+  properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
 DefConstructor('\Cal{}', '#1', bounded => 1, requireMath => 1,
   font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
@@ -287,6 +288,42 @@ DefMacro('\spddddot', "^{....}");
 DefMacro('\spbreve',  "^{\\hbox{\\u{}}}");
 DefMacro('\spbar',    "^{-}");
 DefMacro('\spvec',    "^{\\rightarrow}");
+
+# \boldsymbol{}
+# Note this is really messed up.  \boldsymbol doesn't necessarily just expand,
+# it recognizes certain arguments specially.  Among other things this allows perversities like:
+#   \redefine\cdot{\boldsymbol\cdot}
+DefMathI('\lx@ams@boldsymbol@cdot', undef, "\x{22C5}", role => 'MULOP',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@prime', undef, "\x{2032}", role => 'SUPOP', locked => 1,
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@lbrack', undef, '[', role => 'OPEN', stretchy => 'false',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@rbrack', undef, ']', role => 'CLOSE', stretchy => 'false',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@lbrace', undef, '{', role => 'OPEN', stretchy => 'false', alias => '\{',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@rbrace', undef, '}', role => 'CLOSE', stretchy => 'false', alias => '\}',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@surd', undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root',
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@S', undef, UTF(0xa7),
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@P', undef, UTF(0xB6),
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@dag', undef, "\x{2020}",
+  bounded => 1, font => { forcebold => 1 });
+DefMathI('\lx@ams@boldsymbol@ddag', undef, "\x{2021}",
+  bounded => 1, font => { forcebold => 1 });
+
+DefConstructor('\lx@ams@boldsymbol@{}', '#1',
+  bounded => 1, requireMath => 1, font => { forcebold => 1 });
+
+DefMacro('\boldsymbol DefToken', sub {
+    my ($gullet, $token) = @_;
+    my $name = ToString($token); $name =~ s/^\\//;
+    my $btoken = T_CS('\lx@ams@boldsymbol@' . $name);
+    return (IsDefined($btoken) ? ($btoken) : (T_CS('\lx@ams@boldsymbol@'), $token)); });
 
 # Ignore these?
 DefRegister('\buffer' => Dimension(0));

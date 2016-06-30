@@ -10,7 +10,7 @@
     <title><tag close=" ">1</tag>Known Negations</title>
     <para xml:id="S1.p1">
       <equation xml:id="S1.Ex1">
-        <Math mode="display" xml:id="S1.Ex1.m1" tex="\not=,\not&lt;,\not\leq,\not\ll,\not\prec,\not\preceq,\not\subset,\not\subseteq,%&#10;\not\sqsubseteq,\not\lhd,\not\unlhd,\not\asymp" text="list@(not-equals, not-less-than, not-less-than-or-equals, not-much-less-than, not-precedes, not-precedes-or-equals, not-subset-of, not-subset-of-or-equals, not-square-image-of-or-equals, not-subgroup-of, not-subgroup-of-or-equals, not-asymptotically-equals)">
+        <Math mode="display" tex="\not=,\not&lt;,\not\leq,\not\ll,\not\prec,\not\preceq,\not\subset,\not\subseteq,%&#10;\not\sqsubseteq,\not\lhd,\not\unlhd,\not\asymp" text="list@(not-equals, not-less-than, not-less-than-or-equals, not-much-less-than, not-precedes, not-precedes-or-equals, not-subset-of, not-subset-of-or-equals, not-square-image-of-or-equals, not-subgroup-of, not-subgroup-of-or-equals, not-asymptotically-equals)" xml:id="S1.Ex1.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -58,48 +58,54 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex2">
-        <Math mode="display" xml:id="S1.Ex2.m1" tex="\not\equiv,\not&gt;,\not\geq,\not\gg,\not\succ,\not\succeq,\not\supset,\not%&#10;\supseteq,\not\sqsupseteq,\not\rhd,\not\unrhd,\not\approx," text="list@(not-equivalent-to, not-greater-than, not-greater-than-or-equals, not-much-greater-than, not-succeeds, not-succeeds-or-equals, not-superset-of, not-superset-of-or-equals, not-square-original-of-or-equals, not-contains-as-subgroup, not-contains-as-subgroup-or-equals, not-approximately-equals)">
+        <Math mode="display" tex="\not\equiv,\not&gt;,\not\geq,\not\gg,\not\succ,\not\succeq,\not\supset,\not%&#10;\supseteq,\not\sqsupseteq,\not\rhd,\not\unrhd,\not\approx," text="list@(not-equivalent-to, not-greater-than, not-greater-than-or-equals, not-much-greater-than, not-succeeds, not-succeeds-or-equals, not-superset-of, not-superset-of-or-equals, not-square-original-of-or-equals, not-contains-as-subgroup, not-contains-as-subgroup-or-equals, not-approximately-equals)" xml:id="S1.Ex2.m1">
           <XMath>
-            <XMDual punctuation=",">
-              <XMApp>
-                <XMTok meaning="list"/>
-                <XMRef idref="S1.Ex2.m1.1"/>
-                <XMRef idref="S1.Ex2.m1.2"/>
-                <XMRef idref="S1.Ex2.m1.3"/>
-                <XMRef idref="S1.Ex2.m1.4"/>
-                <XMRef idref="S1.Ex2.m1.5"/>
-                <XMRef idref="S1.Ex2.m1.6"/>
-                <XMRef idref="S1.Ex2.m1.7"/>
-                <XMRef idref="S1.Ex2.m1.8"/>
-                <XMRef idref="S1.Ex2.m1.9"/>
-                <XMRef idref="S1.Ex2.m1.10"/>
-                <XMRef idref="S1.Ex2.m1.11"/>
-                <XMRef idref="S1.Ex2.m1.12"/>
-              </XMApp>
+            <XMDual>
+              <XMRef idref="S1.Ex2.m1.13"/>
               <XMWrap>
-                <XMTok meaning="not-equivalent-to" name="not-equiv" role="RELOP" xml:id="S1.Ex2.m1.1">≢</XMTok>
+                <XMDual xml:id="S1.Ex2.m1.13">
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                    <XMRef idref="S1.Ex2.m1.1"/>
+                    <XMRef idref="S1.Ex2.m1.2"/>
+                    <XMRef idref="S1.Ex2.m1.3"/>
+                    <XMRef idref="S1.Ex2.m1.4"/>
+                    <XMRef idref="S1.Ex2.m1.5"/>
+                    <XMRef idref="S1.Ex2.m1.6"/>
+                    <XMRef idref="S1.Ex2.m1.7"/>
+                    <XMRef idref="S1.Ex2.m1.8"/>
+                    <XMRef idref="S1.Ex2.m1.9"/>
+                    <XMRef idref="S1.Ex2.m1.10"/>
+                    <XMRef idref="S1.Ex2.m1.11"/>
+                    <XMRef idref="S1.Ex2.m1.12"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok meaning="not-equivalent-to" name="not-equiv" role="RELOP" xml:id="S1.Ex2.m1.1">≢</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-greater-than" name="not-&gt;" role="RELOP" xml:id="S1.Ex2.m1.2">≯</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-greater-than-or-equals" name="not-geq" role="RELOP" xml:id="S1.Ex2.m1.3">≱</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-much-greater-than" name="not-gg" role="RELOP" xml:id="S1.Ex2.m1.4">≫̸</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-succeeds" name="not-succ" role="RELOP" xml:id="S1.Ex2.m1.5">⊁</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-succeeds-or-equals" name="not-succeq" role="RELOP" xml:id="S1.Ex2.m1.6">⋡</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-superset-of" name="not-supset" role="RELOP" xml:id="S1.Ex2.m1.7">⊅</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-superset-of-or-equals" name="not-supseteq" role="RELOP" xml:id="S1.Ex2.m1.8">⊉</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-square-original-of-or-equals" name="not-sqsupseteq" role="RELOP" xml:id="S1.Ex2.m1.9">⋣</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-contains-as-subgroup" name="not-rhd" role="ADDOP" xml:id="S1.Ex2.m1.10">⋫</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-contains-as-subgroup-or-equals" name="not-unrhd" role="ADDOP" xml:id="S1.Ex2.m1.11">⋭</XMTok>
+                    <XMTok role="PUNCT">,</XMTok>
+                    <XMTok meaning="not-approximately-equals" name="not-approx" role="RELOP" xml:id="S1.Ex2.m1.12">≉</XMTok>
+                  </XMWrap>
+                </XMDual>
                 <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-greater-than" name="not-&gt;" role="RELOP" xml:id="S1.Ex2.m1.2">≯</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-greater-than-or-equals" name="not-geq" role="RELOP" xml:id="S1.Ex2.m1.3">≱</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-much-greater-than" name="not-gg" role="RELOP" xml:id="S1.Ex2.m1.4">≫̸</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-succeeds" name="not-succ" role="RELOP" xml:id="S1.Ex2.m1.5">⊁</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-succeeds-or-equals" name="not-succeq" role="RELOP" xml:id="S1.Ex2.m1.6">⋡</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-superset-of" name="not-supset" role="RELOP" xml:id="S1.Ex2.m1.7">⊅</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-superset-of-or-equals" name="not-supseteq" role="RELOP" xml:id="S1.Ex2.m1.8">⊉</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-square-original-of-or-equals" name="not-sqsupseteq" role="RELOP" xml:id="S1.Ex2.m1.9">⋣</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-contains-as-subgroup" name="not-rhd" role="ADDOP" xml:id="S1.Ex2.m1.10">⋫</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-contains-as-subgroup-or-equals" name="not-unrhd" role="ADDOP" xml:id="S1.Ex2.m1.11">⋭</XMTok>
-                <XMTok role="PUNCT">,</XMTok>
-                <XMTok meaning="not-approximately-equals" name="not-approx" role="RELOP" xml:id="S1.Ex2.m1.12">≉</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -111,7 +117,7 @@
     <title><tag close=" ">2</tag>Unknown Negations of Characters</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex3">
-        <Math mode="display" xml:id="S2.Ex3.m1" tex="\not a,\not\alpha" text="list@(not-a, not-alpha)">
+        <Math mode="display" tex="\not a,\not\alpha" text="list@(not-a, not-alpha)" xml:id="S2.Ex3.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -120,9 +126,9 @@
                 <XMRef idref="S2.Ex3.m1.2"/>
               </XMApp>
               <XMWrap>
-                <XMTok name="not-a" role="UNKNOWN" xml:id="S2.Ex3.m1.1" font="italic">a̸</XMTok>
+                <XMTok font="italic" name="not-a" role="UNKNOWN" xml:id="S2.Ex3.m1.1">a̸</XMTok>
                 <XMTok role="PUNCT">,</XMTok>
-                <XMTok name="not-alpha" role="UNKNOWN" xml:id="S2.Ex3.m1.2" font="italic">α̸</XMTok>
+                <XMTok font="italic" name="not-alpha" role="UNKNOWN" xml:id="S2.Ex3.m1.2">α̸</XMTok>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -131,7 +137,7 @@
     </para>
     <para xml:id="S2.p2">
       <equation xml:id="S2.Ex4">
-        <Math mode="display" xml:id="S2.Ex4.m1" tex="\not+,\not 4" text="list@(not-plus, not-4)">
+        <Math mode="display" tex="\not+,\not 4" text="list@(not-plus, not-4)" xml:id="S2.Ex4.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -154,7 +160,7 @@
     <title><tag close=" ">3</tag>Random Negations</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex5">
-        <Math mode="display" xml:id="S3.Ex5.m1" tex="\not\sin" text="not@(sine)">
+        <Math mode="display" tex="\not\sin" text="not@(sine)" xml:id="S3.Ex5.m1">
           <XMath>
             <XMApp>
               <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
@@ -164,7 +170,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex6">
-        <Math mode="display" xml:id="S3.Ex6.m1" tex="\not\operatorname{R}" text="not@(R)">
+        <Math mode="display" tex="\not\operatorname{R}" text="not@(R)" xml:id="S3.Ex6.m1">
           <XMath>
             <XMApp>
               <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
@@ -174,25 +180,25 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex7">
-        <Math mode="display" xml:id="S3.Ex7.m1" tex="\not\sqrt{x}" text="not@(square-root@(x))">
+        <Math mode="display" tex="\not\sqrt{x}" text="not@(square-root@(x))" xml:id="S3.Ex7.m1">
           <XMath>
             <XMApp>
               <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
               <XMApp>
                 <XMTok meaning="square-root"/>
-                <XMTok role="UNKNOWN" font="italic">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S3.Ex8">
-        <Math mode="display" xml:id="S3.Ex8.m1" tex="\not\frac{1}{2}" text="not@(1 / 2)">
+        <Math mode="display" tex="\not\frac{1}{2}" text="not@(1 / 2)" xml:id="S3.Ex8.m1">
           <XMath>
             <XMApp>
               <XMTok enclose="updiagonalstrike" meaning="not" role="ENCLOSE"/>
               <XMApp>
-                <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+                <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
                 <XMTok meaning="1" role="NUMBER">1</XMTok>
                 <XMTok meaning="2" role="NUMBER">2</XMTok>
               </XMApp>
@@ -206,32 +212,32 @@
     <title><tag close=" ">4</tag>Falling off the End</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex9">
-        <Math mode="display" xml:id="S4.Ex9.m1" tex="a/bc\not" text="(a / b) * c * not">
+        <Math mode="display" tex="a/bc\not" text="(a / b) * c * not" xml:id="S4.Ex9.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMApp>
-                <XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
-                <XMTok role="UNKNOWN" font="italic">b</XMTok>
+                <XMTok meaning="divide" role="MULOP">/</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">c</XMTok>
+              <XMTok font="italic" role="UNKNOWN">c</XMTok>
               <XMTok meaning="not" role="OPFUNCTION">／</XMTok>
             </XMApp>
           </XMath>
         </Math>
       </equation>
       <equation xml:id="S4.Ex10">
-        <Math mode="display" xml:id="S4.Ex10.m1" tex="\frac{a\not}{b}" text="(a * not) / b">
+        <Math mode="display" tex="\frac{a\not}{b}" text="(a * not) / b" xml:id="S4.Ex10.m1">
           <XMath>
             <XMApp>
-              <XMTok mathstyle="display" meaning="divide" role="MULOP"/>
+              <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                <XMTok role="UNKNOWN" font="italic">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 <XMTok meaning="not" role="OPFUNCTION">／</XMTok>
               </XMApp>
-              <XMTok role="UNKNOWN" font="italic">b</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
             </XMApp>
           </XMath>
         </Math>

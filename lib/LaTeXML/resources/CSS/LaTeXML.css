@@ -86,6 +86,8 @@
 
 /*======================================================================
   Para level */
+.ltx_float {
+    margin: 1ex 3em 1ex 3em; }    
 td.ltx_subfigure,
 td.ltx_subtable,
 td.ltx_subfloat { width:50%; }
@@ -95,7 +97,6 @@ td.ltx_subfloat { width:50%; }
 .ltx_p,
 .ltx_quote,
 .ltx_block,
-.ltx_listingblock,
 .ltx_para {
     display: block; }
 
@@ -126,8 +127,11 @@ td.ltx_subfloat { width:50%; }
 .ltx_eqn_row   { display:table-row; }
 .ltx_eqn_cell  { display:table-cell; width:auto; }
 
-.ltx_tag_equation.ltx_align_left  { position:absolute; left:3em; }
-.ltx_tag_equation.ltx_align_right { position:absolute; right:3em; }
+.ltx_tag_equationgroup.ltx_align_left,
+.ltx_tag_equation.ltx_align_left{ position:absolute; left:3em; }
+.ltx_tag_equationgroup.ltx_align_right,
+.ltx_tag_equation.ltx_align_right{ position:absolute; right:3em; }
+
 
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
 table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
@@ -185,10 +189,27 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_indexlist { margin-left:1em; padding-left:1em;}
 
 /* Listings */
-.ltx_listing td.ltx_linenumber,
-.ltx_listingblock td.ltx_linenumber {
-    width:3em; text-align:right;}
-
+.ltx_listing {
+    display:block;
+    margin: 1ex 3em 1ex 3em;
+    overflow-x:auto; }
+.ltx_float .ltx_listing {
+    margin: 0; }
+.ltx_listingline { white-space:nowrap; min-height:1em; }
+.ltx_lst_numbers_left .ltx_listingline .ltx_tag {
+    background-color:transparent;
+    margin-left:-3em; width:2.5em;
+    position:absolute; 
+    text-align:right; }
+.ltx_lst_numbers_right .ltx_listingline .ltx_tag {
+    background-color:transparent;
+    width:2.5em;
+    position:absolute; right:3em;
+    text-align:right; }
+/*
+    position:absolute; left:0em;
+    max-width:0em; text-align:right; }
+*/
 .ltx_parbox {text-indent:0em; }
 
 /* NOTE that it is CRITICAL to put position:relative outside & absolute inside!!
@@ -238,14 +259,32 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_framed  { border:1px solid black;}
 .ltx_tabular .ltx_td,
 .ltx_tabular .ltx_th { padding:0.1em 0.5em; }
+/* regular lines */
 .ltx_border_t  { border-top:1px solid black; }
 .ltx_border_r  { border-right:1px solid black; }
 .ltx_border_b  { border-bottom:1px solid black; }
 .ltx_border_l  { border-left:1px solid black; }
+/* double lines */
 .ltx_border_tt { border-top:3px double black; }
 .ltx_border_rr { border-right:3px double black; }
 .ltx_border_bb { border-bottom:3px double black; }
 .ltx_border_ll { border-left:3px double black; }
+/* Light lines */
+.ltx_border_T  { border-top:1px solid gray; }
+.ltx_border_R  { border-right:1px solid gray; }
+.ltx_border_B  { border-bottom:1px solid gray; }
+.ltx_border_L  { border-left:1px solid gray; }
+/* Framing */
+.ltx_framed_rectangle { border-style:solid; border-width:1px; }
+.ltx_framed_top       { border-top-style:solid; border-top-width:1px; }
+.ltx_framed_left      { border-left-style:solid; border-left-width:1px; }
+.ltx_framed_right     { border-right-style:solid; border-right-width:1px; }
+.ltx_framed_bottom,
+.ltx_framed_underline { border-bottom-style:solid; border-bottom-width:1px; }
+.ltx_framed_topbottom { border-top-style:solid; border-top-width:1px;
+                        border-bottom-style:solid; border-bottom-width:1px; }
+.ltx_framed_leftright { border-left-style:solid; border-left-width:1px;
+                        border-right-style:solid; border-right-width:1px; }
 
 /*======================================================================
  Misc */
@@ -272,6 +311,7 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_ERROR        { color:red; }
 .ltx_rdf          { display:none; }
 .ltx_missing      { color:red;} 
+.ltx_nounicode    { color:red; }
 /*======================================================================
  SVG (pgf/tikz ?) basics */
 
@@ -315,6 +355,24 @@ cite                 { font-style: normal; }
 /*.ltx_inline-block.ltx_centering,*/
 /* Hmm.... is this right in general? */
 .ltx_centering  { display:block; margin:auto; text-align:center; }
+
+/* Dubious stuff */
+.ltx_hflipped {
+    display:inline-block;
+    -moz-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    transform: scaleX(-1);
+    filter: FlipH;
+    -ms-fliter: "FlipH"; }
+.ltx_vflipped {
+    display:inline-block;
+    -moz-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    transform: scaleY(-1);
+    filter: FlipV;
+    -ms-fliter: "FlipV"; }
 
 /* .ltx_phantom handled in xslt */
 

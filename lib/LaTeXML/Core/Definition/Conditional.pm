@@ -27,7 +27,8 @@ sub new {
   my ($class, $cs, $parameters, $test, %traits) = @_;
   my $source = $STATE->getStomach->getGullet->getMouth;
   return bless { cs => $cs, parameters => $parameters, test => $test,
-    locator => "from " . $source->getLocator(-1),
+    locator      => "from " . $source->getLocator(-1),
+    isExpandable => 1,
     %traits }, $class; }
 
 sub getTest {
@@ -64,7 +65,8 @@ sub invoke_conditional {
   my @args = $self->readArguments($gullet);
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . "} [#$ifid]\n" if $tracing;
+  print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;
+  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   if (my $test = $self->getTest) {
     my $result = &$test($gullet, @args);
     if ($result) {
@@ -112,30 +114,29 @@ sub skipConditionalBody {
   # NOTE: Open-coded manipulation of if_stack!
   # [we're only reading tokens & looking up, so State shouldn't change behind our backs]
   my $stack = $STATE->lookupValue('if_stack');
-  while (my $t = $gullet->readToken) {
-    # The only Interesting tokens are bound to defns (defined OR \let!!!)
-    if (defined(my $defn = $STATE->lookupDefinition($t))) {
-      if (my $cond_type = $$defn{conditional_type}) {
-        if ($cond_type eq 'if') {    #  Found a \ifxx of some sort
-          $level++; }
-        elsif ($cond_type eq 'fi') {    #  Found a \fi
-          if ($$stack[0] ne $LaTeXML::IFFRAME) {
-            # But is it for a condition nested in the test clause?
-            shift(@$stack); }           # then DO pop that conditional's frame; it's DONE!
-          elsif (!--$level) {           # If no more nesting, we're done.
-            shift(@$stack);             # Done with this frame
-            return $t; } }              # AND Return the finishing token.
-        elsif ($level > 1) {            # Ignore \else,\or nested in the body.
-        }
-        elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
-          return $t; }
-        elsif (($cond_type eq 'else') && $nskips
-          # Found \else and we're looking for one?
-          # Make sure this \else is NOT for a nested \if that is part of the test clause!
-          && ($$stack[0] eq $LaTeXML::IFFRAME)) {
-          # No need to actually call elseHandler, but note that we've seen an \else!
-          $$stack[0]{elses} = 1;
-          return $t; } } } }
+  while (1) {
+    my ($t, $cond_type) = $gullet->readNextConditional;
+    last unless $cond_type;
+    if ($cond_type eq 'if') {    #  Found a \ifxx of some sort
+      $level++; }
+    elsif ($cond_type eq 'fi') {    #  Found a \fi
+      if ($$stack[0] ne $LaTeXML::IFFRAME) {
+        # But is it for a condition nested in the test clause?
+        shift(@$stack); }           # then DO pop that conditional's frame; it's DONE!
+      elsif (!--$level) {           # If no more nesting, we're done.
+        shift(@$stack);             # Done with this frame
+        return $t; } }              # AND Return the finishing token.
+    elsif ($level > 1) {            # Ignore \else,\or nested in the body.
+    }
+    elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
+      return $t; }
+    elsif (($cond_type eq 'else') && $nskips
+      # Found \else and we're looking for one?
+      # Make sure this \else is NOT for a nested \if that is part of the test clause!
+      && ($$stack[0] eq $LaTeXML::IFFRAME)) {
+      # No need to actually call elseHandler, but note that we've seen an \else!
+      $$stack[0]{elses} = 1;
+      return $t; } }    # } #}
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
     "Conditional started at $start");
   return; }
@@ -149,7 +150,7 @@ sub invoke_else {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
+    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
       "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
@@ -173,7 +174,7 @@ sub invoke_fi {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return (T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
+    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame

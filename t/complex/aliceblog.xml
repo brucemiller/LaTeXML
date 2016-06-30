@@ -14,7 +14,7 @@
   </creator>
   <rdf aboutlabelref="LABEL:blog:photos" property="cc:license" resourcelabelref="LABEL:license"/>
   <rdf about="" property="foaf:neighbor" resourceidref="fredblog"/>
-  <section refnum="1" xml:id="S1" labels="LABEL:sidebar" resourceidref="me" typeof="foaf:Person">
+  <section labels="LABEL:sidebar" refnum="1" resourceidref="me" typeof="foaf:Person" xml:id="S1">
     <title><tag close=" ">1</tag>Sidebar</title>
     <para xml:id="S1.p1">
       <p><text property="foaf:name">Alice Birpemswick</text>,<break/>Email: <ref href="mailto:alice@example.com" property="foaf:mbox">alice@example.com</ref>,<break/>Phone: <ref href="tel:+1-617-555-7332" property="foaf:phone">+1 617.555.7332</ref>.</p>
@@ -22,48 +22,68 @@
     <para xml:id="S1.p2">
       <p>My Buddies:</p>
       <itemize xml:id="I1">
-        <item xml:id="I1.i1" property="foaf:knows" typeof="foaf:Person">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i1">
           <tag>•</tag>
           <para xml:id="I1.i1.p1">
-            <p><ref href="http://example.com/bob/" property="foaf:homepage"><text property="foaf:name">Bob</text></ref></p>
+            <p><ref href="http://example.com/bob/" property="foaf:name">Bob</ref></p>
           </para>
         </item>
-        <item xml:id="I1.i2" property="foaf:knows" typeof="foaf:Person">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i2">
           <tag>•</tag>
           <para xml:id="I1.i2.p1">
-            <p><ref href="http://example.com/eve/" property="foaf:homepage"><text property="foaf:name">Eve</text></ref></p>
+            <p><ref href="http://example.com/eve/" property="foaf:name">Eve</ref></p>
           </para>
         </item>
-        <item xml:id="I1.i3" property="foaf:knows" typeof="foaf:Person">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i3">
           <tag>•</tag>
           <para xml:id="I1.i3.p1">
-            <p><ref href="http://example.com/manu/" property="foaf:homepage"><text property="foaf:name">Manu</text></ref></p>
+            <p><ref href="http://example.com/manu/" property="foaf:name">Manu</ref></p>
           </para>
         </item>
       </itemize>
     </para>
   </section>
-  <section refnum="2" xml:id="S2" labels="LABEL:blog">
+  <section labels="LABEL:blog" refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Blog Content</title>
-    <paragraph xml:id="S2.SS0.SSS0.Px1" labels="LABEL:blog:trouble" resource="/alice/posts/trouble_with_bob" typeof="schema:BlogPosting">
+    <paragraph labels="LABEL:blog:trouble" resource="/alice/posts/trouble_with_bob" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px1">
       <title property="dcterms:title">The Trouble with Bob</title>
       <para xml:id="S2.SS0.SSS0.Px1.p1">
-        <p>Date: <text content="2011-09-10" datatype="xsd:date" property="dcterms:created">10<Math mode="inline" xml:id="S2.SS0.SSS0.Px1.p1.m1" tex="{}^{th}" text="^t * h"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">t</XMTok><XMTok role="UNKNOWN" font="italic">h</XMTok></XMApp></XMApp></XMath></Math> of September, 2011</text>.<break/><text property="dcterms:creator schema:creator">Alice</text>.</p>
+        <p>Date: <text content="2011-09-10" datatype="xsd:date" property="dcterms:created">10<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px1.p1.m1">
+              <XMath>
+                <XMApp role="FLOATSUPERSCRIPT" scriptpos="2">
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">t</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">h</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math> of September, 2011</text>.<break/><text property="dcterms:creator schema:creator">Alice</text>.</p>
       </para>
       <para xml:id="S2.SS0.SSS0.Px1.p2">
         <p property="schema:articleBody">The trouble with Bob is that he takes much better photos than I do.</p>
       </para>
-      <para xml:id="S2.SS0.SSS0.Px1.p3" resource="http://examplecom/bob/photos/sunset.jpg">
+      <para resource="http://examplecom/bob/photos/sunset.jpg" xml:id="S2.SS0.SSS0.Px1.p3">
         <graphics candidates="sunset.jpg" graphic="sunset.jpg" xml:id="S2.SS0.SSS0.Px1.p3.g1"/>
         <p><text property="dcterms:title">Beautiful Sunset</text>
 by
 <text property="dcterms:creator">Bob</text>.</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px2" labels="LABEL:blog:josbbq" resource="/alice/posts/jos_barbeque" typeof="schema:BlogPosting">
+    <paragraph labels="LABEL:blog:josbbq" resource="/alice/posts/jos_barbeque" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px2">
       <title property="dcterms:title">Jo’s Barbeque</title>
       <para xml:id="S2.SS0.SSS0.Px2.p1">
-        <p>Date: <text content="2011-09-14" datatype="xsd:date" property="dcterms:created">14<Math mode="inline" xml:id="S2.SS0.SSS0.Px2.p1.m1" tex="{}^{th}" text="^t * h"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">t</XMTok><XMTok role="UNKNOWN" font="italic">h</XMTok></XMApp></XMApp></XMath></Math> of September, 2011</text>.<break/></p>
+        <p>Date: <text content="2011-09-14" datatype="xsd:date" property="dcterms:created">14<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px2.p1.m1">
+              <XMath>
+                <XMApp role="FLOATSUPERSCRIPT" scriptpos="2">
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">t</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">h</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math> of September, 2011</text>.<break/></p>
       </para>
       <para xml:id="S2.SS0.SSS0.Px2.p2">
         <p><text property="dcterms:creator">Eve</text>.</p>
@@ -72,10 +92,20 @@ by
         <p property="schema:articleBody">…</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px3" labels="LABEL:blog:photos" resource="/alice/posts/my_photos" typeof="schema:BlogPosting">
+    <paragraph labels="LABEL:blog:photos" resource="/alice/posts/my_photos" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px3">
       <title property="dcterms:title">I will post my photos nevertheless…</title>
       <para xml:id="S2.SS0.SSS0.Px3.p1">
-        <p>Date: <text content="2011-09-15" datatype="xsd:date" property="dcterms:created">15<Math mode="inline" xml:id="S2.SS0.SSS0.Px3.p1.m1" tex="{}^{th}" text="^t * h"><XMath><XMApp role="FLOATSUPERSCRIPT" scriptpos="2"><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">t</XMTok><XMTok role="UNKNOWN" font="italic">h</XMTok></XMApp></XMApp></XMath></Math> of September, 2011</text>.<break/></p>
+        <p>Date: <text content="2011-09-15" datatype="xsd:date" property="dcterms:created">15<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px3.p1.m1">
+              <XMath>
+                <XMApp role="FLOATSUPERSCRIPT" scriptpos="2">
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">t</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">h</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math> of September, 2011</text>.<break/></p>
       </para>
       <para xml:id="S2.SS0.SSS0.Px3.p2">
         <p><text property="dcterms:creator" resourceidref="me">Alice</text>.</p>
@@ -85,7 +115,7 @@ by
       </para>
     </paragraph>
   </section>
-  <section refnum="3" xml:id="S3" labels="LABEL:license">
+  <section labels="LABEL:license" refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>License</title>
     <para xml:id="S3.p1">
       <p>All content on this site is licensed under

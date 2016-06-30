@@ -17,6 +17,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Gullet;
 use LaTeXML::Core::Box;
 use LaTeXML::Core::Comment;
@@ -124,6 +125,9 @@ sub digest {
 my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
+my @absorbable_cc = (    # [CONSTANT]
+  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0);
+
 sub invokeToken {
   my ($self, $token) = @_;
   no warnings 'recursion';
@@ -135,20 +139,23 @@ INVOKE:
       "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
   local $LaTeXML::CURRENT_TOKEN = $token;
   my @result  = ();
-  my $meaning = ($token->isExecutable
-      || ($STATE->lookupValue('IN_MATH')
-      && (($STATE->lookupMathcode($token->getString) || 0) == 0x8000))
-    ? $STATE->lookupMeaning_internal($token)
-    : $token);
-  if (!defined $meaning) {    # Supposedly executable token, but no definition!
-    @result = $self->invokeToken_undefined($token); }
-  elsif ($meaning->isaToken) {    # Common case
-    @result = $self->invokeToken_simple($token, $meaning); }
+  my $meaning = $STATE->lookupDigestableDefinition($token);
+
+  if ($meaning->isaToken) {    # Common case
+    my $cc = $meaning->getCatcode;
+    if ($cc == CC_CS) {
+      @result = $self->invokeToken_undefined($token); }
+    elsif ($absorbable_cc[$cc]) {
+      @result = $self->invokeToken_simple($token, $meaning); }
+    else {
+      Error('misdefined', $token, $self,
+        "The token " . Stringify($token) . " should never reach Stomach!");
+      @result = $self->invokeToken_simple($token, $meaning); } }
   # A math-active character will (typically) be a macro,
   # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
   elsif ($meaning->isExpandable) {
     my $gullet = $$self{gullet};
-    $gullet->unread($meaning->invoke($gullet));
+    $gullet->unread(@{ $meaning->invoke($gullet) });
     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
     pop(@{ $$self{token_stack} });
     goto INVOKE; }
@@ -180,20 +187,30 @@ sub makeError {
   $document->setNode($savenode) if $savenode;
   return; }
 
-my @forbidden_cc = (    # [CONSTANT]
-  1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1);
-
 sub invokeToken_undefined {
   my ($self, $token) = @_;
   my $cs = $token->getCSName;
   $STATE->noteStatus(undefined => $cs);
-  Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.");
   # To minimize chatter, go ahead and define it...
-  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
-      sub { makeError($_[0], 'undefined', $cs); }),
-    'global');
-  # and then invoke it.
-  return $self->invokeToken($token); }
+  if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
+    my $name = $1;
+    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
+      "Defining it now as with \\newif");
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
+    LaTeXML::Package::Let($token, T_CS('\iffalse'));
+    $self->getGullet->unread($token);    # Retry
+    return; }
+  else {
+    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
+      "Defining it now as <ltx:ERROR/>");
+    $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
+        sub { makeError($_[0], 'undefined', $cs); }),
+      'global');
+    # and then invoke it.
+    return $self->invokeToken($token); } }
 
 sub invokeToken_simple {
   my ($self, $token, $meaning) = @_;
@@ -211,10 +228,6 @@ sub invokeToken_simple {
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
     $comment =~ s/\Q$badspace\E/ /g;
     return LaTeXML::Core::Comment->new($comment); }
-  elsif ($forbidden_cc[$cc]) {
-    Fatal('misdefined', $token, $self,
-      "The token " . Stringify($token) . " should never reach Stomach!");
-    return; }
   else {
     return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
       undef, undef, $meaning); } }
@@ -323,11 +336,16 @@ sub beginMode {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont => $curfont, 'local');
-    $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(color => $curfont->getColor), 'local');
-    $STATE->assignValue(mathstyle => ($mode =~ /^display/ ? 'display' : 'text'), 'local'); }
+    $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
+        color => $curfont->getColor, background => $curfont->getBackground,
+        size => $curfont->getSize,
+        mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
   else {
-# When entering text mode, we should set the font to the text font in use before the math (but inherit color!).
-    $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(color => $curfont->getColor), 'local'); }
+    # When entering text mode, we should set the font to the text font in use before the math
+    # but inherit color and size
+    $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
+        color => $curfont->getColor, background => $curfont->getBackground,
+        size => $curfont->getSize), 'local'); }
   return; }
 
 sub endMode {

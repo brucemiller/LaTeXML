@@ -17,18 +17,27 @@ use LaTeXML::Package;
 
 #RequirePackage('ifthen');
 
-DefMacro('\@UnitsNiceFrac[]{}{}',
+# Handy for cases where macros want to use math, but track the current text font
+# (examples, nicefrac, units...)
+DefPrimitiveI('\nf@mathcopytextfont', undef, sub {
+    if (my $textfont = LookupValue('savedfont')) {
+      MergeFont(family => $textfont->getFamily,
+        series => $textfont->getSeries,
+        shape  => $textfont->getShape); }
+    return; });
+
+DefMacro('\@UnitsNiceFrac Optional:\nf@mathcopytextfont{}{}',
   '\ensuremath{\ltx@nicefrac@ifrac{#1{#2}}{#1{#3}}}');
 # copy of \ifrac from amsmath
 DefConstructor('\ltx@nicefrac@ifrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='divide' role='MULOP' mathstyle='inline'/>"
+    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'>/</ltx:XMTok>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  beforeDigest => \&beforeFrac, afterDigest => \&afterFrac,
-  alias => '\nicefrac');
+  alias => '\nicefrac',
+  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
 
-DefMacro('\@UnitsUglyFrac[]{}{}',
+DefMacro('\@UnitsUglyFrac Optional:\nf@mathcopytextfont {}{}',
   '\ifmmode\frac{#1{#2}}{#1{#2}}\else#1{#2}/#1{#2}\fi');
 
 DeclareOption('nice', sub { Let('\nicefrac', '\@UnitsNiceFrac'); });

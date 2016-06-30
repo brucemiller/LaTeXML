@@ -1,8 +1,7 @@
-%define texmf_local %(kpsewhich --expand-var='\$TEXMFLOCAL')
 Name:           LaTeXML
-Version:        0.8.1
+Version:        0.8.2_1
 Release:        1%{?dist}
-Summary:        Converter that transforms TeX and LaTeX into XML/HTML/MathML
+Summary:        Converts TeX and LaTeX to XML/HTML/ePub/MathML
 License:        CC0
 Group:          Applications/Publishing
 URL:            http://dlmf.nist.gov/LaTeXML/
@@ -19,6 +18,7 @@ BuildRequires:  perl(Image::Size)
 BuildRequires:  perl(IO::String)
 BuildRequires:  perl(JSON::XS)
 BuildRequires:  perl(LWP)
+BuildRequires:  perl(MIME::Base64)
 BuildRequires:  perl(Parse::RecDescent)
 BuildRequires:  perl(Pod::Parser)
 BuildRequires:  perl(Test::More)
@@ -36,6 +36,7 @@ Requires:       perl(Image::Size)
 Requires:       perl(IO::String)
 Requires:       perl(JSON::XS)
 Requires:       perl(LWP)
+Requires:       perl(MIME::Base64)
 Requires:       perl(Parse::RecDescent)
 Requires:       perl(Pod::Parser)
 Requires:       perl(Test::More)
@@ -50,14 +51,17 @@ Requires(post): tex(tex)
 Requires(postun): tex(tex)
 
 %description
-LaTeXML is a converter that transforms TeX and LaTeX into XML/HTML/MathML
+LaTeXML is a converter that transforms TeX and LaTeX into XML/HTML/ePub/MathML
 and other formats.
+
+#%define texmf_main %(kpsewhich --expand-var='\$TEXMFMAIN')
+%define texmf %{_texmf_main}
 
 %prep
 %setup -q
 
 %build
-%{__perl} Makefile.PL INSTALLDIRS=vendor
+%{__perl} Makefile.PL INSTALLDIRS=vendor TEXMF=%{texmf} NOMKTEXLSR
 make %{?_smp_mflags}
 
 %install
@@ -78,12 +82,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc Changes LICENSE manual.pdf META.json README
+%doc Changes LICENSE manual.pdf META.json README.pod
 %{_bindir}/*
 %{perl_vendorlib}/*
 %{_mandir}/man1/*
 %{_mandir}/man3/*
-%{texmf_local}/tex/latex/latexml/*
+%{texmf}/tex/latex/latexml/*
 
 %post
 mktexlsr >/dev/null 2>&1 || :

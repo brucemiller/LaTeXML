@@ -1,0 +1,719 @@
+\documentclass{article}
+
+\usepackage{amssymb}
+\usepackage{mathtools}
+
+
+\mathtoolsset{
+mathic % or mathic = true
+}
+
+\begin{document}
+\section{Sums and Limits}
+\paragraph{mathclap \& friends}
+\[
+X = \sum_{1\le i\le j\le n} X_{ij}
+\]
+\[
+X = \sum_{\mathclap{1\le i\le j\le n}} X_{ij}
+\]
+\[
+X = \sum_{\mathrlap{1\le i\le j\le n}} X_{ij}
+\]
+\[
+X = \sum_{\mathllap{1\le i\le j\le n}} X_{ij}
+\]
+
+\paragraph{Cramped}
+\[
+\cramped{x^2} \leftrightarrow x^2 \quad
+\cramped[\scriptstyle]{x^2} \leftrightarrow {\scriptstyle x^2}
+\]
+
+\paragraph{Smashoperator}
+\[
+V = \sum_{1\le i\le j\le n}^{\infty} V_{ij} \quad
+X = \sum_{1\le i\le j\le n}^{3456} X_{ij} \quad
+Y = \sum\limits_{1\le i\le j\le n} Y_{ij} \quad
+Z = \mathop{T}_{1\le i\le j\le n} Z_{ij}
+\]
+
+\[
+V = \sum_{1\le i\le j\le n}^{\infty} V_{ij} \quad
+X = \smashoperator{\sum_{1\le i\le j\le n}^{3456}} X_{ij} \quad
+Y = \smashoperator[r]{\sum\limits_{1\le i\le j\le n}} Y_{ij} \quad
+Z = \smashoperator[l]{\mathop{T}_{1\le i\le j\le n}} Z_{ij}
+\]
+
+\paragraph{Adjustlimits}
+
+\[
+\text{a)} \lim_{n\to\infty} \max_{p\ge n} \quad
+\text{b)} \lim_{n\to\infty} \max_{p^2\ge n} \quad
+\text{c)} \lim_{n\to\infty} \sup_{p^2\ge nK} \quad
+\text{d)} \limsup_{n\to\infty} \max_{p\ge n}
+\]
+
+\[
+\text{a)} \adjustlimits\lim_{n\to\infty} \max_{p\ge n} \quad
+\text{b)} \adjustlimits\lim_{n\to\infty} \max_{p^2\ge n} \quad
+\text{c)} \adjustlimits\lim_{n\to\infty} \sup_{p^2\ge nK} \quad
+\text{d)} \adjustlimits\limsup_{n\to\infty} \max_{p\ge n}
+\]
+
+\section{Tags}
+\newtagform{bad}{((}{))}
+\newtagform{good}[\textbf]{[}{]}
+
+\begin{quote}\renewcommand*\rmdefault{ppl}\normalfont\itshape
+\begin{equation*}
+a=b \label{eq:example}\tag*{Q\&A}
+\end{equation*}
+See \ref{eq:example} or is it better with \refeq{eq:example}?
+\end{quote}
+
+\usetagform{good}
+\begin{equation*}
+a=b \label{eq:example2}\tag*{Q\&A}
+\end{equation*}
+\begin{equation*}
+a=b \label{eq:example3}\tag{Q\&A}
+\end{equation*}
+
+\usetagform{default}
+% showonlyrefs not supported.
+%\mathtoolsset{showonlyrefs,showmanualtags}
+Normal tags.
+\begin{equation}
+a=a\label{eq:a0}
+\end{equation}
+That was equation \eqref{eq:a0}.
+
+\usetagform{good}
+OK tags.
+\begin{equation}
+a=a\label{eq:a1}
+\end{equation}
+That was equation \eqref{eq:a1}, but recall \eqref{eq:a0}
+
+\renewtagform{good}{\{}{\}}
+odd tag.
+\begin{equation}
+a=a\label{eq:a2}
+\end{equation}
+That was equation \eqref{eq:a2}, but recall \eqref{eq:a0} and \eqref{eq:a1}.
+
+\usetagform{bad}
+weird tag.
+\begin{equation}
+b=b\label{eq:b1}
+\end{equation}
+That was equation \eqref{eq:b1}, but recall \eqref{eq:a0}, \eqref{eq:a1} and \eqref{eq:a2}.
+
+\usetagform{default}
+Normal tags again.
+\begin{equation}
+c=c\label{eq:c0}
+\end{equation}
+That was equation \eqref{eq:c0}, but recall \eqref{eq:a0}, \eqref{eq:a1}, \eqref{eq:a2}
+and \eqref{eq:b1}.
+
+
+\begin{gather}
+a=a \label{eq:a} \\
+b=b \label{eq:b} \tag{**}
+\end{gather}
+This should refer to the equation containing $a=a$: \eqref{eq:a}.
+Then a switch of tag forms.
+\begin{align}
+c&=c \label{eq:c} \\
+d&=d \label{eq:d}
+\end{align}
+This should refer to the equation containing $d=d$: \eqref{eq:d}
+(but recall \eqref{eq:a}).
+\begin{equation}
+e=e
+\end{equation}
+%Back to normal.\mathtoolsset{showonlyrefs=false}
+\begin{equation}
+f=f
+\end{equation}
+
+
+%\mathtoolsset{showonlyrefs=true}
+\begin{equation*}
+1+1=2 \label{eq:much}
+\end{equation*}
+
+\begin{equation*}
+2+2=4 \label{eq:wow}
+\end{equation*}
+
+\noeqref{eq:much}
+Blabla \eqref{eq:wow}.
+%\mathtoolsset{showonlyrefs=false}
+
+\section{Arrows}
+
+\[
+A \xLeftarrow[under]{over} B \xRightarrow[under]{over} C
+\]
+\[
+x \xleftrightarrow[under]{overlooooooong} y \xLeftrightarrow[underloooooooong]{over} z
+\]
+\[
+x \xhookleftarrow[bar]{foo} y \xhookrightarrow[bluuuuuuuuub]{baz} t \xmapsto{heeereee} k
+\]
+\[
+k \xleftharpoonup[.]{} l \xleftharpoondown{..} m \xrightharpoondown[...]{} n \xrightharpoonup{....} o
+\]
+\[
+x \xrightleftharpoons{bluuuuub} y \xleftrightharpoons[blaaaaaab]{} z
+\]
+
+
+\[
+z = \LaTeXoverbrace{
+   \underbracket{x}_\text{real} + i
+      \underbracket[1pt][7pt]{y}_\text{imaginary}
+        }^\text{complex number}
+\quad
+\underbrace{1+1}_{=2}
+\]
+
+\section{Matrices}
+
+\[
+\begin{matrix*}
+c & cocococococo \\
+c & c
+\end{matrix*}
+\]
+
+\[
+\begin{matrix*}[l]
+lalalalalala & l \\
+l & l
+\end{matrix*}
+\]
+
+\[
+\begin{matrix*}[r]
+rererererere & r \\
+r & r
+\end{matrix*}
+\]
+
+\[
+\begin{pmatrix*}[l]
+ppppppp & foo \\
+l & ppppppppppppppp
+\end{pmatrix*}
+\]
+
+\[
+\begin{bmatrix*}
+b & b \\
+b & b
+\end{bmatrix*}
+\]
+
+\[
+\begin{Bmatrix*}[r]
+B & B \\
+B & BBBBBBBrBBBBBB
+\end{Bmatrix*}
+\]
+
+\[
+\begin{vmatrix*}
+v & v \\
+v & v
+\end{vmatrix*}
+\]
+
+\[
+\begin{Vmatrix*}[c]
+V & V \\
+VVVVVVcVVVVVV & bar
+\end{Vmatrix*}
+\]
+
+\[
+\begin{vsmallmatrix*}[l]
+a & blblblbllbblblblblblblbl \\
+c & d
+\end{vsmallmatrix*}
+\]
+
+\[
+\begin{bsmallmatrix} a & -b \\ -c & d \end{bsmallmatrix}
+\begin{bsmallmatrix*}[r] a & -b \\ -c & d \end{bsmallmatrix*}
+\]
+
+\[
+\begin{Vsmallmatrix} e & -f \\ -g & h \end{Vsmallmatrix}
+\begin{Vsmallmatrix*}[r] e & -f \\ -g & h \end{Vsmallmatrix*}
+\]
+
+\[
+\begin{bsmallmatrix*} a & -bbbbb \\ -c & d \end{bsmallmatrix*}
+\begin{bsmallmatrix*}[r] a & -bbbbb \\ -c & d \end{bsmallmatrix*}
+\]
+
+\[
+\begin{Vsmallmatrix*} e & -fffff \\ -g & h \end{Vsmallmatrix*}
+\begin{Vsmallmatrix*}[r] e & -fffff \\ -g & h \end{Vsmallmatrix*}
+\]
+
+\mathtoolsset{smallmatrix-align=l}
+
+\[
+\begin{bsmallmatrix*} a & -bbbbb \\ -c & d \end{bsmallmatrix*}
+\begin{bsmallmatrix*}[r] a & -bbbbb \\ -c & d \end{bsmallmatrix*}
+\]
+
+\[
+\begin{Vsmallmatrix*} e & -fffff \\ -g & h \end{Vsmallmatrix*}
+\begin{Vsmallmatrix*}[r] e & -fffff \\ -g & h \end{Vsmallmatrix*}
+\]
+
+\section{Cases}
+
+\[
+\begin{cases}
+E = m c^2 & \text{Nothing to see here} \\
+\int x-3\, dx & \text{Integral is text style}
+\end{cases}
+\]
+
+\[
+\begin{dcases}
+E = m c^2 & c \approx 3.00\times 10^{8}\,\mathrm{m}/\mathrm{s} \\
+\int x-3\, dx & \text{Integral is display style}
+\end{dcases}
+\]
+
+\[
+a= \begin{dcases*}
+E = m c^2 & Nothing to see here (text in math) \\
+\int x-3\, dx & Integral is display style (text in math)
+\end{dcases*}
+\]
+
+\[
+\begin{rcases}
+E = m c^2 & 5^6 \quad and so on \\
+\int x-3\, dx & \int x \, dx
+\end{rcases} = b
+\]
+
+\[
+\begin{rcases*}
+x^2 & for $\int x\,dx>0$\\
+x^3 & else
+\end{rcases*} \Rightarrow \cdots
+\]
+
+\[
+\begin{drcases}
+E = m c^2 & 5^6 \quad and so on \\
+\int x-3\, dx & \int x \, dx
+\end{drcases} = b
+\]
+
+\[
+\begin{drcases*}
+x^2 & for $\int x\,dx>0$\\
+\int x^3\,x & else
+\end{drcases*} \Rightarrow \cdots
+\]
+
+\[
+\text{foo} = \begin{cases*}
+\pi & if something\\
+\int \Omega^\Xi\,\Omega & otherwise
+\end{cases*}
+\]
+
+\section{Gathered}
+
+\[
+A = \begin{gathered}[t]
+\framebox[4cm]{first} \\
+\framebox[4cm]{last}
+\end{gathered} B
+\]
+
+\[
+\begin{gathered}
+a=b+c\\
+b=c+d\\
+...
+\end{gathered}
+\]
+
+\[
+\boxed{hello}
+\]
+
+\begin{align*}
+\Aboxed{ f(x) & = \int h(x)\, dx} \\
+& = g(x)
+\end{align*}
+
+\begin{align}
+a&=b \intertext{Some text}
+c&=d \shortintertext{Some short text}
+e&=f
+\end{align}
+
+\section{Delimiters}
+
+\[
+\lvert \frac{a}{c} \rvert \quad \left\lvert \frac{a}{c} \right\rvert \quad \Bigg\lvert \frac{a}{b} \Bigg\rvert
+\]
+
+\DeclarePairedDelimiter\abs{\lvert}{\rvert}
+\[
+\abs{\frac{a}{b}} \quad \abs*{\frac{a}{b}} \quad \abs[\big]{\frac{a}{b}} \quad \abs[\Bigg]{\frac{a}{b}}
+\]
+\reDeclarePairedDelimiterInnerWrapper\abs{star}{#1\_#2\_#3}
+\reDeclarePairedDelimiterInnerWrapper\abs{nostar}{#1@#2@#3}
+\[
+\abs{\pi} \quad \abs*{\phi}
+\]
+
+\DeclarePairedDelimiterX\innerp[2]{\langle}{\rangle}{#1,#2}
+\DeclarePairedDelimiterX\braket[3]{\langle}{\rangle}{#1\,\delimsize\vert\,#2\,\delimsize\vert\,#3}
+\[
+\innerp*{A}{ \frac{1}{2} } \quad
+\braket[\Big]{B}{\sum_{k} f_k}{C}
+\]
+
+\providecommand\given{}
+\newcommand\SetSymbol[1][]{#1\vert\allowbreak}
+\DeclarePairedDelimiterX\Set[1]\{\}{\renewcommand\given{\SetSymbol[\delimsize]}#1}
+\[ \Set*{ x \in X \given \frac {\sqrt{x}}{x^2+1} > 1 } \]
+
+\DeclarePairedDelimiterX\braketdelim[3]{\langle}{\rangle}%
+{#1\,\delimsize\vert\,#2\,\delimsize\vert\,#3}
+$\braketdelim{1}{\frac{8}{\frac{4}{1}}}{3}$
+$\braketdelim*{1}{\frac{8}{\frac{4}{1}}}{3}$
+$\braketdelim[\big]{1}{\frac{8}{\frac{4}{1}}}{3}$
+
+% % XPP not available in v1.13
+% \DeclarePairedDelimiterXPP\lnorm[1]{}\lVert\rVert{_2}{#1}
+% \DeclarePairedDelimiterXPP\Prop[1]{\mathbb{P}}(){}{\renewcommand\given{\delimsize\vert}#1}
+% \[
+% \lnorm{\frac{\pi}{\int x dx}} \quad \Prop{foo}
+% \]
+
+\[
+\left( \frac{\pi}{\omega} \right) \cdot \left[ \int x dx \right] \ldots \lbrack \sqrt{\frac{\sin x}{\cos z}} \rbrack \cdots \lparen \frac{\frac{foo}{bar}}{\frac{baz}{qux}} \rparen
+\]
+
+\paragraph{Operators}
+\[
+a := b \quad
+a \vcentcolon= b \quad
+a \ordinarycolon= b
+\]
+
+\[
+a \coloneqq b \quad c \Colonapprox d \quad e \dblcolon f
+\]
+
+\[
+\bigtimes \times \nuparrow \ndownarrow \otimes \bigotimes
+\]
+
+\section{Prescripts}
+
+\[
+{}^{4}_{12}\mathbf{C}^{5+}_{2} \quad
+\prescript{14}{2}{\mathbf{C}}^{5+}_{2} \quad
+\prescript{4}{12}{\mathbf{C}}^{5+}_{2} \quad
+\prescript{14}{}{\mathbf{C}}^{5+}_{2} \quad
+\prescript{}{2}{\mathbf{C}}^{5+}_{2}
+\]
+
+\newcommand*\myisotope[3]{%
+\begingroup % to keep changes local. We cannot use a brace group
+% as it affects spacing!
+\mathtoolsset{
+prescript-sup-format=\mathit,
+prescript-sub-format=\mathbf,
+prescript-arg-format=\mathrm,
+}%
+\prescript{#1}{#2}{#3}%
+\endgroup
+}
+\[
+\myisotope{A}{Z}{X}\to \myisotope{A-4}{Z-2}{Y}+
+\myisotope{4}{2}{\alpha}
+\]
+
+\[
+    a=\frac{
+        \splitfrac{xy + xy + \int xy\, \text{dx} + xy + xy}
+                  {+ xy + xy + xy + xy}
+      }
+      {z}
+    =\frac{
+        \splitdfrac{xy + xy + \int xy\, \text{dx} + xy + xy}
+                   {+ xy + xy + xy + xy}
+      }
+      {z}
+\]
+
+\section{Multlines}
+
+\begin{multline*}
+p(x) = 3x^6 + 14x^5y + 590x^4y^2 + 19x^3y^3\\
+- 12x^2y^4 - 12xy^5 + 2y^6 - a^3b^3
+\end{multline*}
+
+\[
+A = \begin{multlined}[t]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}[b]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\mathtoolsset{multlined-pos=t,multlined-width=12em}
+
+\[
+A = \begin{multlined}[c][1cm]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}[c][0.5\textwidth]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}[c][2\textwidth]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}[b]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\[
+A = \begin{multlined}[c][1cm]
+\boxed{first} \\
+\boxed{last}
+\end{multlined} B
+\]
+
+\begin{equation}
+foo\Coloneqq\begin{lgathered}[t]
+x=1,\quad x+1=2 \\
+y=2
+\end{lgathered}
+\end{equation}
+
+\begin{equation}
+bar\Coloneqq\begin{rgathered}[b]
+x=1,\quad x+1=2 \\
+y=2
+\end{rgathered}
+\end{equation}
+
+\section{Spread-lines}
+Spread it
+\begin{spreadlines}{30pt}
+  \[
+  \begin{matrix}
+   a & b & c \\
+   d & e & f \\
+   g & h & i
+  \end{matrix}
+  \]
+
+  \[
+  \begin{pmatrix}
+   a_{1,1} & a_{1,2} & \cdots & a_{1,n} \\
+   a_{2,1} & a_{2,2} & \cdots & a_{2,n} \\
+   \vdots  & \vdots  & \ddots & \vdots  \\
+   a_{m,1} & a_{m,2} & \cdots & a_{m,n}
+  \end{pmatrix}
+  \]
+
+  $\begin{smallmatrix} a&b \\ c&d \end{smallmatrix}$
+
+  $\begin{cases} n/2 & \quad \text{if } n \text{ is even}\\ -(n+1)/2 & \quad \text{if } n \text{ is odd}\\ \end{cases}$
+
+  \begin{equation}\label{xx}
+  \begin{split}
+  a& =b+c-d\\
+  & \quad +e-f\\
+  & =g+h\\
+  & =i
+  \end{split}
+  \end{equation}
+
+  \begin{multline}
+  a+b+c+d+e+f\\
+  +i+j+k+l+m+n
+  \end{multline}
+
+  \begin{gather}
+  a=b\\
+  c=d
+  \end{gather}
+
+  \begin{align}
+  a_1& =b_1+c_1\\
+  a_2& =b_2+c_2-d_2+e_2
+  \end{align}
+
+  \begin{flalign*}
+  a_{11}& =b_{11}&
+  a_{12}& =b_{12}\\
+  a_{21}& =b_{21}&
+  a_{22}& =b_{22}+c_{22}
+  \end{flalign*}
+
+  \begin{alignat}{2}
+  x& = y_1-y_2+y_3-y_5+y_8-\dots
+  &\quad& \text{by foo}\\
+  & = y'\circ y^*  && \text{by baz}\\
+  & = y(0) y'      && \text {by Axiom 1.}
+  \end{alignat}
+
+  \begin{equation*}
+  \left.\begin{aligned}
+  B'&=-\partial\times E,\\
+  E'&=\partial\times B - 4\pi j,
+  \end{aligned}
+  \right\}
+  \qquad \text{Maxwell's equations}
+  \end{equation*}
+
+  \[
+  \bigl( \begin{smallmatrix}
+  a&b\\ c&d
+  \end{smallmatrix} \bigr)
+  \]
+
+  \[
+  \bigl( \begin{smallmatrix*}
+  a&b\\ c&d
+  \end{smallmatrix*} \bigr)
+  \]
+
+  \[
+  \sum_{\begin{subarray}{l}
+  i\in\Lambda\\ 0<j<n
+  \end{subarray}}
+  P(i,j)
+  \]
+
+  \begin{eqnarray}
+       y & = & ax^2 + bx + c \\
+    f(x) & = & x^2 + 2xy + y^2
+  \end{eqnarray}
+\end{spreadlines}
+
+
+\[
+  \begin{multlined}[c][\textwidth]
+    \boxed{First line}     \\
+    \boxed{Second line}    \\
+    \shoveleft{L+E+F+T}    \\
+    \shoveright{R+I+G+H+T} \\
+    \shoveleft{L+E+F+T}    \\
+    \shoveright{R+I+G+H+T} \\
+    \boxed{Wup Wup}    \\
+    \boxed{Last line}
+  \end{multlined}
+\]
+
+\section{Stepped lines}
+\newcounter{steplinecnt}
+\newcommand\stepline{\stepcounter{steplinecnt}\thesteplinecnt}
+\newgathered{stargathered}
+  {\llap{\stepline}$*$\quad\hfil}%
+  {\quad\textbf{over}}%
+  {\setcounter{steplinecnt}{42}}
+
+\[
+  \begin{stargathered}
+    x=1,\quad x+1=2 \\
+    y=2
+  \end{stargathered}
+\]
+\thesteplinecnt
+
+\renewgathered{stargathered}
+  {See:}%
+  {the end}%
+  {\setcounter{steplinecnt}{1337}}
+
+\[
+  \begin{stargathered}
+    s=2.8,\quad s+0.2=3 \\
+    t=4.5
+  \end{stargathered}
+\]
+\thesteplinecnt
+
+\section{Shifting equations}
+\begin{align*}
+\MoveEqLeft[3] \framebox[10cm][c]{Part 1}\\
+= {} & \framebox[8cm][c]{2nd line}\\
+19
+& + \framebox[4cm][c]{ last part}
+\end{align*}
+
+\begin{alignat}{2}
+&& \framebox[1.5cm]{1} &= \framebox[3cm]{2}\\
+\ArrowBetweenLines
+&& \framebox[1.5cm]{3} &= \framebox[2cm]{4}
+\end{alignat}
+
+\begin{align*}
+a &= b              \\
+\MTFlushSpaceAbove
+& \vdotswithin{=} \\
+\MTFlushSpaceBelow
+& = c             \\
+\shortvdotswithin{=}
+& = d
+\end{align*}
+
+\end{document}

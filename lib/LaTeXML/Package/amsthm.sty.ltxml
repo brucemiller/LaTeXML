@@ -84,18 +84,24 @@ RawTeX('\theoremstyle{plain}');    # Activate the default style.
 DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
     my ($stomach, $name, $spaceabove, $spacebelow, $bodyfont,
       $indent, $headfont, $headpunct, $spaceafter, $headspec) = @_;
+    my $headformatter;
+    if ($headspec->unlist) {    # If spec given, create formatter macro
+      $headformatter = T_CS('\format@title@theoremstyle@' . ToString($name));
+      DefMacroI($headformatter, convertLaTeXArgs(3, 0), $headspec); }
+
     DefMacroI(T_CS('\th@' . ToString($name)), undef, sub {
         AssignValue('\thm@bodyfont'  => $bodyfont);
         AssignValue('\thm@headfont'  => $headfont);
         AssignValue('\thm@headpunct' => $headpunct);
         AssignValue('\thm@headstyling' => (Equals($spaceafter, Tokens(T_CS('\newline')))
             ? Tokens() : T_CS('\lx@makerunin')));
+        AssignValue('\thm@headformatter' => $headformatter);
         return; });
 });
 
-DefMacro('\thmname{}',   Tokens());
-DefMacro('\thmnumber{}', Tokens());
-DefMacro('\thmnote{}',   Tokens());
+DefMacro('\thmname{}',   '#1');
+DefMacro('\thmnumber{}', '#1');
+DefMacro('\thmnote{}',   '#1');
 
 DefMacro('\thmhead{}{}{}',     Tokens());
 DefMacro('\swappedhead{}{}{}', Tokens());
@@ -107,7 +113,7 @@ DefMacroI('\thmheadnl', undef, Tokens());
 
 AssignValue('QED@stack', []);
 DefMacro('\pushQED{}', sub { PushValue('QED@stack', $_[1]); });
-DefMacro('\popQED{}', sub { (PopValue('QED@stack')); });
+DefMacro('\popQED', sub { (PopValue('QED@stack') || ()); });
 
 # Should mark this as somehow ignorable for math,
 # but we DO want to keep it in the formula...
@@ -121,7 +127,7 @@ Let('\openbox',    '\qed');
 DefMacro('\qedhere', sub {
     my $t = PopValue('QED@stack');
     PushValue('QED@stack', Tokens());
-    $t; });
+    $t || (); });
 
 DefMacro('\proofname', 'Proof');
 DefPrimitive('\th@proof', sub {

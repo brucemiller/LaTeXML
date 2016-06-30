@@ -42,24 +42,33 @@ use LaTeXML::Package;
 DefMacro('\author{}', sub {
     map { (T_CS('\@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
 
-DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' mark='#1'/>");
+DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' _mark='#1'/>");
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
 DefConstructor('\@inst{}',
-  "^<ltx:contact role='institutemark' mark='#1'/>"
-    . "<ltx:contact role='emailmark' mark='#1'/>");
+  "^<ltx:contact role='institutemark' _mark='#1'/>"
+    . "<ltx:contact role='emailmark' _mark='#1'/>");
 DefMacro('\inst{}', sub {
     map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
 
+Let('\at',      '\and');    # Actually this is different than \and, but...
+Let('\iand',    '\and');
+Let('\nand',    '\and');
+Let('\lastand', '\and');
+
 NewCounter('inst', 'document');
 DefMacro('\institute{}',
-'\bgroup\setcounter{inst}{1}\let\and\institute@and\let\email\@in@inst@email\@new@institute#1\@end@institute\egroup');
+  '\bgroup\setcounter{inst}{1}'
+    . '\let\and\institute@and\let\iand\institute@and\let\nand\institute@and\let\lastand\institute@and'
+    . '\let\at\institute@and'    # Actually something quite different...?
+    . '\let\email\@in@inst@email\@new@institute#1\@end@institute\egroup');
 DefMacro('\institute@and', '\@end@institute\stepcounter{inst}\@new@institute');
 DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{#1}\fi');
 
 #should play similar game as with institute, relocate?
 ##DefConstructor('\@in@inst@email{}', "^<ltx:note role='email' name='#name'>#1</ltx:note>",
 ##  properties => sub { (name => Digest(T_CS('\emailname'))); });
+DefMacro('\emailname', 'E-mail');
 DefConstructor('\@in@inst@email{}',
   "<ltx:note role='email' name='#name' mark='#mark'>#1</ltx:note>",
   properties => sub { (name => Digest(T_CS('\emailname')),
@@ -81,11 +90,11 @@ sub relocateInstitute {
     if (my $mark = $instnode->getAttribute('mark')) {
       # Find authors with same mark.
       my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@mark='$mark']")) {
+      if (@authors = $document->findnodes(".//ltx:contact[\@role='institutemark'][\@_mark='$mark']")) {
         foreach my $author (@authors) {
           $document->appendClone($author, $instnode->childNodes);
           $author->setAttribute(role => 'institute');
-          $author->removeAttribute('mark'); }
+          $author->removeAttribute('_mark'); }
         $instnode->parentNode->removeChild($instnode); }
       # Not sure if this is right; find authors WITHOUT a contact mark.
       elsif (@authors = $document->findnodes(".//ltx:creator[not(descendant::ltx:contact[\@role='institutemark'])]")) {
@@ -98,11 +107,11 @@ sub relocateInstitute {
     if (my $mark = $instnode->getAttribute('mark')) {
       # Find authors with same mark.
       my @authors;
-      if (@authors = $document->findnodes(".//ltx:contact[\@role='emailmark'][\@mark='$mark']")) {
+      if (@authors = $document->findnodes(".//ltx:contact[\@role='emailmark'][\@_mark='$mark']")) {
         foreach my $author (@authors) {
           $document->appendClone($author, $instnode->childNodes);
           $author->setAttribute(role => 'email');
-          $author->removeAttribute('mark'); }
+          $author->removeAttribute('_mark'); }
         $instnode->parentNode->removeChild($instnode); }
     } }
   return; }

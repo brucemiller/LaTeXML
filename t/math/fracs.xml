@@ -1,0 +1,747 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Fractions in text
+<Math mode="inline" tex="\frac{a}{b}" text="a / b" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="\tfrac{a}{b}" text="a / b" xml:id="p1.m2">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="\dfrac{a}{b}" text="a / b" xml:id="p1.m3">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p2">
+    <p>Displayed fractions</p>
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\frac{a}{b}" text="a / b" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\tfrac{a}{b}" text="a / b" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="\dfrac{a}{b}" text="a / b" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <p>Exponents in fractions</p>
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="\frac{a^{n}}{b^{n}}" text="a ^ n / b ^ n" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\frac{a_{n+1}}{b^{n}}" text="a _ (n + 1) / b ^ n" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="a^{n}\over b^{n}" text="a ^ n / b ^ n" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="a^{n+1}\over b^{n}" text="a ^ (n + 1) / b ^ n" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <p>Exponents in nested fractions</p>
+    <equation xml:id="S0.Ex8">
+      <Math mode="display" tex="\frac{\frac{a^{n}}{b^{m}}}{\frac{c^{n}}{d^{m}}}" text="a ^ n / b ^ m / c ^ n / d ^ m" xml:id="S0.Ex8.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex9">
+      <Math mode="display" tex="\frac{a^{n}}{b^{m}}\over\frac{c^{n}}{d^{m}}" text="a ^ n / b ^ m / c ^ n / d ^ m" xml:id="S0.Ex9.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex10">
+      <Math mode="display" tex="\frac{{a^{n}\over b^{m}}}{{c^{n}\over d^{m}}}" text="a ^ n / b ^ m / c ^ n / d ^ m" xml:id="S0.Ex10.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex11">
+      <Math mode="display" tex="{a^{n}\over b^{m}}\over{c^{n}\over d^{m}}" text="a ^ n / b ^ m / c ^ n / d ^ m" xml:id="S0.Ex11.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex12">
+      <Math mode="display" tex="{a^{n+1}\over b^{m}}\over{c^{n}\over d^{m}}" text="a ^ (n + 1) / b ^ m / c ^ n / d ^ m" xml:id="S0.Ex12.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok fontsize="50%" meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">n</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" fontsize="50%" role="UNKNOWN">m</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <p>Fractions in exponents in fractions</p>
+    <equation xml:id="S0.Ex13">
+      <Math mode="display" tex="\frac{a^{\frac{1}{2}}}{b^{\frac{2}{3}}}" text="a ^ (1 / 2) / b ^ (2 / 3)" xml:id="S0.Ex13.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex14">
+      <Math mode="display" tex="a^{\frac{1}{2}}\over b^{\frac{2}{3}}" text="a ^ (1 / 2) / b ^ (2 / 3)" xml:id="S0.Ex14.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex15">
+      <Math mode="display" tex="\frac{a^{1\over 2}}{b^{2\over 3}}" text="a ^ (1 / 2) / b ^ (2 / 3)" xml:id="S0.Ex15.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex16">
+      <Math mode="display" tex="a^{1\over 2}\over b^{2\over 3}" text="a ^ (1 / 2) / b ^ (2 / 3)" xml:id="S0.Ex16.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex17">
+      <Math mode="display" tex="a^{{1+2}\over 2}\over b^{2\over 3}" text="a ^ ((1 + 2) / 2) / b ^ (2 / 3)" xml:id="S0.Ex17.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMApp>
+                  <XMTok fontsize="50%" meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp>
+                <XMTok mathstyle="script" meaning="divide" role="FRACOP"/>
+                <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p6">
+    <p>Fractions in exponents in nested fractions</p>
+    <equation xml:id="S0.Ex18">
+      <Math mode="display" tex="\frac{\frac{a^{\frac{1}{2}}}{b^{\frac{2}{3}}}}{\frac{c^{\frac{1}{2}}}{d^{\frac%&#10;{2}{3}}}}" text="a ^ (1 / 2) / b ^ (2 / 3) / c ^ (1 / 2) / d ^ (2 / 3)" xml:id="S0.Ex18.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex19">
+      <Math mode="display" tex="\frac{a^{\frac{1}{2}}}{b^{\frac{2}{3}}}\over\frac{c^{\frac{1}{2}}}{d^{\frac{2}%&#10;{3}}}" text="a ^ (1 / 2) / b ^ (2 / 3) / c ^ (1 / 2) / d ^ (2 / 3)" xml:id="S0.Ex19.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex20">
+      <Math mode="display" tex="{a^{\frac{1}{2}}\over b^{\frac{2}{3}}}\over{c^{\frac{1}{2}}\over d^{\frac{2}{3%&#10;}}}" text="a ^ (1 / 2) / b ^ (2 / 3) / c ^ (1 / 2) / d ^ (2 / 3)" xml:id="S0.Ex20.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex21">
+      <Math mode="display" tex="{a^{1\over 2}\over b^{2\over 3}}\over{c^{1\over 2}\over d^{2\over 3}}" text="a ^ (1 / 2) / b ^ (2 / 3) / c ^ (1 / 2) / d ^ (2 / 3)" xml:id="S0.Ex21.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex22">
+      <Math mode="display" tex="{a^{{1+2}\over 2}\over b^{2\over 3}}\over{c^{1\over 2}\over d^{2\over 3}}" text="a ^ ((1 + 2) / 2) / b ^ (2 / 3) / c ^ (1 / 2) / d ^ (2 / 3)" xml:id="S0.Ex22.m1">
+        <XMath>
+          <XMApp>
+            <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMApp>
+                    <XMTok fontsize="50%" meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                <XMApp>
+                  <XMTok mathstyle="scriptscript" meaning="divide" role="FRACOP"/>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                  <XMTok fontsize="50%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

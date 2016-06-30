@@ -28,7 +28,7 @@ DefEnvironment('{KVenv} OptionalKeyVals:foo',
 DefEnvironment('{KVstruct} OptionalKeyVals:foo',
   "<ltx:text>"
     . "?&GetKeyVal(#1,width)(<ltx:text>Width: &GetKeyVal(#1,width)</ltx:text>)"
-    . "<ltx:text>&amp;</ltx:text>"
+    . "<ltx:text>\\&</ltx:text>"
     . "?&GetKeyVal(#1,height)(<ltx:text>Height: &GetKeyVal(#1,height)</ltx:text>)"
     . "#body</ltx:text>");
 

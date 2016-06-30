@@ -2,10 +2,9 @@
 \usepackage{makeidx}
 \makeindex
 \usepackage{listings}
-\usepackage{color}
+\usepackage[dvipsnames]{color}
 \begin{document}
 \lstset{numbers=left}
-
 \section{Introduction}
 This document contains the following listings:
 \lstlistoflistings
@@ -15,12 +14,24 @@ Various delimiters: \lstinline{a_word},
 \lstinline!a_word!, \lstinline Aa_wordA,
 \lstinline&a_word& and even \lstinline^a_word^ done.
 
+\def\justcopy#1{#1}
+Indirectly: \justcopy{\lstinline|a_word|};
+and with messed up braces \lstinline{foo { bar }.% }
+
 \section{An untyped Listing}
 No options, language, etc
 \begin{lstlisting}
 stuff1
 stuff2
 stuff3
+\end{lstlisting}
+
+\section{Some C}
+
+\begin{lstlisting}[language=C,identifierstyle=\slshape,directivestyle=\ttfamily]
+#define EXAMPLE whichwhat
+x = "foo";
+break;
 \end{lstlisting}
 
 \section{A Pascal Listing}
@@ -74,7 +85,7 @@ begin
 end;
 \end{lstlisting}
 
-\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}
+\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=right,numberstyle=\color{#1}}}{}
 \begin{colored}{red}
 for i:=maxint to 0 do
 begin
@@ -88,6 +99,43 @@ begin
   { do nothing }
 end;
 \end{colored}
+
+\section{Framing and such}
+\lstset{backgroundcolor=\color[named]{CarnationPink}}
+\begin{lstlisting}[language=Pascal,frame=single,rulecolor=\color{red}]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+
+\begin{lstlisting}[language=Pascal,frameround=tttt,backgroundcolor=\color{yellow}]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+\lstset{backgroundcolor=}
+\begin{lstlisting}[language=Pascal,frame=single]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+
+\begin{lstlisting}[language=Pascal,frame=lines]
+for i:=maxint to 0 do
+begin
+  { do nothing }
+end;
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,identifierstyle=\slshape,directivestyle=\ttfamily,
+caption=A C language listing, frame=lines,backgroundcolor={\color[cmyk]{0,0,0,0.1}}]
+#define EXAMPLE whichwhat
+x = "foo";
+break;
+\end{lstlisting}
 
 \section{Listing with Math}
 \begin{lstlisting}[language=c,texcl,commentstyle=\color{green}]

@@ -25,33 +25,6 @@ use LaTeXML::Package;
 #======================================================================
 # 5. Package Options
 
-# # The kind of braces around citations
-# DeclareOption('round',     sub { setCitationStyle(round=>1); });
-# DeclareOption('curly',     sub { setCitationStyle(curly=>1); });
-# DeclareOption('square',    sub { setCitationStyle(square=>1); });
-# DeclareOption('angle',     sub { setCitationStyle(angle=>1); });
-# # The kind of separator between multiple citations
-# DeclareOption('semicolon', sub { setCitationStyle(semicolon=>1); });
-# DeclareOption('colon',     sub { setCitationStyle(semicolon=>1); }); # SIC!
-# DeclareOption('comma',     sub { setCitationStyle(comma=>1); });
-# # The kind of citation
-# DeclareOption('authoryear',sub { setCitationStyle(authoryear=>1); });
-# DeclareOption('numbers',   sub { setCitationStyle(numbers=>1); });
-# DeclareOption('super',     sub { setCitationStyle(super=>1); });
-# # sorting options
-# DeclareOption('sort',         sub {});
-# DeclareOption('sort&compress',sub {});
-# DeclareOption('compress',     sub {});
-
-# DeclareOption('longnamesfirst',sub {});
-
-# DeclareOption('sectionbib', sub {});
-# DeclareOption('nonamebreak',sub {});
-
-# # They _say_ round & semicolon but ...
-# ExecuteOptions('round','semicolon','authoryear');
-# ExecuteOptions('square','comma','authoryear');
-
 # The kind of citation
 DeclareOption('numbers', sub {
     setCitationStyle(numbers => 1);
@@ -119,6 +92,11 @@ DefMacro('\bibstyle{}', sub {
 #AtBeginDocument{\global\let\bibstyle=\@gobble}
 Let('\@citestyle', '\bibstyle');
 
+# # They _say_ round & semicolon but ...
+ExecuteOptions('round', 'semicolon', 'authoryear');
+# ExecuteOptions('square','comma','authoryear');
+AssignValue(CITE_STYLE => 'authoryear');    # the default?
+
 ProcessOptions();
 #======================================================================
 # 2.3 Basic Citation Commands
@@ -127,34 +105,47 @@ ProcessOptions();
 
 # Note that LaTeX's \cite command is treated almost equivalent to \citet in authoryear mode,
 # but like \citep in numbers mode.
-DefMacro('\cite[] Semiverbatim', sub {
-    my ($gullet, $post, $keys) = @_;
-    my ($style, $open, $close, $ns)
-      = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
+DefMacro('\cite[][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $keys) = @_;
+    my ($style, $open, $close, $ns, $ay)
+      = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR);
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
     $post = undef unless $post && $post->unlist;
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('cite')),
-        Tokens($open,
+        Tokens($open, ($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef),
           ($post ? ($ns, T_SPACE, $post) : ()),
           $close)); }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('cite')),
-        Tokens(Invocation(T_CS('\textsuperscript'),
+        Tokens(($pre ? ($pre, T_SPACE) : ()), Invocation(T_CS('\textsuperscript'),
             Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys,
               undef, undef)),
           ($post ? (T_SPACE, $post) : ()))); }
     else {
-      Invocation(T_CS('\@@cite'),
-        Tokens(Explode('cite')),
-        Invocation(T_CS('\@@bibref'),
-          Tokens(Explode("Authors Phrase1YearPhrase2")),
-          $keys,
-          Invocation(T_CS('\@@citephrase'), $open),
-          Invocation(T_CS('\@@citephrase'),
-            Tokens(($post ? ($ns, T_SPACE, $post) : ()), $close)))); }
+      # Appears to be textual, unless pre or post phrase, then parenthetical (!)
+      if ($pre || $post) {
+        Invocation(T_CS('\@@cite'),
+          Tokens(Explode('cite')),
+          Tokens($open->unlist, ($pre ? ($pre, T_SPACE) : ()),
+            Invocation(T_CS('\@@bibref'),
+              Tokens(Explode("AuthorsPhrase1Year")),
+              $keys,
+              Invocation(T_CS('\@@citephrase'),
+                Tokens($ay->unlist, T_SPACE)), undef),
+            ($post ? ($ns, T_SPACE, $post) : ()), $close)); }
+      else {
+        Invocation(T_CS('\@@cite'),
+          Tokens(Explode('cite')),
+          Invocation(T_CS('\@@bibref'),
+            Tokens(Explode("Authors Phrase1YearPhrase2")),
+            $keys,
+            Invocation(T_CS('\@@citephrase'), $open),
+            Invocation(T_CS('\@@citephrase'), $close))); } }
 });
 
 DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
@@ -168,13 +159,15 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('citet')),
-        Tokens(($pre ? ($pre, T_SPACE) : ()),
+        Tokens(    #($pre ? ($pre, T_SPACE) : ()),
           Invocation(T_CS('\@@bibref'),
             Tokens(Explode("$author Phrase1NumberPhrase2")),
             $keys,
-            Invocation(T_CS('\@@citephrase'), $open),
-            Invocation(T_CS('\@@citephrase'), $close))->unlist,
-          ($post ? ($ns->unlist, T_SPACE, $post->unlist) : ()))); }
+            Invocation(T_CS('\@@citephrase'),
+              Tokens($open, ($pre ? ($pre, T_SPACE) : ()))),
+            Invocation(T_CS('\@@citephrase'),
+              Tokens(($post ? ($ns->unlist, T_SPACE, $post->unlist) : ()), $close->unlist))
+            )))->unlist; }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('citet')),

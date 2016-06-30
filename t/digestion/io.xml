@@ -35,7 +35,15 @@ Line: “<text font="bold">Foo!</text>
 Line: “</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px2.p2">
-      <p><Math mode="inline" xml:id="S0.SS0.SSS0.Px2.p2.m1" tex="x^{\prime}" text="x ^ prime"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post2"/><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok name="prime" role="SUPOP">′</XMTok></XMApp></XMath></Math>
+      <p><Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px2.p2.m1">
+          <XMath>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
 ”<break/>
 
 Line: “line  in brackets

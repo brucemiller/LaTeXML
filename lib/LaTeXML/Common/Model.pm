@@ -32,6 +32,7 @@ sub new {
     %options }, $class;
   $$self{xpath}->registerFunction('match-font', \&LaTeXML::Common::Font::match_font);
   $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
+  $self->registerDocumentNamespace('xml', "http://www.w3.org/XML/1998/namespace");
   return $self; }
 
 sub setDocType {
@@ -262,15 +263,47 @@ sub getNodeQName {
     return '#ProcessingInstruction'; }
   elsif ($type == XML_DTD_NODE) {
     return '#DTD'; }
+  elsif ($type == XML_NAMESPACE_DECL) {
+    my $ns = $node->declaredURI;
+    my $prefix = $ns && $self->getNamespacePrefix($ns, 0, 1);
+    return ($prefix ? 'xmlns:' . $prefix : 'xmlns'); }
   # Need others?
   elsif (($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)) {
     Fatal('misdefined', '<caller>', undef,
       "Should not ask for Qualified Name for node of type $type: " . Stringify($node));
     return; }
-  elsif (my $ns = $node->namespaceURI) {
-    return $self->getNamespacePrefix($ns) . ":" . $node->localname; }
   else {
-    return $node->localname; } }
+    my $ns = $node->namespaceURI;
+    my $prefix = $ns && $self->getNamespacePrefix($ns, 0, 1);
+    return ($prefix ? $prefix . ":" . $node->localname : $node->localname); } }
+
+# Same thing, but using the Document namespace prefixes
+sub getNodeDocumentQName {
+  my ($self, $node) = @_;
+  my $type = $node->nodeType;
+  if ($type == XML_TEXT_NODE) {
+    return '#PCDATA'; }
+  elsif ($type == XML_DOCUMENT_NODE) {
+    return '#Document'; }
+  elsif ($type == XML_COMMENT_NODE) {
+    return '#Comment'; }
+  elsif ($type == XML_PI_NODE) {
+    return '#ProcessingInstruction'; }
+  elsif ($type == XML_DTD_NODE) {
+    return '#DTD'; }
+  elsif ($type == XML_NAMESPACE_DECL) {
+    my $ns = $node->declaredURI;
+    my $prefix = $ns && $self->getDocumentNamespacePrefix($ns, 0, 1);
+    return ($prefix ? 'xmlns:' . $prefix : 'xmlns'); }
+  # Need others?
+  elsif (($type != XML_ELEMENT_NODE) && ($type != XML_ATTRIBUTE_NODE)) {
+    Fatal('misdefined', '<caller>', undef,
+      "Should not ask for Qualified Name for node of type $type: " . Stringify($node));
+    return; }
+  else {
+    my $ns = $node->namespaceURI;
+    my $prefix = $ns && $self->getDocumentNamespacePrefix($ns, 0, 1);
+    return ($prefix ? $prefix . ":" . $node->localname : $node->localname); } }
 
 # Given a Document QName, convert to "code" form
 # Used to convert a possibly prefixed name from the DTD
@@ -297,12 +330,12 @@ sub getXPath {
 
 sub getTags {
   my ($self) = @_;
-  return sort keys %{ $$self{tagprop} }; }
+  return (sort keys %{ $$self{tagprop} }); }
 
 sub getTagContents {
   my ($self, $tag) = @_;
   my $h = $$self{tagprop}{$tag}{model};
-  return $h ? sort keys %$h : (); }
+  return ($h ? sort keys %$h : ()); }
 
 sub addTagContent {
   my ($self, $tag, @elements) = @_;

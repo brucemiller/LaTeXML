@@ -250,7 +250,8 @@ sub gentoc {
       @kids = map { $self->gentoc($doc, $_, $types, $strict, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
-    if (my $code = $$types{$type}) {
+    my $role = $entry->getValue('role');
+    if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
       if ($strict && !$entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
         return (); }
       elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
@@ -331,7 +332,7 @@ sub fill_in_refs {
       if (my $label = $ref->getAttribute('labelref')) {
         my $entry;
         if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
-	    $ref->setAttribute(idref => $id); }
+          $ref->setAttribute(idref => $id); }
         else {
           $self->note_missing('warn', 'Target for Label', $label);
           my $cl = $ref->getAttribute('class');
@@ -370,7 +371,7 @@ sub fill_in_RDFa_refs {
         if (my $label = $ref->getAttribute($key . 'labelref')) {
           my $entry;
           if (($entry = $db->lookup($label)) && ($id = $entry->getValue('id'))) {
-	      $ref->setAttribute($key . 'idref' => $id); }
+            $ref->setAttribute($key . 'idref' => $id); }
           else {
             $self->note_missing('warn', "Target for $key Label", $label);
           } } }
@@ -435,6 +436,12 @@ sub make_bibcite {
       my $refnum   = $entry->getValue('refnum');        # This come's from the \bibitem, w/o BibTeX
       my ($rawyear, $suffix);
 
+      my $titlestring = undef;
+      if (defined $title) {
+        $titlestring = $title->textContent;
+        $titlestring =~ s/^\s+//;                       # Trim leading whitespace
+        $titlestring =~ s/\s+$//;                       # and trailing
+        $titlestring =~ s/\s+/ /gs; }                   # and normalize all other whitespace.
       if ($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/) {
         ($rawyear, $suffix) = ($1, $2); }
       $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
@@ -452,7 +459,7 @@ sub make_bibcite {
           title   => [$doc->trimChildNodes($title || $keytag)],
           attr    => { idref => $id,
             href => orNull($self->generateURL($doc, $id)),
-            ($title ? (title => orNull($title->textContent)) : ()) } }); }
+            ($titlestring ? (title => $titlestring) : ()) } }); }
     else {
       $self->note_missing('warn', 'Entry for citation', $key);
       push(@data, { key => $key, refnum => [$key], title => [$key], year => [],
@@ -681,8 +688,9 @@ sub generateTitle {
         || $entry->getValue('frefnum') || $entry->getValue('refnum'));
     #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc, $title) if $title && ref $title;
-    $title =~ s/^\s+// if $title;
-    $title =~ s/\s+$// if $title;
+    $title =~ s/^\s+//s  if $title;    # Trim leading whitespace
+    $title =~ s/\s+$//s  if $title;    # and trailing
+    $title =~ s/\s+/ /gs if $title;    # and normalize all other whitespace.
     if ($title) {
       $string .= $$self{ref_join} if $string;
       $string .= $title; }

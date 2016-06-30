@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">m</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">t</XMTok>
+            <XMTok font="italic" role="UNKNOWN">h</XMTok>
+          </XMApp>
+        </XMath>
+      </Math> text</p>
+  </para>
+  <para xml:id="p2">
+    <p>text alsotext text</p>
+  </para>
+  <para xml:id="p3">
+    <p>Footnote<note mark="1" role="footnote">text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="p3.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">m</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">t</XMTok>
+              <XMTok font="italic" role="UNKNOWN">h</XMTok>
+            </XMApp>
+          </XMath>
+        </Math> text</note>
+Another<note mark="2" role="footnote">text <equation xml:id="S0.Ex1">
+          <Math mode="display" tex="displayedmath" text="d * i * s * p * l * a * y * e * d * m * a * t * h" xml:id="S0.Ex1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                <XMTok font="italic" role="UNKNOWN">s</XMTok>
+                <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                <XMTok font="italic" role="UNKNOWN">h</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation> text</note></p>
+  </para>
+  <para xml:id="p4">
+    <p>Note that dollar inside equation, etc. fails.</p>
+  </para>
+  <para xml:id="p5">
+    <p>text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="p5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">m</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">t</XMTok>
+            <XMTok font="italic" role="UNKNOWN">h</XMTok>
+          </XMApp>
+        </XMath>
+      </Math> text</p>
+  </para>
+  <para xml:id="p6">
+    <p>text alsotext text</p>
+  </para>
+  <para xml:id="p7">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="a+\mbox{text $math$ text}+c" text="a + [text ⁢math text] + c" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMText>text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="S0.Ex2.m1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math> text</XMText>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p8">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="a+\mbox{text $$alsotext$$ text}+c" text="a + [text alsotext text] + c" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMText>text alsotext text</XMText>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p9">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="a+\makebox{text $math$ text}+c" text="a + [text ⁢math text] + c" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMText>text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="S0.Ex4.m1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math> text</XMText>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p10">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="a+\makebox{text $$alsotext$$ text}+c" text="a + [text alsotext text] + c" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMText>text alsotext text</XMText>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p11">
+    <p>Base<text yoffset="10.0pt">text <Math mode="inline" tex="math" text="m * a * t * h" xml:id="p11.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">m</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">t</XMTok>
+              <XMTok font="italic" role="UNKNOWN">h</XMTok>
+            </XMApp>
+          </XMath>
+        </Math> text</text></p>
+  </para>
+  <para xml:id="p12">
+    <p>Base<text yoffset="10.0pt">text alsotext text</text></p>
+  </para>
+  <para xml:id="p13">
+    <p>Base<inline-block>
+        <p>text</p>
+        <p><Math mode="inline" tex="math" text="m * a * t * h" xml:id="p13.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                <XMTok font="italic" role="UNKNOWN">h</XMTok>
+              </XMApp>
+            </XMath>
+          </Math></p>
+        <p>text</p>
+      </inline-block></p>
+  </para>
+  <para xml:id="p14">
+    <p>Base<inline-block>
+        <p>text</p>
+        <p>alsotext</p>
+        <p>text</p>
+      </inline-block></p>
+  </para>
+</document>

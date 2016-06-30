@@ -1,0 +1,56 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  algorithmicx                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Load core, make a few redefinitions
+InputDefinitions('algorithmicx', type => 'sty', noltxml => 1);
+
+Let('\lx@orig@algorithmic', '\algorithmic');
+DefMacro('\algorithmic', '\lx@setup@algorithmicx\lx@orig@algorithmic');
+DefPrimitive('\lx@setup@algorithmicx', sub {
+    ResetCounter('ALG@line');
+    Let('\list',    '\lx@algorithmicx@beginlist');
+    Let('\endlist', '\lx@algorithmicx@endlist');
+    Let('\item',    '\lx@algorithmicx@item');
+    Let('\hfill',   '\lx@algorithmicx@hfill');
+});
+
+DefConstructor('\lx@algorithmicx@beginlist{}{}', "<ltx:listing>");
+
+DefConstructor('\lx@algorithmicx@endlist', "</ltx:listing>",
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
+
+# This imitates \item; just opens the ltx:listingline, but somebody's got to close it.
+DefConstructor('\lx@algorithmicx@item OptionalUndigested',
+  "<ltx:listingline xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
+    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+  properties => sub {
+    my $frefnum = Digest(T_CS('\ALG@step'));
+    my $refnum  = Digest(T_CS('\theALG@line'));
+    my $id      = Digest(T_CS('\theALG@line@ID'));
+    (id => $id, refnum => $refnum, frefnum => $frefnum); },
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
+
+NewCounter('ALG@line', 'algorithm', idprefix => 'l');    # Assuming we're inside an {algorithm}!
+
+# Hopefully this will only get used for right justifying a comment;
+# the ltx:text should autoclose at end of line?
+DefConstructor('\lx@algorithmicx@hfill',
+  "<ltx:text cssstyle='float:right'>");
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

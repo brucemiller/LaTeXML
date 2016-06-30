@@ -35,9 +35,13 @@ foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
 DeclareOption('openbib', sub {
     RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
 
+DeclareOption('cm',            sub { RequirePackage('textcomp'); });
+DeclareOption('bibnumber',     sub { RequirePackage('natbib'); });
+DeclareOption('bibauthoryear', sub { RequirePackage('natbib'); });
 #DeclareOption(undef,sub {
 #  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
 
+ExecuteOptions(qw(a4paper twocolumn utf8 hideoverfull bibauthoryear));
 ProcessOptions();
 
 RequirePackage('inst_support');
@@ -283,6 +287,10 @@ DefPrimitiveI('\bbbz',   undef, "\x{2124}");
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Online material
+# Support for adsurl URLs containing unescaped % characters, e.g. %26
+# in A&A URLs
+DefConstructor('\bib@field@default@adsurl Verbatim',
+  "<ltx:bib-url href='#1'>ADS entry</ltx:bib-url>");
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Astronomical objects

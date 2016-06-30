@@ -43,4 +43,62 @@
 \end{enumerate}
 \end{enumerate}
 
+\section{Spacing}
+Taller:
+\begin{itemize}
+\itemsep=2em
+\item a
+\item b
+\item c
+\end{itemize}
+
+Taller \& Taller:
+\begin{itemize}
+\item a
+\itemsep=2em
+\item b
+\itemsep=3em
+\item c
+\end{itemize}
+
+{\itemsep=2em
+Itemsep outside has no effect:
+\begin{itemize}
+\item a
+\item b
+\item c
+\end{itemize}}
+
+\section{Mixed tags}
+\begin{itemize}
+\item a
+\item b
+\item[foo] bar
+\item c
+\end{itemize}
+
+\begin{enumerate}
+\item a
+\item b
+\item[foo] bar
+\item c
+\end{enumerate}
+
+\section{Generalized Lists}
+\begin{list}{$\star$}{}
+   \item First item.
+   \item Second.
+   \item[foo] bar
+   \item And the third.
+\end{list}
+
+\newcounter{exer}
+
+\begin{list}{\textbf{\thesection \ - \theexer}}{\usecounter{exer}}
+   \item First item.
+   \item Second.
+   \item[foo] bar
+   \item And the third.
+\end{list}
+
 \end{document}

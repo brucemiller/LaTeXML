@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>Testing equality vs. catcodes</title>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Begin 1</title>
+    <para xml:id="S1.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Mangle…
+BRACE: 1; begin-group character –.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>AMP: 1; begin-group character &amp;.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Test (not): not</p>
+    </para>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>Math 3</title>
+    <para xml:id="S2.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Mangle…
+DOLLAR: 3; math shift character $.</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>AMP: 3; math shift character &amp;.
+Test (not): not</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>Test (equals): equals</p>
+    </para>
+    <para xml:id="S2.p5">
+      <p>Test (not): not</p>
+    </para>
+    <para xml:id="S2.p6">
+      <p>Test (equals): equals</p>
+    </para>
+    <para xml:id="S2.p7">
+      <p>But still acts like math:<Math mode="inline" tex="a" text="a" xml:id="S2.p7.m1">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+          </XMath>
+        </Math>.</p>
+    </para>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag close=" ">3</tag>Math 3 w/let</title>
+    <para xml:id="S3.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>Mangle…
+
+DOLLAR: 3; math shift character $.</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>AMP: 13; math shift character $.</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>Test (equals):  equals</p>
+    </para>
+    <para xml:id="S3.p5">
+      <p>But still acts like math:<Math mode="inline" tex="a" text="a" xml:id="S3.p5.m1">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+          </XMath>
+        </Math>.</p>
+    </para>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag close=" ">4</tag>Math 3 w/let, uncatcode</title>
+    <para xml:id="S4.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>Mangle…
+
+DOLLAR: 3; math shift character $.</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>AMP: 4; alignment tab character &amp;.
+Test (not): not</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>But does NOT act like math.</p>
+    </para>
+  </section>
+  <section refnum="5" xml:id="S5">
+    <title><tag close=" ">5</tag>Param 6</title>
+    <para xml:id="S5.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S5.p2">
+      <p>Mangle…
+HASH: 6; macro parameter character #.</p>
+    </para>
+    <para xml:id="S5.p3">
+      <p>AMP: 6; macro parameter character &amp;.
+Test (not): not</p>
+    </para>
+  </section>
+  <section refnum="6" xml:id="S6">
+    <title><tag close=" ">6</tag>MathActive</title>
+    <para xml:id="S6.p1">
+      <p>Pretest (not): not</p>
+    </para>
+    <para xml:id="S6.p2">
+      <p>Mangle…</p>
+    </para>
+    <para xml:id="S6.p3">
+      <p>PRIME: 12; the character ’.</p>
+    </para>
+    <para xml:id="S6.p4">
+      <p>AMP: 4; alignment tab character &amp;.
+Test (not): not</p>
+    </para>
+    <para xml:id="S6.p5">
+      <p>But works as prime?
+NO</p>
+    </para>
+  </section>
+  <section refnum="7" xml:id="S7">
+    <title><tag close=" ">7</tag>Control Sequences</title>
+    <para xml:id="S7.p1">
+      <p>Compare 2 undefined control sequences:
+equals</p>
+    </para>
+    <para xml:id="S7.p2">
+      <p>Let one to relax:
+not</p>
+    </para>
+    <para xml:id="S7.p3">
+      <p>Let both to relax:
+equals</p>
+    </para>
+    <para xml:id="S7.p4">
+      <p>Test (equals): equals</p>
+    </para>
+    <para xml:id="S7.p5">
+      <p>Test (not): not</p>
+    </para>
+    <para xml:id="S7.p6">
+      <p>Test (not in math): <Math mode="inline" tex="not" text="n * o * t" xml:id="S7.p6.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              <XMTok font="italic" role="UNKNOWN">o</XMTok>
+              <XMTok font="italic" role="UNKNOWN">t</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+  </section>
+</document>

@@ -45,7 +45,7 @@ DefMacro('\bib{}{} RequiredKeyVals:amsrefs', sub {
     my @rawpairs = $keyvals->getPairs;
     my @fields;
     while (@rawpairs) {
-      push(@fields, [lc(shift(@rawpairs)), ToString(shift(@rawpairs))]); }
+      push(@fields, [lc(shift(@rawpairs)), UnTeX(shift(@rawpairs))]); }
     AssignValue('BIBENTRY@' . NormalizeBibKey($key)
         => LaTeXML::Pre::BibTeX::Entry->new(ToString($type), $key, [@fields], [@fields]));
     Invocation(T_CS('\ProcessBibTeXEntry'), T_OTHER($key)); });
@@ -63,7 +63,7 @@ DefEnvironment('{bibdiv}',
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#body"
     . "</ltx:bibliography>",
-  afterDigestBegin => sub { beginBibliography($_[1]); });
+  afterDigestBegin => sub { beginBibliography_clean($_[1]); Let('\par', '\relax'); });
 
 DefEnvironment('{biblist}', "<ltx:biblist>#body</ltx:biblist>");
 

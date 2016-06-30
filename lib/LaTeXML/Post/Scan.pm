@@ -83,7 +83,7 @@ sub process {
       if (my $loc = $doc->siteRelativeDestination) {
         my $prevloc = $preventry->getValue('location');
         if ((defined $prevloc) && ($loc ne $prevloc)) {
-          Warn('unexpected', $id, undef,
+          Warn('unexpected', 'location', undef,
             "Using default ID='$id', "
               . "but there's an apparent conflict with location '$loc' and previous '$prevloc'"); } } }
     $root->setAttribute('xml:id' => $id); }
@@ -222,6 +222,7 @@ sub captioned_handler {
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -253,6 +254,7 @@ sub labelled_handler {
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -277,6 +279,7 @@ sub note_handler {
     # OTOH, it might be a more nicely formatted version of the frefnum
     # So, IF there is a refnum, use tag in place of the frefnum!
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($node->getAttribute('role')),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
@@ -324,12 +327,12 @@ sub bibref_handler {
   # Don't scan refs from 'cited' bibblock
   if (!$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]', $node)) {
 #####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
-    my $keys = $node->getAttribute('bibrefs');
-    foreach my $bibkey (split(',', $keys)) {
-      if ($bibkey) {
-        $bibkey = lc($bibkey);    # NOW we downcase!
-        my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-        $entry->noteAssociation(referrers => $parent_id); } } }
+    if (my $keys = $node->getAttribute('bibrefs')) {
+      foreach my $bibkey (split(',', $keys)) {
+        if ($bibkey) {
+          $bibkey = lc($bibkey);    # NOW we downcase!
+          my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+          $entry->noteAssociation(referrers => $parent_id); } } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
   $self->default_handler($doc, $node, $tag, $parent_id);
   return; }
@@ -352,7 +355,7 @@ sub indexmark_handler {
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
   return; }
 
-# This handles glossarymark and glossaryentry
+# This handles glossaryentry
 sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id   = $node->getAttribute('xml:id');
@@ -371,6 +374,7 @@ sub glossaryentry_handler {
   if ($id) {
     $entry->setValues(id => $id);
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
+      role     => orNull($role),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),

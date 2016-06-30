@@ -80,6 +80,9 @@
     <xsl:element name="html" namespace="{$html_ns}">
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:call-template name="add_RDFa_prefix"/>
+      <xsl:if test="*/@xml:lang">
+        <xsl:apply-templates select="*/@xml:lang" mode="copy-attribute"/>
+      </xsl:if>
       <xsl:apply-templates select="." mode="head"/>
       <xsl:apply-templates select="." mode="body"/>
       <xsl:apply-templates select="." mode="end"/>
@@ -120,6 +123,9 @@
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
       <xsl:choose>
         <xsl:when test="*/ltx:title | */ltx:caption">
+          <xsl:if test="$HEAD_TITLE_PREFIX">
+            <xsl:text>: </xsl:text>
+          </xsl:if>
           <xsl:choose>
             <xsl:when test="*/ltx:toctitle">
               <xsl:apply-templates select="*/ltx:toctitle[1]" mode="visible-text"/>
@@ -151,7 +157,7 @@
   </xsl:template>
 
   <xsl:template match="text()" mode="visible-text">
-    <xsl:value-of select="."/>
+    <xsl:value-of select="normalize-space(.)"/>
   </xsl:template>
   <xsl:template match="*" mode="visible-text">
     <xsl:apply-templates mode="visible-text"/>
@@ -329,7 +335,9 @@
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="meta" namespace="{$html_ns}">
         <xsl:attribute name="name">keywords</xsl:attribute>
-        <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:lang','lang')}">en-us</xsl:attribute>
+        <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:lang','lang')}">
+          <xsl:value-of select="f:if(*/@xml:lang,*/@xml:lang, 'en')"/>
+        </xsl:attribute>
         <xsl:attribute name="content">
           <xsl:value-of select="f:subst(//ltx:keywords/text(),',',', ')"/>
           <xsl:if test="//ltx:indexphrase and //ltx:keywords">

@@ -14,7 +14,15 @@
       <p>abcd</p>
     </para>
     <para xml:id="S1.p3">
-      <p><inline-block vattach="bottom"><p>a</p></inline-block><inline-block vattach="bottom"><p>b</p></inline-block><inline-block vattach="bottom"><p>c</p></inline-block><inline-block vattach="bottom"><p>d</p></inline-block></p>
+      <p><inline-block vattach="bottom">
+          <p>a</p>
+        </inline-block><inline-block vattach="bottom">
+          <p>b</p>
+        </inline-block><inline-block vattach="bottom">
+          <p>c</p>
+        </inline-block><inline-block vattach="bottom">
+          <p>d</p>
+        </inline-block></p>
     </para>
     <para xml:id="S1.p4">
       <p vattach="bottom">a b c d</p>
@@ -36,7 +44,12 @@
       </inline-block>
     </para>
     <para xml:id="S1.p7">
-      <p>ab<inline-block vattach="bottom"><p>a</p><p>b</p><p>c</p><p>d</p></inline-block>cd</p>
+      <p>ab<inline-block vattach="bottom">
+          <p>a</p>
+          <p>b</p>
+          <p>c</p>
+          <p>d</p>
+        </inline-block>cd</p>
     </para>
   </section>
   <section refnum="2" xml:id="S2">
@@ -93,14 +106,39 @@ This is random text. This is random text. This is random text.</p>
       <p align="center">This is random text. This is random text. This is random text.</p>
     </para>
     <para xml:id="S3.p3">
-      <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p3.g1" class="ltx_centering"/>
+      <graphics candidates="foo.png" class="ltx_centering" graphic="foo.png" xml:id="S3.p3.g1"/>
     </para>
-    <para xml:id="S3.p4" class="ltx_centering">
-      <p>c) Parabolic cylinder,  <Math mode="inline" xml:id="S3.p4.m1" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post3"/><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok><XMTok role="UNKNOWN" font="italic">p</XMTok><XMTok role="UNKNOWN" font="italic">z</XMTok></XMApp></XMApp></XMath></Math>;  it is a developable surface.</p>
-      <p>Signatures: blah <Math mode="inline" xml:id="S3.p4.m2" tex="x" text="x"><XMath><XMTok role="UNKNOWN" font="italic">x</XMTok></XMath></Math>, <Math mode="inline" xml:id="S3.p4.m3" tex="y" text="y"><XMath><XMTok role="UNKNOWN" font="italic">y</XMTok></XMath></Math>)</p>
+    <para class="ltx_centering" xml:id="S3.p4">
+      <p>c) Parabolic cylinder,  <Math mode="inline" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z" xml:id="S3.p4.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                <XMTok font="italic" role="UNKNOWN">z</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>;  it is a developable surface.</p>
+      <p>Signatures: blah <Math mode="inline" tex="x" text="x" xml:id="S3.p4.m2">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+          </XMath>
+        </Math>, <Math mode="inline" tex="y" text="y" xml:id="S3.p4.m3">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">y</XMTok>
+          </XMath>
+        </Math>)</p>
     </para>
     <figure frefnum="Figure 1" refnum="1" xml:id="S3.F1">
-      <graphics candidates="foo.png" graphic="foo" xml:id="S3.F1.g1" class="ltx_centering"/>
+      <graphics candidates="foo.png" class="ltx_centering" graphic="foo" xml:id="S3.F1.g1"/>
       <toccaption class="ltx_centering"><tag close=" ">1</tag>This is random text. This is random text. This is random text.</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is random text. This is random text. This is random text.</caption>
     </figure>

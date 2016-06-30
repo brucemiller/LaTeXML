@@ -189,12 +189,6 @@ Positionable.attributes =
   ## the desired depth of the box
   attribute depth { Length.type }?,
 
-  ## extra width beyond the boxes natural size.
-  attribute pad-width { Length.type }?,
-
-  ## extra height beyond the boxes natural size.
-  attribute pad-height { Length.type }?,
-
   ## horizontal shift the position of the box.
   attribute xoffset { Length.type }?,
 
@@ -343,6 +337,19 @@ RDF.attributes =
   ## indicates the content of the property to be used as the object,
   ## to be used instead of the content of the element itself;
   attribute content { text }?
+
+## Attributes for raw data storage
+Data.attributes =
+  ## the data itself
+  attribute data { text }?,
+
+  ## the MIME type of the data
+  attribute datatype { text }?,
+
+  ## the encoding of the data (either empty, base64, or )
+  attribute dataencoding { text }?
+
+
 
 
 

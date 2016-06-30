@@ -25,38 +25,48 @@ our @EXPORT = (
 
 my %NOBLESS = map { ($_ => 1) } qw( SCALAR HASH ARRAY CODE REF GLOB LVALUE);    # [CONSTANT]
 
+# Since the next two are used in debugging and error messages,
+# be careful to avoid recursive errors
 sub Stringify {
   my ($object) = @_;
-  if    (!defined $object)          { return 'undef'; }
-  elsif (!ref $object)              { return $object; }
-  elsif ($NOBLESS{ ref $object })   { return "$object"; }
-  elsif ($object->can('stringify')) { return $object->stringify; }
-  # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
-  elsif ($object->isa('XML::LibXML::Node')) {
-    if ($object->nodeType == XML_ELEMENT_NODE) {
-      my $tag        = $STATE->getModel->getNodeQName($object);
-      my $attributes = '';
-      foreach my $attr ($object->attributes) {
-        my $name = $attr->nodeName;
-        my $val  = $attr->getData;
-        $val = substr($val, 0, 30) . "..." if length($val) > 35;
-        $attributes .= ' ' . $name . "=\"" . $val . "\""; }
-      return "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
-    }
-    elsif ($object->nodeType == XML_TEXT_NODE) {
-      return "XMLText[" . $object->data . "]"; }
-    elsif ($object->nodeType == XML_DOCUMENT_NODE) {
-      return "XMLDocument[" . $$object . "]"; }
-    elsif ($object->nodeType == XML_DOCUMENT_FRAG_NODE) {
-      return "XMLFragment[" . join('', map { Stringify($_) } $object->childNodes) . "]"; }
-    else { return "$object"; } }
-  else { return "$object"; } }
+  my $string = eval {
+    local $LaTeXML::IGNORE_ERRORS = 1;
+    if    (!defined $object)          { return 'undef'; }
+    elsif (!ref $object)              { return $object; }
+    elsif ($NOBLESS{ ref $object })   { return "$object"; }
+    elsif ($object->can('stringify')) { return $object->stringify; }
+    # Have to handle LibXML stuff explicitly (unless we want to add methods...?)
+    elsif ($object->isa('XML::LibXML::Node')) {
+      if ($object->nodeType == XML_ELEMENT_NODE) {
+        my $model = $STATE && $STATE->getModel;
+        my $tag = ($model ? $model->getNodeQName($object)
+          : $object->nodeName);
+        my $attributes = '';
+        foreach my $attr ($object->attributes) {
+          my $name = $attr->nodeName;
+          my $val  = $attr->getData;
+          $val = substr($val, 0, 30) . "..." if length($val) > 35;
+          $attributes .= ' ' . $name . "=\"" . $val . "\""; }
+        return "<" . $tag . $attributes . ($object->hasChildNodes ? ">..." : "/>");
+      }
+      elsif ($object->nodeType == XML_TEXT_NODE) {
+        return "XMLText[" . $object->data . "]"; }
+      elsif ($object->nodeType == XML_DOCUMENT_NODE) {
+        return "XMLDocument[" . $$object . "]"; }
+      elsif ($object->nodeType == XML_DOCUMENT_FRAG_NODE) {
+        return "XMLFragment[" . join('', map { Stringify($_) } $object->childNodes) . "]"; }
+      else { return "$object"; } }
+    else { return "$object"; } };
+  return (defined $string ? $string : overload::StrVal($object)); }    # Fallback, if errors
 
 sub ToString {
   my ($object) = @_;
-  my $r;
-  return (defined $object
-    ? (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object") : ''); }
+  return '' unless defined $object;
+  my $string = eval {
+    local $LaTeXML::IGNORE_ERRORS = 1;
+    my $r;
+    return (($r = ref $object) && !$NOBLESS{$r} ? $object->toString : "$object"); };
+  return (defined $string ? $string : overload::StrVal($object)); }    # Fallback, if errors
 
 # Just how deep of an equality test should this be?
 sub Equals {
@@ -67,14 +77,13 @@ sub Equals {
   my $refb = (ref $b) || '_notype_';
   return 0 if $refa ne $refb;                    # same type?
   return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa};    # Deep comparison of builtins?
-  return 1 if $a->equals($b);                                     # semi-shallow comparison?
-       # Special cases? (should be methods, but that embeds State knowledge too low)
+        # Special cases? (should be methods, but that embeds State knowledge too low)
 
   if ($refa eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defa = $STATE->lookupDefinition($a);
-    my $defb = $STATE->lookupDefinition($b);
-    return $defa && $defb && ($defa eq $defb); }
-  return 0; }
+    my $defa = $STATE->lookupMeaning($a) || $a;
+    my $defb = $STATE->lookupMeaning($b) || $b;
+    return $defa->equals($defb); }
+  return $a->equals($b); }                  # semi-shallow comparison?
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.

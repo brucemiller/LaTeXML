@@ -1,0 +1,131 @@
+\documentclass{article}
+\title{Testing equality vs. catcodes}
+\begin{document}
+\section{Begin 1}
+{
+Pretest (not): \ifx{& equals\else not\fi
+
+Mangle...
+\catcode`\&=1\relax
+BRACE: \the\catcode`\{; \meaning{.
+
+AMP: \the\catcode`\&; \meaning&.
+
+Test (not): \ifx{& equals\else not\fi
+}
+
+\section{Math 3}
+{
+Pretest (not): \ifx$& equals\else not\fi
+
+Mangle...
+\catcode`\&=3\relax
+DOLLAR: \the\catcode`\$; \meaning$.
+
+AMP: \the\catcode`\&; \meaning&.
+Test (not): \ifx$& equals\else not\fi
+
+\let\foo$
+Test (equals): \ifx$\foo equals\else not\fi
+
+\let\bar&
+Test (not): \ifx$\bar equals\else not\fi
+
+Test (equals): \ifx&\bar equals\else not\fi
+
+But still acts like math:&a&.
+}
+
+\section{Math 3 w/let}
+{
+Pretest (not): \ifx$& equals\else not\fi
+
+Mangle...
+\catcode`\&=\active\let&$
+DOLLAR: \the\catcode`\$; \meaning$.
+
+AMP: \the\catcode`\&; \meaning&.
+
+Test (equals): \ifx$& equals\else not\fi
+
+But still acts like math:&a&.
+}
+
+\section{Math 3 w/let, uncatcode}
+{
+Pretest (not): \ifx$& equals\else not\fi
+
+Mangle...
+\catcode`\&=\active\let&$
+\catcode`\&=4\relax
+DOLLAR: \the\catcode`\$; \meaning$.
+
+AMP: \the\catcode`\&; \meaning&.
+Test (not): \ifx$& equals\else not\fi
+
+But does NOT act like math.
+}
+
+\section{Param 6}
+{
+Pretest (not): \ifx#& equals\else not\fi
+
+Mangle...
+\catcode`\&=6\relax
+HASH: \the\catcode`\#; \meaning#.
+
+AMP: \the\catcode`\&; \meaning&.
+Test (not): \ifx#& equals\else not\fi
+}
+
+\section{MathActive}
+{
+Pretest (not): \ifx'& equals\else not\fi
+
+Mangle...
+\makeatletter
+\mathcode`\&="8000
+{\catcode`\&=\active \global\let&\active@math@prime}
+\makeatother
+
+PRIME: \the\catcode`\'; \meaning'.
+
+AMP: \the\catcode`\&; \meaning&.
+Test (not): \ifx#& equals\else not\fi
+
+But works as prime?
+NO %%% $ a&& $
+}
+
+\section{Control Sequences}
+% But "defn" is the same
+
+
+Compare 2 undefined control sequences:
+\ifx\stinky\poo equals \else not\fi
+
+Let one to relax:
+\let\poo\relax
+\ifx\stinky\poo equals \else not\fi
+
+Let both to relax:
+\let\poo\relax
+\let\stinky\relax
+\ifx\stinky\poo equals \else not\fi
+
+\def\foo{FOO}
+\let\bar\foo
+
+
+Test (equals): \ifx\bar\foo equals\else not\fi
+
+
+\makeatletter
+\let\baz\active@math@prime
+\makeatother
+
+Test (not): \ifx'\baz equals \else not \fi
+
+Test (not in math): $\ifx'\baz equals \else not \fi$
+
+\end{document}

@@ -23,7 +23,7 @@
 \URL[\hspace{4em}\LARGE The\ Manual]{./manual/}
 \end{lxNavbar}
 %============================================================
-
+\lxDocumentID{ltxsite}
 \begin{document}
 \label{top}
 \maketitle
@@ -227,7 +227,7 @@ or \htmlref{GitHub}{install.github}, as desired.
 For Debian-based systems (including Ubuntu), the deb repositories
 are generally used for software installation.
 Thanks to Peter Ralph and Atsuhito Kohda, \LaTeXML\ is available from Debian's
-unstable repositories.
+\emph{unstable} repositories (the version in the stable repositories may be quite old).
 
 \paragraph{Installing prebuilt}
 The following command will install \LaTeXML, including its required
@@ -245,10 +245,8 @@ sudo apt-get install   \
   libio-string-perl libjson-xs-perl libparse-recdescent-perl \
   liburi-perl libuuid-tiny-perl libwww-perl                  \
   libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl  \
-  texlive-latex-base imagemagick  perlmagick
+  texlive-latex-base imagemagick libimage-magick-perl
 \end{lstlisting}
-[\emph{NOTE} Recheck this dependency list when the port is done!]
-
 Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired.

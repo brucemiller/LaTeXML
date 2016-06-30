@@ -155,8 +155,18 @@ sub convertNode {
     $g->setAttribute(transform => "scale(1 -1) translate(-5,-10)");    # AD HOC
     my $new = $g->addNewChild($svgURI, 'foreignObject');
     # Totally wrong, but until we properly size things, we HAVE to give it SOME size!
-    $new->setAttribute(width  => 50);
-    $new->setAttribute(height => 20);
+    # Once we move to generate real svg:svg directly in LaTeX.pool,
+    # we'll be in a position to do this more correctly...
+    my $width  = 50;
+    my $height = 20;
+    # Just in case it's a graphic!
+    if (my $w = $node->getAttribute('imagewidth')) {
+      $width = $w; }
+    if (my $h = $node->getAttribute('imageheight')) {
+      $height = $h; }
+    $new->setAttribute(width    => $width);
+    $new->setAttribute(height   => $height);
+    $new->setAttribute(overflow => 'visible');
     $new->appendChild($node); }
   return; }
 

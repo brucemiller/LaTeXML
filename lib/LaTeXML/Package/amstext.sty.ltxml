@@ -19,7 +19,7 @@ use LaTeXML::Package;
 # See amsldoc
 #**********************************************************************
 
-DefConstructor('\text{}', "<ltx:text>#1</ltx:text>", mode => 'text');
+DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>", mode => 'text');
 
 # There's also redefinitions of \stepcounter & \addtocounter
 # that I can't quite seethe point of including here...

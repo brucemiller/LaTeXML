@@ -90,58 +90,16 @@ the content of the \elementref{XMath} element.</a:documentation>
   <!-- ====================================================================== -->
   <define name="XMath.attributes">
     <a:documentation>Common attributes for the various XMath elements.</a:documentation>
+    <ref name="Positionable.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>The role that this item plays in the Grammar.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="open">
-        <a:documentation>an open delimiter to enclose the object;
-commonly used on an \elementref{XMApp} to fence a subexpression.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="close">
-        <a:documentation>an close delimiter to enclose the object;</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
       <attribute name="enclose">
         <a:documentation>an enclose style to enclose the object
 with legitimate values being those of MathML's menclose notations;</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="argopen">
-        <a:documentation>an open delimiter to enclose the argument list,
-when this object is applied to arguments with \elementref{XMApp}.
-This attribute would typically be present on an \elementref{XMTok}
-being applied (\elementref{XMApp}) to arguments.
-The \attr{open} and \attr{close} would enclose the token,
-while \attr{argopen} and \attr{argclose} would enclose the arguments.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="argclose">
-        <a:documentation>a close delimiter to enclose the argument list,
-when this object is applied to arguments with \elementref{XMApp}.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="separators">
-        <a:documentation>character sequences used to separate arguments,
-when this object is applied to arguments with \elementref{XMApp}.
-The character sequences are separated by a single space;
-use a non-breaking space or similar if you want space separated arguments.
-There can be multiple character sequences for different argument positions:
-the first separates the first two arguements, the second separates the second and third;
-the last sequence is repeated if there aren't enough.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="punctuation">
-        <a:documentation>trailing (presumably non-semantic) punctuation.</a:documentation>
       </attribute>
     </optional>
     <optional>
@@ -249,7 +207,6 @@ stack should be arranged horizontally (the layout may depend on the operator).</
           <value>text</value>
           <value>script</value>
           <value>scriptscript</value>
-          <value>inline</value>
         </choice>
       </attribute>
     </optional>
@@ -342,16 +299,6 @@ The attributes are a subset of those for \elementref{XMTok}.</a:documentation>
     <optional>
       <attribute name="name">
         <a:documentation>The name of the kind of hint.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="width">
-        <a:documentation>The width of the space, if any.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="height">
-        <a:documentation>The height of the space, if any.</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -523,19 +470,14 @@ such as the OpenMath name.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="vattach">
-        <a:documentation>which row's baseline aligns with the container's baseline.</a:documentation>
-        <choice>
-          <value>top</value>
-          <value>middle</value>
-          <value>bottom</value>
-          <value>baseline</value>
-        </choice>
+      <attribute name="rowsep">
+        <a:documentation>the spacing between rows</a:documentation>
+        <ref name="Length.type"/>
       </attribute>
     </optional>
     <optional>
-      <attribute name="width">
-        <a:documentation>the desired width of the array.</a:documentation>
+      <attribute name="colsep">
+        <a:documentation>the spacing between columns</a:documentation>
         <ref name="Length.type"/>
       </attribute>
     </optional>

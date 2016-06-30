@@ -103,6 +103,7 @@ NewCounter('chapter',       'document',   idprefix => 'C',   nested => ['section
 NewCounter('section',       'chapter',    idprefix => 'S',   nested => ['subsection']);
 NewCounter('subsection',    'section',    idprefix => 'SS',  nested => ['subsubsection']);
 NewCounter('subsubsection', 'subsection', idprefix => 'SSS', nested => ['paragraph']);
+NewCounter('equation',      'document',   idprefix => 'E');
 
 map { Tag("ltx:$_", autoClose => 1) }
   qw(chapter section subsection subsubsection);
@@ -114,12 +115,12 @@ DefConstructor('\specialhead Until:\endspecialhead',
   properties => sub { RefStepID('chapter') });
 Let('\endspecialhead', '\relax');
 DefConstructor('\head Until:\endhead',
-  "<ltx:subsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:section refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('section') });
 DefMacro('\heading Until:\endheading', '\head#1\endhead');
 DefConstructor('\subhead Until:\endsubhead',
-  "<ltx:section refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:subsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('subsection') });
 DefMacro('\subheading Until:\endsubheading', '\subhead#1\endsubhead');
@@ -399,8 +400,8 @@ sub commaunbox {
 
 DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#class' _noautoclose='1'>#2</ltx:text>",
   properties => { class => sub { 'ltx_bib_' . ToString($_[1]); } });
-DefConstructor('\@bibitem@tag{}', "<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
-
+# Both a tag, and a key!
+DefConstructor('\@bibitem@tag{}', "^key='#1'<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
 DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {
     my ($gullet, $field, $text) = @_;
     my @tokens = $text->unlist;

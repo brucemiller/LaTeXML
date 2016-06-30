@@ -30,9 +30,10 @@ use strict;
 use warnings;
 use File::Spec;
 use File::Copy;
+use File::Which;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find &pathname_findall
+our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -52,9 +53,11 @@ our @EXPORT = qw( &pathname_find &pathname_findall
 ### my $SEP         = '/';                          # [CONSTANT]
 # Some indicators that this is not sufficient? (calls to libraries/externals???)
 # PRELIMINARY test, probably need to be even more careful
-my $SEP         = ($^O =~ /^(MSWin32|NetWare)$/ ? '\\' : '/');    # [CONSTANT]
-my $LITERAL_RE  = '(?:literal)(?=:)';                             # [CONSTANT]
-my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';                      # [CONSTANT]
+my $ISWINDOWS   = $^O =~ /^(MSWin|NetWare|cygwin)/i;
+my $SEP         = ($ISWINDOWS ? '\\' : '/');           # [CONSTANT]
+my $KPATHSEP    = ($ISWINDOWS ? ';' : ':');            # [CONSTANT]
+my $LITERAL_RE  = '(?:literal)(?=:)';                  # [CONSTANT]
+my $PROTOCOL_RE = '(?:https|http|ftp)(?=:)';           # [CONSTANT]
 
 #======================================================================
 # pathname_make(dir=>dir, name=>name, type=>type);
@@ -200,10 +203,9 @@ sub pathname_cwd {
   if (my $cwd = cwd()) {
     return pathname_canonical($cwd); }
   else {
-    Fatal('expected', 'cwd', undef,
-      "Could not determine current working directory (cwd)",
-      "Perhaps a problem with Perl's locale settings?");
-    return; } }
+    # Fatal not imported
+    die "INTERNAL: Could not determine current working directory (cwd)"
+      . "Perhaps a problem with Perl's locale settings?"; } }
 
 sub pathname_chdir {
   my ($directory) = @_;
@@ -287,9 +289,10 @@ sub pathname_findall {
 sub candidate_pathnames {
   my ($pathname, %options) = @_;
   my @dirs = ();
-  $pathname = pathname_canonical($pathname);
-  my ($pathdir, $name, $type) = pathname_split($pathname);
-  $name .= '.' . $type if $type;
+  $pathname = pathname_canonical($pathname) unless $pathname eq '*';
+  my ($pathdir, $name, $type) = ($pathname eq '*' ? (undef, '*', undef) : pathname_split($pathname));
+  $name .= '.' . $type if (defined $type) && ($type ne '');
+  # generate the set of search paths we'll use.
   if (pathname_is_absolute($pathname)) {
     push(@dirs, $pathdir); }
   else {
@@ -307,6 +310,8 @@ sub candidate_pathnames {
 
   # extract the desired extensions.
   my @exts = ();
+  if ($options{type}) {
+    push(@exts, '.' . $options{type}); }
   if ($options{types}) {
     foreach my $ext (@{ $options{types} }) {
       if ($ext eq '') { push(@exts, ''); }
@@ -322,13 +327,80 @@ sub candidate_pathnames {
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
     foreach my $ext (@exts) {
-      if ($ext eq '.*') {    # Unfortunately, we've got to test the file system NOW...
-        opendir(DIR, $dir) or next;    # ???
+      if ($name eq '*') {    # Unfortunately, we've got to test the file system NOW...
+        if ($ext eq '.*') {    # everything
+          opendir(DIR, $dir) or next;
+          push(@paths, map { pathname_concat($dir, $_) } grep { !/^\./ } readdir(DIR));
+          closedir(DIR); }
+        else {
+          opendir(DIR, $dir) or next;    # ???
+          push(@paths, map { pathname_concat($dir, $_) } grep { /\Q$ext\E$/ } readdir(DIR));
+          closedir(DIR); } }
+      elsif ($ext eq '.*') {             # Unfortunately, we've got to test the file system NOW...
+        opendir(DIR, $dir) or next;      # ???
         push(@paths, map { pathname_concat($dir, $_) } grep { /^\Q$name\E\.\w+$/ } readdir(DIR));
         closedir(DIR); }
       else {
         push(@paths, pathname_concat($dir, $name . $ext)); } } }
   return @paths; }
+
+#======================================================================
+our $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
+our $kpse_cache = undef;
+
+sub pathname_kpsewhich {
+  my (@candidates) = @_;
+  return unless $kpsewhich;
+  build_kpse_cache() unless $kpse_cache;
+  foreach my $file (@candidates) {
+    if (my $result = $$kpse_cache{$file}) {
+      return $result; } }
+  # If we've failed to read the cache, try directly calling kpsewhich
+  # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
+  my $files = join(' ', @candidates);
+  if ($kpsewhich && (my $result = `"$kpsewhich" $files`)) {
+    if ($result =~ /^\s*(.+?)\s*\n/s) {
+      return $1; } }
+  return; }
+
+sub build_kpse_cache {
+  $kpse_cache = {};    # At least we've tried.
+  return unless $kpsewhich;
+       # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
+  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
+  # These are directories which contain the tex related files we're interested in.
+  # (but they're typically below where the ls-R indexes are!)
+  my $texpaths = `"$kpsewhich" --show-path tex`; chomp($texpaths);
+  my @filters = ();
+  foreach my $path (split(/$KPATHSEP/, $texpaths)) {
+    $path =~ s/^!!//; $path =~ s|//+$|/|;
+    push(@filters, $path) if -d $path; }
+  $texmf =~ s/^["']//; $texmf =~ s/["']$//;
+  $texmf =~ s/^\s*\\\{(.+?)}\s*/$1/s;
+  my @dirs = split(/,/, $texmf);
+  foreach my $dir (@dirs) {
+    $dir =~ s/^!!//;
+    # Presumably if no ls-R, we can ignore the directory?
+    if (-f "$dir/ls-R") {
+      my $LSR;
+      my $subdir;
+      my $skip = 0;    # whether to skip entries in the current subdirectory.
+      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
+      while (<$LSR>) {
+        chop;
+        next unless $_;
+        if (/^%/) { }
+        elsif (/^(.*?):$/) {    # Move to a new subdirectory
+          $subdir = $1;
+          $subdir =~ s|^\./||;    # remove prefix
+          my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
+          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; }    # check if one of the TeX paths
+        elsif (!$skip) {
+          # Is it safe to use '/' here?
+          my $sep = '/';
+          $$kpse_cache{$_} = join($sep, $dir, $subdir, $_); } }
+      close($LSR); } }
+  return; }
 
 #======================================================================
 1;

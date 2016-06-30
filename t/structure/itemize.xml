@@ -8,19 +8,19 @@
     <title><tag close=" ">1</tag>Itemize</title>
     <para xml:id="S1.p1">
       <itemize xml:id="I1">
-        <item xml:id="I1.i1" labels="LABEL:it:one">
+        <item labels="LABEL:it:one" xml:id="I1.i1">
           <tag>•</tag>
           <para xml:id="I1.i1.p1">
             <p>One, but not <ref labelref="LABEL:en:one"/></p>
           </para>
         </item>
-        <item xml:id="I1.i2" labels="LABEL:it:two">
+        <item labels="LABEL:it:two" xml:id="I1.i2">
           <tag>•</tag>
           <para xml:id="I1.i2.p1">
             <p>Two, but not <ref labelref="LABEL:en:two"/></p>
           </para>
         </item>
-        <item xml:id="I1.i3" labels="LABEL:it:three">
+        <item labels="LABEL:it:three" xml:id="I1.i3">
           <tag>•</tag>
           <para xml:id="I1.i3.p1">
             <p>Three, but not <ref labelref="LABEL:en:three"/></p>
@@ -33,19 +33,19 @@
     <title><tag close=" ">2</tag>Enumerate</title>
     <para xml:id="S2.p1">
       <enumerate xml:id="I2">
-        <item frefnum="1." refnum="1" xml:id="I2.i1" labels="LABEL:en:one">
+        <item frefnum="1." labels="LABEL:en:one" refnum="1" xml:id="I2.i1">
           <tag>1.</tag>
           <para xml:id="I2.i1.p1">
             <p>One , but not <ref labelref="LABEL:de:one"/></p>
           </para>
         </item>
-        <item frefnum="2." refnum="2" xml:id="I2.i2" labels="LABEL:en:two">
+        <item frefnum="2." labels="LABEL:en:two" refnum="2" xml:id="I2.i2">
           <tag>2.</tag>
           <para xml:id="I2.i2.p1">
             <p>Two , but not <ref labelref="LABEL:de:two"/></p>
           </para>
         </item>
-        <item frefnum="3." refnum="3" xml:id="I2.i3" labels="LABEL:en:three">
+        <item frefnum="3." labels="LABEL:en:three" refnum="3" xml:id="I2.i3">
           <tag>3.</tag>
           <para xml:id="I2.i3.p1">
             <p>Three , but not <ref labelref="LABEL:de:three"/></p>
@@ -58,19 +58,19 @@
     <title><tag close=" ">3</tag>Description</title>
     <para xml:id="S3.p1">
       <description xml:id="I3">
-        <item refnum="One" xml:id="I3.ix1" labels="LABEL:de:one">
+        <item labels="LABEL:de:one" refnum="One" xml:id="I3.ix1">
           <tag>One</tag>
           <para xml:id="I3.ix1.p1">
             <p>, but not <ref labelref="LABEL:it:one"/></p>
           </para>
         </item>
-        <item refnum="Two" xml:id="I3.ix2" labels="LABEL:de:two">
+        <item labels="LABEL:de:two" refnum="Two" xml:id="I3.ix2">
           <tag>Two</tag>
           <para xml:id="I3.ix2.p1">
             <p>, but not <ref labelref="LABEL:it:two"/></p>
           </para>
         </item>
-        <item refnum="Three" xml:id="I3.ix3" labels="LABEL:de:three">
+        <item labels="LABEL:de:three" refnum="Three" xml:id="I3.ix3">
           <tag>Three</tag>
           <para xml:id="I3.ix3.p1">
             <p>, but not <ref labelref="LABEL:it:three"/></p>
@@ -162,6 +162,208 @@
           </para>
         </item>
       </enumerate>
+    </para>
+  </section>
+  <section refnum="5" xml:id="S5">
+    <title><tag close=" ">5</tag>Spacing</title>
+    <para xml:id="S5.p1">
+      <p>Taller:</p>
+      <itemize xml:id="I5">
+        <item xml:id="I5.i1">
+          <tag>•</tag>
+          <para xml:id="I5.i1.p1">
+            <p>a</p>
+          </para>
+        </item>
+        <item itemsep="20.0pt" xml:id="I5.i2">
+          <tag>•</tag>
+          <para xml:id="I5.i2.p1">
+            <p>b</p>
+          </para>
+        </item>
+        <item itemsep="20.0pt" xml:id="I5.i3">
+          <tag>•</tag>
+          <para xml:id="I5.i3.p1">
+            <p>c</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S5.p2">
+      <p>Taller &amp; Taller:</p>
+      <itemize xml:id="I6">
+        <item xml:id="I6.i1">
+          <tag>•</tag>
+          <para xml:id="I6.i1.p1">
+            <p>a</p>
+          </para>
+        </item>
+        <item itemsep="20.0pt" xml:id="I6.i2">
+          <tag>•</tag>
+          <para xml:id="I6.i2.p1">
+            <p>b</p>
+          </para>
+        </item>
+        <item itemsep="30.0pt" xml:id="I6.i3">
+          <tag>•</tag>
+          <para xml:id="I6.i3.p1">
+            <p>c</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S5.p3">
+      <p>Itemsep outside has no effect:</p>
+      <itemize xml:id="I7">
+        <item xml:id="I7.i1">
+          <tag>•</tag>
+          <para xml:id="I7.i1.p1">
+            <p>a</p>
+          </para>
+        </item>
+        <item xml:id="I7.i2">
+          <tag>•</tag>
+          <para xml:id="I7.i2.p1">
+            <p>b</p>
+          </para>
+        </item>
+        <item xml:id="I7.i3">
+          <tag>•</tag>
+          <para xml:id="I7.i3.p1">
+            <p>c</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+  </section>
+  <section refnum="6" xml:id="S6">
+    <title><tag close=" ">6</tag>Mixed tags</title>
+    <para xml:id="S6.p1">
+      <itemize xml:id="I8">
+        <item xml:id="I8.i1">
+          <tag>•</tag>
+          <para xml:id="I8.i1.p1">
+            <p>a</p>
+          </para>
+        </item>
+        <item xml:id="I8.i2">
+          <tag>•</tag>
+          <para xml:id="I8.i2.p1">
+            <p>b</p>
+          </para>
+        </item>
+        <item refnum="foo" xml:id="I8.ix1">
+          <tag>foo</tag>
+          <para xml:id="I8.ix1.p1">
+            <p>bar</p>
+          </para>
+        </item>
+        <item xml:id="I8.i3">
+          <tag>•</tag>
+          <para xml:id="I8.i3.p1">
+            <p>c</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S6.p2">
+      <enumerate xml:id="I9">
+        <item frefnum="1." refnum="1" xml:id="I9.i1">
+          <tag>1.</tag>
+          <para xml:id="I9.i1.p1">
+            <p>a</p>
+          </para>
+        </item>
+        <item frefnum="2." refnum="2" xml:id="I9.i2">
+          <tag>2.</tag>
+          <para xml:id="I9.i2.p1">
+            <p>b</p>
+          </para>
+        </item>
+        <item refnum="foo" xml:id="I9.ix1">
+          <tag>foo</tag>
+          <para xml:id="I9.ix1.p1">
+            <p>bar</p>
+          </para>
+        </item>
+        <item frefnum="3." refnum="3" xml:id="I9.i3">
+          <tag>3.</tag>
+          <para xml:id="I9.i3.p1">
+            <p>c</p>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+  <section refnum="7" xml:id="S7">
+    <title><tag close=" ">7</tag>Generalized Lists</title>
+    <para xml:id="S7.p1">
+      <itemize>
+        <item frefnum="$\star$" refnum="1" xml:id="I10.i1">
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i1.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <para xml:id="I10.i1.p1">
+            <p>First item.</p>
+          </para>
+        </item>
+        <item frefnum="$\star$" refnum="2" xml:id="I10.i2">
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i2.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <para xml:id="I10.i2.p1">
+            <p>Second.</p>
+          </para>
+        </item>
+        <item refnum="foo" xml:id="I10.ix1">
+          <tag>foo</tag>
+          <para xml:id="I10.ix1.p1">
+            <p>bar</p>
+          </para>
+        </item>
+        <item frefnum="$\star$" refnum="3" xml:id="I10.i3">
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i3.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <para xml:id="I10.i3.p1">
+            <p>And the third.</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S7.p2">
+      <itemize>
+        <item frefnum="7 - 1" refnum="1" xml:id="exer1">
+          <tag><text font="bold">7 - 1</text></tag>
+          <para xml:id="exer1.p1">
+            <p>First item.</p>
+          </para>
+        </item>
+        <item frefnum="7 - 2" refnum="2" xml:id="exer2">
+          <tag><text font="bold">7 - 2</text></tag>
+          <para xml:id="exer2.p1">
+            <p>Second.</p>
+          </para>
+        </item>
+        <item refnum="foo" xml:id="exerx1">
+          <tag>foo</tag>
+          <para xml:id="exerx1.p1">
+            <p>bar</p>
+          </para>
+        </item>
+        <item frefnum="7 - 3" refnum="3" xml:id="exer3">
+          <tag><text font="bold">7 - 3</text></tag>
+          <para xml:id="exer3.p1">
+            <p>And the third.</p>
+          </para>
+        </item>
+      </itemize>
     </para>
   </section>
 </document>

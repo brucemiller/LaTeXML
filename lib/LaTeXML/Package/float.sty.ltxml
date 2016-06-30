@@ -22,7 +22,8 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Choose the current float style (plain, plaintop, boxed, ruled) Ignorable
-DefMacro('\floatstyle{}', '');
+DefMacro('\float@style',  '');
+DefMacro('\floatstyle{}', '\def\float@style{#1}');
 # \restylefloat{style}  Ignorable
 DefMacro('\restylefloat OptionalMatch:* {}', undef);
 # \floatplacement{style}{placement}  Ignorable
@@ -34,12 +35,16 @@ DefMacro('\listof{}{}', undef);
 # \floatname{type}{name}  Ignorable, but tempting
 DefMacro('\floatname{}{}', '\@namedef{fname@#1}{#2}');
 
+our %float_outerframe = (ruled => 'top');
+our %float_innerframe = (ruled => 'topbottom', boxed => 'rectangle');
 DefPrimitive('\newfloat{}{}{}[]', sub {
     my ($gullet, $type, $placement, $auxext, $within) = @_;
     $type   = ToString($type);
     $within = ToString($within);
+    my $style = ToString(Digest(T_CS('\float@style')));
     NewCounter($type, $within);
-    DefMacro('\the' . $type, '\the' . $within . '.\arabic{' . $type . '}') if $within;
+    DefMacroI('\the' . $type, undef, '\the' . $within . '.\arabic{' . $type . '}') if $within;
+    DefMacroI('\fnum@' . $type, undef, '\fname@' . $type . '\nobreakspace\the' . $type);
     if (!LookupDefinition(T_CS('\fname@' . ToString($type)))) {
       DefMacroI('\fname@' . $type, undef, $type); }
     DefEnvironment("{$type}[]",
@@ -47,15 +52,28 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+      afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
+      afterConstruct => sub { addFloatFrames($_[0], $style); });
     DefEnvironment("{$type*}[]",
 "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+      afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
+      afterConstruct => sub { addFloatFrames($_[0], $style); });
 });
 ## ??? DefMacro('\plain','');
+
+sub addFloatFrames {
+  my ($document, $style) = @_;
+  my $float = $document->getNode->lastChild;
+  if (my $outer = $style && $float_outerframe{$style}) {
+    $document->setAttribute($float, framed => $outer); }
+  if (my $inner = $style && $float_innerframe{$style}) {
+    my ($body) = grep { $document->getNodeQName($_) !~ /^ltx:(?:toc)?caption$/ } $float->childNodes;
+    if ($body) {
+      $document->setAttribute($body, framed => $inner); } }
+  return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

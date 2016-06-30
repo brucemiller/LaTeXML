@@ -33,25 +33,42 @@ use LaTeXML::Package;
 LoadClass('article');
 ProcessOptions();
 
+# Various common things often defined or included by unique classes
+# \institute,, \inst  from inst_support
+RequirePackage('inst_support');
+RequirePackage('epsf');
+# One of the graphics|graphicx packages are often included, leading to undefined \includegraphics
+# However, they have different parameter patterns! But, graphicx seems to be included
+# by random cls files by over 10 to 1, so we'll just load graphicx and hope for the best.
+# The alternative would be to write a version that sniffed the arguments...
+RequirePackage('graphicx');
+
+# natbib is also often used, but reportedly clashes with cite.sty
+# We'll autoload natbib if it hasn't already been loaded, and if any of its obvious macros are used.
+foreach my $trigger (qw(citet citep citealt citealp citenum citeauthor citefullauthor
+  citeyear citeyearpar citeauthoryear setcitestyle bibpunct)) {
+  DefAutoload($trigger, 'natbib.sty.ltxml'); }
+
 DefEnvironment('{frontmatter}', '#body');
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
 DefRegister('\authorrunning', Tokens());
+Let('\runningauthor', '\authorrunning');
+Let('\runauthor',     '\authorrunning');
 
 DefMacro('\runningtitle{}', Tokens());
+Let('\runninghead', '\runningtitle');
 DefMacro('\shortauthor{}',  Tokens());
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
 
 DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
-DefMacro('\email{}',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
-DefMacro('\ead{}[email]', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
-DefMacro('\emailname',    'E-mail');
-DefMacro('\speaker{}',    '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
-
-# \institute,, \inst  from inst_support
-RequirePackage('inst_support');
+DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
+Let('\emailaddr', '\email');
+DefMacro('\ead{}[]',   '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{#2}}');
+DefMacro('\emailname', 'E-mail');
+DefMacro('\speaker{}', '\@add@frontmatter{ltx:creator}[role=speaker]{\@personname{#1}}');
 
 # like from aas
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");

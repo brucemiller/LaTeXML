@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
 our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
@@ -82,8 +83,17 @@ sub beDigested {
   return $stomach->digest($self); }
 
 sub neutralize {
+  my ($self, @extraspecials) = @_;
+  return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
+
+sub isBalanced {
   my ($self) = @_;
-  return Tokens(map { $_->neutralize } $self->unlist); }
+  my $level = 0;
+  foreach my $t (@$self) {
+    my $cc = $$t[1];    # INLINE
+    $level++ if $cc == CC_BEGIN;
+    $level-- if $cc == CC_END; }
+  return $level == 0; }
 
 #======================================================================
 

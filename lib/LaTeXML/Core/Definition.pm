@@ -87,6 +87,23 @@ sub invocation {
   return ($$self{cs}, ($params ? $params->revertArguments(@args) : ())); }
 
 #======================================================================
+# Tracing support
+sub tracingCSName {
+  my ($self) = @_;
+  my $parameters = $$self{parameters};
+  return ToString($self->getCSName)
+    # Show parameter string too
+    . ($parameters ? ' ' . ToString($parameters) : '')
+    # And if this was \let to something show the name it was called by
+    . ($LaTeXML::CURRENT_TOKEN && !$$self{cs}->equals($LaTeXML::CURRENT_TOKEN)
+    ? ' [for ' . ToString($LaTeXML::CURRENT_TOKEN) . ']' : ''); }
+
+sub tracingArgs {
+  my ($self, @args) = @_;
+  my $i = 1;
+  return join("\n", map { '#' . $i++ . '<-' . ToString($_) } @args); }
+
+#======================================================================
 # Profiling support
 #======================================================================
 # If the value PROFILING is true, we'll collect some primitive profiling info.

@@ -2,7 +2,7 @@
 <?latexml class="article"?>
 <?latexml package="makeidx"?>
 <?latexml package="listings"?>
-<?latexml package="color"?>
+<?latexml package="color" options="dvipsnames"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -13,1568 +13,574 @@
     <para xml:id="S1.p1">
       <p>This document contains the following listings:</p>
     </para>
-    <TOC name="Listings" role="listings" select="ltx:listing"/>
+    <TOC name="Listings" role="listings" select="role:listing"/>
   </section>
   <section refnum="2" xml:id="S2">
     <title><tag close=" ">2</tag>Inline Listings</title>
     <para xml:id="S2.p1">
-      <p>Various delimiters: <text class="ltx_lstlisting">a_word</text>,
-<text class="ltx_lstlisting">a_word</text>, <text class="ltx_lstlisting">a_word</text>,
-<text class="ltx_lstlisting">a_word</text> and even <text class="ltx_lstlisting">a_word</text> done.</p>
+      <p>Various delimiters: <text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text>,
+<text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text>, <text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text>,
+<text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text> and even <text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text> done.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Indirectly: <text class="ltx_lst_numbers_left ltx_lstlisting ltx_lst_identifier">a_word</text>;
+and with messed up braces <text class="ltx_lst_numbers_left ltx_lstlisting"><text class="ltx_lst_identifier">foo</text><text class="ltx_lst_space"> </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bar</text></text>.</p>
     </para>
   </section>
   <section refnum="3" xml:id="S3">
     <title><tag close=" ">3</tag>An untyped Listing</title>
     <para xml:id="S3.p1">
       <p>No options, language, etc</p>
-      <listingblock class="ltx_lstlisting" data="stuff1&#10;stuff2&#10;stuff3" xml:id="LSTx1">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line">stuff1</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line">stuff2</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line">stuff3</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <listing class="ltx_lst_numbers_left ltx_lstlisting" data="c3R1ZmYxCnN0dWZmMgpzdHVmZjM=&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_identifier">stuff1</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier">stuff2</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_identifier">stuff3</text></listingline>
+      </listing>
     </para>
   </section>
   <section refnum="4" xml:id="S4">
-    <title><tag close=" ">4</tag>A Pascal Listing</title>
+    <title><tag close=" ">4</tag>Some C</title>
     <para xml:id="S4.p1">
-      <p>A listing portion:</p>
-      <listingblock class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');" xml:id="LSTx2">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">4</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <listing class="ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting" data="I2RlZmluZSBFWEFNUExFIHdoaWNod2hhdAp4ID0gImZvbyI7CmJyZWFrOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_directive" font="typewriter">#define</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier" font="slanted">EXAMPLE</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier" font="slanted">whichwhat</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier" font="slanted">x</text><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_string">”foo”</text>;</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_keyword" font="bold">break</text>;</listingline>
+      </listing>
     </para>
-    <para xml:id="S4.p2">
-      <p>A numbered listing:</p>
-      <listingblock class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;&#9;begin&#10;&#9;&#9;{ do nothing }&#10;&#9;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');" xml:id="LSTx3">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text fontsize="50%">1</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space">␣</text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space">␣</text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space">␣</text>0<text class="ltx_lst_space">␣</text><text class="ltx_lst_keyword" font="bold">do</text></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum"/>
-            <td>
-              <text class="ltx_lst_line">
-                <text class="ltx_lst_space">␣␣␣␣</text>
-                <text class="ltx_lst_keyword" font="bold">begin</text>
-              </text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text fontsize="50%">3</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">␣␣␣␣␣␣␣␣</text>{<text class="ltx_lst_space" font="italic">␣</text><text font="italic">do<text class="ltx_lst_space">␣</text>nothing<text class="ltx_lst_space">␣</text></text>}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum"/>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">␣␣␣␣</text><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text fontsize="50%">5</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"/>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum"/>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(<text font="typewriter" color="#FF0000">'case<text class="ltx_lst_space">␣</text>insensitive'</text>);</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text fontsize="50%">7</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(<text font="typewriter" color="#FF0000">'long<text class="ltx_lst_space">␣</text>''<text class="ltx_lst_space">␣</text>string'</text>);</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum"/>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">WritE</text>(<text font="typewriter" color="#FF0000">'Pascal<text class="ltx_lst_space">␣</text>keywords.'</text>);</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
-    </para>
-    <para xml:id="S4.p3">
-      <p>A Titled listing:</p>
-    </para>
-    <listing class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;Write('case insensitive');" xml:id="LSTx4">
-      <toccaption>A bit of Pascal</toccaption>
-      <caption>A bit of Pascal</caption>
-      <tabular>
-        <tr>
-          <td class="ltx_lst_linenum">1</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">2</td>
-          <td>
-            <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">3</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">4</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">5</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">Write</text>(’case<text class="ltx_lst_space">␣</text>insensitive’);</text>
-          </td>
-        </tr>
-      </tabular>
-    </listing>
-    <para xml:id="S4.p4">
-      <p>A Captioned listing (known as Listing <ref labelref="LABEL:pascallisting"/>) :</p>
-    </para>
-    <listing class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;" refnum="1" xml:id="LST1" labels="LABEL:pascallisting">
-      <toccaption><tag close=" ">1</tag>Another bit of Pascal</toccaption>
-      <caption><tag close=": ">Listing 1</tag>Another bit of Pascal</caption>
-      <tabular>
-        <tr>
-          <td class="ltx_lst_linenum">100</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">101</td>
-          <td>
-            <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">102</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">103</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-          </td>
-        </tr>
-      </tabular>
-    </listing>
   </section>
   <section refnum="5" xml:id="S5">
-    <title><tag close=" ">5</tag>An Environment</title>
+    <title><tag close=" ">5</tag>A Pascal Listing</title>
     <para xml:id="S5.p1">
-      <listingblock class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;" xml:id="LSTx5">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">4</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <p>A listing portion:</p>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOwoKV3JpdGUo&#10;J2Nhc2UgaW5zZW5zaXRpdmUnKTsKV3JpdGUoJ2xvbmcgJycgc3RyaW5nJyk7CldyaXRFKCdQYXNj&#10;YWwga2V5d29yZHMuJyk7&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
     </para>
     <para xml:id="S5.p2">
-      <listingblock class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;" xml:id="LSTx6">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#FF0000">1</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#FF0000">2</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#FF0000">3</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#FF0000">4</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <p>A numbered listing:</p>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCgliZWdpbgoJCXsgZG8gbm90aGluZyB9CgllbmQ7CgpXcml0&#10;ZSgnY2FzZSBpbnNlbnNpdGl2ZScpOwpXcml0ZSgnbG9uZyAnJyBzdHJpbmcnKTsKV3JpdEUoJ1Bh&#10;c2NhbCBrZXl3b3Jkcy4nKTs=&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag><text fontsize="50%">1</text></tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space">␣</text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space">␣</text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space">␣</text>0<text class="ltx_lst_space">␣</text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag/><text class="ltx_lst_space">␣␣␣␣</text><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag><text fontsize="50%">3</text></tag><text class="ltx_lst_space">␣␣␣␣␣␣␣␣</text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic">␣</text><text font="italic">do<text class="ltx_lst_space">␣</text>nothing<text class="ltx_lst_space">␣</text></text>}</text></listingline>
+        <listingline><tag/><text class="ltx_lst_space">␣␣␣␣</text><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+        <listingline><tag><text fontsize="50%">5</text></tag></listingline>
+        <listingline><tag/><text class="ltx_lst_keyword" font="bold">Write</text>(<text class="ltx_lst_string" color="#FF0000" font="typewriter">'case<text class="ltx_lst_space">␣</text>insensitive'</text>);</listingline>
+        <listingline><tag><text fontsize="50%">7</text></tag><text class="ltx_lst_keyword" font="bold">Write</text>(<text class="ltx_lst_string" color="#FF0000" font="typewriter">'long<text class="ltx_lst_space">␣</text>''<text class="ltx_lst_space">␣</text>string'</text>);</listingline>
+        <listingline><tag/><text class="ltx_lst_keyword" font="bold">WritE</text>(<text class="ltx_lst_string" color="#FF0000" font="typewriter">'Pascal<text class="ltx_lst_space">␣</text>keywords.'</text>);</listingline>
+      </listing>
     </para>
     <para xml:id="S5.p3">
-      <listingblock class="ltx_lstlisting ltx_lst_language_Pascal" data="for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;" xml:id="LSTx7">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#0000FF">1</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text>i:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#0000FF">2</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line ltx_lst_keyword" font="bold">begin</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#0000FF">3</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">
-              <text color="#0000FF">4</text>
-            </td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">end</text>;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <p>A Titled listing:</p>
     </para>
+    <float class="ltx_lstlisting" role="listing" xml:id="LSTx1">
+      <toccaption>A bit of Pascal</toccaption>
+      <caption>A bit of Pascal</caption>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOwpXcml0ZSgn&#10;Y2FzZSBpbnNlbnNpdGl2ZScpOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+        <listingline><tag>5</tag><text class="ltx_lst_keyword" font="bold">Write</text>(<text class="ltx_lst_string">’case<text class="ltx_lst_space">␣</text>insensitive’</text>);</listingline>
+      </listing>
+    </float>
+    <para xml:id="S5.p4">
+      <p>A Captioned listing (known as Listing <ref labelref="LABEL:pascallisting"/>) :</p>
+    </para>
+    <float class="ltx_lstlisting" labels="LABEL:pascallisting" refnum="1" role="listing" xml:id="LST1">
+      <toccaption><tag close=" ">1</tag>Another bit of Pascal</toccaption>
+      <caption><tag close=": ">Listing 1</tag>Another bit of Pascal</caption>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>100</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>101</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>102</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>103</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
+    </float>
   </section>
   <section refnum="6" xml:id="S6">
-    <title><tag close=" ">6</tag>Listing with Math</title>
+    <title><tag close=" ">6</tag>An Environment</title>
     <para xml:id="S6.p1">
-      <listingblock class="ltx_lstlisting ltx_lst_language_c" data="// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];" xml:id="LSTx8">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line" color="#00FF00">//calculate <Math mode="inline" xml:id="LSTx8.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line">a[i][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a[j][j]/a[i][j];</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
     </para>
     <para xml:id="S6.p2">
-      <listingblock class="ltx_lstlisting ltx_lst_language_c" data="// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];" xml:id="LSTx9">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text font="italic">//</text>calculate <Math mode="inline" xml:id="LSTx9.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post6"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line">a[i][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a[j][j]/a[i][j];</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_right ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag><text color="#FF0000">1</text></tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag><text color="#FF0000">2</text></tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag><text color="#FF0000">3</text></tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag><text color="#FF0000">4</text></tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
     </para>
     <para xml:id="S6.p3">
-      <listingblock class="ltx_lstlisting ltx_lst_language_c" data="// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} =&#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a $x^2$ math&quot;;" xml:id="LSTx10">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line"><Math mode="inline" xml:id="LSTx10.m2" tex="a_{ij}=a_{jj}/a{ij}" text="a _ (i * j) = (a _ (j * j) / a) * i * j"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post5"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMApp><XMTok mathstyle="inline" meaning="divide" role="MULOP">/</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post5"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp><XMTok role="UNKNOWN" font="italic">a</XMTok></XMApp><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp></XMath></Math>;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" xml:id="LSTx10.m3" tex="a_{ij}=\sin x" text="a _ (i * j) = sine@(x)"><XMath><XMApp><XMTok meaning="equals" role="RELOP">=</XMTok><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN" font="italic">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN" font="italic">i</XMTok><XMTok role="UNKNOWN" font="italic">j</XMTok></XMApp></XMApp><XMApp><XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok><XMTok role="UNKNOWN" font="italic">x</XMTok></XMApp></XMApp></XMath></Math></text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">4</td>
-            <td>
-              <text class="ltx_lst_line">a[i,j]=sin(x)</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">5</td>
-            <td>
-              <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space">␣</text>word”;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">6</td>
-            <td>
-              <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space">␣</text><Math mode="inline" xml:id="LSTx10.m4" tex="x^{2}" text="x ^ 2"><XMath><XMApp><XMTok role="SUPERSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN" font="italic">x</XMTok><XMTok meaning="2" role="NUMBER">2</XMTok></XMApp></XMath></Math><text class="ltx_lst_space">␣</text>math”;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
-    </para>
-    <para xml:id="S6.p4">
-      <listingblock class="ltx_lstlisting ltx_lst_language_c" data="// calculate %$a_{ij}$%&#10;a_{ij}&#10; = a_{jj}/a{ij};" xml:id="LSTx11">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>&lt;<Math mode="inline" xml:id="LSTx11.m1" tex="a_{ij}" text="a _ (i * j)"><XMath><XMApp><XMTok role="SUBSCRIPTOP" scriptpos="post7"/><XMTok role="UNKNOWN">a</XMTok><XMApp><XMTok meaning="times" role="MULOP">⁢</XMTok><XMTok role="UNKNOWN">i</XMTok><XMTok role="UNKNOWN">j</XMTok></XMApp></XMApp></XMath></Math>&gt;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line">a_{ij}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a_{jj}/a{ij};</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
-    </para>
-    <para xml:id="S6.p5">
-      <listingblock class="ltx_lstlisting ltx_lst_language_c" data="// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} =&#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a \&quot;string&quot;;&#10;foo=&quot;a $x^2$ math&quot;;" xml:id="LSTx12">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">2</td>
-            <td>
-              <text class="ltx_lst_line">$a_{ij}</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">3</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a_{jj}/a{ij}$;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">4</td>
-            <td>
-              <text class="ltx_lst_line" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">5</td>
-            <td>
-              <text class="ltx_lst_line">\sin<text class="ltx_lst_space"> </text>x$</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">6</td>
-            <td>
-              <text class="ltx_lst_line">a[i,j]=sin(x)</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">7</td>
-            <td>
-              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>word"</text>;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">8</td>
-            <td>
-              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>\"string"</text>;</text>
-            </td>
-          </tr>
-          <tr>
-            <td class="ltx_lst_linenum">9</td>
-            <td>
-              <text class="ltx_lst_line">foo=<text font="typewriter">"a<text class="ltx_lst_space">␣</text>$x^2$<text class="ltx_lst_space">␣</text>math"</text>;</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_right ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag><text color="#0000FF">1</text></tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag><text color="#0000FF">2</text></tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag><text color="#0000FF">3</text></tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag><text color="#0000FF">4</text></tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
     </para>
   </section>
   <section refnum="7" xml:id="S7">
-    <title><tag close=" ">7</tag>A Perl Listing</title>
-    <listing class="ltx_lstlisting ltx_lst_language_perl" data="# -*- CPERL -*-&#10;package LaTeXML::Package::Pool;&#10;use strict;&#10;use LaTeXML::Package;&#10;&#10;DefConstructor('\container{}',&quot;&lt;ltx:special&gt;#1&lt;/ltx:special&gt;&quot;);&#10;DefConstructor('\foo',&quot;&lt;ltx:not-defined/&gt;&quot;);&#10;&#10;1;&#10;" xml:id="LSTx13">
-      <toccaption>any.sty.ltxml</toccaption>
-      <tabular>
-        <tr>
-          <td class="ltx_lst_linenum">1</td>
-          <td>
-            <text class="ltx_lst_line" font="italic">#<text class="ltx_lst_space"> </text>-*-<text class="ltx_lst_space"> </text>CPERL<text class="ltx_lst_space"> </text>-*-</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">2</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">package</text><text class="ltx_lst_space"> </text>LaTeXML::Package::Pool;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">3</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">use</text><text class="ltx_lst_space"> </text>strict;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">4</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">use</text><text class="ltx_lst_space"> </text>LaTeXML::Package;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">5</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">6</td>
-          <td>
-            <text class="ltx_lst_line">DefConstructor(’\container{}’,”&lt;ltx:special&gt;#1&lt;/ltx:special&gt;”);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">7</td>
-          <td>
-            <text class="ltx_lst_line">DefConstructor(’\foo’,”&lt;ltx:not-defined/&gt;”);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">8</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">9</td>
-          <td>
-            <text class="ltx_lst_line">1;</text>
-          </td>
-        </tr>
-      </tabular>
-    </listing>
+    <title><tag close=" ">7</tag>Framing and such</title>
+    <para xml:id="S7.p1">
+      <listing backgroundcolor="#FF5EFF" class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain" framecolor="#FF0000" framed="rectangle">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
+    </para>
+    <para xml:id="S7.p2">
+      <listing backgroundcolor="#FFFF00" class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain" framed="rectangle">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
+    </para>
+    <para xml:id="S7.p3">
+      <listing class="ltx_lst_language_Pascal ltx_lst_numbers_left ltx_lstlisting" data="Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOw==&#10;" dataencoding="base64" datatype="text/plain" framed="topbottom">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_keyword" font="bold">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword" font="bold">do</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">begin</text></listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space">  </text><text class="ltx_lst_comment">{<text class="ltx_lst_space" font="italic"> </text><text font="italic">do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text></text>}</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">end</text>;</listingline>
+      </listing>
+    </para>
+    <float class="ltx_lstlisting" refnum="2" role="listing" xml:id="LST2">
+      <toccaption><tag close=" ">2</tag>A C language listing</toccaption>
+      <caption><tag close=": ">Listing 2</tag>A C language listing</caption>
+      <listing backgroundcolor="#E6E6E6" class="ltx_lst_language_C ltx_lst_numbers_left ltx_lstlisting" data="I2RlZmluZSBFWEFNUExFIHdoaWNod2hhdAp4ID0gImZvbyI7CmJyZWFrOw==&#10;" dataencoding="base64" datatype="text/plain" framed="topbottom">
+        <listingline><tag>1</tag><text class="ltx_lst_directive" font="typewriter">#define</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier" font="slanted">EXAMPLE</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier" font="slanted">whichwhat</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier" font="slanted">x</text><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_string">”foo”</text>;</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_keyword" font="bold">break</text>;</listingline>
+      </listing>
+    </float>
   </section>
   <section refnum="8" xml:id="S8">
-    <title><tag close=" ">8</tag>A Recursive TeX listing</title>
-    <listing class="ltx_lstlisting ltx_lst_language_TeX_LaTeX" data="\documentclass{article}&#10;\usepackage{makeidx}&#10;\makeindex&#10;\usepackage{listings}&#10;\usepackage{color}&#10;\begin{document}&#10;\lstset{numbers=left}&#10;&#10;\section{Introduction}&#10;This document contains the following listings:&#10;\lstlistoflistings&#10;&#10;\section{Inline Listings}&#10;Various delimiters: \lstinline{a_word},&#10;\lstinline!a_word!, \lstinline Aa_wordA,&#10;\lstinline&amp;a_word&amp; and even \lstinline^a_word^ done.&#10;&#10;\section{An untyped Listing}&#10;No options, language, etc&#10;\begin{lstlisting}&#10;stuff1&#10;stuff2&#10;stuff3&#10;\end{lstlisting}&#10;&#10;\section{A Pascal Listing}&#10;A listing portion:&#10;\begin{lstlisting}[language=Pascal,firstline=2,lastline=5,caption={}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A numbered listing:&#10;\begin{lstlisting}[language=Pascal,numbers=left, numberstyle=\tiny, stepnumber=2,stringstyle=\color{red}\ttfamily,showspaces,tabsize=4]&#10;for i:=maxint to 0 do&#10;&#9;begin&#10;&#9;&#9;{ do nothing }&#10;&#9;end;&#10;&#10;Write('case insensitive');&#10;Write('long '' string');&#10;WritE('Pascal keywords.');&#10;\end{lstlisting}&#10;&#10;A Titled listing:&#10;\begin{lstlisting}[language=Pascal,title={A bit of Pascal}]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;Write('case insensitive');&#10;\end{lstlisting}&#10;&#10;&#10;A Captioned listing (known as Listing \ref{pascallisting}) :&#10;\begin{lstlisting}[language=Pascal,caption=Another bit of Pascal, label=pascallisting,firstnumber=100,numbers=left]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\section{An Environment}&#10;\begin{lstlisting}[language=Pascal]&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{lstlisting}&#10;&#10;\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}&#10;\begin{colored}{red}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\begin{colored}{blue}&#10;for i:=maxint to 0 do&#10;begin&#10;  { do nothing }&#10;end;&#10;\end{colored}&#10;&#10;\section{Listing with Math}&#10;\begin{lstlisting}[language=c,texcl,commentstyle=\color{green}]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[texcl,language=c]&#10;// \upshape calculate $a_{ij}$&#10;a[i][j] = a[j][j]/a[i][j];&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,mathescape,numbers=left,commentstyle=\color{green}]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,escapechar=\%,escapebegin=\textless,escapeend=\textgreater,numbers=left]&#10;// calculate %$a_{ij}$%&#10;a_{ij}&#10; = a_{jj}/a{ij};&#10;\end{lstlisting}&#10;&#10;\begin{lstlisting}[language=c,numbers=left,stringstyle=\ttfamily]&#10;// calculate $a_{ij}$&#10;$a_{ij}&#10; = a_{jj}/a{ij}$;&#10;// calculate $a_{ij} = &#10;\sin x$&#10;a[i,j]=sin(x)&#10;foo=&quot;a word&quot;;&#10;foo=&quot;a \&quot;string&quot;;&#10;foo=&quot;a $x^2$ math&quot;;&#10;\end{lstlisting}&#10;&#10;\section{A Perl Listing}&#10;\lstinputlisting[language=perl]{any.sty.ltxml}&#10;&#10;\section{A Recursive \TeX\ listing}&#10;\lstinputlisting[language={[LaTeX]TeX}]{listing.tex}&#10;&#10;\section{Testing Tag}&#10;% AHA, tagstyle only is in effect with XML (?)&#10;\begin{lstlisting}[language=XML,tagstyle=\bf]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,usekeywordsintag=false]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;\begin{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]&#10;&lt;element attr='value'&gt;content&lt;/element&gt;&#10;\end{lstlisting}&#10;&#10;\section{Screwiness}&#10;\lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}&#10;%,&#10;% AHA, words can only be in one class (1st one declared?)&#10;% BUT, index is separate, and classname is without the &quot;style&quot; !!&#10;\begin{lstlisting}[language=bingo,keywordstyle=\bfseries,keywordstyle={[2]\itshape},index={[1][keywords2]{bar,baz}}]&#10;foo bar baz bing booboo&#10;\end{lstlisting}&#10;{\bfseries\itshape bfit}&#10;{\itshape\bfseries itbf}&#10;\printindex&#10;\end{document}&#10;" xml:id="LSTx14">
-      <toccaption>listing.tex</toccaption>
-      <tabular>
-        <tr>
-          <td class="ltx_lst_linenum">1</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\documentclass</text>{article}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">2</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\usepackage</text>{makeidx}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">3</td>
-          <td>
-            <text class="ltx_lst_line ltx_lst_texcs" font="bold">\makeindex</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">4</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\usepackage</text>{listings}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">5</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\usepackage</text>{color}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">6</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{document}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">7</td>
-          <td>
-            <text class="ltx_lst_line">\lstset{numbers=left}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">8</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">9</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{Introduction}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">10</td>
-          <td>
-            <text class="ltx_lst_line">This<text class="ltx_lst_space"> </text>document<text class="ltx_lst_space"> </text>contains<text class="ltx_lst_space"> </text>the<text class="ltx_lst_space"> </text>following<text class="ltx_lst_space"> </text>listings:</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">11</td>
-          <td>
-            <text class="ltx_lst_line">\lstlistoflistings</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">12</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">13</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{Inline<text class="ltx_lst_space"> </text>Listings}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">14</td>
-          <td>
-            <text class="ltx_lst_line">Various<text class="ltx_lst_space"> </text>delimiters:<text class="ltx_lst_space"> </text>\lstinline{a_word},</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">15</td>
-          <td>
-            <text class="ltx_lst_line">\lstinline!a_word!,<text class="ltx_lst_space"> </text>\lstinline<text class="ltx_lst_space"> </text>Aa_wordA,</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">16</td>
-          <td>
-            <text class="ltx_lst_line">\lstinline&amp;a_word&amp;<text class="ltx_lst_space"> </text>and<text class="ltx_lst_space"> </text>even<text class="ltx_lst_space"> </text>\lstinline^a_word^<text class="ltx_lst_space"> </text>done.</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">17</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">18</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{An<text class="ltx_lst_space"> </text>untyped<text class="ltx_lst_space"> </text>Listing}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">19</td>
-          <td>
-            <text class="ltx_lst_line">No<text class="ltx_lst_space"> </text>options,<text class="ltx_lst_space"> </text>language,<text class="ltx_lst_space"> </text>etc</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">20</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">21</td>
-          <td>
-            <text class="ltx_lst_line">stuff1</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">22</td>
-          <td>
-            <text class="ltx_lst_line">stuff2</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">23</td>
-          <td>
-            <text class="ltx_lst_line">stuff3</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">24</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">25</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">26</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{A<text class="ltx_lst_space"> </text>Pascal<text class="ltx_lst_space"> </text>Listing}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">27</td>
-          <td>
-            <text class="ltx_lst_line">A<text class="ltx_lst_space"> </text>listing<text class="ltx_lst_space"> </text>portion:</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">28</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,firstline=2,lastline=5,caption={}]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">29</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">30</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">31</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">32</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">33</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">34</td>
-          <td>
-            <text class="ltx_lst_line">Write(’case<text class="ltx_lst_space"> </text>insensitive’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">35</td>
-          <td>
-            <text class="ltx_lst_line">Write(’long<text class="ltx_lst_space"> </text>”<text class="ltx_lst_space"> </text>string’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">36</td>
-          <td>
-            <text class="ltx_lst_line">WritE(’Pascal<text class="ltx_lst_space"> </text>keywords.’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">37</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">38</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">39</td>
-          <td>
-            <text class="ltx_lst_line">A<text class="ltx_lst_space"> </text>numbered<text class="ltx_lst_space"> </text>listing:</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">40</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,numbers=left,<text class="ltx_lst_space"> </text>numberstyle=<text class="ltx_lst_texcs" font="bold">\tiny</text>,<text class="ltx_lst_space"> </text>stepnumber=2,stringstyle=\color{red}<text class="ltx_lst_texcs" font="bold">\ttfamily</text>,showspaces,tabsize=4]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">41</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">42</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">        </text>begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">43</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">                </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">44</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">        </text>end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">45</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">46</td>
-          <td>
-            <text class="ltx_lst_line">Write(’case<text class="ltx_lst_space"> </text>insensitive’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">47</td>
-          <td>
-            <text class="ltx_lst_line">Write(’long<text class="ltx_lst_space"> </text>”<text class="ltx_lst_space"> </text>string’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">48</td>
-          <td>
-            <text class="ltx_lst_line">WritE(’Pascal<text class="ltx_lst_space"> </text>keywords.’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">49</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">50</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">51</td>
-          <td>
-            <text class="ltx_lst_line">A<text class="ltx_lst_space"> </text>Titled<text class="ltx_lst_space"> </text>listing:</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">52</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,title={A<text class="ltx_lst_space"> </text>bit<text class="ltx_lst_space"> </text>of<text class="ltx_lst_space"> </text>Pascal}]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">53</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">54</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">55</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">56</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">57</td>
-          <td>
-            <text class="ltx_lst_line">Write(’case<text class="ltx_lst_space"> </text>insensitive’);</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">58</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">59</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">60</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">61</td>
-          <td>
-            <text class="ltx_lst_line">A<text class="ltx_lst_space"> </text>Captioned<text class="ltx_lst_space"> </text>listing<text class="ltx_lst_space"> </text>(known<text class="ltx_lst_space"> </text>as<text class="ltx_lst_space"> </text>Listing<text class="ltx_lst_space"> </text><text class="ltx_lst_texcs" font="bold">\ref</text>{pascallisting})<text class="ltx_lst_space"> </text>:</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">62</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal,caption=Another<text class="ltx_lst_space"> </text>bit<text class="ltx_lst_space"> </text>of<text class="ltx_lst_space"> </text>Pascal,<text class="ltx_lst_space"> </text>label=pascallisting,firstnumber=100,numbers=left]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">63</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">64</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">65</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">66</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">67</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">68</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">69</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{An<text class="ltx_lst_space"> </text>Environment}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">70</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=Pascal]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">71</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">72</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">73</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">74</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">75</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">76</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">77</td>
-          <td>
-            <text class="ltx_lst_line">\lstnewenvironment{colored}[1]{\lstset{language=Pascal,numbers=left,numberstyle=\color{#1}}}{}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">78</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{colored}{red}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">79</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">80</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">81</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">82</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">83</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{colored}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">84</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">85</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{colored}{blue}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">86</td>
-          <td>
-            <text class="ltx_lst_line">for<text class="ltx_lst_space"> </text>i:=maxint<text class="ltx_lst_space"> </text>to<text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text>do</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">87</td>
-          <td>
-            <text class="ltx_lst_line">begin</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">88</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text>do<text class="ltx_lst_space"> </text>nothing<text class="ltx_lst_space"> </text>}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">89</td>
-          <td>
-            <text class="ltx_lst_line">end;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">90</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{colored}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">91</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">92</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{Listing<text class="ltx_lst_space"> </text>with<text class="ltx_lst_space"> </text>Math}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">93</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,texcl,commentstyle=\color{green}]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">94</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text><text class="ltx_lst_texcs" font="bold">\upshape</text><text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">95</td>
-          <td>
-            <text class="ltx_lst_line">a[i][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a[j][j]/a[i][j];</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">96</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">97</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">98</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[texcl,language=c]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">99</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text><text class="ltx_lst_texcs" font="bold">\upshape</text><text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">100</td>
-          <td>
-            <text class="ltx_lst_line">a[i][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a[j][j]/a[i][j];</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">101</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">102</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">103</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,mathescape,numbers=left,commentstyle=\color{green}]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">104</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">105</td>
-          <td>
-            <text class="ltx_lst_line">$a_{ij}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">106</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a_{jj}/a{ij}$;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">107</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">108</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\sin</text><text class="ltx_lst_space"> </text>x$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">109</td>
-          <td>
-            <text class="ltx_lst_line">a[i,j]=sin(x)</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">110</td>
-          <td>
-            <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space"> </text>word”;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">111</td>
-          <td>
-            <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space"> </text>$x^2$<text class="ltx_lst_space"> </text>math”;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">112</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">113</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">114</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,escapechar=\<text font="italic">%,escapebegin=\textless,escapeend=\textgreater,numbers=left]</text></text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">115</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><text font="italic">%$a_{ij}$%</text></text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">116</td>
-          <td>
-            <text class="ltx_lst_line">a_{ij}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">117</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a_{jj}/a{ij};</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">118</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">119</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">120</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=c,numbers=left,stringstyle=<text class="ltx_lst_texcs" font="bold">\ttfamily</text>]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">121</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">122</td>
-          <td>
-            <text class="ltx_lst_line">$a_{ij}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">123</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>a_{jj}/a{ij}$;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">124</td>
-          <td>
-            <text class="ltx_lst_line">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">125</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\sin</text><text class="ltx_lst_space"> </text>x$</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">126</td>
-          <td>
-            <text class="ltx_lst_line">a[i,j]=sin(x)</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">127</td>
-          <td>
-            <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space"> </text>word”;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">128</td>
-          <td>
-            <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space"> </text>\”string”;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">129</td>
-          <td>
-            <text class="ltx_lst_line">foo=”a<text class="ltx_lst_space"> </text>$x^2$<text class="ltx_lst_space"> </text>math”;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">130</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">131</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">132</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{A<text class="ltx_lst_space"> </text>Perl<text class="ltx_lst_space"> </text>Listing}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">133</td>
-          <td>
-            <text class="ltx_lst_line">\lstinputlisting[language=perl]{any.sty.ltxml}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">134</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">135</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{A<text class="ltx_lst_space"> </text>Recursive<text class="ltx_lst_space"> </text><text class="ltx_lst_texcs" font="bold">\TeX</text>\<text class="ltx_lst_space"> </text>listing}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">136</td>
-          <td>
-            <text class="ltx_lst_line">\lstinputlisting[language={[LaTeX]TeX}]{listing.tex}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">137</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">138</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{Testing<text class="ltx_lst_space"> </text>Tag}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">139</td>
-          <td>
-            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>tagstyle<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>effect<text class="ltx_lst_space"> </text>with<text class="ltx_lst_space"> </text>XML<text class="ltx_lst_space"> </text>(?)</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">140</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=XML,tagstyle=\bf]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">141</td>
-          <td>
-            <text class="ltx_lst_line">&lt;element<text class="ltx_lst_space"> </text>attr=’value’&gt;content&lt;/element&gt;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">142</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">143</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=XML,tagstyle=\bf,usekeywordsintag=false]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">144</td>
-          <td>
-            <text class="ltx_lst_line">&lt;element<text class="ltx_lst_space"> </text>attr=’value’&gt;content&lt;/element&gt;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">145</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">146</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">147</td>
-          <td>
-            <text class="ltx_lst_line">&lt;element<text class="ltx_lst_space"> </text>attr=’value’&gt;content&lt;/element&gt;</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">148</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">149</td>
-          <td>
-            <text class="ltx_lst_line"/>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">150</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\section</text>{Screwiness}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">151</td>
-          <td>
-            <text class="ltx_lst_line">\lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">152</td>
-          <td>
-            <text class="ltx_lst_line" font="italic">%,</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">153</td>
-          <td>
-            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>words<text class="ltx_lst_space"> </text>can<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>be<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>class<text class="ltx_lst_space"> </text>(1st<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>declared?)</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">154</td>
-          <td>
-            <text class="ltx_lst_line" font="italic">%<text class="ltx_lst_space"> </text>BUT,<text class="ltx_lst_space"> </text>index<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>separate,<text class="ltx_lst_space"> </text>and<text class="ltx_lst_space"> </text>classname<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>without<text class="ltx_lst_space"> </text>the<text class="ltx_lst_space"> </text>”style”<text class="ltx_lst_space"> </text>!!</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">155</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\begin</text>{lstlisting}[language=bingo,keywordstyle=<text class="ltx_lst_texcs" font="bold">\bfseries</text>,keywordstyle={[2]<text class="ltx_lst_texcs" font="bold">\itshape</text>},index={[1][keywords2]{bar,baz}}]</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">156</td>
-          <td>
-            <text class="ltx_lst_line">foo<text class="ltx_lst_space"> </text>bar<text class="ltx_lst_space"> </text>baz<text class="ltx_lst_space"> </text>bing<text class="ltx_lst_space"> </text>booboo</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">157</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{lstlisting}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">158</td>
-          <td>
-            <text class="ltx_lst_line">{<text class="ltx_lst_texcs" font="bold">\bfseries</text><text class="ltx_lst_texcs" font="bold">\itshape</text><text class="ltx_lst_space"> </text>bfit}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">159</td>
-          <td>
-            <text class="ltx_lst_line">{<text class="ltx_lst_texcs" font="bold">\itshape</text><text class="ltx_lst_texcs" font="bold">\bfseries</text><text class="ltx_lst_space"> </text>itbf}</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">160</td>
-          <td>
-            <text class="ltx_lst_line">\printindex</text>
-          </td>
-        </tr>
-        <tr>
-          <td class="ltx_lst_linenum">161</td>
-          <td>
-            <text class="ltx_lst_line"><text class="ltx_lst_texcs" font="bold">\end</text>{document}</text>
-          </td>
-        </tr>
-      </tabular>
-    </listing>
-  </section>
-  <section refnum="9" xml:id="S9">
-    <title><tag close=" ">9</tag>Testing Tag</title>
-    <para xml:id="S9.p1">
-      <listingblock class="ltx_lstlisting ltx_lst_language_XML" data="&lt;element attr='value'&gt;content&lt;/element&gt;" xml:id="LSTx15">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
-      <listingblock class="ltx_lstlisting ltx_lst_language_XML" data="&lt;element attr='value'&gt;content&lt;/element&gt;" xml:id="LSTx16">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
-      <listingblock class="ltx_lstlisting ltx_lst_language_XML" data="&lt;element attr='value'&gt;content&lt;/element&gt;" xml:id="LSTx17">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text font="bold">&lt;<text class="ltx_lst_keyword">element</text><text class="ltx_lst_space"> </text>attr=’value’&gt;</text>content<text font="bold">&lt;/<text class="ltx_lst_keyword">element</text>&gt;</text></text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+    <title><tag close=" ">8</tag>Listing with Math</title>
+    <para xml:id="S8.p1">
+      <listing class="ltx_lst_language_c ltx_lst_numbers_left ltx_lstlisting" data="Ly8gXHVwc2hhcGUgY2FsY3VsYXRlICRhX3tpan0kCmFbaV1bal0gPSBhW2pdW2pdL2FbaV1bal07&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment" color="#00FF00">//calculate <Math mode="inline" tex="a_{ij}" text="a _ (i * j)" xml:id="S8.p1.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post6"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>[j][j]/<text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j];</listingline>
+      </listing>
+    </para>
+    <para xml:id="S8.p2">
+      <listing class="ltx_lst_language_c ltx_lst_numbers_left ltx_lstlisting" data="Ly8gXHVwc2hhcGUgY2FsY3VsYXRlICRhX3tpan0kCmFbaV1bal0gPSBhW2pdW2pdL2FbaV1bal07&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment"><text font="italic">//</text>calculate <Math mode="inline" tex="a_{ij}" text="a _ (i * j)" xml:id="S8.p2.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post6"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>[j][j]/<text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j];</listingline>
+      </listing>
+    </para>
+    <para xml:id="S8.p3">
+      <listing class="ltx_lst_language_c ltx_lst_numbers_left ltx_lstlisting" data="Ly8gY2FsY3VsYXRlICRhX3tpan0kCiRhX3tpan0KID0gYV97amp9L2F7aWp9JDsKLy8gY2FsY3Vs&#10;YXRlICRhX3tpan0gPQpcc2luIHgkCmFbaSxqXT1zaW4oeCkKZm9vPSJhIHdvcmQiOwpmb289ImEg&#10;JHheMiQgbWF0aCI7&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" tex="a_{ij}" text="a _ (i * j)" xml:id="S8.p3.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></text></listingline>
+        <listingline><tag>2</tag><Math mode="inline" tex="a_{ij}=a_{jj}/a{ij}" text="a _ (i * j) = (a _ (j * j) / a) * i * j" xml:id="S8.p3.m2">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post6"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post6"/>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMApp>
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                      </XMApp>
+                    </XMApp>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMApp>
+                  <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">j</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>;</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_comment" color="#00FF00">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text><Math mode="inline" tex="a_{ij}=\sin x" text="a _ (i * j) = sine@(x)" xml:id="S8.p3.m3">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                    </XMApp>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>,j]=<text class="ltx_lst_identifier">sin</text>(<text class="ltx_lst_identifier">x</text>)</listingline>
+        <listingline><tag>5</tag><text class="ltx_lst_identifier">foo</text>=<text class="ltx_lst_string">”a<text class="ltx_lst_space">␣</text>word”</text>;</listingline>
+        <listingline><tag>6</tag><text class="ltx_lst_identifier">foo</text>=<text class="ltx_lst_string">”a<text class="ltx_lst_space">␣</text><Math mode="inline" tex="x^{2}" text="x ^ 2" xml:id="S8.p3.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post7"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMath>
+            </Math><text class="ltx_lst_space">␣</text>math”</text>;</listingline>
+      </listing>
+    </para>
+    <para xml:id="S8.p4">
+      <listing class="ltx_lst_language_c ltx_lst_numbers_left ltx_lstlisting" data="Ly8gY2FsY3VsYXRlICUkYV97aWp9JCUKYV97aWp9CiA9IGFfe2pqfS9he2lqfTs=&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>&lt;<Math mode="inline" tex="a_{ij}" text="a _ (i * j)" xml:id="S8.p4.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                  <XMTok role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok fontsize="70%" role="UNKNOWN">i</XMTok>
+                    <XMTok fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math>&gt;</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier">a_</text>{<text class="ltx_lst_identifier">i</text>j}</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a_</text>{jj}/<text class="ltx_lst_identifier">a</text>{<text class="ltx_lst_identifier">i</text>j};</listingline>
+      </listing>
+    </para>
+    <para xml:id="S8.p5">
+      <listing class="ltx_lst_language_c ltx_lst_numbers_left ltx_lstlisting" data="Ly8gY2FsY3VsYXRlICRhX3tpan0kCiRhX3tpan0KID0gYV97amp9L2F7aWp9JDsKLy8gY2FsY3Vs&#10;YXRlICRhX3tpan0gPQpcc2luIHgkCmFbaSxqXT1zaW4oeCkKZm9vPSJhIHdvcmQiOwpmb289ImEg&#10;XCJzdHJpbmciOwpmb289ImEgJHheMiQgbWF0aCI7&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}$</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_identifier">$a_</text>{<text class="ltx_lst_identifier">i</text>j}</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a_</text>{jj}/<text class="ltx_lst_identifier">a</text>{<text class="ltx_lst_identifier">i</text>j}<text class="ltx_lst_identifier">$</text>;</listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_comment" font="italic">//<text class="ltx_lst_space"> </text>calculate<text class="ltx_lst_space"> </text>$a_{ij}<text class="ltx_lst_space"> </text>=</text></listingline>
+        <listingline><tag>5</tag>\<text class="ltx_lst_identifier">sin</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">x$</text></listingline>
+        <listingline><tag>6</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>,j]=<text class="ltx_lst_identifier">sin</text>(<text class="ltx_lst_identifier">x</text>)</listingline>
+        <listingline><tag>7</tag><text class="ltx_lst_identifier">foo</text>=<text class="ltx_lst_string" font="typewriter">"a<text class="ltx_lst_space">␣</text>word"</text>;</listingline>
+        <listingline><tag>8</tag><text class="ltx_lst_identifier">foo</text>=<text class="ltx_lst_string" font="typewriter">"a<text class="ltx_lst_space">␣</text>\"string"</text>;</listingline>
+        <listingline><tag>9</tag><text class="ltx_lst_identifier">foo</text>=<text class="ltx_lst_string" font="typewriter">"a<text class="ltx_lst_space">␣</text>$x^2$<text class="ltx_lst_space">␣</text>math"</text>;</listingline>
+      </listing>
     </para>
   </section>
+  <section refnum="9" xml:id="S9">
+    <title><tag close=" ">9</tag>A Perl Listing</title>
+    <float class="ltx_lstlisting" role="listing" xml:id="LSTx2">
+      <toccaption>any.sty.ltxml</toccaption>
+      <listing class="ltx_lst_language_perl ltx_lst_numbers_left ltx_lstlisting" data="IyAtKi0gQ1BFUkwgLSotCnBhY2thZ2UgTGFUZVhNTDo6UGFja2FnZTo6UG9vbDsKdXNlIHN0cmlj&#10;dDsKdXNlIExhVGVYTUw6OlBhY2thZ2U7CgpEZWZDb25zdHJ1Y3RvcignXGNvbnRhaW5lcnt9Jywi&#10;PGx0eDpzcGVjaWFsPiMxPC9sdHg6c3BlY2lhbD4iKTsKRGVmQ29uc3RydWN0b3IoJ1xmb28nLCI8&#10;bHR4Om5vdC1kZWZpbmVkLz4iKTsKCjE7Cg==&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_comment" font="italic">#<text class="ltx_lst_space"> </text>-*-<text class="ltx_lst_space"> </text>CPERL<text class="ltx_lst_space"> </text>-*-</text></listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword" font="bold">package</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">LaTeXML</text>::<text class="ltx_lst_identifier">Package</text>::<text class="ltx_lst_identifier">Pool</text>;</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_keyword" font="bold">use</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">strict</text>;</listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword" font="bold">use</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">LaTeXML</text>::<text class="ltx_lst_identifier">Package</text>;</listingline>
+        <listingline><tag>5</tag></listingline>
+        <listingline><tag>6</tag><text class="ltx_lst_identifier">DefConstructor</text>(<text class="ltx_lst_string">’\container{}’</text>,<text class="ltx_lst_string">”&lt;ltx:special&gt;#1&lt;/ltx:special&gt;”</text>);</listingline>
+        <listingline><tag>7</tag><text class="ltx_lst_identifier">DefConstructor</text>(<text class="ltx_lst_string">’\foo’</text>,<text class="ltx_lst_string">”&lt;ltx:not-defined/&gt;”</text>);</listingline>
+        <listingline><tag>8</tag></listingline>
+        <listingline><tag>9</tag>1;</listingline>
+      </listing>
+    </float>
+  </section>
   <section refnum="10" xml:id="S10">
-    <title><tag close=" ">10</tag>Screwiness</title>
-    <para xml:id="S10.p1">
-      <listingblock class="ltx_lstlisting ltx_lst_language_bingo" data="foo bar baz bing booboo" xml:id="LSTx18">
-        <tabular>
-          <tr>
-            <td class="ltx_lst_linenum">1</td>
-            <td>
-              <text class="ltx_lst_line"><text class="ltx_lst_keyword" font="bold">foo</text><text class="ltx_lst_space"> </text><indexmark><indexphrase key="bar"><text font="typewriter">bar</text></indexphrase></indexmark><text class="ltx_lst_keyword" font="bold">bar</text><text class="ltx_lst_space"> </text><indexmark><indexphrase key="baz"><text font="typewriter">baz</text></indexphrase></indexmark>baz<text class="ltx_lst_space"> </text><indexmark><indexphrase key="bing"><text font="typewriter">bing</text></indexphrase></indexmark><text class="ltx_lst_keywords2" font="italic">bing</text><text class="ltx_lst_space"> </text>booboo</text>
-            </td>
-          </tr>
-        </tabular>
-      </listingblock>
+    <title><tag close=" ">10</tag>A Recursive TeX listing</title>
+    <float class="ltx_lstlisting" role="listing" xml:id="LSTx3">
+      <toccaption>listing.tex</toccaption>
+      <listing class="ltx_lst_language_TeX_LaTeX ltx_lst_numbers_left ltx_lstlisting" data="XGRvY3VtZW50Y2xhc3N7YXJ0aWNsZX0KXHVzZXBhY2thZ2V7bWFrZWlkeH0KXG1ha2VpbmRleApc&#10;dXNlcGFja2FnZXtsaXN0aW5nc30KXHVzZXBhY2thZ2VbZHZpcHNuYW1lc117Y29sb3J9ClxiZWdp&#10;bntkb2N1bWVudH0KXGxzdHNldHtudW1iZXJzPWxlZnR9ClxzZWN0aW9ue0ludHJvZHVjdGlvbn0K&#10;VGhpcyBkb2N1bWVudCBjb250YWlucyB0aGUgZm9sbG93aW5nIGxpc3RpbmdzOgpcbHN0bGlzdG9m&#10;bGlzdGluZ3MKClxzZWN0aW9ue0lubGluZSBMaXN0aW5nc30KVmFyaW91cyBkZWxpbWl0ZXJzOiBc&#10;bHN0aW5saW5le2Ffd29yZH0sClxsc3RpbmxpbmUhYV93b3JkISwgXGxzdGlubGluZSBBYV93b3Jk&#10;QSwKXGxzdGlubGluZSZhX3dvcmQmIGFuZCBldmVuIFxsc3RpbmxpbmVeYV93b3JkXiBkb25lLgoK&#10;XGRlZlxqdXN0Y29weSMxeyMxfQpJbmRpcmVjdGx5OiBcanVzdGNvcHl7XGxzdGlubGluZXxhX3dv&#10;cmR8fTsKYW5kIHdpdGggbWVzc2VkIHVwIGJyYWNlcyBcbHN0aW5saW5le2ZvbyB7IGJhciB9LiUg&#10;fQoKXHNlY3Rpb257QW4gdW50eXBlZCBMaXN0aW5nfQpObyBvcHRpb25zLCBsYW5ndWFnZSwgZXRj&#10;ClxiZWdpbntsc3RsaXN0aW5nfQpzdHVmZjEKc3R1ZmYyCnN0dWZmMwpcZW5ke2xzdGxpc3Rpbmd9&#10;Cgpcc2VjdGlvbntTb21lIEN9CgpcYmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9QyxpZGVudGlm&#10;aWVyc3R5bGU9XHNsc2hhcGUsZGlyZWN0aXZlc3R5bGU9XHR0ZmFtaWx5XQojZGVmaW5lIEVYQU1Q&#10;TEUgd2hpY2h3aGF0CnggPSAiZm9vIjsKYnJlYWs7ClxlbmR7bHN0bGlzdGluZ30KClxzZWN0aW9u&#10;e0EgUGFzY2FsIExpc3Rpbmd9CkEgbGlzdGluZyBwb3J0aW9uOgpcYmVnaW57bHN0bGlzdGluZ31b&#10;bGFuZ3VhZ2U9UGFzY2FsLGZpcnN0bGluZT0yLGxhc3RsaW5lPTUsY2FwdGlvbj17fV0KZm9yIGk6&#10;PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOwoKV3JpdGUoJ2Nhc2Ug&#10;aW5zZW5zaXRpdmUnKTsKV3JpdGUoJ2xvbmcgJycgc3RyaW5nJyk7CldyaXRFKCdQYXNjYWwga2V5&#10;d29yZHMuJyk7ClxlbmR7bHN0bGlzdGluZ30KCkEgbnVtYmVyZWQgbGlzdGluZzoKXGJlZ2lue2xz&#10;dGxpc3Rpbmd9W2xhbmd1YWdlPVBhc2NhbCxudW1iZXJzPWxlZnQsIG51bWJlcnN0eWxlPVx0aW55&#10;LCBzdGVwbnVtYmVyPTIsc3RyaW5nc3R5bGU9XGNvbG9ye3JlZH1cdHRmYW1pbHksc2hvd3NwYWNl&#10;cyx0YWJzaXplPTRdCmZvciBpOj1tYXhpbnQgdG8gMCBkbwoJYmVnaW4KCQl7IGRvIG5vdGhpbmcg&#10;fQoJZW5kOwoKV3JpdGUoJ2Nhc2UgaW5zZW5zaXRpdmUnKTsKV3JpdGUoJ2xvbmcgJycgc3RyaW5n&#10;Jyk7CldyaXRFKCdQYXNjYWwga2V5d29yZHMuJyk7ClxlbmR7bHN0bGlzdGluZ30KCkEgVGl0bGVk&#10;IGxpc3Rpbmc6ClxiZWdpbntsc3RsaXN0aW5nfVtsYW5ndWFnZT1QYXNjYWwsdGl0bGU9e0EgYml0&#10;IG9mIFBhc2NhbH1dCmZvciBpOj1tYXhpbnQgdG8gMCBkbwpiZWdpbgogIHsgZG8gbm90aGluZyB9&#10;CmVuZDsKV3JpdGUoJ2Nhc2UgaW5zZW5zaXRpdmUnKTsKXGVuZHtsc3RsaXN0aW5nfQoKCkEgQ2Fw&#10;dGlvbmVkIGxpc3RpbmcgKGtub3duIGFzIExpc3RpbmcgXHJlZntwYXNjYWxsaXN0aW5nfSkgOgpc&#10;YmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9UGFzY2FsLGNhcHRpb249QW5vdGhlciBiaXQgb2Yg&#10;UGFzY2FsLCBsYWJlbD1wYXNjYWxsaXN0aW5nLGZpcnN0bnVtYmVyPTEwMCxudW1iZXJzPWxlZnRd&#10;CmZvciBpOj1tYXhpbnQgdG8gMCBkbwpiZWdpbgogIHsgZG8gbm90aGluZyB9CmVuZDsKXGVuZHts&#10;c3RsaXN0aW5nfQoKXHNlY3Rpb257QW4gRW52aXJvbm1lbnR9ClxiZWdpbntsc3RsaXN0aW5nfVts&#10;YW5ndWFnZT1QYXNjYWxdCmZvciBpOj1tYXhpbnQgdG8gMCBkbwpiZWdpbgogIHsgZG8gbm90aGlu&#10;ZyB9CmVuZDsKXGVuZHtsc3RsaXN0aW5nfQoKXGxzdG5ld2Vudmlyb25tZW50e2NvbG9yZWR9WzFd&#10;e1xsc3RzZXR7bGFuZ3VhZ2U9UGFzY2FsLG51bWJlcnM9cmlnaHQsbnVtYmVyc3R5bGU9XGNvbG9y&#10;eyMxfX19e30KXGJlZ2lue2NvbG9yZWR9e3JlZH0KZm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2lu&#10;CiAgeyBkbyBub3RoaW5nIH0KZW5kOwpcZW5ke2NvbG9yZWR9CgpcYmVnaW57Y29sb3JlZH17Ymx1&#10;ZX0KZm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOwpcZW5k&#10;e2NvbG9yZWR9Cgpcc2VjdGlvbntGcmFtaW5nIGFuZCBzdWNofQpcbHN0c2V0e2JhY2tncm91bmRj&#10;b2xvcj1cY29sb3JbbmFtZWRde0Nhcm5hdGlvblBpbmt9fQpcYmVnaW57bHN0bGlzdGluZ31bbGFu&#10;Z3VhZ2U9UGFzY2FsLGZyYW1lPXNpbmdsZSxydWxlY29sb3I9XGNvbG9ye3JlZH1dCmZvciBpOj1t&#10;YXhpbnQgdG8gMCBkbwpiZWdpbgogIHsgZG8gbm90aGluZyB9CmVuZDsKXGVuZHtsc3RsaXN0aW5n&#10;fQoKXGJlZ2lue2xzdGxpc3Rpbmd9W2xhbmd1YWdlPVBhc2NhbCxmcmFtZXJvdW5kPXR0dHQsYmFj&#10;a2dyb3VuZGNvbG9yPVxjb2xvcnt5ZWxsb3d9XQpmb3IgaTo9bWF4aW50IHRvIDAgZG8KYmVnaW4K&#10;ICB7IGRvIG5vdGhpbmcgfQplbmQ7ClxlbmR7bHN0bGlzdGluZ30KXGxzdHNldHtiYWNrZ3JvdW5k&#10;Y29sb3I9fQpcYmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9UGFzY2FsLGZyYW1lPXNpbmdsZV0K&#10;Zm9yIGk6PW1heGludCB0byAwIGRvCmJlZ2luCiAgeyBkbyBub3RoaW5nIH0KZW5kOwpcZW5ke2xz&#10;dGxpc3Rpbmd9CgpcYmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9UGFzY2FsLGZyYW1lPWxpbmVz&#10;XQpmb3IgaTo9bWF4aW50IHRvIDAgZG8KYmVnaW4KICB7IGRvIG5vdGhpbmcgfQplbmQ7ClxlbmR7&#10;bHN0bGlzdGluZ30KClxiZWdpbntsc3RsaXN0aW5nfVtsYW5ndWFnZT1DLGlkZW50aWZpZXJzdHls&#10;ZT1cc2xzaGFwZSxkaXJlY3RpdmVzdHlsZT1cdHRmYW1pbHksCmNhcHRpb249QSBDIGxhbmd1YWdl&#10;IGxpc3RpbmcsIGZyYW1lPWxpbmVzLGJhY2tncm91bmRjb2xvcj17XGNvbG9yW2NteWtdezAsMCww&#10;LDAuMX19XQojZGVmaW5lIEVYQU1QTEUgd2hpY2h3aGF0CnggPSAiZm9vIjsKYnJlYWs7ClxlbmR7&#10;bHN0bGlzdGluZ30KClxzZWN0aW9ue0xpc3Rpbmcgd2l0aCBNYXRofQpcYmVnaW57bHN0bGlzdGlu&#10;Z31bbGFuZ3VhZ2U9Yyx0ZXhjbCxjb21tZW50c3R5bGU9XGNvbG9ye2dyZWVufV0KLy8gXHVwc2hh&#10;cGUgY2FsY3VsYXRlICRhX3tpan0kCmFbaV1bal0gPSBhW2pdW2pdL2FbaV1bal07ClxlbmR7bHN0&#10;bGlzdGluZ30KClxiZWdpbntsc3RsaXN0aW5nfVt0ZXhjbCxsYW5ndWFnZT1jXQovLyBcdXBzaGFw&#10;ZSBjYWxjdWxhdGUgJGFfe2lqfSQKYVtpXVtqXSA9IGFbal1bal0vYVtpXVtqXTsKXGVuZHtsc3Rs&#10;aXN0aW5nfQoKXGJlZ2lue2xzdGxpc3Rpbmd9W2xhbmd1YWdlPWMsbWF0aGVzY2FwZSxudW1iZXJz&#10;PWxlZnQsY29tbWVudHN0eWxlPVxjb2xvcntncmVlbn1dCi8vIGNhbGN1bGF0ZSAkYV97aWp9JAok&#10;YV97aWp9CiA9IGFfe2pqfS9he2lqfSQ7Ci8vIGNhbGN1bGF0ZSAkYV97aWp9ID0gClxzaW4geCQK&#10;YVtpLGpdPXNpbih4KQpmb289ImEgd29yZCI7CmZvbz0iYSAkeF4yJCBtYXRoIjsKXGVuZHtsc3Rs&#10;aXN0aW5nfQoKXGJlZ2lue2xzdGxpc3Rpbmd9W2xhbmd1YWdlPWMsZXNjYXBlY2hhcj1cJSxlc2Nh&#10;cGViZWdpbj1cdGV4dGxlc3MsZXNjYXBlZW5kPVx0ZXh0Z3JlYXRlcixudW1iZXJzPWxlZnRdCi8v&#10;IGNhbGN1bGF0ZSAlJGFfe2lqfSQlCmFfe2lqfQogPSBhX3tqan0vYXtpan07ClxlbmR7bHN0bGlz&#10;dGluZ30KClxiZWdpbntsc3RsaXN0aW5nfVtsYW5ndWFnZT1jLG51bWJlcnM9bGVmdCxzdHJpbmdz&#10;dHlsZT1cdHRmYW1pbHldCi8vIGNhbGN1bGF0ZSAkYV97aWp9JAokYV97aWp9CiA9IGFfe2pqfS9h&#10;e2lqfSQ7Ci8vIGNhbGN1bGF0ZSAkYV97aWp9ID0gClxzaW4geCQKYVtpLGpdPXNpbih4KQpmb289&#10;ImEgd29yZCI7CmZvbz0iYSBcInN0cmluZyI7CmZvbz0iYSAkeF4yJCBtYXRoIjsKXGVuZHtsc3Rs&#10;aXN0aW5nfQoKXHNlY3Rpb257QSBQZXJsIExpc3Rpbmd9Clxsc3RpbnB1dGxpc3RpbmdbbGFuZ3Vh&#10;Z2U9cGVybF17YW55LnN0eS5sdHhtbH0KClxzZWN0aW9ue0EgUmVjdXJzaXZlIFxUZVhcIGxpc3Rp&#10;bmd9Clxsc3RpbnB1dGxpc3RpbmdbbGFuZ3VhZ2U9e1tMYVRlWF1UZVh9XXtsaXN0aW5nLnRleH0K&#10;ClxzZWN0aW9ue1Rlc3RpbmcgVGFnfQolIEFIQSwgdGFnc3R5bGUgb25seSBpcyBpbiBlZmZlY3Qg&#10;d2l0aCBYTUwgKD8pClxiZWdpbntsc3RsaXN0aW5nfVtsYW5ndWFnZT1YTUwsdGFnc3R5bGU9XGJm&#10;XQo8ZWxlbWVudCBhdHRyPSd2YWx1ZSc+Y29udGVudDwvZWxlbWVudD4KXGVuZHtsc3RsaXN0aW5n&#10;fQpcYmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9WE1MLHRhZ3N0eWxlPVxiZix1c2VrZXl3b3Jk&#10;c2ludGFnPWZhbHNlXQo8ZWxlbWVudCBhdHRyPSd2YWx1ZSc+Y29udGVudDwvZWxlbWVudD4KXGVu&#10;ZHtsc3RsaXN0aW5nfQpcYmVnaW57bHN0bGlzdGluZ31bbGFuZ3VhZ2U9WE1MLHRhZ3N0eWxlPVxi&#10;ZixtYXJrZmlyc3RpbnRhZ10KPGVsZW1lbnQgYXR0cj0ndmFsdWUnPmNvbnRlbnQ8L2VsZW1lbnQ+&#10;ClxlbmR7bHN0bGlzdGluZ30KClxzZWN0aW9ue1NjcmV3aW5lc3N9Clxsc3RkZWZpbmVsYW5ndWFn&#10;ZXtiaW5nb317bW9yZWtleXdvcmRzPXtmb28sYmFyfSxtb3Jla2V5d29yZHM9WzJde2JpbmcsYmFy&#10;fX0KJSwKJSBBSEEsIHdvcmRzIGNhbiBvbmx5IGJlIGluIG9uZSBjbGFzcyAoMXN0IG9uZSBkZWNs&#10;YXJlZD8pCiUgQlVULCBpbmRleCBpcyBzZXBhcmF0ZSwgYW5kIGNsYXNzbmFtZSBpcyB3aXRob3V0&#10;IHRoZSAic3R5bGUiICEhClxiZWdpbntsc3RsaXN0aW5nfVtsYW5ndWFnZT1iaW5nbyxrZXl3b3Jk&#10;c3R5bGU9XGJmc2VyaWVzLGtleXdvcmRzdHlsZT17WzJdXGl0c2hhcGV9LGluZGV4PXtbMV1ba2V5&#10;d29yZHMyXXtiYXIsYmF6fX1dCmZvbyBiYXIgYmF6IGJpbmcgYm9vYm9vClxlbmR7bHN0bGlzdGlu&#10;Z30Ke1xiZnNlcmllc1xpdHNoYXBlIGJmaXR9CntcaXRzaGFwZVxiZnNlcmllcyBpdGJmfQpccHJp&#10;bnRpbmRleApcZW5ke2RvY3VtZW50fQo=&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\documentclass</text>{<text class="ltx_lst_identifier">article</text>}</listingline>
+        <listingline><tag>2</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\usepackage</text>{<text class="ltx_lst_identifier">makeidx</text>}</listingline>
+        <listingline><tag>3</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\makeindex</text></listingline>
+        <listingline><tag>4</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\usepackage</text>{<text class="ltx_lst_identifier">listings</text>}</listingline>
+        <listingline><tag>5</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\usepackage</text>[<text class="ltx_lst_identifier">dvipsnames</text>]{<text class="ltx_lst_identifier">color</text>}</listingline>
+        <listingline><tag>6</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">document</text>}</listingline>
+        <listingline><tag>7</tag><text class="ltx_lst_identifier">\lstset</text>{<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">left</text>}</listingline>
+        <listingline><tag>8</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Introduction</text>}</listingline>
+        <listingline><tag>9</tag><text class="ltx_lst_identifier">This</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">document</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">contains</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">the</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">following</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listings</text>:</listingline>
+        <listingline><tag>10</tag><text class="ltx_lst_identifier">\lstlistoflistings</text></listingline>
+        <listingline><tag>11</tag></listingline>
+        <listingline><tag>12</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Inline</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Listings</text>}</listingline>
+        <listingline><tag>13</tag><text class="ltx_lst_identifier">Various</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">delimiters</text>:<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">\lstinline</text>{<text class="ltx_lst_identifier">a</text>_<text class="ltx_lst_identifier">word</text>},</listingline>
+        <listingline><tag>14</tag><text class="ltx_lst_identifier">\lstinline</text>!<text class="ltx_lst_identifier">a</text>_<text class="ltx_lst_identifier">word</text>!,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">\lstinline</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Aa</text>_<text class="ltx_lst_identifier">wordA</text>,</listingline>
+        <listingline><tag>15</tag><text class="ltx_lst_identifier">\lstinline</text>&amp;<text class="ltx_lst_identifier">a</text>_<text class="ltx_lst_identifier">word</text>&amp;<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">even</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">\lstinline</text>^<text class="ltx_lst_identifier">a</text>_<text class="ltx_lst_identifier">word</text>^<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">done</text>.</listingline>
+        <listingline><tag>16</tag></listingline>
+        <listingline><tag>17</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\def</text>\j<text class="ltx_lst_identifier">ustcopy</text>#1{#1}</listingline>
+        <listingline><tag>18</tag><text class="ltx_lst_identifier">Indirectly</text>:<text class="ltx_lst_space"> </text>\j<text class="ltx_lst_identifier">ustcopy</text>{<text class="ltx_lst_identifier">\lstinline</text>|<text class="ltx_lst_identifier">a</text>_<text class="ltx_lst_identifier">word</text>|};</listingline>
+        <listingline><tag>19</tag><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">with</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">messed</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">up</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">braces</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">\lstinline</text>{<text class="ltx_lst_identifier">foo</text><text class="ltx_lst_space"> </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bar</text><text class="ltx_lst_space"> </text>}.<text class="ltx_lst_comment" font="italic">%<text class="ltx_lst_space"> </text>}</text></listingline>
+        <listingline><tag>20</tag></listingline>
+        <listingline><tag>21</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">An</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">untyped</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Listing</text>}</listingline>
+        <listingline><tag>22</tag><text class="ltx_lst_identifier">No</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">options</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">language</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">etc</text></listingline>
+        <listingline><tag>23</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>24</tag><text class="ltx_lst_identifier">stuff</text>1</listingline>
+        <listingline><tag>25</tag><text class="ltx_lst_identifier">stuff</text>2</listingline>
+        <listingline><tag>26</tag><text class="ltx_lst_identifier">stuff</text>3</listingline>
+        <listingline><tag>27</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>28</tag></listingline>
+        <listingline><tag>29</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Some</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">C</text>}</listingline>
+        <listingline><tag>30</tag></listingline>
+        <listingline><tag>31</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">C</text>,<text class="ltx_lst_identifier">identifierstyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\slshape</text>,<text class="ltx_lst_identifier">directivestyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\ttfamily</text>]</listingline>
+        <listingline><tag>32</tag>#<text class="ltx_lst_identifier">define</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">EXAMPLE</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">whichwhat</text></listingline>
+        <listingline><tag>33</tag><text class="ltx_lst_identifier">x</text><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>”<text class="ltx_lst_identifier">foo</text>”;</listingline>
+        <listingline><tag>34</tag><text class="ltx_lst_identifier">break</text>;</listingline>
+        <listingline><tag>35</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>36</tag></listingline>
+        <listingline><tag>37</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Pascal</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Listing</text>}</listingline>
+        <listingline><tag>38</tag><text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">portion</text>:</listingline>
+        <listingline><tag>39</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">firstline</text>=2,<text class="ltx_lst_identifier">lastline</text>=5,<text class="ltx_lst_identifier">caption</text>={}]</listingline>
+        <listingline><tag>40</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>41</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>42</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>43</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>44</tag></listingline>
+        <listingline><tag>45</tag><text class="ltx_lst_identifier">Write</text>(’<text class="ltx_lst_identifier">case</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">insensitive</text>’);</listingline>
+        <listingline><tag>46</tag><text class="ltx_lst_identifier">Write</text>(’<text class="ltx_lst_identifier">long</text><text class="ltx_lst_space"> </text>”<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">string</text>’);</listingline>
+        <listingline><tag>47</tag><text class="ltx_lst_identifier">WritE</text>(’<text class="ltx_lst_identifier">Pascal</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">keywords</text>.’);</listingline>
+        <listingline><tag>48</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>49</tag></listingline>
+        <listingline><tag>50</tag><text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">numbered</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text>:</listingline>
+        <listingline><tag>51</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">left</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">numberstyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\tiny</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">stepnumber</text>=2,<text class="ltx_lst_identifier">stringstyle</text>=<text class="ltx_lst_identifier">\color</text>{<text class="ltx_lst_identifier">red</text>}<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\ttfamily</text>,<text class="ltx_lst_identifier">showspaces</text>,<text class="ltx_lst_identifier">tabsize</text>=4]</listingline>
+        <listingline><tag>52</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>53</tag><text class="ltx_lst_space">        </text><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>54</tag><text class="ltx_lst_space">                </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>55</tag><text class="ltx_lst_space">        </text><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>56</tag></listingline>
+        <listingline><tag>57</tag><text class="ltx_lst_identifier">Write</text>(’<text class="ltx_lst_identifier">case</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">insensitive</text>’);</listingline>
+        <listingline><tag>58</tag><text class="ltx_lst_identifier">Write</text>(’<text class="ltx_lst_identifier">long</text><text class="ltx_lst_space"> </text>”<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">string</text>’);</listingline>
+        <listingline><tag>59</tag><text class="ltx_lst_identifier">WritE</text>(’<text class="ltx_lst_identifier">Pascal</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">keywords</text>.’);</listingline>
+        <listingline><tag>60</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>61</tag></listingline>
+        <listingline><tag>62</tag><text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Titled</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text>:</listingline>
+        <listingline><tag>63</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">title</text>={<text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bit</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">of</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Pascal</text>}]</listingline>
+        <listingline><tag>64</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>65</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>66</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>67</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>68</tag><text class="ltx_lst_identifier">Write</text>(’<text class="ltx_lst_identifier">case</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">insensitive</text>’);</listingline>
+        <listingline><tag>69</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>70</tag></listingline>
+        <listingline><tag>71</tag></listingline>
+        <listingline><tag>72</tag><text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Captioned</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text><text class="ltx_lst_space"> </text>(<text class="ltx_lst_identifier">known</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">as</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Listing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\ref</text>{<text class="ltx_lst_identifier">pascallisting</text>})<text class="ltx_lst_space"> </text>:</listingline>
+        <listingline><tag>73</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">caption</text>=<text class="ltx_lst_identifier">Another</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bit</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">of</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">label</text>=<text class="ltx_lst_identifier">pascallisting</text>,<text class="ltx_lst_identifier">firstnumber</text>=100,<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">left</text>]</listingline>
+        <listingline><tag>74</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>75</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>76</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>77</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>78</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>79</tag></listingline>
+        <listingline><tag>80</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">An</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Environment</text>}</listingline>
+        <listingline><tag>81</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>]</listingline>
+        <listingline><tag>82</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>83</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>84</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>85</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>86</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>87</tag></listingline>
+        <listingline><tag>88</tag><text class="ltx_lst_identifier">\lstnewenvironment</text>{<text class="ltx_lst_identifier">colored</text>}[1]{<text class="ltx_lst_identifier">\lstset</text>{<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">right</text>,<text class="ltx_lst_identifier">numberstyle</text>=<text class="ltx_lst_identifier">\color</text>{#1}}}{}</listingline>
+        <listingline><tag>89</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">colored</text>}{<text class="ltx_lst_identifier">red</text>}</listingline>
+        <listingline><tag>90</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>91</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>92</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>93</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>94</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">colored</text>}</listingline>
+        <listingline><tag>95</tag></listingline>
+        <listingline><tag>96</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">colored</text>}{<text class="ltx_lst_identifier">blue</text>}</listingline>
+        <listingline><tag>97</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>98</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>99</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>100</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>101</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">colored</text>}</listingline>
+        <listingline><tag>102</tag></listingline>
+        <listingline><tag>103</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Framing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">such</text>}</listingline>
+        <listingline><tag>104</tag><text class="ltx_lst_identifier">\lstset</text>{<text class="ltx_lst_identifier">backgroundcolor</text>=<text class="ltx_lst_identifier">\color</text>[<text class="ltx_lst_identifier">named</text>]{<text class="ltx_lst_identifier">CarnationPink</text>}}</listingline>
+        <listingline><tag>105</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">frame</text>=<text class="ltx_lst_identifier">single</text>,<text class="ltx_lst_identifier">rulecolor</text>=<text class="ltx_lst_identifier">\color</text>{<text class="ltx_lst_identifier">red</text>}]</listingline>
+        <listingline><tag>106</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>107</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>108</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>109</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>110</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>111</tag></listingline>
+        <listingline><tag>112</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">frameround</text>=<text class="ltx_lst_identifier">tttt</text>,<text class="ltx_lst_identifier">backgroundcolor</text>=<text class="ltx_lst_identifier">\color</text>{<text class="ltx_lst_identifier">yellow</text>}]</listingline>
+        <listingline><tag>113</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>114</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>115</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>116</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>117</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>118</tag><text class="ltx_lst_identifier">\lstset</text>{<text class="ltx_lst_identifier">backgroundcolor</text>=}</listingline>
+        <listingline><tag>119</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">frame</text>=<text class="ltx_lst_identifier">single</text>]</listingline>
+        <listingline><tag>120</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>121</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>122</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>123</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>124</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>125</tag></listingline>
+        <listingline><tag>126</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">Pascal</text>,<text class="ltx_lst_identifier">frame</text>=<text class="ltx_lst_identifier">lines</text>]</listingline>
+        <listingline><tag>127</tag><text class="ltx_lst_identifier">for</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">i</text>:=<text class="ltx_lst_identifier">maxint</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">to</text><text class="ltx_lst_space"> </text>0<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text></listingline>
+        <listingline><tag>128</tag><text class="ltx_lst_identifier">begin</text></listingline>
+        <listingline><tag>129</tag><text class="ltx_lst_space">  </text>{<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">do</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">nothing</text><text class="ltx_lst_space"> </text>}</listingline>
+        <listingline><tag>130</tag><text class="ltx_lst_identifier">end</text>;</listingline>
+        <listingline><tag>131</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>132</tag></listingline>
+        <listingline><tag>133</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">C</text>,<text class="ltx_lst_identifier">identifierstyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\slshape</text>,<text class="ltx_lst_identifier">directivestyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\ttfamily</text>,</listingline>
+        <listingline><tag>134</tag><text class="ltx_lst_identifier">caption</text>=<text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">C</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">language</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text>,<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">frame</text>=<text class="ltx_lst_identifier">lines</text>,<text class="ltx_lst_identifier">backgroundcolor</text>={<text class="ltx_lst_identifier">\color</text>[<text class="ltx_lst_identifier">cmyk</text>]{0,0,0,0.1}}]</listingline>
+        <listingline><tag>135</tag>#<text class="ltx_lst_identifier">define</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">EXAMPLE</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">whichwhat</text></listingline>
+        <listingline><tag>136</tag><text class="ltx_lst_identifier">x</text><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text>”<text class="ltx_lst_identifier">foo</text>”;</listingline>
+        <listingline><tag>137</tag><text class="ltx_lst_identifier">break</text>;</listingline>
+        <listingline><tag>138</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>139</tag></listingline>
+        <listingline><tag>140</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Listing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">with</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Math</text>}</listingline>
+        <listingline><tag>141</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">c</text>,<text class="ltx_lst_identifier">texcl</text>,<text class="ltx_lst_identifier">commentstyle</text>=<text class="ltx_lst_identifier">\color</text>{<text class="ltx_lst_identifier">green</text>}]</listingline>
+        <listingline><tag>142</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\upshape</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}$</listingline>
+        <listingline><tag>143</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>[j][j]/<text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j];</listingline>
+        <listingline><tag>144</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>145</tag></listingline>
+        <listingline><tag>146</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">texcl</text>,<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">c</text>]</listingline>
+        <listingline><tag>147</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\upshape</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}$</listingline>
+        <listingline><tag>148</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j]<text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>[j][j]/<text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>][j];</listingline>
+        <listingline><tag>149</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>150</tag></listingline>
+        <listingline><tag>151</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">c</text>,<text class="ltx_lst_identifier">mathescape</text>,<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">left</text>,<text class="ltx_lst_identifier">commentstyle</text>=<text class="ltx_lst_identifier">\color</text>{<text class="ltx_lst_identifier">green</text>}]</listingline>
+        <listingline><tag>152</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}$</listingline>
+        <listingline><tag>153</tag>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}</listingline>
+        <listingline><tag>154</tag><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>_{jj}/<text class="ltx_lst_identifier">a</text>{<text class="ltx_lst_identifier">i</text>j}$;</listingline>
+        <listingline><tag>155</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}<text class="ltx_lst_space"> </text>=</listingline>
+        <listingline><tag>156</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\sin</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">x</text>$</listingline>
+        <listingline><tag>157</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>,j]=<text class="ltx_lst_identifier">sin</text>(<text class="ltx_lst_identifier">x</text>)</listingline>
+        <listingline><tag>158</tag><text class="ltx_lst_identifier">foo</text>=”<text class="ltx_lst_identifier">a</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">word</text>”;</listingline>
+        <listingline><tag>159</tag><text class="ltx_lst_identifier">foo</text>=”<text class="ltx_lst_identifier">a</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">x</text>^2$<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">math</text>”;</listingline>
+        <listingline><tag>160</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>161</tag></listingline>
+        <listingline><tag>162</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">c</text>,<text class="ltx_lst_identifier">escapechar</text>=\<text class="ltx_lst_comment" font="italic">%,escapebegin=\textless,escapeend=\textgreater,numbers=left]</text></listingline>
+        <listingline><tag>163</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text><text class="ltx_lst_comment" font="italic">%$a_{ij}$%</text></listingline>
+        <listingline><tag>164</tag><text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}</listingline>
+        <listingline><tag>165</tag><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>_{jj}/<text class="ltx_lst_identifier">a</text>{<text class="ltx_lst_identifier">i</text>j};</listingline>
+        <listingline><tag>166</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>167</tag></listingline>
+        <listingline><tag>168</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">c</text>,<text class="ltx_lst_identifier">numbers</text>=<text class="ltx_lst_identifier">left</text>,<text class="ltx_lst_identifier">stringstyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\ttfamily</text>]</listingline>
+        <listingline><tag>169</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}$</listingline>
+        <listingline><tag>170</tag>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}</listingline>
+        <listingline><tag>171</tag><text class="ltx_lst_space"> </text>=<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">a</text>_{jj}/<text class="ltx_lst_identifier">a</text>{<text class="ltx_lst_identifier">i</text>j}$;</listingline>
+        <listingline><tag>172</tag>//<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">calculate</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">a</text>_{<text class="ltx_lst_identifier">i</text>j}<text class="ltx_lst_space"> </text>=</listingline>
+        <listingline><tag>173</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\sin</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">x</text>$</listingline>
+        <listingline><tag>174</tag><text class="ltx_lst_identifier">a</text>[<text class="ltx_lst_identifier">i</text>,j]=<text class="ltx_lst_identifier">sin</text>(<text class="ltx_lst_identifier">x</text>)</listingline>
+        <listingline><tag>175</tag><text class="ltx_lst_identifier">foo</text>=”<text class="ltx_lst_identifier">a</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">word</text>”;</listingline>
+        <listingline><tag>176</tag><text class="ltx_lst_identifier">foo</text>=”<text class="ltx_lst_identifier">a</text><text class="ltx_lst_space"> </text>\”<text class="ltx_lst_identifier">string</text>”;</listingline>
+        <listingline><tag>177</tag><text class="ltx_lst_identifier">foo</text>=”<text class="ltx_lst_identifier">a</text><text class="ltx_lst_space"> </text>$<text class="ltx_lst_identifier">x</text>^2$<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">math</text>”;</listingline>
+        <listingline><tag>178</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>179</tag></listingline>
+        <listingline><tag>180</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Perl</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Listing</text>}</listingline>
+        <listingline><tag>181</tag><text class="ltx_lst_identifier">\lstinputlisting</text>[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">perl</text>]{<text class="ltx_lst_identifier">any</text>.<text class="ltx_lst_identifier">sty</text>.<text class="ltx_lst_identifier">ltxml</text>}</listingline>
+        <listingline><tag>182</tag></listingline>
+        <listingline><tag>183</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">A</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Recursive</text><text class="ltx_lst_space"> </text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\TeX</text>\<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">listing</text>}</listingline>
+        <listingline><tag>184</tag><text class="ltx_lst_identifier">\lstinputlisting</text>[<text class="ltx_lst_identifier">language</text>={[<text class="ltx_lst_identifier">LaTeX</text>]<text class="ltx_lst_identifier">TeX</text>}]{<text class="ltx_lst_identifier">listing</text>.<text class="ltx_lst_identifier">tex</text>}</listingline>
+        <listingline><tag>185</tag></listingline>
+        <listingline><tag>186</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Testing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">Tag</text>}</listingline>
+        <listingline><tag>187</tag><text class="ltx_lst_comment" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>tagstyle<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>effect<text class="ltx_lst_space"> </text>with<text class="ltx_lst_space"> </text>XML<text class="ltx_lst_space"> </text>(?)</text></listingline>
+        <listingline><tag>188</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">XML</text>,<text class="ltx_lst_identifier">tagstyle</text>=<text class="ltx_lst_identifier">\bf</text>]</listingline>
+        <listingline><tag>189</tag>&lt;<text class="ltx_lst_identifier">element</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">attr</text>=’<text class="ltx_lst_identifier">value</text>’&gt;<text class="ltx_lst_identifier">content</text>&lt;/<text class="ltx_lst_identifier">element</text>&gt;</listingline>
+        <listingline><tag>190</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>191</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">XML</text>,<text class="ltx_lst_identifier">tagstyle</text>=<text class="ltx_lst_identifier">\bf</text>,<text class="ltx_lst_identifier">usekeywordsintag</text>=<text class="ltx_lst_identifier">false</text>]</listingline>
+        <listingline><tag>192</tag>&lt;<text class="ltx_lst_identifier">element</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">attr</text>=’<text class="ltx_lst_identifier">value</text>’&gt;<text class="ltx_lst_identifier">content</text>&lt;/<text class="ltx_lst_identifier">element</text>&gt;</listingline>
+        <listingline><tag>193</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>194</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">XML</text>,<text class="ltx_lst_identifier">tagstyle</text>=<text class="ltx_lst_identifier">\bf</text>,<text class="ltx_lst_identifier">markfirstintag</text>]</listingline>
+        <listingline><tag>195</tag>&lt;<text class="ltx_lst_identifier">element</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">attr</text>=’<text class="ltx_lst_identifier">value</text>’&gt;<text class="ltx_lst_identifier">content</text>&lt;/<text class="ltx_lst_identifier">element</text>&gt;</listingline>
+        <listingline><tag>196</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>197</tag></listingline>
+        <listingline><tag>198</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\section</text>{<text class="ltx_lst_identifier">Screwiness</text>}</listingline>
+        <listingline><tag>199</tag><text class="ltx_lst_identifier">\lstdefinelanguage</text>{<text class="ltx_lst_identifier">bingo</text>}{<text class="ltx_lst_identifier">morekeywords</text>={<text class="ltx_lst_identifier">foo</text>,<text class="ltx_lst_identifier">bar</text>},<text class="ltx_lst_identifier">morekeywords</text>=[2]{<text class="ltx_lst_identifier">bing</text>,<text class="ltx_lst_identifier">bar</text>}}</listingline>
+        <listingline><tag>200</tag><text class="ltx_lst_comment" font="italic">%,</text></listingline>
+        <listingline><tag>201</tag><text class="ltx_lst_comment" font="italic">%<text class="ltx_lst_space"> </text>AHA,<text class="ltx_lst_space"> </text>words<text class="ltx_lst_space"> </text>can<text class="ltx_lst_space"> </text>only<text class="ltx_lst_space"> </text>be<text class="ltx_lst_space"> </text>in<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>class<text class="ltx_lst_space"> </text>(1st<text class="ltx_lst_space"> </text>one<text class="ltx_lst_space"> </text>declared?)</text></listingline>
+        <listingline><tag>202</tag><text class="ltx_lst_comment" font="italic">%<text class="ltx_lst_space"> </text>BUT,<text class="ltx_lst_space"> </text>index<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>separate,<text class="ltx_lst_space"> </text>and<text class="ltx_lst_space"> </text>classname<text class="ltx_lst_space"> </text>is<text class="ltx_lst_space"> </text>without<text class="ltx_lst_space"> </text>the<text class="ltx_lst_space"> </text>”style”<text class="ltx_lst_space"> </text>!!</text></listingline>
+        <listingline><tag>203</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\begin</text>{<text class="ltx_lst_identifier">lstlisting</text>}[<text class="ltx_lst_identifier">language</text>=<text class="ltx_lst_identifier">bingo</text>,<text class="ltx_lst_identifier">keywordstyle</text>=<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\bfseries</text>,<text class="ltx_lst_identifier">keywordstyle</text>={[2]<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\itshape</text>},<text class="ltx_lst_identifier">index</text>={[1][<text class="ltx_lst_identifier">keywords</text>2]{<text class="ltx_lst_identifier">bar</text>,<text class="ltx_lst_identifier">baz</text>}}]</listingline>
+        <listingline><tag>204</tag><text class="ltx_lst_identifier">foo</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bar</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">baz</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">booboo</text></listingline>
+        <listingline><tag>205</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">lstlisting</text>}</listingline>
+        <listingline><tag>206</tag>{<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\bfseries</text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\itshape</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">bfit</text>}</listingline>
+        <listingline><tag>207</tag>{<text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\itshape</text><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\bfseries</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">itbf</text>}</listingline>
+        <listingline><tag>208</tag><text class="ltx_lst_identifier">\printindex</text></listingline>
+        <listingline><tag>209</tag><text class="ltx_lst_keyword ltx_lst_texcs" font="bold">\end</text>{<text class="ltx_lst_identifier">document</text>}</listingline>
+      </listing>
+    </float>
+  </section>
+  <section refnum="11" xml:id="S11">
+    <title><tag close=" ">11</tag>Testing Tag</title>
+    <para xml:id="S11.p1">
+      <listing class="ltx_lst_language_XML ltx_lst_numbers_left ltx_lstlisting" data="PGVsZW1lbnQgYXR0cj0ndmFsdWUnPmNvbnRlbnQ8L2VsZW1lbnQ+&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_tag" font="bold">&lt;element<text class="ltx_lst_space"> </text>attr=<text class="ltx_lst_string">’value’</text>&gt;</text><text class="ltx_lst_identifier">content</text><text class="ltx_lst_tag" font="bold">&lt;/element&gt;</text></listingline>
+      </listing>
+      <listing class="ltx_lst_language_XML ltx_lst_numbers_left ltx_lstlisting" data="PGVsZW1lbnQgYXR0cj0ndmFsdWUnPmNvbnRlbnQ8L2VsZW1lbnQ+&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_tag" font="bold">&lt;element<text class="ltx_lst_space"> </text>attr=<text class="ltx_lst_string">’value’</text>&gt;</text><text class="ltx_lst_identifier">content</text><text class="ltx_lst_tag" font="bold">&lt;/element&gt;</text></listingline>
+      </listing>
+      <listing class="ltx_lst_language_XML ltx_lst_numbers_left ltx_lstlisting" data="PGVsZW1lbnQgYXR0cj0ndmFsdWUnPmNvbnRlbnQ8L2VsZW1lbnQ+&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_tag" font="bold">&lt;element<text class="ltx_lst_space"> </text>attr=<text class="ltx_lst_string">’value’</text>&gt;</text><text class="ltx_lst_identifier">content</text><text class="ltx_lst_tag" font="bold">&lt;/element&gt;</text></listingline>
+      </listing>
+    </para>
+  </section>
+  <section refnum="12" xml:id="S12">
+    <title><tag close=" ">12</tag>Screwiness</title>
+    <para xml:id="S12.p1">
+      <listing class="ltx_lst_language_bingo ltx_lst_numbers_left ltx_lstlisting" data="Zm9vIGJhciBiYXogYmluZyBib29ib28=&#10;" dataencoding="base64" datatype="text/plain">
+        <listingline><tag>1</tag><text class="ltx_lst_keyword" font="bold">foo</text><text class="ltx_lst_space"> </text><indexmark>
+            <indexphrase key="bar"><text font="typewriter">bar</text></indexphrase>
+          </indexmark><text class="ltx_lst_keyword" font="bold">bar</text><text class="ltx_lst_space"> </text><indexmark>
+            <indexphrase key="baz"><text font="typewriter">baz</text></indexphrase>
+          </indexmark><text class="ltx_lst_identifier">baz</text><text class="ltx_lst_space"> </text><indexmark>
+            <indexphrase key="bing"><text font="typewriter">bing</text></indexphrase>
+          </indexmark><text class="ltx_lst_keywords2" font="italic">bing</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">booboo</text></listingline>
+      </listing>
       <p><text font="bold italic">bfit</text>
 <text font="bold italic">itbf</text></p>
     </para>

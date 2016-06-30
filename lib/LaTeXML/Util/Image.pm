@@ -38,12 +38,32 @@ our $DPI            = 90;               # [CONSTANT]
 our $DOTS_PER_POINT = ($DPI / 72.0);    # [CONSTANT] Dots per point.
 our $BACKGROUND     = "#FFFFFF";        # [CONSTANT]
 
-# Note that Image::Size my, itself, use Image::Magick, if available,
+# These environment variables can be used to limit the amount
+# of time & space used by ImageMagick.  They are particularly useful
+# when ghostscript becomes involved in converting postscript or pdf.
+# HOWEVER, there are indications that the time limit (at least)
+# is being measured against the whole latexml process, not just image processing.
+# Thus they aren't really that useful here.
+# They probably are useful in a server context, however, so I'll leave the comments.
+# $ENV{MAGICK_DISK_LIMIT} = "2GiB" unless defined $ENV{MAGICK_DISK_LIMIT};
+# $ENV{MAGICK_MEMORY_LIMIT} = "512MiB" unless defined $ENV{MAGICK_MEMORY_LIMIT};
+# $ENV{MAGICK_MAP_LIMIT} = "1GiB" unless defined $ENV{MAGICK_MAP_LIMIT};
+# $ENV{MAGICK_TIME_LIMIT} = "300" unless defined $ENV{MAGICK_TIME_LIMIT};
+
+# Note that Image::Size may, itself, use Image::Magick, if available,
 # as a fallback for getting image size & type!!!
+# However, it seems not to recognize file types with extension .EPS (uppercase), eg!
 sub image_type {
   my ($pathname) = @_;
   my ($w, $h, $t) = imgsize($pathname);
-  return lc($t); }
+  # even though Image::Size CLAIMS to use Image::Magick as fallback... needs tickling?
+  if (!(defined $w) && !(defined $h) && image_can_image()) {    # try harder!
+    my $image = image_read($pathname) or return;
+    ($t) = image_getvalue($image, 'format'); }
+  # Note that Image::Magick (sometimes) returns "descriptive" types
+  # (but I can't find a list anywhere!)
+  $t = 'eps' if $t =~ /postscript/i;
+  return (defined $t ? lc($t) : undef); }
 
 sub image_size {
   my ($pathname) = @_;
@@ -66,7 +86,9 @@ sub image_can_image {
     foreach my $class (@MagickClasses) {
       my $module = $class . ".pm";
       $module =~ s/::/\//g;
-      my $object = eval { require $module; $class->new(); };
+      my $object = eval {
+        local $LaTeXML::IGNORE_ERRORS = 1;
+        require $module; $class->new(); };
       if ($object) {
         $IMAGECLASS = $class;
         last; } } }
@@ -155,6 +177,7 @@ sub to_bp {
   my ($x) = @_;
   if ($x =~ /^\s*([+-]?[\d\.]+)(\w*)\s*$/) {
     my ($v, $u) = ($1, $2);
+    $u =~ s/^true//;
     return $v * ($u ? $BP_conversions{$u} : 1); }
   else {
     return 1; } }

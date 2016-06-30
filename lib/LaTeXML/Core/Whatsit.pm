@@ -208,6 +208,7 @@ sub beAbsorbed {
   LaTeXML::Core::Definition::stopProfiling($profiled, 'absorb') if $profiled;
   return @result; }
 
+# See discussion in Box.pm
 sub computeSize {
   my ($self, %options) = @_;
   # Use #body, if any, else ALL args !?!?!
@@ -241,9 +242,9 @@ sub computeSize {
     $options{layout}  = $$props{layout}  if $$props{layout};
     ($width, $height, $depth) = $font->computeBoxesSize([@boxes], %options); }
   # Now, only set the dimensions that weren't already set.
-  $$props{width}  = $width  unless defined $$props{width};
-  $$props{height} = $height unless defined $$props{height};
-  $$props{depth}  = $depth  unless defined $$props{depth};
+  $$props{cwidth}  = $width  unless defined $$props{width};
+  $$props{cheight} = $height unless defined $$props{height};
+  $$props{cdepth}  = $depth  unless defined $$props{depth};
   return; }
 
 #======================================================================

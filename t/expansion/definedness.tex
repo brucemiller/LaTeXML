@@ -2,53 +2,98 @@
 \begin{document}
 \makeatletter
 
-foo \ifdefined\foo IS \else is NOT \fi defined,
+
+The letter a: \meaning a.
+\ifdefined a IS \else is NOT \fi defined,
+it \ifx a\relax IS \else is NOT \fi relax,
+
+The dollar: \meaning $.
+\ifdefined $ IS \else is NOT \fi defined,
+it \ifx $\relax IS \else is NOT \fi relax,
+%$
+
+The upcaret: \meaning ^.
+\ifdefined ^ IS \else is NOT \fi defined,
+it \ifx ^\relax IS \else is NOT \fi relax,
+
+The underscore:\meaning _.
+\ifdefined _ IS \else is NOT \fi defined,
+it \ifx _\relax IS \else is NOT \fi relax,
+
+\def\fud{FUD}
+macro fud: \meaning \fud.
+\ifdefined\fud IS \else is NOT \fi defined,
+it \ifcsname fud\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\fud\relax IS \else is NOT \fi relax,
+and it \@ifundefined{fud}{is NOT}{IS} @defined.
+
+macro foo: \meaning \foo.
+\ifdefined\foo IS \else is NOT \fi defined,
 it \ifcsname foo\endcsname IS \else is NOT \fi cs-defined,
 it \ifx\foo\relax IS \else is NOT \fi relax,
 and it \@ifundefined{foo}{is NOT}{IS} @defined.
 
-After @ifundefined, however,
-foo \ifdefined\foo IS \else is NOT \fi defined,
+After the @ifundefined, however: \meaning \foo.
+\ifdefined\foo IS \else is NOT \fi defined,
 it \ifcsname foo\endcsname IS \else is NOT \fi cs-defined,
 it \ifx\foo\relax IS \else is NOT \fi relax,
 but it \@ifundefined{foo}{is still NOT}{IS} @defined.
 
-baz \ifdefined\baz IS \else is NOT \fi defined,
-it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
-and it \ifx\baz\relax IS \else is NOT \fi relax.
-Now,
-baz \ifdefined\baz IS \else is still NOT \fi defined,
-it \ifcsname baz\endcsname IS \else is still NOT \fi cs-defined,
-and it \ifx\baz\relax IS \else is still NOT \fi relax.
+Try again, without the @ifundefined.
+macro fuu: \meaning \fuu.
+\ifdefined\fuu IS \else is NOT \fi defined,
+it \ifcsname fuu\endcsname IS \else is NOT \fi cs-defined,
+and it \ifx\fuu\relax IS \else is NOT \fi relax.
+
+After testing, however: \meaning \fuu.
+\ifdefined\fuu IS \else is still NOT \fi defined,
+it \ifcsname fuu\endcsname IS \else is still NOT \fi cs-defined,
+and it \ifx\fuu\relax IS \else is still NOT \fi relax.
+
+[\expandafter\ifx\csname fuu\endcsname\relax test1 \else test2 \fi],
+After ifx csname concoction: \meaning \fuu.
+\ifdefined\fuu IS \else is NOT \fi defined,
+it \ifcsname fuu\endcsname IS \else is NOT \fi cs-defined,
+and it \ifx\fuu\relax IS \else is NOT \fi relax.
 
 
-baz \ifdefined\baz IS \else is NOT \fi defined,
-it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
-and it \ifx\baz\relax IS \else is NOT \fi relax.
-However, after ifx csname concoction
-[\expandafter\ifx\csname baz\endcsname\relax is \else is not \fi],
-baz \ifdefined\baz IS \else is NOT \fi defined,
-it \ifcsname baz\endcsname IS \else is NOT \fi cs-defined,
-and it \ifx\baz\relax IS \else is NOT \fi relax.
-
-
-Let zonk to relax.
 \let\zonk\relax
-zonk \ifdefined\zonk IS \else is NOT \fi defined,
+Let zonk to relax: \meaning \zonk.
+\ifdefined\zonk IS \else is NOT \fi defined,
 it \ifcsname zonk\endcsname IS \else is NOT \fi cs-defined,
 it \ifx\zonk\relax IS \else is NOT \fi relax,
 and it \@ifundefined{zonk}{is NOT}{IS} @defined.
 
-Let zoob to a undefined token.
 \let\zoob\zelda
-zoob \ifdefined\zoob IS \else is NOT \fi defined,
+Let zoob to a undefined token: \meaning\zoob.
+\ifdefined\zoob IS \else is NOT \fi defined,
 it \ifcsname zoob\endcsname IS \else is NOT \fi cs-defined,
 it \ifx\zoob\relax IS \else is NOT \fi relax,
 and it \@ifundefined{zoob}{is NOT}{IS} @defined.
 
-Let zook to a plain letter.
+\let\two\one
+\let\three\two
+\let\four\three
+\let\zoon\four
+Let zoon indirectly to a undefined token: \meaning \zoon.
+\ifdefined\zoon IS \else is NOT \fi defined,
+it \ifcsname zoon\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\zoon\relax IS \else is NOT \fi relax,
+% but do NOT use \@ifundefined, it'll just set it to \relax
+%and it \@ifundefined{zoon}{is NOT}{IS} @defined.
+
+\let\one\relax
+Now, let that initial token to relax: \meaning \zoon.
+\ifdefined\zoon IS \else is NOT \fi defined,
+it \ifcsname zoon\endcsname IS \else is NOT \fi cs-defined,
+it \ifx\zoon\relax IS \else is NOT \fi relax,
+%BUT it still \@ifundefined{zoon}{is NOT}{IS} @defined.
+Ie. no change: the chain was `collaped'.
+
 \let\zook=a
-zook \ifdefined\zook IS \else is NOT \fi defined,
+Let zook to a plain letter: \meaning\zook.
+It expands to `\zook'.
+\ifdefined\zook IS \else is NOT \fi defined,
 it \ifcsname zook\endcsname IS \else is NOT \fi cs-defined,
 it \ifx\zook\relax IS \else is NOT \fi relax,
 and it \@ifundefined{zook}{is NOT}{IS} @defined.

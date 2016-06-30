@@ -30,15 +30,17 @@ use Algorithm::Diff;
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
 my ($doxml,     $dopdf, $docompare)   = ();
 my ($verbosity, $help,  $showversion) = (0);
+my $whitespace = 1;    # keep whitespace;
 GetOptions("xml!" => \$doxml,
-  "pdf!"     => \$dopdf,
-  "compare!" => \$docompare,
-  "quiet"    => sub { $verbosity--; },
-  "verbose"  => sub { $verbosity++; },
-  "VERSION"  => \$showversion,
-  "help"     => \$help,
-  "dvi"      => \$help,                  # Obsolete!
-  "nodvi"    => \$help,
+  "pdf!"        => \$dopdf,
+  "compare!"    => \$docompare,
+  "quiet"       => sub { $verbosity--; },
+  "verbose"     => sub { $verbosity++; },
+  "VERSION"     => \$showversion,
+  "help"        => \$help,
+  "dvi"         => \$help,                  # Obsolete!
+  "nodvi"       => \$help,
+  "whitespace!" => \$whitespace,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 if ($showversion) { print STDERR "$identity\n"; exit(1); }
@@ -52,6 +54,8 @@ binmode(STDERR, ":encoding(UTF-8)");
 #  copy xml to a backup and compare ?
 # or compare option
 # What about if $ARG is a directory? Do all tests in that directory?
+
+my (@PASS, @FAIL);
 foreach my $source (@ARGV) {
   $source =~ s/(\.pdf|\.dvi|\.xml|\.tex|\.spec)$//;    # Ignore extension, if given.
   if (-f "$source.spec") {                             # Do Daemon style test
@@ -61,6 +65,11 @@ foreach my $source (@ARGV) {
   else {
     die "There seems to be no test case $source"; }
 }
+
+if ($docompare) {
+  print "Testing results:"
+    . " Pass= " . (@PASS ? scalar(@PASS) . ' (' . join(',', @PASS) . ')' : '0')
+    . " Fail= " . (@FAIL ? scalar(@FAIL) . ' (' . join(',', @FAIL) . ')' : '0') . "\n"; }
 
 #======================================================================
 sub maketest_latexml {
@@ -73,7 +82,7 @@ sub maketest_latexml {
   my $xml_time = pathname_timestamp($xml_file);
   my $pdf_time = pathname_timestamp($pdf_file);
   if ($docompare) {
-    compare_xml($dir, $name); }
+    (compare_xml($dir, $name) ? push(@FAIL, $name) : push(@PASS, $name)); }
   else {
     # Possibly remake xml
     if (defined $doxml ? $doxml : !(-f $xml_file) || ($src_time > $xml_time)) {
@@ -118,14 +127,15 @@ sub maketest_daemon {
     unlink "$name.test.status" if -e "$name.test.status";
     die "Failed to execute '$invocation': $!"; }
   if ($docompare) {
+    my $ndiffs = 0;
     print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
-    compareLines(readXML("$name.xml"), readXML("$name.test.xml"));
+    $ndiffs += compareLines(readXML("$name.xml"), readXML("$name.test.xml"));
     print "\n" . ("=" x 40) . "\nCompare Expected Status $dir/$name to current status:\n";
-    compareLines(readText("$name.status"), readText("$name.test.status"));
+    $ndiffs += compareLines(readText("$name.status"), readText("$name.test.status"));
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
-  }
-  else {
+    ($ndiffs ? push(@FAIL, $name) : push(@PASS, $name)); }
+  elsif ($doxml) {
     print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
     move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
     move("$name.test.status", "$name.status") if -e "$name.test.status"; }
@@ -162,8 +172,26 @@ sub compare_xml {
   #========================================
   # Do the comparison
   print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
-  compareLines(readXML("$file.xml"), stringifyDom($newdom));
-  return; }
+  return compareLines(readXML("$file.xml"), stringifyDom($newdom)); }
+
+sub compare_xml {
+  my ($dir, $name) = @_;
+  my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
+  my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
+  my $test   = pathname_make(dir => $dir, name => $name, type => 'test.xml');
+  #========================================
+  # Generate the XML from the current latexml
+  system('latexml', $source,
+    "--destination=" . $test,
+    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
+    or die "Failed to convert $source: $!";
+
+  #========================================
+  # Do the comparison
+  print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
+  my $result = compareLines(readXML($xml), readXML($test));
+  unlink $test if -e $test;
+  return $result; }
 
 sub compareLines {
   my ($oldlines, $newlines) = @_;
@@ -190,6 +218,7 @@ sub compareLines {
 sub readXML {
   my ($xmlfile) = @_;
   my $parser = XML::LibXML->new();
+  $parser->keep_blanks($whitespace);    # Keep or trim whitespace.
   return stringifyDom($parser->parse_file($xmlfile)); }
 
 sub readText {
@@ -221,6 +250,18 @@ sub gen_xml {
     rename("$file.xml", "$file.xml.bak"); }
   $latexml->convertAndWriteFile($file)
     or die "Failed to create $file.xml: $!";
+  return; }
+
+sub gen_xml {
+  my ($dir, $name) = @_;
+  my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
+  my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
+  if (-f $xml) {
+    rename($xml, $xml . '.bak'); }
+  system('latexml', $source,
+    "--destination=" . $xml,
+    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
+    or die "Failed to create $xml: $!";
   return; }
 
 sub gen_pdf {

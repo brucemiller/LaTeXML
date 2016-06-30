@@ -16,11 +16,11 @@ use warnings;
 use LaTeXML::Package;
 #======================================================================
 RequirePackage('graphicx');
+RequirePackage('subfig');
 RequirePackage('xcolor');
 RequirePackage('transparent');
 RequirePackage('import');
 # xkeyval
-# subfig
 
 # Since we've already arranged for graphicx to accept svg, we're pretty much done.
 # There are some new options...

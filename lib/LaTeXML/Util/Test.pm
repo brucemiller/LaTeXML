@@ -10,8 +10,8 @@ use File::Copy;
 use File::Which;
 use File::Spec::Functions;
 use base qw(Exporter);
-our @EXPORT = (qw(latexml_ok is_xmlcontent is_filecontent is_strings skip_all
-    latexml_tests),
+#  @Test::More::EXPORT);
+our @EXPORT = (qw(&latexml_ok &latexml_tests),
   @Test::More::EXPORT);
 my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');    # [CONFIGURATION]
 # Note that this is a singlet; the same Builder is shared.
@@ -48,7 +48,7 @@ sub latexml_tests {
         foreach my $name (@daemon_tests) {
           my $test = "$directory/$name";
         SKIP: {
-            skip("No file $test.xml and/or $$test.status", 1)
+            skip("No file $test.xml and/or $test.status", 1)
               unless ((-f "$test.xml") && (-f "$test.status"));
             next unless check_requirements($test, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
@@ -80,32 +80,56 @@ sub do_fail {
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
   my ($texpath, $xmlpath, $name) = @_;
-  my @paths = ($texpath =~ m|^(.+)/\w+\.tex$| ? ($1) : ());
+  if (my $texstrings = process_texfile($texpath, $name)) {
+    if (my $xmlstrings = process_xmlfile($xmlpath, $name)) {
+      return is_strings($texstrings, $xmlstrings, $name); } } }
+
+# These return the list-of-strings form of whatever was requested, if successful,
+# otherwise undef; and they will have reported the failure
+sub process_texfile {
+  my ($texpath, $name) = @_;
   my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includeComments => 0,
       verbosity => -2); };
-  return do_fail($name, "Couldn't instanciate LaTeXML: " . @!) unless $latexml;
-
-  my $dom = eval { $latexml->convertFile($texpath); };
-  return do_fail($name, "Couldn't convert $texpath: " . @!) unless $dom;
-  return is_xmlcontent($latexml, $dom, $xmlpath, $name); }
-
-sub is_xmlcontent {
-  my ($latexml, $xmldom, $path, $name) = @_;
-  if (!defined $xmldom) {
-    return do_fail($name, "The XML DOM was undefined for $name"); }
+  if (!$latexml) {
+    do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
-###    eval { $domstring = $xmldom->toString(1); };
-####    eval { $domstring = $xmldom->toStringC14N(0); };
-    # We want the DOM to be BOTH indented AND canonical!!
-    my $domstring =
-      eval { my $string = $xmldom->toString(1);
-      my $parser = XML::LibXML->new();
-      $parser->validation(0);
-      $parser->keep_blanks(1);
-      $parser->parse_string($string)->toStringC14N(0); };
-    return do_fail($name, "Couldn't convert dom to string: " . @!) unless $domstring;
-    return is_xmlfilecontent([split('\n', $domstring)], $path, $name); } }
+    my $dom = eval { $latexml->convertFile($texpath); };
+    if (!$dom) {
+      do_fail($name, "Couldn't convert $texpath: " . @!); return; }
+    else {
+      return process_dom($dom, $name); } } }
 
+sub process_dom {
+  my ($xmldom, $name) = @_;
+  # We want the DOM to be BOTH indented AND canonical!!
+  my $domstring =
+    eval { my $string = $xmldom->toString(1);
+    my $parser = XML::LibXML->new();
+    $parser->validation(0);
+    $parser->keep_blanks(1);
+    $parser->parse_string($string)->toStringC14N(0); };
+  if (!$domstring) {
+    do_fail($name, "Couldn't convert dom to string: " . @!); return; }
+  else {
+    return process_domstring($domstring, $name); } }
+
+sub process_xmlfile {
+  my ($xmlpath, $name) = @_;
+  my $domstring =
+    eval { my $parser = XML::LibXML->new();
+    $parser->validation(0);
+    $parser->keep_blanks(1);
+    $parser->parse_file($xmlpath)->toStringC14N(0); };
+  if (!$domstring) {
+    do_fail($name, "Could not open $xmlpath"); return; }
+  else {
+    return process_domstring($domstring, $name); } }
+
+sub process_domstring {
+  my ($domstring, $name) = @_;
+  return [split('\n', $domstring)]; }
+
+# This should be OBSOLETE, it has a convoluted, clunky interface
 sub is_filecontent {
   my ($strings, $path, $name) = @_;
   #  if(!open(IN,"<:utf8",$path)){
@@ -119,16 +143,8 @@ sub is_filecontent {
     close($IN);
     return is_strings($strings, [@lines], $name); } }
 
-sub is_xmlfilecontent {
-  my ($strings, $path, $name) = @_;
-  my $domstring =
-    eval { my $parser = XML::LibXML->new();
-    $parser->validation(0);
-    $parser->keep_blanks(1);
-    $parser->parse_file($path)->toStringC14N(0); };
-  return do_fail($name, "Could not open $path") unless $domstring;
-  return is_strings($strings, [split('\n', $domstring)], $name); }
-
+# $strings1 is the currently generated material
+# $strings2 is the stored expected result.
 sub is_strings {
   my ($strings1, $strings2, $name) = @_;
   my $max = $#$strings1 > $#$strings2 ? $#$strings1 : $#$strings2;
@@ -159,7 +175,7 @@ sub daemon_ok {
   my $opts = read_options("$base.spec", $base);
   push @$opts, (['destination', "$localname.test.xml"],
     ['log',                "/dev/null"],
-    ['timeout',            5],
+    ['timeout',            10],
     ['autoflush',          1],
     ['timestamp',          '0'],
     ['nodefaultresources', ''],
@@ -179,8 +195,15 @@ sub daemon_ok {
     chdir($dir);
     is(system($invocation), 0, "latexmlc invocation for test $localname");
     chdir($current_dir);
-    is_filecontent(get_filecontent("$base.test.xml"),    "$base.xml",    $base);
-    is_filecontent(get_filecontent("$base.test.status"), "$base.status", $base);
+    # Compare the just generated $base.test.xml to the previous $base.xml
+    if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
+      if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
+        is_strings($teststrings, $xmlstrings, $base); } }
+
+    # Compare the just generated $base.test.status to the previous $base.status
+    if (my $teststatus = get_filecontent("$base.test.status", $base)) {
+      if (my $status = get_filecontent("$base.status", $base)) {
+        is_strings($teststatus, $status, $base); } }
     unlink "$base.test.xml"    if -e "$base.test.xml";
     unlink "$base.test.status" if -e "$base.test.status";
   }

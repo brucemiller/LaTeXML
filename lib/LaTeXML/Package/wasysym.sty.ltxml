@@ -1,0 +1,196 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  wasysym                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to Kim Philipp Jablonski <kpjkpjkpjkpjkpjkpj@gmail.com>      | #
+# | of the arXMLiv group for initial implementation                     | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+
+DefPrimitiveI('\ataribox', undef, "\x{26CB}", font => { color => 'white', background => 'black' }, bounded => 1);
+DefMathI('\Join',       undef, "\x{2a1d}");
+DefMathI('\Box',        undef, "\x{25a1}");
+DefMathI('\Diamond',    undef, "\x{25c7}");
+DefMathI('\leadsto',    undef, "\x{2933}");
+DefMathI('\sqsubset',   undef, "\x{228f}");
+DefMathI('\sqsupset',   undef, "\x{2290}");
+DefMathI('\lhd',        undef, "\x{22B2}");
+DefMathI('\unlhd',      undef, "\x{22B4}");
+DefMathI('\LHD',        undef, "\x{25C0}");
+DefMathI('\rhd',        undef, "\x{22B3}");
+DefMathI('\unrhd',      undef, "\x{22B5}");
+DefMathI('\RHD',        undef, "\x{25B6}");
+DefMathI('\apprle',     undef, "\x{2272}");
+DefMathI('\apprge',     undef, "\x{2273}");
+DefMathI('\wasypropto', undef, "\x{221d}");
+DefMathI('\invneg',     undef, "\x{2310}");
+DefMathI('\ocircle',    undef, "\x{25cb}");
+DefMathI('\logof',      undef, "\x{229b}");
+
+# These two need some negative spaces to overlap cleanly!
+DefPrimitiveI('\photon', undef, "\x{3030}\x{3030}");           # this is actually CJK punctuation!
+DefPrimitiveI('\gluon',  undef, "\x{27BF}\x{27BF}\x{27BF}");
+Let('\varint',  '\int');
+Let('\varoint', '\oint');
+DefMathI('\iintop', undef, "\x{222C}", meaning => 'double-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiintop', undef, "\x{222D}", meaning => 'triple-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oiintop', undef, "\x{222F}", meaning => 'surface-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iint', undef, "\x{222C}", meaning => 'double-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\iiint', undef, "\x{222D}", meaning => 'triple-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\oiint', undef, "\x{222F}", meaning => 'surface-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+
+DefPrimitiveI('\male',          undef, "\x{2642}");
+DefPrimitiveI('\female',        undef, "\x{2640}");
+DefPrimitiveI('\currency',      undef, UTF(0xA4));
+DefPrimitiveI('\phone',         undef, "\x{260E}");
+DefPrimitiveI('\recorder',      undef, "\x{2315}");
+DefPrimitiveI('\clock',         undef, "\x{1F552}");    # or 231A is safer? or 1F552
+DefPrimitiveI('\lightning',     undef, "\x{21AF}");
+DefPrimitiveI('\pointer',       undef, "\x{21E8}");     # or 261E?
+DefPrimitiveI('\RIGHTarrow',    undef, "\x{25B6}");
+DefPrimitiveI('\LEFTarrow',     undef, "\x{25C0}");
+DefPrimitiveI('\UParrow',       undef, "\x{25B2}");
+DefPrimitiveI('\DOWNarrow',     undef, "\x{25BC}");
+DefPrimitiveI('\diameter',      undef, "\x{2300}");
+DefPrimitiveI('\invdiameter',   undef, "\x{29B0}");     # reversed empty set
+DefPrimitiveI('\varangle',      undef, "\x{2222}");
+DefPrimitiveI('\wasylozenge',   undef, "\x{2311}");
+DefPrimitiveI('\kreuz',         undef, "\x{2720}");
+DefPrimitiveI('\smiley',        undef, "\x{263A}");
+DefPrimitiveI('\frownie',       undef, "\x{2639}");
+DefPrimitiveI('\blacksmiley',   undef, "\x{263B}");
+DefPrimitiveI('\sun',           undef, "\x{263C}");
+DefPrimitiveI('\checked',       undef, "\x{2713}");
+DefPrimitiveI('\bell',          undef, "\x{237E}");
+DefPrimitiveI('\cent',          undef, UTF(0xA2));
+DefPrimitiveI('\permil',        undef, "\x{2030}");
+DefPrimitiveI('\brokenvert',    undef, UTF(0xA6));
+DefPrimitiveI('\wasytherefore', undef, "\x{2234}");
+DefPrimitiveI('\Bowtie',        undef, "\x{22c8}");
+DefPrimitiveI('\agemO',         undef, "\x{2127}");
+
+DefPrimitiveI('\AC',  undef, "\x{223c}");    # don't use math symbol here
+DefPrimitiveI('\HF',  undef, "\x{2248}");    # don't use math symbol here
+DefPrimitiveI('\VHF', undef, "\x{224b}");    # don't use math symbol here
+
+DefPrimitiveI('\Square',     undef, "\x{25A1}");
+DefPrimitiveI('\XBox',       undef, "\x{2327}");
+DefPrimitiveI('\CheckedBox', undef, "\x{2611}");
+DefPrimitiveI('\hexagon',    undef, "\x{2394}");
+DefPrimitiveI('\varhexagon', undef, "\x{2B21}");
+DefMacroI('\octagon', undef, '\lx@nounicode{\octagon}');    # Odd...
+DefPrimitiveI('\pentagon', undef, "\x{2B20}");
+DefPrimitiveI('\hexstar',  undef, "\x{26b9}");
+# Should be able to rotate it?
+#DefConstructorI('\varhexstar',undef,"<ltx:text angle='60' _force_font='1'>\x{26B9}</ltx:text>");
+DefMacroI('\varhexstar', undef, '\lx@nounicode{\varhexstar}');
+DefPrimitiveI('\varhexstar', undef, "\x{26b9}");
+
+DefPrimitiveI('\davidsstar', undef, "\x{2721}");
+
+DefPrimitiveI('\eighthnote',  undef, "\x{1D160}");
+DefPrimitiveI('\quarternote', undef, "\x{1D15F}");
+DefPrimitiveI('\halfnote',    undef, "\x{1D15E}");
+DefPrimitiveI('\fullnote',    undef, "\x{1D15D}");
+DefPrimitiveI('\twonotes',    undef, "\x{266B}");
+
+DefPrimitiveI('\Circle', undef, "\x{25CB}");
+DefPrimitiveI('\CIRCLE', undef, "\x{25CF}");
+DefMacroI('\Leftcircle',  undef, '\lx@nounicode{\Leftcircle}');    # Odd...
+DefMacroI('\Rightcircle', undef, '\lx@nounicode{\Rightcircle}');
+DefPrimitiveI('\LEFTCIRCLE',  undef, "\x{25D6}");
+DefPrimitiveI('\RIGHTCIRCLE', undef, "\x{25D7}");
+DefPrimitiveI('\LEFTcircle',  undef, "\x{25D0}");
+DefPrimitiveI('\RIGHTcircle', undef, "\x{25D1}");
+DefPrimitiveI('\leftturn',    undef, "\x{21BA}");
+DefPrimitiveI('\rightturn',   undef, "\x{21BB}");
+
+DefPrimitiveI('\dh',    undef, UTF(0xf0));
+DefPrimitiveI('\DH',    undef, UTF(0xd0));
+DefPrimitiveI('\thorn', undef, UTF(0xfe));
+DefPrimitiveI('\Thorn', undef, UTF(0xde));
+DefPrimitiveI('\openo', undef, "\x{0254}");
+DefPrimitiveI('\inve',  undef, "\x{01dd}");
+
+DefPrimitiveI('\vernal',    undef, "\x{2648}");
+DefPrimitiveI('\ascnode',   undef, "\x{260A}");
+DefPrimitiveI('\descnode',  undef, "\x{260B}");
+DefPrimitiveI('\fullmoon',  undef, "\x{1F315}");
+DefPrimitiveI('\newmoon',   undef, "\x{1F311}");
+DefPrimitiveI('\leftmoon',  undef, "\x{263E}");
+DefPrimitiveI('\rightmoon', undef, "\x{263D}");
+DefPrimitiveI('\astrosun',  undef, "\x{2609}");
+DefPrimitiveI('\mercury',   undef, "\x{263F}");
+DefPrimitiveI('\venus',     undef, "\x{2640}");
+DefPrimitiveI('\earth',     undef, "\x{2641}");
+DefPrimitiveI('\mars',      undef, "\x{2642}");
+DefPrimitiveI('\jupiter',   undef, "\x{2643}");
+DefPrimitiveI('\saturn',    undef, "\x{2644}");
+DefPrimitiveI('\uranus',    undef, "\x{26E2}");
+DefPrimitiveI('\neptune',   undef, "\x{2646}");
+DefPrimitiveI('\pluto',     undef, "\x{2647}");
+
+DefPrimitiveI('\aries',       undef, "\x{2648}");
+DefPrimitiveI('\taurus',      undef, "\x{2649}");
+DefPrimitiveI('\gemini',      undef, "\x{264A}");
+DefPrimitiveI('\cancer',      undef, "\x{264B}");
+DefPrimitiveI('\leo',         undef, "\x{264C}");
+DefPrimitiveI('\virgo',       undef, "\x{264D}");
+DefPrimitiveI('\libra',       undef, "\x{264E}");
+DefPrimitiveI('\scorpio',     undef, "\x{264F}");
+DefPrimitiveI('\sagittarius', undef, "\x{2650}");
+DefPrimitiveI('\capricornus', undef, "\x{2651}");
+DefPrimitiveI('\aquarius',    undef, "\x{2652}");
+DefPrimitiveI('\pisces',      undef, "\x{2653}");
+DefPrimitiveI('\conjunction', undef, "\x{260C}");
+DefPrimitiveI('\opposition',  undef, "\x{260D}");
+
+DefPrimitiveI('\APLcomment',       undef, "\x{235D}");    # Not sure if this is right
+DefPrimitiveI('\APLstar',          undef, "\x{22C6}");    # Closest I can find...
+DefPrimitiveI('\APLlog',           undef, "\x{235F}");
+DefPrimitiveI('\APLbox',           undef, "\x{2395}");
+DefPrimitiveI('\APLup',            undef, "\x{234B}");
+DefPrimitiveI('\APLdown',          undef, "\x{2352}");
+DefPrimitiveI('\APLinput',         undef, "\x{235e}");
+DefPrimitiveI('\APLinv',           undef, "\x{2339}");
+DefPrimitiveI('\APLuparrowbox',    undef, "\x{2350}");
+DefPrimitiveI('\APLdownarrowbox',  undef, "\x{2357}");
+DefPrimitiveI('\APLleftarrowbox',  undef, "\x{2347}");
+DefPrimitiveI('\APLrightarrowbox', undef, "\x{2348}");
+DefPrimitiveI('\notbackslash',     undef, "\x{2340}");
+DefPrimitiveI('\notslash',         undef, "\x{233F}");
+
+# Need to do these in such a way as to get a reversion or alias!
+DefPrimitiveI('\text@tilde', undef, UTF(0x7E));
+DefPrimitiveI('\text@circ',  undef, "\x{2218}");
+DefMacro('\APLnot{}',  '\lx@kludged{#1\lx@tweaked{width=0pt,xoffset=-0.8em}{\text@tilde}}');
+DefMacro('\APLvert{}', '\lx@kludged{#1\lx@tweaked{width=0pt,xoffset=-1em}{|}}');
+DefMacro('\APLcirc{}', '\lx@kludged{#1\lx@tweaked{width=0pt,xoffset=-0.66em}{\text@circ}}');
+DefMacroI('\APLminus', undef, '\raise 0.5ex \hbox{-}');
+
+#======================================================================
+1;
+
+# vim: ft=perl: noexpandtab:

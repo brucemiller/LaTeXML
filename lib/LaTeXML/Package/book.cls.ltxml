@@ -114,7 +114,7 @@ DefPrimitive('\@appendix', sub {
     Let('\chapter',   '\appendix@chapter', 'global');
     Let('\@appendix', '\relax',            'global');
 
-    if (LookupDefinition(T_CS('\appendixname'))) {
+    if (IsDefined('\appendixname')) {
       Let('\chaptername', '\appendixname', 'global'); }
     return; });
 

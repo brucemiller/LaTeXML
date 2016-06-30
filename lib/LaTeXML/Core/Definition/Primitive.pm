@@ -38,25 +38,26 @@ sub executeBeforeDigest {
   my ($self, $stomach) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my $pre = $$self{beforeDigest};
-  return ($pre ? map { &$_($stomach) } @$pre : ()); }
+  return ($pre ? map { &$_($stomach) } grep { defined $_ } @$pre : ()); }
 
 sub executeAfterDigest {
   my ($self, $stomach, @whatever) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my $post = $$self{afterDigest};
-  return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
+  return ($post ? map { &$_($stomach, @whatever) } grep { defined $_ } @$post : ()); }
 
 # Digest the primitive; this should occur in the stomach.
 sub invoke {
   my ($self, $stomach) = @_;
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
-
-  if ($STATE->lookupValue('TRACINGCOMMANDS')) {
-    print STDERR '{' . $self->getCSName . "}\n"; }
-  my @result = (
-    $self->executeBeforeDigest($stomach),
-    &{ $$self{replacement} }($stomach, $self->readArguments($stomach->getGullet)),
+  print STDERR '{' . $self->tracingCSName . "}\n" if $tracing;
+  my @result = ($self->executeBeforeDigest($stomach));
+  my @args   = $self->readArguments($stomach->getGullet);
+  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  push(@result,
+    &{ $$self{replacement} }($stomach, @args),
     $self->executeAfterDigest($stomach));
 
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;

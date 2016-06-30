@@ -59,14 +59,14 @@ sub getNode {
 
 sub nConnShiftUp {
   my ($p) = @_;
-  if (my $off = LookupValue('\psoffset')) {
+  if (my $off = $p && LookupValue('\psoffset')) {
     return Pair($p->getX, $p->getY->add($off)); }
   else {
     return $p } }
 
 sub nConnShiftDown {
   my ($p) = @_;
-  if (my $off = LookupValue('\psoffset')) {
+  if (my $off = $p && LookupValue('\psoffset')) {
     return Pair($p->getX, $p->getY->subtract($off)); }
   else {
     return $p } }
