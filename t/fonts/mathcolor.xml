@@ -14,7 +14,7 @@
       </Math> B</p>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" tex="r{\color{green}g\color{yellow}y}" text="r * g * y" xml:id="p2.m1">
+    <p><Math mode="inline" tex="r{\color[rgb]{0,1,0}g\color[rgb]{1,1,0}y}" text="r * g * y" xml:id="p2.m1">
         <XMath>
           <XMApp color="#FF0000">
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -26,7 +26,7 @@
       </Math><text color="#FF0000"> R</text> B</p>
   </para>
   <para xml:id="p3">
-    <p><text color="#FF0000">R <Math mode="inline" tex="r\mbox{R}{\color{green}g\mbox{G}\color{yellow}y\mbox{Y}}r\mbox{R}" text="r * [R] * g * [G] * y * [Y] * r * [R]" xml:id="p3.m1">
+    <p><text color="#FF0000">R <Math mode="inline" tex="r\mbox{R}{\color[rgb]{0,1,0}g\mbox{G}\color[rgb]{1,1,0}y\mbox{Y}}r\mbox{R}" text="r * [R] * g * [G] * y * [Y] * r * [R]" xml:id="p3.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -43,7 +43,7 @@
         </Math> R</text> B</p>
   </para>
   <para xml:id="p4">
-    <p><Math mode="inline" tex="\color{red}r" text="r" xml:id="p4.m1">
+    <p><Math mode="inline" tex="\color[rgb]{1,0,0}r" text="r" xml:id="p4.m1">
         <XMath>
           <XMTok color="#FF0000" font="italic" role="UNKNOWN">r</XMTok>
         </XMath>
