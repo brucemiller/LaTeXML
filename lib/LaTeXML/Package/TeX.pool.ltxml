@@ -360,7 +360,8 @@ DefParameterType('DirectoryList', sub {
       my @dirs = ();
       while ($gullet->ifNext(T_BEGIN)) {
         # Should these be Semiverbatim ??
-        push(@dirs, $gullet->readArg); }
+        push(@dirs, $gullet->readArg);
+        $gullet->readMatch(T_OTHER(',')); }
       if ($gullet->ifNext(T_END)) {
         $gullet->readToken; }
       else {
