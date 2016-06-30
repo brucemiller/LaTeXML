@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use MIME::Base64;
+use Encode qw(is_utf8 encode);
 
 #======================================================================
 # To the extent we succeed in doing all the pretty-printing...
@@ -192,7 +193,12 @@ DefConstructor('\@@listings@block {} {}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
-    my $data = encode_base64(LookupValue('LISTINGS_DATA_' . ToString($whatsit->getArg(1))));
+    my $data_key = 'LISTINGS_DATA_' . ToString($whatsit->getArg(1));
+    my $listings_data = LookupValue($data_key);
+    if (is_utf8($listings_data)) {
+      $listings_data = encode('UTF-8', $listings_data);
+    }
+    my $data = encode_base64($listings_data);
     $whatsit->setProperties(data => $data, datatype => 'text/plain', dataencoding => 'base64'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
