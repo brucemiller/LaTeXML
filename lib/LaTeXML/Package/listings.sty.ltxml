@@ -193,7 +193,7 @@ DefConstructor('\@@listings@block {} {}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
-    my $data_key = 'LISTINGS_DATA_' . ToString($whatsit->getArg(1));
+    my $data_key      = 'LISTINGS_DATA_' . ToString($whatsit->getArg(1));
     my $listings_data = LookupValue($data_key);
     if (is_utf8($listings_data)) {
       $listings_data = encode('UTF-8', $listings_data);
@@ -312,13 +312,27 @@ sub lstActivate {
 
 #----------------------------------------------------------------------
 # Various helpers for dealing with the arguments to options.
-sub lstUnGroup {    # Strip outer {}, if any
+# Strip outer {} if there's only a single group
+# [The need for this may be a sign of not-quite-correct keyval handling?]
+sub lstUnGroup {
   my ($tokens) = @_;
   if ($tokens && ref $tokens) {
     my @t = $tokens->unlist;
-    if (Equals($t[0], T_BEGIN) && Equals($t[-1], T_END)) {
+    if (Equals($t[0], T_BEGIN) && Equals($t[-1], T_END) && (count_groups(@t) == 1)) {
       $tokens = Tokens(@t[1 .. $#t - 1]); } }
   return $tokens; }
+
+sub count_groups {
+  my (@tokens) = @_;
+  my $groups   = 0;
+  my $level    = 0;
+  foreach my $t (@tokens) {
+    if (Equals($t, T_END)) {
+      $level--; }
+    elsif (Equals($t, T_BEGIN)) {
+      $groups++ if $level == 0;
+      $level++; } }
+  return $groups; }
 
 sub lstSplit {
   my ($stuff) = @_;
