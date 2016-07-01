@@ -948,11 +948,14 @@ DefMacro('\lst@@escapechar Until:\end', sub {
       LookupValue('LST_CLASSES')->{evaluate}{eval} = 1; }
     return; });
 DefKeyVal('LST', 'escapeinside', '');
-DefMacro('\lst@@escapeinside Until:\end', sub {
-    my ($gullet, $escape) = @_;
-    my ($escape1, $escape2) = map { lstDeslash($_) } ($escape ? $escape->unlist : ());
+DefMacro('\lst@@escapeinside Until:\end', '\ifx.#1.\else\lst@@escapeinside@#1\end\fi');
+DefMacro('\lst@@escapeinside@ {} {} Until:\end', sub {
+    my ($gullet, $escape1, $escape2) = @_;
     if ($escape1 && $escape2) {
-      LookupValue('LST_DELIMITERS')->{$escape1} = { open => lstRegexp($escape1), close => lstRegexp($escape2),
+      $escape1 = lstDeslash($escape1);
+      $escape2 = lstDeslash($escape2);
+      LookupValue('LST_DELIMITERS')->{$escape1} = {
+        open => lstRegexp($escape1), close => lstRegexp($escape2),
         class => 'evaluate', escape => 1 };
       LookupValue('LST_CLASSES')->{evaluate}{eval} = 1; }
     return; });
