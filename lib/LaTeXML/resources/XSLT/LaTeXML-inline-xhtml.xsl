@@ -290,7 +290,9 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:cite">
+  <!-- avoid empty cite's from nocite -->
+  <xsl:template match="ltx:cite"/>
+  <xsl:template match="ltx:cite[child::*[not(self::ltx:bibref) or @show!='nothing']]">
     <xsl:param name="context"/>
     <xsl:element name="cite" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
