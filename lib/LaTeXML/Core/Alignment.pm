@@ -396,20 +396,30 @@ sub normalizeAlignment {
               $border =~ s/[^rRlL]//g;                           # mask all but left border
               $border =~ s/l/r/g;                                # convert to right
               $border =~ s/L/R/g;                                # convert to right
-              $$prev{border} .= $border; }
+              $$prev{border} .= $border;
+              if (my @preserve = preservedBoxes($$col{boxes})) {    # Copy boxes over, in case side effects?
+                $$prev{boxes} = LaTeXML::Core::List($$prev{boxes}
+                  ? ($$prev{boxes}->unlist, @preserve) : @preserve); }
+            }
             elsif (my $next = $$row{columns}[1]) {
               my $border = $$col{border} || '';
-              $border =~ s/[^rRlL]//g;                           # mask all but left & right border
-              $border =~ s/r/l/g;                                # but convert to left
-              $border =~ s/R/L/g;                                # but convert to left
-              $$next{border} .= $border; }                       # add to next row
-                                                                 # Now, remove the column
+              $border =~ s/[^rRlL]//g;                              # mask all but left & right border
+              $border =~ s/r/l/g;                                   # but convert to left
+              $border =~ s/R/L/g;                                   # but convert to left
+              $$next{border} .= $border;                            # add to next row
+              if (my @preserve = preservedBoxes($$col{boxes})) {    # Copy boxes over, in case side effects?
+                $$next{boxes} = LaTeXML::Core::List($$col{boxes}
+                  ? (@preserve, $$next{boxes}->unlist) : @preserve); }
+            }    # Now, remove the column
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
           } } } }
   }
   $$self{normalized} = 1;
   return; }
 
+sub preservedBoxes {
+  my ($boxes) = @_;
+  return ($boxes ? grep { $_->getProperty('alignmentPreserve') } $boxes->unlist : ()); }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Dealing with templates
 
