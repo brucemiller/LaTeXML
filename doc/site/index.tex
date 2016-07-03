@@ -216,7 +216,8 @@ yum install \
   perl-Archive-Zip perl-DB_File perl-File-Which \
   perl-Getopt-Long perl-Image-Size perl-IO-String perl-JSON-XS \
   perl-libwww-perl perl-Parse-RecDescent perl-Pod-Parser \
-  perl-Time-HiRes perl-URI perl-XML-LibXML perl-XML-LibXSLT \
+  perl-Text-Unidecode perl-Test-Simple perl-Time-HiRes perl-URI \
+  perl-XML-LibXML perl-XML-LibXSLT \
   perl-UUID-Tiny texlive ImageMagick ImageMagick-perl
 \end{lstlisting}
 Continue by installing \LaTeXML\ from
@@ -242,8 +243,8 @@ by running this command:
 \begin{lstlisting}[style=shell]
 sudo apt-get install   \
   libarchive-zip-perl libfile-which-perl libimage-size-perl  \
-  libio-string-perl libjson-xs-perl libparse-recdescent-perl \
-  liburi-perl libuuid-tiny-perl libwww-perl                  \
+  libio-string-perl libjson-xs-perl libtext-unidecode-perl \
+  libparse-recdescent-perl liburi-perl libuuid-tiny-perl libwww-perl \
   libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl  \
   texlive-latex-base imagemagick libimage-magick-perl
 \end{lstlisting}
@@ -290,9 +291,9 @@ this command as root:
 \begin{lstlisting}[style=shell]
 sudo port install \
   p5-archive-zip p5-file-which p5-getopt-long p5-image-size \
-  p5-io-string p5-json-xs p5-libwww-perl p5-parse-recdescent \
-  p5-time-hires p5-uri p5-xml-libxml p5-xml-libxslt \
-  p5-perlmagick
+  p5-io-string p5-json-xs p5-text-unidecode p5-libwww-perl \
+  p5-parse-recdescent p5-time-hires p5-uri p5-xml-libxml \
+  p5-xml-libxslt p5-perlmagick
 \end{lstlisting}
 Additionally, either add \texttt{texlive} to the above list,
 or install \href{http://tug.org/mactex/}{MacTeX}.
@@ -391,9 +392,10 @@ cpan LaTeXML
 The following command will install the Perl prerequisites (including optional)
 for \LaTeXML, but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{prerequisites}).
 \begin{lstlisting}[style=shell]
-cpan Archive::Zip DB_File File::Which Image::Size \
-  IO::String JSON::XS LWP Parse::RecDescent \
-  URI XML::LibXML XML::LibXSLT UUID::Tiny
+cpan Archive::Zip DB_File File::Which Getopt::Long Image::Size \
+  IO::String JSON::XS LWP MIME::Base64 Parse::RecDescent \
+  Pod::Parser Text::Unidecode Test::More URI \
+  XML::LibXML XML::LibXSLT UUID::Tiny
 \end{lstlisting}
 You may still want to install \TeX\ and \texttt{Image::Magick}
 using other means.
