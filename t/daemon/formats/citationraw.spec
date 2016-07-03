@@ -1,5 +1,5 @@
 source = ../citations.tex
 whatsin = fragment
-whatsout = standard
+whatsout = document
 format = xhtml
-pmml = 
+pmml =
