@@ -47,6 +47,7 @@ use LaTeXML::Util::Radix;
 use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
+use Text::Unidecode;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
@@ -490,6 +491,7 @@ sub CleanID {
   $key =~ s/,/-comma-/g;
   $key =~ s/%/-pct-/g;
   $key =~ s/&/-amp-/g;
+  $key = unidecode($key);
   $key =~ s/[^\w\_\-.]//g;                 # remove everything else.
   return $key; }
 

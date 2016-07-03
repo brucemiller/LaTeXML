@@ -17,6 +17,7 @@ use LaTeXML::Common::XML;
 use charnames qw(:full);
 use Unicode::Normalize;
 use LaTeXML::Post;
+use Text::Unidecode;
 use base qw(LaTeXML::Post::Collector);
 
 # Options:
@@ -158,8 +159,8 @@ sub getIndexKeyID {
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
        # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
+  $key = unidecode($key);
   $key =~ s/[^a-zA-Z0-9]//g;
-  $key = NFC($key);    # just to be safe(?)
 ## Shouldn't be case insensitive?
 ##  $key =~ tr|A-Z|a-z|;
   return $key; }
