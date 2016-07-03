@@ -2703,7 +2703,7 @@ DefConstructor('\label Semiverbatim', sub {
       $document->setAttribute($node, labels => join(' ', sort keys %labels));
       $document->setNode($savenode); } },
   reversion   => '',
-  properties  => { alignmentSkippable => 1 },
+  properties  => { alignmentSkippable => 1, alignmentPreserve => 1 },
   afterDigest => sub {
     my $label = CleanLabel(ToString($_[1]->getArg(1)));
     $_[1]->setProperty(label => $label);
