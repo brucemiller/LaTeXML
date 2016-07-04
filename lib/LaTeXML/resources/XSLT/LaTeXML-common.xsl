@@ -658,7 +658,7 @@
     <xsl:param name="name"/>
     <xsl:attribute name="{$name}">
       <xsl:value-of select="concat('data:',
-                            f:if(@datatype,@datatype,'text/plain'),
+                            f:if(@datamimetype,@datamimetype,'text/plain'),
                             f:if(@dataencoding, concat(';',@dataencoding),''),
                             ',',@data)"/>
     </xsl:attribute>
