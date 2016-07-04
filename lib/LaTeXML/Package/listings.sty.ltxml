@@ -56,6 +56,20 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END); });                  # to balance ->bgroup
 
+# But it can also be used as an environment!
+DefMacroI(T_CS('\begin{lstinline}'), 'OptionalKeyVals:LST', sub {
+    my ($gullet, $keyvals) = @_;
+    $STATE->getStomach->bgroup;
+    AssignValue(current_environment => 'lstlisting');
+    DefMacroI('@currenvir', undef, 'lstlisting');
+    my $text = listingsReadRawLines($gullet, 'lstinline');
+    lstActivate($keyvals);
+    return (
+      @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
+      lstProcessInline($text),
+      @{ LookupValue('LISTINGS_POSTAMBLE') },
+      T_END); });    # to balance ->bgroup
+
 sub lstProcessInline {
   my ($text) = @_;
   return Invocation(T_CS('\@listings@inline'),
@@ -189,7 +203,7 @@ DefConstructor('\@@listings {}',
     RescueCaptionCounters('lstlisting', $whatsit); });
 
 DefConstructor('\@@listings@block {} {}',
-"<ltx:listing class='ltx_lstlisting' data='#data' datatype='#datatype' dataencoding='#dataencoding'>#2</ltx:listing>",
+"<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
@@ -199,7 +213,7 @@ DefConstructor('\@@listings@block {} {}',
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data);
-    $whatsit->setProperties(data => $data, datatype => 'text/plain', dataencoding => 'base64'); });
+    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low Level String stuff
@@ -225,7 +239,7 @@ sub listingsReadRawLines {
   $gullet->readRawLine;                                       # Ignore 1st line (following \begin{...}
   while (defined($line = $gullet->readRawLine)) {
     if ($line =~ /^\s*\\end\{\Q$environment\E\}(.*?)$/) {
-      $gullet->unread(Tokenize($2), T_CR);                    # put BACK what follows the \end{whatever}
+      $gullet->unread(Tokenize($1), T_CR);                    # put BACK what follows the \end{whatever}
       last; }
     push(@lines, $line); }
   return join("\n", @lines); }
