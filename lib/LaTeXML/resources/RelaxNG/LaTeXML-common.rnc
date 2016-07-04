@@ -344,7 +344,7 @@ Data.attributes =
   attribute data { text }?,
 
   ## the MIME type of the data
-  attribute datatype { text }?,
+  attribute datamimetype { text }?,
 
   ## the encoding of the data (either empty, base64, or )
   attribute dataencoding { text }?
