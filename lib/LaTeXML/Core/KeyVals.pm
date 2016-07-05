@@ -129,9 +129,18 @@ sub new {
     punct => $options{punct}, assign => $options{assign} },
     $class; }
 
+# Since we (by default) accumulate lists of values when repeated,
+# we need to provide the "common" thing: return the last value given.
 sub getValue {
   my ($self, $key) = @_;
-  return $$self{hash}{$key}; }
+  my $value = $$self{hash}{$key};
+  return (!defined $value ? undef : (ref $value eq 'ARRAY' ? $$value[-1] : $value)); }
+
+# But if you want ALL values?
+sub getValues {
+  my ($self, $key) = @_;
+  my $value = $$self{hash}{$key};
+  return (!defined $value ? () : (ref $value eq 'ARRAY' ? @$value : ($value))); }
 
 sub setValue {
   my ($self, $key, $value) = @_;
