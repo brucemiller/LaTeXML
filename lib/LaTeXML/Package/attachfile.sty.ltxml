@@ -1,0 +1,64 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | attachfile.sty                                                      | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+RequirePackage('keyval');
+RequirePackage('ifpdf');
+RequirePackage('calc');
+RequirePackage('color');
+
+DefMacro('\lx@attachfile@options', Tokens());
+DefPrimitive('\attachfilesetup {}', sub {
+    AddToMacro('\lx@attachfile@options', $_[1]->unlist);
+    return; });
+
+DefMacro('\noattachfile []',       '\lx@noattachfile{\lx@attachfile@options,#1}');
+DefMacro('\notextattachfile []{}', '\lx@notextattachfile{\lx@attachfile@options,#1}{#2}');
+DefMacro('\attachfile []{}',       '\lx@attachfile{\lx@attachfile@options,#1}{#2}');
+DefMacro('\textattachfile []{}{}', '\lx@textattachfile{\lx@attachfile@options,#1}{#2}{#3}');
+
+# The Scan & Crossref postprocessors should automatically copy the attached file to the destination.
+#
+# See attachfile.sty's documentation for potentially interesting keywords;
+# particularly metadata: author,created,date,description,mimetype,modified,size,subject,timezone
+# This stuff should eventually be recorded for "Resources" in a Manifest (eg. ePub).
+our %attachfileicon = (pushpin => "\x{1F4CC}", paperclip => "\x{1F4CE}",
+  tag => "\x{1F3F7}", graph => "\x{1F4CA}");
+
+sub attachfileAttributes {
+  my ($file, $kv) = @_;
+  $file = ($file ? ToString($file) : $file);
+  my $icon = $kv && $attachfileicon{ lc(ToString($kv->getValue('icon') || 'PushPin')) }
+    || $attachfileicon{pushpin};
+  my $color = $kv && $kv->getValue('color');
+  $color = $color && ParseColor('rgb', $color);
+  return (file => $file, icon => $icon, color => $color); }
+
+DefConstructor('\lx@noattachfile RequiredKeyVals',
+  "<ltx:text color='#color'>#icon<ltx:text/>",
+  properties => sub { attachfileAttributes(undef, $_[1]); });
+DefConstructor('\lx@notextattachfile RequiredKeyVals {}',
+  "<ltx:text color='#color'>#2<ltx:text>",
+  properties => sub { attachfileAttributes(undef, $_[1]); });
+DefConstructor('\lx@attachfile RequiredKeyVals {}',
+  "<ltx:ref href='#file' color='#color'>#icon</ltx:ref>",
+  properties => sub { attachfileAttributes($_[2], $_[1]); });
+DefConstructor('\lx@textattachfile RequiredKeyVals {}{}',
+  "<ltx:ref href='#file' color='#color'>#3</ltx:ref>",
+  properties => sub { attachfileAttributes($_[2], $_[1]); });
+#======================================================================
+1;
