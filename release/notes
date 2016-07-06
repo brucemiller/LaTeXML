@@ -32,6 +32,12 @@ Get Happy
 obviously make, make test, re-run dlmf, check, etc.
 
 #======================================================================
+# update Changes
+#======================================================================
+# using the date of the last release:
+git log --no-merges --name-status --since=<date>
+
+#======================================================================
 Choose new version
 #======================================================================
 # Last changes:
