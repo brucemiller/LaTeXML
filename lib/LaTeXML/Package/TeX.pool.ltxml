@@ -2194,8 +2194,10 @@ DefConstructor('\tabularcell@hbox HBoxContents',
   beforeDigest => sub {
     ## reenterTextMode();  # BUT NOT \\\\ !!!!!!
     Let(T_MATH,        '\@dollar@in@textmode');
-    Let('\centerline', '\relax');
-  });
+    Let('\centerline', '\relax'); },
+  afterConstruct => sub {    # Override nowrap on right,left,center cells
+    my $cell = $_[0]->getElement;
+    $_[0]->addClass($cell, 'ltx_wrap') unless ($cell->getAttribute('align') || '') eq 'justify'; });
 
 DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
