@@ -144,7 +144,7 @@ sub rationalizeFontSize {
 # convert to percent
 sub relativeFontSize {
   my ($newsize, $oldsize) = @_;
-  return int(100 * $newsize / $oldsize) . '%'; }
+  return int(0.5 + 100 * $newsize / $oldsize) . '%'; }
 
 my $FONTREGEXP
   = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
