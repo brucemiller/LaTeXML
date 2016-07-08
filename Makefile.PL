@@ -47,7 +47,7 @@ WriteMakefile(NAME => 'LaTeXML',
   AUTHOR             => 'Bruce Miller <bruce.miller@nist.gov>',
   ABSTRACT           => "transforms TeX and LaTeX into XML/HTML/MathML",
   VERSION_FROM       => 'lib/LaTeXML.pm',
-  MIN_PERL_VERSION   => 5.008001,
+  MIN_PERL_VERSION   => 5.010001,
   # A very restricted set of licenses are allowed here. No Creative Commons, eg.!
   # The tag open_source should be an Open Source Initiative approved license;
   # public domain is sorta included. See http://opensource.org/faq#public-domain
