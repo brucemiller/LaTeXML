@@ -7,7 +7,7 @@ PortSystem          1.0
 PortGroup           texlive 1.0
 
 name                LaTeXML
-version             0.8.1
+version             0.8.2
 revision            1
 license             public-domain
 maintainers         nist.gov:bruce.miller
@@ -28,11 +28,11 @@ platforms           darwin
 supported_archs     noarch
 
 master_sites        ${homepage}/releases/
-checksums           rmd160 312f0a3d74db75a9210220ab8ea4a1c3f95c6f71 \
-                    sha256 ea264e1c11210e219a46b7699a578d8632c7bbb6eaea5b06d2eb094122cbab2f
+checksums           rmd160 6dbf960277cdcf30605ce93335e3383673c1ff66 \
+                    sha256 3d41a3012760d31d721b569d8c1b430cde1df2b68fcc3c66f41ec640965caabf
 # Use:
-# openssl rmd160 LaTeXML-0.8.0.tar.gz
-# openssl sha256 LaTeXML-0.8.0.tar.gz
+# openssl rmd160 LaTeXML-0.8.2.tar.gz
+# openssl sha256 LaTeXML-0.8.2.tar.gz
 
 #============================================================
 # Dependencies

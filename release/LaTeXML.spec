@@ -1,5 +1,5 @@
 Name:           LaTeXML
-Version:        0.8.2_1
+Version:        0.8.2
 Release:        1%{?dist}
 Summary:        Converts TeX and LaTeX to XML/HTML/ePub/MathML
 License:        CC0
@@ -8,7 +8,7 @@ URL:            http://dlmf.nist.gov/LaTeXML/
 Source0:        http://search.cpan.org/CPAN/authors/id/B/BR/BRMILLER/LaTeXML-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
-BuildRequires:  perl >= 0:5.008001
+BuildRequires:  perl >= 0:5.010001
 BuildRequires:  perl(Archive::Zip)
 BuildRequires:  perl(DB_File)
 BuildRequires:  perl(ExtUtils::MakeMaker)
@@ -22,6 +22,7 @@ BuildRequires:  perl(MIME::Base64)
 BuildRequires:  perl(Parse::RecDescent)
 BuildRequires:  perl(Pod::Parser)
 BuildRequires:  perl(Test::More)
+BuildRequires:  perl(Text::Unidecode)
 BuildRequires:  perl(Time::HiRes)
 BuildRequires:  perl(URI)
 BuildRequires:  perl(XML::LibXML) >= 1.61
@@ -40,6 +41,7 @@ Requires:       perl(MIME::Base64)
 Requires:       perl(Parse::RecDescent)
 Requires:       perl(Pod::Parser)
 Requires:       perl(Test::More)
+Requires:       perl(Text::Unidecode)
 Requires:       perl(Time::HiRes)
 Requires:       perl(URI)
 Requires:       perl(XML::LibXML) >= 1.61
