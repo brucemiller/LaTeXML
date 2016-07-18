@@ -47,6 +47,7 @@ use LaTeXML::Util::Radix;
 use File::Which;
 use Unicode::Normalize;
 use Text::Balanced;
+use Text::Unidecode;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
@@ -490,6 +491,7 @@ sub CleanID {
   $key =~ s/,/-comma-/g;
   $key =~ s/%/-pct-/g;
   $key =~ s/&/-amp-/g;
+  $key = unidecode($key);
   $key =~ s/[^\w\_\-.]//g;                 # remove everything else.
   return $key; }
 
@@ -1514,7 +1516,9 @@ sub defmath_prim {
 sub defmath_cons {
   my ($cs, $paramlist, $presentation, %options) = @_;
   # do we need to do anything about digesting the presentation?
-  my $end_tok   = (defined $presentation ? '>' . ToString($presentation) . '</ltx:XMTok>' : "/>");
+  my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
+  $qpresentation =~ s/(\#|\&|\?|\\)/\\$1/g if $presentation;
+  my $end_tok   = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
   my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
@@ -1523,7 +1527,7 @@ sub defmath_cons {
         ? ($presentation !~ /(?:\(|\)|\\)/
           ? "?#isMath(<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok)"
-            . "($presentation)"
+            . "($qpresentation)"
           : "<ltx:XMTok role='#role' scriptpos='#scriptpos' stretchy='#stretchy'"
             . " font='#font' $cons_attr$end_tok")
         : "<ltx:XMApp role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
@@ -1788,7 +1792,7 @@ sub FindFile_aux {
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
-  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:]/; }
+  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:\s]/; }
 
 sub maybeReportSearchPaths {
   if (LookupValue('SEARCHPATHS_REPORTED')) {
@@ -2430,12 +2434,45 @@ sub DefLigature {
       %options });
   return; }
 
-my $math_ligature_options = {};    # [CONSTANT]
+my $old_math_ligature_options = {};                                                  # [CONSTANT]
+my $math_ligature_options = { matcher => 1, role => 1, name => 1, meaning => 1 };    # [CONSTANT]
 
 sub DefMathLigature {
-  my ($matcher, %options) = @_;
-  CheckOptions("DefMathLigature", $math_ligature_options, %options);
-  UnshiftValue('MATH_LIGATURES', { matcher => $matcher, %options });
+  if ((scalar(@_) % 2) == 1) {                                                       # Old style!
+    my ($matcher, %options) = @_;
+    Info('deprecated', 'ligature', undef, "Old style arguments to DefMathLigature; please update");
+    CheckOptions("DefMathLigature", $old_math_ligature_options, %options);
+    UnshiftValue('MATH_LIGATURES', { old_style => 1, matcher => $matcher }); }       # Install it...
+  else {                                                                             # new style!
+    my (%options) = @_;
+    my $matcher = $options{matcher};
+    delete $options{matcher};
+    my ($pattern) = grep { !$$math_ligature_options{$_} } keys %options;
+    my $replacement = $pattern && $options{$pattern};
+    delete $options{$pattern} if $replacement;
+    CheckOptions("DefMathLigature", $math_ligature_options, %options);    # Check remaining options
+    if ($matcher && $pattern) {
+      Error('misdefined', 'MathLigature', undef,
+        "DefMathLigature only gets one of matcher or pattern=>replacement keywords");
+      return; }
+    elsif ($pattern) {
+      my @chars    = reverse(split(//, $pattern));
+      my $ntomatch = scalar(@chars);
+      my %attr     = %options;
+      $matcher = sub {
+        my ($document, $node) = @_;
+        foreach my $char (@chars) {
+          return unless
+            ($node
+            && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
+            && (($node->textContent || '') eq $char));
+          $node = $node->previousSibling; }
+        return ($ntomatch, $replacement, %attr); }; }
+    elsif (!$matcher) {
+      Error('misdefined', 'MathLigature', undef,
+        "DefMathLigature missing matcher or pattern=>replacement keywords");
+      return; }
+    UnshiftValue('MATH_LIGATURES', { matcher => $matcher }); }    # Install it...
   return; }
 
 #======================================================================
@@ -3556,7 +3593,7 @@ or it can be a code reference which is treated as a primitive for side-effect.
 If a package or class wants to accomodate options, it should start
 with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 
-=item C<PassOptions(I<name>, I<ext>, I<@options>); >>
+=item C<PassOptions(I<name>, I<ext>, I<@options>); >
 
 X<PassOptions>
 Causes the given I<@options> (strings) to be passed to the package
@@ -3576,7 +3613,7 @@ order they were used, like C<ProcessOptions*>.
 X<ExecuteOptions>
 Process the options given explicitly in I<@options>.
 
-=item C<AtBeginDocument(I<@stuff>); >>
+=item C<AtBeginDocument(I<@stuff>); >
 
 X<AtBeginDocument>
 Arranges for I<@stuff> to be carried out after the preamble, at the beginning of the document.
@@ -3838,17 +3875,23 @@ is applied only when C<fontTest> returns true.
 Predefined Ligatures combine sequences of "." or single-quotes into appropriate
 Unicode characters.
 
-=item C<DefMathLigature(I<code>($document,@nodes));>
+=item C<DefMathLigature(I<$string>C<=>>I<$replacment>,I<%options>);>
 
 X<DefMathLigature>
-I<code> is called on each sequence of math nodes at a given level.  If they should
-be replaced, return a list of C<($n,$string,%attributes)> to replace
-the text content of the first node with C<$string> content and add the given attributes.
-The next C<$n-1> nodes are removed.  If no replacement is called for, CODE
-should return undef.
+A Math Ligature typically combines a sequence of math tokens (XMTok) into a single one.
+A simple example is
 
-Predefined Math Ligatures combine letter or digit Math Tokens (XMTok) into multicharacter
-symbols or numbers, depending on the font (non math italic).
+   DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
+
+replaces the two tokens for colon and equals by a token representing assignment.
+The options are those characterising an XMTok, namely: C<role>, C<meaning> and C<name>.
+
+For more complex cases (recognizing numbers, for example), you may supply a
+function C<matcher=>CODE($document,$node)>, which is passed the current document
+and the last math node in the sequence.  It should examine C<$node> and any preceding
+nodes (using C<previousSibling>) and return a list of C<($n,$string,%attributes)> to replace
+the C<$n> nodes by a new one with text content being C<$string> content and the given attributes.
+If no replacement is called for, CODE should return undef.
 
 =back
 
@@ -4010,7 +4053,7 @@ used for other definitions, except that macro being defined is a single characte
 The I<expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
 
-=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >>
+=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >
 
 X<DefKeyVal>
 Defines a keyword I<key> used in keyval arguments for the set I<keyset>.
@@ -4138,7 +4181,7 @@ tokens, or if defined, have the same definition.
 
 =over
 
-=item C<MergeFont(I<%fontspec>); >>
+=item C<MergeFont(I<%fontspec>); >
 
 X<MergeFont>
 Set the current font by merging the font style attributes with the current font.

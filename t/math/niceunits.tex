@@ -1,36 +1,44 @@
 \documentclass{article}
 \usepackage{nicefrac,units}
 \begin{document}
+Text mode, then math mode.
 
-\section{Examples}
-\sffamily\bfseries\unit{m}
+\section{Unit}
+Normal: \unit{m} $\unit{m}$
 
-\sffamily\bfseries$\unit{m}$
+In bold sans-serif:
+{\sffamily\bfseries\unit{m} }
+{\sffamily\bfseries$\unit{m}$}
 
-\sffamily\bfseries\unit[1]{m}
+In bold sans-serif, with a unit:
+{\sffamily\bfseries\unit[1]{m}}
+{\sffamily\bfseries$\unit[1]{m}$}
 
-\sffamily\bfseries$\unit[1]{m}$
+\section{Unitfrac}
+Normal: \unitfrac{m}{s} $\unitfrac{m}{s}$
 
-\sffamily\bfseries\unitfrac{m}{s}
+In bold sans-serif:
+{\sffamily\bfseries\unitfrac{m}{s}}
+{\sffamily\bfseries$\unitfrac{m}{s}$}
 
-\sffamily\bfseries$\unitfrac{m}{s}$
+In bold sans-serif, with a unit:
+{\sffamily\bfseries\unitfrac[1]{m}{s}}
+{\sffamily\bfseries$\unitfrac[1]{m}{s}$}
 
-\sffamily\bfseries\unitfrac[1]{m}{s}
-
-\sffamily\bfseries$\unitfrac[1]{m}{s}$
-
-
-\scriptsize\sffamily\itshape\unitfrac[1]{m}{s}
-
-\scriptsize\sffamily\itshape$\unitfrac[1]{m}{s}$
+In scriptsize, italic sans-serif:
+{\scriptsize\sffamily\itshape\unitfrac[1]{m}{s}}
+{\scriptsize\sffamily\itshape$\unitfrac[1]{m}{s}$}
 
 
-\bfseries\itshape\nicefrac{1}{2}
+\section{Nicefrac}
+Normal: \nicefrac{1}{2} $\nicefrac{1}{2}$
 
-\bfseries\itshape$\nicefrac{1}{2}$
+Typewriter: \nicefrac[\texttt]{1}{2} $\nicefrac[\texttt]{1}{2}$
 
-\nicefrac[\texttt]{1}{2}
+In bold, italic:
+{\bfseries\itshape\nicefrac{1}{2}}
+{\bfseries\itshape$\nicefrac{1}{2}$}
 
-$\nicefrac[\mathcal]{A}{B}$
+Caligraphic $\nicefrac[\mathcal]{A}{B}$
 
 \end{document}

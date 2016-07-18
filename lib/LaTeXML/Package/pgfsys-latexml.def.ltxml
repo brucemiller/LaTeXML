@@ -104,7 +104,15 @@ DefConstructor('\lxSVG@insertpicture{}',
     $whatsit->setProperty(flipnmove => $h + 2 * $miny->pxValue);
     # or tikz macro (see corescopes)
     return; },
-  reversion => '\pgfpicture\makeatletter #1\endpgfpicture');    # ?
+  # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
+  reversion => sub {
+    my ($whatsit) = @_;
+    my $w         = $whatsit->getProperty('width')->ptValue;
+    my $h         = $whatsit->getProperty('height')->ptValue;
+    (T_CS('\hbox'), T_OTHER('to'), T_OTHER($w), T_OTHER('pt'), T_BEGIN,
+      T_CS('\vbox'), T_OTHER('to'), T_OTHER($h), T_OTHER('pt'), T_BEGIN,
+      T_CS('\pgfpicture'), T_CS('\makeatletter'), $whatsit->getArg(1)->revert, T_CS('\endpgfpicture'),
+      T_END, T_END) });    # ?
 
 DefParameterType('SVGMoveableBox', sub {
     my ($gullet) = @_;
@@ -261,6 +269,9 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
           } } } }
     # Could conceivably be simplifying ltx:text ???
   },
+  reversion => sub {
+    my $box = $_[0]->getProperty('thebox');
+    return ($box ? $box->revert : ()); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperty(thebox => LookupValue('box' . $whatsit->getArg(1)->valueOf)); }

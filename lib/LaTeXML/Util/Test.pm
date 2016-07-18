@@ -104,24 +104,20 @@ sub process_dom {
   # We want the DOM to be BOTH indented AND canonical!!
   my $domstring =
     eval { my $string = $xmldom->toString(1);
-    my $parser = XML::LibXML->new();
-    $parser->validation(0);
-    $parser->keep_blanks(1);
+    my $parser = XML::LibXML->new(load_ext_dtd=>0, validation=>0, keep_blanks=>1);
     $parser->parse_string($string)->toStringC14N(0); };
   if (!$domstring) {
-    do_fail($name, "Couldn't convert dom to string: " . @!); return; }
+    do_fail($name, "Couldn't convert dom to string: " . $@); return; }
   else {
     return process_domstring($domstring, $name); } }
 
 sub process_xmlfile {
   my ($xmlpath, $name) = @_;
   my $domstring =
-    eval { my $parser = XML::LibXML->new();
-    $parser->validation(0);
-    $parser->keep_blanks(1);
+    eval { my $parser = XML::LibXML->new(load_ext_dtd=>0, validation=>0, keep_blanks=>1);
     $parser->parse_file($xmlpath)->toStringC14N(0); };
   if (!$domstring) {
-    do_fail($name, "Could not open $xmlpath"); return; }
+    do_fail($name, "Could not convert file $xmlpath to string: " . $@); return; }
   else {
     return process_domstring($domstring, $name); } }
 
@@ -175,7 +171,7 @@ sub daemon_ok {
   my $opts = read_options("$base.spec", $base);
   push @$opts, (['destination', "$localname.test.xml"],
     ['log',                "/dev/null"],
-    ['timeout',            5],
+    ['timeout',            10],
     ['autoflush',          1],
     ['timestamp',          '0'],
     ['nodefaultresources', ''],

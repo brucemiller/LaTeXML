@@ -78,9 +78,9 @@ sub outerWrapper {
   if (my $src = $math->getAttribute('imagesrc')) {
     my $depth = $math->getAttribute('imagedepth');
     @img = (altimg => $src,
-      'altimg-width'  => $math->getAttribute('imagewidth'),
-      'altimg-height' => $math->getAttribute('imageheight'),
-      'altimg-valign' => ($depth ? -$depth : undef)); }        # Note the sign!
+      'altimg-width'  => $math->getAttribute('imagewidth') . 'px',
+      'altimg-height' => $math->getAttribute('imageheight') . 'px',
+      'altimg-valign' => ($depth ? -$depth . 'px' : undef)); }        # Note the sign!
   my @rdfa = map { my $val = ($math->getAttribute($_) || $xmath->getAttribute($_)); $val ? ($_ => $val) : () }
     qw(about resource property rel rev typeof datatype content);
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
@@ -293,10 +293,10 @@ my %mathvariants = (    # CONSTANT
 #  default values like medium or upright (unless that is the only component).
 sub mathvariantForFont {
   my ($font) = @_;
-  $font =~ s/slanted/italic/;    # equivalent in math
-  $font =~ s/serif\s//;          # Not needed (unless alone)
-  $font =~ s/\supright//;        # Not needed (unless 1st element)
-  $font =~ s/\smedium//;         # Not needed (unless 1st element)
+  $font =~ s/slanted/italic/;        # equivalent in math
+  $font =~ s/(?<!^)serif(?>!$)//;    # Not needed (unless alone)
+  $font =~ s/(?<!^)upright//;        # Not needed (unless 1st element)
+  $font =~ s/(?<!^)medium//;         # Not needed (unless 1st element)
   my $variant;
   return $variant if $variant = $mathvariants{$font};
   #  $font =~ s/\sitalic//;          # try w/o italic ?
@@ -564,11 +564,19 @@ sub pmml_mayberesize {
     else {
       $result = ['m:mpadded', {}, $result]; }
     my $attr = $$result[1];
+    if ($yoff) {    # assume this means to move the BOX? (not just the contents?)
+      if (!$height) {
+        if ($yoff =~ /^-/) { $height = $yoff; }
+        else { $height = "+" . $yoff; } }
+      if (!$depth) {
+        if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
+        else { $depth = "-" . $yoff; } } }
     $$attr{width}   = $width  if $width;
     $$attr{height}  = $height if $height;
     $$attr{depth}   = $depth  if $depth;
     $$attr{lspace}  = $xoff   if $xoff;
     $$attr{voffset} = $yoff   if $yoff; }
+
   if (my $frame = $node->getAttribute('framed')) {
     my $attr  = $$result[1];
     my $c     = $$attr{class};
@@ -690,7 +698,28 @@ my %plane1hack = (    # CONSTANT
   'double-struck' => $plane1map{'double-struck'});
 
 my %symmetric_roles = (OPEN => 1, CLOSE => 1, MIDDLE => 1, VERTBAR => 1);
-
+# operator content that's stretchy by default [fill-in from operator dictionary!]
+# [ grep stretchy ~/src/firefox/res/fonts/mathfont.properties | cut -d . -f 2 ]
+my %normally_stretchy = map { $_ => 1 }
+  ("(", ")", "[", "]", "{", "}",
+  "\x{27E8}", "\x{2308}", "\x{27E6}", "\x{230A}", "\x{27E9}", "\x{2309}", "\x{27E7}", "\x{230B}",
+  "\x{2500}", "\x{007C}", "\x{2758}", "\x{21D2}", "\x{2A54}", "\x{2A53}", "\x{21D0}", "\x{21D4}",
+  "\x{2950}", "\x{295E}", "\x{21BD}", "\x{2956}", "\x{295F}", "\x{21C1}", "\x{2957}", "\x{2190}",
+  "\x{21E4}", "\x{21C6}", "\x{2194}", "\x{294E}", "\x{21A4}", "\x{295A}", "\x{21BC}", "\x{2952}",
+  "\x{2199}", "\x{2198}", "\x{2192}", "\x{21E5}", "\x{21C4}", "\x{21A6}", "\x{295B}", "\x{21C0}",
+  "\x{2953}", "\x{2196}", "\x{2197}", "\x{2225}", "\x{2016}", "\x{21CC}", "\x{21CB}", "\x{2223}",
+  "\x{2294}", "\x{22C3}", "\x{228E}", "\x{22C2}", "\x{2293}", "\x{22C1}", "\x{2211}", "\x{22C3}",
+  "\x{228E}", "\x{2A04}", "\x{2A06}", "\x{2232}", "\x{222E}", "\x{2233}", "\x{222F}", "\x{222B}",
+  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{002F}", "\x{221A}", "\x{21D3}",
+  "\x{27F8}", "\x{27FA}", "\x{27F9}", "\x{21D1}", "\x{21D5}", "\x{2193}", "\x{2913}", "\x{21F5}",
+  "\x{21A7}", "\x{2961}", "\x{21C3}", "\x{2959}", "\x{2951}", "\x{2960}", "\x{21BF}", "\x{2958}",
+  "\x{27F5}", "\x{27F7}", "\x{27F6}", "\x{296F}", "\x{295D}", "\x{21C2}", "\x{2955}", "\x{294F}",
+  "\x{295C}", "\x{21BE}", "\x{2954}", "\x{2191}", "\x{2912}", "\x{21C5}", "\x{2195}", "\x{296E}",
+  "\x{21A5}", "\x{02DC}", "\x{02C7}", "\x{005E}", "\x{00AF}", "\x{23DE}", "\x{FE37}", "\x{23B4}",
+  "\x{23DC}", "\x{FE35}", "\x{0332}", "\x{23DF}", "\x{FE38}", "\x{23B5}", "\x{23DD}", "\x{FE36}",
+  "\x{2225}", "\x{2225}", "\x{2016}", "\x{2016}", "\x{2223}", "\x{2223}", "\x{007C}", "\x{007C}",
+  "\x{20D7}", "\x{20D6}", "\x{20E1}", "\x{20D1}", "\x{20D0}", "\x{21A9}", "\x{21AA}", "\x{23B0}",
+  "\x{23B1}");
 # Given an item (string or token element w/attributes) and latexml attributes,
 # convert the string to the appropriate unicode (possibly plane1)
 # & MathML presentation attributes (mathvariant, mathsize, mathcolor, stretchy)
@@ -713,23 +742,38 @@ sub stylizeContent {
   my $text     = (ref $item  ? $item->textContent              : $item);
   my $variant  = ($font      ? mathvariantForFont($font)       : '');
   my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
-  $stretchy = undef if ($tag ne 'm:mo');                           # Only allowed on m:mo!
-  $size     = undef if ($stretchy || 'false') eq 'true';           # Ignore size, if we're stretching.
-  $size     = undef if $size && ($size eq $LaTeXML::MathML::SIZE);
+  $stretchy = undef if ($tag ne 'm:mo');                # Only allowed on m:mo!
+  $size = undef if ($stretchy || 'false') eq 'true';    # Ignore size, if we're stretching.
+
   my $stretchyhack = undef;
 
-  if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {                  # invisible
+  if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {       # invisible get no size or stretchiness
     $stretchy = $size = undef; }
   if ($size) {
+    if ($size eq $LaTeXML::MathML::SIZE) {              # If default size, no need to mention.
+      $size = undef; }
+    # If requested relative size, and in script or scriptscript, we'll need to adjust the size
+    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE =~ /script/)) {
+      my $req = $size; $req =~ s/%$//;
+      my $ex = $stylesize{$LaTeXML::MathML::STYLE}; $ex =~ s/%$//;
+      $size = int(100 * $req / $ex) . '%'; }
     # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
     # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
     # (Thanks Peter Krautzberger)
     # Really we should check the Operator Dictionary to see if it's expected to be symmetric
-    if ($role && $symmetric_roles{$role}) {
-      $stretchyhack = 1;
-      $stretchy     = undef; }
-    elsif ($tag eq 'm:mo') {
-      $stretchy = 'false' } };    # Conversely, if size specifically set, don't stretch it!
+    if ($size) {
+      if ($role && $symmetric_roles{$role}) {
+        $stretchyhack = 1;
+        $stretchy     = undef; }
+      elsif ($tag eq 'm:mo') {
+        $stretchy = 'false'; } } }    # Conversely, if size specifically set, don't stretch it!
+  elsif ($normally_stretchy{$text}) {    # Else, if this would normally be stretchy
+    if ($stretchy && ($stretchy eq 'true')) {
+      $stretchy = undef; }               # Don't need to say this explicitly
+    else {
+      $stretchy = 'false'; } }           # or need to explicitly disable it.
+  elsif ($stretchy && ($stretchy eq 'false')) {
+    $stretchy = undef; }                 # Otherwise, doesn't need to be said at all.
 
   if ((!defined $text) || ($text eq '')) {    # Failsafe for empty tokens?
     $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');

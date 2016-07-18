@@ -441,11 +441,12 @@ DefPrimitive('\colorlet[]{}[]{}', sub {
     return unless checkNoPostscript($type, '\colorlet');
     ($type, $name, $tomodel, $colordesc)
       = map { $_ && Expand($_) } $type, $name, $tomodel, $colordesc;
-    DefColor(ToString($name), ParseXColor(undef, $colordesc, $tomodel),
-      (LookupValue('xglobal@' => 0) ? 'global' : undef));
+    my $color = ParseXColor(undef, $colordesc, $tomodel);
+    DefColor(ToString($name), $color, (LookupValue('xglobal@' => 0) ? 'global' : undef));
     AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
-      Invocation(T_CS('\colorlet'), $type, $name, $tomodel, $colordesc)); });
+      Invocation(T_CS('\definecolor'), $type, $name,    # Revert to ACTUAL color, not user's name
+        T_OTHER('rgb'), T_OTHER(join(',', $color->rgb->components)))); });
 
 # \definecolorset[<type>]{<model_list>}{<head>}{<tail>}{<set_spec>}
 DefPrimitive('\definecolorset[]{}{}{}{}', sub {
@@ -545,7 +546,9 @@ DefPrimitive('\color[]{}', sub {
     DefColor('.', $color);
     AssignValue('preambleTextcolor', $color) if LookupValue('inPreamble');
     MergeFont(color => $color);
-    (Box(undef, undef, undef, Invocation(T_CS('\color'), $models, $colororspecs)),
+    (Box(undef, undef, undef,
+        Invocation(T_CS('\color'), T_OTHER('rgb'),    # Revert to ACTUAL color, not user's name
+          T_OTHER(join(',', $color->rgb->components)))),
       Digest(T_CS('\XC@mcolor'))); });
 
 DefPrimitive('\set@color', sub {

@@ -19,9 +19,15 @@ use FindBin;
 #     to be stuck with such older versions (till now).
 #   TEXMF=<texmfdir> : Installs the tex style files to this texmf tree,
 #     rather than where kpsewhich says TEXMFLOCAL is (useful for spec files?)
+#   NOMKTEXLSR : disables running mktexlsr (to re-index the texmf directories
+#     after installing our style files).  This is to be used when Makefile.PL
+#     is invoked within a staged installation system like rpm, macports, etc.
+#     In those cases you'll need to run "mktexlsr" within the post-install
+#     and post-uninstall stages of the build.
 #======================================================================
 
 our $OLD_LIBXML = grep { /OLD_LIBXML/ } @ARGV;
+our $NOMKTEXLSR = grep { /NOMKTEXLSR/ } @ARGV;
 our $TEXMF;
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
@@ -41,7 +47,7 @@ WriteMakefile(NAME => 'LaTeXML',
   AUTHOR             => 'Bruce Miller <bruce.miller@nist.gov>',
   ABSTRACT           => "transforms TeX and LaTeX into XML/HTML/MathML",
   VERSION_FROM       => 'lib/LaTeXML.pm',
-  MIN_PERL_VERSION   => 5.008001,
+  MIN_PERL_VERSION   => 5.010001,
   # A very restricted set of licenses are allowed here. No Creative Commons, eg.!
   # The tag open_source should be an Open Source Initiative approved license;
   # public domain is sorta included. See http://opensource.org/faq#public-domain
@@ -58,9 +64,11 @@ WriteMakefile(NAME => 'LaTeXML',
     'IO::String'        => 0,
     'JSON::XS'          => 0,
     'LWP'               => 0,
+    'MIME::Base64'      => 0,   # Core
     'Parse::RecDescent' => 0,
     'Pod::Parser'       => 0,   # for Pod::Find
-    'Test::More'        => 0,
+    'Text::Unidecode'   => 0,
+    'Test::More'        => 0,   # part of Test::Simple
     'Time::HiRes'       => 0,
     'URI'               => 0,
     'version'           => 0,
@@ -229,16 +237,26 @@ pure_install ::
 		write "$(DESTINSTALLTEXMFDIR)/.packlist" \
 		"$(INST_TEXMFDIR)" "$(DESTINSTALLTEXMFDIR)" ) \
 	||   echo "No TeX installation, skipping installing LaTeXML TeX packages"
+
+uninstall ::
+	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
+		$(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist") \
+	|| echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping uninstalling LaTeXML TeX packages"
+
+InstallTeXStyles
+
+  if(! $NOMKTEXLSR){
+  $MORE_MAKERULES .= <<'InstallTeXStyles';
+pure_install ::
 	$(NOECHO) ($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFBASEDIR)" || mktexlsr) \
 	||   echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping mktexlsr"
 
 uninstall ::
-	$(NOECHO) (($(PERLRUN) -e "exit(1) unless -w shift;" -- "$(DESTINSTALLTEXMFBASEDIR)") && \
-		$(UNINSTALL) "$(INSTALLTEXMFDIR)/.packlist" && \
-		($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFDIR)" || mktexlsr)) \
-	|| echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping uninstalling LaTeXML TeX packages"
+	$(NOECHO) ($(PERLRUN) -e "exit(1) if -w shift;" -- "$(INSTALLTEXMFBASEDIR)" || mktexlsr) \
+	||   echo "No write permission for $(INSTALLTEXMFBASEDIR), skipping mktexlsr"
 
 InstallTeXStyles
+}
   return; }
 
 #======================================================================

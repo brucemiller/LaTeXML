@@ -107,7 +107,7 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
-    "parallelmath"                => \$$opts{parallelmath},
+    "parallelmath!"                => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
     "xsltparameter=s"   => \@{ $$opts{xsltparameters} },
@@ -369,8 +369,9 @@ sub _prepare_options {
       else {
         ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
 
-  $$opts{timeout} = 600 if ((!defined $$opts{timeout}) || ($$opts{timeout} !~ /\d+/)); # 10 minute timeout default
-  $$opts{expire} = 600 if ((!defined $$opts{expire}) || ($$opts{expire} !~ /\d+/)); # 10 minute timeout default
+  $$opts{input_limit} = 100 unless defined $$opts{input_limit}; # 100 jobs until restart
+  $$opts{timeout} = 600 unless defined $$opts{timeout}; # 10 minute timeout default
+  $$opts{expire} = 600 unless defined $$opts{expire}; # 10 minute timeout default
   $$opts{mathparse} = 'RecDescent' unless defined $$opts{mathparse};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
@@ -649,7 +650,7 @@ C<LaTeXML::Common::Config> - Configuration logic for LaTeXML
     use LaTeXML::Common::Config;
     my $config = LaTeXML::Common::Config->new(
               profile=>'name',
-              timeout=>number
+              timeout=>60,
               ... );
     $config->read(\@ARGV);
     $config->check;
@@ -727,121 +728,219 @@ Clones $config into a new LaTeXML::Common::Config object, $config_clone.
 
 =back
 
-=head1 OPTIONS
-
-=head2 SYNOPSIS
+=head1 OPTION SYNOPSIS
 
 latexmls/latexmlc [options]
 
  Options:
- --destination=file specifies destination file.
- --output=file      [obsolete synonym for --destination]
- --preload=module   requests loading of an optional module;
-                    can be repeated
- --preamble=file    loads a tex file containing document
-                    frontmatter. MUST include \begin{document}
-                    or equivalent
- --postamble=file   loads a tex file containing document
-                    backmatter. MUST include \end{document}
-                    or equivalent
- --includestyles    allows latexml to load raw *.sty file;
-                    by default it avoids this.
- --base=dir         sets the base directory that the server
-                    operates in. Useful when converting
-                    documents that employ relative paths.
- --path=dir         adds dir to the paths searched for files,
-                    modules, etc;
- --log=file         specifies log file (default: STDERR)
- --autoflush=count  Automatically restart the daemon after
-                    "count" inputs. Good practice for vast
-                    batch jobs. (default: 100)
- --timeout=secs     Timecap for conversions (default 600)
- --expire=secs      Timecap for server inactivity (default 600)
- --address=URL      Specify server address (default: localhost)
- --port=number      Specify server port (default: 3354)
- --documentid=id    assign an id to the document root.
- --quiet            suppress messages (can repeat)
- --verbose          more informative output (can repeat)
- --strict           makes latexml less forgiving of errors
- --bibtex           processes a BibTeX bibliography.
- --xml              requests xml output (default).
- --tex              requests TeX output after expansion.
- --box              requests box output after expansion
-                    and digestion.
- --format=name      requests "name" as the output format.
-                    Supported: tex,box,xml,html4,html5,xhtml
-                    html implies html5
- --noparse          suppresses parsing math (default: off)
- --parse=name       enables parsing math (default: on)
-                    and selects parser framework "name".
-                    Supported: Marpa, RecDescent
- --profile=name     specify profile as defined in
-                    LaTeXML::Common::Config
-                    Supported: standard|math|fragment|...
-                    (default: standard)
- --mode=name        Alias for profile
- --whatsin=chunk    Defines the provided input chunk,
-                    choose from document (default), fragment
-                    and formula
- --whatsout=chunk   Defines the expected output chunk,
-                    choose from document (default), fragment
-                    and formula
- --post             requests a followup post-processing
- --embed            requests an embeddable XHTML snippet
-                    (requires: --post,--profile=fragment)
-                    DEPRECATED: Use --whatsout=fragment
-                    TODO: Remove completely
- --stylesheet       specifies a stylesheet,
-                    to be used by the post-processor.
- --css=cssfile      adds a css stylesheet to html/xhtml
-                    (can be repeated)
+ --VERSION               show version number.
+ --help                  shows this help message.
+ --destination=file      specifies destination file.
+ --output=file           [obsolete synonym for --destination]
+ --preload=module        requests loading of an optional module;
+                         can be repeated
+ --preamble=file         loads a tex file containing document
+                         frontmatter. MUST include \begin{document}
+                         or equivalent
+ --postamble=file        loads a tex file containing document
+                         backmatter. MUST include \end{document}
+                         or equivalent
+ --includestyles         allows latexml to load raw *.sty file;
+                         by default it avoids this.
+ --base=dir              sets the current working directory
+ --path=dir              adds dir to the paths searched for files,
+                         modules, etc;
+ --log=file              specifies log file (default: STDERR)
+ --autoflush=count       Automatically restart the daemon after
+                         "count" inputs. Good practice for vast
+                         batch jobs. (default: 100)
+ --timeout=secs          Timecap for conversions (default 600)
+ --expire=secs           Timecap for server inactivity (default 600)
+ --address=URL           Specify server address (default: localhost)
+ --port=number           Specify server port (default: 3354)
+ --documentid=id         assign an id to the document root.
+ --quiet                 suppress messages (can repeat)
+ --verbose               more informative output (can repeat)
+ --strict                makes latexml less forgiving of errors
+ --bibtex                processes a BibTeX bibliography.
+ --xml                   requests xml output (default).
+ --tex                   requests TeX output after expansion.
+ --box                   requests box output after expansion
+                         and digestion.
+ --format=name           requests "name" as the output format.
+                         Supported: tex,box,xml,html4,html5,xhtml
+                         html implies html5
+ --noparse               suppresses parsing math (default: off)
+ --parse=name            enables parsing math (default: on)
+                         and selects parser framework "name".
+                         Supported: RecDescent, no
+ --profile=name          specify profile as defined in
+                         LaTeXML::Common::Config
+                         Supported: standard|math|fragment|...
+                         (default: standard)
+ --mode=name             Alias for profile
+ --cache_key=name        Provides a name for the current option set,
+                         to enable daemonized conversions without
+                         needing re-initializing
+ --whatsin=chunk         Defines the provided input chunk,
+                         choose from document (default), fragment
+                         and formula
+ --whatsout=chunk        Defines the expected output chunk,
+                         choose from document (default), fragment
+                         and formula
+ --post                  requests a followup post-processing
+ --nopost                forbids followup post-processing
+ --validate, --novalidate Enables (the default) or disables
+                         validation of the source xml.
+ --omitdoctype           omits the Doctype declaration,
+ --noomitdoctype         disables the omission (the default)
+ --numbersections        enables (the default) the inclusion of
+                         section numbers in titles, crossrefs.
+ --nonumbersections      disables the above
+ --timestamp             provides a timestamp (typically a time and date)
+                         to be embedded in the comments
+ --embed                 requests an embeddable XHTML snippet
+                         (requires: --post,--profile=fragment)
+                         DEPRECATED: Use --whatsout=fragment
+                         TODO: Remove completely
+ --stylesheet            specifies a stylesheet,
+                         to be used by the post-processor.
+ --css=cssfile           adds a css stylesheet to html/xhtml
+                         (can be repeated)
  --nodefaultresources    disables processing built-in resources
  --javscript=jsfile      adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
+ --icon=iconfile         specify a file to use as a "favicon"
  --xsltparameter=name:value passes parameters to the XSLT.
+ --split                 requests splitting each document
+ --nosplit               disables the above (default)
+ --splitat               sets level to split the document
+ --splitpath=xpath       sets xpath expression to use for
+                         splitting (default splits at
+                         sections, if splitting is enabled)
+ --splitnaming=(id|idrelative|label|labelrelative) specifies
+                         how to name split files (idrelative).
+ --scan                  scans documents to extract ids,
+                         labels, etc.
+                         section titles, etc. (default)
+ --noscan                disables the above
+ --crossref              fills in crossreferences (default)
+ --nocrossref            disables the above
+ --urlstyle=(server|negotiated|file) format to use for urls
+                         (default server).
+ --navigationtoc=(context|none) generates a table of contents
+                         in navigation bar
+ --index                 requests creating an index (default)
+ --noindex               disables the above
+ --splitindex            Splits index into pages per initial.
+ --nosplitindex          disables the above (default)
+ --permutedindex         permutes index phrases in the index
+ --nopermutedindex       disables the above (default)
+ --bibliography=file     sets a bibliography file
+ --splitbibliography     splits the bibliography into pages per
+                         initial.
+ --nosplitbibliography   disables the above (default)
+ --prescan               carries out only the split (if
+                         enabled) and scan, storing
+                         cross-referencing data in dbfile
+                         (default is complete processing)
+ --dbfile=dbfile         sets file to store crossreferences
  --sitedirectory=dir     sets the base directory of the site
  --sourcedirectory=dir   sets the base directory of the
                          original TeX source
+ --source=input          as an alternative to passing the input as
+                         the last argument, after the option set
+                         you can also specify it as the value here.
+                         useful for predictable API calls
  --mathimages            converts math to images
                          (default for html4 format)
  --nomathimages          disables the above
  --mathimagemagnification=mag specifies magnification factor
- --plane1           use plane-1 unicode for symbols
-                    (default, if needed)
- --noplane1         do not use plane-1 unicode
- --pmml             converts math to Presentation MathML
-                    (default for xhtml and html5 formats)
- --cmml             converts math to Content MathML
- --openmath         converts math to OpenMath
- --keepXMath        keeps the XMath of a formula as a MathML
-                    annotation-xml element
- --mathtex          adds TeX annotation to parallel markup
- --nomathtex        disables the above (default)
- --nocomments       omit comments from the output
- --inputencoding=enc specify the input encoding.
- --VERSION          show version number.
- --debug=package    enables debugging output for the named
-                    package
- --help             shows this help message.
+ --presentationmathml    converts math to Presentation MathML
+                         (default for xhtml & html5 formats)
+ --pmml                  alias for --presentationmathml
+ --nopresentationmathml  disables the above
+ --linelength=n          formats presentation mathml to a
+                         linelength max of n characters
+ --contentmathml         converts math to Content MathML
+ --nocontentmathml       disables the above (default)
+ --cmml                  alias for --contentmathml
+ --openmath              converts math to OpenMath
+ --noopenmath            disables the above (default)
+ --om                    alias for --openmath
+ --keepXMath             preserves the intermediate XMath
+                         representation (default is to remove)
+ --mathtex               adds TeX annotation to parallel markup
+ --nomathtex             disables the above (default)
+ --parallelmath          use parallel math annotations (default)
+ --noparallelmath        disable parallel math annotations
+ --plane1                use plane-1 unicode for symbols
+                         (default, if needed)
+ --noplane1              do not use plane-1 unicode
+ --graphicimages         converts graphics to images (default)
+ --nographicimages       disables the above
+ --graphicsmap=type.type specifies a graphics file mapping
+ --pictureimages         converts picture environments to
+                         images (default)
+ --nopictureimages       disables the above
+ --svg                   converts picture environments to SVG
+ --nosvg                 disables the above (default)
+ --nocomments            omit comments from the output
+ --inputencoding=enc     specify the input encoding.
+ --debug=package         enables debugging output for the named
+                         package
 
-Note that the profiles come with a variety of preset options. To customize your
-own conversion setup, use --whatsin=math|fragment|document instead, respectively,
-as well as --whatsout=math|fragment|document.
 
 If you want to provide a TeX snippet directly on input, rather than supply a filename,
 use the C<literal:> protocol to prefix your snippet.
 
-For reliable communication and a stable conversion experience, invoke latexmls
-only through the latexmlc client (you need to set --expire to a positive value,
-in order to request auto-spawning of a dedicated conversion server).
+=head1 OPTIONS AND ARGUMENTS
 
-=head2 DETAILS
+=head2 General Options
+
+=over 4
+
+=item C<--verbose>
+
+Increases the verbosity of output during processing, used twice is pretty chatty.
+    Can be useful for getting more details when errors occur.
+
+=item C<--quiet>
+
+Reduces the verbosity of output during processing, used twice is pretty silent.
+
+=item C<--VERSION>
+
+Shows the version number of the LaTeXML package..
+
+=item C<--debug>=I<package>
+
+Enables debugging output for the named package. The package is given without the leading LaTeXML::.
+
+=item C<--base>=I<dir>
+
+Sepcifies the base working directory for the conversion server.
+    Useful when converting sets of documents that use relative paths.
+
+=item C<--log>=I<file>
+
+Specifies the log file; be default any conversion messages are printed to STDERR.
+
+=item C<--help>
+
+Shows this help message.
+
+=back
+
+
+=head2 Source Options
 
 =over 4
 
 =item C<--destination>=I<file>
 
 Specifies the destination file; by default the XML is written to STDOUT.
+
 
 =item C<--preload>=I<module>
 
@@ -867,76 +966,21 @@ Requests the loading of a tex file with document backmatter, to be read in after
 Note that the given file MUST contain \end{document} or an equivalent environment end,
     when processing LaTeX documents.
 
-=item C<--includestyles>
+=item C<--sourcedirectory>=I<source>
 
-This optional allows processing of style files (files with extensions C<sty>,
-    C<cls>, C<clo>, C<cnf>).  By default, these files are ignored  unless a latexml
-    implementation of them is found (with an extension of C<ltxml>).
-
-These style files generally fall into two classes:  Those
-    that merely affect document style are ignorable in the XML.
-    Others define new markup and document structure, often using
-    deeper LaTeX macros to achieve their ends.  Although the omission
-    will lead to other errors (missing macro definitions), it is
-    unlikely that processing the TeX code in the style file will
-    lead to a correct document.
+Specifies the directory where the original latex source is located.
+Unless LaTeXML is run from that directory, or it can be determined
+from the xml filename, it may be necessary to specify this option in
+order to find graphics and style files.
 
 =item C<--path>=I<dir>
 
 Add I<dir> to the search paths used when searching for files, modules, style files, etc;
     somewhat like TEXINPUTS.  This option can be repeated.
 
-=item C<--log>=I<file>
+=item C<--validate>, C<--novalidate>
 
-Specifies the log file; be default any conversion messages are printed to STDERR.
-
-=item C<--autoflush>=I<count>
-
-Automatically restart the daemon after converting "count" inputs.
-    Good practice for vast batch jobs. (default: 100)
-
-=item C<--expire>=I<secs>
-
-Set an inactivity timeout value in seconds. If the daemon is not given any input
-    for the timeout period it will automatically self-destruct.
-    The default value is 600 seconds, set to 0 to never expire,
-     -1 to entirely opt out of using a server.
-
-=item C<--timeout>=I<secs>
-
-Set time cap for conversion jobs, in seconds. Any job failing to convert in the
-    time range would return with a Fatal error of timing out.
-    Default value is 600, set to 0 to disable.
-
-=item C<--address>=I<URL>
-
-Specify server address (default: localhost)
-
-=item C<--port>=I<number>
-
-Specify server port (default: 3334 for math, 3344 for fragment and 3354 for standard)
-
-=item C<--documentid>=I<id>
-
-Assigns an ID to the root element of the XML document.  This ID is generally
-    inherited as the prefix of ID's on all other elements within the document.
-    This is useful when constructing a site of multiple documents so that
-    all nodes have unique IDs.
-
-=item C<--quiet>
-
-Reduces the verbosity of output during processing, used twice is pretty silent.
-
-=item C<--verbose>
-
-Increases the verbosity of output during processing, used twice is pretty chatty.
-    Can be useful for getting more details when errors occur.
-
-=item C<--strict>
-
-Specifies a strict processing mode. By default, undefined control sequences and
-    invalid document constructs (that violate the DTD) give warning messages, but attempt
-    to continue processing.  Using C<--strict> makes them generate fatal errors.
+Enables (or disables) the validation of the source XML document (the default).
 
 =item C<--bibtex>
 
@@ -951,9 +995,100 @@ Forces latexml to treat the file as a BibTeX bibliography.
     that define macros used in the bibliography must be
     specified using the C<--preload> option.
 
+=item C<--inputencoding=>I<encoding>
+
+Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
+    The encoding must be one known to Perl's Encode package.
+    Note that this only enables the translation of the input bytes to
+    UTF-8 used internally by LaTeXML, but does not affect catcodes.
+    In such cases, you should be using the inputenc package.
+    Note also that this does not affect the output encoding, which is
+    always UTF-8.
+
+=back
+
+
+=head2 TeX Conversion Options
+
+=over 4
+
+=item C<--includestyles>
+
+This optional allows processing of style files (files with extensions C<sty>,
+    C<cls>, C<clo>, C<cnf>).  By default, these files are ignored  unless a latexml
+    implementation of them is found (with an extension of C<ltxml>).
+
+These style files generally fall into two classes:  Those
+    that merely affect document style are ignorable in the XML.
+    Others define new markup and document structure, often using
+    deeper LaTeX macros to achieve their ends.  Although the omission
+    will lead to other errors (missing macro definitions), it is
+    unlikely that processing the TeX code in the style file will
+    lead to a correct document.
+
+
+=item C<--timeout>=I<secs>
+
+Set time cap for conversion jobs, in seconds. Any job failing to convert in the
+    time range would return with a Fatal error of timing out.
+    Default value is 600, set to 0 to disable.
+
+=item C<--nocomments>
+
+Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
+    an aid in tracking the source.  The option --nocomments discards such comments.
+
+=item C<--documentid>=I<id>
+
+Assigns an ID to the root element of the XML document.  This ID is generally
+    inherited as the prefix of ID's on all other elements within the document.
+    This is useful when constructing a site of multiple documents so that
+    all nodes have unique IDs.
+
+=item C<--strict>
+
+Specifies a strict processing mode. By default, undefined control sequences and
+    invalid document constructs (that violate the DTD) give warning messages, but attempt
+    to continue processing.  Using C<--strict> makes them generate fatal errors.
+
+=item C<--post>
+
+Request post-processing, auto-enabled by any requested post-processor. Disabled by default.
+    If post-processing is enabled, the graphics and cross-referencing processors are on by default.
+
+=back
+
+
+=head2 Format Options
+
+=over 4
+
+=item C<--format>=C<(html|html5|html4|xhtml|xml|epub)>
+
+Specifies the output format for post processing.
+By default, it will be guessed from the file extension of the destination
+(if given), with html implying C<html5>, xhtml implying C<xhtml> and the
+default being C<xml>, which you probably don't want.
+
+The C<html5> format converts the material to html5 form with mathematics as MathML;
+C<html5> supports SVG.
+C<html4> format converts the material to the earlier html form, version 4,
+and the mathematics to png images.
+C<xhtml> format converts to xhtml and uses presentation MathML (after attempting
+to parse the mathematics) for representing the math.  C<html5> similarly converts
+math to presentation MathML. In these cases, any
+graphics will be converted to web-friendly formats and/or copied to the
+destination directory. If you simply specify C<html>, it will treat that as C<html5>.
+
+For the default, C<xml>, the output is left in LaTeXML's internal xml,
+but the math is parsed and converted to presentation MathML.
+For html, html5 and xhtml, a default stylesheet is provided, but see
+the C<--stylesheet> option.
+
 =item C<--xml>
 
 Requests XML output; this is the default.
+  DEPRECATED: use --format=xml instead
 
 =item C<--tex>
 
@@ -967,95 +1102,39 @@ Requests Box output for debugging purposes;
     processing is carried out through expansion and digestions,
     and the result is printed.
 
-=item C<--format=name>
-
-Requests an explicitly provided "name" as the output format of the conversion.
-    Currently supported: tex, box, xml, html4, html5, xhtml
-    Tip: If you wish to apply your own custom XSLT stylesheet, select "xml"
-    as the desired format.
-
-=item C<--noparse>
-
-Suppresses parsing math (default: parsing is on)
-
-=item C<--parse=name>
-
-Enables parsing math (default: parsing is on)
-    and selects parser framework "name".
-    Supported: Marpa, RecDescent, no
-    Tip: --parse=no is equivalent to --noparse
-
 =item C<--profile>
 
-Variety of shorthand profiles, described at C<LaTeXML::Common::Config>.
+Variety of shorthand profiles.
+    Note that the profiles come with a variety of preset options.
+    You can examine any of them in their C<resources/Profiles/name.opt>
+    file.
 
 Example: C<latexmlc --profile=math '1+2=3'>
 
-=item C<--post>
+=item C<--omitdoctype>, C<--noomitdoctype>
 
-Request post-processing. Enabled by default is processing graphics and cross-referencing.
+Omits (or includes) the document type declaration.
+The default is to include it if the document model was based on a DTD.
 
+=item C<--numbersections>, C<--nonumbersections>
 
-=item C<--embed>
+Includes (default), or disables the inclusion of section, equation, etc,
+numbers in the formatted document and crossreference links.
 
-TODO: Deprecated, use --whatsout=fragment
-Requests an embeddable XHTML div (requires: --post --format=xhtml),
-    respectively the top division of the document's body.
-    Caveat: This experimental mode is enabled only for fragment profile and post-processed
-    documents (to XHTML).
+=item C<--stylesheet>=I<xslfile>
 
-=item C<--mathimages>, C<--nomathimages>
-
-Requests or disables the conversion of math to images.
-Conversion is the default for html4 format.
-
-=item C<--mathsvg>, C<--nomathsvg>
-
-Requests or disables the conversion of math to svg images.
-
-=item C<--mathimagemagnification=>I<factor>
-
-Specifies the magnification used for math images, if they are made.
-Default is 1.75.
-
-=item C<--pmml>
-
-Requests conversion of math to Presentation MathML.
-    Presentation MathML is the default math processor for the XHTML/HTML5 formats.
-    Will enable C<--post>.
-
-=item C<--cmml>
-
-Requests or disables conversion of math to Content MathML.
-    Conversion is disabled by default.
-    B<Note> that this conversion is only partially implemented.
-    Will enable C<--post>.
-
-=item C<--openmath>
-
-Requests or disables conversion of math to OpenMath.
-    Conversion is disabled by default.
-    B<Note> that this conversion is not yet supported in C<latexmls>.
-    Will enable C<--post>.
-
-=item C<--xmath> and C<--keepXMath>
-
-By default, when any of the MathML or OpenMath conversions
-    are used, the intermediate math representation will be removed;
-    Explicitly specifying --xmath|keepXMath preserves this format.
-    Will enable C<--post>.
-
-=item C<--stylesheet>=I<file>
-
-Sets a stylesheet of choice to be used by the postprocessor.
-    Will enable C<--post>.
+Requests the XSL transformation of the document using the given xslfile as stylesheet.
+If the stylesheet is omitted, a `standard' one appropriate for the
+format (html4, html5 or xhtml) will be used.
 
 =item C<--css>=I<cssfile>
 
-Adds I<cssfile> as a css stylesheet to be used in the transformed html/xhtml.
-    Multiple stylesheets can be used; they are included in the html in the
-    order given, following the default C<core.css>
-    (but see C<--nodefaultresources>). Some stylesheets included in the distribution are
+Adds I<cssfile> as a css stylesheet to be used in the transformed html/html5/xhtml.
+Multiple stylesheets can be used; they are included in the html in the
+order given, following the default C<ltx-LaTeXML.css> (unless C<--nodefaultcss>).
+The stylesheet is copied to the destination directory, unless it is an absolute url.
+
+Some stylesheets included in the distribution are
   --css=navbar-left   Puts a navigation bar on the left.
                       (default omits navbar)
   --css=navbar-right  Puts a navigation bar on the left.
@@ -1068,11 +1147,17 @@ Includes a link to the javascript file I<jsfile>, to be used in the transformed 
 Multiple javascript files can be included; they are linked in the html in the order given.
 The javascript file is copied to the destination directory, unless it is an absolute url.
 
+=item C<--icon>=I<iconfile>
+
+Copies I<iconfile> to the destination directory and sets up the linkage in
+the transformed html/html5/xhtml to use that as the "favicon".
+
 =item C<--nodefaultresources>
 
 Disables the copying and inclusion of resources added by the binding files;
 This includes CSS, javascript or other files.  This does not affect
 resources explicitly requested by the C<--css> or C<--javascript> options.
+
 
 =item C<--timestamp>=I<timestamp>
 
@@ -1086,10 +1171,127 @@ If you don't supply a timestamp, the current time and date will be used.
 Passes parameters to the XSLT stylesheet.
 See the manual or the stylesheet itself for available parameters.
 
-=item C<--nocomments>
+=back
 
-Normally latexml preserves comments from the source file, and adds a comment every 25 lines as
-    an aid in tracking the source.  The option --nocomments discards such comments.
+
+=head2 Site & Crossreferencing Options
+
+=over 4
+
+=item C<--split>, C<--nosplit>
+
+Enables or disables (default) the splitting of documents into multiple `pages'.
+If enabled, the the document will be split into sections, bibliography,
+index and appendices (if any) by default, unless C<--splitpath> is specified.
+
+=item C<--splitat=>I<unit>
+
+Specifies what level of the document to split at. Should be one
+of C<chapter>, C<section> (the default), C<subsection> or C<subsubsection>.
+For more control, see C<--splitpath>.
+
+=item C<--splitpath=>I<xpath>
+
+Specifies an XPath expression to select nodes that will generate separate
+pages. The default splitpath is
+  //ltx:section | //ltx:bibliography | //ltx:appendix | //ltx:index
+
+Specifying
+
+  --splitpath="//ltx:section | //ltx:subsection
+         | //ltx:bibliography | //ltx:appendix | //ltx:index"
+
+would split the document at subsections as well as sections.
+
+=item C<--splitnaming>=C<(id|idrelative|label|labelrelative)>
+
+Specifies how to name the files for subdocuments created by splitting.
+The values C<id> and C<label> simply use the id or label of the subdocument's
+root node for it's filename.  C<idrelative> and C<labelrelative> use
+the portion of the id or label that follows the parent document's
+id or label. Furthermore, to impose structure and uniqueness,
+if a split document has children that are also split, that document
+(and it's children) will be in a separate subdirectory with the
+name index.
+
+=item C<--scan>, C<--noscan>
+
+Enables (default) or disables the scanning of documents for ids, labels,
+references, indexmarks, etc, for use in filling in refs, cites, index and
+so on.  It may be useful to disable when generating documents not based
+on the LaTeXML doctype.
+
+=item C<--crossref>, C<--nocrossref>
+
+Enables (default) or disables the filling in of references, hrefs, etc
+based on a previous scan (either from C<--scan>, or C<--dbfile>)
+It may be useful to disable when generating documents not based
+on the LaTeXML doctype.
+
+=item C<--urlstyle>=C<(server|negotiated|file)>
+
+This option determines the way that URLs within the documents
+are formatted, depending on the way they are intended to be served.
+The default, C<server>, eliminates unneccessary
+trailing C<index.html>.  With C<negotiated>, the trailing
+file extension (typically C<html> or C<xhtml>) are eliminated.
+The scheme C<file> preserves complete (but relative) urls
+so that the site can be browsed as files without any server.
+
+=item C<--navigationtoc>=C<(context|none)>
+
+Generates a table of contents in the navigation bar; default is C<none>.
+The `context' style of TOC, is somewhat verbose and reveals more detail near the current
+page; it is most suitable for navigation bars placed on the left or right.
+Other styles of TOC should be developed and added here, such as a short form.
+
+=item C<--index>, C<--noindex>
+
+Enables (default) or disables the generation of an index from indexmarks
+embedded within the document.  Enabling this has no effect unless
+there is an index element in the document (generated by \printindex).
+
+=item C<--splitindex>, C<--nosplitindex>
+
+Enables or disables (default) the splitting of generated indexes
+into separate pages per initial letter.
+
+=item C<--bibliography=>I<pathname>
+
+Specifies a bibliography generated from a BibTeX file
+to be used to fill in a bibliography element.
+Hand-written bibliographies placed in a C<thebibliography> environment
+do not need this.  The option has no effect unless
+there is an bibliography element in the document (generated by \bibliography).
+
+Note that this option provides the bibliography to be used to
+fill in the bibliography element (generated by C<\bibliography>);
+latexmlpost does not (currently) directly process and format such a bibliography.
+
+=item C<--splitbibliography>, C<--nosplitbibliography>
+
+Enables or disables (default) the splitting of generated bibliographies
+into separate pages per initial letter.
+
+=item C<--prescan>
+
+By default C<latexmlpost> processes a single document into one
+(or more; see C<--split>) destination files in a single pass.
+When generating a complicated site consisting of several documents
+it may be advantageous to first scan through the documents
+to extract and store (in C<dbfile>) cross-referencing data
+(such as ids, titles, urls, and so on).
+A later pass then has complete information allowing all documents
+to reference each other, and also constructs an index and bibliography
+that reflects the entire document set.  The same effect (though less efficient)
+can be achieved by running C<latexmlpost> twice, provided a C<dbfile>
+is specified.
+
+=item C<--dbfile>I<=file>
+
+Specifies a filename to use for the crossreferencing data when
+using two-pass processing.  This file may reside in the intermediate
+destination directory.
 
 =item C<--sitedirectory=>I<dir>
 
@@ -1097,34 +1299,171 @@ Specifies the base directory of the overall web site.
 Pathnames in the database are stored in a form relative
 to this directory to make it more portable.
 
-=item C<--sourcedirectory>=I<source>
+=item C<--embed>
 
-Specifies the directory where the original latex source is located.
-Unless LaTeXML is run from that directory, or it can be determined
-from the xml filename, it may be necessary to specify this option in
-order to find graphics and style files.
+TODO: Deprecated, use --whatsout=fragment
+Requests an embeddable XHTML div (requires: --post --format=xhtml),
+    respectively the top division of the document's body.
+    Caveat: This experimental mode is enabled only for fragment profile and post-processed
+    documents (to XHTML).
 
-=item C<--inputencoding=>I<encoding>
+=back
 
-Specify the input encoding, eg. C<--inputencoding=iso-8859-1>.
-    The encoding must be one known to Perl's Encode package.
-    Note that this only enables the translation of the input bytes to
-    UTF-8 used internally by LaTeXML, but does not affect catcodes.
-    In such cases, you should be using the inputenc package.
-    Note also that this does not affect the output encoding, which is
-    always UTF-8.
 
-=item C<--VERSION>
+=head2 Math Options
 
-Shows the version number of the LaTeXML package..
+These options specify how math should be converted into other formats.
+Multiple formats can be requested; how they will be combined
+depends on the format and other options.
 
-=item C<--debug>=I<package>
+=over 4
 
-Enables debugging output for the named package. The package is given without the leading LaTeXML::.
+=item C<--noparse>
 
-=item C<--help>
+Suppresses parsing math (default: parsing is on)
 
-Shows this help message.
+=item C<--parse=name>
+
+Enables parsing math (default: parsing is on)
+    and selects parser framework "name".
+    Supported: RecDescent, no
+    Tip: --parse=no is equivalent to --noparse
+
+=item C<--mathimages>, C<--nomathimages>
+
+Requests or disables the conversion of math to images (png by default).
+Conversion is the default for html4 format.
+
+=item C<--mathsvg>, C<--nomathsvg>
+
+Requests or disables the conversion of math to svg images.
+
+=item C<--mathimagemagnification=>I<factor>
+
+Specifies the magnification used for math images (both png and svg),
+if they are made. Default is 1.75.
+
+=item C<--presentationmathml>, C<--nopresentationmathml>
+
+Requests or disables conversion of math to Presentation MathML.
+Conversion is the default for xhtml and html5 formats.
+
+=item C<--linelength>I<=number>
+
+(Experimental) Line-breaks the generated Presentation
+MathML so that it is no longer than I<number> `characters'.
+
+=item C<--plane1>
+
+Converts the content of Presentation MathML token elements to
+the appropriate Unicode Plane-1 codepoints according to the selected font,
+when applicable (the default).
+
+=item C<--hackplane1>
+
+Converts the content of Presentation MathML token elements to
+the appropriate Unicode Plane-1 codepoints according to the selected font,
+but only for the mathvariants double-struck, fraktur and script.
+This gives support for current (as of August 2009) versions of
+Firefox and MathPlayer, provided a sufficient set of fonts is available (eg. STIX).
+
+=item C<--contentmathml>, C<--nocontentmathml>
+
+Requests or disables conversion of math to Content MathML.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item C<--openmath>
+
+Requests or disables conversion of math to OpenMath.
+Conversion is disabled by default.
+B<Note> that this conversion is only partially implemented.
+
+=item C<--keepXMath>, C<--xmath>
+
+By default, when any of the MathML or OpenMath conversions
+are used, the intermediate math representation will be removed;
+this option preserves it; it will be used as secondary parallel
+markup, when it follows the options for other math representations.
+
+=back
+
+
+=head2 Graphics Options
+
+=over 4
+
+=item C<--graphicimages>, C<--nographicimages>
+
+Enables (default) or disables the conversion of graphics
+to web-appropriate format (png).
+
+=item C<--graphicsmap=>I<sourcetype.desttype>
+
+Specifies a mapping of graphics file types. Typically, graphics elements
+specify a graphics file that will be converted to a more appropriate file
+target format; for example, postscript files used for graphics with LaTeX
+will be converted to png format for use on the web.  As with LaTeX,
+when a graphics file is specified without a file type, the system will search
+for the most appropriate target type file.
+
+When this option is used, it overrides I<and replaces> the defaults and provides
+a mapping of I<sourcetype> to I<desttype>.  The option can be
+repeated to provide several mappings, with the earlier formats preferred.
+If the I<desttype> is omitted, it specifies copying files of type I<sourcetype>, unchanged.
+
+The default settings is equivalent to having supplied the options:
+  svg png gif jpg jpeg eps.png ps.png ai.png pdf.png
+
+The first formats are preferred and used unchanged, while the latter
+ones are converted to png.
+
+=item C<--pictureimages>, C<--nopictureimages>
+
+Enables (default) or disables the conversion of picture environments
+and pstricks material into images.
+
+=item C<--svg>, C<--nosvg>
+
+Enables or disables (default) the conversion of picture environments
+and pstricks material to SVG.
+
+=back
+
+
+=head2 Daemon, Server and Client Options
+
+Options used only for daemonized conversions, e.g. talking to a remote server
+via latexmlc, or local processing via the C<LaTeXML::Plugin::latexmls> plugin.
+
+For reliable communication and a stable conversion experience, invoke latexmls
+only through the latexmlc client (you need to set --expire to a positive value,
+in order to request auto-spawning of a dedicated conversion server).
+
+=over 4
+
+=back
+
+=item C<--autoflush>=I<count>
+
+Automatically restart the daemon after converting "count" inputs.
+    Good practice for vast batch jobs. (default: 100)
+
+=item C<--expire>=I<secs>
+
+Set an inactivity timeout value in seconds.
+    If the server process is not given any input for the specified duration,
+    it will automatically terminate.
+    The default value is 600 seconds, set to 0 to never expire,
+    -1 to entirely opt out of using an independent server.
+
+=item C<--address>=I<URL>
+
+Specify server address (default: localhost)
+
+=item C<--port>=I<number>
+
+Specify server port (default: 3334 for math, 3344 for fragment and 3354 for standard)
 
 =back
 

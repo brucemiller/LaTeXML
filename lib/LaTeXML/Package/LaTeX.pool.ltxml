@@ -2059,16 +2059,17 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
 AssignValue('thm@swap' => 'N');
-DefRegister('\thm@style'       => Tokenize('plain'));
-DefRegister('\thm@headfont'    => Tokens(T_CS('\bfseries')));
-DefRegister('\thm@bodyfont'    => Tokens(T_CS('\itshape')));
-DefRegister('\thm@headpunct'   => Tokens());
-DefRegister('\thm@styling'     => Tokens());
-DefRegister('\thm@headstyling' => Tokens());
-DefRegister('\thm@prework'     => Tokens());
-DefRegister('\thm@postwork'    => Tokens());
-DefRegister('\thm@symbol'      => Tokens());
-DefRegister('\thm@numbering'   => Tokens(T_OTHER('arabic')));
+DefRegister('\thm@style'        => Tokenize('plain'));
+DefRegister('\thm@headfont'     => Tokens(T_CS('\bfseries')));
+DefRegister('\thm@bodyfont'     => Tokens(T_CS('\itshape')));
+DefRegister('\thm@headpunct'    => Tokens());
+DefRegister('\thm@styling'      => Tokens());
+DefRegister('\thm@headstyling'  => Tokens());
+DefRegister('\thm@prework'      => Tokens());
+DefRegister('\thm@postwork'     => Tokens());
+DefRegister('\thm@symbol'       => Tokens());
+DefRegister('\thm@numbering'    => Tokens(T_OTHER('arabic')));
+DefRegister('\thm@headformater' => undef);
 #  AssignValue('\thm@headfont' => T_CS('\bfseries'));
 #  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
 
@@ -2140,9 +2141,16 @@ sub defineNewTheorem {
         ? (T_CS('\the' . $counter), ($type ? (T_SPACE) : ()), T_CS($thmname))
         : (T_CS($thmname), ($type ? (T_SPACE) : ()), T_CS('\the' . $counter)))),
     scope => 'global');
+  # amsthm allows you to define your own title formatter
+  # if there was one defined, use it, else define a new one.
+  my $headformatter = LookupValue('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
-    '\@tag{\csname fnum@' . $thmset . '\endcsname}'
-      . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct',
+    ($headformatter
+      ? Tokens($headformatter->unlist, T_BEGIN, ($type ? $type->unlist : ()), T_END,
+        T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
+        T_CS('\the'), T_CS('\thm@headpunct'))
+      : '\@tag{\csname fnum@' . $thmset . '\endcsname}'
+        . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct'),
     scope => 'global');
   DefEnvironment("{$thmset} OptionalUndigested",
     "<ltx:theorem xml:id='#id' class='#class'"
@@ -2159,8 +2167,8 @@ sub defineNewTheorem {
     beforeDigestEnd  => sub { Digest('\thm@doendmark'); },
     afterDigest      => sub { Digest('\the\thm@postwork'); },
     properties       => sub {
-      my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ()),
-        my $title = Digest(Tokens(T_BEGIN,
+      my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
+      my $title = Digest(Tokens(T_BEGIN,
           T_CS('\the'), T_CS('\thm@headfont'),
           T_CS('\the'), T_CS('\thm@headstyling'),
           T_CS('\format@title@' . $thmset),
@@ -2695,7 +2703,7 @@ DefConstructor('\label Semiverbatim', sub {
       $document->setAttribute($node, labels => join(' ', sort keys %labels));
       $document->setNode($savenode); } },
   reversion   => '',
-  properties  => { alignmentSkippable => 1 },
+  properties  => { alignmentSkippable => 1, alignmentPreserve => 1 },
   afterDigest => sub {
     my $label = CleanLabel(ToString($_[1]->getArg(1)));
     $_[1]->setProperty(label => $label);

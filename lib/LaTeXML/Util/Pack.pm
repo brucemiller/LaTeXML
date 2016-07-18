@@ -21,6 +21,7 @@ use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
 use base qw(Exporter);
 our @EXPORT = qw(&unpack_source &pack_collection);
+our $archive_file_exclusion_regex = qr/(?:^\.)|(?:\.(?:zip|gz|epub|tex|bib|mobi|cache)$)|(?:~$)/;
 
 sub unpack_source {
   my ($source, $sandbox_directory) = @_;
@@ -46,6 +47,7 @@ sub unpack_source {
 
   # Heuristically determine the input (borrowed from arXiv::FileGuess)
   my %Main_TeX_likelihood;
+  my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
     # Read in the content
     $tex_file = catfile($sandbox_directory, $tex_file);
@@ -72,9 +74,22 @@ sub unpack_source {
       if (/(?:^|\r)\s*\\document(?:style|class)/) {
         $Main_TeX_likelihood{$tex_file} = 3; last TEX_FILE_TRAVERSAL; }    # LaTeX
       if (/(?:^|\r)\s*(?:\\font|\\magnification|\\input|\\def|\\special|\\baselineskip|\\begin)/) {
+        $maybe_tex = 1; }
+      if (/\\(?:input|include)(?:\s+|\{)([^ \}]+)/) {
         $maybe_tex = 1;
-        if (/\\input\s+amstex/) {
-          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; } }    # TeX Priority
+        # the argument of \input can't be the main file
+        # (it could in very elaborate multi-target setups, but we DON'T support those)
+        # so veto it.
+        my $vetoed_file = $1;
+        if ($vetoed_file eq 'amstex') { # TeX Priority
+          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }
+        if ($vetoed_file !~ /\./) {
+          $vetoed_file .= '.tex';
+        }
+        my $base = $tex_file;
+        $base =~ s/\/[^\/]+$//;
+        $vetoed_file = "$base/$vetoed_file";
+        push @vetoed, $vetoed_file; }
       if (/(?:^|\r)\s*\\(?:end|bye)(?:\s|$)/) {
         $maybe_tex_priority = 1; }
       if (/\\(?:end|bye)(?:\s|$)/) {
@@ -105,6 +120,10 @@ sub unpack_source {
       else {
         $Main_TeX_likelihood{$tex_file} = 0; }
     }
+  }
+  # Veto files that were e.g. arguments of \input macros
+  for my $filename(@vetoed) {
+    delete $Main_TeX_likelihood{$filename};
   }
   # The highest likelihood (>0) file gets to be the main source.
   my @files_by_likelihood = sort { $Main_TeX_likelihood{$b} <=> $Main_TeX_likelihood{$a} } grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
@@ -164,7 +183,7 @@ sub get_archive {
     or (print STDERR 'Fatal:expected:directory Failed to compress directory \'$directory\': $@');
   my @entries = grep { /^[^.]/ } readdir($dirhandle);
   closedir $dirhandle;
-  my @files = grep { (!/(?:zip|gz|epub|tex|bib|mobi|~)$/) && -f pathname_concat($directory, $_) } @entries;
+  my @files = grep { !/$archive_file_exclusion_regex/ && -f pathname_concat($directory, $_) } @entries;
   my @subdirs = grep { -d File::Spec->catdir($directory, $_) } @entries;
  # We want to first add the files instead of simply invoking ->addTree on the top level
  # without ANY file attributes at all,
@@ -191,7 +210,7 @@ sub get_archive {
 
   foreach my $subdir (sort @subdirs) {
     my $current_dir = File::Spec->catdir($directory, $subdir);
-    $archive->addTree($current_dir, $subdir, sub { /^[^.]/ && (!/\.(?:zip|gz|epub|mobi|~)$/) }, COMPRESSION_STORED); }
+    $archive->addTree($current_dir, $subdir, sub { !/$archive_file_exclusion_regex/ }, COMPRESSION_STORED); }
 
   my $payload;
   if ($whatsout =~ /^archive(::zip)?$/) {

@@ -51,6 +51,8 @@ sub process {
   $self->fill_in_refs($doc);
   $self->fill_in_RDFa_refs($doc);
   $self->fill_in_bibrefs($doc);
+  $self->copy_resources($doc);
+
   if (keys %LaTeXML::Post::CrossRef::MISSING) {
     my $tempid = 0;
     foreach my $severity (qw(error warn info)) {
@@ -793,6 +795,22 @@ sub generateGlossaryRefTitle {
 
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
+
+# Possibly this needs support from Scan, as well?
+# to manage resources, record in Manifest, something like that?
+sub copy_resources {
+  my ($self, $doc) = @_;
+  # Copy any "resources" linked from the document
+  my $paths = [$doc->getSearchPaths];
+  foreach my $n ($doc->findnodes('//ltx:ref[@href and not(@idref) and not(@labelref)]')) {
+    my $url = $n->getAttribute('href');
+    if ($url !~ /^(\w+:|\/)/) {    # relative path? (No explicit protocol, or absolute)
+      if (my $src = pathname_find($url, paths => $paths)) {    # AND if file exists there.
+        my $dst = $doc->checkDestination($url);
+        pathname_copy($src, $dst);
+      } } }
+  return; }
+
 # ================================================================================
 1;
 

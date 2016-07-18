@@ -294,7 +294,7 @@ DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
 DefParameterType('DefToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readToken;
-    while ($token->equals(T_BEGIN)) {
+    while ($token && $token->equals(T_BEGIN)) {
       my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
       $token = shift(@toks);
       $gullet->unread(@toks); }
@@ -340,6 +340,16 @@ DefParameterType('TeXFileName', sub {
       && (($cc = $token->getCatcode) != CC_SPACE) && ($cc != CC_EOL) && ($cc != CC_COMMENT) && ($cc != CC_CS)) {
       push(@tokens, $token); }
     $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_COMMENT);
+    my $lead_cc = @tokens && $tokens[0]->getCatcode();
+    if ($lead_cc == CC_BEGIN) {
+      my $trail_cc = @tokens && $tokens[-1]->getCatcode();
+      if ($trail_cc == CC_END) {
+        # A begin-end wrapper indicates latex style {filename} use,
+        # so first unwrap,
+        @tokens = @tokens[1 .. $#tokens - 1];
+        # then load latex, and proceed
+        if (!LookupValue('LaTeX.pool_loaded')) {    # if already loaded, DONT redefine!
+          LoadPool("LaTeX"); } } }
     Tokens(@tokens); });
 
 # A LaTeX style directory List
@@ -350,7 +360,8 @@ DefParameterType('DirectoryList', sub {
       my @dirs = ();
       while ($gullet->ifNext(T_BEGIN)) {
         # Should these be Semiverbatim ??
-        push(@dirs, $gullet->readArg); }
+        push(@dirs, $gullet->readArg);
+        $gullet->readMatch(T_OTHER(',')); }
       if ($gullet->ifNext(T_END)) {
         $gullet->readToken; }
       else {
@@ -454,6 +465,7 @@ DefParameterType('DigestedBody', sub {
 ## DefParameterType('Length', sub {
 ##   my($gullet,$unit)=@_;
 
+# CommaList expects something like {balancedstuff,...}
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
@@ -470,7 +482,8 @@ DefParameterType('CommaList', sub {
           push(@items, Tokens(@tokens)); @tokens = (); }
         elsif ($token->equals(T_BEGIN)) {
           push(@tokens, $token, $gullet->readBalanced->unlist, T_END); }
-        else {push(@tokens, $token); }}
+        else {
+          push(@tokens, $token); } }
       if ($typedef) {
         @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; } }
     else {
@@ -2181,8 +2194,10 @@ DefConstructor('\tabularcell@hbox HBoxContents',
   beforeDigest => sub {
     ## reenterTextMode();  # BUT NOT \\\\ !!!!!!
     Let(T_MATH,        '\@dollar@in@textmode');
-    Let('\centerline', '\relax');
-  });
+    Let('\centerline', '\relax'); },
+  afterConstruct => sub {    # Override nowrap on right,left,center cells
+    my $cell = $_[0]->getElement;
+    $_[0]->addClass($cell, 'ltx_wrap') unless ($cell->getAttribute('align') || '') eq 'justify'; });
 
 DefColumnType('p{Dimension}', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
@@ -2916,13 +2931,13 @@ DefPrimitive('\@text@hskip Glue', sub {
   alias => '\hskip');
 DefConstructor('\@math@mskip MuGlue',
   "<ltx:XMHint width='#1'/>",
-  alias => '\hskip',
+  alias => '\mskip',
   properties => sub { (width => $_[1], isSpace => 1); }
 );
 DefPrimitive('\@text@mskip MuGlue', sub {
     my ($stomach, $length) = @_;
     DimensionToSpaces($length); },
-  alias => '\hskip');
+  alias => '\mskip');
 
 DefPrimitiveI('\hss', undef, undef);
 DefConstructorI('\hfil', undef, "?#isMath(<ltx:XMHint name='hfil'/>)( )",
@@ -3807,7 +3822,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     my $meaning   = ToString($kv->getValue('meaning'));
     my $thickness = ToString($kv->getValue('thickness'));
     $role = 'FRACOP' unless $role;
-    $meaning = 'divide' if (!$meaning) && ($thickness ne '0');
+    $meaning = 'divide' if (!$meaning) && ($thickness ne '0pt');
     # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
     my @top = $stomach->regurgitate;
     # really have to pass +/-1, +/-2 etc..!
@@ -3837,15 +3852,15 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
       Revert($whatsit->getProperty('bottom'))); });
 
 DefMacro('\choose',
-  '\lx@generalized@over{\choose}{meaning=binomial,thickness=0,left=\@left(,right=\@right)}');
+  '\lx@generalized@over{\choose}{meaning=binomial,thickness=0pt,left=\@left(,right=\@right)}');
 DefMacro('\brace',
-  '\lx@generalized@over{\brace}{thickness=0,left=\@left\{,right=\@right\}}');
+  '\lx@generalized@over{\brace}{thickness=0pt,left=\@left\{,right=\@right\}}');
 DefMacro('\brack',
-  '\lx@generalized@over{\brack}{thickness=0,left=\@left[,right=\@right]}');
+  '\lx@generalized@over{\brack}{thickness=0pt,left=\@left[,right=\@right]}');
 DefMacro('\atop',
-  '\lx@generalized@over{\atop}{thickness=0}');
+  '\lx@generalized@over{\atop}{thickness=0pt}');
 DefMacro('\atopwithdelims Token Token',
-  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0,left={\@left#1},right={\@right#2}}');
+  '\lx@generalized@over{\atopwithdelims #1 #2}{thickness=0pt,left={\@left#1},right={\@right#2}}');
 DefMacro('\over',
   '\lx@generalized@over{\over}{meaning=divide}');
 DefMacro('\overwithdelims Token Token',
@@ -3949,61 +3964,42 @@ sub TestNode {
     && ((!defined $content) || (($node->textContent || '') eq $content))
     && !grep { $node->getAttribute($_) ne $attrib{$_} } keys %attrib; }
 
+# Recognize !!
+DefMathLigature("!!" => "!!", role => 'POSTFIX', meaning => 'double-factorial');
+
 # Recognize :=
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', ':')
-      && TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-      (2, ":=", meaning => 'assign', role => 'RELOP'); } });
+DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
 
 # Recognize: <=, << and <<<
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', '<')) {
-      if (TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-        (2, "\x{2264}", role => 'RELOP', meaning => 'less-than-or-equals'); }
-      elsif (TestNode($nodes[-1], 'ltx:XMTok', '<')) {
-        (2, "\x{226A}", role => 'RELOP', meaning => 'much-less-than'); } } });
-# Note that << will already have been converted to \ll !!!
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', "\x{226A}")
-      && TestNode($nodes[-1], 'ltx:XMTok', '<')) {
-      (2, "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than'); } });
+# # Note that in <<<, the leading << will already have been converted to \ll !!!
+DefMathLigature("<="        => "\x{2264}", role => 'RELOP', meaning => 'less-than-or-equals');
+DefMathLigature("<<"        => "\x{226A}", role => 'RELOP', meaning => 'much-less-than');
+DefMathLigature("\x{226A}<" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than');
 
 # Recognize: >=, >> and >>>
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', '>')) {
-      if (TestNode($nodes[-1], 'ltx:XMTok', '=')) {
-        (2, "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals'); }
-      elsif (TestNode($nodes[-1], 'ltx:XMTok', '>')) {
-        (2, "\x{226B}", role => 'RELOP', meaning => 'much-greater-than'); } } });
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 2)
-      && TestNode($nodes[-2], 'ltx:XMTok', "\x{226B}")
-      && TestNode($nodes[-1], 'ltx:XMTok', '>')) {
-      (2, "\x{22D9}", role => 'RELOP', meaning => 'very-much-greater-than'); } });
+DefMathLigature(">="        => "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals');
+DefMathLigature(">>"        => "\x{226B}", role => 'RELOP', meaning => 'much-greater-than');
+DefMathLigature("\x{226B}>" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-greater-than');
 
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
 # well, maybe a letter followed by letters & digits?
-DefMathLigature(sub { my ($document, @nodes) = @_;
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
     my @chars = ();
-    my $font  = $document->getNodeFont($nodes[-1]);
+    my $font  = $document->getNodeFont($node);
     if ($font->isSticky) {
-      my $node;
       my $n      = 0;
       my $string = '';
       my $s      = '';
-      while (($node = pop(@nodes))
+      while ($node
         && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
         && ($document->getNodeFont($node)->equals($font))
         && (!$node->hasAttribute('name'))
         && ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
           || (($node->getAttribute('role') || 'UNKNOWN') eq 'NUMBER'))
         && (($s = $node->textContent . $s) =~ /^[0-9a-zA-Z]+$/)) {
-        $n++; $string = $s; }
+        $n++; $string = $s;
+        $node = $node->previousSibling; }
       (($string =~ /^[a-zA-Z]/) && ($n > 1) ? ($n, $string, role => 'UNKNOWN', meaning => undef) : undef);
 } });
 
@@ -4028,17 +4024,17 @@ our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
 
 my %decimal_separator   = (en => '.', de => ',', fr => ',', nl => ',', pt => ',', es => ',');
 my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.', es => '.');
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    my $lang = $document->getNodeLanguage($nodes[-1]);
+DefMathLigature(matcher => sub { my ($document, $node) = @_;
+    my $lang = $document->getNodeLanguage($node);
     $lang =~ s/-\w+$// if $lang;    # strip off region code, if any.
     my $dec  = ($lang && $decimal_separator{$lang})   || '.';
     my $thou = ($lang && $thousands_separator{$lang}) || ',';
     my $decrole = ($dec eq '.' ? 'PERIOD' : '');
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
-    my ($n, $node, $string, $number, $w) = (0, undef, '', '', 0);
+    my ($n, $string, $number, $w) = (0, '', '', 0);
     # NOTE: We're scanning chars from END!
-    while ($node = pop(@nodes)) {
+    while ($node) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
         my $r = ($node->getAttribute('role') || '');
@@ -4068,7 +4064,7 @@ DefMathLigature(sub { my ($document, @nodes) = @_;
           last; } }
       else {
         last; }
-      $n++; }
+      $n++; $node = $node->previousSibling; }
     if (($n > 1) && ($number =~ /\d/)) {
       ($n, $string, meaning => $number, role => 'NUMBER'); } });
 
@@ -5331,20 +5327,12 @@ DefConstructorI('\dots', undef,
 # Pretest for XMath to keep from interpreting math that the DOM may not allow!!
 ##DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'\cdot\cdot\cdot',replace=>'\cdots');
 
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) > 3)
-      && !grep { ($document->getModel->getNodeQName($_) ne 'ltx:XMTok') || ($_->textContent ne "\x{22C5}") }
-      @nodes[$#nodes - 2 .. $#nodes]) {
-      (3, "\x{22EF}", name => 'cdots', role => 'ID'); } });
+DefMathLigature("\x{22C5}\x{22C5}\x{22C5}" => "\x{22EF}", role => 'ID', name => 'cdots');
+
 DefLigature(qr{\.\.\.}, "\x{2026}", fontTest => sub { $_[0]->getFamily ne 'typewriter'; });  # ldots
 
 #DefMathRewrite(xpath=>'descendant-or-self::ltx:XMath',match=>'...',replace=>'\ldots');
-
-DefMathLigature(sub { my ($document, @nodes) = @_;
-    if ((scalar(@nodes) >= 3)
-      && !grep { ($document->getModel->getNodeQName($_) ne 'ltx:XMTok') || ($_->textContent ne ".") }
-      @nodes[$#nodes - 2 .. $#nodes]) {
-      (3, "\x{2026}", name => 'ldots', role => 'ID'); } });
+DefMathLigature("..." => "\x{2026}", role => 'ID', name => 'ldots');
 
 #----------------------------------------------------------------------
 # Math Accents.
@@ -5496,7 +5484,7 @@ DefConstructor('\right@hidden@egroup', '',
 DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
 
 DefConstructor('\@left Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
@@ -5505,8 +5493,9 @@ DefConstructor('\@left Token',
       $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{lrole},
-        char => $$entry{char},
-        name => $$entry{name});
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
       $whatsit->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'OPEN') {
       $arg->setProperty(stretchy => 'true'); }
@@ -5516,7 +5505,7 @@ DefConstructor('\@left Token',
     return; },
   alias => '\left');
 DefConstructor('\@right Token',
-  "?#char(<ltx:XMTok role='#role' name='#name'>#char</ltx:XMTok>)"
+  "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my $arg   = $whatsit->getArg(1);
@@ -5525,8 +5514,9 @@ DefConstructor('\@right Token',
       $whatsit->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
       $whatsit->setProperties(role => $$entry{rrole},
-        char => $$entry{char},
-        name => $$entry{name});
+        char     => $$entry{char},
+        name     => $$entry{name},
+        stretchy => 'true');
       $whatsit->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
       $arg->setProperty(stretchy => 'true'); }

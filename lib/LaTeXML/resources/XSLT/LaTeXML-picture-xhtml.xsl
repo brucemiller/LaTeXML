@@ -116,12 +116,14 @@
               <xsl:value-of select="f:url(.)"/>
             </xsl:attribute>
           </xsl:when>
+          <!-- Apparently, these attributes SHOULD have the xlink prefix, even in HTML5
           <xsl:when test="name()='xlink:href' or name()='xlink:role' or name()='xlink:arcrole'">
             <xsl:attribute name="{local-name()}"
                            namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
               <xsl:value-of select="f:url(.)"/>
             </xsl:attribute>
           </xsl:when>
+          -->
           <xsl:when test="namespace-uri() = $SVG_NAMESPACE">
             <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
               <xsl:value-of select="."/>

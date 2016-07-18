@@ -5,8 +5,9 @@ Changes
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
-README
+README.pod
 INSTALL
+INSTALL.SKIP
 LICENSE
 manual.pdf
 #==================================================
@@ -352,6 +353,7 @@ lib/LaTeXML/Package/apjfonts.sty.ltxml
 lib/LaTeXML/Package/applemac.def.ltxml
 lib/LaTeXML/Package/array.sty.ltxml
 lib/LaTeXML/Package/article.cls.ltxml
+lib/LaTeXML/Package/attachfile.sty.ltxml
 lib/LaTeXML/Package/authblk.sty.ltxml
 lib/LaTeXML/Package/avant.sty.ltxml
 lib/LaTeXML/Package/babel.sty.ltxml
@@ -536,6 +538,7 @@ lib/LaTeXML/Package/slashed.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
 lib/LaTeXML/Package/soul.sty.ltxml
 lib/LaTeXML/Package/srcltx.sty.ltxml
+lib/LaTeXML/Package/stmaryrd.sty.ltxml
 lib/LaTeXML/Package/subfig.sty.ltxml
 lib/LaTeXML/Package/subfigure.sty.ltxml
 lib/LaTeXML/Package/subfloat.sty.ltxml
@@ -545,6 +548,7 @@ lib/LaTeXML/Package/svg.sty.ltxml
 lib/LaTeXML/Package/svmult.cls.ltxml
 lib/LaTeXML/Package/sv_support.sty.ltxml
 lib/LaTeXML/Package/tabularx.sty.ltxml
+lib/LaTeXML/Package/tabulary.sty.ltxml
 lib/LaTeXML/Package/TeX.pool.ltxml
 lib/LaTeXML/Package/textcomp.sty.ltxml
 lib/LaTeXML/Package/texvc.sty.ltxml
@@ -582,7 +586,9 @@ lib/LaTeXML/Package/amsb.fontmap.ltxml
 lib/LaTeXML/Package/ot4.fontmap.ltxml
 lib/LaTeXML/Package/ulem.sty.ltxml
 lib/LaTeXML/Package/utf8.def.ltxml
+lib/LaTeXML/Package/wasysym.sty.ltxml
 lib/LaTeXML/Package/xunicode.sty.ltxml
+
 #==================================================
 # TeX packages
 #==================================================

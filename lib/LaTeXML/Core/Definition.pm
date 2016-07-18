@@ -101,7 +101,12 @@ sub tracingCSName {
 sub tracingArgs {
   my ($self, @args) = @_;
   my $i = 1;
-  return join("\n", map { '#' . $i++ . '<-' . ToString($_) } @args); }
+  return join("\n", map { '#' . $i++ . '<-' . tracingArgToString($_) } @args); }
+
+# Annoying special handing of registers
+sub tracingArgToString {
+  my ($arg) = @_;
+  return (ref $arg eq 'ARRAY' ? '[' . join(',', map { ToString($_) } @$arg) . ']' : ToString($arg)); }
 
 #======================================================================
 # Profiling support

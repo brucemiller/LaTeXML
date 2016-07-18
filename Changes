@@ -1,3 +1,27 @@
+0.8.2 2016-07-10
+     - Numerous bug, robustness, fidelity fixes;
+     - fixes to amsmath, amsthm, keyvals, listings, tikz/pgf, color, xcolor, supertabular packages;
+     - fixes to bibliography, OpenMath, MathML, svg generation;
+     - accomodate sizing of math, better position adjustments;
+     - JATS/NLM format;
+     - Colorized error logging;
+     - New bindings: aas_macros.sty, algc.sty, algcompatible.sty, algmatlab.sty, algorithm.sty,
+       algorithmic.sty, algorithmicx.sty, algpascal.sty, algpseudocode.sty, amsgen.sty,
+       apjfonts.sty, attachfile.sty, authblk.sty, balance.sty, braket.sty, breakurl.sty,
+       colordvi.sty, deluxtable.sty, emulateapj5.sty, esint.sty, fix-cm.sty, flafter.sty,
+       grffile.sty, ifluatex.sty, import.sty, lmodern.sty, marvosym.sty, mathbbol.sty,
+       mathtools.sty, nameref.sty, newlfont.sty, parskip.sty, pdfsync.sty, psfig.tex,
+       pslatex.sty, rotate.sty, srcltx.sty, showkeys.sty, slashed.sty, soul.sty, subfig.sty,
+       subfloat.sty, stmaryrd.sty, svg.sty, t1enc.sty, tabulary.sty, threeparttable.sty,
+       transparent.sty, wasysym.sty.
+
+    Thanks: Deyan Ginev, Kim Philipp Jablonski, Lukas Kohlhase, Michael Kohlhase,
+       Viacheslav Zholudev;
+       And angerhang, Stefan Becuwe, Stephane Binarez, casio7131, Howard Cohl, Joe Cornelli,
+       Boyd Duffee, Giovanni, goska, Bernhard Kleine, neos21, Grant Petty, Bob Plantz,
+       Paolo Prandoni, Tim Prescott, Matteo Seclì, M. Senthilkumar, Moritz Schubotz, Raniere Silva,
+       Cooper Stevenson, Tom Tczyczko, Scott Walter, Frederic Wang, Simon Winter, Tom Wiesing,
+
 0.8.1 2015-02-17
      - Generate "span soup" for inline blocks, when otherwise would produce invalid HTML5.
      - Can use svg as math ouput format.

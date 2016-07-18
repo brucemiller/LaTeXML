@@ -83,8 +83,7 @@ proof_attributes =
   Common.attributes,
   Labelled.attributes,
   Backgroundable.attributes,
-  ## raw data related to the proof
-  attribute data { text }?
+  Data.attributes
 
 ## Content model for \elementref{proof}.
 proof_model = title?, Para.model
@@ -110,11 +109,10 @@ figure_attributes =
   Positionable.attributes,
   Transformable.attributes,
   Backgroundable.attributes,
-
+  Data.attributes,
+  
   ## the vertical floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
-  ## raw data related to the figure
-  attribute data { text }?
+  attribute placement { text }?
 
 ## Content model for \elementref{figure}; allow nested figures, etc for "sub" floats.
 figure_model = (figure | table | float | Block.model | Caption.class)*
@@ -132,11 +130,10 @@ table_attributes =
   Positionable.attributes,
   Transformable.attributes,
   Backgroundable.attributes,
-
+  Data.attributes,
+  
   ## the vertical floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
-  ## raw data related to the table; perhaps csv?
-  attribute data { text }?
+  attribute placement { text }?
 
 ## Content model for \elementref{table}.
 table_model = (table | figure | float | Block.model | Caption.class)*
@@ -154,13 +151,12 @@ float_attributes =
   Positionable.attributes,
   Transformable.attributes,
   Backgroundable.attributes,
+  Data.attributes,
 
   ## The kind of float; could be something like a listing, or some other thing
   attribute role { text }?,
   ## the vertical floating placement parameter that determines where the object is displayed.
-  attribute placement { text }?,
-  ## raw data related to the float
-  attribute data { text }?
+  attribute placement { text }?
 
 ## Content model for \elementref{float}.
 float_model = (float | figure | table | Block.model | Caption.class)*

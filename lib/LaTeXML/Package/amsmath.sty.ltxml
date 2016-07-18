@@ -571,7 +571,8 @@ DefConstructor('\@@amsaligned DigestedBody',
   beforeDigest => sub {
     $_[0]->bgroup;
     amsAlignedBindings(); },
-  reversion => '\begin{aligned}#1\end{aligned}');
+  # note that mathtools fails in image generation, w/o this space in reversion!
+  reversion => '\begin{aligned} #1\end{aligned}');
 
 sub amsAlignedBindings {
   my $col1 = { before => Tokens(T_CS('\hfil'),

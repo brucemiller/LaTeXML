@@ -107,7 +107,7 @@ alpha</td>
       </tbody>
     </tabular>
   </table>
-  <para xml:id="p1">
+  <table xml:id="tab1">
     <tabular>
       <thead>
         <tr>
@@ -155,8 +155,10 @@ alpha</td>
         </tr>
       </tbody>
     </tabular>
-  </para>
-  <para xml:id="p2">
+  </table>
+  <table frefnum="Table 3" refnum="3" xml:id="S0.T3">
+    <toccaption><tag close=" ">3</tag>Another table in a minipage</toccaption>
+    <caption><tag close=": ">Table 3</tag>Another table in a minipage</caption>
     <tabular colsep="20.0pt" width="433.6pt">
       <thead>
         <tr>
@@ -204,5 +206,5 @@ alpha</td>
         </tr>
       </tbody>
     </tabular>
-  </para>
+  </table>
 </document>

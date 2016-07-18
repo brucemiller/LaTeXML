@@ -32,6 +32,12 @@ Get Happy
 obviously make, make test, re-run dlmf, check, etc.
 
 #======================================================================
+# update Changes
+#======================================================================
+# using the date of the last release:
+git log --no-merges --name-status --since=<date>
+
+#======================================================================
 Choose new version
 #======================================================================
 # Last changes:
@@ -92,6 +98,30 @@ mock --rebuild ~/rpmbuild/SRPMS/LaTeXML-X.X.X-1.fcXX.src.rpm
 
 # Copy the rpms to <site>/releases
 
+#======================================================================
+# Scan tarballs, rpms, etc using ClamAV
+clamscan  --tempdir=/dev/shm --recursive  --max-recursion=128 --cross-fs=no  --infected  --block-encrypted=yes --max-files=123456789  --max-filesize=4000M  --max-scansize=4000M sometarball
+
+#======================================================================
+# Make MacPorts Portfile for MacOS
+#======================================================================
+# Maintainer: adfernandes@?  but appears to have quit?
+# Latest was checked in by mojca@...
+
+ * Change version number
+ * recompute checksums
+ * copy resulting Portfile as <site>/releases/Portfile-<version>
+
+#======================================================================
+# Make Debian port
+#======================================================================
+# Debian Developer: Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+OLD NOTES
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #----------------------------------------------------------------------
 # Make an rpm specfile: LaTeXML.spec
 
@@ -137,30 +167,6 @@ mktexlsr >/dev/null 2>&1 || :
 
   * Check that the %install section uses DESTDIR, _NOT_ PERL_INSTALL_ROOT 
 
-#======================================================================
-# Scan tarballs, rpms, etc using ClamAV
-clamscan  --tempdir=/dev/shm --recursive  --max-recursion=128 --cross-fs=no  --infected  --block-encrypted=yes --max-files=123456789  --max-filesize=4000M  --max-scansize=4000M sometarball
-
-#======================================================================
-# Make MacPorts Portfile for MacOS
-#======================================================================
-# Maintainer: adfernandes@?  but appears to have quit?
-# Latest was checked in by mojca@...
-
- * Change version number
- * recompute checksums
- * copy resulting Portfile as <site>/releases/Portfile-<version>
-
-#======================================================================
-# Make Debian port
-#======================================================================
-# Debian Developer: Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-OLD NOTES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #======================================================================
 # To test an installation, try:
 

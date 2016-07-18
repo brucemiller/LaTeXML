@@ -735,7 +735,7 @@ sub closeElement {
   if ($node->nodeType == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $qname, $self,
       "Attempt to close " . ($qname eq '#PCDATA' ? $qname : '</' . $qname . '>') . ", which isn't open",
-      "Currently in " . $self->getInsertionContext);
+      "Currently in " . $self->getInsertionContext());
     return; }
   else {                                         # Found node.
                                                  # Intervening non-auto-closeable nodes!!
@@ -799,7 +799,7 @@ sub closeToNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext) unless $ifopen;
+      "Currently in " . $self->getInsertionContext()) unless $ifopen;
     return; }
   else {                            # Found node.
     Error('malformed', $model->getNodeQName($node), $self,
@@ -821,7 +821,7 @@ sub closeNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext); }
+      "Currently in " . $self->getInsertionContext()); }
   else {                            # Found node.
                                     # Intervening non-auto-closeable nodes!!
     Error('malformed', $model->getNodeQName($node), $self,
@@ -853,6 +853,9 @@ sub addAttribute {
 # if $levels is defined, show only that many levels
 sub getInsertionContext {
   my ($self, $levels) = @_;
+  if (!defined $levels) {    # Default depth is based on verbosity
+    my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+    $levels = 5 if ($verbosity <= 1); }
   my $node = $$self{node};
   my $type = $node->nodeType;
   if (($type != XML_TEXT_NODE) && ($type != XML_ELEMENT_NODE) && ($type != XML_DOCUMENT_NODE)) {
@@ -895,7 +898,7 @@ sub find_insertion_point {
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
         ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here",
-        "Currently in " . $self->getInsertionContext);
+        "Currently in " . $self->getInsertionContext());
       return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
@@ -1025,7 +1028,9 @@ sub openMathText_internal {
   my $font = $self->getNodeFont($node);
   $node->appendText($string);
   ##print STDERR "Trying Math Ligatures at \"$string\"\n";
-  $self->applyMathLigatures($node);
+  if (!$STATE->lookupValue('NOMATHPARSE')) {
+    $self->applyMathLigatures($node);
+  }
   return $node; }
 
 # New stategy (but inefficient): apply ligatures until one succeeds,
@@ -1047,8 +1052,11 @@ sub applyMathLigatures {
 # Apply ligature operation to $node, presumed the last insertion into it's parent(?)
 sub applyMathLigature {
   my ($self, $node, $ligature) = @_;
-  my @sibs = $node->parentNode->childNodes;
-  my ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, @sibs);
+  my ($nmatched, $newstring, %attr);
+  if ($$ligature{old_style}) {    # Obsolete style (expensively) passes in ALL sibling nodes
+    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node->parentNode->childNodes); }
+  else {                          # New style gets node and should ask for $node->previousSibling
+    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node); }
   if ($nmatched) {
     my @boxes = ($self->getNodeBox($node));
     $node->firstChild->setData($newstring);
@@ -1740,7 +1748,7 @@ sub appendTree {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -1749,7 +1757,7 @@ C<LaTeXML::Core::Document> - represents an XML document under construction.
 =head1 DESCRIPTION
 
 A C<LaTeXML::Core::Document> represents an XML document being constructed by LaTeXML,
-and also provides the methods for constructing it.  
+and also provides the methods for constructing it.
 It extends L<LaTeXML::Common::Object>.
 
 LaTeXML will have digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
@@ -1775,7 +1783,7 @@ to the a Namespace URI that was registered for the DTD.
 
 The arguments named C<$node> are an XML::LibXML node.
 
-The methods here are grouped into three sections covering basic access to the 
+The methods here are grouped into three sections covering basic access to the
 document, insertion methods at the current insertion point,
 and less commonly used, lower-level, document manipulation methods.
 
@@ -1928,7 +1936,7 @@ and inserting the string C<$text> into it.
 =item C<< $document->openElement($qname,%attributes); >>
 
 Open an element, named C<$qname> and with the given attributes.
-This will be inserted into the current node while  performing 
+This will be inserted into the current node while  performing
 any required automatic opening and closing of intermedate nodes.
 The new element is returned, and also becomes the current insertion point.
 An error (fatal if in C<Strict> mode) is signalled if there is no allowed way
@@ -2004,7 +2012,7 @@ to what is allowed by the document model.
 
 Returns a list of elements where an arbitrary insertion might take place.
 Roughly this is a list starting with C<$node>,
-followed by its parent and the parents siblings (in reverse order), 
+followed by its parent and the parents siblings (in reverse order),
 followed by the grandparent and siblings (in reverse order).
 
 =item C<< $node = $document->floatToElement($qname); >>

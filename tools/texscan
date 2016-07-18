@@ -154,6 +154,7 @@ sub newInternal {
   my ($dir, $name, $type) = pathname_split($path);
   $name .= '.' . $type if $type;
   $name = "latex.ltx" if $name eq "LaTeX.pool";
+  $name = "plain.tex" if $name eq "TeX.pool";
   $dir = '.' unless $dir;
 
   if (my $cached = $CACHE{$class}{$name}) {
@@ -579,6 +580,7 @@ sub scan {
       my @pkgs = ("TeX.pool");
       if ($::AMSTEX) {
         push(@pkgs, "amstex.tex") if $$self{name} =~ /\.sty$/; }
+      elsif ($name eq 'plain.tex') { }
       else {
         push(@pkgs, "LaTeX.pool");
         push(@pkgs, "article.cls") unless $name =~ /\.(cls|ltx)$/;

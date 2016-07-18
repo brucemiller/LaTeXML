@@ -144,7 +144,7 @@ sub rationalizeFontSize {
 # convert to percent
 sub relativeFontSize {
   my ($newsize, $oldsize) = @_;
-  return int(100 * $newsize / $oldsize) . '%'; }
+  return int(0.5 + 100 * $newsize / $oldsize) . '%'; }
 
 my $FONTREGEXP
   = '(' . join('|', sort { -($a cmp $b) } keys %font_family) . ')'
@@ -551,6 +551,10 @@ our %stylesize = (display => 10, text => 10,
 # You must arrange this in the calls....
 sub merge {
   my ($self, %options) = @_;
+  # Evaluate any functional values given.
+  foreach my $k (keys %options) {
+    $options{$k} = &{ $options{$k} }() if ref $options{$k} eq 'CODE'; }
+
   my $family    = $options{family};
   my $series    = $options{series};
   my $shape     = $options{shape};
@@ -584,14 +588,18 @@ sub merge {
 
   if (my $scale = $options{scale}) {
     $size = $scale * $size; }
-  if ($options{mathstyle}) {    # Also set the size from mathstyle
-    $size = $stylesize{$mathstyle}; }
-  elsif ($options{scripted}) {    # Or adjust both the mathstyle & size for scripts
-    $mathstyle = $scriptstylemap{ $mathstyle || 'display' };
-    $size      = $stylesize{ $mathstyle      || 'display' }; }
-  elsif ($options{fraction}) {    # Or adjust both for fractions
-    $mathstyle = $fracstylemap{ $mathstyle || 'display' };
-    $size      = $stylesize{ $mathstyle    || 'display' }; }
+  # Set the mathstyle, and also the size from the mathstyle
+  # But we may need to scale that size against the existing or requested size.
+  my $stylescale = ($$self[3] ? $$self[3] / $stylesize{ $$self[9] || 'display' } : 1);
+  if ($options{size}) { }    # Explicitly requested size, use it
+  elsif ($options{mathstyle}) {    # otherwise set the size from mathstyle
+    $size = $stylescale * $stylesize{$mathstyle}; }
+  elsif ($options{scripted}) {     # Or adjust both the mathstyle & size for scripts
+    $mathstyle = $scriptstylemap{ $mathstyle          || 'display' };
+    $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
+  elsif ($options{fraction}) {     # Or adjust both for fractions
+    $mathstyle = $fracstylemap{ $mathstyle            || 'display' };
+    $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
 
   my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
