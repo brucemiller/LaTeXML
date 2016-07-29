@@ -185,12 +185,12 @@ sub read {
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
       -input => pod_where({ -inc => 1 }, __PACKAGE__),
-      -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+      -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
       -input => pod_where({ -inc => 1 }, __PACKAGE__),
-      -sections => 'OPTIONS/SYNOPSIS', output => \*STDOUT);
+      -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
   # Check that options for system I/O (destination and log) are valid before wasting any time...
@@ -236,7 +236,7 @@ sub scan_to_keyvals {
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
       -input => pod_where({ -inc => 1 }, __PACKAGE__),
-      -sections => 'OPTIONS/SYNOPSIS', -output => \*STDERR);
+      -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
   return $getOptions_success && $keyvals;
@@ -730,7 +730,7 @@ Clones $config into a new LaTeXML::Common::Config object, $config_clone.
 
 =head1 OPTION SYNOPSIS
 
-latexmls/latexmlc [options]
+latexmlc [options]
 
  Options:
  --VERSION               show version number.

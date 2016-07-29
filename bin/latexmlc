@@ -232,13 +232,13 @@ __END__
 
 =head1 NAME
 
-C<latexmlc> - A omni-executable for LaTeXML, capable of
-  stand-alone socket-server and (soon) web service conversion.
+C<latexmlc> - An omni-executable for LaTeXML, capable of
+  stand-alone, socket-server and web service conversion.
+  Supports both core processing and post-processing.
 
 =head1 SYNOPSYS
 
 See the OPTIONS section in L<LaTeXML::Common::Config> for usage information.
-  Also consult latexmlc --help
 
 =head1 DESCRIPTION
 
@@ -247,10 +247,10 @@ L<latexmlc> provides a client which automatically sets up a LaTeXML local server
 
   If such server already exists, the client proceeds to communicate normally.
 
-  A stand-alone conversion (the default) can also be requested via --timeout=-1
+  A stand-alone conversion (the default) can also be requested via --expire=-1
 
 =head1 SEE ALSO
 
-L<latexmls>, L<ltxmojo>, L<LaTeXML::Common::Config>
+L<LaTeXML::Common::Config>
 
 =cut
