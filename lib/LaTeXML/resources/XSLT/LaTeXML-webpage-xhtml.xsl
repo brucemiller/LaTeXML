@@ -18,6 +18,7 @@
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
     xmlns:string= "http://exslt.org/strings"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:m     = "http://www.w3.org/1998/Math/MathML"
     exclude-result-prefixes = "ltx f"
     extension-element-prefixes="string f">
 
@@ -122,10 +123,12 @@
     <xsl:element name="title" namespace="{$html_ns}">
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
       <xsl:choose>
-        <xsl:when test="*/ltx:title | */ltx:caption">
+<!--        <xsl:when test="*/ltx:title | */ltx:caption">-->
+        <xsl:when test="descendant::ltx:title | descendant::ltx:caption">
           <xsl:if test="$HEAD_TITLE_PREFIX">
             <xsl:text>: </xsl:text>
           </xsl:if>
+<!--
           <xsl:choose>
             <xsl:when test="*/ltx:toctitle">
               <xsl:apply-templates select="*/ltx:toctitle[1]" mode="visible-text"/>
@@ -138,6 +141,21 @@
             </xsl:when>
             <xsl:when test="*/ltx:caption">
               <xsl:apply-templates select="*/ltx:caption[1]" mode="visible-text"/>
+            </xsl:when>
+          </xsl:choose>
+-->
+          <xsl:choose>
+            <xsl:when test="descendant::ltx:toctitle">
+              <xsl:apply-templates select="descendant::ltx:toctitle[position()=1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="descendant::ltx:title">
+              <xsl:apply-templates select="descendant::ltx:title[position()=1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="descendant::ltx:toccaption">
+              <xsl:apply-templates select="descendant::ltx:toccaption[position()=1]" mode="visible-text"/>
+            </xsl:when>
+            <xsl:when test="descendant::ltx:caption">
+              <xsl:apply-templates select="descendant::ltx:caption[position()=1]" mode="visible-text"/>
             </xsl:when>
           </xsl:choose>
 <!--          <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>-->
@@ -157,8 +175,12 @@
   </xsl:template>
 
   <xsl:template match="text()" mode="visible-text">
+    <!-- normalize space, but preserve leading & trailing -->
+    <xsl:if test="starts-with(translate(.,'&#x0a;',' '),' ')"><xsl:text> </xsl:text></xsl:if>
     <xsl:value-of select="normalize-space(.)"/>
+    <xsl:if test="substring(translate(.,'&#x0a;',' '),string-length(.)) = ' '"><xsl:text> </xsl:text></xsl:if>
   </xsl:template>
+
   <xsl:template match="*" mode="visible-text">
     <xsl:apply-templates mode="visible-text"/>
   </xsl:template>
@@ -169,6 +191,231 @@
     <xsl:apply-templates mode="visible-text"/>
     <xsl:if test="@close"><xsl:value-of select="@close"/></xsl:if>
   </xsl:template>
+
+  <!--  ======================================================================
+       extracting visible plain (unicode) text from math markup -->
+  <xsl:template match="ltx:Math" mode="visible-text">
+    <xsl:choose>
+      <xsl:when test="m:math"><xsl:apply-templates select="m:math" mode="visible-text"/></xsl:when>
+      <xsl:otherwise><xsl:value-of select="@tex"/></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="m:math" mode="visible-text">
+    <xsl:apply-templates mode="visible-text"/>
+  </xsl:template>
+
+  <xsl:template match="m:semantics" mode="visible-text">
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+  </xsl:template>
+
+  <xsl:template match="*" mode="visible-nested">
+    <xsl:text>{</xsl:text>
+    <xsl:apply-templates select="." mode="visible-text"/>
+    <xsl:text>}</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:mo | m:mi | m:mn" mode="visible-nested">
+    <xsl:apply-templates select="." mode="visible-text"/>
+  </xsl:template>
+
+  <xsl:template match="*" mode="visible-script">
+    <xsl:param name="op"/>
+    <xsl:value-of select="$op"/>
+    <xsl:apply-templates select="." mode="visible-nested"/>
+  </xsl:template>
+
+  <xsl:template match="m:none" mode="visible-script"/>
+
+  <xsl:template match="m:mo[contains(text(),'&#x2032;')]" mode="visible-script">
+    <xsl:value-of select="text()"/>
+  </xsl:template>
+
+  <!-- Combining accents -->
+  <xsl:template match="m:mo[text()='&#x60;']" mode="visible-script">
+    <xsl:text>&#x0300;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#xB4;']" mode="visible-script">
+    <xsl:text>&#x0301;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#x5E;']" mode="visible-script">
+    <xsl:text>&#x0302;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='~']" mode="visible-script">
+    <xsl:text>&#x0303;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#xAF;']" mode="visible-script">
+    <xsl:text>&#x0304;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#x02D8;']" mode="visible-script">
+    <xsl:text>&#x0306;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#x02D9;']" mode="visible-script">
+    <xsl:text>&#x0307;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='o']" mode="visible-script">
+    <xsl:text>&#x030A;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#x02DD;']" mode="visible-script">
+    <xsl:text>&#x030B;</xsl:text>
+  </xsl:template>
+  <xsl:template match="m:mo[text()='&#x02C7;']" mode="visible-script">
+    <xsl:text>&#x030C;</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:msub | m:munder" mode="visible-text">
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+    <xsl:apply-templates select="*[2]" mode="visible-script">
+      <xsl:with-param name="op" select="'_'"/>
+    </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template match="m:msup | m:mover" mode="visible-text">
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+    <xsl:apply-templates select="*[2]" mode="visible-script">
+      <xsl:with-param name="op" select="'^'"/>
+    </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template match="m:msubsup | m:munderover" mode="visible-text">
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+    <xsl:apply-templates select="*[2]" mode="visible-script">
+      <xsl:with-param name="op" select="'_'"/>
+    </xsl:apply-templates>
+    <xsl:apply-templates select="*[3]" mode="visible-script">
+      <xsl:with-param name="op" select="'^'"/>
+    </xsl:apply-templates>
+  </xsl:template>
+
+  <xsl:template match="m:mmultiscripts" mode="visible-text">
+    <xsl:choose>
+      <xsl:when test="m:mprescripts">
+        <xsl:call-template name="multiscripts_pre">
+          <xsl:with-param name="m" select="count(m:mprescripts/preceding-sibling::*)+1"/>
+          <xsl:with-param name="n" select="count(*)"/>
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="*[1]" mode="visible-nested"/>
+        <xsl:call-template name="multiscripts_sub">
+          <xsl:with-param name="i" select="2"/>
+          <xsl:with-param name="n" select="count(*)"/>
+          <xsl:with-param name="op" select="'_'"/>
+          <xsl:with-param name="other" select="'^'"/>
+        </xsl:call-template>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template name="multiscripts_pre">
+    <xsl:param name="m"/>
+    <xsl:param name="n"/>
+    <xsl:text>{}</xsl:text>
+    <xsl:call-template name="multiscripts">
+      <xsl:with-param name="i" select="2"/>
+      <xsl:with-param name="n" select="$m - 1"/>
+      <xsl:with-param name="op" select="'_'"/>
+      <xsl:with-param name="other" select="'^'"/>
+    </xsl:call-template>
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+    <xsl:call-template name="multiscripts">
+      <xsl:with-param name="i" select="$m + 1"/>
+      <xsl:with-param name="n" select="$n"/>
+      <xsl:with-param name="op" select="'_'"/>
+      <xsl:with-param name="other" select="'^'"/>
+    </xsl:call-template>
+  </xsl:template>
+
+  <xsl:template name="multiscripts">
+    <xsl:param name="i"/>
+    <xsl:param name="n"/>
+    <xsl:param name="op"/>
+    <xsl:param name="other"/>
+    <xsl:if test="$i &lt;= $n">
+      <xsl:apply-templates select="*[$i]" mode="visible-script">
+        <xsl:with-param name="op" select="$op"/>
+      </xsl:apply-templates>
+      <xsl:call-template name="multiscripts">
+        <xsl:with-param name="i" select="$i+1"/>
+        <xsl:with-param name="n" select="$n"/>
+        <xsl:with-param name="op" select="$other"/>
+        <xsl:with-param name="other" select="$op"/>
+      </xsl:call-template>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="m:mfrac" mode="visible-text">
+    <xsl:apply-templates select="*[1]" mode="visible-nested"/>
+    <xsl:text>/</xsl:text>
+    <xsl:apply-templates select="*[2]" mode="visible-nested"/>
+  </xsl:template>
+
+  <xsl:template match="m:mphantom" mode="visible-text"/>
+  <xsl:template match="m:mspace" mode="visible-text">
+    <xsl:text> </xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:mfenced"  mode="visible-text">
+    <xsl:value-of select="@open | '('"/>
+    <xsl:apply-templates mode="visible-text-punctuated"/>
+    <xsl:value-of select="@close | ')'"/>  
+  </xsl:template>
+
+  <!-- NO, I'm not going to try to decipher @separators -->
+  <xsl:template match="*"  mode="visible-text-punctuated">
+    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:if test="./following-sibling::*">
+      <xsl:text>,</xsl:text>
+    </xsl:if>
+  </xsl:template>
+    
+  <xsl:template match="m:mtable"  mode="visible-text">
+    <xsl:text>[</xsl:text>
+    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:text>]</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:mtr"  mode="visible-text">
+    <xsl:text>[</xsl:text>
+    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:text>]</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:mtd"  mode="visible-text">
+    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:if test="./following-sibling::m:mtd">
+      <xsl:text>,</xsl:text>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="m:menclose"  mode="visible-text">
+    <xsl:value-of select="@notation"/>
+    <xsl:text>(</xsl:text>
+    <xsl:apply-templates mode="visible-text"/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:msqrt" mode="visible-text">
+    <xsl:text>sqrt(</xsl:text>
+    <xsl:apply-templates mode="visible-text"/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:mroot" mode="visible-text">
+    <xsl:text>root(</xsl:text>
+    <xsl:apply-templates select="*[1]" mode="visible-text"/>
+    <xsl:text>,</xsl:text>
+    <xsl:apply-templates select="*[2]" mode="visible-text"/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="m:merror" mode="visible-text">
+    <xsl:text>ERROR(</xsl:text>
+    <xsl:apply-templates mode="visible-text"/>
+    <xsl:text>)</xsl:text>
+  </xsl:template>
+
+  <!--  ====================================================================== -->
 
   <!-- Generate an identifier for the "generator", ie. program that created these files-->
   <xsl:template match="/" mode="head-generator-identifier">
@@ -205,7 +452,6 @@
       </xsl:element>
     </xsl:if>
   </xsl:template>
-
 
   <!-- Generate head entries based on resources.
        These should generally come before the CSS, JAVASCRIPT parameters are processed
