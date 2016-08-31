@@ -178,7 +178,7 @@ sub truncateNode {
         $n--; } }
     else {
       $n--; } }
-  if ($trunc || @children) {
+  if ($trunc || (scalar(@children) > 1)) {
     map { $node->removeChild($_) } @children;    # Remove any remaining children.
     $node->appendText("\x{2026}"); }
   return $node; }
