@@ -297,7 +297,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="*[1]" mode="visible-nested"/>
-        <xsl:call-template name="multiscripts_sub">
+        <xsl:call-template name="multiscripts">
           <xsl:with-param name="i" select="2"/>
           <xsl:with-param name="n" select="count(*)"/>
           <xsl:with-param name="op" select="'_'"/>
