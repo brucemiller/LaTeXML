@@ -23,6 +23,7 @@
    xmlns:str   ="http://exslt.org/strings"
    xmlns:m     ="http://www.w3.org/1998/Math/MathML"
    xmlns:xlink ="http://www.w3.org/1999/xlink"
+   extension-element-prefixes="str"
    exclude-result-prefixes="ltx str m xlink">
 
   <xsl:import href="LaTeXML-tabular-xhtml.xsl"/>

@@ -21,7 +21,7 @@
     xmlns:func  = "http://exslt.org/functions"
     xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
     xmlns:xhtml = "http://www.w3.org/1999/xhtml"
-    extension-element-prefixes="func f"
+    extension-element-prefixes="func f exsl string date"
     exclude-result-prefixes = "ltx f func string">
 
   <!-- ALL CAPS parameters are intended to be passed in;
