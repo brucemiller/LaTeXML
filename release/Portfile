@@ -60,19 +60,16 @@ depends_lib-append \
 # - it can install its own style files for use within tex/latex
 # We could simply depend on texlive, but some folks prefer MacTeX
 # and object to 2nd multi-GB download!  So we define variants.
-options latexml.found_tex
-default latexml.found_tex no
-
+set latexml.found_tex no
 # No texmf install via Makefile.
-pre-configure {
-   configure.args-append   TEXMF=
-  }
+configure.args-append   TEXMF=
+
 # We don't want dependencies on texlive, but want to cooperate.
 # We'll install style files where texlive expects or will expect.
 post-destroot {
-    xinstall -d ${texlive_texmfdist}/tex/latex/latexml
+    xinstall -d ${destroot}${texlive_texmfdist}/tex/latex/latexml
     foreach sty [glob ${worksrcpath}/lib/LaTeXML/texmf/*.sty] {
-        file copy -force ${sty} ${texlive_texmfdist}/tex/latex/latexml/
+        file copy -force ${sty} ${destroot}${texlive_texmfdist}/tex/latex/latexml/
     }
 }
 # invoke mktexlsr IFF texlive already installed;
@@ -83,22 +80,11 @@ post-activate {
         ${texlive.mktexlsr}
     }
 }
-# Remove style files
-post-uninstall {
-    foreach sty [glob -nocomplain ${texlive_texmfdist}/tex/latex/latexml/*.sty] {
-        delete ${sty}
-    }
-    if [file executable ${prefix}/bin/mktexlsr] {
-        ${texlive.mktexlsr}
-    }
-}
 
 # The mactex variant expects MacTeX to be installed
 # and installs latexml's stylefiles to MacTeX's texmf (local)
-options latexml.mactex_bin
-options latexml.mactex_texmf
-default latexml.mactex_bin ""
-default latexml.mactex_texmf ""
+set latexml.mactex_bin ""
+set latexml.mactex_texmf ""
 set latexml.mactex_candidates { \
    "/Library/TeX/texbin" \
    "/usr/texbin" \
@@ -107,15 +93,15 @@ variant mactex description {Build with MacTeX support} {
     # First, check if MacTeX actually seems to be there...
     foreach dir ${latexml.mactex_candidates} {
         if [file executable "${dir}/kpsewhich"] {
-            latexml.mactex_bin ${dir}
+            set latexml.mactex_bin ${dir}
             break
         }
     }
     if { ${latexml.mactex_bin} != "" } {
-        latexml.mactex_texmf \
+        set latexml.mactex_texmf \
             [exec ${latexml.mactex_bin}/kpsewhich --expand-var='\$TEXMFLOCAL']
         regsub -all {'} ${latexml.mactex_texmf} "" latexml.mactex_texmf
-        latexml.found_tex yes
+        set latexml.found_tex yes
     } else {
         return -code error "Cannot find MacTeX installation; aborting"
     }
@@ -143,11 +129,9 @@ variant mactex description {Build with MacTeX support} {
     destroot.violate_mtree  yes
 }
 
-post-activate {
-    if {! ${latexml.found_tex}} {
-        ui_msg "${name} works best with some version of TeX installed. \
+if {! ${latexml.found_tex}} {
+  notes "${name} works best with some version of TeX installed. \
     Please consider installing texlive, or PRE-install MacTeX and use +mactex variant."
-    }
 }
 
 #============================================================
