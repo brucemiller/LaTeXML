@@ -1302,18 +1302,32 @@ sub findNodeByID {
   my $node = $$self{idcache}{$id};
   return $$self{idcache}{$id}; }
 
+# If $branch given, should be 'content' or 'presentation'
 sub realizeXMNode {
-  my ($self, $node) = @_;
-  if ($self->getQName($node) eq 'ltx:XMRef') {
+  my ($self, $node, $branch) = @_;
+  if ($branch) {
+    while ($node) {
+      my $qname = $self->getQName($node);
+      if ($qname eq 'ltx:XMRef') {
+        my $id = $node->getAttribute('idref');
+        if (my $realnode = $self->findNodeByID($id)) {
+          $node = $realnode; }
+        else {
+          Fatal('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
+          return; } }
+      elsif ($qname eq 'ltx:XMDual') {
+        my ($content, $presentation) = element_nodes($node);
+        $node = ($branch == 'content' ? $content : $presentation); }
+      else {
+        return $node; } } }
+  elsif ($self->getQName($node) eq 'ltx:XMRef') {
     my $id = $node->getAttribute('idref');
     if (my $realnode = $self->findNodeByID($id)) {
-      #print STDERR "REALIZE $id => $realnode\n";
       return $realnode; }
     else {
       Fatal('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
       return; } }
-  else {
-    return $node; } }
+  return $node; }
 
 sub uniquifyID {
   my ($self, $baseid, $suffix) = @_;
