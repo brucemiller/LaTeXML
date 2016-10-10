@@ -155,8 +155,8 @@ sub addCrossref {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 sub realize {
-  my ($node) = @_;
-  return (ref $node) ? $LaTeXML::Post::DOCUMENT->realizeXMNode($node) : $node; }
+  my ($node, $branch) = @_;
+  return (ref $node) ? $LaTeXML::Post::DOCUMENT->realizeXMNode($node, $branch) : $node; }
 
 # For a node that is a (possibly embellished) operator,
 # find the underlying role.
@@ -1030,6 +1030,7 @@ sub pmml_script_decipher {
   # We'll fold them together they seem to be on the appropriate levels
   # Keep from having multiple scripts when $loc is stack!!!
   while (1) {
+    $base = realize($base, 'presentation');
     last unless getQName($base) eq 'ltx:XMApp';
     my ($xop, $xbase, $xscript) = element_nodes($base);
     last unless (getQName($xop) eq 'ltx:XMTok');
