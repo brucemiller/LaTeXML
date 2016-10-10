@@ -6213,7 +6213,6 @@ DefConstructor('\lx@text@nounicode DefToken',
 # and establish an id and idref later.
 DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
   reversion   => '#2',
-  bounded     => 1,
   afterDigest => sub {
     AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
 DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
