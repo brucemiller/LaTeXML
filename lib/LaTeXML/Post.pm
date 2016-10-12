@@ -1317,7 +1317,7 @@ sub realizeXMNode {
           return; } }
       elsif ($qname eq 'ltx:XMDual') {
         my ($content, $presentation) = element_nodes($node);
-        $node = ($branch == 'content' ? $content : $presentation); }
+        $node = ($branch eq 'content' ? $content : $presentation); }
       else {
         return $node; } } }
   elsif ($self->getQName($node) eq 'ltx:XMRef') {
