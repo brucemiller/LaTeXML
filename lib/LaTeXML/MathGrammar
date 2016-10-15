@@ -699,6 +699,7 @@ operator: OPERATOR
 # SUPOP is really only \prime(s) (?)
 supops   : SUPOP(s)                             { New(undef,
                                                       join('',map($_->textContent,@{$item[1]})),
+                                                       role=>'SUPOP',
                                                        name=>'prime'.scalar(@{$item[1]})); }
 
 # ================================================================================
