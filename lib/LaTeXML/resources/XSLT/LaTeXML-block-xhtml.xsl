@@ -378,44 +378,46 @@
        Aligned templates -->
 
   <!-- typical table arrangement for numbered equation w/constraint:
+       (Note that number is vertically centered across the equation rows, but NOT the constraint)
        _______________________________
-       | (1) | pad | lhs | =rhs | pad |
-       |     |_____|_____|______|_____|
+       |     | pad | lhs | =rhs | pad |
+       | (1) |_____|_____|______|_____|
        |     | pad |     | =rhs | pad |
-       |     |_____|_____|______|_____|
-       |     |             constraint |
-       |_____|________________________|  
+       |_____|_____|_____|______|_____|
+       |                   constraint |
+       |______ _______________________|
 
        typical arrangement for numbered equations in equationgroup
        (ignores the number (if any) on the equationgroup)
        _______________________________
-       | (1) | pad | lhs | =rhs | pad |
-       |     |_____|_____|______|_____|
+       |     | pad | lhs | =rhs | pad |
+       | (1) |_____|_____|______|_____|
        |     | pad |     | =rhs | pad |
-       |     |_____|_____|______|_____|
-       |     |             constraint |
-       |_____|________________________|  
-       | (2) | pad | lhs | =rhs | pad |
-       |     |_____|_____|______|_____|
+       |_____|_____|_____|______|_____|
+       |                   constraint |
+       |_____ ________________________|
+       |     | pad | lhs | =rhs | pad |
+       | (2) |_____|_____|______|_____|
        |     | pad |     | =rhs | pad |
-       |     |_____|_____|______|_____|
-       |     |             constraint |
-       |_____|________________________|  
+       |_____|_____|_____|______|_____|
+       |                   constraint |
+       |_____ ________________________|
 
        typical arrangement for unnumbered equations in numbered equationgroup
+       (Note that the equation number is centered across all content, including any constraints)
        _______________________________
-       | (1) | pad | lhs | =rhs | pad |
-       |     |_____|_____|______|_____|
-       |     | pad |     | =rhs | pad |
-       |     |_____|_____|______|_____|
-       |     |             constraint |
-       |     |________________________|  
        |     | pad | lhs | =rhs | pad |
        |     |_____|_____|______|_____|
        |     | pad |     | =rhs | pad |
        |     |_____|_____|______|_____|
        |     |             constraint |
-       |_____|________________________|  
+       | (1) |________________________|
+       |     | pad | lhs | =rhs | pad |
+       |     |_____|_____|______|_____|
+       |     | pad |     | =rhs | pad |
+       |     |_____|_____|______|_____|
+       |     |             constraint |
+       |_____|________________________|
 
   -->
 
@@ -532,8 +534,10 @@
     <xsl:param name="eqnopos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'left','right')"/>
     <xsl:choose>
-      <xsl:when test="$eqnopos != $side"/>                       <!-- Wrong side: Nothing -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][@refnum][not(descendant::ltx:equation[@refnum])]"> <!-- eqn.group is numbered, but not eqns! -->
+      <!-- Wrong side: Nothing -->
+      <xsl:when test="$eqnopos != $side"/>
+      <!-- equationgroup is numbered, but NOT equations! -->
+      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][@refnum][not(descendant::ltx:equation[@refnum])]">
         <!-- place number only for 1st row -->
         <xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
                       or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
@@ -560,12 +564,13 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
             </xsl:element>
         </xsl:if>                                              <!--Else NOTHING (rowspan'd!) -->
       </xsl:when>
-      <xsl:when test="ancestor-or-self::ltx:equation[position()=1][@refnum]">        <!-- equation is numbered! -->
+      <!-- equation is numbered! (but not equationgroup, if any) -->
+      <xsl:when test="ancestor-or-self::ltx:equation[position()=1][@refnum]">
         <!-- place number only for 1st row -->
         <xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
                       or not(ancestor-or-self::ltx:tr)">
           <!-- Count the MathFork rows, the MathForks w/only implicit row,
-               or if not MathFork'd at all, and also any constraints.-->
+               or if not MathFork'd at all; but NOT any constraints.-->
           <xsl:variable name="nrows"
                         select="count(
                                 ancestor-or-self::ltx:equation[position()=1][@refnum]
@@ -574,7 +579,6 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
                                 [ltx:MathFork/ltx:MathBranch[1]/ltx:td]
                                 | ancestor-or-self::ltx:equation[position()=1][@refnum]
                                 [ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-                                | ancestor-or-self::ltx:equation[position()=1][@refnum]/ltx:constraint
                                 )"/>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
@@ -872,7 +876,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
           <xsl:attribute name="class">ltx_eqn_cell ltx_align_right</xsl:attribute>
           <!-- the $ncolumns of math, plus whatever endpadding, but NOT the number-->
           <xsl:attribute name="colspan">
-            <xsl:value-of select="$ncolumns+2"/>
+            <xsl:value-of select="$ncolumns+2 + f:if(ancestor-or-self::ltx:equation[@refnum],1,0)"/>
+          <!--<xsl:value-of select="$ncolumns+2"/>-->
           </xsl:attribute>
           <xsl:apply-templates select="." mode="constraints">
             <xsl:with-param name="context" select="$context"/>
