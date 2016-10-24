@@ -1,5 +1,5 @@
 # -*- coding: utf-8; mode: tcl; c-basic-offset: 4; indent-tabs-mode: nil; tab-width: 4; truncate-lines: t -*- vim:fenc=utf-8:et:sw=4:ts=4:sts=4
-# $Id$
+# $Id: Portfile 154083 2016-10-20 02:23:50Z mojca@macports.org $
 #======================================================================
 # Portfile for LaTeXML
 #======================================================================
@@ -61,23 +61,25 @@ depends_lib-append \
 # We could simply depend on texlive, but some folks prefer MacTeX
 # and object to 2nd multi-GB download!  So we define variants.
 set latexml.found_tex no
-# No texmf install via Makefile.
-configure.args-append   TEXMF=
 
 # We don't want dependencies on texlive, but want to cooperate.
 # We'll install style files where texlive expects or will expect.
+configure.args-append   TEXMF=${texlive_texmfdist}
+
+# But the .packlist will need cleanup
 post-destroot {
-    xinstall -d ${destroot}${texlive_texmfdist}/tex/latex/latexml
-    foreach sty [glob ${worksrcpath}/lib/LaTeXML/texmf/*.sty] {
-        file copy -force ${sty} ${destroot}${texlive_texmfdist}/tex/latex/latexml/
+    fs-traverse file ${destroot}${prefix}/share {
+        if {[file isfile ${file}] && [file tail ${file}] eq ".packlist"} {
+            ui_info "Fixing paths in [string map "${destroot}${prefix}/ {}" ${file}]"
+            reinplace -n "s|${destroot}||p" ${file}
+        }
     }
 }
-# invoke mktexlsr IFF texlive already installed;
-# otherwise texlive will do it if it's ever installed.
+
+# Note whether we've found a TeX
 post-activate {
     if [file executable ${prefix}/bin/mktexlsr] {
-        latexml.found_tex yes
-        ${texlive.mktexlsr}
+        set latexml.found_tex yes
     }
 }
 
@@ -107,22 +109,18 @@ variant mactex description {Build with MacTeX support} {
     }
 
     post-destroot {
-        xinstall -d ${latexml.mactex_texmf}/tex/latex/latexml
+        xinstall -d ${destroot}${latexml.mactex_texmf}/tex/latex/latexml
         foreach sty [glob ${worksrcpath}/lib/LaTeXML/texmf/*.sty] {
-            file copy -force ${sty} ${latexml.mactex_texmf}/tex/latex/latexml/
+            xinstall -m 644 ${sty} ${destroot}${latexml.mactex_texmf}/tex/latex/latexml
         }
     }
     post-activate {
         system "${latexml.mactex_bin}/mktexlsr"
     }
-    # Remove style files
-    post-uninstall {
-        foreach sty [glob -nocomplain ${latexml.mactex_texmf}/tex/latex/latexml/*.sty] {
-            delete ${sty}
-        }
+    post-deactivate {
         system "${latexml.mactex_bin}/mktexlsr"
     }
-    notes "Using MacTeX for TeX: will install styles to MacTeX's texmf-local \
+    notes "Using MacTeX for TeX: will install styles to MacTeX's texmf-local
         ${latexml.mactex_texmf} \
         (which is outside macport's common directory structure)"
     # AND, since we're installing files outside macports' normal directories
@@ -130,8 +128,8 @@ variant mactex description {Build with MacTeX support} {
 }
 
 if {! ${latexml.found_tex}} {
-  notes "${name} works best with some version of TeX installed. \
-    Please consider installing texlive, or PRE-install MacTeX and use +mactex variant."
+    notes "${name} works best with some version of TeX installed.
+        Please consider installing texlive, or PRE-install MacTeX and use the +mactex variant."
 }
 
 #============================================================
