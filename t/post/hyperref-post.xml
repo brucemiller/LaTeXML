@@ -2,36 +2,36 @@
 <?latexml class="article"?>
 <?latexml package="hyperref"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
-<document xmlns="http://dlmf.nist.gov/LaTeXML" xml:id="Document">
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1" labels="LABEL:sec:intro" fragid="S1">
+  <section refnum="1" xml:id="S1" labels="LABEL:sec:intro">
     <title><tag close=" ">1</tag>Introduction</title>
   </section>
-  <section refnum="2" xml:id="S2" labels="LABEL:sec:motivation" fragid="S2">
+  <section refnum="2" xml:id="S2" labels="LABEL:sec:motivation">
     <title><tag close=" ">2</tag>Motivation</title>
   </section>
-  <section refnum="3" xml:id="S3" labels="LABEL:sec:conclusion" fragid="S3">
+  <section refnum="3" xml:id="S3" labels="LABEL:sec:conclusion">
     <title><tag close=" ">3</tag>Conclusion</title>
-    <subsection refnum="3.1" xml:id="S3.SS1" labels="LABEL:subsec:nameref" fragid="S3.SS1">
+    <subsection refnum="3.1" xml:id="S3.SS1" labels="LABEL:subsec:nameref">
       <title><tag close=" ">3.1</tag>nameref</title>
-      <para xml:id="S3.SS1.p1" fragid="S3.SS1.p1">
-        <p>Nameref for sections <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:intro" show="title" href="#S1" title="1 Introduction"><text class="ltx_ref_title">Introduction</text></ref> and <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:motivation" show="title" href="#S2" title="2 Motivation"><text class="ltx_ref_title">Motivation</text></ref>.</p>
+      <para xml:id="S3.SS1.p1">
+        <p>Nameref for sections <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:intro" show="title"/> and <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:motivation" show="title"/>.</p>
       </para>
-      <para xml:id="S3.SS1.p2" fragid="S3.SS1.p2">
-        <p>And subsections <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:nameref" show="title" href="#S3.SS1" title="3.1 nameref ‣ 3 Conclusion"><text class="ltx_ref_title">nameref</text></ref> and <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:autoref" show="title" href="#S3.SS2" title="3.2 autoref ‣ 3 Conclusion"><text class="ltx_ref_title">autoref</text></ref>.</p>
+      <para xml:id="S3.SS1.p2">
+        <p>And subsections <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:nameref" show="title"/> and <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:autoref" show="title"/>.</p>
       </para>
     </subsection>
-    <subsection refnum="3.2" xml:id="S3.SS2" labels="LABEL:subsec:autoref" fragid="S3.SS2">
+    <subsection refnum="3.2" xml:id="S3.SS2" labels="LABEL:subsec:autoref">
       <title><tag close=" ">3.2</tag>autoref</title>
-      <para xml:id="S3.SS2.p1" fragid="S3.SS2.p1">
-        <p>Autoref for <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:intro" show="type refnum" href="#S1" title="1 Introduction"> <text class="ltx_ref_tag">1</text></ref> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:motivation" show="type refnum" href="#S2" title="2 Motivation"> <text class="ltx_ref_tag">2</text></ref>.</p>
+      <para xml:id="S3.SS2.p1">
+        <p>Autoref for <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:intro" show="type refnum"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:motivation" show="type refnum"/>.</p>
       </para>
-      <para xml:id="S3.SS2.p2" fragid="S3.SS2.p2">
-        <p>And also <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:nameref" show="type refnum" href="#S3.SS1" title="3.1 nameref ‣ 3 Conclusion"> <text class="ltx_ref_tag">3.1</text></ref> and <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:autoref" show="type refnum" href="#S3.SS2" title="3.2 autoref ‣ 3 Conclusion"> <text class="ltx_ref_tag">3.2</text></ref>.</p>
+      <para xml:id="S3.SS2.p2">
+        <p>And also <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:nameref" show="type refnum"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:autoref" show="type refnum"/>.</p>
       </para>
-      <para xml:id="S3.SS2.p3" fragid="S3.SS2.p3">
-        <p>These two should fail gracefully: <ref class="ltx_refmacro_nameref ltx_missing_label" labelref="LABEL:sec:fail" show="title" broken="1">LABEL:sec:fail</ref> and <ref class="ltx_refmacro_autoref ltx_missing_label" labelref="LABEL:sec:fail" show="type refnum" broken="1">LABEL:sec:fail</ref>.</p>
+      <para xml:id="S3.SS2.p3">
+        <p>These two should fail gracefully: <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:fail" show="title"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:fail" show="type refnum"/>.</p>
       </para>
     </subsection>
   </section>
