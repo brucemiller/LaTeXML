@@ -9,9 +9,14 @@ use FindBin;
 use File::Copy;
 use File::Which;
 use File::Spec::Functions;
+use LaTeXML::Post;
+use LaTeXML::Post::MathML::Presentation;
+use LaTeXML::Post::XMath;
+
 use base qw(Exporter);
 #  @Test::More::EXPORT);
 our @EXPORT = (qw(&latexml_ok &latexml_tests),
+  qw(&process_domstring &process_xmlfile &is_strings),
   @Test::More::EXPORT);
 my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');    # [CONFIGURATION]
 # Note that this is a singlet; the same Builder is shared.
@@ -27,8 +32,9 @@ sub latexml_tests {
   else {
     my @dir_contents = sort readdir($DIR);
     my $t;
-    my @core_tests   = map { (($t = $_) =~ s/\.tex$//  ? ($t) : ()); } @dir_contents;
-    my @daemon_tests = map { (($t = $_) =~ s/\.spec$// ? ($t) : ()); } @dir_contents;
+    my @core_tests   = map { (($t = $_) =~ s/\.tex$//      ? ($t) : ()); } @dir_contents;
+    my @post_tests   = map { (($t = $_) =~ s/-post\.xml$// ? ($t) : ()); } @dir_contents;
+    my @daemon_tests = map { (($t = $_) =~ s/\.spec$//     ? ($t) : ()); } @dir_contents;
     closedir($DIR);
     if (eval { use_ok("LaTeXML::Core"); }) {
     SKIP: {
@@ -38,13 +44,22 @@ sub latexml_tests {
           $requires = {}; }                                # but turn to normal, empty set
         elsif ($$requires{'*'}) {
           check_requirements("$directory/", $$requires{'*'}); }
-
+        # Carry out any TeX conversion tests
         foreach my $name (@core_tests) {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, $$requires{$name});
             latexml_ok("$test.tex", "$test.xml", $test); } }
+        # Carry out any post-processing tests
+        foreach my $name (@post_tests) {
+          my $test = "$directory/$name";
+        SKIP: {
+            skip("No file $test.xml and/or $test-post.xml", 1)
+              unless ((-f "$test.xml") && (-f "$test-post.xml"));
+            next unless check_requirements($test, $$requires{$name});
+            latexmlpost_ok("$test.tex", "$test-post.xml", $test); } }
+        # Carry out any daemon tests.
         foreach my $name (@daemon_tests) {
           my $test = "$directory/$name";
         SKIP: {
@@ -84,6 +99,12 @@ sub latexml_ok {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
+sub latexmlpost_ok {
+  my ($xmlpath, $postxmlpath, $name) = @_;
+  if (my $texstrings = postprocess_xmlfile($xmlpath, $name)) {
+    if (my $xmlstrings = process_xmlfile($postxmlpath, $name)) {
+      return is_strings($texstrings, $xmlstrings, $name); } } }
+
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
@@ -99,12 +120,27 @@ sub process_texfile {
     else {
       return process_dom($dom, $name); } } }
 
+sub postprocess_xmlfile {
+  my ($xmlpath, $name) = @_;
+  my $xmath = LaTeXML::Post::XMath->new();
+  return do_fail($name, "Couldn't instanciate LaTeXML::Post::XMath") unless $xmath;
+  $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new());
+  my @procs = ($xmath);
+  my $latexmlpost = LaTeXML::Post->new(verbosity => -1);
+  return do_fail($name, "Couldn't instanciate LaTeXML::Post:") unless $latexmlpost;
+
+  my ($doc) = $latexmlpost->ProcessChain(
+    LaTeXML::Post::Document->newFromFile("$name.xml", validate => 1),
+    @procs);
+  return do_fail($name, "Couldn't process $name.xml") unless $doc;
+  return process_dom($doc, $name); }
+
 sub process_dom {
   my ($xmldom, $name) = @_;
   # We want the DOM to be BOTH indented AND canonical!!
   my $domstring =
     eval { my $string = $xmldom->toString(1);
-    my $parser = XML::LibXML->new(load_ext_dtd=>0, validation=>0, keep_blanks=>1);
+    my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
     $parser->parse_string($string)->toStringC14N(0); };
   if (!$domstring) {
     do_fail($name, "Couldn't convert dom to string: " . $@); return; }
@@ -114,7 +150,7 @@ sub process_dom {
 sub process_xmlfile {
   my ($xmlpath, $name) = @_;
   my $domstring =
-    eval { my $parser = XML::LibXML->new(load_ext_dtd=>0, validation=>0, keep_blanks=>1);
+    eval { my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
     $parser->parse_file($xmlpath)->toStringC14N(0); };
   if (!$domstring) {
     do_fail($name, "Could not convert file $xmlpath to string: " . $@); return; }
