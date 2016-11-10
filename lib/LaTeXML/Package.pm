@@ -1752,8 +1752,10 @@ sub FindFile_aux {
   if (defined LookupValue($file . '_contents')) {
     return $file; }
   if (pathname_is_absolute($file)) {    # And if we've got an absolute path,
-    return $file if -f $file;           # No need to search, just check if it exists.
-    return; }                           # otherwise we're never going to find it.
+    if (!$options{noltxml}) {
+      return $file . '.ltxml' if -f $file . '.ltxml'; }    # No need to search, just check if it exists.
+    return $file if -f $file;                              # No need to search, just check if it exists.
+    return; }                                              # otherwise we're never going to find it.
   elsif (pathname_is_nasty($file)) {    # If it is a nasty filename, we won't touch it.
     return; }                           # we DO NOT want to pass this to kpathse or such!
 
