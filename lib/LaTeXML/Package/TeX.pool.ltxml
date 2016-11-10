@@ -3125,7 +3125,7 @@ sub cleanup_XMText {
     my $child = $children[0];
     $document->setNodeFont($textnode, $document->getNodeFont($child));
     foreach my $attr ($child->attributes) {    # Copy the child's attributes (should Merge!!)
-      $textnode->setAttribute($attr->nodeName => $attr->getValue); }
+      $textnode->setAttribute($attr->nodeName => $attr->getValue) unless $attr->nodeName eq 'xml:id'; }
     $document->unwrapNodes($child); }
 
   # Now apply a simplifying rule for nested Math
