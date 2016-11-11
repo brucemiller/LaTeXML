@@ -167,29 +167,40 @@ sub canContainIndirect {
 # This model therefor includes information from the Schema, as well as
 # autoOpen information that may be introduced in binding files.
 # [Thus it should NOT be modifying the Model object, which may cover several documents in Daemon]
+# $imodel{$tag}{$child} => $open means if in $tag, to open $child, we must first open $open
 sub computeIndirectModel {
   my ($self) = @_;
   my $model  = $$self{model};
   my $imodel = {};
   # Determine any indirect paths to each descendent via an `autoOpen-able' tag.
+  local %::OPENABILITY = ();
+  foreach my $tag ($model->getTags) {
+    my $x;
+    if (($x = $STATE->lookupMapping('TAG_PROPERTIES', $tag)) && ($x = $$x{autoOpen})) {
+      $::OPENABILITY{$tag} = ($x =~ /^\d*\.\d*$/ ? $x : 1); }
+    else {
+      $::OPENABILITY{$tag} = 0; } }
   foreach my $tag ($model->getTags) {
     local %::DESC = ();
-    computeIndirectModel_aux($model, $tag, '');
-    $$imodel{$tag} = {%::DESC}; }
+    computeIndirectModel_aux($model, $tag, '', 1);
+    foreach my $kid (sort keys %::DESC) {
+      my $best = 0;    # Find best path to $kid.
+      foreach my $start (sort keys %{ $::DESC{$kid} }) {
+        if ($::DESC{$kid}{$start} > $best) {
+          $$imodel{$tag}{$kid} = $start; $best = $::DESC{$kid}{$start}; } } } }
   # PATCHUP
   if ($$model{permissive}) {    # !!! Alarm!!!
     $$imodel{'#Document'}{'#PCDATA'} = 'ltx:p'; }
   return $imodel; }
 
 sub computeIndirectModel_aux {
-  my ($model, $tag, $start) = @_;
+  my ($model, $tag, $start, $desirability) = @_;
   my $x;
   foreach my $kid ($model->getTagContents($tag)) {
-    next if $::DESC{$kid};      # already seen
-    $::DESC{$kid} = $start if $start;
-    if (($kid ne '#PCDATA') && ($x = $STATE->lookupMapping('TAG_PROPERTIES', $kid)) && $$x{autoOpen}) {
-      computeIndirectModel_aux($model, $kid, $start || $kid); }
-  }
+    next if $::DESC{$kid}{$start};    # Already solved
+    $::DESC{$kid}{$start} = $desirability if $start;
+    if (($kid ne '#PCDATA') && ($x = $::OPENABILITY{$kid})) {
+      computeIndirectModel_aux($model, $kid, $start || $kid, $desirability * $x); } }
   return; }
 
 sub canContainSomehow {
@@ -897,7 +908,7 @@ sub find_insertion_point {
       return $self->find_insertion_point($qname); }    # Then retry, possibly w/auto open's
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
-        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed here",
+        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed in <$cur_qname>",
         "Currently in " . $self->getInsertionContext());
       return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
 
@@ -1135,7 +1146,8 @@ sub autoCollapseChildren {
     $self->setNodeFont($node, $self->getNodeFont($c));
     $self->removeNode($c);
     foreach my $gc ($c->childNodes) {
-      $node->appendChild($gc); }
+      $node->appendChild($gc);
+      $self->recordNodeIDs($node); }
     # Merge the attributes from the child onto $node
     foreach my $attr ($c->attributes()) {
       if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
