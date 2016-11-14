@@ -227,7 +227,8 @@ addExpressionModifier :
 ###                 moreRHS[$item[3],$item[4],$item[5]] balancedClose[$item[2]]
 ###            { Apply(New('annotated'),$arg[0],Fence($item[2],$item[6],$item[7])); }
         | PUNCT(?) OPEN MODIFIEROP Expression balancedClose[$item[2]]
-            { Apply($item[3],$arg[0],$item[4]); } # Is the punctuation Lost here?
+            { Apply(New('annotated'),$arg[0],
+                    Fence($item[2], Apply($item[3],Absent(),$item[4]),$item[5])); }
         | MODIFIER
             { Apply(New('annotated'),$arg[0],$item[1]); }
         | MODIFIEROP Expression
