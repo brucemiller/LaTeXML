@@ -458,13 +458,13 @@ a \TeX\ file, \textit{mydoc}\texttt{.tex} to XML, and
 then to HTML would be:
 \begin{lstlisting}[style=shell]
    latexml --dest=%mydoc%.xml %mydoc%
-   latexmlpost -dest=%somewhere/mydoc%.html %mydoc%.xml
+   latexmlpost --dest=%somewhere/mydoc%.html %mydoc%.xml
 \end{lstlisting}
 This will carry out a default transformation into HTML5,
 which represents mathematics using MathML.  Using an
 extension of xhtml would generate XHTML including MathML.
-Adding the option \verb|--format=html4| will generate
-HTML (version 4), using images to represent the math.
+Adding the option \verb|--format=html4| to the call to \verb|latexmlpost|
+will generate HTML (version 4), using images to represent the math.
 
 If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 \begin{description}

@@ -41,8 +41,8 @@ sub unpack_source {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
   # Set $source to point to the main TeX file in that directory
   my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.tex$');
-  if (!@TeX_file_members) { # No .tex file? Try files without extensions!
-    @TeX_file_members = map { $_->fileName() } grep {!/\./ || /\.[^.]{4,}$/} $zip_handle->members();
+  if (!@TeX_file_members) { # No .tex file? Try files with no, or unusually long, extensions
+    @TeX_file_members = grep {!/\./ || /\.[^.]{4,}$/} map { $_->fileName() } $zip_handle->members();
   }
 
   # Heuristically determine the input (borrowed from arXiv::FileGuess)
