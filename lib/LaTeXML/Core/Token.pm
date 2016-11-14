@@ -373,7 +373,7 @@ Return a string representing C<$object>.
 =item C<< $string = $token->getCSName; >>
 
 Return the string or character part of the C<$token>; for the special category
-codes, returns the standard string (eg. C<T_BEGIN->getCSName> returns "{").
+codes, returns the standard string (eg. C<< T_BEGIN->getCSName >> returns "{").
 
 =item C<< $string = $token->getString; >>
 
