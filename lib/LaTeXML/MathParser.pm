@@ -275,9 +275,13 @@ sub parse {
       # but the replacement my have been replaced as well!
       while (my $reprepid = $$LaTeXML::MathParser::LOSTNODES{$repid}) {
         $repid = $reprepid; }
-      foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
-        $document->setAttribute($n, idref => $repid); } }
-
+      if ($document->findnodes("descendant-or-self::*[\@xml:id='$id']")
+        && !$document->findnodes("descendant-or-self::*[\@xml:id='$repid']")) {
+        # Do nothing if the node never actually got replaced (parse ultimately failed?)
+      }
+      else {
+        foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
+          $document->setAttribute($n, idref => $repid); } } }
     $p->setAttribute('text', text_form($result)); }
   return; }
 
@@ -420,8 +424,13 @@ sub filter_hints {
             my $s = $prev->getAttribute('_space') || 0.0;
             $prev->setAttribute(_space => $s + $pts); }
           else {
-            $pending_space += $pts; } } } }
-    else {                                       # Some other element.
+            $pending_space += $pts; } } }
+      # If XMHint is referenced??
+      # Really shouldn't happen, but if XMHint is in XMWrap, it may end up with id....?
+      if (my $id = $node->getAttribute('xml:id')) {
+        if ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
+          push(@prefiltered, $node); $prev = $node; } } }
+    else {    # Some other element.
       if ($pending_comments) {
         $node->setAttribute(_pre_comment => $pending_comments);
         $pending_comments = ''; }
