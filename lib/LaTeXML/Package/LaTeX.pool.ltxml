@@ -3945,6 +3945,13 @@ DefPrimitive('\mathversion{}', sub {
       AssignValue(mathfont => LookupValue('mathfont')->merge(forcebold => 0), 'local'); }
     else { Error('unexpected', $version, $stomach, "Unknown math verison '$version'"); } });
 
+DefPrimitive('\DeclareOldFontCommand{}{}{}', sub {
+    my ($stomach, $cmd, $font, $mathcmd) = @_;
+    DefMacroI($cmd, undef, sub {
+        return (LookupValue('IN_MATH') ? $mathcmd->unlist : $font->unlist); });
+    #      Tokens(T_CS('\ifmmode'), $mathcmd->unlist, T_CS('\else'), $font->unlist, T_CS('\fi')));
+    return; });
+
 DefMacro('\newfont{}{}', '\font#1=#2\relax');
 
 Let('\normalcolor', '\relax');
@@ -4460,6 +4467,7 @@ RawTeX(<<'EOTeX');
 \newif\if@noitemarg \@noitemargfalse
 \newif\if@nmbrlist  \@nmbrlistfalse
 
+\def\glb@settings{}%
 EOTeX
 
 DefMacroI('\@height', undef, 'height');
@@ -4590,8 +4598,8 @@ DefMacro('\newlabel{}{}',       Tokens());
 
 DefMacroI('\stop', undef, sub { $_[0]->closeMouth(1); return; });
 DefMacroI('\ignorespacesafterend', undef, Tokens());
-DefMacroI('\mathgroup',            undef, Tokens());
-DefMacroI('\mathalpha',            undef, Tokens());
+Let('\mathgroup', '\fam');
+Let('\mathalpha', '\relax');
 
 #\def\mathhexbox#1#2#3{\mbox{$\m@th \mathchar"#1#2#3$}}
 DefPrimitive('\mathhexbox {}{}{}', sub {
