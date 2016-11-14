@@ -327,7 +327,11 @@ DefParameterType('Register', sub {
     else {
       Error('expected', '<register>', $gullet,
         "A <register> was supposed to be here", "Got " . Stringify($token));
-      undef; } },
+      if (isDefinable($token)) {
+        DefRegisterI($token, undef, Tokens());
+        return [$defn]; }
+      else {
+        return; } } },
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
@@ -588,6 +592,7 @@ DefMacro('\@ifundefined{}{}{}', sub {
 
 sub isDefinable {
   my ($token) = @_;
+  return unless $token;
   my $meaning = LookupMeaning($token);
   my $name = $token->getString; $name =~ s/^\\//;
   return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
@@ -3173,7 +3178,12 @@ sub cleanup_XMText {
             $document->wrapNodes('ltx:XMText', $m); }
         } } }
     # And now we don't need the XMText any more.
-    $document->unwrapNodes($textnode); }
+    foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
+      $table->setAttribute($attr->nodeName => $attr->getValue); }
+    my $newtable = $document->unwrapNodes($textnode);
+    if (my $id = $textnode->getAttribute('xml:id')) {
+      $document->unRecordID($id);
+      $document->recordID($id, $newtable); } }
   return; }
 
 #**********************************************************************
@@ -4836,9 +4846,9 @@ DefConstructorI('\@math@italiccorr', undef,
 DefPrimitiveI('\@text@italiccorr', undef, "", alias => '\/');
 
 # What kind of magic might allow \mskip to translate these back into the above?
-DefMacroI('\thinmuskip',  undef, "3 mu");
-DefMacroI('\medmuskip',   undef, "4mu plus 2mu minus 4mu");
-DefMacroI('\thickmuskip', undef, "5mu plus 5mu");
+DefRegister('\thinmuskip'  => MuGlue("3mu"));
+DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
+DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
 
 #======================================================================
 # TeX Book, Appendix B. p. 358
