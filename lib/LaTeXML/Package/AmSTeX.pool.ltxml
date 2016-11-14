@@ -105,6 +105,7 @@ DefMacro('\loadeusm',      '');
 DefMacro('\loadmathfont',  '');
 DefMacro('\loadmsam',      '');
 DefMacro('\loadmsbm',      '');
+Let('\font@', '\font');    # Close enough?
 
 DefMacro('\boldnotloaded{}', '');
 
@@ -403,6 +404,35 @@ DefMacro('\lx@cfrac',
 
 #======================================================================
 # Dubious
+RawTeX(<<'EoTeX');
+\def\vspace@{\def\vspace##1{\crcr\noalign{\vskip##1\relax}}}
+\newdimen\captionwidth@
+\newdimen\smallcaptionwidth@
+\newdimen\ex@
+\newdimen\buffer@
+\newdimen\spreadmlines@
+\newdimen\lwidth@
+\newdimen\rwidth@
+\newdimen\maxlwidth@
+\newdimen\maxrwidth@
+\newdimen\totwidth@
+\newdimen\lineht@
+\newdimen\gwidth@
+\newdimen\gmaxwidth@
+\newdimen\glineht@
+\newdimen\multlinegap@
+\newdimen\multlinetaggap@
+\newdimen\mwidth@
+\newdimen\mlineht@
+\newdimen\ltwidth@
+\newdimen\rtwidth@
+\newdimen\accentdimen@
+\newdimen\minaw@
+\newdimen\minCDaw@
+\newdimen\bigaw@
+\newdimen\pmbraise@
+\newtoks\hashtoks@
+EoTeX
 
 DefMacro('\printoptions',    '');
 DefMacro('\showallocations', '');
