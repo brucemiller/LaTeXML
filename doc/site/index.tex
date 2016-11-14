@@ -193,15 +193,15 @@ you probably should include them as dependencies of \LaTeXML.
 
 \subsection[RPM-based systems]{RPM-based systems}\label{install.rpm}
 \index{rpm}\index{Fedora}\index{Redhat}\index{Centos}
-For Fedora and RedHat Enterprise based distributions
-(Redhat Enterprise Linux 6, Centos 6,\ldots) and similar,
+For Fedora and Enterprise Linux based distributions
+(Redhat Enterprise Linux, CentOS, Scientific Linux\ldots) and similar,
 most software is obtained and installed via the yum repository.
 
 \paragraph{Installing prebuilt}\\
 The following commands will install \LaTeXML, including its required
 and optional prerequisites:
 \begin{itemize}
-\item Download \CurrentFedora\ or \CurrentRedHat\ (but enable the elp repository),
+\item Download \CurrentFedora\ or \CurrentRedHat\, % (but enable the elp repository),
 as appropriate.
 \item Install \LaTeXML, and its prerequisites, using the command:
 \begin{lstlisting}[style=shell]
@@ -263,28 +263,23 @@ Download and install MacPorts from that site.
 Since some users prefer \href{http://tug.org/mactex/}{MacTeX} or another
 \TeX\ system over MacPort's \texttt{texlive}, and since \texttt{texlive} is quite large,
 the \emph{default} \LaTeXML\ installation does \emph{not} include a dependency
-on a \TeX-installation nor does it install \LaTeXML's own style files!
-However, we provide two `variants' that do include or assume such a dependency:
+on a \TeX-installation, although it installs \LaTeXML's own style files where \texttt{texlive}
+would expect them, if you do choose to install it.
+Note that \LaTeXML\ will use, for its own purposes, the style files from whatever
+\TeX\ system, if any, it finds at runtime.
 
-\subparagraph{MacPort's TeXLive:}  To install \LaTeXML, including MacPort's \texttt{texlive}
-along with \LaTeXML's other prerequisites and style files, use the command:
-\begin{lstlisting}[style=shell]
-sudo port install LaTeXML +texlive
-\end{lstlisting}
-
-\subparagraph{MacTeX:}  To install \LaTeXML, along with its prerequisites and style files,
-using your (preinstalled) MacTeX, use the command:
-\begin{lstlisting}[style=shell]
-sudo port install LaTeXML +mactex
-\end{lstlisting}
-
-\subparagraph{Other:} To install \LaTeXML\ without assuming any installed \TeX,
-use the command:
+\subparagraph{TeXLive or Other:} To install \LaTeXML\ to work with MacPort's texlive,
+or without any installed \TeX, use the command:
 \begin{lstlisting}[style=shell]
 sudo port install LaTeXML
 \end{lstlisting}
-Note that the latter will \emph{not} install \LaTeXML's style files into any texmf directory,
-although \LaTeXML\ will still use any \TeX\ system it finds at runtime.
+
+\subparagraph{MacTeX:}  To install \LaTeXML, along with its prerequisites,
+and installing style files where MacTeX (assumed already installed) will find them,
+use the command:
+\begin{lstlisting}[style=shell]
+sudo port install LaTeXML +mactex
+\end{lstlisting}
 
 \paragraph{Installing prerequisites}\label{install.mac.prereq}
 The prerequisites (including optional ones except \TeX) can be installed by running
@@ -301,30 +296,6 @@ or install \href{http://tug.org/mactex/}{MacTeX}.
 Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired.
-
-% \emph{Note:} There have been issues reported regarding \verb|DB_File|
-% not being installed;  Apparently you must install the 
-% the db `variant' of perl, rather than the gdbm variant;
-% that is, you must run \verb|sudo port install perl +db|
-% (possibly after uninstalling perl first?).
-
-% \emph{Note:} There have been issues reported with recent
-% installations of Perl with MacPorts:  it will install \LaTeXML's
-% executables in a directory specific to the current version of Perl
-% (eg. \texttt{/opt/local/libexec/perl5.12/sitebin},
-% instead of \texttt{/opt/local/bin} which would be in your \texttt{PATH} environment variable).
-% Apparently this is a feature, not a bug; it only happens when installing from source or git;
-% not when installing the MacPorts port.  There are three workarounds, each with disadvantages:
-% \begin{itemize}
-% \item Watch for where the scripts get installed and that directory to your \texttt{PATH}
-%   environment variable;
-% \item Set up symbolic links from a directory in your path, such as \texttt{/opt/local/bin},
-%   to the actual installed locations;
-% \item Use the makefile options to choose an installation directory (see \ref{install.options}):
-% \begin{lstlisting}[style=shell]
-% perl Makefile.PL INSTALLSITEBIN=/opt/local/bin INSTALLSITESCRIPT=/opt/local/bin
-% \end{lstlisting}
-% \end{itemize}
 
 \subsection{Windows}\index{windows}
 These installation instructions assume you will use
