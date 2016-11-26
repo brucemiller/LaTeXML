@@ -118,8 +118,9 @@ GetOptions("quiet" => sub { $verbosity--; },
   # So, need to separate multiple transformations from the combination.
   # However, IF combining, then will need to support a id/ref mechanism.
   #        "mathml|mml!"  =>\$mathml,
-  "mathimages"                  => sub { addMathFormat('images'); },
-  "nomathimages"                => sub { removeMathFormat('images'); },
+  "mathimages"   => sub { addMathFormat('images'); },
+  "nomathimages" => sub { removeMathFormat('images'); },
+  "mathimagemagnification=s"    => \$mathimagemag,
   "mathsvg"                     => sub { addMathFormat('svg'); },
   "nomathsvg"                   => sub { removeMathFormat('svg'); },
   "linelength=i"                => \$linelength,
