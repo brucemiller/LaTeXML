@@ -153,7 +153,7 @@ sub applyClause {
     map { $document->recordNodeIDs($_) } @inserted;
     my $font = $document->getNodeFont($tree);                       # the font of the matched node
     foreach my $ins (@inserted) {    # Copy the non-semantic parts of font to the replacement
-      $document->setNodeFont($ins => $document->getNodeFont($ins)->mergePurestyle($font)); }
+      $document->mergeNodeFontRec($ins => $font); }
     # Now, replace the following nodes.
     map { $parent->appendChild($_) } @following; }
   elsif ($op eq 'action') {
