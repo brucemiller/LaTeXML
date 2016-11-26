@@ -1414,6 +1414,19 @@ sub setNodeFont {
   # otherwise, probably just ignorable?
   return; }
 
+# Possibly a sign of a design flaw; Set the node's font & all children that HAD the same font.
+sub mergeNodeFontRec {
+  my ($self, $node, $font) = @_;
+  return unless ref $font;    # ?
+  my $oldfont = $self->getNodeFont($node);
+  my %props   = $oldfont->purestyleChanges($font);
+  my @nodes   = ($node);
+  while (my $n = shift(@nodes)) {
+    if ($n->nodeType == XML_ELEMENT_NODE) {
+      $self->setNodeFont($n, $self->getNodeFont($n)->merge(%props));
+      push(@nodes, $n->childNodes); } }
+  return; }
+
 sub getNodeFont {
   my ($self, $node) = @_;
   my $t = $node->nodeType;
