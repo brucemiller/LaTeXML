@@ -418,14 +418,6 @@ sub font_match_xpaths {
 # # Presumably a text font is "sticky", if used in math?
 # sub isSticky { return 1; }
 
-sub mergePurestyle {
-  my ($font, $other) = @_;
-  return $font->merge(
-    size       => $other->getSize,
-    color      => $other->getColor,
-    background => $other->getBackground,
-    opacity    => $other->getOpacity,
-    mathstyle  => $other->getMathstyle); }
 #======================================================================
 our %mathstylesize = (display => 1, text => 1,
   script => 0.7, scriptscript => 0.5);
@@ -648,6 +640,43 @@ sub specialize {
   return (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
     $encoding, $language, $mathstyle, $force); }
+
+# A special form of merge when copying/moving nodes to a new context,
+# particularly math which become scripts or such.
+our %mathstylestep = (
+  display      => { display => 0,  text => 1,  script => 2,  scriptscript => 3 },
+  text         => { display => -1, text => 0,  script => 1,  scriptscript => 2 },
+  script       => { display => -2, text => -1, script => 0,  scriptscript => 1 },
+  scriptscript => { display => -3, text => -2, script => -1, scriptscript => 0 });
+our %stepmathstyle = (
+  display => { -3 => 'display', -2 => 'display', -1 => 'display',
+    0 => 'display', 1 => 'text', 2 => 'script', 3 => 'scriptscript' },
+  text => { -3 => 'display', -2 => 'display', -1 => 'display',
+    0 => 'text', 1 => 'script', 2 => 'scriptscript', 3 => 'scriptscript' },
+  script => { -3 => 'display', -2 => 'display', -1 => 'text',
+    0 => 'script', 1 => 'scriptscript', 2 => 'scriptscript', 3 => 'scriptscript' },
+  scriptscript => { -3 => 'display', -2 => 'text', -1 => 'script',
+    0 => 'scriptscript', 1 => 'scriptscript', 2 => 'scriptscript', 3 => 'scriptscript' });
+
+sub purestyleChanges {
+  my ($self, $other) = @_;
+  my $mathstyle = $other->getMathstyle;
+  return (
+    scale      => $other->getSize / $self->getSize,
+    color      => $other->getColor,
+    background => $other->getBackground,
+    opacity    => $other->getOpacity,                 # should multiply or replace?
+    mathstylestep => $mathstylestep{ $self->getMathstyle }{ $other->getMathstyle }); }
+
+sub mergePurestyle {
+  my ($self, %stylechanges) = @_;
+  my $new = $self->new_internal(@$self);
+  $$new[3] = $$self[3] * $stylechanges{scale} if $stylechanges{scale};
+  $$new[4] = $stylechanges{color}             if $stylechanges{color};
+  $$new[5] = $stylechanges{background}        if $stylechanges{background};
+  $$new[6] = $stylechanges{opacity}           if $stylechanges{opacity};
+  $$new[9] = $stepmathstyle{ $$self[9] }{ $stylechanges{mathstylestep} } if $stylechanges{mathstylestep};
+  return new; }
 
 #**********************************************************************
 1;
