@@ -1394,11 +1394,13 @@ sub adjust_latexml_doctype {
 sub cacheLookup {
   my ($self, $key) = @_;
   $self->openCache;
+  $key = Encode::encode_utf8($key) if $key;
   return $$self{cache}{$key}; }
 
 sub cacheStore {
   my ($self, $key, $value) = @_;
   $self->openCache;
+  $key = Encode::encode_utf8($key) if $key;
   if (defined $value) {
     $$self{cache}{$key} = $value; }
   else {
