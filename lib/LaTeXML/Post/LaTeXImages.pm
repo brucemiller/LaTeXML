@@ -263,6 +263,7 @@ sub generateImages {
     if (!open($TEX, '>', $texfile)) {
       Error('I/O', $texfile, undef, "Cant write to '$texfile'", "Response was: $!");
       return $doc; }
+    binmode $TEX, ':encoding(UTF-8)';
     print $TEX $self->pre_preamble($doc);
     print $TEX "\\makeatletter\n";
     print $TEX $self->preamble($doc) . "\n";
