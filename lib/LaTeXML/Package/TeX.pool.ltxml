@@ -6150,6 +6150,9 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
     my $node = $document->getLastChildElement($document->getNode);
+    if ($document->getNodeQName($node) eq 'ltx:XMDual') {
+      my (@ch) = $node->childNodes;
+      $node = $ch[1]; }
     if (my $lpadding = $whatsit->getArg(1)) {
       $document->setAttribute($node, lpadding => $lpadding); }
     if (my $rpadding = $whatsit->getArg(2)) {
