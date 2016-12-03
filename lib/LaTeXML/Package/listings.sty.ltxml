@@ -44,12 +44,12 @@ our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
 DefMacro('\lstinline OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
-    # get opening delim from gullet, before cattable swap,
-    # in case token was already peeked for the optional args!
+    $STATE->getStomach->bgroup;    # To localize activation
+    lstActivate($keyvals);         # But do BEFORE reading arg, since some options screw things up.
+                                   # get opening delim from gullet, before cattable swap,
+                                   # in case token was already peeked for the optional args!
     my $init = $gullet->readToken;
     my $body = listingsReadRawString($gullet, (Equals($init, T_BEGIN) ? T_END : $init));
-    $STATE->getStomach->bgroup;    # To localize activation
-    lstActivate($keyvals);
     return (
       @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       lstProcessInline($body),
@@ -114,6 +114,7 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
         return lstProcessDisplay(lstGetTokens('name'), $text); });
 });
 
+# Return 2 lists: body, trailer
 sub lstProcessBlock {
   my ($name, $text) = @_;
   # store the data to be placed in the listing
@@ -121,15 +122,16 @@ sub lstProcessBlock {
   AssignValue('LISTINGS_DATA_COUNTER' => $c,    'global');
   AssignValue('LISTINGS_DATA_' . $c   => $text, 'global');
   return (
-    @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
-    Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text)),
-    @{ LookupValue('LISTINGS_POSTAMBLE') },
-    T_END); }
+    [@{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
+      Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text))],
+    [@{ LookupValue('LISTINGS_POSTAMBLE') },
+      T_END]); }
 
 sub lstProcessDisplay {
   my ($name, $text) = @_;
   # Hmm.. should locally define \lstname to be either name or the file...
-  my @body = (lstProcessBlock($name, $text));
+  my ($body, $trailer) = lstProcessBlock($name, $text);
+  my @body = @$body;
   # Figure out whether the display is numbered, or has a caption or titles.
   my @caption = ();
   my ($numbered, $labelled, $caption, $x);
@@ -153,6 +155,7 @@ sub lstProcessDisplay {
     else {
       push(@body, $caption); } }
 
+  push(@body, @$trailer);
   # We go a bit (a bit too far?) to try to treat this as a separate Para level object
   # (if with captions or titled),
   # or as an in-block item (within a logical paragraph)
@@ -222,11 +225,23 @@ DefConstructor('\@@listings@block {} {}',
 # Note that this does NOT balance groups, even if $until is '}'!
 sub listingsReadRawString {
   my ($gullet, $until) = @_;
+  # NOTE that this normally does NOT balance {, but DOES within mathescape'd $
+  # Moreover, neither escapechar nor escapeinside have this effect!
+  # I'd swear this is a bug that became a feature.
+  my $SAVESTATE  = $STATE;
+  my $mathescape = lstGetBoolean('mathescape');
   local $STATE = $EMPTY_CATTABLE;
+  my $inmath = 0;
   my @tokens = ();
   while (defined(my $token = $gullet->readToken())) {
     last if $until and $token->getString eq $until->getString;
-    push(@tokens, $token); }
+    if ($mathescape && ($token->getString eq '$')) {
+      if ($inmath) { $inmath = 0; $STATE = $EMPTY_CATTABLE; }
+      else { $inmath = 1; $STATE = $SAVESTATE; } }
+    if ($inmath && $token->equals(T_BEGIN)) {
+      push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
+    else {
+      push(@tokens, $token); } }
   while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
     pop(@tokens); }
   return ToString(Tokens(@tokens)); }
@@ -320,8 +335,7 @@ sub lstActivate {
         $val = LookupValue('KEYVAL@LST@' . $key . '@default') unless $val;
         # Done for effect.
         Digest(Tokens($cs, ($val ? $val->unlist : Tokens()), T_CS('\end'))); }
-      AssignValue('LST@' . $key => $val);
-    } }
+      AssignValue('LST@' . $key => $val); } }
   return; }
 
 #----------------------------------------------------------------------
