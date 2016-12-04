@@ -1182,10 +1182,10 @@ sub lstProcess {
   local $LaTeXML::DELIM_RE = join('|', map { $$delimiters{$_}{open} } sort keys %$delimiters);
   local $LaTeXML::ESCAPE_RE = join('|', map { $$delimiters{$_}{open} }
       grep { $$delimiters{$_}{escape} } sort keys %$delimiters);
-  local $LaTeXML::QUOTED_RE = undef;
+  local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
   local $LaTeXML::SPACE = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
   local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
-  if (!$LaTeXML::CASE_SENSITIVE) {    # Clunky, but until know, we don't know
+  if (!$LaTeXML::CASE_SENSITIVE) {           # Clunky, but until know, we don't know
     foreach my $word (keys %$words) {
       $$words{ uc($word) } = $$words{$word}; } }
 
