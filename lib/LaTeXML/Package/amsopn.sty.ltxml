@@ -24,7 +24,8 @@ DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     DefMathI($cs, undef, Invocation(T_CS('\operatorname'), $star, $text),
       scriptpos => ($star ? \&doScriptpos : 'post'),
       role => 'OPFUNCTION',    # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
-      font => { family => 'serif', series => 'medium', shape => 'upright' }); });
+      font                   => { family => 'serif', series => 'medium', shape => 'upright' },
+      hide_content_reversion => 1); });
 
 # See p.18
 # New functions (most are already in TeX)
