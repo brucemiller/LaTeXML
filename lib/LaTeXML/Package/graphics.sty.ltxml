@@ -190,7 +190,7 @@ DefConstructor('\graphicspath DirectoryList', sub {
       my $path = pathname_absolute(pathname_canonical(ToString($dir)));
       push(@paths, $path);
       PushValue(GRAPHICSPATHS => $path); }
-    return (path => [@paths]); });
+    return (paths => [@paths]); });
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
