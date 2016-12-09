@@ -679,7 +679,18 @@ Let('\protect', '\relax');
 #======================================================================
 
 DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
-DefMacro('\string Token',        sub { ExplodeText($_[1]->getString); });
+#DefMacro('\string Token',        sub { ExplodeText($_[1]->getString); });
+# Hmm... I wonder, should getString itself be dealing with escapechar?
+sub escapechar {
+  my $code = LookupRegister('\escapechar')->valueOf;
+  return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
+
+DefMacro('\string Token', sub {
+    my $s = $_[1]->getString;
+    if ($s =~ s/^\\//) {
+      $s = escapechar() . $s; }
+    ExplodeText($s); });
+
 DefMacroI('\jobname', undef, Tokens());    # Set to the filename by initialization
 
 DefMacroI('\fontname', undef, sub { Explode("fontname not implemented"); });
@@ -741,9 +752,8 @@ DefMacro('\meaning Token', sub {
 
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
-##    my ($token, @toks) = ();
     my $token;
-    my $cs = '\\';
+    my $cs = escapechar();
     my $s;
     # keep newlines from having \n inside!
     while (($token = $gullet->readXToken(0)) && (($s = $token->getString) ne '\endcsname')) {
@@ -755,9 +765,7 @@ DefParameterType('CSName', sub {
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-##      push(@toks, ($cc == CC_SPACE ? T_SPACE : $token)); }
       $cs .= ($cc == CC_SPACE ? ' ' : $s); }
-##    T_CS("\\" . ToString(Tokens(@toks))); });
     T_CS($cs); });
 
 DefMacro('\csname CSName', sub {
@@ -774,7 +782,7 @@ DefPrimitive('\endcsname', sub {
 DefMacro('\expandafter Token Token', sub {
     my ($gullet, $tok, $xtok) = @_;
     my $defn;
-    if (defined($defn = LookupDefinition($xtok)) && $defn->isExpandable) {
+    if (defined($defn = $STATE->lookupExpandable($xtok))) {
       # Note that IF expandafter ends up expanding a \the in an \edef,
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
       local $LaTeXML::NOEXPAND_THE = undef;
@@ -854,7 +862,7 @@ DefRegister('\tracingcommands', Number(0),
     tracinglostchars => 1,
     tracingrestores  => 0, language => 0, uchyph => 1, lefthyphenmin => 0,
     righthyphenmin   => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
-    escapechar       => 0, endlinechar => 0, newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
+    escapechar => ord('\\'), endlinechar => 0, newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
     fam  => -1, mag => 1000, magnification => 1000, delimiterfactor => 0,
     time => 0,  day => 0,    month         => 0,    year            => 0,
     showboxbreadth => 5, showboxdepth => 3, errorcontextlines => 5);
