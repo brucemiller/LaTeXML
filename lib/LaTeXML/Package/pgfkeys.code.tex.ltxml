@@ -73,7 +73,7 @@ DefPrimitive('\pgfkeysaddvalue{}{}{}', sub {
     DefMacroI($cs, undef, $expansion); },
   locked => 1);
 
-DefPrimitive('\pgfkeyslet{} DefToken', sub {
+DefPrimitive('\pgfkeyslet{} SkipMatch:= Skip1Space DefToken', sub {
     my ($stomach, $key, $value) = @_;
     $key = ToString(Expand($key));
     Let(pgfkeyCS($key), $value); },
@@ -200,8 +200,10 @@ sub parsePGFKeys {
       while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip whitespace
         shift(@tokens); }
       # Balanced tokens until ','
+      my $ntopbraces = 0;
       while (@tokens && !Equals($tokens[0], T_OTHER(','))) {
         if (Equals($tokens[0], T_BEGIN)) {
+          $ntopbraces++;                                           # Top level brace
           my ($level, $t) = (0, undef);
           while (defined($t = shift(@tokens))) {
             my $cc = $t->getCatcode;
@@ -211,8 +213,11 @@ sub parsePGFKeys {
             last unless $level; } }
         else {
           push(@v, shift(@tokens)); } }
-      while (@v && ($v[-1]->getCatcode == CC_SPACE)) {    # pop spaces off of value????
+      while (@v && ($v[-1]->getCatcode == CC_SPACE)) {             # pop spaces off of value????
         pop(@v); }
+      # Strip outer braces if a single set encloses entire value and not just {}
+      if (($ntopbraces == 1) && (scalar(@v) > 2) && Equals($v[0], T_BEGIN) && Equals($v[-1], T_END)) {
+        shift(@v); pop(@v); }
       $value = Tokens(@v); }
     if (@tokens && Equals($tokens[0], T_OTHER(','))) {    # And skip the comma, if we're not at end.
       shift(@tokens); }                                   # Remove the comma
