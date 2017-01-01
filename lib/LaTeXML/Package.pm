@@ -767,7 +767,7 @@ sub GenerateID {
     my $ancestor = $document->findnode('ancestor::*[@xml:id][1]', $node)
       || $document->getDocument->documentElement;
     ## Old versions don't like $ancestor->getAttribute('xml:id');
-    my $ancestor_id = $ancestor && $ancestor->getAttributeNS("http://www.w3.org/XML/1998/namespace", 'id');
+    my $ancestor_id = $ancestor && $ancestor->getAttributeNS($LaTeXML::Common::XML::XML_NS, 'id');
     # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
     # or $ancestor IS the root element (but without an id);
     # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
@@ -2527,7 +2527,7 @@ sub ProcessPendingResources {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -2723,7 +2723,7 @@ For C<XUntil>, tokens are expanded as they are matched and accumulated.
 =item C<UntilBrace>
 
 X<UntilBrace>
-Reads tokens until the next open brace C<{>.  
+Reads tokens until the next open brace C<{>.
 This corresponds to the peculiar TeX construct C<\def\foo#{...>.
 
 =item C<Match:I<match(|match)*> | Keyword:>I<match(|match)*>>
@@ -2952,7 +2952,7 @@ or I<cannot> appear, in math mode.
 
 =item C<beforeDigest=E<gt>I<code>($stomach)>
 
-supplies a hook to execute during digestion 
+supplies a hook to execute during digestion
 just before the main part of the primitive is executed
 (and before any arguments have been read).
 The I<code> should either return nothing (return;)
@@ -3010,7 +3010,7 @@ specifies if it is not allowed to change this value.
 
 =item C<setter=E<gt>I<code>($value,@args)>
 
-By default I<value> is stored in the State's Value table under a name concatenating the 
+By default I<value> is stored in the State's Value table under a name concatenating the
 control sequence and argument values.  These options allow other means of fetching and
 storing the value.
 
@@ -3185,7 +3185,7 @@ have already been separated; useful for definitions from within code.
 
 X<DefMath>
 A common shorthand constructor; it defines a control sequence that creates a mathematical object,
-such as a symbol, function or operator application.  
+such as a symbol, function or operator application.
 The options given can effectively create semantic macros that contribute to the eventual
 parsing of mathematical content.
 In particular, it generates an XMDual using the replacement I<tex> for the presentation.
@@ -3626,7 +3626,7 @@ or C<I<code>($gullet)> which would yeild tokens to be expanded.
 This operation is useful for style files loaded with C<--preload> or document specific
 customization files (ie. ending with C<.latexml>); normally the contents would be executed
 before LaTeX and other style files are loaded and thus can be overridden by them.
-By deferring the evaluation to begin-document time, these contents can override those style files. 
+By deferring the evaluation to begin-document time, these contents can override those style files.
 This is likely to only be meaningful for LaTeX documents.
 
 =item C<AtEndDocument(I<@stuff>)>
@@ -3909,7 +3909,7 @@ document can take place.
 X<DefRewrite>X<DefMathRewrite>
 These two declarations define document rewrite rules that are applied to the
 document tree after it has been constructed, but before math parsing, or
-any other postprocessing, is done.  The I<%specification> consists of a 
+any other postprocessing, is done.  The I<%specification> consists of a
 sequence of key/value pairs with the initial specs successively narrowing the
 selection of document nodes, and the remaining specs indicating how
 to modify or replace the selected nodes.
