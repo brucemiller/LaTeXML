@@ -463,9 +463,14 @@ sub associateNode {
     $node->setAttribute('_sourced' => 1);
     $iscontainer = scalar(element_nodes($node)); }
   my $sourcenode = $currentnode;
-  # If the generated node is a "container" (non-token!), use the container as source
+  # If the generated node is a "container" (non-token!), use the containing XMDual as source
   if ($iscontainer) {
-    if (my $container = $document->findnode('ancestor-or-self::ltx:XMDual[1]', $sourcenode)) {
+    my $sid = $sourcenode->getAttribute('xml:id');
+    # But ONLY if that XMDual is the "direct" parent, or is parent of XRef that points to $current
+    if (my $container = $document->findnode('parent::ltx:XMDual[1]', $sourcenode)
+      || ($sid &&
+        $document->findnode("ancestor-or-self::ltx:XMDual[ltx:XMRef[\@idref='$sid']][1]",
+          $sourcenode))) {
       $sourcenode = $container; } }
   # If the current node is appropriately visible, use it.
   elsif ($currentnode->getAttribute(($ispresentation ? '_cvis' : '_pvis'))) { }
@@ -476,8 +481,9 @@ sub associateNode {
     if ($q eq 'ltx:XMTok') { }
     elsif ($q eq 'ltx:XMApp') {
       ($op) = element_nodes($op);
-      if ($document->getQName($op) eq 'ltx:XMRef') {
-        $op = $document->realizeXMNode($op); } }
+      $q = $document->getQName($op) || 'unknown'; }    # get "real" operator
+    if ($q eq 'ltx:XMRef') {
+      $op = $document->realizeXMNode($op); }
     if ($op && !$op->getAttribute('_pvis')) {
       $sourcenode = $op; }
     else {
@@ -513,7 +519,7 @@ sub shownode {
   if ($ref eq 'ARRAY') {
     my ($tag, $attr, @children) = @$node;
     return "\n" . ('  ' x $level)
-      . '[' . $tag . ',{' . join(',', map { $_ . '=>' . $$attr{$_} } sort keys %$attr) . '},'
+      . '[' . $tag . ',{' . join(',', map { $_ . '=>' . ($$attr{$_} || '') } sort keys %$attr) . '},'
       . join(',', map { shownode($_, $level + 1) } @children) . ']'; }
   elsif ($ref =~ /^XML/) {
     return $node->toString; }
@@ -534,14 +540,35 @@ sub addCrossrefs {
   my $selfs_map  = $$self{convertedIDs};
   my $others_map = $$otherprocessor{convertedIDs};
   my $xrefids    = $$self{crossreferencing_ids};
-  foreach my $xid (keys %$selfs_map) {    # For each Math id that $self converted
-    if (my $other_ids = $$others_map{$xid}) {    # Did $other also convert those ids?
+  my $backref    = {};
+  foreach my $id (keys %$selfs_map) {
+    foreach my $t (@{ $$selfs_map{$id} }) {
+      $$backref{$t} = $id; } }
+  foreach my $xid (keys %$selfs_map) {    # For each XMath id that $self converted
+    my $other_ids = $$others_map{$xid};    # the ids where $xid ended up in $other processor
+    if (!$other_ids) {
+      # But If this node didn't directly end up in $other, try to find alternative
+      # Typically happens when a "visible" node doesn't have visible representation in other format!
+      # So, see if an ancestor got mapped.
+      if (my $mapped = $$selfs_map{$xid}) {
+        foreach my $mid (@$mapped) {
+          if (my $node = $doc->findNodeByID($mid)) {
+            my ($parent, $pid, $xpid) = ($node, undef, undef);
+            while (($parent = $parent->parentNode)
+              && (!($pid = $parent->getAttribute('xml:id'))
+                || !($xpid = $$backref{$pid})
+                || !$$others_map{$xpid})) { }
+            if ($xpid) {
+              $other_ids = $$others_map{$xpid}; } } } } }
+    if ($other_ids) {    # Hopefully, we've got the targets, now
       my $xref_id = $$other_ids[0];
-      if (scalar(@$other_ids) > 1) {             # Find 1st in document order! (order is cached)
+      if (scalar(@$other_ids) > 1) {    # Find 1st in document order! (order is cached)
         ($xref_id) = sort { $$xrefids{$a} <=> $$xrefids{$b} } @$other_ids; }
       foreach my $id (@{ $$selfs_map{$xid} }) {    # look at each node $self created from $xid
         if (my $node = $doc->findNodeByID($id)) {    # If we find a node,
-          $self->addCrossref($node, $xref_id); } } } }    # add a crossref from it to $others's node
+          $self->addCrossref($node, $xref_id); } } }    # }    # add a crossref from it to $others's nod
+    else {
+    } }
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -553,7 +580,7 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Util::Radix;
 use DB_File;
 use Unicode::Normalize;
-use LaTeXML::Post;                                        # to import error handling...
+use LaTeXML::Post;    # to import error handling...
 use LaTeXML::Common::Error;
 use base qw(LaTeXML::Common::Object);
 our $NSURI = "http://dlmf.nist.gov/LaTeXML";
