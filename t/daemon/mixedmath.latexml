@@ -1,0 +1,42 @@
+# -*- mode: Perl -*-
+package LaTeXML::Package::Pool;
+use warnings;
+use strict;
+use LaTeXML::Package;
+
+my $mathcounter = 0;
+# Hackery to force shorter (more readable & checkable) ID's
+Tag('ltx:XMath', afterOpen => sub {
+    my ($doc, $node, $whatsit) = @_;
+    $doc->setAttribute($node, 'xml:id' => 'm' . (++$mathcounter));
+});
+
+sub XGenerateID {
+  my ($document, $node, $whatsit, $prefix) = @_;
+  #  if($document->getNodeQName($node) =~ /^ltx:XM(?!Dual|Ref)/){
+  if ($document->getNodeQName($node) =~ /^ltx:XM(?!Ref)/) {
+    #    GenerateID($document,$node,$whatsit,$prefix); }
+    if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')) {
+      my $ancestor = $document->findnode('ancestor-or-self::ltx:XMath[@xml:id]', $node);
+      my $ancestor_id = $ancestor && $ancestor->getAttribute('xml:id');
+
+      $prefix = 'id' unless $prefix || $ancestor_id;
+
+      my $ctrkey = '_ID_counter_' . (defined $prefix ? $prefix . '_' : '');
+      my $ctr = ($ancestor && $ancestor->getAttribute($ctrkey)) || 0;
+
+      my $id = ($ancestor_id ? $ancestor_id . "." : '') . (defined $prefix ? $prefix : '') . (++$ctr);
+      $ancestor->setAttribute($ctrkey => $ctr) if $ancestor;
+      $document->setAttribute($node, 'xml:id' => $id); } }
+  return; }
+
+# Some dubious definite integral markup, for demonstration purposes
+# Eventually should make parser smarter!
+DefMath('\diffd', "d", role => 'DIFFOP', meaning => 'differential-d');
+DefMath('\defint{}{}{}{}', '\int_{#1}^{#2} #3 \diffd{#4}',
+  meaning => 'hack-definite-integral');
+
+DefMath('\baddefint{}{}{}{}', '\int_{#1}^{#2} #3 d{#4}',
+  meaning => 'hack-definite-integral');
+
+1;
