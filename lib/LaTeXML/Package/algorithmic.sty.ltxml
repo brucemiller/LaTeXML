@@ -22,6 +22,9 @@ Let('\lx@orig@algorithmic', '\algorithmic');
 DefMacro('\algorithmic', '\lx@setup@algorithmic\lx@orig@algorithmic');
 DefPrimitive('\lx@setup@algorithmic', sub {
     ResetCounter('ALC@line');
+    # If we are not within an algorithm environment, step the counter for its id's
+    if (!grep { $_ eq 'algorithm'; } $STATE->lookupStackedValues('current_environment')) {
+      RefStepID('algorithm'); }
     Let('\list',    '\lx@algorithmic@beginlist');
     Let('\endlist', '\lx@algorithmic@endlist');
     Let('\item',    '\lx@algorithmic@item');
@@ -51,7 +54,8 @@ DefConstructor('\lx@algorithmic@item@@ OptionalUndigested',
     (id => $id, refnum => $refnum, frefnum => $frefnum); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
-NewCounter('ALC@line', 'algorithm', idprefix => 'l');    # Assuming we're inside an {algorithm}!
+NewCounter('algorithm', undef,       idprefix => 'alg');
+NewCounter('ALC@line',  'algorithm', idprefix => 'l');     # Assuming we're inside an {algorithm}!
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

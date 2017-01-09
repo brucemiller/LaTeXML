@@ -22,13 +22,18 @@ Let('\lx@orig@algorithmic', '\algorithmic');
 DefMacro('\algorithmic', '\lx@setup@algorithmicx\lx@orig@algorithmic');
 DefPrimitive('\lx@setup@algorithmicx', sub {
     ResetCounter('ALG@line');
+    # If we are not within an algorithm environment, step the counter for its id's
+    if (!grep { $_ eq 'algorithm'; } $STATE->lookupStackedValues('current_environment')) {
+      RefStepID('algorithm'); }
     Let('\list',    '\lx@algorithmicx@beginlist');
     Let('\endlist', '\lx@algorithmicx@endlist');
     Let('\item',    '\lx@algorithmicx@item');
     Let('\hfill',   '\lx@algorithmicx@hfill');
 });
 
-DefConstructor('\lx@algorithmicx@beginlist{}{}', "<ltx:listing>");
+# IGNORE \list 1st arg (we'll handle counter stepping in \item)
+DefMacro('\lx@algorithmicx@beginlist{}{}', '\lx@algorithmicx@beginlist@{#2}');
+DefConstructor('\lx@algorithmicx@beginlist@{}', "<ltx:listing>");
 
 DefConstructor('\lx@algorithmicx@endlist', "</ltx:listing>",
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
@@ -44,7 +49,10 @@ DefConstructor('\lx@algorithmicx@item OptionalUndigested',
     (id => $id, refnum => $refnum, frefnum => $frefnum); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
-NewCounter('ALG@line', 'algorithm', idprefix => 'l');    # Assuming we're inside an {algorithm}!
+# Ideally, these appear within an algorithm environment, and we'd like to number lines within it.
+# BUT algorithm package isn't required, so define it here!
+NewCounter('algorithm', undef,       idprefix => 'alg');
+NewCounter('ALG@line',  'algorithm', idprefix => 'l');     # Assuming we're inside an {algorithm}!
 
 # Hopefully this will only get used for right justifying a comment;
 # the ltx:text should autoclose at end of line?
