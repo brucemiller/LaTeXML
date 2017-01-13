@@ -2463,7 +2463,7 @@ DefMacroI('\@tabbing@tabset', undef,
     . '\@open@column\@open@inner@column');
 DefConstructorI('\@tabbing@tabset@marker', undef, '', reversion => '\=');
 DefMacroI('\@tabbing@nexttab', undef,
-  '\@close@inner@column.\@close@column'
+  '\@close@inner@column\@close@column'
     . '\@tabbing@nexttab@marker'
     . '\@open@column\@open@inner@column');
 DefConstructorI('\@tabbing@nexttab@marker', undef, '', reversion => '\>');
