@@ -483,6 +483,7 @@ lib/LaTeXML/Package/mathptm.sty.ltxml
 lib/LaTeXML/Package/mathptmx.sty.ltxml
 lib/LaTeXML/Package/mathrsfs.sty.ltxml
 lib/LaTeXML/Package/mathtools.sty.ltxml
+lib/LaTeXML/Package/mleftright.sty.ltxml
 lib/LaTeXML/Package/mn.cls.ltxml
 lib/LaTeXML/Package/mn2e.cls.ltxml
 lib/LaTeXML/Package/mn2e_support.sty.ltxml
@@ -619,6 +620,9 @@ t/92_profiles.t
 t/93_formats.t
 t/94_runtimes.t
 t/95_complex_config.t
+t/alignment/algx.pdf
+t/alignment/algx.tex
+t/alignment/algx.xml
 t/alignment/array.pdf
 t/alignment/array.tex
 t/alignment/array.xml
@@ -1170,6 +1174,8 @@ t/tokenize/verbata.xml
 t/daemon/citations.tex
 t/daemon/document.tex
 t/daemon/fragment.tex
+t/daemon/mixedmath.tex
+t/daemon/mixedmath.latexml
 t/daemon/post.tex
 t/daemon/pre.tex
 t/daemon/tiny.bib
@@ -1188,6 +1194,9 @@ t/daemon/formats/citationraw.xml
 t/daemon/formats/makebib.spec
 t/daemon/formats/makebib.status
 t/daemon/formats/makebib.xml
+t/daemon/formats/mixedmath.spec
+t/daemon/formats/mixedmath.status
+t/daemon/formats/mixedmath.xml
 t/daemon/formats/noparse.spec
 t/daemon/formats/noparse.status
 t/daemon/formats/noparse.xml
