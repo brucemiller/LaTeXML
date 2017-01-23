@@ -431,8 +431,10 @@ sub filter_hints {
         if ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
           push(@prefiltered, $node); $prev = $node; } } }
     # Don't store stuff on APPLYOP, since they tend to disappear.
-    elsif ((getQName($node) eq 'ltx:XMTok') && (($node->getAttribute('role') || '') eq 'APPLYOP')) { }
-    else {    # Some other element.
+    elsif ((getQName($node) eq 'ltx:XMTok') && (($node->getAttribute('role') || '') eq 'APPLYOP')) {
+###      push(@prefiltered, $node); $prev = $node; }    # Keep it.
+      push(@prefiltered, $node); }    # Keep it, but don't step $prev
+    else {                            # Some other element.
       if ($pending_comments) {
         $node->setAttribute(_pre_comment => $pending_comments);
         $pending_comments = ''; }
