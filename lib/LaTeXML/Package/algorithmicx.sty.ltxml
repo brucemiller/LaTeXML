@@ -38,8 +38,14 @@ DefConstructor('\lx@algorithmicx@beginlist@{}', "<ltx:listing>");
 DefConstructor('\lx@algorithmicx@endlist', "</ltx:listing>",
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
+# Empty lines still get an \item, but they're followed by \nointerlineskip!
+# We do NOT want to generate a listingline in those cases.
+# (but this seems a little brittle?)
+DefMacro('\lx@algorithmicx@item []',
+  '\@ifnextchar\nointerlineskip{}{\lx@algorithmicx@@item}');
+
 # This imitates \item; just opens the ltx:listingline, but somebody's got to close it.
-DefConstructor('\lx@algorithmicx@item OptionalUndigested',
+DefConstructor('\lx@algorithmicx@@item',
   "<ltx:listingline xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
     . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
   properties => sub {
