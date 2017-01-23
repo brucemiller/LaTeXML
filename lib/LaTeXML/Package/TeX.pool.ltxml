@@ -2103,7 +2103,7 @@ DefPrimitive('\immediate', undef);
 DefPrimitive('\special {}',     undef);
 DefPrimitive('\penalty Number', undef);
 DefPrimitive('\kern Dimension', undef);
-DefPrimitive('\mkern MuGlue',   undef);
+DefMacro('\mkern MuGlue', '\ifmmode\@math@mskip #1\relax\else\@text@mskip #1\relax\fi');
 DefPrimitiveI('\unpenalty', undef, undef);
 DefPrimitiveI('\unkern',    undef, undef);
 ## Worrisome, but...
