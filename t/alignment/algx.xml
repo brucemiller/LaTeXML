@@ -8,7 +8,7 @@
   <resource src="ltx-book.css" type="text/css"/>
   <para xml:id="p1">
     <listing>
-      <listingline xml:id="algx1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Proc</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="algx1.l1.m1">
+      <listingline refnum="1" xml:id="algx1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Proc</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="algx1.l1.m1">
               <XMath>
                 <XMDual>
                   <XMApp>
@@ -25,16 +25,16 @@
               </XMath>
             </Math>)
 </text></text></listingline>
-      <listingline xml:id="algx1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> 7
+      <listingline refnum="2" xml:id="algx1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> 7
 </text></listingline>
-      <listingline xml:id="algx1.l3"><tag><text fontsize="80%">3:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
+      <listingline refnum="3" xml:id="algx1.l3"><tag><text fontsize="80%">3:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
     </listing>
   </para>
-  <float class="ltx_float_algorithm" framed="top" frefnum="Algorithm 1" labels="LABEL:euclid LABEL:euclidendwhile" refnum="1" xml:id="alg1">
+  <float class="ltx_float_algorithm" framed="top" frefnum="Algorithm 1" labels="LABEL:euclid" refnum="1" xml:id="alg1">
     <toccaption><tag close=" ">1</tag>Euclid’s algorithm</toccaption>
     <caption><tag close=" ">Algorithm 1</tag>Euclid’s algorithm</caption>
     <listing framed="topbottom">
-      <listingline xml:id="alg1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Euclid</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="alg1.l1.m1">
+      <listingline refnum="1" xml:id="alg1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Euclid</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="alg1.l1.m1">
               <XMath>
                 <XMDual>
                   <XMApp>
@@ -55,7 +55,7 @@
                 </XMath>
               </Math> The g.c.d. of a and b
 </text></text></text></listingline>
-      <listingline xml:id="alg1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l2.m1">
+      <listingline refnum="2" xml:id="alg1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l2.m1">
           <XMath>
             <XMApp>
               <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
@@ -69,7 +69,7 @@
           </XMath>
         </Math><text fontsize="80%">
 </text></listingline>
-      <listingline xml:id="alg1.l3"><tag><text fontsize="80%">3:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">while</text><text fontsize="80%"> </text><Math mode="inline" tex="r\not=0" text="r not-equals 0" xml:id="alg1.l3.m1">
+      <listingline refnum="3" xml:id="alg1.l3"><tag><text fontsize="80%">3:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">while</text><text fontsize="80%"> </text><Math mode="inline" tex="r\not=0" text="r not-equals 0" xml:id="alg1.l3.m1">
           <XMath>
             <XMApp>
               <XMTok fontsize="80%" meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
@@ -83,7 +83,7 @@
               </XMath>
             </Math> We have the answer if r is 0
 </text></text></listingline>
-      <listingline xml:id="alg1.l4"><tag><text fontsize="80%">4:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="a\leftarrow b" text="a leftarrow b" xml:id="alg1.l4.m1">
+      <listingline refnum="4" xml:id="alg1.l4"><tag><text fontsize="80%">4:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="a\leftarrow b" text="a leftarrow b" xml:id="alg1.l4.m1">
           <XMath>
             <XMApp>
               <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
@@ -93,7 +93,7 @@
           </XMath>
         </Math><text fontsize="80%">
 </text></listingline>
-      <listingline xml:id="alg1.l5"><tag><text fontsize="80%">5:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="b\leftarrow r" text="b leftarrow r" xml:id="alg1.l5.m1">
+      <listingline refnum="5" xml:id="alg1.l5"><tag><text fontsize="80%">5:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="b\leftarrow r" text="b leftarrow r" xml:id="alg1.l5.m1">
           <XMath>
             <XMApp>
               <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
@@ -103,7 +103,7 @@
           </XMath>
         </Math><text fontsize="80%">
 </text></listingline>
-      <listingline xml:id="alg1.l6"><tag><text fontsize="80%">6:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l6.m1">
+      <listingline refnum="6" xml:id="alg1.l6"><tag><text fontsize="80%">6:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l6.m1">
           <XMath>
             <XMApp>
               <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
@@ -117,9 +117,9 @@
           </XMath>
         </Math><text fontsize="80%">
 </text></listingline>
-      <listingline xml:id="alg1.l7"><tag><text fontsize="80%">7:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">while</text><text fontsize="80%">
+      <listingline labels="LABEL:euclidendwhile" refnum="7" xml:id="alg1.l7"><tag><text fontsize="80%">7:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">while</text><text fontsize="80%">
 </text></listingline>
-      <listingline xml:id="alg1.l8"><tag><text fontsize="80%">8:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> </text><Math mode="inline" tex="b" text="b" xml:id="alg1.l8.m1">
+      <listingline refnum="8" xml:id="alg1.l8"><tag><text fontsize="80%">8:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> </text><Math mode="inline" tex="b" text="b" xml:id="alg1.l8.m1">
           <XMath>
             <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
           </XMath>
@@ -129,7 +129,7 @@
             </XMath>
           </Math> The gcd is b
 </text></listingline>
-      <listingline xml:id="alg1.l9"><tag><text fontsize="80%">9:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
+      <listingline refnum="9" xml:id="alg1.l9"><tag><text fontsize="80%">9:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
     </listing>
   </float>
 </document>
