@@ -189,6 +189,9 @@ sub default_handler {
   if ($id) {
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
       labels   => orNull($self->noteLabels($node)),
+      refnum   => orNull($node->getAttribute('refnum')),
+      frefnum  => orNull($node->getAttribute('frefnum')),
+      rrefnum  => orNull($node->getAttribute('rrefnum')),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
       fragid   => orNull($self->inPageID($doc, $id)));
