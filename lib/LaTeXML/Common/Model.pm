@@ -31,8 +31,8 @@ sub new {
     namespace_errors        => 0,
     %options }, $class;
   $$self{xpath}->registerFunction('match-font', \&LaTeXML::Common::Font::match_font);
-  $self->registerNamespace('xml', "http://www.w3.org/XML/1998/namespace");
-  $self->registerDocumentNamespace('xml', "http://www.w3.org/XML/1998/namespace");
+  $self->registerNamespace('xml', $LaTeXML::Common::XML::XML_NS);
+  $self->registerDocumentNamespace('xml', $LaTeXML::Common::XML::XML_NS);
   return $self; }
 
 sub setDocType {
@@ -422,7 +422,7 @@ sub describeModel {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -481,7 +481,7 @@ that are relevant to L<LaTeXML>.
 The `code' mapping is the one used in code implementing packages, and in
 particular, constructors defined within those packages.  The prefix C<ltx>
 is used consistently to refer to L<LaTeXML>'s own namespace
-(C<http://dlmf.nist.gov/LaTeXML)>. 
+(C<http://dlmf.nist.gov/LaTeXML)>.
 
 The other mapping, the `document' mapping, is used in the created document;
 this may be different from the `code' mapping in order to accommodate
@@ -514,7 +514,7 @@ Return the namespace url for the given C<$prefix>.
 
 =item C<< $boole = $model->canContain($tag,$childtag); >>
 
-Returns whether an element with qualified name C<$tag> can contain an element 
+Returns whether an element with qualified name C<$tag> can contain an element
 with qualified name C<$childtag>.
 The tag names #PCDATA, #Document, #Comment and #ProcessingInstruction
 are specially recognized.
