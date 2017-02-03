@@ -841,6 +841,11 @@ sub alignment_test_headers {
     print STDERR "header content too much longer than data content\n"
       if $LaTeXML::Core::Alignment::DEBUG;
     return; }
+  # Or if a header cell has "large" content?
+  if ($headlength >= 1000) {    # Or if a header cell has "large" content?
+    print STDERR "header content too large\n"
+      if $LaTeXML::Core::Alignment::DEBUG;
+    return; }
 
   print STDERR "Succeeded with $nhead headers\n" if $LaTeXML::Core::Alignment::DEBUG;
   return @heads; }
