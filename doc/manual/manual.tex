@@ -504,22 +504,25 @@ controlled by
 \end{lstlisting}
 
 \paragraph{Stylesheets and Javascript}\label{usage.post.xslt}
-If you wish to provide your own \XSLT\,
-\CSS\ stylesheets or javascript programs, the options 
+If you wish to restyle the generated \HTML\ either by adding \CSS\ or by customizing
+the \XSLT, change its functionality by adding javascript,
+or even generate an alternative output format with \XSLT,
+some combination of the following options will be useful.
 \begin{lstlisting}[style=shell]
---stylesheet=%stylesheet%.xsl
---css=%stylesheet%.css
---nodefaultcss
---javascript=%program%.js
+--nodefaultresources          # Omits the default resources (css..)
+--css=%stylesheet%.css        # Adds a new CSS stylesheet
+--javascript=%program%.js     # Adds a Javascript
+--stylesheet=%stylesheet%.xsl # Uses an alternative XSLT stylesheet
+--xsltparameter=%name%:%value% # Sets an XSLT parameter
 \end{lstlisting}
-can be used.  The \shellcode{--css} and  \shellcode{--javascript} options provide \CSS\ stylesheets
-and javascript programs respectively; they can be repeated to include multiple files.
-In both cases, if a local file is referenced, it will be copied to the
-destination directory, but otherwise urls are accepted.
+All but \shellcode{--stylesheet} can be repeated to include multiple files
+or set multiple parameters.  When a local \CSS\ or javascript file is included,
+it will be copied to the destination directory, but otherwise urls are accepted.
 
-The core \CSS\ stylesheet, \code{LaTeXML.css}, helps match the basic
-styling of \LaTeX\ to \HTML; certain bindings, such as \texttt{amsart},
-automatically include additional stylesheets to better match the desired style.
+The core \CSS\ stylesheet, \code{LaTeXML.css}, along with
+certain styles or classes (\texttt{article}, \texttt{report}, \texttt{book},
+\texttt{amsart}) which add stylesheets automatically,
+helps match the styling of \LaTeX\ to \HTML.
 You can also request the inclusion of your own stylesheets from the commandline using
 \shellcode{--css} option.  Some sample \CSS\ enhancements are included with the distribution:
 \begin{description}
@@ -528,7 +531,8 @@ You can also request the inclusion of your own stylesheets from the commandline 
 \item[\code{LaTeXML-blue.css}] Colors various features in a soft blue.
 \end{description}
 In cases where you wish to completely manage the \CSS\,
-the option \shellcode{--nodefaultcss} causes only explicitly requested css files to be included.
+the option \shellcode{--nodefaultcss} causes only explicitly requested (command-line)
+css files to be included.
 
 Javascript files are included in the generated \HTML\ by using the \shellcode{--javascript} option.
 The distribution includes a sample \code{LaTeXML-maybeMathjax.js} which is useful
@@ -545,6 +549,17 @@ See \ref{customization.latexmlpost.css} for more information on developing your 
 To develop \CSS\ and \XSLT\ stylesheets, 
 a knowledge of the \LaTeXML\ document type is also necessary; see  Appendix \ref{schema}.
 
+Individual \XSLT\ stylesheets may have parameters that can customize the
+conversion from \LaTeXML's \XML\ to the target format.  An obscure example is
+\begin{lstlisting}[style=shell]
+--xsltparameter=SIMPLIFY_HTML:true
+\end{lstlisting}
+which causes a `simpler' \HTML\ to be generated.
+Generally, \LaTeXML's \HTML\ relies on \CSS\ to recreate the appearance
+of many features of \LaTeX, but this sometimes results in somewhat convoluted
+\HTML\ that may not be ideal in situations where \CSS\ is not available.
+This parameter `dumbs down' itemizations and enumerations by
+ignoring any custom item labels or numbers.
 %%%----------------------------------------------------------------------
 \section[Splitting]{Splitting the Output}\label{usage.splitting}\index{latexmlpost!basic usage!split pages}
 For larger documents, it is often desirable to break the 
