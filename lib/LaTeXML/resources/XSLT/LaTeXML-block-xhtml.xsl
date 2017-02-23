@@ -21,6 +21,8 @@
     extension-element-prefixes="func f"
     exclude-result-prefixes = "ltx func f">
 
+  <xsl:param name="SIMPLIFY_HTML"></xsl:param>
+
   <!-- ======================================================================
        Various Block-level elements:
        ltx:p, ltx:equation, ltx:equationgroup, ltx:quote, ltx:block,
@@ -1064,6 +1066,21 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
+      <xsl:when test="$SIMPLIFY_HTML">
+        <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:call-template name="add_attributes"/>
+          <xsl:apply-templates select="." mode="begin">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="*[local-name() != 'tag']">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="end">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+        </xsl:element>
+      </xsl:when>
       <xsl:when test="child::ltx:tag">
         <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
