@@ -555,12 +555,13 @@ sub addCrossrefs {
           if (my $node = $doc->findNodeByID($mid)) {
             my ($parent, $pid, $xpid) = ($node, undef, undef);
             while (($parent = $parent->parentNode)
+              && ($parent->nodeType == XML_ELEMENT_NODE)      # in case we hit Document
               && (!($pid = $parent->getAttribute('xml:id'))
                 || !($xpid = $$backref{$pid})
                 || !$$others_map{$xpid})) { }
             if ($xpid) {
               $other_ids = $$others_map{$xpid}; } } } } }
-    if ($other_ids) {    # Hopefully, we've got the targets, now
+    if ($other_ids) {                                         # Hopefully, we've got the targets, now
       my $xref_id = $$other_ids[0];
       if (scalar(@$other_ids) > 1) {    # Find 1st in document order! (order is cached)
         ($xref_id) = sort { $$xrefids{$a} <=> $$xrefids{$b} } @$other_ids; }
