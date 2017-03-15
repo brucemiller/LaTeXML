@@ -57,8 +57,8 @@ sub getExpansion {
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
   my ($self, $gullet) = @_;
-  # shortcut for "trivial" macros; but this bypasses tracing & profiling!!!!
-  if (my $triv = $$self{trivial_expansion}) {
+  # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
+  if (my $triv = (!$STATE->lookupValue('TRACINGMACROS')) && $$self{trivial_expansion}) {
     return $triv; }
   else {
     return $self->doInvocation($gullet, $self->readArguments($gullet)); } }
