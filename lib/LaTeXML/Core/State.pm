@@ -108,16 +108,20 @@ sub new {
   $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
-  $$self{mathcode} = {};
-  $$self{sfcode}   = {};
-  $$self{lccode}   = {};
-  $$self{uccode}   = {};
-  $$self{delcode}  = {};
+  $$self{mathcode}            = {};
+  $$self{sfcode}              = {};
+  $$self{lccode}              = {};
+  $$self{uccode}              = {};
+  $$self{delcode}             = {};
+  $$self{tracing_definitions} = {};
   return $self; }
 
 sub assign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
+  if (exists $$self{tracing_definitions}{$key}) {
+    print STDERR "ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
+      (ref $value ? $value->stringify : $value) . "\n"; }
   if ($scope eq 'global') {
     # Remove bindings made in all frames down-to & including the next lower locked frame
     my $frame;
