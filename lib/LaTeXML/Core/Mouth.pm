@@ -193,17 +193,17 @@ sub handle_escape {    # Read control sequence
   # Knuth, p.46 says that Newlines are converted to spaces,
   # Bit I believe that he does NOT mean within control sequences
   my $cs = "\\" . $ch;    # I need this standardized to be able to lookup tokens (A better way???)
-  if ($cc == CC_LETTER) { # For letter, read more letters for csname.
+  if ((defined $cc) && ($cc == CC_LETTER)) {    # For letter, read more letters for csname.
     while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_LETTER)) {
       $cs .= $ch; }
     $$self{colno}--; }
-  if ($cc == CC_SPACE) {    # We'll skip whitespace here.
+  if ((defined $cc) && ($cc == CC_SPACE)) {     # We'll skip whitespace here.
     while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
     $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
-  if ($cc == CC_EOL) {      # If we've got an EOL
-                            # if in \read mode, leave the EOL to be turned into a T_SPACE
+  if ((defined $cc) && ($cc == CC_EOL)) {       # If we've got an EOL
+        # if in \read mode, leave the EOL to be turned into a T_SPACE
     if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
-    else {                  # else skip it.
+    else {    # else skip it.
       getNextChar($self);
       $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
   return T_CS($cs); }
@@ -297,7 +297,7 @@ sub readToken {
     }
     # ==== Extract next token from line.
     my ($ch, $cc) = getNextChar($self);
-    my $token = $DISPATCH[$cc];
+    my $token = (defined $cc ? $DISPATCH[$cc] : undef);
     $token = &$token($self, $ch) if ref $token eq 'CODE';
     return $token if defined $token;    # Else, repeat till we get something or run out.
   }
