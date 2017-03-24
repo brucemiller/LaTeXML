@@ -62,8 +62,12 @@ sub setTeXImage {
   $self->SUPER::setTeXImage($doc, $node, $path, $width, $height, $depth);
   # Since the width & height attributes can get exposed in the XSLT (CSS)
   # adjust them to match the size actually computed
-  $node->setAttribute(width  => $width . "pt");
-  $node->setAttribute(height => $height . "pt");
+  #  $node->setAttribute(width  => $width . "pt");
+  #  $node->setAttribute(height => $height . "pt");
+  # But, since the inner image (of whatever format) will already get a size,
+  # it's probably safer to just remove those attributes?
+  $node->removeAttribute('width');
+  $node->removeAttribute('height');
   return; }
 
 # Definitions needed for processing inline & display picture images
