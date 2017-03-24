@@ -1022,12 +1022,12 @@ sub IfCondition {
 
 # Used only for regular \newif type conditions
 sub SetCondition {
+  my ($if, $value, $scope) = @_;
   my ($defn, $test);
-  my ($if, $value) = @_;
   # We'll accept any conditional \ifxxx, providing it takes no arguments
   if (($defn = $STATE->lookupDefinition($if)) && (($$defn{conditional_type} || '') eq 'if')
     && !$defn->getParameters) {
-    Let($if, ($value ? T_CS('\iftrue') : T_CS('\iffalse'))) }
+    Let($if, ($value ? T_CS('\iftrue') : T_CS('\iffalse')), $scope) }
   else {
     Error('expected', 'conditional', $STATE->getStomach,
       "Expected a conditional defined by \\newif, got '" . ToString($if) . "'"); }
