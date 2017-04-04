@@ -324,7 +324,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:title" mode="classes">
-    <xsl:apply-imports/>
+    <xsl:apply-templates select="." mode="base-classes"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="concat('ltx_title_',local-name(..))"/>
   </xsl:template>

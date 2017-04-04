@@ -185,7 +185,7 @@
 
   <xsl:template match="ltx:rule" mode="styling">
     <xsl:param name="context"/>
-    <xsl:apply-imports/>
+    <xsl:apply-templates select="." mode="base-styling"/>
     <xsl:choose>
       <xsl:when test="@color">
         <xsl:value-of select="concat('background:',@color,';display:inline-block;')"/>

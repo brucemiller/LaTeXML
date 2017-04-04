@@ -119,7 +119,7 @@
 
   <xsl:template match="ltx:listing" mode="classes">
     <xsl:param name="context"/>
-    <xsl:apply-imports/>
+    <xsl:apply-templates select="." mode="base-classes"/>
     <xsl:text> ltx_listing</xsl:text>
   </xsl:template>
 
@@ -1196,7 +1196,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][@refnum]/descendant::ltx:equat
        so it's the GRANDPARENT's type we want to use here!-->
   <xsl:template match="ltx:tag" mode="classes">
     <xsl:param name="context"/>
-    <xsl:apply-imports/>
+    <xsl:apply-templates select="." mode="base-classes"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="concat('ltx_tag_',local-name(../..))"/>
   </xsl:template>
