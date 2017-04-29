@@ -20,19 +20,19 @@
 
   <!-- Include all LaTeXML to xhtml modules -->
   <!-- Note that you can include these in your own stylesheet using urns like:
-       <xsl:import href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
+       <xsl:include href="urn:x-LaTeXML:XSLT:LaTeXML-common.xsl"/>
   -->
 
-  <xsl:import href="LaTeXML-common.xsl"/>
-  <xsl:import href="LaTeXML-inline-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-block-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-misc-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-meta-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-para-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-math-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-tabular-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-picture-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-structure-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-bib-xhtml.xsl"/>
-  <xsl:import href="LaTeXML-webpage-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-common.xsl"/>
+  <xsl:include href="LaTeXML-inline-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-block-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-misc-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-meta-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-para-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-math-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-tabular-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-picture-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-structure-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-bib-xhtml.xsl"/>
+  <xsl:include href="LaTeXML-webpage-xhtml.xsl"/>
 </xsl:stylesheet>
