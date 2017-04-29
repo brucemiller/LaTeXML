@@ -65,6 +65,7 @@ sub ProcessChain_internal {
         NoteEnd($msg); }
       else {
         push(@newdocs, $doc); } }
+    push(@newdocs, $processor->finalize());
     @docs = @newdocs; }
   NoteEnd("post-processing");
   return @docs; }
@@ -180,6 +181,9 @@ sub process {
   my ($self, $doc, @toprocess) = @_;
   Fatal("misdefined", $self, $doc, "This post-processor is abstract; does not implement ->process");
   return $doc; }
+
+# Hook for singleton processors/wrapp-up operations
+sub finalize { (); }
 
 #======================================================================
 # Some postprocessors will want to create a bunch of "resource"s,
