@@ -809,7 +809,7 @@ sub stylizeContent {
   if ($variant
     && ($plane1 || $plane1hack)
     && ($mapping = ($plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))) {
-    my @c = map { $$mapping{$_} } split(//, $text || '');
+    my @c = map { $$mapping{$_} } split(//, (defined $text ? $text : ''));
     if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
