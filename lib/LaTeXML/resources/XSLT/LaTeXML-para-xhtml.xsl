@@ -180,6 +180,7 @@
     <xsl:text>&#x0A;</xsl:text>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:caption"/>
   <xsl:template match="ltx:caption">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -198,6 +199,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:toccaption"/>
   <xsl:template match="ltx:toccaption"/>
 
 </xsl:stylesheet>

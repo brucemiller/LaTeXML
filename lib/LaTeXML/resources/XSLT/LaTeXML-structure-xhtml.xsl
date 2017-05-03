@@ -146,6 +146,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:keywords"/>
   <xsl:template match="ltx:keywords">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -176,6 +177,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:classification"/>
   <xsl:template match="ltx:classification">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -289,6 +291,7 @@
     </func:result>
   </func:function>
 
+  <xsl:preserve-space elements="ltx:title"/>
   <xsl:template match="ltx:title">
     <xsl:param name="context"/>
     <!-- Skip title, if the parent has a titlepage! -->
@@ -472,6 +475,7 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:personname"/>
   <xsl:template match="ltx:personname">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -504,6 +508,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:contact"/>
   <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -575,6 +580,7 @@
   <xsl:template match="*|/" mode="auto-toc"/>
 
   <!-- only place the date & subtitle within the title treatment -->
+  <xsl:preserve-space elements="ltx:date"/>
   <xsl:template match="ltx:date"/>
 
   <xsl:template match="ltx:date" mode="intitle">
@@ -596,6 +602,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:subtitle"/>
   <xsl:template match="ltx:subtitle"/>
 
   <!-- NOTE: Probably should support font, punct, etc, right? -->
@@ -619,6 +626,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:toctitle"/>
   <xsl:template match="ltx:toctitle"/>
 
   <!-- ======================================================================
@@ -693,6 +701,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:indexrefs"/>
   <xsl:template match="ltx:indexrefs">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -790,5 +799,6 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:glossaryphrase"/>
   <xsl:template match="ltx:glossaryphrase[@role='acronym']"/>
 </xsl:stylesheet>

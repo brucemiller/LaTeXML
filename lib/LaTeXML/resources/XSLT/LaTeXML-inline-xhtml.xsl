@@ -30,6 +30,7 @@
        in inline mode, and so set the inner context to 'inline'.
        See the CONTEXT discussion in LaTeXML-common -->
 
+  <xsl:preserve-space elements="ltx:text"/>
   <xsl:template match="ltx:text">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -72,6 +73,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:emph"/>
   <xsl:template match="ltx:emph">
     <xsl:param name="context"/>
     <xsl:element name="em" namespace="{$html_ns}">
@@ -90,6 +92,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:del"/>
   <xsl:template match="ltx:del">
     <xsl:param name="context"/>
     <xsl:element name="del" namespace="{$html_ns}">
@@ -108,6 +111,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:sub"/>
   <xsl:template match="ltx:sub">
     <xsl:param name="context"/>
     <xsl:element name="sub" namespace="{$html_ns}">
@@ -126,6 +130,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:sup"/>
   <xsl:template match="ltx:sup">
     <xsl:param name="context"/>
     <xsl:element name="sup" namespace="{$html_ns}">
@@ -144,6 +149,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:glossaryref ltx:acronym"/>
   <xsl:template match="ltx:glossaryref[@href] | ltx:acronym[@href]">
     <xsl:param name="context"/>
     <xsl:element name="a" namespace="{$html_ns}">
@@ -211,6 +217,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:ref"/>
   <xsl:template match="ltx:ref">
     <xsl:param name="context"/>
     <xsl:choose>
@@ -271,6 +278,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:anchor"/>
   <xsl:template match="ltx:anchor">
     <xsl:param name="context"/>
     <xsl:element name="a" namespace="{$html_ns}">
@@ -291,6 +299,7 @@
   </xsl:template>
 
   <!-- avoid empty cite's from nocite -->
+  <xsl:preserve-space elements="ltx:cite"/>
   <xsl:template match="ltx:cite"/>
   <xsl:template match="ltx:cite[child::*[not(self::ltx:bibref) or @show!='nothing']]">
     <xsl:param name="context"/>

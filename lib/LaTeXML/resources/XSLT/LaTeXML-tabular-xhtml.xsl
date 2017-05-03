@@ -29,6 +29,7 @@
        See the CONTEXT discussion in LaTeXML-common -->
 
   <xsl:strip-space elements="ltx:tabular ltx:thead ltx:tbody ltx:tfoot ltx:tr"/>
+  <xsl:preserve-space elements="ltx:td"/>
 
   <xsl:template match="ltx:tabular">
     <xsl:param name="context"/>

@@ -31,6 +31,7 @@
   <!-- normally hidden, but should be exposable various ways.
        The role will likely distinguish various modes of footnote, endnote,
        and other annotation -->
+  <xsl:preserve-space elements="ltx:note"/>
   <xsl:template match="ltx:note">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -68,6 +69,7 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:preserve-space elements="ltx:note-mark"/>
   <xsl:template name="note-mark">
     <xsl:element name="sup" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_note_mark</xsl:attribute>
@@ -79,6 +81,7 @@
   </xsl:template>
 
   <!-- Actually, this ought to be annoyingly visible -->
+  <xsl:preserve-space elements="ltx:ERROR"/>
   <xsl:template match="ltx:ERROR">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -101,6 +104,7 @@
   <xsl:template match="ltx:indexmark"/>
 
   <!-- but the phrases it contains may be used in back-ref situations -->
+  <xsl:preserve-space elements="ltx:indexphrase"/>
   <xsl:template match="ltx:indexphrase">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -120,6 +124,7 @@
   </xsl:template>
 
   <!-- Typically will end up with css display:none -->
+  <xsl:preserve-space elements="ltx:rdf"/>
   <xsl:template match="ltx:rdf">
     <xsl:param name="context"/>
     <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">

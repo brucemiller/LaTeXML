@@ -34,6 +34,7 @@
        a valid 'span' element instead.
        See the CONTEXT discussion in LaTeXML-common -->
 
+  <xsl:preserve-space elements="ltx:p"/>
   <xsl:template match="ltx:p">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -137,6 +138,7 @@
   </xsl:template>
 
 
+  <xsl:preserve-space elements="ltx:listingline"/>
   <xsl:template match="ltx:listingline">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
