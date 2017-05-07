@@ -27,7 +27,7 @@ DefMacro('\pgfsysdriver', 'pgfsys-latexml.def');    # and we'll load the .ltxml!
 #   AND all the files it includes!
 #   (we should turn off @)#@# comments while we're at it!)
 InputDefinitions('pgf', type => 'sty', noltxml => 1)
-  || Warn(":missing:pgf.sty Couldn't find pgf.sty");
+  || Warn('missing_file', 'pgf.sty', undef, "Couldn't find pgf.sty");
 
 # This is very probably the wrong way to do this,
 # but it seems that pgfstrokecolor is the color used for default drawing, text, etc.
