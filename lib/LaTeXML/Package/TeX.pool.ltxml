@@ -1150,7 +1150,7 @@ DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
     if ($denom == 0) {
       Error('misdefined', $scale, $stomach, "Illegal \\divide by 0; assuming 1");
       $denom = 1; }
-    $defn->setValue($defn->valueOf(@args)->multiply(1 / $denom), @args); });
+    $defn->setValue($defn->valueOf(@args)->divide($denom), @args); });
 
 # <let assignment> = \futurelet <control sequence><token><token>
 #   | \let<control sequence><equals><one optional space><token>
@@ -1348,9 +1348,16 @@ DefRegister('\dp Number', Dimension(0),
     $stuff->setDepth($value) if $stuff;
     return; });
 
-#DefRegister('\fontdimen Number TeXFileName'=>Dimension(0));
-
-DefRegister('\fontdimen Number Token' => Dimension(0),
+# 2nd arg is <font> = <fontdef token> | \font | <family member>
+#  <family member> = <font range><4bit number>
+#  <font range> = \textfont | \scriptfont | \scriptscriptfont
+DefParameterType('FontToken', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readToken;
+    if ($token->toString =~ /^\\(?:text|script|scriptscript)font$/) {
+      $gullet->readNumber; }
+    $token; });    #?
+DefRegister('\fontdimen Number FontToken' => Dimension(0),
   getter => sub { my $p = ToString($_[0]);
     if    ($p == 2) { Dimension('0.5em'); }    # interword space
     elsif ($p == 5) { Dimension('1ex'); }      # x-height
