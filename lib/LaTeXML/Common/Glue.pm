@@ -38,8 +38,8 @@ our $GLUE_re = qr/(\+?\-?$num_re)($unit_re)($plus_re)?($minus_re)?/;    # [CONST
 
 sub new {
   my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;
-  $sp = ToString($sp) if ref $sp;
-  $plus = ToString($plus) if ref $plus;
+  $sp    = ToString($sp)    if ref $sp;
+  $plus  = ToString($plus)  if ref $plus;
   $pfill = ToString($pfill) if ref $pfill;
   $minus = ToString($minus) if ref $minus;
   $mfill = ToString($mfill) if ref $mfill;
@@ -112,6 +112,18 @@ sub multiply {
   my ($pts, $p, $pf, $m, $mf) = @$self;
   $other = $other->valueOf if ref $other;
   return (ref $self)->new($pts * $other, $p * $other, $pf, $m * $other, $mf); }
+
+sub divide {
+  my ($self, $other) = @_;
+  my ($pts, $p, $pf, $m, $mf) = @$self;
+  $other = $other->valueOf if ref $other;
+  return (ref $self)->new($pts / $other, $p / $other, $pf, $m / $other, $mf); }
+
+sub divideround {
+  my ($self, $other) = @_;
+  my ($pts, $p, $pf, $m, $mf) = @$self;
+  $other = $other->valueOf if ref $other;
+  return (ref $self)->new($pts / $other, $p / $other, $pf, $m / $other, $mf); }
 
 sub stringify {
   my ($self) = @_;

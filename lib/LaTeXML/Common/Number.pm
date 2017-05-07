@@ -109,6 +109,16 @@ sub multiply {
   my ($self, $other) = @_;
   return (ref $self)->new(int($self->valueOf * (ref $other ? $other->valueOf : $other))); }
 
+# Truncating division
+sub divide {
+  my ($self, $other) = @_;
+  return (ref $self)->new(int($self->valueOf / (ref $other ? $other->valueOf : $other))); }
+
+# Rounding division
+sub divideround {
+  my ($self, $other) = @_;
+  return (ref $self)->new(int(0.5 + $self->valueOf / (ref $other ? $other->valueOf : $other))); }
+
 sub stringify {
   my ($self) = @_;
   return "Number[" . $$self[0] . "]"; }
@@ -192,6 +202,14 @@ Return an object representing the difference between C<$object> and C<$other>
 =item C<< $n = $object->multiply($n); >>
 
 Return an object representing the product of C<$object> and C<$n> (a regular number).
+
+=item C<< $n = $object->divide($n); >>
+
+Return an object representing the (truncating) division of C<$object> by C<$n> (a regular number).
+
+=item C<< $n = $object->divideround($n); >>
+
+Return an object representing the (rounding) division of C<$object> by C<$n> (a regular number).
 
 =back
 
