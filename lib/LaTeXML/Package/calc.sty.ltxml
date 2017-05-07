@@ -125,8 +125,7 @@ sub readTerm {
     my $factor2 = readValue($gullet, 'Number');
     $factor = ($op eq '*'
       ? $factor->multiply($factor2)
-        #	    : $term->divide($div)); }
-      : (ref $factor)->new(int($factor->valueOf / $factor2->valueOf))); }    # ????
+      : $factor->divide($factor2)); }
   return $factor; }
 
 sub readValue {
