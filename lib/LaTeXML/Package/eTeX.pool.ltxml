@@ -152,5 +152,65 @@ DefConditional('\unless Token', sub {
       Error('unexpected', $if, "\\unless should not be followed by " . Stringify($if)); } });
 
 #======================================================================
+# \numexpr, \dimexpr, \gluexpr, \muexpr
+# These read tokens doing simple parsing until \relax or the parse fails.
+# since we don't know where it ends, we can't easily use Parse::RecDescent.
+# They also act like a Register!
+# $type is one of Number, Dimension, Glue or MuGlue
+sub etex_readexpr {
+  my ($gullet, $type) = @_;
+  my $value = etex_readexpr_i($gullet, $type, 0);
+  if (my $token = $gullet->readToken) {    # Skip \relax
+    $gullet->unread($token) unless $token->equals(T_CS('\relax')); }
+  return $value; }
+
+sub etex_readexpr_i {
+  my ($gullet, $type, $prec) = @_;
+  $gullet->skipSpaces;
+  # Read a first value
+  my $value;
+  my $token = $gullet->readXToken;
+  if (!$token) {
+    return; }
+  elsif ($token->equals(T_OTHER('('))) {
+    $value = etex_readexpr_i($gullet, $type, 0);
+    my $close = $gullet->readXToken;    # close parenthesis should have terminated recursive call
+    if (!$close || !$close->equals(T_OTHER(')'))) {
+      Error('expected', ')', $gullet,
+        "Missing close parenthesis in $type expr.", "Got " . ToString($close)); } }
+  else {                                # Read core TeX value/register
+    $gullet->unread($token);
+    $value = $gullet->readValue($type); }
+
+  # Now check for a following operator(s) & operand(s) (respecting precedence)
+  $gullet->skipSpaces;
+  while (my $next = $gullet->readXToken) {
+    if ($next->equals(T_CS('\relax'))) {
+      $gullet->unread($next);           # leave the \relax for top-level to strip off.
+      last; }
+    elsif ($next->equals(T_OTHER('+')) && ($prec < 1)) {
+      $value = $value->add(etex_readexpr_i($gullet, $type, 1)); }
+    elsif ($next->equals(T_OTHER('-')) && ($prec < 1)) {
+      $value = $value->subtract(etex_readexpr_i($gullet, $type, 1)); }
+    elsif ($next->equals(T_OTHER('*')) && ($prec < 2)) {    # multiplier should be pure number
+      $value = $value->multiply(etex_readexpr_i($gullet, 'Number', 2)); }
+    elsif ($next->equals(T_OTHER('/')) && ($prec < 2)) {    # denominator should be pure number
+      $value = $value->divideround(etex_readexpr_i($gullet, 'Number', 2)); }
+    else {                                                  # anything else, we're done.
+      $gullet->unread($next);
+      last; } }
+  return $value; }
+
+DefParameterType('NumExpr',  sub { etex_readexpr($_[0], 'Number'); });
+DefParameterType('DimExpr',  sub { etex_readexpr($_[0], 'Dimension'); });
+DefParameterType('GlueExpr', sub { etex_readexpr($_[0], 'Glue'); });
+DefParameterType('MuExpr',   sub { etex_readexpr($_[0], 'MuGlue'); });
+
+DefRegister('\numexpr NumExpr',   Number(0),    getter => sub { $_[0]; });
+DefRegister('\dimexpr DimExpr',   Dimension(0), getter => sub { $_[0]; });
+DefRegister('\glueexpr GlueExpr', Glue(0),      getter => sub { $_[0]; });
+DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
+
+#======================================================================
 1;
 
