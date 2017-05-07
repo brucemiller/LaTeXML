@@ -1,0 +1,97 @@
+\documentclass{article}
+\newcount\mynum
+\newdimen\mydim
+\newskip\myskip
+\newmuskip\mymuskip
+\let\origrelax\relax
+\begin{document}
+% Simple
+\mynum=\numexpr 13/5\relax
+Num=\the\mynum.
+
+\mynum=\numexpr 3*13/5\relax
+Num=\the\mynum.
+
+
+\mynum=\numexpr 3-3*13/5\relax
+Num=\the\mynum.
+
+\mynum=\numexpr 3*13/5-3\relax
+Num=\the\mynum.
+
+\mynum=\numexpr 3 * 13 / 5 - 3 \relax
+Num=\the\mynum.
+
+\mydim=\dimexpr (2pt-5pt)*\numexpr 3-3*13/5\relax + 34pt/2\relax
+Dim=\the\mydim.
+
+\mynum=\numexpr 3-3*13/5\relax
+\mydim=\dimexpr (2pt-5pt)*\mynum + 34pt/2\relax
+Num=\the\mynum;
+Dim=\the\mydim.
+
+\mydim=30pt\relax
+Dim=\the\mydim.
+
+\mydim=40pt\origrelax
+Dim=\the\mydim.
+
+\def\three{3}
+\mynum=\numexpr \three*13/5-3\relax
+Num=\the\mynum.
+
+\mynum=\numexpr 3*1\three/5-\three\relax
+Num=\the\mynum.
+
+\mynum=\numexpr (1+2)*3\relax
+Num=\the\mynum.
+
+\def\myopen{(}
+\def\myclose{)}
+\def\myplus{+}
+\def\mytimes{*}
+\mynum=\numexpr \myopen 1\myplus 2\myclose \mytimes 3\relax
+Num=\the\mynum.
+
+
+\begingroup
+\def\relax{Ha!\origrelax}
+\mydim=50pt\relax
+Dim=\the\mydim.
+\endgroup
+
+
+\mydim=30pt
+\ifdim\dimexpr (2pt-5pt)*\numexpr 3-3*13/5\relax + 34pt/2 < \mydim
+Greater than\else Less than\fi.
+
+\mydim=40pt
+\ifdim\dimexpr (2pt-5pt)*\numexpr 3-3*13/5\relax + 34pt/2 < \mydim
+Greater than\else Less than\fi.
+
+
+
+\myskip=\glueexpr (2pt-5pt)*\numexpr 3-3*13/5\relax + 34pt/2\relax
+Glue=\the\myskip.
+
+\mymuskip=\muexpr (2mu-5mu)*\numexpr 3-3*13/5\relax + 34mu/2\relax
+MuGlue=\the\mymuskip.
+
+\end{document}
+
+% Errors...
+
+\mynum=\numexpr \relax
+Num=\the\mynum
+
+\mynum=\numexpr x\relax
+Num=\the\mynum
+
+\mynum=\numexpr 13*\relax
+Num=\the\mynum
+
+\mynum=\numexpr (1+2\relax
+Num=\the\mynum
+
+{\mynum=\numexpr 13*}
+
