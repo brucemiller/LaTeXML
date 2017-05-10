@@ -57,7 +57,6 @@ sub process {
   return unless $$self{stylesheet};
   # # Set up the Stylesheet parameters; making pathname parameters relative to document
   my %params = %{ $$self{parameters} };
-
   # Deal with any resources embedded within the document
   if (my @resnodes = $doc->findnodes('//ltx:resource[@src]')) {
     if ($$self{noresources}) {
@@ -96,24 +95,23 @@ sub copyResource {
   elsif (my $path = pathname_find($reqsrc, ($ext ? (types => [$ext]) : ()),
       paths => [@searchpaths],
       ($resdir ? (installation_subdir => $resdir) : ()))) {
-    # Make an attempt to preserve the relative path to the requested resource
+    my $dest;
+    my ($dir, $name, $ex) = pathname_split($path);
+    # If a resource directory has been specified,
+    if (my $rd = $$self{resource_directory}) {
+      # Put resources in resource_directory, relative to site_directory
+      $dest = pathname_absolute(pathname_make(dir => $rd, name => $name, type => $ex),
+        $doc->getSiteDirectory); }
+    # Otherise, make an attempt to preserve the relative path to the requested resource
     # Ie. same path from dest doc to copied resource, as from original doc to source resource.
     # Get the path relative to user's source, and simulate that path in the destination
-    my $relpath = pathname_relative($reqsrc, $doc->getSourceDirectory);
-    if (my $rd = $$self{resource_directory}) {
-      $relpath = pathname_concat($rd, $relpath); }
-    my $dest = pathname_absolute($relpath, $doc->getSiteDirectory);
-    # Now IFF that is a valid relative path WITHIN the site directory, we'll use it.
-    # Otherwise, we'll place it in a resource directory, or at toplevel in the destination.
-    if (!pathname_is_contained($dest, $doc->getSiteDirectory)) {
-      # $resourcedir can be relative (interpreted relative to destination doc)
-      # or absolute, HOPEFULLY, within the site directory
-      my ($dir, $name, $ex) = pathname_split($dest);
-      $relpath = pathname_make(dir => $$self{resource_directory} || '', name => $name, type => $ex);
-      $relpath = pathname_relative($relpath, $doc->getSourceDirectory)
-        if pathname_is_absolute($relpath);
-      $dest = pathname_absolute($relpath, $doc->getSiteDirectory); }
-
+    else {
+      my $relpath = pathname_relative($reqsrc, $doc->getSourceDirectory);
+      $dest = pathname_absolute($relpath, $doc->getSiteDirectory);
+      # Now IFF that is a valid relative path WITHIN the site directory, we'll use it.
+      # Otherwise, we'll place at toplevel in the destination.
+      if (!pathname_is_contained($dest, $doc->getSiteDirectory)) {
+        $dest = pathname_make(dir => $doc->getSiteDirectory, name => $name, type => $ex); } }
     # Now, copy (unless in same place! happens a lot during testing!!!!)
     pathname_copy($path, $dest) unless $path eq $dest;
     # and return the relative path from the dest doc to the resource
