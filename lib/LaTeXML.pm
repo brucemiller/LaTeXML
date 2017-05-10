@@ -478,50 +478,13 @@ sub convert_post {
       require LaTeXML::Post::XSLT;
       my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
       my @searchpaths = ('.', $DOCUMENT->getSearchPaths);
+      # store these for the XSLT; XSLT Processor will copy resources where needed.
       foreach my $css (@{ $$opts{css} }) {
-        if (pathname_is_url($css)) {    # external url ? no need to copy
-          print STDERR "Using CSS=$css\n" if $verbosity > 0;
-          push(@{ $$parameters{CSS} }, $css); }
-        elsif (my $csssource = pathname_find($css, types => ['css'], paths => [@searchpaths],
-            installation_subdir => 'style')) {
-          print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
-          my $cssdest = pathname_absolute($css, pathname_directory($$opts{destination}));
-          $cssdest .= '.css' unless $cssdest =~ /\.css$/;
-          warn "CSS source $csssource is same as destination!" if $csssource eq $cssdest;
-          pathname_copy($csssource, $cssdest) if ($$opts{local} || ($$opts{whatsout} =~ /^archive/)); # TODO: Look into local copying carefully
-          push(@{ $$parameters{CSS} }, $cssdest); }
-        else {
-          warn "Couldn't find CSS file $css in paths " . join(',', @searchpaths) . "\n";
-          push(@{ $$parameters{CSS} }, $css); } }    # but still put the link in!
-
+        push(@{ $$parameters{CSS} }, $css); }
       foreach my $js (@{ $$opts{javascript} }) {
-        if (pathname_is_url($js)) {                  # external url ? no need to copy
-          print STDERR "Using JAVASCRIPT=$js\n" if $verbosity > 0;
-          push(@{ $$parameters{JAVASCRIPT} }, $js); }
-        elsif (my $jssource = pathname_find($js, types => ['js'], paths => [@searchpaths],
-            installation_subdir => 'style')) {
-          print STDERR "Using JAVASCRIPT=$jssource\n" if $verbosity > 0;
-          my $jsdest = pathname_absolute($js, pathname_directory($$opts{destination}));
-          $jsdest .= '.js' unless $jsdest =~ /\.js$/;
-          warn "Javascript source $jssource is same as destination!" if $jssource eq $jsdest;
-          pathname_copy($jssource, $jsdest) if ($$opts{local} || ($$opts{whatsout} =~ /^archive/)); #TODO: Local handling
-          push(@{ $$parameters{JAVASCRIPT} }, $jsdest); }
-        else {
-          warn "Couldn't find Javascript file $js in paths " . join(',', @searchpaths) . "\n";
-          push(@{ $$parameters{JAVASCRIPT} }, $js);
-        }
-      }    # but still put the link in!
+        push(@{ $$parameters{JAVASCRIPT} }, $js); }
       if ($$opts{icon}) {
-        if (my $iconsrc = pathname_find($$opts{icon}, paths => [$DOCUMENT->getSearchPaths])) {
-          print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
-          my $icondest = pathname_absolute($$opts{icon}, pathname_directory($$opts{destination}));
-          pathname_copy($iconsrc, $icondest) if ($$opts{local} || ($$opts{whatsout} =~ /^archive/));
-          $$parameters{ICON} = $icondest; }
-        else {
-          warn "Couldn't find ICON " . $$opts{icon} . " in paths " . join(',', @searchpaths) . "\n";
-          $$parameters{ICON} = $$opts{icon};
-        }
-      }
+        $$parameters{ICON} = $$opts{icon}; }
       if (!defined $$opts{timestamp}) { $$opts{timestamp}       = localtime(); }
       if ($$opts{timestamp})          { $$parameters{TIMESTAMP} = "'" . $$opts{timestamp} . "'"; }
       # Now add in the explicitly given XSLT parameters
@@ -556,7 +519,7 @@ sub convert_post {
   my @postdocs;
   my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
   my $post_eval_return = eval {
-   local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
+    local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
     alarm($$opts{timeout});
     @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
     alarm(0);
@@ -569,7 +532,7 @@ sub convert_post {
     $$runtime{status_code} = 3;
     $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
     print STDERR $@;
-    undef @postdocs; # Empty document for fatals, for sanity's sake
+    undef @postdocs;    # Empty document for fatals, for sanity's sake
   }
 
   # Finalize by arranging any manifests and packaging the output.
@@ -603,7 +566,7 @@ sub convert_post {
   # Merge postprocessing and main processing reports
   ### HACKY until we use a single Core::State object, we'll just "wing it" for status messages:
   my $post_status = $latexmlpost->getStatusMessage;
-  if ($post_status ne $$runtime{status}) { # Just so that we avoid double "No problem" reporting
+  if ($post_status ne $$runtime{status}) {    # Just so that we avoid double "No problem" reporting
     $$runtime{status} .= "\n" . $post_status;
   }
   $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);

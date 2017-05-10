@@ -395,45 +395,13 @@ if (!$prescan) {
     my @searchpaths = ('.',
       (grep { -d $_ } reverse(@paths)),
       $DOCUMENT->getSearchPaths);
+    # store these for the XSLT; XSLT Processor will copy resources where needed.
     foreach my $css (@css) {
-      if (pathname_is_url($css)) {    # external url ? no need to copy
-        print STDERR "Using CSS=$css\n" if $verbosity > 0;
-        push(@{ $$parameters{CSS} }, $css); }
-      elsif (my $csssource = pathname_find($css, types => ['css'], paths => [@searchpaths],
-          installation_subdir => 'resources/CSS')) {
-        print STDERR "Using CSS=$csssource\n" if $verbosity > 0;
-        my $cssdest = pathname_absolute($css, pathname_directory($destination));
-        $cssdest .= '.css' unless $cssdest =~ /\.css$/;
-        warn "CSS source $csssource is same as destination!" if $csssource eq $cssdest;
-        pathname_copy($csssource, $cssdest);
-        push(@{ $$parameters{CSS} }, $cssdest); }
-      else {
-        warn "Couldn't find CSS file $css in paths " . join(',', @searchpaths) . "\n";
-        push(@{ $$parameters{CSS} }, $css); } }    # but still put the link in!
+      push(@{ $$parameters{CSS} }, $css); }
     foreach my $js (@javascript) {
-      if (pathname_is_url($js)) {                  # external url ? no need to copy
-        print STDERR "Using JAVASCRIPT=$js\n" if $verbosity > 0;
-        push(@{ $$parameters{JAVASCRIPT} }, $js); }
-      elsif (my $jssource = pathname_find($js, types => ['js'], paths => [@searchpaths],
-          installation_subdir => 'resources/javascript')) {
-        print STDERR "Using JAVASCRIPT=$jssource\n" if $verbosity > 0;
-        my $jsdest = pathname_absolute($js, pathname_directory($destination));
-        $jsdest .= '.js' unless $jsdest =~ /\.js$/;
-        warn "Javascript source $jssource is same as destination!" if $jssource eq $jsdest;
-        pathname_copy($jssource, $jsdest);
-        push(@{ $$parameters{JAVASCRIPT} }, $jsdest); }
-      else {
-        warn "Couldn't find Javascript file $js in paths " . join(',', @searchpaths) . "\n";
-        push(@{ $$parameters{JAVASCRIPT} }, $js); } }    # but still put the link in!
+      push(@{ $$parameters{JAVASCRIPT} }, $js); }
     if ($icon) {
-      if (my $iconsrc = pathname_find($icon, paths => [$DOCUMENT->getSearchPaths])) {
-        print STDERR "Using icon=$iconsrc\n" if $verbosity > 0;
-        my $icondest = pathname_absolute($icon, pathname_directory($destination));
-        pathname_copy($iconsrc, $icondest);
-        $$parameters{ICON} = $icondest; }
-      else {
-        warn "Couldn't find ICON $icon in paths " . join(',', @searchpaths) . "\n";
-        $$parameters{ICON} = $icon; } }
+      $$parameters{ICON} = $icon; }
     if (!defined $timestamp) {
       $timestamp = localtime(); }
     if ($timestamp) {
