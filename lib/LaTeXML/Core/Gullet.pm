@@ -188,7 +188,7 @@ sub neutralizeTokens {
   my ($self, @tokens) = @_;
   my @result = ();
   foreach my $token (@tokens) {
-    if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
+    if ($token->getCatcode == CC_PARAM) {
       push(@result, $token); }
     elsif (defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
       push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
@@ -213,13 +213,13 @@ sub readToken {
   my $token;
   my $cc;
   # Check in pushback first....
-  while (($token = shift(@{ $$self{pushback} })) && $hold_token[$cc = $$token[1]]) {
+  while (($token = shift(@{ $$self{pushback} })) && $hold_token[$cc = $token->getCatcode]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token if defined $token;
-  while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
+  while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $token->getCatcode]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
@@ -253,9 +253,9 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (($cc = $$token[1]) == CC_NOTEXPANDED) {    # NOTE: Inlined ->getCatcode
-          # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
-          # so this token should never leak out through an EXTERNAL call to readToken.
+    elsif (($cc = $token->getCatcode) == CC_NOTEXPANDED) {
+      # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
+      # so this token should never leak out through an EXTERNAL call to readToken.
       return $self->readToken; }    # Just return the next token.
     elsif ($cc == CC_COMMENT) {
       return $token if $commentsok;
@@ -305,19 +305,19 @@ sub readNonSpace {
   my ($self) = @_;
   my $token;
   do { $token = $self->readToken();
-  } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
+  } while (defined $token && $token->getCatcode == CC_SPACE);    # Inline ->getCatcode!
   return $token; }
 
 sub skipSpaces {
   my ($self) = @_;
   my $tok = $self->readNonSpace;
-  unshift(@{ $$self{pushback} }, $tok) if defined $tok;    # Unread
+  unshift(@{ $$self{pushback} }, $tok) if defined $tok;          # Unread
   return; }
 
 sub skip1Space {
   my ($self) = @_;
   my $token = $self->readToken();
-  unshift(@{ $$self{pushback} }, $token) if $token && ($$token[1] != CC_SPACE); # Inline ->getCatcode, unread
+  unshift(@{ $$self{pushback} }, $token) if $token && ($token->getCatcode != CC_SPACE);
   return; }
 
 # <filler> = <optional spaces> | <filler>\relax<optional spaces>
@@ -328,7 +328,7 @@ sub skipFiller {
     return unless defined $tok;
     # Should \foo work too (where \let\foo\relax) ??
     if ($tok->getString ne '\relax') {
-      unshift(@{ $$self{pushback} }, $tok);                                     # Unread
+      unshift(@{ $$self{pushback} }, $tok);    # Unread
       return; }
   }
   return; }
@@ -349,7 +349,7 @@ sub readBalanced {
   my ($token, $level) = (undef, 1);
   # Inlined readToken (we'll keep comments in the result)
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
-    my $cc = $$token[1];
+    my $cc = $token->getCatcode;
     if (!$balanced_interesting_cc[$cc]) {
       push(@tokens, $token); }
     elsif ($cc == CC_END) {
@@ -380,8 +380,8 @@ sub readMatch {
     while (@tomatch && defined($token = $self->readToken)
       && push(@matched, $token) && ($token->equals($tomatch[0]))) {
       shift(@tomatch);
-      if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
-        while (defined($token = $self->readToken) && ($$token[1] == CC_SPACE)) {
+      if ($token->getCatcode == CC_SPACE) {    # If this was space, SKIP any following!!!
+        while (defined($token = $self->readToken) && ($token->getCatcode == CC_SPACE)) {
           push(@matched, $token); }
         unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
     }
@@ -419,11 +419,11 @@ sub readUntil {
     return unless defined $token;
     push(@tokens, $token);
     $n++;
-    if ($$token[1] == CC_BEGIN) {      # And if it's a BEGIN, copy till balanced END
+    if ($token->getCatcode == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
       push(@tokens, $self->readBalanced->unlist, T_END); } }
   # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
   # so that delimited arguments behave more similarly to simple, undelimited arguments.
-  if (($n == 1) && ($tokens[0][1] == CC_BEGIN)) {
+  if (($n == 1) && ($tokens[0]->getCatcode == CC_BEGIN)) {
     shift(@tokens); pop(@tokens); }
   return (wantarray ? (Tokens(@tokens), $found) : Tokens(@tokens)); }
 
@@ -432,7 +432,7 @@ sub readUntilBrace {
   my @tokens = ();
   my $token;
   while (defined($token = $self->readToken())) {
-    if ($$token[1] == CC_BEGIN) {    # INLINE Catcode
+    if ($token->getCatcode == CC_BEGIN) {    # INLINE Catcode
       unshift(@{ $$self{pushback} }, $token);    # Unread
       last; }
     push(@tokens, $token); }
@@ -459,7 +459,7 @@ sub readArg {
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
-  elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
+  elsif ($token->getCatcode == CC_BEGIN) {
     return $self->readBalanced; }
   else {
     return Tokens($token); } }
@@ -513,7 +513,7 @@ sub readTokensValue {
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
-  elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
+  elsif ($token->getCatcode == CC_BEGIN) {
     return $self->readBalanced; }
   elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
     if ($defn->isRegister eq 'Tokens') {
@@ -523,7 +523,7 @@ sub readTokensValue {
         $self->unread(@{$x}); }
       return $self->readTokensValue; }
     else {
-      return $token; } }                       # ?
+      return $token; } }    # ?
   else {
     return $token; } }
 
@@ -547,7 +547,7 @@ sub readDigits {
   my ($token, $digit);
   while (($token = $self->readXToken(0)) && (($digit = $token->getString) =~ /^[$range]$/)) {
     $string .= $digit; }
-  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && $$token[1] == CC_SPACE); # Inline ->getCatcode, unread
+  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && $token->getCatcode == CC_SPACE);
   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>
@@ -561,10 +561,10 @@ sub readFactor {
     $string .= '.' . $self->readDigits('0-9');
     $token = $self->readXToken(0); }
   if (length($string) > 0) {
-    unshift(@{ $$self{pushback} }, $token) if $token && $$token[1] != CC_SPACE; # Inline ->getCatcode, unread
+    unshift(@{ $$self{pushback} }, $token) if $token && $token->getCatcode != CC_SPACE;
     return $string; }
   else {
-    unshift(@{ $$self{pushback} }, $token);                                     # Unread
+    unshift(@{ $$self{pushback} }, $token);    # Unread
     my $n = $self->readNormalInteger;
     return (defined $n ? $n->valueOf : undef); } }
 
@@ -598,13 +598,13 @@ sub readNormalInteger {
   my $token = $self->readXToken(0);
   if (!defined $token) {
     return; }
-  elsif (($$token[1] == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) {    # Read decimal literal
+  elsif (($token->getCatcode == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) { # Read decimal literal
     return Number(int($token->getString . $self->readDigits('0-9', 1))); }
-  elsif ($token->equals(T_OTHER("\'"))) {                                   # Read Octal literal
+  elsif ($token->equals(T_OTHER("\'"))) {                                        # Read Octal literal
     return Number(oct($self->readDigits('0-7', 1))); }
-  elsif ($token->equals(T_OTHER("\""))) {                                   # Read Hex literal
+  elsif ($token->equals(T_OTHER("\""))) {                                        # Read Hex literal
     return Number(hex($self->readDigits('0-9A-F', 1))); }
-  elsif ($token->equals(T_OTHER("\`"))) {                                   # Read Charcode
+  elsif ($token->equals(T_OTHER("\`"))) {                                        # Read Charcode
     my $next = $self->readToken;
     my $s = ($next && $next->getString) || '';
     $s =~ s/^\\//;
@@ -631,10 +631,10 @@ sub readFloat {
     $token = $self->readXToken(0); }
   my $n;
   if (length($string) > 0) {
-    unshift(@{ $$self{pushback} }, $token) if $token && $$token[1] != CC_SPACE; # Inline ->getCatcode, unread
+    unshift(@{ $$self{pushback} }, $token) if $token && $token->getCatcode != CC_SPACE;
     $n = $string; }
   else {
-    unshift(@{ $$self{pushback} }, $token) if $token;                           # Unread
+    unshift(@{ $$self{pushback} }, $token) if $token;    # Unread
     $n = $self->readNormalInteger;
     $n = $n->valueOf if defined $n; }
   return (defined $n ? Float($s * $n) : undef); }

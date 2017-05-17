@@ -62,7 +62,7 @@ sub revert {
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
   my ($self) = @_;
-  return join('', map { $$_[0] } @$self); }
+  return join('', map { $_->getString } @$self); }
 
 # Methods for overloaded ops.
 sub equals {
@@ -90,7 +90,7 @@ sub isBalanced {
   my ($self) = @_;
   my $level = 0;
   foreach my $t (@$self) {
-    my $cc = $$t[1];    # INLINE
+    my $cc = $t->getCatcode;
     $level++ if $cc == CC_BEGIN;
     $level-- if $cc == CC_END; }
   return $level == 0; }
@@ -103,10 +103,10 @@ sub substituteParameters {
   my @result = ();
   while (@in) {
     my $token;
-    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+    if (($token = shift(@in))->getCatcode != CC_PARAM) {
       push(@result, $token); }
-    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
+    elsif (($token = shift(@in))->getCatcode != CC_PARAM) {    # Not multiple '#'; read arg.
+      if (my $arg = $args[ord($token->getString) - ord('0') - 1]) {
         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
     else {    # Duplicated '#', copy 2nd '#'
       push(@result, $token); } }

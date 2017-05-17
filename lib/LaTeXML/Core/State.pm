@@ -330,8 +330,8 @@ sub lookupMeaning {
   my ($self, $token) = @_;
   my $e;
   if (my $cs = $token
-    && $active_or_cs[$$token[1]]
-    && $$token[0]) {
+    && $active_or_cs[$token->getCatcode]
+    && $token->getString) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
 
@@ -362,10 +362,10 @@ sub lookupDefinition {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $$token[1];
+  my $cc = $token->getCatcode;
   my $lookupname =
     ($active_or_cs[$cc]
-    ? $$token[0]
+    ? $token->getString
     : $executable_primitive_name[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
@@ -382,10 +382,10 @@ sub lookupConditional {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $$token[1];
+  my $cc = $token->getCatcode;
   my $lookupname =
     ($active_or_cs[$cc]
-    ? $$token[0]
+    ? $token->getString
     : $executable_primitive_name[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
@@ -402,10 +402,10 @@ sub lookupExpandable {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $$token[1];
+  my $cc = $token->getCatcode;
   my $lookupname =
     ($active_or_cs[$cc]
-    ? $$token[0]
+    ? $token->getString
     : $executable_primitive_name[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
@@ -428,8 +428,8 @@ sub lookupDigestableDefinition {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc   = $$token[1];
-  my $name = $$token[0];
+  my $cc   = $token->getCatcode;
+  my $name = $token->getString;
   my $lookupname =
     (($active_or_cs[$cc]
         || ($letter_or_other[$cc] && $self->lookupValue('IN_MATH')
@@ -440,7 +440,7 @@ sub lookupDigestableDefinition {
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
-      && ($lookupname = $executable_primitive_name[$$defn[1]])
+      && ($lookupname = $executable_primitive_name[$defn->getCatcode])
       && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
@@ -453,7 +453,7 @@ sub installDefinition {
   # Ignore attempts to (re)define $cs from tex sources
   #  my $cs = $definition->getCS->getCSName;
   my $token = $definition->getCS;
-  my $cs = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
+  my $cs = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$token->getCatcode] || $token->getString);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     if (my $s = $self->getStomach->getGullet->getSource) {
       # report if the redefinition seems to come from document source

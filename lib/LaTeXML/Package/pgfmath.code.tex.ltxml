@@ -81,14 +81,14 @@ DefParameterType('pgfNumber', sub {
     #    my $token    = $gullet->readXToken(0);
     my $token;
     do { $token = $gullet->readXToken(0);
-    } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
+    } while (defined $token && $token->getCatcode == CC_SPACE);
 
     if ($token->getCatcode == CC_BEGIN) {
       my @tokens = ();
       my $result = '';
       my $level  = 1;
       while ($token = $gullet->readXToken(0)) {
-        my $cc = $$token[1];
+        my $cc = $token->getCatcode;
         if ($cc == CC_END) {
           $level--;
           last unless $level; }
@@ -97,7 +97,7 @@ DefParameterType('pgfNumber', sub {
         #        push(@tokens, $token); }
         #      return Tokens(@tokens); }
         #        $result .= $token->getString; }
-        $result .= $$token[0]; }
+        $result .= $token->getString; }
       return $result; }
     else {
 ##      return Tokens($token); } });
@@ -108,19 +108,19 @@ DefParameterType('pgfNumbers', sub {
     my ($gullet) = @_;
     my $token;
     do { $token = $gullet->readXToken(0);
-    } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
+    } while (defined $token && $token->getCatcode == CC_SPACE);
 
     if ($token->getCatcode == CC_BEGIN) {
       my @results = ();
       my $result  = '';
       my $level   = 1;
       while ($token = $gullet->readXToken(0)) {
-        my $cc   = $$token[1];
-        my $char = $$token[0];
+        my $cc   = $token->getCatcoe;
+        my $char = $token->getString;
         if ($cc == CC_END) {
           $level--;
           last unless $level;
-          if ($level == 1) {                               # Next number
+          if ($level == 1) {    # Next number
             push(@results, $result); $result = ''; $char = ''; } }
         elsif ($cc == CC_BEGIN) {
           if ($level == 1) { $char = ''; }

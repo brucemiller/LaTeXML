@@ -235,7 +235,7 @@ DefParameterType('Expanded', sub {
       my $level = 1;
       while ($token = $gullet->readXToken(0)) {
         push(@tokens, $token);
-        my $cc = $$token[1];
+        my $cc = $token->getCatcode;
         if ($cc == CC_END) {
           $level--;
           last unless $level; }
