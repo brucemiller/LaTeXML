@@ -95,6 +95,23 @@ sub isBalanced {
     $level-- if $cc == CC_END; }
   return $level == 0; }
 
+# NOTE: Assumes each arg either undef or also Tokens
+# Using inline accessors on those assumptions
+sub substituteParameters {
+  my ($self, @args) = @_;
+  my @in     = @{$self};    # ->unlist
+  my @result = ();
+  while (@in) {
+    my $token;
+    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+      push(@result, $token); }
+    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
+      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
+        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
+    else {    # Duplicated '#', copy 2nd '#'
+      push(@result, $token); } }
+  return LaTeXML::Core::Tokens->new(@result); }
+
 #======================================================================
 
 1;
