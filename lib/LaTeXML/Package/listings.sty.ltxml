@@ -77,7 +77,7 @@ sub lstProcessInline {
 
 DefConstructor('\@listings@inline {}',
   "<ltx:text class='ltx_lstlisting' _noautoclose='1'>#1</ltx:text>",
-  reversion => '\lstinline#{1}');
+  reversion => '\lstinline{#1}');
 
 # Not a regular environment, since we're going to read the body verbatim!
 DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
@@ -107,9 +107,9 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
-        PushValue(LISTINGS_POSTAMBLE => LaTeXML::Core::Definition::Expandable::substituteTokens($end, @args));
+        PushValue(LISTINGS_POSTAMBLE => $end->substituteParameters(@args));
         # This will typically have \lstset, equivalent of lstActivate
-        Digest(Tokens(LaTeXML::Core::Definition::Expandable::substituteTokens($start, @args)));
+        Digest($start->substituteParameters(@args));
         my $text = listingsReadRawLines($gullet, $name);
         return lstProcessDisplay(lstGetTokens('name'), $text); });
 });
