@@ -4509,8 +4509,8 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
     # use \egroup for $next, if we've fallen off end?
-    (LaTeXML::Core::Definition::Expandable::substituteTokens(
-        XEquals($token, (defined $next ? $next : T_END)) ? $if : $else),
+    ((XEquals($token, (defined $next ? $next : T_END)) ? $if : $else)
+      ->substituteParameters()->unlist,
       (defined $next ? ($next) : ())); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
 Let('\@ifnext',           '\@ifnextchar');    # ????
@@ -4520,9 +4520,9 @@ DefMacro('\@ifstar {}{}', sub {
     my $next = $gullet->readNonSpace;
     # NOTE: Not actually substituting, but collapsing ## pairs!!!!
     if (T_OTHER('*')->equals($next)) {
-      LaTeXML::Core::Definition::Expandable::substituteTokens($if); }
+      $if->substituteParameters()->unlist; }
     else {
-      (LaTeXML::Core::Definition::Expandable::substituteTokens($else), $next); } });
+      ($else->substituteParameters()->unlist, $next); } });
 
 DefMacro('\@dblarg {}',    '\kernel@ifnextchar[{#1}{\@xdblarg{#1}}');
 DefMacro('\@xdblarg {}{}', '#1[{#2}]{#2}');

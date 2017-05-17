@@ -144,7 +144,7 @@ sub revert {
       @tokens = &$spec($self, $self->getArgs); }
     else {
       if (defined $spec) {
-        @tokens = LaTeXML::Core::Definition::Expandable::substituteTokens($spec, map { Tokens(Revert($_)) } $self->getArgs)
+        @tokens = $spec->substituteParameters(map { Tokens(Revert($_)) } $self->getArgs)->unlist
           if $spec ne ''; }
       else {
         my $alias = ($LaTeXML::REVERT_RAW ? undef : $defn->getAlias);
