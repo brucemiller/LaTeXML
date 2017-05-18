@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../lib";
+use lib "$FindBin::RealBin/../arch";
 use File::Spec;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;

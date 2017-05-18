@@ -9,6 +9,7 @@ use FindBin;
 use File::Copy;
 use File::Which;
 use File::Spec::Functions;
+use LaTeXML;
 use LaTeXML::Post;
 use LaTeXML::Post::MathML::Presentation;
 use LaTeXML::Post::XMath;
