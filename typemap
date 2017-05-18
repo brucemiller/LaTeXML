@@ -1,0 +1,59 @@
+     ####TYPEMAP: <<EndOfTypemap
+
+TYPEMAP
+   ###LaTeXML_Core_Token  T_PTROBJ_SPECIAL
+LaTeXML_Core_Token  T_PTROBJ_Token
+   ###LaTeXML_Core_Tokens T_SV
+LaTeXML_Core_Tokens T_PTROBJ_Tokens
+UTF8                T_UTF8
+
+INPUT
+T_PTROBJ_SPECIAL
+  if(sv_derived_from($arg, \"${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")){
+    IV tmp = SvIV((SV*)SvRV($arg));
+    $var = INT2PTR($type, tmp);
+   }
+  else
+    croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
+
+T_PTROBJ_Token
+  if(sv_isa($arg, \"LaTeXML::Core::Token\")){
+    IV tmp = SvIV((SV*)SvRV($arg));
+    $var = INT2PTR($type, tmp);
+   }
+  else
+    croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
+
+T_PTROBJ_Tokens
+  if(sv_isa($arg, \"LaTeXML::Core::Tokens\")){
+    $var = (AV *)SvRV($arg);
+   }
+  else
+    croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
+
+T_UTF8
+   if(!SvUTF8($arg)){
+      $arg = sv_mortalcopy($arg);
+      sv_utf8_upgrade($arg); }
+   $var = ($type)SvPV_nolen($arg);
+
+OUTPUT
+T_PTROBJ_SPECIAL
+      sv_setref_pv($arg, \"${(my $ntt=$ntype)=~s/_/::/g;\$ntt}\", (void*)$var);
+    
+T_PTROBJ_Token
+      sv_setref_pv($arg, \"LaTeXML::Core::Token\", (void*)$var);
+
+T_PTROBJ_Tokens
+      # setref_pv($arg, \"LaTeXML::Core::Tokens\", (AV*)$var);
+      # $arg = newSVrv(newRV_inc((SV*)$var), \"LaTeXML::Core::Tokens\");
+      # $arg = newRV((SV*)$var);
+      # $arg = sv_bless((SV*)$var, gv_stashpv(\"LaTeXML::Core::Tokens\",0));
+      # $arg = sv_bless(newRV_noinc((SV*)$var), gv_stashpv(\"LaTeXML::Core::Tokens\",0));
+      $arg = sv_bless(newRV_inc((SV*)$var), gv_stashpv(\"LaTeXML::Core::Tokens\",0));
+
+T_UTF8
+  sv_setpv((SV*)$arg, $var);
+  SvUTF8_on($arg);
+  
+    ###EndOfTypemap
