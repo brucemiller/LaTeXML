@@ -26,22 +26,22 @@ our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
 # Token List constructors.
 
 # Return a LaTeXML::Core::Tokens made from the arguments (tokens)
-sub Tokens {
+sub XXXTokens {
   my (@tokens) = @_;
-  return LaTeXML::Core::Tokens->new(@tokens); }
-
-#======================================================================
-
-# Form a Tokens list of Token's
-# Flatten the arguments Token's and Tokens's into plain Token's
-# .... Efficiently! since this seems to be called MANY times.
-sub new {
-  my ($class, @tokens) = @_;
   my $r;
-  return bless [map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-        : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+   return bless [map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+         : ($r eq 'LaTeXML::Core::Tokens' ? @$_
           : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
-      @tokens], $class; }
+      @tokens], 'LaTeXML::Core::Tokens'; }
+
+sub ZZTokens {
+  my (@tokens) = @_;
+  print STDERR "Creating tokens from: ".join(',',@tokens)." = ".join(',',map { Stringify($_) } @tokens)."\n";
+  my $t = XXTokens(@tokens);
+  print STDERR "GOT $t\n";
+  print STDERR " ==> ".Stringify($t)."\n";
+  return $t; }
+#======================================================================
 
 # Return a list of the tokens making up this Tokens
 sub unlist {
@@ -49,9 +49,10 @@ sub unlist {
   return @$self; }
 
 # Return a shallow copy of the Tokens
-sub clone {
-  my ($self) = @_;
-  return bless [@$self], ref $self; }
+# sub clone {
+#   my ($self) = @_;
+# #  return bless [@$self], ref $self; }
+#   return Tokens(@$self); }
 
 # Return a string containing the TeX form of the Tokens
 sub revert {
@@ -76,6 +77,11 @@ sub equals {
 
 sub stringify {
   my ($self) = @_;
+#  print STDERR "STRINGIFYING $self\n";
+#  my @items = @$self;
+  my @items = $self->unlist;
+#  print STDERR " ==> ".join(',',map { $_->stringify } @items)."\n";
+#  print STDERR " ==> ".join(',', @items)."\n";
   return "Tokens[" . join(',', map { $_->toString } @$self) . "]"; }
 
 sub beDigested {
@@ -86,31 +92,31 @@ sub neutralize {
   my ($self, @extraspecials) = @_;
   return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
 
-sub isBalanced {
-  my ($self) = @_;
-  my $level = 0;
-  foreach my $t (@$self) {
-    my $cc = $t->getCatcode;
-    $level++ if $cc == CC_BEGIN;
-    $level-- if $cc == CC_END; }
-  return $level == 0; }
+# sub isBalanced {
+#   my ($self) = @_;
+#   my $level = 0;
+#   foreach my $t (@$self) {
+#     my $cc = $t->getCatcode;
+#     $level++ if $cc == CC_BEGIN;
+#     $level-- if $cc == CC_END; }
+#   return $level == 0; }
 
 # NOTE: Assumes each arg either undef or also Tokens
 # Using inline accessors on those assumptions
-sub substituteParameters {
-  my ($self, @args) = @_;
-  my @in     = @{$self};    # ->unlist
-  my @result = ();
-  while (@in) {
-    my $token;
-    if (($token = shift(@in))->getCatcode != CC_PARAM) {
-      push(@result, $token); }
-    elsif (($token = shift(@in))->getCatcode != CC_PARAM) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($token->getString) - ord('0') - 1]) {
-        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
-    else {    # Duplicated '#', copy 2nd '#'
-      push(@result, $token); } }
-  return LaTeXML::Core::Tokens->new(@result); }
+# sub substituteParameters {
+#   my ($self, @args) = @_;
+#   my @in     = @{$self};    # ->unlist
+#   my @result = ();
+#   while (@in) {
+#     my $token;
+#     if (($token = shift(@in))->getCatcode != CC_PARAM) {    # Non '#'; copy it
+#       push(@result, $token); }
+#     elsif (($token = shift(@in))->getCatcode != CC_PARAM) {    # Not multiple '#'; read arg.
+#       if (my $arg = $args[ord($token->getString) - ord('0') - 1]) {
+#         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
+#     else {    # Duplicated '#', copy 2nd '#'
+#       push(@result, $token); } }
+#   return Tokens(@result); }
 
 #======================================================================
 

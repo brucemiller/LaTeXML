@@ -65,26 +65,22 @@ use constant CC_MARKER      => 18;    # non TeX extension!
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
 # These are immutable
-use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Core::Token';
-use constant T_END   => bless ['}',  2],  'LaTeXML::Core::Token';
-use constant T_MATH  => bless ['$',  3],  'LaTeXML::Core::Token';
-use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Core::Token';
-use constant T_PARAM => bless ['#',  6],  'LaTeXML::Core::Token';
-use constant T_SUPER => bless ['^',  7],  'LaTeXML::Core::Token';
-use constant T_SUB   => bless ['_',  8],  'LaTeXML::Core::Token';
-use constant T_SPACE => bless [' ',  10], 'LaTeXML::Core::Token';
-use constant T_CR    => bless ["\n", 10], 'LaTeXML::Core::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Core::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Core::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
-sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
+use constant T_BEGIN => Token('{',  1);
+use constant T_END   => Token('}',  2);
+use constant T_MATH  => Token('$',  3);
+use constant T_ALIGN => Token('&',  4);
+use constant T_PARAM => Token('#',  6);
+use constant T_SUPER => Token('^',  7);
+use constant T_SUB   => Token('_',  8);
+use constant T_SPACE => Token(' ',  10);
+use constant T_CR    => Token("\n", 10);
+##sub T_LETTER { my ($c) = @_; return Token($c, 11); }
+##sub T_OTHER  { my ($c) = @_; return Token($c, 12); }
+##sub T_ACTIVE { my ($c) = @_; return Token($c, 13); }
+sub T_COMMENT { my ($c) = @_; return Token('%' . ($c || ''), 14); }
+##sub T_CS { my ($c) = @_; return Token($c, 16); }
 # Illegal: don't use unless you know...
-sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Core::Token'; }
-
-sub Token {
-  my ($string, $cc) = @_;
-  return bless [$string, (defined $cc ? $cc : CC_OTHER)], 'LaTeXML::Core::Token'; }
+sub T_MARKER { my ($t) = @_; return Token($t, 18); }
 
 # Explode a string into a list of tokens, all w/catcode OTHER (except space).
 sub Explode {
@@ -196,37 +192,6 @@ our @CC_SHORT_NAME =           #[CONSTANT]
 
 sub isaToken { return 1; }
 
-# Get the CS Name of the token. This is the name that definitions will be
-# stored under; It's the same for various `different' BEGIN tokens, eg.
-sub getCSName {
-  my ($token) = @_;
-  return $PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
-
-# Get the CSName only if the catcode is executable!
-sub getExecutableName {
-  my ($self) = @_;
-  my ($cs, $cc) = @$self;
-  return $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
-
-# Return the string or character part of the token
-sub getString {
-  my ($self) = @_;
-  return $$self[0]; }
-
-# Return the character code of  character part of the token, or 256 if it is a control sequence
-sub getCharcode {
-  my ($self) = @_;
-  return ($$self[1] == CC_CS ? 256 : ord($$self[0])); }
-
-# Return the catcode of the token.
-sub getCatcode {
-  my ($self) = @_;
-  return $$self[1]; }
-
-sub isExecutable {
-  my ($self) = @_;
-  return $executable_catcode[$$self[1]]; }
-
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist {
   my ($self) = @_;
@@ -246,7 +211,8 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
 # here, since if comments do get into the Tokens, that will introduce weird crap into the stream.
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  my ($ch,   $cc)            = @$self;
+  my $ch = $self->getString;
+  my $cc = $self->getCatcode;
   return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
     ? T_OTHER($ch) : $self); }
 
@@ -262,10 +228,6 @@ sub revert {
   my ($self) = @_;
   return $self; }
 
-sub toString {
-  my ($self) = @_;
-  return $$self[0]; }
-
 sub beDigested {
   my ($self, $stomach) = @_;
   return $stomach->digest($self); }
@@ -273,31 +235,19 @@ sub beDigested {
 #======================================================================
 # Methods for overloaded ops.
 
-# Compare two tokens; They are equal if they both have same catcode & string
-# [We pretend all SPACE's are the same, since we'd like to hide newline's in there!]
-# NOTE: That another popular equality checks whether the "meaning" (defn) are the same.
-# That is NOT done here; see Equals(x,y) and XEquals(x,y)
-sub equals {
-  my ($a, $b) = @_;
-  return
-    (defined $b
-      && (ref $a) eq (ref $b))
-    && ($$a[1] == $$b[1])
-    && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
-
 my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
 sub stringify {
   my ($self) = @_;
-  my $string = $$self[0];
+  my $string = $self->getString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
+  return $CC_SHORT_NAME[$self->getCatcode] . '[' . $string . ']'; }
 
 #======================================================================
 
