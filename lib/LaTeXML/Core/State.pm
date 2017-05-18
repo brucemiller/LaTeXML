@@ -329,9 +329,10 @@ our @letter_or_other = (
 sub lookupMeaning {
   my ($self, $token) = @_;
   my $e;
-  if (my $cs = $token
-    && $active_or_cs[$token->getCatcode]
-    && $token->getString) {
+##  if (my $cs = $token
+##    && $active_or_cs[$token->getCatcode]
+##    && $token->getString) {
+  if (my $cs = $token && $token->getMeaningName) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
 
@@ -362,11 +363,12 @@ sub lookupDefinition {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $token->getCatcode;
-  my $lookupname =
-    ($active_or_cs[$cc]
-    ? $token->getString
-    : $executable_primitive_name[$cc]);
+##  my $cc = $token->getCatcode;
+##  my $lookupname =
+##    ($active_or_cs[$cc]
+##    ? $token->getString
+##    : $executable_primitive_name[$cc]);
+  my $lookupname = $token->getExpandableName;
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -382,11 +384,12 @@ sub lookupConditional {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $token->getCatcode;
-  my $lookupname =
-    ($active_or_cs[$cc]
-    ? $token->getString
-    : $executable_primitive_name[$cc]);
+##  my $cc = $token->getCatcode;
+##  my $lookupname =
+##    ($active_or_cs[$cc]
+##    ? $token->getString
+##    : $executable_primitive_name[$cc]);
+  my $lookupname = $token->getExpandableName;
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -402,11 +405,12 @@ sub lookupExpandable {
   my $defn;
   my $entry;
   #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $token->getCatcode;
-  my $lookupname =
-    ($active_or_cs[$cc]
-    ? $token->getString
-    : $executable_primitive_name[$cc]);
+##  my $cc = $token->getCatcode;
+##  my $lookupname =
+##    ($active_or_cs[$cc]
+##    ? $token->getString
+##    : $executable_primitive_name[$cc]);
+  my $lookupname = $token->getExpandableName;
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
