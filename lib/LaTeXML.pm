@@ -20,13 +20,6 @@ File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);
-use LaTeXML::Common::Config;
-use LaTeXML::Core;
-use LaTeXML::Util::Pack;
-use LaTeXML::Util::Pathname;
-use LaTeXML::Util::WWW;
-use LaTeXML::Util::ObjectDB;
-use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
 use version; our $VERSION = version->declare("0.8.2");
@@ -38,6 +31,19 @@ our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
 our $IDENTITY = "$FindBin::Script ($LaTeXML::FULLVERSION)";
 
 our $LOG_STACK = 0;
+
+BEGIN {
+  use XSLoader;
+  #  XSLoader::load('LaTeXML', $VERSION);
+  XSLoader::load('LaTeXML', "0.8.2");
+}
+use LaTeXML::Common::Config;
+use LaTeXML::Core;
+use LaTeXML::Util::Pack;
+use LaTeXML::Util::Pathname;
+use LaTeXML::Util::WWW;
+use LaTeXML::Util::ObjectDB;
+use LaTeXML::Post::Scan;
 
 #**********************************************************************
 #our @IGNORABLE = qw(timeout profile port preamble postamble port destination log removed_math_formats whatsin whatsout math_formats input_limit input_counter dographics mathimagemag );
