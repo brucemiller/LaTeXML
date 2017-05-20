@@ -1,7 +1,6 @@
 package LaTeXML::Util::Test;
 use strict;
 use warnings;
-
 use Test::More;
 use LaTeXML::Util::Pathname;
 use JSON::XS;
@@ -113,7 +112,7 @@ sub latexmlpost_ok {
 
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
-sub process_texfile {
+sub XXprocess_texfile {
   my ($texpath, $name) = @_;
   my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includeComments => 0,
       verbosity => -2); };
@@ -125,6 +124,20 @@ sub process_texfile {
       do_fail($name, "Couldn't convert $texpath: " . @!); return; }
     else {
       return process_dom($dom, $name); } } }
+
+# A slower version that runs latexml command line; needed when it crashes!
+sub process_texfile {
+  my ($texpath, $name) = @_;
+  my $string = `latexml --nocomments -q -q -q $texpath`;
+  if (!$string) {
+    do_fail($name, "Couldn't convert $texpath: " . @!); return; }
+  my $domstring =
+    eval { my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
+    $parser->parse_string($string)->toStringC14N(0); };
+  if (!$domstring) {
+    do_fail($name, "Couldn't normalize dom to string: " . $@); return; }
+  else {
+    return process_domstring($domstring, $name); } }
 
 sub postprocess_xmlfile {
   my ($xmlpath, $name) = @_;
