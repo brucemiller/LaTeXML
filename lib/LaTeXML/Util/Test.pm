@@ -36,6 +36,12 @@ sub latexml_tests {
     my @post_tests   = map { (($t = $_) =~ s/-post\.xml$// ? ($t) : ()); } @dir_contents;
     my @daemon_tests = map { (($t = $_) =~ s/\.spec$//     ? ($t) : ()); } @dir_contents;
     closedir($DIR);
+    # (try to) predict how many subtests there will be.
+    # (this helps the report when the latexml crashes completely)
+    plan tests => (1
+        + scalar(@core_tests)
+        + scalar(@post_tests)
+        + 3 * scalar(@daemon_tests) - ($directory =~ /runtimes/ ? 2 : 0));    # !!
     if (eval { use_ok("LaTeXML::Core"); }) {
     SKIP: {
         my $requires = $options{requires} || {};    # normally a hash: test=>[files...]
