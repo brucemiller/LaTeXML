@@ -122,7 +122,7 @@ if ($@) {    # Fatal error?
   print STDERR $@; }
 $latexml->showProfile();    # Show profile (if any)
 
-print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
+print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n" if $verbosity > -2;
 print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
 
 if (!$serialized) { }
@@ -133,6 +133,7 @@ elsif ($destination) {
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
+  binmode(STDOUT, ":encoding(UTF-8)");
   print $serialized; }
 
 # ========================================
