@@ -54,7 +54,7 @@ sub addBeforeColumn {
 
 sub addAfterColumn {
   my ($self, @tokens) = @_;
-  $$self{current_column}{after} = Tokens(@tokens, @{ $$self{current_column}{after} });
+  $$self{current_column}{after} = Tokens(@tokens, $$self{current_column}{after});
   return; }
 
 # Or between this column & next...
@@ -62,7 +62,7 @@ sub addBetweenColumn {
   my ($self, @tokens) = @_;
   my @cols = @{ $$self{columns} };
   if ($$self{current_column}) {
-    $$self{current_column}{after} = Tokens(@{ $$self{current_column}{after} }, @tokens); }
+    $$self{current_column}{after} = Tokens($$self{current_column}{after}, @tokens); }
   else {
     push(@{ $$self{save_between} }, @tokens); }
   return; }

@@ -44,9 +44,9 @@ sub ZZTokens {
 #======================================================================
 
 # Return a list of the tokens making up this Tokens
-sub unlist {
-  my ($self) = @_;
-  return @$self; }
+# sub unlist {
+#   my ($self) = @_;
+#   return @$self; }
 
 # Return a shallow copy of the Tokens
 # sub clone {
@@ -57,32 +57,27 @@ sub unlist {
 # Return a string containing the TeX form of the Tokens
 sub revert {
   my ($self) = @_;
-  return @$self; }
+  return $self->unlist; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
   my ($self) = @_;
-  return join('', map { $_->getString } @$self); }
+  return join('', map { $_->getString } $self->unlist); }
 
 # Methods for overloaded ops.
 sub equals {
   my ($a, $b) = @_;
   return 0 unless defined $b && (ref $a) eq (ref $b);
-  my @a = @$a;
-  my @b = @$b;
+  my @a = $a->unlist;
+  my @b = $b->unlist;
   while (@a && @b && ($a[0]->equals($b[0]))) {
     shift(@a); shift(@b); }
   return !(@a || @b); }
 
 sub stringify {
   my ($self) = @_;
-#  print STDERR "STRINGIFYING $self\n";
-#  my @items = @$self;
-  my @items = $self->unlist;
-#  print STDERR " ==> ".join(',',map { $_->stringify } @items)."\n";
-#  print STDERR " ==> ".join(',', @items)."\n";
-  return "Tokens[" . join(',', map { $_->toString } @$self) . "]"; }
+  return "Tokens[" . join(',', map { $_->toString } $self->unlist) . "]"; }
 
 sub beDigested {
   my ($self, $stomach) = @_;
@@ -105,7 +100,7 @@ sub neutralize {
 # Using inline accessors on those assumptions
 # sub substituteParameters {
 #   my ($self, @args) = @_;
-#   my @in     = @{$self};    # ->unlist
+#   my @in     = $self->unlist;
 #   my @result = ();
 #   while (@in) {
 #     my $token;
@@ -113,10 +108,11 @@ sub neutralize {
 #       push(@result, $token); }
 #     elsif (($token = shift(@in))->getCatcode != CC_PARAM) {    # Not multiple '#'; read arg.
 #       if (my $arg = $args[ord($token->getString) - ord('0') - 1]) {
-#         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
-#     else {    # Duplicated '#', copy 2nd '#'
+#         push(@result, Revert($arg)); } }
+#     else {                                                     # Duplicated '#', copy 2nd '#'
 #       push(@result, $token); } }
 #   return Tokens(@result); }
+
 
 #======================================================================
 
