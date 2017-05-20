@@ -1,5 +1,5 @@
 /*
-       # / == == == == == == == == == == == == == == == == == == == == == == == == == == == == == == == == == == = \ #
+       # /=====================================================================\ #
        # |  LaTeXML.xs                                                         | #
        # |                                                                     | #
        # |=====================================================================| #
@@ -28,9 +28,16 @@ typedef struct Token {
 
 typedef T_Token * PTR_Token;
 
+typedef SV * PTR_SV;
+typedef struct Tokens {
+  int ntokens;
+  PTR_SV * tokens;
+} T_Tokens;
+
+typedef T_Tokens * PTR_Tokens;
 
 typedef struct Token * LaTeXML_Core_Token;
-typedef AV * LaTeXML_Core_Tokens;
+typedef struct Tokens * LaTeXML_Core_Tokens;
 
 typedef enum {
     CC_ESCAPE      =  0,
@@ -51,7 +58,8 @@ typedef enum {
     CC_INVALID     = 15,
     CC_CS          = 16,
     CC_NOTEXPANDED = 17,
-    CC_MARKER      = 18
+    CC_MARKER      = 18,
+    CC_MAX         = 18
 } T_Catcode;
 
 /* Categorization of Category codes */
@@ -116,133 +124,164 @@ UTF8 CC_SHORT_NAME[] =
 
 LaTeXML_Core_Token
 make_token(UTF8 string, int catcode){
-  /* check 0 <= catcode <= 18 !!!*/
   /*check string not null ? */
-  /*PTR_Token token = malloc(sizeof(T_Token));*/
   PTR_Token token;
+  if((catcode < 0) || (catcode > CC_MAX)){
+    croak("Illegal catcode %d",catcode); }
   Newx(token,1,T_Token);
   /* check for out of memory ? */
-  /*token->string = (UTF8) malloc((strlen(string) + 1) * sizeof(char));*/
   Newx(token->string,(strlen(string) + 1),char);
   strcpy(token->string, string);
   token->catcode = catcode;
   return token; }
 
-#define SvToken(arg) INT2PTR(LaTeXML_Core_Token, SvIV((SV*)SvRV(arg)))
+     /* You'll often need SvRV(arg) */
+#define SvToken(arg) INT2PTR(LaTeXML_Core_Token, SvIV((SV*) arg))
+#define SvTokens(arg) INT2PTR(LaTeXML_Core_Tokens, SvIV((SV*) arg))
+
 
 #define T_LETTER(arg) (make_token((arg), 11))
 #define T_OTHER(arg)  (make_token((arg), 12))
 #define T_ACTIVE(arg) (make_token((arg), 13))
 #define T_CS(arg)     (make_token((arg), 16))
 
+  /* Note peculiar pre-allocation strategy for nalloc!
+     it is expected that the caller has allocated enough room for it's arguments
+     assuming they are Token's; add_to_tokens will grow if it encounters Tokens/Reversions */
+void
+add_to_tokens(PTR_Tokens tokens, int * nalloc, SV * thing, int revert) {
+  /* fprintf(stderr, "Item %s; ", sv_reftype(t, 1));*/
+  dTHX;                         /* perhaps want to look into pTHX, perl context, etc??? */
+  if (sv_isa(thing, "LaTeXML::Core::Token")) {
+    /*fprintf(stderr, "Token.");*/
+    thing = SvRV(thing);
+    SvREFCNT_inc(thing);
+    tokens->tokens[tokens->ntokens++] = thing; }
+  else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
+    LaTeXML_Core_Tokens toks = SvTokens(SvRV(thing));
+    int n = toks->ntokens;
+    int i;
+    /*fprintf(stderr, "Tokens(%d): ", nt);*/
+    Renew(tokens->tokens, (*nalloc)+= n-1, PTR_SV);
+    for (i = 0 ; i < n ; i++) {
+      /*fprintf(stderr, "adding item %d; ",j);*/
+      SvREFCNT_inc(toks->tokens[i]);
+      tokens->tokens[tokens->ntokens++] = toks->tokens[i]; } }
+  else if (revert){             /* Insert the what Revert($thing) returns */
+    dSP;
+    I32 ax;
+    int i,nvals;
+    ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,1);
+    PUSHs(thing);
+    PUTBACK;
+    nvals = call_pv("Revert", G_ARRAY);
+    SPAGAIN;
+    SP -= nvals; ax = (SP - PL_stack_base) + 1;
+    Renew(tokens->tokens, (*nalloc)+= nvals-1, PTR_SV);    
+    for(i=0; i<nvals; i++){
+      add_to_tokens(tokens, nalloc, ST(i), revert); }
+    PUTBACK; FREETMPS; LEAVE; }
+  else {
+    /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
+    croak("Tokens: Expected a Token, got ???"); }
+}
+
+
 MODULE = LaTeXML PACKAGE = LaTeXML::Core::Token
 
 LaTeXML_Core_Token
 Token(string, catcode)
-  UTF8 string
-  int catcode
+    UTF8 string
+    int catcode
   CODE:
-  RETVAL = make_token(string, catcode);
+    RETVAL = make_token(string, catcode);
   OUTPUT:
-  RETVAL
+    RETVAL
 
 LaTeXML_Core_Token
 T_LETTER(string)
-  UTF8 string
+    UTF8 string
 
 LaTeXML_Core_Token
 T_OTHER(string)
-  UTF8 string
+    UTF8 string
 
 LaTeXML_Core_Token
 T_ACTIVE(string)
-  UTF8 string
+    UTF8 string
 
 LaTeXML_Core_Token
 T_CS(string)
-  UTF8 string
+    UTF8 string
 
 int
 getCatcode(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = self->catcode;
+    RETVAL = self->catcode;
   OUTPUT:
-  RETVAL
+    RETVAL
 
 UTF8
 getString(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = self->string;
+    RETVAL = self->string;
   OUTPUT:
-  RETVAL
+    RETVAL
 
 UTF8
 toString(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = self->string;
+    RETVAL = self->string;
   OUTPUT:
-  RETVAL
+    RETVAL
 
 int
 getCharcode(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = (self->catcode == CC_CS ? 256 : (int) self->string [0]);
+    RETVAL = (self->catcode == CC_CS ? 256 : (int) self->string [0]);
   OUTPUT:
-  RETVAL
+    RETVAL
 
 UTF8
 getCSName(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   INIT:
-  UTF8 s = PRIMITIVE_NAME[self->catcode];
+    UTF8 s = PRIMITIVE_NAME[self->catcode];
   CODE:
-   RETVAL = (s == NULL ? self->string : s);
-   OUTPUT:
-   RETVAL 
+    RETVAL = (s == NULL ? self->string : s);
+    OUTPUT:
+    RETVAL 
 
 UTF8
 getMeaningName(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = (ACTIVE_OR_CS[self->catcode]
+    RETVAL = (ACTIVE_OR_CS[self->catcode]
               ? self->string
               : NULL);
   OUTPUT:
-  RETVAL
+    RETVAL
 
 UTF8
 getExpandableName(self)
-  LaTeXML_Core_Token self
+    LaTeXML_Core_Token self
   CODE:
-  RETVAL = (ACTIVE_OR_CS [self->catcode]
-    ? self->string
+    RETVAL = (ACTIVE_OR_CS [self->catcode]
+              ? self->string
               : EXECUTABLE_NAME[self->catcode]);
   OUTPUT:
-  RETVAL 
-
-# Not used?
-UTF8
-getExecutableName(self)
-    LaTeXML_Core_Token self
-    INIT:
-    UTF8 s = PRIMITIVE_NAME[self->catcode];
-    CODE:
-    RETVAL = (EXECUTABLE_CATCODE[self->catcode]
-              ? (s == NULL ? self->string : s)
-                 : NULL);
-    OUTPUT:
     RETVAL 
 
 int
 isExecutable(self)
     LaTeXML_Core_Token self
-    CODE:
+  CODE:
     RETVAL = EXECUTABLE_CATCODE [self->catcode];
-    OUTPUT:
+  OUTPUT:
     RETVAL
 
     #    /* Compare two tokens; They are equal if they both have same catcode & string*/
@@ -254,10 +293,10 @@ int
 equals(self, b)
     LaTeXML_Core_Token self
     SV * b
-    INIT:
+  INIT:
     IV bptr;
     LaTeXML_Core_Token bb;
-    CODE:
+  CODE:
     if (SvOK(b) && sv_isa(b, "LaTeXML::Core::Token")) {
     bptr = SvIV((SV *) SvRV(b));
     bb = INT2PTR(LaTeXML_Core_Token, bptr);
@@ -267,18 +306,16 @@ equals(self, b)
       RETVAL = 1; }
     else {
       RETVAL = strcmp(self->string, bb->string) == 0; } }
-  else {
-    RETVAL = 0; }
-   OUTPUT:
+    else {
+      RETVAL = 0; }
+  OUTPUT:
     RETVAL
 
 void
 DESTROY(self)
     LaTeXML_Core_Token self
-    CODE:
+  CODE:
     # printf("DESTROY TOKEN %s[%s]!\n",CC_SHORT_NAME[self->catcode],self->string);
-    # free(self->string);
-    # free(self);
     Safefree(self->string);
     Safefree(self);
 
@@ -292,189 +329,117 @@ MODULE = LaTeXML PACKAGE = LaTeXML::Core::Tokens
   #   - single Tokens arg; just return that arg
   #   - do our own memory management of the array of Token's
 
-LaTeXML_Core_Tokens
+
+SV *
 Tokens(...)
   INIT:
     int i;
-    AV * tokens = newAV();
+    PTR_Tokens tokens;
+    int nalloc;
   CODE:
-  /* Use av_extend to pre-size the thing?*/
-  /* fprintf(stderr, "\nCreate Tokens(%d): ", items);*/
-  /* av_extend(tokens, items); */
-  for (i = 0 ; i < items ; i++) {
-    /*fprintf(stderr, "Item %d; ", sv_isobject(ST(i)));*/
-    SV * t = ST(i);
-    if (sv_isa(t, "LaTeXML::Core::Token")) {
-      /*if (strcmp(sv_reftype(t, 1),"LaTeXML::Core::Token") == 0) {*/
-      /*fprintf(stderr, "Token %d.",SvTYPE(t));*/
-      av_push(tokens, newRV_inc((SV *) SvRV(t))); }
-    else if (sv_isa(t, "LaTeXML::Core::Tokens")) {
-      /*else if(strcmp(sv_reftype(t, 1),"LaTeXML::Core::Tokens") == 0) {*/
-      AV * ts = (AV *)SvRV(t);
-      int nt = av_top_index(ts);
-      int j;
-      /* fprintf(stderr, "Tokens(%d): ", nt+1);*/
-      for (j = 0 ; j <= nt ; j++) {
-        SV * tt = * (SV * *) av_fetch(ts, j, 0);
-        /* fprintf(stderr, "adding item %d: %s; ",j, sv_reftype(tt, 1));*/
-        av_push(tokens, (SV *) tt); } } /* Already a ref */
+    if((items == 1) && sv_isa(ST(0), "LaTeXML::Core::Tokens")) {
+      SvREFCNT_inc(ST(0));
+      RETVAL = ST(0); }
     else {
-      /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
-      croak("Tokens: Expected a Token, got ???"); }
-  }
-  /*fprintf(stderr, "done\n"); */
-  /*sv_2mortal((SV *) tokens);*/
-  RETVAL = tokens;
+      Newxz(tokens,1, T_Tokens);
+      if(items > 0){
+        Newx(tokens->tokens,nalloc=items, PTR_SV); }
+      /*fprintf(stderr, "\nCreate Tokens(%d): ", items);*/
+      for (i = 0 ; i < items ; i++) {
+        add_to_tokens(tokens,&nalloc,ST(i),0); }
+     /*fprintf(stderr, "done %d.\n", tokens->ntokens);*/
+     RETVAL = newSV(0);
+     sv_setref_pv(RETVAL, "LaTeXML::Core::Tokens", (void*)tokens);
+    }
   OUTPUT:
-  RETVAL
+    RETVAL
 
-LaTeXML_Core_Tokens
-store__Tokens(...)
+void
+unlist(self)
+    LaTeXML_Core_Tokens self
   INIT:
     int i;
-    AV * tokens = newAV();
-    int n = items;
-    int p = 0;
-  CODE:
-  /* Use av_extend to pre-size the thing?*/
-  /* fprintf(stderr, "\nCreate Tokens(%d): ", items);*/
-  av_extend(tokens, n);
-  for (i = 0 ; i < items ; i++) {
-    SV * t = SvRV(ST(i));
-    /* fprintf(stderr, "Item %s; ", sv_reftype(t, 1));*/
-    /* if (sv_isa(t, "LaTeXML::Core::Token")) {*/
-    if (strcmp(sv_reftype(t, 1),"LaTeXML::Core::Token") == 0) {
-      /*fprintf(stderr, "Token %d.",SvTYPE(t));*/
-      av_store(tokens, p++, newRV_inc((SV *) t)); }
-    /*else if (sv_isa(t, "LaTeXML::Core::Tokens")) {*/
-    else if(strcmp(sv_reftype(t, 1),"LaTeXML::Core::Tokens") == 0) {
-      int nt = av_top_index((AV *)t);
-      int j;
-      n += nt - 1;
-      av_extend(tokens, n);
-      /* fprintf(stderr, "Tokens(%d): ", nt+1);*/
-      for (j = 0 ; j <= nt ; j++) {
-        SV * tt = * (SV * *) av_fetch((AV *)t, j, 0);
-        /* fprintf(stderr, "adding item %d: %s; ",j, sv_reftype(tt, 1));*/
-        av_store(tokens, p++, (SV *) tt); } } /* Already a ref */
-    else {
-      /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
-      croak("Tokens: Expected a Token, got ???"); }
-  }
-  /*fprintf(stderr, "done\n"); */
-  RETVAL = tokens;
-  OUTPUT:
-  RETVAL
-
-LaTeXML_Core_Tokens
-ZZZZZZTokens(...)
-  INIT:
-    int i;
-    AV * tokens = newAV();
-  CODE:
-  /* Use av_extend to pre-size the thing?*/
-  /* fprintf(stderr, "\nCreate Tokens(%d): ", items);*/
-  /*av_extend(tokens, items);*/
-  for (i = 0 ; i < items ; i++) {
-    /*SV * t = SvRV(ST(i));*/
-    SV * t = ST(i);
-    /* fprintf(stderr, "Item %s; ", sv_reftype(t, 1));*/
-    if (sv_isa(t, "LaTeXML::Core::Token")) {
-       fprintf(stderr, "Token.%d",SvTYPE(t));
-      if(SvTYPE(t) == SVt_IV){
-        SvREFCNT_inc(t);
-        av_push(tokens, (SV *) t); }
-      else {
-        av_push(tokens, newRV_inc((SV *) t)); } }
-    else if (sv_isa(t, "LaTeXML::Core::Tokens")) {
-      t = SvRV(t);
-      int nt = av_top_index((AV *)t);
-      int j;
-      /* fprintf(stderr, "Tokens(%d): ", nt+1);*/
-      for (j = 0 ; j <= nt ; j++) {
-        SV * tt = * (SV * *) av_fetch((AV *)t, j, 0);
-        /* fprintf(stderr, "adding item %d: %s; ",j, sv_reftype(tt, 1));*/
-        av_push(tokens, (SV *) tt); } } /* Already a ref */
-    else {
-      /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
-      croak("Tokens: Expected a Token, got ???"); }
-  }
-  /*fprintf(stderr, "done\n"); */
-  RETVAL = tokens;
-  OUTPUT:
-  RETVAL
-
+  PPCODE:
+    EXTEND(SP, self->ntokens);
+    for(i = 0; i < self->ntokens; i++) {
+      PUSHs(sv_2mortal(newRV_inc(self->tokens[i]))); }
+ 
 int
 isBalanced(self)
-  LaTeXML_Core_Tokens self
+    LaTeXML_Core_Tokens self
   INIT:
-   int i, n, level;
+    int i, level;
   CODE:
-    n = av_top_index(self);
     level = 0;
-  /*fprintf(stderr,"\nChecking balance of %d tokens",n);*/
-  for (i = 0 ; i <= n ; i++) {
-    LaTeXML_Core_Token t = SvToken(* (SV * *) av_fetch(self, i, 0));
-    int cc = t->catcode;
-    /*fprintf(stderr,"[%d]",cc);*/
-    if (cc == CC_BEGIN) {
-      /*fprintf(stderr,"+");*/
-      level++; }
-    else if (cc == CC_END) {
-      /*fprintf(stderr,"-");*/
-      level--; } }
-  /*fprintf(stderr,"net %d",level);*/
-  RETVAL = (level == 0);
+    /*fprintf(stderr,"\nChecking balance of %d tokens",self->ntokens);*/
+    for (i = 0 ; i < self->ntokens ; i++) {
+      LaTeXML_Core_Token t = SvToken(self->tokens[i]);
+      int cc = t->catcode;
+      /*fprintf(stderr,"[%d]",cc);*/
+      if (cc == CC_BEGIN) {
+        /*fprintf(stderr,"+");*/
+        level++; }
+      else if (cc == CC_END) {
+        /*fprintf(stderr,"-");*/
+        level--; } }
+      /*fprintf(stderr,"net %d",level);*/
+    RETVAL = (level == 0);
   OUTPUT:
-  RETVAL
+    RETVAL
+
 
 LaTeXML_Core_Tokens
 substituteParameters(self,...)
-  LaTeXML_Core_Tokens self
+    LaTeXML_Core_Tokens self
   INIT:
-    int i,n;
-    AV * tokens = newAV();
+    int i;
+    PTR_Tokens tokens;
+    int nalloc;
   CODE:
-  /*fprintf(stderr,"\nsubstituting:");*/
-    n = av_top_index(self);
-    for(i = 0 ; i <= n; i++){
-      SV * tv = * (SV * *) av_fetch(self, i, 0);
-      LaTeXML_Core_Token t = SvToken(tv);
+    Newxz(tokens,1,T_Tokens);
+    if(self->ntokens > 0){
+      Newx(tokens->tokens,nalloc=self->ntokens, PTR_SV); }
+    /*fprintf(stderr,"\nsubstituting:");*/
+    for (i = 0 ; i < self->ntokens ; i++) {
+      LaTeXML_Core_Token t = SvToken(self->tokens[i]);
       int cc = t->catcode;
       if(cc != CC_PARAM){ /* non #, so copy it*/
-        /*fprintf(stderr,"copy;");*/
-        av_push(tokens,tv); }
-      else if(i == n) {
+        /*fprintf(stderr,"copy %s;",t->string);*/
+        SvREFCNT_inc(self->tokens[i]);
+        tokens->tokens[tokens->ntokens++] = self->tokens[i]; }
+      else if(i >= self->ntokens) { /* # at end of tokens? */
         croak("substituteParamters: fell off end of pattern"); }
       else {
-        /*fprintf(stderr,"#");*/
-        tv = * (SV * *) av_fetch(self, ++i, 0);
-        t = SvToken(tv);
+        /*t = SvToken(self->tokens[++i]);*/
+        i++;
+        t = SvToken(self->tokens[i]);
+        /*fprintf(stderr,"#%s ",t->string);*/
         cc = t->catcode;
-        if(cc == CC_PARAM){ /* next char is #, just insert it */
-          /*fprintf(stderr,"copy;");*/
-          av_push(tokens,tv); }
+        if(cc == CC_PARAM){ /* next char is #, just duplicate it */
+          /*fprintf(stderr,"copy#;");*/
+          SvREFCNT_inc(self->tokens[i]);
+          tokens->tokens[tokens->ntokens++] = self->tokens[i]; }
         else {                  /* otherwise, insert the appropriate arg. */
           int argn = (int) t->string[0] - (int) '0';
           /*fprintf(stderr,"arg%d;",argn);*/
           if((argn < 1) || (argn > 9)){
             croak("substituteTokens: Illegal argument number %d",argn); }
           else if ((argn <= items) && SvOK(ST(argn))){      /* ignore undef */
-            SV * t = SvRV(ST(argn));
-            if (strcmp(sv_reftype(t, 1),"LaTeXML::Core::Token") == 0) {
-              av_push(tokens, newRV_inc((SV *) t)); }
-            else if(strcmp(sv_reftype(t, 1),"LaTeXML::Core::Tokens") == 0) {
-              int nt = av_top_index((AV *)t);
-              int j;
-              for (j = 0 ; j <= nt ; j++) {
-                SV * tt = * (SV * *) av_fetch((AV *)t, j, 0);
-                av_push(tokens, (SV *) tt); } }/* Already a ref */
-            else {
-              /* Probably should be trying to Revert(arg) here! */
-              /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
-              croak("substituteTokens: Expected a Token or Tokens, got ???"); } } }
-        } }
-  /*fprintf(stderr,"done\n");*/
-  RETVAL = tokens;
+            add_to_tokens(tokens,&nalloc, ST(argn), 1); } }
+      } }
+    /*fprintf(stderr,"done\n");*/
+    RETVAL = tokens;
   OUTPUT:
-  RETVAL
+    RETVAL
+
+void
+DESTROY(self)
+    LaTeXML_Core_Tokens self
+  INIT:
+    int i;
+  CODE:
+    # printf("DESTROY TOKEN %s[%s]!\n",CC_SHORT_NAME[self->catcode],self->string);
+    for (i = 0 ; i < self->ntokens ; i++) {
+      SvREFCNT_dec(self->tokens[i]); }
+    Safefree(self->tokens);
+    Safefree(self);
