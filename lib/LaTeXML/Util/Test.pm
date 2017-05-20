@@ -45,17 +45,13 @@ sub latexml_tests {
     if (eval { use_ok("LaTeXML::Core"); }) {
     SKIP: {
         my $requires = $options{requires} || {};    # normally a hash: test=>[files...]
-        if (!ref $requires) {                       # scalar== filename required by ALL
-          check_requirements("$directory/", $requires);    # may SKIP:
-          $requires = {}; }                                # but turn to normal, empty set
-        elsif ($$requires{'*'}) {
-          check_requirements("$directory/", $$requires{'*'}); }
-        # Carry out any TeX conversion tests
+        $requires = { '*' => $requires } unless ref $requires;    # scalar== filename required by ALL
+        ## Carry out any TeX conversion tests
         foreach my $name (@core_tests) {
           my $test = "$directory/$name";
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
-            next unless check_requirements($test, $$requires{$name});
+            next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexml_ok("$test.tex", "$test.xml", $test); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
@@ -63,7 +59,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml and/or $test-post.xml", 1)
               unless ((-f "$test.xml") && (-f "$test-post.xml"));
-            next unless check_requirements($test, $$requires{$name});
+            next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
             latexmlpost_ok("$test.tex", "$test-post.xml", $test); } }
         # Carry out any daemon tests.
         foreach my $name (@daemon_tests) {
@@ -71,7 +67,8 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml and/or $test.status", 1)
               unless ((-f "$test.xml") && (-f "$test.status"));
-            next unless check_requirements($test, $$requires{$name});
+            my $ntests = ($directory =~ /runtimes/ ? 1 : 3);
+            next unless check_requirements($test, $ntests, $$requires{'*'}, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
           } } } }
     else {
@@ -79,14 +76,16 @@ sub latexml_tests {
   return done_testing(); }
 
 sub check_requirements {
-  my ($test, $reqmts) = @_;
-  foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
-    if (($kpsewhich && (`"$kpsewhich" $reqmt`)) || (pathname_find($reqmt))) { }
-    else {
-      my $message = "Missing requirement $reqmt for $test";
-      diag("Skip: $message");
-      skip($message, 1);
-      return 0; } }
+  my ($test, $ntests, @reqmts) = @_;
+  foreach my $reqmts (@reqmts) {
+    next unless defined $reqmts;
+    foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
+      if (($kpsewhich && (`"$kpsewhich" $reqmt`)) || (pathname_find($reqmt))) { }
+      else {
+        my $message = "Missing requirement $reqmt for $test";
+        diag("Skip: $message");
+        skip($message, $ntests);
+        return 0; } } }
   return 1; }
 
 sub do_fail {
