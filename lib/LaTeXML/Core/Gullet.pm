@@ -233,7 +233,7 @@ sub unread {
   unshift(@{ $$self{pushback} },
     map { (!defined $_ ? ()
         : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+          : ($r eq 'LaTeXML::Core::Tokens' ? $_->unlist
             : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
       @tokens);
   return; }
@@ -266,16 +266,11 @@ sub readXToken {
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
-        unshift(@{ $$self{pushback} },
-          map { (!defined $_ ? ()
-              : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-                : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-                  : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
-            @{$r}); } }
+        unshift(@{ $$self{pushback} }, $r->unlist); } }
     else {
-      return $token; }    # just return it
+      return $token; }                                  # just return it
   }
-  return; }               # never get here.
+  return; }                                             # never get here.
 
 # Read the next raw line (string);
 # primarily to read from the Mouth, but keep any unread input!
@@ -520,7 +515,7 @@ sub readTokensValue {
       return $defn->valueOf($defn->readArguments($self)); }
     elsif ($defn->isExpandable) {
       if (my $x = $defn->invoke($self)) {
-        $self->unread(@{$x}); }
+        $self->unread($x->unlist); }
       return $self->readTokensValue; }
     else {
       return $token; } }    # ?

@@ -787,7 +787,7 @@ DefMacro('\expandafter Token Token', sub {
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
       local $LaTeXML::NOEXPAND_THE = undef;
       my $x = $defn->invoke($gullet);
-      ($tok, ($x ? @{$x} : ())); }    # Expand $xtok ONCE ONLY!
+      ($tok, ($x ? $x->unlist : ())); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
 

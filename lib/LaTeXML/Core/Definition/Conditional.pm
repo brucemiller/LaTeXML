@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Core::Definition::Expandable);
 
 # Conditional control sequences; Expandable
@@ -150,7 +151,7 @@ sub invoke_else {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
       "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
@@ -174,7 +175,7 @@ sub invoke_fi {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame

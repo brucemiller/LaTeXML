@@ -78,39 +78,26 @@ sub doInvocation {
       print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
       print STDERR $self->tracingArgs(@args) . "\n" if @args; }
     else {
-      # for "real" macros, make sure all args are Tokens
-      my @targs = map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
-          ? $_
-          : ($r && ($r eq 'LaTeXML::Core::Token')
-            ? Tokens($_)
-            : Tokens(Revert($_)))) }
-        @args;
       print STDERR "\n" . $self->tracingCSName
         . ' -> ' . tracetoString($expansion) . "\n";
-      print STDERR $self->tracingArgs(@targs) . "\n" if @args;
-      @result = $expansion->substituteParameters(@targs)->unlist; } }
+      print STDERR $self->tracingArgs(@args) . "\n" if @args;
+      @result = $expansion->substituteParameters(@args)->unlist; } }
   else {
     if (ref $expansion eq 'CODE') {
       my $t;
       # Check the result from code calls.
       @result = map { (($t = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($t eq 'LaTeXML::Core::Tokens' ? @$_
+          : ($t eq 'LaTeXML::Core::Tokens' ? $_->unlist
             : (Error('misdefined', $self, undef,
                 "Expected a Token in expansion of " . ToString($self),
                 "got " . Stringify($_)), ()))) }
         &$expansion($gullet, @args); }
     else {
       # but for tokens, make sure args are proper Tokens (lists)
-      @result = $expansion->substituteParameters(
-        map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
-            ? $_
-            : ($r && ($r eq 'LaTeXML::Core::Token')
-              ? Tokens($_)
-              : Tokens(Revert($_)))) }
-          @args)->unlist; } }
+      @result = $expansion->substituteParameters(@args)->unlist; } }
   # Getting exclusive requires dubious Gullet support!
   push(@result, T_MARKER($profiled)) if $profiled;
-  return [@result]; }
+  return Tokens(@result); }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
