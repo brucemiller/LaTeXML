@@ -4,7 +4,7 @@
 # I'd like to have a directory of unit tests, so it can be more easily
 # grown, but this will be a start
 
-use Test::More;
+use Test::More tests=>34;
 BEGIN { use_ok('LaTeXML'); }
 #BEGIN { use_ok('LaTeXML::Global'); }
 BEGIN { use_ok('LaTeXML::Package'); }
@@ -42,18 +42,31 @@ ok(eval { $balanced = Tokens(T_LETTER('a'),T_BEGIN,T_OTHER('...'),T_END,T_LETTER
 ok(eval { $balanced->isBalanced; }, "Check is balanced");
 ok(eval { $unbalanced = Tokens(T_LETTER('a'),T_BEGIN,T_OTHER('...'),T_LETTER('z')); },
  "Make unbalanced tokens");
-ok(eval { ! $unbalanced->isBalanced; }, "Check is not balancde");
+ok(eval { ! $unbalanced->isBalanced; }, "Check is not balanced");
 
 # Macro arg substitution tests
-my ($subst,$nosubst,$pattern);
-ok(eval { $nosubst = $balanced->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w')); },
- "substitute tokens w/o params");
-is(eval { Stringify($nosubst); }, 'Tokens[a,{,...,},z]', "Got correct (non)substitution");
-ok(eval { $pattern = Tokens(T_LETTER('a'),T_BEGIN,T_PARAM,T_OTHER(1),T_LETTER('m'),T_PARAM,T_OTHER(2),T_END,T_LETTER('z'));  },
- "make tokens w/ params");
-ok(eval { $subst = $pattern->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w'));  },
- "subsitute tokens w/params");
-is(eval { Stringify($subst); }, 'Tokens[a,{,u,m,v,},z]', "Got correct substitution");
+my ($nopara,$duppara,$withpara,$subst);
+ok(eval { $nopara = Tokens(T_LETTER('a'),T_BEGIN,T_OTHER('...'),T_END,T_LETTER('z')); },
+ "Pattern w/o param");
+ok(eval { $subst = $nopara->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w')); },
+ 'substitute w/o params');
+is(eval { Stringify($subst); }, 'Tokens[a,{,...,},z]', 'Got correct (non)substitution');
+
+ok(eval { $duppara = Tokens(T_LETTER('a'),T_BEGIN,T_PARAM,T_PARAM,T_LETTER(','),T_PARAM,T_PARAM,T_END,T_LETTER('z'));  },
+ 'Pattern w/ duplicate param');
+ok(eval { $subst = $duppara->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w'));  },
+ 'subsitute w/duplicate param');
+is(eval { Stringify($subst); }, 'Tokens[a,{,#,,,#,},z]', 'Got correct substitution');
+
+ok(eval { $withpara = Tokens(T_LETTER('a'),T_BEGIN,T_PARAM,T_OTHER(1),T_LETTER(','),T_PARAM,T_OTHER(2),T_END,T_LETTER('z'));  },
+ 'Pattern w/ params');
+ok(eval { $subst = $withpara->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w'));  },
+ 'subsitute w/params');
+is(eval { Stringify($subst); }, 'Tokens[a,{,u,,,v,},z]', 'Got correct substitution');
+
+ok(eval { $subst = $withpara->substituteParameters("Hello","World"); },
+ 'subsitute w/string reversion');
+is(eval { Stringify($subst); }, 'Tokens[a,{,H,e,l,l,o,,,W,o,r,l,d,},z]', 'Got correct substitution');
 
 done_testing();
 
