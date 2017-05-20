@@ -128,7 +128,8 @@ sub XXprocess_texfile {
 # A slower version that runs latexml command line; needed when it crashes!
 sub process_texfile {
   my ($texpath, $name) = @_;
-  my $string = `latexml --nocomments -q -q -q $texpath`;
+  my $latexml = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexml');
+  my $string = `$latexml --nocomments -q -q -q $texpath`;
   if (!$string) {
     do_fail($name, "Couldn't convert $texpath: " . @!); return; }
   my $domstring =
