@@ -5,7 +5,13 @@ LaTeXML_Core_Tokens T_PTROBJ_Tokens
 
 INPUT
 T_UTF8
-   $var = ($type)SvPVutf8_nolen($arg);
+   /* One of these 2 SHOULD work, and seems faster, but leads to undefs & stuff in perl 5.10? */
+   /*$var = ($type)SvPVutf8_nolen($arg);*/
+   /*$var = ($type)SvPVutf8_nolen(sv_mortalcopy($arg));*/
+   if(!SvUTF8($arg)){
+     $arg = sv_mortalcopy($arg);
+     sv_utf8_upgrade($arg); }
+   $var = ($type)SvPV_nolen($arg);
 
 T_PTROBJ_Token
   if(sv_isa($arg, \"LaTeXML::Core::Token\")){
