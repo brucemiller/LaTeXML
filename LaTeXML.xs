@@ -26,6 +26,18 @@ typedef struct Token {
   UTF8 string;
 } T_Token;
 
+
+#ifdef DEBUG_TOKEN
+#  define DEBUG_Token(...) fprintf(stderr, __VA_ARGS__)
+#else
+#  define DEBUG_Token(...)
+#endif
+#ifdef DEBUG_TOKENS
+#  define DEBUG_Tokens(...) fprintf(stderr, __VA_ARGS__)
+#else
+#  define DEBUG_Tokens(...)
+#endif
+
 typedef T_Token * PTR_Token;
 
 typedef SV * PTR_SV;
@@ -128,8 +140,10 @@ make_token(UTF8 string, int catcode){
   PTR_Token token;
   if((catcode < 0) || (catcode > CC_MAX)){
     croak("Illegal catcode %d",catcode); }
+  DEBUG_Token("Create token(%d, %s) ",catcode,string);
   Newx(token,1,T_Token);
-  /* check for out of memory ? */
+  if(string == NULL){
+    croak("Token(%s) string is not defined", CC_SHORT_NAME[catcode]); }
   Newx(token->string,(strlen(string) + 1),char);
   strcpy(token->string, string);
   token->catcode = catcode;
@@ -150,10 +164,10 @@ make_token(UTF8 string, int catcode){
      assuming they are Token's; add_to_tokens will grow if it encounters Tokens/Reversions */
 void
 add_to_tokens(PTR_Tokens tokens, int * nalloc, SV * thing, int revert) {
-  /* fprintf(stderr, "Item %s; ", sv_reftype(t, 1));*/
   dTHX;                         /* perhaps want to look into pTHX, perl context, etc??? */
+  DEBUG_Tokens("\nAdding to tokens:");
   if (sv_isa(thing, "LaTeXML::Core::Token")) {
-    /*fprintf(stderr, "Token.");*/
+    DEBUG_Tokens( "Token.");
     thing = SvRV(thing);
     SvREFCNT_inc(thing);
     tokens->tokens[tokens->ntokens++] = thing; }
@@ -161,22 +175,25 @@ add_to_tokens(PTR_Tokens tokens, int * nalloc, SV * thing, int revert) {
     LaTeXML_Core_Tokens toks = SvTokens(SvRV(thing));
     int n = toks->ntokens;
     int i;
-    /*fprintf(stderr, "Tokens(%d): ", nt);*/
-    Renew(tokens->tokens, (*nalloc)+= n-1, PTR_SV);
-    for (i = 0 ; i < n ; i++) {
-      /*fprintf(stderr, "adding item %d; ",j);*/
-      SvREFCNT_inc(toks->tokens[i]);
-      tokens->tokens[tokens->ntokens++] = toks->tokens[i]; } }
+    DEBUG_Tokens( "Tokens(%d): ", n);
+    if(n > 0){
+      Renew(tokens->tokens, (*nalloc)+= n-1, PTR_SV);
+      for (i = 0 ; i < n ; i++) {
+        DEBUG_Tokens( "adding item %d; ",i);
+        SvREFCNT_inc(toks->tokens[i]);
+        tokens->tokens[tokens->ntokens++] = toks->tokens[i]; } } }
   else if (revert){             /* Insert the what Revert($thing) returns */
     dSP;
     I32 ax;
     int i,nvals;
+    DEBUG_Tokens( "Reversion:");
     ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,1);
     PUSHs(thing);
     PUTBACK;
     nvals = call_pv("Revert", G_ARRAY);
     SPAGAIN;
     SP -= nvals; ax = (SP - PL_stack_base) + 1;
+    DEBUG_Tokens( "%d items",nvals);
     Renew(tokens->tokens, (*nalloc)+= nvals-1, PTR_SV);    
     for(i=0; i<nvals; i++){
       add_to_tokens(tokens, nalloc, ST(i), revert); }
@@ -184,6 +201,7 @@ add_to_tokens(PTR_Tokens tokens, int * nalloc, SV * thing, int revert) {
   else {
     /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
     croak("Tokens: Expected a Token, got ???"); }
+  DEBUG_Tokens( "Done adding.");
 }
 
 
@@ -315,7 +333,7 @@ void
 DESTROY(self)
     LaTeXML_Core_Token self
   CODE:
-    # printf("DESTROY TOKEN %s[%s]!\n",CC_SHORT_NAME[self->catcode],self->string);
+    DEBUG_Token("DESTROY Token %s[%s]!\n",CC_SHORT_NAME[self->catcode],self->string);
     Safefree(self->string);
     Safefree(self);
 
@@ -344,10 +362,10 @@ Tokens(...)
       Newxz(tokens,1, T_Tokens);
       if(items > 0){
         Newx(tokens->tokens,nalloc=items, PTR_SV); }
-      /*fprintf(stderr, "\nCreate Tokens(%d): ", items);*/
+      DEBUG_Tokens( "\nCreate Tokens(%d): ", items);
       for (i = 0 ; i < items ; i++) {
         add_to_tokens(tokens,&nalloc,ST(i),0); }
-     /*fprintf(stderr, "done %d.\n", tokens->ntokens);*/
+     DEBUG_Tokens( "done %d.\n", tokens->ntokens);
      RETVAL = newSV(0);
      sv_setref_pv(RETVAL, "LaTeXML::Core::Tokens", (void*)tokens);
     }
@@ -371,18 +389,18 @@ isBalanced(self)
     int i, level;
   CODE:
     level = 0;
-    /*fprintf(stderr,"\nChecking balance of %d tokens",self->ntokens);*/
+    DEBUG_Tokens("\nChecking balance of %d tokens",self->ntokens);
     for (i = 0 ; i < self->ntokens ; i++) {
       LaTeXML_Core_Token t = SvToken(self->tokens[i]);
       int cc = t->catcode;
-      /*fprintf(stderr,"[%d]",cc);*/
+      DEBUG_Tokens("[%d]",cc);
       if (cc == CC_BEGIN) {
-        /*fprintf(stderr,"+");*/
+        DEBUG_Tokens("+");
         level++; }
       else if (cc == CC_END) {
-        /*fprintf(stderr,"-");*/
+        DEBUG_Tokens("-");
         level--; } }
-      /*fprintf(stderr,"net %d",level);*/
+      DEBUG_Tokens("net %d",level);
     RETVAL = (level == 0);
   OUTPUT:
     RETVAL
@@ -399,12 +417,12 @@ substituteParameters(self,...)
     Newxz(tokens,1,T_Tokens);
     if(self->ntokens > 0){
       Newx(tokens->tokens,nalloc=self->ntokens, PTR_SV); }
-    /*fprintf(stderr,"\nsubstituting:");*/
+    DEBUG_Tokens("\nsubstituting:");
     for (i = 0 ; i < self->ntokens ; i++) {
       LaTeXML_Core_Token t = SvToken(self->tokens[i]);
       int cc = t->catcode;
       if(cc != CC_PARAM){ /* non #, so copy it*/
-        /*fprintf(stderr,"copy %s;",t->string);*/
+        DEBUG_Tokens("copy %s;",t->string);
         SvREFCNT_inc(self->tokens[i]);
         tokens->tokens[tokens->ntokens++] = self->tokens[i]; }
       else if(i >= self->ntokens) { /* # at end of tokens? */
@@ -413,21 +431,21 @@ substituteParameters(self,...)
         /*t = SvToken(self->tokens[++i]);*/
         i++;
         t = SvToken(self->tokens[i]);
-        /*fprintf(stderr,"#%s ",t->string);*/
+        DEBUG_Tokens("#%s ",t->string);
         cc = t->catcode;
         if(cc == CC_PARAM){ /* next char is #, just duplicate it */
-          /*fprintf(stderr,"copy#;");*/
+          DEBUG_Tokens("copy#;");
           SvREFCNT_inc(self->tokens[i]);
           tokens->tokens[tokens->ntokens++] = self->tokens[i]; }
         else {                  /* otherwise, insert the appropriate arg. */
           int argn = (int) t->string[0] - (int) '0';
-          /*fprintf(stderr,"arg%d;",argn);*/
+          DEBUG_Tokens("arg%d;",argn);
           if((argn < 1) || (argn > 9)){
             croak("substituteTokens: Illegal argument number %d",argn); }
           else if ((argn <= items) && SvOK(ST(argn))){      /* ignore undef */
             add_to_tokens(tokens,&nalloc, ST(argn), 1); } }
       } }
-    /*fprintf(stderr,"done\n");*/
+    DEBUG_Tokens("done\n");
     RETVAL = tokens;
   OUTPUT:
     RETVAL
@@ -438,7 +456,7 @@ DESTROY(self)
   INIT:
     int i;
   CODE:
-    # printf("DESTROY TOKEN %s[%s]!\n",CC_SHORT_NAME[self->catcode],self->string);
+    DEBUG_Tokens("DESTROY Tokens(%d)",self->ntokens);
     for (i = 0 ; i < self->ntokens ; i++) {
       SvREFCNT_dec(self->tokens[i]); }
     Safefree(self->tokens);
