@@ -1802,7 +1802,8 @@ DefConstructor('\frac InFractionStyle InFractionStyle',
 #======================================================================-
 # All this is already in TeX.pool
 
-DefConstructor('\stackrel{}{}',
+DefMacro('\stackrel{}{}', '\lx@stackrel{{\scriptstyle #1}}{{#2}}');
+DefConstructor('\lx@stackrel{}{}',
   "<ltx:XMApp role='RELOP'>"
     . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
