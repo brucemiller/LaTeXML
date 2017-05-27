@@ -122,9 +122,7 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # Additional User Macros
 
 # \href{url}{text}
-DefConstructor('\href Verbatim  {}',
-  "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
+DefMacro('\href Verbatim {}', '\@@Url\href{}{}{#1}{#2}');
 
 # \url{url} from url.sty
 # Redefine \@url to sanitize the argument less
@@ -142,7 +140,8 @@ DefMacro('\@Url Token', sub {
       $url = $mouth->readTokens($close); }
     EndSemiverbatim();
     # Identical with url's \@Url except that it sanitizes the arg less
-    my @toks = map { ($_->getCatcode == CC_CS ? $_ : T_OTHER(ToString($_))) } $url->unlist;
+    my $cc;
+    my @toks = map { (((($cc = $_->getCatcode) == CC_CS) || ($cc == CC_SUB)) ? $_ : T_OTHER(ToString($_))) } $url->unlist;
     (Invocation(T_CS('\@@Url'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),

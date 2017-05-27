@@ -14,19 +14,20 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use Encode;
 
 #**********************************************************************
 DefPrimitive('\DeclareInputMath {Number} {}', sub {
     my ($stomach, $code, $expansion) = @_;
     my $char = pack('C', $code->valueOf);
     AssignCatcode($char, CC_ACTIVE);
-    DefMacroI($char, undef, $expansion); });
+    DefMacroI(T_ACTIVE($char), undef, $expansion); });
 
 DefPrimitive('\DeclareInputText {Number} {}', sub {
     my ($stomach, $code, $expansion) = @_;
     my $char = pack('C', $code->valueOf);
     AssignCatcode($char, CC_ACTIVE);
-    DefMacroI($char, undef, $expansion); });
+    DefMacroI(T_ACTIVE($char), undef, $expansion); });
 
 DefMacro('\IeC{}', '#1');
 
@@ -47,11 +48,15 @@ sub SetInputEncoding {
   foreach my $code ((0 .. 8), 0xB, (0xE .. 0x1E), (128 .. 255)) {
     my $char = pack('C', $code);
     AssignCatcode($char, CC_ACTIVE);
-    Let($char, '\@inpenc@undefined'); }
+    Let(T_ACTIVE($char), '\@inpenc@undefined'); }
   AssignValue(PERL_INPUT_ENCODING => undef);    # Disable the perl-level decoding, if any.
 
   # Then load TeX's input encoding definitions.
   InputDefinitions($encoding, type => 'def');
+  # NOTE: INPUT_ENCODING is never actually used anywhere!
+  # So, presumably either Perl is magically converting to utf8
+  # or more likely, treating the bytes as (misinterpreted?) utf8?
+  # In latter case, perhaps it doesn't matter as long as we end up with the same bytes in/out???
   AssignValue(INPUT_ENCODING => $encoding);
   return; }
 

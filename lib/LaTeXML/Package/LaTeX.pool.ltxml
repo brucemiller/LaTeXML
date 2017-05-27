@@ -47,6 +47,7 @@ AssignValue(inPreamble => 1);    # \begin{document} will clear this.
 
 DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
   "<?latexml class='#2' ?#1(options='#1')?>",
+  beforeDigest => sub { onlyPreamble('\documentclass'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $options = $whatsit->getArg(1);
@@ -66,7 +67,8 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
   "<?latexml class='#2' ?#1(options='#1') oldstyle='true'?>",
   beforeDigest => sub {
     Info('unexpected', '\documentstyle', $_[0], "Entering LaTeX 2.09 Compatibility mode");
-    AssignValue('2.09_COMPATIBILITY' => 1, 'global'); },
+    AssignValue('2.09_COMPATIBILITY' => 1, 'global');
+    onlyPreamble('\documentstyle'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $class   = ToString($whatsit->getArg(2));
@@ -1800,7 +1802,8 @@ DefConstructor('\frac InFractionStyle InFractionStyle',
 #======================================================================-
 # All this is already in TeX.pool
 
-DefConstructor('\stackrel{}{}',
+DefMacro('\stackrel{}{}', '\lx@stackrel{{\scriptstyle #1}}{{#2}}');
+DefConstructor('\lx@stackrel{}{}',
   "<ltx:XMApp role='RELOP'>"
     . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
     . "<ltx:XMArg>#2</ltx:XMArg>"
@@ -4311,77 +4314,77 @@ RawTeX(<<'EOTeX');
   \iterate
   \let\iterate\relax
 }
-\newdimen\@ydim 							
+\newdimen\@ydim
 \let\@@hyph=\-
-\newbox\@arstrutbox							
-\newbox\@begindvibox							
-\newcount\@botnum							
-\newdimen\@botroom							 
-\newcount\@chclass							 
-\newcount\@chnum							
-\newdimen\@clnht							
-\newdimen\@clnwd							
-\newdimen\@colht							
-\newcount\@colnum							 
-\newdimen\@colroom							
-\newbox\@curfield							 
-\newbox\@curline							 
-\newcount\@currtype							 
-\newcount\@curtab							 
-\newcount\@curtabmar							
-\newbox\@dashbox							
-\newcount\@dashcnt							 
-\newdimen\@dashdim							 
-\newcount\@dbltopnum							
-\newdimen\@dbltoproom							
+\newbox\@arstrutbox
+\newbox\@begindvibox
+\newcount\@botnum
+\newdimen\@botroom
+\newcount\@chclass
+\newcount\@chnum
+\newdimen\@clnht
+\newdimen\@clnwd
+\newdimen\@colht
+\newcount\@colnum
+\newdimen\@colroom
+\newbox\@curfield
+\newbox\@curline
+\newcount\@currtype
+\newcount\@curtab
+\newcount\@curtabmar
+\newbox\@dashbox
+\newcount\@dashcnt
+\newdimen\@dashdim
+\newcount\@dbltopnum
+\newdimen\@dbltoproom
 \let\@dischyph=\-
-\newcount\@enumdepth 
-\newcount\@floatpenalty							
-\newdimen\@fpmin							
-\newcount \@fpstype							
-\newcount\@highpenalty							
-\newcount\@hightab							
-\newbox\@holdpg								
+\newcount\@enumdepth
+\newcount\@floatpenalty
+\newdimen\@fpmin
+\newcount \@fpstype
+\newcount\@highpenalty
+\newcount\@hightab
+\newbox\@holdpg
 \newinsert \@kludgeins
-\newcount\@lastchclass							
-\newbox\@leftcolumn							
-\newbox\@linechar							
-\newdimen\@linelen							
-\newcount\@lowpenalty							
-\newdimen\@maxdepth							 
-\newcount\@medpenalty							
+\newcount\@lastchclass
+\newbox\@leftcolumn
+\newbox\@linechar
+\newdimen\@linelen
+\newcount\@lowpenalty
+\newdimen\@maxdepth
+\newcount\@medpenalty
 \newdimen\@mparbottom \@mparbottom\z@
-\newinsert\@mpfootins							 
-\newcount\@mplistdepth							
-\newcount\@multicnt							
-\newcount\@nxttabmar							
-\newbox\@outputbox							
-\newdimen\@pagedp							
-\newdimen\@pageht							
-\newbox\@picbox								
-\newdimen\@picht							
-\newdimen \@reqcolroom							
-\newskip\@rightskip \@rightskip \z@skip					
-\newcount\@savsf							
-\newdimen\@savsk							
-\newcount\@secpenalty							
+\newinsert\@mpfootins
+\newcount\@mplistdepth
+\newcount\@multicnt
+\newcount\@nxttabmar
+\newbox\@outputbox
+\newdimen\@pagedp
+\newdimen\@pageht
+\newbox\@picbox
+\newdimen\@picht
+\newdimen \@reqcolroom
+\newskip\@rightskip \@rightskip \z@skip
+\newcount\@savsf
+\newdimen\@savsk
+\newcount\@secpenalty
 \def\@sqrt[#1]{\root #1\of}
-\newbox\@tabfbox							
-\newcount\@tabpush							
-\newdimen \@textfloatsheight						
-\newdimen\@textmin							
-\newcount\@topnum							
-\newdimen\@toproom							
-\newcount\@xarg								
-\newdimen\@xdim								
-\newcount\@yarg								
-\newdimen\@ydim								
-\newcount\@yyarg							
+\newbox\@tabfbox
+\newcount\@tabpush
+\newdimen \@textfloatsheight
+\newdimen\@textmin
+\newcount\@topnum
+\newdimen\@toproom
+\newcount\@xarg
+\newdimen\@xdim
+\newcount\@yarg
+\newdimen\@ydim
+\newcount\@yyarg
 \newtoks\every@math@size
-\newif \if@fcolmade							 
-\newdimen\lower@bound							
-\newcount\par@deathcycles						 
-\newdimen\upper@bound							
+\newif \if@fcolmade
+\newdimen\lower@bound
+\newcount\par@deathcycles
+\newdimen\upper@bound
 \newif\if@insert
 \newif\if@colmade
 \newif\if@specialpage   \@specialpagefalse
