@@ -243,7 +243,7 @@ sub unread {
 # `Toplevel' processing, (if $toplevel is true), used at the toplevel processing by Stomach,
 #  will step to the next input stream (Mouth) if one is available,
 # If $commentsok is true, will also pass comments.
-sub readXToken {
+sub XXXXreadXToken {
   my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
@@ -263,10 +263,52 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     # Note: special-purpose lookup in State, for efficiency
+###    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+    elsif ($LaTeXML::Core::Token::executable_catcode[$cc]
+             && defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+      local $LaTeXML::CURRENT_TOKEN = $token;
+      if (my $r = $defn->invoke($self)) {
+        unshift(@{ $$self{pushback} }, $r->unlist); } }
+    else {
+      return $token; }                                  # just return it
+  }
+  return; }                                             # never get here.
+
+# catcodes interesting to readXtoken: executable (hence, possibly expandable),
+#  or some special cases: comment, notexpanded, marker
+our @readXToken_interesting_catcode = (    # [CONSTANT]
+  0, 1, 1, 1,
+  1, 0, 0, 1,
+  1, 0, 0, 0,
+  0, 1, 1, 0,
+  1, 1, 1);
+
+sub readXToken {
+  my ($self, $toplevel, $commentsok) = @_;
+  $toplevel = 1 unless defined $toplevel;
+  return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
+  my ($token, $cc, $defn);
+  while (1) {
+    $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
+    if (!defined $token) {
+      return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
+      $self->closeMouth; }    # Next input stream.
+    elsif (! $readXToken_interesting_catcode[($cc = $token->getCatcode)]){ # Short circuit tests
+      return $token; }                                  # just return it
+    # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
         unshift(@{ $$self{pushback} }, $r->unlist); } }
+    elsif ($cc == CC_NOTEXPANDED) {
+      # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
+      # so this token should never leak out through an EXTERNAL call to readToken.
+      return $self->readToken; }    # Just return the next token.
+    elsif ($cc == CC_COMMENT) {
+      return $token if $commentsok;
+      push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
+    elsif ($cc == CC_MARKER) {
+      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     else {
       return $token; }                                  # just return it
   }
@@ -345,9 +387,9 @@ sub readBalanced {
   # Inlined readToken (we'll keep comments in the result)
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
     my $cc = $token->getCatcode;
-    if (!$balanced_interesting_cc[$cc]) {
-      push(@tokens, $token); }
-    elsif ($cc == CC_END) {
+   if (!$balanced_interesting_cc[$cc]) {
+     push(@tokens, $token); }
+   elsif ($cc == CC_END) {
       $level--;
       last unless $level;
       push(@tokens, $token); }
@@ -355,7 +397,10 @@ sub readBalanced {
       $level++;
       push(@tokens, $token); }
     elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
+      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
+##    else {
+##      push(@tokens, $token); }
+  }
   return Tokens(@tokens); }
 
 sub ifNext {
@@ -375,14 +420,33 @@ sub readMatch {
     while (@tomatch && defined($token = $self->readToken)
       && push(@matched, $token) && ($token->equals($tomatch[0]))) {
       shift(@tomatch);
-      if ($token->getCatcode == CC_SPACE) {    # If this was space, SKIP any following!!!
-        while (defined($token = $self->readToken) && ($token->getCatcode == CC_SPACE)) {
-          push(@matched, $token); }
-        unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
+###      if ($token->getCatcode == CC_SPACE) {    # If this was space, SKIP any following!!!
+###        while (defined($token = $self->readToken) && ($token->getCatcode == CC_SPACE)) {
+###          push(@matched, $token); }
+###        unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
     }
     return $choice unless @tomatch;                            # All matched!!!
     unshift(@{ $$self{pushback} }, @matched);                  # Put 'em back and try next!
   }
+  return; }
+
+# This looks better, but is worse, since there's usually only 1 choice!
+sub YYreadMatch {
+  my ($self, @choices) = @_;
+  my @candidates = map { [$_,$_->unlist] } @choices;
+  my @read=();
+  my $i=0;
+  my $token;
+  while(@candidates && ($token = $self->readToken)){
+    push(@read,$token); $i++;
+    my @cand = @candidates;
+    foreach my $c (@cand){
+      if($token->equals($$c[$i])){
+        if($i == $#$c){
+          return $$c[0]; } }
+      else {
+        @candidates = grep { $_ ne $c } @candidates; } } }
+  unshift(@{ $$self{pushback} }, @read);                  # Give up; put tokens back.
   return; }
 
 # Match the input against a set of keywords; Similar to readMatch, but the keywords are strings,
@@ -427,7 +491,7 @@ sub readUntilBrace {
   my @tokens = ();
   my $token;
   while (defined($token = $self->readToken())) {
-    if ($token->getCatcode == CC_BEGIN) {    # INLINE Catcode
+    if ($token->getCatcode == CC_BEGIN) {
       unshift(@{ $$self{pushback} }, $token);    # Unread
       last; }
     push(@tokens, $token); }
