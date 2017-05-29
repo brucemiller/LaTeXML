@@ -50,8 +50,7 @@ sub finish {
 
 sub hasMoreInput {
   my ($self) = @_;
-  #  ($$self{colno} < $$self{nchars}) || $$self{IN}; }
-  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }) || $$self{IN}; }
+  return $$self{tongue}->hasMoreInput || scalar(@{ $$self{buffer} }) || $$self{IN}; }
 
 sub getNextLine {
   my ($self) = @_;
@@ -75,14 +74,17 @@ sub getNextLine {
         Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
   $line .= "\r";                        # put line ending back!
 
-  if (!($$self{lineno} % 25)) {
-    NoteProgressDetailed("[#$$self{lineno}]"); }
+##  if (!($$self{lineno} % 25)) {
+##    NoteProgressDetailed("[#$$self{lineno}]"); }
+  my ($l, $c) = $self->getPosition;
+  if (!($l % 25)) {
+    NoteProgressDetailed("[#$l]"); }
   return $line; }
 
 sub stringify {
   my ($self) = @_;
-  return "Mouth[$$self{source}\@$$self{lineno}x$$self{colno}]"; }
-
+  my ($l, $c) = $self->getPosition;
+  return 'Mouth[' . $$self{source} . '@' . $l . 'x' . $c . ']'; }
 #======================================================================
 1;
 
