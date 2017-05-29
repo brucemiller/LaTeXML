@@ -112,7 +112,7 @@ sub latexmlpost_ok {
 
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
-sub XXprocess_texfile {
+sub process_texfile {
   my ($texpath, $name) = @_;
   my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includeComments => 0,
       verbosity => -2); };
@@ -126,7 +126,7 @@ sub XXprocess_texfile {
       return process_dom($dom, $name); } } }
 
 # A slower version that runs latexml command line; needed when it crashes!
-sub process_texfile {
+sub YYprocess_texfile {
   my ($texpath, $name) = @_;
   my $latexml = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexml');
   my $string = `$latexml --nocomments -q -q -q $texpath`;
