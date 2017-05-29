@@ -842,20 +842,29 @@ sub EndSemiverbatim {
 # However, be careful with any changes.
 our $STD_CATTABLE;
 our $STY_CATTABLE;
+our $TOKENIZING_MOUTH;
 
 # Tokenize($string); Tokenizes the string using the standard cattable, returning a LaTeXML::Core::Tokens
 sub Tokenize {
   my ($string) = @_;
   $STD_CATTABLE = LaTeXML::Core::State->new(catcodes => 'standard') unless $STD_CATTABLE;
   local $STATE = $STD_CATTABLE;
-  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+  $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
+  $TOKENIZING_MOUTH->{tongue}->finish();
+  $TOKENIZING_MOUTH->openString($string);
+  return $TOKENIZING_MOUTH->readTokens; }
 
 # TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Core::Tokens
 sub TokenizeInternal {
   my ($string) = @_;
   $STY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'style') unless $STY_CATTABLE;
   local $STATE = $STY_CATTABLE;
-  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
+  $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
+  $TOKENIZING_MOUTH->{tongue}->finish();
+  $TOKENIZING_MOUTH->openString($string);
+  return $TOKENIZING_MOUTH->readTokens; }
 
 #======================================================================
 # Non-exported support for defining forms.
