@@ -350,7 +350,7 @@ readChar(SV * state, LaTeXML_Core_Mouth_Tongue tongue, char * character, int * c
       nba += ch_len;
       nca ++;
       /* Look for 2 lower-case hex or 1 control char (pure ASCII!) */
-      char c1,c2;
+      char c1,c2, * tmp;
       UV code;
       if((tongue->ptr + nba + 2 <= tongue->nbytes)
          && (c1 = * (tongue->chars+tongue->ptr + nba))
@@ -366,8 +366,8 @@ readChar(SV * state, LaTeXML_Core_Mouth_Tongue tongue, char * character, int * c
         nca ++;
         code = (c1 > 64 ? c1 - 64 : c1 + 64); } /* ???? */
       /* Code point could have 8th bit, turn to multibyte unicode! */
-      nbr = UVCHR_SKIP(code);
-      uvchr_to_utf8((U8 *)character,code);
+      tmp = (char *)uvchr_to_utf8((U8 *)character,code);
+      nbr = tmp - character;    /* how many bytes */
       *catcode = lookupCatcode(state,character); }
     DEBUG_Tongue("NEXT Succeed %d bytes, %d chars advanced => '%s', %d bytes\n",
                  nba,nca,character,nbr);
