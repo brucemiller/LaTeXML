@@ -279,6 +279,7 @@ sub readToken {
       $$self{colno} = 0;
       my $line = $self->getNextLine;
       if (!defined $line) {    # Exhausted the input.
+        $$self{at_eof} = 1;
         $$self{chars}  = [];
         $$self{nchars} = 0;
         return; }
@@ -335,6 +336,7 @@ sub readRawLine {
   else {
     $line = $self->getNextLine;
     if (!defined $line) {
+      $$self{at_eof} = 1;
       $$self{chars} = []; $$self{nchars} = 0; $$self{colno} = 0; }
     else {
       $$self{lineno}++;
