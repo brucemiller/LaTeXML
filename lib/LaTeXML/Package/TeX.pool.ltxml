@@ -2054,15 +2054,16 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
       $stomach->bgroup;
       AssignValue(PRESERVE_NEWLINES => 2);
       my @tokens = ();
-      my $EOL = Token("\n", CC_SPACE);
-      my ($t, $cc, $level) = (undef, 0, 0);
+      my ($t, $level) = (undef, 0);
       while ($t = $mouth->readToken) {
+        my $cc = $t->getCatcode;
         push(@tokens, $t);
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
-        last if ((($cc = $t->getCatcode) == CC_SPACE) && ($t->getString eq "\n")) && !$level; }
+        last if ((($cc == CC_SPACE) && ($t->getString eq "\n"))
+          || ($cc == CC_COMMENT)
+          || ($t->equals(T_CS('\par')))) && !$level; }
       $stomach->egroup;
-      # I'm unclear whether there should be a trailing $EOL on the last line, but apparently not?
       @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }
     return; });
@@ -2071,7 +2072,7 @@ DefConditional('\ifeof Number', sub {
     my ($gullet, $port) = @_;
     $port = ToString($port);
     if (my $mouth = LookupValue('input_file:' . $port)) {
-      return !$mouth->hasMoreInput; }
+      return $$mouth{at_eof}; }
     else {
       return 1; } });
 
