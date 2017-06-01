@@ -2072,7 +2072,7 @@ DefConditional('\ifeof Number', sub {
     my ($gullet, $port) = @_;
     $port = ToString($port);
     if (my $mouth = LookupValue('input_file:' . $port)) {
-      return $$mouth{at_eof}; }
+      return $mouth->atEOF; }
     else {
       return 1; } });
 
