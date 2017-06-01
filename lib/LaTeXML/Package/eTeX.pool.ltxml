@@ -42,7 +42,7 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
     my ($gullet, $port, $token) = @_;
     $port = ToString($port);
     if (my $mouth = LookupValue('input_file:' . $port)) {
-      DefMacroI($token, undef, Tokens(Explode($mouth->readRawLine))); }
+      DefMacroI($token, undef, Tokens(Explode(($mouth->readRawLine || '') . "\r"))); }
     return; });
 
 DefMacro('\scantokens {}', sub {
