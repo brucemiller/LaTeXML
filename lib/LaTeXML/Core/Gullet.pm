@@ -265,7 +265,7 @@ sub XXXXreadXToken {
     # Note: special-purpose lookup in State, for efficiency
 ###    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
     elsif ($LaTeXML::Core::Token::executable_catcode[$cc]
-             && defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+      && defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
         unshift(@{ $$self{pushback} }, $r->unlist); } }
@@ -293,9 +293,9 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (! $readXToken_interesting_catcode[($cc = $token->getCatcode)]){ # Short circuit tests
-      return $token; }                                  # just return it
-    # Note: special-purpose lookup in State, for efficiency
+    elsif (!$readXToken_interesting_catcode[($cc = $token->getCatcode)]) {    # Short circuit tests
+      return $token; }                                                        # just return it
+        # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
@@ -329,7 +329,8 @@ sub readRawLine {
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
   # of the current line from the Mouth (NOT reading a new line)
   if (@tokens) {
-    return ToString(Tokens(@tokens)) . $$self{mouth}->readRawLine(1); }
+    my $rest = $$self{mouth}->readRawLine(1);
+    return ToString(Tokens(@tokens)) . (defined $rest ? $rest : ''); }
   # Otherwise, read the next line from the Mouth.
   else {
     return $$self{mouth}->readRawLine; } }
@@ -387,9 +388,9 @@ sub readBalanced {
   # Inlined readToken (we'll keep comments in the result)
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
     my $cc = $token->getCatcode;
-   if (!$balanced_interesting_cc[$cc]) {
-     push(@tokens, $token); }
-   elsif ($cc == CC_END) {
+    if (!$balanced_interesting_cc[$cc]) {
+      push(@tokens, $token); }
+    elsif ($cc == CC_END) {
       $level--;
       last unless $level;
       push(@tokens, $token); }
@@ -425,28 +426,28 @@ sub readMatch {
 ###          push(@matched, $token); }
 ###        unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
     }
-    return $choice unless @tomatch;                            # All matched!!!
-    unshift(@{ $$self{pushback} }, @matched);                  # Put 'em back and try next!
+    return $choice unless @tomatch;    # All matched!!!
+    unshift(@{ $$self{pushback} }, @matched);    # Put 'em back and try next!
   }
   return; }
 
 # This looks better, but is worse, since there's usually only 1 choice!
 sub YYreadMatch {
   my ($self, @choices) = @_;
-  my @candidates = map { [$_,$_->unlist] } @choices;
-  my @read=();
-  my $i=0;
+  my @candidates = map { [$_, $_->unlist] } @choices;
+  my @read       = ();
+  my $i          = 0;
   my $token;
-  while(@candidates && ($token = $self->readToken)){
-    push(@read,$token); $i++;
+  while (@candidates && ($token = $self->readToken)) {
+    push(@read, $token); $i++;
     my @cand = @candidates;
-    foreach my $c (@cand){
-      if($token->equals($$c[$i])){
-        if($i == $#$c){
+    foreach my $c (@cand) {
+      if ($token->equals($$c[$i])) {
+        if ($i == $#$c) {
           return $$c[0]; } }
       else {
         @candidates = grep { $_ ne $c } @candidates; } } }
-  unshift(@{ $$self{pushback} }, @read);                  # Give up; put tokens back.
+  unshift(@{ $$self{pushback} }, @read);    # Give up; put tokens back.
   return; }
 
 # Match the input against a set of keywords; Similar to readMatch, but the keywords are strings,
