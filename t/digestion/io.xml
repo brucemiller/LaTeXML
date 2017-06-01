@@ -35,7 +35,9 @@ Line: “<text font="bold">Foo!</text>
 Line: “</p>
     </para>
     <para xml:id="S0.SS0.SSS0.Px2.p2">
-      <p><Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px2.p2.m1">
+      <p>”<break/>
+
+Line: “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px2.p2.m1">
           <XMath>
             <XMApp>
               <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
@@ -65,27 +67,27 @@ Closed!</p>
     <para xml:id="S0.SS0.SSS0.Px3.p1">
       <p>Reading file exists.data:<break/>
 
-Line: “This file exists!”<break/>
+Line: “This file exists!ﬂ”<break/>
 
-Line: “line 2”<break/>
+Line: “line 2ﬂ”<break/>
 
-Line: “another line       spaces”<break/>
+Line: “another line       spacesﬂ”<break/>
 
-Line: “%oddchars # &amp; “foo”<break/>
+Line: “%oddchars # &amp; “fooﬂ”<break/>
 
-Line: ““foo”<break/>
+Line: ““fooﬂ”<break/>
 
-Line: “”<break/>
+Line: “ﬂ”<break/>
 
-Line: “$x’$”<break/>
+Line: “$x’$ﬂ”<break/>
 
-Line: “line – in brackets”<break/>
+Line: “line – in bracketsﬂ”<break/>
 
-Line: “still ˝ continues”<break/>
+Line: “still ˝ continuesﬂ”<break/>
 
-Line: “last line.”<break/>
+Line: “last line.ﬂ”<break/>
 
-Line: “”<break/>
+Line: “ﬂ”<break/>
 Closed!</p>
     </para>
   </paragraph>
@@ -110,6 +112,11 @@ Line: “Second line
 
 Line: “Last line
 ”<break/>
+
+Line: “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p3">
+      <p>”<break/>
 Closed!</p>
     </para>
   </paragraph>
