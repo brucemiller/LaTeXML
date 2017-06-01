@@ -24,8 +24,8 @@ sub new {
   $$self{fordefinitions} = 1 if $options{fordefinitions};
   $$self{notes}          = 1 if $options{notes};
   my $content = auth_get($url);
-  $self->openString($content);
   $self->initialize;
+  $self->setInput($content);
   return $self; }
 
 #======================================================================

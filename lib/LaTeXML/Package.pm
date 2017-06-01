@@ -851,8 +851,7 @@ sub Tokenize {
   local $STATE = $STD_CATTABLE;
 ###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
   $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
-  $TOKENIZING_MOUTH->{tongue}->finish();
-  $TOKENIZING_MOUTH->openString($string);
+  $TOKENIZING_MOUTH->setInput($string);
   return $TOKENIZING_MOUTH->readTokens; }
 
 # TokenizeInternal($string); Tokenizes the string using the internal cattable, returning a LaTeXML::Core::Tokens
@@ -862,8 +861,7 @@ sub TokenizeInternal {
   local $STATE = $STY_CATTABLE;
 ###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
   $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
-  $TOKENIZING_MOUTH->{tongue}->finish();
-  $TOKENIZING_MOUTH->openString($string);
+  $TOKENIZING_MOUTH->setInput($string);
   return $TOKENIZING_MOUTH->readTokens; }
 
 #======================================================================

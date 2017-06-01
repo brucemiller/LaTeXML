@@ -55,15 +55,9 @@ sub new {
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
     notes          => ($options{notes} ? 1 : 0),
   }, $class;
-  $self->openString($string);
   $self->initialize;
+  $self->setInput($string);
   return $self; }
-
-sub openString {
-  my ($self, $string) = @_;
-  $$self{string} = $string;
-  $$self{buffer} = [(defined $string ? splitLines($string) : ())];
-  return; }
 
 sub initialize {
   my ($self) = @_;
@@ -81,7 +75,6 @@ sub initialize {
 
 sub finish {
   my ($self) = @_;
-  $$self{buffer} = [];
   $$self{tongue}->finish();
   if ($$self{fordefinitions}) {
     $STATE->assignCatcode('@' => $$self{saved_at_cc});
@@ -90,23 +83,12 @@ sub finish {
     NoteEnd($$self{note_message}); }
   return; }
 
-# This is (hopefully) a platform independent way of splitting a string
-# into "lines" ending with CRLF, CR or LF (DOS, Mac or Unix).
-# Note that TeX considers newlines to be \r, ie CR, ie ^^M
-sub splitLines {
-  my ($string) = @_;
-  $string =~ s/(?:\015\012|\015|\012)/\r/sg;    #  Normalize remaining
-  return split("\r", $string); }                # And split.
-
 sub getNextLine {
-  my ($self) = @_;
-  return unless scalar(@{ $$self{buffer} });
-  my $line = shift(@{ $$self{buffer} });
-  return (scalar(@{ $$self{buffer} }) ? $line . "\r" : $line); }    # No CR on last line!
+  return; }
 
 sub hasMoreInput {
   my ($self) = @_;
-  return $$self{tongue}->hasMoreInput() || scalar(@{ $$self{buffer} }); }
+  return $$self{tongue}->hasMoreInput(); }
 
 sub stringify {
   my ($self) = @_;
