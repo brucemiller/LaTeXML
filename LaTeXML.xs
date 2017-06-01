@@ -61,8 +61,10 @@ typedef struct Tongue_struct {
   STRLEN bufsize;
   STRLEN ptr;
   STRLEN nbytes;
-  STRLEN prev_nbytes;
-  STRLEN prev_ncols;
+  STRLEN prev_ptr;
+  STRLEN prev_colno;
+  int prev_lineno;
+  int at_eof;
 } T_Tongue;
 
 typedef T_Token  * LaTeXML_Core_Token;
@@ -326,7 +328,9 @@ getMouthTongue(SV * mouth){
     croak("Mouth doesn't have a tongue!"); }
   return SvTongue(SvRV(*ptr)); }
 
-  /* Since readToken looks ahead, we'll need to be able to undo the effects of nextChar! */
+#define CR 13
+#define LF 10
+  /* Since readToken looks ahead, we'll need to be able to undo the effects of readChar! */
 int
 readChar(SV * state, LaTeXML_Core_Mouth_Tongue tongue, char * character, int * catcode){
   dTHX;
@@ -335,46 +339,63 @@ readChar(SV * state, LaTeXML_Core_Mouth_Tongue tongue, char * character, int * c
     int nca = 0;                /* # chars advanced in buffer */
     int nba = 0;                /* # bytes advanced */
     int nbr = 0;                /* # bytes returned */
-    ch_len = UTF8SKIP(tongue->chars+tongue->ptr);
-    CopyChar(tongue->chars+tongue->ptr,character,ch_len);
-    DEBUG_Tongue("NEXT examine '%s', %lu bytes\n",character, ch_len);
-    nca ++;
-    nba += ch_len;
-    nbr += ch_len;
-    *catcode = lookupCatcode(state,character);
-    if((*catcode == CC_SUPER)          /* Check for ^^hex or ^^<ctrl> */
-       && (tongue->ptr + nba + ch_len + 1 <= tongue->nbytes)       /* at least 2 more chars? */
-       && ( ((ch_len == 1) && (*character == *(tongue->chars+tongue->ptr+nba)))
-           || (strncmp(character,tongue->chars+tongue->ptr + nba,ch_len)==0)) ){ /* check if same */
-      DEBUG_Tongue("NEXT saw ^^\n");
-      nba += ch_len;
+    char c;
+    tongue->prev_ptr = tongue->ptr;
+    tongue->prev_colno = tongue->colno;
+    tongue->prev_lineno = tongue->lineno;
+    DEBUG_Tongue("READCHAR @ %lu, %d x %lu\n", tongue->ptr, tongue->lineno, tongue->colno);
+    /* Check for line ends: CR+LF (Windows) | CR (Unix) | LF (old Mac);
+       normalize to CR = \r = ^^M, which is what TeX expects. */
+    if(((c = *(tongue->chars+tongue->ptr)) == CR) || (c == LF)){
+      nba++; nca++;
+      if((c == CR) && (*(tongue->chars+tongue->ptr+1) == LF)){ /* Got CRLF */
+        nba++; nca++; }
+      nbr = 1;
+      DEBUG_Tongue(" succeeded w/CR\n");
+      CopyChar("\r",character,1);      
+      *catcode = lookupCatcode(state,character); /* But still, lookup current catcode! */
+      tongue->ptr += nba;
+      tongue->colno = 0;
+      tongue->lineno ++; }
+    else {
+      ch_len = UTF8SKIP(tongue->chars+tongue->ptr);
+      CopyChar(tongue->chars+tongue->ptr,character,ch_len);
+      DEBUG_Tongue("NEXT examine '%s', %lu bytes\n",character, ch_len);
       nca ++;
-      /* Look for 2 lower-case hex or 1 control char (pure ASCII!) */
-      char c1,c2, * tmp;
-      UV code;
-      if((tongue->ptr + nba + 2 <= tongue->nbytes)
-         && (c1 = * (tongue->chars+tongue->ptr + nba))
-         && ( ((c1 = c1-'0') >= 0) && ((c1 <= 9) || (((c1 = c1-'a'+'0'+10) >=10) && (c1 <= 15))))
-         && (c2 = * (tongue->chars+tongue->ptr + nba + 1))
-         && ( ((c2 = c2-'0') >= 0) && ((c2 <= 9) || (((c2 = c2-'a'+'0'+10) >=10) && (c2 <= 15)))) ){
-        nba += 2;
-        nca += 2;
-        code = c1*16+c2; }
-      else {
-        c1 = * (tongue->chars+tongue->ptr + nba);
-        nba ++;
+      nba += ch_len;
+      nbr += ch_len;
+      *catcode = lookupCatcode(state,character);
+      if((*catcode == CC_SUPER)          /* Check for ^^hex or ^^<ctrl> */
+         && (tongue->ptr + nba + ch_len + 1 <= tongue->nbytes)       /* at least 2 more chars? */
+         && ( ((ch_len == 1) && (*character == *(tongue->chars+tongue->ptr+nba)))
+              || (strncmp(character,tongue->chars+tongue->ptr + nba,ch_len)==0)) ){ /* check if same */
+        DEBUG_Tongue("NEXT saw ^^\n");
+        nba += ch_len;
         nca ++;
-        code = (c1 > 64 ? c1 - 64 : c1 + 64); } /* ???? */
-      /* Code point could have 8th bit, turn to multibyte unicode! */
-      tmp = (char *)uvchr_to_utf8((U8 *)character,code);
-      nbr = tmp - character;    /* how many bytes */
-      *catcode = lookupCatcode(state,character); }
-    DEBUG_Tongue("NEXT Succeed %d bytes, %d chars advanced => '%s', %d bytes\n",
-                 nba,nca,character,nbr);
-    tongue->ptr += nba;
-    tongue->colno += nca;
-    tongue->prev_nbytes = nba;
-    tongue->prev_ncols = nca;
+        /* Look for 2 lower-case hex or 1 control char (pure ASCII!) */
+        char c1,c2, * tmp;
+        UV code;
+        if((tongue->ptr + nba + 2 <= tongue->nbytes)
+           && (c1 = * (tongue->chars+tongue->ptr + nba))
+           && ( ((c1 = c1-'0') >= 0) && ((c1 <= 9) || (((c1 = c1-'a'+'0'+10) >=10) && (c1 <= 15))))
+           && (c2 = * (tongue->chars+tongue->ptr + nba + 1))
+           && ( ((c2 = c2-'0') >= 0) && ((c2 <= 9) || (((c2 = c2-'a'+'0'+10) >=10) && (c2 <= 15)))) ){
+          nba += 2;
+          nca += 2;
+          code = c1*16+c2; }
+        else {
+          c1 = * (tongue->chars+tongue->ptr + nba);
+          nba ++;
+          nca ++;
+          code = (c1 > 64 ? c1 - 64 : c1 + 64); } /* ???? */
+        /* Code point could have 8th bit, turn to multibyte unicode! */
+        tmp = (char *)uvchr_to_utf8((U8 *)character,code);
+        nbr = tmp - character;    /* how many bytes */
+        *catcode = lookupCatcode(state,character); }
+      DEBUG_Tongue("NEXT Succeed %d bytes, %d chars advanced => '%s', %d bytes\n",
+                   nba,nca,character,nbr);
+      tongue->ptr += nba;
+      tongue->colno += nca; }
     return nbr; }
   else {
     DEBUG_Tongue("NEXT Failed\n");
@@ -384,20 +405,66 @@ readChar(SV * state, LaTeXML_Core_Mouth_Tongue tongue, char * character, int * c
      but the catcodes can (& will) change by then! */
 void
 unreadChar(LaTeXML_Core_Mouth_Tongue tongue){
-  DEBUG_Tongue("PUTBack %d bytes, %d chars\n",tongue->prev_nbytes,tongue->prev_ncols);
-  tongue->ptr   -= tongue->prev_nbytes;
-  tongue->colno -= tongue->prev_ncols;
-  tongue->prev_nbytes = 0;
-  tongue->prev_ncols = 0;
+  DEBUG_Tongue("PUTBack char\n");
+  tongue->ptr = tongue->prev_ptr;
+  tongue->colno = tongue->prev_colno;
+  tongue->lineno = tongue->prev_lineno;
 }
 
 int
-readLine(SV * mouth, LaTeXML_Core_Mouth_Tongue tongue){
+readLine(LaTeXML_Core_Mouth_Tongue tongue){
+  STRLEN p = 0,pend;
+  char c;
+  /* Skip to CRLF|CR|LF */
+  while((tongue->ptr + p < tongue->nbytes)
+        && ( ( (c=*(tongue->chars + tongue->ptr + p)) != CR) && (c != LF)) ){
+    p += UTF8SKIP(tongue->chars + tongue->ptr + p); }
+  pend = p + 1;
+  if((tongue->ptr + pend < tongue->nbytes)
+     && (*(tongue->chars + tongue->ptr + pend - 1) == CR)
+     && (*(tongue->chars + tongue->ptr + pend) == LF)){ /* CRLF */
+    pend ++; }
+  /* Now skip backwards over any trailing spaces */
+  while(*(tongue->chars + tongue->ptr + p - 1) == ' ') {
+    p--; }
+  tongue->ptr += pend;
+  tongue->colno = 0;
+  tongue->lineno++;
+  return p; }
+
+void
+setInput(LaTeXML_Core_Mouth_Tongue tongue, UTF8 input){
+  tongue->nbytes = strlen(input);
+  DEBUG_Tongue("SET INPUT got %lu bytes: '%s'\n",tongue->nbytes,input);
+  if(tongue->nbytes > tongue->bufsize){ /* Check if buffer big enough. */
+    if(tongue->bufsize == 0){    /* first line? new buffer */
+      Newx(tongue->chars, (tongue->nbytes + 2), char); }
+    else {                    /* Else, grow if needed */
+      Renew(tongue->chars, (tongue->nbytes + 2), char); }
+    tongue->bufsize = tongue->nbytes; }
+  CopyChar(input,tongue->chars,tongue->nbytes);
+  /* Force the buffer to end with a CR */
+  if((tongue->nbytes > 0)
+     && ! ((*(tongue->chars+tongue->nbytes -1) == CR)
+           || (*(tongue->chars+tongue->nbytes -1) == LF))){
+    *(tongue->chars+tongue->nbytes) = CR;
+    tongue->nbytes++; }
+  tongue->ptr = 0;
+  tongue->colno = 0;
+  tongue->lineno = 1;
+  tongue->at_eof = 0;
+  tongue->prev_ptr = tongue->ptr;
+  tongue->prev_colno = tongue->colno;
+  tongue->prev_lineno = tongue->lineno;
+}
+
+int
+fetchLine(SV * mouth, LaTeXML_Core_Mouth_Tongue tongue){
   int nvals;
   char * line;
   SV * sv;
   dTHX; dSP;
-  DEBUG_Tongue("Tongue: readLine\n");
+  DEBUG_Tongue("FETCHLINE\n");
   ENTER; SAVETMPS; PUSHMARK(SP); EXTEND(SP,1);
   PUSHs(mouth);
   PUTBACK;
@@ -410,38 +477,47 @@ readLine(SV * mouth, LaTeXML_Core_Mouth_Tongue tongue){
     if(!SvOK(sv)){
       line = NULL; }
     else {
-      char c;
       if(! SvUTF8(sv)) {
         sv = sv_mortalcopy(sv);
         sv_utf8_upgrade(sv); }
       line = (UTF8)SvPV_nolen(sv);
-      DEBUG_Tongue("Got line '%s'\n",line);
+      /* shouldn't be here? 
       tongue->lineno++;
-      tongue->colno = 0;
+      tongue->colno = 0; */
       tongue->nbytes = strlen(line);
-      DEBUG_Tongue("length %lu;",tongue->nbytes);
+      DEBUG_Tongue("FETCHLINE got %lu bytes: '%s'\n",tongue->nbytes,line);
       if(tongue->nbytes > tongue->bufsize){ /* Check if buffer big enough. */
         if(tongue->bufsize == 0){    /* first line? new buffer */
-          Newx(tongue->chars, (tongue->nbytes + 2), char); }
+          Newx(tongue->chars, (tongue->nbytes + 1), char); }
         else {                    /* Else, grow if needed */
-          Newx(tongue->chars, (tongue->nbytes + 2), char); }
+          Renew(tongue->chars, (tongue->nbytes + 1), char); }
         tongue->bufsize = tongue->nbytes; }
       CopyChar(line,tongue->chars,tongue->nbytes);
       tongue->ptr = 0;
       /* normalize line end. */
-      while((tongue->nbytes > 0)
-            && ( ((c = *(tongue->chars+tongue->nbytes - 1)) == ' ') || ((c >= 11) && (c <= 13)) ) ){
+      /*** DO we really need to remove spaces at end? */
+      /*
+       while((tongue->nbytes > 0)
+         && ( ((c = *(tongue->chars+tongue->nbytes - 1)) == ' ') || ((c >= 10) && (c <= 13)) ) ){ 
         tongue->nbytes--; }
-      if((tongue->nbytes > 0)     /* keep Trailing control space */
-         && (*(tongue->chars+tongue->nbytes - 1) == '\\')
+      */
+      /*
+      while((tongue->nbytes > 0)
+            && ( ((c = *(tongue->chars+tongue->nbytes - 1)) == 13) || (c == 10) ) ){
+        tongue->nbytes--; }
+      */
+      /*if((tongue->nbytes > 0) */    /* keep Trailing control space */
+      /*   && (*(tongue->chars+tongue->nbytes - 1) == '\\')
          && (*(tongue->chars+tongue->nbytes) == ' ')) {
-        tongue->nbytes++; }
-      DEBUG_Tongue("SET LINE to %lu bytes, '%s'\n", tongue->nbytes, line);
-      CopyChar("\r",tongue->chars+tongue->nbytes,1); tongue->nbytes++;/* Append \r */
+         tongue->nbytes++; } */
+      /*      if( ((c = *(tongue->chars+tongue->nbytes - 1)) != CR) && (c != LF) ){
+              CopyChar("\r",tongue->chars+tongue->nbytes,1); tongue->nbytes++; } */
+      /*      CopyChar("\r",tongue->chars+tongue->nbytes,1); tongue->nbytes++; */
     } }
   PUTBACK; FREETMPS; LEAVE;
   if(line == NULL){
     DEBUG_Tongue("No remaining input\n");
+    tongue->at_eof = 1;
     return 0; }
   else {
     return 1; } }
@@ -717,7 +793,8 @@ new()
     Newxz(tongue,1,T_Tongue);
     DEBUG_Tongue("Creating TONGUE!\n");
     Newxz(tongue->chars,3,char);
-    tongue->bufsize=3;
+    tongue->bufsize = 3;
+    tongue->lineno = 1;
     RETVAL = tongue;
   OUTPUT:
     RETVAL
@@ -727,7 +804,7 @@ finish(tongue)
     LaTeXML_Core_Mouth_Tongue tongue;
   CODE:
     DEBUG_Tongue("Finished with Tongue\n");
-    tongue->lineno = 0;
+    tongue->lineno = 1;
     tongue->colno = 0;
     /*if(tongue->chars != NULL){
       safefree(tongue->chars); } *//* should reuse if long enough?  */
@@ -739,6 +816,7 @@ int
 hasMoreInput(tongue)
     LaTeXML_Core_Mouth_Tongue tongue
   CODE:
+    DEBUG_Tongue("Tongue has %lu bytes\n", tongue->nbytes-tongue->ptr);
     RETVAL = tongue->ptr < tongue->nbytes;
   OUTPUT:
     RETVAL
@@ -764,6 +842,16 @@ getPosition(mouth)
     mPUSHi((IV) tongue->lineno);
     mPUSHi((IV) tongue->colno);
 
+void
+setInput(mouth,input)
+    SV * mouth;
+    UTF8 input;
+  INIT:
+    LaTeXML_Core_Mouth_Tongue tongue;
+  CODE:
+    tongue = getMouthTongue(mouth);
+    setInput(tongue,input);
+
 LaTeXML_Core_Token
 readToken(mouth)
     SV * mouth;
@@ -780,16 +868,18 @@ readToken(mouth)
     startcol = tongue->colno;
     RETVAL = NULL;
     while(RETVAL == NULL){
-      DEBUG_Tongue("READ Token\n");
+      DEBUG_Tongue("READ Token @ %lu\n",startcol);
       if((nbytes = readChar(state,tongue,ch,&cc))){
         if((startcol == 0) && (cc == CC_SPACE)){ /* Ignore leading spaces */
+          DEBUG_Tongue("Skipping leading space\n");
           while((nbytes = readChar(state,tongue,ch,&cc) && (cc == CC_SPACE))){
           } }
         if(CC_TrivialRead[cc]){   /* Common, trivial case first */
           DEBUG_Tongue("Token[%s,%s]\n",ch,CC_SHORT_NAME[cc]);
           RETVAL = make_token(ch,cc); }
         else if(cc == CC_ESCAPE){
-          char buffer[tongue->nbytes+1];  /* room for whole line. */
+          /* Actually, room for the whole file! Safe strategy for reasonable max token length??? */
+          char buffer[tongue->nbytes+1]; /* room for whole line. */
           STRLEN p;
           buffer[0]='\\'; p = 1; buffer[p]=0; /* Store \, 'cause CS are stored that way */
           DEBUG_Tongue("ESCAPE '%s'\n",buffer);
@@ -813,18 +903,37 @@ readToken(mouth)
           DEBUG_Tongue("Token[%s,%s]\n",buffer,CC_SHORT_NAME[CC_CS]);
           RETVAL = make_token(buffer,CC_CS); }
         else if (cc == CC_SPACE){
-          DEBUG_Tongue("SPACE\n");
-          RETVAL = make_token(ch,cc);
+          int cr = 0;
+          DEBUG_Tongue("Skipping spaces\n");
           while((nbytes = readChar(state,tongue,ch,&cc)) /* skip following spaces */
                 && ((cc == CC_SPACE) || (cc == CC_EOL)) ){
-          }
+            if(cc == CC_EOL){
+              cr = 1;
+              nbytes = 0;
+              break; } }
+          if(cr && lookupInteger(state,"PRESERVE_NEWLINES")){
+            RETVAL = make_token("\n",CC_SPACE); }
+          else {
+            RETVAL = make_token(" ",CC_SPACE); }
           if(nbytes){           /* put back non-space (if any) */
             unreadChar(tongue); } }
         else if (cc == CC_COMMENT){
-          DEBUG_Tongue("Comment '%s'\n",tongue->chars+tongue->ptr);
-          if((tongue->ptr +1 < tongue->nbytes) /* More than just CR? */
+          STRLEN pstart = tongue->ptr;
+          STRLEN n;
+          if((n = readLine(tongue))
              && lookupBoolean(state,"INCLUDE_COMMENTS")){
-            char buffer[tongue->nbytes+1];  /* room for whole line. */
+            char buffer[n+2];
+            buffer[0]='%';            
+            Copy(tongue->chars+pstart,buffer+1,n,char);
+            buffer[n+1] = 0;
+            DEBUG_Tongue("Comment '%s'\n",buffer);
+            RETVAL = make_token(buffer,cc);
+          }
+          startcol = tongue->colno; }
+        /*
+          if((tongue->ptr +1 < tongue->nbytes)
+             && lookupBoolean(state,"INCLUDE_COMMENTS")){
+            char buffer[tongue->nbytes+1];
             int n = tongue->nbytes-tongue->ptr;
             buffer[0]='%';
             Copy(tongue->chars+tongue->ptr,buffer+1,n,char);
@@ -834,13 +943,16 @@ readToken(mouth)
             buffer[n] = 0;
             RETVAL = make_token(buffer,cc); }
           tongue->ptr = tongue->nbytes; }
+        */
         else if (cc == CC_EOL){
-          DEBUG_Tongue("EOL @ %lu\n",tongue->colno);
           if(startcol == 0){
+            DEBUG_Tongue("EOL \\par\n");
             RETVAL = T_CS("\\par"); }
           else if(lookupInteger(state,"PRESERVE_NEWLINES")){
+            DEBUG_Tongue("EOL T_SPACE[\\n]\n");
             RETVAL = make_token("\n",CC_SPACE); }
           else {
+            DEBUG_Tongue("EOL T_SPACE\n");
             RETVAL = make_token(" ",CC_SPACE); } }
         else if (cc == CC_IGNORE){
           DEBUG_Tongue("IGNORE\n"); }
@@ -850,8 +962,8 @@ readToken(mouth)
         else {
           DEBUG_Tongue("No proper Catcode '%d'\n",cc); }
         }
-      else {                    /* Try for next line. */
-        if(! readLine(mouth,tongue)){
+      else {                    /* Got no input; Try for next line. */
+        if(! fetchLine(mouth,tongue)){
           break; }
         if(((tongue->lineno % 25) == 0) && lookupBoolean(state,"INCLUDE_COMMENTS")){
           char * source = getMouthShortsource(mouth);
@@ -863,7 +975,18 @@ readToken(mouth)
   OUTPUT:
     RETVAL
 
-UTF8
+int
+atEOF(mouth)
+    SV * mouth;
+  INIT:
+    LaTeXML_Core_Mouth_Tongue tongue;
+  CODE:
+    tongue = getMouthTongue(mouth);
+    RETVAL = tongue->at_eof;
+  OUTPUT:
+    RETVAL
+
+SV *
 readRawLine(mouth,...)
     SV * mouth;
   INIT:
@@ -873,17 +996,42 @@ readRawLine(mouth,...)
     if(items > 1){
       noread = SvIV(ST(1)); }
     tongue = getMouthTongue(mouth);
-    if((tongue->ptr >= tongue->nbytes) && noread){ /* out of input, but don't want a new line */
-      RETVAL = ""; }      
-    else if(tongue->ptr >= tongue->nbytes){ /* otherwise read a line, if needed */
-      readLine(mouth,tongue); }
-    if(tongue->ptr < tongue->nbytes) { /* If we have input now */
-      RETVAL = tongue->chars+tongue->ptr;
-      tongue->ptr = tongue->nbytes;
-      if(*(tongue->chars+tongue->ptr-1) == '\r'){ /* cut off trailing \r */
-        *(tongue->chars+tongue->ptr-1) = 0; } }
+    /* Peculiar logic: 'noread' really means return the rest of current line,
+       if we've alread read something from it */
+    if(noread){
+      if(tongue->colno > 0){
+        STRLEN pstart = tongue->ptr;
+        STRLEN n = readLine(tongue);
+        /*
+        if(n==0){ fprintf(stderr,"KEEP RAW: Empty line\n"); }
+        else {
+          char buffer[n+1];
+          Copy(tongue->chars+pstart,buffer,n,char);
+          buffer[n] = 0;
+          fprintf(stderr,"KEEP RAW: '%s'\n",buffer); }
+              */
+        RETVAL = newSVpvn_flags(tongue->chars+pstart,n, SVf_UTF8); }
+      else {
+        RETVAL = &PL_sv_undef;; } }
     else {
-      RETVAL = NULL; }
+      if(tongue->ptr >= tongue->nbytes){ /* out of input */
+        fetchLine(mouth,tongue); }
+      if(tongue->ptr < tongue->nbytes) { /* If we have input now */
+        STRLEN pstart = tongue->ptr;
+        STRLEN n = readLine(tongue);
+        /*
+        if(n==0){ fprintf(stderr,"READ RAW: Empty line\n"); }
+        else {
+          char buffer[n+1];
+          Copy(tongue->chars+pstart,buffer,n,char);
+          buffer[n] = 0;
+          fprintf(stderr,"READ RAW: '%s'\n",buffer); }
+               */
+        RETVAL = newSVpvn_flags(tongue->chars+pstart,n, SVf_UTF8);
+      }
+      else {
+        DEBUG_Tongue("NO MORE RAW\n");
+        RETVAL = &PL_sv_undef;; } }
   OUTPUT:
     RETVAL
     
