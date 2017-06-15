@@ -253,6 +253,27 @@ Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired.
 
+\subsection{Archlinux \& friends}\label{install.arch}\index{Arch}
+For Archlinux and derivatives, there is a package in the \href{https://aur.archlinux.org/}{Archlinux User Repository}. 
+Furthermore, most dependencies can be found in the official repositories. 
+
+\paragraph{Installing from AUR}
+To install latexml from the user repositories, install the \href{https://aur.archlinux.org/packages/perl-latexml/}{perl-latexml} package. 
+
+\paragraph{Installing dependencies}
+To install the dependencies, use the following pacman command:
+\begin{lstlisting}[style=shell]
+sudo pacman -S db imagemagick perl perl-archive-zip \
+   perl-file-which perl-image-size perl-io-string \
+   perl-libwww perl-json-xs perl-parse-recdescent \
+   perl-xml-libxml perl-xml-libxslt texlive-core
+\end{lstlisting}
+
+Additionally, install the \href{https://aur.archlinux.org/packages/perl-text-unidecode/}{perl-text-unidecode}
+AUR package. 
+
+
+
 \subsection{MacOS}\label{install.mac}\index{Apple Macintosh}
 For Apple Macintosh systems, the  \href{http://www.macports.org}{MacPorts}
 repository is the most convenient way to install \LaTeXML;
