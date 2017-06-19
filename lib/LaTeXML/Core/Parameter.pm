@@ -82,11 +82,15 @@ sub read {
   # (eg. \caption(...\label{badchars}}) where you really need to
   # cleanup after the fact!
   # Hmmm, seem to still need it...
-  $self->setupCatcodes;
-  my $value = &{ $$self{reader} }($gullet, @{ $$self{extra} || [] });
-  $value = $value->neutralize(@{ $$self{semiverbatim} }) if $$self{semiverbatim} && (ref $value)
-    && $value->can('neutralize');
-  $self->revertCatcodes;
+  my $semiverbatim = $$self{semiverbatim};
+  if ($semiverbatim) {
+    $STATE->beginSemiverbatim(@$semiverbatim); }
+  my $extra  = $$self{extra};
+  my $reader = $$self{reader};
+  my $value  = ($extra ? &$reader($gullet, @$extra) : &$reader($gullet));
+  if ($semiverbatim) {
+    $value = $value->neutralize(@$semiverbatim) if (ref $value) && $value->can('neutralize');
+    $STATE->endSemiverbatim(); }
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
