@@ -47,48 +47,46 @@ sub create {
 
 sub new {
   my ($class, $string, %options) = @_;
-  $string               = q{}                unless defined $string;
-  $options{source}      = "Anonymous String" unless defined $options{source};
-  $options{shortsource} = "String"           unless defined $options{shortsource};
-  my $self = bless { source => $options{source},
-    shortsource    => $options{shortsource},
+  $string = q{} unless defined $string;
+  my $source      = (defined $options{source}      ? $options{source}      : "Anonymous String");
+  my $shortsource = (defined $options{shortsource} ? $options{shortsource} : "String");
+  return $class->initialize(source => $source, shortsource => $shortsource, content => $string,
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
-    notes          => ($options{notes} ? 1 : 0),
-  }, $class;
-  $self->initialize;
-  $self->setInput($string);
-  return $self; }
+    notes          => ($options{notes}          ? 1 : 0)); }
 
 sub initialize {
-  my ($self) = @_;
-  $$self{tongue} = LaTeXML::Core::Mouth::Tongue::new();
-  if ($$self{notes}) {
-    $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
-      . " " . $$self{source};
-    NoteBegin($$self{note_message}); }
-  if ($$self{fordefinitions}) {
-    $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
-    $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
+  my ($class, %options) = @_;
+  my $saved_state = ($options{fordefinitions}
+    ? [$STATE->lookupCatcode('@'), $STATE->lookupValue('INCLUDE_COMMENTS')]
+    : undef);
+  my $note_message = ($options{notes}
+    ? "Processing " . ($options{fordefinitions} ? "definitions" : "content")
+      . " " . $options{source}
+    : '');
+  my $self = LaTeXML::Core::Mouth::new_internal(
+    (defined $options{source}      ? $options{source}      : ''),
+    (defined $options{shortsource} ? $options{shortsource} : ''),
+    (defined $options{content}     ? $options{content}     : ''),
+    $saved_state, $note_message);
+  NoteBegin($note_message) if $note_message;
+  if ($options{fordefinitions}) {
     $STATE->assignCatcode('@' => CC_LETTER);
     $STATE->assignValue(INCLUDE_COMMENTS => 0); }
-  return; }
+  return $self; }
 
 sub finish {
   my ($self) = @_;
-  $$self{tongue}->finish();
-  if ($$self{fordefinitions}) {
-    $STATE->assignCatcode('@' => $$self{saved_at_cc});
-    $STATE->assignValue(INCLUDE_COMMENTS => $$self{SAVED_INCLUDE_COMMENTS}); }
-  if ($$self{notes}) {
-    NoteEnd($$self{note_message}); }
+  if (my $saved_state = $self->getSavedState) {
+    my ($atcc, $comments) = @$saved_state;
+    $STATE->assignCatcode('@' => $atcc);
+    $STATE->assignValue(INCLUDE_COMMENTS => $comments); }
+  if (my $message = $self->getNoteMessage) {
+    NoteEnd($message); }
+  $self->finish_internal();
   return; }
 
 sub getNextLine {
   return; }
-
-sub hasMoreInput {
-  my ($self) = @_;
-  return $$self{tongue}->hasMoreInput(); }
 
 sub stringify {
   my ($self) = @_;
@@ -100,9 +98,9 @@ sub getLocator {
   my ($self, $length) = @_;
   my ($l,    $c)      = $self->getPosition;
   if ($length && ($length < 0)) {
-    return "at $$self{shortsource}; line $l col $c"; }
+    return "at " . $self->getShortSource . "; line $l col $c"; }
   elsif ($length && (defined $l || defined $c)) {
-    my $msg   = "at $$self{source}; line $l col $c";
+    my $msg   = "at " . $self->getSource . "; line $l col $c";
     my $chars = $$self{chars};
     if (my $n = $$self{nchars}) {
       $c = $n - 1 if $c >= $n;
@@ -114,25 +112,7 @@ sub getLocator {
       $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; }
     return $msg; }
   else {
-    return "at $$self{source}; line $l col $c"; } }
-
-sub getSource {
-  my ($self) = @_;
-  return $$self{source}; }
-
-#**********************************************************************
-# Read all tokens until a token equal to $until (if given), or until exhausted.
-# Returns an empty Tokens list, if there is no input
-
-sub readTokens {
-  my ($self, $until) = @_;
-  my @tokens = ();
-  while (defined(my $token = $self->readToken())) {
-    last if $until and $token->getString eq $until->getString;
-    push(@tokens, $token); }
-  while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
-    pop(@tokens); }
-  return Tokens(@tokens); }
+    return "at " . $self->getSource . "; line $l col $c"; } }
 
 #======================================================================
 1;

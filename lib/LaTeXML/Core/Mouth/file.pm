@@ -21,16 +21,8 @@ use base qw(LaTeXML::Core::Mouth);
 sub new {
   my ($class, $pathname, %options) = @_;
   my ($dir,   $name,     $ext)     = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
-  $self->initialize;
-  $self->openFile($pathname);
-  return $self; }
-
-sub openFile {
-  my ($self, $pathname) = @_;
   my $IN;
+  my $self = undef;    # ?!?!?!?!?!
   if (!-r $pathname) {
     Fatal('I/O', 'unreadable', $self, "File $pathname is not readable."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
@@ -38,9 +30,10 @@ sub openFile {
   open($IN, '<', $pathname)
     || Fatal('I/O', 'open', $self, "Can't open $pathname for reading", $!);
   local $/ = undef;
-  $self->setInput(<$IN>);
+  my $content = <$IN>;
   close($IN);
-  return; }
+  return $class->initialize(source => $pathname, shortsource => "$name.$ext", content => $content,
+    fordefinitions => $options{fordefinitions}, notes => $options{notes}); }
 
 sub getNextLine {
   return; }
@@ -48,7 +41,7 @@ sub getNextLine {
 sub stringify {
   my ($self) = @_;
   my ($l, $c) = $self->getPosition;
-  return 'Mouth[' . $$self{source} . '@' . $l . 'x' . $c . ']'; }
+  return 'Mouth[' . $self->getSource . '@' . $l . 'x' . $c . ']'; }
 #======================================================================
 1;
 

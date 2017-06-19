@@ -20,13 +20,9 @@ sub new {
   my ($class,   $url,  %options) = @_;
   my ($urlbase, $name, $ext)     = url_split($url);
   $STATE->assignValue(URLBASE => $urlbase) if defined $urlbase;
-  my $self = bless { source => $url, shortsource => $name }, $class;
-  $$self{fordefinitions} = 1 if $options{fordefinitions};
-  $$self{notes}          = 1 if $options{notes};
   my $content = auth_get($url);
-  $self->initialize;
-  $self->setInput($content);
-  return $self; }
+  return $class->initialize(source => $url, shortsource = $name, content => $content,
+    fordefinitions => $options{fordefinitions}, notes => options { notes }); }
 
 #======================================================================
 1;

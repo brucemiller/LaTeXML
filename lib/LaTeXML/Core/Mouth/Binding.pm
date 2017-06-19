@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
+use base qw(LaTeXML::Core::Mouth);
 
 # This is a fake mouth, used for processing *.ltxml, *.latexml files
 # It exists primarily for the purposes of
@@ -25,39 +26,26 @@ use LaTeXML::Util::Pathname;
 sub new {
   my ($class, $pathname) = @_;
   my ($dir, $name, $ext) = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  NoteBegin("Loading $$self{source}");
-  return $self; }
-
-sub finish {
-  my ($self) = @_;
-  NoteEnd("Loading $$self{source}");
-  return; }
+  return $class->initialize(source => $pathname, shortsource => "$name.$ext", notes => 1); }
 
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
   my ($self, $length) = @_;
-  my $path  = $$self{source};
-  my $loc   = ($length && $length < 0 ? $$self{shortsource} : $$self{source});
+  return "I'm Lost!";
+  my $path  = $self->getSource;
+  my $loc   = ($length && $length < 0 ? $self->getShortSource : $self->getSource);
   my $frame = 2;
   my ($pkg, $file, $line);
   while (($pkg, $file, $line) = caller($frame++)) {
     last if $file eq $path; }
   return $loc . ($line ? " line $line" : ''); }
 
-sub getSource {
-  my ($self) = @_;
-  return $$self{source}; }
-
 sub hasMoreInput {
   return 0; }
 
-sub readToken {
-  return; }
-
 sub stringify {
   my ($self) = @_;
-  return "Mouth::Binding[$$self{source}]"; }
+  return "Mouth::Binding[" . $self->getSource . "]"; }
 #======================================================================
 1;
 
