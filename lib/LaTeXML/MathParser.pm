@@ -801,7 +801,7 @@ sub text_form {
   return $text; }
 
 my %PREFIX_ALIAS = (    # [CONSTANT]
-  SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => => '*',
+  SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => '*',
   'equals'      => '=', 'less-than' => '<', 'greater-than' => '>',
   'less-than-or-equals' => '<=', 'greater-than-or-equals' => '>=',
   'much-less-than'      => '<<', 'much-greater-than'      => '>>',
@@ -1468,7 +1468,7 @@ sub MaybeFunction {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -1517,7 +1517,7 @@ C<$op> to the nodes C<@args>.
 =item C<< $node = ApplyDelimited($op,@stuff); >>
 
 Create a new C<XMApp> node representing the application of the node
-C<$op> to the arguments found in C<@stuff>.  C<@stuff> are 
+C<$op> to the arguments found in C<@stuff>.  C<@stuff> are
 delimited arguments in the sense that the leading and trailing nodes
 should represent open and close delimiters and the arguments are
 separated by punctuation nodes.
