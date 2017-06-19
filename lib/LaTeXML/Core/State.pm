@@ -163,7 +163,7 @@ sub getModel {
 # Lookup & assign a general Value
 # [Note that the more direct $$self{value}{$_[1]}[0]; works, but creates entries
 # this could concievably cause space issues, but timing doesn't show improvements this way]
-sub lookupValue {
+sub XXXlookupValue {
   my ($self, $key) = @_;
   my $e = $$self{value}{$key};
   return $e && $$e[0]; }
@@ -246,7 +246,7 @@ sub valueInFrame {
 
 #======================================================================
 # Lookup & assign a character's Catcode
-sub lookupCatcode {
+sub XXXlookupCatcode {
   my ($self, $key) = @_;
   my $e = $$self{catcode}{$key};
   return $e && $$e[0]; }
@@ -257,7 +257,7 @@ sub assignCatcode {
   return; }
 
 # The following rarely used.
-sub lookupMathcode {
+sub XXXlookupMathcode {
   my ($self, $key) = @_;
   my $e = $$self{mathcode}{$key};
   return $e && $$e[0]; }
@@ -267,7 +267,7 @@ sub assignMathcode {
   assign_internal($self, 'mathcode', $key, $value, $scope);
   return; }
 
-sub lookupSFcode {
+sub XXXlookupSFcode {
   my ($self, $key) = @_;
   my $e = $$self{sfcode}{$key};
   return $e && $$e[0]; }
@@ -277,7 +277,7 @@ sub assignSFcode {
   assign_internal($self, 'sfcode', $key, $value, $scope);
   return; }
 
-sub lookupLCcode {
+sub XXXlookupLCcode {
   my ($self, $key) = @_;
   my $e = $$self{lccode}{$key};
   return $e && $$e[0]; }
@@ -287,7 +287,7 @@ sub assignLCcode {
   assign_internal($self, 'lccode', $key, $value, $scope);
   return; }
 
-sub lookupUCcode {
+sub XXXlookupUCcode {
   my ($self, $key) = @_;
   my $e = $$self{uccode}{$key};
   return $e && $$e[0]; }
@@ -297,7 +297,7 @@ sub assignUCcode {
   assign_internal($self, 'uccode', $key, $value, $scope);
   return; }
 
-sub lookupDelcode {
+sub XXXlookupDelcode {
   my ($self, $key) = @_;
   my $e = $$self{delcode}{$key};
   return $e && $$e[0]; }
@@ -326,15 +326,19 @@ our @letter_or_other = (
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
 # Any other token is returned as is.
-sub lookupMeaning {
+sub XXlookupMeaning {
   my ($self, $token) = @_;
   my $e;
 ##  if (my $cs = $token
 ##    && $active_or_cs[$token->getCatcode]
 ##    && $token->getString) {
   if (my $cs = $token && $token->getMeaningName) {
-    my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
-  else { return $token; } }
+    my $e = $$self{meaning}{$cs};
+    print STDERR "MEANING " . $token->toString . " ==> " . ($e && $$e[0] ? $$e[0]->toString : 'undef') . "\n";
+    return $e && $$e[0]; }
+  else {
+    print STDERR "MEANING " . $token->toString . " ==> Itself\n";
+    return $token; } }
 
 # $meaning should be a definition (for defining active control sequences)
 # or another token, for \let
@@ -357,7 +361,7 @@ our @executable_primitive_name = (    # [CONSTANT]
   undef,       undef,   undef, undef,
   undef,       undef);
 
-sub lookupDefinition {
+sub XXlookupDefinition {
   my ($self, $token) = @_;
   return unless $token;
   my $defn;
@@ -378,7 +382,7 @@ sub lookupDefinition {
   return; }
 
 # identical, but for return test; used by skipConditionalBody
-sub lookupConditional {
+sub XXXlookupConditional {
   my ($self, $token) = @_;
   return unless $token;
   my $defn;
@@ -399,7 +403,7 @@ sub lookupConditional {
   return; }
 
 # Identical but inlined return tests for efficiency; used by readXToken
-sub lookupExpandable {
+sub XXXlookupExpandable {
   my ($self, $token, $toplevel) = @_;
   return unless $token;
   my $defn;
@@ -426,7 +430,7 @@ sub lookupExpandable {
 # and also looks for cs that have been let to other `executable' tokens
 # This returns a definition object,
 # or a "self inserting" token.
-sub lookupDigestableDefinition {
+sub XXXlookupDigestableDefinition {
   my ($self, $token) = @_;
   return unless $token;
   my $defn;
