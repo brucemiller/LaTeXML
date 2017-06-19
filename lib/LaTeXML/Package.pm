@@ -199,7 +199,10 @@ sub parseParameters {
     if ($p =~ s/^(\{([^\}]*)\})\s*//) {
       my ($spec, $inner_spec) = ($1, $2);
       my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, extra => [$inner])); }
+      if ($inner) {
+        push(@params, LaTeXML::Core::Parameter->new('PlainReparsed', $spec, extra => [$inner])); }
+      else {
+        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
     elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
       my ($spec, $inner_spec) = ($1, $2);
       if ($inner_spec =~ /^Default:(.*)$/) {
@@ -793,10 +796,7 @@ sub Expand {
   return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread(@tokens);
-      my @expanded = ();
-      while (defined(my $t = $gullet->readXToken(0))) {
-        push(@expanded, $t); }
-      return Tokens(@expanded); }); }
+      return $gullet->readXTokens(); }); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -824,7 +824,6 @@ sub RawTeX {
       while ($token = $gullet->readXToken(0)) {
         next if $token->equals(T_SPACE);
         $stomach->invokeToken($token); } });
-
   $STATE->assignCatcode('@' => $savedcc);
   return; }
 
@@ -1944,6 +1943,7 @@ sub loadTeXDefinitions {
       while ($token = $gullet->readXToken(0)) {
         next if $token->equals(T_SPACE);
         $stomach->invokeToken($token); } });
+
   AssignValue('INTERPRETING_DEFINITIONS' => $was_interpreting);
   AssignValue('INCLUDE_STYLES'           => $was_including_styles);
   return; }
