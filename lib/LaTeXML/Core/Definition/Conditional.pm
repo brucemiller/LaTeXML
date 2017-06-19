@@ -40,6 +40,7 @@ sub getTest {
 # they do NOT defined as macros, so they don't need to handle doInvocation,
 sub invoke {
   my ($self, $gullet) = @_;
+  local $LaTeXML::CURRENT_TOKEN = $$self{cs};
   # A real conditional must have condition_type set
   if (my $cond_type = $$self{conditional_type}) {
     if ($cond_type eq 'if') {
