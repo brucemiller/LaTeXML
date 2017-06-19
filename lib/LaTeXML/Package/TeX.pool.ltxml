@@ -111,17 +111,19 @@ RequireResource('LaTeXML.css');
 #======================================================================
 # Define parsers for standard parameter types.
 
-DefParameterType('Plain', sub {
+DefParameterType('Plain', \&LaTeXML::Core::Gullet::readArg,
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+DefParameterType('PlainReparsed', sub {
     my ($gullet, $inner) = @_;
     my $value = $gullet->readArg;
-    if ($inner) {
-      ($value) = $inner->reparseArgument($gullet, $value); }
+    ($value) = $inner->reparseArgument($gullet, $value);
     $value; },
   reversion => sub {
     my ($arg, $inner) = @_;
-    (T_BEGIN,
-      ($inner ? $inner->revertArguments($arg) : Revert($arg)),
-      T_END); });
+    (T_BEGIN, $inner->revertArguments($arg), T_END); });
 
 DefParameterType('Optional', sub {
     my ($gullet, $default, $inner) = @_;
@@ -154,29 +156,27 @@ DefParameterType('GeneralText', sub {
         "Expected <general text> here");
       return $open; } });
 
-DefParameterType('Until', sub {
-    my ($gullet, $until) = @_;
-    $gullet->readUntil($until); },
+DefParameterType('Until', \&LaTeXML::Core::Gullet::readUntil,
   reversion => sub {
     my ($arg, $until) = @_;
     (Revert($arg), Revert($until)); });
 
 # Skip any spaces, but don't contribute an argument.
-DefParameterType('SkipSpaces', sub { $_[0]->skipSpaces; 1; }, novalue => 1);
+DefParameterType('SkipSpaces', \&LaTeXML::Core::Gullet::skipSpaces, novalue => 1, optional => 1);
 
-DefParameterType('Skip1Space', sub { $_[0]->skip1Space; 1; }, novalue => 1);
+DefParameterType('Skip1Space', \&LaTeXML::Core::Gullet::skip1Space, novalue => 1, optional => 1);
 
 # Read the next token
-DefParameterType('Token', sub { $_[0]->readToken; });
+DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken);
 
 # Read the next token, after expanding any expandable ones.
-DefParameterType('XToken', sub { $_[0]->readXToken; });
+DefParameterType('XToken', \&LaTeXML::Core::Gullet::readXToken);
 
 # Read a number
-DefParameterType('Number', sub { $_[0]->readNumber; });
+DefParameterType('Number', \&LaTeXML::Core::Gullet::readNumber);
 
 # Read a floating point number
-DefParameterType('Float', sub { $_[0]->readFloat; });
+DefParameterType('Float', \&LaTeXML::Core::Gullet::readFloat);
 
 sub ReadFloat {
   my ($gullet) = @_;
@@ -184,22 +184,20 @@ sub ReadFloat {
   return ($gullet->readFloat || Float(0)); }
 
 # Read a dimension
-DefParameterType('Dimension', sub { $_[0]->readDimension; });
+DefParameterType('Dimension', \&LaTeXML::Core::Gullet::readDimension);
 
 # Read a Glue (aka skip)
-DefParameterType('Glue', sub { $_[0]->readGlue; });
+DefParameterType('Glue', \&LaTeXML::Core::Gullet::readGlue);
 
 # Read a MuDimension (math)
-DefParameterType('MuDimension', sub { $_[0]->readMuDimension; });
+DefParameterType('MuDimension', \&LaTeXML::Core::Gullet::readMuDimension);
 
 # Read a MuGlue (math)
-DefParameterType('MuGlue', sub { $_[0]->readMuGlue; });
+DefParameterType('MuGlue', \&LaTeXML::Core::Gullet::readMuGlue);
 
 # Read until the next (balanced) open brace {
 # used for the last TeX-style delimited argument
-DefParameterType('UntilBrace', sub {
-    my ($gullet) = @_;
-    $gullet->readUntilBrace; });
+DefParameterType('UntilBrace', \&LaTeXML::Core::Gullet::readUntilBrace);
 
 # Yet another special case: Require a { but do not read it!!!
 DefParameterType('RequireBrace', sub {
@@ -244,21 +242,22 @@ DefParameterType('Expanded', sub {
     return Tokens(@tokens); });
 
 # Read a matching keyword, eg. Match:=
-DefParameterType('Match', sub { shift->readMatch(@_); });
+DefParameterType('Match', \&LaTeXML::Core::Gullet::readMatch);
 
 # Read a keyword; eg. Keyword:to
 # (like Match, but ignores catcodes)
-DefParameterType('Keyword', sub { shift->readKeyword(@_); });
+DefParameterType('Keyword', sub { shift->readKeyword(map { ToString($_); } @_); });
 
 # Read balanced material (?)
-DefParameterType('Balanced', sub { $_[0]->readBalanced; });
+DefParameterType('Balanced', \&LaTeXML::Core::Gullet::readBalanced);
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
-DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
+DefParameterType('Semiverbatim', \&LaTeXML::Core::Gullet::readArg,
+  semiverbatim => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
-DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
+DefParameterType('OptionalSemiverbatim', \&LaTeXML::Core::Gullet::readOptional,
   semiverbatim => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
@@ -279,16 +278,19 @@ DefParameterType('Verbatim', sub {
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read an argument that will not be digested.
-DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
+DefParameterType('Undigested', \&LaTeXML::Core::Gullet::readArg,
+  undigested => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
-DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
+DefParameterType('OptionalUndigested', \&LaTeXML::Core::Gullet::readOptional,
   undigested => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
-DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
+DefParameterType('UndigestedKey', \&LaTeXML::Core::Gullet::readArg,
+  #sub { $_[0]->readArg; },
+  undigested => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -516,32 +518,28 @@ DefParameterType('OptionalKeyVals', sub {
 
 # Not sure that this is the most elegant solution, but...
 # What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
-DefParameterType('DisplayStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('DisplayStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(mathstyle => 'display'); },
   afterDigest => sub {
     $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
-DefParameterType('TextStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('TextStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(mathstyle => 'text'); },
   afterDigest => sub {
     $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
-DefParameterType('ScriptStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('ScriptStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(mathstyle => 'script'); },
   afterDigest => sub {
     $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
-DefParameterType('ScriptscriptStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('ScriptscriptStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(mathstyle => 'scriptscript'); },
@@ -549,8 +547,7 @@ DefParameterType('ScriptscriptStyle', sub {
     $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 # Perverse naming convention: not script style, but in the style of a script relative to current.
-DefParameterType('InScriptStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('InScriptStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(scripted => 1); },
@@ -560,8 +557,7 @@ DefParameterType('InScriptStyle', sub {
 # NOTE: the various parameter features don't combine easily!!
 # I need a ScriptStyleUntil for \root!!!
 # I also need to redo fractions using these new types....
-DefParameterType('OptionalInScriptStyle', sub {
-    $_[0]->readOptional; },
+DefParameterType('OptionalInScriptStyle', \&LaTeXML::Core::Gullet::readOptional,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(scripted => 1); },
@@ -569,8 +565,7 @@ DefParameterType('OptionalInScriptStyle', sub {
     $_[0]->egroup; },
   optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
-DefParameterType('InFractionStyle', sub {
-    $_[0]->readArg; },
+DefParameterType('InFractionStyle', \&LaTeXML::Core::Gullet::readArg,
   beforeDigest => sub {
     $_[0]->bgroup;
     MergeFont(fraction => 1); },
@@ -750,23 +745,7 @@ DefMacro('\meaning Token', sub {
     else {
       Explode('undefined'); } });
 
-DefParameterType('CSName', sub {
-    my ($gullet) = @_;
-    my $token;
-    my $cs = escapechar();
-    my $s;
-    # keep newlines from having \n inside!
-    while (($token = $gullet->readXToken(0)) && (($s = $token->getString) ne '\endcsname')) {
-      my $cc = $token->getCatcode;
-      if ($cc == CC_CS) {
-        if (defined $STATE->lookupDefinition($token)) {
-          Error('unexpected', $token, $gullet,
-            "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
-        else {
-          Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
-      # Keep newlines from having \n!
-      $cs .= ($cc == CC_SPACE ? ' ' : $s); }
-    T_CS($cs); });
+DefParameterType('CSName', \&LaTeXML::Core::Gullet::readCSName);
 
 DefMacro('\csname CSName', sub {
     my ($gullet, $token) = @_;
@@ -786,8 +765,9 @@ DefMacro('\expandafter Token Token', sub {
       # Note that IF expandafter ends up expanding a \the in an \edef,
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
       local $LaTeXML::NOEXPAND_THE = undef;
-      my $x = $defn->invoke($gullet);
-      ($tok, ($x ? $x->unlist : ())); }    # Expand $xtok ONCE ONLY!
+##      my $x = $defn->invoke($gullet);
+##      ($tok, ($x ? $x->unlist : ())); }    # Expand $xtok ONCE ONLY!
+      ($tok, $defn->invoke($gullet)); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
 
@@ -1696,13 +1676,14 @@ DefParameterType('BoxSpecification', sub {
 sub readBoxContents {
   my ($gullet, $everybox) = @_;
   my $t;
-  while (($t = $gullet->readToken) && !Equals($t, T_BEGIN)) { }    # Skip till { or \bgroup
+  # Since we're Digesting, use Equals($t,T_BEGIN), NOT $t->equals, since must see \bgroup, etc.
+  while (($t = $gullet->readToken) && !Equals($t, T_BEGIN)) { }    # Skip till { OR \bgroup
           # Now, insert some extra tokens, if any, possibly from \afterassignment
   if (my $token = LookupValue('BeforeNextBox')) {
     AssignValue(BeforeNextBox => undef, 'global');
     $gullet->unread($token); }
   # AND, insert any extra tokens passed in, due to everyhbox or everyvbox
-  $gullet->unread($everybox->unlist) if $everybox;
+  $gullet->unread($everybox) if $everybox;
   my ($contents, @stuff) = $STATE->getStomach->invokeToken(T_BEGIN);
   return $contents; }
 
@@ -2747,7 +2728,7 @@ DefConstructor('\halign BoxSpecification',
     # Read the template up till something equivalent to \cr
     my @template = ();
     # Only expand certain things; See TeX book p.238
-    while (($t = $gullet->readToken(0)) && !Equals($t, T_CS('\cr'))) {
+    while (($t = $gullet->readToken()) && !Equals($t, T_CS('\cr'))) {
       if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
         $gullet->readKeyword('=');
         my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!

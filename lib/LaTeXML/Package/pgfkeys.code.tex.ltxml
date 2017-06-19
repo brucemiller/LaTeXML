@@ -174,74 +174,49 @@ DefMacro('\pgfkeysvaluerequired', '\pgfkeysvaluerequired',
 # (deals with /first char syntax/ stuff, affecting how key=value is parsed?)
 sub parsePGFKeys {
   my ($stomach, $keyvals) = @_;
-  my @tokens  = $keyvals->unlist;
   my @results = ();
-  while (@tokens) {
-    my ($key, $value) = (undef, undef);
-    ($key, @tokens) = parsePGFKeyOrValue(1, @tokens);
-    #    last unless $key;
-    #    next unless $key;           # ?
-    # Then if '=', pull tokens until end or , ==> value
-    # If there's an =, then there's a value (possibly empty), otherwise no value given.
-    if (@tokens && Equals($tokens[0], T_OTHER('='))) {    # If '=', explicit value
-      Error('unexpected', '=', $stomach, "Missing key before =") unless $key;
-      shift(@tokens);
-      ($value, @tokens) = parsePGFKeyOrValue(0, @tokens);
-      $value ||= Tokens(); }                              # if we got = there's SOME value even empty
-    if (@tokens && Equals($tokens[0], T_OTHER(','))) {    # And skip the comma, if we're not at end.
-      shift(@tokens); }                                   # Remove the comma
-        #    next unless @k;                                       # Ignore empty slots between commas
+  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+      my ($gullet) = @_;
+      $gullet->unread($keyvals);
+      my $delim = T_OTHER(',');
+      while ($delim && $delim->equals(T_OTHER(','))) {
+        # trim trailing spaces ????
+        # Strip outer braces if a single set encloses entire value and not just {} ????
+        $gullet->skipSpaces;
+        my $key;
+        my $value;
+        ($key, $delim) = $gullet->readUntil(T_OTHER(','), T_OTHER('='));
+        $key = $key->trim if $key;
+        # Then if '=', pull tokens until end or , ==> value
+        # If there's an =, then there's a value (possibly empty), otherwise no value given.
+        if ($delim && $delim->equals(T_OTHER('='))) {    # If '=', explicit value
+          Error('unexpected', '=', $stomach, "Missing key before =") unless $key;
+          $gullet->skipSpaces;
+          # Balanced tokens until $delim
+          ($value, $delim) = $gullet->readUntil(T_OTHER(','));
+          $value ||= Tokens();
+          $value = $value->trim; }                       # if we got = there's SOME value even empty
+            #----------------------------------------
+            # Now, get the current key, expanded, and @add@path@as@needed
+        if ($key && ToString($key)) {    # check in case we have commas with no keyval pair between
+          $key = Expand($key);
+          DefMacroI(T_CS('\pgfkeyscurrentkeyRAW'), undef, $key);
+          # Separate  the key into the path & name, default the path
+          # Note that this isn't consistently described in pgfkeys.code.tex
+          my @k = $key->unlist;
+          if (@k && !$k[0]->equals(T_OTHER('/'))) {    # If doesn't start with /, add default path
+            Digest(T_CS('\pgfkeysaddeddefaultpathtrue'));
+            my $oldkey = Tokens(@k);
+            unshift(@k, Expand(T_CS('\pgfkeysdefaultpath'))->unlist);
+            $key = Tokens(@k); }
+          else {
+            Digest(T_CS('\pgfkeysaddeddefaultpathfalse')); }
+          DefMacroI(T_CS('\pgfkeyscurrentkey'), undef, $key);
 
-    #----------------------------------------
-    # Now, get the current key, expanded, and @add@path@as@needed
-    if ($key) {    # check in case we have commas with no keyval pair between
-      $key = Expand($key);
-      DefMacroI(T_CS('\pgfkeyscurrentkeyRAW'), undef, $key);
-      # Separate  the key into the path & name, default the path
-      # Note that this isn't consistently described in pgfkeys.code.tex
-      my @k = $key->unlist;
-      if (@k && !Equals($k[0], T_OTHER('/'))) {    # If doesn't start with /, add default path
-        Digest(T_CS('\pgfkeysaddeddefaultpathtrue'));
-        my $oldkey = Tokens(@k);
-        unshift(@k, Expand(T_CS('\pgfkeysdefaultpath'))->unlist);
-        $key = Tokens(@k); }
-      else {
-        Digest(T_CS('\pgfkeysaddeddefaultpathfalse')); }
-      DefMacroI(T_CS('\pgfkeyscurrentkey'), undef, $key);
-      #----------------------------------------
-      # Finally, start working with the value
-      pgfAssignKey($stomach, ToString($key), $value); } }
+          #----------------------------------------
+          # Finally, start working with the value
+          pgfAssignKey($stomach, ToString($key), $value); } } });
   return @results; }
-
-# Pull a {}-balanced key until , or (if forkey), until = from @tokens;
-# Strip leading & trailing whitespace, and remove outer {} if any.
-# Return the value (as a Tokens) and any remaning tokens.
-sub parsePGFKeyOrValue {
-  my ($forkey, @tokens) = @_;
-  my @t = ();
-  while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
-    shift(@tokens); }
-  # Balanced tokens until $delim
-  my $ntopbraces = 0;
-  while (@tokens && !Equals($tokens[0], T_OTHER(','))
-    && (!$forkey || !Equals($tokens[0], T_OTHER('=')))) {
-    if (Equals($tokens[0], T_BEGIN)) {                         # If top-level brace
-      $ntopbraces++;
-      my ($level, $t) = (0, undef);
-      while (defined($t = shift(@tokens))) {                   # Read balanced
-        my $cc = $t->getCatcode;
-        $level++ if $cc == CC_BEGIN;
-        $level-- if $cc == CC_END;
-        push(@t, $t);
-        last unless $level; } }
-    else {
-      push(@t, shift(@tokens)); } }
-  while (@t && ($t[-1]->getCatcode == CC_SPACE)) {             # pop off trailing spaces
-    pop(@t); }
-  # Strip outer braces if a single set encloses entire value and not just {}
-  if (($ntopbraces == 1) && (scalar(@t) > 2) && Equals($t[0], T_BEGIN) && Equals($t[-1], T_END)) {
-    shift(@t); pop(@t); }
-  return ((@t ? Tokens(@t) : undef), @tokens); }
 
 # But first, let's try to deal with filtering...
 DefConditional('\ifpgfkeysfiltercontinue');
