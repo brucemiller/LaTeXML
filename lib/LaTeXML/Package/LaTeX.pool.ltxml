@@ -4184,7 +4184,7 @@ sub make_message {
 
 DefPrimitive('\@onlypreamble{}', sub { onlyPreamble('\@onlypreamble'); }); # Don't bother enforcing this.
 DefPrimitive('\GenericError{}{}{}{}', sub { Error(make_message('\GenericError', $_[2], $_[3], $_[4])); });
-DefPrimitive('\GenericWarning{}{}', sub { Warn(make_message('\GenericWarning', $_[2], $_[3])); });
+DefPrimitive('\GenericWarning{}{}', sub { Warn(make_message('\GenericWarning', $_[1], $_[2])); });
 DefPrimitive('\GenericInfo{}{}',    sub { Info(make_message('\GenericInfo',    $_[1], $_[2])); });
 
 Let('\MessageBreak', '\relax');
