@@ -1,8 +1,10 @@
 TYPEMAP
-UTF8                T_UTF8
-LaTeXML_Core_Token  T_PTROBJ_Token
-LaTeXML_Core_Tokens T_PTROBJ_Tokens
-LaTeXML_Core_Mouth_Tongue T_PTROBJ_Tongue
+UTF8                      T_UTF8
+LaTeXML_Core_Token        T_PTROBJ_Token
+LaTeXML_Core_Tokens       T_PTROBJ_Tokens
+LaTeXML_Core_Tokenstack   T_PTROBJ_Tokenstack
+LaTeXML_Core_Mouth        T_PTROBJ_Mouth
+
 INPUT
 T_UTF8
    /* One of these 2 SHOULD work, and seems faster, but leads to undefs & stuff in perl 5.10? */
@@ -27,8 +29,15 @@ T_PTROBJ_Tokens
   else
     croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
 
-T_PTROBJ_Tongue
-  if(sv_isa($arg, \"LaTeXML::Core::Mouth::Tongue\")){
+T_PTROBJ_Tokenstack
+  if(sv_isa($arg, \"LaTeXML::Core::Tokenstack\")){
+    IV tmp = SvIV((SV*)SvRV($arg));
+    $var = INT2PTR($type, tmp); }
+  else
+    croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
+
+T_PTROBJ_Mouth
+  if(sv_isa($arg, \"LaTeXML::Core::Mouth\")){
     IV tmp = SvIV((SV*)SvRV($arg));
     $var = INT2PTR($type, tmp); }
   else
@@ -44,13 +53,10 @@ T_PTROBJ_Token
   sv_setref_pv($arg, \"LaTeXML::Core::Token\", (void*)$var);
 
 T_PTROBJ_Tokens
-  /* setref_pv($arg, \"LaTeXML::Core::Tokens\", (AV*)$var); */
-  /* $arg = newSVrv(newRV_inc((SV*)$var), \"LaTeXML::Core::Tokens\");*/
-  /* $arg = newRV((SV*)$var); */
-  /* $arg = sv_bless((SV*)$var, gv_stashpv(\"LaTeXML::Core::Tokens\",0)); */
-  /* $arg = sv_bless(newRV_noinc((SV*)$var), gv_stashpv(\"LaTeXML::Core::Tokens\",0)); */
-  /* $arg = sv_bless(newRV_inc((SV*)$var), gv_stashpv(\"LaTeXML::Core::Tokens\",0)); */
   sv_setref_pv($arg, \"LaTeXML::Core::Tokens\", (void*)$var);
 
-T_PTROBJ_Tongue
-  sv_setref_pv($arg, \"LaTeXML::Core::Mouth::Tongue\", (void*)$var);
+T_PTROBJ_Tokenstack
+  sv_setref_pv($arg, \"LaTeXML::Core::Tokenstack\", (void*)$var);
+
+T_PTROBJ_Mouth
+  sv_setref_pv($arg, \"LaTeXML::Core::Mouth\", (void*)$var);
