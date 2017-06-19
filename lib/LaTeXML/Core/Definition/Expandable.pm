@@ -55,8 +55,9 @@ sub getExpansion {
   return $$self{expansion}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
-sub invoke {
+sub XXXXinvoke {
   my ($self, $gullet) = @_;
+  local $LaTeXML::CURRENT_TOKEN = $$self{cs};
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
   if (my $triv = (!$STATE->lookupValue('TRACINGMACROS')) && $$self{trivial_expansion}) {
     return $triv; }
@@ -84,20 +85,49 @@ sub doInvocation {
       @result = $expansion->substituteParameters(@args)->unlist; } }
   else {
     if (ref $expansion eq 'CODE') {
-      my $t;
-      # Check the result from code calls.
-      @result = map { (($t = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($t eq 'LaTeXML::Core::Tokens' ? $_->unlist
-            : (Error('misdefined', $self, undef,
-                "Expected a Token in expansion of " . ToString($self),
-                "got " . Stringify($_)), ()))) }
-        &$expansion($gullet, @args); }
+      @result = &$expansion($gullet, @args); }
     else {
       # but for tokens, make sure args are proper Tokens (lists)
       @result = $expansion->substituteParameters(@args)->unlist; } }
   # Getting exclusive requires dubious Gullet support!
   push(@result, T_MARKER($profiled)) if $profiled;
   return Tokens(@result); }
+
+sub invoke {
+  my ($self, $gullet) = @_;
+  local $LaTeXML::CURRENT_TOKEN = $$self{cs};
+  my $tracing = $STATE->lookupValue('TRACINGMACROS');
+  # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
+  if (my $triv = (!$tracing) && $$self{trivial_expansion}) {
+    return $triv; }
+  else {
+    my @args      = $self->readArguments($gullet);
+    my $expansion = $self->getExpansion;
+    my $r;
+    my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
+    my $result;
+    if ($tracing) {    # More involved...
+      if (ref $expansion eq 'CODE') {
+        # Harder to emulate \tracingmacros here.
+        $result = Tokens(&$expansion($gullet, @args));
+        # CHECK @result HERE TOO!!!!
+        print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString($result) . "\n";
+        print STDERR $self->tracingArgs(@args) . "\n" if @args; }
+      else {
+        print STDERR "\n" . $self->tracingCSName
+          . ' -> ' . tracetoString($expansion) . "\n";
+        print STDERR $self->tracingArgs(@args) . "\n" if @args;
+        $result = $expansion->substituteParameters(@args); } }
+    else {
+      if (ref $expansion eq 'CODE') {
+        $result = Tokens(&$expansion($gullet, @args)); }
+      else {
+        # but for tokens, make sure args are proper Tokens (lists)
+        $result = $expansion->substituteParameters(@args); } }
+    # Getting exclusive requires dubious Gullet support!
+    #####push(@result, T_MARKER($profiled)) if $profiled;
+    return $result; } }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
