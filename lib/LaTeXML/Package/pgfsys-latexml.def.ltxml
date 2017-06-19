@@ -943,7 +943,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     # Read the template up till something equivalent to \cr
     my @template = ();
     # Only expand certain things; See TeX book p.238
-    while (($t = $gullet->readToken(0)) && !Equals($t, T_CS('\cr'))) {
+    while (($t = $gullet->readToken) && !Equals($t, T_CS('\cr'))) {
       if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
         $gullet->readKeyword('=');
         my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!
