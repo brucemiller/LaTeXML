@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
+use LaTeXML::Util::Pathname;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -29,10 +30,13 @@ GetOptions("force!" => \$force,
   "html!"     => \$dohtml,
   "xhtml!"    => \$dohtml,
   "validate!" => \$validate,
+  "webdir=s"  => \$WEBDEST,
   verbose     => sub { $verbosity++; },
   quiet       => sub { $verbosity--; },
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+
+$WEBDEST = pathname_absolute($WEBDEST);
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
@@ -122,6 +126,8 @@ makemanual [options]
 
  Options:
   --force           Force regeneration (default: only if needed)
+  --webdir          Directory to put website at. Defaults to
+                    '/local/www/site/htdocs/LaTeXML'
   --help            Shows this help.
 
 =cut
