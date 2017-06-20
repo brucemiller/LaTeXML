@@ -104,10 +104,10 @@ if ($dohtml) {
       "--sourcedir=$MANDIR",
       "--urlstyle=server",
       "--sitedirectory=$WEBDEST",
-      "--css=../latexmldoc.css",
-      "--javascript=../LaTeXML-maybeMathjax.js",
+      "--css=$DOCDIR/latexmldoc.css",
+      "--javascript=LaTeXML-maybeMathjax.js",
       ($validate ? () : ("--novalidate")),
-      "--icon=../favicon.ico"],
+      "--icon=$DOCDIR/favicon.ico"],
     force => $force);
   # but if only css needs updating...
   copy("$MANDIR/../latexmldoc.css", "$WEBDEST/latexmldoc.css");
