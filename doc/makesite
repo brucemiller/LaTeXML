@@ -106,7 +106,7 @@ copy("$LATEXMLDIR/Changes", "$WEBDIR/Changes");
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub getReleases {
   # Scan the releases directory for all released versions.
-  opendir(REL, "$WEBDIR/releases") or die "Couldn't read releases directory: $!";
+  opendir(REL, "$WEBDIR/releases") or die "Couldn't read directory $WEBDIR/releases: $!";
   my @files = readdir(REL);
   closedir(REL);
   my %links = ();
