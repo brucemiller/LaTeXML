@@ -2178,7 +2178,7 @@ Tag('ltx:td', afterClose => \&trimNodeWhitespace);
 # Primitive column types;
 # This is really LaTeX, but the mechanisms are used behind-the-scenes here, too.
 DefColumnType('|', sub {
-    $LaTeXML::BUILD_TEMPLATE->addBetweenColumn(T_CS('\vrule')); return; });
+    $LaTeXML::BUILD_TEMPLATE->addBetweenColumn(T_CS('\vrule'), T_CS('\relax')); return; });
 DefColumnType('l', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(after => Tokens(T_CS('\hfil'))); return; });
 DefColumnType('c', sub {
