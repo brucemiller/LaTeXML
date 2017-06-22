@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use FindBin;
 use lib "$FindBin::RealBin/../blib/lib", $FindBin::RealBin;
+use LaTeXML::Util::Pathname;
 use Carp;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
@@ -30,8 +31,11 @@ GetOptions("force!" => \$force,
   "site!"     => \$dosite,
   "examples!" => \$doexamples,
   "manual!"   => \$domanual,
+  "webdir=s"    => \$WEBDIR,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+
+$WEBDIR = pathname_absolute($WEBDIR);
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 #======================================================================
@@ -79,6 +83,7 @@ if ($doexamples) {
 # Make the manual (if not already done)
 if ($domanual) {
   system("$DOCDIR/makemanual",
+    "--webdir", $WEBDIR,
     ($force ? ("--force") : ()),
     ($verbosity == 0 ? ()
       : ($verbosity > 0
@@ -101,7 +106,7 @@ copy("$LATEXMLDIR/Changes", "$WEBDIR/Changes");
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub getReleases {
   # Scan the releases directory for all released versions.
-  opendir(REL, "$WEBDIR/releases") or die "Couldn't read releases directory: $!";
+  opendir(REL, "$WEBDIR/releases") or die "Couldn't read directory $WEBDIR/releases: $!";
   my @files = readdir(REL);
   closedir(REL);
   my %links = ();
@@ -173,5 +178,7 @@ Options:
   --help    Shows this help message.
   --quiet   Runs more quietly
   --verbose Runs more noisily
+  --webdir  Directory to place generated website in. Defaults to
+            '/local/www/site/htdocs/LaTeXML'
 
 =cut
