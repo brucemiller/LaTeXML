@@ -288,6 +288,7 @@ DefMacro('\figcaption', sub {
 #======================================================================
 # 2.15 Tables
 RequirePackage('deluxetable');
+DefEnvironment('{longrotatetable}','#body');
 
 DefMacro('\phn',   '\phantom{0}');
 DefMacro('\phd',   '\phantom{.}');
