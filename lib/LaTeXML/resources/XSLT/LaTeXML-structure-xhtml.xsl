@@ -23,9 +23,9 @@
     exclude-result-prefixes = "ltx f func exsl">
 
   <!-- whether to split index lists into two columns -->
-  <xsl:param name="twocolumn-indexlist"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_INDEX"></xsl:param>
   <!-- whether to split glossary lists into two columns -->
-  <xsl:param name="twocolumn-glossarylist"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_GLOSSARY"></xsl:param>
 
   <!-- ======================================================================
        Document Structure
@@ -638,7 +638,7 @@
   <xsl:template match="ltx:indexlist">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="$twocolumn-indexlist and not(ancestor::ltx:indexlist)">
+      <xsl:when test="$USE_TWOCOLUMN_INDEX and not(ancestor::ltx:indexlist)">
         <xsl:apply-templates select="." mode="twocolumn">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
@@ -729,7 +729,7 @@
   <xsl:template match="ltx:glossarylist">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="$twocolumn-glossarylist">
+      <xsl:when test="$USE_TWOCOLUMN_GLOSSARY">
         <xsl:apply-templates select="." mode="twocolumn">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>

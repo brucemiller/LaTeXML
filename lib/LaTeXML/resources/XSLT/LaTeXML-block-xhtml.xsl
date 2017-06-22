@@ -170,7 +170,7 @@
   -->
 
   <!-- Should alignments like eqnarray, align, be respected, or more semantically presented?-->
-  <xsl:param name="aligned_equations" select="true()"/>
+  <xsl:param name="USE_ALIGNED_EQUATIONS" select="true()"/>
 
   <xsl:param name="classPI">
     <xsl:value-of select="//processing-instruction()[local-name()='latexml'][contains(.,'class')]"/>
@@ -235,7 +235,7 @@
   <xsl:template match="ltx:equationgroup">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="$aligned_equations">
+      <xsl:when test="$USE_ALIGNED_EQUATIONS">
         <xsl:apply-templates select="." mode="aligned">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
@@ -251,7 +251,7 @@
   <xsl:template match="ltx:equation">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="$aligned_equations">
+      <xsl:when test="$USE_ALIGNED_EQUATIONS">
         <xsl:apply-templates select="." mode="aligned">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>

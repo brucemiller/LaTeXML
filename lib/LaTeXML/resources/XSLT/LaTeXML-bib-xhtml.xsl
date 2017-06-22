@@ -21,7 +21,7 @@
     exclude-result-prefixes = "ltx f">
 
   <!-- whether to split bibliography lists into two columns -->
-  <xsl:param name="twocolumn-biblist"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_BIB"></xsl:param>
 
   <!-- ======================================================================
        Bibliography
@@ -43,7 +43,7 @@
   <xsl:template match="ltx:biblist">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="$twocolumn-biblist">
+      <xsl:when test="$USE_TWOCOLUMN_BIB">
         <xsl:apply-templates select="." mode="twocolumns">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
