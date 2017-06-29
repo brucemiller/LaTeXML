@@ -65,14 +65,16 @@ sub getNextLine {
     else {
       push(@{ $$self{buffer} }, LaTeXML::Core::Mouth::splitLines($line)); } }
 
-  my $line = (shift(@{ $$self{buffer} }) || '');
-  if ($line) {
+  my $line = shift(@{ $$self{buffer} });
+  if (defined $line) {
     if (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
      # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
      # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
       $line = decode($encoding, $line, Encode::FB_DEFAULT);
       if ($line =~ s/\x{FFFD}/ /g) {    # Just remove the replacement chars, and warn (or Info?)
         Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
+  else {
+    $line = ''; }
   $line .= "\r";                        # put line ending back!
 
   if (!($$self{lineno} % 25)) {
