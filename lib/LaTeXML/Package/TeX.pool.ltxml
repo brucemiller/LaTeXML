@@ -315,7 +315,8 @@ DefParameterType('Variable', sub {
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
-    $defn->invocation(@args); });
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
@@ -335,7 +336,8 @@ DefParameterType('Register', sub {
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
-    $defn->invocation(@args); });
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
@@ -6119,10 +6121,9 @@ DefConstructor('\DUAL OptionalKeyVals {}{}',
   reversion => sub {
     my ($whatsit) = @_;
     my ($kv, $content, $presentation) = $whatsit->getArgs;
-    my $role = GetKeyVal($kv, 'role');
     if (!$LaTeXML::DUAL_BRANCH) {
-      $whatsit->getDefinition->invocation($role, $content,
-        $presentation); }
+      Tokens(T_CS('\DUAL'),
+        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
     elsif (($LaTeXML::DUAL_BRANCH eq 'content')
       || !GetKeyVal($kv, 'hide_content_reversion')) {
       Revert($content); }
@@ -6131,8 +6132,8 @@ DefConstructor('\DUAL OptionalKeyVals {}{}',
     else {
       Warn('misdefined', 'DUAL', $_[0],
         "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
-      $whatsit->getDefinition->invocation($role, $content,
-        $presentation); }
+      Tokens(T_CS('\DUAL'),
+        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
   },
   sizer => '#3');    # size according to presentation
 
