@@ -401,6 +401,7 @@ sub filter_hints {
   my $prev             = undef;
   my $pending_comments = '';
   my $pending_space    = 0.0;
+  my $pending_phantom  = undef;
   # Filter the nodes, watching for XMHint's and Comments.
   foreach my $node (@nodes) {
     my $type = $node->nodeType;
@@ -420,11 +421,15 @@ sub filter_hints {
     elsif (getQName($node) eq 'ltx:XMHint') {    # If a Hint node?
       if (my $width = $node->getAttribute('width')) {
         if (my $pts = getXMHintSpacing($width)) {
+          my $ph = ($node->getAttribute('name') || '') =~ /phantom$/;
           if ($prev) {
             my $s = $prev->getAttribute('_space') || 0.0;
-            $prev->setAttribute(_space => $s + $pts); }
+            my $p = $prev->getAttribute('_phantom');
+            $prev->setAttribute(_space => $s + $pts);
+            $prev->setAttribute(_phantom => $p || $ph); }
           else {
-            $pending_space += $pts; } } }
+            $pending_space += $pts;
+            $pending_phantom = $ph; } } }
       # If XMHint is referenced??
       # Really shouldn't happen, but if XMHint is in XMWrap, it may end up with id....?
       if (my $id = $node->getAttribute('xml:id')) {
@@ -441,17 +446,21 @@ sub filter_hints {
       if ($pending_space) {
         $node->setAttribute(lpadding =>
             LaTeXML::Common::Dimension::attributeformat($pending_space * 65536));
-        $pending_space = 0.0; }
+        $node->setAttribute(_phantom => $pending_phantom);
+        $pending_space   = 0.0;
+        $pending_phantom = undef; }
       push(@prefiltered, $node); $prev = $node; }    # Keep it.
   }
   # if $pending_space > 0, should store as rpadding on last element?
   my @filtered = ();
-  # Filter through the pre-filtered nodes looking for large rpadding.
+  # Filter through the pre-filtered nodes looking for large rpadding to convert to virtual PUNCT.
+  # But we'll assume that phantoms do NOT get converted to PUNCT ?
   foreach my $node (@prefiltered) {
     push(@filtered, $node);
     if (my $s = $node->getAttribute('_space')) {
       $node->removeAttribute('_space');
-      if (($s >= $HINT_PUNCT_THRESHOLD) && (($node->getAttribute('role') || '') ne 'PUNCT')) {
+      if ((!$node->getAttribute('_phantom'))
+        && ($s >= $HINT_PUNCT_THRESHOLD) && (($node->getAttribute('role') || '') ne 'PUNCT')) {
         # Create a new Punctuation node (XMTok) from the wide space
         # I'm leary that this is a safe way to create an XML node that's NOT in the tree, but...
         my $p = $node->parentNode;
