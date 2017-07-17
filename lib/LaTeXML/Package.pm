@@ -800,15 +800,17 @@ sub Expand {
 
 sub Invocation {
   my ($token, @args) = @_;
-  if (my $defn = $STATE->lookupDefinition((ref $token ? $token : T_CS($token)))) {
-    return Tokens($defn->invocation(@args)); }
+  $token = (ref $token ? $token : T_CS($token));
+  # Note: $token may have been \let to another defn!
+  if (my $defn = $STATE->lookupDefinition($token)) {
+    my $params = $defn->getParameters;
+    return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
     Error('undefined', $token, undef,
       "Can't invoke " . Stringify($token) . "; it is undefined");
     DefConstructorI($token, convertLaTeXArgs(scalar(@args), 0),
       sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $token); });
     return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
-##    return Tokens(); } }
 
 sub RawTeX {
   my ($text) = @_;

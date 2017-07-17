@@ -317,7 +317,8 @@ DefParameterType('Variable', sub {
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
-    $defn->invocation(@args); });
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
@@ -337,7 +338,8 @@ DefParameterType('Register', sub {
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
-    $defn->invocation(@args); });
+    my $params = $defn->getParameters;
+    return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
@@ -5608,15 +5610,35 @@ DefMacro('\mathpalette{}{}',
     . '{#1\scriptstyle{#2}}{#1\scriptscriptstyle{#2}}');
 
 DefConstructor('\phantom{}',
-  "?#isMath(<ltx:XMHint name='phantom'/>)"
+  "?#isMath(<ltx:XMHint width='#width' height='#height' depth='#depth' name='phantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 });
-DefConstructor('\hphantom{}', "?#isMath(<ltx:XMHint name='hphantom'/>)"
+  properties => { isSpace => 1 },
+  afterDigest => sub {
+    my $whatsit = $_[1];
+    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
+    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    return; });
+
+DefConstructor('\hphantom{}',
+  "?#isMath(<ltx:XMHint width='#width' name='hphantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 });
-DefConstructor('\vphantom{}', "?#isMath(<ltx:XMHint name='vphantom'/>)"
+  properties => { isSpace => 1 },
+  afterDigest => sub {
+    my $whatsit = $_[1];
+    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
+    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    return; });
+
+DefConstructor('\vphantom{}',
+  "?#isMath(<ltx:XMHint height='#height' depth='#depth' name='vphantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 });
+  properties => { isSpace => 1 },
+  afterDigest => sub {
+    my $whatsit = $_[1];
+    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
+    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    return; });
+
 DefConstructor('\mathstrut', "?#isMath(<ltx:XMHint name='mathstrut'/>)()",
   properties => { isSpace => 1 });
 DefConstructor('\smash{}', "#1");                         # well, what?
@@ -5632,7 +5654,17 @@ DefConstructor('\sqrt OptionalInScriptStyle Digested',
     . "(<ltx:XMApp><ltx:XMTok meaning='square-root'/>"
     . "<ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>)");
 
-DefConstructor('\root Until:\of {}',
+DefParameterType('ScriptStyleUntil', sub {
+    my ($gullet, $until) = @_;
+    $gullet->readUntil($until); },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(mathstyle => 'script'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
+DefConstructor('\root ScriptStyleUntil:\of {}',
   "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>");
@@ -6100,10 +6132,9 @@ DefConstructor('\DUAL OptionalKeyVals {}{}',
   reversion => sub {
     my ($whatsit) = @_;
     my ($kv, $content, $presentation) = $whatsit->getArgs;
-    my $role = GetKeyVal($kv, 'role');
     if (!$LaTeXML::DUAL_BRANCH) {
-      $whatsit->getDefinition->invocation($role, $content,
-        $presentation); }
+      Tokens(T_CS('\DUAL'),
+        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
     elsif (($LaTeXML::DUAL_BRANCH eq 'content')
       || !GetKeyVal($kv, 'hide_content_reversion')) {
       Revert($content); }
@@ -6112,8 +6143,8 @@ DefConstructor('\DUAL OptionalKeyVals {}{}',
     else {
       Warn('misdefined', 'DUAL', $_[0],
         "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
-      $whatsit->getDefinition->invocation($role, $content,
-        $presentation); }
+      Tokens(T_CS('\DUAL'),
+        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
   },
   sizer => '#3');    # size according to presentation
 
