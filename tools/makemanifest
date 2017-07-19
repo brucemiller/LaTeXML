@@ -1,0 +1,133 @@
+#!/bin/bash
+
+# tools/makemanifest -- Script to re-generate MANIFEST file
+# Usage   : bash tools/makemanifest > MANIFEST
+# Preview : bash tools/makemanifest | diff -u MANIFEST -
+
+cd $(dirname "$0")/../
+cat << EOF
+#==================================================
+# Base
+#==================================================
+Changes
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+README.pod
+INSTALL
+INSTALL.SKIP
+LICENSE
+manual.pdf
+
+#==================================================
+# Executables
+#==================================================
+$(find bin -type f | sort)
+
+#==================================================
+# Master Modules
+#==================================================
+lib/LaTeXML.pm
+lib/LaTeXML/Version.in
+lib/LaTeXML/Global.pm
+
+#==================================================
+# Core Modules
+#==================================================
+lib/LaTeXML/Core.pm
+lib/LaTeXML/Core/State.pm
+
+lib/LaTeXML/Core/Mouth.pm
+lib/LaTeXML/Core/Mouth/file.pm
+lib/LaTeXML/Core/Mouth/http.pm
+lib/LaTeXML/Core/Mouth/https.pm
+lib/LaTeXML/Core/Mouth/Binding.pm
+lib/LaTeXML/Core/Gullet.pm
+lib/LaTeXML/Core/Stomach.pm
+lib/LaTeXML/Core/Document.pm
+lib/LaTeXML/Core/Rewrite.pm
+
+lib/LaTeXML/Core/Token.pm
+lib/LaTeXML/Core/Tokens.pm
+lib/LaTeXML/Core/Box.pm
+lib/LaTeXML/Core/Comment.pm
+lib/LaTeXML/Core/List.pm
+lib/LaTeXML/Core/Whatsit.pm
+
+lib/LaTeXML/Core/Definition.pm
+lib/LaTeXML/Core/Definition/Expandable.pm
+lib/LaTeXML/Core/Definition/Conditional.pm
+lib/LaTeXML/Core/Definition/Primitive.pm
+lib/LaTeXML/Core/Definition/Register.pm
+lib/LaTeXML/Core/Definition/CharDef.pm
+lib/LaTeXML/Core/Definition/Constructor.pm
+lib/LaTeXML/Core/Definition/Constructor/Compiler.pm
+lib/LaTeXML/Core/Parameter.pm
+lib/LaTeXML/Core/Parameters.pm
+
+lib/LaTeXML/Core/Alignment.pm
+lib/LaTeXML/Core/Alignment/Template.pm
+lib/LaTeXML/Core/Array.pm
+lib/LaTeXML/Core/KeyVals.pm
+lib/LaTeXML/Core/MuDimension.pm
+lib/LaTeXML/Core/MuGlue.pm
+lib/LaTeXML/Core/Pair.pm
+lib/LaTeXML/Core/PairList.pm
+
+# ....
+lib/LaTeXML/MathGrammar
+lib/LaTeXML/MathParser.pm
+
+#==================================================
+# Preprocessing Modules
+#==================================================
+$(find lib/LaTeXML/Pre -type f | sort )
+
+#==================================================
+# Postprocessing Modules
+#==================================================
+lib/LaTeXML/Post.pm
+$(find lib/LaTeXML/Post -type f | sort )
+lib/LaTeXML/LaTeXML.catalog
+
+#==================================================
+# Common Modules
+#==================================================
+$(find lib/LaTeXML/Common -type f | sort )
+
+#==================================================
+# Utility Modules
+#==================================================
+$(find lib/LaTeXML/Util -type f | sort )
+
+#==================================================
+# Document Model
+#==================================================
+$(find lib/LaTeXML/resources/RelaxNG -type f | sort )
+$(find lib/LaTeXML/resources/DTD -type f | sort )
+
+#==================================================
+# XSLT & CSS Support
+#==================================================
+$(find lib/LaTeXML/resources/XSLT -type f | sort )
+$(find lib/LaTeXML/resources/CSS -type f | sort )
+$(find lib/LaTeXML/resources/javascript -type f | sort )
+$(find lib/LaTeXML/resources/Profiles -type f | sort )
+
+#==================================================
+# Supported Packages
+#==================================================
+lib/LaTeXML/Package.pm
+$(find lib/LaTeXML/Package -type f | sort )
+
+#==================================================
+# TeX packages
+#==================================================
+$(find lib/LaTeXML/texmf -type f | sort )
+
+#==================================================
+# Test Suite.
+#==================================================
+$(find t -type f | sort )
+
+EOF
