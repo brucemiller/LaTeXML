@@ -2209,6 +2209,9 @@ sub LoadClass {
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
   #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
   PushValue(class_options => ($options{options} ? @{ $options{options} } : ()));
+  if(my $op = $options{options}){
+      # ? Expand {\zap@space#2 \@empty}%
+      DefMacroI('\@classoptionslist',undef, join(',',@$op)); }
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => 1, handleoptions => 1, noerror => 1,
       %options)) {

@@ -570,6 +570,7 @@ DefMacroI('\@clsextension', undef, 'cls');
 DefMacroI('\@pkgextension', undef, 'sty');
 Let('\@currext',  '\@empty');
 Let('\@currname', '\@empty');
+Let('\@classoptionslist','\relax');
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
