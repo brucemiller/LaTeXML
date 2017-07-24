@@ -1,0 +1,227 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{mathrsfs}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{graphicx}
+\newcommand{\mml}[1]{\texttt{m:#1}}
+\newcommand{\attr}[1]{\texttt{@#1}}
+%\newcommand{\mathsized}[2]{\scalebox{#1}{#2}}
+\newcommand{\mathsized}[2]{\mbox{#1 $#2$}}
+\title{LaTeXML Math Sampler}
+\begin{document}
+This document is a sampler of the kind of MathML produced by LaTeXML,
+primarily for testing for sufficient MathML support.
+It is \emph{not} a comprehensive test, nor a torture test.
+
+% m:math, @display
+
+
+The \mml{semantics}, \mml{annotation}, and \mml{annotation-xml} elements
+will be exercised if you generate both presentation and content during post-processing
+using the \verb|--pmml --cmml| options.
+%m:semantics
+%m:annotation, @encoding
+%m:annotation-xml, @encoding
+
+
+\section{Token Elements}
+Token elements \mml{mi}, \mml{mo} and \mml{mn}, with various
+attributes \attr{mathvariant}, \attr{mathsize} and \attr{class}.
+% m:mo, m:mi, m:mn,
+%   @mathvariant,
+%   @minsize, @maxsize, @mathsize, @stretchy,
+%   @mathcolor, @mathbackground,
+%  @class = ltx_font_mathcaligraphic | ltx_font_mathscript | ltx_font_oldstyle | ltx_font_smallcaps
+\begin{equation}
+ A,\qquad
+ \mathnormal{A},\qquad
+ \mathrm{A},\qquad
+ \mathit{A},\qquad
+ \mathbf{A},\qquad
+ \mathsf{A},\qquad
+ \mathtt{A},
+\end{equation}
+\begin{equation}
+ \mathcal{A},\qquad
+ \mathscr{A},\qquad
+ \mathbb{A},\qquad
+ \mathfrak{A}
+\end{equation}
+\begin{equation}
+ \mathsized{\tiny}{X},\qquad
+ \mathsized{\scriptsize}{X},\qquad
+ \mathsized{\normalsize}{X},\qquad
+ \mathsized{\large}{X},\qquad
+ \mathsized{\Large}{X},\qquad
+ \mathsized{\LARGE}{X},\qquad
+ \mathsized{\huge}{X},\qquad
+ \mathsized{\Huge}{X}
+\end{equation}
+
+And some color, \attr{mathcolor}, \attr{mathbackground}:
+\begin{equation}
+  {\color{red} X}, \qquad
+  {\color{blue} X}, \qquad
+  {\color{green} X}, \qquad
+  \fcolorbox{blue}{red}{\textcolor{green}{X}}
+\end{equation}
+
+Playing with \attr{minsize}, \attr{maxsize}, \attr{stretchy}:
+% m:mi, @fence, @separator, @largeop, @symmetric, @lspace, @rspace, @movablelimits
+\begin{equation}
+ (a|b),\qquad
+ \bigl(a\bigm|b\bigr),\qquad
+ \Bigl(a\Bigm|b\Bigr),\qquad
+ \biggl(a\biggm|b\biggr),\qquad
+ \Biggl(a\Biggm|b\Biggr)
+\end{equation}
+
+\begin{equation}
+\left( a^{b}  \middle| x \right),\qquad
+\left( a^{b^{c}} \middle| x \right),\qquad
+\left( a^{b^{c^{d}}} \middle| x \right)
+\end{equation}
+
+% m:mtext
+% m:mspace, @width
+\begin{equation}
+ \mbox{Hello} + y - 1.2345
+\end{equation}
+Some spacing \mml{mspace}.
+\begin{equation}
+  xy,\qquad
+  x \hspace{1em} y,\qquad
+  x \hspace{2em} y
+\end{equation}
+% m:mglyph not used
+% m:ms not used
+Not used: \mml{mglyph}, \mml{ms}.
+
+\section{General Layout Schemata}
+Various layout schemata \mml{mrow}, \mml{mfrac} (with various \attr{linethickness}),
+and \mml{mstyle}:
+%m:mrow
+% m:mfrac, @linethickness
+\begin{equation}
+ \frac{a}{b},\qquad
+ \tfrac{a}{b},\qquad
+ \dfrac{a}{b} 
+\end{equation}
+\begin{equation} 
+ \binom{a}{b} 
+ \genfrac{}{}{0.0ex}{}{a}{b},\qquad
+ \genfrac{}{}{0.01ex}{}{a}{b},\qquad
+ \genfrac{}{}{0.1ex}{}{a}{b},\qquad
+ \genfrac{}{}{1ex}{}{a}{b}
+\end{equation}
+\begin{equation} 
+ \genfrac{(}{)}{}{}{a}{b},\qquad
+ \genfrac{(}{)}{}{}{a^2}{b^2},\qquad
+ \genfrac{(}{)}{}{}{\int_a^b f(x)dx}{\int_a^b g(x)dx} 
+\end{equation}
+
+Roots \mml{msqrt} and \mml{mroot}, as well as enclosures \mml{menclose}:
+% m:msqrt, m:mroot
+% m:menclose, @notation
+\begin{equation}
+ \sqrt{x},\qquad
+ \sqrt[3]{x},\qquad
+ \root 3 \of {x},\qquad
+ \boxed{x^2},\qquad
+ \not{?} 
+\end{equation}
+
+% m:mstyle, @displaystyle, @scriptlevel
+% m:merror
+
+More spacing examples with \mml{mpadded}:
+% m:mpadded, @lspace, @width
+\begin{equation}
+  a+b, \qquad
+  a \,+\, b, \qquad
+  a \>+\> b, \qquad
+  a \;+\; b, \qquad
+\end{equation}
+% m:phantom
+\begin{eqnarray}
+  X &=& f(x) + g(x) + h(x) \\
+    &=& f(x) + \phantom{g(x)} + h(x) \\
+\end{eqnarray}
+%% m:mfenced, @open, @close [not really used]
+
+Not used: \mml{mfenced}, \mml{mphantom};
+used only for errors: \mml{merror}.
+
+\section{Script and Limit Schemata}
+A variety of sub- and super-scripts (\mml{msub}, \mml{msup}, \mml{msubsup}),
+under- and over-scripts (\mml{munder}, \mml{mover}, \mml{munderover}),
+some as accents, and pre-scripts (\mml{multiscripts}, \mml{mprescripts}, \mml{none}).
+% m:sub, m:sup, m:subsup
+
+\begin{equation}
+ a^{b},\qquad
+ a^{b^{c}},\qquad
+ a^{b^{c^{d}}},\qquad
+ a_{b},\qquad
+ a_{b_{c}},\qquad
+ a_{b_{c_ {d}}},\qquad
+ a^{b}_{c} 
+\end{equation}
+
+% m:under, m:over, m:underover
+\begin{equation}
+ \sum^{b},\qquad
+ \sum_{b},\qquad
+ \sum^{b}_{c}
+\end{equation}
+\begin{equation}
+X = \sum_{1\le i \le j \le n} X_{ij},\qquad
+X = \sum_{\mathclap{1\le i \le j \le n}} X_{ij},\qquad
+%X = \smashoperator{\sum_{1\le i \le j \le n}} X_{ij},\qquad
+X = \smashoperator[r]{\sum_{1\le i \le j \le n}} X_{ij},\qquad
+X = \smashoperator[l]{\sum_{1\le i \le j \le n}} X_{ij}
+\end{equation}
+
+\begin{equation}
+ a \overset{\mathrm{def}}{\rightarrow} b, \qquad
+ a \underset{\mathrm{def}}{\rightarrow} b,\qquad
+ a \overrightarrow{\mathrm{def}} b,\qquad
+ a \underrightarrow{\mathrm{def}} b
+\end{equation}
+
+% m:multiscripts, m:prescripts, m:none
+\begin{equation}
+ {}_p F_q,\qquad
+ \sideset{_a^b}{^c_d}{\sum}
+\end{equation}
+
+\section{Tabular Math}
+Some basic tabular math (\mml{mtable}, \mml{mtr}, \mml{mtd});
+many combinations of row and column spacing and spans
+(\attr{rowspacing}, \attr{columnspacing}, \attr{columnspan}, \attr{rowspan})
+are not currently tested.
+%m:mtable, @rowspacing, @columnspacing, @width
+%m:mtr
+%m:mtd, @columnalign, @columnspan, @rowspan
+
+\begin{equation}
+  \begin{matrix} -1 & 3 \\ 2 & -4 \end{matrix}
+,\qquad
+  \begin{matrix*}[r] -1 & 3 \\ 2 & -4 \end{matrix*}
+,\qquad
+  \begin{Vmatrix} -1 & 3 \\ 2 & -4 \end{Vmatrix}
+,\qquad
+  \begin{Vmatrix*}[r] -1 & 3 \\ 2 & -4 \end{Vmatrix*}
+\end{equation}
+% m:mlabeledtr, m:maligngroup, m:malignmark not used
+Not used: \mml{mlabeledtr}, \mml{maligngroup}, \mml{malignmark}.
+
+\section{Elementary Math}
+% m:mstack, m:mlongdiv, m:msgroup, m:msrow,
+% m:mscarries, m:mscarry, m:msline not used
+Not currently used:
+\mml{mstack}, \mml{mlongdiv}, \mml{msgroup}, \mml{msrow},
+\mml{mscarries}, \mml{mscarry}, \mml{msline}.
+\end{document}
