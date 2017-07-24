@@ -20,7 +20,7 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 RequirePackage('textcomp');
-RequirePackage('SIunits');
+# RequirePackage('SIunits');
 
 # I think we are finally able to process siunitx.sty directly
 # and more closely track development of siunitx.
