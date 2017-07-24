@@ -159,7 +159,7 @@ sub maketest_daemon {
 # The normalized form is most sensible for comparison,
 # but the literal form is most expected(?) for test!!
 # (else, we're ignoring whitespace changes in test)
-sub compare_xml {
+sub XXXcompare_xml {
   my ($dir, $name) = @_;
   #========================================
   # Generate the XML from the current latexml
@@ -181,7 +181,7 @@ sub compare_xml {
   my $test   = pathname_make(dir => $dir, name => $name, type => 'test.xml');
   #========================================
   # Generate the XML from the current latexml
-  system('latexml', $source,
+  system("$FindBin::RealBin/../blib/script/latexml", $source,
     "--destination=" . $test,
     "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
     or die "Failed to convert $source: $!";
