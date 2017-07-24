@@ -55,6 +55,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefPrimitive  &DefPrimitiveI
     &DefRegister &DefRegisterI &LookupRegister &AssignRegister &LookupDimension
     &DefConstructor &DefConstructorI
+    &DefHook &AddHook
     &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
     &convertLaTeXArgs),
@@ -1234,6 +1235,91 @@ sub DefConstructorI {
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
+#======================================================================
+# Define a hook for an existing macro.
+#======================================================================
+# This method allows defining a hook for an existing macro.
+# A hook can work either like a Primitive (see DefPrimitive), a
+# Constructor (see DefConstructor) or a Macro (see DefMacro).
+# However, instead of only performing the specified actions, a hook in
+# addition runs the existing macro code after performing the hook. The
+# primary use-case is to introduce side-effects to an existing macro.
+#
+# Options are:
+#   kind            : type of hook to define, one of 'primitive' (default),
+#                     'constructor', 'macro'.
+#   and all options supported by DefMacro and DefPrimitive and DefMacro
+
+sub DefHook {
+    my ($pt, $replacement, %options) = @_;
+
+    # get the macro name
+    my ($macro, $proto) = parsePrototype($pt);
+
+    my $macroname = $macro->getCSName();
+    my $hookcounter = "hookcount\@hook\@$macroname";
+    my $hookcount = $STATE->getValue($hookcounter) || 0;
+
+    # generate a new name and increment the counter
+    my $hookmacro = T_CS("\\ltx\@hook\@hook\@" . roman_aux(++$hookcount) . "\@$macroname");
+    $STATE->assignValue($hookcounter, $hookcount);
+
+    # find the kind we need to make
+    my $kind = $options{kind} || 'primitive';
+    delete $options{kind};
+
+    # define the hook macro
+    if($kind eq 'primitive'){
+        CheckOptions("DefHook ($pt)", $primitive_options, %options);
+        DefPrimitiveI($hookmacro, $proto, $replacement, %options); }
+    elsif($kind eq 'constructor'){
+        CheckOptions("DefHook ($pt)", $constructor_options, %options);
+        DefConstructorI($hookmacro, $proto, $replacement, %options); }
+    elsif($kind eq 'macro'){
+        CheckOptions("DefHook ($pt)", $macro_options, %options);
+        DefMacroI($hookmacro, $proto, $replacement, %options); }
+    else {
+        Fatal('malformed', $kind, undef,
+          "Unknown 'kind' parameter value $kind in DefHook($pt), should be one of 'primitive', 'constructor', 'macro'. "); }
+
+    # and add the hook
+    AddHook($macro, $proto, $hookmacro);
+
+    return; }
+
+sub AddHook {
+  my ($macro, $proto, $hookmacro) = @_;
+
+  # find the number of hooks we already have
+  my $macroname = $macro->getCSName();
+  my $orgcounter = "hookcount\@org\@$macroname";
+  my $orgcount = $STATE->getValue($orgcounter) || 0;
+
+  # generate a new name and increment the counter
+  my $orgmacro = T_CS("\\ltx\@hook\@org\@" . roman_aux(++$orgcount) . "\@$macroname");
+  $STATE->assignValue($orgcounter, $orgcount);
+
+  # store the original macro in a new macro
+  Let($orgmacro, $macro);
+
+  # redefine the new macro
+  DefMacroI($macro, $proto, sub {
+      my ($gullet, @params) = @_;
+
+      # call the hook, and then the original
+      my @tokens = ();
+      push(@tokens, @{Invocation($hookmacro, @params);});
+      # HACK: Workaround for issue #849, should only be this:
+      # push(@tokens, @{Invocation($orgmacro, @params);});
+      my @otokens = @{Invocation($orgmacro, @params);};
+      shift(@otokens);
+      push(@tokens, $orgmacro, @otokens);
+
+      @tokens;
+  });
+
+  return;
+}
 
 #======================================================================
 # Support for XMDual
