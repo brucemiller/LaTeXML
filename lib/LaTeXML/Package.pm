@@ -2146,6 +2146,14 @@ sub InputDefinitions {
       if $options{options};
 
     my ($fdir, $fname, $ftype) = pathname_split($file);
+    if ($options{handleoptions}) {
+      # Add an appropriately faked entry into \@filelist
+      my ($d, $n, $e) = ($fdir, $fname, $ftype);    # If ftype is ltxml, reparse to get sty/cls!
+      ($d, $n, $e) = pathname_split(pathname_concat($d, $n)) if $e eq 'ltxml';    # Fake it???
+      my @p = ($STATE->lookupDefinition(T_CS('\@filelist'))
+        ? Expand(T_CS('\@filelist'))->unlist : ());
+      my @n = Explode($e ? $n . '.' . $e : $n);
+      DefMacroI('\@filelist', undef, (@p ? Tokens(@p, T_OTHER(','), @n) : Tokens(@n))); }
     if ($ftype eq 'ltxml') {
       loadLTXML($filename, $file); }    # Perl module.
     else {
@@ -2154,13 +2162,6 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
-      # Add an appropriately faked entry into \@filelist
-      my ($d, $n, $e) = ($fdir, $fname, $ftype);    # If ftype is ltxml, reparse to get sty/cls!
-      ($d, $n, $e) = pathname_split(pathname_concat($d, $n)) if $e eq 'ltxml';    # Fake it???
-      my @p = ($STATE->lookupDefinition(T_CS('\@filelist'))
-        ? Expand(T_CS('\@filelist'))->unlist : ());
-      my @n = Explode($e ? $n . '.' . $e : $n);
-      DefMacroI('\@filelist', undef, (@p ? Tokens(@p, T_OTHER(','), @n) : Tokens(@n)));
       resetOptions(); }    # And reset options afterwards, too.
     return $file; }
   elsif (!$options{noerror}) {
