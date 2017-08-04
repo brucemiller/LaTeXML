@@ -500,19 +500,31 @@ DefParameterType('CommaList', sub {
       values => [@items]); });
 
 DefParameterType('RequiredKeyVals', sub {
-    my ($gullet, $keyset) = @_;
-    $keyset = ToString($keyset);
+    my ($gullet, $prefix, $keyset) = @_;
+
+    # if we only have only one argument, we use keyset
+    unless (defined($keyset)) {
+      $keyset = $prefix;
+      $prefix = undef;
+    }
+
     if ($gullet->ifNext(T_BEGIN)) {
-      return (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_END)); }
+      return (LaTeXML::Core::KeyVals::readKeyVals($gullet, $prefix, $keyset, T_END)); }
     else {
       Error('expected', '{', $gullet, "Missing keyval arguments");
-      return (LaTeXML::Core::KeyVals->new($keyset, [], open => T_BEGIN, close => T_END)); } });
+      return (LaTeXML::Core::KeyVals::empty($prefix, $keyset)); } });
 
 DefParameterType('OptionalKeyVals', sub {
-    my ($gullet, $keyset) = @_;
-    $keyset = ToString($keyset);
+    my ($gullet, $prefix, $keyset) = @_;
+
+    # if we only have only one argument, we use keyset
+    unless (defined($keyset)) {
+      $keyset = $prefix;
+      $prefix = undef;
+    }
+
     return ($gullet->ifNext(T_OTHER('['))
-      ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $keyset, T_OTHER(']'))) : undef); },
+      ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $prefix, $keyset, T_OTHER(']'))) : undef); },
   optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
@@ -1690,7 +1702,7 @@ sub revert_spec {
 DefParameterType('BoxSpecification', sub {
     my ($gullet) = @_;
     if (my $key = $gullet->readKeyword('to', 'spread')) {
-      LaTeXML::Core::KeyVals->new(undef, [$key, $gullet->readDimension]); } },
+      LaTeXML::Core::KeyVals->new(undef, undef, [$key, $gullet->readDimension]); } },
   optional => 1, undigested => 1);
 
 # Risky: I think this needs to be digested as a body to work like TeX (?)
@@ -1882,7 +1894,7 @@ DefParameterType('RuleSpecification', sub {
     my %spec = ();
     while (my $key = $gullet->readKeyword('width', 'height', 'depth')) {
       $spec{$key} = $gullet->readDimension; }
-    LaTeXML::Core::KeyVals->new(undef, [%spec]); },
+    LaTeXML::Core::KeyVals->new(undef, undef, [%spec]); },
   optional => 1, undigested => 1);
 
 DefConstructor('\vrule RuleSpecification',

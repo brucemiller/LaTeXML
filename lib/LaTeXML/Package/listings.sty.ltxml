@@ -1026,7 +1026,7 @@ DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', s
     if ($dialect && $dialect->unlist) {
       $dialect = uc(ToString($dialect)); $dialect =~ s/\s+//g;
       $name .= '$' . $dialect; }
-    AssignValue($name => LaTeXML::Core::KeyVals->new('LST',
+    AssignValue($name => LaTeXML::Core::KeyVals->new(undef, 'LST',
         [(@base ? (language => Tokens(@base)) : ()),
           $keyvals->getPairs],
         open  => T_OTHER('['), close  => T_OTHER(']'),
@@ -1468,4 +1468,3 @@ lstLoadConfiguration();
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-
