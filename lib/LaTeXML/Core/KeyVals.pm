@@ -20,124 +20,310 @@ use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Common::Object);
 
 our @EXPORT = (
-  qw(&DefKeyVal &GetKeyVal &GetKeyVals)
+  qw(&GetKeyVal &GetKeyVals)
 );
-
-#======================================================================
-# KeyVal Internal Helper functions
-#======================================================================
-
-# Gets the header matching to a given key-val pair
-sub getKeyValHeader {
-  my ($prefix, $keyset, $key) = @_;
-
-  # prefix defaults to 'KV' if it is not defined
-  # to be backwards compatible with the keyval package
-  $prefix = $prefix || 'KV';
-
-  my @header = ();
-
-  # now we need to join all the components
-  push(@header, $prefix) if $prefix;
-  push(@header, $keyset) if $keyset;
-  push(@header, $key);
-  return join('@', @header); }
-
-#======================================================================
-# State Getter Methods
-#======================================================================
-
-# Get the LaTeXML definition (i.e. the type) of a keyval parameter
-sub getKeyValType {
-  my ($prefix, $keyset, $key) = @_;
-  my $header = getKeyValHeader($prefix, $keyset, $key);
-
-  return $STATE->lookupValue('KEYVAL@type@' . $header); }
-
-# Get the LaTeXML default (i.e. the type) of a parameter
-sub getKeyValDefault {
-  my ($prefix, $keyset, $key) = @_;
-  my $header = getKeyValHeader($prefix, $keyset, $key);
-
-  return $STATE->lookupValue('KEYVAL@default@' . $header); }
 
 #======================================================================
 # Exposed Methods
 #======================================================================
 
-# Defines a new key-value pair and returns it's header
-sub DefKeyVal {
-  my ($keyset, $key, $type, $default, %options) = @_;
-
-  # find the header to use for all the mappings
-  my $header = getKeyValHeader($options{prefix}, $keyset, $key);
-
-  # store the (LaTeXML) type of the key-value pair
-  my $paramlist = LaTeXML::Package::parseParameters($type || "{}", "KeyVal $key in set $keyset");
-  if (scalar(@$paramlist) != 1) {
-    Warn('unexpected', 'keyval', $key,
-      "Too many parameters in keyval $key (in set $keyset); taking only first", $paramlist); }
-  my $parameter = $$paramlist[0];
-  LaTeXML::Package::AssignValue('KEYVAL@type@' . $header => $parameter);
-
-  # store the default value (if applicable)
-  LaTeXML::Package::AssignValue('KEYVAL@default@' . $header => LaTeXML::Package::Tokenize($default))
-    if defined $default;
-
-  # if we have code, we should define the macros as well
-  my $code = $options{code};
-  if (defined($code)) {
-    LaTeXML::Package::DefMacroI('\\' . $header,
-      LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Plain', '{}')),
-      $code,
-      scope => 'global');
-
-    LaTeXML::Package::DefMacroI('\\' . $header . '@default', undef,
-      Tokens(T_CS('\\' . $header), T_BEGIN, LaTeXML::Package::Tokenize($default), T_END),
-      scope => 'global')
-      if $default;
-  }
-
-  return $header; }
-
-# These functions allow convenient access to KeyVal objects within constructors.
-# Access the value associated with a given key.
-# Can use in constructor: eg. <foo attrib='&GetKeyVal(#1,'key')'>
 sub GetKeyVal {
   my ($keyval, $key) = @_;
   return (defined $keyval) && $keyval->getValue($key); }
 
-# Access the entire hash.
-# Can use in constructor: <foo %&GetKeyVals(#1)/>
 sub GetKeyVals {
   my ($keyval) = @_;
   return (defined $keyval ? $keyval->getKeyVals : {}); }
 
 #======================================================================
-# KeyVal Parsing Methods
+# The KeyVals constructor
 #======================================================================
+# This defines the KeyVals data object that can appear in the datastream
+# along with tokens, boxes, etc.
+# Thus it has to be digestible, however we may not want to digest it more
+# than once.
+#**********************************************************************
+
+sub new {
+  my ($class, $prefix, $keysets, $tuples, %options) = @_;
+  # parse all the arguments
+  $prefix = defined($prefix) ? ToString($prefix) : 'KV';
+  $keysets = [split(',', ToString(defined($keysets) ? $keysets : '_anonymous_'))] unless (ref($keysets) eq 'ARRAY');
+  my @atuples = defined($tuples) ? @{$tuples} : ();
+  my $skip = $options{skip};
+  $skip = [split(',', ToString(defined($options{skip}) ? $options{skip} : ''))] unless (ref($options{skip}) eq 'ARRAY');
+  my $setAll           = $options{setAll}           ? 1 : 0;
+  my $setInternals     = $options{setInternals}     ? 1 : 0;
+  my $skipKeyDigestion = $options{skipKeyDigestion} ? 1 : 0;
+  my $skipMissing      = $options{skipMissing};
+  my $hookMissing      = $options{hookMissing};
+  # hook missing, if defined, must be a token
+  if (defined($hookMissing) && $hookMissing) {
+    $hookMissing = ref($hookMissing) ? $hookMissing : T_CS(ToString($hookMissing)); }
+  else { $hookMissing = undef; }
+  # skip missing may be a token (=store all the missing macros there)
+  unless (ref($skipMissing)) {
+    # may be undef or 0 (= throw errors)
+    unless (defined($skipMissing)) { $skipMissing = undef; }
+    elsif  ($skipMissing eq '0')   { $skipMissing = undef; }
+    # may be 1 (= ignore all missing keys)
+    elsif ($skipMissing eq '1') { $skipMissing = 1; }
+    # may be a string (= store all the missing keys there)
+    else { $skipMissing = T_CS($skipMissing); } }
+  my %hash = ();
+  my $self = bless {
+    # which KeyVals are we parsing and how do we behave?
+    prefix      => $prefix,      keysets     => $keysets,
+    skip        => $skip,        setAll      => $setAll, setInternals => $setInternals,
+    skipMissing => $skipMissing, hookMissing => $hookMissing,
+
+    # all the internal representations
+    tuples => [@atuples], cachedPairs => [()], cachedHash => \%hash,
+
+    # additional flag
+    skipKeyDigestion => $skipKeyDigestion,
+
+    # all the character tokens we used
+    open  => $options{open},  close  => $options{close},
+    punct => $options{punct}, assign => $options{assign} },
+
+    $class;
+
+  # we need to build all the caches if we have a non-empty array
+  $self->rebuild if scalar($self->getTuples) > 0;
+
+  return $self; }
+
+#======================================================================
+# Accessors for internal usage
+#======================================================================
+
+sub getPrefix {
+  my ($self) = @_;
+  return $$self{prefix}; }
+
+sub getKeySets {
+  my ($self) = @_;
+  return @{ $$self{keysets} }; }
+
+sub getSetAll {
+  my ($self) = @_;
+  return $$self{setAll}; }
+
+sub getSetInternals {
+  my ($self) = @_;
+  return $$self{setInternals}; }
+
+sub getTuples {
+  my ($self) = @_;
+  return @{ $$self{tuples}; } }
+
+sub getCachedPairs {
+  my ($self) = @_;
+  return @{ $$self{cachedPairs}; } }
+
+sub getCachedHash {
+  my ($self) = @_;
+  return %{ $$self{cachedHash} }; }
+
+sub getSkip {
+  my ($self) = @_;
+  return @{ $$self{skip} }; }
+
+sub getSkipMissing {
+  my ($self) = @_;
+  return $$self{skipMissing}; }
+
+sub getHookMissing {
+  my ($self) = @_;
+  return $$self{hookMissing}; }
+
+sub getSkipKeyDigestion {
+  my ($self) = @_;
+  return $$self{skipKeyDigestion}; }
+
+sub getOpen {
+  my ($self) = @_;
+  return $$self{open}; }
+
+sub getClose {
+  my ($self) = @_;
+  return $$self{close}; }
+
+sub getPunct {
+  my ($self) = @_;
+  return $$self{punct}; }
+
+sub getAssign {
+  my ($self) = @_;
+  return $$self{assign}; }
+
+#======================================================================
+# Resolution to KeySets
+#======================================================================
+
+sub resolveKeyValFor {
+  my ($self, $key) = @_;
+
+  my $prefix  = $self->getPrefix;
+  my @keysets = $self->getKeySets;
+  my @sets    = ();
+
+  # iterate over the keysets
+  foreach my $keyset (@keysets) {
+    my $bkeyval = LaTeXML::Core::KeyVal->new($prefix, $keyset, $key);
+    push(@sets, $bkeyval) if $bkeyval->isDefined(1); }
+
+  # throw an error, unless we record the missing macros
+  if (scalar @sets == 0) {
+    Error(
+      'undefined', 'Encountered unknown KeyVals key',
+      "'$key' with prefix '$prefix' not defined in '" . join(",", @keysets) . "', " .
+        'were you perhaps using \setkeys instead of \setkeys*?') unless defined($self->getSkipMissing);
+    return; }
+
+  # return either the first or all of the elements
+  return ($sets[0]) unless $self->getSetAll;
+  return @sets; }
+
+sub canResolveKeyValFor {
+  my ($self, $key) = @_;
+  my $prefix  = $self->getPrefix;
+  my @keysets = $self->getKeySets;
+
+  # iterate over the keysets
+  foreach my $keyset (@keysets) {
+    my $bkeyval = LaTeXML::Core::KeyVal->new($prefix, $keyset, $key);
+    return 1 if $bkeyval->isDefined(1); }
+
+  return 0; }
+
+sub getPrimaryKeyValOf {
+  my ($self, $key, @keysets) = @_;
+
+  if (scalar @keysets == 0) {
+    my $prefix   = $self->getPrefix;
+    my @headsets = $self->getKeySets;
+    return LaTeXML::Core::KeyVal->new($prefix, $headsets[0], $key); }
+  else { return $keysets[0] } }
+
+#======================================================================
+# Changing contained values
+#======================================================================
+
+sub addValue {
+  my ($self, $key, $value, $useDefault, $noRebuild) = @_;
+
+  # figure out the keyset(s) for the key to be added
+  my @keysets = $self->resolveKeyValFor($key);
+  my $headset = $self->getPrimaryKeyValOf($key, @keysets);
+  my @tuples  = $self->getTuples;
+
+  # and add the new element to the set of tuples
+  push(@tuples, $key, ($useDefault ? $headset->getDefault : $value), $useDefault, [@keysets], $headset);
+  $$self{tuples} = [@tuples];
+
+  # we now need to rebuild, unless we were asked not to
+  # TODO: Maybe only update the last element?
+  $self->rebuild unless $noRebuild;
+
+  return; }
+
+sub setValue {
+  my ($self, $key, $value, $useDefault) = @_;
+
+  # delete the existing values by skipping key
+  $self->rebuild($key);
+
+  # if we have an array, we need to push all of them
+  if (ref $value eq 'ARRAY') {
+    foreach my $val (@{$value}) {
+      $self->addValue($key, $val, $useDefault, 1); }
+
+    $self->rebuild();
+    return; }
+
+  # if we have a single value, set it normally
+  elsif (defined($value)) {
+    $self->addValue($key, $value, $useDefault); }
+
+  return; }
+
+sub rebuild {
+  my ($self, $skip) = @_;
+
+  # the new data structures to create
+  my @tuples    = $self->getTuples;
+  my @newtuples = ();
+  my @pairs     = ();
+  my %hash      = ();
+
+  while (@tuples) {
+    # take all the elements we need from the stack
+    my ($key, $value, $useDefault, $resolution, $keyval) =
+      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
+
+    # if we want to skip some values, we need to store new tuples
+    if (defined($skip)) {
+      next if $key eq $skip;
+      push(@newtuples, $key, $value, $useDefault, $resolution, $keyval) if defined($skip); }
+
+    # push key / value into the pair
+    push(@pairs, $key, $value);
+
+    # if we do not have a value yet, set it
+    if (!defined $hash{$key}) { $hash{$key} = $value; }
+
+    # If we get a third value, push into an array
+    # This is unlikely to be what the caller expects!! But what else?
+    elsif (ref $hash{$key} eq 'ARRAY') { push(@{ $hash{$key} }, $value); }
+
+    # If we get a second value, make an array
+    else { $hash{$key} = [$hash{$key}, $value]; } }
+
+  # store all of the values
+  $$self{cachedPairs} = [@pairs];
+  $$self{cachedHash}  = \%hash;
+  $$self{tuples}      = [@newtuples] if defined($skip);
+
+  return; }
+
+#======================================================================
+# parsing values from a gullet
+#======================================================================
+
 # A KeyVal argument MUST be delimited by either braces or brackets (if optional)
-# This method reads the keyval pairs INCLUDING the delimiters, (rather than parsing
-# after the fact), since some values may have special catcode needs.
+# This method reads the keyval pairs INCLUDING the delimiters, (rather than
+# parsing after the fact), since some values may have special catcode needs.
 ##my $T_EQ    = T_OTHER('=');    # [CONSTANT]
 ##my $T_COMMA = T_OTHER(',');    # [CONSTANT]
 
-# Read a set of Key-Val parameters from the gullet and create a KeyVals objects
-sub readKeyVals {
-  # we need a gullet, a prefix, a keyset and a token to close groups
-  my ($gullet, $prefix, $keyset, $close) = @_;
+sub readFrom {
+  my ($self, $gullet, $until, %options) = @_;
+
+  # if we want to force skipMissing keys, we set it up here
+  my $silenceMissing = $options{silenceMissing} ? 1 : 0;
+
+  my $skipMissing      = $self->getSkipMissing;
+  my $skipKeyDigestion = $self->getSkipKeyDigestion;
+  my $hookMissing      = $self->getHookMissing;
+
+  # if we want to silence all missing errors, store them in a hook
+  if ($silenceMissing) {
+    $$self{skipMissing}      = 1;
+    $$self{skipKeyDigestion} = 1;
+    $$self{hookMissing}      = undef; }
 
   # read the opening token and figure out where we are
   my $startloc = $gullet->getLocator();
-  my $open     = $gullet->readToken;
 
-  # token representing assignment and punctuation
-  my $assign = T_OTHER('=');
-  my $punct  = T_OTHER(',');
-
-  # setup prefix and keyset in a sane fashion
-  $prefix = ($prefix ? ToString($prefix) : 'KV');
-  $keyset = ($keyset ? ToString($keyset) : '_anonymous_');
+  # set and read tokens
+  $$self{open}   = $gullet->readToken;
+  $$self{close}  = $until;
+  $$self{assign} = T_OTHER('=');
+  $$self{punct}  = T_OTHER(',');
+  my ($open, $close, $punct, $assign) =
+    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
 
   # create arrays for key-value pairs and explicit values
   my @kv        = ();
@@ -150,7 +336,7 @@ sub readKeyVals {
     $gullet->skipSpaces;
 
     # Read a single keyword, get a delimiter and a set of keyword tokens
-    my ($ktoks, $delim) = readKeyValsKeyword($gullet, $close);
+    my ($ktoks, $delim) = $self->readKeyWordFrom($gullet, $close);
 
     # if there was no delimiter at the end, we throw an error
     Error('expected', $close, $gullet,
@@ -164,16 +350,16 @@ sub readKeyVals {
     # if we have a non-empty key
     if ($key) {
 
-      my ($value, $explicit);
-
-      # get the type of the key-value pair
-      my $keydef = getKeyValType($prefix, $keyset, $key);
+      my $value;
+      my $isDefault;
 
       # if we have an '=', we explcity assign a value
       if ($delim->equals($assign)) {
-        $explicit = 1;
+        $isDefault = 0;
 
         # setup the key-codes to properly read
+        my $keyval = $self->getPrimaryKeyValOf($key, $self->resolveKeyValFor($key));
+        my $keydef = $keyval->getType();
         $keydef->setupCatcodes if $keydef;
 
         # read until $punct
@@ -188,42 +374,37 @@ sub readKeyVals {
         $value = $keydef->reparse($gullet, $value) if $keydef && $value;
 
         # and cleanup
-        $keydef->revertCatcodes if $keydef;
-      }
+        $keydef->revertCatcodes if $keydef; }
 
       # we did not get an '=', and thus need to read the default value
-      else {
-        $explicit = 0;
-        $value = getKeyValDefault($prefix, $keyset, $key);
-      }
+      else { $isDefault = 1; }
 
-      # store all the parsed things
-      push(@kv,        $key);
-      push(@kv,        $value);
-      push(@explicits, $explicit);
-    }
+      # and store our value please
+      $self->addValue($key, $value, $isDefault, 0) if (!$silenceMissing || $self->canResolveKeyValFor($key)); }
 
     # we finish if we have the last element
     last if $delim->equals($close); }
 
-  # create the new keyvals object
-  return LaTeXML::Core::KeyVals->new($prefix, $keyset, [@kv],
-    explicits => [@explicits],
-    open      => $open, close => $close,
-    punct     => $punct, assign => $assign); }
+  # rebuild and return nothing
+  $self->rebuild;
 
-# Read a keyvals keyword (tokens DO get expanded)
-# read until we find =, comma or the end delimiter of the keyvals (typically } or ])
-sub readKeyValsKeyword {
+  # restore all settings if we silenced the missing keys
+  if ($silenceMissing) {
+    $$self{skipMissing}      = $skipMissing;
+    $$self{skipKeyDigestion} = $skipKeyDigestion;
+    $$self{hookMissing}      = $hookMissing; }
 
-  # we need a gullet and a closing token
-  my ($gullet, $close) = @_;
+  return; }
+
+sub readKeyWordFrom {
+  my ($self, $gullet) = @_;
 
   # set of tokens we will expand
   my @tokens = ();
 
-  # set of delimters we want to ignore
-  my @delim = ($close, T_OTHER('='), T_OTHER(','));
+  # set of delimiters we want to ignore
+  my @delim =
+    ($self->getClose, $self->getPunct, $self->getAssign);
 
   # we do not want any spaces
   $gullet->skipSpaces;
@@ -245,67 +426,15 @@ sub readKeyValsKeyword {
   return (Tokens(@tokens), $token); }
 
 #======================================================================
-# The Data object representing the KeyVals
+# Public accessors of all the values
 #======================================================================
-# This defines the KeyVal data object that can appear in the datastream
-# along with tokens, boxes, etc.
-# Thus it has to be digestible.
-
-# KeyVals: representation of keyval arguments,
-# Not necessarily a hash, since keys could be repeated and order may
-# be significant.
-#**********************************************************************
-# Where does this really belong?
-# The values can be Tokens, after parsing, or Boxes, after digestion.
-# (or Numbers, etc. in either case)
-# But also, it has a non-generic API used above...
-# If Box-like, it could have a beAbsorbed method; which would do what?
-# Should it convert to simple text? Or structure?
-# If latter, there needs to be a key => tag mapping.
-
-# Options can be tokens for open, close, punct (between pairs), assign (typically =)
-sub new {
-  my ($class, $prefix, $keyset, $pairs, %options) = @_;
-
-  # make sure prefix and keyset are string (if applicable)
-  $prefix = ($prefix ? ToString($prefix) : 'KV');
-  $keyset = ($keyset ? ToString($keyset) : '_anonymous_');
-
-  # Load pairs and explicits
-  my @pp = @$pairs;
-  my @explicits = @{ $options{explicits} || [(1) x ((scalar @pp) / 2)] };
-
-  # create a hash of valuies
-  my %hash = ();
-  while (@pp) {
-    my ($k, $v) = (shift(@pp), shift(@pp));
-
-    # if we do not have a value yet, set it
-    if (!defined $hash{$k}) { $hash{$k} = $v; }
-
-    # If we get a third value, push into an array
-    # This is unlikely to be what the caller expects!! But what else?
-    elsif (ref $hash{$k} eq 'ARRAY') { push(@{ $hash{$k} }, $v); }
-
-    # If we get a second value, make an array
-    else { $hash{$k} = [$hash{$k}, $v]; } }
-
-  return bless {
-    prefix => $prefix, keyset => $keyset,
-    keyvals => $pairs, hash => {%hash}, explicits => [@explicits],
-    open  => $options{open},  close  => $options{close},
-    punct => $options{punct}, assign => $options{assign} },
-    $class; }
-
-# creates an empty key-vals object from a (prefix, keyset) combination
-sub empty {
-  my ($prefix, $keyset) = @_;
-  return LaTeXML::Core::KeyVals->new($prefix, $keyset, [], open => T_BEGIN, close => T_END); }
+# Note: The API of this need to be stable, as people may be using it
 
 # return the value of a given key. If multiple values are given, return the last one.
 sub getValue {
   my ($self, $key) = @_;
-  my $value = $$self{hash}{$key};
+  my %hash  = $self->getCachedHash;
+  my $value = $hash{$key};
   # Since we (by default) accumulate lists of values when repeated,
   # we need to provide the "common" thing: return the last value given.
   return (!defined $value ? undef : (ref $value eq 'ARRAY' ? $$value[-1] : $value)); }
@@ -313,144 +442,180 @@ sub getValue {
 # return a list of values for a given key
 sub getValues {
   my ($self, $key) = @_;
-  my $value = $$self{hash}{$key};
+  my %hash  = self->getCachedHash;
+  my $value = $hash{$key};
   return (!defined $value ? () : (ref $value eq 'ARRAY' ? @$value : ($value))); }
-
-# sets of deletes a value for a given key
-sub setValue {
-  my ($self, $key, $value) = @_;
-  if (defined $value) {
-    $$self{hash}{$key} = $value; }
-  else {
-    delete $$self{hash}{$key}; }
-  return; }
 
 # return the set of key-value pairs
 sub getPairs {
   my ($self) = @_;
-  return @{ $$self{keyvals} }; }
+  return $self->getCachedPairs; }
+
+# returns a key => ToString(value)
+sub getHash {
+  my ($self) = @_;
+  my %hash = $self->getCachedHash;
+  return map { ($_ => ToString($hash{$_})) } keys %hash; }
 
 # return a hash of key-value pairs
 sub getKeyVals {
   my ($self) = @_;
-  return $$self{hash}; }
-
-# returns a hash kof key-value pairs
-sub getHash {
-  my ($self) = @_;
-  return map { ($_ => ToString($$self{hash}{$_})) } keys %{ $$self{hash} }; }
+  my %hash = $self->getCachedHash;
+  return \%hash; }
 
 # checks if the value for a given key exists
 sub hasKey {
   my ($self, $key) = @_;
-  return exists $$self{hash}{$key}; }
+  my %hash = self->getCachedHash;
+  return exists $hash{$key}; }
 
-# digests this key-val object
+#======================================================================
+# Value Related Reversion
+#======================================================================
+
+sub setKeys {
+  my ($self) = @_;
+
+  my @tuples       = $self->getTuples;
+  my @skip         = $self->getSkip;
+  my $setInternals = $self->getSetInternals;
+
+  my ($punct, $assign) = ($self->getPunct, $self->getAssign);
+
+  # we might have to store values in a seperate token
+  my $rmmacro     = $self->getSkipMissing;
+  my $hookMissing = $self->getHookMissing;
+  my $definedrm   = ref($rmmacro) ? 1 : 0;
+  my @rmtokens    = ();
+
+  # read in existing tokens (if they are defined)
+  if ($definedrm && $STATE->lookupMeaning($rmmacro)) {
+    @rmtokens = LaTeXML::Package::Expand($rmmacro)->unlist; }
+
+  # define some xkeyval internals
+  my @tokens = $setInternals ? (
+    T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, Explode(join(',', $self->getKeySets)), T_END,
+    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, Explode(join(',', @skip)), T_END
+  ) : ();
+
+  # iterate over the key-value pairs
+  while (@tuples) {
+    my ($key, $value, $useDefault, $resolution, $keyval) =
+      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
+    my @keyvals = @{$resolution};
+
+    # we might want to skip to the next iteration if key is to be omitted
+    next if (grep { $_ eq $key } @skip);
+
+    # we might need to save the macros that weren't saved
+    if (scalar @keyvals == 0) {
+      if ($definedrm) {
+        push(@rmtokens, $keyval->revert($value, $useDefault, (@rmtokens ? 0 : 1),
+            1, $punct, $assign)); }
+      my @reversion = $keyval->revert($value, $useDefault, 1, 1, $punct, $assign);
+      push(@tokens, $hookMissing, T_BEGIN, $keyval->revert($value, $useDefault, 1, 1, $punct, $assign), T_END) if $hookMissing;
+      next; }
+
+    # and iterate over all valid keysets
+    foreach my $keyset (@keyvals) {
+      my $expansion = $keyset->setKeys($value, $useDefault, 1, 1, $setInternals);
+      next unless defined($expansion);
+      push(@tokens, $expansion->unlist); } }
+
+  # and assign the macro with the other keys
+  push(@tokens, T_CS('\def'), $rmmacro, T_BEGIN, @rmtokens, T_END) if $definedrm;
+
+  # reset all the internals (if applicable)
+  push(@tokens,
+    T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, T_END,
+    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, T_END) if $setInternals;
+
+  # and return the list of tokens
+  return Tokens(@tokens); }
+
 sub beDigested {
-
   my ($self, $stomach) = @_;
 
-  # read the prefix and keyset of this object
-  my $prefix = $$self{prefix};
-  my $keyset = $$self{keyset};
+  unless ($self->getSkipKeyDigestion) { $stomach->digest($self->setKeys); }
+  else { Info('ignore', 'keyvals', $self,
+      "Skipping digestion of \\setkeys as requested (did you digest a KeyVals twice?) "); }
 
-  # read the set of key-value pairs and explicit values
-  my @kv        = @{ $$self{keyvals} };
-  my @explicits = @{ $$self{explicits} };
+  # old and new tuples we want to create
+  my @tuples    = $self->getTuples;
+  my @newtuples = ();
 
-  my @dkv = ();
-  while (@kv) {
-    my ($key, $value, $explicit) = (shift(@kv), shift(@kv), shift(@explicits));
+  # iterate over them
+  while (@tuples) {
+    my ($key, $value, $useDefault, $resolution, $keyval) =
+      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
 
-    # get the key-value definition
-    my $keydef = getKeyValType($prefix, $keyset, $key);
+    # digest a single token
+    push(@newtuples, $keyval->digest($stomach, $value), $useDefault, $resolution, $keyval); }
 
-    # digest key & value pairs
-    push(@dkv, $key,
-      ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach)))
-      if $value; }
+  # read all our current state
+  my $prefix       = $self->getPrefix;
+  my $keysets      = $self->getKeySets;
+  my $setAll       = $self->getSetAll;
+  my $skip         = $self->getSkip;
+  my $setInternals = $self->getSetInternals;
+  my $skipMissing  = $self->getSkipMissing;
+  my $hookMissing  = $self->getHookMissing;
+  my ($open, $close, $punct, $assign) =
+    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
 
-  # and re-create the KeyVals object
-  return LaTeXML::Core::KeyVals->new($prefix, $keyset,
-    [@dkv], explicits => [@explicits],
-    open  => $$self{open},  close  => $$self{close},
-    punct => $$self{punct}, assign => $$self{assign}); }
+  # then re-create the current object
+  return LaTeXML::Core::KeyVals->new(
+    $prefix, $keysets, [@newtuples],
+    setAll => $setAll, setInternals => $setInternals,
+    skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
+    skipKeyDigestion => 1,
+    open             => $open, close => $close,
+    punct            => $punct, assign => $assign); }
 
-# reverts this key-value object into a set of tokens representing
-# the source that was used to parse it
 sub revert {
   my ($self) = @_;
 
-  my $prefix = $$self{prefix};
-  my $keyset = $$self{keyset};
+  # read values from class
+  my @tuples = $self->getTuples;
+  my ($open, $close, $punct, $assign) =
+    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
 
-  my @tokens    = ();
-  my @kv        = @{ $$self{keyvals} };
-  my @explicits = @{ $$self{explicits} };
+  my @tokens = ();
 
   # iterate over the key-value pairs
-  while (@kv) {
-    my ($key, $value, $explicit) = (shift(@kv), shift(@kv), shift(@explicits));
+  while (@tokens) {
+    my ($key, $value, $useDefault, $resolution, $keyval) =
+      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
 
-    # write comma and key, unless in the first iteration
-    push(@tokens, $$self{punct}) if $$self{punct} && @tokens;
-    push(@tokens, T_SPACE)       if @tokens;
-    push(@tokens, Explode($key));
-
-    # if we explicitly specefied the value, write equals and value
-    if ($explicit) {
-      my $keydef = getKeyValType($prefix, $keyset, $key);
-      push(@tokens, ($$self{assign} || T_SPACE)) if $value;
-      push(@tokens, ($keydef ? $keydef->revert($value) : Revert($value))) if $value; } }
+    # revert a single token
+    push(@tokens, $keyval->revert($value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); }
 
   # add open and close values if they were given
-  unshift(@tokens, $$self{open}) if $$self{open};
-  push(@tokens, $$self{close}) if $$self{close};
+  unshift(@tokens, $open) if $open;
+  push(@tokens, $close) if $close;
 
   # and return the list of tokens
-  return @tokens; }
+  return Tokens(@tokens); }
 
-# expands this key-value object into a set of tokens representing
-# the result of expanding it
-sub set {
+# turns this object into a string
+sub toString {
   my ($self) = @_;
 
-  my $prefix = $$self{prefix};
-  my $keyset = $$self{keyset};
+  my @kv = $self->getPairs;
+  my ($punct, $assign) = ($self->getPunct || '', $self->getAssign || ' ');
 
-  my @tokens    = ();
-  my @kv        = @{ $$self{keyvals} };
-  my @explicits = @{ $$self{explicits} };
+  my $string = '';
 
-  # iterate over the key-value pairs
   while (@kv) {
-    my ($key, $value, $explicit) = (shift(@kv), shift(@kv), shift(@explicits));
-    my $kprefix = getKeyValHeader($prefix, $keyset, $key);
-
-    # we have a value given, call the appropriate macro with it
-    if ($explicit) { push(@tokens, T_CS('\\' . $kprefix), T_BEGIN, $value, T_END); }
-
-    # if it was not given explicitly, call the default macro
-    else { push(@tokens, T_CS('\\' . $kprefix . '@default')); } }
-
-  # and return the list of tokens
-  return @tokens; }
+    my ($key, $value) = (shift(@kv), shift(@kv));
+    $string .= ToString($punct) . ' ' if $string;
+    $string .= $key . ToString($assign) . ToString($value); }
+  return $string; }
 
 # TODO: ????
 sub unlist {
   my ($self) = @_;
   return $self; }
-
-# turns this object into a string
-sub toString {
-  my ($self) = @_;
-  my $string = '';
-  my @kv     = @{ $$self{keyvals} };
-  while (@kv) {
-    my ($key, $value) = (shift(@kv), shift(@kv));
-    $string .= ToString($$self{punct} || '') . ' ' if $string;
-    $string .= $key . ToString($$self{assign} || ' ') . ToString($value); }
-  return $string; }
 
 #======================================================================
 1;
@@ -461,7 +626,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::KeyVals> - support for keyvals
+C<LaTeXML::Core::KeyVals> - Key-Value Pairs in LaTeXML
 
 =head1 DESCRIPTION
 
@@ -469,62 +634,284 @@ Provides a parser and representation of keyval pairs
 C<LaTeXML::Core::KeyVals> represents parameters handled by LaTeX's keyval package.
 It extends L<LaTeXML::Common::Object>.
 
-=head2 Declarations
-
-=over 4
-
-=item C<< DefKeyVal($keyset,$key,$type); >>
-
-Defines the type of value expected for the key $key when parsed in part
-of a KeyVal using C<$keyset>.  C<$type> would be something like 'any' or 'Number', but
-I'm still working on this.
-
-=back
-
 =head2 Accessors
 
 =over 4
 
 =item C<< GetKeyVal($arg,$key) >>
 
-This is useful within constructors to access the value associated with C<$key> in
-the argument C<$arg>.
+Access the value associated with a given key. 
+This is useful within constructors to access the value associated with C<$key> 
+in the argument C<$arg>. Example usage in a copnstructor:
+
+<foo attrib='&GetKeyVal(#1,'key')'>
 
 =item C<< GetKeyVals($arg) >>
 
-This is useful within constructors to extract all keyvalue pairs to assign all attributes.
+Access the entire hash. Can be used in a constructor like:
+Can use in constructor: <foo %&GetKeyVals(#1)/>
 
 =back
 
-=head2 KeyVal Methods
+=head2 Constructors
 
 =over 4
 
-=item C<< $value = $keyval->getValue($key); >>
+=item C<<LaTeXML::Core::KeyVals->new(I<prefix>, I<keysets>, I<tuples>, I<options>)); >>
 
-Return the value associated with C<$key> in the C<$keyval>.
+Creates a new KeyVals object with the given parameters. 
+All arguments are optional and the simples way of calling this method is 
+C<< my $keyvals = LaTeXML::Core::KeyVals->new() >>. 
 
-=item C<< @keyvals = $keyval->getKeyVals; >>
+I<prefix> is the given prefix all key-value pairs operate in and defaults to 
+C<'KV'>. If given, prefix should be a string. 
+
+I<keysets> should be a list of keysets to find keys inside of. If given, it
+should either be reference to a list of strings or a comma-seperated string. 
+This argument defaults to C<'_anonymous_'>. 
+
+I<tuples> should be a a reference to a (flat) list of five-tuples representing
+the key-value pairs this KeyVals object is seeded with. See the I<getTuples>
+function on details of the structure of this list. 
+If set to a non-empty list, I<rebuild> is called automatically to populate
+the other caches. 
+
+Furthermore, the KeyVals constructor accepts a variety of options that can
+be used to customize its behaviour. These are I<setAll>, I<setInternals>, 
+I<skip>, I<skipMissing>, I<hookMissing>, I<skipKeyDigestion>, I<open>, I<close>,
+I<punct> and I<assign>. 
+
+I<setAll> is a flag that, if set, ensures that keys will be set in all existing
+keysets, instad of only in the first one. 
+
+I<setInternals> is a flag that, if set, ensures that certain 'xkeyval' package
+internals are set during key digestion. 
+
+I<skip> should be a list of keys to be skipped when digesting the keys of this
+object. 
+
+I<skipMissing> allows one way of handling keys during key digestion
+that have not been explictilty declared using C<DefKey> or related
+functionality. If set to C<undef> or C<0>, an error is thrown upon trying to set
+such a key, if set to C<1> they are ignored. Alternatively, this can be set to a
+key macro which is then extended to contain a comman-separated list of the
+undefined keys. 
+
+I<hookMissing> allows to call a specific macro if a single key is unknown during
+key digestion. 
+
+I<skipKeyDigestion> is a flag that, if set, skips automatic digestion of
+keys when calling I<beDigested>. 
+
+The options I<open>, I<close>, I<punct> and I<assign> optionally contain the 
+tokens used for the respective meanings. 
+
+=back
+
+=head2 KeyVals Accessors (intended for internal usage)
+
+=over 4
+
+=item C<< my $prefix = $keyvals->getPrefix() >>
+
+Returns the I<Prefix> property. 
+
+=item C<< my @keysets = $keyvals->getKeySets() >>
+
+Returns the I<KeySets> property. 
+
+=item C<< my $setall = $keyvals->getSetAll() >>
+
+Returns the I<SetAll> property. 
+
+=item C<< my $setinternals = $keyvals->getSetInternals() >>
+
+Returns the I<SetInternals> property. 
+
+=item C<< my @skip = $keyvals->getSkip() >>
+
+Returns the I<Skip> property. 
+
+=item C<< my $skipmissing = $keyvals->getSkipMissing() >>
+
+Returns the I<SkipMissing> property. 
+
+=item C<< my $hookmissing = $keyvals->getHookMissing() >>
+
+Returns the I<HookMissing> property. 
+
+=item C<< my @tuples = $keyvals->getTuples() >>
+
+Returns the I<Tuples> property representing
+
+=item C<< my @cachedpairs = $keyvals->getCachedPairs() >>
+
+Returns the I<CachedPairs> property. 
+
+=item C<< my %cachedhash = $keyvals->getCachedHash() >>
+
+Returns the I<CachedHash> property. 
+
+=item C<< my $skipkeydigestion = $keyvals->getSkipKeyDigestion() >>
+
+Returns the I<SkipKeyDigestion> property. 
+
+=item C<< my $open = $keyvals->getOpen() >>
+
+Returns the I<Open> property. 
+
+=item C<< my $close = $keyvals->getClose() >>
+
+Returns the I<Close> property. 
+
+=item C<< my $punct = $keyvals->getPunct() >>
+
+Returns the I<Punct> property. 
+
+=item C<< my $assign = $keyvals->getAssign() >>
+
+Returns the I<Assign> property. 
+
+=back
+
+=head2 Resolution to KeySets
+
+=over 4
+
+=item C<< my @keysets = $keyvals->resolveKeyValFor($key) >>
+
+Finds all I<KeyVal> objects that should be used for interacting with the given
+I<key>. May return C<undef> if no matching keysets are found. Use the parameters
+ I<keysets>, I<setAll> and I<skipMissing> to customize the exact behaviour of
+this function. 
+
+=item C<< my $canResolveKeyVal = $keyvals->canResolveKeyValFor($key) >>
+
+Checks if this I<KeyVals> object can resolve a KeyVal for I<key>. Ignores
+I<setAll> and I<skipMissing> parameters. 
+
+=item C<< my $keyval = $keyvals->getPrimaryKeyValOf($key, @keysets) >>
+
+Gets a single I<KeyVal> parameter to be used for interacting a a single I<key>, 
+given that it resolves to I<keysets>. Always returns a single I<KeyVal> object, 
+even if no keysets are found. 
+
+=back
+
+=head2 Changing contained values
+
+=over 4
+
+=item C<< $keyvals->addValue($key, $value, $useDefault, $noRebuild) >>
+
+Adds the given I<value> for I<key> at the end of the given list of values and
+rebuilds all internal caches. If the I<useDefault> flag is set, the specific
+value is ignored, and the default is set instead. 
+
+If this function is called multiple times the I<noRebuild> option should be 
+given to prevent constant rebuilding and the I<rebuild> function should be 
+called manually called. 
+
+=item C<< $keyvals->setValue($key, $value, $useDefault) >>
+
+Sets the value of I<key> to I<value>, optionally using the default if 
+I<useDefault> is set. Note that if I<value> is a reference to an array, 
+the key is inserted multiple times. If I<value> is C<undef>, the values is
+deleted. 
+
+=item C<< $keyvals->rebuild($skip) >>
+
+Rebuilds the internal caches of key-value mapping and list of pairs from from
+main list of tuples. If I<skip> is given, all values for the given key are
+omitted, and the given key is deleted. 
+
+=back
+
+=head2 Parsing values from a gullet
+
+=over 4
+
+=item C<< $keyvals->readFrom($gullet, $until, %options) >>
+
+Reads a set of KeyVals from I<gullet>, up until the I<until> token, and updates
+the state of this I<KeyVals> object accordingly. 
+
+Furthermore, this methods supports several options. 
+
+When the I<silenceMissing> option is set, missing keys will be completely
+ignored when reading keys, that is they do not get recorded into the KeyVals
+object and no warnings or errors will be thrown. 
+
+=item C<< $keyvals->readKeyWordFrom($gullet) >>
+
+Reads a single keyword from I<gullet>. Intended for internal use only. 
+
+=back
+
+=head2 KeyVals Accessors
+
+=over 4
+
+=item C<< my $value = $keyvals->getValue($key); >>
+
+Return a value associated with C<$key>. 
+
+=item C<< @values = $keyvals->getValues($key); >>
+
+Return the list of all values associated with C<$key>. 
+
+=item C<< %keyvals = $keyvals->getKeyVals; >>
+
+Return the hash reference containing the keys and values bound in the C<$keyval>.
+Each value in the hash may be a single value or a list if the key is repeated. 
+
+=item C<< @keyvals = $keyvals->getPairs; >>
+
+Return the alternating keys and values bound in the C<$keyval>.
+Note that this may contain multiple entries for a given key, if they
+were repeated. 
+
+=item C<< %hash = $keyvals->getHash; >>
 
 Return the hash reference containing the keys and values bound in the C<$keyval>.
 Note that will only contain the last value for a given key, if they
 were repeated.
 
-=item C<< @keyvals = $keyval->getPairs; >>
+=item C<< $haskey = $keyvals->hasKey($key); >>
 
-Return the alternating keys and values bound in the C<$keyval>.
-Note that this may contain multiple entries for a given key, if they
-were repeated.
+Checks if the KeyVals object contains a value for $key. 
 
-=item C<< $keyval->digestValues; >>
+=back
 
-Return a new C<LaTeXML::Core::KeyVals> object with all values digested as appropriate.
+=head2 Value Related Reversion
+
+=over 4
+
+=item C<< $expansion = $keyvals->setKeys; >>
+
+Expand this KeyVals into a set of tokens for digesting keys. 
+
+
+=item C<< $keyvals = $keyvals->beDigested($stomach); >>
+
+Return a new C<LaTeXML::Core::KeyVals> object with both keys and values
+digested. 
+
+=item C<< $reversion = $keyvals->revert(); >>
+
+Revert this object into a set of tokens representing the original 
+sequence of Tokens that was used to be read it from the gullet. 
+
+=item C<< $str = $keyvals->toString(); >>
+
+Turns this object into a key=value comma seperated string. 
 
 =back
 
 =head1 AUTHOR
 
 Bruce Miller <bruce.miller@nist.gov>
+Tom Wiesing <tom.wiesing@gmail.com>
 
 =head1 COPYRIGHT
 

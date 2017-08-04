@@ -4,4 +4,4 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/keyval");
+latexml_tests("t/keyval_options");

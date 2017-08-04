@@ -499,34 +499,103 @@ DefParameterType('CommaList', sub {
     LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $typedef,
       values => [@items]); });
 
-DefParameterType('RequiredKeyVals', sub {
-    my ($gullet, $prefix, $keyset) = @_;
+### Support for Key / Value arguments.
+## The very basic form is
+##   RequiredKeyVals: $keyset
+##   OptionalKeyVals: $keyset
+## to parse Key-Value pairs from a given keyset (see the 'keyval' package
+## documentation for more information). These types of KeyVal
+## parameters will return a LaTeXML::Core::KeyVals object, which can then be
+## used to access the values of the individual items.
+## The difference between the two forms is that RequiredKeyVals expects a set of
+## key-value pairs wrapped in T_BEGIN T_END, where as OptionalKeyVals optionally
+## expects a set of KeyValue pairs wrapped in T_OTHER('[') T_OTHER(']')
+##
+## Several extension of the keyval package exist, the most common one we support
+## is the xkeyval package. This introduces further variations on the keyval
+## arguments parsing, in particular it allows to read keys from more than one
+## keyset at once. These can be specified by giving comma-seperated values in
+## the keyset argument. By default, a key will only be set in the **first**
+## keyset it occurs in. By using
+##   RequiredKeyVals+: $keysets
+##   OptionalKeyVals+: $keysets
+## the key will be set in all keysets instead.
+##
+## All keys to be parsed with these arguments should be declared using
+## DefKeyVal in LaTeXML::Package. By default, an error is thrown if an unknown
+## key is encountered. To surpress this behaviour, and instead store all
+## undefined keys, use
+##   RequiredKeyVals*: $keysets
+##   OptionalKeyVals*: $keysets
+## instead. The '*' and '+' modifiers can be combined by using:
+##   RequiredKeyVals*+: $keysets
+##   OptionalKeyVals*+: $keysets
+##
+## Furthermore, the xkeyval package supports giving prefixes to keys,
+##   RequiredKeyVals[*][+]: $prefix|$keysets
+##   OptionalKeyVals[*][+]: $prefix|$keysets
+##
+## Finally, it is possible to specify specific keys to skip when digesting the
+## object. This can be achieved using comma-seperated key values in
+##   RequiredKeyVals[*][+]: $prefix|$keysets|$skip
+##   OptionalKeyVals[*][+]: $prefix|$keysets|$skip
 
-    # if we only have only one argument, we use keyset
-    unless (defined($keyset)) {
-      $keyset = $prefix;
-      $prefix = undef;
-    }
+# function to handle all the
+sub KeyVals_aux {
+  my ($gullet, $until, $spec, %options) = @_;
+  my ($star, $plus, $prefix, $keysets, $skip) = @{$spec};
 
-    if ($gullet->ifNext(T_BEGIN)) {
-      return (LaTeXML::Core::KeyVals::readKeyVals($gullet, $prefix, $keyset, T_END)); }
-    else {
-      Error('expected', '{', $gullet, "Missing keyval arguments");
-      return (LaTeXML::Core::KeyVals::empty($prefix, $keyset)); } });
+  # support both "keysets" and "prefix|keysets"
+  unless (defined($keysets)) {
+    $keysets = $prefix;
+    $prefix  = undef;
 
-DefParameterType('OptionalKeyVals', sub {
-    my ($gullet, $prefix, $keyset) = @_;
+    # to emulate old behaviour, throw no errors
+    # when we have a single keyset and no prefix (or no keyset at all)
+    $star = 1 if (!defined($keysets) || index(',', $keysets) == -1); }
 
-    # if we only have only one argument, we use keyset
-    unless (defined($keyset)) {
-      $keyset = $prefix;
-      $prefix = undef;
-    }
+  # create a new set of Key-Value arguments
+  my $keyvals = LaTeXML::Core::KeyVals->new(
+    $prefix, $keysets, undef,
+    setAll => $plus, setInternals => 1,
+    skip => $skip, skipMissing => $star, skipKeyDigestion => defined($keysets));
 
-    return ($gullet->ifNext(T_OTHER('['))
-      ? (LaTeXML::Core::KeyVals::readKeyVals($gullet, $prefix, $keyset, T_OTHER(']'))) : undef); },
-  optional => 1,
-  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  # and read it from the gullet
+  $keyvals->readFrom($gullet, $until) if defined($until);
+
+  # we still want to make use of the hash
+  return $keyvals; }
+
+sub RequiredKeyVals {
+  my ($star, $plus, $gullet, @keyspec) = @_;
+  my $until;
+
+  if ($gullet->ifNext(T_BEGIN)) {
+    $until = T_END; }
+  else {
+    Error('expected', '{', $gullet, "Missing keyval arguments"); }
+
+  return (KeyVals_aux($gullet, $until, [$star, $plus, @keyspec])); }
+
+DefParameterType('RequiredKeyVals',   sub { RequiredKeyVals(0, 0, @_); });
+DefParameterType('RequiredKeyVals*',  sub { RequiredKeyVals(1, 0, @_); });
+DefParameterType('RequiredKeyVals+',  sub { RequiredKeyVals(0, 1, @_); });
+DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); });
+
+sub OptionalKeyVals {
+  my ($star, $plus, $gullet, @keyspec) = @_;
+  if ($gullet->ifNext(T_OTHER('['))) {
+    return (KeyVals_aux($gullet, T_OTHER(']'), [$star, $plus, @keyspec])); }
+  else { return (undef); } }
+
+DefParameterType('OptionalKeyVals', sub { OptionalKeyVals(0, 0, @_); },
+  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+DefParameterType('OptionalKeyVals*', sub { OptionalKeyVals(1, 0, @_); },
+  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+DefParameterType('OptionalKeyVals+', sub { OptionalKeyVals(0, 1, @_); },
+  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+DefParameterType('OptionalKeyVals*+', sub { OptionalKeyVals(1, 1, @_); },
+  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Not sure that this is the most elegant solution, but...
 # What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
@@ -1702,7 +1771,9 @@ sub revert_spec {
 DefParameterType('BoxSpecification', sub {
     my ($gullet) = @_;
     if (my $key = $gullet->readKeyword('to', 'spread')) {
-      LaTeXML::Core::KeyVals->new(undef, undef, [$key, $gullet->readDimension]); } },
+      my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1, skipKeyDigestion => 1);
+      $keyvals->setValue($key, $gullet->readDimension);
+      $keyvals; } },
   optional => 1, undigested => 1);
 
 # Risky: I think this needs to be digested as a body to work like TeX (?)
@@ -1891,10 +1962,10 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
 
 DefParameterType('RuleSpecification', sub {
     my ($gullet) = @_;
-    my %spec = ();
+    my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1, skipKeyDigestion => 1);
     while (my $key = $gullet->readKeyword('width', 'height', 'depth')) {
-      $spec{$key} = $gullet->readDimension; }
-    LaTeXML::Core::KeyVals->new(undef, undef, [%spec]); },
+      $keyvals->setValue($key, $gullet->readDimension); }
+    $keyvals; },
   optional => 1, undigested => 1);
 
 DefConstructor('\vrule RuleSpecification',
@@ -2141,10 +2212,10 @@ DefPrimitiveI('\unskip', undef, sub {
 DefPrimitive('\mark{}', undef);
 # \insert<8bit><filler>{<vertical mode material>}
 DefPrimitive('\insert Number', undef);    # Just let the insertion get processed(?)
-# \vadjust<filler>{<vertical mode material>}
-# Note: \vadjust ignores in vertical mode...
-# is it sufficient to just clear the macro to avoid recursion?
-# (we don't track horizontal/vertical mode)
+                                          # \vadjust<filler>{<vertical mode material>}
+                                          # Note: \vadjust ignores in vertical mode...
+     # is it sufficient to just clear the macro to avoid recursion?
+     # (we don't track horizontal/vertical mode)
 DefMacroI('\LTX@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{}');
 DefMacroI('\LTX@clear@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{\def\LTX@vadjust@afterpar{}}');
 DefPrimitive('\vadjust {}', sub {
@@ -4755,7 +4826,7 @@ DefAccent('\t', "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? Wh
       # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
-#DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
+        #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
 
 # This will fail if there really are "assignments" after the number!
 # We're given a number pointing into the font, from which we can derive the standalone char.
@@ -5341,7 +5412,7 @@ DefConstructorI('\ldots', undef,
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{2026}"))
       : ()); });    # Since not DefMath!
-# And so can \vdots
+                    # And so can \vdots
 DefConstructorI('\vdots', undef,
   "?#isMath(<ltx:XMTok name='vdots' font='#font' role='ID'>\x{22EE}</ltx:XMTok>)(\x{22EE})",
   properties => sub {
@@ -5349,13 +5420,13 @@ DefConstructorI('\vdots', undef,
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
       : ()); });    # Since not DefMath!
-# But not these!
+                    # But not these!
 DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');    # MIDLINE HORIZONTAL ELLIPSIS
 
 DefMathI('\ddots', undef, "\x{22F1}", role => 'ID');           # DOWN RIGHT DIAGONAL ELLIPSIS
 DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good default role
-# Note that amsmath redefines \dots to be `smart'.
-# Aha, also can be in text...
+        # Note that amsmath redefines \dots to be `smart'.
+        # Aha, also can be in text...
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   properties => sub {
@@ -5448,7 +5519,7 @@ DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN',  stretchy => 'false');   
 DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE', stretchy => 'false');    # RIGHT CEILING
 DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN',  stretchy => 'false');    # LEFT FLOOR
 DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE', stretchy => 'false');    # RIGHT FLOOR
-# Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
+          # Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
 DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # LEFT-POINTING ANGLE BRACKET
 DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
@@ -6445,5 +6516,5 @@ sub orNull {
 #**********************************************************************
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
-#**********************************************************************
+                       #**********************************************************************
 1;

@@ -1026,12 +1026,12 @@ DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', s
     if ($dialect && $dialect->unlist) {
       $dialect = uc(ToString($dialect)); $dialect =~ s/\s+//g;
       $name .= '$' . $dialect; }
-    AssignValue($name => LaTeXML::Core::KeyVals->new(undef, 'LST',
-        [(@base ? (language => Tokens(@base)) : ()),
-          $keyvals->getPairs],
-        open  => T_OTHER('['), close  => T_OTHER(']'),
-        punct => T_OTHER(','), assign => T_OTHER('=')),
-      'global'); });
+    my $value = LaTeXML::Core::KeyVals->new(
+      undef, 'LST', [$keyvals->getTuples],
+      open  => T_OTHER('['), close  => T_OTHER(']'),
+      punct => T_OTHER(','), assign => T_OTHER('='));
+    $value->setValue('language', Tokens(@base)) if @base;
+    AssignValue($name => $value, 'global'); });
 
 # Seems to use <language>$<dialect> as the naming scheme.
 DefPrimitive('\lstalias []{} []{}', sub {

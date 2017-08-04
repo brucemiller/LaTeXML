@@ -1,0 +1,187 @@
+\documentclass{article}
+
+\usepackage{xkeyval}
+
+\begin{document}
+  
+  \makeatletter
+  
+  \section{keyval prefixes}
+  % Define keys for multiple prefixes to check if they are used appropriatly in both ones. 
+  
+  \define@key[my]{sample}{key}{My Key has been set to {\tt\string#1\relax}. }
+  \define@key[my]{sample}{keyword}[true]{My Keyword has been set to {\tt\string#1\relax}. }
+  
+  \define@key[their]{sample}{key}{Their key has been set to {\tt\string#1\relax}. }
+  \define@key[their]{sample}{keyword}[true]{Their keyword has been set to {\tt\string#1\relax}. }
+  
+  \def\my@sample@stuff#1{My Stuff has been set to {\tt\string#1\relax}. }
+  \def\my@sample@stuff@default{My Stuff has been set to default. }
+  
+  \def\their@sample@stuff#1{Their Stuff has been set to {\tt\string#1\relax}. }
+  \def\their@sample@stuff@default{Their Stuff has been set to default. }
+  
+  Setting no arguments for `my'. 
+  \setkeys[my]{sample}{}
+  
+  Setting `key=value' for `my'.  
+  \setkeys[my]{sample}{key=value}
+  
+  Setting `keyword' for `my'. 
+  \setkeys[my]{sample}{keyword}
+
+  Setting `keyword=true' for `my'.  
+  \setkeys[my]{sample}{keyword=true}
+
+  Setting `keyword=false' for `my'. 
+  \setkeys[my]{sample}{keyword=false}
+  
+  Setting `key=value,keyword' for `my'. 
+  \setkeys[my]{sample}{key=value,keyword}
+  
+  Setting `key=value,keyword=true' for `my'.  
+  \setkeys[my]{sample}{key=value,keyword=true}
+
+  Setting `keyword=true,key=value' for `my'. 
+  \setkeys[my]{sample}{keyword=true,key=value}
+
+  Setting `key=value,keyword=false' for `my'. 
+  \setkeys[my]{sample}{key=value,keyword=false}
+  
+  Setting `stuff' for `my'. 
+  \setkeys[my]{sample}{stuff}
+  
+  Setting `stuff=things' for `my'. 
+  \setkeys[my]{sample}{stuff=things}
+  
+  Setting no arguments for `their'. 
+  \setkeys[their]{sample}{}
+  
+  Setting `key=value' for `their'.  
+  \setkeys[their]{sample}{key=value}
+  
+  Setting `keyword' for `their'. 
+  \setkeys[their]{sample}{keyword}
+
+  Setting `keyword=true' for `their'.  
+  \setkeys[their]{sample}{keyword=true}
+
+  Setting `keyword=false' for `their'. 
+  \setkeys[their]{sample}{keyword=false}
+  
+  Setting `key=value,keyword' for `their'. 
+  \setkeys[their]{sample}{key=value,keyword}
+  
+  Setting `key=value,keyword=true' for `their'.  
+  \setkeys[their]{sample}{key=value,keyword=true}
+
+  Setting `keyword=true,key=value' for `their'. 
+  \setkeys[their]{sample}{keyword=true,key=value}
+
+  Setting `key=value,keyword=false' for `their'. 
+  \setkeys[their]{sample}{key=value,keyword=false}
+  
+  Setting `stuff' for `their'. 
+  \setkeys[their]{sample}{stuff}
+  
+  Setting `stuff=things' for `their'. 
+  \setkeys[their]{sample}{stuff=things}
+  
+  
+  \section{command keys}
+  % Define command keys and make sure that macros get defined. 
+  
+  \define@cmdkey[prefix]{sample}[macro@]{key}{My Key has been set to \macro@key. }
+  \define@cmdkey[prefix]{sample}{word}{My word has been set to \cmdprefix@sample@word. }
+  
+  \define@cmdkeys[prefix]{sample}{a,b,c}
+  
+  \setkeys[prefix]{sample}{key=value,word=thing,a=1,b=2,c=3}
+  a was set to \cmdprefix@sample@a.
+  b was set to \cmdprefix@sample@b.
+  c was set to \cmdprefix@sample@c.
+  
+  \section{choice keys}
+  % Define choice keys and make sure macros and selections get picked when valid
+  
+  \define@choicekey[prefix]{choices}{color}{red,green,blue}{The color is {\tt\string#1\relax}. }
+  \define@choicekey[prefix]{choices}{mcolor}[\var\nr]{red,green,blue}{The color is {\tt\var\relax} and has number \nr. }
+  \define@choicekey*[prefix]{choices}{scolor}{RED,green,blue}{The color is {\tt\string#1\relax}. }
+  \define@choicekey+[prefix]{choices}{pcolor}{red,green,blue}{Valid selection {\tt\string#1\relax}.}{Invalid selection, you may not choose {\tt\string#1\relax}. }
+  \define@choicekey*+[prefix]{choices}{spcolor}{RED,green,blue}{Valid selection {\tt\string#1\relax}.}{Invalid selection, you may not choose {\tt\string#1\relax}. }
+  
+  \setkeys[prefix]{choices}{color=red,color=green,color=blue}
+  
+  \setkeys[prefix]{choices}{mcolor=red,mcolor=green,mcolor=blue}
+ 
+  \setkeys[prefix]{choices}{scolor=red,scolor=RED,scolor=green,scolor=blue}
+  
+  \setkeys[prefix]{choices}{pcolor=red,pcolor=green,pcolor=blue,pcolor=yellow}
+  
+  \setkeys[prefix]{choices}{spcolor=red,spcolor=RED,spcolor=green,spcolor=blue,spcolor=yellow}
+  
+  \section{boolean keys}
+  % Define boolean keys and make sure macros and selections get picked when valid
+  
+  \define@boolkey[prefix]{bool}{a}{A has been set to #1. }
+  \define@boolkey[prefix]{bool}{b}{B has been set to #1. }
+  
+  \define@boolkey+[prefix]{bool}{c}{C is true||false. }{C is invalid. }
+  \define@boolkey+[prefix]{bool}{d}{D is true||false. }{D is invalid. }
+  \define@boolkey+[prefix]{bool}{e}{E is true||false. }{E is invalid. }
+  
+  \define@boolkeys[prefix]{bool}{f,g,h}
+  
+  \setkeys[prefix]{bool}{a=true,b=false,c=true,d=false,e=invalid,f=true,g=false,h=true}
+  
+  \ifprefix@bool@a
+    A = true
+  \else
+    A = false
+  \fi
+  
+  \ifprefix@bool@b
+    B = true
+  \else
+    B = false
+  \fi
+  
+  \ifprefix@bool@c
+    C = true
+  \else
+    C = false
+  \fi
+  
+  \ifprefix@bool@d
+    D = true
+  \else
+    D = false
+  \fi
+  
+  \ifprefix@bool@e
+    E = true
+  \else
+    E = false
+  \fi
+  
+  \ifprefix@bool@f
+    F = true
+  \else
+    F = false
+  \fi
+  
+  \ifprefix@bool@g
+    G = true
+  \else
+    G = false
+  \fi
+  
+  \ifprefix@bool@h
+    H = true
+  \else
+    H = false
+  \fi
+  
+  \makeatother
+
+\end{document}

@@ -33,6 +33,7 @@ use LaTeXML::Core::MuGlue;
 # Extra objects typically used in Bindings
 use LaTeXML::Core::Alignment;
 use LaTeXML::Core::Array;
+use LaTeXML::Core::KeyVal;
 use LaTeXML::Core::KeyVals;
 use LaTeXML::Core::Pair;
 use LaTeXML::Core::PairList;
@@ -125,6 +126,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   @LaTeXML::Common::Float::EXPORT,
   @LaTeXML::Common::Dimension::EXPORT,
   @LaTeXML::Common::Glue::EXPORT,
+  @LaTeXML::Core::KeyVal::EXPORT,
   @LaTeXML::Core::KeyVals::EXPORT,
   @LaTeXML::Core::MuDimension::EXPORT,
   @LaTeXML::Core::MuGlue::EXPORT,
@@ -4033,14 +4035,6 @@ I<proto> is the prototype for the pattern, analogous to the pattern
 used for other definitions, except that macro being defined is a single character.
 The I<expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
-
-=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >
-
-X<DefKeyVal>
-Defines a keyword I<key> used in keyval arguments for the set I<keyset>.
-If I<type> is given, it defines the type of value that must be supplied,
-such as C<'Dimension'>.  If I<default> is given, that value will be used
-when I<key> is used without an equals and explicit value in a keyvals argument.
 
 =back
 

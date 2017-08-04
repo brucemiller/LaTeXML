@@ -1,0 +1,14 @@
+\RequirePackage{xkeyval}
+
+\def\@paper{}
+\DeclareOptionX{a4paper}{\edef\@paper{\@paper Read `a4paper` option as #1. }}
+
+\def\@hello{Missing `hello' parameter. }
+\DeclareOptionX{hello}{\edef\@hello{Defined `hello' to #1. }}
+
+\ProcessOptionsX*
+
+\providecommand{\scenario}{%
+  \@paper%
+  \@hello%
+}

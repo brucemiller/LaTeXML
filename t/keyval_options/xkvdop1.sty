@@ -1,0 +1,14 @@
+\RequirePackage{xkeyval}
+
+\def\@hello{Missing `hello' parameter. }
+\DeclareOptionX{hello}{\edef\@hello{Defined `hello' to #1. }}
+
+\def\@world{Missing `world' parameter. }
+\DeclareOptionX{world}[default]{\edef\@world{Defined `world' to #1. }}
+
+\ProcessOptionsX
+
+\providecommand{\scenario}{%
+  \@hello%
+  \@world%
+}
