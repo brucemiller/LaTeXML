@@ -1,11 +1,121 @@
-#!/bin/bash
+#!/usr/bin/env perl
+# /=====================================================================\ #
+# |  makemanifest                                                       | #
+# | automagically re-generate the manifest file                         | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 
-# tools/makemanifest -- Script to re-generate MANIFEST file
-# Usage   : bash tools/makemanifest > MANIFEST
-# Preview : bash tools/makemanifest | diff -u MANIFEST -
+use strict;
+use String::Util 'trim';
+use File::Path qw(make_path);
+use File::Copy qw(move);
+use File::Basename;
+use File::Find::Rule;
+use Getopt::Long qw(:config no_ignore_case);
+use Algorithm::Diff; 
+use Pod::Usage;
 
-cd $(dirname "$0")/../
-cat << EOF
+# read command line options
+my $identity  = 'makemanifest';
+my ($diff, $quiet, $save, $help) = ();
+GetOptions("diff" => \$diff, 
+  "save" => \$save, 
+  "quiet" => \$quiet, 
+  "help"  => \$help,
+) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
+pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
+
+#======================================================================
+# Main Program Logic
+#======================================================================
+
+# switch to the root directory for all the finds
+chdir make_path(basename($0), '..');
+
+# Create an object to find all the files
+my $finder = File::Find::Rule->file();
+
+# read .gitignore
+open my $gitignore, '<', '.gitignore';
+chomp(my @gitignoreLines = <$gitignore>);
+close $gitignore;
+
+# add all lines from there to the ignored files
+foreach my $line (@gitignoreLines) { 
+  $line = trim($line);
+  $finder = $finder->not_name($line) unless((length($line) == 0) || (substr($line, 0, 1) eq '#')); }
+
+# Build the new MANIFEST
+my $manifest = build_manifest();
+
+# show the diff if --diff was given
+if($diff) {
+  # get the old and new manifests
+  open my $infile, '<', 'MANIFEST';
+  chomp(my @oldmanifest = <$infile>);
+  close $infile;
+
+  # get the new manifest
+  my @newmanifest = split("\n", $manifest);
+  push(@newmanifest, '');
+  
+  # and make a diff
+  my $diff = Algorithm::Diff->new(\@oldmanifest, \@newmanifest);
+  while ($diff->Next()) {
+    next if $diff->Same();
+    my $sep = '';
+    if (!$diff->Items(2)) {
+      printf "%d,%dd%d\n", $diff->Get(qw( Min1 Max1 Max2 )); }
+    elsif (!$diff->Items(1)) {
+      printf "%da%d,%d\n", $diff->Get(qw( Max1 Min2 Max2 )); }
+    else {
+      $sep = "---\n";
+      printf "%d,%dc%d,%d\n", $diff->Get(qw( Min1 Max1 Min2 Max2 )); }
+    print "< $_\n" for $diff->Items(1);
+    print $sep;
+    print "> $_\n" for $diff->Items(2); } 
+    print("\n"); }
+
+# unless --quiet is set, print the new manifest to STDOUT
+elsif (!$quiet) {
+  print($manifest); }
+
+# if told to do so, write the new file
+if ($save) {
+  # Make a Backup of the old MANIFEST
+  move("MANIFEST", "MANIFEST.bak");
+  # write the new one into it
+  open my $outfile, '>', 'MANIFEST';
+  print $outfile $manifest;
+  close $outfile;
+
+  # hey, we did it
+  print STDERR "Wrote new MANIFEST\n"; }
+
+#======================================================================
+# Function to list all the files in a given directory
+#======================================================================
+sub list_files {
+  my ($dir) = @_;
+  my $str = '';
+  my @files = $finder->in($dir); 
+  foreach my $file (sort @files) { $str .= "$file\n"; }
+  return $str; }
+
+#======================================================================
+# Main function to build the manifest file
+# Returns the contents as a string
+#======================================================================
+sub build_manifest {
+  
+  # build the string
+  my $str = <<'HERE';
 #==================================================
 # Base
 #==================================================
@@ -22,7 +132,9 @@ manual.pdf
 #==================================================
 # Executables
 #==================================================
-$(find bin -type f | sort)
+HERE
+  $str .= list_files("bin");
+  $str .= <<'HERE';
 
 #==================================================
 # Master Modules
@@ -81,53 +193,96 @@ lib/LaTeXML/MathParser.pm
 #==================================================
 # Preprocessing Modules
 #==================================================
-$(find lib/LaTeXML/Pre -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/Pre");
+  $str .= <<'HERE';
 
 #==================================================
 # Postprocessing Modules
 #==================================================
 lib/LaTeXML/Post.pm
-$(find lib/LaTeXML/Post -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/Post");
+  $str .= <<'HERE';
 lib/LaTeXML/LaTeXML.catalog
 
 #==================================================
 # Common Modules
 #==================================================
-$(find lib/LaTeXML/Common -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/Common");
+  $str .= <<'HERE';
 
 #==================================================
 # Utility Modules
 #==================================================
-$(find lib/LaTeXML/Util -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/Util");
+  $str .=  <<'HERE';
 
 #==================================================
 # Document Model
 #==================================================
-$(find lib/LaTeXML/resources/RelaxNG -type f | sort )
-$(find lib/LaTeXML/resources/DTD -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/resources/RelaxNG");
+  $str .= list_files("lib/LaTeXML/resources/DTD");
+  $str .= <<'HERE';
 
 #==================================================
 # XSLT & CSS Support
 #==================================================
-$(find lib/LaTeXML/resources/XSLT -type f | sort )
-$(find lib/LaTeXML/resources/CSS -type f | sort )
-$(find lib/LaTeXML/resources/javascript -type f | sort )
-$(find lib/LaTeXML/resources/Profiles -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/resources/XSLT");
+  $str .= list_files("lib/LaTeXML/resources/CSS");
+  $str .= list_files("lib/LaTeXML/resources/javascript");
+  $str .= list_files("lib/LaTeXML/resources/Profiles");
+  $str .= <<'HERE';
 
 #==================================================
 # Supported Packages
 #==================================================
 lib/LaTeXML/Package.pm
-$(find lib/LaTeXML/Package -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/Package");
+  $str .= <<'HERE';
 
 #==================================================
 # TeX packages
 #==================================================
-$(find lib/LaTeXML/texmf -type f | sort )
+HERE
+  $str .= list_files("lib/LaTeXML/texmf");
+  $str .= <<'HERE';
 
 #==================================================
 # Test Suite.
 #==================================================
-$(find t -type f | sort )
+HERE
+  $str .= list_files("t");
+  $str .= "\n";
+  return $str; }
 
-EOF
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+__END__
+
+=head1 NAME
+
+C<makemanifest> I<options>
+
+=head1 SYNOPSIS
+
+A tool to automagically regenerate the MANIFEST file for LaTeXML. 
+By default, this tool prints the new MANIFEST file to STDOUT. 
+
+Options:
+
+  --diff      Instead of saving the new manifest file only produce a diff. 
+  --quiet     Be quiet, and do not print the new MANIFEST to STDOUT. 
+  --save      Store the newly generate MANIFEST file in the LaTeXML root
+              directory. Makes a copy of the old MANIFEST file and stores
+              it under MANIFEST.bak. 
+  --help      Show this help message
+
+=cut
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
