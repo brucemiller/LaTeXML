@@ -174,7 +174,7 @@ sub compile_MathGrammar {
 pure_all :: $(INST_LIBDIR)/LaTeXML/MathGrammar.pm
 
 $(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
-	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar
+	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar Parse::RecDescent
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	$(MV) MathGrammar.pm blib/lib/LaTeXML/MathGrammar.pm
 
