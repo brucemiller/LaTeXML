@@ -33,6 +33,7 @@ use LaTeXML::Core::MuGlue;
 # Extra objects typically used in Bindings
 use LaTeXML::Core::Alignment;
 use LaTeXML::Core::Array;
+use LaTeXML::Core::KeyVal;
 use LaTeXML::Core::KeyVals;
 use LaTeXML::Core::Pair;
 use LaTeXML::Core::PairList;
@@ -87,8 +88,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   qw(&DefColor &DefColorModel &LookupColor),
 
   # Support for structured/argument readers
-  qw(&ReadParameters &DefParameterType  &DefColumnType
-    &DefKeyVal &GetKeyVal &GetKeyVals),
+  qw(&ReadParameters &DefParameterType  &DefColumnType),
 
   # Access to State
   qw(&LookupValue &AssignValue
@@ -126,6 +126,8 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   @LaTeXML::Common::Float::EXPORT,
   @LaTeXML::Common::Dimension::EXPORT,
   @LaTeXML::Common::Glue::EXPORT,
+  @LaTeXML::Core::KeyVal::EXPORT,
+  @LaTeXML::Core::KeyVals::EXPORT,
   @LaTeXML::Core::MuDimension::EXPORT,
   @LaTeXML::Core::MuGlue::EXPORT,
   @LaTeXML::Core::Pair::EXPORT,
@@ -411,33 +413,6 @@ sub ReadParameters {
   my $for = T_OTHER("Anonymous");
   my $parm = parseParameters($spec, $for);
   return ($parm ? $parm->readArguments($gullet, $for) : ()); }
-
-# This new declaration allows you to define the type associated with
-# the value for specific keys.
-sub DefKeyVal {
-  my ($keyset, $key, $type, $default) = @_;
-  my $paramlist = LaTeXML::Package::parseParameters($type || "{}", "KeyVal $key in set $keyset");
-  if (scalar(@$paramlist) != 1) {
-    Warn('unexpected', 'keyval', $key,
-      "Too many parameters in keyval $key (in set $keyset); taking only first", $paramlist); }
-  my $parameter = $$paramlist[0];
-  AssignValue('KEYVAL@' . $keyset . '@' . $key              => $parameter);
-  AssignValue('KEYVAL@' . $keyset . '@' . $key . '@default' => Tokenize($default))
-    if defined $default;
-  return; }
-
-# These functions allow convenient access to KeyVal objects within constructors.
-# Access the value associated with a given key.
-# Can use in constructor: eg. <foo attrib='&GetKeyVal(#1,'key')'>
-sub GetKeyVal {
-  my ($keyval, $key) = @_;
-  return (defined $keyval) && $keyval->getValue($key); }
-
-# Access the entire hash.
-# Can use in constructor: <foo %&GetKeyVals(#1)/>
-sub GetKeyVals {
-  my ($keyval) = @_;
-  return (defined $keyval ? $keyval->getKeyVals : {}); }
 
 # Merge the current font with the style specifications
 sub MergeFont {
@@ -4060,14 +4035,6 @@ I<proto> is the prototype for the pattern, analogous to the pattern
 used for other definitions, except that macro being defined is a single character.
 The I<expansion> is a string specifying what it should expand into,
 typically more verbose column specification.
-
-=item C<DefKeyVal(I<keyset>, I<key>, I<type>, I<default>); >
-
-X<DefKeyVal>
-Defines a keyword I<key> used in keyval arguments for the set I<keyset>.
-If I<type> is given, it defines the type of value that must be supplied,
-such as C<'Dimension'>.  If I<default> is given, that value will be used
-when I<key> is used without an equals and explicit value in a keyvals argument.
 
 =back
 

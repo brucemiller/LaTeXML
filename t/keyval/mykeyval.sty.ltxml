@@ -9,6 +9,8 @@ RequirePackage('keyval');
 # Tests of various constructors using KeyVals.
 #======================================================================
 DefKeyVal('foo', 'path', 'Semiverbatim');
+DefKeyVal('foo', 'height', '');
+DefKeyVal('foo', 'width', '');
 
 # Testing simple use of keys;
 #   attribute is just list of key-value pairs.

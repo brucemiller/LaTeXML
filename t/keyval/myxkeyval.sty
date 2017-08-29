@@ -1,0 +1,12 @@
+\RequirePackage{xkeyval}
+
+\define@key[myxkeyval]{scenario}{role}{Loading role #1. }
+\define@cmdkey[myxkeyval]{scenario}{country}{}
+\define@choicekey+[myxkeyval]{scenario}{color}{red,yellow,green}{The lights are now #1. }{Invalid color for lights. }
+\define@boolkey[myxkeyval]{scenario}{cross}{}
+
+
+\providecommand{\scenario}[1]{\setkeys[myxkeyval]{scenario}{#1}%
+  Now located in \myxkeyval@scenario@country. %
+  \ifmyxkeyval@scenario@cross Crossing is now allowed. \else Crossing is now forbidden. \fi %
+}

@@ -1,0 +1,49 @@
+\documentclass{article}
+\usepackage{xkeyval}
+
+\makeatletter
+
+\define@key{sample}{key}{Key has been set to {\tt\string#1\relax}. }
+\define@key{sample}{keyword}[true]{Keyword has been set to {\tt\string#1\relax}. }
+
+\def\KV@sample@stuff#1{Stuff has been set to {\tt\string#1\relax}. }
+\def\KV@sample@stuff@default{Stuff has been set to default. }
+
+\makeatother
+
+\begin{document}
+  \section{Package xkeyval keyval compatibility}
+  
+  Setting no arguments. 
+  \setkeys{sample}{}
+  
+  Setting `key=value'. 
+  \setkeys{sample}{key=value}
+  
+  Setting `keyword'. 
+  \setkeys{sample}{keyword}
+
+  Setting `keyword=true'. 
+  \setkeys{sample}{keyword=true}
+
+  Setting `keyword=false'. 
+  \setkeys{sample}{keyword=false}
+  
+  Setting `key=value,keyword'. 
+  \setkeys{sample}{key=value,keyword}
+  
+  Setting `key=value,keyword=true'. 
+  \setkeys{sample}{key=value,keyword=true}
+
+  Setting `keyword=true,key=value'. 
+  \setkeys{sample}{keyword=true,key=value}
+
+  Setting `key=value,keyword=false'. 
+  \setkeys{sample}{key=value,keyword=false}
+  
+  Setting `stuff'. 
+  \setkeys{sample}{stuff}
+  
+  Setting `stuff=things'. 
+  \setkeys{sample}{stuff=things}
+\end{document}

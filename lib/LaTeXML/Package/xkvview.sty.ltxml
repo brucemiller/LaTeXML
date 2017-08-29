@@ -1,0 +1,177 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xkvview                                                            | #
+# | Implementation of xkvview for LaTeXML                               | #
+# |=====================================================================| #
+# | Thanks to Tom Wiesing <tom.wiesing@gmail.com>                       | #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+
+# load the original xkeyval
+InputDefinitions('xkeyval', type => 'sty', noltxml => 1)
+  || Warn(":missing:xkeyval.sty Couldn't find xkeyval.sty");
+
+# load the xkvview style file
+InputDefinitions('xkvview', type => 'sty', noltxml => 1)
+  || Warn(":missing:xkvview.sty Couldn't find xkvview.sty");
+
+# and hook all the things
+
+## ------------
+## regular keys
+## ------------
+
+Let('\ltx@orig@define@key', '\define@key');
+DefMacro('\define@key[]{}{}[]{}', sub {
+    my ($gullet, $prefix, $keyset, $key, $default, $code) = @_;
+
+    # define the key, but omit $code so that it doesn't get redefined
+    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix);
+
+    # Invocation() doesn't work here, because we are faking a signature
+    my @tokens = (T_CS('\ltx@orig@define@key'));
+    push(@tokens, T_OTHER('['), $prefix,  T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keyset,  T_END);
+    push(@tokens, T_BEGIN,      $key,     T_END);
+    push(@tokens, T_OTHER('['), $default, T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN,      $code,    T_END);
+    @tokens; });
+
+## ------------
+## command keys
+## ------------
+#
+Let('\ltx@orig@define@cmdkey', '\define@cmdkey');
+DefMacro('\define@cmdkey[]{}[]{}[]{}', sub {
+    my ($gullet, $prefix, $keyset, $macroprefix, $key, $default, $code) = @_;
+
+    my $sprefix      = defined($prefix)      ? ToString($prefix)      : undef;
+    my $smacroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+
+    # define the command key, but omit $code so that it doesn't get redefined
+    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix,
+      kind => "command", macroprefix => $smacroprefix);
+
+    # Invocation() doesn't work here, because we are faking a signature
+    my @tokens = (T_CS('\ltx@orig@define@cmdkey'));
+    push(@tokens, T_OTHER('['), $prefix,      T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keyset,      T_END);
+    push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
+    push(@tokens, T_BEGIN,      $key,         T_END);
+    push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN,      $code,        T_END);
+    @tokens; });
+
+Let('\ltx@orig@define@cmdkeys', '\define@cmdkeys');
+DefMacro('\define@cmdkeys[]{}[]{}[]', sub {
+    my ($gullet, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
+
+    my $sprefix      = defined($prefix) ? ToString($prefix) : undef;
+    my $skeyset      = ToString($keyset);
+    my $smacroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+
+    # define the command keys, but omit $code so that they don't get redefined
+    foreach my $key (split(',', ToString($keys))) {
+      DefKeyVal($skeyset, $key, '', ToString($default), prefix => $prefix,
+        kind => "command", macroprefix => $smacroprefix); }
+
+    # Invocation() doesn't work here, because we are faking a signature
+    my @tokens = (T_CS('\ltx@orig@define@cmdkeys'));
+    push(@tokens, T_OTHER('['), $prefix,      T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keyset,      T_END);
+    push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
+    push(@tokens, T_BEGIN,      $keys,        T_END);
+    push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
+    @tokens; });
+
+## ------------
+## choice keys
+## ------------
+
+Let('\ltx@orig@define@choicekey', '\define@choicekey');
+DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub {
+    my ($gullet, $star, $plus, $prefix, $keyset, $key, $bin, $choices, $default, $code) = @_;
+
+    # define the choice key, but omit $code so that it doesn't get redefined
+    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    my @thechoices = split(',', ToString($choices));
+    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix,
+      kind => 'choice', normalize => defined($star), choices => [@thechoices],
+      bin => $bin);
+
+    # Invocation() doesn't work here, because we are faking a signature
+    # we can also omit the $mismatch argument, as it is still to be processed
+    my @tokens = ();
+    push(@tokens, T_CS('\\ltx@orig@define@choicekey'));
+    push(@tokens, $star) if defined($star);
+    push(@tokens, $plus) if defined($plus);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_BEGIN, $key,    T_END);
+    push(@tokens, T_OTHER('['), $bin, T_OTHER(']')) if defined($bin);
+    push(@tokens, T_BEGIN, $choices, T_END);
+    push(@tokens, T_OTHER('['), $default, T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN, $code, T_END);
+    @tokens; });
+
+## ------------
+## bool keys
+## ------------
+
+Let('\ltx@orig@define@boolkey', '\define@boolkey');
+DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
+    my ($gullet, $plus, $prefix, $keyset, $macroprefix, $key, $default, $code) = @_;
+
+    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix,
+      kind => 'boolean', macroprefix => ToString($macroprefix));
+
+    # Invocation() doesn't work here, because we are faking a signature
+    # we can also omit the $mismatch argument, as it is still to be processed
+    my @tokens = ();
+    push(@tokens, T_CS('\\ltx@orig@define@boolkey'));
+    push(@tokens, $plus) if defined($plus);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
+    push(@tokens, T_BEGIN,      $key,         T_END);
+    push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN,      $code,        T_END);
+    @tokens; });
+
+Let('\ltx@orig@define@boolkeys', '\define@boolkeys');
+DefMacro('\define@boolkeys[]{}[]{}[]', sub {
+    my ($gullet, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
+
+    my $sprefix      = defined($prefix) ? ToString($prefix) : undef;
+    my $skeyset      = ToString($keyset);
+    my $smacroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+
+    # define the boolean keys, but omit $code so that they don't get redefined
+    foreach my $key (split(',', ToString($keys))) {
+      DefKeyVal($skeyset, $key, '', ToString($default), prefix => $prefix,
+        kind => 'boolean', macroprefix => $smacroprefix); }
+
+    # Invocation() doesn't work here, because we are faking a signature
+    my @tokens = (T_CS('\ltx@orig@define@boolkeys'));
+    push(@tokens, T_OTHER('['), $prefix,      T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keyset,      T_END);
+    push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
+    push(@tokens, T_BEGIN,      $keys,        T_END);
+    push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
+    @tokens; });
+
+#======================================================================
+1;
