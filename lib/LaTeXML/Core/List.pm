@@ -53,15 +53,14 @@ sub new {
   # Maybe the most representative font for a List is the font of the LAST box (that _has_ a font!) ???
   while (defined($bx = pop(@bxs)) && (!defined $font)) {
     $font = $bx->getFont unless defined $font; }
-  return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
-
-sub isMath {
-  my ($self) = @_;
-  return ($$self[4]{mode} || 'text') eq 'math'; }
+  #return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
+  return bless { boxes => [@boxes],
+    properties => { font => $font, locator => $locator || '', }
+    }, $class; }
 
 sub unlist {
   my ($self) = @_;
-  return @{ $$self[0] }; }
+  return @{ $$self{boxes} }; }
 
 sub revert {
   my ($self) = @_;
@@ -99,8 +98,8 @@ sub computeSize {
   $options{width}  = $$props{width}  if $$props{width};
   $options{height} = $$props{height} if $$props{height};
   $options{depth}  = $$props{depth}  if $$props{depth};
-  my ($w, $h, $d) = ($$self[1] || LaTeXML::Common::Font->textDefault)
-    ->computeBoxesSize($$self[0], %options);
+  my ($w, $h, $d) = ($$props{font} || LaTeXML::Common::Font->textDefault)
+    ->computeBoxesSize($$self{boxes}, %options);
   $$props{width}  = $w unless defined $$props{width};
   $$props{height} = $h unless defined $$props{height};
   $$props{depth}  = $d unless defined $$props{depth};
