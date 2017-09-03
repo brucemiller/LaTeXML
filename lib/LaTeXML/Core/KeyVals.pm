@@ -442,7 +442,7 @@ sub getValue {
 # return a list of values for a given key
 sub getValues {
   my ($self, $key) = @_;
-  my %hash  = self->getCachedHash;
+  my %hash  = $self->getCachedHash;
   my $value = $hash{$key};
   return (!defined $value ? () : (ref $value eq 'ARRAY' ? @$value : ($value))); }
 
@@ -466,7 +466,7 @@ sub getKeyVals {
 # checks if the value for a given key exists
 sub hasKey {
   my ($self, $key) = @_;
-  my %hash = self->getCachedHash;
+  my %hash = $self->getCachedHash;
   return exists $hash{$key}; }
 
 #======================================================================
@@ -583,7 +583,7 @@ sub revert {
   my @tokens = ();
 
   # iterate over the key-value pairs
-  while (@tokens) {
+  while (@tuples) {
     my ($key, $value, $useDefault, $resolution, $keyval) =
       (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
 
