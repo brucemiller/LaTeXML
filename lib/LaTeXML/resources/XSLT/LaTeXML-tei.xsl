@@ -1,21 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-/=====================================================================\
-|  LaTeXML-jats.xsl                                                   |
-|  Stylesheet for converting LaTeXML documents to JATS/NLM            |
-|=====================================================================|
-| Part of LaTeXML:                                                    |
-|  Public domain software, produced as part of work done by the       |
-|  United States Government & not subject to copyright in the US.     |
-|=====================================================================|
-| Thanks to Lukas Kohlhase formerly of Jacobs University, Bremen      |
-| and Viacheslav Zholudev from ResearchGate;                          |
-| Released to the Public Domain                                       |
-|=====================================================================|
-| Bruce Miller <bruce.miller@nist.gov>                        #_#     |
-| http://dlmf.nist.gov/LaTeXML/                              (o o)    |
-\=========================================================ooo==U==ooo=/
--->
+
 <xsl:stylesheet
         version     ="1.0"
         xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
@@ -164,53 +148,6 @@
                 </back>
             </text>
         </TEI>
-<!--
-        <TEI>
-            <teiHeader>
-                <fileDesc>
-                    <titleStmt>
-                        <xsl:apply-templates select="ltx:title" mode="front"/>
-                    </titleStmt>
-                    <publicationStmt>
-                        <xsl:apply-templates select="ltx:date[@role='creation']" mode="front"/>
-                    </publicationStmt>
-                    <sourceDesc>
-                        <biblStruct type="article">
-                            <analytic>
-                                <xsl:apply-templates select="ltx:creator[@role='author']" mode="front"/>
-                                <xsl:apply-templates select="ltx:title" mode="front"/>
-                            </analytic>
-                        </biblStruct>
-                    </sourceDesc>
-                </fileDesc>
-                <profileDesc>
-                    <xsl:apply-templates select="ltx:abstract" mode="front"/>
-                    <xsl:apply-templates select="ltx:keywords" mode="front"/>
-                </profileDesc>
-            </teiHeader>
-            <front>
-                <article-meta>
-                    <xsl:apply-templates select="ltx:title" mode="front"/>
-                    <contrib-group>
-                        <xsl:apply-templates select="ltx:creator[@role='author']" mode="front"/>
-                    </contrib-group>
-                    <xsl:apply-templates select="ltx:date[@role='creation']" mode="front"/>
-                    <xsl:apply-templates select="*[not(self::ltx:title or self::ltx:creator[@role='author'] or self::ltx:date[@role='creation'] or self::ltx:abstract or self::ltx:keywords)]" mode="front"/>
-                </article-meta>
-            </front>
-            <text>
-                <body>
-                    <xsl:apply-templates select="@*|node()"/>
-                </body>
-                <back>
-                    <xsl:apply-templates select="@*|node()" mode="back"/>
-                    <app-group>
-                        <xsl:apply-templates select="//ltx:appendix" mode="app"/>
-                    </app-group>
-                </back>
-            </text>
-        </TEI>
--->
     </xsl:template>
 
     <xsl:template match="ltx:para[not(ancestor::ltx:section or ancestor::ltx:appendix or ancestor::ltx:acknowledgements) and preceding::ltx:section]">  <!-- Is not allowed -->
