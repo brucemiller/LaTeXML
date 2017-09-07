@@ -357,7 +357,7 @@ sub disable {
 # Value Related Reversion
 #======================================================================
 
-sub setKeys {
+sub setKeysExpansion {
   my ($self, $value, $useDefault, $checkExistence, $checkDisabled, $setInternals) = @_;
 
   # if we do not exist, return undef
@@ -382,7 +382,7 @@ sub setKeys {
   ) : ();
 
   # we have a value given, call the appropriate macro with it
-  unless ($useDefault) { push(@tokens, T_CS('\\' . $self->getHeader), T_BEGIN, $value, T_END); }
+  unless ($useDefault) { push(@tokens, T_CS('\\' . $self->getHeader), T_BEGIN, Revert($value), T_END); }
 
   # if it was not given explicitly, call the default macro
   else { push(@tokens, T_CS('\\' . $self->getHeader . '@default')); }
@@ -395,41 +395,6 @@ sub setKeys {
     T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, T_END) if $setInternals;
 
   return Tokens(@tokens); }
-
-sub digest {
-  my ($self, $stomach, $value) = @_;
-
-  # get the key-value definition
-  my $keydef = $self->getType();
-
-  # define the tokens
-  my @dkv = ();
-  if ($value) {
-    push(@dkv, $self->getKey,
-      ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach))); }
-
-  return @dkv; }
-
-sub revert {
-  my ($self, $value, $useDefault, $isFirst, $compact, $punct, $assign) = @_;
-
-  # get the key-value definition
-  my $keydef = $self->getType();
-
-  # define the tokens
-  my @tokens = ();
-
-  # write comma and key, unless in the first iteration
-  push(@tokens, $punct)  if $punct    && !$isFirst;
-  push(@tokens, T_SPACE) if !$isFirst && !$compact;
-  push(@tokens, Explode($self->getKey));
-
-  # write the default (if applicable)
-  if (!$useDefault && $value) {
-    push(@tokens, ($assign || T_SPACE));
-    push(@tokens, ($keydef ? $keydef->revert($value) : Revert($value))); }
-
-  return @tokens; }
 
 sub toString {
   my ($self) = @_;

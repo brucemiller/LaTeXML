@@ -52,11 +52,10 @@ sub new {
   my @atuples = defined($tuples) ? @{$tuples} : ();
   my $skip = $options{skip};
   $skip = [split(',', ToString(defined($options{skip}) ? $options{skip} : ''))] unless (ref($options{skip}) eq 'ARRAY');
-  my $setAll           = $options{setAll}           ? 1 : 0;
-  my $setInternals     = $options{setInternals}     ? 1 : 0;
-  my $skipKeyDigestion = $options{skipKeyDigestion} ? 1 : 0;
-  my $skipMissing      = $options{skipMissing};
-  my $hookMissing      = $options{hookMissing};
+  my $setAll       = $options{setAll}       ? 1 : 0;
+  my $setInternals = $options{setInternals} ? 1 : 0;
+  my $skipMissing  = $options{skipMissing};
+  my $hookMissing  = $options{hookMissing};
   # hook missing, if defined, must be a token
   if (defined($hookMissing) && $hookMissing) {
     $hookMissing = ref($hookMissing) ? $hookMissing : T_CS(ToString($hookMissing)); }
@@ -80,18 +79,13 @@ sub new {
     # all the internal representations
     tuples => [@atuples], cachedPairs => [()], cachedHash => \%hash,
 
-    # additional flag
-    skipKeyDigestion => $skipKeyDigestion,
-
     # all the character tokens we used
     open  => $options{open},  close  => $options{close},
     punct => $options{punct}, assign => $options{assign} },
 
     $class;
-
   # we need to build all the caches if we have a non-empty array
   $self->rebuild if scalar($self->getTuples) > 0;
-
   return $self; }
 
 #======================================================================
@@ -137,10 +131,6 @@ sub getSkipMissing {
 sub getHookMissing {
   my ($self) = @_;
   return $$self{hookMissing}; }
-
-sub getSkipKeyDigestion {
-  my ($self) = @_;
-  return $$self{skipKeyDigestion}; }
 
 sub getOpen {
   my ($self) = @_;
@@ -304,15 +294,13 @@ sub readFrom {
   # if we want to force skipMissing keys, we set it up here
   my $silenceMissing = $options{silenceMissing} ? 1 : 0;
 
-  my $skipMissing      = $self->getSkipMissing;
-  my $skipKeyDigestion = $self->getSkipKeyDigestion;
-  my $hookMissing      = $self->getHookMissing;
+  my $skipMissing = $self->getSkipMissing;
+  my $hookMissing = $self->getHookMissing;
 
   # if we want to silence all missing errors, store them in a hook
   if ($silenceMissing) {
-    $$self{skipMissing}      = 1;
-    $$self{skipKeyDigestion} = 1;
-    $$self{hookMissing}      = undef; }
+    $$self{skipMissing} = 1;
+    $$self{hookMissing} = undef; }
 
   # read the opening token and figure out where we are
   my $startloc = $gullet->getLocator();
@@ -390,9 +378,8 @@ sub readFrom {
 
   # restore all settings if we silenced the missing keys
   if ($silenceMissing) {
-    $$self{skipMissing}      = $skipMissing;
-    $$self{skipKeyDigestion} = $skipKeyDigestion;
-    $$self{hookMissing}      = $hookMissing; }
+    $$self{skipMissing} = $skipMissing;
+    $$self{hookMissing} = $hookMissing; }
 
   return; }
 
@@ -473,7 +460,7 @@ sub hasKey {
 # Value Related Reversion
 #======================================================================
 
-sub setKeys {
+sub setKeysExpansion {
   my ($self) = @_;
 
   my @tuples       = $self->getTuples;
@@ -510,15 +497,15 @@ sub setKeys {
     # we might need to save the macros that weren't saved
     if (scalar @keyvals == 0) {
       if ($definedrm) {
-        push(@rmtokens, $keyval->revert($value, $useDefault, (@rmtokens ? 0 : 1),
+        push(@rmtokens, $self->revertKeyVal($keyval, $value, $useDefault, (@rmtokens ? 0 : 1),
             1, $punct, $assign)); }
-      my @reversion = $keyval->revert($value, $useDefault, 1, 1, $punct, $assign);
-      push(@tokens, $hookMissing, T_BEGIN, $keyval->revert($value, $useDefault, 1, 1, $punct, $assign), T_END) if $hookMissing;
+      my @reversion = $self->revertKeyVal($keyval, $value, $useDefault, 1, 1, $punct, $assign);
+      push(@tokens, $hookMissing, T_BEGIN, $self->revertKeyVal($keyval, $value, $useDefault, 1, 1, $punct, $assign), T_END) if $hookMissing;
       next; }
 
     # and iterate over all valid keysets
     foreach my $keyset (@keyvals) {
-      my $expansion = $keyset->setKeys($value, $useDefault, 1, 1, $setInternals);
+      my $expansion = $keyset->setKeysExpansion($value, $useDefault, 1, 1, $setInternals);
       next unless defined($expansion);
       push(@tokens, $expansion->unlist); } }
 
@@ -536,9 +523,11 @@ sub setKeys {
 sub beDigested {
   my ($self, $stomach) = @_;
 
-  unless ($self->getSkipKeyDigestion) { $stomach->digest($self->setKeys); }
-  else { Info('ignore', 'keyvals', $self,
+  if ($$self{was_digested}) {
+    Info('ignore', 'keyvals', $self,
       "Skipping digestion of \\setkeys as requested (did you digest a KeyVals twice?) "); }
+  else {
+    $stomach->digest($self->setKeysExpansion); }
 
   # old and new tuples we want to create
   my @tuples    = $self->getTuples;
@@ -550,7 +539,11 @@ sub beDigested {
       (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
 
     # digest a single token
-    push(@newtuples, $keyval->digest($stomach, $value), $useDefault, $resolution, $keyval); }
+    my $keydef = $keyval->getType();
+    my $v      = (defined $value ?
+        ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach))
+      : undef);
+    push(@newtuples, $key, $v, $useDefault, $resolution, $keyval); }
 
   # read all our current state
   my $prefix       = $self->getPrefix;
@@ -568,9 +561,9 @@ sub beDigested {
     $prefix, $keysets, [@newtuples],
     setAll => $setAll, setInternals => $setInternals,
     skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
-    skipKeyDigestion => 1,
-    open             => $open, close => $close,
-    punct            => $punct, assign => $assign); }
+    was_digested => 1,
+    open         => $open, close => $close,
+    punct        => $punct, assign => $assign); }
 
 sub revert {
   my ($self) = @_;
@@ -588,7 +581,8 @@ sub revert {
       (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
 
     # revert a single token
-    push(@tokens, $keyval->revert($value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); }
+    if ($keyval) {    # when is this undef?
+      push(@tokens, $self->revertKeyVal($keyval, $value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); } }
 
   # add open and close values if they were given
   unshift(@tokens, $open) if $open;
@@ -611,6 +605,27 @@ sub toString {
     $string .= ToString($punct) . ' ' if $string;
     $string .= $key . ToString($assign) . ToString($value); }
   return $string; }
+
+sub revertKeyVal {
+  my ($self, $keyval, $value, $useDefault, $isFirst, $compact, $punct, $assign) = @_;
+
+  # get the key-value definition
+  my $keydef = $keyval->getType();
+
+  # define the tokens
+  my @tokens = ();
+
+  # write comma and key, unless in the first iteration
+  push(@tokens, $punct)  if $punct    && !$isFirst;
+  push(@tokens, T_SPACE) if !$isFirst && !$compact;
+  push(@tokens, Explode($keyval->getKey));
+
+  # write the default (if applicable)
+  if (!$useDefault && $value) {
+    push(@tokens, ($assign || T_SPACE));
+    push(@tokens, ($keydef ? $keydef->revert($value) : Revert($value))); }
+
+  return @tokens; }
 
 # TODO: ????
 sub unlist {
@@ -678,7 +693,7 @@ the other caches.
 
 Furthermore, the KeyVals constructor accepts a variety of options that can
 be used to customize its behaviour. These are I<setAll>, I<setInternals>, 
-I<skip>, I<skipMissing>, I<hookMissing>, I<skipKeyDigestion>, I<open>, I<close>,
+I<skip>, I<skipMissing>, I<hookMissing>, I<open>, I<close>,
 I<punct> and I<assign>. 
 
 I<setAll> is a flag that, if set, ensures that keys will be set in all existing
@@ -699,9 +714,6 @@ undefined keys.
 
 I<hookMissing> allows to call a specific macro if a single key is unknown during
 key digestion. 
-
-I<skipKeyDigestion> is a flag that, if set, skips automatic digestion of
-keys when calling I<beDigested>. 
 
 The options I<open>, I<close>, I<punct> and I<assign> optionally contain the 
 tokens used for the respective meanings. 
@@ -751,10 +763,6 @@ Returns the I<CachedPairs> property.
 =item C<< my %cachedhash = $keyvals->getCachedHash() >>
 
 Returns the I<CachedHash> property. 
-
-=item C<< my $skipkeydigestion = $keyvals->getSkipKeyDigestion() >>
-
-Returns the I<SkipKeyDigestion> property. 
 
 =item C<< my $open = $keyvals->getOpen() >>
 
@@ -887,7 +895,7 @@ Checks if the KeyVals object contains a value for $key.
 
 =over 4
 
-=item C<< $expansion = $keyvals->setKeys; >>
+=item C<< $expansion = $keyvals->setKeysExpansion; >>
 
 Expand this KeyVals into a set of tokens for digesting keys. 
 
