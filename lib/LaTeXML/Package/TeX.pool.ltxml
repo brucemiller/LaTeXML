@@ -558,7 +558,7 @@ sub KeyVals_aux {
   my $keyvals = LaTeXML::Core::KeyVals->new(
     $prefix, $keysets, undef,
     setAll => $plus, setInternals => 1,
-    skip => $skip, skipMissing => $star, skipKeyDigestion => defined($keysets));
+    skip   => $skip, skipMissing  => $star);
 
   # and read it from the gullet
   $keyvals->readFrom($gullet, $until) if defined($until);
@@ -1771,7 +1771,7 @@ sub revert_spec {
 DefParameterType('BoxSpecification', sub {
     my ($gullet) = @_;
     if (my $key = $gullet->readKeyword('to', 'spread')) {
-      my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1, skipKeyDigestion => 1);
+      my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1);
       $keyvals->setValue($key, $gullet->readDimension);
       $keyvals; } },
   optional => 1, undigested => 1);
@@ -1962,7 +1962,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
 
 DefParameterType('RuleSpecification', sub {
     my ($gullet) = @_;
-    my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1, skipKeyDigestion => 1);
+    my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, undef, skipMissing => 1);
     while (my $key = $gullet->readKeyword('width', 'height', 'depth')) {
       $keyvals->setValue($key, $gullet->readDimension); }
     $keyvals; },

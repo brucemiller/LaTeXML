@@ -34,7 +34,7 @@ DefPrimitive('\define@key{}{}[]{}', sub {
 DefMacro('\setkeys{}', sub {
     my ($gullet, $keyset) = @_;
     my ($values) = ReadParameters($gullet, 'RequiredKeyVals:' . ToString($keyset));
-    $values->setKeys; });
+    $values->setKeysExpansion; });
 
 #======================================================================
 1;
