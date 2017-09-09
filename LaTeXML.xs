@@ -729,7 +729,7 @@ boxstack_callAV(pTHX_ LaTeXML_Core_Boxstack stack, SV * subs, SV * caller, int n
   int i;
   if(subs){
     AV * av = MUTABLE_AV(SvRV(subs));
-    SSize_t nsubs = av_top_index(av) + 1;
+    SSize_t nsubs = av_len(av) + 1;
     DEBUG_Boxstack("Boxstack %p calling %ld subs\n",stack,nsubs);
     for(i = 0; i < nsubs; i++){
       SV ** ptr = av_fetch(av,i,0);
@@ -809,7 +809,7 @@ state_assign_internal(pTHX_ SV * state, UTF8 table, UTF8 key, SV * value, UTF8 s
   undo_stack = MUTABLE_AV(SvRV(*ptr)); /* $$state{undo}  */
 
   if(strcmp(scope,"global") == 0){
-    SSize_t nframes = av_top_index(undo_stack) + 1;
+    SSize_t nframes = av_len(undo_stack) + 1;
     int iframe;
     HV * frame = NULL;
     DEBUG_State("Assign internal global: checking %lu frames\n",nframes);
@@ -2234,7 +2234,7 @@ expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
     parameters = (SV *) *ptr;
     DEBUG_Expandable("got parameters %p\n", parameters); }
   AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
-  SSize_t npara = (params ? av_top_index(params) + 1 : 0);
+  SSize_t npara = (params ? av_len(params) + 1 : 0);
   SV * args[npara];
   
   if(params){       /* If no parameters, nothing to read! */
@@ -2302,7 +2302,7 @@ expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet,
     parameters = (SV *) *ptr;
     DEBUG_Expandable("got parameters %p\n", parameters); }
   AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
-  SSize_t npara = (params ? av_top_index(params) + 1 : 0);
+  SSize_t npara = (params ? av_len(params) + 1 : 0);
   SV * args[npara];
   
   if(params){       /* If no parameters, nothing to read! */
@@ -2428,7 +2428,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state){
         parameters = (SV *) *ptr;
         DEBUG_Expandable("got parameters %p\n", parameters); }
       AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
-      SSize_t npara = (params ? av_top_index(params) + 1 : 0);
+      SSize_t npara = (params ? av_len(params) + 1 : 0);
       SV * args[npara];
 
       if(params){       /* If no parameters, nothing to read! */
@@ -2539,7 +2539,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * stomach, SV * state){
     parameters = (SV *) *ptr;
     DEBUG_Primitive("got parameters %p\n", parameters); }
   AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
-  SSize_t npara = (params ? av_top_index(params) + 1 : 0);
+  SSize_t npara = (params ? av_len(params) + 1 : 0);
   SV * args[npara];
   if(params){       /* If no parameters, nothing to read! */
     DEBUG_Primitive("reading %ld parameters\n", npara);
@@ -3699,7 +3699,7 @@ readArguments(gullet, parameters, fordefn)
  PPCODE:
     if(SvOK(parameters)){       /* If no parameters, nothing to read! */
       AV * params = MUTABLE_AV(SvRV(parameters));
-      SSize_t npara = av_top_index(params) + 1;
+      SSize_t npara = av_len(params) + 1;
       SV * values[npara];
       PUTBACK;
       int nargs = gullet_readArguments(aTHX_ gullet, npara, params, fordefn, values);
