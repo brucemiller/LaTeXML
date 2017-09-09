@@ -37,7 +37,7 @@ T_PTROBJ_Tokenstack
     croak(\"$var is not of type ${(my $ntt=$ntype)=~s/_/::/g; \$ntt}\")
 
 T_PTROBJ_Mouth
-  if(sv_isa($arg, \"LaTeXML::Core::Mouth\")){
+  if(sv_derived_from($arg, \"LaTeXML::Core::Mouth\")){
     IV tmp = SvIV((SV*)SvRV($arg));
     $var = INT2PTR($type, tmp); }
   else
