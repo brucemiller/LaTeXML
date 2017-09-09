@@ -268,7 +268,6 @@ that are executed before and after digestion.  These can be useful for changing 
 =head1 SEE ALSO
 
 L<LaTeXML::Core::Definition::Expandable>,
-L<LaTeXML::Core::Definition::Conditional>,
 L<LaTeXML::Core::Definition::Primitive>,
 L<LaTeXML::Core::Definition::Register>,
 L<LaTeXML::Core::Definition::CharDef> and
