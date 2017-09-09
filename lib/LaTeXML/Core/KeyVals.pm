@@ -45,11 +45,10 @@ sub GetKeyVals {
 #**********************************************************************
 
 sub new {
-  my ($class, $prefix, $keysets, $tuples, %options) = @_;
+  my ($class, $prefix, $keysets, %options) = @_;
   # parse all the arguments
   $prefix = defined($prefix) ? ToString($prefix) : 'KV';
   $keysets = [split(',', ToString(defined($keysets) ? $keysets : '_anonymous_'))] unless (ref($keysets) eq 'ARRAY');
-  my @atuples = defined($tuples) ? @{$tuples} : ();
   my $skip = $options{skip};
   $skip = [split(',', ToString(defined($options{skip}) ? $options{skip} : ''))] unless (ref($options{skip}) eq 'ARRAY');
   my $setAll       = $options{setAll}       ? 1 : 0;
@@ -77,15 +76,13 @@ sub new {
     skipMissing => $skipMissing, hookMissing => $hookMissing,
 
     # all the internal representations
-    tuples => [@atuples], cachedPairs => [()], cachedHash => \%hash,
+    tuples => [], cachedPairs => [()], cachedHash => \%hash,
 
     # all the character tokens we used
     open  => $options{open},  close  => $options{close},
     punct => $options{punct}, assign => $options{assign} },
 
     $class;
-  # we need to build all the caches if we have a non-empty array
-  $self->rebuild if scalar($self->getTuples) > 0;
   return $self; }
 
 #======================================================================
@@ -111,6 +108,13 @@ sub getSetInternals {
 sub getTuples {
   my ($self) = @_;
   return @{ $$self{tuples}; } }
+
+sub setTuples {
+  my ($self, @tuples) = @_;
+  $$self{tuples} = [@tuples];
+  # we need to build all the caches
+  $self->rebuild;
+  return; }
 
 sub getCachedPairs {
   my ($self) = @_;
@@ -207,11 +211,10 @@ sub addValue {
   # figure out the keyset(s) for the key to be added
   my @keysets = $self->resolveKeyValFor($key);
   my $headset = $self->getPrimaryKeyValOf($key, @keysets);
-  my @tuples  = $self->getTuples;
 
-  # and add the new element to the set of tuples
-  push(@tuples, $key, ($useDefault ? $headset->getDefault : $value), $useDefault, [@keysets], $headset);
-  $$self{tuples} = [@tuples];
+  # and add the new tuple to the set of tuples
+  push(@{ $$self{tuples} },
+    [$key, ($useDefault ? $headset->getDefault : $value), $useDefault, [@keysets], $headset]);
 
   # we now need to rebuild, unless we were asked not to
   # TODO: Maybe only update the last element?
@@ -243,20 +246,18 @@ sub rebuild {
   my ($self, $skip) = @_;
 
   # the new data structures to create
-  my @tuples    = $self->getTuples;
   my @newtuples = ();
   my @pairs     = ();
   my %hash      = ();
 
-  while (@tuples) {
+  foreach my $tuple (@{ $$self{tuples} }) {
     # take all the elements we need from the stack
-    my ($key, $value, $useDefault, $resolution, $keyval) =
-      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
+    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
 
     # if we want to skip some values, we need to store new tuples
     if (defined($skip)) {
       next if $key eq $skip;
-      push(@newtuples, $key, $value, $useDefault, $resolution, $keyval) if defined($skip); }
+      push(@newtuples, [$key, $value, $useDefault, $resolution, $keyval]) if defined($skip); }
 
     # push key / value into the pair
     push(@pairs, $key, $value);
@@ -461,9 +462,7 @@ sub hasKey {
 #======================================================================
 
 sub setKeysExpansion {
-  my ($self) = @_;
-
-  my @tuples       = $self->getTuples;
+  my ($self)       = @_;
   my @skip         = $self->getSkip;
   my $setInternals = $self->getSetInternals;
 
@@ -486,9 +485,8 @@ sub setKeysExpansion {
   ) : ();
 
   # iterate over the key-value pairs
-  while (@tuples) {
-    my ($key, $value, $useDefault, $resolution, $keyval) =
-      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
+  foreach my $tuple (@{ $$self{tuples} }) {
+    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
     my @keyvals = @{$resolution};
 
     # we might want to skip to the next iteration if key is to be omitted
@@ -529,21 +527,18 @@ sub beDigested {
   else {
     $stomach->digest($self->setKeysExpansion); }
 
-  # old and new tuples we want to create
-  my @tuples    = $self->getTuples;
+  # new tuples we want to create
   my @newtuples = ();
 
   # iterate over them
-  while (@tuples) {
-    my ($key, $value, $useDefault, $resolution, $keyval) =
-      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
-
+  foreach my $tuple (@{ $$self{tuples} }) {
+    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
     # digest a single token
     my $keydef = $keyval->getType();
     my $v      = (defined $value ?
         ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach))
       : undef);
-    push(@newtuples, $key, $v, $useDefault, $resolution, $keyval); }
+    push(@newtuples, [$key, $v, $useDefault, $resolution, $keyval]); }
 
   # read all our current state
   my $prefix       = $self->getPrefix;
@@ -557,29 +552,28 @@ sub beDigested {
     ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
 
   # then re-create the current object
-  return LaTeXML::Core::KeyVals->new(
-    $prefix, $keysets, [@newtuples],
+  my $new = LaTeXML::Core::KeyVals->new(
+    $prefix, $keysets,
     setAll => $setAll, setInternals => $setInternals,
     skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
     was_digested => 1,
     open         => $open, close => $close,
-    punct        => $punct, assign => $assign); }
+    punct        => $punct, assign => $assign);
+  $new->setTuples(@newtuples);
+  return $new; }
 
 sub revert {
   my ($self) = @_;
 
   # read values from class
-  my @tuples = $self->getTuples;
   my ($open, $close, $punct, $assign) =
     ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
 
   my @tokens = ();
 
   # iterate over the key-value pairs
-  while (@tuples) {
-    my ($key, $value, $useDefault, $resolution, $keyval) =
-      (shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples), shift(@tuples));
-
+  foreach my $tuple (@{ $$self{tuples} }) {
+    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
     # revert a single token
     if ($keyval) {    # when is this undef?
       push(@tokens, $self->revertKeyVal($keyval, $value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); } }
@@ -672,7 +666,7 @@ Can use in constructor: <foo %&GetKeyVals(#1)/>
 
 =over 4
 
-=item C<<LaTeXML::Core::KeyVals->new(I<prefix>, I<keysets>, I<tuples>, I<options>)); >>
+=item C<<LaTeXML::Core::KeyVals->new(I<prefix>, I<keysets>, I<options>)); >>
 
 Creates a new KeyVals object with the given parameters. 
 All arguments are optional and the simples way of calling this method is 
@@ -684,12 +678,6 @@ C<'KV'>. If given, prefix should be a string.
 I<keysets> should be a list of keysets to find keys inside of. If given, it
 should either be reference to a list of strings or a comma-seperated string. 
 This argument defaults to C<'_anonymous_'>. 
-
-I<tuples> should be a a reference to a (flat) list of five-tuples representing
-the key-value pairs this KeyVals object is seeded with. See the I<getTuples>
-function on details of the structure of this list. 
-If set to a non-empty list, I<rebuild> is called automatically to populate
-the other caches. 
 
 Furthermore, the KeyVals constructor accepts a variety of options that can
 be used to customize its behaviour. These are I<setAll>, I<setInternals>, 
@@ -755,6 +743,14 @@ Returns the I<HookMissing> property.
 =item C<< my @tuples = $keyvals->getTuples() >>
 
 Returns the I<Tuples> property representing
+
+=item C<< $keyvals->setTuples(@tuples) >>
+
+Sets the I<tuples> which should be a list of five-tuples (array references) representing
+the key-value pairs this KeyVals object is seeded with. See the I<getTuples>
+function on details of the structure of this list. 
+I<rebuild> is called automatically to populate the other caches. 
+Typically, the tuples is set by I<readFrom>.
 
 =item C<< my @cachedpairs = $keyvals->getCachedPairs() >>
 
