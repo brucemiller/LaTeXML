@@ -112,6 +112,7 @@ RequireResource('LaTeXML.css');
 # Define parsers for standard parameter types.
 
 DefParameterType('Plain', \&LaTeXML::Core::Gullet::readArg,
+  opcode => 'arg',
   reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -162,15 +163,20 @@ DefParameterType('Until', \&LaTeXML::Core::Gullet::readUntil,
     (Revert($arg), Revert($until)); });
 
 # Skip any spaces, but don't contribute an argument.
-DefParameterType('SkipSpaces', \&LaTeXML::Core::Gullet::skipSpaces, novalue => 1, optional => 1);
+DefParameterType('SkipSpaces', \&LaTeXML::Core::Gullet::skipSpaces, novalue => 1, optional => 1,
+                 opcode => 'skipspaces');
 
-DefParameterType('Skip1Space', \&LaTeXML::Core::Gullet::skip1Space, novalue => 1, optional => 1);
+DefParameterType('Skip1Space', \&LaTeXML::Core::Gullet::skip1Space, novalue => 1, optional => 1,
+                                  opcode => 'skipspace');
+
+DefParameterType('SkipMatch:=', undef, novalue => 1, optional => 1,
+                                  opcode => 'skipequals');
 
 # Read the next token
-DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken);
+DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken, opcode => 'token');
 
 # Read the next token, after expanding any expandable ones.
-DefParameterType('XToken', \&LaTeXML::Core::Gullet::readXToken);
+DefParameterType('XToken', \&LaTeXML::Core::Gullet::readXToken, opcode => 'xtoken');
 
 # Read a number
 DefParameterType('Number', \&LaTeXML::Core::Gullet::readNumber);
@@ -197,7 +203,7 @@ DefParameterType('MuGlue', \&LaTeXML::Core::Gullet::readMuGlue);
 
 # Read until the next (balanced) open brace {
 # used for the last TeX-style delimited argument
-DefParameterType('UntilBrace', \&LaTeXML::Core::Gullet::readUntilBrace);
+DefParameterType('UntilBrace', \&LaTeXML::Core::Gullet::readUntilBrace, opcode => 'untilbrace');
 
 # Yet another special case: Require a { but do not read it!!!
 DefParameterType('RequireBrace', sub {
@@ -657,8 +663,9 @@ DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
 DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
 DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 
-DefConditionalI('\iftrue',  undef, sub { 1; });
-DefConditionalI('\iffalse', undef, sub { 0; });
+### Something weird about these as opcodes?
+DefConditionalI('\iftrue',  undef, sub { 1; });#, opcode=>'iftrue');
+DefConditionalI('\iffalse', undef, sub { 0; });#, opcode=>'iffalse');
 
 #======================================================================
 # This makes \relax disappear completely after digestion
@@ -752,7 +759,8 @@ DefParameterType('CSName', \&LaTeXML::Core::Gullet::readCSName);
 DefMacro('\csname CSName', sub {
     my ($gullet, $token) = @_;
     Let($token, '\relax') unless defined LookupMeaning($token);
-    $token; });
+    $token; },
+       opcode=>'csname');
 
 DefPrimitive('\endcsname', sub {
     my ($stomach) = @_;
@@ -772,6 +780,7 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $defn->invoke($gullet)); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
+DefMacro('\expandafter', \&LaTeXML::Core::Gullet::expandafter, opcode=>'expandafter');
 
 # Insert magic token that Gullet knows not to expand the next one.
 DefMacroI('\noexpand', undef, Token('', CC_NOTEXPANDED));
@@ -1019,6 +1028,7 @@ sub parseDefParameters {
   }
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
+use Devel::Peek 'Dump';
 sub do_def {
   my ($globally, $expanded, $gullet, $cs, $params, $body) = @_;
   if (!$cs) {

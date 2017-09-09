@@ -144,7 +144,7 @@ DefConstructor('\middle Token', '#1',
 DefConditional('\unless Token', sub {
     my ($gullet, $if) = @_;
     my ($defn, $test);
-    if (($defn = LookupDefinition($if)) && (($$defn{conditional_type} || '') eq 'if')
+    if (($defn = LookupDefinition($if)) && (($$defn{opcode} || '') =~ /^if/)
       && ($test = $defn->getTest)) {
       # Invert the if's test!
       !&$test($gullet, $defn->readArguments($gullet)); }
