@@ -20,7 +20,6 @@ use Time::HiRes;
 use base qw(LaTeXML::Common::Object);
 # Make these present, but do not import.
 require LaTeXML::Core::Definition::Expandable;
-require LaTeXML::Core::Definition::Conditional;
 require LaTeXML::Core::Definition::Primitive;
 require LaTeXML::Core::Definition::Register;
 require LaTeXML::Core::Definition::CharDef;
@@ -52,18 +51,29 @@ sub getLocator {
   my ($self) = @_;
   return $$self{locator}; }
 
-sub readArguments {
-  my ($self, $gullet) = @_;
-  my $params = $self->getParameters;
-  return ($params ? $params->readArguments($gullet, $self) : ()); }
-
 sub getParameters {
   my ($self) = @_;
-  # Allow defering these until the Definition is actually used.
-  if ((defined $$self{parameters}) && !ref $$self{parameters}) {
-    require LaTeXML::Package;
-    $$self{parameters} = LaTeXML::Package::parseParameters($$self{parameters}, $$self{cs}); }
   return $$self{parameters}; }
+
+# Copied from Parameters.pm; Possibly move here?
+sub readArguments {
+  my ($self, $gullet) = @_;
+  if (my $parameters = $$self{parameters}) {
+    return $gullet->readArguments($parameters, $$self{cs}->getCSName); }
+  else {
+    return; } }
+
+sub readArgumentsAndDigest {
+  my ($self, $stomach) = @_;
+  my @args = ();
+  if ($$self{parameters}) {
+    my $gullet = $stomach->getGullet;
+    foreach my $parameter (@{ $$self{parameters} }) {
+      my $value = $parameter->read($gullet, $self);
+      if (!$$parameter{novalue}) {
+        $value = $parameter->digest($stomach, $value, $self);
+        push(@args, $value); } } }
+  return @args; }
 
 #======================================================================
 # Overriding methods
