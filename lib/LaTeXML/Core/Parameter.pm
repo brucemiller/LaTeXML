@@ -23,10 +23,6 @@ use base qw(LaTeXML::Common::Object);
 # sub new {
 #   my ($class, $spec, %options) = @_;
 #   return bless { spec => $spec, %options }, $class; }
-
-# Create a parameter reading object for a specific type.
-# If either a declared entry or a function Read<Type> accessible from LaTeXML::Package::Pool
-# is defined.
 sub new {
   my ($class, $type, $spec, %options) = @_;
   my $descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $type);
@@ -50,7 +46,35 @@ sub new {
   # Convert semiverbatim to list of extra SPECIALS.
   my %data = (%{$descriptor}, %options);
   $data{semiverbatim} = [] if $data{semiverbatim} && (ref $data{semiverbatim} ne 'ARRAY');
-  return bless { spec => $spec, type => $type, %data }, $class; }
+
+  my $self = bless { spec => $spec, type => $type, %data }, $class;
+  # Now construct an efficient reader
+  my $reader = $data{reader};
+  my $newreader;
+  # There's just GOT to be a clever way to build a sub (but including closures ?)
+  if(my @extra = ($data{extra} ? @{$data{extra}} : ())){
+    if(my $semiverbatim = $data{semiverbatim}){
+      $newreader = sub {
+        my($gullet)=@_;
+        $STATE->beginSemiverbatim(@$semiverbatim);
+        my $value = &$reader($gullet,@extra);
+        $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
+        $STATE->endSemiverbatim;
+      return $value; }; }
+    else {
+      $newreader = sub {
+        my($gullet)=@_;
+        return &$reader($gullet,@extra); }; } }
+  elsif(my $semiverbatim = $data{semiverbatim}){
+    $newreader = sub {
+      my($gullet)=@_;
+      $STATE->beginSemiverbatim(@$semiverbatim);
+      my $value = &$reader($gullet);
+      $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
+      $STATE->endSemiverbatim;
+      return $value; }; }
+  $$self{reader} = $newreader if $newreader;
+  return $self; }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
 sub checkReaderFunction {
@@ -78,19 +102,7 @@ sub revertCatcodes {
 
 sub read {
   my ($self, $gullet, $fordefn) = @_;
-  # For semiverbatim, I had messed with catcodes, but there are cases
-  # (eg. \caption(...\label{badchars}}) where you really need to
-  # cleanup after the fact!
-  # Hmmm, seem to still need it...
-  my $semiverbatim = $$self{semiverbatim};
-  if ($semiverbatim) {
-    $STATE->beginSemiverbatim(@$semiverbatim); }
-  my $extra  = $$self{extra};
-  my $reader = $$self{reader};
-  my $value  = ($extra ? &$reader($gullet, @$extra) : &$reader($gullet));
-  if ($semiverbatim) {
-    $value = $value->neutralize(@$semiverbatim) if (ref $value) && $value->can('neutralize');
-    $STATE->endSemiverbatim(); }
+  my $value = &{ $$self{reader} }($gullet);
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
@@ -120,6 +132,7 @@ sub reparse {
           shift(@tokens); pop(@tokens); }
         $gulletx->unread(@tokens);    # but put back tokens to be read
         my $value = $self->read($gulletx);
+###        my $value = &{ $$self{reader} }($gulletx);
         $gulletx->skipSpaces;
         return $value; }); } }
 

@@ -58,11 +58,7 @@ sub revertArguments {
 
 sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
-  my @args = ();
-  foreach my $parameter (@$self) {
-    my $value = $parameter->read($gullet);
-    push(@args, $value) unless $$parameter{novalue}; }
-  return @args; }
+  return $gullet->readArguments($self, $fordefn); }
 
 sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;
@@ -81,7 +77,7 @@ sub reparseArgument {
     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
         my ($gulletx) = @_;
         $gulletx->unread($tokens);                                         # but put back tokens to be read
-        my @values = $self->readArguments($gulletx);
+        my @values = $gulletx->readArguments($self, $LaTeXML::CURRENT_TOKEN);
         $gulletx->skipSpaces;
         return @values; }); }
   else {
