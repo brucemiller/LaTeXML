@@ -57,10 +57,6 @@ sub getGullet {
   my ($self) = @_;
   return $$self{gullet}; }
 
-sub getLocator {
-  my ($self, @args) = @_;
-  return $$self{gullet}->getLocator(@args); }
-
 sub getBoxingLevel {
   my ($self) = @_;
   return scalar(@{ $$self{boxing} }); }
@@ -172,7 +168,6 @@ INVOKE:
     "Returned " . join(',', map { "'" . Stringify($_) . "'" }
         grep { (!ref $_) || (!$_->isaBox) } @result))
     if grep { (!ref $_) || (!$_->isaBox) } @result;
-
   pop(@{ $$self{token_stack} });
   return @result; }
 
@@ -197,9 +192,9 @@ sub invokeToken_undefined {
     Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
       "Defining it now as with \\newif");
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
+        T_CS('\\' . $name . 'true'), undef, Tokens(T_CS('\let'), $token, T_CS('\iftrue'))));
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
+        T_CS('\\' . $name . 'false'), undef, Tokens(T_CS('\let'), $token, T_CS('\iffalse'))));
     LaTeXML::Package::Let($token, T_CS('\iffalse'));
     $self->getGullet->unread($token);    # Retry
     return; }

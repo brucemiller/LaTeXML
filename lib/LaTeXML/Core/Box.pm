@@ -26,7 +26,7 @@ our @EXPORT = (
 sub Box {
   my ($string, $font, $locator, $tokens, %properties) = @_;
   $font = $STATE->lookupValue('font') unless defined $font;
-  $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
+  $locator = $STATE->getStomach->getLocator unless defined $locator;
   $tokens = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
   my $state = $STATE;
   if ($state->lookupValue('IN_MATH')) {
