@@ -1,0 +1,97 @@
+\documentclass{article}
+
+\usepackage{xkeyval}
+
+\begin{document}
+  \makeatletter
+  
+  \section{existence check}
+  % Define a few keys here
+  \define@key[my]{familya}{foobar}{}
+  \define@key[my]{familyb}{foobar}{}
+  \define@key[my]{familya}{foo}{}
+  \define@key[my]{familyb}{bar}{}
+
+  % and check if they exist or not
+  \key@ifundefined[my]{familya,familyb}{foo}{`foo' does not exist. }{`foo' exists in \XKV@tfam. }
+  \key@ifundefined[my]{familya,familyb}{bar}{`bar' does not exist. }{`bar' exists in \XKV@tfam. }
+  \key@ifundefined[my]{familya,familyb}{foobar}{`foobar' does not exist. }{`foobar' exists in \XKV@tfam. }
+  \key@ifundefined[my]{familya,familyb}{world}{`world' does not exist. }{`world' exists in \XKV@tfam. }
+  
+  
+  \section{disabling keys}
+  % define three more keys
+  \define@key[my]{familyc}{a}{Key `A'. }
+  \define@key[my]{familyc}{b}{Key `B'. }
+  \define@key[my]{familyc}{c}{Key `C'. }
+  
+  % disable two of them
+  \disable@keys[my]{familyc}{a,b}
+  
+  % now try to set them, we should only get 'c' and warnings for the other two
+  \setkeys[my]{familyc}{a=1,b=2,c=3}
+  
+  
+  \section{keys in only one of multiple families}
+  % define foo, bar and foobar in a single and multiple families each
+  \define@key[my]{familyd}{foobar}{Set `foobar' in `d'. }
+  \define@key[my]{familye}{foobar}{Set `foobar' in `e'. }
+  \define@key[my]{familyd}{foo}{Set `foo' in `d'. }
+  \define@key[my]{familye}{bar}{Set `bar' in `e'. }
+  
+  % now set them
+  \setkeys[my]{familyd,familye}{foo=1,bar=2,foobar=3}
+  
+  
+  \section{keys in all families}
+  % again define foo in multiple families
+  \define@key[my]{familyf}{foo}{Found `foo' key in `f'. }
+  \define@key[my]{familyg}{foo}{Found `foo' key in `g'. }
+  
+  % now set them
+  \setkeys+[my]{familyf,familyg}{foo=1}
+  
+  
+  \section{Skip keys}
+  % define foo, bar and foobar
+  \define@key[my]{familyh}{foo}{Found `foo' key in `h'. }
+  \define@key[my]{familyh}{bar}{Found `bar' key in `h'. }
+  \define@key[my]{familyh}{foobar}{Found `foobar' key in `h'. }
+  
+  % set all, but skip only foobar
+  \setkeys[my]{familyh}[foobar]{foo=3,bar=4,foobar=5}
+  
+
+  \section{Store missing keys}
+  % Define a few keys
+  \define@key[my]{familyi}{foo}{Found `foo' key in `i'. }
+  \define@key[my]{familyi}{bar}{Found `bar' key in `i'. }
+  \define@key[my]{familyj}{foobar}{Found `foobar' key in `j'. }
+  \define@key[my]{familyk}{world}{Found `world' key in `k'. }
+  
+  % set them with a '*' and list remaining ones
+  \setkeys*[my]{familyi}{foo=1,bar=2,foobar=3,world=4}
+  
+  Leftover keys are \XKV@rm. 
+  
+  % set them in a second family
+  \setrmkeys*[my]{familyj}
+  
+  Leftover keys are \XKV@rm. 
+  
+  % and a third one
+  \setrmkeys[my]{familyk}
+  
+  Leftover keys are \XKV@rm. 
+  
+  
+  \section{Available Internals}
+  
+  \define@key[my]{familyl}{foo}{Prefix=\XKV@prefix, Fams=\XKV@fams, TFam=\XKV@tfam, Header=\XKV@header, Key=\XKV@tkey, Na=\XKV@na. Found `foo' key in `l'. }
+  \define@key[my]{familyl}{bar}{Prefix=\XKV@prefix, Fams=\XKV@fams, TFam=\XKV@tfam, Header=\XKV@header, Key=\XKV@tkey, Na=\XKV@na. Found `bar' key in `l'. }
+  \define@key[my]{familym}{foobar}{Prefix=\XKV@prefix, Fams=\XKV@fams, TFam=\XKV@tfam, Header=\XKV@header, Key=\XKV@tkey, Na=\XKV@na. Found `foobar' key in `m'. }
+  
+  \setkeys[my]{familyl,familym}{foo=1,bar=2,foobar=3}
+  
+  \makeatother
+\end{document}

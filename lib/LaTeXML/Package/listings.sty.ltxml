@@ -1026,12 +1026,8 @@ DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', s
     if ($dialect && $dialect->unlist) {
       $dialect = uc(ToString($dialect)); $dialect =~ s/\s+//g;
       $name .= '$' . $dialect; }
-    AssignValue($name => LaTeXML::Core::KeyVals->new('LST',
-        [(@base ? (language => Tokens(@base)) : ()),
-          $keyvals->getPairs],
-        open  => T_OTHER('['), close  => T_OTHER(']'),
-        punct => T_OTHER(','), assign => T_OTHER('=')),
-      'global'); });
+    $keyvals->setValue('language', Tokens(@base)) if @base;    # Probably don't need to clone, first?
+    AssignValue($name => $keyvals, 'global'); });
 
 # Seems to use <language>$<dialect> as the naming scheme.
 DefPrimitive('\lstalias []{} []{}', sub {
@@ -1040,7 +1036,7 @@ DefPrimitive('\lstalias []{} []{}', sub {
     return; });
 
 # keywords (keywordstyle in section 4.6)
-DefKeyVal('LST', 'keywordprefix', '');               #  ???
+DefKeyVal('LST', 'keywordprefix', '');                         #  ???
 DefKeyVal('LST', 'keywords',      'Semiverbatim');
 DefMacro('\lst@@keywords [Number] Until:\end', sub {
     lstSetClassWords(lstClassName('keywords', $_[1]), $_[2]); });
@@ -1468,4 +1464,3 @@ lstLoadConfiguration();
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-

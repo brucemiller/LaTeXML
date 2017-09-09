@@ -570,6 +570,7 @@ DefMacroI('\@clsextension', undef, 'cls');
 DefMacroI('\@pkgextension', undef, 'sty');
 Let('\@currext',  '\@empty');
 Let('\@currname', '\@empty');
+Let('\@classoptionslist','\relax');
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
@@ -1113,7 +1114,7 @@ sub setEnumerationStyle {
       elsif (Equals($t, T_LETTER('i'))) {
         DefMacroI('\theenum' . $level, undef, Invocation(T_CS('\roman'), $ctr));
         push(@out, T_CS('\theenum' . $level)); }
-      elsif (Equals($t, T_LETTER('1'))) {
+      elsif (Equals($t, T_OTHER('1'))) {
         DefMacroI('\theenum' . $level, undef, Invocation(T_CS('\arabic'), $ctr));
         push(@out, T_CS('\theenum' . $level)); }
       else {

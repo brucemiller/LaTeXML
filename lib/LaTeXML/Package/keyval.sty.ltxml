@@ -3,6 +3,7 @@
 # |  keyval                                                             | #
 # | Implementation of keyval for LaTeXML                                | #
 # |=====================================================================| #
+# | Thanks to Tom Wiesing <tom.wiesing@gmail.com>                       | #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
@@ -15,30 +16,25 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Should define some macros that connect to KeyVal ?
+InputDefinitions('keyval', type => 'sty', noltxml => 1)
+  || Warn(":missing:keyval.sty Couldn't find keyval.sty");
 
-# This doesn't really do anything useful; what keyval wants is to evaluate $code!!!
+# HOOK into define@key to make the latexml definitions as well
 DefPrimitive('\define@key{}{}[]{}', sub {
     my ($stomach, $keyset, $key, $default, $code) = @_;
+
     $keyset = ToString($keyset);
     $key    = ToString($key);
-    DefKeyVal($keyset, $key, '', ToString($default));
-    # And define macros, just incase..
-    DefMacroI('\KV@' . $keyset . '@' . $key,
-      LaTeXML::Core::Parameters->new(LaTeXML::Core::Parameter->new('Plain', '{}')),
-      $code,
-      scope => 'global');
-    DefMacroI('\KV@' . $keyset . '@' . $key . '@default', undef,
-      Tokens(T_CS('\KV@' . $keyset . '@' . $key), T_BEGIN, $default->unlist, T_END),
-      scope => 'global')
-      if $default;
+
+    DefKeyVal($keyset, $key, '', ToString($default), code => $code);
+
     return; });
 
 # \setkeys{keyset}{keyvals}
 DefMacro('\setkeys{}', sub {
     my ($gullet, $keyset) = @_;
     my ($values) = ReadParameters($gullet, 'RequiredKeyVals:' . ToString($keyset));
-    $values->revert; });    # and it will be expanded/digested as needed(?)
+    $values->setKeysExpansion; });
 
 #======================================================================
 1;

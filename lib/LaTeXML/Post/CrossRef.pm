@@ -254,7 +254,7 @@ sub gentoc {
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
     if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
-      if ($strict && !$entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
+      if ($strict && ! defined $entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
         return (); }
       elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
         return (); }
