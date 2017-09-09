@@ -114,11 +114,13 @@ sub new {
   $$self{uccode}              = {};
   $$self{delcode}             = {};
   $$self{tracing_definitions} = {};
+  $self->installOpcodes();
   return $self; }
 
-sub assign_internal {
+sub XXassign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
+#print STDERR "Assign internal in table $table, $key => $value; scope=$scope\n";
   if (exists $$self{tracing_definitions}{$key}) {
     print STDERR "ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
       (ref $value ? $value->stringify : $value) . "\n"; }
@@ -168,7 +170,7 @@ sub XXXlookupValue {
   my $e = $$self{value}{$key};
   return $e && $$e[0]; }
 
-sub assignValue {
+sub XXXassignValue {
   my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'value', $key, $value, $scope);
   return; }
@@ -342,7 +344,7 @@ sub XXlookupMeaning {
 
 # $meaning should be a definition (for defining active control sequences)
 # or another token, for \let
-sub assignMeaning {
+sub XXassignMeaning {
   my ($self, $token, $meaning, $scope) = @_;
   return if $token->equals($meaning);    # HACK!!!????
   assign_internal($self, 'meaning', $token->getCSName => $meaning, $scope);
@@ -455,7 +457,7 @@ sub XXXlookupDigestableDefinition {
   return $token; }
 
 # And a shorthand for installing definitions
-sub installDefinition {
+sub XXinstallDefinition {
   my ($self, $definition, $scope) = @_;
   # Locked definitions!!! (or should this test be in assignMeaning?)
   # Ignore attempts to (re)define $cs from tex sources
