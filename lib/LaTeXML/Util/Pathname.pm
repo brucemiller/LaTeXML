@@ -32,6 +32,7 @@ use File::Spec;
 use File::Copy;
 use File::Which;
 use Cwd;
+
 use base qw(Exporter);
 our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
@@ -43,7 +44,8 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
   &pathname_cwd &pathname_chdir &pathname_mkdir &pathname_copy
-  &pathname_installation);
+  &pathname_installation
+  &pathname_read);
 
 # NOTE: For absolute pathnames, the directory component starts with
 # whatever File::Spec considers to be the volume, or "/".
@@ -345,28 +347,31 @@ sub candidate_pathnames {
   return @paths; }
 
 #======================================================================
-our $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
-our $kpse_cache = undef;
+our $kpsewhich        = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
+our $kpse_cache_tried = undef;
+our $kpse_cache       = undef;
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
   return unless $kpsewhich;
-  build_kpse_cache() unless $kpse_cache;
-  foreach my $file (@candidates) {
-    if (my $result = $$kpse_cache{$file}) {
-      return $result; } }
-  # If we've failed to read the cache, try directly calling kpsewhich
-  # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
-  my $files = join(' ', @candidates);
-  if ($kpsewhich && (my $result = `"$kpsewhich" $files`)) {
-    if ($result =~ /^\s*(.+?)\s*\n/s) {
-      return $1; } }
+  build_kpse_cache() unless $kpse_cache_tried;
+  if ($kpse_cache) {
+    foreach my $file (@candidates) {
+      if (my $result = $$kpse_cache{$file}) {
+        return $result; } } }
+  else {
+    # If we've failed to read the cache, try directly calling kpsewhich
+    # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
+    my $files = join(' ', @candidates);
+    if ($kpsewhich && (my $result = `"$kpsewhich" $files`)) {
+      if ($result =~ /^\s*(.+?)\s*\n/s) {
+        return $1; } } }
   return; }
 
 sub build_kpse_cache {
-  $kpse_cache = {};    # At least we've tried.
+  $kpse_cache_tried = 1;
   return unless $kpsewhich;
-       # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
+  # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
@@ -385,22 +390,35 @@ sub build_kpse_cache {
       my $LSR;
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.
-      open($LSR, '<', "$dir/ls-R") or die "Cannot read $dir/ls-R: $!";
-      while (<$LSR>) {
-        chop;
+      foreach (pathname_read("$dir/ls-R")) {
         next unless $_;
-        if (/^%/) { }
+        if (substr($_, 0, 1) eq '%') { }
         elsif (/^(.*?):$/) {    # Move to a new subdirectory
           $subdir = $1;
           $subdir =~ s|^\./||;    # remove prefix
           my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
-          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; }    # check if one of the TeX paths
+          $skip = !grep { substr($d, 0, length($_)) eq $_ } @filters; }    # check if one of the TeX paths
         elsif (!$skip) {
           # Is it safe to use '/' here?
           my $sep = '/';
-          $$kpse_cache{$_} = join($sep, $dir, $subdir, $_); } }
-      close($LSR); } }
+          $$kpse_cache{$_} = join($sep, $dir, $subdir, $_); } } } }
   return; }
+
+#======================================================================
+# A fast file slurp, see https://www.perl.com/pub/2003/11/21/slurp.html
+sub pathname_read {
+  my ($pathname) = @_;
+  my $buffer     = "";
+  my $rbuffer    = \$buffer;
+  local *FH;
+  sysopen(FH, $pathname, 0)    # O_RDONLY)
+    or die "Cannot open $pathname: $!";
+  my $size_left = -s FH;
+  while ($size_left > 0) {
+    my $size_read = sysread(FH, ${$rbuffer}, $size_left, length ${$rbuffer});
+    die "Read error in $pathname: $!" unless $size_read;
+    $size_left -= $size_read; }
+  return (wantarray ? split(/\n/, ${$rbuffer}) : ${$rbuffer}); }
 
 #======================================================================
 1;
