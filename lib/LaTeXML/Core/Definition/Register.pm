@@ -23,8 +23,11 @@ use base qw(LaTeXML::Core::Definition::Primitive);
 #    readonly : whether this register can only be read
 sub new {
   my ($class, $cs, $parameters, %traits) = @_;
+  if ((defined $parameters) && !ref $parameters) {
+    require LaTeXML::Package;
+    $parameters = LaTeXML::Package::parseParameters($parameters, $cs); }
   return bless { cs => $cs, parameters => $parameters,
-    locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
+    locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
 sub isPrefix {
@@ -61,7 +64,7 @@ sub invoke {
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my $gullet = $stomach->getGullet;
-  my @args   = $self->readArguments($gullet);
+  my @args = $gullet->readArguments($$self{parameters},$self);
   $gullet->readKeyword('=');    # Ignore
   my $value = $gullet->readValue($self->isRegister);
   $self->setValue($value, @args);

@@ -42,8 +42,11 @@ sub new {
     "Constructor replacement for '" . ToString($cs) . "' is not a string or CODE",
     "Replacement is $replacement")
     if !(defined $replacement) || ((ref $replacement) && !(ref $replacement eq 'CODE'));
+  if ((defined $parameters) && !ref $parameters) {
+    require LaTeXML::Package;
+    $parameters = LaTeXML::Package::parseParameters($parameters, $cs); }
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
-    locator => "from " . $source->getLocator(-1), %traits,
+    locator => "from " . $source->getLocator, %traits,
 ##    nargs => (defined $traits{nargs} ? $traits{nargs}
     ##  : ($parameters ? $parameters->getNumArgs : 0))
     nargs => $traits{nargs}
@@ -87,8 +90,7 @@ sub invoke {
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
-  my $params = $self->getParameters;
-  my @args = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
+  my @args = $self->readArgumentsAndDigest($stomach);
   print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
@@ -102,9 +104,9 @@ sub invoke {
     my $value = $props{$key};
     if (ref $value eq 'CODE') {
       $props{$key} = &$value($stomach, @args); } }
-  $props{font}    = $font                                     unless defined $props{font};
-  $props{locator} = $stomach->getGullet->getMouth->getLocator unless defined $props{locator};
-  $props{isMath}  = $ismath                                   unless defined $props{isMath};
+  $props{font}    = $font                unless defined $props{font};
+  $props{locator} = $stomach->getLocator unless defined $props{locator};
+  $props{isMath}  = $ismath              unless defined $props{isMath};
   $props{level}   = $stomach->getBoxingLevel;
 
   # Now create the Whatsit, itself.

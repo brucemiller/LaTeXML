@@ -23,11 +23,14 @@ sub new {
   my ($class, $cs, $parameters, $replacement, %traits) = @_;
   # Could conceivably have $replacement being a List or Box?
   my $source = $STATE->getStomach->getGullet->getMouth;
+  if ((defined $parameters) && !ref $parameters) {
+    require LaTeXML::Package;
+    $parameters = LaTeXML::Package::parseParameters($parameters, $cs); }
   Fatal('misdefined', $cs, $source, "Primitive replacement for '" . ToString($cs) . "' is not CODE",
     "Replacement is $replacement")
     unless ref $replacement eq 'CODE';
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
-    locator => "from " . $source->getLocator(-1),
+    locator => "from " . $source->getLocator,
     %traits }, $class; }
 
 sub isPrefix {
@@ -45,23 +48,6 @@ sub executeAfterDigest {
   local $LaTeXML::Core::State::UNLOCKED = 1;
   my $post = $$self{afterDigest};
   return ($post ? map { &$_($stomach, @whatever) } grep { defined $_ } @$post : ()); }
-
-# Digest the primitive; this should occur in the stomach.
-sub invoke {
-  my ($self, $stomach) = @_;
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
-  print STDERR '{' . $self->tracingCSName . "}\n" if $tracing;
-  my @result = ($self->executeBeforeDigest($stomach));
-  my @args   = $self->readArguments($stomach->getGullet);
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
-  push(@result,
-    &{ $$self{replacement} }($stomach, @args),
-    $self->executeAfterDigest($stomach));
-
-  LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
-  return @result; }
 
 sub equals {
   my ($self, $other) = @_;
