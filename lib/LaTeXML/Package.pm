@@ -215,8 +215,11 @@ sub parseParameters {
         push(@params, LaTeXML::Core::Parameter->new('Optional', $spec)); } }
     elsif ($p =~ s/^((\w*)(:([^\s\{\[]*))?)\s*//) {
       my ($spec, $type, $extra) = ($1, $2, $4);
-      my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
-      push(@params, LaTeXML::Core::Parameter->new($type, $spec, extra => [@extra])); }
+      if (my $descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $spec)) {    # Explicitly defined
+        push(@params, LaTeXML::Core::Parameter->new($spec, $spec)); }
+      else {
+        my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
+        push(@params, LaTeXML::Core::Parameter->new($type, $spec, extra => [@extra])); } }
     else {
       Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
@@ -372,7 +375,7 @@ sub Let {
   # If strings are given, assume CS tokens (most common case)
   $token1 = T_CS($token1) unless ref $token1;
   $token2 = T_CS($token2) unless ref $token2;
-  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope);
+  $STATE->let($token1, $token2, $scope);
   AfterAssignment();
   return; }
 
@@ -554,7 +557,7 @@ sub CleanURL {
 #======================================================================
 
 my $parameter_options = {    # [CONSTANT]
-  nargs => 1, reversion => 1, optional => 1, novalue => 1,
+  nargs => 1, reversion => 1, optional => 1, novalue => 1, opcode => 1,
   beforeDigest => 1, afterDigest => 1,
   semiverbatim => 1, undigested  => 1 };
 
@@ -793,10 +796,8 @@ sub GenerateID {
 sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
-  return $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread(@tokens);
-      return $gullet->readXTokens(); }); }
+  return $STATE->getStomach->getGullet->readingFromMouth(Tokens(@tokens),
+    \&LaTeXML::Core::Gullet::readXTokens); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -850,7 +851,6 @@ sub Tokenize {
   my ($string) = @_;
   $STD_CATTABLE = LaTeXML::Core::State->new(catcodes => 'standard') unless $STD_CATTABLE;
   local $STATE = $STD_CATTABLE;
-###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
   $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
   $TOKENIZING_MOUTH->setInput($string);
   return $TOKENIZING_MOUTH->readTokens; }
@@ -860,7 +860,6 @@ sub TokenizeInternal {
   my ($string) = @_;
   $STY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'style') unless $STY_CATTABLE;
   local $STATE = $STY_CATTABLE;
-###  return LaTeXML::Core::Mouth->new($string)->readTokens; }
   $TOKENIZING_MOUTH = LaTeXML::Core::Mouth->new() unless $TOKENIZING_MOUTH;
   $TOKENIZING_MOUTH->setInput($string);
   return $TOKENIZING_MOUTH->readTokens; }
@@ -931,7 +930,7 @@ sub DefExpandable {
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
-  scope => 1, locked => 1, mathactive => 1 };
+  scope => 1, locked => 1, mathactive => 1, opcode => 1 };
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
@@ -947,7 +946,10 @@ sub DefMacroI {
   if ((length($cs) == 1) && $options{mathactive}) {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
   $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+  if ((defined $paramlist) && !ref $paramlist) {
+    $paramlist = parseParameters($paramlist, $cs); }
+  if (!ref $expansion) {
+    $expansion = TokenizeInternal($expansion); }
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
@@ -979,18 +981,25 @@ sub DefConditionalI {
   my ($cs, $paramlist, $test, %options) = @_;
   $cs = coerceCS($cs);
   my $csname = ToString($cs);
+  if ((defined $paramlist) && !ref $paramlist) {
+    $paramlist = parseParameters($paramlist, $cs); }
+  my $opcode = $options{opcode};
   # Special cases...
   if ($csname eq '\fi') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
-        $cs, undef, undef, conditional_type => 'fi', %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        $cs, undef, undef, opcode => 'fi', %options),
       $options{scope}); }
   elsif ($csname eq '\else') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
-        $cs, undef, undef, conditional_type => 'else', %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        $cs, undef, undef, opcode => 'else', %options),
       $options{scope}); }
   elsif ($csname eq '\or') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
-        $cs, undef, undef, conditional_type => 'or', %options),
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        $cs, undef, undef, opcode => 'or', %options),
+      $options{scope}); }
+  elsif ($csname eq '\ifcase') {
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        $cs, $paramlist, undef, opcode => 'ifcase', %options),
       $options{scope}); }
   elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
     my $name = $1;
@@ -1000,9 +1009,9 @@ sub DefConditionalI {
       DefMacroI(T_CS('\\' . $name . 'false'), undef, Tokens(T_CS('\let'), $cs, T_CS('\iffalse')));
       Let($cs, T_CS('\iffalse')); }
     else {
-      # For \ifcase, the parameter list better be a single Number !!
-      $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
-          conditional_type => 'if', %options),
+      $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+          $cs, $paramlist, undef,
+          test => $test, opcode => $opcode || 'if', %options),
         $options{scope}); }
   }
   else {
@@ -1017,7 +1026,7 @@ sub IfCondition {
   $if = coerceCS($if);
   my ($defn, $test);
   if (($defn = $STATE->lookupDefinition($if))
-    && (($$defn{conditional_type} || '') eq 'if') && ($test = $defn->getTest)) {
+    && (($$defn{opcode} || '') eq 'if') && ($test = $defn->getTest)) {
     return &$test($gullet, @args); }
   elsif (XEquals($if, T_CS('\iftrue'))) {
     return 1; }
@@ -1033,7 +1042,7 @@ sub SetCondition {
   my ($if, $value, $scope) = @_;
   my ($defn, $test);
   # We'll accept any conditional \ifxxx, providing it takes no arguments
-  if (($defn = $STATE->lookupDefinition($if)) && (($$defn{conditional_type} || '') eq 'if')
+  if (($defn = $STATE->lookupDefinition($if)) && (($$defn{opcode} || '') eq 'if')
     && !$defn->getParameters) {
     Let($if, ($value ? T_CS('\iftrue') : T_CS('\iffalse')), $scope) }
   else {
@@ -1064,12 +1073,10 @@ sub DefPrimitive {
 
 sub DefPrimitiveI {
   my ($cs, $paramlist, $replacement, %options) = @_;
-#####  $replacement = sub { (); } unless defined $replacement;
   my $string = $replacement;
   $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
     unless ref $replacement;
   $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
@@ -1109,7 +1116,6 @@ sub DefRegister {
 sub DefRegisterI {
   my ($cs, $paramlist, $value, %options) = @_;
   $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type   = $register_types{ ref $value };
   my $name   = ToString($cs);
   my $getter = $options{getter}
@@ -1171,7 +1177,8 @@ sub AssignRegister {
 
 sub flatten {
   my (@stuff) = @_;
-  return [map { (defined $_ ? (ref $_ eq 'ARRAY' ? @$_ : ($_)) : ()) } @stuff]; }
+  my @flattened = map { (defined $_ ? (ref $_ eq 'ARRAY' ? @$_ : ($_)) : ()) } @stuff;
+  return (scalar(@flattened) ? [@flattened] : undef); }
 
 #======================================================================
 # Define a constructor control sequence.
@@ -1215,7 +1222,6 @@ sub DefConstructor {
 sub DefConstructorI {
   my ($cs, $paramlist, $replacement, %options) = @_;
   $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -1469,6 +1475,8 @@ sub defmath_dual {
   my $csname  = $cs->getString;
   my $cont_cs = T_CS($csname . "\@content");
   my $pres_cs = T_CS($csname . "\@presentation");
+  if ((defined $paramlist) && !ref $paramlist) {
+    $paramlist = parseParameters($paramlist, $cs); }
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
         my ($self, @args) = @_;
@@ -1511,7 +1519,7 @@ sub defmath_prim {
   delete $options{font};
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($cs, undef, sub {
         my ($stomach)  = @_;
-        my $locator    = $stomach->getGullet->getLocator;
+        my $locator    = $stomach->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
         foreach my $key (keys %properties) {
@@ -1565,13 +1573,9 @@ my $environment_options = {    # [CONSTANT]
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
   CheckOptions("DefEnvironment ($proto)", $environment_options, %options);
-##  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
-##  my $paramlist=parseParameters($proto,"Environment $name");
-##  my $name = $1;
   my ($name, $paramlist) = Text::Balanced::extract_bracketed($proto, '{}');
   $name =~ s/[\{\}]//g;
   $paramlist =~ s/^\s*//;
-##  $paramlist = parseParameters($paramlist, "Environment $name");
   DefEnvironmentI($name, $paramlist, $replacement, %options);
   return; }
 
@@ -1579,7 +1583,6 @@ sub DefEnvironmentI {
   my ($name, $paramlist, $replacement, %options) = @_;
   my $mode = $options{mode};
   $name = ToString($name) if ref $name;
-##  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
   my $sizer = inferSizer($options{sizer}, $options{reversion});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -1978,7 +1981,8 @@ sub DeclareOption {
   my $cs = ($option ? '\ds@' . $option : '\default@ds');
   # print STDERR "Declaring option: ".($option ? $option : '<default>')."\n";
   if ((!defined $code) || (ref $code eq 'CODE')) {
-    DefPrimitiveI($cs, undef, $code); }
+#####    DefPrimitiveI($cs, undef, $code); }
+    DefMacroI($cs, undef, $code); }
   else {
     DefMacroI($cs, undef, $code); }
   return; }
