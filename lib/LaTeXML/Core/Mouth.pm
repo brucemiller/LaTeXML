@@ -64,6 +64,7 @@ sub initialize {
       . " " . $options{source}
     : '');
   my $self = LaTeXML::Core::Mouth::new_internal(
+    $class,
     (defined $options{source}      ? $options{source}      : ''),
     (defined $options{shortsource} ? $options{shortsource} : ''),
     (defined $options{content}     ? $options{content}     : ''),
@@ -94,7 +95,7 @@ sub stringify {
   return 'Mouth[<string>@' . $l . 'x' . $c . ']'; }
 
 #**********************************************************************
-sub getLocator {
+sub XXXXgetLocator {
   my ($self, $length) = @_;
   my ($l,    $c)      = $self->getPosition;
   if ($length && ($length < 0)) {

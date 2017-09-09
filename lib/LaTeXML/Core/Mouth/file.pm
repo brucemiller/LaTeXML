@@ -27,11 +27,7 @@ sub new {
     Fatal('I/O', 'unreadable', $self, "File $pathname is not readable."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
     Fatal('invalid', 'binary', $self, "Input file $pathname appears to be binary."); }
-  open($IN, '<', $pathname)
-    || Fatal('I/O', 'open', $self, "Can't open $pathname for reading", $!);
-  local $/ = undef;
-  my $content = <$IN>;
-  close($IN);
+  my $content = pathname_read($pathname);
   return $class->initialize(source => $pathname, shortsource => "$name.$ext", content => $content,
     fordefinitions => $options{fordefinitions}, notes => $options{notes}); }
 

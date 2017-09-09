@@ -31,7 +31,6 @@ sub new {
 # Evolve to figure out if this gets dynamic location!
 sub getLocator {
   my ($self, $length) = @_;
-  return "I'm Lost!";
   my $path  = $self->getSource;
   my $loc   = ($length && $length < 0 ? $self->getShortSource : $self->getSource);
   my $frame = 2;
