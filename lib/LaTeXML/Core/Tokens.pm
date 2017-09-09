@@ -42,39 +42,6 @@ sub ZZTokens {
   print STDERR " ==> ".Stringify($t)."\n";
   return $t; }
 #======================================================================
-
-# Return a list of the tokens making up this Tokens
-# sub unlist {
-#   my ($self) = @_;
-#   return @$self; }
-
-# Return a shallow copy of the Tokens
-# sub clone {
-#   my ($self) = @_;
-# #  return bless [@$self], ref $self; }
-#   return Tokens(@$self); }
-
-# Return a string containing the TeX form of the Tokens
-sub revert {
-  my ($self) = @_;
-  return $self->unlist; }
-
-# toString is used often, and for more keyword-like reasons,
-# NOT for creating valid TeX (use revert or UnTeX for that!)
-sub toString {
-  my ($self) = @_;
-  return join('', map { $_->getString } $self->unlist); }
-
-# Methods for overloaded ops.
-sub equals {
-  my ($a, $b) = @_;
-  return 0 unless defined $b && (ref $a) eq (ref $b);
-  my @a = $a->unlist;
-  my @b = $b->unlist;
-  while (@a && @b && ($a[0]->equals($b[0]))) {
-    shift(@a); shift(@b); }
-  return !(@a || @b); }
-
 sub stringify {
   my ($self) = @_;
   return "Tokens[" . join(',', map { $_->toString } $self->unlist) . "]"; }
@@ -86,33 +53,6 @@ sub beDigested {
 sub neutralize {
   my ($self, @extraspecials) = @_;
   return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
-
-# sub isBalanced {
-#   my ($self) = @_;
-#   my $level = 0;
-#   foreach my $t (@$self) {
-#     my $cc = $t->getCatcode;
-#     $level++ if $cc == CC_BEGIN;
-#     $level-- if $cc == CC_END; }
-#   return $level == 0; }
-
-# NOTE: Assumes each arg either undef or also Tokens
-# Using inline accessors on those assumptions
-# sub substituteParameters {
-#   my ($self, @args) = @_;
-#   my @in     = $self->unlist;
-#   my @result = ();
-#   while (@in) {
-#     my $token;
-#     if (($token = shift(@in))->getCatcode != CC_PARAM) {    # Non '#'; copy it
-#       push(@result, $token); }
-#     elsif (($token = shift(@in))->getCatcode != CC_PARAM) {    # Not multiple '#'; read arg.
-#       if (my $arg = $args[ord($token->getString) - ord('0') - 1]) {
-#         push(@result, Revert($arg)); } }
-#     else {                                                     # Duplicated '#', copy 2nd '#'
-#       push(@result, $token); } }
-#   return Tokens(@result); }
-
 
 #======================================================================
 
