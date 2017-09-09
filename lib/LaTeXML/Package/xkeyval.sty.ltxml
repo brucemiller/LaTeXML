@@ -29,7 +29,7 @@ DefMacro('\setkeys OptionalMatch:* OptionalMatch:+ []{}[]', sub {
     $star = defined($star) ? T_CS('\XKV@rm') : undef;
 
     my $keyvals = LaTeXML::Core::KeyVals->new(
-      $prefix, $keysets, undef,
+      $prefix, $keysets,
       setAll => defined($plus), setInternals => 1,
       skip => $skip, skipMissing => $star);
     $keyvals->readFrom($gullet, T_END);
@@ -359,7 +359,7 @@ DefMacro('\ProcessOptionsX@int OptionalMatch:* [] {} []', sub {
 
     # we want to read keyvals options
     my $keyvals = LaTeXML::Core::KeyVals->new(
-      $prefix, $keysets, undef,
+      $prefix, $keysets,
       setAll => 0, setInternals => 1,
       skip => $skip, skipMissing => defined($hookMissing),
       hookMissing => $hookMissing
