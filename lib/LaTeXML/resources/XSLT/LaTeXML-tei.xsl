@@ -249,9 +249,9 @@
     </xsl:template>
 
     <xsl:template match="ltx:equationgroup" mode="front">
-        <formula-group>
+        <p>
             <xsl:apply-templates select="@*|node()" mode="front"/>
-        </formula-group>
+        </p>
     </xsl:template>
 
     <xsl:template match="ltx:equationgroup/ltx:equation" mode="front">
@@ -361,9 +361,9 @@
     <!-- However I still need stuff to handle various other subcases that could come up in for example appendices or acknowledgements -->
 
     <xsl:template match="ltx:equationgroup" mode="back">
-        <formula-group>
+        <p>
             <xsl:apply-templates select="@*|node()" mode="back"/>
-        </formula-group>
+        </p>
     </xsl:template>
 
     <xsl:template match="ltx:equationgroup/ltx:equation" mode="back">
@@ -611,9 +611,7 @@
 
     <xsl:template match="ltx:equationgroup">
         <p>
-            <formula-group>
                 <xsl:apply-templates select="@*|node()"/>
-            </formula-group>
         </p>
     </xsl:template>
 
