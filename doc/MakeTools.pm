@@ -113,7 +113,7 @@ sub pdflatex {
     || (!-f $pdffile)
     || ($timestamp > pathname_timestamp($pdffile))) {
     my $cwd = pathname_cwd();
-    chdir($srcdir);
+    pathname_chdir($srcdir);
     my ($pass, $changed, $error) = (0, 0, 0);
     do {
       $pass++; $changed = 0;
@@ -141,7 +141,7 @@ sub pdflatex {
           or die "Failed to run bibtex for $name";
         $changed = 1 if $pass < 2; }
     } while ($pass <= $MAXPASS) && $changed;
-    chdir($cwd); }
+    pathname_chdir($cwd); }
   return; }
 
 sub monitor_command {
