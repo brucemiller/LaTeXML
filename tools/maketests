@@ -121,7 +121,7 @@ sub maketest_daemon {
     $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
   }
   $invocation .= " 2>$name.test.status ";
-  chdir($dir);
+  pathname_chdir($dir);
   if (system($invocation) != 0) {
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
@@ -139,7 +139,7 @@ sub maketest_daemon {
     print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
     move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
     move("$name.test.status", "$name.status") if -e "$name.test.status"; }
-  chdir($cwd);
+  pathname_chdir($cwd);
   return; }
 
 #======================================================================
@@ -242,7 +242,7 @@ sub gen_xml {
 sub gen_pdf {
   my ($dir, $name) = @_;
   my $cwd = pathname_cwd();
-  chdir($dir) if $dir;
+  pathname_chdir($dir) if $dir;
   # Get list of files currently in directory.
   my $DIR;
   opendir($DIR, ".") or die "Cannot read directory $dir: $!";
@@ -266,7 +266,7 @@ sub gen_pdf {
   foreach my $f (@files_now) {
     if (($f ne "$name.pdf") && !grep { $f eq $_ } @files_before) {
       unlink($f); } }
-  chdir($cwd) if $dir;
+  pathname_chdir($cwd) if $dir;
   return; }
 
 sub read_options {
