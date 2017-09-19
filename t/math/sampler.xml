@@ -306,7 +306,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
       </equation>
       <p>Some spacing <text font="typewriter">m:mspace</text>.</p>
       <equation frefnum="(8)" refnum="8" xml:id="S1.E8">
-        <Math mode="display" tex="xy,\qquad x\hskip 10.0pty,\qquad x\hskip 20.0pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E8.m1">
+        <Math mode="display" tex="xy,\qquad x\hskip 10.00002pty,\qquad x\hskip 20.00003pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E8.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -378,7 +378,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
         </Math>
       </equation>
       <equation frefnum="(10)" refnum="10" xml:id="S2.E10">
-        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.043pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43pt}{}{a}{b},\qquad\genfrac{}{}{4.3pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E10.m1">
+        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.04306pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43056pt}{}{a}{b},\qquad\genfrac{}{}{4.30554pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E10.m1">
           <XMath>
             <XMDual>
               <XMApp>
