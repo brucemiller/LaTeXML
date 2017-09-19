@@ -120,7 +120,7 @@ sub new {
 sub XXassign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
-#print STDERR "Assign internal in table $table, $key => $value; scope=$scope\n";
+  #print STDERR "Assign internal in table $table, $key => $value; scope=$scope\n";
   if (exists $$self{tracing_definitions}{$key}) {
     print STDERR "ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
       (ref $value ? $value->stringify : $value) . "\n"; }
@@ -660,24 +660,35 @@ sub getActiveScopes {
 #   Put here since it could concievably evolve to depend on the current font.
 
 # Conversion to scaled points
-my %UNITS = (    # [CONSTANT]
-  pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-  cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-  cc => 12 * 1238 * 65536 / 1157, sp => 1);
+# my %UNITS = (    # [CONSTANT]
+#   pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
+#   cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+#   cc => 12 * 1238 * 65536 / 1157, sp => 1);
 
-sub convertUnit {
-  my ($self, $unit) = @_;
-  $unit = lc($unit);
-  # Eventually try to track font size?
-  if    ($unit eq 'em') { return 10.0 * 65536; }
-  elsif ($unit eq 'ex') { return 4.3 * 65536; }
-  elsif ($unit eq 'mu') { return 10.0 * 65536 / 18; }
-  else {
-    my $sp = $UNITS{$unit};
-    if (!$sp) {
-      Warn('expected', '<unit>', undef, "Illegal unit of measure '$unit', assuming pt.");
-      $sp = $UNITS{'pt'}; }
-    return $sp; } }
+# my %UNITS = (
+#   em => 655361 / 65536., ex => 282168 / 65536.,
+#   pt => 1, pc => 12, in => 72.27, bp => 72.27 / 72,
+#   cm => 72.27 / 2.54, mm => 72.27 / 2.54 / 10,
+#   dd => 1238 / 1157., cc => 12 * 1238 / 1157., sp => 1 / 65536.,
+#   truept => 1, truepc => 12, truein => 72.27, truebp => 72.27 / 72,
+#   truecm => 72.27 / 2.54, truemm => 72.27 / 2.54 / 10,
+#   truedd => 1238 / 1157., truecc => 12 * 1238 / 1157., truesp => 1 / 65536.,
+#   mu => 10 / 18.);
+
+# sub convertUnit {
+#   my ($self, $unit) = @_;
+#   $unit = lc($unit);
+#   # Eventually try to track font size?
+#   #  if    ($unit eq 'em') { return 10.0 * 65536; }
+#   #  elsif ($unit eq 'ex') { return 4.3 * 65536; }
+#   #  elsif ($unit eq 'mu') { return 10.0 * 65536 / 18; }
+#   #  else
+#   {
+#     my $sp = $UNITS{$unit};
+#     if (!$sp) {
+#       Warn('expected', '<unit>', undef, "Illegal unit of measure '$unit', assuming pt.");
+#       $sp = $UNITS{'pt'}; }
+#     return $sp * 65536; } }
 
 #======================================================================
 
