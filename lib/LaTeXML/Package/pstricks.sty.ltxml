@@ -42,17 +42,7 @@ DefParameterType('Float', sub { $_[0]->readFloat; });
 sub ReadPSDimension {
   my ($gullet, $scale) = @_;
   $scale = LookupValue('\psunit') unless $scale;
-  my $s = $gullet->readOptionalSigns;
-  if (defined(my $d = $gullet->readRegisterValue('Dimension'))) {
-    return Dimension($s * $d->valueOf); }
-  elsif (defined($d = $gullet->readFloat)) {
-    if (my $unit = $gullet->readUnit) {
-      return Dimension($s * $d->valueOf * $unit); }
-    else {
-      return $scale->multiply($s * $d->valueOf); } }
-  else {
-    Warn('expected', '<number>', $gullet, "Missing number, treated as zero.");
-    return Dimension(0); } }
+  return $gullet->readDimension(1,$scale->valueOf); }
 
 sub b_reversion {
   my ($box) = @_;

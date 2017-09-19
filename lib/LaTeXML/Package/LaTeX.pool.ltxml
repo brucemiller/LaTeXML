@@ -568,9 +568,9 @@ DefRegister('\mathindent'    => Dimension(0));
 
 DefMacroI('\@clsextension', undef, 'cls');
 DefMacroI('\@pkgextension', undef, 'sty');
-Let('\@currext',  '\@empty');
-Let('\@currname', '\@empty');
-Let('\@classoptionslist','\relax');
+Let('\@currext',          '\@empty');
+Let('\@currname',         '\@empty');
+Let('\@classoptionslist', '\relax');
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
@@ -1346,7 +1346,6 @@ DefMacroI('\verb', undef, sub {
     StartSemiverbatim('%', '\\', '{', '}');
     $init = $mouth->readToken;
     $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
-
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
@@ -3322,7 +3321,7 @@ DefPrimitive('\newskip DefToken',   sub { DefRegisterI($_[1], undef, Glue(0)); }
 DefPrimitive('\newmuskip DefToken', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
 DefPrimitive('\newtoks DefToken',   sub { DefRegisterI($_[1], undef, Tokens()); });
 
-DefRegister('\fill', Glue(0, '1fill'));
+DefRegister('\fill', Glue(0, 1, 'fill'));
 
 #======================================================================
 # C.13.2 Space
@@ -3564,9 +3563,9 @@ sub ReadPair {
         "Cannot process escape to postscript");
       $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
       return Pair(Dimension(0), Dimension(0)); }
-    my $x = &$itemreader($gullet, $xarg);
+    my $x = ($xarg ? &$itemreader($gullet, $xarg) : &$itemreader($gullet));
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
-    my $y = &$itemreader($gullet, $yarg);
+    my $y = ($yarg ? &$itemreader($gullet, $yarg) : &$itemreader($gullet));
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }
   else {

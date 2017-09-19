@@ -112,7 +112,7 @@ RequireResource('LaTeXML.css');
 # Define parsers for standard parameter types.
 
 DefParameterType('Plain', \&LaTeXML::Core::Gullet::readArg,
-  opcode => 'arg',
+  opcode    => 'arg',
   reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -164,13 +164,13 @@ DefParameterType('Until', \&LaTeXML::Core::Gullet::readUntil,
 
 # Skip any spaces, but don't contribute an argument.
 DefParameterType('SkipSpaces', \&LaTeXML::Core::Gullet::skipSpaces, novalue => 1, optional => 1,
-                 opcode => 'skipspaces');
+  opcode => 'skipspaces');
 
 DefParameterType('Skip1Space', \&LaTeXML::Core::Gullet::skip1Space, novalue => 1, optional => 1,
-                                  opcode => 'skipspace');
+  opcode => 'skipspace');
 
 DefParameterType('SkipMatch:=', undef, novalue => 1, optional => 1,
-                                  opcode => 'skipequals');
+  opcode => 'skipequals');
 
 # Read the next token
 DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken, opcode => 'token');
@@ -179,10 +179,10 @@ DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken, opcode => 'token')
 DefParameterType('XToken', \&LaTeXML::Core::Gullet::readXToken, opcode => 'xtoken');
 
 # Read a number
-DefParameterType('Number', \&LaTeXML::Core::Gullet::readNumber);
+DefParameterType('Number', \&LaTeXML::Core::Gullet::readNumber, opcode => 'Number');
 
 # Read a floating point number
-DefParameterType('Float', \&LaTeXML::Core::Gullet::readFloat);
+DefParameterType('Float', \&LaTeXML::Core::Gullet::readFloat, opcode => 'Float');
 
 sub ReadFloat {
   my ($gullet) = @_;
@@ -190,16 +190,13 @@ sub ReadFloat {
   return ($gullet->readFloat || Float(0)); }
 
 # Read a dimension
-DefParameterType('Dimension', \&LaTeXML::Core::Gullet::readDimension);
+DefParameterType('Dimension', \&LaTeXML::Core::Gullet::readDimension, opcode => 'Dimension');
 
 # Read a Glue (aka skip)
-DefParameterType('Glue', \&LaTeXML::Core::Gullet::readGlue);
-
-# Read a MuDimension (math)
-DefParameterType('MuDimension', \&LaTeXML::Core::Gullet::readMuDimension);
+DefParameterType('Glue', \&LaTeXML::Core::Gullet::readGlue, opcode => 'Glue');
 
 # Read a MuGlue (math)
-DefParameterType('MuGlue', \&LaTeXML::Core::Gullet::readMuGlue);
+DefParameterType('MuGlue', \&LaTeXML::Core::Gullet::readMuGlue, opcode => 'MuGlue');
 
 # Read until the next (balanced) open brace {
 # used for the last TeX-style delimited argument
@@ -745,8 +742,8 @@ DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
 DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
 
 ### Something weird about these as opcodes?
-DefConditionalI('\iftrue',  undef, sub { 1; });#, opcode=>'iftrue');
-DefConditionalI('\iffalse', undef, sub { 0; });#, opcode=>'iffalse');
+DefConditionalI('\iftrue',  undef, sub { 1; });    #, opcode=>'iftrue');
+DefConditionalI('\iffalse', undef, sub { 0; });    #, opcode=>'iffalse');
 
 #======================================================================
 # This makes \relax disappear completely after digestion
@@ -841,7 +838,7 @@ DefMacro('\csname CSName', sub {
     my ($gullet, $token) = @_;
     Let($token, '\relax') unless defined LookupMeaning($token);
     $token; },
-       opcode=>'csname');
+  opcode => 'csname');
 
 DefPrimitive('\endcsname', sub {
     my ($stomach) = @_;
@@ -861,7 +858,7 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $defn->invoke($gullet)); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
-DefMacro('\expandafter', \&LaTeXML::Core::Gullet::expandafter, opcode=>'expandafter');
+DefMacro('\expandafter', \&LaTeXML::Core::Gullet::expandafter, opcode => 'expandafter');
 
 # Insert magic token that Gullet knows not to expand the next one.
 DefMacroI('\noexpand', undef, Token('', CC_NOTEXPANDED));
@@ -1036,7 +1033,7 @@ sub today {
   my %mparms = (
     thinmuskip => '3mu', medmuskip => '4mu plus 2mu minus 4mu', thickmuskip => '5mu plus 5mu');
   foreach my $p (keys %mparms) {
-    DefRegister("\\$p", Glue($mparms{$p})); }
+    DefRegister("\\$p", MuGlue($mparms{$p})); }
 }
 #======================================================================
 # Token registers; TeXBook p.275
@@ -1110,6 +1107,7 @@ sub parseDefParameters {
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 use Devel::Peek 'Dump';
+
 sub do_def {
   my ($globally, $expanded, $gullet, $cs, $params, $body) = @_;
   if (!$cs) {
@@ -4267,7 +4265,7 @@ DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); })
 # TeX plain uses \newdimen, etc. for these.
 # Is there any advantage to that?
 DefRegister('\maxdimen',  Dimension(16383.99999 * 65536));
-DefRegister('\hideskip',  Glue(-1000 * 65536, '1fill'));
+DefRegister('\hideskip',  Glue(-1000 * 65536, 1, 'fill'));
 DefRegister('\centering', Glue('0pt plus 1000pt minus 1000pt'));
 DefRegister('\p@',        Dimension(65536));
 DefRegister('\z@',        Dimension(0));
@@ -6269,7 +6267,7 @@ DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
 DefConstructor('\lx@kludged{}',
   "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
   reversion => '#1');
-DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
+DefConstructor('\@PADDED[MuGlue]{MuGlue}{}',
   '#3',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;

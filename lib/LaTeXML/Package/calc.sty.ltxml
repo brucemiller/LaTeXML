@@ -30,7 +30,8 @@ DefPrimitive('\addtocounter{}{}', sub {
 DefPrimitive('\setlength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
-    $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), @args); });
+    my $type = $defn->isRegister;
+    $defn->setValue(readExpression($stomach->getGullet, $type, $arg), @args); });
 
 DefPrimitive('\addtolength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
@@ -163,7 +164,7 @@ sub readValue {
   elsif (Equals($peek, T_CS('\ratio'))) {
     my $x = readExpression($gullet, 'Glue', $gullet->readArg);
     my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    return Float($x->ptValue / $y->ptValue); }
+    return Float($x->valueOf / $y->valueOf); }
   # Evaluate MinMax values
   elsif (Equals($peek, T_CS('\minof'))) {
     my $x = readExpression($gullet, $type, $gullet->readArg);
@@ -181,8 +182,9 @@ sub readValue {
     $gullet->unread($peek);
     if ($type eq 'Number') {
       return $gullet->readNumber(); }
-    else {    # Really should read glue, but downgrade to dimension????
-      return $gullet->readGlue(); } } }
+    else {    # Read glue, but maybe downgrade to dimension!
+      my $x = $gullet->readGlue();
+      return ($type eq 'Dimension' ? Dimension($x->valueOf) : $x); } } }
 
 sub readMinMax {
   my ($gullet, $type) = @_;
@@ -241,7 +243,7 @@ sub readReal {
   elsif (Equals($peek, T_CS('\ratio'))) {
     my $x = readExpression($gullet, 'Glue', $gullet->readArg);
     my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    return Float($x->ptValue / $y->ptValue); }
+    return Float($x->valueOf / $y->valueOf); }
   else {
     $gullet->unread($peek);
     return; } }

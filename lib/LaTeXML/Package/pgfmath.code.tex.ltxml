@@ -310,7 +310,7 @@ DefPrimitive('\pgfmathsetlength DefToken {}', sub {
     else {
       $length = pgfmathparse($gullet, $tokens);
       if (IfCondition(T_CS('\ifpgfmathmathunitsdeclared'))) {
-        $length = MuDimension($length * $STATE->convertUnit('mu')); }
+        $length = MuGlue($length * $STATE->convertUnit('mu')); }
       else {
         $length = Dimension($length * 65536); } }
     AssignRegister($register, $length); });

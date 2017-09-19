@@ -841,7 +841,7 @@ DefConstructorI('\negthickspace', undef,
   "?#isMath(<ltx:XMHint name='negthickspace' width='#width'/>)(\x{2004})",
   properties => { isSpace => 1, width => sub { LookupValue('\thickmuskip')->negate; } });
 
-DefConstructor('\mspace{MuDimension}', "<ltx:XMHint name='mspace' width='#1'/>");
+DefConstructor('\mspace{MuGlue}', "<ltx:XMHint name='mspace' width='#1'/>");
 
 #======================================================================
 # Section 4.3 Dots
