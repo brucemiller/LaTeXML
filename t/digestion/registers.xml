@@ -1,0 +1,551 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>TeX Registers</title>
+  <section refnum="1" xml:id="S1">
+    <title><tag close=" ">1</tag>Numbers</title>
+    <para xml:id="S1.p1">
+      <p>counta:=1=1</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p2">
+      <p>counta:=-1=-1</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p3">
+      <p>counta:=12=12</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p4">
+      <p>counta:=123456=123456</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>counta:=10=10</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p6">
+      <p>counta:=’10=8</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p7">
+      <p>counta:=”10=16</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p8">
+      <p>counta:=‘a=97</p>
+    </para>
+    <subsection refnum="1.1" xml:id="S1.SS1">
+      <title><tag close=" ">1.1</tag>Coersions</title>
+      <para xml:id="S1.SS1.p1">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p2">
+        <p>counta:=countb=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p3">
+        <p>counta:=-countb=-10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p4">
+        <p>dimenb:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p5">
+        <p>counta:=dimenb=65536</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p6">
+        <p>skipb:=1pt plus 1fill=1.0pt plus 1.0fill (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS1.p7">
+        <p>counta:=skipb=65536</p>
+      </para>
+    </subsection>
+    <subsection refnum="1.2" xml:id="S1.SS2">
+      <title><tag close=" ">1.2</tag>Arithmetic</title>
+      <para xml:id="S1.SS2.p1">
+        <p>counta:=1=1</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p2">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p3">
+        <p>countb:=countb+counta=11</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p4">
+        <p>countb:=countb/2=5</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p5">
+        <p>counta:=23=23</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p6">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p7">
+        <p>counta:=counta/countb=2</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p8">
+        <p>counta:=1=1</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p9">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p10">
+        <p>countb:=countb-counta=9</p>
+      </para>
+    </subsection>
+    <subsection refnum="1.3" xml:id="S1.SS3">
+      <title><tag close=" ">1.3</tag>Allocation</title>
+      <para xml:id="S1.SS3.p1">
+        <p>counttwo:=7=7</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS3.p2">
+        <p>count 2:=count 2=7</p>
+      </para>
+    </subsection>
+    <subsection refnum="1.4" xml:id="S1.SS4">
+      <title><tag close=" ">1.4</tag>Undefined?</title>
+      <para xml:id="S1.SS4.p1">
+        <p>count 128:=Unknown=0</p>
+      </para>
+    </subsection>
+  </section>
+  <section refnum="2" xml:id="S2">
+    <title><tag close=" ">2</tag>Dimensions</title>
+    <subsection refnum="2.1" xml:id="S2.SS1">
+      <title><tag close=" ">2.1</tag>Units</title>
+      <para xml:id="S2.SS1.p1">
+        <p>dimena:=1em=10.00002pt (sp=655361)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p2">
+        <p>dimena:=1ex=4.30554pt (sp=282168)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p3">
+        <p>dimena:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p4">
+        <p>dimena:=1pc=12.0pt (sp=786432)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p5">
+        <p>dimena:=1in=72.26999pt (sp=4736286)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p6">
+        <p>dimena:=1bp=1.00374pt (sp=65781)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p7">
+        <p>dimena:=1cm=28.45274pt (sp=1864679)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p8">
+        <p>dimena:=1mm=2.84526pt (sp=186467)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p9">
+        <p>dimena:=1dd=1.07pt (sp=70124)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p10">
+        <p>dimena:=1cc=12.8401pt (sp=841489)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p11">
+        <p>dimena:=1sp=0.00002pt (sp=1)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p12">
+        <p>dimena:=1truept=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p13">
+        <p>dimena:=1truepc=12.0pt (sp=786432)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p14">
+        <p>dimena:=1truein=72.26999pt (sp=4736286)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p15">
+        <p>dimena:=1truebp=1.00374pt (sp=65781)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p16">
+        <p>dimena:=1truecm=28.45274pt (sp=1864679)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p17">
+        <p>dimena:=1truemm=2.84526pt (sp=186467)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p18">
+        <p>dimena:=1truedd=1.07pt (sp=70124)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p19">
+        <p>dimena:=1truecc=12.8401pt (sp=841489)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p20">
+        <p>dimena:=1truesp=0.00002pt (sp=1)</p>
+      </para>
+      <para xml:id="S2.SS1.p21">
+        <p>dimena:=10pt=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p22">
+        <p>dimena:=’10pt=8.0pt (sp=524288)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p23">
+        <p>dimena:=”10pt=16.0pt (sp=1048576)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS1.p24">
+        <p>dimena:=‘apt=97.0pt (sp=6356992)</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.2" xml:id="S2.SS2">
+      <title><tag close=" ">2.2</tag>Rounding</title>
+      <para class="ltx_noindent" xml:id="S2.SS2.p1">
+        <p>dimena:=0.01pt=0.01pt (sp=655)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p2">
+        <p>dimena:=0.1pt=0.1pt (sp=6554)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p3">
+        <p>dimena:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p4">
+        <p>dimena:=10pt=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p5">
+        <p>dimena:=100pt=100.0pt (sp=6553600)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p6">
+        <p>dimena:=0.0123pt=0.0123pt (sp=806)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p7">
+        <p>dimena:=0.123pt=0.123pt (sp=8061)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p8">
+        <p>dimena:=1.23pt=1.23pt (sp=80609)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p9">
+        <p>dimena:=12.3pt=12.3pt (sp=806093)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS2.p10">
+        <p>dimena:=123pt=123.0pt (sp=8060928)</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.3" xml:id="S2.SS3">
+      <title><tag close=" ">2.3</tag>Coersions</title>
+      <para xml:id="S2.SS3.p1">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p2">
+        <p>dimena:=countb pt=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p3">
+        <p>dimenb:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p4">
+        <p>dimena:=4.5 dimenb=4.5pt (sp=294912)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p5">
+        <p>dimena:=countb dimenb=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p6">
+        <p>dimena:=-countb dimenb=-10.0pt (sp=-655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p7">
+        <p>skipb:=1pt plus 1fill=1.0pt plus 1.0fill (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS3.p8">
+        <p>dimena:=4.5 skipb=4.5pt (sp=294912)</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.4" xml:id="S2.SS4">
+      <title><tag close=" ">2.4</tag>Arithmetic</title>
+      <para xml:id="S2.SS4.p1">
+        <p>dimena:=123.4pt=123.4pt (sp=8087142)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p2">
+        <p>dimenb:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p3">
+        <p>dimena:=dimena-dimenb=122.4pt (sp=8021606)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p4">
+        <p>dimena:=dimena+dimenb=123.4pt (sp=8087142)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p5">
+        <p>dimena:=dimena/2=61.7pt (sp=4043571)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p6">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS4.p7">
+        <p>dimena:=dimena/countb=6.17pt (sp=404357)</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.5" xml:id="S2.SS5">
+      <title><tag close=" ">2.5</tag>Allocation</title>
+      <para xml:id="S2.SS5.p1">
+        <p>counta:=7=7</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS5.p2">
+        <p>dimen“counta:=dimen counta=1.23pt (sp=80609)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS5.p3">
+        <p>dimen 7:==1.23pt (sp=80609)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS5.p4">
+        <p>dimen“counta:=dimen counta + dimen 7=2.45999pt (sp=161218)</p>
+      </para>
+    </subsection>
+    <subsection refnum="2.6" xml:id="S2.SS6">
+      <title><tag close=" ">2.6</tag>Undefined?</title>
+      <para xml:id="S2.SS6.p1">
+        <p>Unknown dimen: 0pt = 0.0pt</p>
+      </para>
+    </subsection>
+  </section>
+  <section refnum="3" xml:id="S3">
+    <title><tag close=" ">3</tag>Glue</title>
+    <para xml:id="S3.p1">
+      <p>skipa:=1pt=1.0pt (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p2">
+      <p>skipa:=0pt plus 2fill=0.0pt plus 2.0fill (sp=0)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p3">
+      <p>skipa:=1pt plus 2pt=1.0pt plus 2.0pt (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p4">
+      <p>skipa:=1pt plus 2pt minus 3pt=1.0pt plus 2.0pt minus 3.0pt (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p5">
+      <p>skipa:=1pt plus 9fil=1.0pt plus 9.0fil (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p6">
+      <p>skipa:=1pt plus 9fill=1.0pt plus 9.0fill (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p7">
+      <p>skipa:=1pt plus 9filll=1.0pt plus 9.0filll (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p8">
+      <p>skipa:=1pt plus 2fil minus 3filll=1.0pt plus 2.0fil minus 3.0filll (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p9">
+      <p>skipa:=1pt plus 2fill minus 3fill=1.0pt plus 2.0fill minus 3.0fill (sp=65536)</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p10">
+      <p>skipa:=1pt plus 2filll minus 3fil=1.0pt plus 2.0filll minus 3.0fil (sp=65536)</p>
+    </para>
+    <subsection refnum="3.1" xml:id="S3.SS1">
+      <title><tag close=" ">3.1</tag>Coersions</title>
+      <para xml:id="S3.SS1.p1">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p2">
+        <p>skipa:=countb pt=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p3">
+        <p>dimenb:=1pt=1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p4">
+        <p>skipa:=4.5 dimenb=4.5pt (sp=294912)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p5">
+        <p>skipa:=countb dimenb=10.0pt (sp=655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p6">
+        <p>skipa:=-countb dimenb=-10.0pt (sp=-655360)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p7">
+        <p>skipb:=1pt plus 1fill=1.0pt plus 1.0fill (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p8">
+        <p>skipa:=skipb=1.0pt plus 1.0fill (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p9">
+        <p>skipa:=-skipb=-1.0pt plus -1.0fill (sp=-65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p10">
+        <p>skipa:=4.5 skipb=4.5pt (sp=294912)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS1.p11">
+        <p>skipa:=countb skipb=10.0pt (sp=655360)</p>
+      </para>
+    </subsection>
+    <subsection refnum="3.2" xml:id="S3.SS2">
+      <title><tag close=" ">3.2</tag>Arithmetic</title>
+      <para xml:id="S3.SS2.p1">
+        <p>skipa:=1pt plus 2pt=1.0pt plus 2.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS2.p2">
+        <p>skipb:=1pt plus 1pt=1.0pt plus 1.0pt (sp=65536)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS2.p3">
+        <p>skipa:=skipa-skipb=0.0pt plus 1.0pt (sp=0)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS2.p4">
+        <p>skipa:=0pt plus 2fill=0.0pt plus 2.0fill (sp=0)</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S3.SS2.p5">
+        <p>skipa:=skipa+skipb=1.0pt plus 2.0fill (sp=65536)</p>
+      </para>
+    </subsection>
+    <subsection refnum="3.3" xml:id="S3.SS3">
+      <title><tag close=" ">3.3</tag>Undefined?</title>
+      <para xml:id="S3.SS3.p1">
+        <p>Unknown skip: 0pt = 0.0pt</p>
+      </para>
+    </subsection>
+  </section>
+  <section refnum="4" xml:id="S4">
+    <title><tag close=" ">4</tag>MuGlue</title>
+    <subsection refnum="4.1" xml:id="S4.SS1">
+      <title><tag close=" ">4.1</tag>Units</title>
+      <para xml:id="S4.SS1.p1">
+        <p>muskipa:=1mu=1.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p2">
+        <p>muskipa:=10mu=10.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p3">
+        <p>muskipa:=’10mu=8.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p4">
+        <p>muskipa:=”10mu=16.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p5">
+        <p>muskipa:=‘amu=97.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p6">
+        <p>muskipa:=0mu plus 2fill=0.0mu  plus 2.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p7">
+        <p>muskipa:=1mu plus 2mu=1.0mu  plus 2.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p8">
+        <p>muskipa:=1mu plus 2mu minus 3mu=1.0mu  plus 2.0mu minus 3.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p9">
+        <p>muskipa:=1mu plus 9fil=1.0mu  plus 9.0fil</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p10">
+        <p>muskipa:=1mu plus 9fill=1.0mu  plus 9.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p11">
+        <p>muskipa:=1mu plus 9filll=1.0mu  plus 9.0filll</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p12">
+        <p>muskipa:=1mu plus 2fil minus 3filll=1.0mu  plus 2.0fil minus 3.0filll</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p13">
+        <p>muskipa:=1mu plus 2fill minus 3fill=1.0mu  plus 2.0fill minus 3.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS1.p14">
+        <p>muskipa:=1mu plus 2filll minus 3fil=1.0mu  plus 2.0filll minus 3.0fil</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.2" xml:id="S4.SS2">
+      <title><tag close=" ">4.2</tag>Rounding</title>
+      <para xml:id="S4.SS2.p1">
+        <p>muskipa:=0.01mu=0.01mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p2">
+        <p>muskipa:=0.1mu=0.1mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p3">
+        <p>muskipa:=1mu=1.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p4">
+        <p>muskipa:=10mu=10.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p5">
+        <p>muskipa:=100mu=100.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p6">
+        <p>muskipa:=0.0123mu=0.0123mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p7">
+        <p>muskipa:=0.123mu=0.123mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p8">
+        <p>muskipa:=1.23mu=1.23mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p9">
+        <p>muskipa:=12.3mu=12.3mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS2.p10">
+        <p>muskipa:=123mu=123.0mu</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.3" xml:id="S4.SS3">
+      <title><tag close=" ">4.3</tag>Coersions</title>
+      <para xml:id="S4.SS3.p1">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p2">
+        <p>muskipa:=countb mu=10.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p3">
+        <p>muskipb:=1mu plus 1fill=1.0mu  plus 1.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p4">
+        <p>muskipa:=skipb=1.0mu  plus 1.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p5">
+        <p>muskipa:=-skipb=-1.0mu  plus -1.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p6">
+        <p>muskipa:=4.5 skipb=4.5mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p7">
+        <p>muskipa:=countb skipb=10.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS3.p8">
+        <p>muskipa:=-countb skipb=-10.0mu</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.4" xml:id="S4.SS4">
+      <title><tag close=" ">4.4</tag>Arithmetic</title>
+      <para xml:id="S4.SS4.p1">
+        <p>muskipa:=123.4mu=123.4mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p2">
+        <p>muskipb:=1mu=1.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p3">
+        <p>muskipa:=muskipa-muskipb=122.4mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p4">
+        <p>muskipa:=muskipa+muskipb=123.4mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p5">
+        <p>muskipa:=muskipa/2=61.7mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p6">
+        <p>countb:=10=10</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p7">
+        <p>muskipa:=muskipa/countb=6.17mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p8">
+        <p>muskipa:=1mu plus 2mu=1.0mu  plus 2.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p9">
+        <p>muskipb:=1mu plus 1mu=1.0mu  plus 1.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p10">
+        <p>muskipa:=skipa-skipb=0.0mu  plus 1.0mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p11">
+        <p>muskipa:=0mu plus 2fill=0.0mu  plus 2.0fill</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS4.p12">
+        <p>muskipa:=skipa+skipb=1.0mu  plus 2.0fill</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.5" xml:id="S4.SS5">
+      <title><tag close=" ">4.5</tag>Allocation</title>
+      <para xml:id="S4.SS5.p1">
+        <p>counta:=7=7</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS5.p2">
+        <p>muskip“counta:=muskip counta=1.23mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS5.p3">
+        <p>muskip 7:==1.23mu</p>
+      </para>
+      <para class="ltx_noindent" xml:id="S4.SS5.p4">
+        <p>muskip“counta:=muskip counta + muskip 7=2.45999mu</p>
+      </para>
+    </subsection>
+    <subsection refnum="4.6" xml:id="S4.SS6">
+      <title><tag close=" ">4.6</tag>Undefined?</title>
+      <para xml:id="S4.SS6.p1">
+        <p>Unknown muskip: 0pt = 0.0mu</p>
+      </para>
+    </subsection>
+  </section>
+</document>

@@ -1,0 +1,333 @@
+\documentclass{article}
+\newcount\counta
+\newcount\countb
+\newcount\countc
+\newdimen\dimena
+\newdimen\dimenb
+\newdimen\dimenc
+\newskip\skipa
+\newskip\skipb
+\newskip\skipc
+\newmuskip\muskipa
+\newmuskip\muskipb
+\newmuskip\muskipc
+\makeatletter
+\newcount\scaledpoints
+\def\testsp#1{%
+  \scaledpoints=#1\relax
+  (As scaled points: \the\scaledpoints) }
+
+\def\showcount#1{\@ifnextchar[{\showcount@{#1}}{\showcount@{#1}[]}}%]
+\def\showcount@#1[#2]{%
+  \expandafter\@gobble\detokenize{#1}:=#2=\the#1
+  \par\noindent}
+\def\parsecount#1{\@dblarg{\parsecount@{#1}}}
+\def\parsecount@#1[#2]#3{%
+  #1=#3\relax
+  \showcount@{#1}[#2]}
+
+\def\showdimension#1{\@ifnextchar[{\showdimension@{#1}}{\showdimension@{#1}[]}}%]
+\def\showdimension@#1[#2]{%
+  \scaledpoints=#1\relax
+  \expandafter\@gobble\detokenize{#1}:=#2=\the#1\ (sp=\the\scaledpoints)
+  \par\noindent}
+\def\parsedimension#1{\@dblarg{\parsedimension@{#1}}}
+\def\parsedimension@#1[#2]#3{%
+  #1=#3\relax
+  \showdimension@{#1}[#2]}
+
+\def\showglue#1{\@ifnextchar[{\showglue@{#1}}{\showglue@{#1}[]}}%]
+\def\showglue@#1[#2]{%
+  \scaledpoints=#1\relax
+  \expandafter\@gobble\detokenize{#1}:=#2=\the#1\ (sp=\the\scaledpoints)
+  \par\noindent}
+\def\parseglue#1{\@dblarg{\parseglue@{#1}}}
+\def\parseglue@#1[#2]#3{%
+  #1=#3\relax
+  \showglue@{#1}[#2]}
+
+\def\showmuglue#1{\@ifnextchar[{\showmuglue@{#1}}{\showmuglue@{#1}[]}}%]
+\def\showmuglue@#1[#2]{%
+  \expandafter\@gobble\detokenize{#1}:=#2=\the#1
+  \par\noindent}
+\def\parsemuglue#1{\@dblarg{\parsemuglue@{#1}}}
+\def\parsemuglue@#1[#2]#3{%
+  #1=#3\relax
+  \showmuglue@{#1}[#2]}
+
+\makeatother
+\title{TeX Registers}
+\begin{document}
+\section{Numbers}
+\parsecount\counta{1}
+\parsecount\counta{-1}
+\parsecount\counta{12}
+\parsecount\counta{123456}
+
+\parsecount\counta{10}
+\parsecount\counta{'10}
+\parsecount\counta{"10}
+\parsecount\counta{`a}
+
+\subsection{Coersions}
+\parsecount\countb{10}
+\parsecount\counta[countb]{\countb}
+\parsecount\counta[-countb]{-\countb}
+\parsedimension\dimenb{1pt}
+\parsecount\counta[dimenb]{\dimenb}
+\parseglue\skipb{1pt plus 1fill}
+\parsecount\counta[skipb]{\skipb}
+% Not from muglue!
+
+\subsection{Arithmetic}
+\parsecount\counta{1}
+\parsecount\countb{10}
+\advance\countb\counta
+\showcount\countb[countb+counta]
+\divide\countb2
+\showcount\countb[countb/2]
+\parsecount\counta{23}
+\parsecount\countb{10}
+\divide\counta\countb
+\showcount\counta[counta/countb]
+\parsecount\counta{1}
+\parsecount\countb{10}
+\advance\countb-\counta
+\showcount\countb[countb-counta]
+
+\subsection{Allocation}
+\countdef\counttwo=2
+\parsecount\counttwo{7}
+\showcount{\count2}[count 2]
+
+\subsection{Undefined?}
+\showcount{\count128}[Unknown]
+
+\section{Dimensions}
+\subsection{Units}
+\parsedimension\dimena{1em}
+\parsedimension\dimena{1ex}
+\parsedimension\dimena{1pt}
+\parsedimension\dimena{1pc}
+\parsedimension\dimena{1in}
+\parsedimension\dimena{1bp}
+\parsedimension\dimena{1cm}
+\parsedimension\dimena{1mm}
+\parsedimension\dimena{1dd}
+\parsedimension\dimena{1cc}
+\parsedimension\dimena{1sp}
+\parsedimension\dimena{1truept}
+\parsedimension\dimena{1truepc}
+\parsedimension\dimena{1truein}
+\parsedimension\dimena{1truebp}
+\parsedimension\dimena{1truecm}
+\parsedimension\dimena{1truemm}
+\parsedimension\dimena{1truedd}
+\parsedimension\dimena{1truecc}
+\parsedimension\dimena{1truesp}
+
+\parsedimension\dimena{10pt}
+\parsedimension\dimena{'10pt}
+\parsedimension\dimena{"10pt}
+\parsedimension\dimena{`apt}
+\subsection{Rounding}
+\parsedimension\dimena{0.01pt}
+\parsedimension\dimena{0.1pt}
+\parsedimension\dimena{1pt}
+\parsedimension\dimena{10pt}
+\parsedimension\dimena{100pt}
+\parsedimension\dimena{0.0123pt}
+\parsedimension\dimena{0.123pt}
+\parsedimension\dimena{1.23pt}
+\parsedimension\dimena{12.3pt}
+\parsedimension\dimena{123pt}
+
+\subsection{Coersions}
+\parsecount\countb{10}
+\parsedimension\dimena[countb pt]{\countb pt}
+\parsedimension\dimenb{1pt}
+\parsedimension\dimena[4.5 dimenb]{4.5\dimenb}
+\parsedimension\dimena[countb dimenb]{\countb\dimenb}
+\parsedimension\dimena[-countb dimenb]{-\countb\dimenb}
+\parseglue\skipb{1pt plus 1fill}
+\parsedimension\dimena[4.5 skipb]{4.5\skipb}
+% Not from muglue!
+
+\subsection{Arithmetic}
+\parsedimension\dimena{123.4pt}
+\parsedimension\dimenb{1pt}
+\advance\dimena-\dimenb
+\showdimension\dimena[dimena-dimenb]
+\advance\dimena\dimenb
+\showdimension\dimena[dimena+dimenb]
+\divide\dimena2
+\showdimension\dimena[dimena/2]
+\parsecount\countb{10}
+\divide\dimena\countb
+\showdimension\dimena[dimena/countb]
+
+\subsection{Allocation}
+\parsecount\counta{7}
+\parsedimension{\dimen\counta}[dimen counta]{1.23pt}
+\showdimension{\dimen7}
+\advance\dimen\counta\dimen7
+\showdimension{\dimen\counta}[dimen counta + dimen 7]
+
+%%Catcodes?
+%%{\catcode`\p=12\catcode`\t=12\gdef\undim#1pt{#1 Points}}
+%%15.0 Points = \expandafter\undim\the\dimen7
+
+\subsection{Undefined?}
+
+Unknown dimen: 0pt = \the\dimen128\relax
+
+\section{Glue}
+\parseglue\skipa{1pt}
+\parseglue\skipa{0pt plus 2fill}
+\parseglue\skipa{1pt plus 2pt}
+\parseglue\skipa{1pt plus 2pt minus 3pt}
+\parseglue\skipa{1pt plus 9fil}
+\parseglue\skipa{1pt plus 9fill}
+\parseglue\skipa{1pt plus 9filll}
+\parseglue\skipa{1pt plus 2fil minus 3filll}
+\parseglue\skipa{1pt plus 2fill minus 3fill}
+\parseglue\skipa{1pt plus 2filll minus 3fil}
+
+\subsection{Coersions}
+\parsecount\countb{10}
+\parseglue\skipa[countb pt]{\countb pt}
+\parsedimension\dimenb{1pt}
+\parseglue\skipa[4.5 dimenb]{4.5\dimenb}
+\parseglue\skipa[countb dimenb]{\countb\dimenb}
+\parseglue\skipa[-countb dimenb]{-\countb\dimenb}
+\parseglue\skipb{1pt plus 1fill}
+\parseglue\skipa[skipb]{\skipb}
+\parseglue\skipa[-skipb]{-\skipb}
+\parseglue\skipa[4.5 skipb]{4.5\skipb}
+\parseglue\skipa[countb skipb]{\countb\skipb}
+% Not from muglue!
+
+
+\subsection{Arithmetic}
+\parseglue\skipa{1pt plus 2pt}
+\parseglue\skipb{1pt plus 1pt}
+\advance\skipa-\skipb
+\showglue\skipa[skipa-skipb]
+\parseglue\skipa{0pt plus 2fill}
+\advance\skipa\skipb
+\showglue\skipa[skipa+skipb]
+
+
+% Catcodes?
+% \skip7 = 1pt plus 3pt\relax
+% {\catcode`\p=12\catcode`\l=12\catcode`\u=12\catcode`\s=12\catcode`\t=12%
+% \gdef\oongoo#1pt#2plus#3pt{#1 Points #2 Plus #3 Points}}
+% 1.0 Points  Plus 3.0 Points = \expandafter\oongoo\the\skip7
+
+\subsection{Undefined?}
+
+Unknown skip: 0pt = \the\skip128\relax
+
+\section{MuGlue}
+\subsection{Units}
+\parsemuglue\muskipa{1mu}
+\parsemuglue\muskipa{10mu}
+\parsemuglue\muskipa{'10mu}
+\parsemuglue\muskipa{"10mu}
+\parsemuglue\muskipa{`amu}
+\parsemuglue\muskipa{0mu plus 2fill}
+\parsemuglue\muskipa{1mu plus 2mu}
+\parsemuglue\muskipa{1mu plus 2mu minus 3mu}
+\parsemuglue\muskipa{1mu plus 9fil}
+\parsemuglue\muskipa{1mu plus 9fill}
+\parsemuglue\muskipa{1mu plus 9filll}
+\parsemuglue\muskipa{1mu plus 2fil minus 3filll}
+\parsemuglue\muskipa{1mu plus 2fill minus 3fill}
+\parsemuglue\muskipa{1mu plus 2filll minus 3fil}
+
+\subsection{Rounding}
+\parsemuglue\muskipa{0.01mu}
+\parsemuglue\muskipa{0.1mu}
+\parsemuglue\muskipa{1mu}
+\parsemuglue\muskipa{10mu}
+\parsemuglue\muskipa{100mu}
+\parsemuglue\muskipa{0.0123mu}
+\parsemuglue\muskipa{0.123mu}
+\parsemuglue\muskipa{1.23mu}
+\parsemuglue\muskipa{12.3mu}
+\parsemuglue\muskipa{123mu}
+
+\subsection{Coersions}
+\parsecount\countb{10}
+\parsemuglue\muskipa[countb mu]{\countb mu}
+\parsemuglue\muskipb{1mu plus 1fill}
+\parsemuglue\muskipa[skipb]{\muskipb}
+\parsemuglue\muskipa[-skipb]{-\muskipb}
+\parsemuglue\muskipa[4.5 skipb]{4.5\muskipb}
+\parsemuglue\muskipa[countb skipb]{\countb\muskipb}
+\parsemuglue\muskipa[-countb skipb]{-\countb\muskipb}
+% Not from regular dimen or glue
+
+\subsection{Arithmetic}
+\parsemuglue\muskipa{123.4mu}
+\parsemuglue\muskipb{1mu}
+\advance\muskipa-\muskipb
+\showmuglue\muskipa[muskipa-muskipb]
+\advance\muskipa\muskipb
+\showmuglue\muskipa[muskipa+muskipb]
+\divide\muskipa2
+\showmuglue\muskipa[muskipa/2]
+\parsecount\countb{10}
+\divide\muskipa\countb
+\showmuglue\muskipa[muskipa/countb]
+\parsemuglue\muskipa{1mu plus 2mu}
+\parsemuglue\muskipb{1mu plus 1mu}
+\advance\muskipa-\muskipb
+\showmuglue\muskipa[skipa-skipb]
+\parsemuglue\muskipa{0mu plus 2fill}
+\advance\muskipa\muskipb
+\showmuglue\muskipa[skipa+skipb]
+
+\subsection{Allocation}
+\parsecount\counta{7}
+\parsemuglue{\muskip\counta}[muskip counta]{1.23mu}
+\showmuglue{\muskip7}
+\advance\muskip\counta\muskip7
+\showmuglue{\muskip\counta}[muskip counta + muskip 7]
+
+%%Catcodes?
+%%{\catcode`\p=12\catcode`\t=12\gdef\undim#1pt{#1 Points}}
+%%15.0 Points = \expandafter\undim\the\muskip7
+
+\subsection{Undefined?}
+
+Unknown muskip: 0pt = \the\muskip128\relax
+
+% Catcodes?
+% \skip7 = 1pt plus 3pt\relax
+% {\catcode`\p=12\catcode`\l=12\catcode`\u=12\catcode`\s=12\catcode`\t=12%
+% \gdef\oongoo#1pt#2plus#3pt{#1 Points #2 Plus #3 Points}}
+% 1.0 Points  Plus 3.0 Points = \expandafter\oongoo\the\skip7
+
+\end{document}
+\section{Tokens}
+% Let's hope 127 is safe?
+\count127=99\relax
+the count 127 [99] : \the\count127\relax
+
+the two (countdef 2)[196608] : \the\counttwo
+
+
+\def\foo{FOO}
+%the macro foo : \the\foo
+
+%the primitive def : \the\def
+
+\toks2={ab\foo cd}
+Tokens: abFOOcd = \the\toks2
+
+Catcode: 11 = \the\catcode`\A
+
+Catcode: 12 = \the\catcode`\@
+
+\end{document}
