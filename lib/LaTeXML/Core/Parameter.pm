@@ -52,22 +52,22 @@ sub new {
   my $reader = $data{reader};
   my $newreader;
   # There's just GOT to be a clever way to build a sub (but including closures ?)
-  if(my @extra = ($data{extra} ? @{$data{extra}} : ())){
-    if(my $semiverbatim = $data{semiverbatim}){
+  if (my @extra = ($data{extra} ? @{ $data{extra} } : ())) {
+    if (my $semiverbatim = $data{semiverbatim}) {
       $newreader = sub {
-        my($gullet)=@_;
+        my ($gullet) = @_;
         $STATE->beginSemiverbatim(@$semiverbatim);
-        my $value = &$reader($gullet,@extra);
+        my $value = &$reader($gullet, @extra);
         $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
         $STATE->endSemiverbatim;
-      return $value; }; }
+        return $value; }; }
     else {
       $newreader = sub {
-        my($gullet)=@_;
-        return &$reader($gullet,@extra); }; } }
-  elsif(my $semiverbatim = $data{semiverbatim}){
+        my ($gullet) = @_;
+        return &$reader($gullet, @extra); }; } }
+  elsif (my $semiverbatim = $data{semiverbatim}) {
     $newreader = sub {
-      my($gullet)=@_;
+      my ($gullet) = @_;
       $STATE->beginSemiverbatim(@$semiverbatim);
       my $value = &$reader($gullet);
       $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
@@ -127,7 +127,7 @@ sub reparse {
         my ($gulletx) = @_;
         my @tokens = $tokens->unlist;
         if (@tokens    # Strip outer braces from dimensions & friends
-          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuDimension|MuGlue)$/)
+          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuGlue)$/)
           && $tokens[0]->equals(T_BEGIN) && $tokens[-1]->equals(T_END)) {
           shift(@tokens); pop(@tokens); }
         $gulletx->unread(@tokens);    # but put back tokens to be read

@@ -28,7 +28,6 @@ use LaTeXML::Common::Number;
 use LaTeXML::Common::Float;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Common::Glue;
-use LaTeXML::Core::MuDimension;
 use LaTeXML::Core::MuGlue;
 # Extra objects typically used in Bindings
 use LaTeXML::Core::Alignment;
@@ -128,7 +127,6 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   @LaTeXML::Common::Glue::EXPORT,
   @LaTeXML::Core::KeyVal::EXPORT,
   @LaTeXML::Core::KeyVals::EXPORT,
-  @LaTeXML::Core::MuDimension::EXPORT,
   @LaTeXML::Core::MuGlue::EXPORT,
   @LaTeXML::Core::Pair::EXPORT,
   @LaTeXML::Core::PairList::EXPORT,
@@ -4306,7 +4304,6 @@ L<LaTeXML::Common::Number>,
 L<LaTeXML::Common::Float>,
 L<LaTeXML::Common::Dimension>,
 L<LaTeXML::Common::Glue>,
-L<LaTeXML::Core::MuDimension>,
 L<LaTeXML::Core::MuGlue>,
 L<LaTeXML::Core::Pair>,
 L<LaTeXML::Core::PairList>,
