@@ -24,14 +24,19 @@ our @EXPORT = (qw(&Number));
 
 sub Number {
   my ($number) = @_;
+  $number = ToString($number) if ref $number;
+  $number = (defined $number ? int($number) : 0);
   return LaTeXML::Common::Number->new($number); }
 
 #======================================================================
 
 sub new {
   my ($class, $number) = @_;
-  $number = ToString($number) if ref $number;
-  return bless [$number || "0"], $class; }
+  return bless [$number], $class; }
+
+sub new_internal {
+  my ($class, $number) = @_;
+  return bless [$number], $class; }
 
 sub valueOf {
   my ($self) = @_;
@@ -86,7 +91,7 @@ sub larger {
 
 sub absolute {
   my ($self, $other) = @_;
-  return (ref $self)->new(abs($self->valueOf)); }
+  return (ref $self)->new_internal(abs($self->valueOf)); }
 
 sub sign {
   my ($self) = @_;
@@ -94,30 +99,30 @@ sub sign {
 
 sub negate {
   my ($self) = @_;
-  return (ref $self)->new(-$self->valueOf); }
+  return (ref $self)->new_internal(-$self->valueOf); }
 
 sub add {
   my ($self, $other) = @_;
-  return (ref $self)->new($self->valueOf + $other->valueOf); }
+  return (ref $self)->new_internal($self->valueOf + $other->valueOf); }
 
 sub subtract {
   my ($self, $other) = @_;
-  return (ref $self)->new($self->valueOf - $other->valueOf); }
+  return (ref $self)->new_internal($self->valueOf - $other->valueOf); }
 
 # arg 2 is a number
 sub multiply {
   my ($self, $other) = @_;
-  return (ref $self)->new(int($self->valueOf * (ref $other ? $other->valueOf : $other))); }
+  return (ref $self)->new_internal(int($self->valueOf * (ref $other ? $other->valueOf : $other))); }
 
 # Truncating division
 sub divide {
   my ($self, $other) = @_;
-  return (ref $self)->new(int($self->valueOf / (ref $other ? $other->valueOf : $other))); }
+  return (ref $self)->new_internal(int($self->valueOf / (ref $other ? $other->valueOf : $other))); }
 
 # Rounding division
 sub divideround {
   my ($self, $other) = @_;
-  return (ref $self)->new(int(0.5 + $self->valueOf / (ref $other ? $other->valueOf : $other))); }
+  return (ref $self)->new_internal(int(0.5 + $self->valueOf / (ref $other ? $other->valueOf : $other))); }
 
 sub stringify {
   my ($self) = @_;

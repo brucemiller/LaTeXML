@@ -19,15 +19,14 @@ our @EXPORT = (qw(&Glue));
 
 #======================================================================
 # Exported constructor.
-
 sub Glue {
-  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
-  return LaTeXML::Common::Glue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+  my ($sp, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::Common::Glue->new($sp, $plus, $pfill, $minus, $mfill); }
 
 #======================================================================
 
 my %fillcode = (fil => 1, fill => 2, filll => 3);    # [CONSTANT]
-my @FILL = ('', 'fil', 'fill', 'filll');             # [CONSTANT]
+our @FILL = ('', 'fil', 'fill', 'filll');             # [CONSTANT]
 
 my $num_re   = qr/\d*\.?\d*/;                        # [CONSTANT]
 my $unit_re  = qr/[a-zA-Z][a-zA-Z]/;                 # [CONSTANT]
@@ -47,15 +46,27 @@ sub new {
     if ($sp =~ /^(\d*\.?\d*)$/) { }
     elsif ($sp =~ /^$GLUE_re$/) {
       my ($f, $u, $p, $pu, $m, $mu) = ($1, $2, $4, $5, $7, $8);
-      $sp = $f * $STATE->convertUnit($u);
+      $sp = $f * $STATE->convertUnit($u) + 0.5;
       if (!$pu) { }
       elsif ($fillcode{$pu}) { $plus = $p;                            $pfill = $pu; }
-      else                   { $plus = $p * $STATE->convertUnit($pu); $pfill = 0; }
+      else                   { $plus = $p * $STATE->convertUnit($pu) + 0.5; $pfill = 0; }
       if (!$mu) { }
       elsif ($fillcode{$mu}) { $minus = $m;                            $mfill = $mu; }
-      else                   { $minus = $m * $STATE->convertUnit($mu); $mfill = 0; }
+      else                   { $minus = $m * $STATE->convertUnit($mu) + 0.5; $mfill = 0; }
     } }
-  return bless [$sp || "0", $plus || "0", $pfill || 0, $minus || "0", $mfill || 0], $class; }
+#  $sp = (defined $sp ? int($sp + 0.5) : 0);
+  $sp = (defined $sp ? int($sp) : 0);
+#  $plus = (defined $plus ? int($plus+0.5) : 0);
+  $plus = (defined $plus ? int($plus) : 0);
+  $pfill = $pfill || 0;
+#  $minus = (defined $minus ? int($minus+0.5) : 0);
+  $minus = (defined $minus ? int($minus) : 0);
+  $mfill = $mfill || 0;
+  return bless [$sp,$plus,$pfill,$minus,$mfill], $class; }
+
+sub new_internal {
+  my ($class, $sp, $plus, $pfill, $minus, $mfill) = @_;
+  return bless [$sp,$plus||0,$pfill||0,$minus||0,$mfill||0], $class; }
 
 #sub getStretch { $_[0]->[1]; }
 #sub getShrink  { $_[0]->[2]; }
@@ -64,13 +75,11 @@ sub toString {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
   my $string = LaTeXML::Common::Dimension::pointformat($sp);
-  $string .= ' plus ' . ($pfill
-    ? $plus . $FILL[$pfill]
-    : LaTeXML::Common::Dimension::pointformat($plus))
+  $string .= ' plus '
+    . LaTeXML::Common::Dimension::formatScaled($plus) . ($pfill ? $FILL[$pfill] : 'pt')
     if $plus != 0;
-  $string .= ' minus ' . ($mfill
-    ? $minus . $FILL[$mfill]
-    : LaTeXML::Common::Dimension::pointformat($minus))
+  $string .= ' minus '
+    . LaTeXML::Common::Dimension::formatScaled($minus) . ($mfill ? $FILL[$mfill] : 'pt')
     if $minus != 0;
   return $string; }
 
@@ -91,39 +100,39 @@ sub toAttribute {
 sub negate {
   my ($self) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
-  return (ref $self)->new(-$pts, -$p, $pf, -$m, $mf); }
+  return (ref $self)->new_internal(-$pts, -$p, $pf, -$m, $mf); }
 
 sub add {
   my ($self, $other) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
-  if (ref $other eq 'LaTeXML::Common::Glue') {
+  if ((ref $other) eq (ref $self)) {
     my ($pts2, $p2, $pf2, $m2, $mf2) = @$other;
     $pts += $pts2;
     if ($pf == $pf2) { $p += $p2; }
     elsif ($pf < $pf2) { $p = $p2; $pf = $pf2; }
     if ($mf == $mf2) { $m += $m2; }
     elsif ($mf < $mf2) { $m = $m2; $mf = $mf2; }
-    return (ref $self)->new($pts, $p, $pf, $m, $mf); }
+    return (ref $self)->new_internal($pts, $p, $pf, $m, $mf); }
   else {
-    return (ref $self)->new($pts + $other->valueOf, $p, $pf, $m, $mf); } }
+    return (ref $self)->new_internal($pts + $other->valueOf, $p, $pf, $m, $mf); } }
 
 sub multiply {
   my ($self, $other) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
   $other = $other->valueOf if ref $other;
-  return (ref $self)->new($pts * $other, $p * $other, $pf, $m * $other, $mf); }
+  return (ref $self)->new_internal($pts * $other, $p * $other, $pf, $m * $other, $mf); }
 
 sub divide {
   my ($self, $other) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
   $other = $other->valueOf if ref $other;
-  return (ref $self)->new($pts / $other, $p / $other, $pf, $m / $other, $mf); }
+  return (ref $self)->new_internal($pts / $other, $p / $other, $pf, $m / $other, $mf); }
 
 sub divideround {
   my ($self, $other) = @_;
   my ($pts, $p, $pf, $m, $mf) = @$self;
   $other = $other->valueOf if ref $other;
-  return (ref $self)->new($pts / $other, $p / $other, $pf, $m / $other, $mf); }
+  return (ref $self)->new_internal($pts / $other, $p / $other, $pf, $m / $other, $mf); }
 
 sub stringify {
   my ($self) = @_;

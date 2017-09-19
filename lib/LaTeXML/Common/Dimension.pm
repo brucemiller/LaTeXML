@@ -22,8 +22,8 @@ our @EXPORT = (qw(&Dimension));
 # Exported constructor.
 
 sub Dimension {
-  my ($scaledpoints) = @_;
-  return LaTeXML::Common::Dimension->new($scaledpoints); }
+  my ($sp) = @_;
+  return LaTeXML::Common::Dimension->new($sp); }
 
 #======================================================================
 
@@ -31,9 +31,14 @@ sub new {
   my ($class, $sp) = @_;
   $sp = "0" unless $sp;
   $sp = ToString($sp) if ref $sp;
-  if ($sp =~ /^(-?\d*\.?\d*)([a-zA-Z][a-zA-Z])$/) {    # Dimensions given.
-    $sp = $1 * $STATE->convertUnit($2); }
-  return bless [$sp || "0"], $class; }
+  if ($sp =~ /^((-?)\d*\.?\d*)([a-zA-Z][a-zA-Z])$/) {    # Dimensions given.
+    $sp = $1 * $STATE->convertUnit($3) + ($2 ? -0.5 : 0.5); }
+  $sp = (defined $sp ? int($sp) : 0);
+  return bless [$sp], $class; }
+
+sub new_internal {
+  my ($class, $sp) = @_;
+  return bless [$sp], $class; }
 
 sub toString {
   my ($self) = @_;
@@ -48,14 +53,16 @@ sub stringify {
   return "Dimension[" . $$self[0] . "]"; }
 
 # Utility for formatting scaled points sanely.
-sub pointformat {
+sub XXXpointformat {
   my ($sp) = @_;
   # As much as I'd like to make this more friendly & readable
   # there's TeX code that depends on getting enough precision
   # If you use %.5f, tikz (for example) will sometimes hang trying to do arithmetic!
   # But see toAttribute for friendlier forms....
   # [do we need the juggling in attributeFormat to be reproducible?]
-  my $s = sprintf("%.6f", ($sp / 65536));
+#####  my $s = sprintf("%.6f", ($sp / 65536));
+  # Or try 5 digits again???
+  my $s = sprintf("%.5f", ($sp / 65536));
   $s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
   $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
