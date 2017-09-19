@@ -24,7 +24,6 @@ use LaTeXML::Common::Number;
 use LaTeXML::Common::Float;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Common::Glue;
-use LaTeXML::Core::MuDimension;
 use LaTeXML::Core::MuGlue;
 use base qw(LaTeXML::Common::Object);
 #**********************************************************************
@@ -348,28 +347,28 @@ sub readValue {
     return; }
 }
 
-our %coercible_type = (
-  Number      => { Number      => 1 },
-  Dimension   => { Dimension   => 1, Number => 1 },
-  Glue        => { Glue        => 1, Dimension => 1, Number => 1 },
-  MuDimension => { MuDimension => 1 },
-  MuGlue => { MuGlue => 1, MuDimension => 1 },
-);
+# our %coercible_type = (
+#   Number      => { Number      => 1 },
+#   Dimension   => { Dimension   => 1, Number => 1 },
+#   Glue        => { Glue        => 1, Dimension => 1, Number => 1 },
+#   MuDimension => { MuDimension => 1 },
+#   MuGlue => { MuGlue => 1, MuDimension => 1 },
+# );
 
-# Read the value of a Register of type (or coercible to) $reqtype.
-sub readRegisterValue {
-  my ($self, $reqtype) = @_;
-  my $token = $self->readXToken(0);
-  return unless defined $token;
-  my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token);
-  my $type;
-  if ((defined $defn)
-    && ($type = $defn->isRegister)
-    && $coercible_type{$type}{$reqtype}) {
-    return $defn->valueOf($defn->readArguments($self)); }
-  else {
-    $$self{mouth}->unread($token);    # Unread
-    return; } }
+# # Read the value of a Register of type (or coercible to) $reqtype.
+# sub XXXXreadRegisterValue {
+#   my ($self, $reqtype) = @_;
+#   my $token = $self->readXToken(0);
+#   return unless defined $token;
+#   my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token);
+#   my $type;
+#   if ((defined $defn)
+#     && ($type = $defn->isRegister)
+#     && $coercible_type{$type}{$reqtype}) {
+#     return $defn->valueOf($defn->readArguments($self)); }
+#   else {
+#     $$self{mouth}->unread($token);    # Unread
+#     return; } }
 
 # Apparent behaviour of a token value (ie \toks#=<arg>)
 sub readTokensValue {
@@ -396,41 +395,43 @@ sub readTokensValue {
 
 # <optional signs> = <optional spaces> | <optional signs><plus or minus><optional spaces>
 # return +1 or -1
-sub readOptionalSigns {
-  my ($self) = @_;
-  my ($sign, $t) = ("+1", '');
-  while (defined($t = $self->readXToken(0))
-    && (($t->getString eq '+') || ($t->getString eq '-') || ($t->equals(T_SPACE)))) {
-    $sign = -$sign if ($t->getString eq '-'); }
-  $$self{mouth}->unread($t) if $t;    # Unread
-  return $sign; }
+# sub XXXXreadOptionalSigns {
+#   my ($self) = @_;
+#   my ($sign, $t) = ("+1", '');
+#   while (defined($t = $self->readXToken(0))
+#     && (($t->getString eq '+') || ($t->getString eq '-') || ($t->equals(T_SPACE)))) {
+#     $sign = -$sign if ($t->getString eq '-'); }
+#   $$self{mouth}->unread($t) if $t;    # Unread
+#   return $sign; }
 
-sub readDigits {
-  my ($self, $range, $skip) = @_;
-  my $string = '';
-  my ($token, $digit);
-  while (($token = $self->readXToken(0)) && (($digit = $token->getString) =~ /^[$range]$/)) {
-    $string .= $digit; }
-  $$self{mouth}->unread($token) if $token && !($skip && $token->getCatcode == CC_SPACE);
-  return $string; }
+# sub readDigits {
+#   my ($self, $range, $skip) = @_;
+#   my $string = '';
+#   my ($token, $digit);
+#   while (($token = $self->readXToken(0)) && (($digit = $token->getString) =~ /^[$range]$/)) {
+#     $string .= $digit; }
+#   $$self{mouth}->unread($token) if $token && !($skip && $token->getCatcode == CC_SPACE);
+#   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>
 # <decimal constant> = . | , | <digit><decimal constant> | <decimal constant><digit>
 # Return a number (perl number)
-sub readFactor {
-  my ($self) = @_;
-  my $string = $self->readDigits('0-9');
-  my $token  = $self->readXToken(0);
-  if ($token && $token->getString =~ /^[\.\,]$/) {
-    $string .= '.' . $self->readDigits('0-9');
-    $token = $self->readXToken(0); }
-  if (length($string) > 0) {
-    $$self{mouth}->unread($token) if $token && $token->getCatcode != CC_SPACE;
-    return $string; }
-  else {
-    $$self{mouth}->unread($token);    # Unread
-    my $n = $self->readNormalInteger;
-    return (defined $n ? $n->valueOf : undef); } }
+# sub XXXreadFactor {
+#   my ($self) = @_;
+#   my $string = $self->readDigits('0-9');
+#   my $token  = $self->readXToken(0);
+#   if ($token && $token->getString =~ /^[\.\,]$/) {
+#     $string .= '.' . $self->readDigits('0-9');
+#     $token = $self->readXToken(0); }
+#   if (length($string) > 0) {
+#     $$self{mouth}->unread($token) if $token && $token->getCatcode != CC_SPACE;
+# print STDERR "GOT FACTOR $string\n";
+#     return $string; }
+#   else {
+#     $$self{mouth}->unread($token);    # Unread
+#     my $n = $self->readNormalInteger;
+# print STDERR "GOT REGISTER FACTOR $n (from ".Stringify($token)."\n";
+#     return (defined $n ? $n : undef); } }
 
 #======================================================================
 # Integer, Number
@@ -439,66 +440,65 @@ sub readFactor {
 # <unsigned number> = <normal integer> | <coerced integer>
 # <coerced integer> = <internal dimen> | <internal glue>
 
-sub readNumber {
-  my ($self) = @_;
-  my $s = $self->readOptionalSigns;
-  if (defined(my $n = $self->readNormalInteger)) { return ($s < 0 ? $n->negate : $n); }
-  else {
-    my $next = $self->readToken();
-    $$self{mouth}->unread($next);    # Unread
-    Warn('expected', '<number>', $self, "Missing number, treated as zero",
-      "while processing " . ToString($LaTeXML::CURRENT_TOKEN),
-      "next token is " . ToString($next));
-    return Number(0); } }
+# sub XXXreadNumber {
+#   my ($self) = @_;
+#   my $s = $self->readOptionalSigns;
+#   if (defined(my $n = $self->readNormalInteger)) { return Number($s * $n); }
+#   else {
+#     my $next = $self->readToken();
+#     $$self{mouth}->unread($next);    # Unread
+#     Warn('expected', '<number>', $self, "Missing number, treated as zero",
+#       "while processing " . ToString($LaTeXML::CURRENT_TOKEN),
+#       "next token is " . ToString($next));
+#     return Number(0); } }
 
 # <normal integer> = <internal integer> | <integer constant>
 #   | '<octal constant><one optional space> | "<hexadecimal constant><one optional space>
 #   | `<character token><one optional space>
 # Return a Number or undef
-sub readNormalInteger {
-  my ($self) = @_;
-  my $token = $self->readXToken(0);
-  if (!defined $token) {
-    return; }
-  elsif (($token->getCatcode == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) { # Read decimal literal
-    return Number(int($token->getString . $self->readDigits('0-9', 1))); }
-  elsif ($token->equals(T_OTHER("\'"))) {                                        # Read Octal literal
-    return Number(oct($self->readDigits('0-7', 1))); }
-  elsif ($token->equals(T_OTHER("\""))) {                                        # Read Hex literal
-    return Number(hex($self->readDigits('0-9A-F', 1))); }
-  elsif ($token->equals(T_OTHER("\`"))) {                                        # Read Charcode
-    my $next = $self->readToken;
-    my $s = ($next && $next->getString) || '';
-    $s =~ s/^\\//;
-    return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
-  else {
-    $$self{mouth}->unread($token);    # Unread
-    if (my $number = $self->readRegisterValue('Number')) {
-      return Number($number->valueOf); }
-    else {
-      return; } } }
+# sub XXXreadNormalInteger {
+#   my ($self) = @_;
+#   my $token = $self->readXToken(0);
+#   if (!defined $token) {
+#     return; }
+#   elsif (($token->getCatcode == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) { # Read decimal literal
+#     return int($token->getString . $self->readDigits('0-9', 1)); }
+#   elsif ($token->equals(T_OTHER("\'"))) {                                        # Read Octal literal
+#     return oct($self->readDigits('0-7', 1)); }
+#   elsif ($token->equals(T_OTHER("\""))) {                                        # Read Hex literal
+#     return hex($self->readDigits('0-9A-F', 1)); }
+#   elsif ($token->equals(T_OTHER("\`"))) {                                        # Read Charcode
+#     my $next = $self->readToken;
+#     my $s = ($next && $next->getString) || '';
+#     $s =~ s/^\\//;
+#     return ord($s); }    # Only a character token!!! NOT expanded!!!!
+#   else {
+#     $$self{mouth}->unread($token);    # Unread
+#     if (my $number = $self->readRegisterValue('Number')) {
+#       return $number->valueOf; }
+#     else {
+#       return; } } }
 
 #======================================================================
 # Float, a floating point number.
 # Similar to factor, but does NOT accept comma!
 # This is NOT part of TeX, but is convenient.
-sub readFloat {
-  my ($self) = @_;
-  my $s      = $self->readOptionalSigns;
-  my $string = $self->readDigits('0-9');
-  my $token  = $self->readXToken(0);
-  if ($token && $token->getString =~ /^[\.]$/) {
-    $string .= '.' . $self->readDigits('0-9');
-    $token = $self->readXToken(0); }
-  my $n;
-  if (length($string) > 0) {
-    $$self{mouth}->unread($token) if $token && $token->getCatcode != CC_SPACE;
-    $n = $string; }
-  else {
-    $$self{mouth}->unread($token) if $token;    # Unread
-    $n = $self->readNormalInteger;
-    $n = $n->valueOf if defined $n; }
-  return (defined $n ? Float($s * $n) : undef); }
+# sub readFloat {
+#   my ($self) = @_;
+#   my $s      = $self->readOptionalSigns;
+#   my $string = $self->readDigits('0-9');
+#   my $token  = $self->readXToken(0);
+#   if ($token && $token->getString =~ /^[\.]$/) {
+#     $string .= '.' . $self->readDigits('0-9');
+#     $token = $self->readXToken(0); }
+#   my $n;
+#   if (length($string) > 0) {
+#     $$self{mouth}->unread($token) if $token && $token->getCatcode != CC_SPACE;
+#     $n = $string; }
+#   else {
+#     $$self{mouth}->unread($token) if $token;    # Unread
+#     $n = $self->readNormalInteger; }
+#   return (defined $n ? Float($s * $n) : undef); }
 
 #======================================================================
 # Dimensions
@@ -506,22 +506,22 @@ sub readFloat {
 # <dimen> = <optional signs><unsigned dimen>
 # <unsigned dimen> = <normal dimen> | <coerced dimen>
 # <coerced dimen> = <internal glue>
-sub readDimension {
-  my ($self) = @_;
-  my $s = $self->readOptionalSigns;
-  if (defined(my $d = $self->readRegisterValue('Dimension'))) {
-    return ($s < 0 ? $d->negate : $d); }
-  elsif (defined($d = $self->readFactor)) {
-    my $unit = $self->readUnit;
-    if (!defined $unit) {
-      #      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $unit = 65536; }
-    return Dimension($s * $d * $unit); }
-  else {
-    Warn('expected', '<number>', $self, "Missing number, treated as zero.",
-      "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
-    return Dimension(0); } }
+# sub XXXreadDimension {
+#   my ($self) = @_;
+#   my $s = $self->readOptionalSigns;
+#   if (defined(my $d = $self->readRegisterValue('Dimension'))) {
+#     return ($s < 0 ? $d->negate : $d); }
+#   elsif (defined($d = $self->readFactor)) {
+#     my $unit = $self->readUnit;
+#     if (!defined $unit) {
+#       #      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       $unit = 65536; }
+#     return Dimension($s * $d * $unit); }
+#   else {
+#     Warn('expected', '<number>', $self, "Missing number, treated as zero.",
+#       "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
+#     return Dimension(0); } }
 
 # <unit of measure> = <optional spaces><internal unit>
 #     | <optional true><physical unit><one optional space>
@@ -530,21 +530,21 @@ sub readDimension {
 # <physical unit> = pt | pc | in | bp | cm | mm | dd | cc | sp
 
 # Read a unit, returning the equivalent number of scaled points,
-sub readUnit {
-  my ($self) = @_;
-  if (defined(my $u = $self->readKeyword('ex', 'em'))) {
-    $self->skip1Space;
-    return $STATE->convertUnit($u); }
-  elsif (defined($u = $self->readRegisterValue('Number'))) {
-    return $u->valueOf; }    # These are coerced to number=>sp
-  else {
-    $self->readKeyword('true');    # But ignore, we're not bothering with mag...
-    $u = $self->readKeyword('pt', 'pc', 'in', 'bp', 'cm', 'mm', 'dd', 'cc', 'sp');
-    if ($u) {
-      $self->skip1Space;
-      return $STATE->convertUnit($u); }
-    else {
-      return; } } }
+# sub readUnit {
+#   my ($self) = @_;
+#   if (defined(my $u = $self->readKeyword('ex', 'em'))) {
+#     $self->skip1Space;
+#     return $STATE->convertUnit($u); }
+#   elsif (defined($u = $self->readRegisterValue('Number'))) {
+#     return $u->valueOf; }    # These are coerced to number=>sp
+#   else {
+#     $self->readKeyword('true');    # But ignore, we're not bothering with mag...
+#     $u = $self->readKeyword('pt', 'pc', 'in', 'bp', 'cm', 'mm', 'dd', 'cc', 'sp');
+#     if ($u) {
+#       $self->skip1Space;
+#       return $STATE->convertUnit($u); }
+#     else {
+#       return; } } }
 
 #======================================================================
 # Mu Dimensions
@@ -554,31 +554,31 @@ sub readUnit {
 # <normal mudimen> = <factor><mu unit>
 # <mu unit> = <optional spaces><internal muglue> | mu <one optional space>
 # <coerced mudimen> = <internal muglue>
-sub readMuDimension {
-  my ($self) = @_;
-  my $s = $self->readOptionalSigns;
-  if (defined(my $m = $self->readFactor)) {
-    my $munit = $self->readMuUnit;
-    if (!defined $munit) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
-      Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $munit = $STATE->convertUnit('mu'); }
-    return MuDimension($s * $m * $munit); }
-  elsif (defined($m = $self->readRegisterValue('MuGlue'))) {
-    return MuDimension($s * $m->valueOf); }
-  else {
-    Warn('expected', '<mudimen>', $self, "Expecting mudimen; assuming 0");
-    return MuDimension(0); } }
+# sub XXXreadMuDimension {
+#   my ($self) = @_;
+#   my $s = $self->readOptionalSigns;
+#   if (defined(my $m = $self->readFactor)) {
+#     my $munit = $self->readMuUnit;
+#     if (!defined $munit) {
+#       Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
+#       Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       $munit = $STATE->convertUnit('mu'); }
+#     return MuDimension($s * $m * $munit); }
+#   elsif (defined($m = $self->readRegisterValue('MuGlue'))) {
+#     return MuDimension($s * $m->valueOf); }
+#   else {
+#     Warn('expected', '<mudimen>', $self, "Expecting mudimen; assuming 0");
+#     return MuDimension(0); } }
 
-sub readMuUnit {
-  my ($self) = @_;
-  if (my $m = $self->readKeyword('mu')) {
-    $self->skip1Space;
-    return $STATE->convertUnit($m); }
-  elsif ($m = $self->readRegisterValue('MuGlue')) {
-    return $m->valueOf; }
-  else {
-    return; } }
+# sub readMuUnit {
+#   my ($self) = @_;
+#   if (my $m = $self->readKeyword('mu')) {
+#     $self->skip1Space;
+#     return $STATE->convertUnit($m); }
+#   elsif ($m = $self->readRegisterValue('MuGlue')) {
+#     return $m->valueOf; }
+#   else {
+#     return; } }
 
 #======================================================================
 # Glue
@@ -586,49 +586,49 @@ sub readMuUnit {
 # <glue> = <optional signs><internal glue> | <dimen><stretch><shrink>
 # <stretch> = plus <dimen> | plus <fil dimen> | <optional spaces>
 # <shrink>  = minus <dimen> | minus <fil dimen> | <optional spaces>
-sub readGlue {
-  my ($self) = @_;
-  my $s = $self->readOptionalSigns;
-  my $n;
-  if (defined($n = $self->readRegisterValue('Glue'))) {
-    return ($s < 0 ? $n->negate : $n); }
-  else {
-    my $d = $self->readDimension;
-    if (!$d) {
-      Warn('expected', '<number>', $self, "Missing number, treated as zero.",
-        "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
-      return Glue(0); }
-    $d = $d->negate if $s < 0;
-    my ($r1, $f1, $r2, $f2);
-    ($r1, $f1) = $self->readRubber if $self->readKeyword('plus');
-    ($r2, $f2) = $self->readRubber if $self->readKeyword('minus');
-    return Glue($d->valueOf, $r1, $f1, $r2, $f2); } }
+# sub readGlue {
+#   my ($self) = @_;
+#   my $s = $self->readOptionalSigns;
+#   my $n;
+#   if (defined($n = $self->readRegisterValue('Glue'))) {
+#     return ($s < 0 ? $n->negate : $n); }
+#   else {
+#     my $d = $self->readDimension;
+#     if (!$d) {
+#       Warn('expected', '<number>', $self, "Missing number, treated as zero.",
+#         "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
+#       return Glue(0); }
+#     $d = $d->negate if $s < 0;
+#     my ($r1, $f1, $r2, $f2);
+#     ($r1, $f1) = $self->readRubber if $self->readKeyword('plus');
+#     ($r2, $f2) = $self->readRubber if $self->readKeyword('minus');
+#     return Glue($d->valueOf, $r1, $f1, $r2, $f2); } }
 
-my %FILLS = (fil => 1, fill => 2, filll => 3);    # [CONSTANT]
+# my %FILLS = (fil => 1, fill => 2, filll => 3);    # [CONSTANT]
 
-sub readRubber {
-  my ($self, $mu) = @_;
-  my $s = $self->readOptionalSigns;
-  my $f = $self->readFactor;
-  if (!defined $f) {
-    $f = ($mu ? $self->readMuDimension : $self->readDimension);
-    return ($f->valueOf * $s, 0); }
-  elsif (defined(my $fil = $self->readKeyword('filll', 'fill', 'fil'))) {
-    return ($s * $f, $FILLS{$fil}); }
-  elsif ($mu) {
-    my $u = $self->readMuUnit;
-    if (!defined $u) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
-      Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $u = $STATE->convertUnit('mu'); }
-    return ($s * $f * $u, 0); }
-  else {
-    my $u = $self->readUnit;
-    if (!defined $u) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $u = 65536; }
-    return ($s * $f * $u, 0); } }
+# sub readRubber {
+#   my ($self, $mu) = @_;
+#   my $s = $self->readOptionalSigns;
+#   my $f = $self->readFactor;
+#   if (!defined $f) {
+#     $f = ($mu ? $self->readMuDimension : $self->readDimension);
+#     return ($f->valueOf * $s, 0); }
+#   elsif (defined(my $fil = $self->readKeyword('filll', 'fill', 'fil'))) {
+#     return ($s * $f, $FILLS{$fil}); }
+#   elsif ($mu) {
+#     my $u = $self->readMuUnit;
+#     if (!defined $u) {
+#       Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
+#       Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       $u = $STATE->convertUnit('mu'); }
+#     return ($s * $f * $u, 0); }
+#   else {
+#     my $u = $self->readUnit;
+#     if (!defined $u) {
+#       Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       Fatal('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
+#       $u = 65536; }
+#     return ($s * $f * $u, 0); } }
 
 #======================================================================
 # Mu Glue
@@ -636,23 +636,23 @@ sub readRubber {
 # <muglue> = <optional signs><internal muglue> | <mudimen><mustretch><mushrink>
 # <mustretch> = plus <mudimen> | plus <fil dimen> | <optional spaces>
 # <mushrink> = minus <mudimen> | minus <fil dimen> | <optional spaces>
-sub readMuGlue {
-  my ($self) = @_;
-  my $s = $self->readOptionalSigns;
-  my $n;
-  if (defined($n = $self->readRegisterValue('MuGlue'))) {
-    return ($s < 0 ? $n->negate : $n); }
-  else {
-    my $d = $self->readMuDimension;
-    if (!$d) {
-      Warn('expected', '<number>', $self, "Missing number, treated as zero.",
-        "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
-      return MuGlue(0); }
-    $d = $d->negate if $s < 0;
-    my ($r1, $f1, $r2, $f2);
-    ($r1, $f1) = $self->readRubber(1) if $self->readKeyword('plus');
-    ($r2, $f2) = $self->readRubber(1) if $self->readKeyword('minus');
-    return MuGlue($d->valueOf, $r1, $f1, $r2, $f2); } }
+# sub readMuGlue {
+#   my ($self) = @_;
+#   my $s = $self->readOptionalSigns;
+#   my $n;
+#   if (defined($n = $self->readRegisterValue('MuGlue'))) {
+#     return ($s < 0 ? $n->negate : $n); }
+#   else {
+#     my $d = $self->readMuDimension;
+#     if (!$d) {
+#       Warn('expected', '<number>', $self, "Missing number, treated as zero.",
+#         "while processing " . ToString($LaTeXML::CURRENT_TOKEN));
+#       return MuGlue(0); }
+#     $d = $d->negate if $s < 0;
+#     my ($r1, $f1, $r2, $f2);
+#     ($r1, $f1) = $self->readRubber(1) if $self->readKeyword('plus');
+#     ($r2, $f2) = $self->readRubber(1) if $self->readKeyword('minus');
+#     return MuGlue($d->valueOf, $r1, $f1, $r2, $f2); } }
 
 #======================================================================
 # See pp 272-275 for lists of the various registers.
@@ -813,11 +813,6 @@ can be used as a numerical value.
 
 Read a L<LaTeXML::Common::Dimension> according to TeX's rules of the various things that
 can be used as a dimension value.
-
-=item C<< $mudimension = $gullet->readMuDimension; >>
-
-Read a L<LaTeXML::Core::MuDimension> according to TeX's rules of the various things that
-can be used as a mudimension value.
 
 =item C<< $glue = $gullet->readGlue; >>
 
