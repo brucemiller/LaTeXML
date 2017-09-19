@@ -2146,7 +2146,8 @@ gullet_readRegisterValue(pTHX_ SV * gullet, SV * state, int ntypes, UTF8 * regty
          && (type_sv = object_get(aTHX_ defn, "registerType"))){
       UTF8 type = SvPV_nolen(type_sv);
       int typeok = 0;
-      for(int i = 0; i < ntypes ; i++){
+      int i;
+      for(i = 0; i < ntypes ; i++){
         if(strcmp(type,regtypes[i])==0){
           typeok = 1;
           break; }}
@@ -2162,9 +2163,9 @@ gullet_readRegisterValue(pTHX_ SV * gullet, SV * state, int ntypes, UTF8 * regty
           SvREFCNT_dec(parameters); }
         dSP; ENTER; SAVETMPS; PUSHMARK(SP);
         EXTEND(SP,nargs+1); PUSHs(defn);
-        for(int ip=0; ip<nargs; ip++){
+        for(i=0; i<nargs; i++){
           /* No need for mortal/refcnt stuff, since args will be explicitly decremented later*/
-          SV * arg = (args[ip] ? args[ip] : &PL_sv_undef);
+          SV * arg = (args[i] ? args[i] : &PL_sv_undef);
           PUSHs(arg); }
         PUTBACK;
         int nvals = call_method("valueOf",G_SCALAR);
@@ -2176,8 +2177,8 @@ gullet_readRegisterValue(pTHX_ SV * gullet, SV * state, int ntypes, UTF8 * regty
         SvREFCNT_dec(type_sv);  
         SvREFCNT_dec(defn);
         SvREFCNT_dec(token);
-        for(int ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
-          SvREFCNT_dec(args[ip]); }
+        for(i = 0; i < nargs; i++){ /* NOW, we can clean up the args */
+          SvREFCNT_dec(args[i]); }
         return value; } } }
   if(type_sv){ SvREFCNT_dec(type_sv); }
   if(defn){ SvREFCNT_dec(defn); }
@@ -2840,7 +2841,8 @@ expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet,
     SV * sv = POPs;
     nskips = SvIV(sv); }
   PUTBACK; FREETMPS; LEAVE;
-  for(int ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
+  int ip;
+  for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
     SvREFCNT_dec(args[ip]); }
   if(nskips > 0){
     SV * t = gullet_skipConditionalBody(aTHX_ gullet, nskips, ifid);
@@ -3084,7 +3086,8 @@ primitive_invoke(pTHX_ SV * primitive, SV * stomach, SV * state){
     DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
   LEAVE;
   /*SvREFCNT_dec(current_token);*/
-  for(int i = 0; i < nargs; i++){
+  int i;
+  for(i = 0; i < nargs; i++){
     SvREFCNT_dec(args[i]); } 
   DEBUG_Primitive("Primitive %p %s[%s] returned %d boxes\n",primitive,CC_SHORT_NAME[t->catcode],t->string,stack->nboxes);
   return stack; }
@@ -3381,7 +3384,8 @@ installOpcodes(state)
     state_install_parameter_op(aTHX_ state, "Float",         &parameter_opcode_Float);
     /* Install Units */
     HV * units = newHV();
-    for(int i = 0; i < MAX_UNITS; i++){
+    int i;
+    for(i = 0; i < MAX_UNITS; i++){
       hv_store(units, UNIT_NAME[i],strlen(UNIT_NAME[i]), newSVnv(UNIT_VALUE[i]),0); }
     HV * hash = MUTABLE_HV(SvRV(state));
     hv_store(hash,"units",5,newRV_noinc((SV*)units),0);
