@@ -22,35 +22,39 @@ our @EXPORT = (qw(&MuGlue));
 # Exported constructor.
 
 sub MuGlue {
-  my ($scaledpoints, $plus, $pfill, $minus, $mfill) = @_;
-  return LaTeXML::Core::MuGlue->new($scaledpoints, $plus, $pfill, $minus, $mfill); }
+  my ($scaledmu, $plus, $pfill, $minus, $mfill) = @_;
+  return LaTeXML::Core::MuGlue->new($scaledmu, $plus, $pfill, $minus, $mfill); }
 
+# NOTE: MuGlue stores scaled mu (as integer), not scaled points!
+# While it would be nice to just use scaled points, the conversion leads to rounding errors
+# compared to TeX.  So, we just bite the bullet & follow TeX, here.
+# HOWEVER: Since muglue may show up in sizing calculations of boxes, etc,
+# we'll need to adapt the API to make clear which units we get.
+# Currently ->toValue just returns the internal value.
 #======================================================================
 
 # 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
+
+my @FILL = ('', 'fil', 'fill', 'filll');    # [CONSTANT]
+
 sub toString {
   my ($self) = @_;
-  my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . 'mu ';
-  $string .= 'plus ' . ($pfill
-    ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu ') if $plus != 0;
-  $string .= 'minus ' . ($mfill
-    ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu ') if $minus != 0;
+  my ($smu, $plus, $pfill, $minus, $mfill) = @$self;
+  my $string = LaTeXML::Common::Dimension::formatScaled($smu) . 'mu ';
+  $string .= ' plus '
+    . LaTeXML::Common::Dimension::formatScaled($plus) . ($pfill ? $FILL[$pfill] : 'mu')
+    if $plus != 0;
+  $string .= ' minus '
+    . LaTeXML::Common::Dimension::formatScaled($minus) . ($mfill ? $FILL[$mfill] : 'mu')
+
+    if $minus != 0;
   return $string; }
 
+# Since mu (not to mention glue) may be a bit perverse to the outside world,
+# let's just conver these to simple pts.
 sub toAttribute {
   my ($self) = @_;
-  my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . "mu";
-  $string .= ' plus ' . ($pfill
-    ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu') if $plus != 0;
-  $string .= ' minus ' . ($mfill
-    ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu') if $minus != 0;
-  return $string; }
+  return LaTeXML::Common::Float::floatformat($$self[0] / 65536 / 1.8) . "pt"; }
 
 sub stringify {
   my ($self) = @_;
