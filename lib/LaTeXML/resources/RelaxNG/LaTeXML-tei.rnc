@@ -1445,7 +1445,8 @@ tei_bibl =
      | tei_model.segLike
      | tei_model.ptrLike
      | tei_model.biblPart
-     | tei_model.global)*,
+     | tei_model.global
+     | tei_model.graphicLike)*,
     tei_att.global.attributes,
     tei_att.declarable.attributes,
     tei_att.typed.attributes,
@@ -1491,7 +1492,7 @@ tei_listBibl =
   
   ## (citation list) contains a list of bibliographic citations of any kind. [3.11.1. Methods of Encoding Bibliographic References and Lists of References 2.2.7. The Source Description 15.3.2. Declarable Elements]
   element tei:listBibl {
-    tei_model.biblLike*,
+    (tei_model.biblLike | tei_head)*,
     tei_att.global.attributes,
     tei_att.sortable.attributes,
     tei_att.declarable.attributes,
@@ -1789,53 +1790,19 @@ tei_div =
   
   ## (text division) contains a subdivision of the front, body, or back of a text. [4.1. Divisions of the Body]
   element tei:div {
-    ((tei_model.divTop | tei_model.global)*,
-     ((((tei_model.divLike | tei_model.divGenLike), tei_model.global*)+
-       | ((tei_model.common, tei_model.global*)+,
-          ((tei_model.divLike | tei_model.divGenLike),
-           tei_model.global*)*)),
-      (tei_model.divBottom, tei_model.global*)*)?)
-    >> sch:pattern [
-         id = "Grobid-div-abstractModel-structure-l-constraint-6"
-         "\x{a}" ~
-         "            "
-         sch:rule [
-           context = "tei:div"
-           "\x{a}" ~
-           "               "
-           sch:report [
-             test = "ancestor::tei:l"
-             "\x{a}" ~
-             "        Abstract model violation: Lines may not contain higher-level structural elements such as div.\x{a}" ~
-             "      "
-           ]
-           "\x{a}" ~
-           "            "
-         ]
-         "\x{a}" ~
-         "         "
-       ]
-    >> sch:pattern [
-         id = "Grobid-div-abstractModel-structure-p-constraint-7"
-         "\x{a}" ~
-         "            "
-         sch:rule [
-           context = "tei:div"
-           "\x{a}" ~
-           "               "
-           sch:report [
-             test =
-               "ancestor::tei:p or ancestor::tei:ab and not(ancestor::tei:floatingText)"
-             "\x{a}" ~
-             "        Abstract model violation: p and ab may not contain higher-level structural elements such as div.\x{a}" ~
-             "      "
-           ]
-           "\x{a}" ~
-           "            "
-         ]
-         "\x{a}" ~
-         "         "
-       ],
+    (
+      ( tei_model.divTop | tei_model.global )*,
+      (
+         (
+            ( ( tei_model.divLike | tei_model.divGenLike ), tei_model.global* )+
+          | (
+               ( tei_model.common, tei_model.global* )+,
+               ( ( tei_model.divLike | tei_model.divGenLike ), tei_model.global* )*
+            )
+         ),
+         ( tei_model.divBottom, tei_model.global* )*
+      )?
+   ),
     tei_att.global.attributes,
     tei_att.divLike.attributes,
     tei_att.typed.attributes,
@@ -2178,7 +2145,7 @@ tei_table =
   
   ## contains text displayed in tabular form, in rows and columns. [14.1.1. TEI Tables]
   element tei:table {
-    text?,
+    (text | tei_row | tei_head)*,
     tei_att.global.attributes,
     
     ## indicates the number of rows in the table.
@@ -2186,6 +2153,17 @@ tei_table =
     
     ## (columns) indicates the number of columns in each row of the table.
     attribute cols { tei_data.count }?,
+    empty
+  }
+
+tei_row =
+  
+  ## contains one row of a table.  [14.1.1. TEI Tables]
+  element tei:row {
+    tei_cell*,
+    tei_macro.specialPara,
+    tei_att.global.attributes,
+    tei_att.tableDecoration.attributes,
     empty
   }
 tei_cell =

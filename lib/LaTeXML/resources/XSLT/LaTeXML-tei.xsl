@@ -677,27 +677,27 @@
     </xsl:template>
 
     <xsl:template match="ltx:theorem">
-        <statement>
+        <note>
             <xsl:apply-templates select="@*|node()"/>
-        </statement>
+        </note>
     </xsl:template>
 
     <xsl:template match="ltx:theorem/ltx:title">
-        <head>
-            <xsl:apply-templates select="@*|node()"/>
-        </head>
+            <title>
+                <xsl:apply-templates select="@*|node()"/>
+            </title>
     </xsl:template>
 
     <xsl:template match="ltx:proof">
-        <statement>
+        <note>
             <xsl:apply-templates select="@*|node()"/>
-        </statement>
+        </note>
     </xsl:template>
 
     <xsl:template match="ltx:proof/ltx:title">
-        <head>
-            <xsl:apply-templates select="@*|node()"/>
-        </head>
+            <title>
+                <xsl:apply-templates select="@*|node()"/>
+            </title>
     </xsl:template>
 
     <xsl:template match="ltx:contact[@role='address']" mode="front">
@@ -1017,6 +1017,7 @@
         <xsl:choose>
             <xsl:when test="not(preceding-sibling::ltx:p)">
                 <p>
+                    <xsl:attribute name="xml:id"><xsl:value-of select="../@xml:id"/></xsl:attribute>
                     <xsl:apply-templates select="@*|node()"/>
                 </p>
             </xsl:when>
