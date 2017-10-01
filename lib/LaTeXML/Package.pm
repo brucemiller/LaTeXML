@@ -2177,7 +2177,7 @@ sub RequirePackage {
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, after => 1 };
+  options => 1, withoptions => 1, after => 1, notex=>1 };
 
 sub LoadClass {
   my ($class, %options) = @_;
