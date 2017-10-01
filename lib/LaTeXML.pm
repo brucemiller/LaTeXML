@@ -599,7 +599,7 @@ sub new_latexml {
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includeComments => $$opts{comments},
     inputencoding   => $$opts{inputencoding},
-    includeStyles   => $$opts{includestyles},
+    includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},
     nomathparse     => $$opts{nomathparse},                           # Backwards compatibility
     mathparse       => $$opts{mathparse});
