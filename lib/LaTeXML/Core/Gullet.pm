@@ -663,7 +663,7 @@ sub readTokensValue {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -807,7 +807,7 @@ and return the value.  Returns undef if the next token isn't such a register.
 =item C<< $number = $gullet->readNumber; >>
 
 Read a L<LaTeXML::Common::Number> according to TeX's rules of the various things that
-can be used as a numerical value. 
+can be used as a numerical value.
 
 =item C<< $dimension = $gullet->readDimension; >>
 
