@@ -1918,7 +1918,10 @@ gullet_readBalanced(pTHX_ SV * gullet, SV * state, LaTeXML_Core_Tokens tokens){
       gullet_stopProfiling(aTHX_ gullet, token); }
     else {
       tokens_add_to(aTHX_ tokens,token,0); }
-    SvREFCNT_dec(token); } }
+    SvREFCNT_dec(token); }
+  if (level > 0) {
+    croak("expected:}:  Gullet->readBalanced ran out of input in an unbalanced state."); }
+}
 
 SV *
 gullet_readNonSpace(pTHX_ SV * gullet, SV * state){

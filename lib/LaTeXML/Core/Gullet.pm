@@ -382,7 +382,7 @@ sub readTokensValue {
     if ($defn->isRegister eq 'Tokens') {
       return $defn->valueOf($defn->readArguments($self)); }
     elsif ($defn->isExpandable) {
-      if (my $x = $defn->invoke($token,$self)) {
+      if (my $x = $defn->invoke($token, $self)) {
         $$self{mouth}->unread($x->unlist); }
       return $self->readTokensValue; }
     else {
