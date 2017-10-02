@@ -853,9 +853,7 @@ DefMacro('\expandafter Token Token', sub {
       # Note that IF expandafter ends up expanding a \the in an \edef,
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
       local $LaTeXML::NOEXPAND_THE = undef;
-##      my $x = $defn->invoke($gullet);
-##      ($tok, ($x ? $x->unlist : ())); }    # Expand $xtok ONCE ONLY!
-      ($tok, $defn->invoke($gullet)); }    # Expand $xtok ONCE ONLY!
+      ($tok, $defn->invoke($tok, $gullet)); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
 DefMacro('\expandafter', \&LaTeXML::Core::Gullet::expandafter, opcode => 'expandafter');
@@ -1204,7 +1202,7 @@ DefPrimitive('\advance Variable SkipKeyword:by', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    local $LaTeXML::CURRENT_TOKEN = $defn;
+####    local $LaTeXML::CURRENT_TOKEN = $defn;
     $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
 
 DefPrimitive('\multiply Variable SkipKeyword:by Number', sub {

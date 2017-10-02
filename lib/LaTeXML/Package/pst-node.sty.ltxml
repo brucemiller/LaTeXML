@@ -173,8 +173,9 @@ DefMacro('\Rnode PSCoord', sub {
     if ($coord) {
       $coord = ToString($_[1]); }
     else {
-      my $rref = LookupDefinition(T_CS('\RnodeRef'));
-      my @rref = ($rref ? $rref->invoke($gullet) : ());
+      my $tok = T_CS('\RnodeRef');
+      my $rref = LookupDefinition($tok);
+      my @rref = ($rref ? $rref->invoke($tok,$gullet) : ());
       $coord = join('', map { ToString($_) } @rref) if @rref;
       $coord = (LookupValue('\pshref')) . ',' . (ToString(LookupValue('\psvref'))) unless $coord; }
     (T_CS('\@Rnode'), T_OTHER('('), Explode($coord), T_OTHER(')')); });
