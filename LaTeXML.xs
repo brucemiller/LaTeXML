@@ -1206,10 +1206,13 @@ state_digestable(pTHX_ SV * state, SV * token){
     SvREFCNT_inc(token);
     return token; } }
 
-/* SV * expandable_op(aTHX_ token, expandable, gullet, state*/
+/* SV * expandable_op(aTHX_ token, expandable_defn, gullet, state)*/
 typedef SV * expandable_op(pTHX_ SV *, SV *, SV *, SV *);
+/* SV * primitive_op(aTHX_ token, primitive_defn, stomach, state, resultstack)*/
+typedef void primitive_op(pTHX_ SV *, SV *, SV *, SV *, LaTeXML_Core_Boxstack);
 /* SV * parameter_op(aTHX_ parameter, gullet, state) */
 typedef SV * parameter_op(pTHX_ SV *, SV *, SV *);  
+
 void
 state_install_expandable_op(pTHX_ SV * state, UTF8 opcode, expandable_op * op){
   HV * hash = MUTABLE_HV(SvRV(state));
@@ -1233,6 +1236,33 @@ state_lookup_expandable_op(pTHX_ SV * state, UTF8 opcode){
     if(sv_op){
       IV tmp = SvIV((SV*)SvRV(sv_op));
       expandable_op * op = INT2PTR(expandable_op *, tmp);
+      SvREFCNT_dec(sv_op);
+      return op; } }
+  return NULL; }
+
+void
+state_install_primitive_op(pTHX_ SV * state, UTF8 opcode, primitive_op * op){
+  HV * hash = MUTABLE_HV(SvRV(state));
+  SV ** ptr;
+  HV * table;
+  if( (ptr  = hv_fetch(hash,"primitive_ops",14,0)) && SvOK(*ptr) ){
+    table =  MUTABLE_HV(SvRV(*ptr)); }
+  else {
+    table = newHV();
+    hv_store(hash,"primitive_ops",14,newRV_noinc((SV*)table),0); }
+  SV * ref = newSV(0);
+  sv_setref_pv(ref, NULL, (void*)op);
+  hv_store(table,opcode,-strlen(opcode),  ref,0);  }
+
+primitive_op *
+state_lookup_primitive_op(pTHX_ SV * state, UTF8 opcode){
+  SV * primitive_ops = object_get(aTHX_ state, "primitive_ops");
+  if(primitive_ops){
+    SV * sv_op = object_get(aTHX_ primitive_ops, opcode);
+    SvREFCNT_dec(primitive_ops);
+    if(sv_op){
+      IV tmp = SvIV((SV*)SvRV(sv_op));
+      primitive_op * op = INT2PTR(primitive_op *, tmp);
       SvREFCNT_dec(sv_op);
       return op; } }
   return NULL; }
@@ -1714,7 +1744,7 @@ gullet_nextMouth(pTHX_ SV * gullet){
   return (sv != NULL); }
 
 SV *
-expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state);
+expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state);
 
 int readXToken_interesting_catcode[] = {
   0, 1, 1, 1,
@@ -1750,8 +1780,8 @@ gullet_readXToken(pTHX_ SV * gullet, SV * state, int toplevel, int commentsok){
         return token; }                           /* just return it */
       else if ( (defn = state_expandable(aTHX_ state, token)) ) {
         DEBUG_Gullet("expand & loop\n");
+        SV * expansion = expandable_invoke(aTHX_ defn, token, gullet, state);
         SvREFCNT_dec(token);
-        SV * expansion = expandable_invoke(aTHX_ defn, gullet, state);
         SvREFCNT_dec(defn);
         mouth = gullet_getMouth(aTHX_ gullet); /* Expansion could change Mouths! */
         if(expansion){
@@ -1808,8 +1838,8 @@ gullet_expandafter(pTHX_ SV * gullet, SV * state){
         SvREFCNT_dec(token);
         break; }
       else if ( (defn = state_expandable(aTHX_ state, token)) ) {
+        SV * expansion = expandable_invoke(aTHX_ defn, token, gullet, state);
         SvREFCNT_dec(token);
-        SV * expansion = expandable_invoke(aTHX_ defn, gullet, state);
         SvREFCNT_dec(defn);
         mouth = gullet_getMouth(aTHX_ gullet); /* Expansion can change mouth? */
         if(expansion){
@@ -2695,7 +2725,8 @@ expandable_newIfFrame(pTHX_ SV * conditional, SV * token, SV * gullet, SV * stat
   state_assign_internal(aTHX_ state, "value", "if_count",newSViv(++ifid),"global");
   HV * ifframe = newHV();
   hv_store(ifframe, "token",   5, (token ? SvREFCNT_inc(token) : newSV(0)),0); /* ==undef */
-  hv_store(ifframe, "start",   5, gullet_getLocator(aTHX_ gullet), 0);
+  SV * loc = gullet_getLocator(aTHX_ gullet);
+  hv_store(ifframe, "start",   5, loc, 0);
   hv_store(ifframe, "parsing", 7, newSViv(1), 0);
   hv_store(ifframe, "elses",   5, newSViv(0), 0);
   hv_store(ifframe, "ifid",    4, newSViv(ifid), 0);
@@ -2733,6 +2764,30 @@ expandable_getIFFrame(pTHX_ SV * state, UTF8 fortoken){
 /*return MUTABLE_HV(SvRV(*ptr)); }*/
 
 SV *
+expandable_getActiveIFFrame(pTHX_ SV * state, UTF8 fortoken){
+  SV * * ptr;
+  SV * sv_ifstack = state_value(aTHX_ state, "if_stack");
+  if(!sv_ifstack){
+    croak("Didn't expect %s since we seem not to be in a conditional (no if_stack)",fortoken); }
+  /*fprintf(stderr,"GETIFFRAME\n");
+    Perl_sv_dump(aTHX_ sv_stack);*/
+
+  AV * stack = MUTABLE_AV(SvRV(sv_ifstack));
+  int i;
+  int n = av_len(stack) + 1;
+  for(i = 0; i < n; i++){
+    ptr = av_fetch(stack, i, 0);
+    if(!ptr){
+      croak("Didn't expect %s since we seem not to be in a conditional (no frame in if_stack)",
+            fortoken); }
+    else if(object_getBoole(aTHX_ *ptr, "parsing")){
+      SvREFCNT_dec(sv_ifstack);
+      return *ptr; } }
+  croak("Internal error: no \\if frame is open for %s", fortoken);
+  SvREFCNT_dec(sv_ifstack);
+  return NULL; }
+
+SV *
 expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state){
   int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   HV * defnhash = MUTABLE_HV(SvRV(expandable));
@@ -2755,6 +2810,11 @@ expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
     DEBUG_Expandable("reading %ld parameters\n", npara);
     nargs = gullet_readArguments(aTHX_ gullet, npara, params, current_token, args);
     DEBUG_Expandable("got %d arguments\n", nargs); }
+
+  SV * ifframe2 = expandable_getActiveIFFrame(aTHX_ state,  "some \\if");
+  UTF8 ifid2 = object_getPV(aTHX_ ifframe2,"ifid");
+  if(strcmp(ifid,ifid2) != 0){
+    fprintf(stderr, "if %s in body INSTEAD of %s\n",ifid2,ifid); }
 
   hv_store(ifframe, "parsing",7, newSViv(0),0);
 
@@ -2897,47 +2957,33 @@ expandable_opcode_expandafter(pTHX_ SV * current_token, SV * expandable, SV * gu
   return NULL; }
 
 SV *
-expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state){
+expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   int tracing = state_booleval(aTHX_ state, "TRACINGMACROS");
   int profiling= state_booleval(aTHX_ state, "PROFILING");
   HV * defnhash = MUTABLE_HV(SvRV(expandable));
   SV ** ptr;
   SV * result = NULL;
-  SV * current_token;
-  SV * cs = &PL_sv_undef;
-  if( (ptr  = hv_fetchs(defnhash,"cs",0)) /* $$expandable{cs} */
-      && SvOK(*ptr) ){
-    cs = (SV *) *ptr; }
-  else {
-    croak("Yikes, got no token!"); }
-  LaTeXML_Core_Token t = SvToken(SvRV(cs)); PERL_UNUSED_VAR(t); /* -Wall */
+  LaTeXML_Core_Token t = SvToken(SvRV(token)); PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Expandable("Invoke Expandable %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string);
-
-  ENTER;
-  /* local $LaTeXML::CURRENT_TOKEN = $$self{cs};*/
-  current_token = get_sv("LaTeXML::CURRENT_TOKEN",0);
-  save_item(current_token);
-  sv_setsv(current_token,cs);
-
   if(profiling){
-    /*my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+    /*my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{token});
       state_startProfiling(aTHX_ profiled,"expand"); */ }
   if( (ptr  = hv_fetchs(defnhash,"opcode",0)) && SvOK(*ptr) ){
     UTF8 opcode = SvPV_nolen(*ptr);
     expandable_op * op = state_lookup_expandable_op(aTHX_ state, opcode);
     if(op){
-      result = op(aTHX_ current_token, expandable, gullet, state); }
+      result = op(aTHX_ token, expandable, gullet, state); }
     else {
       croak("Internal error: Expandable opcode %s has no definition",opcode); }
   }
   else {
-    if( (ptr  = hv_fetchs(defnhash,"trivial_expansion",0)) /* $$expandable{expansion} */
+    if(0 && (ptr  = hv_fetchs(defnhash,"trivial_expansion",0)) /* $$expandable{expansion} */
         && SvOK(*ptr) ){
       DEBUG_Expandable("Trivial Expansion\n");
       result = (SV *) *ptr;
       SvREFCNT_inc(result);
       if(tracing){
-        /* print STDERR "\n" . $self->tracingCSName
+        /* print STDERR "\n" . $self->tracingCSName($token)
            . ' -> ' . tracetoString($expansion) . "\n"; */ } }
     else {
       SV * expansion = NULL;
@@ -2958,7 +3004,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state){
 
       if(params){       /* If no parameters, nothing to read! */
         DEBUG_Expandable("reading %ld parameters\n", npara);
-        nargs = gullet_readArguments(aTHX_ gullet, npara, params, current_token, args);
+        nargs = gullet_readArguments(aTHX_ gullet, npara, params, token, args);
         DEBUG_Expandable("got %d arguments\n", nargs); }
 
       if(! SvOK(expansion)){      /* empty? */
@@ -2985,23 +3031,24 @@ expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state){
             tokens_add_to(aTHX_ tokens, ST(ip), 0); } }
         result = newSV(0);
         sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tokens);
-        SvREFCNT_inc(result);
+        /*SvREFCNT_inc(result);*/
         PUTBACK; FREETMPS; LEAVE;
         if(tracing){
-          /* print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString($result) . "\n";
+          /* print STDERR "\n" . $self->tracingCSName($token) . ' ==> ' . tracetoString($result) . "\n";
              print STDERR $self->tracingArgs(@args) . "\n" if @args; */ } }
       else if(sv_isa(expansion, "LaTeXML::Core::Tokens")) {
         IV tmp = SvIV((SV*)SvRV(expansion));
         LaTeXML_Core_Tokens tokens = INT2PTR(LaTeXML_Core_Tokens, tmp);
         DEBUG_Expandable("Expansion is tokens %p\n", expansion);
         if(tracing){
-          /* print STDERR "\n" . $self->tracingCSName
+          /* print STDERR "\n" . $self->tracingCSName($token)
              . ' -> ' . tracetoString($expansion) . "\n";
              print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
         LaTeXML_Core_Tokens tresult = tokens_substituteParameters(aTHX_ tokens, nargs, args);
         result = newSV(0);
         sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tresult);
-        SvREFCNT_inc(result); }
+        /* SvREFCNT_inc(result); */
+}
       else {
         croak("expansion is not of type LaTeXML::Core::Tokens"); }
       for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
@@ -3010,85 +3057,74 @@ expandable_invoke(pTHX_ SV * expandable, SV * gullet, SV * state){
    /*
     # Getting exclusive requires dubious Gullet support!
     #####push(@result, T_MARKER($profiled)) if $profiled; */
-  /*SvREFCNT_dec(current_token);*/
-  LEAVE;
   DEBUG_Expandable("Returning expansion %p\n", result);
   return result; }
 
   /*======================================================================
     C-level Primitive support */
 LaTeXML_Core_Boxstack
-primitive_invoke(pTHX_ SV * primitive, SV * stomach, SV * state){
+primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state){
   int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   int profiling= state_booleval(aTHX_ state, "PROFILING");
   HV * stomachhash = MUTABLE_HV(SvRV(stomach));
   HV * defnhash = MUTABLE_HV(SvRV(primitive));
   SV ** ptr;
-  SV * current_token;
-  SV * cs = &PL_sv_undef;
   SV * gullet;
   if( (ptr  = hv_fetchs(stomachhash,"gullet",0))
       && SvOK(*ptr) ){
     gullet = (SV *) *ptr; }
   else {
     croak("Stomach %p has no Gullet!", stomach); }
-
-  if( (ptr  = hv_fetchs(defnhash,"cs",0)) /* $$primitive{cs} */
-      && SvOK(*ptr) ){
-    cs = (SV *) *ptr; }
-  if (! (SvOK(cs) && sv_isa(cs, "LaTeXML::Core::Token")) ) {
-    cs = token_new(aTHX_ "<unknown>", CC_CS); }
-  LaTeXML_Core_Token t = SvToken(SvRV(cs));PERL_UNUSED_VAR(t); /* -Wall */
-
+  LaTeXML_Core_Token t = SvToken(SvRV(token));PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Primitive("Invoke Primitive %p %s[%s]\n",primitive,CC_SHORT_NAME[t->catcode],t->string);
-  LaTeXML_Core_Boxstack stack = boxstack_new(aTHX);
-  /* local $LaTeXML::CURRENT_TOKEN = $$self{cs};*/
-  /* and if still undef ????? */
-   ENTER;
-  current_token = get_sv("LaTeXML::CURRENT_TOKEN",0);
-  save_item(current_token); 
-  sv_setsv(current_token,cs);
   if(profiling){
     /*my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
       state_startProfiling(aTHX_ profiled,"expand"); */ }
+  LaTeXML_Core_Boxstack stack = boxstack_new(aTHX);
   /* Call beforeDigest daemons */
-  if( (ptr  = hv_fetchs(defnhash,"beforeDigest",0)) /* $$primitive{beforeDigest} */
-      && SvOK(*ptr) ){
+  if( (ptr  = hv_fetchs(defnhash,"beforeDigest",0)) && SvOK(*ptr) ){
     DEBUG_Primitive("%p calling beforeDigest %p\n", primitive, *ptr);
     boxstack_callAV(aTHX_ stack, *ptr, stomach, 0, NULL);
     DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
-  /* Read arguments */
-  SV * parameters = NULL;
-  int nargs = 0;
-  if((ptr  = hv_fetchs(defnhash,"parameters",0)) /* $$primitive{parameters} */
-    && SvOK(*ptr) ){
-    parameters = (SV *) *ptr;
-    DEBUG_Primitive("got parameters %p\n", parameters); }
-  AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
-  SSize_t npara = (params ? av_len(params) + 1 : 0);
-  SV * args[npara];
-  if(params){       /* If no parameters, nothing to read! */
-    DEBUG_Primitive("reading %ld parameters\n", npara);
-    nargs = gullet_readArguments(aTHX_ gullet, npara, params, current_token, args);
-    DEBUG_Primitive("got %d arguments\n", nargs); }
-  /* Tracing args ??? */
-  /* Call main invocation */
-  if( (ptr  = hv_fetchs(defnhash,"replacement",0)) /* $$primitive{replacement} */
-      && SvOK(*ptr) ){
-    DEBUG_Primitive("%p calling replacement %p\n", primitive, *ptr);
-    boxstack_call(aTHX_ stack, *ptr, stomach, nargs, args);
-    DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
-  /* Call afterDigest daemons */
-  if( (ptr  = hv_fetchs(defnhash,"afterDigest",0)) /* $$primitive{afterDigest} */
-      && SvOK(*ptr) ){
-    DEBUG_Primitive("%p calling afterDigest %p\n", primitive, *ptr);
-    boxstack_callAV(aTHX_ stack, *ptr, stomach, nargs, args);
-    DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
-  LEAVE;
-  /*SvREFCNT_dec(current_token);*/
-  int i;
-  for(i = 0; i < nargs; i++){
-    SvREFCNT_dec(args[i]); } 
+  /* Call opcode, if defined */
+  if( (ptr  = hv_fetchs(defnhash,"opcode",0)) && SvOK(*ptr) ){
+    UTF8 opcode = SvPV_nolen(*ptr);
+    primitive_op * op = state_lookup_primitive_op(aTHX_ state, opcode);
+    if(op){
+      op(aTHX_ token, primitive, stomach, state, stack); }
+    else {
+      croak("Internal error: Primitive opcode %s has no definition",opcode); } }
+  else {
+    /* Read arguments */
+    SV * parameters = NULL;
+    int nargs = 0;
+    if((ptr  = hv_fetchs(defnhash,"parameters",0)) /* $$primitive{parameters} */
+       && SvOK(*ptr) ){
+      parameters = (SV *) *ptr;
+      DEBUG_Primitive("got parameters %p\n", parameters); }
+    AV * params = (parameters && SvOK(parameters) ? MUTABLE_AV(SvRV(parameters)) :NULL);
+    SSize_t npara = (params ? av_len(params) + 1 : 0);
+    SV * args[npara];
+    if(params){       /* If no parameters, nothing to read! */
+      DEBUG_Primitive("reading %ld parameters\n", npara);
+      nargs = gullet_readArguments(aTHX_ gullet, npara, params, token, args);
+      DEBUG_Primitive("got %d arguments\n", nargs); }
+    /* Tracing args ??? */
+    /* Call main invocation */
+    if( (ptr  = hv_fetchs(defnhash,"replacement",0)) && SvOK(*ptr) ){
+      DEBUG_Primitive("%p calling replacement %p\n", primitive, *ptr);
+      boxstack_call(aTHX_ stack, *ptr, stomach, nargs, args);
+      DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
+    /* Call afterDigest daemons */
+    /* BUT!!!! since they get the args, not done for opcodes ???? */
+    if( (ptr  = hv_fetchs(defnhash,"afterDigest",0)) /* $$primitive{afterDigest} */
+        && SvOK(*ptr) ){
+      DEBUG_Primitive("%p calling afterDigest %p\n", primitive, *ptr);
+      boxstack_callAV(aTHX_ stack, *ptr, stomach, nargs, args);
+      DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes); }
+    int i;
+    for(i = 0; i < nargs; i++){
+      SvREFCNT_dec(args[i]); }  }
   DEBUG_Primitive("Primitive %p %s[%s] returned %d boxes\n",primitive,CC_SHORT_NAME[t->catcode],t->string,stack->nboxes);
   return stack; }
 
@@ -3311,8 +3347,10 @@ installDefinition(state, definition, ...)
     LaTeXML_Core_Token t = SvToken(SvRV(*ptr));
     UTF8 name = PRIMITIVE_NAME[t->catcode]; /* getCSName */
     name = (name == NULL ? t->string : name);
-    char lock[strlen(name)+8];
-    sprintf(lock,"%s:locked",name);
+    int nlen = strlen(name);
+    char lock[nlen+8];
+    strncpy(lock,name,nlen);
+    strcpy(lock+nlen,":locked");
     SV * tmp;
     if ( state_booleval(aTHX_ state, lock)
          && ( ! (tmp = get_sv("LaTeXML::Core::State::UNLOCKED",0)) || !SvTRUE(tmp)) ) {
@@ -4396,7 +4434,7 @@ new(class,cs,parameters,expansion,...)
     hv_store(hash, "cs",2, SvREFCNT_inc(cs),0);
     if(parameters){
       hv_store(hash,"parameters",10,SvREFCNT_inc(parameters),0); }
-    else if(expansion && sv_isa(expansion, "LaTeXML::Core::Tokens")) {
+    else if(0 && expansion && sv_isa(expansion, "LaTeXML::Core::Tokens")) {
       LaTeXML_Core_Tokens exp = SvTokens(SvRV(expansion));
       SV * noargs[0];
       SV * triv = newSV(0);
@@ -4423,15 +4461,16 @@ new(class,cs,parameters,expansion,...)
     RETVAL
     
 void
-invoke(self, gullet)
+invoke(self, token, gullet)
     SV * self;
+    SV * token;
     SV * gullet;
   INIT:
     SV * state = state_global(aTHX);
     SV * result;
   PPCODE:
     PUTBACK;
-    result = expandable_invoke(aTHX_ self, gullet, state);
+    result = expandable_invoke(aTHX_ self, token, gullet, state);
     SPAGAIN;
     if(result){ 
       EXTEND(SP,1);
@@ -4443,8 +4482,9 @@ invoke(self, gullet)
 MODULE = LaTeXML  PACKAGE = LaTeXML::Core::Definition::Primitive
 
 void
-invoke(self, stomach)
+invoke(self, token, stomach)
     SV * self;
+    SV * token;
     SV * stomach;
   INIT:
     SV * state = state_global(aTHX);
@@ -4456,7 +4496,7 @@ invoke(self, stomach)
     PUTBACK/SPAGAIN seems to handle that (even though the called functions use them already).
     See cryptic comments at https://github.com/Perl-XS/notes/issues/7 */
     PUTBACK;
-    stack = primitive_invoke(aTHX_ self, stomach, state);
+    stack = primitive_invoke(aTHX_ self, token, stomach, state);
     SPAGAIN;
     if(stack->nboxes){
       EXTEND(SP,stack->nboxes);
