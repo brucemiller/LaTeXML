@@ -30,17 +30,6 @@ sub new {
   map { $$_{empty} = 1 } @{ $data{repeated} };
   return bless {%data}, $class; }
 
-sub revert {
-  my ($self) = @_;
-  return @{ $$self{tokens} }; }
-
-# Methods for constructing a template.
-
-sub setReversion {
-  my ($self, @tokens) = @_;
-  $$self{tokens} = [@tokens];
-  return; }
-
 sub setRepeating {
   my ($self) = @_;
   $$self{repeating} = 1;

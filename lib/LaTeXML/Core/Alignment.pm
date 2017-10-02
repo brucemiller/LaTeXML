@@ -177,6 +177,7 @@ sub stringify {
   my ($self) = @_;
   return "Alignment[]"; }
 
+# Does this ever get used? (most alignment constructs have/need their own reversion!)
 sub revert {
   my ($self) = @_;
   return $self->getBody->revert; }
@@ -433,7 +434,6 @@ sub ReadAlignmentTemplate {
   $gullet->skipSpaces;
   local $LaTeXML::BUILD_TEMPLATE =
     LaTeXML::Core::Alignment::Template->new(columns => [], tokens => []);
-  my @tokens = (T_BEGIN);
   my $nopens = 0;
   while (my $open = $gullet->readToken) {
     if ($open->equals(T_BEGIN)) { $nopens++; }
@@ -447,21 +447,12 @@ sub ReadAlignmentTemplate {
       $gullet->unread($op); }
     elsif (defined($defn = $STATE->lookupDefinition(T_CS('\NC@rewrite@' . ToString($op))))
       && $defn->isExpandable) {
-      # A variation on $defn->invoke, so we can reconstruct the reversion
-      my @args = $defn->readArguments($gullet);
-      if (my $exp = $defn->doInvocation($gullet, @args)) {    # This just expanded into other stuff
-        $gullet->unread($exp); }
-      else {
-        push(@tokens, $op);
-        if (my $param = $defn->getParameters) {
-          push(@tokens, $param->revertArguments(@args)); } } }
-    elsif ($op->equals(T_BEGIN)) {                            # Wrong, but a safety valve
+      $gullet->unread($defn->invoke($op, $gullet)); }
+    elsif ($op->equals(T_BEGIN)) {    # Wrong, but a safety valve
       $gullet->unread($gullet->readBalanced); }
     else {
       Warn('unexpected', $op, $gullet, "Unrecognized tabular template '" . Stringify($op) . "'"); }
     last unless $nopens; }
-  push(@tokens, T_END);
-  $LaTeXML::BUILD_TEMPLATE->setReversion(@tokens);
   return $LaTeXML::BUILD_TEMPLATE; }
 
 sub parseAlignmentTemplate {
