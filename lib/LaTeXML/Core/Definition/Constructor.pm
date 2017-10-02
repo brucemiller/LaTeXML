@@ -77,15 +77,15 @@ sub getNumArgs {
 # Digest the constructor; This should occur in the Stomach to create a Whatsit.
 # The whatsit which will be further processed to create the document.
 sub invoke {
-  my ($self, $stomach) = @_;
+  my ($self, $token, $stomach) = @_;
   # Call any `Before' code.
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $profiled = $STATE->lookupValue('PROFILING') && $token;
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my @pre = $self->executeBeforeDigest($stomach);
 
-  print STDERR '{' . $self->tracingCSName . "}\n" if $tracing;
+  print STDERR '{' . $self->tracingCSName($token) . "}\n" if $tracing;
   # Get some info before we process arguments...
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');

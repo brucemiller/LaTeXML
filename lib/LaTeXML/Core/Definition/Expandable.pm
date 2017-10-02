@@ -37,42 +37,7 @@ sub getTest {
 sub getExpansion {
   my ($self) = @_;
   my $expansion = $$self{expansion};
-  if (defined $expansion && !ref $expansion) { # Tokenization DEFERRED till actually used (shaves > 5%)
-    require LaTeXML::Package;                  # make sure present, but no imports
-    $$self{expansion} = $expansion = LaTeXML::Package::TokenizeInternal($expansion);
-    if (!$$self{parameters}) {                 # And prepare for future simpler expansions
-      $$self{trivial_expansion} = $$self{expansion}->substituteParameters(); } }
   return $expansion; }
-
-# Expand the expandable control sequence. This should be carried out by the Gullet.
-sub doInvocation {
-  my ($self, $gullet, @args) = @_;
-  my $expansion = $$self{expansion};
-  my $r;
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
-  my @result;
-  if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
-    if (ref $expansion eq 'CODE') {
-      # Harder to emulate \tracingmacros here.
-      @result = &$expansion($gullet, @args);
-      # CHECK @result HERE TOO!!!!
-      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
-      print STDERR $self->tracingArgs(@args) . "\n" if @args; }
-    else {
-      print STDERR "\n" . $self->tracingCSName
-        . ' -> ' . tracetoString($expansion) . "\n";
-      print STDERR $self->tracingArgs(@args) . "\n" if @args;
-      @result = $expansion->substituteParameters(@args)->unlist; } }
-  else {
-    if (ref $expansion eq 'CODE') {
-      @result = &$expansion($gullet, @args); }
-    else {
-      # but for tokens, make sure args are proper Tokens (lists)
-      @result = $expansion->substituteParameters(@args)->unlist; } }
-  # Getting exclusive requires dubious Gullet support!
-  push(@result, T_MARKER($profiled)) if $profiled;
-  return Tokens(@result); }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {

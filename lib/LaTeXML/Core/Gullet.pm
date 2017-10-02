@@ -77,11 +77,11 @@ sub nextMouth {
   $self->closeMouth;    # Next input stream.
   return $$self{mouth}; }
 
-# temporary, for XSUB
-sub invokeExpandable {
-  my ($self, $defn, $token) = @_;
-  #  local $LaTeXML::CURRENT_TOKEN = $token;
-  return $defn->invoke($self); }
+# # temporary, for XSUB
+# sub invokeExpandable {
+#   my ($self, $defn, $token) = @_;
+#   #  local $LaTeXML::CURRENT_TOKEN = $token;
+#   return $defn->invoke($token,$self); }
 
 sub getMouth {
   my ($self) = @_;
@@ -227,46 +227,46 @@ sub XXXunread {
 
 # catcodes interesting to readXtoken: executable (hence, possibly expandable),
 #  or some special cases: comment, notexpanded, marker
-our @readXToken_interesting_catcode = (    # [CONSTANT]
-  0, 1, 1, 1,
-  1, 0, 0, 1,
-  1, 0, 0, 0,
-  0, 1, 1, 0,
-  1, 1, 1);
+# our @readXToken_interesting_catcode = (    # [CONSTANT]
+#   0, 1, 1, 1,
+#   1, 0, 0, 1,
+#   1, 0, 0, 0,
+#   0, 1, 1, 0,
+#   1, 1, 1);
 
-sub XXXreadXToken {
-  my ($self, $toplevel, $commentsok) = @_;
-  $toplevel = 1 unless defined $toplevel;
-###  return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
-  my ($token, $cc, $defn);
-  $token = $commentsok && $$self{pending_comments}->pop;
-  return $token if defined $token;
+# sub XXXreadXToken {
+#   my ($self, $toplevel, $commentsok) = @_;
+#   $toplevel = 1 unless defined $toplevel;
+# ###  return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
+#   my ($token, $cc, $defn);
+#   $token = $commentsok && $$self{pending_comments}->pop;
+#   return $token if defined $token;
 
-  while (1) {
-    $token = $$self{mouth}->readToken();
-    if (!defined $token) {
-      return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
-      $self->closeMouth; }    # Next input stream.
-    elsif (!$readXToken_interesting_catcode[($cc = $token->getCatcode)]) {    # Short circuit tests
-      return $token; }                                                        # just return it
-        # Note: special-purpose lookup in State, for efficiency
-    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
-      local $LaTeXML::CURRENT_TOKEN = $token;
-      if (my $r = $defn->invoke($self)) {
-        $$self{mouth}->unread($r); } }
-    elsif ($cc == CC_NOTEXPANDED) {
-      # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
-      # so this token should never leak out through an EXTERNAL call to readToken.
-      return $self->readToken; }    # Just return the next token.
-    elsif ($cc == CC_COMMENT) {
-      return $token if $commentsok;
-      $$self{pending_comments}->push($token); }
-    elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
-    else {
-      return $token; }              # just return it
-  }
-  return; }                         # never get here.
+#   while (1) {
+#     $token = $$self{mouth}->readToken();
+#     if (!defined $token) {
+#       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
+#       $self->closeMouth; }    # Next input stream.
+#     elsif (!$readXToken_interesting_catcode[($cc = $token->getCatcode)]) {    # Short circuit tests
+#       return $token; }                                                        # just return it
+#         # Note: special-purpose lookup in State, for efficiency
+#     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+#       local $LaTeXML::CURRENT_TOKEN = $token;
+#       if (my $r = $defn->invoke($token,$self)) {
+#         $$self{mouth}->unread($r); } }
+#     elsif ($cc == CC_NOTEXPANDED) {
+#       # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
+#       # so this token should never leak out through an EXTERNAL call to readToken.
+#       return $self->readToken; }    # Just return the next token.
+#     elsif ($cc == CC_COMMENT) {
+#       return $token if $commentsok;
+#       $$self{pending_comments}->push($token); }
+#     elsif ($cc == CC_MARKER) {
+#       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
+#     else {
+#       return $token; }              # just return it
+#   }
+#   return; }                         # never get here.
 
 # Read the next raw line (string);
 # primarily to read from the Mouth, but keep any unread input!
@@ -382,7 +382,7 @@ sub readTokensValue {
     if ($defn->isRegister eq 'Tokens') {
       return $defn->valueOf($defn->readArguments($self)); }
     elsif ($defn->isExpandable) {
-      if (my $x = $defn->invoke($self)) {
+      if (my $x = $defn->invoke($token,$self)) {
         $$self{mouth}->unread($x->unlist); }
       return $self->readTokensValue; }
     else {

@@ -93,14 +93,14 @@ sub toString {
 #======================================================================
 # Tracing support
 sub tracingCSName {
-  my ($self) = @_;
+  my ($self, $token) = @_;
   my $parameters = $$self{parameters};
   return ToString($self->getCSName)
     # Show parameter string too
     . ($parameters ? ' ' . ToString($parameters) : '')
     # And if this was \let to something show the name it was called by
-    . ($LaTeXML::CURRENT_TOKEN && !$$self{cs}->equals($LaTeXML::CURRENT_TOKEN)
-    ? ' [for ' . ToString($LaTeXML::CURRENT_TOKEN) . ']' : ''); }
+    . ($token && !$$self{cs}->equals($token)
+    ? ' [for ' . ToString($token) . ']' : ''); }
 
 sub tracingArgs {
   my ($self, @args) = @_;

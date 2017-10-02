@@ -38,7 +38,7 @@ sub setValue {
   return; }
 
 sub invoke {
-  my ($self, $stomach) = @_;
+  my ($self, $token, $stomach) = @_;
   my $cs = $$self{internalcs};
   # Tracing ?
   return (defined $cs ? $stomach->invokeToken($cs) : undef); }

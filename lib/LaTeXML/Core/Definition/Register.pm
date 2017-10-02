@@ -59,8 +59,8 @@ sub addValue {
 # No before/after daemons ???
 # (other than afterassign)
 sub invoke {
-  my ($self, $stomach) = @_;
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my ($self, $token, $stomach) = @_;
+  my $profiled = $STATE->lookupValue('PROFILING') && $token;
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my $gullet = $stomach->getGullet;
