@@ -233,7 +233,7 @@ DefEnvironment('{algorithm}',
   beforeDigest => sub { DefMacroI('\@captype', undef, 'algorithm'); },
   afterDigest => sub { RescueCaptionCounters('algorithm', $_[1]); });
 
-RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
+RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
 
 # These make captions for continuations of figures & tables....
 # this isn't really quite right, but...
