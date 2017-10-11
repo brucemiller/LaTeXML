@@ -197,7 +197,7 @@
     </xsl:template>
 
     <xsl:template match="ltx:contact[@role='affiliation']" mode="front">
-        <aff><xsl:apply-templates select="@*|node()" /></aff>
+        <affiliation><xsl:apply-templates select="@*|node()" /></affiliation>
     </xsl:template>
 
     <xsl:template match="ltx:contact[@role='email']" mode="front">
@@ -506,7 +506,7 @@
     </xsl:template>
 
     <xsl:template match="ltx:acknowledgements" mode="back">
-        <ack>
+        <div type="acknowledgements">
             <xsl:if test="not(./ltx:p)">
                 <p>
                     <xsl:apply-templates mode="back" select="@*|node()"/>
@@ -515,7 +515,7 @@
             <xsl:if test="./ltx:p">
                 <xsl:apply-templates mode="back" select="@*|node()"/>
             </xsl:if>
-        </ack>
+        </div>
     </xsl:template>
 
     <xsl:template match="ltx:text[@font='italic']" mode="back">
@@ -639,7 +639,9 @@
     </xsl:template>
 
     <xsl:template match="ltx:inline-block">
-        <xsl:apply-templates select="@*|node()"/>
+        <figure>
+            <xsl:apply-templates select="@*|node()"/>
+        </figure>
     </xsl:template>
 
     <xsl:template match="ltx:p">
@@ -702,9 +704,9 @@
 
     <xsl:template match="ltx:contact[@role='address']" mode="front">
         <address>
-            <addr-line>
+            <addrLine>
                 <xsl:apply-templates select="@*|node()" mode="front"/>
-            </addr-line>
+            </addrLine>
         </address>
     </xsl:template>
 
