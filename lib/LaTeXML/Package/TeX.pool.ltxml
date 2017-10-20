@@ -111,8 +111,7 @@ RequireResource('LaTeXML.css');
 #======================================================================
 # Define parsers for standard parameter types.
 
-DefParameterType('Plain', \&LaTeXML::Core::Gullet::readArg,
-  opcode    => 'arg',
+DefParameterType('Plain', Opcode('Arg'),
   reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -157,32 +156,29 @@ DefParameterType('GeneralText', sub {
         "Expected <general text> here");
       return $open; } });
 
-DefParameterType('Until', \&LaTeXML::Core::Gullet::readUntil,
+DefParameterType('Until', Opcode('Until'),
   reversion => sub {
     my ($arg, $until) = @_;
     (Revert($arg), Revert($until)); });
 
 # Skip any spaces, but don't contribute an argument.
-DefParameterType('SkipSpaces', \&LaTeXML::Core::Gullet::skipSpaces, novalue => 1, optional => 1,
-  opcode => 'skipspaces');
+DefParameterType('SkipSpaces', Opcode('SkipSpaces'), novalue => 1, optional => 1);
 
-DefParameterType('Skip1Space', \&LaTeXML::Core::Gullet::skip1Space, novalue => 1, optional => 1,
-  opcode => 'skipspace');
+DefParameterType('Skip1Space', Opcode('SkipSpace'), novalue => 1, optional => 1);
 
-DefParameterType('SkipMatch:=', undef, novalue => 1, optional => 1,
-  opcode => 'skipequals');
+DefParameterType('SkipMatch:=', Opcode('SkipEquals'), novalue => 1, optional => 1);
 
 # Read the next token
-DefParameterType('Token', \&LaTeXML::Core::Gullet::readToken, opcode => 'token');
+DefParameterType('Token', Opcode('Token'));
 
 # Read the next token, after expanding any expandable ones.
-DefParameterType('XToken', \&LaTeXML::Core::Gullet::readXToken, opcode => 'xtoken');
+DefParameterType('XToken', Opcode('XToken'));
 
 # Read a number
-DefParameterType('Number', \&LaTeXML::Core::Gullet::readNumber, opcode => 'Number');
+DefParameterType('Number', Opcode('Number'));
 
 # Read a floating point number
-DefParameterType('Float', \&LaTeXML::Core::Gullet::readFloat, opcode => 'Float');
+DefParameterType('Float', Opcode('Float'));
 
 sub ReadFloat {
   my ($gullet) = @_;
@@ -190,25 +186,20 @@ sub ReadFloat {
   return ($gullet->readFloat || Float(0)); }
 
 # Read a dimension
-DefParameterType('Dimension', \&LaTeXML::Core::Gullet::readDimension, opcode => 'Dimension');
+DefParameterType('Dimension', Opcode('Dimension'));
 
 # Read a Glue (aka skip)
-DefParameterType('Glue', \&LaTeXML::Core::Gullet::readGlue, opcode => 'Glue');
+DefParameterType('Glue', Opcode('Glue'));
 
 # Read a MuGlue (math)
-DefParameterType('MuGlue', \&LaTeXML::Core::Gullet::readMuGlue, opcode => 'MuGlue');
+DefParameterType('MuGlue', Opcode('MuGlue'));
 
 # Read until the next (balanced) open brace {
 # used for the last TeX-style delimited argument
-DefParameterType('UntilBrace', \&LaTeXML::Core::Gullet::readUntilBrace, opcode => 'untilbrace');
+DefParameterType('UntilBrace', Opcode('UntilBrace'));
 
 # Yet another special case: Require a { but do not read it!!!
-DefParameterType('RequireBrace', sub {
-    my ($gullet) = @_;
-    if (!$gullet->ifNext(T_BEGIN)) {
-      Error('expected', '{', $gullet, "Expected a { here"); }
-    T_BEGIN; },
-  novalue => 1);
+DefParameterType('RequireBrace', Opcode('RequireBrace'), novalue => 1, optional => 1);
 
 DefParameterType('XUntil', sub {
     my ($gullet, $until) = @_;
@@ -228,24 +219,20 @@ DefParameterType('XUntil', sub {
 # This is sorta like readbalanced, but expands as it goes.
 # This appears to be needed by certain primitives (eg. \noalign ?)
 # and maybe what we should be using for some Digested ??
-DefParameterType('Expanded', sub {
-    my ($gullet) = @_;
-    my $token    = $gullet->readXToken(0);
-    my @tokens   = ($token);
-    if ($token->getCatcode == CC_BEGIN) {
-      my $level = 1;
-      while ($token = $gullet->readXToken(0)) {
-        push(@tokens, $token);
-        my $cc = $token->getCatcode;
-        if ($cc == CC_END) {
-          $level--;
-          last unless $level; }
-        elsif ($cc == CC_BEGIN) {
-          $level++; } } }
-    return Tokens(@tokens); });
+DefParameterType('Expanded', Opcode('XArg'),
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+# A variant on expanded for edef bodies;
+# it inhibits expansion of \the
+DefParameterType('ExpandedBody', Opcode('XBody'),
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
 
 # Read a matching keyword, eg. Match:=
-DefParameterType('Match', \&LaTeXML::Core::Gullet::readMatch);
+DefParameterType('Match', Opcode('Match'));
 
 # Read a keyword; eg. Keyword:to
 # (like Match, but ignores catcodes)
@@ -255,7 +242,7 @@ DefParameterType('Keyword', sub { shift->readKeyword(map { ToString($_); } @_); 
 DefParameterType('Balanced', \&LaTeXML::Core::Gullet::readBalanced);
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
-DefParameterType('Semiverbatim', \&LaTeXML::Core::Gullet::readArg,
+DefParameterType('Semiverbatim', Opcode('Arg'),    #\&LaTeXML::Core::Gullet::readArg,
   semiverbatim => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
@@ -292,7 +279,6 @@ DefParameterType('OptionalUndigested', \&LaTeXML::Core::Gullet::readOptional,
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', \&LaTeXML::Core::Gullet::readArg,
-  #sub { $_[0]->readArg; },
   undigested => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
@@ -832,13 +818,8 @@ DefMacro('\meaning Token', sub {
     else {
       Explode('undefined'); } });
 
-DefParameterType('CSName', \&LaTeXML::Core::Gullet::readCSName);
-
-DefMacro('\csname CSName', sub {
-    my ($gullet, $token) = @_;
-    Let($token, '\relax') unless defined LookupMeaning($token);
-    $token; },
-  opcode => 'csname');
+DefParameterType('CSName', Opcode('CSName'));
+DefMacro('\csname CSName', Opcode('CSName'));
 
 DefPrimitive('\endcsname', sub {
     my ($stomach) = @_;
@@ -856,7 +837,7 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $defn->invoke($tok, $gullet)); }    # Expand $xtok ONCE ONLY!
     else {
       ($tok, $xtok); } });
-DefMacro('\expandafter', \&LaTeXML::Core::Gullet::expandafter, opcode => 'expandafter');
+DefMacro('\expandafter', Opcode('expandafter'));
 
 # Insert magic token that Gullet knows not to expand the next one.
 DefMacroI('\noexpand', undef, Token('', CC_NOTEXPANDED));
@@ -1054,6 +1035,7 @@ sub today {
 # <def> = \def | \gdef | \edef | \xdef
 # <definition text> = <register text><left brace><balanced text><right brace>
 
+# Now handled in XS; this should become obsolete...
 sub parseDefParameters {
   my ($cs, $params) = @_;
   my @tokens = $params->unlist;
@@ -1104,10 +1086,9 @@ sub parseDefParameters {
   }
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
-use Devel::Peek 'Dump';
-
+# this should become obsolete...
 sub do_def {
-  my ($globally, $expanded, $gullet, $cs, $params, $body) = @_;
+  my ($globally, $gullet, $cs, $params, $body) = @_;
   if (!$cs) {
     Error('expected', 'Token', $gullet, "Expected definition token");
     return; }
@@ -1115,18 +1096,30 @@ sub do_def {
     Error('misdefined', $cs, $gullet, "Expected definition parameter list");
     return; }
   $params = parseDefParameters($cs, $params);
-  if ($expanded) {
-    local $LaTeXML::NOEXPAND_THE = 1;
-    $body = Expand($body); }
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0, 0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 0, @_); }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token UntilBrace {}', sub { do_def(0, 1, @_); }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 1, @_); }, locked => 1);
+DefParameterType('DefParameters', Opcode('DefParameters'), optional => 1);
+DefPrimitive('\def  SkipSpaces Token DefParameters {}', sub {
+    my ($gullet, $cs, $params, $body) = @_;
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body));
+    AfterAssignment(); return; }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token DefParameters {}', sub {
+    my ($gullet, $cs, $params, $body) = @_;
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
+      'global');
+    AfterAssignment(); return; }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token DefParameters ExpandedBody', sub {
+    my ($gullet, $cs, $params, $body) = @_;
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body));
+    AfterAssignment(); return; }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token DefParameters ExpandedBody', sub {
+    my ($gullet, $cs, $params, $body) = @_;
+    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
+      'global');
+    AfterAssignment(); return; }, locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
@@ -2454,6 +2447,7 @@ DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0
 # but aren't, so more punting is in order!
 # Note that \no align processes (at least expands) it's argument as it reads it;
 # See the peculiar construct in LaTeX for \hline and \@xhline
+# NOTE: since we removed the enclsing braces on Expanded, do we need to add them?
 DefMacro('\noalign Expanded',
   '\if@in@alignment'
     . '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline'

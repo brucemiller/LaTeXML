@@ -3547,25 +3547,51 @@ sub ResolveReader {
 # This defines a Pair parameter type,
 # that reads a parenthesized, comma separated pair of subtype.
 # By default, the subtype is Float, but you can write Pair:Number, or Pair:Dimension
+# sub ReadPair {
+#   my ($gullet, $itemtype, $xarg, $yarg) = @_;
+#   my $itemreader;
+#   if   (!$itemtype) { $itemreader = \&ReadFloat; }
+#   else              { $itemreader = ResolveReader($itemtype); }
+#   if (!$itemreader) {
+#     Error('misdefined', $itemtype, $gullet, "Can't find reader for Pair items from '$itemtype'");
+#     return Pair(Dimension(0), Dimension(0)); }    # Assume something like this?
+#   $gullet->skipSpaces;
+#   if ($gullet->ifNext(T_OTHER('('))) {
+#     $gullet->readToken; $gullet->skipSpaces;
+#     if ($gullet->ifNext(T_OTHER('!'))) {          # maybe only for pstricks???
+#       Error('unexpected', 'postscript', $gullet,
+#         "Cannot process escape to postscript");
+#       $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
+#       return Pair(Dimension(0), Dimension(0)); }
+#     my $x = ($xarg ? &$itemreader($gullet, $xarg) : &$itemreader($gullet));
+#     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
+#     my $y = ($yarg ? &$itemreader($gullet, $yarg) : &$itemreader($gullet));
+#     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
+#     return Pair($x, $y); }
+#   else {
+#     return; } }
+
+# NOTE: Look for uses of ReadPair, ResolveReader
 sub ReadPair {
   my ($gullet, $itemtype, $xarg, $yarg) = @_;
   my $itemreader;
-  if   (!$itemtype) { $itemreader = \&ReadFloat; }
-  else              { $itemreader = ResolveReader($itemtype); }
-  if (!$itemreader) {
-    Error('misdefined', $itemtype, $gullet, "Can't find reader for Pair items from '$itemtype'");
-    return Pair(Dimension(0), Dimension(0)); }    # Assume something like this?
+  $itemtype = 'Float' unless $itemtype;
+  $itemtype = ToString($itemtype) if ref $itemtype;
+  my $xitemparam = LaTeXML::Core::Parameter->new($itemtype, $itemtype,
+    ($xarg ? (extra => $xarg) : ()));
+  my $yitemparam = LaTeXML::Core::Parameter->new($itemtype, $itemtype,
+    ($yarg ? (extra => $yarg) : ()));
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_OTHER('('))) {
     $gullet->readToken; $gullet->skipSpaces;
-    if ($gullet->ifNext(T_OTHER('!'))) {          # maybe only for pstricks???
+    if ($gullet->ifNext(T_OTHER('!'))) {    # maybe only for pstricks???
       Error('unexpected', 'postscript', $gullet,
         "Cannot process escape to postscript");
       $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
       return Pair(Dimension(0), Dimension(0)); }
-    my $x = ($xarg ? &$itemreader($gullet, $xarg) : &$itemreader($gullet));
+    my $x = $xitemparam->read($gullet);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
-    my $y = ($yarg ? &$itemreader($gullet, $yarg) : &$itemreader($gullet));
+    my $y = $yitemparam->read($gullet);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }
   else {
