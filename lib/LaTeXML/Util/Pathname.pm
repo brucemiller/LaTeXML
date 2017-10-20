@@ -397,11 +397,10 @@ sub build_kpse_cache {
       my $subdir;
       my $skip = 0;    # whether to skip entries in the current subdirectory.
       foreach (pathname_read("$dir/ls-R")) {
-        next unless $_;
-        if (substr($_, 0, 1) eq '%') { }
-        elsif (/^(.*?):$/) {    # Move to a new subdirectory
-          $subdir = $1;
-          $subdir =~ s|^\./||;    # remove prefix
+        next if !$_ || (substr($_, 0, 1) eq '%');
+        if (substr($_, -1, 1) eq ':') {    # Move to a new subdirectory
+          $subdir = substr($_, 0, -1);
+          $subdir = substr($subdir, 2) if substr($subdir, 0, 2) eq './';    # remove prefix
           my $d = $dir . '/' . $subdir;    # Hopefully OS safe, for comparison?
           $skip = !grep { substr($d, 0, length($_)) eq $_ } @filters; }    # check if one of the TeX paths
         elsif (!$skip) {
