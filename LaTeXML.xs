@@ -2746,11 +2746,12 @@ gullet_readInteger(pTHX_ SV * gullet, SV * state){
         U8 * string = (U8*) t->string;
         int code;
         if(string[0] == '\\'){ string++; }
-        if(!UTF8_IS_INVARIANT(string[0])){
+        /*if(!UTF8_IS_INVARIANT(string[0])){
+          fprintf(stderr,"CHARCODE %s\n",string);
           STRLEN len = strlen((char *)string);
           code = utf8_to_uvchr_buf(string,string+len,&len); }
-        else {
-          code = string[0]; }
+          else { */
+        code = string[0];/* }*/
         /*fprintf(stderr,"Charcode: %s => %d\n",string,code);*/
         SvREFCNT_dec(token);
         return code; } } }
