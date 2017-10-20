@@ -143,8 +143,9 @@ DefConstructor('\middle Token', '#1',
 # \unless someif
 DefConditional('\unless Token', sub {
     my ($gullet, $if) = @_;
-    my ($defn, $test);
-    if (($defn = LookupDefinition($if)) && (($$defn{opcode} || '') =~ /^if/)
+    my ($defn, $exp, $test);
+    if (($defn = LookupDefinition($if))
+      && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp =~ /^if/)
       && ($test = $defn->getTest)) {
       # Invert the if's test!
       !&$test($gullet, $defn->readArguments($gullet)); }
