@@ -75,7 +75,9 @@ DefMacro('\@@@show@pgfmatharg@{}', sub {
     print STDERR "MATH ARG $arg\n";
     return; });
 
-# A variant on Expanded that omits the outer {}
+# A variant on Expanded that omits the outer {} sorta...
+# but apparently also reads a complete "number" if no {}
+# Or else, we've somehow lost braces somewhere???
 DefParameterType('pgfNumber', sub {
     my ($gullet) = @_;
     #    my $token    = $gullet->readXToken(0);
@@ -84,24 +86,35 @@ DefParameterType('pgfNumber', sub {
     } while (defined $token && $token->getCatcode == CC_SPACE);
 
     if ($token->getCatcode == CC_BEGIN) {
-      my @tokens = ();
-      my $result = '';
-      my $level  = 1;
-      while ($token = $gullet->readXToken(0)) {
-        my $cc = $token->getCatcode;
-        if ($cc == CC_END) {
-          $level--;
-          last unless $level; }
-        elsif ($cc == CC_BEGIN) {
-          $level++; }
-        #        push(@tokens, $token); }
-        #      return Tokens(@tokens); }
-        #        $result .= $token->getString; }
-        $result .= $token->getString; }
-      return $result; }
+      return ToString($gullet->readXBalanced()); }
     else {
-##      return Tokens($token); } });
-      return $token->getString; } });
+      $gullet->unread($token);
+      my $value = $gullet->readFloat();
+#####print STDERR "PGFNUMBER ".Stringify($value)."\n";
+      $token = $gullet->readToken();
+      if($token && ($token->equals(T_OTHER('Y')))){
+        Error('misdefined','internal',$gullet,
+              "Whoops, probably should be handling 'Y' format here?"); }
+    return $value->valueOf; 
+} });
+# Actually need to deal with the "Y" format too!?!?!
+DefParameterType('XXpgfNumber', sub {
+    my ($gullet) = @_;
+    #    my $token    = $gullet->readXToken(0);
+    my $token;
+    do { $token = $gullet->readXToken(0);
+    } while (defined $token && $token->getCatcode == CC_SPACE);
+
+    my $value;
+    if ($token->getCatcode == CC_BEGIN) {
+      $value = $gullet->readFloat();
+      my $end = $gullet->readToken();
+      Error('unexpected',$end,$gullet,"Expected }") unless $end->getCatcode == CC_END;}
+    else {
+      $gullet->unread($token);
+      $value = $gullet->readFloat(); }
+print STDERR "PGFNUMBER ".Stringify($value)."\n";
+    return $value->valueOf; } );
 
 # This one expects {{number}{number}....} and returns an array of them
 DefParameterType('pgfNumbers', sub {
@@ -115,7 +128,7 @@ DefParameterType('pgfNumbers', sub {
       my $result  = '';
       my $level   = 1;
       while ($token = $gullet->readXToken(0)) {
-        my $cc   = $token->getCatcoe;
+        my $cc   = $token->getCatcode;
         my $char = $token->getString;
         if ($cc == CC_END) {
           $level--;
@@ -262,7 +275,7 @@ sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
-  my $string = (ref $tokens ? ToString(Expand($tokens)) : $tokens);
+  my $string = (ref $tokens ? ToString($tokens) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
@@ -285,17 +298,17 @@ sub pgfmathparse {
 ####  print STDERR "PGFPARSE: '$input' => '$result'\n";
   return $result; }
 
-DefMacro('\lx@pgfmath@parseX{}', sub {
+DefMacro('\lx@pgfmath@parseX Expanded', sub {
     my ($gullet, $tokens) = @_;
     DefMacroI('\lx@pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
     return; });
 
-DefMacro('\lx@pgfmath@parse{}', sub {
+DefMacro('\lx@pgfmath@parse Expanded', sub {
     my ($gullet, $tokens) = @_;
     DefMacroI('\pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
     return; });
 
-DefPrimitive('\pgfmathsetlength DefToken {}', sub {
+DefPrimitive('\pgfmathsetlength DefToken Expanded', sub {
     my ($stomach, $register, $tokens) = @_;
     my $gullet = $stomach->getGullet;
     my $length;

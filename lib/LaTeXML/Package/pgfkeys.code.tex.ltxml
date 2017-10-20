@@ -50,21 +50,26 @@ sub pgfkeyLookup {
   my $kcs = pgfkeyCS($key);
   return (LookupDefinition($kcs) ? $kcs : ()); }
 
+sub pgfkeyDefaultPath {
+  # Better have simple expansion, or we're screwed.
+  my $defn = LookupDefinition(T_CS('\pgfkeysdefaultpath'));
+  return ($defn ? $$defn{expansion} : Tokens()); }
+
 # Expand like edef does (w.r.t \the)
 sub eExpand {
   my ($tokens) = @_;
   local $LaTeXML::NOEXPAND_THE = 1;
   return Expand($tokens); }
 
-DefPrimitive('\pgfkeyssetvalue{}{}', sub {
+DefPrimitive('\pgfkeyssetvalue Expanded {}', sub {
     my ($stomach, $key, $value) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     DefMacroI(pgfkeyCS($key), undef, $value); },
   locked => 1);
 
-DefPrimitive('\pgfkeysaddvalue{}{}{}', sub {
+DefPrimitive('\pgfkeysaddvalue Expanded {}{}', sub {
     my ($stomach, $key, $before, $after) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     my $cs        = pgfkeyCS($key);
     my $defn      = LookupDefinition($cs);
     my $expansion = Tokens($before->unlist,
@@ -73,33 +78,33 @@ DefPrimitive('\pgfkeysaddvalue{}{}{}', sub {
     DefMacroI($cs, undef, $expansion); },
   locked => 1);
 
-DefPrimitive('\pgfkeyslet{} SkipMatch:= Skip1Space DefToken', sub {
+DefPrimitive('\pgfkeyslet Expanded SkipMatch:= Skip1Space DefToken', sub {
     my ($stomach, $key, $value) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     Let(pgfkeyCS($key), $value); },
   locked => 1);
 
-DefPrimitive('\pgfkeysgetvalue{} DefToken', sub {
+DefPrimitive('\pgfkeysgetvalue Expanded DefToken', sub {
     my ($stomach, $key, $cmd) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     Let($cmd, pgfkeyCS($key)); },
   locked => 1);
 
-DefMacro('\pgfkeysvalueof{}', sub {
+DefMacro('\pgfkeysvalueof Expanded', sub {
     my ($gullet, $key) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     return (pgfkeyCS($key)); },
   locked => 1);
 
-DefMacro('\pgfkeysifdefined{}{}{}', sub {
+DefMacro('\pgfkeysifdefined Expanded {}{}', sub {
     my ($gullet, $key, $if, $else) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     (LookupDefinition(pgfkeyCS($key)) ? $if->unlist : $else->unlist); },
   locked => 1);
 
-DefMacro('\pgfkeysifassignable{}{}{}', sub {
+DefMacro('\pgfkeysifassignable Expanded {}{}', sub {
     my ($gullet, $key, $if, $else) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     (LookupDefinition(pgfkeyCS($key)) || LookupDefinition(pgfkeyCS($key . '/.@cmd'))
       ? $if->unlist : $else->unlist); },
   locked => 1);
@@ -115,17 +120,18 @@ DefMacro('\pgfkeys@error{}', sub {
 
 DefPrimitive('\pgfkeys{}', sub {
     my ($stomach, $keyvals) = @_;
-    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
+    ## NOTE: Some kind of "get expansion" for simple cases?
+    my $savedpath = pgfkeyDefaultPath();
     Let('\pgfkeysdefaultpath', '\pgfkeys@root');
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
     return @results; },
   locked => 1);
 
-DefPrimitive('\pgfqkeys{}{}', sub {
+DefPrimitive('\pgfqkeys Expanded {}', sub {
     my ($stomach, $path, $keyvals) = @_;
-    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $savedpath = pgfkeyDefaultPath();
+    my $newpath = Tokens($path, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
@@ -138,9 +144,9 @@ DefPrimitive('\pgfkeysalso{}', sub {
     return @results; },
   locked => 1);
 
-DefPrimitive('\pgfqkeysalso{}{}', sub {
+DefPrimitive('\pgfqkeysalso Expanded {}', sub {
     my ($stomach, $path, $keyvals) = @_;
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $newpath = Tokens($path, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     return @results; },
@@ -185,7 +191,7 @@ sub parsePGFKeys {
         $gullet->skipSpaces;
         my $key;
         my $value;
-        ($key, $delim) = $gullet->readUntil(T_OTHER(','), T_OTHER('='));
+        ($key, $delim) = $gullet->readXUntil(T_OTHER(','), T_OTHER('='));
         $key = $key->trim if $key;
         # Then if '=', pull tokens until end or , ==> value
         # If there's an =, then there's a value (possibly empty), otherwise no value given.
@@ -199,7 +205,6 @@ sub parsePGFKeys {
             #----------------------------------------
             # Now, get the current key, expanded, and @add@path@as@needed
         if ($key && ToString($key)) {    # check in case we have commas with no keyval pair between
-          $key = Expand($key);
           DefMacroI(T_CS('\pgfkeyscurrentkeyRAW'), undef, $key);
           # Separate  the key into the path & name, default the path
           # Note that this isn't consistently described in pgfkeys.code.tex
@@ -207,7 +212,7 @@ sub parsePGFKeys {
           if (@k && !$k[0]->equals(T_OTHER('/'))) {    # If doesn't start with /, add default path
             Digest(T_CS('\pgfkeysaddeddefaultpathtrue'));
             my $oldkey = Tokens(@k);
-            unshift(@k, Expand(T_CS('\pgfkeysdefaultpath'))->unlist);
+            unshift(@k, pgfkeyDefaultPath());
             $key = Tokens(@k); }
           else {
             Digest(T_CS('\pgfkeysaddeddefaultpathfalse')); }
@@ -225,6 +230,9 @@ DefConditional('\ifpgfkeysfilteringisactive');
 # This sub attempts to capture the behaviour of case 1, 2 and 3
 # including the filtered and restricted variants,
 # and the different all, onlyexisting and fullorexisting behaviours.
+# QUESTION: Can the ASSIGNMENT of keys affect the PARSING of following keys?
+# If not, then this should probably done at Macro level and avoid all the
+# nested calls to Expand/Digest.... more efficient!
 sub pgfAssignKey {
   my ($stomach, $key, $value) = @_;
   my $cmdkey;
@@ -344,32 +352,32 @@ sub pgfHandleValue {
 our $PGF_1ARG = LaTeXML::Core::Parameters->new(
   LaTeXML::Core::Parameter->new('Until', 'Until:\pgfeov', extra => [T_CS('\pgfeov')]));
 
-DefMacro('\pgfkeysdef{}{}', sub {
+DefMacro('\pgfkeysdef Expanded {}', sub {
     my ($gullet, $key, $body) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     DefMacroI(pgfkeyCS($key . '/.@cmd'),  $PGF_1ARG, $body);
     DefMacroI(pgfkeyCS($key . '/.@body'), undef,     $body); },
   locked => 1);
 
-DefMacro('\pgfkeysedef{}{}', sub {
+DefMacro('\pgfkeysedef Expanded {}', sub {
     my ($gullet, $key, $body) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     DefMacroI(pgfkeyCS($key . '/.@cmd'),  $PGF_1ARG, eExpand($body));
     DefMacroI(pgfkeyCS($key . '/.@body'), undef,     $body); },
   locked => 1);
 
-DefMacro('\pgfkeysdefargs{}{}{}', sub {
+DefMacro('\pgfkeysdefargs Expanded {}{}', sub {
     my ($gullet, $key, $args, $body) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
     DefMacroI(pgfkeyCS($key . '/.@cmd'), parseDefParameters("PGF Key $key", $vargs), $body);
     DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
     DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
   locked => 1);
 
-DefMacro('\pgfkeysedefargs{}{}{}', sub {
+DefMacro('\pgfkeysedefargs Expanded {}{}', sub {
     my ($gullet, $key, $args, $body) = @_;
-    $key = ToString(Expand($key));
+    $key = ToString($key);
     my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
     DefMacroI(pgfkeyCS($key . '/.@cmd'), parseDefParameters("PGF Key $key", $vargs), eExpand($body));
     DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
@@ -377,9 +385,9 @@ DefMacro('\pgfkeysedefargs{}{}{}', sub {
   locked => 1);
 
 # called by \pgfkeysdefnargs and \pgfkeysedefnargs
-DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
+DefMacro('\pgfkeysdefnargs@ Expanded {}{}{}', sub {
     my ($gullet, $key, $nargs, $body, $def) = @_;
-    $key   = ToString(Expand($key));
+    $key   = ToString($key);
     $nargs = ToString($nargs);
     $nargs =~ s/^#//;
     my $args = Tokens(map { (T_PARAM, T_OTHER($_)) } 1 .. $nargs);
@@ -428,7 +436,7 @@ sub pgfStopFiltering {
 DefPrimitive('\pgfkeysfiltered{}', sub {
     my ($stomach, $keyvals) = @_;
     pgfStartFiltering();
-    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
+    my $savedpath = pgfkeyDefaultPath();
     Let('\pgfkeysdefaultpath', '\pgfkeys@root');
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
@@ -451,11 +459,11 @@ DefPrimitive('\pgfkeysalsofiltered{}', sub {
     return @results; },
   locked => 1);
 
-DefPrimitive('\pgfqkeysfiltered{}{}', sub {
+DefPrimitive('\pgfqkeysfiltered Expanded {}', sub {
     my ($stomach, $path, $keyvals) = @_;
     pgfStartFiltering();
-    my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $savedpath = pgfkeyDefaultPath();
+    my $newpath = Tokens($path, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
