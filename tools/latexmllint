@@ -51,8 +51,9 @@ my @SCOLORS   = (undef, undef, undef, undef, "magenta", "red");
 my @LINTPATHS = (qw(bin lib tools));
 
 my $TOOLDIR    = $FindBin::RealBin;
-my $LATEXMLDIR = catfile($TOOLDIR, updir());            # Assumes we're in tools subdir
+my $LATEXMLDIR = catfile($TOOLDIR, updir());             # Assumes we're in tools subdir
 my $LIBDIR     = catfile($LATEXMLDIR, 'blib', 'lib');
+my $ARCHDIR    = catfile($LATEXMLDIR, 'blib', 'arch');
 ##my $LIBDIR     = catfile($LATEXMLDIR,'lib'); # Just use source dir, not blib! (don't assume "make")
 
 my @FILES = expand_files((@ARGV ? @ARGV : map { catfile($LATEXMLDIR, $_) } @LINTPATHS));
@@ -162,7 +163,7 @@ sub doPerlSyntax {
   print "Checking '$file' syntax..." if $VERBOSITY > 0;
   # Use backticks, since otherwise can't manage the output (actually stderr, here!)...
   # Output doesn't distinguish errors from warnings?
-  my $critique = `$PERL -I $LIBDIR -c $file 2>&1`;
+  my $critique = `$PERL -I $LIBDIR -I $ARCHDIR -c $file 2>&1`;
   if ($critique) {    # file has issues
     my @filtered = ();
     $failed = 1;      # Assume failed, unless we find "OK"
