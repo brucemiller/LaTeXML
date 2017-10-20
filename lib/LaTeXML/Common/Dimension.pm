@@ -50,7 +50,7 @@ sub toAttribute {
 
 sub stringify {
   my ($self) = @_;
-  return "Dimension[" . $$self[0] . "]"; }
+  return "Dimension[" . pointformat($$self[0]) . "]"; }
 
 # Utility for formatting scaled points sanely.
 sub XXXpointformat {
