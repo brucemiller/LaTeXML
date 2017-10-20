@@ -125,51 +125,51 @@ my $MAXSTACK = 200;    # [CONSTANT]
 my @absorbable_cc = (    # [CONSTANT]
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0);
 
-sub invokeToken {
-  my ($self, $token) = @_;
-  no warnings 'recursion';
-INVOKE:
-  push(@{ $$self{token_stack} }, $token);
-  if (scalar(@{ $$self{token_stack} }) > $MAXSTACK) {
-    Fatal('internal', '<recursion>', $self,
-      "Excessive recursion(?): ",
-      "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
-  my @result  = ();
-  my $meaning = $STATE->lookupDigestableDefinition($token);
+# sub invokeToken {
+#   my ($self, $token) = @_;
+#   no warnings 'recursion';
+# INVOKE:
+#   push(@{ $$self{token_stack} }, $token);
+#   if (scalar(@{ $$self{token_stack} }) > $MAXSTACK) {
+#     Fatal('internal', '<recursion>', $self,
+#       "Excessive recursion(?): ",
+#       "Tokens on stack: " . join(', ', map { ToString($_) } @{ $$self{token_stack} })); }
+#   my @result  = ();
+#   my $meaning = $STATE->lookupDigestableDefinition($token);
 
-  if ($meaning->isaToken) {    # Common case
-    my $cc = $meaning->getCatcode;
-    if ($cc == CC_CS) {
-      @result = $self->invokeToken_undefined($token); }
-    elsif ($absorbable_cc[$cc]) {
-      @result = $self->invokeToken_simple($token, $meaning); }
-    else {
-      Error('misdefined', $token, $self,
-        "The token " . Stringify($token) . " should never reach Stomach!");
-      @result = $self->invokeToken_simple($token, $meaning); } }
-  # A math-active character will (typically) be a macro,
-  # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
-  elsif ($meaning->isExpandable) {
-    my $gullet = $$self{gullet};
-    $gullet->unread($meaning->invoke($token, $gullet));
-    $token = $gullet->readXToken();    # replace the token by it's expansion!!!
-    pop(@{ $$self{token_stack} });
-    goto INVOKE; }
-  elsif ($meaning->isaDefinition) {    # Otherwise, a normal primitive or constructor
-    @result = $meaning->invoke($token, $self);
-    $STATE->clearPrefixes unless $meaning->isPrefix; }    # Clear prefixes unless we just set one.
-  else {
-    Fatal('misdefined', $meaning, $self,
-      "The object " . Stringify($meaning) . " should never reach Stomach!"); }
-  if ((scalar(@result) == 1) && (!defined $result[0])) {
-    @result = (); }                                       # Just paper over the obvious thing.
-  Fatal('misdefined', $token, $self,
-    "Execution yielded non boxes",
-    "Returned " . join(',', map { "'" . Stringify($_) . "'" }
-        grep { (!ref $_) || (!$_->isaBox) } @result))
-    if grep { (!ref $_) || (!$_->isaBox) } @result;
-  pop(@{ $$self{token_stack} });
-  return @result; }
+#   if ($meaning->isaToken) {    # Common case
+#     my $cc = $meaning->getCatcode;
+#     if ($cc == CC_CS) {
+#       @result = $self->invokeToken_undefined($token); }
+#     elsif ($absorbable_cc[$cc]) {
+#       @result = $self->invokeToken_simple($token, $meaning); }
+#     else {
+#       Error('misdefined', $token, $self,
+#         "The token " . Stringify($token) . " should never reach Stomach!");
+#       @result = $self->invokeToken_simple($token, $meaning); } }
+#   # A math-active character will (typically) be a macro,
+#   # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
+#   elsif ($meaning->isExpandable) {
+#     my $gullet = $$self{gullet};
+#     $gullet->unread($meaning->invoke($token, $gullet));
+#     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
+#     pop(@{ $$self{token_stack} });
+#     goto INVOKE; }
+#   elsif ($meaning->isaDefinition) {    # Otherwise, a normal primitive or constructor
+#     @result = $meaning->invoke($token, $self);
+#     $STATE->clearPrefixes unless $meaning->isPrefix; }    # Clear prefixes unless we just set one.
+#   else {
+#     Fatal('misdefined', $meaning, $self,
+#       "The object " . Stringify($meaning) . " should never reach Stomach!"); }
+#   if ((scalar(@result) == 1) && (!defined $result[0])) {
+#     @result = (); }                                       # Just paper over the obvious thing.
+#   Fatal('misdefined', $token, $self,
+#     "Execution yielded non boxes",
+#     "Returned " . join(',', map { "'" . Stringify($_) . "'" }
+#         grep { (!ref $_) || (!$_->isaBox) } @result))
+#     if grep { (!ref $_) || (!$_->isaBox) } @result;
+#   pop(@{ $$self{token_stack} });
+#   return @result; }
 
 sub makeError {
   my ($document, $type, $content) = @_;
@@ -227,6 +227,34 @@ sub invokeToken_simple {
   else {
     return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
       undef, undef, $meaning); } }
+
+sub invokeToken_comment {
+  my ($self, $token) = @_;
+  ##    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
+  my $comment = $token->getString;
+  # However, spaces normally would have be digested away as positioning...
+  my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
+  $comment =~ s/\Q$badspace\E/ /g;
+  return LaTeXML::Core::Comment->new($comment); }
+
+sub invokeToken_insert {
+  my ($self, $token) = @_;
+  my $cc   = $token->getCatcode;
+  my $font = $STATE->lookupValue('font');
+  $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+  if ($cc == CC_SPACE){
+    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))){
+      return (); }
+    else {
+      return Box($token->getString, $font, $$self{gullet}->getLocator, $token); } }
+  return Box(LaTeXML::Package::FontDecodeString($token->getString, undef, 1),
+             undef, undef, $token); }
+
+sub invokeToken_definition {
+  my($self, $token, $defn)=@_;
+  my @result = $defn->invoke($token, $self);
+  $STATE->clearPrefixes unless $defn->isPrefix;    # Clear prefixes unless we just set one.
+  return @result; }
 
 # Regurgitate: steal the previously digested boxes from the current level.
 sub regurgitate {

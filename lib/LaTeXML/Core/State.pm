@@ -253,7 +253,7 @@ sub XXXlookupCatcode {
   my $e = $$self{catcode}{$key};
   return $e && $$e[0]; }
 
-sub assignCatcode {
+sub XXXassignCatcode {
   my ($self, $key, $value, $scope) = @_;
   assign_internal($self, 'catcode', $key, $value, $scope);
   return; }
@@ -485,25 +485,25 @@ sub XXinstallDefinition {
 
 #======================================================================
 
-sub pushFrame {
-  my ($self, $nobox) = @_;
-  # Easy: just push a new undo hash.
-  unshift(@{ $$self{undo} }, {});
-  return; }
+# sub pushFrame {
+#   my ($self, $nobox) = @_;
+#   # Easy: just push a new undo hash.
+#   unshift(@{ $$self{undo} }, {});
+#   return; }
 
-sub popFrame {
-  my ($self) = @_;
-  if ($$self{undo}[0]{_FRAME_LOCK_}) {
-    Fatal('unexpected', '<endgroup>', $self->getStomach,
-      "Attempt to pop last locked stack frame"); }
-  else {
-    my $undo = shift(@{ $$self{undo} });
-    foreach my $table (keys %$undo) {
-      my $undotable = $$undo{$table};
-      foreach my $name (keys %$undotable) {
-        # Typically only 1 value to shift off the table, unless scopes have been activated.
-        map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
-  return; }
+# sub popFrame {
+#   my ($self) = @_;
+#   if ($$self{undo}[0]{_FRAME_LOCK_}) {
+#     Fatal('unexpected', '<endgroup>', $self->getStomach,
+#       "Attempt to pop last locked stack frame"); }
+#   else {
+#     my $undo = shift(@{ $$self{undo} });
+#     foreach my $table (keys %$undo) {
+#       my $undotable = $$undo{$table};
+#       foreach my $name (keys %$undotable) {
+#         # Typically only 1 value to shift off the table, unless scopes have been activated.
+#         map { shift(@{ $$self{$table}{$name} }) } 1 .. $$undotable{$name}; } } }
+#   return; }
 
 # Determine depth of group nesting created by {,},\bgroup,\egroup,\begingroup,\endgroup
 # by counting all frames which are not Daemon frames (and thus don't possess _FRAME_LOCK_).
@@ -515,7 +515,7 @@ sub getFrameDepth {
 #======================================================================
 # This is primarily about catcodes, but a bit more...
 
-sub beginSemiverbatim {
+sub XXbeginSemiverbatim {
   my ($self, @extraspecials) = @_;
   # Is this a good/safe enough shorthand, or should we really be doing beginMode?
   $self->pushFrame;
@@ -528,7 +528,11 @@ sub beginSemiverbatim {
   $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local');
   return; }
 
-sub endSemiverbatim {
+sub setASCIIencoding {
+  my ($self) = @_;
+  $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local'); }
+
+sub XXendSemiverbatim {
   my ($self) = @_;
   $self->popFrame;
   return; }

@@ -49,8 +49,7 @@ sub equals {
   my ($self, $other) = @_;
   return (defined $other && (ref $self) eq (ref $other))
     && Equals($$self{parameters},  $$other{parameters})
-    && Equals($self->getExpansion, $other->getExpansion); }
-
+    && Equals($$self{expansion}, $$other{expansion}); }
 #======================================================================
 1;
 

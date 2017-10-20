@@ -27,6 +27,7 @@ sub new {
     require LaTeXML::Package;
     $parameters = LaTeXML::Package::parseParameters($parameters, $cs); }
   return bless { cs => $cs, parameters => $parameters,
+    replacement => LaTeXML::Package::Opcode('register'),
     locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
@@ -56,25 +57,25 @@ sub addValue {
   &{ $$self{setter} }($oldvalue->add($value), @args);
   return; }
 
-# No before/after daemons ???
-# (other than afterassign)
-sub invoke {
-  my ($self, $token, $stomach) = @_;
-  my $profiled = $STATE->lookupValue('PROFILING') && $token;
-  LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
+# # No before/after daemons ???
+# # (other than afterassign)
+# sub invoke {
+#   my ($self, $token, $stomach) = @_;
+#   my $profiled = $STATE->lookupValue('PROFILING') && $token;
+#   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
-  my $gullet = $stomach->getGullet;
-  my @args = $gullet->readArguments($$self{parameters},$self);
-  $gullet->readKeyword('=');    # Ignore
-  my $value = $gullet->readValue($self->isRegister);
-  $self->setValue($value, @args);
+#   my $gullet = $stomach->getGullet;
+#   my @args = $gullet->readArguments($$self{parameters},$self);
+#   $gullet->readKeyword('=');    # Ignore
+#   my $value = $gullet->readValue($self->isRegister);
+#   $self->setValue($value, @args);
 
-  # Tracing ?
-  if (my $after = $STATE->lookupValue('afterAssignment')) {
-    $STATE->assignValue(afterAssignment => undef, 'global');
-    $gullet->unread($after); }    # primitive returns boxes, so these need to be digested!
-  LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
-  return; }
+#   # Tracing ?
+#   if (my $after = $STATE->lookupValue('afterAssignment')) {
+#     $STATE->assignValue(afterAssignment => undef, 'global');
+#     $gullet->unread($after); }    # primitive returns boxes, so these need to be digested!
+#   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
+#   return; }
 
 #===============================================================================
 1;

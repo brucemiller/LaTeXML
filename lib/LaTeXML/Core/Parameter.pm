@@ -49,31 +49,33 @@ sub new {
 
   my $self = bless { spec => $spec, type => $type, %data }, $class;
   # Now construct an efficient reader
+  # NOTE: Fix this!!! Opcodes is gonna mess this up!!!!
   my $reader = $data{reader};
   my $newreader;
   # There's just GOT to be a clever way to build a sub (but including closures ?)
-  if (my @extra = ($data{extra} ? @{ $data{extra} } : ())) {
-    if (my $semiverbatim = $data{semiverbatim}) {
-      $newreader = sub {
-        my ($gullet) = @_;
-        $STATE->beginSemiverbatim(@$semiverbatim);
-        my $value = &$reader($gullet, @extra);
-        $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
-        $STATE->endSemiverbatim;
-        return $value; }; }
-    else {
-      $newreader = sub {
-        my ($gullet) = @_;
-        return &$reader($gullet, @extra); }; } }
-  elsif (my $semiverbatim = $data{semiverbatim}) {
-    $newreader = sub {
-      my ($gullet) = @_;
-      $STATE->beginSemiverbatim(@$semiverbatim);
-      my $value = &$reader($gullet);
-      $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
-      $STATE->endSemiverbatim;
-      return $value; }; }
-  $$self{reader} = $newreader if $newreader;
+  # if (my @extra = ($data{extra} ? @{ $data{extra} } : ())) {
+  #   if (my $semiverbatim = $data{semiverbatim}) {
+  #     $newreader = sub {
+  #       my ($gullet) = @_;
+  #       $STATE->beginSemiverbatim(@$semiverbatim);
+  #       my $value = &$reader($gullet, @extra);
+  #       $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
+  #       $STATE->endSemiverbatim;
+  #       return $value; }; }
+  #   else {
+  #     $newreader = sub {
+  #       my ($gullet) = @_;
+  #       return &$reader($gullet, @extra); }; } }
+  # els
+# if (my $semiverbatim = $data{semiverbatim}) {
+#     $newreader = sub {
+#       my ($gullet) = @_;
+#       $STATE->beginSemiverbatim(@$semiverbatim);
+#       my $value = &$reader($gullet);
+#       $value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));
+#       $STATE->endSemiverbatim;
+#       return $value; }; }
+#   $$self{reader} = $newreader if $newreader;
   return $self; }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
@@ -100,15 +102,25 @@ sub revertCatcodes {
     $STATE->endSemiverbatim(); }
   return; }
 
-sub read {
-  my ($self, $gullet, $fordefn) = @_;
-  my $value = &{ $$self{reader} }($gullet);
-  if ((!defined $value) && !$$self{optional}) {
-    Error('expected', $self, $gullet,
-      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
-      $gullet->showUnexpected);
-    $value = T_OTHER('missing'); }
-  return $value; }
+# sub read {
+#   my ($self, $gullet, $fordefn) = @_;
+#   my $value = &{ $$self{reader} }($gullet);
+#   if ((!defined $value) && !$$self{optional}) {
+#     Error('expected', $self, $gullet,
+#       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
+#       $gullet->showUnexpected);
+#     $value = T_OTHER('missing'); }
+#   return $value; }
+
+# sub read {
+#   my ($self, $gullet, $fordefn) = @_;
+#   my $value = $gullet->readArgument($self,$fordefn);
+#   if ((!defined $value) && !$$self{optional}) {
+#     Error('expected', $self, $gullet,
+#       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
+#       $gullet->showUnexpected);
+#     $value = T_OTHER('missing'); }
+#   return $value; }
 
 # This is needed by structured parameter types like KeyVals
 # where the argument may already have been tokenized before the KeyVals

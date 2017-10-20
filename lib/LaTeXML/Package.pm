@@ -57,7 +57,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefConstructor &DefConstructorI
     &dualize_arglist &createXMRefs
     &DefMath &DefMathI &DefEnvironment &DefEnvironmentI
-    &convertLaTeXArgs),
+    &convertLaTeXArgs &Opcode),
 
   # Class, Package and File loading.
   qw(&Input &InputContent &InputDefinitions &RequirePackage &LoadClass &LoadPool &FindFile
@@ -529,8 +529,12 @@ sub CleanURL {
 # Defining new Control-sequence Parameter types.
 #======================================================================
 
+sub Opcode {
+  my($opcode)=@_;
+  bless \$opcode, 'LaTeXML::Core::Opcode'; }
+
 my $parameter_options = {    # [CONSTANT]
-  nargs => 1, reversion => 1, optional => 1, novalue => 1, opcode => 1,
+  nargs => 1, reversion => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
   semiverbatim => 1, undigested  => 1 };
 
@@ -626,9 +630,11 @@ sub CounterValue {
   return $value; }
 
 sub AfterAssignment {
-  if (my $after = $STATE->lookupValue('afterAssignment')) {
-    $STATE->assignValue(afterAssignment => undef, 'global');
-    $STATE->getStomach->getGullet->unread($after); } # primitive returns boxes, so these need to be digested!
+##  if (my $after = $STATE->lookupValue('afterAssignment')) {
+##    $STATE->assignValue(afterAssignment => undef, 'global');
+##    $STATE->getStomach->getGullet->unread($after); } # primitive returns boxes, so these need to be digested!
+##  return; }
+  $STATE->afterAssignment();
   return; }
 
 sub SetCounter {
@@ -770,7 +776,7 @@ sub Expand {
   my (@tokens) = @_;
   return () unless @tokens;
   return $STATE->getStomach->getGullet->readingFromMouth(Tokens(@tokens),
-    \&LaTeXML::Core::Gullet::readXTokens); }
+    \&LaTeXML::Core::Gullet::readXUntilEnd); }
 
 sub Invocation {
   my ($token, @args) = @_;
@@ -903,7 +909,7 @@ sub DefExpandable {
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
-  scope => 1, locked => 1, mathactive => 1, opcode => 1 };
+  scope => 1, locked => 1, mathactive => 1 };
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
@@ -956,23 +962,23 @@ sub DefConditionalI {
   my $csname = ToString($cs);
   if ((defined $paramlist) && !ref $paramlist) {
     $paramlist = parseParameters($paramlist, $cs); }
-  my $opcode = $options{opcode};
+##  my $opcode = $options{opcode};
   # Special cases...
   if ($csname eq '\fi') {
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, undef, opcode => 'fi', %options),
+        $cs, undef, Opcode('fi'), %options),
       $options{scope}); }
   elsif ($csname eq '\else') {
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, undef, opcode => 'else', %options),
+        $cs, undef, Opcode('else'), %options),
       $options{scope}); }
   elsif ($csname eq '\or') {
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, undef, opcode => 'or', %options),
+        $cs, undef, Opcode('or'), %options),
       $options{scope}); }
   elsif ($csname eq '\ifcase') {
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, $paramlist, undef, opcode => 'ifcase', %options),
+        $cs, $paramlist, Opcode('ifcase'), %options),
       $options{scope}); }
   elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
     my $name = $1;
@@ -983,8 +989,9 @@ sub DefConditionalI {
       Let($cs, T_CS('\iffalse')); }
     else {
       $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-          $cs, $paramlist, undef,
-          test => $test, opcode => $opcode || 'if', %options),
+##          $cs, $paramlist, Opcode($opcode || 'if'),
+          $cs, $paramlist, Opcode('if'),
+          test => $test, %options),
         $options{scope}); }
   }
   else {
@@ -997,9 +1004,12 @@ sub IfCondition {
   my ($if, @args) = @_;
   my $gullet = $STATE->getStomach->getGullet;
   $if = coerceCS($if);
-  my ($defn, $test);
+  my ($defn, $exp, $test);
   if (($defn = $STATE->lookupDefinition($if))
-    && (($$defn{opcode} || '') eq 'if') && ($test = $defn->getTest)) {
+##    && (($$defn{opcode} || '') eq 'if')
+    # candidate for Expandable->getIfCondition ????
+    && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp eq 'if')
+    && ($test = $defn->getTest)) {
     return &$test($gullet, @args); }
   elsif (XEquals($if, T_CS('\iftrue'))) {
     return 1; }
@@ -1013,9 +1023,11 @@ sub IfCondition {
 # Used only for regular \newif type conditions
 sub SetCondition {
   my ($if, $value, $scope) = @_;
-  my ($defn, $test);
+  my ($defn, $exp, $test);
   # We'll accept any conditional \ifxxx, providing it takes no arguments
-  if (($defn = $STATE->lookupDefinition($if)) && (($$defn{opcode} || '') eq 'if')
+  if (($defn = $STATE->lookupDefinition($if))
+##    && (($$defn{opcode} || '') eq 'if')
+    && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp eq 'if')
     && !$defn->getParameters) {
     Let($if, ($value ? T_CS('\iftrue') : T_CS('\iffalse')), $scope) }
   else {
@@ -1917,10 +1929,12 @@ sub loadTeXDefinitions {
       content => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
-      my $token;
-      while ($token = $gullet->readXToken(0)) {
-        next if $token->equals(T_SPACE);
-        $stomach->invokeToken($token); } });
+###      my $token;
+###      while ($token = $gullet->readXToken(0)) {
+###        next if $token->equals(T_SPACE);
+###        $stomach->invokeToken($token); }
+      $stomach->invokeInput();
+ });
 
   AssignValue('INTERPRETING_DEFINITIONS' => $was_interpreting);
   AssignValue('INCLUDE_STYLES'           => $was_including_styles);

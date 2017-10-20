@@ -332,20 +332,20 @@ sub readOptional {
 #  Numbers, Dimensions, Glue
 # See TeXBook, Ch.24, pp.269-271.
 #**********************************************************************
-sub readValue {
-  my ($self, $type) = @_;
-  if    ($type eq 'Number')    { return $self->readNumber; }
-  elsif ($type eq 'Dimension') { return $self->readDimension; }
-  elsif ($type eq 'Glue')      { return $self->readGlue; }
-  elsif ($type eq 'MuGlue')    { return $self->readMuGlue; }
-  elsif ($type eq 'Tokens')    { return $self->readTokensValue; }
-  elsif ($type eq 'Token')     { return $self->readToken; }
-  elsif ($type eq 'any')       { return $self->readArg; }
-  else {
-    Error('unexpected', $type, $self,
-      "Gullet->readValue Didn't expect this type: $type");
-    return; }
-}
+# sub readValue {
+#   my ($self, $type) = @_;
+#   if    ($type eq 'Number')    { return $self->readNumber; }
+#   elsif ($type eq 'Dimension') { return $self->readDimension; }
+#   elsif ($type eq 'Glue')      { return $self->readGlue; }
+#   elsif ($type eq 'MuGlue')    { return $self->readMuGlue; }
+#   elsif ($type eq 'Tokens')    { return $self->readTokensValue; }
+#   elsif ($type eq 'Token')     { return $self->readToken; }
+#   elsif ($type eq 'any')       { return $self->readArg; }
+#   else {
+#     Error('unexpected', $type, $self,
+#       "Gullet->readValue Didn't expect this type: $type");
+#     return; }
+# }
 
 # our %coercible_type = (
 #   Number      => { Number      => 1 },
@@ -370,25 +370,25 @@ sub readValue {
 #     $$self{mouth}->unread($token);    # Unread
 #     return; } }
 
-# Apparent behaviour of a token value (ie \toks#=<arg>)
-sub readTokensValue {
-  my ($self) = @_;
-  my $token = $self->readNonSpace;
-  if (!defined $token) {
-    return; }
-  elsif ($token->getCatcode == CC_BEGIN) {
-    return $self->readBalanced; }
-  elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
-    if ($defn->isRegister eq 'Tokens') {
-      return $defn->valueOf($defn->readArguments($self)); }
-    elsif ($defn->isExpandable) {
-      if (my $x = $defn->invoke($token, $self)) {
-        $$self{mouth}->unread($x->unlist); }
-      return $self->readTokensValue; }
-    else {
-      return $token; } }    # ?
-  else {
-    return $token; } }
+# # Apparent behaviour of a token value (ie \toks#=<arg>)
+# sub readTokensValue {
+#   my ($self) = @_;
+#   my $token = $self->readNonSpace;
+#   if (!defined $token) {
+#     return; }
+#   elsif ($token->getCatcode == CC_BEGIN) {
+#     return $self->readBalanced; }
+#   elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
+#     if ($defn->isRegister eq 'Tokens') {
+#       return $defn->valueOf($defn->readArguments($self)); }
+#     elsif ($defn->isExpandable) {
+#       if (my $x = $defn->invoke($token, $self)) {
+#         $$self{mouth}->unread($x->unlist); }
+#       return $self->readTokensValue; }
+#     else {
+#       return $token; } }    # ?
+#   else {
+#     return $token; } }
 
 #======================================================================
 # some helpers...
