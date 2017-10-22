@@ -2177,10 +2177,13 @@ sub RequirePackage {
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, after => 1 };
+  options => 1, withoptions => 1, after => 1, notex=>1 };
 
 sub LoadClass {
   my ($class, %options) = @_;
+  $options{notex} = 1
+    if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
+
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
   #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
@@ -2189,7 +2192,7 @@ sub LoadClass {
       # ? Expand {\zap@space#2 \@empty}%
       DefMacroI('\@classoptionslist',undef, join(',',@$op)); }
   # Note that we'll handle errors specifically for this case.
-  if (my $success = InputDefinitions($class, type => 'cls', notex => 1, handleoptions => 1, noerror => 1,
+  if (my $success = InputDefinitions($class, type => 'cls', notex => $options{notex}, handleoptions => 1, noerror => 1,
       %options)) {
     return $success; }
   else {
