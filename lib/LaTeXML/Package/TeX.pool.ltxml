@@ -1216,6 +1216,7 @@ DefPrimitive('\advance Variable SkipKeyword:by', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
+    return () if !$defn || $defn eq "missing";
     local $LaTeXML::CURRENT_TOKEN = $defn;
     $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
 
