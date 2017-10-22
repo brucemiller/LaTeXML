@@ -327,7 +327,8 @@ DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
-DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode => 'text');
+DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>",
+  mode => 'text', bounded => 1, font => { emph => 1 });
 
 #======================================================================
 # C.3.2 Making Paragraphs
