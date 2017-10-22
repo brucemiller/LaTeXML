@@ -568,9 +568,9 @@ DefRegister('\mathindent'    => Dimension(0));
 
 DefMacroI('\@clsextension', undef, 'cls');
 DefMacroI('\@pkgextension', undef, 'sty');
-Let('\@currext',  '\@empty');
-Let('\@currname', '\@empty');
-Let('\@classoptionslist','\relax');
+Let('\@currext',          '\@empty');
+Let('\@currname',         '\@empty');
+Let('\@classoptionslist', '\relax');
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
@@ -3008,7 +3008,7 @@ DefPrimitive('\includeonly{}', sub {
     $paths = ToString($paths);
     my $table = LookupValue('including@only');
     AssignValue('including@only', $table = {}, 'global') unless $table;
-    map { $$table{$_} = 1 } split(/,\s*/, $paths);
+    map { $$table{$_} = 1 } map { /^\s*(.*?)\s*$/ && $1; } split(/,/, $paths);
     return; });
 
 # NOTE: In the long run, we want to SAVE the contents and associate them with the given file name
