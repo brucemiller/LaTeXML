@@ -1195,6 +1195,7 @@ DefPrimitive('\advance Variable SkipKeyword:by', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
+    return () if !$defn || $defn eq "missing";
 ####    local $LaTeXML::CURRENT_TOKEN = $defn;
     $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
 
@@ -4420,7 +4421,7 @@ DefConstructorI('\@math@enskip', undef,
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enskip', undef, "\x{2002}", alias => '\enskip');
 
-DefMacroI('\enspace', undef, '\ifmmode\@math@espace\else\@text@enspace\fi');
+DefMacroI('\enspace', undef, '\ifmmode\@math@enspace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enspace',

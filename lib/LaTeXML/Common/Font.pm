@@ -593,6 +593,9 @@ sub merge {
     $mathstyle = $fracstylemap{ $mathstyle            || 'display' };
     $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
 
+  if ($options{emph}) {
+    $shape = ($shape eq 'italic' ? 'upright' : 'italic'); }
+
   my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
     $encoding,  $language,

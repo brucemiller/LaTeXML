@@ -51,7 +51,7 @@ sub new {
     'global');
   $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
         @{ $options{graphicspaths} || [] }], 'global');
-  $state->assignValue(INCLUDE_STYLES => $options{includeStyles} || 0, 'global');
+  $state->assignValue(INCLUDE_STYLES => $options{includestyles} || 0, 'global');
   $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding}) if $options{inputencoding};
   $state->assignValue(NOMATHPARSE => $options{nomathparse} || 0, 'global');
   return bless { state => $state,

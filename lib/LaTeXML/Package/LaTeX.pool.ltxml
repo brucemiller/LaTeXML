@@ -327,7 +327,8 @@ DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
-DefConstructor('\emph{}', "<ltx:emph>#1</ltx:emph>", mode => 'text');
+DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>",
+  mode => 'text', bounded => 1, font => { emph => 1 });
 
 #======================================================================
 # C.3.2 Making Paragraphs
@@ -3007,7 +3008,7 @@ DefPrimitive('\includeonly{}', sub {
     $paths = ToString($paths);
     my $table = LookupValue('including@only');
     AssignValue('including@only', $table = {}, 'global') unless $table;
-    map { $$table{$_} = 1 } split(/,\s*/, $paths);
+    map { $$table{$_} = 1 } map { /^\s*(.*?)\s*$/ && $1; } split(/,/, $paths);
     return; });
 
 # NOTE: In the long run, we want to SAVE the contents and associate them with the given file name
@@ -3296,9 +3297,12 @@ DefMacro('\stretch{}', '0pt plus #1fill\relax');
 DefPrimitive('\@check@length DefToken', sub {
     my ($stomach, $cs) = @_;
     my $defn = LookupDefinition($cs);
-    if (!$defn || !$defn->isRegister) {
+    if (!$defn) {
       Warn('undefined', $cs, $stomach, "'" . ToString($cs) . "' is not a length; defining it now");
       DefRegisterI($cs, undef, Dimension(0)); }
+    elsif (!$defn->isRegister) {
+      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got ".ref($defn)." instead of register.");
+    }
     return; });
 
 DefPrimitive('\newlength DefToken', sub {
@@ -3478,6 +3482,7 @@ DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
     Let('\\\\', '\par'); });
+DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
@@ -4515,6 +4520,8 @@ DefMacroI('\@charrb',        undef, T_LETTER('}'));
 
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
+# https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
+DefMacro('\@setfontsize{}{}{}', Tokens());
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');
