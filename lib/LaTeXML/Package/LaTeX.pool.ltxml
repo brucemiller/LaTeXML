@@ -3298,9 +3298,12 @@ DefMacro('\stretch{}', '0pt plus #1fill\relax');
 DefPrimitive('\@check@length DefToken', sub {
     my ($stomach, $cs) = @_;
     my $defn = LookupDefinition($cs);
-    if (!$defn || !$defn->isRegister) {
+    if (!$defn) {
       Warn('undefined', $cs, $stomach, "'" . ToString($cs) . "' is not a length; defining it now");
       DefRegisterI($cs, undef, Dimension(0)); }
+    elsif (!$defn->isRegister) {
+      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got ".ref($defn)." instead of register.");
+    }
     return; });
 
 DefPrimitive('\newlength DefToken', sub {
@@ -3480,6 +3483,7 @@ DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
     Let('\\\\', '\par'); });
+DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
@@ -4491,6 +4495,8 @@ DefMacroI('\@charrb',        undef, T_LETTER('}'));
 
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
+# https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
+DefMacro('\@setfontsize{}{}{}', Tokens());
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');
