@@ -4439,7 +4439,7 @@ DefConstructorI('\@math@enskip', undef,
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enskip', undef, "\x{2002}", alias => '\enskip');
 
-DefMacroI('\enspace', undef, '\ifmmode\@math@espace\else\@text@enspace\fi');
+DefMacroI('\enspace', undef, '\ifmmode\@math@enspace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
   alias => '\enspace',
