@@ -23,7 +23,7 @@ use LaTeXML::Package;
 # \protected associates with the next defn
 # (note that it isn't actually used anywhere).
 DefPrimitiveI('\protected', undef, sub {
-    $STATE->setPrefix('protected'); return; }, isPrefix => 1);
+    $STATE->setProtectedFlag; return; }, isPrefix => 1);
 
 # \detokenize
 DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });

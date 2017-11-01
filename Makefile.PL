@@ -38,6 +38,14 @@ our @EXCLUSIONS     = ();
 our $MORE_MACROS    = {};
 our $MORE_MAKERULES = '';
 
+# To avoid top-level clutter, C Sources are ASSUMED to be in src/*.c,
+# EACH w/corresponding src/*.h
+# Since compile rule ( .c.o) assumes object will be NEXT to source,
+# but rest of MakeMaker assumes objects will be at top-level,
+# we need to do some tweaking.
+# Also, we'd like the C sources files to depend on the headers!
+our @CSOURCES = qw(object tokens numbers tokenstack state mouth
+                   parameters gullet stomach boxstack expandable primitive);
 record_revision();
 compile_MathGrammar();
 install_TeXStyles();
@@ -82,6 +90,14 @@ WriteMakefile(NAME => 'LaTeXML',
       : ('XML::LibXML' => 1.61)),    # But > 1.62 is better
     'XML::LibXSLT' => 1.58,
   },
+  # We want to keep *.h,*.c in src, to avoid top-level clutter.
+  # This turns out to be messier than you would think
+  # See c_o hack, below
+  clean => { FILES=>'src/*$(OBJ_EXT)' },
+  C => [map { "src/$_.c" } @CSOURCES],
+#  OBJECT => '$(O_FILES)',
+#  OBJECT => 'LaTeXML$(OBJ_EXT) $(O_FILES)',
+  OBJECT => ['LaTeXML$(OBJ_EXT)', map { "src/$_\$(OBJ_EXT)" } @CSOURCES],
   EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
   macro => $MORE_MACROS,
   # link to  github location to newer MakeMaker
@@ -115,6 +131,25 @@ sub MY::libscan {
 sub MY::postamble {
   my ($self, @rules) = @_;
   return $self->MY::SUPER::postamble(@rules) . $MORE_MAKERULES; }
+
+# Need similar hack for make clean (does *.o, but not in subdirs)
+# Ideally would introduce dependence on *.h files ????
+# This has got to be the silliest hack.
+# (1) that it is necessary and (2) that this is a way to achieve it.
+
+sub MY::c_o {
+  my($self,@extra)=@_;
+  my $cmd = $_[0]->MY::SUPER::c_o(@extra);
+  # Append "-o $*($OBJ_EXT)" wherever $*.c is!
+  # So that object goes next to source (where make compile rule expects, and where O_FILES points)
+  # Is it even remotely portable?!?!?
+  # Also, it's applying to more rules (.c.s and .c.i ??) than I'd like.
+  $cmd =~ s/\$\*\.c(\s+|$)/\$\*\.c -o \$\*\$(OBJ_EXT)$1/g;
+  # Make .c depend on  headers
+  # Rewrite ".c$(OBJ_EXT)" more explicitly as "%$(OBJ_EXT) : %.c headers..."
+  my $headers = join(' ', map { "src/$_.h" } @CSOURCES);
+  $cmd =~ s/^\Q.c$(OBJ_EXT)\E\s+:$/%\$(OBJ_EXT) : %.c $headers/m;
+  return $cmd; }
 
 #**********************************************************************
 # Special Cases

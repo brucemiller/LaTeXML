@@ -367,7 +367,7 @@ sub getLocation {
     return Locator($box) if $box; }
   if ($LaTeXML::BOX) {            # In constructor?
     return Locator($LaTeXML::BOX); }
-  if ($STATE && $STATE->getStomach) {
+  if ($STATE && $STATE->getStomach_noerror) {
     my $gullet = $STATE->getStomach->getGullet;
     # NOTE: Problems here.
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!

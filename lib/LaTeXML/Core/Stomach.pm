@@ -95,7 +95,7 @@ sub digest {
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
-      $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+      $STATE->clearFlags;    # prefixes shouldn't apply here.
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       my $depth     = $initdepth;
@@ -157,7 +157,7 @@ my @absorbable_cc = (    # [CONSTANT]
 #     goto INVOKE; }
 #   elsif ($meaning->isaDefinition) {    # Otherwise, a normal primitive or constructor
 #     @result = $meaning->invoke($token, $self);
-#     $STATE->clearPrefixes unless $meaning->isPrefix; }    # Clear prefixes unless we just set one.
+#     $STATE->clearFlags unless $meaning->isPrefix; }    # Clear prefixes unless we just set one.
 #   else {
 #     Fatal('misdefined', $meaning, $self,
 #       "The object " . Stringify($meaning) . " should never reach Stomach!"); }
@@ -211,7 +211,7 @@ sub invokeToken_simple {
   my ($self, $token, $meaning) = @_;
   my $cc   = $meaning->getCatcode;
   my $font = $STATE->lookupValue('font');
-  $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+  $STATE->clearFlags;    # prefixes shouldn't apply here.
   if ($cc == CC_SPACE) {
     if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))) {
       return (); }
@@ -241,7 +241,7 @@ sub invokeToken_insert {
   my ($self, $token) = @_;
   my $cc   = $token->getCatcode;
   my $font = $STATE->lookupValue('font');
-  $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+  $STATE->clearFlags;    # prefixes shouldn't apply here.
   if ($cc == CC_SPACE){
     if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))){
       return (); }
@@ -253,7 +253,7 @@ sub invokeToken_insert {
 sub invokeToken_definition {
   my($self, $token, $defn)=@_;
   my @result = $defn->invoke($token, $self);
-  $STATE->clearPrefixes unless $defn->isPrefix;    # Clear prefixes unless we just set one.
+  $STATE->clearFlags unless $defn->isPrefix;    # Clear prefixes unless we just set one.
   return @result; }
 
 # Regurgitate: steal the previously digested boxes from the current level.

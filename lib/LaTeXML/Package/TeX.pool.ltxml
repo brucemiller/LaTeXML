@@ -1123,9 +1123,9 @@ DefPrimitive('\xdef SkipSpaces Token DefParameters ExpandedBody', sub {
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
-DefPrimitiveI('\global', undef, sub { $STATE->setPrefix('global'); return; }, isPrefix => 1);
-DefPrimitiveI('\long',   undef, sub { $STATE->setPrefix('long');   return; }, isPrefix => 1);
-DefPrimitiveI('\outer',  undef, sub { $STATE->setPrefix('outer');  return; }, isPrefix => 1);
+DefPrimitiveI('\global', undef, sub { $STATE->setGlobalFlag; return; }, isPrefix => 1);
+DefPrimitiveI('\long',   undef, sub { $STATE->setLongFlag;   return; }, isPrefix => 1);
+DefPrimitiveI('\outer',  undef, sub { $STATE->setOuterFlag;  return; }, isPrefix => 1);
 
 #======================================================================
 # Non-Macro assignments; TeXBook Ch.24, pp 276--277
@@ -1726,8 +1726,8 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
       AssignValue('BeforeNextBox' => $token); }
     # Save global flag, since we're digesting to get the box content, which resets the flag!
     # Should afterDigest be responsible for resetting flags?
-    my $scope = $STATE->getPrefix('global') && 'global';
-    $STATE->clearPrefixes;    # before invoke, below; we've saved the only relevant one (global)
+    my $scope = $STATE->globalFlag && 'global';
+    $STATE->clearFlags;    # before invoke, below; we've saved the only relevant one (global)
     my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
     @rest; });

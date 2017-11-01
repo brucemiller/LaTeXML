@@ -280,7 +280,7 @@ sub AssignMapping {
 
 sub LookupMappingKeys {
   my ($map) = @_;
-  return $STATE->lookupMappingKeys($map); }
+  return sort $STATE->lookupMappingKeys($map); }
 
 sub LookupCatcode {
   my ($char) = @_;
