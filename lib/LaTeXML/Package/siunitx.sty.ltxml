@@ -25,7 +25,7 @@ RequirePackage('textcomp');
 # I think we are finally able to process siunitx.sty directly
 # and more closely track development of siunitx.
 DefMacro('\si[]{}', '\ensuremath{#2}');
-DefMacro('\SI[]{}[]{}', '\ensuremath{#2 #3}');
+DefMacro('\SI[]{}[]{}', '\ensuremath{#2 #4}');
 DefMacro('\SIrange[]{}{}{}','\ensuremath{#2{\unicode{x2013}}#3 #4}');
 DefMacro('\SIUnitSymbolAngstrom','\AA');
 DefMacro('\SIUnitSymbolArcminute','\'');
