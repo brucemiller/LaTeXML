@@ -199,10 +199,8 @@ sub parseParameters {
     if ($p =~ s/^(\{([^\}]*)\})\s*//) {
       my ($spec, $inner_spec) = ($1, $2);
       my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      if ($inner) {
-        push(@params, LaTeXML::Core::Parameter->new('PlainReparsed', $spec, extra => [$inner])); }
-      else {
-        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
+      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec,
+          ($inner ? (extra => [$inner]) : ()))); }
     elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
       my ($spec, $inner_spec) = ($1, $2);
       if ($inner_spec =~ /^Default:(.*)$/) {
@@ -530,7 +528,7 @@ sub CleanURL {
 #======================================================================
 
 sub Opcode {
-  my($opcode)=@_;
+  my ($opcode) = @_;
   bless \$opcode, 'LaTeXML::Core::Opcode'; }
 
 my $parameter_options = {    # [CONSTANT]
@@ -879,8 +877,9 @@ sub DefAutoload {
     my ($name, $type) = ($1, $2);
     if (!LookupValue($name . '.' . $type . '_loaded')) {    # if already loaded, DONT redefine!
       DefMacroI($cs, undef, sub {
-          $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
-          if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
+###          $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
+          $STATE->assignMeaning($cs => undef, 'global');    # UNDEFINE (no recurse)
+          if    ($type eq 'pool') { LoadPool($name); }      # Load appropriate definitions
           elsif ($type eq 'cls')  { LoadClass($name); }
           else                    { RequirePackage($name); }
           ($cs); }); } }    # Then return the original cs, so that it's be re-tried.
@@ -1934,7 +1933,7 @@ sub loadTeXDefinitions {
 ###        next if $token->equals(T_SPACE);
 ###        $stomach->invokeToken($token); }
       $stomach->invokeInput();
- });
+    });
 
   AssignValue('INTERPRETING_DEFINITIONS' => $was_interpreting);
   AssignValue('INCLUDE_STYLES'           => $was_including_styles);
@@ -2153,7 +2152,7 @@ sub InputDefinitions {
       my @n = Explode($e ? $n . '.' . $e : $n);
       DefMacroI('\@filelist', undef, (@p ? Tokens(@p, T_OTHER(','), @n) : Tokens(@n))); }
     if ($ftype eq 'ltxml') {
-      loadLTXML($filename, $file); }    # Perl module.
+      loadLTXML($filename, $file); }                                              # Perl module.
     else {
       loadTeXDefinitions($filename, $file); }
     if ($options{handleoptions}) {
@@ -2200,7 +2199,7 @@ sub RequirePackage {
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, after => 1, notex=>1 };
+  options => 1, withoptions => 1, after => 1, notex => 1 };
 
 sub LoadClass {
   my ($class, %options) = @_;
@@ -2211,9 +2210,9 @@ sub LoadClass {
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
   #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
   PushValue(class_options => ($options{options} ? @{ $options{options} } : ()));
-  if(my $op = $options{options}){
-      # ? Expand {\zap@space#2 \@empty}%
-      DefMacroI('\@classoptionslist',undef, join(',',@$op)); }
+  if (my $op = $options{options}) {
+    # ? Expand {\zap@space#2 \@empty}%
+    DefMacroI('\@classoptionslist', undef, join(',', @$op)); }
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => $options{notex}, handleoptions => 1, noerror => 1,
       %options)) {

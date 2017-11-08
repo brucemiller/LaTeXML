@@ -32,17 +32,17 @@ extern SV *
 stomach_getLocator(pTHX_ SV * stomach);
 
 extern void
-stomach_defineUndefined(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack);
+stomach_defineUndefined(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack);
 
 extern void
-stomach_insertComment(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack);
+stomach_insertComment(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack);
 
 extern void
-stomach_insertBox(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack);
+stomach_insertBox(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack);
 
 extern void                            /* NOTE: Really only for constructors */
-stomach_invokeDefinition(pTHX_ SV * stomach, SV * state, SV * token, SV * defn, LaTeXML_Core_Boxstack stack);
+stomach_invokeDefinition(pTHX_ SV * stomach, SV * state, SV * token, SV * defn, LaTeXML_Boxstack stack);
 
 extern void
-stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack);
+stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack);
 #endif

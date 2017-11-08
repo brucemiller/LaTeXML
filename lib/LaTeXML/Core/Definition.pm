@@ -70,7 +70,7 @@ sub readArgumentsAndDigest {
     my $gullet = $stomach->getGullet;
     foreach my $parameter (@{ $$self{parameters} }) {
       my $value = $parameter->read($gullet, $self);
-      if (!$$parameter{novalue}) {
+      if (!$parameter->getNovalue) {
         $value = $parameter->digest($stomach, $value, $self);
         push(@args, $value); } } }
   return @args; }

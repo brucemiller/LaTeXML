@@ -56,9 +56,6 @@ sub new {
 
 sub initialize {
   my ($class, %options) = @_;
-  my $saved_state = ($options{fordefinitions}
-    ? [$STATE->lookupCatcode('@'), $STATE->lookupValue('INCLUDE_COMMENTS')]
-    : undef);
   my $note_message = ($options{notes}
     ? "Processing " . ($options{fordefinitions} ? "definitions" : "content")
       . " " . $options{source}
@@ -68,23 +65,25 @@ sub initialize {
     (defined $options{source}      ? $options{source}      : ''),
     (defined $options{shortsource} ? $options{shortsource} : ''),
     (defined $options{content}     ? $options{content}     : ''),
-    $saved_state, $note_message);
+    $STATE->lookupCatcode('@') || CC_OTHER,
+    $STATE->lookupValue('INCLUDE_COMMENTS') || 0,
+    $note_message);
   NoteBegin($note_message) if $note_message;
   if ($options{fordefinitions}) {
     $STATE->assignCatcode('@' => CC_LETTER);
     $STATE->assignValue(INCLUDE_COMMENTS => 0); }
   return $self; }
 
-sub finish {
-  my ($self) = @_;
-  if (my $saved_state = $self->getSavedState) {
-    my ($atcc, $comments) = @$saved_state;
-    $STATE->assignCatcode('@' => $atcc);
-    $STATE->assignValue(INCLUDE_COMMENTS => $comments); }
-  if (my $message = $self->getNoteMessage) {
-    NoteEnd($message); }
-  $self->finish_internal();
-  return; }
+# sub finish {
+#   my ($self) = @_;
+#   # if (my $saved_state = $self->getSavedState) {
+#   #   my ($atcc, $comments) = @$saved_state;
+#   #   $STATE->assignCatcode('@' => $atcc);
+#   #   $STATE->assignValue(INCLUDE_COMMENTS => $comments); }
+#   if (my $message = $self->getNoteMessage) {
+#     NoteEnd($message); }
+#   $self->finish_internal();
+#   return; }
 
 sub getNextLine {
   return; }

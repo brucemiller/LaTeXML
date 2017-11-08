@@ -47,11 +47,11 @@ sub new {
   my %data = (%{$descriptor}, %options);
   $data{semiverbatim} = [] if $data{semiverbatim} && (ref $data{semiverbatim} ne 'ARRAY');
 
-  my $self = bless { spec => $spec, type => $type, %data }, $class;
+#####  my $self = bless { spec => $spec, type => $type, %data }, $class;
   # Now construct an efficient reader
   # NOTE: Fix this!!! Opcodes is gonna mess this up!!!!
-  my $reader = $data{reader};
-  my $newreader;
+##  my $reader = $data{reader};
+##  my $newreader;
   # There's just GOT to be a clever way to build a sub (but including closures ?)
   # if (my @extra = ($data{extra} ? @{ $data{extra} } : ())) {
   #   if (my $semiverbatim = $data{semiverbatim}) {
@@ -76,7 +76,8 @@ sub new {
 #       $STATE->endSemiverbatim;
 #       return $value; }; }
 #   $$self{reader} = $newreader if $newreader;
-  return $self; }
+
+  return LaTeXML::Core::Parameter::new_internal($spec, type => $type, %data); }
 
 # Check whether a reader function is accessible within LaTeXML::Package::Pool
 sub checkReaderFunction {
@@ -86,21 +87,24 @@ sub checkReaderFunction {
     if (defined &reader) {
       return \&reader; } } }
 
-sub stringify {
-  my ($self) = @_;
-  return $$self{spec}; }
+# sub stringify {
+#   my ($self) = @_;
+#   return $$self{spec}; }
 
-sub setupCatcodes {
-  my ($self) = @_;
-  if ($$self{semiverbatim}) {
-    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} }); }
-  return; }
+# sub setupCatcodes {
+#   my ($self) = @_;
+# ###  if ($$self{semiverbatim}) {
+# ###    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} }); }
+#   if (my $semiverb = $self->getSemiverbatim) {
+#     $STATE->beginSemiverbatim(@$semiverb); }
+#   return; }
 
-sub revertCatcodes {
-  my ($self) = @_;
-  if ($$self{semiverbatim}) {
-    $STATE->endSemiverbatim(); }
-  return; }
+# sub revertCatcodes {
+#   my ($self) = @_;
+# ###  if ($$self{semiverbatim}) {
+#   if ($self->getSemiverbatim) {
+#     $STATE->endSemiverbatim(); }
+#   return; }
 
 # sub read {
 #   my ($self, $gullet, $fordefn) = @_;
@@ -130,16 +134,19 @@ sub reparse {
   my ($self, $gullet, $tokens) = @_;
   # Needs neutralization, since the keyvals may have been tokenized already???
   # perhaps a better test would involve whether $tokens is, in fact, Tokens?
-  if (($$self{type} eq 'Plain') || $$self{undigested}) {    # Gack!
+  my $spec = $self->getSpecification; 
+##  if (($$self{type} eq 'Plain') || $$self{undigested}) {    # Gack!
+  if (($spec eq 'Plain') || ($spec eq '{}') || $self->getUndigested) {    # Gack!
     return $tokens; }
-  elsif ($$self{semiverbatim}) {                            # Needs neutralization
-    return $tokens->neutralize(@{ $$self{semiverbatim} }); }    # but maybe specific to catcodes
+  elsif (my $semiverb = $self->getSemiverbatim) {                            # Needs neutralization
+    return $tokens->neutralize(@$semiverb); }    # but maybe specific to catcodes
   else {
     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
         my ($gulletx) = @_;
         my @tokens = $tokens->unlist;
         if (@tokens    # Strip outer braces from dimensions & friends
-          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuGlue)$/)
+###          && ($$self{type} =~ /^(?:Number|Dimension|Glue|MuGlue)$/)
+          && ($spec =~ /^(?:Number|Dimension|Glue|MuGlue)$/)
           && $tokens[0]->equals(T_BEGIN) && $tokens[-1]->equals(T_END)) {
           shift(@tokens); pop(@tokens); }
         $gulletx->unread(@tokens);    # but put back tokens to be read
@@ -151,8 +158,11 @@ sub reparse {
 sub digest {
   my ($self, $stomach, $value, $fordefn) = @_;
   # If semiverbatim, Expand (before digest), so tokens can be neutralized; BLECH!!!!
-  if ($$self{semiverbatim}) {
-    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} });
+###  if ($$self{semiverbatim}) {
+###    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} });
+  my $semiverb = $self->getSemiverbatim;
+  if ($semiverb) {
+    $STATE->beginSemiverbatim(@$semiverb);
     if ((ref $value eq 'LaTeXML::Core::Token') || (ref $value eq 'LaTeXML::Core::Tokens')) {
       $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
           my ($igullet) = @_;
@@ -162,18 +172,23 @@ sub digest {
             push(@tokens, $token); }
           $value = Tokens(@tokens);
           $value = $value->neutralize; }); } }
-  if (my $pre = $$self{beforeDigest}) {    # Done for effect only.
+##  if (my $pre = $$self{beforeDigest}) {    # Done for effect only.
+  if (my $pre = $self->getBeforeDigest) {    # Done for effect only.
     &$pre($stomach); }                     # maybe pass extras?
-  $value = $value->beDigested($stomach) if (ref $value) && !$$self{undigested};
-  if (my $post = $$self{afterDigest}) {    # Done for effect only.
+  $value = $value->beDigested($stomach) if (ref $value) && !$self->getUndigested;
+##  if (my $post = $$self{afterDigest}) {    # Done for effect only.
+  if (my $post = $self->getAfterDigest) {    # Done for effect only.
     &$post($stomach); }                    # maybe pass extras?
-  $STATE->endSemiverbatim() if $$self{semiverbatim};    # Corner case?
+  $STATE->endSemiverbatim() if $semiverb;    # Corner case?
   return $value; }
 
 sub revert {
   my ($self, $value) = @_;
-  if (my $reverter = $$self{reversion}) {
-    return &$reverter($value, @{ $$self{extra} || [] }); }
+###  if (my $reverter = $$self{reversion}) {
+  if (my $reverter = $self->getReversion) {
+###    return &$reverter($value, @{ $$self{extra} || [] }); }
+    my $extra = $self->getExtra || [];
+    return &$reverter($value, @$extra); }
   else {
     return Revert($value); } }
 

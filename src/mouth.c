@@ -25,70 +25,104 @@
 #include "mouth.h"
 
 void
-mouth_setInput(pTHX_ LaTeXML_Core_Mouth mouth, UTF8 input);
+mouth_setInput(pTHX_ SV * mouth, UTF8 input);
 
-LaTeXML_Core_Mouth
-mouth_new(pTHX_ UTF8 source, UTF8 short_source, UTF8 content, SV * saved_state, UTF8 note_message){
-  LaTeXML_Core_Mouth mouth;
-  Newxz(mouth,1,T_Mouth);
+SV *
+mouth_new(pTHX_ UTF8 class, UTF8 source, UTF8 short_source, UTF8 content,
+          int saved_at_cc, int saved_comments, UTF8 note_message){
+  LaTeXML_Mouth xmouth;
+  Newxz(xmouth,1,T_Mouth);
   DEBUG_Mouth("Creating MOUTH for %s\n",source);
-  Newxz(mouth->chars,3,char);
-  mouth->bufsize = 3;
-  mouth->lineno  = 1;
-  mouth->pushback = tokenstack_new(aTHX);
-  mouth->source = string_copy(source);
-  mouth->short_source = string_copy(short_source);
-  if(saved_state){
-    SvREFCNT_inc(saved_state); }
-  mouth->saved_state = saved_state;
-  mouth->note_message = string_copy(note_message);
+  Newxz(xmouth->chars,3,char);
+  xmouth->bufsize = 3;
+  xmouth->lineno  = 1;
+  xmouth->pushback = tokenstack_new(aTHX);
+  xmouth->source = string_copy(source);
+  xmouth->short_source = string_copy(short_source);
+  xmouth->saved_at_cc    = saved_at_cc;
+  xmouth->saved_comments = saved_comments;
+  xmouth->note_message   = (note_message ? string_copy(note_message) : NULL);
+  xmouth->flags = (strcmp(source,"Anonymous String") == 0 ? MOUTH_INTERESTING : 0);
+  xmouth->previous_mouth = NULL;
+  SV * mouth = newSV(0);
+  sv_setref_pv(mouth, class, (void*)xmouth);
   mouth_setInput(aTHX_ mouth, content);
   return mouth; }
 
 void
-mouth_DESTROY(pTHX_ LaTeXML_Core_Mouth mouth){
-  Safefree(mouth->chars);
-  Safefree(mouth->source);
-  Safefree(mouth->short_source);
-  if(mouth->saved_state){
-    SvREFCNT_dec(mouth->saved_state); }
-  Safefree(mouth->note_message);  
-  tokenstack_DESTROY(aTHX_ mouth->pushback);
-  Safefree(mouth); }
+mouth_DESTROY(pTHX_ LaTeXML_Mouth xmouth){
+  Safefree(xmouth->chars);
+  Safefree(xmouth->source);
+  Safefree(xmouth->short_source);
+  Safefree(xmouth->note_message);  
+  if(xmouth->previous_mouth){
+    SvREFCNT_dec(xmouth->previous_mouth); }
+  tokenstack_DESTROY(aTHX_ xmouth->pushback);
+  Safefree(xmouth); }
+
+void
+mouth_finish(pTHX_ SV * mouth){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  LaTeXML_Tokenstack pb = xmouth->pushback;
+  DEBUG_Mouth("Finished with Mouth for %s\n",xmouth->source);
+  xmouth->lineno = 1;
+  xmouth->colno  = 0;
+  xmouth->nbytes = 0;
+  xmouth->ptr    = 0;
+  SV * state = state_global(aTHX);
+  state_assign(aTHX_ state, TBL_CATCODE,"@", newSViv(xmouth->saved_at_cc),"local");
+  state_assign(aTHX_ state, TBL_VALUE,"INCLUDE_COMMENTS", newSViv(xmouth->saved_comments),"local");
+  while(pb->ntokens > 0){
+    pb->ntokens--;
+    SvREFCNT_dec(pb->tokens[pb->ntokens]); }
+  if(xmouth->note_message){
+    SV * message = newSVpv(xmouth->note_message,strlen(xmouth->note_message));
+    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+    EXTEND(SP,1); PUSHs(message);  PUTBACK;
+    call_pv("NoteEnd",G_DISCARD);
+    SPAGAIN; PUTBACK; FREETMPS; LEAVE;
+  } }
 
 #define CR 13
 #define LF 10
 
 void
-mouth_setInput(pTHX_ LaTeXML_Core_Mouth mouth, UTF8 input){
-  mouth->nbytes = strlen(input);
-  DEBUG_Mouth("SET INPUT got %lu bytes: '%s'\n",mouth->nbytes,input);
-  if(mouth->nbytes > mouth->bufsize){ /* Check if buffer big enough. */
-    if(mouth->bufsize == 0){    /* first line? new buffer */
-      Newx(mouth->chars, (mouth->nbytes + 2), char); }
+mouth_setInput(pTHX_ SV * mouth, UTF8 input){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  xmouth->nbytes = strlen(input);
+  DEBUG_Mouth("SET INPUT got %lu bytes: '%s'\n",xmouth->nbytes,input);
+  if(xmouth->nbytes > xmouth->bufsize){ /* Check if buffer big enough. */
+    if(xmouth->bufsize == 0){    /* first line? new buffer */
+      Newx(xmouth->chars, (xmouth->nbytes + 2), char); }
     else {                    /* Else, grow if needed */
-      Renew(mouth->chars, (mouth->nbytes + 2), char); }
-    mouth->bufsize = mouth->nbytes; }
-  CopyChar(input,mouth->chars,mouth->nbytes);
+      Renew(xmouth->chars, (xmouth->nbytes + 2), char); }
+    xmouth->bufsize = xmouth->nbytes; }
+  CopyChar(input,xmouth->chars,xmouth->nbytes);
   /* Force the buffer to end with a CR */
-  if((mouth->nbytes > 0)
-     && ! ((*(mouth->chars+mouth->nbytes -1) == CR)
-           || (*(mouth->chars+mouth->nbytes -1) == LF))){
-    *(mouth->chars+mouth->nbytes) = CR;
-    mouth->nbytes++; }
-  mouth->ptr    = 0;
-  mouth->colno  = 0;
-  mouth->lineno = 1;
-  mouth->at_eof = 0;
-  mouth->prev_ptr    = mouth->ptr;
-  mouth->prev_colno  = mouth->colno;
-  mouth->prev_lineno = mouth->lineno;
+  if((xmouth->nbytes > 0)
+     && ! ((*(xmouth->chars+xmouth->nbytes -1) == CR)
+           || (*(xmouth->chars+xmouth->nbytes -1) == LF))){
+    *(xmouth->chars+xmouth->nbytes) = CR;
+    xmouth->nbytes++; }
+  xmouth->ptr    = 0;
+  xmouth->colno  = 0;
+  xmouth->lineno = 1;
+  xmouth->flags  = 0;
+  xmouth->prev_ptr    = xmouth->ptr;
+  xmouth->prev_colno  = xmouth->colno;
+  xmouth->prev_lineno = xmouth->lineno;
 }
 
+int
+mouth_hasMoreInput(pTHX_ SV * mouth){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  return (xmouth->pushback->ntokens > 0) || (xmouth->ptr < xmouth->nbytes); }
+
 SV *
-mouth_getLocator(pTHX_ LaTeXML_Core_Mouth mouth){
-  int l = mouth->lineno;
-  int c = mouth->colno;
+mouth_getLocator(pTHX_ SV * mouth){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  int l = xmouth->lineno;
+  int c = xmouth->colno;
   /*
   if(length > 0){
     my $msg   = "at " . $self->getSource . "; line $l col $c";
@@ -104,64 +138,65 @@ mouth_getLocator(pTHX_ LaTeXML_Core_Mouth mouth){
     return $msg; }
     else { */
   SV * loc = newSV(0);
-  sv_setpvf(loc,"at %s; line %d col %d",mouth->source,l,c);
+  sv_setpvf(loc,"at %s; line %d col %d",xmouth->source,l,c);
   return loc; }
 
   /* Since readToken looks ahead, we'll need to be able to undo the effects of mouth_readChar! */
 int
-mouth_readChar(pTHX_ LaTeXML_Core_Mouth mouth, SV * state, char * character, int * catcode){
-  if(mouth->ptr < mouth->nbytes){
+mouth_readChar(pTHX_ SV * mouth, SV * state, char * character, int * catcode){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  if(xmouth->ptr < xmouth->nbytes){
     STRLEN ch_len;
     int nca = 0;                /* # chars advanced in buffer */
     int nba = 0;                /* # bytes advanced */
     int nbr = 0;                /* # bytes returned */
     char c;
-    mouth->prev_ptr = mouth->ptr;
-    mouth->prev_colno = mouth->colno;
-    mouth->prev_lineno = mouth->lineno;
-    DEBUG_Mouth("READCHAR @ %lu, %d x %lu\n", mouth->ptr, mouth->lineno, mouth->colno);
+    xmouth->prev_ptr = xmouth->ptr;
+    xmouth->prev_colno = xmouth->colno;
+    xmouth->prev_lineno = xmouth->lineno;
+    DEBUG_Mouth("READCHAR @ %lu, %d x %lu\n", xmouth->ptr, xmouth->lineno, xmouth->colno);
     /* Check for line ends: CR+LF (Windows) | CR (Unix) | LF (old Mac);
        normalize to CR = \r = ^^M, which is what TeX expects. */
-    if(((c = *(mouth->chars+mouth->ptr)) == CR) || (c == LF)){
+    if(((c = *(xmouth->chars+xmouth->ptr)) == CR) || (c == LF)){
       nba++; nca++;
-      if((c == CR) && (mouth->ptr + nba < mouth->nbytes)
-         && (*(mouth->chars+mouth->ptr+1) == LF)){ /* Got CRLF */
+      if((c == CR) && (xmouth->ptr + nba < xmouth->nbytes)
+         && (*(xmouth->chars+xmouth->ptr+1) == LF)){ /* Got CRLF */
         nba++; nca++; }
       nbr = 1;
       DEBUG_Mouth(" succeeded w/CR\n");
       CopyChar("\r",character,1);      
       *catcode = state_catcode(aTHX_ state,character); /* But still, lookup current catcode! */
-      mouth->ptr += nba;
-      mouth->colno = 0;
-      mouth->lineno ++; }
+      xmouth->ptr += nba;
+      xmouth->colno = 0;
+      xmouth->lineno ++; }
     else {
-      ch_len = UTF8SKIP(mouth->chars+mouth->ptr);
-      CopyChar(mouth->chars+mouth->ptr,character,ch_len);
+      ch_len = UTF8SKIP(xmouth->chars+xmouth->ptr);
+      CopyChar(xmouth->chars+xmouth->ptr,character,ch_len);
       DEBUG_Mouth("NEXT examine '%s', %lu bytes\n",character, ch_len);
       nca ++;
       nba += ch_len;
       nbr += ch_len;
       *catcode = state_catcode(aTHX_ state,character);
       if((*catcode == CC_SUPER)          /* Check for ^^hex or ^^<ctrl> */
-         && (mouth->ptr + nba + ch_len + 1 <= mouth->nbytes)       /* at least 2 more chars? */
-         && ( ((ch_len == 1) && (*character == *(mouth->chars+mouth->ptr+nba)))
-              || (strncmp(character,mouth->chars+mouth->ptr + nba,ch_len)==0)) ){ /* check if same */
+         && (xmouth->ptr + nba + ch_len + 1 <= xmouth->nbytes)       /* at least 2 more chars? */
+         && ( ((ch_len == 1) && (*character == *(xmouth->chars+xmouth->ptr+nba)))
+              || (strncmp(character,xmouth->chars+xmouth->ptr + nba,ch_len)==0)) ){ /* check if same */
         DEBUG_Mouth("NEXT saw ^^\n");
         nba += ch_len;
         nca ++;
         /* Look for 2 lower-case hex or 1 control char (pure ASCII!) */
         char c1,c2, * tmp;
         UV code;
-        if((mouth->ptr + nba + 2 <= mouth->nbytes)
-           && (c1 = * (mouth->chars+mouth->ptr + nba))
+        if((xmouth->ptr + nba + 2 <= xmouth->nbytes)
+           && (c1 = * (xmouth->chars+xmouth->ptr + nba))
            && ( ((c1 = c1-'0') >= 0) && ((c1 <= 9) || (((c1 = c1-'a'+'0'+10) >=10) && (c1 <= 15))))
-           && (c2 = * (mouth->chars+mouth->ptr + nba + 1))
+           && (c2 = * (xmouth->chars+xmouth->ptr + nba + 1))
            && ( ((c2 = c2-'0') >= 0) && ((c2 <= 9) || (((c2 = c2-'a'+'0'+10) >=10) && (c2 <= 15)))) ){
           nba += 2;
           nca += 2;
           code = c1*16+c2; }
         else {
-          c1 = * (mouth->chars+mouth->ptr + nba);
+          c1 = * (xmouth->chars+xmouth->ptr + nba);
           nba ++;
           nca ++;
           code = (c1 > 64 ? c1 - 64 : c1 + 64); } /* ???? */
@@ -171,8 +206,8 @@ mouth_readChar(pTHX_ LaTeXML_Core_Mouth mouth, SV * state, char * character, int
         *catcode = state_catcode(aTHX_ state,character); }
       DEBUG_Mouth("NEXT Succeed %d bytes, %d chars advanced => '%s', %d bytes\n",
                    nba,nca,character,nbr);
-      mouth->ptr += nba;
-      mouth->colno += nca; }
+      xmouth->ptr += nba;
+      xmouth->colno += nca; }
     return nbr; }
   else {
     DEBUG_Mouth("NEXT Failed\n");
@@ -181,38 +216,40 @@ mouth_readChar(pTHX_ LaTeXML_Core_Mouth mouth, SV * state, char * character, int
   /* Put back the previously parsed character.  Would be nice to save it for next call,
      but the catcodes can (& will) change by then! */
 void
-mouth_unreadChar(pTHX_ LaTeXML_Core_Mouth mouth){
+mouth_unreadChar(pTHX_ SV * mouth){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
   DEBUG_Mouth("PUTBack char\n");
-  mouth->ptr = mouth->prev_ptr;
-  mouth->colno = mouth->prev_colno;
-  mouth->lineno = mouth->prev_lineno;
+  xmouth->ptr = xmouth->prev_ptr;
+  xmouth->colno = xmouth->prev_colno;
+  xmouth->lineno = xmouth->prev_lineno;
 }
 
 int
-mouth_readLine(pTHX_ LaTeXML_Core_Mouth mouth){
+mouth_readLine(pTHX_ SV * mouth){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
   STRLEN p = 0,pend;
   char c;
   /* Skip to CRLF|CR|LF */
-  while((mouth->ptr + p < mouth->nbytes)
-        && ( ( (c=*(mouth->chars + mouth->ptr + p)) != CR) && (c != LF)) ){
-    p += UTF8SKIP(mouth->chars + mouth->ptr + p); }
+  while((xmouth->ptr + p < xmouth->nbytes)
+        && ( ( (c=*(xmouth->chars + xmouth->ptr + p)) != CR) && (c != LF)) ){
+    p += UTF8SKIP(xmouth->chars + xmouth->ptr + p); }
   pend = p + 1;
-  if((mouth->ptr + pend < mouth->nbytes)
-     && (*(mouth->chars + mouth->ptr + pend - 1) == CR)
-     && (*(mouth->chars + mouth->ptr + pend) == LF)){ /* CRLF */
+  if((xmouth->ptr + pend < xmouth->nbytes)
+     && (*(xmouth->chars + xmouth->ptr + pend - 1) == CR)
+     && (*(xmouth->chars + xmouth->ptr + pend) == LF)){ /* CRLF */
     pend ++; }
   /* Now skip backwards over any trailing spaces */
-  while(*(mouth->chars + mouth->ptr + p - 1) == ' ') {
+  while(*(xmouth->chars + xmouth->ptr + p - 1) == ' ') {
     p--; }
-  mouth->ptr   += pend;
-  mouth->colno = 0;
-  mouth->lineno++;
+  xmouth->ptr   += pend;
+  xmouth->colno = 0;
+  xmouth->lineno++;
   return p; }
 
 
 /*
 int
-mouth_fetchInput(pTHX_ LaTeXML_Core_Mouth mouth){
+mouth_fetchInput(pTHX_ SV * mouth){
   int nvals;
   char * line;
   SV * sv;
@@ -234,28 +271,29 @@ mouth_fetchInput(pTHX_ LaTeXML_Core_Mouth mouth){
         sv = sv_mortalcopy(sv);
         sv_utf8_upgrade(sv); }
       line = (UTF8)SvPV_nolen(sv);
-      mouth->nbytes = strlen(line);
-      DEBUG_Mouth("FETCHLINE got %lu bytes: '%s'\n",mouth->nbytes,line);
-      if(mouth->nbytes > mouth->bufsize){
-        if(mouth->bufsize == 0){    
-          Newx(mouth->chars, (mouth->nbytes + 1), char); }
+      xmouth->nbytes = strlen(line);
+      DEBUG_Mouth("FETCHLINE got %lu bytes: '%s'\n",xmouth->nbytes,line);
+      if(xmouth->nbytes > xmouth->bufsize){
+        if(xmouth->bufsize == 0){    
+          Newx(xmouth->chars, (xmouth->nbytes + 1), char); }
         else {                   
-          Renew(mouth->chars, (mouth->nbytes + 1), char); }
-        mouth->bufsize = mouth->nbytes; }
-      CopyChar(line,mouth->chars,mouth->nbytes);
-      mouth->ptr = 0; } }
+          Renew(xmouth->chars, (xmouth->nbytes + 1), char); }
+        xmouth->bufsize = xmouth->nbytes; }
+      CopyChar(line,xmouth->chars,xmouth->nbytes);
+      xmouth->ptr = 0; } }
   PUTBACK; FREETMPS; LEAVE;
   if(line == NULL){
     DEBUG_Mouth("No remaining input\n");
-    mouth->at_eof = 1;
+    xmouth->flags |= MOUTH_AT_EOF;
     return 0; }
   else {
     return 1; } }
 */
 
 void
-mouth_unreadToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * thing){
-  tokenstack_push(aTHX_ mouth->pushback, thing); }
+mouth_unreadToken(pTHX_ SV * mouth, SV * thing){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  tokenstack_push(aTHX_ xmouth->pushback, thing); }
 
 int CC_TrivialRead[] = 
   { 0, 1, 1, 1,
@@ -265,13 +303,14 @@ int CC_TrivialRead[] =
     1, 1, 0};
 
 SV *
-mouth_readToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * state){
+mouth_readToken(pTHX_ SV * mouth, SV * state){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
   char ch[UTF8_MAXBYTES+1];
   int  cc;
   STRLEN nbytes;
-  STRLEN startcol = mouth->colno;
-  if(mouth->pushback->ntokens > 0){
-    return tokenstack_pop(aTHX_ mouth->pushback); }
+  STRLEN startcol = xmouth->colno;
+  if(xmouth->pushback->ntokens > 0){
+    return tokenstack_pop(aTHX_ xmouth->pushback); }
   while(1){
     DEBUG_Mouth("READ Token @ %lu\n",startcol);
     if((nbytes = mouth_readChar(aTHX_ mouth,state,ch,&cc))){
@@ -285,11 +324,11 @@ mouth_readToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * state){
       else if(cc == CC_ESCAPE){
         /* WARNING: Actually, room for the whole file!
            What's a SAFE strategy for reasonable max token length??? */
-        char buffer[mouth->nbytes+1]; /* room for whole line. */
+        char buffer[xmouth->nbytes+1]; /* room for whole line. */
         STRLEN p;
         buffer[0]='\\'; p = 1; buffer[p]=0; /* Store \, 'cause CS are stored that way */
         DEBUG_Mouth("ESCAPE '%s'\n",buffer);
-        if((nbytes = mouth_readChar(aTHX_ mouth,state,buffer+p,&cc))){
+          if((nbytes = mouth_readChar(aTHX_ mouth,state,buffer+p,&cc))){
           p+=nbytes;
           if(cc == CC_LETTER){
             while((nbytes = mouth_readChar(aTHX_ mouth,state,buffer+p,&cc)) && (cc == CC_LETTER)){
@@ -299,7 +338,7 @@ mouth_readToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * state){
             while((cc == CC_SPACE) && (nbytes = mouth_readChar(aTHX_ mouth,state,ch,&cc)) ){
             }
             /* In \read & we get EOL, we'll put it back to turn into a space; otherwise remove it */
-            if ((cc == CC_EOL) && !(state_intval(aTHX_ state,"PRESERVE_NEWLINES") > 1)) {
+            if ((cc == CC_EOL) && !(state_lookupIV(aTHX_ state, TBL_VALUE, "PRESERVE_NEWLINES") > 1)) {
               nbytes = 0; }    /* so it will NOT be put back  */
             if(nbytes) {        /* put back last non-letter, non-space peeked char, if any */
               mouth_unreadChar(aTHX_ mouth); } }
@@ -319,28 +358,28 @@ mouth_readToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * state){
             break; } }
         if(nbytes){           /* put back non-space (if any) */
           mouth_unreadChar(aTHX_ mouth); }
-        if(cr && state_intval(aTHX_ state,"PRESERVE_NEWLINES")){
+        if(cr && state_lookupIV(aTHX_ state, TBL_VALUE, "PRESERVE_NEWLINES")){
           return token_new(aTHX_ "\n",CC_SPACE); }
         else {
           return token_new(aTHX_ " ",CC_SPACE); } }
       else if (cc == CC_COMMENT){
-        STRLEN pstart = mouth->ptr;
+        STRLEN pstart = xmouth->ptr;
         STRLEN n;
         if((n = mouth_readLine(aTHX_ mouth))
-           && state_booleval(aTHX_ state,"INCLUDE_COMMENTS")){
+           && state_lookupBoole(aTHX_ state,TBL_VALUE,"INCLUDE_COMMENTS")){
           char buffer[n+2];
           buffer[0]='%';            
-          Copy(mouth->chars+pstart,buffer+1,n,char);
+          Copy(xmouth->chars+pstart,buffer+1,n,char);
           buffer[n+1] = 0;
           DEBUG_Mouth("Comment '%s'\n",buffer);
           return token_new(aTHX_ buffer,cc);
         }
-        startcol = mouth->colno; }
+        startcol = xmouth->colno; }
       else if (cc == CC_EOL){
         if(startcol == 0){
           DEBUG_Mouth("EOL \\par\n");
           return T_CS("\\par"); }
-        else if(state_intval(aTHX_ state,"PRESERVE_NEWLINES")){
+        else if(state_lookupIV(aTHX_ state,TBL_VALUE, "PRESERVE_NEWLINES")){
           DEBUG_Mouth("EOL T_SPACE[\\n]\n");
           return token_new(aTHX_ "\n",CC_SPACE); }
         else {
@@ -358,27 +397,27 @@ mouth_readToken(pTHX_ LaTeXML_Core_Mouth mouth, SV * state){
       /* Comment this out; it currently has no effect, but we may want to "chunk" input???
       if(! mouth_fetchInput(aTHX_ mouth)){
       break; } */                /* EXIT FROM OUTER LOOP */
-      mouth->at_eof = 1;        /* but still terminate */
+      xmouth->flags |= MOUTH_AT_EOF;        /* but still terminate */
       return NULL;
       /* This should be integrated into above; CC_EOL ? CC_COMMENT ? 
-      if(((mouth->lineno % 25) == 0) && state_booleval(aTHX_ state,"INCLUDE_COMMENTS")){
+      if(((xmouth->lineno % 25) == 0) && state_lookupBoole(aTHX_ state,TBL_VALUE,"INCLUDE_COMMENTS")){
         char * source = mouth_getShortsource(aTHX_ mouth);
         if(source != NULL){
-          char * comment = form("**** %s Line %d ****",source,mouth->lineno);
+          char * comment = form("**** %s Line %d ****",source,xmouth->lineno);
           token = token_new(aTHX_ comment, CC_COMMENT); } }
       else {
-      startcol = mouth->colno; } */
+      startcol = xmouth->colno; } */
     } } }
 
-LaTeXML_Core_Tokens
-mouth_readTokens(pTHX_ LaTeXML_Core_Mouth mouth, SV * state, SV * until){
-  LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 1);
-  LaTeXML_Core_Token u = (until ? SvToken(until) : NULL);
+SV *
+mouth_readTokens(pTHX_ SV * mouth, SV * state, SV * until){
+  SV * tokens = tokens_new(aTHX_ 1);
+  LaTeXML_Token u = (until ? SvToken(until) : NULL);
   char * test = (u ? u->string : NULL);
   SV * token;
   /* NOTE: Compare to Until's string, NOT catcode!! */
   while ( (token = mouth_readToken(aTHX_ mouth, state)) ) {
-    LaTeXML_Core_Token t = SvToken(token);
+    LaTeXML_Token t = SvToken(token);
     if(test && (strcmp(test,t->string) == 0)){
       SvREFCNT_dec(token);
       break; }
@@ -386,4 +425,3 @@ mouth_readTokens(pTHX_ LaTeXML_Core_Mouth mouth, SV * state, SV * until){
     SvREFCNT_dec(token); }
   tokens_trimright(aTHX_ tokens);
   return tokens; }
-

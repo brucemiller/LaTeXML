@@ -45,14 +45,14 @@ sub getNumArgs {
   my ($self) = @_;
   my $n = 0;
   foreach my $parameter (@$self) {
-    $n++ unless $$parameter{novalue}; }
+    $n++ unless $parameter->getNovalue; }
   return $n; }
 
 sub revertArguments {
   my ($self, @args) = @_;
   my @tokens = ();
   foreach my $parameter (@$self) {
-    next if $$parameter{novalue};
+    next if $parameter->getNovalue;
     push(@tokens, $parameter->revert(shift(@args))); }
   return @tokens; }
 
@@ -66,7 +66,7 @@ sub readArgumentsAndDigest {
   my $gullet = $stomach->getGullet;
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
-    if (!$$parameter{novalue}) {
+    if (!$parameter->getNovalue) {
       $value = $parameter->digest($stomach, $value, $fordefn);
       push(@args, $value); } }
   return @args; }

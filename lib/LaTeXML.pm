@@ -261,7 +261,7 @@ sub convert {
       my ($state) = @_;    # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
-      $$state{status} = {};
+      $state->clearStatus;
   });
   if ($LaTeXML::UNSAFE_FATAL) {
     # If the conversion hit an unsafe fatal, we need to reinitialize

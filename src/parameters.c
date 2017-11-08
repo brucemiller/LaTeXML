@@ -26,49 +26,71 @@
 #include "gullet.h"
 #include "parameters.h"
 
+LaTeXML_Parameter
+parameter_new(pTHX_ UTF8 spec){
+  LaTeXML_Parameter parameter;
+  Newxz(parameter, 1, T_Parameter);
+  parameter->spec = string_copy(spec);
+  parameter->reader = NULL;
+  parameter->opreader = NULL;
+  parameter->flags = 0;
+  parameter->semiverbatim = NULL;
+  parameter->extra = NULL;
+  parameter->beforeDigest = NULL;
+  parameter->afterDigest = NULL;
+  parameter->reversion = NULL;
+  return parameter; }
+
+void
+parameter_DESTROY(pTHX_ SV * parameter){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);  
+  if(xparameter->spec        ){ Safefree(xparameter->spec); }
+  if(xparameter->reader      ){ SvREFCNT_dec(xparameter->reader); }
+  if(xparameter->semiverbatim){ Safefree(xparameter->semiverbatim); }
+  if(xparameter->extra       ){ Safefree(xparameter->extra); }
+  if(xparameter->beforeDigest){ SvREFCNT_dec(xparameter->beforeDigest); }
+  if(xparameter->afterDigest ){ SvREFCNT_dec(xparameter->afterDigest); }
+  if(xparameter->reversion   ){ SvREFCNT_dec(xparameter->reversion); }
+  Safefree(xparameter); }
+
+int
+parameter_setupCatcodes(pTHX_ SV * parameter, SV * state){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);
+  if(xparameter->semiverbatim){
+    state_beginSemiverbatim(aTHX_ state, xparameter->nsemiverbatim, xparameter->semiverbatim);
+    return 1; }
+  return 0; }
+
+void
+parameter_revertCatcodes(pTHX_ SV * parameter, SV * state){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);
+  if(xparameter->semiverbatim){
+    state_endSemiverbatim(aTHX_ state); } }
+
 SV *
 parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
   SV * value = NULL;
-  HV * parameter_hash = SvHash(parameter);
-  UTF8 spec = hash_getPV(aTHX_ parameter_hash,"spec");
-  SV * reader = hash_get(aTHX_ parameter_hash,"reader");
-  UTF8 opcode = NULL;
-  parameter_op * op = NULL;
-  SV ** ptr;
-  int i;
-  AV * semiverb = hash_getAV(aTHX_ parameter_hash, "semiverbatim");
-  if(semiverb){
-    int i,nc = av_len(semiverb)+1;
-    UTF8 chars[nc];
-    int nchars = 0;
-    for(i = 0; i < nchars; i++){
-      if( (ptr = av_fetch(semiverb,i,0)) ){
-        chars[nchars++] = SvPV_nolen(*ptr); } }
-    state_beginSemiverbatim(aTHX_ state, nchars, chars);
-    SvREFCNT_dec(semiverb); }
-  AV * extra = hash_getAV(aTHX_ parameter_hash, "extra");
-  int nargs = (extra ? av_len(extra)+1 : 0);
-  SV * args[nargs];
-  if(extra){
-    for(i = 0; i < nargs; i++){
-      ptr = av_fetch(extra,i,0);
-      args[i] = (ptr && SvOK(*ptr) ? *ptr : NULL); }
-      SvREFCNT_dec(extra); }
-  if(reader && sv_isa(reader,"LaTeXML::Core::Opcode")
-     && (opcode = SvPV_nolen(SvRV(reader)))
-     && (op = parameter_lookup(aTHX_ opcode))){
-    DEBUG_Gullet("readArguments reading parameter %s [opcode=%s] for %p\n",
-                 spec, opcode, fordefn);
-    value = op(aTHX_ parameter, gullet, state, nargs, args); }
-  else if(reader && SvTYPE(SvRV(reader)) == SVt_PVCV){ /* ref $expansion eq 'CODE' */
-    DEBUG_Gullet("readArguments reading parameter %s for %p\n", spec, fordefn);
+  LaTeXML_Parameter xparameter = SvParameter(parameter);
+  if(xparameter->semiverbatim){
+    parameter_setupCatcodes(aTHX_ parameter, state); }
+  if(xparameter->opreader){
+    DEBUG_Gullet("readArguments reading parameter %s for %p, opcode %p\n",
+                 xparameter->spec, fordefn, xparameter->opreader);
+    value = xparameter->opreader(aTHX_ parameter, gullet, state,
+                                xparameter->nextra, xparameter->extra); }
+  else if(xparameter->reader){
+    DEBUG_Gullet("readArguments reading parameter %s for %p, code = %p\n",
+                 xparameter->spec, fordefn, xparameter->reader);
     dSP; ENTER; SAVETMPS; PUSHMARK(SP);
-    EXTEND(SP,1+nargs); PUSHs(gullet);
-    for(i=0; i<nargs; i++){
-      SV * arg = (args[i] ? args[i] : &PL_sv_undef);
+    EXTEND(SP,1+xparameter->nextra); PUSHs(gullet);
+    int i;
+    for(i=0; i<xparameter->nextra; i++){
+      SV * arg = xparameter->extra[i];
+      if(!arg){ arg = &PL_sv_undef; }
       PUSHs(arg); }
     PUTBACK;
-    int nvals = call_sv(reader,G_SCALAR);
+    if(0){ fprintf(stderr,"PERL READER for %s\n",xparameter->spec); }
+    int nvals = call_sv(xparameter->reader,G_SCALAR);
     SPAGAIN;
     if(nvals == 0){ }       /* nothing returned? */
     else if(nvals == 1){  
@@ -82,37 +104,41 @@ parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
       croak("readArguments parameter reader for %p, returned %d values\n", fordefn, nvals); }
     PUTBACK; FREETMPS; LEAVE; }
   else {
-    croak("No reader (CODE or Opcode) for parameter %s (%p) (opcode is %s)",spec, parameter, opcode); }
-  if((! value) && !hash_getBoole(aTHX_ parameter_hash, "optional")){
+    croak("No reader (CODE or Opcode) for parameter %s (%p)",xparameter->spec, parameter); }
+  if((! value) && ! (xparameter->flags & PARAMETER_OPTIONAL)){
     /*Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
-      $gullet->showUnexpected);
+      $xgullet->showUnexpected);
       $value = T_OTHER('missing'); */
-    croak("expected:argument %s",spec);  }
+    croak("expected:argument %s",xparameter->spec);  }
 
-  if(semiverb){
+  if(xparameter->semiverbatim){
     /*$value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));*/
     state_endSemiverbatim(aTHX_ state); }
-  if(reader){ SvREFCNT_dec(reader); }
   return value; }
 
-SV *                            /* read regular arg {} */
+SV *                            /* read regular arg {}  or {othertype}*/
 parameter_opcode_arg(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
-  LaTeXML_Core_Tokens tokens = gullet_readArg(aTHX_ gullet, state);
+  SV * tokens = gullet_readArg(aTHX_ gullet, state);
+  SV * innersv = (nargs > 0 ? args[0] : NULL);
   if(tokens){
-    SV * value = newSV(0);
-    sv_setref_pv(value, "LaTeXML::Core::Tokens", (void*)tokens);
-    return value; }
+    if(! innersv){             /* No inner parameters spec provided? */
+      return tokens; }
+    else {
+      AV * inner = SvArray(innersv);
+      SSize_t n_inner = av_len(inner) + 1;
+      SV * inner_args[n_inner];
+      int n_inner_args = 0;
+      SV * mouth = gullet_openMouth(aTHX_ gullet, tokens, 1);
+      n_inner_args = gullet_readArguments(aTHX_ gullet, state, n_inner, inner, NULL, inner_args);
+      gullet_skipSpaces(aTHX_ gullet, state);
+      gullet_closeThisMouth(aTHX_ gullet, mouth);
+      return (n_inner_args > 0 ? inner_args[0] : NULL); } }
   return NULL; }
 
 SV *                            /* read regular arg {} */
 parameter_opcode_xarg(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
-  LaTeXML_Core_Tokens tokens = gullet_readXArg(aTHX_ gullet, state);
-  if(tokens){
-    SV * value = newSV(0);
-    sv_setref_pv(value, "LaTeXML::Core::Tokens", (void*)tokens);
-    return value; }
-  return NULL; }
+  return gullet_readXArg(aTHX_ gullet, state); }
 
 SV *                            /* read regular arg {} */
 parameter_opcode_xbody(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
@@ -120,13 +146,9 @@ parameter_opcode_xbody(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs,
   SV * noexpandthe = get_sv("LaTeXML::NOEXPAND_THE",0);
   save_item(noexpandthe);
   sv_setsv(noexpandthe,newSViv(1));
-  LaTeXML_Core_Tokens tokens = gullet_readXArg(aTHX_ gullet, state);
+  SV * tokens = gullet_readXArg(aTHX_ gullet, state);
   LEAVE;
-  if(tokens){
-    SV * value = newSV(0);
-    sv_setref_pv(value, "LaTeXML::Core::Tokens", (void*)tokens);
-    return value; }
-  return NULL; }
+  return tokens; }
 
 SV *                            /* read Token */
 parameter_opcode_Token(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
@@ -135,6 +157,50 @@ parameter_opcode_Token(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs,
 SV *                            /* read XToken */
 parameter_opcode_XToken(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
   return gullet_readXToken(aTHX_ gullet, state, 0, 0); }
+
+
+SV *                            /* read Token */
+parameter_opcode_DefToken(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
+  SV * token = gullet_readToken(aTHX_ gullet, state);
+  LaTeXML_Token t;
+  while(token && (t = SvToken(token)) && (t->catcode == CC_BEGIN)){
+    gullet_skipSpaces(aTHX_ gullet, state);
+    SV * tokens = tokens_new(aTHX_ 1);
+    LaTeXML_Tokens xtokens = SvTokens(tokens);
+    gullet_readBalanced(aTHX_ gullet,state,tokens,0);
+    if(xtokens->ntokens){
+      token = xtokens->tokens[0];
+      int i;
+      for(i = xtokens->ntokens-1; i > 0; i--){
+        gullet_unreadToken(aTHX_ gullet, xtokens->tokens[i]); } }
+    else {
+      token = NULL; }
+    SvREFCNT_dec(tokens); }
+  return token; }
+
+SV *                            /* read Token */
+parameter_opcode_Optional(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
+  SV * tokens = gullet_readOptional(aTHX_ gullet, state);
+  SV * defaultsv = (nargs > 0 ? args[0] : NULL);
+  SV * innersv   = (nargs > 1 ? args[1] : NULL);
+  if(tokens){
+    if(! innersv){             /* No inner parameters spec provided? */
+      return tokens; }
+    else {
+      AV * inner = SvArray(innersv);
+      SSize_t n_inner = av_len(inner) + 1;
+      SV * inner_args[n_inner];
+      int n_inner_args = 0;
+      SV * mouth = gullet_openMouth(aTHX_ gullet, tokens, 1);
+      n_inner_args = gullet_readArguments(aTHX_ gullet, state, n_inner, inner, NULL, inner_args);
+      gullet_skipSpaces(aTHX_ gullet, state);
+      gullet_closeThisMouth(aTHX_ gullet, mouth);
+      return (n_inner_args > 0 ? inner_args[0] : NULL); } }
+  else if(defaultsv){
+    SvREFCNT_inc(defaultsv);
+    return defaultsv; }
+  else {
+    return NULL; } }
 
 SV *                            /* read CSName */
 parameter_opcode_CSName(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
@@ -152,17 +218,12 @@ parameter_opcode_SkipSpace(pTHX_ SV * parameter, SV * gullet, SV * state, int na
 
 SV *                            /* read until next open brace (but don't include it) */
 parameter_opcode_UntilBrace(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
-  LaTeXML_Core_Tokens tokens = gullet_readUntilBrace(aTHX_ gullet, state);
-  if(tokens){
-    SV * value = newSV(0);
-    sv_setref_pv(value, "LaTeXML::Core::Tokens", (void*)tokens);
-    return value; }
-  return NULL; }
+  return gullet_readUntilBrace(aTHX_ gullet, state); }
 
 SV *                            /* require a brace (but don't include it) */
 parameter_opcode_RequireBrace(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
   SV * token;
-  LaTeXML_Core_Token t;
+  LaTeXML_Token t;
   if( (token = gullet_readToken(aTHX_ gullet, state))
       && (t = SvToken(token)) && (t->catcode == CC_BEGIN)){
     gullet_unreadToken(aTHX_ gullet, token);
@@ -178,6 +239,18 @@ parameter_opcode_SkipEquals(pTHX_ SV * parameter, SV * gullet, SV * state, int n
   gullet_skipEquals(aTHX_ gullet, state);
   return NULL; }
 
+SV *                            /* skip an "by" */
+parameter_opcode_SkipBy(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
+  UTF8 choices[] = {"by"};
+  gullet_readKeyword(aTHX_ gullet, state,1,choices);
+  return NULL; }
+
+SV *                            /* skip an "by" */
+parameter_opcode_SkipTo(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
+  UTF8 choices[] = {"to"};
+  gullet_readKeyword(aTHX_ gullet, state,1,choices);
+  return NULL; }
+
 SV *                            /* skip an = */
 parameter_opcode_Match(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
   int type[nargs];
@@ -190,14 +263,7 @@ parameter_opcode_Until(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs,
   int type[nargs];
   int maxlength = gullet_prepareMatch(aTHX_ gullet, nargs, type, args);
   int match;
-  LaTeXML_Core_Tokens tokens
-    = gullet_readUntilMatch(aTHX_ gullet, state, 0, nargs,maxlength, type, args, &match);
-  if(tokens){
-    SV * sv = newSV(0);
-    sv_setref_pv(sv, "LaTeXML::Core::Tokens", (void*)tokens);
-    return sv; }
-  else {
-    return NULL; } }
+  return gullet_readUntilMatch(aTHX_ gullet, state, 0, nargs,maxlength, type, args, &match); }
 
 SV *                            /* read a Number */
 parameter_opcode_Number(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
@@ -223,6 +289,31 @@ SV *
 parameter_opcode_DefParameters(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
   return gullet_readDefParameters(aTHX_ gullet, state); }
 
+SV *
+parameter_opcode_Register(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, SV ** args){
+  SV * token;
+  SV * defn;
+  HV * defn_hash;
+  if( (token = gullet_readXToken(aTHX_ gullet, state, 0, 0)) ){
+    if ( (defn = state_definition(aTHX_ state, token))
+         && (defn_hash = SvHash(defn))
+         && (hash_getPV(aTHX_ defn_hash, "registerType"))){
+      AV * reg = newAV();
+      av_push(reg,defn);
+      AV * parameters = hash_getAV(aTHX_ defn_hash,"parameters");
+      SSize_t npara = (parameters ? av_len(parameters) + 1 : 0);
+      SV * args[npara];
+      int nargs = 0;
+      if(parameters){
+        nargs = gullet_readArguments(aTHX_ gullet, state, npara, parameters, token, args);
+        int i;
+        for(i = 0; i < nargs; i++){
+          av_push(reg, args[i]); } }
+      SvREFCNT_dec(token);
+      return newRV_noinc((SV*)reg); }
+    SvREFCNT_dec(token); }
+  /* Eventually, possibly, create a register and fall back? */
+  croak("Expected a register"); }
 
 HV * parameter_opcode_table = NULL;
 
@@ -242,13 +333,17 @@ parameter_install_opcodes(pTHX){
   parameter_install_op(aTHX_ "XBody",         &parameter_opcode_xbody);
   parameter_install_op(aTHX_ "Token",         &parameter_opcode_Token);
   parameter_install_op(aTHX_ "XToken",        &parameter_opcode_XToken);
+  parameter_install_op(aTHX_ "DefToken",      &parameter_opcode_DefToken);
   parameter_install_op(aTHX_ "CSName",        &parameter_opcode_CSName);
   parameter_install_op(aTHX_ "SkipSpace",     &parameter_opcode_SkipSpace);
   parameter_install_op(aTHX_ "SkipSpaces",    &parameter_opcode_SkipSpaces);
   parameter_install_op(aTHX_ "SkipEquals",    &parameter_opcode_SkipEquals);
+  parameter_install_op(aTHX_ "SkipBy",        &parameter_opcode_SkipBy);
+  parameter_install_op(aTHX_ "SkipTo",        &parameter_opcode_SkipTo);
   parameter_install_op(aTHX_ "Match",         &parameter_opcode_Match);
   parameter_install_op(aTHX_ "Until",         &parameter_opcode_Until);
   parameter_install_op(aTHX_ "UntilBrace",    &parameter_opcode_UntilBrace);
+  parameter_install_op(aTHX_ "Optional",      &parameter_opcode_Optional);
   parameter_install_op(aTHX_ "RequireBrace",  &parameter_opcode_RequireBrace);
   parameter_install_op(aTHX_ "Number",        &parameter_opcode_Number);
   parameter_install_op(aTHX_ "Dimension",     &parameter_opcode_Dimension);
@@ -256,6 +351,7 @@ parameter_install_opcodes(pTHX){
   parameter_install_op(aTHX_ "MuGlue",        &parameter_opcode_MuGlue);
   parameter_install_op(aTHX_ "Float",         &parameter_opcode_Float);
   parameter_install_op(aTHX_ "DefParameters", &parameter_opcode_DefParameters);
+  parameter_install_op(aTHX_ "Register",      &parameter_opcode_Register);
 }
 
 parameter_op *

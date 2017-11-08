@@ -76,7 +76,7 @@ SV *
 token_new(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
   /*check string not null ? */
   SV * sv;
-  LaTeXML_Core_Token token;
+  LaTeXML_Token token;
   int n;
   if((catcode < 0) || (catcode > CC_MAX)){
     croak("Illegal catcode %d",catcode); }
@@ -93,14 +93,14 @@ token_new(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
   return sv; }
 
 void
-token_DESTROY(pTHX_ LaTeXML_Core_Token token){
+token_DESTROY(pTHX_ LaTeXML_Token token){
   DEBUG_Token("DESTROY Token %s[%s]!\n",CC_SHORT_NAME[token->catcode],token->string);
   Safefree(token->string);
   Safefree(token); }
 
 int
 token_equals(pTHX_ SV * a, SV * b) {
-  LaTeXML_Core_Token aa,bb;
+  LaTeXML_Token aa,bb;
   aa = SvToken(a);
   bb = SvToken(b);
   if (aa->catcode != bb->catcode) {
@@ -120,39 +120,42 @@ token_equals(pTHX_ SV * a, SV * b) {
 
 #define TOKENS_ALLOC_QUANTUM 10
 
-LaTeXML_Core_Tokens
+SV *
 tokens_new(pTHX_ int nalloc) {
-  LaTeXML_Core_Tokens tokens;
-  Newxz(tokens,1, T_Tokens);
+  LaTeXML_Tokens xtokens;
+  Newxz(xtokens,1, T_Tokens);
   if(nalloc > 0){
-    tokens->nalloc = nalloc;
-    Newx(tokens->tokens, tokens->nalloc, PTR_SV); }
+    xtokens->nalloc = nalloc;
+    Newx(xtokens->tokens, xtokens->nalloc, PTR_SV); }
+  SV * tokens = newSV(0);
+  sv_setref_pv(tokens, "LaTeXML::Core::Tokens", (void*)xtokens);
   return tokens; }
 
 void
-tokens_DESTROY(pTHX_ LaTeXML_Core_Tokens tokens){
+tokens_DESTROY(pTHX_ LaTeXML_Tokens xtokens){
   int i;
-  DEBUG_Tokens("DESTROY Tokens(%d)",tokens->ntokens);
-  for (i = 0 ; i < tokens->ntokens ; i++) {
-    SvREFCNT_dec(tokens->tokens[i]); }
-  Safefree(tokens->tokens);
-  Safefree(tokens); }
+  DEBUG_Tokens("DESTROY Tokens(%d)",xtokens->ntokens);
+  for (i = 0 ; i < xtokens->ntokens ; i++) {
+    SvREFCNT_dec(xtokens->tokens[i]); }
+  Safefree(xtokens->tokens);
+  Safefree(xtokens); }
 
 UTF8                            /* NOTE: This returns a newly allocated string! */
-tokens_toString(pTHX_ LaTeXML_Core_Tokens tokens){
+tokens_toString(pTHX_ SV * tokens){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
   int i;
   int length = 0;
-  int lengths[tokens->ntokens]; /* Risky if many? */
+  int lengths[xtokens->ntokens]; /* Risky if many? */
   char * string;
-  for(i = 0; i < tokens->ntokens; i++){
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[i]);
+  for(i = 0; i < xtokens->ntokens; i++){
+    LaTeXML_Token t = SvToken(xtokens->tokens[i]);
     lengths[i] =  strlen(t->string); /* cache strlen's */
     length += lengths[i]; }
   /*length += strlen(t->string);}*/
   Newx(string,length+1,char);
   int pos = 0;
-  for(i = 0; i < tokens->ntokens; i++){
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[i]);
+  for(i = 0; i < xtokens->ntokens; i++){
+    LaTeXML_Token t = SvToken(xtokens->tokens[i]);
     /*int l = strlen(t->string);*/
     int l = lengths[i];
     strncpy(string+pos, t->string, l);
@@ -161,45 +164,49 @@ tokens_toString(pTHX_ LaTeXML_Core_Tokens tokens){
   return string; }
 
 int
-tokens_equals(pTHX_ LaTeXML_Core_Tokens a,LaTeXML_Core_Tokens b){
-  if(a->ntokens != b->ntokens){
+tokens_equals(pTHX_ SV * a, SV * b){
+  LaTeXML_Tokens atokens = SvTokens(a);
+  LaTeXML_Tokens btokens = SvTokens(b);
+  if(atokens->ntokens != btokens->ntokens){
     return 0; }
   else {
     int i;
-    for(i = 0; i < a->ntokens; i++){
-      if(! token_equals(aTHX_ a->tokens[i],b->tokens[i])){
+    for(i = 0; i < atokens->ntokens; i++){
+      if(! token_equals(aTHX_ atokens->tokens[i],btokens->tokens[i])){
         return 0; } }
     return 1; } }
 
 void
-tokens_shrink(pTHX_ LaTeXML_Core_Tokens tokens){
-  if(tokens->nalloc > tokens->ntokens){
-    Renew(tokens->tokens,tokens->nalloc = tokens->ntokens, PTR_SV); } }
+tokens_shrink(pTHX_ SV * tokens){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
+  if(xtokens->nalloc > xtokens->ntokens){
+    Renew(xtokens->tokens,xtokens->nalloc = xtokens->ntokens, PTR_SV); } }
 
 void                            /* adds in-place */
-tokens_add_to(pTHX_ LaTeXML_Core_Tokens tokens, SV * thing, int revert) {
+tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert) {
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
   /* Tempting to define a _noinc variant ?? */
   DEBUG_Tokens("\nAdding to tokens:");
   if (sv_isa(thing, "LaTeXML::Core::Token")) {
     DEBUG_Tokens( "Token.");
-    if(tokens->ntokens >= tokens->nalloc){
-      tokens->nalloc += TOKENS_ALLOC_QUANTUM;
-      Renew(tokens->tokens, tokens->nalloc, PTR_SV); }
+    if(xtokens->ntokens >= xtokens->nalloc){
+      xtokens->nalloc += TOKENS_ALLOC_QUANTUM;
+      Renew(xtokens->tokens, xtokens->nalloc, PTR_SV); }
     /* NOTE: Beware Tokens coming from Perl: use newSVsv (else the SV can change behind your back */
     SvREFCNT_inc(thing);
-    tokens->tokens[tokens->ntokens++] = thing; }
+    xtokens->tokens[xtokens->ntokens++] = thing; }
   else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
-    LaTeXML_Core_Tokens toks = SvTokens(thing);
+    LaTeXML_Tokens toks = SvTokens(thing);
     int n = toks->ntokens;
     int i;
     DEBUG_Tokens( "Tokens(%d): ", n);
     if(n > 0){
-      tokens->nalloc += n-1;
-      Renew(tokens->tokens, tokens->nalloc, PTR_SV);
+      xtokens->nalloc += n-1;
+      Renew(xtokens->tokens, xtokens->nalloc, PTR_SV);
       for (i = 0 ; i < n ; i++) {
         DEBUG_Tokens( "adding item %d; ",i);
         SvREFCNT_inc(toks->tokens[i]);
-        tokens->tokens[tokens->ntokens++] = toks->tokens[i]; } } }
+        xtokens->tokens[xtokens->ntokens++] = toks->tokens[i]; } } }
   else if (revert){             /* Insert the what Revert($thing) returns */
     dSP;
     I32 ax;
@@ -212,8 +219,8 @@ tokens_add_to(pTHX_ LaTeXML_Core_Tokens tokens, SV * thing, int revert) {
     SPAGAIN;
     SP -= nvals; ax = (SP - PL_stack_base) + 1;
     DEBUG_Tokens( "%d items",nvals);
-    tokens->nalloc += nvals-1;
-    Renew(tokens->tokens, tokens->nalloc, PTR_SV);    
+    xtokens->nalloc += nvals-1;
+    Renew(xtokens->tokens, xtokens->nalloc, PTR_SV);    
     for(i=0; i<nvals; i++){
       tokens_add_to(aTHX_ tokens, ST(i), revert); }
     PUTBACK; FREETMPS; LEAVE; }
@@ -226,24 +233,25 @@ tokens_add_to(pTHX_ LaTeXML_Core_Tokens tokens, SV * thing, int revert) {
 }
 
 void                            /* Modifies in-place */
-tokens_trimBraces(pTHX_ LaTeXML_Core_Tokens tokens){
-  /*  if(tokens->ntokens > 1){*/
-  while(tokens->ntokens > 1){
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[tokens->ntokens-1]);
+tokens_trimBraces(pTHX_ SV * tokens){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
+  /*  if(xtokens->ntokens > 1){*/
+  while(xtokens->ntokens > 1){
+    LaTeXML_Token t = SvToken(xtokens->tokens[xtokens->ntokens-1]);
     if(t->catcode == CC_SPACE){
-      SvREFCNT_dec(tokens->tokens[tokens->ntokens-1]);
-      tokens->ntokens--; }
+      SvREFCNT_dec(xtokens->tokens[xtokens->ntokens-1]);
+      xtokens->ntokens--; }
     else {
       break; } }
-  if(tokens->ntokens > 2){
-    LaTeXML_Core_Token t0 = SvToken(tokens->tokens[0]);
-    LaTeXML_Core_Token tn = SvToken(tokens->tokens[tokens->ntokens-1]);
+  if(xtokens->ntokens > 2){
+    LaTeXML_Token t0 = SvToken(xtokens->tokens[0]);
+    LaTeXML_Token tn = SvToken(xtokens->tokens[xtokens->ntokens-1]);
     if((t0->catcode == CC_BEGIN) && (tn->catcode == CC_END)){
       int i;
       int level = 0;
       int balanced1 = 0;          /* 0 = unknown, +1 = one outer level, -1 not */
-      for (i = 0 ; i < tokens->ntokens ; i++) {
-        LaTeXML_Core_Token t = SvToken(tokens->tokens[i]);
+      for (i = 0 ; i < xtokens->ntokens ; i++) {
+        LaTeXML_Token t = SvToken(xtokens->tokens[i]);
         int cc = t->catcode;
         if (cc == CC_BEGIN) {
           level++;
@@ -257,45 +265,47 @@ tokens_trimBraces(pTHX_ LaTeXML_Core_Tokens tokens){
         else if (level == 0) {
           balanced1 = -1; } }
       if((level == 0) && (balanced1 == 1)){
-        SvREFCNT_dec(tokens->tokens[0]);
-        SvREFCNT_dec(tokens->tokens[tokens->ntokens-1]);
-        Move(tokens->tokens+1,tokens->tokens,tokens->ntokens-2, PTR_SV);
-        tokens->ntokens -= 2; } } } }
+        SvREFCNT_dec(xtokens->tokens[0]);
+        SvREFCNT_dec(xtokens->tokens[xtokens->ntokens-1]);
+        Move(xtokens->tokens+1,xtokens->tokens,xtokens->ntokens-2, PTR_SV);
+        xtokens->ntokens -= 2; } } } }
 
 void                            /* Remove trailing spaces, in-place */
-tokens_trimright(pTHX_ LaTeXML_Core_Tokens tokens){
-  LaTeXML_Core_Token t;
-  while((tokens->ntokens > 1) && (t=SvToken(tokens->tokens[tokens->ntokens-1]))
+tokens_trimright(pTHX_ SV * tokens){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
+  LaTeXML_Token t;
+  while((xtokens->ntokens > 1) && (t=SvToken(xtokens->tokens[xtokens->ntokens-1]))
         && (t->catcode == CC_SPACE)){
-    SvREFCNT_dec(tokens->tokens[tokens->ntokens-1]);
-    tokens->ntokens--; }
+    SvREFCNT_dec(xtokens->tokens[xtokens->ntokens-1]);
+    xtokens->ntokens--; }
 }
 
-LaTeXML_Core_Tokens             /* trim's left/right space, then braces; creates NEW tokens */
-tokens_trim(pTHX_ LaTeXML_Core_Tokens tokens){
+SV *             /* trim's left/right space, then braces; creates NEW tokens */
+tokens_trim(pTHX_ SV * tokens){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
   int i;
   int i0 = 0;
-  int n  = tokens->ntokens;
+  int n  = xtokens->ntokens;
   while(i0 < n){
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[i0]);
+    LaTeXML_Token t = SvToken(xtokens->tokens[i0]);
     if(t->catcode == CC_SPACE){
       i0++; }
     else {
       break; } }
   while(n > i0){
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[n-1]);
+    LaTeXML_Token t = SvToken(xtokens->tokens[n-1]);
     if(t->catcode == CC_SPACE){
       n--; }
     else {
       break; } }
   if(i0 + 2 <= n){
-    LaTeXML_Core_Token t0 = SvToken(tokens->tokens[i0]);
-    LaTeXML_Core_Token tn = SvToken(tokens->tokens[n-1]);
+    LaTeXML_Token t0 = SvToken(xtokens->tokens[i0]);
+    LaTeXML_Token tn = SvToken(xtokens->tokens[n-1]);
     if((t0->catcode == CC_BEGIN) && (tn->catcode == CC_END)){
       int level = 0;
       int balanced1 = 0;          /* 0 = unknown, +1 = one outer level, -1 not */
       for (i = i0 ; i < n ; i++) {
-        LaTeXML_Core_Token t = SvToken(tokens->tokens[i]);
+        LaTeXML_Token t = SvToken(xtokens->tokens[i]);
         int cc = t->catcode;
         if (cc == CC_BEGIN) {
           level++;
@@ -310,38 +320,41 @@ tokens_trim(pTHX_ LaTeXML_Core_Tokens tokens){
           balanced1 = -1; } }
       if((level == 0) && (balanced1 == 1)){
         i0++; n--; } } }
-  LaTeXML_Core_Tokens trimmed = tokens_new(aTHX_ n-i0);
+  SV * trimmed = tokens_new(aTHX_ n-i0);
+  LaTeXML_Tokens ttokens = SvTokens(trimmed);
   int j = 0;
   for(i = i0; i < n; i++){
-    SvREFCNT_inc(tokens->tokens[i]);
-    trimmed->tokens[j++] = tokens->tokens[i]; }
-  trimmed->ntokens = j;
+    SvREFCNT_inc(xtokens->tokens[i]);
+    ttokens->tokens[j++] = xtokens->tokens[i]; }
+  ttokens->ntokens = j;
   return trimmed; }
 
-LaTeXML_Core_Tokens
-tokens_substituteParameters(pTHX_ LaTeXML_Core_Tokens tokens, int nargs, SV **args){
+SV *
+tokens_substituteParameters(pTHX_ SV * tokens, int nargs, SV **args){
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
   int i;
-  LaTeXML_Core_Tokens result = tokens_new(aTHX_ tokens->ntokens);
+  SV * result = tokens_new(aTHX_ xtokens->ntokens);
+  LaTeXML_Tokens rtokens = SvTokens(result);
   DEBUG_Tokens("\nsubstituting:");
-  for (i = 0 ; i < tokens->ntokens ; i++) {
-    LaTeXML_Core_Token t = SvToken(tokens->tokens[i]);
+  for (i = 0 ; i < xtokens->ntokens ; i++) {
+    LaTeXML_Token t = SvToken(xtokens->tokens[i]);
     int cc = t->catcode;
     if(cc != CC_PARAM){ /* non #, so copy it*/
       DEBUG_Tokens("copy %s;",t->string);
-      SvREFCNT_inc(tokens->tokens[i]);
-      result->tokens[result->ntokens++] = tokens->tokens[i]; }
-    else if(i >= tokens->ntokens) { /* # at end of tokens? */
+      SvREFCNT_inc(xtokens->tokens[i]);
+      rtokens->tokens[rtokens->ntokens++] = xtokens->tokens[i]; }
+    else if(i >= xtokens->ntokens) { /* # at end of tokens? */
       croak("substituteParamters: fell off end of pattern"); }
     else {
-      /*t = SvToken(tokens->tokens[++i]);*/
+      /*t = SvToken(xtokens->tokens[++i]);*/
       i++;
-      t = SvToken(tokens->tokens[i]);
+      t = SvToken(xtokens->tokens[i]);
       DEBUG_Tokens("#%s ",t->string);
       cc = t->catcode;
       if(cc == CC_PARAM){ /* next char is #, just duplicate it */
         DEBUG_Tokens("copy#;");
-        SvREFCNT_inc(tokens->tokens[i]);
-        result->tokens[result->ntokens++] = tokens->tokens[i]; }
+        SvREFCNT_inc(xtokens->tokens[i]);
+        rtokens->tokens[rtokens->ntokens++] = xtokens->tokens[i]; }
       else {                  /* otherwise, insert the appropriate arg. */
         int argn = (int) t->string[0] - (int) '0';
         DEBUG_Tokens("arg%d;",argn);

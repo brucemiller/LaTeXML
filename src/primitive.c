@@ -30,8 +30,8 @@
 
 void
 primitive_opcode_register(pTHX_ SV * token, SV * regdefn, SV * stomach, SV * state,
-                          int nargs, SV ** args, LaTeXML_Core_Boxstack stack){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+                          int nargs, SV ** args, LaTeXML_Boxstack stack){
+  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   /* args to register are in args, but not "= value" */
   SV * gullet = stomach_gullet(aTHX_ stomach);
   UTF8 type = hash_getPV(aTHX_ SvHash(regdefn), "registerType");
@@ -50,14 +50,15 @@ primitive_opcode_register(pTHX_ SV * token, SV * regdefn, SV * stomach, SV * sta
 
 void
 primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
-                 LaTeXML_Core_Boxstack stack){
+                 LaTeXML_Boxstack stack){
+  LaTeXML_State xstate = SvState(state);
   HV * primitive_hash = SvHash(primitive);
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  int profiling= state_booleval(aTHX_ state, "PROFILING");
-  LaTeXML_Core_Token t = SvToken(token);PERL_UNUSED_VAR(t); /* -Wall */
+  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  int profiling= xstate->config & CONFIG_PROFILING;
+  LaTeXML_Token t = SvToken(token);PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Primitive("Invoke Primitive %p %s[%s]\n",primitive,CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
-    /*my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+    /*my $profiled = $XSTATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
       state_startProfiling(aTHX_ profiled,"expand"); */ }
   /* Call beforeDigest daemons */
   AV * before = hash_getAV(aTHX_ primitive_hash, "beforeDigest");
@@ -74,7 +75,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   if(parameters){       /* If no parameters, nothing to read! */
     SV * gullet = stomach_gullet(aTHX_ stomach);
     DEBUG_Primitive("reading %ld parameters\n", npara);
-    nargs = gullet_readArguments(aTHX_ gullet, npara, parameters, token, args);
+    nargs = gullet_readArguments(aTHX_ gullet, state, npara, parameters, token, args);
     DEBUG_Primitive("got %d arguments\n", nargs);
     SvREFCNT_dec(parameters); }
   /* Call main replacement:  opcode, if defined, or function */
@@ -129,9 +130,9 @@ primitive_lookup(pTHX_ UTF8 opcode){
 
 void
 primitive_afterAssignment(pTHX_ SV * state){
-  SV * after = state_value(aTHX_ state, "afterAssignment");
+  SV * after = state_lookup(aTHX_ state,TBL_VALUE, "afterAssignment");
   if(after){
-    state_assign_value(aTHX_ state, "afterAssignment", NULL,"global");
+    state_assign(aTHX_ state, TBL_VALUE, "afterAssignment", NULL,"global");
     SV * stomach = state_stomach(aTHX_ state);
     SV * gullet = stomach_gullet(aTHX_ stomach);
     SvREFCNT_dec(stomach);

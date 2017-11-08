@@ -31,9 +31,9 @@
 
 #define BOXSTACK_ALLOC_QUANTUM 10
 
-LaTeXML_Core_Boxstack
+LaTeXML_Boxstack
 boxstack_new(pTHX) {
-  LaTeXML_Core_Boxstack stack;
+  LaTeXML_Boxstack stack;
   Newxz(stack,1, T_Boxstack);
   DEBUG_Boxstack("New boxstack %p\n",stack);
   stack->nalloc = BOXSTACK_ALLOC_QUANTUM;
@@ -41,7 +41,7 @@ boxstack_new(pTHX) {
   return stack; }
 
 void
-boxstack_DESTROY(pTHX_ LaTeXML_Core_Boxstack stack){
+boxstack_DESTROY(pTHX_ LaTeXML_Boxstack stack){
   int i;
   for (i = 0 ; i < stack->nboxes ; i++) {
     SvREFCNT_dec(stack->boxes[i]); }
@@ -50,7 +50,7 @@ boxstack_DESTROY(pTHX_ LaTeXML_Core_Boxstack stack){
 
 /* Invoke a Stomach->method to produce boxes */
 void                            /* Horrible naming!!! */
-boxstack_callmethod(pTHX_ LaTeXML_Core_Boxstack stack, UTF8 method,
+boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,
               SV * state, SV * stomach, SV * token,
               int nargs, SV ** args) {
   DEBUG_Boxstack("Boxstack %p call %s on %d args\n",stack,method,nargs);
@@ -87,7 +87,7 @@ boxstack_callmethod(pTHX_ LaTeXML_Core_Boxstack stack, UTF8 method,
 
 /* Call a primitive's replacement sub (OPCODE or CODE) on the given arguments */
 void                            /* Horrible naming!!! */
-boxstack_call(pTHX_ LaTeXML_Core_Boxstack stack, SV * primitive, SV * sub,
+boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
               SV * state, SV * stomach, SV * token,
               int nargs, SV ** args) {
   DEBUG_Boxstack("Boxstack %p call %p on %d args\n",stack,sub,nargs);
@@ -134,12 +134,12 @@ boxstack_call(pTHX_ LaTeXML_Core_Boxstack stack, SV * primitive, SV * sub,
     PUTBACK; FREETMPS; LEAVE;
     DEBUG_Boxstack("Done accumulating.\n"); }
   else {
-    LaTeXML_Core_Token t = SvToken(token);
+    LaTeXML_Token t = SvToken(token);
     croak("Boxstack replacement for %s is not CODE or Opcode: %p",t->string, sub); } }
 
 
 void
-boxstack_callAV(pTHX_ LaTeXML_Core_Boxstack stack, SV * primitive, AV * subs,
+boxstack_callAV(pTHX_ LaTeXML_Boxstack stack, SV * primitive, AV * subs,
                 SV * state, SV * stomach, SV * token,
                 int nargs, SV ** args) {
   int i;

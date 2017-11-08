@@ -161,11 +161,15 @@ sub finishDigestion {
   if (my $env = $state->lookupValue('current_environment')) {
     Error('expected', "\\end{$env}", $stomach,
       "Input ended while environment $env was open"); }
-  my $ifstack = $state->lookupValue('if_stack');
-  if ($ifstack && $$ifstack[0]) {
+  # my $ifstack = $state->lookupValue('if_stack');
+  # if ($ifstack && $$ifstack[0]) {
+  #   Error('expected', '\fi', $stomach,
+  #     "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete",
+  #     "started at " . ToString($$ifstack[0]{start})); }
+  if(my $ifcontext = $state->getIfContext){
     Error('expected', '\fi', $stomach,
-      "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete",
-      "started at " . ToString($$ifstack[0]{start})); }
+      "Input ended while conditional was incomplete",
+          $ifcontext); }
   $stomach->getGullet->flush;
   return List(@stuff); }
 

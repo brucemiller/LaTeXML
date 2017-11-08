@@ -24,9 +24,9 @@
 #include "tokens.h"
 #include "tokenstack.h"
 
-LaTeXML_Core_Tokenstack
+LaTeXML_Tokenstack
 tokenstack_new(pTHX) {
-  LaTeXML_Core_Tokenstack stack;
+  LaTeXML_Tokenstack stack;
   Newxz(stack,1, T_Tokenstack);
   DEBUG_Tokenstack("New tokenstack %p\n",stack);
   stack->nalloc = TOKENSTACK_ALLOC_QUANTUM;
@@ -34,7 +34,7 @@ tokenstack_new(pTHX) {
   return stack; }
 
 void
-tokenstack_DESTROY(pTHX_ LaTeXML_Core_Tokenstack stack){
+tokenstack_DESTROY(pTHX_ LaTeXML_Tokenstack stack){
   int i;
   for (i = 0 ; i < stack->ntokens ; i++) {
     SvREFCNT_dec(stack->tokens[i]); }
@@ -42,7 +42,7 @@ tokenstack_DESTROY(pTHX_ LaTeXML_Core_Tokenstack stack){
   Safefree(stack); }
 
 void
-tokenstack_push(pTHX_ LaTeXML_Core_Tokenstack stack, SV * thing) {
+tokenstack_push(pTHX_ LaTeXML_Tokenstack stack, SV * thing) {
   DEBUG_Tokenstack("Tokenstack push %p: %p ",stack,thing);
   if (sv_isa(thing, "LaTeXML::Core::Token")) {
     DEBUG_Tokenstack( "Token.");
@@ -54,8 +54,8 @@ tokenstack_push(pTHX_ LaTeXML_Core_Tokenstack stack, SV * thing) {
     SvREFCNT_inc(thing);
     stack->tokens[stack->ntokens++] = thing; }
   else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
-    LaTeXML_Core_Tokens tokens = SvTokens(thing);
-    int n = tokens->ntokens;
+    LaTeXML_Tokens xtokens = SvTokens(thing);
+    int n = xtokens->ntokens;
     int i;
     DEBUG_Tokenstack( "Tokens(%d): ", n);
     if(n > 0){
@@ -63,8 +63,8 @@ tokenstack_push(pTHX_ LaTeXML_Core_Tokenstack stack, SV * thing) {
       Renew(stack->tokens, stack->nalloc, PTR_SV);
       for (i = n-1 ; i >= 0 ; i--) {
         DEBUG_Tokenstack( "adding item %d; ",i);
-        SvREFCNT_inc(tokens->tokens[i]);
-        stack->tokens[stack->ntokens++] = tokens->tokens[i]; } } }
+        SvREFCNT_inc(xtokens->tokens[i]);
+        stack->tokens[stack->ntokens++] = xtokens->tokens[i]; } } }
   else {
     /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
     croak("Tokens push: Expected a Token, got %s (%p)",SvPV_nolen(thing), thing); }
@@ -72,7 +72,7 @@ tokenstack_push(pTHX_ LaTeXML_Core_Tokenstack stack, SV * thing) {
 }
 
 SV *
-tokenstack_pop(pTHX_ LaTeXML_Core_Tokenstack stack) {
+tokenstack_pop(pTHX_ LaTeXML_Tokenstack stack) {
   DEBUG_Tokenstack("Tokenstack pop %p\n",stack);
   if(stack->ntokens > 0){
     return stack->tokens[--stack->ntokens]; }

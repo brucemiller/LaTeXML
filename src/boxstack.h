@@ -32,27 +32,27 @@ typedef struct Boxstack_struct {
   int discard;
   PTR_SV * boxes;
 } T_Boxstack;
-typedef T_Boxstack * LaTeXML_Core_Boxstack;
+typedef T_Boxstack * LaTeXML_Boxstack;
 
-extern LaTeXML_Core_Boxstack
+extern LaTeXML_Boxstack
 boxstack_new(pTHX);
 
 extern void
-boxstack_DESTROY(pTHX_ LaTeXML_Core_Boxstack stack);
+boxstack_DESTROY(pTHX_ LaTeXML_Boxstack stack);
 
 /* Invoke a Stomach->method to produce boxes */
 extern void                            /* Horrible naming!!! */
-boxstack_callmethod(pTHX_ LaTeXML_Core_Boxstack stack, UTF8 method,
+boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,
               SV * state, SV * stomach, SV * token,
                     int nargs, SV ** args);
 
 /* Call a primitive's replacement sub (OPCODE or CODE) on the given arguments */
 extern void                            /* Horrible naming!!! */
-boxstack_call(pTHX_ LaTeXML_Core_Boxstack stack, SV * primitive, SV * sub,
+boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
               SV * state, SV * stomach, SV * token,
               int nargs, SV ** args);
 extern void
-boxstack_callAV(pTHX_ LaTeXML_Core_Boxstack stack, SV * primitive, AV * subs,
+boxstack_callAV(pTHX_ LaTeXML_Boxstack stack, SV * primitive, AV * subs,
                 SV * state, SV * stomach, SV * token,
                 int nargs, SV ** args);
 

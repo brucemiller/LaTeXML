@@ -85,7 +85,7 @@ use LaTeXML::Core::Token;    # To get CatCodes
 #     catcodes => (standard|style|none)
 #     stomach  => a Stomach object.
 #     model    => a Mod el object.
-sub new {
+sub XXXXnew {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value => {}, meaning => {}, stash => {}, stash_active => {},
@@ -115,6 +115,29 @@ sub new {
   $$self{delcode}             = {};
   $$self{tracing_definitions} = {};
   return $self; }
+
+sub new {
+  my ($class, %options) = @_;
+  my $self = LaTeXML::Core::State::new_internal($options{stomach},$options{model});
+  $self->setFrameLock(1);
+  $self->assignValue(VERBOSITY => 0);
+  $options{catcodes} = 'standard' unless defined $options{catcodes};
+  if ($options{catcodes} =~ /^(standard|style)/) {
+    # Setup default catcodes.
+    my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
+      "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
+      "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
+      "~" => CC_ACTIVE, chr(0) => CC_IGNORE);
+    map { $self->assignCatcode($_ => $std{$_}) } keys %std;
+    for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
+      $self->assignCatcode( chr($c) => CC_LETTER);
+      $self->assignCatcode( chr($c + ord('a') - ord('A')) => CC_LETTER); }
+  }
+  $self->assignValue(SPECIALS => ['^', '_', '@', '~', '&', '$', '#', "'"]);
+  if ($options{catcodes} eq 'style') {
+    $self->assignCatcode('@' => CC_LETTER); }
+  return $self; }
+
 
 # sub XXassign_internal {
 #   my ($self, $table, $key, $value, $scope) = @_;
@@ -439,7 +462,6 @@ sub popDaemonFrame {
 #   return $code; }
 sub getStatusMessage {
   my ($self) = @_;
-  my $status = $$self{status};
   my $fatals = $self->getStatus("fatal") || 0;
   my $errors = $self->getStatus("error") || 0;
   my $warnings = $self->getStatus("warning") || 0;

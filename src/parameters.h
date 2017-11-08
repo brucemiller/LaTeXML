@@ -19,8 +19,43 @@
 /* SV * parameter_op(aTHX_ parameter, gullet, state, nargs, args) */
 typedef SV * parameter_op(pTHX_ SV *, SV *, SV *, int, SV **);  
 
+typedef struct Parameter_struct {
+  UTF8 spec;
+  SV * reader;
+  parameter_op * opreader;
+  int flags;
+  SV * semiverbatimsv;            /* Duplicated until completely within the C */
+  int nsemiverbatim;              /* -1 means need semiverbatim, but no extra tokens */
+  UTF8 * semiverbatim;
+  SV * extrasv;
+  int nextra;
+  SV ** extra;
+  SV * beforeDigest;
+  SV * afterDigest;
+  SV * reversion;
+} T_Parameter;
+typedef T_Parameter * LaTeXML_Parameter;
+
+#define SvParameter(arg)      INT2PTR(LaTeXML_Parameter,      SvIV((SV*) SvRV(arg)))
+
+#define PARAMETER_OPTIONAL   0x01
+#define PARAMETER_NOVALUE    0x02
+#define PARAMETER_UNDIGESTED 0x04
+
+extern LaTeXML_Parameter
+parameter_new(pTHX_ UTF8 spec);
+
+extern void
+parameter_DESTROY(pTHX_ SV * parameter);
+
 extern parameter_op *
 parameter_lookup(pTHX_ UTF8 opcode);
+
+extern int
+parameter_setupCatcodes(pTHX_ SV * parameter, SV * state);
+
+extern void
+parameter_revertCatcodes(pTHX_ SV * parameter, SV * state);
 
 extern SV *
 parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn);

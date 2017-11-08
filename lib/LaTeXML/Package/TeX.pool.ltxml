@@ -111,28 +111,13 @@ RequireResource('LaTeXML.css');
 #======================================================================
 # Define parsers for standard parameter types.
 
+# 1st argument to Plain (if any) is parameter spec for inside the {}
 DefParameterType('Plain', Opcode('Arg'),
   reversion => sub {
     my ($arg, $inner) = @_;
-    (T_BEGIN, Revert($arg), T_END); });
+    (T_BEGIN, ($inner ? $inner->revertArguments($arg) : Revert($arg)), T_END); });
 
-DefParameterType('PlainReparsed', sub {
-    my ($gullet, $inner) = @_;
-    my $value = $gullet->readArg;
-    ($value) = $inner->reparseArgument($gullet, $value);
-    $value; },
-  reversion => sub {
-    my ($arg, $inner) = @_;
-    (T_BEGIN, $inner->revertArguments($arg), T_END); });
-
-DefParameterType('Optional', sub {
-    my ($gullet, $default, $inner) = @_;
-    my $value = $gullet->readOptional;
-    if (!$value && $default) {
-      $value = $default; }
-    elsif ($inner) {
-      ($value) = $inner->reparseArgument($gullet, $value); }
-    $value; },
+DefParameterType('Optional', Opcode('Optional'),
   optional  => 1,
   reversion => sub {
     my ($arg, $default, $inner) = @_;
@@ -162,37 +147,23 @@ DefParameterType('Until', Opcode('Until'),
     (Revert($arg), Revert($until)); });
 
 # Skip any spaces, but don't contribute an argument.
-DefParameterType('SkipSpaces', Opcode('SkipSpaces'), novalue => 1, optional => 1);
-
-DefParameterType('Skip1Space', Opcode('SkipSpace'), novalue => 1, optional => 1);
-
-DefParameterType('SkipMatch:=', Opcode('SkipEquals'), novalue => 1, optional => 1);
-
-# Read the next token
-DefParameterType('Token', Opcode('Token'));
-
-# Read the next token, after expanding any expandable ones.
-DefParameterType('XToken', Opcode('XToken'));
-
-# Read a number
-DefParameterType('Number', Opcode('Number'));
-
-# Read a floating point number
-DefParameterType('Float', Opcode('Float'));
+DefParameterType('SkipSpaces',     Opcode('SkipSpaces'), novalue => 1, optional => 1);
+DefParameterType('Skip1Space',     Opcode('SkipSpace'),  novalue => 1, optional => 1);
+DefParameterType('SkipMatch:=',    Opcode('SkipEquals'), novalue => 1, optional => 1);
+DefParameterType('SkipKeyword:by', Opcode('SkipBy'),     novalue => 1, optional => 1);
+DefParameterType('SkipKeyword:to', Opcode('SkipTo'),     novalue => 1, optional => 1);
+DefParameterType('Token',          Opcode('Token'));
+DefParameterType('XToken',         Opcode('XToken'));
+DefParameterType('Number',         Opcode('Number'));
+DefParameterType('Float',          Opcode('Float'));
+DefParameterType('Dimension',      Opcode('Dimension'));
+DefParameterType('Glue',           Opcode('Glue'));
+DefParameterType('MuGlue',         Opcode('MuGlue'));
 
 sub ReadFloat {
   my ($gullet) = @_;
   $gullet->skipSpaces;
   return ($gullet->readFloat || Float(0)); }
-
-# Read a dimension
-DefParameterType('Dimension', Opcode('Dimension'));
-
-# Read a Glue (aka skip)
-DefParameterType('Glue', Opcode('Glue'));
-
-# Read a MuGlue (math)
-DefParameterType('MuGlue', Opcode('MuGlue'));
 
 # Read until the next (balanced) open brace {
 # used for the last TeX-style delimited argument
@@ -242,12 +213,12 @@ DefParameterType('Keyword', sub { shift->readKeyword(map { ToString($_); } @_); 
 DefParameterType('Balanced', \&LaTeXML::Core::Gullet::readBalanced);
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
-DefParameterType('Semiverbatim', Opcode('Arg'),    #\&LaTeXML::Core::Gullet::readArg,
+DefParameterType('Semiverbatim', Opcode('Arg'),
   semiverbatim => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
-DefParameterType('OptionalSemiverbatim', \&LaTeXML::Core::Gullet::readOptional,
+DefParameterType('OptionalSemiverbatim', Opcode('Optional'),
   semiverbatim => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
@@ -268,41 +239,24 @@ DefParameterType('Verbatim', sub {
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read an argument that will not be digested.
-DefParameterType('Undigested', \&LaTeXML::Core::Gullet::readArg,
+DefParameterType('Undigested', Opcode('Arg'),
   undigested => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
-DefParameterType('OptionalUndigested', \&LaTeXML::Core::Gullet::readOptional,
+DefParameterType('OptionalUndigested', Opcode('Optional'),
   undigested => 1, optional => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
-DefParameterType('UndigestedKey', \&LaTeXML::Core::Gullet::readArg,
+DefParameterType('UndigestedKey', Opcode('Arg'),
   undigested => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
-DefParameterType('DefToken', sub {
-    my ($gullet) = @_;
-    my $token = $gullet->readToken;
-    while ($token && $token->equals(T_BEGIN)) {
-      my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
-      $token = shift(@toks);
-      $gullet->unread(@toks); }
-    $token; },
-  undigested => 1);
+DefParameterType('DefToken', Opcode('DefToken'), undigested => 1);
 
 # Read a variable, ie. a token (after expansion) that is a writable register.
-DefParameterType('Variable', sub {
-    my ($gullet) = @_;
-    my $token = $gullet->readXToken;
-    my $defn = $token && LookupDefinition($token);
-    if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
-      [$defn, $defn->readArguments($gullet)]; }
-    else {
-      Error('expected', '<variable>', $gullet,
-        "A <variable> was supposed to be here", "Got " . Stringify($token));
-      undef; } },
+DefParameterType('Variable', Opcode('Register'),
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
@@ -310,20 +264,7 @@ DefParameterType('Variable', sub {
     return Tokens($defn->getCS, ($params ? $params->revertArguments(@args) : ())); });
 
 # Same, but not necessarily writable
-DefParameterType('Register', sub {
-    my ($gullet) = @_;
-    my $token = $gullet->readXToken;
-    my $defn = $token && LookupDefinition($token);
-    if ((defined $defn) && $defn->isRegister) {
-      [$defn, $defn->readArguments($gullet)]; }
-    else {
-      Error('expected', '<register>', $gullet,
-        "A <register> was supposed to be here", "Got " . Stringify($token));
-      if (isDefinable($token)) {
-        DefRegisterI($token, undef, Tokens());
-        return [$defn]; }
-      else {
-        return; } } },
+DefParameterType('Register', Opcode('Register'),
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
@@ -535,7 +476,6 @@ DefParameterType('CommaList', sub {
 sub KeyVals_aux {
   my ($gullet, $until, $spec, %options) = @_;
   my ($star, $plus, $prefix, $keysets, $skip) = @{$spec};
-
   # support both "keysets" and "prefix|keysets"
   unless (defined($keysets)) {
     $keysets = $prefix;
@@ -804,7 +744,7 @@ DefMacro('\meaning Token', sub {
           $argcount = $ltxps->getNumArgs;
         }
         my $sp;
-        my @specparts = map { (($sp = $_->{spec}) =~ s/^(\w+):// ? $sp : $sp) } @params;
+        my @specparts = map { (($sp = $_->getSpecification) =~ s/^(\w+):// ? $sp : $sp) } @params;
         my $arg = 1;
         foreach (@specparts) {
           last if ($arg > $argcount);

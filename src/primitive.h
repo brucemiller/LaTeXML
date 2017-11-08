@@ -26,14 +26,14 @@
 #endif
 
 /* void primitive_op(aTHX_ token, primitive_defn, stomach, state, nargs, args, resultstack)*/
-typedef void primitive_op(pTHX_ SV *, SV *, SV *, SV *, int, SV **, LaTeXML_Core_Boxstack);
+typedef void primitive_op(pTHX_ SV *, SV *, SV *, SV *, int, SV **, LaTeXML_Boxstack);
 
 extern primitive_op *
 primitive_lookup(pTHX_ UTF8 opcode);
 
 extern void
 primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
-                 LaTeXML_Core_Boxstack stack);
+                 LaTeXML_Boxstack stack);
 
 extern void
 primitive_afterAssignment(pTHX_ SV * state);

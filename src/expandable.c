@@ -30,86 +30,59 @@
 SV *
 expandable_opcode_csname(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   SV * token = args[0];
   SV * meaning = state_meaning(aTHX_ state, token);
   if(meaning){
     SvREFCNT_dec(meaning); }
   else {                        /* Define as \relax, if not already defined. */
-    LaTeXML_Core_Token t = SvToken(token);
-    SV * relax = state_meaning_internal(aTHX_ state, "\\relax");
-    state_assign_meaning(aTHX_ state, t->string, relax, "local"); }
+    LaTeXML_Token t = SvToken(token);
+    SV * relax = state_lookup_noinc(aTHX_ state,TBL_MEANING, "\\relax");
+    state_assign(aTHX_ state, TBL_MEANING, t->string, relax, "local"); }
   return token; }
 
-HV *
+LaTeXML_IfFrame
 expandable_newIfFrame(pTHX_ SV * conditional, SV * token, SV * gullet, SV * state){
-  int ifid = state_intval(aTHX_ state, "if_count");
-  state_assign_value(aTHX_ state, "if_count",newSViv(++ifid),"global");
-  HV * ifframe = newHV();
-  hv_store(ifframe, "token",   5, (token ? SvREFCNT_inc(token) : newSV(0)),0); /* ==undef */
   SV * loc = gullet_getLocator(aTHX_ gullet);
-  hv_store(ifframe, "start",   5, loc, 0);
-  hv_store(ifframe, "parsing", 7, newSViv(1), 0);
-  hv_store(ifframe, "elses",   5, newSViv(0), 0);
-  hv_store(ifframe, "ifid",    4, newSViv(ifid), 0);
-  LaTeXML_Core_Token t = SvToken(token);    PERL_UNUSED_VAR(t); /* -Wall */
-  SV * sv_ifstack = state_value(aTHX_ state, "if_stack");
-  AV * ifstack;
-  if(sv_ifstack){
-    ifstack = SvArray(sv_ifstack); }
-  else {
-    ifstack = newAV();
-    sv_ifstack = newRV_inc((SV *)ifstack);
-    state_assign_value(aTHX_ state, "if_stack", sv_ifstack,"global"); }
-  av_unshift(ifstack, 1);
-  av_store(ifstack, 0, newRV_inc((SV *)ifframe)); /* why inc? */
-  SvREFCNT_dec(sv_ifstack);
-  /*fprintf(stderr,"NEWIFFRAME\n");
-    Perl_sv_dump(aTHX_ sv_stack);*/
+  LaTeXML_IfFrame ifframe = state_pushIfFrame(aTHX_ state, token, SvPV_nolen(loc));
+  SvREFCNT_dec(loc);
   return ifframe; }
 
-HV *
+LaTeXML_IfFrame
 expandable_getIFFrame(pTHX_ SV * state, UTF8 fortoken){ /* No refcnt inc! */
-  AV * ifstack = state_valueAV_noinc(aTHX_ state, "if_stack");
-  HV * frame = array_getHV_noinc(aTHX_ ifstack, 0);
-  if(!frame){
+  LaTeXML_State xstate = SvState(state);
+  if(xstate->ifstack_top < 0){
     croak("Didn't expect %s since we seem not to be in a conditional (no frame in if_stack)",
           fortoken); }
-  return frame; }
+  return xstate->ifstack[xstate->ifstack_top]; }
 
-HV *
+LaTeXML_IfFrame
 expandable_getActiveIFFrame(pTHX_ SV * state, UTF8 fortoken){ /* no refcnt inc */
-  AV * ifstack = state_valueAV_noinc(aTHX_ state, "if_stack");
+  LaTeXML_State xstate = SvState(state);
+  if(xstate->ifstack_top < 0){
+    croak("Didn't expect %s since we seem not to be in a conditional (no frame in if_stack)",
+          fortoken); }
   int i;
-  int n = av_len(ifstack) + 1;
-  for(i = 0; i < n; i++){
-    HV * frame = array_getHV_noinc(aTHX_ ifstack, i);
-    if(!frame){
-      croak("Didn't expect %s since we seem not to be in a conditional (no frame in if_stack)",
-            fortoken); }
-    else if(hash_getBoole(aTHX_ frame, "parsing")){
-      return frame; } }
+  for(i = xstate->ifstack_top; i >= 0; i--){
+    LaTeXML_IfFrame ifframe = xstate->ifstack[i];  
+    if(ifframe->parsing){
+      return ifframe; } }
   croak("Internal error: no \\if frame is open for %s", fortoken);
   return NULL; }
 
 SV *
-expandable_skipConditionalBody(pTHX_ SV * gullet, int nskips, UTF8 sought_ifid){
-  SV * state = state_global(aTHX);
-  LaTeXML_Core_Mouth mouth = gullet_getMouth(aTHX_ gullet);
+expandable_skipConditionalBody(pTHX_ SV * gullet, SV * state, int nskips, int sought_ifid){
+  LaTeXML_State xstate = SvState(state);
+  SV * mouth = gullet_getMouth(aTHX_ gullet);
   SV * token;
   int level = 1;
   int n_ors = 0;
-  SV ** ptr;
   SV * start = gullet_getLocator(aTHX_ gullet);
   /* Question: does if_stack need to be a state value, or can it be an object value? */
-  SV * sv_ifstack = state_value(aTHX_ state, "if_stack");
-  AV * ifstack = SvArray(sv_ifstack);
-  ptr = av_fetch(ifstack, 0, 0);
-  HV * ifframe = (ptr ? SvHash(*ptr) : NULL);
-  ptr = hv_fetchs(ifframe,"ifid",0);
-  UTF8 ifid = (ptr ? (UTF8)SvPV_nolen(*ptr) : "lost");
+  LaTeXML_IfFrame ifframe = xstate->ifstack[xstate->ifstack_top];
+  int ifid = ifframe->ifid;
   while( (token = mouth_readToken(aTHX_ mouth, state)) ){
-    LaTeXML_Core_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
+    LaTeXML_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
     SV * defn = state_expandable(aTHX_ state, token);
     SV * expansion = NULL;
     UTF8 opcode;
@@ -125,54 +98,42 @@ expandable_skipConditionalBody(pTHX_ SV * gullet, int nskips, UTF8 sought_ifid){
       if (strncmp(opcode,"if",2) == 0) {
         level++; }
       else if (strcmp(opcode, "fi") == 0) {    /*  Found a \fi */
-        if (strcmp(ifid,sought_ifid) != 0) {     /* but for different if (nested in test?) */
+        if (ifid != sought_ifid) {     /* but for different if (nested in test?) */
           /* then DO pop that conditional's frame; it's DONE!*/
-          ifframe = SvHash(av_shift(ifstack)); /* shift($ifstack) */
-          hv_clear(ifframe);
-          SvREFCNT_dec(ifframe);
-          ptr = av_fetch(ifstack, 0, 0);
-          ifframe = (ptr ? SvHash(*ptr) : NULL);
-          ptr = hv_fetchs(ifframe,"ifid",0);
-          ifid = (ptr ? (UTF8)SvPV_nolen(*ptr) : "lost"); }
+          ifframe = state_popIfFrame(aTHX_ state);
+          ifid = ifframe->ifid; }
         else if (!--level) { /* If no more nesting, we're done.*/
-          ifframe = SvHash(av_shift(ifstack)); /* Done with this frame */
-          hv_clear(ifframe);
-          SvREFCNT_dec(ifframe);
+          ifframe = state_popIfFrame(aTHX_ state);
           SvREFCNT_dec(start);
-          SvREFCNT_dec(sv_ifstack);
           return token; } }  /* AND Return the finishing token.*/
       else if (strcmp(opcode,"or")==0) {
         if ((level < 2) && (++n_ors == nskips)) {
           SvREFCNT_dec(start);
-          SvREFCNT_dec(sv_ifstack);
           return token; } }
       else if (strcmp(opcode,"else")==0) {
-        if((level < 2) && nskips && (strcmp(ifid,sought_ifid) == 0)){
+        if((level < 2) && nskips && (ifid == sought_ifid)){
           /* Found \else and we're looking for one?
              Make sure this \else is NOT for a nested \if that is part of the test clause!*/ /*  */
           /* No need to actually call elseHandler, but note that we've seen an \else!*/
-          hv_store(ifframe,"elses",5,newSViv(1),0); /* $$stack[0]{elses} = 1;*/
+          ifframe->elses++;
           SvREFCNT_dec(start);
-          SvREFCNT_dec(sv_ifstack);
           return token; } } }
     SvREFCNT_dec(token); }
   /* if we fell through..
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
   "Conditional started at $start"); */
-  SvREFCNT_dec(sv_ifstack);
   croak("Missing \\fi or \\else: conditional fell off end from %s",SvPV_nolen(start)); }
 
 SV *
 expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   HV * defnhash = SvHash(expandable);
   SV ** ptr;
   int ip;
-  HV * ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\if");
-  UTF8 ifid = hash_getPV(aTHX_ ifframe,"ifid");
-  hash_put_noinc(aTHX_ ifframe,"parsing",newSViv(0));
-
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\if");
+  int ifid = ifframe->ifid;
+  ifframe->parsing = 0;
   SV * test = NULL;
   if( (ptr  = hv_fetchs(defnhash,"test",0)) /* $$expansable{test} */
       && SvOK(*ptr) ){
@@ -197,38 +158,36 @@ expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
   for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
     SvREFCNT_dec(args[ip]); }
   if(! boolean){
-    SV * t = expandable_skipConditionalBody(aTHX_ gullet, -1, ifid);
+    SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, -1, ifid);
     if(t){ SvREFCNT_dec(t); } }
   return NULL; }
 
 SV *
 expandable_opcode_iftrue(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iftrue");
-  hash_put_noinc(aTHX_ ifframe,"parsing",NULL);
+  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iftrue");
+  ifframe->parsing = 0;
   /* do nothing else! */
   return NULL; }
 
 SV *
 expandable_opcode_iffalse(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
-  hash_put_noinc(aTHX_ ifframe,"parsing",newSViv(0));
-  UTF8 ifid = hash_getPV(aTHX_ ifframe,"ifid");
-  SV * t = expandable_skipConditionalBody(aTHX_ gullet, -1, ifid);
-  if(t){ SvREFCNT_dec(t); }  
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
+  ifframe->parsing = 0;
+  SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, -1, ifframe->ifid);
+  if(t){ SvREFCNT_dec(t); }
   return NULL; }
 
 SV *
 expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
-  hash_put_noinc(aTHX_ ifframe,"parsing",newSViv(0));
-  UTF8 ifid = hash_getPV(aTHX_ ifframe,"ifid");
-
+  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
+  ifframe->parsing = 0;
+  int ifid = ifframe->ifid;
   /* Better have 1 argument, and it should be a Number! */
   dSP; ENTER; SAVETMPS; PUSHMARK(SP);
   EXTEND(SP,1); PUSHs(args[0]); PUTBACK;
@@ -243,71 +202,62 @@ expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet,
   for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
     SvREFCNT_dec(args[ip]); }
   if(nskips > 0){
-    SV * t = expandable_skipConditionalBody(aTHX_ gullet, nskips, ifid);
+    SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, nskips, ifid);
     if(t){ SvREFCNT_dec(t); } }
   return NULL; }
 
 SV *
 expandable_opcode_else(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * frame = expandable_getIFFrame(aTHX_ state, "\\else");
-  if(hash_getBoole(aTHX_ frame,"parsing")){
-    LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 2);
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  LaTeXML_IfFrame ifframe = expandable_getIFFrame(aTHX_ state, "\\else");
+  if(ifframe->parsing){
+    SV * tokens = tokens_new(aTHX_ 2);
     SV * relax =  token_new(aTHX_ "\\relax",CC_CS);
     tokens_add_to(aTHX_ tokens, relax,0); SvREFCNT_dec(relax);
     tokens_add_to(aTHX_ tokens, current_token,0);
-    SV * result = newSV(0);
-    sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tokens);
-    SvREFCNT_inc(result);
-    return result; }
-  else if (hash_getIV(aTHX_ frame,"elses")){
+    return tokens; }
+  else if (ifframe->elses){
     croak("extra XXX; already saw \\else for this level"); }
   else {
-    UTF8 ifid = hash_getPV(aTHX_ frame,"ifid");
-    SV * t = expandable_skipConditionalBody(aTHX_ gullet, 0, ifid);
+    SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, 0, ifframe->ifid);
     if(t){ SvREFCNT_dec(t); } }
   return NULL; }
 
 SV *
 expandable_opcode_fi(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * frame = expandable_getIFFrame(aTHX_ state, "\\fi");
-  if(hash_getBoole(aTHX_ frame,"parsing")){
-    LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 2);
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  LaTeXML_IfFrame ifframe = expandable_getIFFrame(aTHX_ state, "\\fi");
+  if(ifframe->parsing){
+    SV * tokens = tokens_new(aTHX_ 2);
     SV * relax = token_new(aTHX_ "\\relax",CC_CS);
     tokens_add_to(aTHX_ tokens, relax,0); SvREFCNT_dec(relax);
     tokens_add_to(aTHX_ tokens, current_token,0);
-    SV * result = newSV(0);
-    sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tokens);
-    SvREFCNT_inc(result);
-    return result; }
+    return tokens; }
   else {
-    SV * sv_ifstack = state_value(aTHX_ state, "if_stack");
-    AV * ifstack = SvArray(sv_ifstack);
-    SV * ignore = av_shift(ifstack); PERL_UNUSED_VAR(ignore); /* Done with this if frame */
-    SvREFCNT_dec(sv_ifstack);  }
+    state_popIfFrame(aTHX_ state); }
   return NULL; }
 
 SV *
 expandable_opcode_expandafter(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   /* NOTE: This reads it's own 2 tokens!!! */
   gullet_expandafter(aTHX_ gullet, state);
   return NULL; }
 
 SV *
 expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
-  int tracing = state_booleval(aTHX_ state, "TRACINGMACROS");
-  int profiling= state_booleval(aTHX_ state, "PROFILING");
+  LaTeXML_State xstate = SvState(state);
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS");
+  int profiling= xstate->config & CONFIG_PROFILING;
   HV * expandable_hash = SvHash(expandable);
   SV * result = NULL;
-  LaTeXML_Core_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
+  LaTeXML_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Expandable("Invoke Expandable %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
-    /*my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{token});
+    /*my $profiled = $XSTATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{token});
       state_startProfiling(aTHX_ profiled,"expand"); */ }
   SV * expansion = hash_get(aTHX_ expandable_hash, "expansion");
   UTF8 opcode = NULL;
@@ -318,7 +268,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
 
   /* GENERALIZE this to (before|after)expand ?   BEFORE reading arguments! */
   if(opcode && (strncmp(opcode,"if",2)==0)){ /* Prepare if stack frame for if's */
-    HV * ignore = expandable_newIfFrame(aTHX_ expandable, token, gullet, state);
+    LaTeXML_IfFrame ignore = expandable_newIfFrame(aTHX_ expandable, token, gullet, state);
     PERL_UNUSED_VAR(ignore); }
   /* Read arguments */
   int ip;
@@ -328,7 +278,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   SV * args[npara];
   if(parameters){       /* If no parameters, nothing to read! */
     DEBUG_Expandable("reading %ld parameters\n", npara);
-    nargs = gullet_readArguments(aTHX_ gullet, npara, parameters, token, args);
+    nargs = gullet_readArguments(aTHX_ gullet, state, npara, parameters, token, args);
     DEBUG_Expandable("got %d arguments\n", nargs);
     SvREFCNT_dec(parameters); }
 
@@ -356,32 +306,34 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
       int nvals = call_sv(expansion,G_ARRAY);
       DEBUG_Expandable("code returned %d values\n", nvals);
       SPAGAIN;
-      LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ nvals);
+      result = tokens_new(aTHX_ nvals);
       if(nvals > 0){
         SP -= nvals;
         I32 ax = (SP - PL_stack_base) + 1; /* Hackery to read return in reverse using ST! */
         for(ip = 0; ip < nvals; ip++){
-          tokens_add_to(aTHX_ tokens, ST(ip), 0); } }
-      result = newSV(0);
-      sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tokens);
+          tokens_add_to(aTHX_ result, ST(ip), 0); } }
       PUTBACK; FREETMPS; LEAVE;
       if(tracing){
         /* print STDERR "\n" . $self->tracingCSName($token) . ' ==> ' . tracetoString($result) . "\n";
            print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
       SvREFCNT_dec(expansion); }
+    else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
+      DEBUG_Expandable("Expansion is token %p\n", expansion);
+      if(tracing){
+        /* print STDERR "\n" . $self->tracingCSName($token)
+           . ' -> ' . tracetoString($expansion) . "\n";
+           print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
+      result = expansion; }
     else if(sv_isa(expansion, "LaTeXML::Core::Tokens")) {
-      IV tmp = SvIV((SV*)SvRV(expansion));
-      LaTeXML_Core_Tokens tokens = INT2PTR(LaTeXML_Core_Tokens, tmp);
       DEBUG_Expandable("Expansion is tokens %p\n", expansion);
       if(tracing){
         /* print STDERR "\n" . $self->tracingCSName($token)
            . ' -> ' . tracetoString($expansion) . "\n";
            print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
-      LaTeXML_Core_Tokens tresult = tokens_substituteParameters(aTHX_ tokens, nargs, args);
-      result = newSV(0);
-      sv_setref_pv(result, "LaTeXML::Core::Tokens", (void*) tresult);
+      result = tokens_substituteParameters(aTHX_ expansion, nargs, args);
       SvREFCNT_dec(expansion); }
     else {
+      Perl_sv_dump(aTHX_ expansion);
       croak("expansion is not CODE or of type LaTeXML::Core::Tokens");
       SvREFCNT_dec(expansion); }
     for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */

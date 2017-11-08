@@ -46,17 +46,17 @@ typedef struct Token_struct {
   int catcode;
   UTF8 string;
 } T_Token;
-typedef T_Token  * LaTeXML_Core_Token;
+typedef T_Token  * LaTeXML_Token;
 
 typedef struct Tokens_struct {
   int ntokens;
   int nalloc;
   PTR_SV * tokens;
 } T_Tokens;
-typedef T_Tokens * LaTeXML_Core_Tokens;
+typedef T_Tokens * LaTeXML_Tokens;
 
-#define SvTokens(arg)     INT2PTR(LaTeXML_Core_Tokens,     SvIV((SV*) SvRV(arg)))
-#define SvToken(arg)      INT2PTR(LaTeXML_Core_Token,      SvIV((SV*) SvRV(arg)))
+#define SvTokens(arg)     INT2PTR(LaTeXML_Tokens,     SvIV((SV*) SvRV(arg)))
+#define SvToken(arg)      INT2PTR(LaTeXML_Token,      SvIV((SV*) SvRV(arg)))
 
 typedef enum {
     CC_ESCAPE      =  0,
@@ -93,7 +93,7 @@ extern UTF8 CC_SHORT_NAME[];
 extern SV *
 token_new(pTHX_ UTF8 string, int catcode);
 extern void
-token_DESTROY(pTHX_ LaTeXML_Core_Token token);
+token_DESTROY(pTHX_ LaTeXML_Token token);
 
 #define T_LETTER(arg) (token_new(aTHX_ (arg), 11))
 #define T_OTHER(arg)  (token_new(aTHX_ (arg), 12))
@@ -109,34 +109,34 @@ token_equals(pTHX_ SV * a, SV * b);
    it is expected that the caller has allocated enough room for it's arguments
    assuming they are Token's; add_to_tokens will grow if it encounters Tokens/Reversions */
 
-extern LaTeXML_Core_Tokens
+extern SV *
 tokens_new(pTHX_ int nalloc);
 
 extern void
-tokens_DESTROY(pTHX_ LaTeXML_Core_Tokens tokens);
+tokens_DESTROY(pTHX_ LaTeXML_Tokens xtokens);
 
 extern UTF8                            /* NOTE: This returns a newly allocated string! */
-tokens_toString(pTHX_ LaTeXML_Core_Tokens tokens);
+tokens_toString(pTHX_ SV * tokens);
 
 extern int
-tokens_equals(pTHX_ LaTeXML_Core_Tokens a,LaTeXML_Core_Tokens b);
+tokens_equals(pTHX_ SV * a, SV * b);
 
 extern void
-tokens_shrink(pTHX_ LaTeXML_Core_Tokens tokens);
+tokens_shrink(pTHX_ SV * tokens);
 
 extern void                            /* adds in-place */
-tokens_add_to(pTHX_ LaTeXML_Core_Tokens tokens, SV * thing, int revert);
+tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert);
 
 extern void                            /* Modifies in-place */
-tokens_trimBraces(pTHX_ LaTeXML_Core_Tokens tokens);
+tokens_trimBraces(pTHX_ SV * tokens);
 
 extern void                            /* Remove trailing spaces, in-place */
-tokens_trimright(pTHX_ LaTeXML_Core_Tokens tokens);
+tokens_trimright(pTHX_ SV * tokens);
 
-extern LaTeXML_Core_Tokens             /* trim's left/right space, then braces; creates NEW tokens */
-tokens_trim(pTHX_ LaTeXML_Core_Tokens tokens);
+extern SV * /* trim's left/right space, then braces; creates NEW tokens */
+tokens_trim(pTHX_ SV * tokens);
 
-extern LaTeXML_Core_Tokens
-tokens_substituteParameters(pTHX_ LaTeXML_Core_Tokens tokens, int nargs, SV **args);
+extern SV *
+tokens_substituteParameters(pTHX_ SV * tokens, int nargs, SV **args);
 
 #endif

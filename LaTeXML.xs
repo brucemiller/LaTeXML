@@ -21,10 +21,10 @@
 #include "src/object.h"
 #include "src/tokens.h"
 #include "src/numbers.h"
+#include "src/state.h"
 #include "src/tokenstack.h"
 #include "src/boxstack.h"
 #include "src/parameters.h"
-#include "src/state.h"
 #include "src/mouth.h"
 #include "src/gullet.h"
 #include "src/expandable.h"
@@ -85,21 +85,22 @@ Major ToDo:
 MODULE = LaTeXML PACKAGE = LaTeXML::Core::State
 PROTOTYPES: ENABLE
 
-void
-assign_internal(state, table, key, value, ...)
-    SV * state;
-    UTF8 table;
-    UTF8 key;
-    SV * value;
-  CODE:   
-    UTF8 scope = ((items > 4) && SvTRUE(ST(4)) ? SvPV_nolen(ST(4)) : NULL);
-    state_assign_internal(aTHX_ state, table, key, value, scope);
+SV *
+new_internal(stomach,model)
+    SV * stomach;
+    SV * model;
+  CODE:
+    RETVAL = state_new(aTHX_ stomach, model);
+  OUTPUT:
+    RETVAL
 
 SV *
 getStomach(state)
     SV * state;
   CODE:
     RETVAL = state_stomach(aTHX_ state);
+    if(! RETVAL){
+      croak("internal:stomach State has no stomach!"); }
   OUTPUT:
     RETVAL
 
@@ -107,7 +108,7 @@ SV *
 getStomach_noerror(state)
     SV * state;
   CODE:
-    RETVAL = state_stomach_noerror(aTHX_ state);
+    RETVAL = state_stomach(aTHX_ state);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
@@ -117,6 +118,7 @@ getModel(state)
     SV * state;
   CODE:
     RETVAL = state_model(aTHX_ state);
+    if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
 
@@ -124,7 +126,8 @@ void
 getValueKeys(state)
     SV * state;
   INIT:
-    HV * hash = state_valueTable_noinc(aTHX_ state);
+    LaTeXML_State xstate = SvState(state);
+    HV * hash = xstate->tables[TBL_VALUE];
     HE * entry;
   CODE:
     hv_iterinit(hash);          /* NOT sorted! */
@@ -137,7 +140,8 @@ void
 getKnownScopes(state)
     SV * state;
   INIT:
-    HV * hash = state_stashTable_noinc(aTHX_ state);
+    LaTeXML_State xstate = SvState(state);
+    HV * hash = xstate->tables[TBL_STASH];
     HE * entry;
   CODE:
     hv_iterinit(hash);          /* NOT sorted! */
@@ -150,7 +154,8 @@ void
 getActiveScopes(state)
     SV * state;
   INIT:
-    HV * hash = state_activeStashTable_noinc(aTHX_ state);
+    LaTeXML_State xstate = SvState(state);
+    HV * hash = xstate->tables[TBL_STASH_ACTIVE];
     HE * entry;
   CODE:
     hv_iterinit(hash);          /* NOT sorted! */
@@ -208,12 +213,13 @@ deactivateScope(state, scope)
  CODE:
    state_deactivateScope(aTHX_ state, scope);
 
-int
+SV *
 lookupCatcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_catcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_CATCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(CC_OTHER); }
   OUTPUT:
     RETVAL
 
@@ -221,17 +227,20 @@ void
 assignCatcode(state,string,catcode,...)
     SV * state;
     UTF8 string;
-    int catcode;
+    SV * catcode;
   PPCODE:
+    if(SvOK(catcode) && !SvIOKp(catcode)){
+      croak("Catcode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_catcode(aTHX_ state,string,catcode,scope);
+    state_assign(aTHX_ state, TBL_CATCODE, string, catcode, scope);
 
-int
+SV *
 lookupMathcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_mathcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_MATHCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
     RETVAL
 
@@ -239,17 +248,20 @@ void
 assignMathcode(state,string,mathcode,...)
     SV * state;
     UTF8 string;
-    int mathcode;
+    SV * mathcode;
   PPCODE:
+    if(SvOK(mathcode) && !SvIOKp(mathcode)){
+      croak("Mathcode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_mathcode(aTHX_ state,string,mathcode,scope);
+    state_assign(aTHX_ state, TBL_MATHCODE, string, mathcode, scope);
 
-int
+SV *
 lookupSFcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_SFcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_SFCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
     RETVAL
 
@@ -257,17 +269,20 @@ void
 assignSFcode(state,string,sfcode,...)
     SV * state;
     UTF8 string;
-    int sfcode;
+    SV * sfcode;
   PPCODE:
+    if(SvOK(sfcode) && !SvIOKp(sfcode)){
+      croak("SFcode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_SFcode(aTHX_ state,string,sfcode,scope);
+    state_assign(aTHX_ state, TBL_SFCODE, string, sfcode, scope);
 
-int
+SV *
 lookupLCcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_LCcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_LCCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
     RETVAL
 
@@ -275,17 +290,20 @@ void
 assignLCcode(state,string,lccode,...)
     SV * state;
     UTF8 string;
-    int lccode;
+    SV * lccode;
   PPCODE:
+    if(SvOK(lccode) && !SvIOKp(lccode)){
+      croak("lccode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_LCcode(aTHX_ state,string,lccode,scope);
+    state_assign(aTHX_ state, TBL_LCCODE, string, lccode, scope);
 
-int
+SV *
 lookupUCcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_UCcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_UCCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
     RETVAL
 
@@ -293,17 +311,20 @@ void
 assignUCcode(state,string,uccode,...)
     SV * state;
     UTF8 string;
-    int uccode;
+    SV * uccode;
   PPCODE:
+    if(SvOK(uccode) && !SvIOKp(uccode)){
+      croak("uccode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_UCcode(aTHX_ state,string,uccode,scope);
+    state_assign(aTHX_ state, TBL_UCCODE, string, uccode, scope);
 
-int
+SV *
 lookupDelcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_Delcode(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_DELCODE, string);
+    if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
     RETVAL
 
@@ -311,17 +332,19 @@ void
 assignDelcode(state,string,delcode,...)
     SV * state;
     UTF8 string;
-    int delcode;
+    SV * delcode;
   PPCODE:
+    if(SvOK(delcode) && !SvIOKp(delcode)){
+      croak("delcode expected a number"); }
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_Delcode(aTHX_ state,string,delcode,scope);
+    state_assign(aTHX_ state, TBL_DELCODE, string, delcode, scope);
 
 SV *
 lookupValue(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_value(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_VALUE, string);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
@@ -333,7 +356,7 @@ assignValue(state,string,value, ...)
     SV * value;
   CODE:
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_value(aTHX_ state, string, value, scope);
+    state_assign(aTHX_ state, TBL_VALUE, string, value, scope);
 
 int
 isValueBound(state,string,...)
@@ -342,7 +365,7 @@ isValueBound(state,string,...)
   INIT:
     int frame = ((items > 2) && SvOK(ST(2)) ? SvIV(ST(2)) : -1);
   CODE:
-    RETVAL = state_isValueBound(aTHX_ state, string, frame);
+    RETVAL = state_isBound(aTHX_ state, TBL_VALUE, string, frame);
   OUTPUT:
     RETVAL
 
@@ -353,7 +376,7 @@ valueInFrame(state,string,...)
   INIT:
     int frame = ((items > 2) && SvOK(ST(2)) ? SvIV(ST(2)) : 0);
   CODE:
-    RETVAL = state_valueInFrame(aTHX_ state, string, frame);
+    RETVAL = state_lookupInFrame(aTHX_ state, TBL_VALUE, string, frame);
   OUTPUT:
     RETVAL
 
@@ -362,7 +385,7 @@ lookupStackedValues(state,string)
     SV * state;
     UTF8 string;
   INIT:
-    AV * av = state_boundValues_noinc(aTHX_ state, string);
+    AV * av = state_bindings_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
     if(av){
@@ -377,7 +400,7 @@ pushValue(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
-    AV * av = state_valueAV_noinc(aTHX_ state, string);
+    AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
     for(i = 2; i < items; i++){
@@ -390,7 +413,7 @@ popValue(state,string)
     SV * state;
     UTF8 string;
   INIT:
-    AV * av = state_valueAV_noinc(aTHX_ state, string);
+    AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
   CODE:
     RETVAL = av_pop(av);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
@@ -402,7 +425,7 @@ unshiftValue(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
-    AV * av = state_valueAV_noinc(aTHX_ state, string);
+    AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
     av_unshift(av,items-2);
@@ -416,7 +439,7 @@ shiftValue(state,string)
     SV * state;
     UTF8 string;
   INIT:
-    AV * av = state_valueAV_noinc(aTHX_ state, string);
+    AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
   CODE:
     RETVAL = av_shift(av);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
@@ -429,7 +452,7 @@ lookupMapping(state,string,key)
     UTF8 string;
     UTF8 key;
   INIT:
-    HV * hash = state_valueHV_noinc(aTHX_ state, string);
+    HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
     SV ** ptr = hv_fetch(hash,key,-strlen(key),0);
   CODE:
     if(ptr && *ptr && SvOK(*ptr)){
@@ -444,7 +467,7 @@ lookupMappingKeys(state,string)
     SV * state;
     UTF8 string;
   INIT:
-    HV * hash = state_valueHV_noinc(aTHX_ state, string);
+    HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
     HE * entry;
   PPCODE:
     hv_iterinit(hash);          /* NOT sorted! */
@@ -460,7 +483,7 @@ assignMapping(state,string,key,value)
     UTF8 key;
     SV * value;
   INIT:
-    HV * hash = state_valueHV_noinc(aTHX_ state, string);
+    HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
   PPCODE:
     hv_store(hash,key,-strlen(key),value,0);
     SvREFCNT_inc(value);
@@ -470,7 +493,7 @@ lookupStash(state,string)
     SV * state;
     UTF8 string;
   CODE:
-    RETVAL = state_stash(aTHX_ state, string);
+    RETVAL = state_lookup(aTHX_ state, TBL_STASH, string);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
@@ -482,7 +505,7 @@ assignStash(state,string,value, ...)
     SV * value;
   CODE:
     UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    state_assign_stash(aTHX_ state, string, value, scope);
+    state_assign(aTHX_ state, TBL_STASH, string, value, scope);
 
 SV *
 lookupMeaning(state,token)
@@ -498,7 +521,8 @@ int
 globalFlag(state)
     SV * state;
   CODE:
-   RETVAL = state_globalFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    RETVAL = xstate->flags & FLAG_GLOBAL;
   OUTPUT:
     RETVAL
 
@@ -506,13 +530,15 @@ void
 setGlobalFlag(state)
     SV * state;
   CODE:
-   state_setGlobalFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags |= FLAG_GLOBAL;
 
 int
 longFlag(state)
     SV * state;
   CODE:
-   RETVAL = state_longFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    RETVAL = xstate->flags & FLAG_LONG;
   OUTPUT:
     RETVAL
 
@@ -520,13 +546,15 @@ void
 setLongFlag(state)
     SV * state;
   CODE:
-   state_setLongFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags |= FLAG_LONG;
 
 int
 outerFlag(state)
     SV * state;
   CODE:
-   RETVAL = state_outerFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    RETVAL = xstate->flags & FLAG_OUTER;
   OUTPUT:
     RETVAL
 
@@ -534,13 +562,15 @@ void
 setOuterFlag(state)
     SV * state;
   CODE:
-   state_setOuterFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags |= FLAG_OUTER;
 
 int
 protectedFlag(state)
     SV * state;
   CODE:
-   RETVAL = state_protectedFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    RETVAL = xstate->flags & FLAG_PROTECTED;
   OUTPUT:
     RETVAL
 
@@ -548,13 +578,15 @@ void
 setProtectedFlag(state)
     SV * state;
   CODE:
-   state_setProtectedFlag(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags |= FLAG_PROTECTED;
 
 void
 clearFlags(state)
     SV * state;
   CODE:
-   state_clearFlags(aTHX_ state); 
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags = 0;
 
 void
 beginSemiverbatim(state,...)
@@ -588,10 +620,10 @@ assignMeaning(state, token, meaning,...)
        && token_equals(aTHX_ token,meaning)){
       } /* Hack; ignore assigment to itself */
     else {
-      LaTeXML_Core_Token t = SvToken(token);
+      LaTeXML_Token t = SvToken(token);
       UTF8 name = PRIMITIVE_NAME[t->catcode]; /* getCSName */
       name = (name == NULL ? t->string : name);
-      state_assign_meaning(aTHX_ state, name, meaning, scope); }
+      state_assign(aTHX_ state, TBL_MEANING, name, meaning, scope); }
 
 void
 let(state, token1, token2,...)
@@ -609,10 +641,10 @@ let(state, token1, token2,...)
        && token_equals(aTHX_ token1,meaning)){
     }
     else {
-      LaTeXML_Core_Token t1 = SvToken(token1);
+      LaTeXML_Token t1 = SvToken(token1);
       UTF8 name1 = PRIMITIVE_NAME[t1->catcode]; /* getCSName */
       name1 = (name1 == NULL ? t1->string : name1);
-      state_assign_meaning(aTHX_ state, name1, meaning, scope); }
+      state_assign(aTHX_ state, TBL_MEANING, name1, meaning, scope); }
     if(meaning){ SvREFCNT_dec(meaning); }
 
 SV *
@@ -645,7 +677,7 @@ installDefinition(state, definition, ...)
     SV ** ptr = hv_fetchs(hash,"cs",0);
     if(! ptr){
       croak("Definition doesn't have a CS!"); }
-    LaTeXML_Core_Token t = SvToken(*ptr);
+    LaTeXML_Token t = SvToken(*ptr);
     UTF8 name = PRIMITIVE_NAME[t->catcode]; /* getCSName */
     name = (name == NULL ? t->string : name);
     int nlen = strlen(name);
@@ -653,11 +685,11 @@ installDefinition(state, definition, ...)
     strncpy(lock,name,nlen);
     strcpy(lock+nlen,":locked");
     SV * tmp;
-    if ( state_booleval(aTHX_ state, lock)
+    if ( state_lookupBoole(aTHX_ state, TBL_VALUE, lock)
          && ( ! (tmp = get_sv("LaTeXML::Core::State::UNLOCKED",0)) || !SvTRUE(tmp)) ) {
       /*fprintf(stderr,"Ignoring redefinition of %s\n",name);*/
       /*
-       if (my $s = $self->getStomach->getGullet->getSource) {
+       if (my $s = $self->getStomach->getxgullet->getSource) {
          # report if the redefinition seems to come from document source
          if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
            && ($s !~ /\.code\.tex$/)) {
@@ -665,7 +697,7 @@ installDefinition(state, definition, ...)
            return; } */
     }
     else {
-      state_assign_meaning(aTHX_ state, name, definition, scope); }
+      state_assign(aTHX_ state, TBL_MEANING, name, definition, scope); }
 
 void
 afterAssignment(state)
@@ -685,6 +717,20 @@ getLocator(state)
     RETVAL
 
 SV *
+getIfContext(state)
+    SV * state;
+  CODE:  
+    LaTeXML_State xstate = SvState(state);
+    LaTeXML_IfFrame ifframe = (xstate->ifstack_top > 0 ? xstate->ifstack[xstate->ifstack_top] : NULL);
+    if(ifframe){
+      LaTeXML_Token t = SvToken(ifframe->token);
+      RETVAL = newSVpvf("If %s started at %s",t->string, ifframe->start); }
+    else {
+      RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+SV *
 convertUnit(state,unit)
     SV * state;
     UTF8 unit;
@@ -692,6 +738,12 @@ convertUnit(state,unit)
     RETVAL = state_convertUnit(aTHX_ state, unit);
   OUTPUT:
     RETVAL
+
+void
+clearStatus(state,...)
+    SV * state;
+  CODE:
+    state_clearStatus(aTHX_ state);
 
 void
 noteStatus(state,type,...)
@@ -745,52 +797,52 @@ T_CS(string)
     UTF8 string
 
 int
-getCatcode(self)
-    LaTeXML_Core_Token self
+getCatcode(token)
+    LaTeXML_Token token
   CODE:
-    RETVAL = self->catcode;
+    RETVAL = token->catcode;
   OUTPUT:
     RETVAL
 
 UTF8
-getString(self)
-    LaTeXML_Core_Token self
+getString(token)
+    LaTeXML_Token token
   CODE:
-    RETVAL = self->string;
+    RETVAL = token->string;
   OUTPUT:
     RETVAL
 
 UTF8
-toString(self)
-    LaTeXML_Core_Token self
+toString(token)
+    LaTeXML_Token token
   CODE:
-    RETVAL = self->string;
+    RETVAL = token->string;
   OUTPUT:
     RETVAL
 
 int
-getCharcode(self)
-    LaTeXML_Core_Token self
+getCharcode(token)
+    LaTeXML_Token token
   CODE:
-    RETVAL = (self->catcode == CC_CS ? 256 : (int) self->string [0]);
+    RETVAL = (token->catcode == CC_CS ? 256 : (int) token->string [0]);
   OUTPUT:
     RETVAL
 
 UTF8
-getCSName(self)
-    LaTeXML_Core_Token self
+getCSName(token)
+    LaTeXML_Token token
   INIT:
-    UTF8 s = PRIMITIVE_NAME[self->catcode];
+    UTF8 s = PRIMITIVE_NAME[token->catcode];
   CODE:
-    RETVAL = (s == NULL ? self->string : s);
+    RETVAL = (s == NULL ? token->string : s);
   OUTPUT:
     RETVAL 
 
 int
-isExecutable(self)
-    LaTeXML_Core_Token self
+isExecutable(token)
+    LaTeXML_Token token
   CODE:
-    RETVAL = EXECUTABLE_CATCODE [self->catcode];
+    RETVAL = EXECUTABLE_CATCODE [token->catcode];
   OUTPUT:
     RETVAL
 
@@ -813,10 +865,10 @@ equals(a, b)
     RETVAL
 
 void
-DESTROY(self)
-    LaTeXML_Core_Token self
+DESTROY(token)
+    LaTeXML_Token token
   CODE:
-    token_DESTROY(aTHX_ self);
+    token_DESTROY(aTHX_ token);
 
  #/*======================================================================
  #   LaTeXML::Common::Dimension
@@ -858,7 +910,7 @@ SV *
 Tokens(...)
   INIT:
     int i;
-    LaTeXML_Core_Tokens tokens;
+    SV * tokens;
   CODE:
     if((items == 1) && sv_isa(ST(0), "LaTeXML::Core::Tokens")) {
       RETVAL = ST(0);
@@ -869,10 +921,8 @@ Tokens(...)
         SV * sv = newSVsv(ST(i));
         tokens_add_to(aTHX_ tokens,sv,0);
         SvREFCNT_dec(sv); }
-     DEBUG_Tokens( "done %d.\n", tokens->ntokens);
-     RETVAL = newSV(0);
-     sv_setref_pv(RETVAL, "LaTeXML::Core::Tokens", (void*)tokens);
-    }
+      /*DEBUG_Tokens( "done %d.\n", SvTokens(tokens)->ntokens);*/
+      RETVAL = tokens; }
   OUTPUT:
     RETVAL
 
@@ -883,7 +933,7 @@ equals(a, b)
   CODE:
    if (SvOK(a) && sv_isa(a, "LaTeXML::Core::Tokens")
        && SvOK(b) && sv_isa(b, "LaTeXML::Core::Tokens")) {
-     RETVAL = tokens_equals(aTHX_ SvTokens(a),SvTokens(b)); }
+     RETVAL = tokens_equals(aTHX_ a, b); }
    else {
      RETVAL = 0; }
   OUTPUT:
@@ -891,42 +941,45 @@ equals(a, b)
 
 UTF8
 toString(tokens)
-    LaTeXML_Core_Tokens tokens;
+    SV * tokens;
   CODE:
     RETVAL = tokens_toString(aTHX_ tokens);
   OUTPUT: 
     RETVAL
 
 void
-unlist(self)
-    LaTeXML_Core_Tokens self
+unlist(tokens)
+    SV * tokens
   INIT:
     int i;
+    LaTeXML_Tokens xtokens = SvTokens(tokens);
   PPCODE:
-    EXTEND(SP, self->ntokens);
-    for(i = 0; i < self->ntokens; i++) {
-      PUSHs(sv_2mortal(SvREFCNT_inc(self->tokens[i]))); }
+    EXTEND(SP, xtokens->ntokens);
+    for(i = 0; i < xtokens->ntokens; i++) {
+      PUSHs(sv_2mortal(SvREFCNT_inc(xtokens->tokens[i]))); }
 
 void
-revert(self)
-    LaTeXML_Core_Tokens self
+revert(tokens)
+    SV * tokens
   INIT:                    /* same as unlist */
     int i;
+    LaTeXML_Tokens xtokens = SvTokens(tokens);
   PPCODE:
-    EXTEND(SP, self->ntokens);
-    for(i = 0; i < self->ntokens; i++) {
-      PUSHs(sv_2mortal(SvREFCNT_inc(self->tokens[i]))); }
+    EXTEND(SP, xtokens->ntokens);
+    for(i = 0; i < xtokens->ntokens; i++) {
+      PUSHs(sv_2mortal(SvREFCNT_inc(xtokens->tokens[i]))); }
 
 int
-isBalanced(self)
-    LaTeXML_Core_Tokens self
+isBalanced(tokens)
+    SV * tokens
   INIT:
     int i, level;
+    LaTeXML_Tokens xtokens = SvTokens(tokens);
   CODE:
     level = 0;
-    DEBUG_Tokens("\nChecking balance of %d tokens",self->ntokens);
-    for (i = 0 ; i < self->ntokens ; i++) {
-      LaTeXML_Core_Token t = SvToken(self->tokens[i]);
+    DEBUG_Tokens("\nChecking balance of %d tokens",xtokens->ntokens);
+    for (i = 0 ; i < xtokens->ntokens ; i++) {
+      LaTeXML_Token t = SvToken(xtokens->tokens[i]);
       int cc = t->catcode;
       DEBUG_Tokens("[%d]",cc);
       if (cc == CC_BEGIN) {
@@ -940,9 +993,9 @@ isBalanced(self)
   OUTPUT:
     RETVAL
 
-LaTeXML_Core_Tokens
-substituteParameters(self,...)
-    LaTeXML_Core_Tokens self
+SV *
+substituteParameters(tokens,...)
+    SV * tokens
   INIT:
     int i;
     int nargs = items-1;
@@ -953,24 +1006,24 @@ substituteParameters(self,...)
       if(! SvOK(arg)){
         arg = NULL; }
       args[i] = arg; }
-    RETVAL = tokens_substituteParameters(aTHX_ self, nargs, args);
+    RETVAL = tokens_substituteParameters(aTHX_ tokens, nargs, args);
     if(RETVAL == NULL){ croak("NULL from substituteParameters"); }
   OUTPUT:
     RETVAL
 
-LaTeXML_Core_Tokens
-trim(self)
-    LaTeXML_Core_Tokens self
+SV *
+trim(tokens)
+    SV * tokens
   CODE:
-    RETVAL = tokens_trim(aTHX_ self); 
+    RETVAL = tokens_trim(aTHX_ tokens); 
   OUTPUT:
     RETVAL
   
 void
-DESTROY(self)
-    LaTeXML_Core_Tokens self
+DESTROY(xtokens)
+    LaTeXML_Tokens xtokens
   CODE:
-    tokens_DESTROY(aTHX_ self);
+    tokens_DESTROY(aTHX_ xtokens);
 
  #/*======================================================================
  #   LaTeXML::Core::Tokenstack
@@ -980,7 +1033,7 @@ MODULE = LaTeXML  PACKAGE = LaTeXML::Core::Tokenstack
 SV *
 new()
   INIT:
-    LaTeXML_Core_Tokenstack stack;
+    LaTeXML_Tokenstack stack;
   CODE:
     stack = tokenstack_new(aTHX);
     RETVAL = newSV(0);
@@ -990,7 +1043,7 @@ new()
 
 void
 push(stack,token)
-    LaTeXML_Core_Tokenstack stack;
+    LaTeXML_Tokenstack stack;
     SV * token;
   CODE:
     SV * sv = newSVsv(token);
@@ -999,7 +1052,7 @@ push(stack,token)
 
 SV *
 pop(stack)
-    LaTeXML_Core_Tokenstack stack;
+    LaTeXML_Tokenstack stack;
   CODE:
     RETVAL = tokenstack_pop(aTHX_ stack);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
@@ -1012,63 +1065,106 @@ pop(stack)
 MODULE = LaTeXML PACKAGE = LaTeXML::Core::Mouth
 
 SV *
-new_internal(class,source,short_source,content,saved_state,note_message)
+new_internal(class,source,short_source,content,saved_at_cc,saved_comments,note_message)
       UTF8 class;
       UTF8 source;
       UTF8 short_source;
       UTF8 content;
-      SV * saved_state;
+      int  saved_at_cc;
+      int  saved_comments;
       UTF8 note_message;
-  INIT:
-    LaTeXML_Core_Mouth mouth
-      = mouth_new(aTHX_ source,short_source,content,saved_state,note_message); 
   CODE:
-    RETVAL = newSV(0);
-    sv_setref_pv(RETVAL, class, (void*)mouth);
+    RETVAL = mouth_new(aTHX_ class, source,short_source,content,
+                       saved_at_cc,saved_comments,note_message); 
   OUTPUT:
     RETVAL
 
 void
-DESTROY(self)
-    LaTeXML_Core_Mouth self
+DESTROY(xmouth)
+    LaTeXML_Mouth xmouth
   CODE:
-    mouth_DESTROY(aTHX_ self);
+    mouth_DESTROY(aTHX_ xmouth);
 
 void
-finish_internal(mouth)
-    LaTeXML_Core_Mouth mouth;
-  INIT:
-    LaTeXML_Core_Tokenstack pb = mouth->pushback;
+finish(mouth)
+    SV * mouth;
   CODE:
-    DEBUG_Mouth("Finished with Mouth for %s\n",mouth->source);
-    mouth->lineno = 1;
-    mouth->colno  = 0;
-    mouth->nbytes = 0;
-    mouth->ptr    = 0;
-    while(pb->ntokens > 0){
-      pb->ntokens--;
-      SvREFCNT_dec(pb->tokens[pb->ntokens]); }
+    mouth_finish(aTHX_ mouth);
 
 int
 hasMoreInput(mouth)
-    LaTeXML_Core_Mouth mouth
+    SV * mouth
   CODE:
-    DEBUG_Mouth("Mouth has %lu bytes\n", mouth->nbytes-mouth->ptr);
-    RETVAL = (mouth->pushback->ntokens > 0) || (mouth->ptr < mouth->nbytes);
+    RETVAL = mouth_hasMoreInput(aTHX_ mouth);
   OUTPUT:
     RETVAL
 
 void
 getPosition(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   PPCODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
     EXTEND(SP, 2);
-    mPUSHi((IV) mouth->lineno);
-    mPUSHi((IV) mouth->colno);
+    mPUSHi((IV) xmouth->lineno);
+    mPUSHi((IV) xmouth->colno);
+
+void
+setAutoclose(mouth, autoclose)
+    SV * mouth;
+    int autoclose;
+  CODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    if(autoclose){
+      xmouth->flags |= MOUTH_AUTOCLOSE; }
+    else {
+      xmouth->flags &= ~MOUTH_AUTOCLOSE; }
+
+int
+getAutoclose(mouth)
+    SV * mouth;
+  CODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->flags & MOUTH_AUTOCLOSE;
+  OUTPUT:
+    RETVAL
+
+void
+setPreviousMouth(mouth,previous)
+    SV * mouth;
+    SV * previous;
+  CODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    if(SvOK(previous)){
+      SvREFCNT_inc(previous);
+      xmouth->previous_mouth = previous; }
+    else {
+      xmouth->previous_mouth = NULL; }
+
+SV *
+getPreviousMouth(mouth)
+    SV * mouth;
+  CODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    if(xmouth->previous_mouth){
+      RETVAL = xmouth->previous_mouth;
+      SvREFCNT_inc(RETVAL); }
+    else {
+      RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+int
+isInteresting(mouth)
+    SV * mouth;
+  CODE:
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->flags & MOUTH_INTERESTING;
+  OUTPUT:
+    RETVAL
 
 SV *
 getLocator(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   CODE:  
     RETVAL = mouth_getLocator(aTHX_ mouth);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
@@ -1077,54 +1173,44 @@ getLocator(mouth)
 
 UTF8
 getSource(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   CODE:
-    RETVAL = mouth->source;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->source;
     if(RETVAL == NULL){ croak("NULL from getSource"); }
   OUTPUT:
     RETVAL
 
 UTF8
 getShortSource(mouth)
-    LaTeXML_Core_Mouth mouth;    
+    SV * mouth;    
   CODE:
-    RETVAL = mouth->short_source;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->short_source;
     if(RETVAL == NULL){ croak("NULL from getShortSource"); }
   OUTPUT:
     RETVAL
 
 UTF8
 getNoteMessage(mouth)
-    LaTeXML_Core_Mouth mouth;    
+    SV * mouth;    
   CODE:
-    RETVAL = mouth->note_message;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->note_message;
     if(RETVAL == NULL){ croak("NULL from getNoteMessage"); }
  OUTPUT:
     RETVAL
 
-SV *
-getSavedState(mouth)
-    LaTeXML_Core_Mouth mouth;    
-  CODE:
-    if(mouth->saved_state){
-      RETVAL = SvREFCNT_inc(mouth->saved_state);
-      RETVAL = mouth->saved_state; }
-    else {
-      RETVAL = &PL_sv_undef; }
-     /*mouth->saved_state = NULL; */             /* use only ONCE! */
-  OUTPUT:
-    RETVAL
-
 void
 setInput(mouth,input)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
     UTF8 input;
   CODE:
     mouth_setInput(aTHX_ mouth,input);
 
 SV *
 readToken(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   CODE:
     RETVAL = mouth_readToken(aTHX_ mouth, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
@@ -1132,9 +1218,9 @@ readToken(mouth)
     RETVAL
 
 
-LaTeXML_Core_Tokens
+SV *
 readTokens(mouth,...)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   INIT:
     SV * until = NULL;
   CODE:
@@ -1147,7 +1233,7 @@ readTokens(mouth,...)
   
 void
 unread(mouth,...)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   INIT:
     int i;
   CODE:
@@ -1158,12 +1244,13 @@ unread(mouth,...)
 
 void
 getPushback(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   INIT:
     int i,n;
-    LaTeXML_Core_Tokenstack pb;
+    LaTeXML_Tokenstack pb;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
   PPCODE:
-    pb = mouth->pushback;
+    pb = xmouth->pushback;
     n = pb->ntokens;
     EXTEND(SP, n);
     for(i = n-1; i >= 0; i--) {
@@ -1171,53 +1258,55 @@ getPushback(mouth)
 
 int
 atEOF(mouth)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   CODE:
-    RETVAL = mouth->at_eof;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    RETVAL = xmouth->flags & MOUTH_AT_EOF;
   OUTPUT:
     RETVAL
 
 SV *
 readRawLine(mouth,...)
-    LaTeXML_Core_Mouth mouth;
+    SV * mouth;
   INIT:
     int noread = 0;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
   CODE:
     if(items > 1){
       noread = SvIV(ST(1)); }
     /* Peculiar logic: 'noread' really means return the rest of current line,
        if we've alread read something from it */
     if(noread){
-      if(mouth->colno > 0){
-        STRLEN pstart = mouth->ptr;
+      if(xmouth->colno > 0){
+        STRLEN pstart = xmouth->ptr;
         STRLEN n = mouth_readLine(aTHX_ mouth);
         /*
         if(n==0){ fprintf(stderr,"KEEP RAW: Empty line\n"); }
         else {
           char buffer[n+1];
-          Copy(mouth->chars+pstart,buffer,n,char);
+          Copy(xmouth->chars+pstart,buffer,n,char);
           buffer[n] = 0;
           fprintf(stderr,"KEEP RAW: '%s'\n",buffer); }
               */
-        RETVAL = newSVpvn_flags(mouth->chars+pstart,n, SVf_UTF8); }
+        RETVAL = newSVpvn_flags(xmouth->chars+pstart,n, SVf_UTF8); }
       else {
         RETVAL = &PL_sv_undef; } }
     else {
-      if(mouth->ptr >= mouth->nbytes){       /* out of input */
+      if(xmouth->ptr >= xmouth->nbytes){       /* out of input */
         /* mouth_fetchInput(aTHX_ mouth); }  */
-        mouth->at_eof = 1; }
-      if(mouth->ptr < mouth->nbytes) { /* If we have input now */
-        STRLEN pstart = mouth->ptr;
+        xmouth->flags |= MOUTH_AT_EOF; }
+      if(xmouth->ptr < xmouth->nbytes) { /* If we have input now */
+        STRLEN pstart = xmouth->ptr;
         STRLEN n = mouth_readLine(aTHX_ mouth);
         /*
         if(n==0){ fprintf(stderr,"READ RAW: Empty line\n"); }
         else {
           char buffer[n+1];
-          Copy(mouth->chars+pstart,buffer,n,char);
+          Copy(xmouth->chars+pstart,buffer,n,char);
           buffer[n] = 0;
           fprintf(stderr,"READ RAW: '%s'\n",buffer); }
                */
-        RETVAL = newSVpvn_flags(mouth->chars+pstart,n, SVf_UTF8); }
+        RETVAL = newSVpvn_flags(xmouth->chars+pstart,n, SVf_UTF8); }
       else {
         DEBUG_Mouth("NO MORE RAW\n");
         RETVAL = &PL_sv_undef;; } }
@@ -1230,6 +1319,21 @@ readRawLine(mouth,...)
 MODULE = LaTeXML PACKAGE = LaTeXML::Core::Gullet
 
 SV *
+new(class)
+    SV * class;
+  CODE:
+    PERL_UNUSED_VAR(class);
+    RETVAL = gullet_new(aTHX);
+  OUTPUT:
+    RETVAL
+
+void
+DESTROY(gullet)
+    SV * gullet;
+  CODE:
+    gullet_DESTROY(aTHX_ gullet);
+
+SV *
 readToken(gullet)
     SV * gullet;
   INIT:
@@ -1240,11 +1344,61 @@ readToken(gullet)
   OUTPUT:
     RETVAL
 
+SV *
+getMouth(gullet)
+    SV * gullet;
+  CODE:
+    RETVAL = gullet_getMouth(aTHX_ gullet);
+    if(!RETVAL) { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+void
+setMouth(gullet,mouth)
+    SV * gullet;
+    SV * mouth;
+  INIT:
+    LaTeXML_Gullet xgullet = SvGullet(gullet);
+  CODE:
+    if(mouth){
+      SvREFCNT_inc(mouth);
+      xgullet->mouth = mouth; }
+    else {
+      xgullet->mouth = NULL; }
+
+SV *
+openMouth(gullet,mouth,...)
+    SV * gullet;
+    SV * mouth;
+  INIT:
+    int noautoclose = (items > 2 ? SvIV(ST(2)) : 0);
+  CODE:
+    RETVAL = gullet_openMouth(aTHX_ gullet, mouth, noautoclose);
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+void
+closeMouth(gullet, ...)
+    SV * gullet;
+  INIT:
+    int forced = (items > 1 ? SvIV(ST(1)) : 0);
+  CODE:
+    gullet_closeMouth(aTHX_ gullet, forced);
+
+void
+closeThisMouth(gullet, tomouth)
+    SV * gullet;
+    SV * tomouth;
+  CODE:
+    gullet_closeThisMouth(aTHX_ gullet, tomouth);
+
 void
 unread(gullet,...)
     SV * gullet;
   INIT:
-    LaTeXML_Core_Mouth mouth = gullet_getMouth(aTHX_ gullet);
+    SV * mouth = gullet_getMouth(aTHX_ gullet);
     int i;
   CODE:
     for(i = items-1; i >= 1; i--){
@@ -1252,13 +1406,21 @@ unread(gullet,...)
       mouth_unreadToken(aTHX_ mouth, sv);
       SvREFCNT_dec(sv); }
 
+int
+ifNext(gullet,token)
+    SV * gullet;
+    SV * token;
+  CODE:  
+    RETVAL = gullet_ifNext(aTHX_ gullet, state_global(aTHX), token);
+  OUTPUT:
+    RETVAL
+
 SV *
 getLocator(gullet)
     SV * gullet;
   CODE:  
     RETVAL = gullet_getLocator(aTHX_ gullet);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
-   /*else { sv_2mortal(RETVAL); }  WHY NOT????????*/
   OUTPUT:
     RETVAL
 
@@ -1288,7 +1450,7 @@ expandafter(gullet)
   CODE:
     gullet_expandafter(aTHX_ gullet, state);
 
-LaTeXML_Core_Tokens
+SV *
 readXUntilEnd(gullet)
     SV * gullet;
   CODE:
@@ -1324,31 +1486,31 @@ skip1Space(gullet)
   CODE:
     gullet_skip1Space(aTHX_ gullet, state);
 
-LaTeXML_Core_Tokens
+SV *
 readBalanced(gullet)
     SV * gullet;
   INIT:
     SV * state = state_global(aTHX);
-    LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 1);
+    SV * tokens = tokens_new(aTHX_ 1);
   CODE:
     gullet_readBalanced(aTHX_ gullet, state, tokens, 0);
     RETVAL = tokens;
   OUTPUT:
     RETVAL
 
-LaTeXML_Core_Tokens
+SV *
 readXBalanced(gullet)
     SV * gullet;
   INIT:
     SV * state = state_global(aTHX);
-    LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 1);
+    SV * tokens = tokens_new(aTHX_ 1);
   CODE:
     gullet_readBalanced(aTHX_ gullet, state, tokens, 1);
     RETVAL = tokens;
   OUTPUT:
     RETVAL
     
-LaTeXML_Core_Tokens
+SV *
 readArg(gullet)
     SV * gullet;
   INIT:
@@ -1359,7 +1521,7 @@ readArg(gullet)
   OUTPUT:
     RETVAL
 
-LaTeXML_Core_Tokens
+SV *
 readXArg(gullet)
     SV * gullet;
   INIT:
@@ -1370,7 +1532,7 @@ readXArg(gullet)
   OUTPUT:
     RETVAL
 
-LaTeXML_Core_Tokens
+SV *
 readUntilBrace(gullet)
     SV * gullet;
   INIT:
@@ -1378,6 +1540,23 @@ readUntilBrace(gullet)
   CODE:
     RETVAL = gullet_readUntilBrace(aTHX_ gullet, state);
     if(RETVAL == NULL){ croak("NULL from readUntilBrace"); }
+  OUTPUT:
+    RETVAL
+
+SV *
+readOptional(gullet,...)
+    SV * gullet;
+  INIT:
+    SV * state = state_global(aTHX);
+    SV * defaultx = (items > 1 ? ST(2) : NULL);
+  CODE:
+    RETVAL = gullet_readOptional(aTHX_ gullet, state);
+    if(! RETVAL){
+      if(defaultx && SvOK(defaultx)){
+        SvREFCNT_inc(defaultx);
+        RETVAL = defaultx; }
+      else {
+        RETVAL = &PL_sv_undef; } }
   OUTPUT:
     RETVAL
 
@@ -1438,23 +1617,19 @@ readUntil(gullet,...)
       choices[choice] = ST(1+choice); }
     maxlength = gullet_prepareMatch(aTHX_ gullet, nchoices, type, choices);
 
-    LaTeXML_Core_Tokens tokens =
+    SV * tokens =
       gullet_readUntilMatch(aTHX_ gullet, state, 0, nchoices, maxlength, type, choices, &match);
     U8 gimme = GIMME_V;
     if(gimme == G_VOID){}
     else if (gimme == G_SCALAR){
-      SV * sv = newSV(0);
-      sv_setref_pv(sv, "LaTeXML::Core::Tokens", (void*)tokens);
-      PUSHs(sv); }
+      PUSHs(tokens); }
     else {
       EXTEND(SP, 2);
-      SV * sv = newSV(0);
-      sv_setref_pv(sv, "LaTeXML::Core::Tokens", (void*)tokens);
-      PUSHs(sv);
+      PUSHs(tokens);
       if(match < 0){
         PUSHs(&PL_sv_undef); }
       else {
-        sv = sv_2mortal(SvREFCNT_inc(choices[match]));
+        SV * sv = sv_2mortal(SvREFCNT_inc(choices[match]));
         PUSHs(sv); } }
 
 void
@@ -1475,23 +1650,19 @@ readXUntil(gullet,...)
       choices[choice] = ST(1+choice); }
     maxlength = gullet_prepareMatch(aTHX_ gullet, nchoices, type, choices);
 
-    LaTeXML_Core_Tokens tokens =
+    SV * tokens =
       gullet_readUntilMatch(aTHX_ gullet, state, 1, nchoices, maxlength, type, choices, &match);
     U8 gimme = GIMME_V;
     if(gimme == G_VOID){}
     else if (gimme == G_SCALAR){
-      SV * sv = newSV(0);
-      sv_setref_pv(sv, "LaTeXML::Core::Tokens", (void*)tokens);
-      PUSHs(sv); }
+      PUSHs(tokens); }
     else {
       EXTEND(SP, 2);
-      SV * sv = newSV(0);
-      sv_setref_pv(sv, "LaTeXML::Core::Tokens", (void*)tokens);
-      PUSHs(sv);
+      PUSHs(tokens);
       if(match < 0){
         PUSHs(&PL_sv_undef); }
       else {
-        sv = sv_2mortal(SvREFCNT_inc(choices[match]));
+        SV * sv = sv_2mortal(SvREFCNT_inc(choices[match]));
         PUSHs(sv); } }
 
 SV *
@@ -1630,7 +1801,7 @@ readArguments(gullet, parameters, fordefn)
       SSize_t npara = av_len(params) + 1;
       SV * values[npara];
       PUTBACK;
-      int nargs = gullet_readArguments(aTHX_ gullet, npara, params, fordefn, values);
+      int nargs = gullet_readArguments(aTHX_ gullet, state_global(aTHX), npara, params, fordefn, values);
       SPAGAIN;
       int ip;
       /*fprintf(stderr,"GOT %ld parameters, %d arguments for %s\n",npara,nargs, name);*/
@@ -1648,6 +1819,205 @@ readArguments(gullet, parameters, fordefn)
  #   LaTeXML::Core::Parameter
  #  ======================================================================*/
 MODULE = LaTeXML  PACKAGE = LaTeXML::Core::Parameter
+
+LaTeXML_Parameter
+new_internal(spec,...)
+    UTF8 spec;
+  INIT:
+    LaTeXML_Parameter parameter = parameter_new(aTHX_ spec);
+  CODE:
+    if((items-1) % 2){
+      croak("Odd number of values in Parameter_new keyword values"); }
+    int i;
+    for(i = 1; i < items; i+=2){
+      UTF8 key = SvPV_nolen(ST(i));
+      SV * value = ST(i+1);
+      if(strcmp(key,"reader") == 0){
+        if(value && sv_isa(value,"LaTeXML::Core::Opcode")){
+          UTF8 opcode = SvPV_nolen(SvRV(value));
+          parameter->opreader = parameter_lookup(aTHX_ opcode);
+          if(! parameter->opreader){
+            croak("Parameter %s has an undefined opcode %s",spec,opcode); }}
+        else if(value && SvTYPE(SvRV(value)) == SVt_PVCV){
+          SvREFCNT_inc(value);
+          parameter->reader = value; }
+        else {
+          croak("Parameter %s has reader which is not an opcode or CODE",spec); } }
+      else if(strcmp(key,"semiverbatim") == 0){
+        SvREFCNT_inc(value);
+        parameter->semiverbatimsv = value;
+        AV * semiverb = SvArray(value);
+        int i,nc = av_len(semiverb)+1;
+        SV ** ptr;
+        int nchars = 0;
+        Newx(parameter->semiverbatim,nc,UTF8);
+        for(i = 0; i < nc; i++){
+          if( (ptr = av_fetch(semiverb,i,0)) ){
+            parameter->semiverbatim[nchars++] = string_copy(SvPV_nolen(*ptr)); } }
+        parameter->nsemiverbatim = nchars; }
+      else if(strcmp(key,"extra") == 0){
+        SvREFCNT_inc(value);
+        parameter->extrasv = value;
+        AV * extra = SvArray(value);
+        int i,nc = av_len(extra)+1;
+        SV ** ptr;
+        int nextra = 0;
+        Newx(parameter->extra,nc,PTR_SV);
+        for(i = 0; i < nc; i++){
+          if( (ptr = av_fetch(extra,i,0)) && *ptr && SvOK(*ptr)){
+            SvREFCNT_inc(*ptr);
+            parameter->extra[nextra++] = *ptr; }
+          else {
+            parameter->extra[nextra++] = NULL; } }
+        parameter->nextra = nextra; }
+      else if(strcmp(key,"optional") == 0){
+        if(SvTRUE(value)){ parameter->flags |= PARAMETER_OPTIONAL; }
+        else             { parameter->flags &= ~PARAMETER_OPTIONAL; } }
+      else if(strcmp(key,"novalue") == 0){
+        if(SvTRUE(value)){ parameter->flags |= PARAMETER_NOVALUE; }
+        else             { parameter->flags &= ~PARAMETER_NOVALUE; } }
+      else if(strcmp(key,"undigested") == 0){
+        if(SvTRUE(value)){ parameter->flags |= PARAMETER_UNDIGESTED; }
+        else             { parameter->flags &= ~PARAMETER_UNDIGESTED; } }
+      else if(strcmp(key,"beforeDigest") == 0){
+        SvREFCNT_inc(value);
+        parameter->beforeDigest = value; }
+      else if(strcmp(key,"afterDigest") == 0){
+        SvREFCNT_inc(value);
+        parameter->afterDigest = value; }
+      else if(strcmp(key,"reversion") == 0){
+        SvREFCNT_inc(value);
+        parameter->reversion = value; }
+      else if(strcmp(key,"type") == 0){
+      }
+      else {
+        fprintf(stderr,"Parameter %s initialization keyword %s unknown\n",spec,key); }
+    }
+    if(! parameter->reader && !parameter->opreader){
+      croak("Parameter %s has no reader!",parameter->spec); }
+    RETVAL = parameter;
+  OUTPUT:
+    RETVAL
+
+void
+DESTROY(parameter)
+    SV * parameter;
+  CODE:
+    parameter_DESTROY(aTHX_ parameter);
+
+UTF8
+getSpecification(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->spec;
+  OUTPUT:
+    RETVAL
+
+UTF8
+stringify(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->spec;
+  OUTPUT:
+    RETVAL
+
+SV *
+getSemiverbatim(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->semiverbatimsv;
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+int
+setupCatcodes(parameter)    
+    SV * parameter;
+  CODE:
+    RETVAL = parameter_setupCatcodes(aTHX_ parameter, state_global(aTHX));
+  OUTPUT:
+    RETVAL
+
+void
+revertCatcodes(parameter)    
+    SV * parameter;
+  CODE:
+    parameter_revertCatcodes(aTHX_ parameter, state_global(aTHX));
+    
+SV *
+getExtra(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->extrasv;
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+SV *
+getBeforeDigest(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->beforeDigest;
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+SV *
+getAfterDigest(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->afterDigest;
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+SV *
+getReversion(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->reversion;
+    if(RETVAL){ SvREFCNT_inc(RETVAL); }
+    else { RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+int
+getUndigested(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->flags & PARAMETER_UNDIGESTED;
+  OUTPUT:
+    RETVAL
+
+int
+getNovalue(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->flags & PARAMETER_NOVALUE;
+  OUTPUT:
+    RETVAL
 
 SV *
 read(parameter, gullet, ...)
@@ -1677,6 +2047,7 @@ new(class,cs,parameters,expansion,...)
     SV * expansion;
   INIT:  
     SV * state = state_global(aTHX);
+    LaTeXML_State xstate = SvState(state);
     HV * hash = newHV();
     int i;
   CODE:
@@ -1689,10 +2060,8 @@ new(class,cs,parameters,expansion,...)
     if(!SvOK(expansion)){
       expansion = NULL; }
     else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
-      LaTeXML_Core_Tokens tokens = tokens_new(aTHX_ 1);
-      tokens_add_to(aTHX_ tokens,expansion,0);
-      expansion = newSV(0);
-      sv_setref_pv(expansion, "LaTeXML::Core::Tokens", (void*) tokens); }
+      SV * tokens = tokens_new(aTHX_ 1);
+      tokens_add_to(aTHX_ tokens,expansion,0); }
       
     /* check expansion balanced */
     if(!SvOK(parameters)){ /* or empty? */
@@ -1707,7 +2076,7 @@ new(class,cs,parameters,expansion,...)
     SV * locator = gullet_getLocator(aTHX_ gullet);
     SvREFCNT_dec(stomach); SvREFCNT_dec(gullet);
     hv_store(hash,"locator",      7,locator, 0);
-    if(state_protectedFlag(aTHX_ state)){
+    if(xstate->flags & FLAG_PROTECTED){
       hv_store(hash,"isProtected", 11,newSViv(1),0); }
     hv_store(hash,"isExpandable",12,newSViv(1),0);
     for(i = 4; i < items; i+=2){
@@ -1723,8 +2092,8 @@ new(class,cs,parameters,expansion,...)
     RETVAL
     
 void
-invoke(self, token, gullet)
-    SV * self;
+invoke(expandable, token, gullet)
+    SV * expandable;
     SV * token;
     SV * gullet;
   INIT:
@@ -1732,7 +2101,7 @@ invoke(self, token, gullet)
     SV * result;
   PPCODE:
     PUTBACK;
-    result = expandable_invoke(aTHX_ self, token, gullet, state);
+    result = expandable_invoke(aTHX_ expandable, token, gullet, state);
     SPAGAIN;
     if(result){ 
       EXTEND(SP,1);
@@ -1744,13 +2113,13 @@ invoke(self, token, gullet)
 MODULE = LaTeXML  PACKAGE = LaTeXML::Core::Definition::Primitive
 
 void
-invoke(self, token, stomach)
-    SV * self;
+invoke(primitive, token, stomach)
+    SV * primitive;
     SV * token;
     SV * stomach;
   INIT:
     SV * state = state_global(aTHX);
-    LaTeXML_Core_Boxstack stack = boxstack_new(aTHX);
+    LaTeXML_Boxstack stack = boxstack_new(aTHX);
     int i;
   PPCODE:
     /* NOTE: Apparently if you're calling back to Perl, and Perl REallocates the stack
@@ -1758,7 +2127,7 @@ invoke(self, token, stomach)
     PUTBACK/SPAGAIN seems to handle that (even though the called functions use them already).
     See cryptic comments at https://github.com/Perl-XS/notes/issues/7 */
     PUTBACK;
-    primitive_invoke(aTHX_ self, token, stomach, state, stack);
+    primitive_invoke(aTHX_ primitive, token, stomach, state, stack);
     SPAGAIN;
     if(stack->nboxes){
       EXTEND(SP,stack->nboxes);
@@ -1786,7 +2155,7 @@ invokeToken(stomach, token)
     SV * stomach;
     SV * token;
   INIT:
-    LaTeXML_Core_Boxstack stack = boxstack_new(aTHX);
+    LaTeXML_Boxstack stack = boxstack_new(aTHX);
     int i;
   PPCODE:  
     PUTBACK;                    /* Apparently needed here, as well... (but why?) */
@@ -1805,13 +2174,13 @@ invokeInput(stomach)
   INIT:
     SV * state = state_global(aTHX);
     SV * gullet = stomach_gullet(aTHX_ stomach);
-    LaTeXML_Core_Boxstack stack = boxstack_new(aTHX);
+    LaTeXML_Boxstack stack = boxstack_new(aTHX);
     SV * token;
   PPCODE:  
     PUTBACK;                    /* Apparently needed here, as well... (but why?) */
     stack->discard = 1;         /* NO need to accumulate! */
     while( (token = gullet_readXToken(aTHX_ gullet, state, 0,0)) ){
-      LaTeXML_Core_Token t = SvToken(token);
+      LaTeXML_Token t = SvToken(token);
       if(t->catcode != CC_SPACE){
         stomach_invokeToken(aTHX_ stomach, state_global(aTHX), token, stack);
       }

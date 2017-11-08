@@ -40,28 +40,28 @@ stomach_getLocator(pTHX_ SV * stomach){
   return gullet_getLocator(aTHX_ stomach_gullet(aTHX_ stomach)); }
 
 void
-stomach_defineUndefined(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack){
+stomach_defineUndefined(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* $stomach->invokeToken_undefined($token) */
   SV * args[] = {token};
   int nargs = 1;
   boxstack_callmethod(aTHX_ stack, "invokeToken_undefined", state, stomach, token,nargs, args); }
 
 void
-stomach_insertComment(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack){
+stomach_insertComment(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* part of $stomach->invokeToken_simple($token,$meahing); */
   SV * args[] = {token};
   int nargs = 1;
   boxstack_callmethod(aTHX_ stack, "invokeToken_comment", state, stomach, token,nargs, args); }
 
 void
-stomach_insertBox(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack){
+stomach_insertBox(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* part of $stomach->invokeToken_simple($token,$meahing); */
   SV * args[] = {token};
   int nargs = 1;
   boxstack_callmethod(aTHX_ stack, "invokeToken_insert", state, stomach, token,nargs, args); }
 
 void                            /* NOTE: Really only for constructors */
-stomach_invokeDefinition(pTHX_ SV * stomach, SV * state, SV * token, SV * defn, LaTeXML_Core_Boxstack stack){
+stomach_invokeDefinition(pTHX_ SV * stomach, SV * state, SV * token, SV * defn, LaTeXML_Boxstack stack){
   SV * args[] = {token, defn};
   int nargs = 2;
   boxstack_callmethod(aTHX_ stack, "invokeToken_definition", state, stomach, token, nargs, args); }
@@ -77,31 +77,32 @@ int letter_or_other[] = {
   0, 0};
 
 void
-stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Boxstack stack){
+stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* push tokon token stack*/
   /* if maxstack, fatal */
+  LaTeXML_State xstate = SvState(state);
  REINVOKE:
   if(! token){
     return; }
-  LaTeXML_Core_Token t = SvToken(token);
+  LaTeXML_Token t = SvToken(token);
   int cc = t->catcode;
   DEBUG_Stomach("Invoke token %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string);
   char * name =
     (ACTIVE_OR_CS [cc]
-     || (letter_or_other[cc] && state_booleval(aTHX_ state, "IN_MATH")
-         && (state_mathcode(aTHX_ state, t->string) == 0x8000))
+     || (letter_or_other[cc] && state_lookupBoole(aTHX_ state,TBL_VALUE, "IN_MATH")
+         && (state_lookupIV(aTHX_ state, TBL_MATHCODE, t->string) == 0x8000))
      ? t->string
      : EXECUTABLE_NAME[cc]);
   SV * defn = NULL;
   SV * insert_token = NULL;    /* Common case, default */
-  if(name && (defn = state_meaning_internal(aTHX_ state, name)) ){
+  if(name && (defn = state_lookup_noinc(aTHX_ state,TBL_MEANING, name)) ){
     /* If \let to an executable token (typically $, {,}, etc), lookup IT's defn! */
     if(sv_isa(defn, "LaTeXML::Core::Token")){
-      LaTeXML_Core_Token let = SvToken(defn);
+      LaTeXML_Token let = SvToken(defn);
       char * letname;
       SV * letdefn;
       if( (letname = EXECUTABLE_NAME[let->catcode])
-          && (letdefn = state_meaning_internal(aTHX_ state, letname)) ){
+          && (letdefn = state_lookup_noinc(aTHX_ state, TBL_MEANING, letname)) ){
         if(sv_isa(letdefn, "LaTeXML::Core::Token")){ /* And if that's a token? */
           insert_token = letdefn; /*SvREFCNT_dec(defn);*/ defn = NULL; }
         else {
@@ -111,7 +112,7 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Box
   else {
     insert_token = token; }
   if(insert_token){
-    /*LaTeXML_Core_Token it = SvToken(insert_token);*/
+    /*LaTeXML_Token it = SvToken(insert_token);*/
     DEBUG_Stomach("Invoke token self-insert %s[%s]\n",CC_SHORT_NAME[it->catcode],it->string); }
   else {
     DEBUG_Stomach("Invoke defn %p [%s]\n", defn, sv_reftype(SvRV(defn),1));
@@ -119,7 +120,7 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Box
   }
   HV * defn_hash = (defn ? SvHash(defn) : NULL);
   if (insert_token) {    /* Common case*/
-    LaTeXML_Core_Token it = SvToken(insert_token);
+    LaTeXML_Token it = SvToken(insert_token);
     int icc = it->catcode;
     if (icc == CC_CS) {
       DEBUG_Stomach("Invoking undefined\n");
@@ -157,7 +158,7 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Core_Box
          || (sv_isa(defn,"LaTeXML::Core::Definition::Register")) )){
       fprintf(stderr,"\nOH NO! definition got wrecked:\n"); Perl_sv_dump(aTHX_ defn); }
     if(! hash_getBoole(aTHX_ defn_hash, "isPrefix")){
-      state_clearFlags(aTHX_ state); }
+      xstate->flags = 0; }
     SvREFCNT_dec(defn);
   }
   else if(sv_derived_from(defn,"LaTeXML::Core::Definition")) {
