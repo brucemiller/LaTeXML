@@ -221,7 +221,12 @@ state_assign(pTHX_ SV * state, int tableid, UTF8 key, SV * value, UTF8 scope){
   if(scope == NULL){
     scope = (xstate->flags & FLAG_GLOBAL ? "global" : "local"); }
 
-  SvREFCNT_inc(value);          /* Eventually we'll store it... */
+  /* Perl has a nasty habit of reusing SV's at times (scratchpads?)
+     If we store non-reference SV's the contents (int, string,...) may CHANGE behind our backs!!!
+     We're storing the SV *, so we need to copy or increment refcnt, as appropriate.*/
+  if(! value)          {}
+  else if(SvROK(value)){ SvREFCNT_inc(value); }
+  else                 { value = newSVsv(value); } /* Copy! */
   DEBUG_State("START Assign internal in table %d, %s => %p; scope=%s\n",tableid, key, value, scope);
   /* Get --- or create --- the list of bound values for key in this table */
   if( ( ptr = hv_fetch(table,key,-keylen,0) )){

@@ -97,7 +97,7 @@ WriteMakefile(NAME => 'LaTeXML',
   C => [map { "src/$_.c" } @CSOURCES],
 #  OBJECT => '$(O_FILES)',
 #  OBJECT => 'LaTeXML$(OBJ_EXT) $(O_FILES)',
-  OBJECT => ['LaTeXML$(OBJ_EXT)', map { "src/$_\$(OBJ_EXT)" } @CSOURCES],
+  OBJECT => join(' ', 'LaTeXML$(OBJ_EXT)', map { "src/$_\$(OBJ_EXT)" } @CSOURCES),
   EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
   macro => $MORE_MACROS,
   # link to  github location to newer MakeMaker
