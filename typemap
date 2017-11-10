@@ -10,14 +10,14 @@ LaTeXML_State        T_PTROBJ_State
 
 INPUT
 T_UTF8
-   /* One of these 2 SHOULD work, and seems faster, but leads to undefs & stuff in perl 5.10? */
-   $var = ($type)SvPVutf8_nolen($arg);
+   /* One of these 2 SHOULD work, and seems faster, but leads to undefs & stuff in perl 5.14? */
+   /*$var = ($type)SvPVutf8_nolen($arg);*/
    /*$var = ($type)SvPVutf8_nolen(sv_mortalcopy($arg));*/
- /*
+   /* Actually this seems just as fast, and works back to perl 5.14...*/
    if(!SvUTF8($arg)){
      $arg = sv_mortalcopy($arg);
      sv_utf8_upgrade($arg); }
-   $var = ($type)SvPV_nolen($arg); */
+   $var = ($type)SvPV_nolen($arg);
 
 T_PTROBJ_Token
   if(sv_isa($arg, \"LaTeXML::Core::Token\")){
