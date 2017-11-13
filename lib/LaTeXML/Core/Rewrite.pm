@@ -279,7 +279,7 @@ sub compile_replacement {
       $stomach->bgroup;
       $STATE->assignValue(font     => LaTeXML::Common::Font->new(), 'local');
       $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
-      my $box = $stomach->digest($pattern, 0);
+      my $box = $stomach->digest($pattern);
       $stomach->egroup;
       $box = $box->getBody if $$self{math};
       $_[0]->absorb($box); }
@@ -301,7 +301,6 @@ sub digest_rewrite {
   $stomach->bgroup;
   $STATE->assignValue(font => LaTeXML::Common::Font->new(), 'local'); # Use empty font, so eventual insertion merges.
   $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
-###  my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
   my $box = $stomach->digest($string);
   $stomach->egroup;
   return $box; }
