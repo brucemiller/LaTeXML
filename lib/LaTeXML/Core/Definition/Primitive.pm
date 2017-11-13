@@ -26,9 +26,9 @@ sub new {
   if ((defined $parameters) && !ref $parameters) {
     require LaTeXML::Package;
     $parameters = LaTeXML::Package::parseParameters($parameters, $cs); }
-  Fatal('misdefined', $cs, $source, "Primitive replacement for '" . ToString($cs) . "' is not CODE",
-    "Replacement is $replacement")
-    unless ref $replacement eq 'CODE';
+##  Fatal('misdefined', $cs, $source, "Primitive replacement for '" . ToString($cs) . "' is not CODE",
+##    "Replacement is $replacement")
+##    unless ref $replacement eq 'CODE';
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
     locator => "from " . $source->getLocator,
     %traits }, $class; }

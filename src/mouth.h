@@ -26,9 +26,10 @@
 #endif
 
 typedef enum {
-  MOUTH_AT_EOF      = 0x01,
-  MOUTH_AUTOCLOSE   = 0x02,
-  MOUTH_INTERESTING = 0x04
+  MOUTH_BASE        = 0x01,
+  MOUTH_AT_EOF      = 0x02,
+  MOUTH_AUTOCLOSE   = 0x04,
+  MOUTH_INTERESTING = 0x08
 } T_MouthFlags;
 
 typedef struct Mouth_struct {

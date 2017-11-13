@@ -1128,18 +1128,6 @@ getAutoclose(mouth)
   OUTPUT:
     RETVAL
 
-void
-setPreviousMouth(mouth,previous)
-    SV * mouth;
-    SV * previous;
-  CODE:
-    LaTeXML_Mouth xmouth = SvMouth(mouth);
-    if(SvOK(previous)){
-      SvREFCNT_inc(previous);
-      xmouth->previous_mouth = previous; }
-    else {
-      xmouth->previous_mouth = NULL; }
-
 SV *
 getPreviousMouth(mouth)
     SV * mouth;
@@ -1353,19 +1341,6 @@ getMouth(gullet)
   OUTPUT:
     RETVAL
 
-void
-setMouth(gullet,mouth)
-    SV * gullet;
-    SV * mouth;
-  INIT:
-    LaTeXML_Gullet xgullet = SvGullet(gullet);
-  CODE:
-    if(mouth){
-      SvREFCNT_inc(mouth);
-      xgullet->mouth = mouth; }
-    else {
-      xgullet->mouth = NULL; }
-
 SV *
 openMouth(gullet,mouth,...)
     SV * gullet;
@@ -1393,6 +1368,12 @@ closeThisMouth(gullet, tomouth)
     SV * tomouth;
   CODE:
     gullet_closeThisMouth(aTHX_ gullet, tomouth);
+
+void
+flush(gullet)
+    SV * gullet;
+  CODE:
+    gullet_flush(aTHX_ gullet);
 
 void
 unread(gullet,...)
@@ -2142,6 +2123,33 @@ invoke(primitive, token, stomach)
 MODULE = LaTeXML  PACKAGE = LaTeXML::Core::Stomach
 
 SV *
+new(class)
+    UTF8 class;
+  CODE:  
+    PERL_UNUSED_VAR(class);
+    RETVAL = stomach_new(aTHX);
+  OUTPUT:
+    RETVAL
+
+void
+initialize(stomach)
+    SV * stomach;
+  CODE:  
+    stomach_initialize(aTHX_ stomach, state_global(aTHX));
+
+SV *
+getGullet(stomach)
+    SV * stomach;
+  INIT: 
+    LaTeXML_Stomach xstomach = SvStomach(stomach);
+  CODE:  
+    RETVAL = xstomach->gullet;
+    if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
+    else { SvREFCNT_inc(RETVAL); }
+  OUTPUT:
+    RETVAL
+
+SV *
 getLocator(stomach)
     SV * stomach;
   CODE:  
@@ -2149,6 +2157,72 @@ getLocator(stomach)
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
+
+int
+getBoxingLevel(stomach)
+    SV * stomach;
+  INIT:
+    LaTeXML_Stomach xstomach = SvStomach(stomach);
+    AV * boxing = xstomach->boxing;
+  CODE:  
+    RETVAL = av_len(boxing)+1;
+  OUTPUT:
+    RETVAL
+
+void
+pushStackFrame(stomach, ...)
+    SV * stomach;
+  INIT:
+    int nobox = ((items > 1) && SvTRUE(ST(1)) ? 1 : 0);
+  CODE:  
+    stomach_pushStackFrame(aTHX_ stomach, state_global(aTHX), nobox);
+
+void
+popStackFrame(stomach, ...)
+    SV * stomach;
+  INIT:
+    int nobox = ((items > 1) && SvTRUE(ST(1)) ? 1 : 0);
+  CODE:  
+    stomach_popStackFrame(aTHX_ stomach, state_global(aTHX), nobox);
+
+
+void
+bgroup(stomach)
+    SV * stomach;
+  CODE:  
+    stomach_bgroup(aTHX_ stomach, state_global(aTHX));
+
+void
+egroup(stomach)
+    SV * stomach;
+  CODE:  
+    stomach_egroup(aTHX_ stomach, state_global(aTHX));
+
+void
+begingroup(stomach)
+    SV * stomach;
+  CODE:  
+    stomach_begingroup(aTHX_ stomach, state_global(aTHX));
+
+void
+endgroup(stomach)
+    SV * stomach;
+  CODE:  
+    stomach_endgroup(aTHX_ stomach, state_global(aTHX));
+
+void
+beginMode(stomach, mode)
+    SV * stomach;
+    UTF8 mode;
+  CODE:  
+    stomach_beginMode(aTHX_ stomach, state_global(aTHX),mode);
+
+void
+endMode(stomach, mode)
+    SV * stomach;
+    UTF8 mode;
+  CODE:  
+    stomach_endMode(aTHX_ stomach, state_global(aTHX),mode);
 
 void
 invokeToken(stomach, token)
@@ -2188,3 +2262,32 @@ invokeInput(stomach)
     SvREFCNT_dec(gullet);
     boxstack_DESTROY(aTHX_ stack);  /* DISCARD boxes! */
     SPAGAIN;
+
+SV *
+digest(stomach,tokens)
+    SV * stomach;
+    SV * tokens;
+  CODE:  
+    RETVAL = stomach_digest(aTHX_ stomach, state_global(aTHX), tokens);
+    if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+void
+digestNextBody(stomach, ...)
+    SV * stomach;
+  INIT:
+    SV * terminal = ((items > 1) && SvOK(ST(1)) ? ST(1) : NULL);
+    int i;
+  PPCODE:  
+    PUTBACK;                    /* Apparently needed here, as well... (but why?) */
+    if(terminal && !(sv_isa(terminal,"LaTeXML::Core::Token"))){
+      croak("Expected a token!"); }
+    LaTeXML_Boxstack stack = stomach_digestNextBody(aTHX_ stomach, state_global(aTHX), terminal);
+    SPAGAIN;
+    if(stack->nboxes){
+      EXTEND(SP,stack->nboxes);
+      for(i = 0; i < stack->nboxes; i++){
+        SvREFCNT_inc(stack->boxes[i]);
+        PUSHs(sv_2mortal(stack->boxes[i])); } }
+    boxstack_DESTROY(aTHX_ stack);

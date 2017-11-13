@@ -48,6 +48,15 @@ boxstack_DESTROY(pTHX_ LaTeXML_Boxstack stack){
   Safefree(stack->boxes);
   Safefree(stack); }
 
+void
+boxstack_push(pTHX_ LaTeXML_Boxstack stack, SV * box){
+  if(stack->nboxes+1 >= stack->nalloc){
+    stack->nalloc += BOXSTACK_ALLOC_QUANTUM;
+    Renew(stack->boxes, stack->nalloc, PTR_SV); }
+  SvREFCNT_inc(box);
+  stack->boxes[stack->nboxes++] = box; }
+
+
 /* Invoke a Stomach->method to produce boxes */
 void                            /* Horrible naming!!! */
 boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,

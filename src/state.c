@@ -161,6 +161,11 @@ state_lookup(pTHX_ SV * state, int tableid, UTF8 string){
   SV * sv = state_lookup_noinc(aTHX_ state, tableid, string);
   return (sv ? SvREFCNT_inc(sv) : NULL); }
 
+UTF8
+state_lookupPV(pTHX_ SV * state, int tableid, UTF8 string){
+  SV * sv = state_lookup_noinc(aTHX_ state, tableid, string);
+  return (sv ? SvPV_nolen(sv) : NULL); }
+
 int
 state_lookupIV(pTHX_ SV * state, int tableid, UTF8 string){
   SV * sv = state_lookup_noinc(aTHX_ state, tableid, string);

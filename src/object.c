@@ -131,6 +131,8 @@ hash_put(pTHX_ HV * hash, UTF8 key, SV * value){
 SV *
 array_get_noinc(pTHX_ AV * array, int i){ /* No refcnt inc! */
   SV ** ptr;
+  if(i < 0){
+    i = av_len(array)+1-i; }
   if( (ptr  = av_fetch(array,i,0)) && *ptr && SvOK(*ptr) ){
     return *ptr; }
   else {

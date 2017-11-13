@@ -302,7 +302,7 @@ sub digest_rewrite {
   $STATE->assignValue(font => LaTeXML::Common::Font->new(), 'local'); # Use empty font, so eventual insertion merges.
   $STATE->assignValue(mathfont => LaTeXML::Common::Font->new(), 'local');
 ###  my $box = $stomach->digest((ref $string ? $string : Tokenize($string)), 0);
-  my $box = $stomach->digest($string, 0);
+  my $box = $stomach->digest($string);
   $stomach->egroup;
   return $box; }
 

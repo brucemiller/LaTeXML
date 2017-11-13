@@ -30,36 +30,36 @@ use LaTeXML::Core::Definition;
 use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
-sub new {
-  my ($class, %options) = @_;
-  return bless { gullet => LaTeXML::Core::Gullet->new(),
-    boxing => [], token_stack => [] }, $class; }
+# sub new {
+#   my ($class, %options) = @_;
+#   return bless { gullet => LaTeXML::Core::Gullet->new(),
+#     boxing => [], token_stack => [] }, $class; }
+
+# #**********************************************************************
+# # Initialize various parameters, preload, etc.
+# sub initialize {
+#   my ($self) = @_;
+#   $$self{boxing}      = [];
+#   $$self{token_stack} = [];
+#   $STATE->assignValue(MODE              => 'text',           'global');
+#   $STATE->assignValue(IN_MATH           => 0,                'global');
+#   $STATE->assignValue(PRESERVE_NEWLINES => 1,                'global');
+#   $STATE->assignValue(afterGroup        => [],               'global');
+#   $STATE->assignValue(afterAssignment   => undef,            'global');
+#   $STATE->assignValue(groupInitiator    => 'Initialization', 'global');
+#   # Setup default fonts.
+#   $STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
+#   $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
+#   return; }
 
 #**********************************************************************
-# Initialize various parameters, preload, etc.
-sub initialize {
-  my ($self) = @_;
-  $$self{boxing}      = [];
-  $$self{token_stack} = [];
-  $STATE->assignValue(MODE              => 'text',           'global');
-  $STATE->assignValue(IN_MATH           => 0,                'global');
-  $STATE->assignValue(PRESERVE_NEWLINES => 1,                'global');
-  $STATE->assignValue(afterGroup        => [],               'global');
-  $STATE->assignValue(afterAssignment   => undef,            'global');
-  $STATE->assignValue(groupInitiator    => 'Initialization', 'global');
-  # Setup default fonts.
-  $STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
-  $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
-  return; }
+# sub getGullet {
+#   my ($self) = @_;
+#   return $$self{gullet}; }
 
-#**********************************************************************
-sub getGullet {
-  my ($self) = @_;
-  return $$self{gullet}; }
-
-sub getBoxingLevel {
-  my ($self) = @_;
-  return scalar(@{ $$self{boxing} }); }
+# sub getBoxingLevel {
+#   my ($self) = @_;
+#   return scalar(@{ $$self{boxing} }); }
 
 #**********************************************************************
 # Digestion
@@ -67,52 +67,56 @@ sub getBoxingLevel {
 # NOTE: Worry about whether the $autoflush thing is right?
 # It puts a lot of cruft in Gullet; Should we just create a new Gullet?
 
-sub digestNextBody {
-  my ($self, $terminal) = @_;
-  no warnings 'recursion';
-  my $startloc  = $self->getLocator;
-  my $initdepth = scalar(@{ $$self{boxing} });
-  my $token;
-  local @LaTeXML::LIST = ();
-  while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
-    push(@LaTeXML::LIST, $self->invokeToken($token));
-    last if $terminal and Equals($token, $terminal);
-    last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
-  Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
-    "current body started at " . ToString($startloc))
-    if $terminal && !Equals($token, $terminal);
-  push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
-  return @LaTeXML::LIST; }
+# sub digestNextBody {
+#   my ($self, $terminal) = @_;
+#   no warnings 'recursion';
+#   my $startloc  = $self->getLocator;
+#   my $initdepth = scalar(@{ $$self{boxing} });
+#   my $token;
+#   local @LaTeXML::LIST = ();
+#   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+#     push(@LaTeXML::LIST, $self->invokeToken($token));
+#     last if $terminal and Equals($token, $terminal);
+#     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
+#   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
+#     "current body started at " . ToString($startloc))
+#     if $terminal && !Equals($token, $terminal);
+#   push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
+#   return @LaTeXML::LIST; }
 
 # Digest a list of tokens independent from any current Gullet.
 # Typically used to digest arguments to primitives or constructors.
 # Returns a List containing the digested material.
-sub digest {
-  my ($self, $tokens) = @_;
-  no warnings 'recursion';
-  return unless defined $tokens;
-  return
-    $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-      my ($gullet) = @_;
-      $gullet->unread($tokens);
-      $STATE->clearFlags;    # prefixes shouldn't apply here.
-      my $ismath    = $STATE->lookupValue('IN_MATH');
-      my $initdepth = scalar(@{ $$self{boxing} });
-      my $depth     = $initdepth;
-      local @LaTeXML::LIST = ();
-      while (defined(my $token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
-        push(@LaTeXML::LIST, $self->invokeToken($token));
-        last if $initdepth > scalar(@{ $$self{boxing} }); }              # if we've closed the initial mode.
-      my $token = $$self{token_stack}[-1];
-      Fatal('internal', '<EOF>', $self,
-        "We've fallen off the end, somehow!?!?!",
-        "Last token " . ToString($token)
-          . " (Boxing depth was $initdepth, now $depth: Boxing generated by "
-          . join(', ', map { ToString($_) } @{ $$self{boxing} }))
-        if $initdepth < $depth;
+# sub digest {
+#   my ($self, $tokens) = @_;
+#   no warnings 'recursion';
+#   return unless defined $tokens;
+#   return
+#     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+#       my ($gullet) = @_;
+#       $gullet->unread($tokens);
+#       $STATE->clearFlags;    # prefixes shouldn't apply here.
+#       my $ismath    = $STATE->lookupValue('IN_MATH');
+#       my $initdepth = scalar(@{ $$self{boxing} });
+#       my $depth     = $initdepth;
+#       local @LaTeXML::LIST = ();
+#       while (defined(my $token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+#         push(@LaTeXML::LIST, $self->invokeToken($token));
+#         last if $initdepth > scalar(@{ $$self{boxing} }); }              # if we've closed the initial mode.
+#       my $token = $$self{token_stack}[-1];
+#       Fatal('internal', '<EOF>', $self,
+#         "We've fallen off the end, somehow!?!?!",
+#         "Last token " . ToString($token)
+#           . " (Boxing depth was $initdepth, now $depth: Boxing generated by "
+#           . join(', ', map { ToString($_) } @{ $$self{boxing} }))
+#         if $initdepth < $depth;
 
-      List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
-      }); }
+#       List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
+#       }); }
+
+sub makeDigestedList {
+  my($self,$ismath)=@_;
+  return List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text')); }
 
 # Invoke a token;
 # If it is a primitive or constructor, the definition will be invoked,
@@ -246,7 +250,7 @@ sub invokeToken_insert {
     if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))){
       return (); }
     else {
-      return Box($token->getString, $font, $$self{gullet}->getLocator, $token); } }
+      return Box($token->getString, $font, $self->getGullet->getLocator, $token); } }
   return Box(LaTeXML::Package::FontDecodeString($token->getString, undef, 1),
              undef, undef, $token); }
 
@@ -272,32 +276,32 @@ sub regurgitate {
 # Dealing with TeX's bindings & grouping.
 # Note that lookups happen more often than bgroup/egroup (which open/close frames).
 
-sub pushStackFrame {
-  my ($self, $nobox) = @_;
-  my $token = $$self{token_stack}[-1];
-  $STATE->pushFrame;
-  $STATE->assignValue(beforeAfterGroup      => [],                'local');    # ALWAYS bind this!
-  $STATE->assignValue(afterGroup            => [],                'local');    # ALWAYS bind this!
-  $STATE->assignValue(afterAssignment       => undef,             'local');    # ALWAYS bind this!
-  $STATE->assignValue(groupNonBoxing        => $nobox,            'local');    # ALWAYS bind this!
-  $STATE->assignValue(groupInitiator        => $token,            'local');
-  $STATE->assignValue(groupInitiatorLocator => $self->getLocator, 'local');
-  push(@{ $$self{boxing} }, $token) unless $nobox;    # For begingroup/endgroup
-  return; }
+# sub pushStackFrame {
+#   my ($self, $nobox) = @_;
+#   my $token = $$self{token_stack}[-1];
+#   $STATE->pushFrame;
+#   $STATE->assignValue(beforeAfterGroup      => [],                'local');    # ALWAYS bind this!
+#   $STATE->assignValue(afterGroup            => [],                'local');    # ALWAYS bind this!
+#   $STATE->assignValue(afterAssignment       => undef,             'local');    # ALWAYS bind this!
+#   $STATE->assignValue(groupNonBoxing        => $nobox,            'local');    # ALWAYS bind this!
+#   $STATE->assignValue(groupInitiator        => $token,            'local');
+#   $STATE->assignValue(groupInitiatorLocator => $self->getLocator, 'local');
+#   push(@{ $$self{boxing} }, $token) unless $nobox;    # For begingroup/endgroup
+#   return; }
 
-sub popStackFrame {
-  my ($self, $nobox) = @_;
-  if (my $beforeafter = $STATE->lookupValue('beforeAfterGroup')) {
-    if (@$beforeafter) {
-      my @result = map { $_->beDigested($self) } @$beforeafter;
-      if (my ($x) = grep { !$_->isaBox } @result) {
-        Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
-      push(@LaTeXML::LIST, @result); } }
-  my $after = $STATE->lookupValue('afterGroup');
-  $STATE->popFrame;
-  pop(@{ $$self{boxing} }) unless $nobox;    # For begingroup/endgroup
-  $$self{gullet}->unread(@$after) if $after;
-  return; }
+# sub popStackFrame {
+#   my ($self, $nobox) = @_;
+#   if (my $beforeafter = $STATE->lookupValue('beforeAfterGroup')) {
+#     if (@$beforeafter) {
+#       my @result = map { $_->beDigested($self) } @$beforeafter;
+#       if (my ($x) = grep { !$_->isaBox } @result) {
+#         Fatal('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'"); }
+#       push(@LaTeXML::LIST, @result); } }
+#   my $after = $STATE->lookupValue('afterGroup');
+#   $STATE->popFrame;
+#   pop(@{ $$self{boxing} }) unless $nobox;    # For begingroup/endgroup
+#   $$self{gullet}->unread(@$after) if $after;
+#   return; }
 
 sub currentFrameMessage {
   my ($self) = @_;
@@ -313,78 +317,91 @@ sub currentFrameMessage {
 # Grouping pushes a new stack frame for binding definitions, etc.
 #======================================================================
 
-# if $nobox is true, inhibit incrementing the boxingLevel
-sub bgroup {
-  my ($self) = @_;
-  pushStackFrame($self, 0);
-  return; }
+# # if $nobox is true, inhibit incrementing the boxingLevel
+# sub bgroup {
+#   my ($self) = @_;
+#   pushStackFrame($self, 0);
+#   return; }
 
-sub egroup {
-  my ($self) = @_;
-  if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
-    || $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
-    my $token = $$self{token_stack}[-1];
-    Error('unexpected', $token, $self, "Attempt to close boxing group",
-      $self->currentFrameMessage); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
-    popStackFrame($self, 0); }
-  return; }
+# sub egroup {
+#   my ($self) = @_;
+#   if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+#     || $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
+#     my $token = $$self{token_stack}[-1];
+#     Error('unexpected', $token, $self, "Attempt to close boxing group",
+#       $self->currentFrameMessage); }
+#   else {    # Don't pop if there's an error; maybe we'll recover?
+#     popStackFrame($self, 0); }
+#   return; }
 
-sub begingroup {
-  my ($self) = @_;
-  pushStackFrame($self, 1);
-  return; }
+# sub begingroup {
+#   my ($self) = @_;
+#   pushStackFrame($self, 1);
+#   return; }
 
-sub endgroup {
-  my ($self) = @_;
-  if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
-    || !$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
-    my $token = $$self{token_stack}[-1];
-    Error('unexpected', $token, $self, "Attempt to close non-boxing group",
-      $self->currentFrameMessage); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
-    popStackFrame($self, 1); }
-  return; }
+# sub endgroup {
+#   my ($self) = @_;
+#   if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
+#     || !$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
+#     my $token = $$self{token_stack}[-1];
+#     Error('unexpected', $token, $self, "Attempt to close non-boxing group",
+#       $self->currentFrameMessage); }
+#   else {    # Don't pop if there's an error; maybe we'll recover?
+#     popStackFrame($self, 1); }
+#   return; }
 
 #======================================================================
 # Mode (minimal so far; math vs text)
 # Could (should?) be taken up by Stomach by building horizontal, vertical or math lists ?
 
-sub beginMode {
-  my ($self, $mode) = @_;
-  $self->pushStackFrame;    # Effectively bgroup
-  my $prevmode = $STATE->lookupValue('MODE');
-  my $ismath   = $mode =~ /math$/;
-  $STATE->assignValue(MODE    => $mode,   'local');
-  $STATE->assignValue(IN_MATH => $ismath, 'local');
-  my $curfont = $STATE->lookupValue('font');
-  if ($mode eq $prevmode) { }
-  elsif ($ismath) {
-    # When entering math mode, we set the font to the default math font,
-    # and save the text font for any embedded text.
-    $STATE->assignValue(savedfont => $curfont, 'local');
-    $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
-        color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize,
-        mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
-  else {
-    # When entering text mode, we should set the font to the text font in use before the math
-    # but inherit color and size
-    $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
-        color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize), 'local'); }
-  return; }
+# sub beginMode {
+#   my ($self, $mode) = @_;
+#   $self->pushStackFrame;    # Effectively bgroup
+#   my $prevmode = $STATE->lookupValue('MODE');
+#   my $ismath   = $mode =~ /math$/;
+#   $STATE->assignValue(MODE    => $mode,   'local');
+#   $STATE->assignValue(IN_MATH => $ismath, 'local');
+#   my $curfont = $STATE->lookupValue('font');
+#   if ($mode eq $prevmode) { }
+#   elsif ($ismath) {
+#     # When entering math mode, we set the font to the default math font,
+#     # and save the text font for any embedded text.
+#     $STATE->assignValue(savedfont => $curfont, 'local');
+#     $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
+#         color => $curfont->getColor, background => $curfont->getBackground,
+#         size => $curfont->getSize,
+#         mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
+#   else {
+#     # When entering text mode, we should set the font to the text font in use before the math
+#     # but inherit color and size
+#     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
+#         color => $curfont->getColor, background => $curfont->getBackground,
+#         size => $curfont->getSize), 'local'); }
+#   return; }
 
-sub endMode {
-  my ($self, $mode) = @_;
-  if ((!$STATE->isValueBound('MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
-    || ($STATE->lookupValue('MODE') ne $mode)) {    # Or was a mode switch to a different mode
-    my $token = $$self{token_stack}[-1];
-    Error('unexpected', $token, $self, "Attempt to end mode $mode",
-      $self->currentFrameMessage); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
-    $self->popStackFrame; }    # Effectively egroup.
-  return; }
+sub getMergedMathFont {
+  my($self, $curfont, $mode)=@_;
+  return $STATE->lookupValue('mathfont')->merge(
+    color => $curfont->getColor, background => $curfont->getBackground,
+    size => $curfont->getSize,
+    mathstyle => ($mode =~ /^display/ ? 'display' : 'text')); }
+
+sub getMergedTextFont {
+  my($self, $curfont)=@_;
+  return $STATE->lookupValue('savedfont')->merge(
+    color => $curfont->getColor, background => $curfont->getBackground,
+    size => $curfont->getSize); }
+
+# sub endMode {
+#   my ($self, $mode) = @_;
+#   if ((!$STATE->isValueBound('MODE', 0))    # Last stack frame was NOT a mode switch!?!?!
+#     || ($STATE->lookupValue('MODE') ne $mode)) {    # Or was a mode switch to a different mode
+#     my $token = $$self{token_stack}[-1];
+#     Error('unexpected', $token, $self, "Attempt to end mode $mode",
+#       $self->currentFrameMessage); }
+#   else {    # Don't pop if there's an error; maybe we'll recover?
+#     $self->popStackFrame; }    # Effectively egroup.
+#   return; }
 
 #**********************************************************************
 1;

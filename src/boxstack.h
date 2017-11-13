@@ -40,6 +40,9 @@ boxstack_new(pTHX);
 extern void
 boxstack_DESTROY(pTHX_ LaTeXML_Boxstack stack);
 
+extern void
+boxstack_push(pTHX_ LaTeXML_Boxstack stack, SV * box);
+
 /* Invoke a Stomach->method to produce boxes */
 extern void                            /* Horrible naming!!! */
 boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,

@@ -1984,8 +1984,11 @@ DefConstructor('\@hidden@bgroup', '#body', beforeDigest => sub { $_[0]->bgroup; 
 DefConstructor('\@hidden@egroup', '', afterDigest => sub { $_[0]->egroup; },
   reversion => '');
 
-DefPrimitive('\begingroup', sub { $_[0]->begingroup; });
-DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
+#DefPrimitive('\begingroup', sub { $_[0]->begingroup; });
+#DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
+DefPrimitive('\begingroup', Opcode('begingroup'));
+DefPrimitive('\endgroup',   Opcode('endgroup'));
+
 
 # Debugging aids; Ignored!
 DefPrimitive('\show Token',     undef);

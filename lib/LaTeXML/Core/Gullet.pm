@@ -98,15 +98,15 @@ sub flushMouth {
 
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
 # Flush all sources (close all pending mouth's)
-sub flush {
-  my ($self) = @_;
-  my $mouth = $self->getMouth;
-  $mouth->finish;
-  for(my $m = $mouth; $m ; $m = $m->getPreviousMouth){
-    $m->finish; }
-  $self->setMouth(LaTeXML::Core::Mouth->new());
-  $self->getMouth->setAutoclose(1);
-  return; }
+# sub flush {
+#   my ($self) = @_;
+#   my $mouth = $self->getMouth;
+#   $mouth->finish;
+#   for(my $m = $mouth; $m ; $m = $m->getPreviousMouth){
+#     $m->finish; }
+#   $self->setMouth(LaTeXML::Core::Mouth->new());
+#   $self->getMouth->setAutoclose(1);
+#   return; }
 
 # Do something, while reading stuff from a specific Mouth.
 # This reads ONLY from that mouth (or any mouth openned by code in that source),

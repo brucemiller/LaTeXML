@@ -29,6 +29,16 @@
 #include "stomach.h"
 
 void
+primitive_opcode_begingroup(pTHX_ SV * token, SV * regdefn, SV * stomach, SV * state,
+                          int nargs, SV ** args, LaTeXML_Boxstack stack){
+  stomach_begingroup(aTHX_ stomach, state); }
+
+void
+primitive_opcode_endgroup(pTHX_ SV * token, SV * regdefn, SV * stomach, SV * state,
+                          int nargs, SV ** args, LaTeXML_Boxstack stack){
+  stomach_endgroup(aTHX_ stomach, state); }
+
+void
 primitive_opcode_register(pTHX_ SV * token, SV * regdefn, SV * stomach, SV * state,
                           int nargs, SV ** args, LaTeXML_Boxstack stack){
   int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
@@ -113,6 +123,8 @@ primitive_install_op(pTHX_ UTF8 opcode, primitive_op * op){
 void
 primitive_install_opcodes(pTHX){
   /* Install Primitive Opcodes */
+  primitive_install_op(aTHX_ "begingroup",    &primitive_opcode_begingroup);
+  primitive_install_op(aTHX_ "endgroup",      &primitive_opcode_endgroup);
   primitive_install_op(aTHX_ "register",      &primitive_opcode_register);
 }
 

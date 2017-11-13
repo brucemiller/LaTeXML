@@ -33,6 +33,10 @@ gullet_new(pTHX){
   LaTeXML_Gullet xgullet;
   Newxz(xgullet,1,T_Gullet);
   xgullet->mouth = NULL;
+  xgullet->mouth
+    = mouth_new(aTHX_ "LaTeXML::Core::Mouth","BaseMouth", "BaseMouth", "",CC_OTHER,0,NULL);
+  LaTeXML_Mouth xmouth = SvMouth(xgullet->mouth);
+  xmouth->flags = MOUTH_BASE;
   xgullet->pending_comments = tokenstack_new(aTHX);
   SV * gullet = newSV(0);
   sv_setref_pv(gullet, "LaTeXML::Core::Gullet", (void*)xgullet);
@@ -56,29 +60,30 @@ SV *
 gullet_openMouth(pTHX_ SV * gullet, SV * mouth, int noautoclose){
   LaTeXML_Gullet xgullet = SvGullet(gullet);  
   if(mouth && SvOK(mouth)){
-    if(sv_isa(mouth,"LaTeXML::Core::Tokens")){
+    if(sv_isa(mouth,"LaTeXML::Core::Tokens")
+       || sv_isa(mouth,"LaTeXML::Core::Token")){
       SV * tokens = mouth;
       SV * state = state_global(aTHX);
       mouth = mouth_new(aTHX_ "LaTeXML::Core::Mouth","Tokens", "Tokens", "",
                         state_catcode(aTHX_ state,"@"),
                         state_lookupIV(aTHX_ state,TBL_VALUE,"INCLUDE_COMMENTS"),
                         NULL);
+      SvREFCNT_inc(mouth);      /* 1 extra, since we're storing AND returning it */
       LaTeXML_Mouth xm = SvMouth(mouth);
       xm->flags &= ~MOUTH_INTERESTING;
       mouth_unreadToken(aTHX_ mouth, tokens); }
-    else { 
+    else if(sv_derived_from(mouth,"LaTeXML::Core::Mouth")){
       SvREFCNT_inc(mouth); }
+    else { 
+      croak("Shouldn't get %p as a mouth",mouth); }
     SV * previous = xgullet->mouth;
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     xmouth->previous_mouth = previous;
-    SvREFCNT_inc(previous);
     xgullet->mouth = mouth;
     if(noautoclose){
       xmouth->flags &= ~MOUTH_AUTOCLOSE; }
     else {
       xmouth->flags |= MOUTH_AUTOCLOSE; } }
-  else {
-    xgullet->mouth = NULL; }
   return xgullet->mouth; }
 
 void
@@ -91,52 +96,72 @@ gullet_closeMouth(pTHX_ SV * gullet, int forced) {
       croak("unexpected: closing mouth with input remaining in %s\n",xmouth->source); }
     mouth_finish(aTHX_ mouth);
     SV * previous = xmouth->previous_mouth;
-    if(previous){
-      xgullet->mouth = previous; }
-    else {
-      /* Shouldn't NULL's work here? */
-      xgullet->mouth = mouth_new(aTHX_ "LaTeXML::Core::Mouth", "", "", "", CC_OTHER, 0, NULL);
-      LaTeXML_Mouth xmouth = SvMouth(xgullet->mouth);
-      xmouth->flags |= MOUTH_AUTOCLOSE; }
-    SvREFCNT_dec(mouth); } }
+    if(previous){               /* leave the base mouth */
+      xgullet->mouth = previous;
+      xmouth->previous_mouth = NULL;
+      SvREFCNT_dec(mouth);
+    } } }
 
-SV *
+int
 gullet_nextMouth(pTHX_ SV * gullet){
   LaTeXML_Gullet xgullet = SvGullet(gullet);  
-  SV * mouth = xgullet->mouth;
-  if(mouth){
-    LaTeXML_Mouth xmouth = SvMouth(mouth);
-    if(!(xmouth->flags & MOUTH_AUTOCLOSE) || !xmouth->previous_mouth){
-      return NULL; }
+  if(xgullet->mouth){
+    LaTeXML_Mouth xmouth = SvMouth(xgullet->mouth);
+    if((xmouth->flags & MOUTH_BASE) || !(xmouth->flags & MOUTH_AUTOCLOSE)
+       || !xmouth->previous_mouth){
+      return 0; }
     gullet_closeMouth(aTHX_ gullet,0);
-    return xgullet->mouth; }
-  return NULL; }
+    return 1; }
+  return 0; }
 
 void
 gullet_closeThisMouth(pTHX_ SV * gullet, SV * tomouth){
   LaTeXML_Gullet xgullet = SvGullet(gullet);  
+  LaTeXML_Mouth xtomouth = SvMouth(tomouth);
+  SV * mouth = xgullet->mouth;
+  /* Check that tomouth is still open in the current chain of mouths */
   while (1) {
-    SV * mouth = xgullet->mouth;
-    if(! mouth){
-      break; }
     LaTeXML_Mouth xmouth = SvMouth(mouth);
-    if (SvMouth(mouth) == SvMouth(tomouth)) {
+    if(! mouth){
+      croak("unexpected:<closed> Mouth is unexpectedly already closed"); }
+    else if (xmouth == xtomouth) {
+      break; }
+    else {
+      mouth = xmouth->previous_mouth; } }
+  /* Now close till we close tomouth */
+  while (1) {
+    mouth = xgullet->mouth;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    if (xmouth == xtomouth) {
       gullet_closeMouth(aTHX_ gullet,1);
       break; }
-    else if(! xmouth->previous_mouth){
-      croak("unexpected:<closed> Mouth is unexpectedly already closed"); }
-    else if (! (xmouth->flags & MOUTH_AUTOCLOSE) || mouth_hasMoreInput(aTHX_ mouth)) {
+    else if (xmouth->flags & MOUTH_BASE) {
+      fprintf(stderr,"unexpected: Cannot close base mouth in %s\n",xmouth->source);
+      break; }
+    else if (! (xmouth->flags & MOUTH_AUTOCLOSE)){
+      fprintf(stderr,"unexpected: forcing close on non-closable Mouth in %s\n",xmouth->source);
+      gullet_closeMouth(aTHX_ gullet, 1); }
+    else if (mouth_hasMoreInput(aTHX_ mouth)) {
       SV * token = mouth_readToken(aTHX_ mouth, state_global(aTHX));
       if(token){
         LaTeXML_Token t = SvToken(token);
         fprintf(stderr,"unexpected: Unexpected input remaining in %s: %s[%s]\n",
                 xmouth->source,CC_SHORT_NAME[t->catcode],t->string); }
-      else {
-        fprintf(stderr,"unexpected: Unexpected input remaining in %s\n",xmouth->source); }
-      mouth_finish(aTHX_ mouth);
+      /*mouth_finish(aTHX_ mouth);*/
       gullet_closeMouth(aTHX_ gullet, 1); }
     else {
       gullet_closeMouth(aTHX_ gullet,0); } } }
+
+void
+gullet_flush(pTHX_ SV * gullet){
+  LaTeXML_Gullet xgullet = SvGullet(gullet);  
+  while (1) {
+    SV * mouth = xgullet->mouth;
+    LaTeXML_Mouth xmouth = SvMouth(mouth);
+    if (xmouth->flags & MOUTH_BASE) {
+      break; }
+    else {
+      gullet_closeMouth(aTHX_ gullet,1); } } }
 
 SV *
 gullet_getLocator(pTHX_ SV * gullet){

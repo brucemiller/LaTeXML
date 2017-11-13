@@ -48,11 +48,11 @@ gullet_openMouth(pTHX_ SV * gullet, SV * mouth, int noautoclose);
 extern void
 gullet_closeMouth(pTHX_ SV * gullet, int forced);
 
-extern SV *
-gullet_nextMouth(pTHX_ SV * gullet);
-
 extern void
 gullet_closeThisMouth(pTHX_ SV * gullet, SV * tomouth);
+
+extern void
+gullet_flush(pTHX_ SV * gullet);
 
 extern SV *
 gullet_getLocator(pTHX_ SV * gullet);

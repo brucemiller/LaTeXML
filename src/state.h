@@ -110,6 +110,9 @@ state_lookup_noinc(pTHX_ SV * state, int tableid, UTF8 string);
 extern SV *
 state_lookup(pTHX_ SV * state, int tableid, UTF8 string);
 
+extern UTF8
+state_lookupPV(pTHX_ SV * state, int tableid, UTF8 string);
+
 extern int
 state_lookupIV(pTHX_ SV * state, int tableid, UTF8 string);
 

@@ -133,6 +133,7 @@ parameter_opcode_arg(pTHX_ SV * parameter, SV * gullet, SV * state, int nargs, S
       n_inner_args = gullet_readArguments(aTHX_ gullet, state, n_inner, inner, NULL, inner_args);
       gullet_skipSpaces(aTHX_ gullet, state);
       gullet_closeThisMouth(aTHX_ gullet, mouth);
+      SvREFCNT_dec(mouth);
       return (n_inner_args > 0 ? inner_args[0] : NULL); } }
   return NULL; }
 
@@ -195,6 +196,7 @@ parameter_opcode_Optional(pTHX_ SV * parameter, SV * gullet, SV * state, int nar
       n_inner_args = gullet_readArguments(aTHX_ gullet, state, n_inner, inner, NULL, inner_args);
       gullet_skipSpaces(aTHX_ gullet, state);
       gullet_closeThisMouth(aTHX_ gullet, mouth);
+      SvREFCNT_dec(mouth);
       return (n_inner_args > 0 ? inner_args[0] : NULL); } }
   else if(defaultsv){
     SvREFCNT_inc(defaultsv);
