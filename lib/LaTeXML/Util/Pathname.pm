@@ -376,7 +376,8 @@ sub build_kpse_cache {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
-  $texmf =~ s/^\s*\\\{(.+?)}\s*/$1/s;
+  $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
+  $texmf =~ s/\{\}//g;
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;
