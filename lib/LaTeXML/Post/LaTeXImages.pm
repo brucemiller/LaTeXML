@@ -182,7 +182,8 @@ sub cleanTeX {
     $style = $1; }
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
-  $tex =~ s/\%[^\n]*\n//gs;                                            # Strip comments
+  # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
+  $tex =~ s/(?<!\\)((?:\\\\)*)\%[^\n]*\n/$1/gs;
   $tex = $style . ' ' . $tex if $style;                                # Put back the style, if any
   return $tex; }
 
