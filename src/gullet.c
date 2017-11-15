@@ -191,11 +191,8 @@ gullet_readToken(pTHX_ SV * gullet, SV * state){
       LaTeXML_Token t = SvToken(token);
       int cc = t->catcode;
       if(cc == CC_COMMENT){
-        LaTeXML_Tokenstack pc = xgullet->pending_comments;
-        DEBUG_Gullet("PUSH Comment: %s\n",t->string);
-        tokenstack_push(aTHX_ pc,token);
+        tokenstack_push(aTHX_ xgullet->pending_comments,token);
         SvREFCNT_dec(token); }
-      /* AND CC_MARKER!!!*/
       else if(cc == CC_MARKER){
         gullet_stopProfiling(aTHX_ gullet, token); }
       else {
@@ -347,8 +344,7 @@ gullet_expandafter(pTHX_ SV * gullet, SV * state){
         SvREFCNT_dec(token);
         break; }
       else if (cc == CC_COMMENT) {
-        LaTeXML_Tokenstack comments = xgullet->pending_comments;
-        tokenstack_push(aTHX_ comments,token);
+        tokenstack_push(aTHX_ xgullet->pending_comments,token);
         SvREFCNT_dec(token); }
       else if (cc == CC_MARKER) {
         gullet_stopProfiling(aTHX_ gullet, token); }
@@ -392,6 +388,7 @@ gullet_readBalanced(pTHX_ SV * gullet, SV * state, SV * tokens, int expanded){
     else if(cc == CC_MARKER){
       gullet_stopProfiling(aTHX_ gullet, token); }
     else {
+      /* we'll accumulate comments, as well */
       tokens_add_to(aTHX_ tokens,token,0); }
     SvREFCNT_dec(token); }
   if (level > 0) {
@@ -407,7 +404,9 @@ gullet_readNonSpace(pTHX_ SV * gullet, SV * state){
     int cc = t->catcode;
     if(cc == CC_SPACE){
       SvREFCNT_dec(token); }
-    /* comment ? */
+    else if(cc == CC_COMMENT){
+      tokenstack_push(aTHX_ xgullet->pending_comments,token);
+      SvREFCNT_dec(token); }
     else if(cc == CC_MARKER){
       gullet_stopProfiling(aTHX_ gullet, token); }
     else {
@@ -422,9 +421,6 @@ gullet_readXNonSpace(pTHX_ SV * gullet, SV * state){
     int cc = t->catcode;
     if(cc == CC_SPACE){
       SvREFCNT_dec(token); }
-    /* comment ? */
-    else if(cc == CC_MARKER){
-      gullet_stopProfiling(aTHX_ gullet, token); }
     else {
       return token; } }
   return NULL; }
@@ -440,7 +436,7 @@ gullet_skipSpaces(pTHX_ SV * gullet, SV * state){
 void
 gullet_skip1Space(pTHX_ SV * gullet,  SV * state){
   LaTeXML_Gullet xgullet = SvGullet(gullet);
-  SV * token = mouth_readToken(aTHX_ xgullet->mouth, state);
+  SV * token = gullet_readToken(aTHX_ gullet, state);
   if(token != NULL){
     LaTeXML_Token t = SvToken(token);    
     if(t->catcode != CC_SPACE){
@@ -450,7 +446,7 @@ gullet_skip1Space(pTHX_ SV * gullet,  SV * state){
 void
 gullet_skipEquals(pTHX_ SV * gullet,  SV * state){
   LaTeXML_Gullet xgullet = SvGullet(gullet);
-  SV * token = mouth_readToken(aTHX_ xgullet->mouth, state);
+  SV * token = gullet_readToken(aTHX_ gullet, state);
   if(token != NULL){
     LaTeXML_Token t = SvToken(token);    
     if((t->catcode != CC_OTHER) || (strcmp(t->string,"=") !=0)){
@@ -512,6 +508,11 @@ gullet_readUntilBrace(pTHX_ SV * gullet, SV * state){
       mouth_unreadToken(aTHX_ xgullet->mouth, token);
       SvREFCNT_dec(token);
       break; }
+    else if(cc == CC_COMMENT){
+      tokenstack_push(aTHX_ xgullet->pending_comments,token);
+      SvREFCNT_dec(token); }
+    else if(cc == CC_MARKER){
+      gullet_stopProfiling(aTHX_ gullet, token); }
     else {
       tokens_add_to(aTHX_ tokens,token,0);
       SvREFCNT_dec(token); } }
@@ -526,6 +527,7 @@ gullet_readOptional(pTHX_ SV * gullet, SV * state){
     SV * tokens = tokens_new(aTHX_ 1);
     while((token = mouth_readToken(aTHX_ xgullet->mouth, state))
           && (t = SvToken(token)) && ((t->catcode != CC_OTHER) || (strcmp(t->string,"]") !=0))){
+      /* Comments ok; do we need to worry about markers? */
       tokens_add_to(aTHX_ tokens, token, 0); }
     return tokens; }
   else if (token){
