@@ -169,7 +169,9 @@ sub processGraphic {
   my ($self, $doc, $node) = @_;
   my $source = $self->findGraphicFile($doc, $node);
   if (!$source) {
-    Warn('expected', 'source', $node, "No graphic source specified; skipping"); return; }
+    Warn('expected', 'source', $node, "No graphic source specified; skipping");
+    $node->setAttribute('imagesrc', $node->getAttribute('graphic'));
+    return; }
   my $transform = $self->getTransform($node);
   my ($image, $width, $height) = $self->transformGraphic($doc, $node, $source, $transform);
   # $image should probably be relative already, except corner applications?

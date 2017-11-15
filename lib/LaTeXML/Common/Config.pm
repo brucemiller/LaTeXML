@@ -431,12 +431,13 @@ sub _prepare_options {
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $$opts{math_formats} = [] unless defined $$opts{math_formats};
   $$opts{post} = 1 if ((!defined $$opts{post}) &&
-    (scalar(@{ $$opts{math_formats} }))
+    (scalar(@{ $$opts{math_formats} })
     || ($$opts{stylesheet})
     || $$opts{is_html}
     || $$opts{is_xhtml}
     || (($$opts{format}||'') eq 'jats')
     || ($$opts{whatsout} && ($$opts{whatsout} ne 'document'))
+    )
   );
 # || ... || ... || ...
 # $$opts{post}=0 if (defined $$opts{mathparse} && (! $$opts{mathparse})); # No-parse overrides post-processing
@@ -493,7 +494,6 @@ sub _prepare_options {
         qw(id idrelative label labelrelative));
       $$opts{splitat} = _checkOptionValue('--splitat', $$opts{splitat}, CORE::keys %{ $$opts{splitpaths} });
       $$opts{splitpath} = $$opts{splitpaths}->{ $$opts{splitat} } unless defined $$opts{splitpath}; }
-
     # Check for appropriate combination of split, scan, prescan, dbfile, crossref
     if ($$opts{split} && (!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)) {
       croak("Must supply --destination when using --split"); }
@@ -511,16 +511,21 @@ sub _prepare_options {
       croak("Cannot generate index (--index) without --scan or --dbfile"); }
     if (!$$opts{prescan} && @{ $$opts{bibliographies} } && !($$opts{scan} || defined $$opts{crossref})) {
       croak("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-    if ((!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)
-      && (_checkMathFormat($opts, 'images') || _checkMathFormat($opts, 'svg')
-        || $$opts{dographics} || $$opts{picimages})) {
-      croak("Must supply --destination unless all auxilliary file writing is disabled"
-          . "(--nomathimages --nomathsvg --nographicimages --nopictureimages --nodefaultcss)"); }
+
+    # There is now a legitimate case to preserve graphics here.
+    # if ((!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)
+    #   && (_checkMathFormat($opts, 'images') || _checkMathFormat($opts, 'svg')
+    #     || $$opts{dographics} || $$opts{picimages})) {
+    #   croak("Must supply --destination unless all auxilliary file writing is disabled"
+    #       . "(--nomathimages --nomathsvg --nographicimages --nopictureimages --nodefaultcss)"); }
 
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
-    $$opts{format} = "xml" if ($$opts{stylesheet}) && (!defined $$opts{format});
-    $$opts{format} = "xhtml" unless defined $$opts{format};
+    if (!defined $$opts{format}) {
+      if ($$opts{stylesheet}) { $$opts{format} = "xml"; }
+      else { $$opts{format} = "xhtml"; }
+    }
+
     if (!$$opts{stylesheet}) {
       if    ($$opts{format} eq 'xhtml')       { $$opts{stylesheet} = "LaTeXML-xhtml.xsl"; }
       elsif ($$opts{format} eq "html4")       { $$opts{stylesheet} = "LaTeXML-html4.xsl"; }
