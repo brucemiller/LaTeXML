@@ -415,7 +415,7 @@ sub _prepare_options {
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
-    $$opts{format} = 'html5' if $$opts{format} eq 'html';    # Default
+    $$opts{format} = 'html5' if $$opts{format} eq 'html';    # Default is 5
     if ($$opts{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
       $$opts{format}   = 'html5';
@@ -424,6 +424,8 @@ sub _prepare_options {
     $$opts{is_html}  = ($$opts{format} =~ /^html/);
     $$opts{is_xhtml} = ($$opts{format} =~ /^(xhtml5?|epub|mobi)$/);
     $$opts{whatsout} = 'archive' if (($$opts{format} eq 'epub') || ($$opts{format} eq 'mobi'));
+  } else {
+    $$opts{format} = 'xml' # We failed to guess format in any-which-way, so XML is default
   }
   #======================================================================
   # II. Sanity check and Completion of Post options.

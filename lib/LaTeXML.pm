@@ -314,10 +314,10 @@ sub convert {
   # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
   undef $serialized;
   if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
-    if (($$opts{format} =~ 'x(ht)?ml') || ($$opts{format} eq 'jats')) {
+    if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
       $serialized = $result->toString(1); }
     elsif ($$opts{format} =~ /^html/) {
-      if (ref($result) =~ '^LaTeXML::(Post::)?Document$') {    # Special for documents
+      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
         $serialized = $result->getDocument->toStringHTML; }
       else {                                                   # Regular for fragments
         do {
