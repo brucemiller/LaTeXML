@@ -238,6 +238,12 @@ sub get_math {
     }
     $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$'); }
   if ($math) {
+    my $imagesrc = $math->getAttribute('imagesrc');
+    if ($imagesrc && $imagesrc =~ /[.]svg$/) {
+      # Return the SVG directly
+      $math = LaTeXML::Common::XML::Parser->new()->parseFile($imagesrc);
+      $math = $math && $math->getDocumentElement;
+    }
     # Copy over document namespace declarations:
     # NOTE: This copies ALL the namespaces, not just the needed ones!
     foreach ($doc->getDocumentElement->getNamespaces) {

@@ -542,8 +542,8 @@ sub alignment_regroup_rows {
     my @cells = $document->findnodes('ltx:td', $rows[0]);
     # Non header cells, done.
     last if scalar(grep { (!$_->getAttribute('thead')) } @cells);
-    push(@heads, shift(@rows));
     my $line = scalar(@heads);
+    push(@heads, shift(@rows));
     $maxreach = max($maxreach, map { ($_->getAttribute('rowspan') || 0) + $line } @cells); }
   if ($maxreach > scalar(@heads)) {    # rowspan crossed over thead boundary!
     unshift(@rows, @heads); @heads = (); }

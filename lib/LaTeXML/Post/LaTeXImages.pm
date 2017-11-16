@@ -92,7 +92,7 @@ sub new {
     # it now can take a number of digits (%3p) for pages, BUT old version produces imgx-%3p.svg!!
     # So, simply use %p, let new version do 1,..,9,10,...
     # Recovery code below!
-    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=1pt --mag=$mag --no-fonts -o imgx-${fmt}p";
+    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}p";
     $$self{dvicmd_output_name} = 'imgx-%02d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
