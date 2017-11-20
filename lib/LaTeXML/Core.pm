@@ -196,7 +196,8 @@ sub convertDocument {
       if (my $paths = $state->lookupValue('SEARCHPATHS')) {
         if ($state->lookupValue('INCLUDE_COMMENTS')) {
           $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
-      foreach my $preload (@{ $$self{preload} }) {
+      foreach my $preload_by_reference (@{ $$self{preload} }) {
+        my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
         next if $preload =~ /\.pool$/;
         my $options = undef;                                 # Stupid perlcritic policy
         if ($preload =~ s/^\[([^\]]*)\]//) { $options = $1; }
