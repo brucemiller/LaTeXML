@@ -25,9 +25,15 @@
 #  define DEBUGGING_Expandable 0
 #endif
 
+extern SV *
+expandable_new(pTHX_ SV * state, SV * cs, SV * parameters, SV * expansion, SV * locator);
+
 /* SV * expandable_op(aTHX_ token, expandable_defn, gullet, state, nargs, args)*/
 /* And, perhaps eventually, Tokens to accumulate results? */
 typedef SV * expandable_op(pTHX_ SV *, SV *, SV *, SV *, int, SV **);
+
+extern int
+expandable_equals(pTHX_ SV * expandable, SV * expandable2);
 
 extern expandable_op *
 expandable_lookup(pTHX_ UTF8 opcode);

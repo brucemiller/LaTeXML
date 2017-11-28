@@ -22,7 +22,9 @@
 #include "tokens.h"
 #include "state.h"
 #include "boxstack.h"
-
+#include "parameters.h"
+#include "expandable.h"
+#include "primitive.h"
 
 UTF8 UNIT_NAME[] =
   {"em","ex",
@@ -591,6 +593,75 @@ state_meaning(pTHX_ SV * state, SV * token){
     return token; }
   return NULL; }
 
+int
+state_Equals(pTHX_ SV * thing1, SV * thing2){
+  if(thing1 == thing2){     /* if same, whatever it is (including NULL), match! */
+    return 1; }
+  else if((!thing1) || (!thing2)){ /* if either is NULL? fail */
+    return 0; }
+  else if (!sv_isobject(thing1) || !sv_isobject(thing2)){
+    /* perhaps shouldn't happen, but we'll not do deep comparison of raw datastructures */
+    return 0; }
+  else {
+    UTF8 type1 = (UTF8)sv_reftype(SvRV(thing1),1);
+    UTF8 type2 = (UTF8)sv_reftype(SvRV(thing2),1);
+    if(strcmp(type1,type2) != 0){ /* Not same type? fail */
+      return 0; }
+    else if(strcmp(type1,"LaTeXML::Core::Token")==0){
+      return token_equals(aTHX_ thing1, thing2); }
+    else if(strcmp(type1,"LaTeXML::Core::Tokens")==0){
+      return tokens_equals(aTHX_ thing1, thing2); }
+    else if(strcmp(type1,"LaTeXML::Core::Definition::Expandable")==0){
+      return expandable_equals(aTHX_ thing1, thing2); }
+    else if(strcmp(type1,"LaTeXML::Core::Definition::Primitive")==0){
+      return primitive_equals(aTHX_ thing1, thing2); }
+    else if(strcmp(type1,"LaTeXML::Core::Parameters")==0){
+      AV * av1 = SvArray(thing1);
+      AV * av2 = SvArray(thing2);
+      int n1 = av_len(av1)+1;
+      int n2 = av_len(av2)+1;
+      if(n1 != n2){
+        return 0; }
+      else {
+        int i;
+        for(i = 0; i < n1; i++){
+          if(! state_Equals(aTHX_ 
+                            array_get_noinc(aTHX_ av1, i),
+                            array_get_noinc(aTHX_ av2, i))){
+            return 0; } }
+        return 1; } }
+    else if(strcmp(type1,"LaTeXML::Core::Parameter")==0){
+      return parameter_equals(aTHX_ thing1, thing2); }
+    else if(strcmp(type1,"LaTeXML::Core::Opcode")==0){
+      return strcmp(SvPV_nolen(SvRV(thing1)),SvPV_nolen(SvRV(thing2))) == 0; }
+    /* LaTeXML::Util::Transform */
+    /* LaTeXML::Common::Font */
+    /* LaTeXML::Core::Box */
+    /* LaTeXML::Core::List */
+    /* LaTeXML::Core::Whatsit */
+    else {                      /* Fallback to method call */
+      dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+      EXTEND(SP,2); PUSHs(thing1); PUSHs(thing2); PUTBACK;
+      int nvals = call_method("equals",G_SCALAR);
+      SPAGAIN;
+      int result = 0;
+      if(nvals){
+        SV * value = POPs;
+        result = SvTRUE(value); }
+      PUTBACK; FREETMPS; LEAVE;
+      return result; } }
+  return 0; }
+
+int
+state_XEquals(pTHX_ SV * state, SV * token1, SV * token2){
+  SV * meaning1 = state_meaning(aTHX_ state, token1);
+  SV * meaning2 = state_meaning(aTHX_ state, token2);
+  int boolean = state_Equals(aTHX_ meaning1,meaning2);
+  if(meaning1){ SvREFCNT_dec(meaning1); }
+  if(meaning2){ SvREFCNT_dec(meaning2); }
+  return boolean; }
+
+
 SV *
 state_definition(pTHX_ SV * state, SV * token){
   if(! token){
@@ -607,6 +678,36 @@ state_definition(pTHX_ SV * state, SV * token){
   else {
     return NULL; } }
 
+void
+state_installDefinition(pTHX_ SV * state, SV * definition, UTF8 scope){
+  HV * hash = SvHash(definition);
+  SV ** ptr = hv_fetchs(hash,"cs",0);
+  if(! ptr){
+    croak("Definition doesn't have a CS!"); }
+  LaTeXML_Token t = SvToken(*ptr);
+  UTF8 name = PRIMITIVE_NAME[t->catcode]; /* getCSName */
+  name = (name == NULL ? t->string : name);
+  int nlen = strlen(name);
+  char lock[nlen+8];
+  strncpy(lock,name,nlen);
+  strcpy(lock+nlen,":locked");
+  SV * tmp;
+  if ( state_lookupBoole(aTHX_ state, TBL_VALUE, lock)
+       && ( ! (tmp = get_sv("LaTeXML::Core::State::UNLOCKED",0)) || !SvTRUE(tmp)) ) {
+    /*fprintf(stderr,"Ignoring redefinition of %s\n",name);*/
+    /*
+      if (my $s = $self->getStomach->getxgullet->getSource) {
+      # report if the redefinition seems to come from document source
+      if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
+      && ($s !~ /\.code\.tex$/)) {
+      Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
+      return; } */
+  }
+  else {
+    state_assign(aTHX_ state, TBL_MEANING, name, definition, scope); }
+}
+
+
 SV *
 state_expandable(pTHX_ SV * state, SV * token){
   if(! token){
@@ -618,9 +719,8 @@ state_expandable(pTHX_ SV * state, SV * token){
   HV * defn_hash;
   if(name
      && (defn = state_lookup_noinc(aTHX_ state, TBL_MEANING, name))
-     && SvROK(defn) && sv_derived_from(defn, "LaTeXML::Core::Definition")
+     && SvROK(defn) && sv_isa(defn, "LaTeXML::Core::Definition::Expandable")
      && (defn_hash = SvHash(defn))
-     && hash_getBoole(aTHX_ defn_hash,"isExpandable")
      && ! hash_getBoole(aTHX_ defn_hash,"isProtected")){
     SvREFCNT_inc(defn);
     return defn; }
@@ -676,3 +776,63 @@ extern int
 state_getProfiling(pTHX_ SV * state){
   LaTeXML_State xstate = SvState(state);
   return xstate->config & CONFIG_PROFILING; }
+
+/* Not exactly the correct place for this ? */
+/* These 2 deal with the tuples for registers: the definition + the arguments (if any) */
+SV *
+register_valueOf(pTHX_ SV * reg, SV * state, int nargs, SV ** args){
+  SV * getter = hash_get(aTHX_ SvHash(reg), "getter");
+  SV * value = hash_get(aTHX_ SvHash(reg), "value");
+  int i;
+  /* For chardef's .... Yuck!*/
+  /*  if(value){
+    return value; }
+    else */
+ if(! getter || !SvOK(getter)){
+    LaTeXML_Token t = SvToken(hash_get(aTHX_ SvHash(reg), "cs"));
+    croak("This thing is not a Register %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string); }
+  else if(SvROK(getter) && SvTYPE(SvRV(getter)) == SVt_PVCV){ /* 'CODE' */
+    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+    EXTEND(SP,nargs);
+    for(i=0; i<nargs; i++){
+      SV * arg = (args[i] ? args[i] : &PL_sv_undef);
+      PUSHs(arg); }
+    PUTBACK;
+    int nvals = call_sv(getter,G_SCALAR);
+    SPAGAIN;
+    if(nvals){ value = POPs; SvREFCNT_inc(value); }
+    PUTBACK; FREETMPS; LEAVE; }
+  else if (nargs > 0){
+    croak("This Register %s cannot take %d args",SvPV_nolen(getter),nargs); }
+  else if(SvPOK(getter)){
+    value = state_lookup(aTHX_ state_global(aTHX), TBL_VALUE, SvPV_nolen(getter)); }
+  else {
+    LaTeXML_Token t = SvToken(hash_get(aTHX_ SvHash(reg), "cs"));
+    /* Probably should just be a warn, return NULL */
+    croak("This thing is not a Register %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string); }
+  return value; }
+
+void
+register_setValue(pTHX_ SV * reg, SV * state, int nargs, SV ** args, SV * value){
+  SV * setter = hash_get(aTHX_ SvHash(reg), "setter");
+  int i;
+  if(! setter || !SvOK(setter)){
+    LaTeXML_Token t = SvToken(hash_get(aTHX_ SvHash(reg), "cs"));
+    croak("This thing is not a Register %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string); }
+  else if(SvROK(setter) && SvTYPE(SvRV(setter)) == SVt_PVCV){ /* 'CODE' */
+    dSP; ENTER; SAVETMPS; PUSHMARK(SP);
+    EXTEND(SP,nargs+1); PUSHs((value ? value : &PL_sv_undef));
+    for(i=0; i<nargs; i++){
+      SV * arg = (args[i] ? args[i] : &PL_sv_undef);
+      PUSHs(arg); }
+    PUTBACK;
+    call_sv(setter,G_DISCARD);
+    SPAGAIN; PUTBACK; FREETMPS; LEAVE; }
+  else if (nargs > 0){
+    croak("This Register %s cannot take %d args",SvPV_nolen(setter), nargs); }
+  else if(SvPOK(setter)){
+    state_assign(aTHX_ state_global(aTHX), TBL_VALUE, SvPV_nolen(setter), value, NULL); }
+  else {
+    LaTeXML_Token t = SvToken(hash_get(aTHX_ SvHash(reg), "cs"));
+    /* Probably should just be a warn? */
+    croak("This thing is not a Register %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string); } }

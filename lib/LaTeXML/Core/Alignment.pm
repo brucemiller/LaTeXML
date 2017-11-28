@@ -446,7 +446,7 @@ sub ReadAlignmentTemplate {
       last unless $nopens;
       $gullet->unread($op); }
     elsif (defined($defn = $STATE->lookupDefinition(T_CS('\NC@rewrite@' . ToString($op))))
-      && $defn->isExpandable) {
+      && (ref $defn eq 'LaTeXML::Core::Definition::Expandable')) {
       $gullet->unread($defn->invoke($op, $gullet)); }
     elsif ($op->equals(T_BEGIN)) {    # Wrong, but a safety valve
       $gullet->unread($gullet->readBalanced); }

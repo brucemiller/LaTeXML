@@ -51,7 +51,7 @@ use Text::Unidecode;
 use base qw(Exporter);
 our @EXPORT = (qw(&DefAutoload &DefExpandable
     &DefMacro &DefMacroI
-    &DefConditional &DefConditionalI &IfCondition &SetCondition
+    &DefConditional &DefConditionalI
     &DefPrimitive  &DefPrimitiveI
     &DefRegister &DefRegisterI &LookupRegister &AssignRegister &LookupDimension
     &DefConstructor &DefConstructorI
@@ -304,15 +304,7 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
-  my $def1 = LookupMeaning($token1);    # token, definition object or undef
-  my $def2 = LookupMeaning($token2);    # ditto
-  if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
-    return; }
-  elsif (!defined $def1 && !defined $def2) {    # true if both undefined
-    return 1; }
-  elsif ($def1->equals($def2)) {                # If both have defns, must be same defn!
-    return 1; }
-  return; }
+  $STATE->XEquals($token1, $token2); }
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
@@ -414,7 +406,7 @@ sub ReadParameters {
   my ($gullet, $spec) = @_;
   my $for = T_OTHER("Anonymous");
   my $parm = parseParameters($spec, $for);
-  return ($parm ? $parm->readArguments($gullet, $for) : ()); }
+  return ($parm ? $gullet->readArguments($parm, $for) : ()); }
 
 # Merge the current font with the style specifications
 sub MergeFont {
@@ -918,7 +910,6 @@ sub DefMacro {
 
 sub DefMacroI {
   my ($cs, $paramlist, $expansion, %options) = @_;
-  if (!defined $expansion) { $expansion = Tokens(); }
   # Optimization: Defer till macro actually used
   #  elsif (!ref $expansion)     { $expansion = TokenizeInternal($expansion); }
   if ((length($cs) == 1) && $options{mathactive}) {
@@ -926,10 +917,12 @@ sub DefMacroI {
   $cs = coerceCS($cs);
   if ((defined $paramlist) && !ref $paramlist) {
     $paramlist = parseParameters($paramlist, $cs); }
-  if (!ref $expansion) {
+  if (defined $expansion && !ref $expansion) {
     $expansion = TokenizeInternal($expansion); }
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
-    $options{scope});
+###  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
+###    $options{scope});
+  LaTeXML::Core::Definition::Expandable->newInstalled($STATE, $options{scope} || 'local',
+    $cs, $paramlist, $expansion, %options);
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
   return; }
 
@@ -961,77 +954,25 @@ sub DefConditionalI {
   my $csname = ToString($cs);
   if ((defined $paramlist) && !ref $paramlist) {
     $paramlist = parseParameters($paramlist, $cs); }
-##  my $opcode = $options{opcode};
-  # Special cases...
-  if ($csname eq '\fi') {
+  if ($test && (ref $test eq 'LaTeXML::Core::Opcode')) {
+    # special cases \else, \fi, will have Opcode
     $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, Opcode('fi'), %options),
+        $cs, $paramlist, $test, %options),
       $options{scope}); }
-  elsif ($csname eq '\else') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, Opcode('else'), %options),
-      $options{scope}); }
-  elsif ($csname eq '\or') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, undef, Opcode('or'), %options),
-      $options{scope}); }
-  elsif ($csname eq '\ifcase') {
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        $cs, $paramlist, Opcode('ifcase'), %options),
-      $options{scope}); }
-  elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
+  elsif ($csname =~ /^\\if(.*)$/) {
     my $name = $1;
-    if ((defined $name) && ($name ne 'case')
-      && (!defined $test)) {    # user-defined conditional, like with \newif
+    if ($test) {
+      $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+          $cs, $paramlist, Opcode('ifGeneral'), test => $test, %options),
+        $options{scope}); }
+    else {
       DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
       DefMacroI(T_CS('\\' . $name . 'false'), undef, Tokens(T_CS('\let'), $cs, T_CS('\iffalse')));
-      Let($cs, T_CS('\iffalse')); }
-    else {
-      $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-##          $cs, $paramlist, Opcode($opcode || 'if'),
-          $cs, $paramlist, Opcode('if'),
-          test => $test, %options),
-        $options{scope}); }
-  }
+      $STATE->let($cs, T_CS('\iffalse')); } }
   else {
     Error('misdefined', $cs, $STATE->getStomach,
       "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
-  return; }
-
-sub IfCondition {
-  my ($if, @args) = @_;
-  my $gullet = $STATE->getStomach->getGullet;
-  $if = coerceCS($if);
-  my ($defn, $exp, $test);
-  if (($defn = $STATE->lookupDefinition($if))
-##    && (($$defn{opcode} || '') eq 'if')
-    # candidate for Expandable->getIfCondition ????
-    && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp eq 'if')
-    && ($test = $defn->getTest)) {
-    return &$test($gullet, @args); }
-  elsif (XEquals($if, T_CS('\iftrue'))) {
-    return 1; }
-  elsif (XEquals($if, T_CS('\iffalse'))) {
-    return 0; }
-  else {
-    Error('expected', 'conditional', $gullet,
-      "Expected a conditional, got '" . ToString($if) . "'");
-    return; } }
-
-# Used only for regular \newif type conditions
-sub SetCondition {
-  my ($if, $value, $scope) = @_;
-  my ($defn, $exp, $test);
-  # We'll accept any conditional \ifxxx, providing it takes no arguments
-  if (($defn = $STATE->lookupDefinition($if))
-##    && (($$defn{opcode} || '') eq 'if')
-    && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp eq 'if')
-    && !$defn->getParameters) {
-    Let($if, ($value ? T_CS('\iftrue') : T_CS('\iffalse')), $scope) }
-  else {
-    Error('expected', 'conditional', $STATE->getStomach,
-      "Expected a conditional defined by \\newif, got '" . ToString($if) . "'"); }
   return; }
 
 #======================================================================
@@ -1103,17 +1044,21 @@ sub DefRegisterI {
   my $type   = $register_types{ ref $value };
   my $name   = ToString($cs);
   my $getter = $options{getter}
-    || sub { LookupValue(join('', $name, map { ToString($_) } @_)) || $value; };
+    || ($paramlist
+    ? sub { LookupValue(join('', $name, map { ToString($_) } @_)) || $value; }
+    : $name);
   my $setter = $options{setter}
     || ($options{readonly}
     ? sub { my ($v, @args) = @_;
       Warn('unexpected', $name, $STATE->getStomach,
         "Can't assign to register $name"); return; }
-    : sub { my ($v, @args) = @_;
-      AssignValue(join('', $name, map { ToString($_) } @args) => $v); });
+    : ($paramlist
+      ? sub { my ($v, @args) = @_;
+        AssignValue(join('', $name, map { ToString($_) } @args) => $v); }
+      : $name));
   # Not really right to set the value!
   AssignValue(ToString($cs) => $value) if defined $value;
-  $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($cs, $paramlist, Opcode('register'),
       registerType => $type,
       getter       => $getter, setter => $setter,
       readonly     => $options{readonly}),
@@ -2073,7 +2018,7 @@ sub AddToMacro {
   @tokens = map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens;
   # Needs error checking!
   my $defn = $STATE->lookupDefinition($cs);
-  if (!defined $defn || !$defn->isExpandable) {
+  if (!defined $defn || !(ref $defn eq 'LaTeXML::Core::Definition::Expandable')) {
     Error('unexpected', $cs, $STATE->getStomach->getGullet,
       ToString($cs) . " is not an expandable control sequence"); }
   else {
@@ -2369,7 +2314,8 @@ sub DefColor {
   #print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
   return unless ref $color;
   my ($model, @spec) = @$color;
-  $scope = 'global' if $STATE->lookupDefinition(T_CS('\ifglobalcolors')) && IfCondition(T_CS('\ifglobalcolors'));
+  $scope = 'global' if $STATE->lookupDefinition(T_CS('\ifglobalcolors'))
+    && XEquals(T_CS('\ifglobalcolors'), T_CS('\iftrue'));
   AssignValue('color_' . $name => $color, $scope);
   # We could store these pieces separately,or in a list for above,
   # so that extract could use them more reasonably?
@@ -2891,13 +2837,6 @@ Internal form of C<DefConditional> where the control sequence and parameter list
 have already been parsed; useful for definitions from within code.
 Also, slightly more efficient for conditinal with no arguments (use C<undef> for
 C<paramlist>).
-
-=item C<IfCondition(I<$ifcs>,I<@args>)>
-
-X<IfCondition>
-C<IfCondition> allows you to test a conditional from within perl. Thus something like
-C<if(IfCondition('\ifmmode')){ domath } else { dotext }> might be equivalent to
-TeX's C<\ifmmode domath \else dotext \fi>.
 
 =back
 

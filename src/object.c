@@ -21,10 +21,15 @@
 #include "object.h"
 
 /* Simplified hash accessors; would be nice to macroize */
+
+/* Since this is used for internal things, with ASCII names.... let's try w/o the -strlen(key)
+  BUT be careful; they are used a bit in state.c...?
+ */
 SV *
 hash_get_noinc(pTHX_ HV * hash, UTF8 key){ /* No refcnt inc! */
   SV ** ptr;
-  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){
+  /*  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){*/
+  if( (ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr) ){
     return *ptr; }
   else {
     return NULL; } }
@@ -32,7 +37,8 @@ hash_get_noinc(pTHX_ HV * hash, UTF8 key){ /* No refcnt inc! */
 SV *
 hash_get(pTHX_ HV * hash, UTF8 key){
   SV ** ptr;
-  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){
+  /*  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){*/
+  if( (ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr) ){
     SvREFCNT_inc(*ptr);
     return *ptr; }
   else {
@@ -41,7 +47,8 @@ hash_get(pTHX_ HV * hash, UTF8 key){
 UTF8
 hash_getPV(pTHX_ HV * hash, UTF8 key){
   SV ** ptr;
-  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){
+  /*if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){*/
+  if( (ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr) ){
     return SvPV_nolen(*ptr); }
   else {
     return NULL; } }
@@ -49,7 +56,8 @@ hash_getPV(pTHX_ HV * hash, UTF8 key){
 int
 hash_getIV(pTHX_ HV * hash, UTF8 key){
   SV ** ptr;
-  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){
+  /*  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){*/
+  if( (ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr) ){
     return SvIV(*ptr); }
   else {
     return 0; } }
@@ -57,7 +65,8 @@ hash_getIV(pTHX_ HV * hash, UTF8 key){
 int
 hash_getBoole(pTHX_ HV * hash, UTF8 key){
   SV ** ptr;
-  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){
+  /*  if( (ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr) ){*/
+      if( (ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr) ){
     return SvTRUE(*ptr); }
   else {
     return 0; } }
@@ -67,7 +76,8 @@ hash_getBoole(pTHX_ HV * hash, UTF8 key){
 AV *
 hash_getAV_internal(pTHX_ HV * hash, UTF8 key, int refcnt, int create){
   SV ** ptr;
-  if(! ((ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr))){
+  /*  if(! ((ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr))){*/
+  if(! ((ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr))){    
     if(create){
       AV * av = newAV();
       hv_store(hash,key,-strlen(key),newRV_noinc((SV*)av),0);
@@ -91,7 +101,8 @@ hash_getAV_internal(pTHX_ HV * hash, UTF8 key, int refcnt, int create){
 HV *
 hash_getHV_internal(pTHX_ HV * hash, UTF8 key, int refcnt, int create){
   SV ** ptr;
-  if(! ((ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr))){
+  /*  if(! ((ptr  = hv_fetch(hash,key,-strlen(key),0)) && *ptr && SvOK(*ptr))){*/
+  if(! ((ptr  = hv_fetch(hash,key,strlen(key),0)) && *ptr && SvOK(*ptr))){
     if(create){
       HV * hv = newHV();
       hv_store(hash,key,-strlen(key),newRV_noinc((SV*)hv),0);

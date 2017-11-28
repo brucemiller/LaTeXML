@@ -53,7 +53,7 @@ typedef struct Mouth_struct {
 } T_Mouth;
 typedef T_Mouth * LaTeXML_Mouth;
 
-#define SvMouth(arg)      INT2PTR(LaTeXML_Mouth,      SvIV((SV*) SvRV(arg)))
+#define SvMouth(arg)      ((LaTeXML_Mouth)INT2PTR(LaTeXML_Mouth, SvIV((SV*) SvRV(arg))))
 
 extern void
 mouth_setInput(pTHX_ SV * mouth, UTF8 input);
@@ -95,7 +95,10 @@ mouth_fetchInput(pTHX_ SV * mouth);
 */
 
 extern void
-mouth_unreadToken(pTHX_ SV * mouth, SV * thing);
+mouth_unreadToken(pTHX_ SV * mouth, SV * token);
+
+extern void
+mouth_unread(pTHX_ SV * mouth, SV * thing);
 
 extern SV *
 mouth_readToken(pTHX_ SV * mouth, SV * state);

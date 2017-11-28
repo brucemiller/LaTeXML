@@ -24,6 +24,8 @@
 #include "state.h"
 #include "mouth.h"
 #include "gullet.h"
+#include "boxstack.h"
+#include "stomach.h"
 #include "parameters.h"
 
 LaTeXML_Parameter
@@ -54,6 +56,12 @@ parameter_DESTROY(pTHX_ SV * parameter){
   Safefree(xparameter); }
 
 int
+parameter_equals(pTHX_ SV * parameter, SV * other){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);  
+  LaTeXML_Parameter xother     = SvParameter(other);  
+  return strcmp(xparameter->spec, xother->spec) == 0; }
+
+int
 parameter_setupCatcodes(pTHX_ SV * parameter, SV * state){
   LaTeXML_Parameter xparameter = SvParameter(parameter);
   if(xparameter->semiverbatim){
@@ -67,12 +75,39 @@ parameter_revertCatcodes(pTHX_ SV * parameter, SV * state){
   if(xparameter->semiverbatim){
     state_endSemiverbatim(aTHX_ state); } }
 
+int NEUTRALIZABLE[] = {
+  0, 0, 0, 1,
+  1, 0, 1, 1,
+  1, 0, 0, 0,
+  0, 1, 0, 0,
+  0, 0};
+
 SV *
-parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
-  SV * value = NULL;
+parameter_neutralize(pTHX_ SV * state, SV * tokens){
+  if(sv_isa(tokens,"LaTeXML::Core::Tokens")){
+    LaTeXML_Tokens xtokens = SvTokens(tokens);
+    SV * newtokens = tokens_new(aTHX_ xtokens->ntokens);
+    LaTeXML_Tokens xnewtokens = SvTokens(newtokens);
+    int i;
+    for(i = 0; i < xtokens->ntokens; i++){
+      SV * token = xtokens->tokens[i];
+      LaTeXML_Token xtoken = SvToken(token);
+      if(! NEUTRALIZABLE[xtoken->catcode]){
+        xnewtokens->tokens[xnewtokens->ntokens++] = SvREFCNT_inc(token); }
+      else {
+        int newcc = state_catcode(aTHX_ state, xtoken->string);
+        if(newcc == xtoken->catcode){
+          xnewtokens->tokens[xnewtokens->ntokens++] = SvREFCNT_inc(token); }
+        else {
+          xnewtokens->tokens[xnewtokens->ntokens++] = token_new(aTHX_ xtoken->string,newcc); } } }
+    return newtokens; }
+  else {
+    return SvREFCNT_inc(tokens); } } /* whatever it is */
+  
+SV *
+parameter_read_internal(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
   LaTeXML_Parameter xparameter = SvParameter(parameter);
-  if(xparameter->semiverbatim){
-    parameter_setupCatcodes(aTHX_ parameter, state); }
+  SV * value = NULL;
   if(xparameter->opreader){
     DEBUG_Gullet("readArguments reading parameter %s for %p, opcode %p\n",
                  xparameter->spec, fordefn, xparameter->opreader);
@@ -105,6 +140,14 @@ parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
     PUTBACK; FREETMPS; LEAVE; }
   else {
     croak("No reader (CODE or Opcode) for parameter %s (%p)",xparameter->spec, parameter); }
+  return value; }
+
+SV *
+parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);
+  if(xparameter->semiverbatim){
+    parameter_setupCatcodes(aTHX_ parameter, state); }
+  SV * value = parameter_read_internal(aTHX_ parameter, gullet, state, fordefn);
   if((! value) && ! (xparameter->flags & PARAMETER_OPTIONAL)){
     /*Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
@@ -114,6 +157,50 @@ parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn){
 
   if(xparameter->semiverbatim){
     /*$value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));*/
+    SV * oldvalue = value;
+    if(value){
+      value = parameter_neutralize(aTHX_ state, value);
+      SvREFCNT_dec(oldvalue); }
+    state_endSemiverbatim(aTHX_ state); }
+  return value; }
+
+SV *
+parameter_readAndDigest(pTHX_ SV * parameter, SV * stomach, SV * state, SV * fordefn){
+  LaTeXML_Parameter xparameter = SvParameter(parameter);
+  LaTeXML_Stomach xstomach = SvStomach(stomach);
+  LaTeXML_Boxstack stack = boxstack_new(aTHX);
+  if(xparameter->semiverbatim){
+    parameter_setupCatcodes(aTHX_ parameter, state); }
+  SV * value = parameter_read_internal(aTHX_ parameter, xstomach->gullet, state, fordefn);
+  if((! value) && ! (xparameter->flags & PARAMETER_OPTIONAL)){
+
+    croak("expected:argument %s",xparameter->spec);  }
+
+  /* Question: maybe even before read??? */
+  stack->discard = 1;
+  if(xparameter->beforeDigest){ /* Can I pass parameter here??? */
+    /*  NOT AV's ... YET?
+        boxstack_callAV(aTHX_ stack, parameter, SvArray(xparameter->beforeDigest),
+      state, stomach, fordefn, 0, NULL); }*/
+    boxstack_call(aTHX_ stack, parameter, xparameter->beforeDigest,
+                    state, stomach, fordefn, 0, NULL); }
+
+  if(value && xparameter->semiverbatim){
+    /*$value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));*/
+    SV * oldvalue = value;
+    value = parameter_neutralize(aTHX_ state, value);
+    SvREFCNT_dec(oldvalue); }
+  stack->discard = 0;
+  if(value && !(xparameter->flags & PARAMETER_UNDIGESTED)){
+    stomach_digestThing(aTHX_ stomach, state, value, stack);
+    value = stack->boxes[0]; }
+  stack->discard = 1;
+  if(xparameter->afterDigest){
+    /* boxstack_callAV(aTHX_ stack, parameter, SvArray(xparameter->afterDigest),
+       state, stomach, fordefn, 0, NULL); } */
+    boxstack_call(aTHX_ stack, parameter, xparameter->afterDigest,
+                    state, stomach, fordefn, 0, NULL); }
+  if(xparameter->semiverbatim){
     state_endSemiverbatim(aTHX_ state); }
   return value; }
 

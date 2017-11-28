@@ -42,9 +42,16 @@ typedef SV * PTR_SV;
 
 /* Currently we copy string & free on DESTROY; Do getString (etal) need to copy? */
 /* the C ends up with sv_setpv, which(apparently) copies the string into the PV(string var) */
+/*
 typedef struct Token_struct {
   int catcode;
   UTF8 string;
+} T_Token;
+typedef T_Token  * LaTeXML_Token;
+*/
+typedef struct Token_struct {
+  int catcode;
+  char string[];
 } T_Token;
 typedef T_Token  * LaTeXML_Token;
 
@@ -55,8 +62,8 @@ typedef struct Tokens_struct {
 } T_Tokens;
 typedef T_Tokens * LaTeXML_Tokens;
 
-#define SvTokens(arg)     INT2PTR(LaTeXML_Tokens,     SvIV((SV*) SvRV(arg)))
-#define SvToken(arg)      INT2PTR(LaTeXML_Token,      SvIV((SV*) SvRV(arg)))
+#define SvTokens(arg)     ((LaTeXML_Tokens)INT2PTR(LaTeXML_Tokens, SvIV((SV*) SvRV(arg))))
+#define SvToken(arg)      ((LaTeXML_Token) INT2PTR(LaTeXML_Token,  SvIV((SV*) SvRV(arg))))
 
 typedef enum {
     CC_ESCAPE      =  0,
@@ -123,6 +130,9 @@ tokens_equals(pTHX_ SV * a, SV * b);
 
 extern void
 tokens_shrink(pTHX_ SV * tokens);
+
+extern void
+tokens_add_token(pTHX_ SV * tokens, SV * token);
 
 extern void                            /* adds in-place */
 tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert);

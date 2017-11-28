@@ -45,9 +45,8 @@ boxstack_push(pTHX_ LaTeXML_Boxstack stack, SV * box);
 
 /* Invoke a Stomach->method to produce boxes */
 extern void                            /* Horrible naming!!! */
-boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,
-              SV * state, SV * stomach, SV * token,
-                    int nargs, SV ** args);
+boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * state,
+                    SV * object, UTF8 method, int nargs, SV ** args);
 
 /* Call a primitive's replacement sub (OPCODE or CODE) on the given arguments */
 extern void                            /* Horrible naming!!! */

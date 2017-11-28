@@ -2084,8 +2084,8 @@ DefPrimitive('\th@plain', sub {
     AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
     return; });
 
-DefMacroI('\lx@makerunin',   undef, '\@ADDCLASS{ltx_runin}');
-DefMacroI('\lx@makeoutdent', undef, '\@ADDCLASS{ltx_outdent}');
+DefMacroI('\lx@makerunin',   undef, '\@ADDCLASS{ltx\_runin}');
+DefMacroI('\lx@makeoutdent', undef, '\@ADDCLASS{ltx\_outdent}');
 
 DefMacroI('\@thmcountersep', undef, '.');
 DefMacroI('\thm@doendmark',  undef, '');

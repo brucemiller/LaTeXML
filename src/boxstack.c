@@ -57,16 +57,15 @@ boxstack_push(pTHX_ LaTeXML_Boxstack stack, SV * box){
   stack->boxes[stack->nboxes++] = box; }
 
 
-/* Invoke a Stomach->method to produce boxes */
+/* Invoke a object->method to produce boxes */
 void                            /* Horrible naming!!! */
-boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, UTF8 method,
-              SV * state, SV * stomach, SV * token,
-              int nargs, SV ** args) {
+boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * state,
+                    SV * object, UTF8 method,  int nargs, SV ** args) {
   DEBUG_Boxstack("Boxstack %p call %s on %d args\n",stack,method,nargs);
   int i;
   DEBUG_Boxstack("Replacement is METHOD %s\n", method);
   dSP; ENTER; SAVETMPS; PUSHMARK(SP);
-  EXTEND(SP,nargs+1); PUSHs(stomach); 
+  EXTEND(SP,nargs+1); PUSHs(object); 
   for(i=0; i<nargs; i++){
     SV * arg = (args[i] ? args[i] : &PL_sv_undef);
     PUSHs(arg); }

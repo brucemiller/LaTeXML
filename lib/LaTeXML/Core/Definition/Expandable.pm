@@ -22,17 +22,9 @@ use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Parameters;
 use base qw(LaTeXML::Core::Definition);
 
-sub isExpandable {
-  return 1; }
-
 sub isProtected {
   my ($self) = @_;
   return $$self{isProtected}; }
-
-# For \if expandables!!!!
-sub getTest {
-  my ($self) = @_;
-  return $$self{test}; }
 
 sub getExpansion {
   my ($self) = @_;
@@ -47,9 +39,13 @@ sub tracetoString {
 
 sub equals {
   my ($self, $other) = @_;
-  return (defined $other && (ref $self) eq (ref $other))
-    && Equals($$self{parameters},  $$other{parameters})
-    && Equals($$self{expansion}, $$other{expansion}); }
+  return unless (defined $other && (ref $self) eq (ref $other));
+  my ($x,$y);
+  return
+    ! ( ($x=$$self{parameters}) xor  ($y=$$other{parameters})) && (!$x || $x->equals($y))
+    # expansion is undef, Opcode, Tokens or sub!
+    && ! ( ($x=$$self{expansion}) xor  ($y=$$other{expansion})) && Equals($x,$y); }
+
 #======================================================================
 1;
 

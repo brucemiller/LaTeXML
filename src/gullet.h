@@ -31,7 +31,7 @@ typedef struct Gullet_struct {
 }  T_Gullet;
 typedef T_Gullet * LaTeXML_Gullet;
 
-#define SvGullet(arg)      INT2PTR(LaTeXML_Gullet,      SvIV((SV*) SvRV(arg)))
+#define SvGullet(arg)      ((LaTeXML_Gullet)INT2PTR(LaTeXML_Gullet, SvIV((SV*) SvRV(arg))))
 
 extern SV *
 gullet_new(pTHX);
@@ -66,6 +66,9 @@ gullet_readToken(pTHX_ SV * gullet, SV * state);
 extern void
 gullet_unreadToken(pTHX_ SV * gullet, SV * token);
 
+extern void
+gullet_unread(pTHX_ SV * gullet, SV * thing);
+
 extern void                            /* Show next tokens; risky if followed by catcode changes! */
 gullet_showContext(pTHX_ SV * gullet, SV * state);
 
@@ -77,6 +80,9 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state);
 
 extern SV *
 gullet_readXToken(pTHX_ SV * gullet, SV * state, int toplevel, int commentsok);
+
+extern SV *
+gullet_neutralizeTokens(pTHX_ SV * gullet, SV * state, SV * tokens);
 
 extern void
 gullet_expandafter(pTHX_ SV * gullet, SV * state);

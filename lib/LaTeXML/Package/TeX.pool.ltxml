@@ -404,9 +404,10 @@ DefParameterType('DigestedBody', sub {
 ##   my($gullet,$unit)=@_;
 
 # CommaList expects something like {balancedstuff,...}
+# [does this even work, anymore?]
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
-    my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
+    my $typedef = $type && LaTeXML::Core::Parameter->new(ToString($type));
     my @items = ();
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
@@ -423,10 +424,10 @@ DefParameterType('CommaList', sub {
         else {
           push(@tokens, $token); } }
       if ($typedef) {
-        @items = map { [$typedef->reparseArgument($gullet, $_)]->[0] } @items; } }
+        @items = map { $typedef->reparse($gullet, $_) } @items; } }
     else {
       # If no brace, just read one item or token, but still make Array!
-      push(@items, ($typedef ? $typedef->readArguments($gullet, "CommaList")
+      push(@items, ($typedef ? $typedef->read($gullet, "CommaList")
           : ($gullet->readToken))); }
     LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, type => $typedef,
       values => [@items]); });
@@ -600,9 +601,9 @@ DefMacro('\@ifundefined{}{}{}', sub {
 sub isDefinable {
   my ($token) = @_;
   return unless $token;
-  my $meaning = LookupMeaning($token);
+  my $meaning = $STATE->lookupMeaning($token);
   my $name = $token->getString; $name =~ s/^\\//;
-  return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
+  return (((!defined $meaning) || ($meaning eq $STATE->lookupMeaning(T_CS('\relax'))))
       && (($name ne 'relax') && ($name !~ /^end/))); }
 
 #**********************************************************************
@@ -611,44 +612,32 @@ sub isDefinable {
 #**********************************************************************
 
 #======================================================================
-# Should complain if we aren't actually evaluating an \if
+##  CURRENTLY: we have to supply BOTH a test function AND opcode!  FIX THIS!
+DefConditionalI('\iftrue',  undef, Opcode('iftrue'));
+DefConditionalI('\iffalse', undef, Opcode('iffalse'));
 
 # The following special cases are built-in to Definition
-DefConditional('\else',          undef);
-DefConditional('\or',            undef);
-DefConditional('\fi',            undef);
-DefConditional('\ifcase Number', undef);
-
-sub compare {
-  my ($u, $rel, $v) = @_;
-  $u = $u->valueOf if ref $u;
-  $v = $v->valueOf if ref $v;
-  if ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))) {
-    return $u < $v; }
-  elsif ($rel->equals(T_OTHER('='))) {
-    return $u == $v; }
-  elsif ($rel->equals(T_OTHER('>')) || $rel->equals(T_CS('\@@>'))) {
-    return $u > $v; }
-  else {
-    Error('expected', '<relationaltoken>', $STATE->getStomach->getGullet,
-      "Expected a relational token for comparision", "Got " . Stringify($rel));
-    return; } }
-
-DefConditional('\ifnum Number Token Number',       sub { compare($_[1], $_[2], $_[3]); });
-DefConditional('\ifdim Dimension Token Dimension', sub { compare($_[1], $_[2], $_[3]); });
-DefConditional('\ifodd Number',                    sub { $_[1]->valueOf % 2; });
+DefConditional('\else',                            Opcode('else'));
+DefConditional('\or',                              Opcode('or'));
+DefConditional('\fi',                              Opcode('fi'));
+DefConditional('\ifcase Number',                   Opcode('ifcase'));
+DefConditional('\ifnum Number Token Number',       Opcode('ifnum'));
+DefConditional('\ifdim Dimension Token Dimension', Opcode('ifdim'));
+DefConditional('\ifodd Number',                    Opcode('ifodd'));  #sub { $_[1]->valueOf % 2; });
+#,opcode=>'ifodd');
 
 # NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
-DefConditionalI('\ifvmode', undef, sub { 0; });
-DefConditionalI('\ifhmode', undef, sub { 0; });
-DefConditionalI('\ifinner', undef, sub { 0; });
+DefConditionalI('\ifvmode', undef, Opcode('ifvmode'));
+DefConditionalI('\ifhmode', undef, Opcode('ifhmode'));
+DefConditionalI('\ifinner', undef, Opcode('ifinner'));
+DefConditionalI('\ifmmode', undef, Opcode('ifmmode'));
 
-DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
+##DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\if XToken XToken',    Opcode('if'));
+DefConditional('\ifcat XToken XToken', Opcode('ifcat'));
 
-DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
-DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
-
-DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
+####DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
+DefConditional('\ifx Token Token', Opcode('ifx'));
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
 # We'll assume that a box is horizontal if there's anything at all,
@@ -666,10 +655,6 @@ sub classify_box {
 DefConditional('\ifvoid Number', sub { !classify_box($_[1]); });
 DefConditional('\ifhbox Number', sub { classify_box($_[1]) eq 'hbox'; });
 DefConditional('\ifvbox Number', sub { classify_box($_[1]) eq 'vbox'; });
-
-### Something weird about these as opcodes?
-DefConditionalI('\iftrue',  undef, sub { 1; });    #, opcode=>'iftrue');
-DefConditionalI('\iffalse', undef, sub { 0; });    #, opcode=>'iffalse');
 
 #======================================================================
 # This makes \relax disappear completely after digestion
@@ -717,7 +702,7 @@ our @CATCODE_MEANING = (
 DefMacro('\meaning Token', sub {
     my ($gullet, $tok) = @_;
     my $meaning = 'undefined';
-    if (my $definition = (Equals($tok, T_ALIGN) ? $tok : LookupMeaning($tok))) {
+    if (my $definition = (Equals($tok, T_ALIGN) ? $tok : $STATE->lookupMeaning($tok))) {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
       # I don't understand what this is about
@@ -767,16 +752,6 @@ DefPrimitive('\endcsname', sub {
       $stomach->getGullet->showUnexpected);
     return; });
 
-DefMacro('\expandafter Token Token', sub {
-    my ($gullet, $tok, $xtok) = @_;
-    my $defn;
-    if (defined($defn = $STATE->lookupExpandable($xtok))) {
-      # Note that IF expandafter ends up expanding a \the in an \edef,
-      # that it Overrides the implicit noexpand that \edef would normally use for\the!!
-      local $LaTeXML::NOEXPAND_THE = undef;
-      ($tok, $defn->invoke($tok, $gullet)); }    # Expand $xtok ONCE ONLY!
-    else {
-      ($tok, $xtok); } });
 DefMacro('\expandafter', Opcode('expandafter'));
 
 # Insert magic token that Gullet knows not to expand the next one.
@@ -795,20 +770,7 @@ DefMacro('\input TeXFileName', sub { Input($_[1]); });
 DefMacroI('\endinput', undef, sub { $_[0]->flushMouth; return; });
 
 # \the<internal quantity>
-DefMacro('\the Register', sub {
-    my ($gullet, $variable) = @_;
-    return () unless $variable;
-    my ($defn, @args) = @$variable;
-    my $type = $defn->isRegister;
-    if (!$type) {
-      my $cs = ToString($defn->getCS);
-      Error('unexpected', "\\the$cs", $gullet, "You can't use $cs after \\the"); return (); }
-    my $value = $defn->valueOf(@args);
-    ## In all cases, these should be OTHER, except for space. (!?)
-    my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist : ()) : Explode(ToString($value)));
-    if ($LaTeXML::NOEXPAND_THE) {    # See \the for the sense in this.
-      @tokens = $gullet->neutralizeTokens(@tokens); }
-    return @tokens; });
+DefMacro('\the Register', Opcode('the'));
 
 #**********************************************************************
 # Primitives
@@ -1042,30 +1004,16 @@ sub do_def {
   return; }
 
 DefParameterType('DefParameters', Opcode('DefParameters'), optional => 1);
-DefPrimitive('\def  SkipSpaces Token DefParameters {}', sub {
-    my ($gullet, $cs, $params, $body) = @_;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body));
-    AfterAssignment(); return; }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token DefParameters {}', sub {
-    my ($gullet, $cs, $params, $body) = @_;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
-      'global');
-    AfterAssignment(); return; }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token DefParameters ExpandedBody', sub {
-    my ($gullet, $cs, $params, $body) = @_;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body));
-    AfterAssignment(); return; }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token DefParameters ExpandedBody', sub {
-    my ($gullet, $cs, $params, $body) = @_;
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
-      'global');
-    AfterAssignment(); return; }, locked => 1);
+DefPrimitive('\def  SkipSpaces Token DefParameters {}',           Opcode('def'),  locked => 1);
+DefPrimitive('\gdef SkipSpaces Token DefParameters {}',           Opcode('gdef'), locked => 1);
+DefPrimitive('\edef SkipSpaces Token DefParameters ExpandedBody', Opcode('def'),  locked => 1);
+DefPrimitive('\xdef SkipSpaces Token DefParameters ExpandedBody', Opcode('gdef'), locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
-DefPrimitiveI('\global', undef, sub { $STATE->setGlobalFlag; return; }, isPrefix => 1);
-DefPrimitiveI('\long',   undef, sub { $STATE->setLongFlag;   return; }, isPrefix => 1);
-DefPrimitiveI('\outer',  undef, sub { $STATE->setOuterFlag;  return; }, isPrefix => 1);
+DefPrimitiveI('\global', undef, Opcode('global'), isPrefix => 1);
+DefPrimitiveI('\long',   undef, Opcode('long'),   isPrefix => 1);
+DefPrimitiveI('\outer',  undef, Opcode('outer'),  isPrefix => 1);
 
 #======================================================================
 # Non-Macro assignments; TeXBook Ch.24, pp 276--277
@@ -1128,39 +1076,16 @@ DefRegister('\toks Number'   => Tokens());
 #    | \advance <dimen variable><optional by><dimen>
 #    | \advance <glue variable><optional by><glue>
 #    | \advance <muglue variable><optional by><muglue>
-#    | \multiply <numeric variable><optional by><number>
 #    | \divide <numeric variable><optional by><number>
+#    | \multiply <numeric variable><optional by><number>
 
-DefPrimitive('\advance Variable SkipKeyword:by', sub {
-    my ($stomach, $var) = @_;
-    return () unless $var;
-    my ($defn, @args) = @$var;
-    return () if !$defn || $defn eq "missing";
-####    local $LaTeXML::CURRENT_TOKEN = $defn;
-    $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
-
-DefPrimitive('\multiply Variable SkipKeyword:by Number', sub {
-    my ($stomach, $var, $scale) = @_;
-    return () unless $var;
-    my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf), @args); });
-
-DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
-    my ($stomach, $var, $scale) = @_;
-    return () unless $var;
-    my ($defn, @args) = @$var;
-    my $denom = $scale->valueOf;
-    if ($denom == 0) {
-      Error('misdefined', $scale, $stomach, "Illegal \\divide by 0; assuming 1");
-      $denom = 1; }
-    $defn->setValue($defn->valueOf(@args)->divide($denom), @args); });
+DefPrimitive('\advance Variable SkipKeyword:by',         Opcode('advance'));
+DefPrimitive('\multiply Variable SkipKeyword:by Number', Opcode('multiply'));
+DefPrimitive('\divide Variable SkipKeyword:by Number',   Opcode('divide'));
 
 # <let assignment> = \futurelet <control sequence><token><token>
 #   | \let<control sequence><equals><one optional space><token>
-DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
-    my ($stomach, $token1, $token2) = @_;
-    Let($token1, $token2);
-    return; });
+DefPrimitive('\let Token SkipMatch:= Skip1Space Token', Opcode('let'));
 
 DefMacro('\futurelet Token Token Token', sub {
     my ($stomach, $cs, $token1, $token2) = @_;
@@ -1580,11 +1505,14 @@ DefPrimitive('\char Number', sub {
 # Almost like a register, but different...
 DefPrimitive('\chardef Token SkipMatch:= Number', sub {
     my ($stomach, $newcs, $value) = @_;
-    my $csname     = $newcs->getCSName;
-    my $internalcs = T_CS('\@chardef@' . $csname);
-    DefPrimitiveI($internalcs, undef, sub {
-        Box(FontDecode($value->valueOf), undef, undef, Invocation(T_CS('\char'), $value)); });
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
+    my $getter = 'chardef:' . $newcs->getCSName;
+    $STATE->assignValue($getter => $value);
+    $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($newcs, undef,
+        # This generates replacement text box, when used as primitive
+        sub { Box(FontDecode($value->valueOf), undef, undef, Invocation(T_CS('\char'), $value)); },
+        # This looks up the numeric value, when used as a register
+        registerType => 'Number', readonly => 1,
+        getter => $getter));
     AfterAssignment();
     return; });
 
@@ -1622,18 +1550,17 @@ DefConstructor('\mathchar Number',
 # Almost like a register, but different...
 DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
     my ($stomach, $newcs, $value) = @_;
-    my $csname = $newcs->getCSName;
+    my $getter = 'mathchardef:' . $newcs->getCSName;
     my ($role, $glyph) = decodeMathChar($value->valueOf);
-    my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
-    DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      sizer => '#1',
-      properties => { role => $role, glyph => $glyph,
-        font => sub { LookupValue('font')->specialize($glyph); } },
-      #       reversion => '\mathchar' . $value->valueOf . '\relax',
-      # revert to the plain glyph if it seems plausible? (this helps \left,\right, eg)
-      reversion => (ord($glyph) < 128 ? $glyph : '\mathchar' . $value->valueOf . '\relax'),
-    ) if $glyph;
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
+    my $rev = (ord($glyph) < 128 ? $glyph
+      : Tokens(Invocation(T_CS('\mathchar'), $value->valueOf), T_CS('\relax'))),
+      $STATE->assignValue($getter => $value);
+    $STATE->installDefinition(LaTeXML::Core::Definition::Primitive->new($newcs, undef,
+        # This generates replacement text box, when used as primitive
+        sub { Box($glyph, undef, undef, $rev, mode => 'math', role => $role); },
+        # This looks up the numeric value, when used as a register
+        registerType => 'Number', readonly => 1,
+        getter => $getter));
     AfterAssignment();
     return; });
 
@@ -1984,11 +1911,8 @@ DefConstructor('\@hidden@bgroup', '#body', beforeDigest => sub { $_[0]->bgroup; 
 DefConstructor('\@hidden@egroup', '', afterDigest => sub { $_[0]->egroup; },
   reversion => '');
 
-#DefPrimitive('\begingroup', sub { $_[0]->begingroup; });
-#DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 DefPrimitive('\begingroup', Opcode('begingroup'));
 DefPrimitive('\endgroup',   Opcode('endgroup'));
-
 
 # Debugging aids; Ignored!
 DefPrimitive('\show Token',     undef);

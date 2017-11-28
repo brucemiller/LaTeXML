@@ -92,3 +92,5 @@ stomach_digest(pTHX_ SV * stomach, SV * state, SV * tokens);
 extern LaTeXML_Boxstack
 stomach_digestNextBody(pTHX_ SV * stomach, SV * state, SV * terminal);
 
+extern void
+stomach_digestThing(pTHX_ SV * stomach, SV * state, SV * thing, LaTeXML_Boxstack stack);

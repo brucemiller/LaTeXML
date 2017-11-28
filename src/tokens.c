@@ -42,38 +42,39 @@ UTF8 standardchar[] =
   { "\\",  "{",   "}",   "$",
     "&",  "\n",  "#",  "^",
     "_",  NULL, NULL, NULL,
-    NULL, NULL, "%",  NULL};
+    NULL, NULL, "%",  NULL,
+    NULL, NULL, NULL};
 
 UTF8 CC_NAME[] =
   {"Escape", "Begin", "End", "Math",
    "Align", "EOL", "Parameter", "Superscript",
    "Subscript", "Ignore", "Space", "Letter",
    "Other", "Active", "Comment", "Invalid",
-   "ControlSequence", "NotExpanded"};
+   "ControlSequence", "NotExpanded", "Marker"};
 UTF8 PRIMITIVE_NAME[] =
   {"Escape",    "Begin", "End",       "Math",
    "Align",     "EOL",   "Parameter", "Superscript",
    "Subscript", NULL,    "Space",     NULL,
    NULL,        NULL,     NULL,       NULL,
-   NULL,       "NotExpanded"};
+   NULL,       "NotExpanded", NULL};
 UTF8 EXECUTABLE_NAME[] = 
   {NULL,       "Begin", "End", "Math",
    "Align",     NULL,   NULL, "Superscript",
    "Subscript", NULL,   NULL, NULL,
    NULL,        NULL,   NULL, NULL,
-   NULL,        NULL};
+   NULL,        NULL, NULL};
 
 UTF8 CC_SHORT_NAME[] =
   {"T_ESCAPE", "T_BEGIN", "T_END", "T_MATH",
    "T_ALIGN", "T_EOL", "T_PARAM", "T_SUPER",
    "T_SUB", "T_IGNORE", "T_SPACE", "T_LETTER",
    "T_OTHER", "T_ACTIVE", "T_COMMENT", "T_INVALID",
-   "T_CS", "T_NOTEXPANDED"};
+   "T_CS", "T_NOTEXPANDED", "T_MARKER"};
 
 /*======================================================================
     C-level Token support */
 SV *
-token_new(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
+token_new_internal(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
   /*check string not null ? */
   SV * sv;
   LaTeXML_Token token;
@@ -81,21 +82,32 @@ token_new(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
   if((catcode < 0) || (catcode > CC_MAX)){
     croak("Illegal catcode %d",catcode); }
   DEBUG_Token("Create %s[%s] ",CC_SHORT_NAME[catcode],string);
-  Newx(token,1,T_Token);
   if(string == NULL){
     croak("Token %s string is not defined", CC_SHORT_NAME[catcode]); }
   n = strlen(string);
-  Newx(token->string,(n + 1),char);
+  /*Newx(token,1,T_Token+n+1);*/
+  Newxc(token,sizeof(T_Token)+n+1,char,T_Token);
   CopyChar(string,token->string,n);
   token->catcode = catcode;
   sv = newSV(0);
   sv_setref_pv(sv, "LaTeXML::Core::Token", (void*)token);
   return sv; }
 
+SV * token_cache[19][256];
+/* Caching all single char tokens! */
+SV *
+token_new(pTHX_ UTF8 string, int catcode){ /* NOTE: string is copied! */
+  if(string && string[0] && (string[1]==0)){
+    SV * token = token_cache[catcode][(int)string[0]];
+    if(! token ){
+      token = token_cache[catcode][(int)string[0]] = token_new_internal(aTHX_ string, catcode); }
+    SvREFCNT_inc(token);
+    return token; }
+  return token_new_internal(aTHX_ string, catcode); }
+
 void
 token_DESTROY(pTHX_ LaTeXML_Token token){
   DEBUG_Token("DESTROY Token %s[%s]!\n",CC_SHORT_NAME[token->catcode],token->string);
-  Safefree(token->string);
   Safefree(token); }
 
 int
@@ -181,6 +193,18 @@ tokens_shrink(pTHX_ SV * tokens){
   LaTeXML_Tokens xtokens = SvTokens(tokens);
   if(xtokens->nalloc > xtokens->ntokens){
     Renew(xtokens->tokens,xtokens->nalloc = xtokens->ntokens, PTR_SV); } }
+
+void                            /* adds in-place */
+tokens_add_token(pTHX_ SV * tokens, SV * token) {
+  LaTeXML_Tokens xtokens = SvTokens(tokens);
+  /* Tempting to define a _noinc variant ?? */
+  DEBUG_Tokens("\nAdding token:");
+  if(xtokens->ntokens >= xtokens->nalloc){
+    xtokens->nalloc += TOKENS_ALLOC_QUANTUM;
+    Renew(xtokens->tokens, xtokens->nalloc, PTR_SV); }
+  /* NOTE: Beware Tokens coming from Perl: use newSVsv (else the SV can change behind your back */
+  SvREFCNT_inc(token);
+  xtokens->tokens[xtokens->ntokens++] = token; }
 
 void                            /* adds in-place */
 tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert) {

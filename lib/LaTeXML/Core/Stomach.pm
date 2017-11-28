@@ -257,7 +257,8 @@ sub invokeToken_insert {
 sub invokeToken_definition {
   my($self, $token, $defn)=@_;
   my @result = $defn->invoke($token, $self);
-  $STATE->clearFlags unless $defn->isPrefix;    # Clear prefixes unless we just set one.
+### NOT needed, since these definitions are only constructors!
+###  $STATE->clearFlags unless $defn->isPrefix;    # Clear prefixes unless we just set one.
   return @result; }
 
 # Regurgitate: steal the previously digested boxes from the current level.

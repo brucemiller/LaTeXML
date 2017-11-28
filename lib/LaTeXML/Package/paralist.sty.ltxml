@@ -95,7 +95,7 @@ DefEnvironment('{asparaenum} OptionalUndigested',
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(1)); });
 
 # Possibly redefine stock enumerate to take optional argument
-if (IfCondition(T_CS('\if@plnewenum'))) {
+if (XEquals(T_CS('\if@plnewenum'),T_CS('\iftrue'))) {
   DefEnvironment('{enumerate} OptionalUndigested',
     "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
     properties => sub { beginItemize('enumerate', 'enum'); },
@@ -124,7 +124,7 @@ DefEnvironment('{asparaitem} OptionalUndigested',
   properties => sub { beginItemize('itemize', '@@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 
-if (IfCondition(T_CS('\if@plnewitem'))) {
+if (XEquals(T_CS('\if@plnewitem'),T_CS('\iftrue'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
     properties => sub { beginItemize('itemize', '@@item'); },

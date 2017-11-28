@@ -35,25 +35,30 @@
  Towards consistent, predictable API's for both C & Perl,
  in consideration of the fact that there will be a lot of storing/fetching
  pointers to objects in both C structures and Perl Hashes & Arrays,
- as well as creating new objects when required.
+ as well as creating new objects when required. We need to manage memory
+ & refcounts, so, we generally should ALWAYS be working with SV's,
+ especially for any object that will be seen by Perl.  But we need to make
+ sure that we have an SV that references the correct type of object!
 
- * C-API should return NULL for failures, non-things, etc
- * Perl-API should watch for NULL's and return &PL_sv_undef
-   (otherwise mysterious memory errors)
+ So, we have to be careful when Perl passes to C (either in XS or when C
+ gets results from call_sv or call_method) that the right kind of SV* are being passed.
+ * Checking SV*'s for appropriate types, before it gets cast to a C structure!
+ * undefs & NULL:  C-level should deal with NULL, so we should use !SvOK => NULL
+   Conversely, NULL returned from C should be converted to &PL_sv_undef.
+   But we need to be careful when NULL is a recoverable condition,
+   before we start following null pointers in C!
 
  * C-API functions should give the rights to the caller any object(s) returned,
    typically through SvREFCNT_inc (or equivalent).
    The caller either returns the object to it's caller, or uses SvREFCNT_dec
    (or equivalent) when done with the object.
    Exception: functions named with _noinc suffix; use when you know you'll be done
-   with the object before anyone will dec its refcnt or Perl will get a chance to do any cleanup.
-   Functions are NOT responsible for managing the REFCNT of arguments!
- 
-   [ALWAYS? Or is there a naming convention for exceptions?
-   eg. the gullet_getMouth, various state methods etc where you are
-   seldom likely to return the object to Perl ???]
+   with the object before anyone will dec its refcnt or Perl will get a chance
+   to do any cleanup.  Functions are NOT responsible for managing the REFCNT of arguments!
+   Functions that store an object should assure that REFCNT is incremented.
 
- * Functions that store an object should assure that REFCNT is incremented.
+   NOTE: Neither hv_store/hv_fetch (& av) change the reference count on the stored
+   SV *, and fetch returns the same SV that was stored.
 
  * Perl-API functions should always set mortal (eg. sv_2mortal),
    but note that RETVAL will automatically have sv_2mortal applied!
@@ -61,17 +66,14 @@
  * BE CAREFUL about putting things like POPs inside something like SvTRUE
    Some of the latter are macros that duplicate it's arguments!!!!!!
 
-NOTE: Neither hv_store/hv_fetch (& av) change the reference count on the stored
-   SV *, and fetch returns the same SV that was stored.
-
 Question: Should some of the C API avoid passing pTHX as argument ?
 It's not always actually needed or passed through.
 But, if we omit it, we need to be predictable.
 
 Major ToDo:
-(1) separate into modules
-(2) reimplement tracing
-(3) develop error & logging API
+(1) reimplement tracing
+(2) develop error & logging API
+(3) figure out error recovery
  ======================================================================*/
 
 
@@ -518,6 +520,25 @@ lookupMeaning(state,token)
     RETVAL
 
 int
+XEquals(state, token1,token2)
+    SV * state;
+    SV * token1;
+    SV * token2;
+  CODE:
+    RETVAL = state_XEquals(aTHX_ state, token1, token2);
+  OUTPUT:
+    RETVAL
+
+int
+Equals(token1,token2)
+    SV * token1;
+    SV * token2;
+  CODE:
+    RETVAL = state_Equals(aTHX_ token1, token2);
+  OUTPUT:
+    RETVAL
+
+int
 globalFlag(state)
     SV * state;
   CODE:
@@ -580,6 +601,13 @@ setProtectedFlag(state)
   CODE:
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_PROTECTED;
+
+void
+setUnlessFlag(state)
+    SV * state;
+  CODE:
+    LaTeXML_State xstate = SvState(state);
+    xstate->flags |= FLAG_UNLESS;
 
 void
 clearFlags(state)
@@ -673,31 +701,7 @@ installDefinition(state, definition, ...)
     SV * definition;
   CODE:
     UTF8 scope = ((items > 2) && SvTRUE(ST(2)) ? SvPV_nolen(ST(2)) : NULL);
-    HV * hash = SvHash(definition);
-    SV ** ptr = hv_fetchs(hash,"cs",0);
-    if(! ptr){
-      croak("Definition doesn't have a CS!"); }
-    LaTeXML_Token t = SvToken(*ptr);
-    UTF8 name = PRIMITIVE_NAME[t->catcode]; /* getCSName */
-    name = (name == NULL ? t->string : name);
-    int nlen = strlen(name);
-    char lock[nlen+8];
-    strncpy(lock,name,nlen);
-    strcpy(lock+nlen,":locked");
-    SV * tmp;
-    if ( state_lookupBoole(aTHX_ state, TBL_VALUE, lock)
-         && ( ! (tmp = get_sv("LaTeXML::Core::State::UNLOCKED",0)) || !SvTRUE(tmp)) ) {
-      /*fprintf(stderr,"Ignoring redefinition of %s\n",name);*/
-      /*
-       if (my $s = $self->getStomach->getxgullet->getSource) {
-         # report if the redefinition seems to come from document source
-         if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
-           && ($s !~ /\.code\.tex$/)) {
-           Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
-           return; } */
-    }
-    else {
-      state_assign(aTHX_ state, TBL_MEANING, name, definition, scope); }
+    state_installDefinition(aTHX_ state, definition, scope);
 
 void
 afterAssignment(state)
@@ -1046,7 +1050,7 @@ push(stack,token)
     LaTeXML_Tokenstack stack;
     SV * token;
   CODE:
-    SV * sv = newSVsv(token);
+    SV * sv = newSVsv(token); /* Create a "safe" copy(?) */
     tokenstack_push(aTHX_ stack,sv); 
     SvREFCNT_dec(sv);
 
@@ -1226,8 +1230,8 @@ unread(mouth,...)
     int i;
   CODE:
     for(i = items-1; i >= 1; i--){
-      SV * sv = newSVsv(ST(i));
-      mouth_unreadToken(aTHX_ mouth, sv);
+      SV * sv = newSVsv(ST(i)); /* Create a "safe" copy(?) */
+      mouth_unread(aTHX_ mouth, sv);
       SvREFCNT_dec(sv); }
 
 void
@@ -1383,8 +1387,8 @@ unread(gullet,...)
     int i;
   CODE:
     for(i = items-1; i >= 1; i--){
-      SV * sv = newSVsv(ST(i));
-      mouth_unreadToken(aTHX_ mouth, sv);
+      SV * sv = newSVsv(ST(i)); /* Create a "safe" copy(?) */
+      mouth_unread(aTHX_ mouth, sv);
       SvREFCNT_dec(sv); }
 
 int
@@ -1420,6 +1424,15 @@ readXToken(gullet,...)
     RETVAL = gullet_readXToken(aTHX_ gullet, state, toplevel, commentsok);
     SPAGAIN;
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+SV *
+neutralizeTokens(gullet,tokens)
+    SV * gullet;
+    SV * tokens;
+  CODE:
+    RETVAL = gullet_neutralizeTokens(aTHX_ gullet, state_global(aTHX), tokens);
   OUTPUT:
     RETVAL
 
@@ -2014,6 +2027,20 @@ read(parameter, gullet, ...)
   OUTPUT:
     RETVAL
 
+SV *
+readAndDigest(parameter, stomach, ...)
+    SV * stomach;
+    SV * parameter;
+  INIT:
+    SV * fordefn = NULL;
+  CODE:
+    if(items > 2){
+      fordefn = ST(2); }
+    RETVAL = parameter_readAndDigest(aTHX_ parameter, stomach, state_global(aTHX), fordefn);
+    if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
 
  #/*======================================================================
  #   LaTeXML::Core::Definition::Expandable
@@ -2029,37 +2056,19 @@ new(class,cs,parameters,expansion,...)
   INIT:  
     SV * state = state_global(aTHX);
     LaTeXML_State xstate = SvState(state);
-    HV * hash = newHV();
+    LaTeXML_Stomach xstomach = SvStomach(xstate->stomach);
+    SV * gullet =  xstomach->gullet;
     int i;
   CODE:
+    PERL_UNUSED_VAR(class);
     if((items-4) % 2){
       croak("Odd number of hash elements in Expandable->new"); }
     /* tokenize expansion ? */
     /* expansion = Tokens(expansion) if ref expansion Token ? */
-    if(!SvOK(cs) || !sv_isa(cs, "LaTeXML::Core::Token")) {
-      croak("Undefined cs!\n");}
-    if(!SvOK(expansion)){
-      expansion = NULL; }
-    else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
-      SV * tokens = tokens_new(aTHX_ 1);
-      tokens_add_to(aTHX_ tokens,expansion,0); }
-      
-    /* check expansion balanced */
-    if(!SvOK(parameters)){ /* or empty? */
-      parameters = NULL; }
-    hv_store(hash, "cs",2, SvREFCNT_inc(cs),0);
-    if(parameters){
-      hv_store(hash,"parameters",10,SvREFCNT_inc(parameters),0); }
-    if(expansion){
-      hv_store(hash,"expansion",    9,SvREFCNT_inc(expansion),0); }
-    SV * stomach = state_stomach(aTHX_ state);
-    SV * gullet =  stomach_gullet(aTHX_ stomach);
     SV * locator = gullet_getLocator(aTHX_ gullet);
-    SvREFCNT_dec(stomach); SvREFCNT_dec(gullet);
-    hv_store(hash,"locator",      7,locator, 0);
-    if(xstate->flags & FLAG_PROTECTED){
-      hv_store(hash,"isProtected", 11,newSViv(1),0); }
-    hv_store(hash,"isExpandable",12,newSViv(1),0);
+    SV * expandable = expandable_new(aTHX_ state, cs, parameters, expansion,locator);
+    /* Add other properties */
+    HV * hash = SvHash(expandable);
     for(i = 4; i < items; i+=2){
       SV * keysv = ST(i);
       SV * value = ST(i+1);
@@ -2067,11 +2076,42 @@ new(class,cs,parameters,expansion,...)
         STRLEN keylen;
         UTF8 key = SvPV(ST(i),keylen);
         hv_store(hash,key,keylen,SvREFCNT_inc(value),0); }}
-    RETVAL = newRV_noinc((SV*)hash);
-    sv_bless(RETVAL, gv_stashpv(class,0));
+    RETVAL = expandable;
   OUTPUT:    
     RETVAL
-    
+
+void
+newInstalled(class,state, scope, cs,parameters,expansion,...)
+    UTF8 class;
+    SV * state;
+    UTF8 scope;
+    SV * cs;
+    SV * parameters;
+    SV * expansion;
+  INIT:  
+    LaTeXML_State xstate = SvState(state);
+    LaTeXML_Stomach xstomach = SvStomach(xstate->stomach);
+    SV * gullet =  xstomach->gullet;
+    int i;
+  CODE:
+    PERL_UNUSED_VAR(class);
+    if((items-4) % 2){
+      croak("Odd number of hash elements in Expandable->new"); }
+    /* tokenize expansion ? */
+    /* expansion = Tokens(expansion) if ref expansion Token ? */
+    SV * locator = gullet_getLocator(aTHX_ gullet);
+    SV * expandable = expandable_new(aTHX_ state, cs, parameters, expansion,locator);
+    /* Add other properties */
+    HV * hash = SvHash(expandable);
+    for(i = 4; i < items; i+=2){
+      SV * keysv = ST(i);
+      SV * value = ST(i+1);
+      if(SvOK(keysv) && SvOK(value)){
+        STRLEN keylen;
+        UTF8 key = SvPV(ST(i),keylen);
+        hv_store(hash,key,keylen,SvREFCNT_inc(value),0); }}
+    state_installDefinition(aTHX_ state, expandable, scope);
+
 void
 invoke(expandable, token, gullet)
     SV * expandable;
@@ -2117,6 +2157,36 @@ invoke(primitive, token, stomach)
         PUSHs(sv_2mortal(stack->boxes[i])); } }
     boxstack_DESTROY(aTHX_ stack);
 
+SV *
+valueOf(reg,...)
+    SV * reg;
+  INIT:
+    int nargs = items-1;
+    SV * args[nargs];
+    int i;
+  CODE:
+    for(i = 0; i < nargs; i++){
+      SV * arg = ST(i+1);
+      args[i] = (SvOK(arg) ? arg : NULL); }
+    RETVAL = register_valueOf(aTHX_ reg, state_global(aTHX), nargs, args);
+    if(!RETVAL){ RETVAL = &PL_sv_undef; }
+  OUTPUT:
+    RETVAL
+
+void
+setValue(reg, value...)
+    SV * reg;
+    SV * value;
+  INIT:
+    int nargs = items-2;
+    SV * args[nargs];
+    int i;
+  PPCODE:
+    for(i = 0; i < nargs; i++){
+      SV * arg = ST(i+2);
+      args[i] = (SvOK(arg) ? arg : NULL); }
+    register_setValue(aTHX_ reg, state_global(aTHX), nargs, args, value);
+    
  #/*======================================================================
  #   LaTeXML::Core::Stomach
  #  ======================================================================*/
@@ -2284,6 +2354,24 @@ digestNextBody(stomach, ...)
     if(terminal && !(sv_isa(terminal,"LaTeXML::Core::Token"))){
       croak("Expected a token!"); }
     LaTeXML_Boxstack stack = stomach_digestNextBody(aTHX_ stomach, state_global(aTHX), terminal);
+    SPAGAIN;
+    if(stack->nboxes){
+      EXTEND(SP,stack->nboxes);
+      for(i = 0; i < stack->nboxes; i++){
+        SvREFCNT_inc(stack->boxes[i]);
+        PUSHs(sv_2mortal(stack->boxes[i])); } }
+    boxstack_DESTROY(aTHX_ stack);
+
+void
+digestThing(stomach, thing)
+    SV * stomach;
+    SV * thing;
+  INIT:
+    int i;
+  PPCODE:  
+    PUTBACK;                    /* Apparently needed here, as well... (but why?) */
+    LaTeXML_Boxstack stack = boxstack_new(aTHX);
+    stomach_digestThing(aTHX_ stomach, state_global(aTHX), thing, stack);
     SPAGAIN;
     if(stack->nboxes){
       EXTEND(SP,stack->nboxes);

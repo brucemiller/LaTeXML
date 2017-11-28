@@ -42,11 +42,20 @@ tokenstack_DESTROY(pTHX_ LaTeXML_Tokenstack stack){
   Safefree(stack); }
 
 void
+tokenstack_pushToken(pTHX_ LaTeXML_Tokenstack stack, SV * token) {
+  DEBUG_Tokenstack("Tokenstack push token %p: %p ",stack,token);
+  if(stack->ntokens >= stack->nalloc){
+    stack->nalloc += TOKENSTACK_ALLOC_QUANTUM;
+    Renew(stack->tokens, stack->nalloc, PTR_SV); }
+  /* NOTE: Beware Tokens coming from Perl: use newSVsv (else the SV can change behind your back */
+  SvREFCNT_inc(token);
+  stack->tokens[stack->ntokens++] = token; }
+
+void
 tokenstack_push(pTHX_ LaTeXML_Tokenstack stack, SV * thing) {
   DEBUG_Tokenstack("Tokenstack push %p: %p ",stack,thing);
   if (sv_isa(thing, "LaTeXML::Core::Token")) {
     DEBUG_Tokenstack( "Token.");
-    SvREFCNT_inc(thing);
     if(stack->ntokens >= stack->nalloc){
       stack->nalloc += TOKENSTACK_ALLOC_QUANTUM;
       Renew(stack->tokens, stack->nalloc, PTR_SV); }
@@ -75,7 +84,9 @@ SV *
 tokenstack_pop(pTHX_ LaTeXML_Tokenstack stack) {
   DEBUG_Tokenstack("Tokenstack pop %p\n",stack);
   if(stack->ntokens > 0){
-    return stack->tokens[--stack->ntokens]; }
+    SV * token = stack->tokens[--stack->ntokens];
+    stack->tokens[stack->ntokens+1] = NULL;
+    return token; }
   else {
     return NULL; } }
 

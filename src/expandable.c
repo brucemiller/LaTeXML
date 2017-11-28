@@ -19,6 +19,7 @@
 #include "XSUB.h"
 #include "../ppport.h"
 #include "object.h"
+#include "numbers.h"
 #include "tokens.h"
 #include "tokenstack.h"
 #include "state.h"
@@ -26,6 +27,44 @@
 #include "parameters.h"
 #include "expandable.h"
 #include "gullet.h"
+
+SV *
+expandable_new(pTHX_ SV * state, SV * cs, SV * parameters, SV * expansion, SV * locator){
+  LaTeXML_State xstate = SvState(state);
+  if(!SvOK(cs) || !sv_isa(cs, "LaTeXML::Core::Token")) {
+    croak("Undefined cs!\n");}
+  if(!expansion || !SvOK(expansion)){
+    expansion = NULL; }
+  else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
+    SV * tokens = tokens_new(aTHX_ 1);
+    tokens_add_token(aTHX_ tokens,expansion);
+    expansion = tokens; }
+      
+  /* check expansion balanced ? */
+  if(!parameters || !SvOK(parameters)){ /* or empty? */
+    parameters = NULL; }
+
+  HV * hash = newHV();
+  hv_store(hash, "cs",2, SvREFCNT_inc(cs),0);
+  if(parameters){
+    hv_store(hash,"parameters",10,SvREFCNT_inc(parameters),0); }
+  if(expansion){
+    hv_store(hash,"expansion",    9,SvREFCNT_inc(expansion),0); }
+  if(locator){
+    hv_store(hash,"locator",      7,SvREFCNT_inc(locator), 0); }
+  if(xstate->flags & FLAG_PROTECTED){
+    hv_store(hash,"isProtected", 11,newSViv(1),0); }
+  /*hv_store(hash,"isExpandable",12,newSViv(1),0);*/
+  SV * expandable = newRV_noinc((SV*)hash);
+  sv_bless(expandable, gv_stashpv("LaTeXML::Core::Definition::Expandable",0));
+  return expandable; }
+  
+int
+expandable_equals(pTHX_ SV * expandable, SV * expandable2){
+  return state_Equals(aTHX_ hash_get_noinc(aTHX_ SvHash(expandable),"parameters"),
+                      hash_get_noinc(aTHX_ SvHash(expandable2),"parameters"))
+    && state_Equals(aTHX_ hash_get_noinc(aTHX_ SvHash(expandable),"expansion"),
+                    hash_get_noinc(aTHX_ SvHash(expandable2),"expansion")); }
 
 SV *
 expandable_opcode_csname(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
@@ -57,7 +96,7 @@ expandable_getIFFrame(pTHX_ SV * state, UTF8 fortoken){ /* No refcnt inc! */
   return xstate->ifstack[xstate->ifstack_top]; }
 
 LaTeXML_IfFrame
-expandable_getActiveIFFrame(pTHX_ SV * state, UTF8 fortoken){ /* no refcnt inc */
+expandable_getActiveIFFrame(pTHX_ SV * state, SV * fortoken){ /* no refcnt inc */
   LaTeXML_State xstate = SvState(state);
   if(xstate->ifstack_top < 0){
     croak("Didn't expect %s since we seem not to be in a conditional (no frame in if_stack)",
@@ -125,22 +164,26 @@ expandable_skipConditionalBody(pTHX_ SV * gullet, SV * state, int nskips, int so
   croak("Missing \\fi or \\else: conditional fell off end from %s",SvPV_nolen(start)); }
 
 SV *
-expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
-                         int nargs, SV ** args){
+expandable_doconditional(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int boolean){
+  LaTeXML_State xstate = SvState(state);
   int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  HV * defnhash = SvHash(expandable);
-  SV ** ptr;
-  int ip;
-  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\if");
-  int ifid = ifframe->ifid;
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state, current_token);
   ifframe->parsing = 0;
-  SV * test = NULL;
-  if( (ptr  = hv_fetchs(defnhash,"test",0)) /* $$expansable{test} */
-      && SvOK(*ptr) ){
-    test = *ptr; }
-  else {
-    croak("Missing test!"); }
+  if(xstate->flags & FLAG_UNLESS){
+    boolean = !boolean; }
+  if(! boolean){
+    SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, -1, ifframe->ifid);
+    if(t){ SvREFCNT_dec(t); } }
+  return NULL; }
 
+SV *
+expandable_opcode_ifgeneral(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  SV * test = hash_get(aTHX_ SvHash(expandable),"test");
+  int ip;
+  if(!test) {
+    croak("Missing test!"); }
   dSP; ENTER; SAVETMPS; PUSHMARK(SP);
   EXTEND(SP,nargs+1); PUSHs(gullet);
   for(ip=0; ip<nargs; ip++){
@@ -155,37 +198,114 @@ expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
     SV * sv = POPs;
     boolean = SvTRUE(sv); }
   PUTBACK; FREETMPS; LEAVE;
-  for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
-    SvREFCNT_dec(args[ip]); }
-  if(! boolean){
-    SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, -1, ifid);
-    if(t){ SvREFCNT_dec(t); } }
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, boolean);
   return NULL; }
 
 SV *
 expandable_opcode_iftrue(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iftrue");
-  ifframe->parsing = 0;
-  /* do nothing else! */
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, 1);
   return NULL; }
 
 SV *
 expandable_opcode_iffalse(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
-  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
-  ifframe->parsing = 0;
-  SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, -1, ifframe->ifid);
-  if(t){ SvREFCNT_dec(t); }
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, 0);
+  return NULL; }
+
+
+int
+expandable_compare(pTHX_ SV * current_token, SV * state,
+                         int nargs, SV ** args){
+  int value1 = number_value(aTHX_ args[0]);
+  UTF8 comp  = SvToken(args[1])->string;
+  int value2 = number_value(aTHX_ args[2]);  
+  if      (strcmp(comp,"<")==0){  return value1 < value2; }
+  else if (strcmp(comp,"=")==0){  return value1 == value2; }
+  else if (strcmp(comp,">")==0){  return value1 > value2; }
+  else {
+    croak("expected:<relationaltoken> didn't expect '%s'",comp); } }
+          
+SV *
+expandable_opcode_ifnum(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state,
+                           expandable_compare(aTHX_ current_token, state, nargs, args));
+  return NULL; }
+
+SV *
+expandable_opcode_ifdim(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state,
+                           expandable_compare(aTHX_ current_token, state, nargs, args));
+  return NULL; }
+
+SV *
+expandable_opcode_ifodd(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  int value = number_value(aTHX_ args[0]);
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, value % 2);
+  return NULL; }
+
+SV *
+expandable_opcode_ifvmode(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  /* False, until we know what mode we're in! */
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, 0);
+  return NULL; }
+
+SV *
+expandable_opcode_ifhmode(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  /* False, until we know what mode we're in! */
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, 0);
+  return NULL; }
+
+SV *
+expandable_opcode_ifinner(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  /* False, until we know what mode we're in! */
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, 0);
+  return NULL; }
+
+SV *
+expandable_opcode_ifmmode(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  int inmath = state_lookupIV(aTHX_ state, TBL_VALUE, "IN_MATH");
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, inmath);
+  return NULL; }
+
+SV *
+expandable_opcode_ifcat(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  LaTeXML_Token t1 = SvToken(args[0]);
+  LaTeXML_Token t2 = SvToken(args[1]);
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state,
+                           t1->catcode == t2->catcode);
+  return NULL; }
+
+SV *
+expandable_opcode_if(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  LaTeXML_Token t1 = SvToken(args[0]);
+  LaTeXML_Token t2 = SvToken(args[1]);
+  char c1 = (t1->catcode == CC_CS ? 256 : (int) t1->string [0]);
+  char c2 = (t2->catcode == CC_CS ? 256 : (int) t2->string [0]);
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, c1 == c2);
+  return NULL; }
+
+SV *
+expandable_opcode_ifx(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  int boolean = state_XEquals(aTHX_ state, args[0], args[1]);
+  expandable_doconditional(aTHX_ current_token, expandable, gullet, state, boolean);
   return NULL; }
 
 SV *
 expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
                          int nargs, SV ** args){
   int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
-  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  "some \\iffalse");
+  LaTeXML_IfFrame ifframe = expandable_getActiveIFFrame(aTHX_ state,  current_token);
   ifframe->parsing = 0;
   int ifid = ifframe->ifid;
   /* Better have 1 argument, and it should be a Number! */
@@ -198,9 +318,10 @@ expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet,
     SV * sv = POPs;
     nskips = SvIV(sv); }
   PUTBACK; FREETMPS; LEAVE;
+  /*
   int ip;
-  for(ip = 0; ip < nargs; ip++){ /* NOW, we can clean up the args */
-    SvREFCNT_dec(args[ip]); }
+  for(ip = 0; ip < nargs; ip++){
+    SvREFCNT_dec(args[ip]); } */
   if(nskips > 0){
     SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, nskips, ifid);
     if(t){ SvREFCNT_dec(t); } }
@@ -214,7 +335,7 @@ expandable_opcode_else(pTHX_ SV * current_token, SV * expandable, SV * gullet, S
   if(ifframe->parsing){
     SV * tokens = tokens_new(aTHX_ 2);
     SV * relax =  token_new(aTHX_ "\\relax",CC_CS);
-    tokens_add_to(aTHX_ tokens, relax,0); SvREFCNT_dec(relax);
+    tokens_add_token(aTHX_ tokens, relax); SvREFCNT_dec(relax);
     tokens_add_to(aTHX_ tokens, current_token,0);
     return tokens; }
   else if (ifframe->elses){
@@ -232,7 +353,7 @@ expandable_opcode_fi(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
   if(ifframe->parsing){
     SV * tokens = tokens_new(aTHX_ 2);
     SV * relax = token_new(aTHX_ "\\relax",CC_CS);
-    tokens_add_to(aTHX_ tokens, relax,0); SvREFCNT_dec(relax);
+    tokens_add_token(aTHX_ tokens, relax); SvREFCNT_dec(relax);
     tokens_add_to(aTHX_ tokens, current_token,0);
     return tokens; }
   else {
@@ -246,6 +367,34 @@ expandable_opcode_expandafter(pTHX_ SV * current_token, SV * expandable, SV * gu
   /* NOTE: This reads it's own 2 tokens!!! */
   gullet_expandafter(aTHX_ gullet, state);
   return NULL; }
+
+SV *
+expandable_opcode_the(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV * state,
+                         int nargs, SV ** args){
+  int tracing = state_lookupBoole(aTHX_ state,TBL_VALUE, "TRACINGMACROS"); PERL_UNUSED_VAR(tracing);
+  /* Get the value of the register tuple in args[0] */
+  /* Nice if we had this better encapsulated somewhere ... */
+  AV * regtuple = SvArray(args[0]);
+  SV * reg = array_get(aTHX_ regtuple, 0);
+  if(! reg){
+    croak("Missing register definition to \\advance!"); }
+  if(! SvROK(reg) || (SvTYPE(SvRV(reg)) != SVt_PVHV)){
+    croak("Wrong kind of register definition to \\the!"); }
+  int reg_nargs = av_len(regtuple); /* +1 - 1 */
+  SV * reg_args[reg_nargs];
+  int i;
+  for(i = 0; i < reg_nargs; i++){
+    reg_args[i] = array_get(aTHX_ regtuple, i+1); }
+  SV * value = register_valueOf(aTHX_ reg, state, reg_nargs, reg_args);
+  SV * tokens = tokens_new(aTHX_ 1);
+  tokens_add_to(aTHX_ tokens, value, 1); /* Add the value, possibly reverting it */
+  SvREFCNT_dec(value);
+  SV * noexpand = get_sv("LaTeXML::NOEXPAND_THE",0);
+  if(SvOK(noexpand) && SvTRUE(noexpand)){
+    SV * newtokens = gullet_neutralizeTokens(aTHX_ gullet, state, tokens);
+    SvREFCNT_dec(tokens);
+    tokens = newtokens; }
+  return tokens; }
 
 SV *
 expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
@@ -289,7 +438,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
     else {
       croak("Internal error: Expandable opcode %s has no definition",opcode); } }
   else {
-    if(! SvOK(expansion)){      /* empty? */
+    if(!expansion || ! SvOK(expansion)){      /* empty? */
       SvREFCNT_dec(expansion);
       DEBUG_Expandable("Expansion is empty\n"); }
     else if(SvTYPE(SvRV(expansion)) == SVt_PVCV){ /* ref $expansion eq 'CODE' */
@@ -360,14 +509,25 @@ void
 expandable_install_opcodes(pTHX){
     /* Install Expandable Opcodes */
     expandable_install_op(aTHX_ "CSName",       &expandable_opcode_csname);
-    expandable_install_op(aTHX_ "if",           &expandable_opcode_if);
+    expandable_install_op(aTHX_ "ifGeneral",    &expandable_opcode_ifgeneral);
     expandable_install_op(aTHX_ "iftrue",       &expandable_opcode_iftrue);
     expandable_install_op(aTHX_ "iffalse",      &expandable_opcode_iffalse);
+    expandable_install_op(aTHX_ "ifnum",        &expandable_opcode_ifnum);
+    expandable_install_op(aTHX_ "ifdim",        &expandable_opcode_ifdim);
+    expandable_install_op(aTHX_ "ifodd",        &expandable_opcode_ifodd);
+    expandable_install_op(aTHX_ "ifvmode",      &expandable_opcode_ifvmode);
+    expandable_install_op(aTHX_ "ifhmode",      &expandable_opcode_ifhmode);
+    expandable_install_op(aTHX_ "ifmmode",      &expandable_opcode_ifmmode);
+    expandable_install_op(aTHX_ "ifinner",      &expandable_opcode_ifinner);
+    expandable_install_op(aTHX_ "ifcat",        &expandable_opcode_ifcat);
+    expandable_install_op(aTHX_ "if",           &expandable_opcode_if);
+    expandable_install_op(aTHX_ "ifx",          &expandable_opcode_ifx);
     expandable_install_op(aTHX_ "ifcase",       &expandable_opcode_ifcase);
     expandable_install_op(aTHX_ "else",         &expandable_opcode_else);
     expandable_install_op(aTHX_ "or",           &expandable_opcode_else);
     expandable_install_op(aTHX_ "fi",           &expandable_opcode_fi);
     expandable_install_op(aTHX_ "expandafter",  &expandable_opcode_expandafter);
+    expandable_install_op(aTHX_ "the",  &expandable_opcode_the);
 }
 
 expandable_op *

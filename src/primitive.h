@@ -25,6 +25,9 @@
 #  define DEBUGGING_Primitive 0
 #endif
 
+extern int
+primitive_equals(pTHX_ SV * primitive, SV * primitive2);
+
 /* void primitive_op(aTHX_ token, primitive_defn, stomach, state, nargs, args, resultstack)*/
 typedef void primitive_op(pTHX_ SV *, SV *, SV *, SV *, int, SV **, LaTeXML_Boxstack);
 

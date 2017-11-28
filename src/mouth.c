@@ -291,9 +291,15 @@ mouth_fetchInput(pTHX_ SV * mouth){
 */
 
 void
-mouth_unreadToken(pTHX_ SV * mouth, SV * thing){
+mouth_unreadToken(pTHX_ SV * mouth, SV * token){
+  LaTeXML_Mouth xmouth = SvMouth(mouth);
+  tokenstack_pushToken(aTHX_ xmouth->pushback, token); }
+
+void
+mouth_unread(pTHX_ SV * mouth, SV * thing){
   LaTeXML_Mouth xmouth = SvMouth(mouth);
   tokenstack_push(aTHX_ xmouth->pushback, thing); }
+
 
 int CC_TrivialRead[] = 
   { 0, 1, 1, 1,
@@ -421,7 +427,7 @@ mouth_readTokens(pTHX_ SV * mouth, SV * state, SV * until){
     if(test && (strcmp(test,t->string) == 0)){
       SvREFCNT_dec(token);
       break; }
-    tokens_add_to(aTHX_ tokens,token,0);
+    tokens_add_token(aTHX_ tokens,token);
     SvREFCNT_dec(token); }
   tokens_trimright(aTHX_ tokens);
   return tokens; }

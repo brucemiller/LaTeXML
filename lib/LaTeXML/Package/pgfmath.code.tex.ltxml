@@ -273,8 +273,8 @@ our $PGFMathFunctions;
 # NOTE: need to handle \ifpgfmathunitsdeclared
 sub pgfmathparse {
   my ($gullet, $tokens) = @_;
-  SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
-  SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
+  Let(T_CS('\ifpgfmathunitsdeclared'),     T_CS('\iffalse'), 'global');
+  Let(T_CS('\ifpgfmathmathunitsdeclared'), T_CS('\iffalse'), 'global');
   my $string = (ref $tokens ? ToString($tokens) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
@@ -322,7 +322,7 @@ DefPrimitive('\pgfmathsetlength DefToken Expanded', sub {
       $length = $gullet->readGlue; }
     else {
       $length = pgfmathparse($gullet, $tokens);
-      if (IfCondition(T_CS('\ifpgfmathmathunitsdeclared'))) {
+      if (XEquals(T_CS('\ifpgfmathmathunitsdeclared'),T_CS('\iftrue'))) {
         $length = MuGlue($length * $STATE->convertUnit('mu')); }
       else {
         $length = Dimension($length * 65536); } }
@@ -375,18 +375,18 @@ sub pgfmath_leftrecapply {
 # (which is sensible for the ultimate output, but wreaks havoc w/ accuracy here!)
 sub pgfmath_convert {
   my ($number, $unit) = @_;
-  SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');                        # Saw units!
-  SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 1, 'global') if $unit eq 'mu';
+  Let(T_CS('\ifpgfmathunitsdeclared'), T_CS('\iftrue'), 'global');                        # Saw units!
+  Let(T_CS('\ifpgfmathmathunitsdeclared'), T_CS('\iftrue'), 'global') if $unit eq 'mu';
   return $number * $STATE->convertUnit($unit) / 65536; }    # return value in pts!
 
 sub pgfmath_register {
   my ($cs) = @_;
   my $reg = LookupRegister($cs);
-  SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
+  Let(T_CS('\ifpgfmathunitsdeclared'), T_CS('\iftrue'), 'global');
   return (ref $reg eq 'LaTeXML::Common::Number' ? $reg->valueOf : $reg->valueOf / 65536); }
 
 sub pgfmath_setunitsdeclared {
-  SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
+  Let(T_CS('\ifpgfmathunitsdeclared'), T_CS('\iftrue'), 'global');
   return; }
 
 BEGIN {
@@ -463,7 +463,7 @@ BEGIN {
     real => sub { $_[0] + 0.0; },
     #    rnd      => sub { },
     round    => sub { round($_[0]); },
-    scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
+    scalar   => sub { Let(T_CS('\ifpgfmathunitsdeclared'), T_CS('\iffalse'), 'global'); $_[0]; },
     sec      => sub { sec(pgfmathargradians($_[0])); },
     sign     => sub { sign($_[0]); },
     sin      => sub { sin(pgfmathargradians($_[0])); },

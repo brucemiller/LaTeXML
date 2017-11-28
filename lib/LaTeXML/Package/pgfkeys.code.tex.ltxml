@@ -236,7 +236,7 @@ DefConditional('\ifpgfkeysfilteringisactive');
 sub pgfAssignKey {
   my ($stomach, $key, $value) = @_;
   my $cmdkey;
-  my $filtered = IfCondition(T_CS('\ifpgfkeysfilteringisactive'));
+  my $filtered = XEquals(T_CS('\ifpgfkeysfilteringisactive'),T_CS('\iftrue'));
   # Double # to simulate what \pgfkeys@spdef does
   DefMacroI(T_CS('\pgfkeyscurrentvalue'), undef,
     ($value ? Tokens(map { ($_->getCatcode == CC_PARAM ? ($_, $_) : $_) } $value->unlist)
@@ -254,11 +254,11 @@ sub pgfAssignKey {
     if ($filtered) {
       # \pgfkeys@cur@is@descendant@of@errors
       my $check = ($key =~ m|^/errors|);
-      SetCondition(T_CS('\ifpgfkeysfiltercontinue'), $check);
+      Let(T_CS('\ifpgfkeysfiltercontinue'), ($check ? T_CS('\iftrue') : T_CS('\iffalse')));
       print STDERR "[SPECIAL CHECK] '$key' is descendant of '/errors': " . ($check ? 'TRUE' : 'FALSE') . ".\n" if $PGFKEYS_DEBUG;
-      if (IfCondition(T_CS('\ifpgfkeysfiltercontinue'))) {
+      if (XEquals(T_CS('\ifpgfkeysfiltercontinue'),T_CS('\iftrue'))) {
         $filtered = 0; } }
-    if ($filtered) { SetCondition(T_CS('\ifpgfkeysfiltercontinue'), 1); }
+    if ($filtered) { Let(T_CS('\ifpgfkeysfiltercontinue'), T_CS('\iftrue')); }
     if (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {    # Case 1
       return if $filtered && testFilterPredicate($key, 1);
       print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 1)\n" if $PGFKEYS_DEBUG;
@@ -290,7 +290,7 @@ sub pgfAssignKey {
         if $PGFKEYS_DEBUG && ($restricted || ($handle ne 'all'));
       if (pgfkeyLookup($cmdkey = '/handlers/' . $name . '/.@cmd')    # a command bound?
         && (!$restricted || ($handle eq 'all')
-          || (($handle eq 'full') && !IfCondition(T_CS('\ifpgfkeysaddeddefaultpath')))
+          || (($handle eq 'full') && !XEquals(T_CS('\ifpgfkeysaddeddefaultpath'),T_CS('\iftrue')))
           || LookupDefinition(T_CS('\pgfkey@excpt@' . $name))
           || pgfkeyLookup($path) || pgfkeyLookup($path . '/.@cmd'))) {
         return if $filtered && testFilterPredicate($key, 3);
@@ -315,7 +315,7 @@ sub testFilterPredicate {
   my ($key, $case) = @_;
   DefMacroI('\pgfkeyscasenumber', undef, $case);
   Digest(T_CS('\pgfkeys@key@predicate'));
-  if (!IfCondition(T_CS('\ifpgfkeysfiltercontinue'))) {
+  if (!XEquals(T_CS('\ifpgfkeysfiltercontinue'),T_CS('\iftrue'))) {
     print STDERR "FILTERED OUT KEY $key (case $case)\n" if $PGFKEYS_DEBUG;
     Digest(T_CS('\pgfkeys@filtered@handler'));
     return 1; }
@@ -417,10 +417,10 @@ DefMacro('\pgfkeysdefnargs@ Expanded {}{}{}', sub {
 # filtering typically happens within \pgfkeys@install@filter@and@invoke
 # we'll simulate with a start/stop
 sub pgfStartFiltering {
-  if (IfCondition(T_CS('\ifpgfkeysfilteringisactive'))) {
+  if (XEquals(T_CS('\ifpgfkeysfilteringisactive'),T_CS('\iftrue'))) {
     Warning('unexpected', 'pgffiltering', $_[0],
 "Sorry, nested calls to key filtering routines are not allowed. (reason: It is not possible to properly restore the previous filtering state after returning from the nested call)"); }
-  SetCondition(T_CS('\ifpgfkeysfilteringisactive'), 1);
+  Let(T_CS('\ifpgfkeysfilteringisactive'), T_CS('\iftrue'));
   #  Let('\pgfkeys@case@one', '\pgfkeys@case@one@filtered');
   #  Let('\pgfkeys@try',      '\pgfkeys@try@filtered');
   #  Let('\pgfkeys@unknown',  '\pgfkeys@unknown@filtered');
@@ -430,7 +430,7 @@ sub pgfStopFiltering {
   #  Let('\pgfkeys@case@one', '\pgfkeys@orig@case@one');
   #  Let('\pgfkeys@try',      '\pgfkeys@orig@try');
   #  Let('\pgfkeys@unknown',  '\pgfkeys@orig@unknown');
-  SetCondition(T_CS('\ifpgfkeysfilteringisactive'), 0);
+  Let(T_CS('\ifpgfkeysfilteringisactive'), T_CS('\iffalse'));
   return; }
 
 DefPrimitive('\pgfkeysfiltered{}', sub {

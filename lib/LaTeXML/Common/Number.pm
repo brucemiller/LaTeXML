@@ -79,7 +79,8 @@ sub unlist {
 
 sub revert {
   my ($self) = @_;
-  return ExplodeText($self->toString); }
+###  return ExplodeText($self->toString); }
+  return Explode($self->toString); }
 
 sub smaller {
   my ($self, $other) = @_;

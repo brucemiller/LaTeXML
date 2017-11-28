@@ -56,32 +56,32 @@ sub revertArguments {
     push(@tokens, $parameter->revert(shift(@args))); }
   return @tokens; }
 
-sub readArguments {
-  my ($self, $gullet, $fordefn) = @_;
-  return $gullet->readArguments($self, $fordefn); }
+# sub readArguments {
+#   my ($self, $gullet, $fordefn) = @_;
+#   return $gullet->readArguments($self, $fordefn); }
 
-sub readArgumentsAndDigest {
-  my ($self, $stomach, $fordefn) = @_;
-  my @args   = ();
-  my $gullet = $stomach->getGullet;
-  foreach my $parameter (@$self) {
-    my $value = $parameter->read($gullet, $fordefn);
-    if (!$parameter->getNovalue) {
-      $value = $parameter->digest($stomach, $value, $fordefn);
-      push(@args, $value); } }
-  return @args; }
+# sub readArgumentsAndDigest {
+#   my ($self, $stomach, $fordefn) = @_;
+#   my @args   = ();
+#   my $gullet = $stomach->getGullet;
+#   foreach my $parameter (@$self) {
+#     my $value = $parameter->read($gullet, $fordefn);
+#     if (!$parameter->getNovalue) {
+#       $value = $parameter->digest($stomach, $value, $fordefn);
+#       push(@args, $value); } }
+#   return @args; }
 
-sub reparseArgument {
-  my ($self, $gullet, $tokens) = @_;
-  if (defined $tokens) {
-    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
-        my ($gulletx) = @_;
-        $gulletx->unread($tokens);                                         # but put back tokens to be read
-        my @values = $gulletx->readArguments($self, $LaTeXML::CURRENT_TOKEN);
-        $gulletx->skipSpaces;
-        return @values; }); }
-  else {
-    return (); } }
+# sub reparseArgument {
+#   my ($self, $gullet, $tokens) = @_;
+#   if (defined $tokens) {
+#     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {    # start with empty mouth
+#         my ($gulletx) = @_;
+#         $gulletx->unread($tokens);                                         # but put back tokens to be read
+#         my @values = $gulletx->readArguments($self, $LaTeXML::CURRENT_TOKEN);
+#         $gulletx->skipSpaces;
+#         return @values; }); }
+#   else {
+#     return (); } }
 
 #======================================================================
 1;

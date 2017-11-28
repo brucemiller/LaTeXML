@@ -1,4 +1,4 @@
-/*# /=====================================================================\ #
+ /*# /=====================================================================\ #
   # |  LaTeXML/src/state.h                                                | #
   # |                                                                     | #
   # |=====================================================================| #
@@ -82,12 +82,13 @@ typedef struct State_struct {
 } T_State;
 typedef T_State * LaTeXML_State;
 
-#define SvState(arg)      INT2PTR(LaTeXML_State,      SvIV((SV*) SvRV(arg)))
+#define SvState(arg)      ((LaTeXML_State)INT2PTR(LaTeXML_State, SvIV((SV*) SvRV(arg))))
 
 #define FLAG_GLOBAL    0x01
 #define FLAG_LONG      0x02
 #define FLAG_OUTER     0x04
 #define FLAG_PROTECTED 0x08
+#define FLAG_UNLESS    0x10
 
 #define CONFIG_PROFILING 0x01
 
@@ -176,8 +177,17 @@ state_endSemiverbatim(pTHX_ SV * state);
 extern SV *
 state_meaning(pTHX_ SV * state, SV * token);
 
+extern int
+state_Equals(pTHX_ SV * thing1, SV * thing2);
+
+extern int
+state_XEquals(pTHX_ SV * state, SV * token1, SV * token2);
+
 extern SV *
 state_definition(pTHX_ SV * state, SV * token);
+
+extern void
+state_installDefinition(pTHX_ SV * state, SV * definition, UTF8 scope);
 
 extern SV *
 state_expandable(pTHX_ SV * state, SV * token);
@@ -202,5 +212,11 @@ state_setProfiling(pTHX_ SV * state, int profiling);
 
 extern int
 state_getProfiling(pTHX_ SV * state);
+
+extern SV *
+register_valueOf(pTHX_ SV * reg, SV * state, int nargs, SV ** args);
+
+extern void
+register_setValue(pTHX_ SV * reg, SV * state, int nargs, SV ** args, SV * value);
 
 #endif

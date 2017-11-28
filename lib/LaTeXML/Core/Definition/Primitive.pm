@@ -37,6 +37,14 @@ sub isPrefix {
   my ($self) = @_;
   return $$self{isPrefix}; }
 
+sub isRegister {
+  my ($self) = @_;
+  return $$self{registerType}; }
+
+sub isReadonly {
+  my ($self) = @_;
+  return $$self{readonly}; }
+
 sub executeBeforeDigest {
   my ($self, $stomach) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;

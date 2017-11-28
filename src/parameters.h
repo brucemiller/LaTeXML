@@ -36,7 +36,7 @@ typedef struct Parameter_struct {
 } T_Parameter;
 typedef T_Parameter * LaTeXML_Parameter;
 
-#define SvParameter(arg)      INT2PTR(LaTeXML_Parameter,      SvIV((SV*) SvRV(arg)))
+#define SvParameter(arg)      ((LaTeXML_Parameter)INT2PTR(LaTeXML_Parameter,SvIV((SV*) SvRV(arg))))
 
 #define PARAMETER_OPTIONAL   0x01
 #define PARAMETER_NOVALUE    0x02
@@ -47,6 +47,9 @@ parameter_new(pTHX_ UTF8 spec);
 
 extern void
 parameter_DESTROY(pTHX_ SV * parameter);
+
+extern int
+parameter_equals(pTHX_ SV * parameter, SV * other);
 
 extern parameter_op *
 parameter_lookup(pTHX_ UTF8 opcode);
@@ -60,5 +63,7 @@ parameter_revertCatcodes(pTHX_ SV * parameter, SV * state);
 extern SV *
 parameter_read(pTHX_ SV * parameter, SV * gullet, SV * state, SV * fordefn);
 
+extern SV *
+parameter_readAndDigest(pTHX_ SV * parameter, SV * stomach, SV * state, SV * fordefn);
 
 #endif

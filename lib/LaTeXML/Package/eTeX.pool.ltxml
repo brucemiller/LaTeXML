@@ -33,7 +33,7 @@ DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });
 # with the peculiarity of how <filler> is expanded beforehand!
 DefMacro('\unexpanded GeneralText', sub {
     my ($gullet, $tokens) = @_;
-    return $gullet->neutralizeTokens($tokens->unlist); });
+    return $gullet->neutralizeTokens($tokens); });
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 
@@ -141,16 +141,9 @@ DefConstructor('\middle Token', '#1',
     return; });
 
 # \unless someif
-DefConditional('\unless Token', sub {
-    my ($gullet, $if) = @_;
-    my ($defn, $exp, $test);
-    if (($defn = LookupDefinition($if))
-      && ($exp = $$defn{expansion}) && (ref $exp eq 'LaTeXML::Core::Opcode') && ($$exp =~ /^if/)
-      && ($test = $defn->getTest)) {
-      # Invert the if's test!
-      !&$test($gullet, $defn->readArguments($gullet)); }
-    else {
-      Error('unexpected', $if, "\\unless should not be followed by " . Stringify($if)); } });
+# This should be expandable (I assume) so it works with conditionals, though it sets a (fake) flag
+# This should only appear before an \ifxxxx, but isn't really worth checking
+DefMacro('\unless', sub { $STATE->setUnlessFlag; });
 
 #======================================================================
 # \numexpr, \dimexpr, \gluexpr, \muexpr

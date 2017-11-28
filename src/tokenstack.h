@@ -37,7 +37,7 @@ typedef struct Tokenstack_struct {
 } T_Tokenstack;
 typedef T_Tokenstack * LaTeXML_Tokenstack;
 
-#define SvTokenstack(arg) INT2PTR(LaTeXML_Tokenstack, SvIV((SV*) SvRV(arg)))
+#define SvTokenstack(arg) ((LaTeXML_Tokenstack)INT2PTR(LaTeXML_Tokenstack, SvIV((SV*) SvRV(arg))))
 
 #define TOKENSTACK_ALLOC_QUANTUM 10
 
@@ -46,6 +46,9 @@ tokenstack_new(pTHX);
 
 extern void
 tokenstack_DESTROY(pTHX_ LaTeXML_Tokenstack stack);
+
+extern void
+tokenstack_pushToken(pTHX_ LaTeXML_Tokenstack stack, SV * token);
 
 extern void
 tokenstack_push(pTHX_ LaTeXML_Tokenstack stack, SV * thing);

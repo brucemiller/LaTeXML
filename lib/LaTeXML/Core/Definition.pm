@@ -21,8 +21,6 @@ use base qw(LaTeXML::Common::Object);
 # Make these present, but do not import.
 require LaTeXML::Core::Definition::Expandable;
 require LaTeXML::Core::Definition::Primitive;
-require LaTeXML::Core::Definition::Register;
-require LaTeXML::Core::Definition::CharDef;
 require LaTeXML::Core::Definition::Constructor;
 
 #**********************************************************************
@@ -37,9 +35,6 @@ sub getCS {
 sub getCSName {
   my ($self) = @_;
   return (defined $$self{alias} ? $$self{alias} : $$self{cs}->getCSName); }
-
-sub isExpandable {
-  return 0; }
 
 sub isRegister {
   return ''; }
@@ -69,10 +64,10 @@ sub readArgumentsAndDigest {
   if ($$self{parameters}) {
     my $gullet = $stomach->getGullet;
     foreach my $parameter (@{ $$self{parameters} }) {
-      my $value = $parameter->read($gullet, $self);
+      my $value = $parameter->readAndDigest($stomach, $self);
       if (!$parameter->getNovalue) {
-        $value = $parameter->digest($stomach, $value, $self);
         push(@args, $value); } } }
+
   return @args; }
 
 #======================================================================
@@ -268,9 +263,7 @@ that are executed before and after digestion.  These can be useful for changing 
 =head1 SEE ALSO
 
 L<LaTeXML::Core::Definition::Expandable>,
-L<LaTeXML::Core::Definition::Primitive>,
-L<LaTeXML::Core::Definition::Register>,
-L<LaTeXML::Core::Definition::CharDef> and
+L<LaTeXML::Core::Definition::Primitive> and
 L<LaTeXML::Core::Definition::Constructor>.
 
 =head1 AUTHOR

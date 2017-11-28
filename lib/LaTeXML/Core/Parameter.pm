@@ -160,22 +160,31 @@ sub digest {
   # If semiverbatim, Expand (before digest), so tokens can be neutralized; BLECH!!!!
 ###  if ($$self{semiverbatim}) {
 ###    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} });
+
+  # Why do we need to REPARSE this thing again????
   my $semiverb = $self->getSemiverbatim;
   if ($semiverb) {
+    my $oldvalue = $value;
     $STATE->beginSemiverbatim(@$semiverb);
-    if ((ref $value eq 'LaTeXML::Core::Token') || (ref $value eq 'LaTeXML::Core::Tokens')) {
-      $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-          my ($igullet) = @_;
-          $igullet->unread($value);
-          my @tokens = ();
-          while (defined(my $token = $igullet->readXToken(1, 1))) {
-            push(@tokens, $token); }
-          $value = Tokens(@tokens);
-          $value = $value->neutralize; }); } }
+#     if ((ref $value eq 'LaTeXML::Core::Token') || (ref $value eq 'LaTeXML::Core::Tokens')) {
+#       $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+#           my ($igullet) = @_;
+#           $igullet->unread($value);
+#           my @tokens = ();
+#           while (defined(my $token = $igullet->readXToken(1, 1))) {
+#             push(@tokens, $token); }
+#           $value = Tokens(@tokens);
+#           $value = $value->neutralize; 
+# }); }
+#     if(! Equals($value,$oldvalue)){
+#       print STDERR "\nMYSTERY REPARSE ".Stringify($value)." instead of ".Stringify($oldvalue)."\n"; }
+  }
 ##  if (my $pre = $$self{beforeDigest}) {    # Done for effect only.
   if (my $pre = $self->getBeforeDigest) {    # Done for effect only.
     &$pre($stomach); }                     # maybe pass extras?
-  $value = $value->beDigested($stomach) if (ref $value) && !$self->getUndigested;
+##  $value = $value->beDigested($stomach) if (ref $value) && !$self->getUndigested;
+  $value = $stomach->digestThing($value) if (defined $value) && (ref $value) && !$self->getUndigested;
+
 ##  if (my $post = $$self{afterDigest}) {    # Done for effect only.
   if (my $post = $self->getAfterDigest) {    # Done for effect only.
     &$post($stomach); }                    # maybe pass extras?

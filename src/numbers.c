@@ -44,6 +44,18 @@ number_value(pTHX_ SV * sv){     /* num presumbed to be SViv */
       croak("Expected an integer"); } }
   return 0; }
 
+SV *
+number_scale(pTHX_ SV * number, int scale){
+  return number_new(aTHX_ number_value(aTHX_ number) * scale); }
+
+SV *
+number_divide(pTHX_ SV * number, int scale){
+  return number_new(aTHX_ number_value(aTHX_ number) / scale); }
+
+SV *
+number_add(pTHX_ SV * number, SV * other){
+  return number_new(aTHX_ number_value(aTHX_ number)+number_value(aTHX_ other)); }
+
 int
 number_formatScaled(pTHX_ char * buffer, int sp){   /* Knuth's: TeX the Program, algorithm 103 */
   /* buffer should be (at least)  char buffer = [3*sizeof(int)*CHAR_BIT/8 + 2]; */
@@ -73,6 +85,18 @@ dimension_new(pTHX_ int sp){
   return ref; }
 
 SV *
+dimension_scale(pTHX_ SV * dimension, int scale){
+  return dimension_new(aTHX_ number_value(aTHX_ dimension) * scale); }
+
+SV *
+dimension_divide(pTHX_ SV * dimension, int scale){
+  return dimension_new(aTHX_ number_value(aTHX_ dimension) / scale); }
+
+SV *
+dimension_add(pTHX_ SV * dimension, SV * other){
+  return dimension_new(aTHX_ number_value(aTHX_ dimension)+number_value(aTHX_ other)); }
+
+SV *
 glue_new(pTHX_ int sp, int plus, int plusfill, int minus, int minusfill){
   AV * av = newAV();
   av_push(av, newSViv(sp));
@@ -86,7 +110,7 @@ glue_new(pTHX_ int sp, int plus, int plusfill, int minus, int minusfill){
   return ref; }
 
 SV *
-glue_negate(pTHX_ SV * glue){
+glue_scale(pTHX_ SV * glue, int scale){
   AV * glue_av = SvArray(glue);
   AV * av = newAV();
   int sp = array_getIV(aTHX_ glue_av, 0);
@@ -94,10 +118,58 @@ glue_negate(pTHX_ SV * glue){
   int pf = array_getIV(aTHX_ glue_av, 2);
   int mv = array_getIV(aTHX_ glue_av, 3);
   int mf = array_getIV(aTHX_ glue_av, 4);
-  av_push(av, newSViv(-sp));
-  av_push(av, newSViv(-pv));
+  av_push(av, newSViv(sp * scale));
+  av_push(av, newSViv(pv * scale));
   av_push(av, newSViv(pf));
-  av_push(av, newSViv(-mv));
+  av_push(av, newSViv(mv * scale));
+  av_push(av, newSViv(mf));
+  /* Note: you can't use sv_setref_pv with an AV or HV! */
+  SV * ref = newRV_noinc((SV*)av);
+  sv_bless(ref, gv_stashpv("LaTeXML::Common::Glue",0));
+  return ref; }
+
+SV *
+glue_divide(pTHX_ SV * glue, int scale){
+  AV * glue_av = SvArray(glue);
+  AV * av = newAV();
+  int sp = array_getIV(aTHX_ glue_av, 0);
+  int pv = array_getIV(aTHX_ glue_av, 1);
+  int pf = array_getIV(aTHX_ glue_av, 2);
+  int mv = array_getIV(aTHX_ glue_av, 3);
+  int mf = array_getIV(aTHX_ glue_av, 4);
+  av_push(av, newSViv(sp / scale));
+  av_push(av, newSViv(pv / scale));
+  av_push(av, newSViv(pf));
+  av_push(av, newSViv(mv / scale));
+  av_push(av, newSViv(mf));
+  /* Note: you can't use sv_setref_pv with an AV or HV! */
+  SV * ref = newRV_noinc((SV*)av);
+  sv_bless(ref, gv_stashpv("LaTeXML::Common::Glue",0));
+  return ref; }
+
+SV *
+glue_add(pTHX_ SV * glue, SV * glue2){
+  AV * glue_av = SvArray(glue);
+  AV * glue2_av = SvArray(glue2);
+  AV * av = newAV();
+  int sp = array_getIV(aTHX_ glue_av, 0);
+  int pv = array_getIV(aTHX_ glue_av, 1);
+  int pf = array_getIV(aTHX_ glue_av, 2);
+  int mv = array_getIV(aTHX_ glue_av, 3);
+  int mf = array_getIV(aTHX_ glue_av, 4);
+  int sp2 = array_getIV(aTHX_ glue2_av, 0);
+  int pv2 = array_getIV(aTHX_ glue2_av, 1);
+  int pf2 = array_getIV(aTHX_ glue2_av, 2);
+  int mv2 = array_getIV(aTHX_ glue2_av, 3);
+  int mf2 = array_getIV(aTHX_ glue2_av, 4);
+  if (pf == pf2) { pv += pv2; }
+  else if (pf < pf2) { pv = pv2; pf = pf2; }
+  if (mf == mf2) { mv += mv2; }
+  else if (mf < mf2) { mv = mv2; mf = mf2; }
+  av_push(av, newSViv(sp + sp2));
+  av_push(av, newSViv(pv));
+  av_push(av, newSViv(pf));
+  av_push(av, newSViv(mv));
   av_push(av, newSViv(mf));
   /* Note: you can't use sv_setref_pv with an AV or HV! */
   SV * ref = newRV_noinc((SV*)av);
@@ -118,7 +190,7 @@ muglue_new(pTHX_ int sp, int plus, int plusfill, int minus, int minusfill){
   return ref; }
 
 SV *
-muglue_negate(pTHX_ SV * muglue){
+muglue_scale(pTHX_ SV * muglue, int scale){
   AV * muglue_av = SvArray(muglue);
   AV * av = newAV();
   int sp = array_getIV(aTHX_ muglue_av, 0);
@@ -126,10 +198,58 @@ muglue_negate(pTHX_ SV * muglue){
   int pf = array_getIV(aTHX_ muglue_av, 2);
   int mv = array_getIV(aTHX_ muglue_av, 3);
   int mf = array_getIV(aTHX_ muglue_av, 4);
-  av_push(av, newSViv(-sp));
-  av_push(av, newSViv(-pv));
+  av_push(av, newSViv(sp * scale));
+  av_push(av, newSViv(pv * scale));
   av_push(av, newSViv(pf));
-  av_push(av, newSViv(-mv));
+  av_push(av, newSViv(mv * scale));
+  av_push(av, newSViv(mf));
+  /* Note: you can't use sv_setref_pv with an AV or HV! */
+  SV * ref = newRV_noinc((SV*)av);
+  sv_bless(ref, gv_stashpv("LaTeXML::Core::MuGlue",0));
+  return ref; }
+
+SV *
+muglue_divide(pTHX_ SV * muglue, int scale){
+  AV * muglue_av = SvArray(muglue);
+  AV * av = newAV();
+  int sp = array_getIV(aTHX_ muglue_av, 0);
+  int pv = array_getIV(aTHX_ muglue_av, 1);
+  int pf = array_getIV(aTHX_ muglue_av, 2);
+  int mv = array_getIV(aTHX_ muglue_av, 3);
+  int mf = array_getIV(aTHX_ muglue_av, 4);
+  av_push(av, newSViv(sp / scale));
+  av_push(av, newSViv(pv / scale));
+  av_push(av, newSViv(pf));
+  av_push(av, newSViv(mv / scale));
+  av_push(av, newSViv(mf));
+  /* Note: you can't use sv_setref_pv with an AV or HV! */
+  SV * ref = newRV_noinc((SV*)av);
+  sv_bless(ref, gv_stashpv("LaTeXML::Core::MuGlue",0));
+  return ref; }
+
+SV *
+muglue_add(pTHX_ SV * muglue, SV * muglue2){
+  AV * glue_av = SvArray(muglue);
+  AV * glue2_av = SvArray(muglue2);
+  AV * av = newAV();
+  int sp = array_getIV(aTHX_ glue_av, 0);
+  int pv = array_getIV(aTHX_ glue_av, 1);
+  int pf = array_getIV(aTHX_ glue_av, 2);
+  int mv = array_getIV(aTHX_ glue_av, 3);
+  int mf = array_getIV(aTHX_ glue_av, 4);
+  int sp2 = array_getIV(aTHX_ glue2_av, 0);
+  int pv2 = array_getIV(aTHX_ glue2_av, 1);
+  int pf2 = array_getIV(aTHX_ glue2_av, 2);
+  int mv2 = array_getIV(aTHX_ glue2_av, 3);
+  int mf2 = array_getIV(aTHX_ glue2_av, 4);
+  if (pf == pf2) { pv += pv2; }
+  else if (pf < pf2) { pv = pv2; pf = pf2; }
+  if (mf == mf2) { mv += mv2; }
+  else if (mf < mf2) { mv = mv2; mf = mf2; }
+  av_push(av, newSViv(sp + sp2));
+  av_push(av, newSViv(pv));
+  av_push(av, newSViv(pf));
+  av_push(av, newSViv(mv));
   av_push(av, newSViv(mf));
   /* Note: you can't use sv_setref_pv with an AV or HV! */
   SV * ref = newRV_noinc((SV*)av);

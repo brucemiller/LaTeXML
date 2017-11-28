@@ -736,7 +736,7 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
     return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    if (IfCondition(T_CS('\if@rowcolors'))) {
+    if (XEquals(T_CS('\if@rowcolors'),T_CS('\iftrue'))) {
       my $n     = LookupValue('Alignment')->currentRowNumber;
       my $first = LookupValue('tabular_row_color_first');
       my $odd   = LookupValue('tabular_row_color_odd');

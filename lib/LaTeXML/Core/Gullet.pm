@@ -195,16 +195,16 @@ sub show_pushback {
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
 # Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable tokens.
-sub neutralizeTokens {
-  my ($self, @tokens) = @_;
-  my @result = ();
-  foreach my $token (@tokens) {
-    if ($token->getCatcode == CC_PARAM) {
-      push(@result, $token); }
-    elsif (defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
-      push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
-    push(@result, $token); }
-  return @result; }
+# sub neutralizeTokens {
+#   my ($self, $tokens) = @_;
+#   my @result = ();
+#   foreach my $token ($tokens->unlist) {
+#     if ($token->getCatcode == CC_PARAM) {
+#       push(@result, $token); }
+#     elsif (defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
+#       push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
+#     push(@result, $token); }
+#   return Tokens(@result); }
 
 # Read the next raw line (string);
 # primarily to read from the Mouth, but keep any unread input!
