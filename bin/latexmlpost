@@ -255,6 +255,15 @@ elsif ($format eq 'jats') {
   $picimages  = 1 unless defined $picimages;
   $is_html    = 0;
   $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
+elsif ($format eq 'tei') {
+  $extension = 'xml' unless defined $extension;
+  # Add pMML FIRST, unless already there, or was disabled.
+  # note that MathImages can supply altimg attributes
+  maybeAddMathFormat('pmml');
+  $dographics = 1 unless defined $dographics;
+  $picimages  = 1 unless defined $picimages;
+  $is_html    = 0;
+  $stylesheet = "LaTeXML-tei.xsl" if !defined $stylesheet; }
 elsif ($format eq 'xml') {
   $extension = 'xml' unless defined $extension; }
 else {
