@@ -32,8 +32,8 @@ DefMacro('\cmidrule[]',
   '\@ifnextchar({\ifx.#1.\expandafter\ltx@@cmidrule\else\@afterfi\ltx@@cmidrule[#1]\fi}'
     . '{\ifx.#1.\expandafter\ltx@cmidrule\else\@afterfi\ltx@cmidrule[#1]\fi}');
 
-DefMacro('\ltx@@cmidrule[Dimension] Match:( Until:){}', '\cline{#3}');
-DefMacro('\ltx@cmidrule[Dimension]{}',                  '\cline{#2}');
+DefMacro('\ltx@@cmidrule[Dimension] SkipMatch:( Until:){}', '\cline{#3}');
+DefMacro('\ltx@cmidrule[Dimension]{}',                      '\cline{#2}');
 
 # add vspace
 DefMacro('\addlinespace[Dimension]', '');
