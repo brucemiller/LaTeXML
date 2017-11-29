@@ -1,0 +1,35 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  french.ldf                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# frenchb doesn't normally require this package,
+# but behaves better if it's loaded
+RequirePackage('textcomp');
+InputDefinitions('french', type => 'ldf', noltxml => 1);
+
+DefConstructor('\fup{}',        "<ltx:sup>#1</ltx:sup>");
+DefConstructor('\FB@up@fake{}', "<ltx:sup>#1</ltx:sup>");
+
+# Attempt to make it work with older & newer versions.
+Let('\ltx@orig@nombre', '\nombre');
+DefMacro('\nombre{}', '\@ifpackageloaded{numprint}{\numprint{#1}}{\ltx@orig@nombre{#1}}');
+AtBeginDocument(sub {
+    Let('\degre', '\textdegree');
+    DefMacro('\degres', '\hbox to 0.3em{\degre}');
+});
+
+1;
+
