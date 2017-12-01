@@ -3302,7 +3302,7 @@ DefPrimitive('\@check@length DefToken', sub {
       Warn('undefined', $cs, $stomach, "'" . ToString($cs) . "' is not a length; defining it now");
       DefRegisterI($cs, undef, Dimension(0)); }
     elsif (!$defn->isRegister) {
-      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got ".ref($defn)." instead of register.");
+      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got " . ref($defn) . " instead of register.");
     }
     return; });
 
@@ -4533,7 +4533,7 @@ DefMacro('\@ifstar {}{}', sub {
     if (T_OTHER('*')->equals($next)) {
       $if->substituteParameters()->unlist; }
     else {
-      ($else->substituteParameters()->unlist, $next); } });
+      ($else->substituteParameters()->unlist, ($next ? $next : ())); } });
 
 DefMacro('\@dblarg {}',    '\kernel@ifnextchar[{#1}{\@xdblarg{#1}}');
 DefMacro('\@xdblarg {}{}', '#1[{#2}]{#2}');
