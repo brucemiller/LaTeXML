@@ -63,12 +63,12 @@ NewCounter('paragraph',     'subsubsection', idprefix => 'P',   nested => ['subp
 NewCounter('subparagraph', 'paragraph', idprefix => 'SP', nested => ['equation', 'figure', 'table']);
 
 DefMacro('\thepart',          '\Roman{part}');
-DefMacro('\thechapter',       '\arabic{chapter}');
-DefMacro('\thesection',       '\thechapter.\arabic{section}');
-DefMacro('\thesubsection',    '\thesection.\arabic{subsection}');
-DefMacro('\thesubsubsection', '');
-DefMacro('\theparagraph',     '');
-DefMacro('\thesubparagraph',  '');
+DefMacro('\thechapter',       (CounterValue('secnumdepth')>=0) ? '\arabic{chapter}' : '');
+DefMacro('\thesection',       (CounterValue('secnumdepth')>=1) ? '\thechapter.\arabic{section}' : '');
+DefMacro('\thesubsection',    (CounterValue('secnumdepth')>=2) ? '\thesection.\arabic{subsection}' : '');
+DefMacro('\thesubsubsection', (CounterValue('secnumdepth')>=3) ? '\thesubsection.\arabic{subsubsection}' : '');
+DefMacro('\theparagraph',     (CounterValue('secnumdepth')>=4) ? '\thesubsubsection.\arabic{paragraph}' : '');
+DefMacro('\thesubparagraph',  (CounterValue('secnumdepth')>=5) ? '\theparagraph.\arabic{subparagraph}' : '');
 
 DefMacro('\chaptermark{}', '');
 
