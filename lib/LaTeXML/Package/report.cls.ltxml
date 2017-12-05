@@ -64,15 +64,10 @@ NewCounter('subparagraph', 'paragraph', idprefix => 'SP', nested => ['equation',
 
 DefMacro('\thepart',          '\Roman{part}');
 DefMacro('\thechapter',       (CounterValue('secnumdepth')>=0) ? '\arabic{chapter}' : '');
-
 DefMacro('\thesection',       (CounterValue('secnumdepth')>=1) ? '\thechapter.\arabic{section}' : '');
-
 DefMacro('\thesubsection',    (CounterValue('secnumdepth')>=2) ? '\thesection.\arabic{subsection}' : '');
-
 DefMacro('\thesubsubsection', (CounterValue('secnumdepth')>=3) ? '\thesubsection.\arabic{subsubsection}' : '');
-
 DefMacro('\theparagraph',     (CounterValue('secnumdepth')>=4) ? '\thesubsubsection.\arabic{paragraph}' : '');
-
 DefMacro('\thesubparagraph',  (CounterValue('secnumdepth')>=5) ? '\theparagraph.\arabic{subparagraph}' : '');
 
 DefMacro('\chaptermark{}', '');
