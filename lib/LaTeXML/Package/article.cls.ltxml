@@ -67,8 +67,8 @@ DefMacro('\thepart',          '\Roman{part}');
 DefMacro('\thesection',       '\arabic{section}');
 DefMacro('\thesubsection',    '\thesection.\arabic{subsection}');
 DefMacro('\thesubsubsection', '\thesubsection.\arabic{subsubsection}');
-DefMacro('\theparagraph',     '');
-DefMacro('\thesubparagraph',  '');
+DefMacro('\theparagraph',     '\thesubsubsection.\arabic{paragraph}');
+DefMacro('\thesubparagraph',  '\theparagraph.\arabic{subparagraph}');
 SetCounter(tocdepth => Number(3));
 
 NewCounter('equation',       'document', idprefix => 'E',  idwithin => 'section');

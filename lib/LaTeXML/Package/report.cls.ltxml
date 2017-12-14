@@ -66,9 +66,9 @@ DefMacro('\thepart',          '\Roman{part}');
 DefMacro('\thechapter',       '\arabic{chapter}');
 DefMacro('\thesection',       '\thechapter.\arabic{section}');
 DefMacro('\thesubsection',    '\thesection.\arabic{subsection}');
-DefMacro('\thesubsubsection', '');
-DefMacro('\theparagraph',     '');
-DefMacro('\thesubparagraph',  '');
+DefMacro('\thesubsubsection', '\thesubsection.\arabic{subsubsection}');
+DefMacro('\theparagraph',     '\thesubsubsection.\arabic{paragraph}');
+DefMacro('\thesubparagraph',  '\theparagraph.\arabic{subparagraph}');
 
 DefMacro('\chaptermark{}', '');
 
