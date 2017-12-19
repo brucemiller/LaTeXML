@@ -65,9 +65,9 @@ sub new {
 sub convertAndWriteFile {
   my ($self, $file) = @_;
   $file =~ s/\.tex$//;
-  my $dom = $self->convertFile($file);
-  $dom->toFile("$file.xml", 1) if $dom;
-  return $dom; }
+  my $doc = $self->convertFile($file);
+  $doc->getDocument->toFile("$file.xml", 1) if $doc;
+  return $doc; }
 
 sub convertFile {
   my ($self, $file) = @_;
