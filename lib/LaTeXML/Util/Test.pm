@@ -114,7 +114,7 @@ sub latexmlpost_ok {
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
   my ($texpath, $name) = @_;
-  my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includeComments => 0,
+  my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0,
       verbosity => -2); };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
