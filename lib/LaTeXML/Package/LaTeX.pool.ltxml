@@ -4075,7 +4075,7 @@ RawTeX(<<'EoTeX');
 \def\@carcube#1#2#3#4\@nil{#1#2#3}
 EoTeX
 
-DefMacro('\@ifdefinable Token {}', sub {
+DefMacro('\@ifdefinable DefToken {}', sub {
     my ($gullet, $token, $if) = @_;
     if (isDefinable($token)) {
       return $if->unlist }
