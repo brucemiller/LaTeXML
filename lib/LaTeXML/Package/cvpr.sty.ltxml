@@ -1,0 +1,47 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  cvpr                                                               | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Style for CVPR conference submissions
+# http://cvpr2017.thecvf.com/submission/main_conference/author_guidelines
+
+# cvpr.sty doesn't parse when using InputDefinitions. Most of it is irrelevant
+# for LaTeXML, so just the relevant stuff is just copied below.
+
+RequirePackage('xspace');
+RawTeX(<<'EoTeX');
+\newif\ifcvprfinal
+\cvprfinalfalse
+\def\cvprfinalcopy{\global\cvprfinaltrue}
+
+% Add a period to the end of an abbreviation unless there's one
+% already, then \xspace.
+\makeatletter
+\DeclareRobustCommand\onedot{\futurelet\@let@token\@onedot}
+\def\@onedot{\ifx\@let@token.\else.\null\fi\xspace}
+
+\def\eg{\emph{e.g}\onedot} \def\Eg{\emph{E.g}\onedot}
+\def\ie{\emph{i.e}\onedot} \def\Ie{\emph{I.e}\onedot}
+\def\cf{\emph{c.f}\onedot} \def\Cf{\emph{C.f}\onedot}
+\def\etc{\emph{etc}\onedot} \def\vs{\emph{vs}\onedot}
+\def\wrt{w.r.t\onedot} \def\dof{d.o.f\onedot}
+\def\etal{\emph{et al}\onedot}
+\makeatother
+
+EoTeX
+
+#======================================================================
+1;
