@@ -283,15 +283,14 @@ DefEnvironment('{document}', sub {
       $document->absorb($body); }
     else {
       $document->insertElement('ltx:document', $body, 'xml:id' => $id); } },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
   afterDigestBegin => sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
+    my @boxes = ();
     if (my $ops = LookupValue('@at@begin@document')) {
-      my @boxes = Digest(Tokens(@$ops));
-      $_[1]->setFont(LookupValue('font'));                     # Start w/ whatever font was selected.
-      return @boxes; }
-    else {
-      return; } },
+      push(@boxes, Digest(Tokens(@$ops)));
+      $_[1]->setFont(LookupValue('font')); }                   # Start w/ whatever font was selected.
+    AssignValue(inPreamble => 0);                              # atbegin is still (sorta) preamble
+    return @boxes; },
   beforeDigestEnd => sub {
     $_[0]->getGullet->flush;
     if (my $ops = LookupValue('@at@end@document')) {
@@ -707,6 +706,8 @@ DefMacro('\@if@ptions{}{}{}', sub {
     else {
       T_CS('\@secondoftwo'); } });
 
+DefMacro('\@ptionlist {}', '\@ifundefined{opt@#1}\@empty{\csname opt@#1\endcsname}');
+
 DefMacro('\g@addto@macro DefToken {}', sub { AddToMacro($_[1], $_[2]); });
 DefMacro('\addto@hook DefToken {}', '#1\expandafter{\the#1#2}');
 
@@ -758,7 +759,7 @@ DefRegister('\oddsidemargin'   => Dimension(0));
 DefRegister('\marginparwidth'  => Dimension(0));
 DefRegister('\marginparsep'    => Dimension(0));
 DefRegister('\columnwidth'     => Dimension('6in'));
-DefRegister('\linewidth  '     => Dimension('6in'));
+DefRegister('\linewidth'       => Dimension('6in'));
 DefRegister('\baselinestretch' => Dimension(0));
 
 #======================================================================
