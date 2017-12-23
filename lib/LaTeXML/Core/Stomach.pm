@@ -218,11 +218,11 @@ sub invokeToken_simple {
   my $font = $STATE->lookupValue('font');
   $STATE->clearPrefixes;    # prefixes shouldn't apply here.
   if ($cc == CC_SPACE) {
-    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))) {
+    if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
       return Box($meaning->getString, $font, $$self{gullet}->getLocator, $meaning); } }
-  elsif ($cc == CC_COMMENT) {    # Note: Comments need char decoding as well!
+  elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
     my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
     # However, spaces normally would have be digested away as positioning...
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
