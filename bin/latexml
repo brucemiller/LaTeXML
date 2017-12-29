@@ -76,8 +76,8 @@ my $latexml = LaTeXML::Core->new(
   searchpaths     => [grep { -d $_ } reverse(@paths)],
   graphicspaths   => ['.'],
   verbosity       => $verbosity, strict => $strict,
-  includeComments => $comments, inputencoding => $inputencoding,
-  includeStyles   => $includestyles,
+  includecomments => $comments, inputencoding => $inputencoding,
+  includestyles   => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
 # Check that destination is valid before wasting any time...

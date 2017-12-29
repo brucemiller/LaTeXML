@@ -199,8 +199,11 @@ sub parseParameters {
     if ($p =~ s/^(\{([^\}]*)\})\s*//) {
       my ($spec, $inner_spec) = ($1, $2);
       my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
-      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec,
-          ($inner ? (extra => [$inner]) : ()))); }
+      # If single inner spec is optional, make whole thing optional
+      my $opt = $inner && (scalar(@$inner) == 1) && $$inner[0]->getOptional;
+      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, 
+          ($inner ? (extra => [$inner]) : ()),
+          optional => $opt)); }
     elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
       my ($spec, $inner_spec) = ($1, $2);
       if ($inner_spec =~ /^Default:(.*)$/) {
@@ -800,7 +803,8 @@ sub RawTeX {
   return; }
 
 sub StartSemiverbatim {
-  $STATE->beginSemiverbatim(@_);
+  my (@chars) = @_;
+  $STATE->beginSemiverbatim(@chars);
   return; }
 
 sub EndSemiverbatim {
@@ -1078,7 +1082,6 @@ sub LookupRegister {
 
 sub LookupDimension {
   my ($cs) = @_;
-  my $defn;
   $cs = T_CS($cs) unless ref $cs;
   if (my $defn = $STATE->lookupDefinition($cs)) {
     if ($defn->isRegister) {    # Easy (and proper) case.
@@ -1693,9 +1696,9 @@ sub FindFile_aux {
     return $file; }
   if (pathname_is_absolute($file)) {    # And if we've got an absolute path,
     if (!$options{noltxml}) {
-      return $file . '.ltxml' if -f $file . '.ltxml'; }    # No need to search, just check if it exists.
-    return $file if -f $file;                              # No need to search, just check if it exists.
-    return; }                                              # otherwise we're never going to find it.
+      return $file . '.ltxml' if -f ($file . '.ltxml'); }    # No need to search, just check if it exists.
+    return $file if -f $file;    # No need to search, just check if it exists.
+    return; }                    # otherwise we're never going to find it.
   elsif (pathname_is_nasty($file)) {    # If it is a nasty filename, we won't touch it.
     return; }                           # we DO NOT want to pass this to kpathse or such!
 

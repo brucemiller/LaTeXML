@@ -603,7 +603,7 @@ sub new_latexml {
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
-    includeComments => $$opts{comments},
+    includecomments => $$opts{comments},
     inputencoding   => $$opts{inputencoding},
     includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},

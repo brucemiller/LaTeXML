@@ -128,7 +128,7 @@ if (my @baddirs = grep { !-d $_ } @paths) {
 
 my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
   verbosity => $verbosity, strict => $strict,
-  includeComments => 0, includeStyles => $includestyles,
+  includecomments => 0, includestyles => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
 

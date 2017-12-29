@@ -42,7 +42,7 @@ sub new {
     'global');
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
     'global');
-  $state->assignValue(INCLUDE_COMMENTS => (defined $options{includeComments} ? $options{includeComments} : 1),
+  $state->assignValue(INCLUDE_COMMENTS => (defined $options{includecomments} ? $options{includecomments} : 1),
     'global');
   $state->assignValue(DOCUMENTID => (defined $options{documentid} ? $options{documentid} : ''),
     'global');
@@ -65,9 +65,9 @@ sub new {
 sub convertAndWriteFile {
   my ($self, $file) = @_;
   $file =~ s/\.tex$//;
-  my $dom = $self->convertFile($file);
-  $dom->toFile("$file.xml", 1) if $dom;
-  return $dom; }
+  my $doc = $self->convertFile($file);
+  $doc->getDocument->toFile("$file.xml", 1) if $doc;
+  return $doc; }
 
 sub convertFile {
   my ($self, $file) = @_;
@@ -200,9 +200,10 @@ sub convertDocument {
       if (my $paths = $state->lookupValue('SEARCHPATHS')) {
         if ($state->lookupValue('INCLUDE_COMMENTS')) {
           $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
-      foreach my $preload (@{ $$self{preload} }) {
+      foreach my $preload_by_reference (@{ $$self{preload} }) {
+        my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
         next if $preload =~ /\.pool$/;
-        my $options = undef;                                 # Stupid perlcritic policy
+        my $options = undef;                 # Stupid perlcritic policy
         if ($preload =~ s/^\[([^\]]*)\]//) { $options = $1; }
         if ($preload =~ s/\.cls$//) {
           $document->insertPI('latexml', class => $preload, ($options ? (options => $options) : ())); }
@@ -314,7 +315,7 @@ Creates a new LaTeXML object for transforming TeX files into XML.
  strict     : If true, undefined control sequences and
               invalid document constructs give fatal
               errors, instead of warnings.
- includeComments : If false, comments will be excluded
+ includecomments : If false, comments will be excluded
               from the result document.
  preload    : an array of modules to preload
  searchpath : an array of paths to be searched for Packages

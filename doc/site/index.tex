@@ -184,6 +184,12 @@ is less widely available.
 \item[UUID::Tiny] generates unique identifiers that can be used to make better ePub documents
   (it can be installed using \htmlref{CPAN}{install.cpan.prereq}).
 
+\item[perl-doc]\label{perl-doc}
+ On \emph{some} compact distributions the perl documentation modules
+ are not installed by default (eg.~debian minimal). These modules help generate
+ readable command-line documentation for the \LaTeXML\ tools. Thus you \emph{may}
+ want to install an extra package (\texttt{perl-doc} on debian minimal) to enable this feature. 
+
 \end{description}
 \emph{Note to packagers:} If you are preparing a compiled installation package (such as rpm or deb) for
 \LaTeXML, and the above packages are easily installable in your distribution,
@@ -254,6 +260,8 @@ sudo apt-get install   \
 Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired.
+
+See note \ref{perl-doc} about optional installation of \texttt{perl-doc}.
 
 \subsection{Archlinux \& friends}\label{install.arch}\index{Arch}
 For Archlinux and derivatives, it is most convenient to install from sources via \htmlref{CPANM}{install.cpanm}. 

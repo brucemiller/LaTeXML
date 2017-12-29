@@ -165,7 +165,7 @@ sub XXXcompare_xml {
   #========================================
   # Generate the XML from the current latexml
   local ($^W) = 0;    # NASTY way to turn off redefinitions!
-  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [], includeComments => 0, verbosity => $verbosity);
+  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [], includecomments => 0, verbosity => $verbosity);
   my $file = pathname_concat($dir, $name);
   my $newdom = $latexml->convertFile(pathname_concat($dir, $name))
     or die "Failed to convert $file.tex: $!";
@@ -246,23 +246,11 @@ sub gen_xml {
   local ($^W) = 0;    # NASTY way to turn off redefinitions!
   my $file = pathname_concat($dir, $name);
   my $latexml = LaTeXML::Core->new(preload => [], searchpath => [],
-    includeComments => 0, verbosity => $verbosity);
+    includecomments => 0, verbosity => $verbosity);
   if (-f "$file.xml") {
     rename("$file.xml", "$file.xml.bak"); }
   $latexml->convertAndWriteFile($file)
     or die "Failed to create $file.xml: $!";
-  return; }
-
-sub gen_xml {
-  my ($dir, $name) = @_;
-  my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
-  my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
-  if (-f $xml) {
-    rename($xml, $xml . '.bak'); }
-  system('latexml', $source,
-    "--destination=" . $xml,
-    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
-    or die "Failed to create $xml: $!";
   return; }
 
 sub gen_pdf {

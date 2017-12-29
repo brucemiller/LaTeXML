@@ -1994,6 +1994,16 @@ getReversion(parameter)
     RETVAL
 
 int
+getOptional(parameter)
+    SV * parameter;
+  INIT:
+    LaTeXML_Parameter param = SvParameter(parameter);
+  CODE:
+    RETVAL = param->flags & PARAMETER_OPTIONAL;
+  OUTPUT:
+    RETVAL
+
+int
 getUndigested(parameter)
     SV * parameter;
   INIT:

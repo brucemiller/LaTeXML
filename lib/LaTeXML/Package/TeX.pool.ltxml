@@ -1720,23 +1720,23 @@ sub insertBlock {
   my $model   = $document->getModel;
   my $context = $document->getElement;    # Where we originally start inserting.
 
-  # If we're "explicitly" asking for a vbox, or can't currently put an ltx:p in
-  # (which would be a typical block mode item), or if the current point accepts raw text,
-  # then we'd better open an inline-block.
-  # [A thought is to close any open ltx:p, or create & delete one, just to "prime" it.
-  # but those seem a bad idea, because we may want a vbox inside a p, or....]
+  # Generally, we're going to need some sort of container to hold the contents of the block.
+  # Particularly if we're: setting various size & positioning attributes;
+  # or can't currently open an ltx:p; or if the current point accepts plain text (#PCDATA).
+  # If we're in an inline context, we'll need a ltx:inline-block,  otherwise ltx:block.
+  # [Or maybe an ltx:para... when does that happen?]
   my $newblock = undef;
   my $unwrap   = 0;
   map { ($blockattr{$_} || delete $blockattr{$_}) } keys %blockattr;
   my $hasattr = scalar(keys %blockattr);
   if ($hasattr || !$document->canContainSomehow($context, 'ltx:p') || $document->canContain($context, '#PCDATA')) {
-    # [If we DONT open, we lose the vattach!]
-    $newblock = $document->openElement('ltx:inline-block', '_autoclose' => 1, %blockattr); }
-  elsif ($document->canContainSomehow($context, 'ltx:para')) {
-    $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
-  #  else {
-  #    $unwrap = 1;
-  #    $newblock = $document->openElement('ltx:inline-block',%blockattr); }
+    my $tag = ($document->canContain($context, 'ltx:block')
+      ? 'ltx:block'
+      : 'ltx:inline-block');
+    $newblock = $document->openElement($tag, '_autoclose' => 1, %blockattr); }
+  ## I think this option isn't really needed.... try to simplify
+  ## elsif ($document->canContainSomehow($context, 'ltx:para')) {
+  ## $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
 
   # Insert the content for the block, and reduce
   $document->setAttribute($document->getElement, '_vertical_mode_' => 1);    # HACK!!!! (see \hbox)
@@ -2780,6 +2780,9 @@ DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noin
 
 # Remember; \par _closes_, not opens, paragraphs!
 # Here, we want to close both an open p and para (if either are open).
+# NOTE Also that the whole inPreamble bit is, I think, overused.
+# For example, \par should be a NOOP in vertical mode, and that would generally make it
+# ignored in the preamble.
 DefConstructorI('\par', undef, sub {
     my ($document, %props) = @_;
     if ($props{inPreamble}) { }

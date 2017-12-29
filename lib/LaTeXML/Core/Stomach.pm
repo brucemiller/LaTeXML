@@ -115,7 +115,7 @@ use base qw(LaTeXML::Common::Object);
 #       }); }
 
 sub makeDigestedList {
-  my($self,$ismath)=@_;
+  my ($self, $ismath) = @_;
   return List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text')); }
 
 # Invoke a token;
@@ -217,7 +217,7 @@ sub invokeToken_simple {
   my $font = $STATE->lookupValue('font');
   $STATE->clearFlags;    # prefixes shouldn't apply here.
   if ($cc == CC_SPACE) {
-    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))) {
+    if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
       return Box($meaning->getString, $font, $$self{gullet}->getLocator, $meaning); } }
@@ -237,7 +237,7 @@ sub invokeToken_comment {
   ##    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
   my $comment = $token->getString;
   # However, spaces normally would have be digested away as positioning...
-  my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
+  my $badspace = pack('U', 0xA0) . "\x{0335}";      # This is at space's pos in OT1
   $comment =~ s/\Q$badspace\E/ /g;
   return LaTeXML::Core::Comment->new($comment); }
 
@@ -245,17 +245,18 @@ sub invokeToken_insert {
   my ($self, $token) = @_;
   my $cc   = $token->getCatcode;
   my $font = $STATE->lookupValue('font');
-  $STATE->clearFlags;    # prefixes shouldn't apply here.
-  if ($cc == CC_SPACE){
-    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))){
+  $STATE->clearFlags;                               # prefixes shouldn't apply here.
+  if ($cc == CC_SPACE) {
+###    if (($STATE->lookupValue('IN_MATH') || $STATE->lookupValue('inPreamble'))){
+    if ($STATE->lookupValue('IN_MATH')) {
       return (); }
     else {
       return Box($token->getString, $font, $self->getGullet->getLocator, $token); } }
   return Box(LaTeXML::Package::FontDecodeString($token->getString, undef, 1),
-             undef, undef, $token); }
+    undef, undef, $token); }
 
 sub invokeToken_definition {
-  my($self, $token, $defn)=@_;
+  my ($self, $token, $defn) = @_;
   my @result = $defn->invoke($token, $self);
 ### NOT needed, since these definitions are only constructors!
 ###  $STATE->clearFlags unless $defn->isPrefix;    # Clear prefixes unless we just set one.
@@ -307,7 +308,7 @@ sub regurgitate {
 sub currentFrameMessage {
   my ($self) = @_;
   return "current frame is "
-    . ($STATE->isValueBound('MODE', 0)       # SET mode in CURRENT frame ?
+    . ($STATE->isValueBound('MODE', 0)    # SET mode in CURRENT frame ?
     ? "mode-switch to " . $STATE->lookupValue('MODE')
     : ($STATE->lookupValue('groupNonBoxing')    # Current frame is a non-boxing group?
       ? "non-boxing" : "boxing") . " group")
@@ -381,14 +382,14 @@ sub currentFrameMessage {
 #   return; }
 
 sub getMergedMathFont {
-  my($self, $curfont, $mode)=@_;
+  my ($self, $curfont, $mode) = @_;
   return $STATE->lookupValue('mathfont')->merge(
     color => $curfont->getColor, background => $curfont->getBackground,
     size => $curfont->getSize,
     mathstyle => ($mode =~ /^display/ ? 'display' : 'text')); }
 
 sub getMergedTextFont {
-  my($self, $curfont)=@_;
+  my ($self, $curfont) = @_;
   return $STATE->lookupValue('savedfont')->merge(
     color => $curfont->getColor, background => $curfont->getBackground,
     size => $curfont->getSize); }
