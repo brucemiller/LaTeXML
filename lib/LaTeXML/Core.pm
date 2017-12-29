@@ -166,10 +166,10 @@ sub finishDigestion {
   #   Error('expected', '\fi', $stomach,
   #     "Input ended while conditional " . ToString($$ifstack[0]{token}) . " was incomplete",
   #     "started at " . ToString($$ifstack[0]{start})); }
-  if(my $ifcontext = $state->getIfContext){
+  if (my $ifcontext = $state->getIfContext) {
     Error('expected', '\fi', $stomach,
       "Input ended while conditional was incomplete",
-          $ifcontext); }
+      $ifcontext); }
   $stomach->getGullet->flush;
   return List(@stuff); }
 

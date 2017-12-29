@@ -201,7 +201,7 @@ sub parseParameters {
       my $inner = ($inner_spec ? parseParameters($inner_spec, $for) : undef);
       # If single inner spec is optional, make whole thing optional
       my $opt = $inner && (scalar(@$inner) == 1) && $$inner[0]->getOptional;
-      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec, 
+      push(@params, LaTeXML::Core::Parameter->new('Plain', $spec,
           ($inner ? (extra => [$inner]) : ()),
           optional => $opt)); }
     elsif ($p =~ s/^(\[([^\]]*)\])\s*//) {    # Ditto for Optional
