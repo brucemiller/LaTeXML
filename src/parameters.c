@@ -84,7 +84,7 @@ int NEUTRALIZABLE[] = {
 
 SV *
 parameter_neutralize(pTHX_ SV * state, SV * tokens){
-  if(sv_isa(tokens,"LaTeXML::Core::Tokens")){
+  if(isa_Tokens(tokens)){
     LaTeXML_Tokens xtokens = SvTokens(tokens);
     SV * newtokens = tokens_new(aTHX_ xtokens->ntokens);
     LaTeXML_Tokens xnewtokens = SvTokens(newtokens);
@@ -109,13 +109,13 @@ parameter_read_internal(pTHX_ SV * parameter, SV * gullet, SV * state, SV * ford
   LaTeXML_Parameter xparameter = SvParameter(parameter);
   SV * value = NULL;
   if(xparameter->opreader){
-    DEBUG_Gullet("readArguments reading parameter %s for %p, opcode %p\n",
-                 xparameter->spec, fordefn, xparameter->opreader);
+    DEBUG_Gullet("readArguments reading parameter %s for %s, opcode %p\n",
+                 xparameter->spec, TokenName(fordefn), xparameter->opreader);
     value = xparameter->opreader(aTHX_ parameter, gullet, state,
                                 xparameter->nextra, xparameter->extra); }
   else if(xparameter->reader){
-    DEBUG_Gullet("readArguments reading parameter %s for %p, code = %p\n",
-                 xparameter->spec, fordefn, xparameter->reader);
+    DEBUG_Gullet("readArguments reading parameter %s for %s, code = %p\n",
+                 xparameter->spec, TokenName(fordefn), xparameter->reader);
     dSP; ENTER; SAVETMPS; PUSHMARK(SP);
     EXTEND(SP,1+xparameter->nextra); PUSHs(gullet);
     int i;
@@ -128,7 +128,7 @@ parameter_read_internal(pTHX_ SV * parameter, SV * gullet, SV * state, SV * ford
     int nvals = call_sv(xparameter->reader,G_SCALAR);
     SPAGAIN;
     if(nvals == 0){ }       /* nothing returned? */
-    else if(nvals == 1){  
+    else if(nvals == 1){    /* pretty much can return anything? */
       value = POPs;
       if(! SvOK(value)){
         value = NULL; }
@@ -136,7 +136,7 @@ parameter_read_internal(pTHX_ SV * parameter, SV * gullet, SV * state, SV * ford
         SvREFCNT_inc(value); } }
     else {
       /* Or just warn of internal mis-definition? */
-      croak("readArguments parameter reader for %p, returned %d values\n", fordefn, nvals); }
+      croak("readArguments parameter reader for %s, returned %d values\n", TokenName(fordefn), nvals); }
     PUTBACK; FREETMPS; LEAVE; }
   else {
     croak("No reader (CODE or Opcode) for parameter %s (%p)",xparameter->spec, parameter); }
@@ -182,8 +182,8 @@ parameter_readAndDigest(pTHX_ SV * parameter, SV * stomach, SV * state, SV * for
     /*  NOT AV's ... YET?
         boxstack_callAV(aTHX_ stack, parameter, SvArray(xparameter->beforeDigest),
       state, stomach, fordefn, 0, NULL); }*/
-    boxstack_call(aTHX_ stack, parameter, xparameter->beforeDigest,
-                    state, stomach, fordefn, 0, NULL); }
+    boxstack_call(aTHX_ stack, fordefn, state,
+                  parameter, xparameter->beforeDigest, stomach, 0, NULL); }
 
   if(value && xparameter->semiverbatim){
     /*$value = $value->neutralize(@$semiverbatim) if (ref $value) && ($value->can('neutralize'));*/
@@ -198,8 +198,8 @@ parameter_readAndDigest(pTHX_ SV * parameter, SV * stomach, SV * state, SV * for
   if(xparameter->afterDigest){
     /* boxstack_callAV(aTHX_ stack, parameter, SvArray(xparameter->afterDigest),
        state, stomach, fordefn, 0, NULL); } */
-    boxstack_call(aTHX_ stack, parameter, xparameter->afterDigest,
-                    state, stomach, fordefn, 0, NULL); }
+    boxstack_call(aTHX_ stack, fordefn, state,
+                  parameter, xparameter->afterDigest, stomach, 0, NULL); }
   if(xparameter->semiverbatim){
     state_endSemiverbatim(aTHX_ state); }
   return value; }

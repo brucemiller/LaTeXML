@@ -44,7 +44,7 @@ our $MORE_MAKERULES = '';
 # but rest of MakeMaker assumes objects will be at top-level,
 # we need to do some tweaking.
 # Also, we'd like the C sources files to depend on the headers!
-our @CSOURCES = qw(object tokens numbers tokenstack state mouth
+our @CSOURCES = qw(errors object tokens numbers tokenstack state mouth
                    parameters gullet stomach boxstack expandable primitive);
 record_revision();
 compile_MathGrammar();

@@ -90,7 +90,7 @@ sub invoke {
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
-  my @args = $self->readArgumentsAndDigest($stomach);
+  my @args = $self->readArgumentsAndDigest($stomach,$$self{cs});
   print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];

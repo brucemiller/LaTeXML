@@ -36,6 +36,8 @@ typedef struct Parameter_struct {
 } T_Parameter;
 typedef T_Parameter * LaTeXML_Parameter;
 
+#define isa_Parameter(arg)    ((arg) && sv_isa(arg, "LaTeXML::Core::Parameter"))
+
 #define SvParameter(arg)      ((LaTeXML_Parameter)INT2PTR(LaTeXML_Parameter,SvIV((SV*) SvRV(arg))))
 
 #define PARAMETER_OPTIONAL   0x01

@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "state.h"
@@ -644,10 +645,7 @@ state_Equals(pTHX_ SV * thing1, SV * thing2){
       EXTEND(SP,2); PUSHs(thing1); PUSHs(thing2); PUTBACK;
       int nvals = call_method("equals",G_SCALAR);
       SPAGAIN;
-      int result = 0;
-      if(nvals){
-        SV * value = POPs;
-        result = SvTRUE(value); }
+      int result = (nvals > 0 ? SvTRUEx(POPs) : 0);
       PUTBACK; FREETMPS; LEAVE;
       return result; } }
   return 0; }
@@ -672,7 +670,7 @@ state_definition(pTHX_ SV * state, SV * token){
   SV * defn;
   if(name
      && (defn = state_lookup_noinc(aTHX_ state, TBL_MEANING, name))
-     && !sv_isa(defn, "LaTeXML::Core::Token")){ /* not a simple token! */
+     && !isa_Token(defn)){ /* not a simple token! */
     SvREFCNT_inc(defn);
     return defn; }
   else {
@@ -719,7 +717,7 @@ state_expandable(pTHX_ SV * state, SV * token){
   HV * defn_hash;
   if(name
      && (defn = state_lookup_noinc(aTHX_ state, TBL_MEANING, name))
-     && SvROK(defn) && sv_isa(defn, "LaTeXML::Core::Definition::Expandable")
+     && SvROK(defn) && isa_Expandable(defn)
      && (defn_hash = SvHash(defn))
      && ! hash_getBoole(aTHX_ defn_hash,"isProtected")){
     SvREFCNT_inc(defn);
@@ -800,6 +798,8 @@ register_valueOf(pTHX_ SV * reg, SV * state, int nargs, SV ** args){
     PUTBACK;
     int nvals = call_sv(getter,G_SCALAR);
     SPAGAIN;
+    /* Could return one of a variety of register types,
+       how to check against what was expected? */
     if(nvals){ value = POPs; SvREFCNT_inc(value); }
     PUTBACK; FREETMPS; LEAVE; }
   else if (nargs > 0){

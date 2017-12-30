@@ -309,6 +309,9 @@ sub generateMessage {
   #   showErrorContext() ?????
   $detail = 0 unless defined $detail;
   # Increment $detail if $verbosity > 0, unless $detail = -1,
+  if($LaTeXML::CURRENT_TOKEN){  # !!!
+    push(@lines,"While processing ".Stringify($LaTeXML::CURRENT_TOKEN)); }
+
   my $verbosity = ($STATE && $STATE->lookupValue('VERBOSITY')) || 0;
   if (($detail > -1) && ($verbosity > 0)) {
     $detail = 0 if defined $verbosity && $verbosity < -1;

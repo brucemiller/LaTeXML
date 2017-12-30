@@ -19,6 +19,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "tokenstack.h"
@@ -59,7 +60,7 @@ boxstack_push(pTHX_ LaTeXML_Boxstack stack, SV * box){
 
 /* Invoke a object->method to produce boxes */
 void                            /* Horrible naming!!! */
-boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * state,
+boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * token, SV * state,
                     SV * object, UTF8 method,  int nargs, SV ** args) {
   DEBUG_Boxstack("Boxstack %p call %s on %d args\n",stack,method,nargs);
   int i;
@@ -87,7 +88,7 @@ boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * state,
       SV * box = ST(i);
       if (box && SvOK(box)){
         DEBUG_Boxstack("Box %s.",sv_reftype(SvRV(box),1));
-        /*box = SvRV(box);  ????? */
+        typecheck_value(box,TokenName(token),"digestion",BoxLike);
         SvREFCNT_inc(box);
         stack->boxes[stack->nboxes++] = box; } } }
   PUTBACK; FREETMPS; LEAVE;
@@ -95,15 +96,14 @@ boxstack_callmethod(pTHX_ LaTeXML_Boxstack stack, SV * state,
 
 /* Call a primitive's replacement sub (OPCODE or CODE) on the given arguments */
 void                            /* Horrible naming!!! */
-boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
-              SV * state, SV * stomach, SV * token,
-              int nargs, SV ** args) {
+boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * token, SV * state,
+              SV * primitive, SV * sub, SV * stomach, int nargs, SV ** args) {
   DEBUG_Boxstack("Boxstack %p call %p on %d args\n",stack,sub,nargs);
   int i;
   if(! SvOK(sub)){      /* empty? */
     DEBUG_Boxstack("Replacement is undef\n");
     return; }
-  else if(sv_isa(sub,"LaTeXML::Core::Opcode")){
+  else if(isa_Opcode(sub)){
     UTF8 opcode = SvPV_nolen(SvRV(sub));
     DEBUG_Boxstack("Replacement is opcode %s\n", opcode);
     primitive_op * op = primitive_lookup(aTHX_ opcode);
@@ -111,7 +111,7 @@ boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
       op(aTHX_ token, primitive, stomach, state, nargs, args, stack); }
     else {
       croak("Internal error: Primitive opcode %s has no definition",opcode); } }
-  else if(SvTYPE(SvRV(sub)) == SVt_PVCV){ /* ref $expansion eq 'CODE' */
+  else if(isa_CODE(sub)){
     DEBUG_Boxstack("Replacement is CODE %p\n", sub);
     dSP; ENTER; SAVETMPS; PUSHMARK(SP);
     EXTEND(SP,nargs+1); PUSHs(stomach); 
@@ -136,7 +136,7 @@ boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
         SV * box = ST(i);
         if (box && SvOK(box)){
           DEBUG_Boxstack("Box.");
-          /*box = SvRV(box);  ????? */
+          typecheck_value(box,TokenName(token),"digested",BoxLike);
           SvREFCNT_inc(box);
           stack->boxes[stack->nboxes++] = box; } } }
     PUTBACK; FREETMPS; LEAVE;
@@ -147,9 +147,8 @@ boxstack_call(pTHX_ LaTeXML_Boxstack stack, SV * primitive, SV * sub,
 
 
 void
-boxstack_callAV(pTHX_ LaTeXML_Boxstack stack, SV * primitive, AV * subs,
-                SV * state, SV * stomach, SV * token,
-                int nargs, SV ** args) {
+boxstack_callAV(pTHX_ LaTeXML_Boxstack stack, SV * token, SV * state,
+                SV * primitive, AV * subs, SV * stomach, int nargs, SV ** args) {
   int i;
   if(subs){
     SSize_t nsubs = av_len(subs) + 1;
@@ -158,7 +157,7 @@ boxstack_callAV(pTHX_ LaTeXML_Boxstack stack, SV * primitive, AV * subs,
       SV ** ptr = av_fetch(subs,i,0);
       if(*ptr && SvOK(*ptr)){
         SV * sub = *ptr;
-        boxstack_call(aTHX_ stack, primitive, sub, state, stomach, token, nargs, args); } }
+        boxstack_call(aTHX_ stack, token, state, primitive, sub, stomach, nargs, args); } }
     DEBUG_Boxstack("Boxstack %p done calling %ld subs\n",stack,nsubs); }
 }
 

@@ -20,6 +20,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "tokenstack.h"
@@ -54,7 +55,7 @@ tokenstack_pushToken(pTHX_ LaTeXML_Tokenstack stack, SV * token) {
 void
 tokenstack_push(pTHX_ LaTeXML_Tokenstack stack, SV * thing) {
   DEBUG_Tokenstack("Tokenstack push %p: %p ",stack,thing);
-  if (sv_isa(thing, "LaTeXML::Core::Token")) {
+  if (isa_Token(thing)) {
     DEBUG_Tokenstack( "Token.");
     if(stack->ntokens >= stack->nalloc){
       stack->nalloc += TOKENSTACK_ALLOC_QUANTUM;
@@ -62,7 +63,7 @@ tokenstack_push(pTHX_ LaTeXML_Tokenstack stack, SV * thing) {
     /* NOTE: Beware Tokens coming from Perl: use newSVsv (else the SV can change behind your back */
     SvREFCNT_inc(thing);
     stack->tokens[stack->ntokens++] = thing; }
-  else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
+  else if (isa_Tokens(thing)) {
     LaTeXML_Tokens xtokens = SvTokens(thing);
     int n = xtokens->ntokens;
     int i;

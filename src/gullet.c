@@ -19,6 +19,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "tokenstack.h"
@@ -60,8 +61,7 @@ SV *
 gullet_openMouth(pTHX_ SV * gullet, SV * mouth, int noautoclose){
   LaTeXML_Gullet xgullet = SvGullet(gullet);  
   if(mouth && SvOK(mouth)){
-    if(sv_isa(mouth,"LaTeXML::Core::Tokens")
-       || sv_isa(mouth,"LaTeXML::Core::Token")){
+    if(isa_Tokens(mouth) || isa_Token(mouth)){
       SV * tokens = mouth;
       SV * state = state_global(aTHX);
       mouth = mouth_new(aTHX_ "LaTeXML::Core::Mouth","Tokens", "Tokens", "",
@@ -72,10 +72,10 @@ gullet_openMouth(pTHX_ SV * gullet, SV * mouth, int noautoclose){
       LaTeXML_Mouth xm = SvMouth(mouth);
       xm->flags &= ~MOUTH_INTERESTING;
       mouth_unread(aTHX_ mouth, tokens); }
-    else if(sv_derived_from(mouth,"LaTeXML::Core::Mouth")){
+    else if(isa_Mouth(mouth)){
       SvREFCNT_inc(mouth); }
     else { 
-      croak("Shouldn't get %p as a mouth",mouth); }
+      typecheck_fatal(mouth,"mouth","gullet->openMouth",Token,Tokens,Mouth); }
     SV * previous = xgullet->mouth;
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     xmouth->previous_mouth = previous;
@@ -605,14 +605,14 @@ gullet_prepareMatch(pTHX_ SV * gullet, int nchoices, int * type, SV ** choices){
   /* prepare for matching by characterizing the candidates, thier types, lengths, etc. */
   for(choice = 0; choice < nchoices; choice++){
     SV * thing = choices[choice];
-    if (sv_isa(thing, "LaTeXML::Core::Token")) {
+    if (isa_Token(thing)) {
       type[choice] = 1;
       /*choices[choice] = SvRV(thing);*/
       DEBUG_Gullet("readUntil: choice %d = %s[%s]\n",choice,
          CC_SHORT_NAME[(SvToken(choices[choice]))->catcode],(SvToken(choices[choice]))->string);
       if(maxlength < 1){
         maxlength = 1; } }
-    else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
+    else if (isa_Tokens(thing)) {
       LaTeXML_Tokens xtokens = SvTokens(thing);
       if(xtokens->ntokens == 1){
         type[choice] = 1;
@@ -812,12 +812,12 @@ gullet_addnewparameter(pTHX_ AV * parameters, SV * state,
   if(!desc){
     croak("internal:missing_parameter_definition:%s",type); }
   SV * reader = hash_get_noinc(aTHX_ desc, "reader");
-  if(reader && sv_isa(reader,"LaTeXML::Core::Opcode")){
+  if(reader && isa_Opcode(reader)){
     UTF8 opcode = SvPV_nolen(SvRV(reader));
     parameter->opreader = parameter_lookup(aTHX_ opcode);
     if(! parameter->opreader){
       croak("Parameter %s has an undefined opcode %s",parameter->spec,opcode); }}
-  else if(reader && SvTYPE(SvRV(reader)) == SVt_PVCV){
+  else if(reader && isa_CODE(reader)){
     SvREFCNT_inc(reader);
     parameter->reader = reader; }
   else {
@@ -1078,10 +1078,9 @@ gullet_readFloatingPoint(pTHX_ SV * gullet, SV * state, int comma_p){
                && (ch >= '0') && (ch <= '9')) {
           number += (ch - '0')*e; e /= 10;
           SvREFCNT_dec(token); } }
-      /*fprintf(stderr,"Floating: %f\n",number);*/
       if(token){
-        if(t->catcode != CC_SPACE){
-          mouth_unreadToken(aTHX_ xgullet->mouth, token); }
+        /*if(t->catcode != CC_SPACE){ */
+        mouth_unreadToken(aTHX_ xgullet->mouth, token); /*}*/
         SvREFCNT_dec(token); } }
     else if((cc == CC_OTHER) && (index("'`\"",ch))){
       mouth_unreadToken(aTHX_ xgullet->mouth, token);
@@ -1161,8 +1160,12 @@ gullet_readUnit(pTHX_ SV * gullet, SV * state, double defaultunit){
   else if(defaultunit != 0.0){
     return defaultunit; }
   else {
-    warn("expected:<unit> Illegal unit of measure (pt inserted).");
-    gullet_showContext(aTHX_ gullet, state);
+    SV * t1 = gullet_readToken(aTHX_ gullet,state);
+    SV * t2 = gullet_readToken(aTHX_ gullet,state);
+    croak("expected:<unit> Illegal unit of measure %s%s (pt inserted).",
+         TokenName(t1),TokenName(t2));
+    gullet_unread(aTHX_ gullet,t2);    gullet_unread(aTHX_ gullet,t1);
+    /*gullet_showContext(aTHX_ gullet, state);*/
     return 65536; } }
 
 double
@@ -1181,8 +1184,12 @@ gullet_readMuUnit(pTHX_ SV * gullet, SV * state){
     SvREFCNT_dec(regvalue); 
     return unit; }
   else {
-    warn("expected:<unit> Illegal unit of measure (mu inserted).");
-    gullet_showContext(aTHX_ gullet, state);
+    SV * t1 = gullet_readToken(aTHX_ gullet,state);
+    SV * t2 = gullet_readToken(aTHX_ gullet,state);
+    warn("expected:<unit> Illegal unit of measure %s%s (mu inserted).",
+         TokenName(t1),TokenName(t2));
+    gullet_unread(aTHX_ gullet,t2);    gullet_unread(aTHX_ gullet,t1);
+    /*gullet_showContext(aTHX_ gullet, state);*/
     return 10.0*65536/18; } }
 
 void                            /* private */
@@ -1339,15 +1346,15 @@ gullet_readArguments(pTHX_ SV * gullet, SV * state,
                      int npara, AV * parameters, SV * fordefn, SV * args[]){
   int ip;
   int nargs = 0;
-  DEBUG_Gullet("readArguments reading %d parameters for %p\n",npara, fordefn);
+  DEBUG_Gullet("readArguments reading %d parameters for %s\n",npara, TokenName(fordefn));
   for(ip = 0; ip < npara; ip++){
     SV * parameter =  array_get_noinc(aTHX_ parameters,ip);
     SV * value = parameter_read(aTHX_ parameter, gullet, state, fordefn);
     LaTeXML_Parameter xparameter = SvParameter(parameter);
     if(! (xparameter->flags & PARAMETER_NOVALUE)){ /* Now (maybe) store the argument */
-      DEBUG_Gullet("readArguments stored argument %d = %p, for %p\n", nargs, value, fordefn);
+      DEBUG_Gullet("readArguments stored argument %d = %p, for %s\n", nargs, value, TokenName(fordefn));
       args[nargs++] = value; } }
-  DEBUG_Gullet("readArguments read %d args (of %d) for %p\n",nargs, npara, fordefn);
+  DEBUG_Gullet("readArguments read %d args (of %d) for %s\n",nargs, npara, TokenName(fordefn));
   return nargs; }
 
 

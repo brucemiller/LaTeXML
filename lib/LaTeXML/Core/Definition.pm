@@ -54,7 +54,7 @@ sub getParameters {
 sub readArguments {
   my ($self, $gullet) = @_;
   if (my $parameters = $$self{parameters}) {
-    return $gullet->readArguments($parameters, $$self{cs}->getCSName); }
+    return $gullet->readArguments($parameters, $$self{cs}); }
   else {
     return; } }
 
@@ -64,7 +64,7 @@ sub readArgumentsAndDigest {
   if ($$self{parameters}) {
     my $gullet = $stomach->getGullet;
     foreach my $parameter (@{ $$self{parameters} }) {
-      my $value = $parameter->readAndDigest($stomach, $self);
+      my $value = $parameter->readAndDigest($stomach, $$self{cs});
       if (!$parameter->getNovalue) {
         push(@args, $value); } } }
 
@@ -106,6 +106,22 @@ sub tracingArgs {
 sub tracingArgToString {
   my ($arg) = @_;
   return (ref $arg eq 'ARRAY' ? '[' . join(',', map { ToString($_) } @$arg) . ']' : ToString($arg)); }
+
+# print a string of tokens like TeX would when tracing.
+sub tracetokens {
+  my ($tokens) = @_;
+  return join('', map { ($_->getCatcode == CC_CS ? $_->getString . ' ' : $_->getString) }
+      $tokens->unlist); }
+
+# Temporary?
+sub showtrace {
+  my($self, $token, $result, @args)=@_;
+  my $fortoken = $$self{cs};
+  print STDERR "\n" . $self->tracingCSName($token)
+    . ' [for ' . ToString($fortoken).']'
+    . ' ==> ' . ($result ? tracetokens($result) : '') . "\n";
+  print STDERR $self->tracingArgs(@args) . "\n" if @args;
+  return; }
 
 #======================================================================
 # Profiling support

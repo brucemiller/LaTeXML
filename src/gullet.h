@@ -31,6 +31,8 @@ typedef struct Gullet_struct {
 }  T_Gullet;
 typedef T_Gullet * LaTeXML_Gullet;
 
+#define isa_Gullet(arg)       ((arg) && sv_isa(arg, "LaTeXML::Core::Gullet"))
+
 #define SvGullet(arg)      ((LaTeXML_Gullet)INT2PTR(LaTeXML_Gullet, SvIV((SV*) SvRV(arg))))
 
 extern SV *

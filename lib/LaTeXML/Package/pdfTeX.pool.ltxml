@@ -130,10 +130,10 @@ DefParameterType('OpenActionSpecification', sub {
   optional => 1, undigested => 1);
 
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');
-DefMacro('\pdfnames{}',   {});
-DefMacro('\pdftrailer{}', {});
-DefMacro('\pdfmapfile{}', '');
-DefMacro('\pdfmapline{}', '');
+DefMacro('\pdfnames{}',   undef);
+DefMacro('\pdftrailer{}', undef);
+DefMacro('\pdfmapfile{}', undef);
+DefMacro('\pdfmapline{}', undef);
 # \pdffontattr font general text
 # \pdffontexpand font expand spec
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)

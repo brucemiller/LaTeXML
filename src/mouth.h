@@ -53,6 +53,8 @@ typedef struct Mouth_struct {
 } T_Mouth;
 typedef T_Mouth * LaTeXML_Mouth;
 
+#define isa_Mouth(arg)        ((arg) && sv_derived_from(arg, "LaTeXML::Core::Mouth"))
+
 #define SvMouth(arg)      ((LaTeXML_Mouth)INT2PTR(LaTeXML_Mouth, SvIV((SV*) SvRV(arg))))
 
 extern void

@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "tokenstack.h"
@@ -42,7 +43,7 @@ mouth_new(pTHX_ UTF8 class, UTF8 source, UTF8 short_source, UTF8 content,
   xmouth->saved_at_cc    = saved_at_cc;
   xmouth->saved_comments = saved_comments;
   xmouth->note_message   = (note_message ? string_copy(note_message) : NULL);
-  xmouth->flags = (strcmp(source,"Anonymous String") == 0 ? MOUTH_INTERESTING : 0);
+  xmouth->flags = (strcmp(source,"Anonymous String") == 0 ? 0 : MOUTH_INTERESTING);
   xmouth->previous_mouth = NULL;
   SV * mouth = newSV(0);
   sv_setref_pv(mouth, class, (void*)xmouth);
@@ -107,7 +108,7 @@ mouth_setInput(pTHX_ SV * mouth, UTF8 input){
   xmouth->ptr    = 0;
   xmouth->colno  = 0;
   xmouth->lineno = 1;
-  xmouth->flags  = 0;
+  xmouth->flags  &= ~MOUTH_AT_EOF;
   xmouth->prev_ptr    = xmouth->ptr;
   xmouth->prev_colno  = xmouth->colno;
   xmouth->prev_lineno = xmouth->lineno;

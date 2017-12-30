@@ -32,6 +32,8 @@ typedef struct Stomach_struct {
 } T_Stomach;
 typedef T_Stomach * LaTeXML_Stomach;
 
+#define isa_Stomach(arg)      ((arg) && sv_isa(arg, "LaTeXML::Core::Stomach"))
+
 #define SvStomach(arg)      INT2PTR(LaTeXML_Stomach,      SvIV((SV*) SvRV(arg)))
 
 extern SV *

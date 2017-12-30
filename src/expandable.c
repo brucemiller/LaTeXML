@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "numbers.h"
 #include "tokens.h"
@@ -31,11 +32,11 @@
 SV *
 expandable_new(pTHX_ SV * state, SV * cs, SV * parameters, SV * expansion, SV * locator){
   LaTeXML_State xstate = SvState(state);
-  if(!SvOK(cs) || !sv_isa(cs, "LaTeXML::Core::Token")) {
+  if(!SvOK(cs) || !isa_Token(cs)) {
     croak("Undefined cs!\n");}
   if(!expansion || !SvOK(expansion)){
     expansion = NULL; }
-  else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
+  else if(isa_Token(expansion)) {
     SV * tokens = tokens_new(aTHX_ 1);
     tokens_add_token(aTHX_ tokens,expansion);
     expansion = tokens; }
@@ -128,7 +129,7 @@ expandable_skipConditionalBody(pTHX_ SV * gullet, SV * state, int nskips, int so
     if(! defn){}
     else if ( ! (expansion = hash_get(aTHX_ SvHash(defn), "expansion"))){
       SvREFCNT_dec(defn); }
-    else if(! sv_isa(expansion,"LaTeXML::Core::Opcode")){
+    else if(! isa_Opcode(expansion)){
       SvREFCNT_dec(defn);
       SvREFCNT_dec(expansion); }
     else if( (opcode = SvPV_nolen(SvRV(expansion)) ) ){
@@ -193,10 +194,7 @@ expandable_opcode_ifgeneral(pTHX_ SV * current_token, SV * expandable, SV * gull
   int nvals = call_sv(test,G_SCALAR);
   DEBUG_Expandable("code returned %d values\n", nvals);
   SPAGAIN;
-  int boolean = 0;
-  if(nvals > 0){
-    SV * sv = POPs;
-    boolean = SvTRUE(sv); }
+  int boolean = (nvals > 0 ? SvTRUEx(POPs) : 0);
   PUTBACK; FREETMPS; LEAVE;
   expandable_doconditional(aTHX_ current_token, expandable, gullet, state, boolean);
   return NULL; }
@@ -314,14 +312,12 @@ expandable_opcode_ifcase(pTHX_ SV * current_token, SV * expandable, SV * gullet,
   int nvals = call_method("valueOf",G_SCALAR);
   SPAGAIN;
   int nskips = 0;
-  if(nvals > 0){
-    SV * sv = POPs;
-    nskips = SvIV(sv); }
+  SV * tmp = NULL;
+  if((nvals > 0) && (tmp = POPs) && isa_int(tmp)) {
+    nskips = SvIVx(tmp); }
+  else {
+    typecheck_fatal(tmp,"Result of valueOf","ifcase",int); }
   PUTBACK; FREETMPS; LEAVE;
-  /*
-  int ip;
-  for(ip = 0; ip < nargs; ip++){
-    SvREFCNT_dec(args[ip]); } */
   if(nskips > 0){
     SV * t = expandable_skipConditionalBody(aTHX_ gullet, state, nskips, ifid);
     if(t){ SvREFCNT_dec(t); } }
@@ -336,7 +332,7 @@ expandable_opcode_else(pTHX_ SV * current_token, SV * expandable, SV * gullet, S
     SV * tokens = tokens_new(aTHX_ 2);
     SV * relax =  token_new(aTHX_ "\\relax",CC_CS);
     tokens_add_token(aTHX_ tokens, relax); SvREFCNT_dec(relax);
-    tokens_add_to(aTHX_ tokens, current_token,0);
+    tokens_add_token(aTHX_ tokens, current_token);
     return tokens; }
   else if (ifframe->elses){
     croak("extra XXX; already saw \\else for this level"); }
@@ -354,7 +350,7 @@ expandable_opcode_fi(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV 
     SV * tokens = tokens_new(aTHX_ 2);
     SV * relax = token_new(aTHX_ "\\relax",CC_CS);
     tokens_add_token(aTHX_ tokens, relax); SvREFCNT_dec(relax);
-    tokens_add_to(aTHX_ tokens, current_token,0);
+    tokens_add_token(aTHX_ tokens, current_token);
     return tokens; }
   else {
     state_popIfFrame(aTHX_ state); }
@@ -396,6 +392,20 @@ expandable_opcode_the(pTHX_ SV * current_token, SV * expandable, SV * gullet, SV
     tokens = newtokens; }
   return tokens; }
 
+void
+expandable_showtrace(pTHX_ SV * expandable, SV * token, SV * expansion, int nargs, SV ** args){
+  dSP;
+  ENTER; SAVETMPS; PUSHMARK(SP);
+  EXTEND(SP,nargs+3); PUSHs(expandable); PUSHs(token); PUSHs(expansion);
+  int ip;
+  for(ip=0; ip<nargs; ip++){
+    SV * arg = (args[ip] ? args[ip] : &PL_sv_undef);
+    PUSHs(arg); }
+  PUTBACK;
+  call_method("showtrace",G_DISCARD);
+  SPAGAIN; PUTBACK; FREETMPS; LEAVE;
+}
+
 SV *
 expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   LaTeXML_State xstate = SvState(state);
@@ -403,6 +413,10 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   int profiling= xstate->config & CONFIG_PROFILING;
   HV * expandable_hash = SvHash(expandable);
   SV * result = NULL;
+  /* Boiler plate for local $LaTeXML::CURRENT_TOKEN = token */
+  ENTER;  SV * current_token = get_sv("LaTeXML::CURRENT_TOKEN",1); save_item(current_token);
+  sv_setsv(current_token, token);
+  
   LaTeXML_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Expandable("Invoke Expandable %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
@@ -411,7 +425,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   SV * expansion = hash_get(aTHX_ expandable_hash, "expansion");
   UTF8 opcode = NULL;
 
-  if(expansion && (sv_isa(expansion,"LaTeXML::Core::Opcode"))){
+  if(expansion && (isa_Opcode(expansion))){
     opcode = SvPV_nolen(SvRV(expansion));
     SvREFCNT_dec(expansion); expansion = NULL; }
 
@@ -434,7 +448,10 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   if(opcode){
     expandable_op * op = expandable_lookup(aTHX_ opcode);
     if(op){
-      result = op(aTHX_ token, expandable, gullet, state, nargs, args); }
+      result = op(aTHX_ token, expandable, gullet, state, nargs, args);
+      if(tracing){
+        expandable_showtrace(aTHX_ expandable, token, result, nargs,args); }
+    }
     else {
       croak("Internal error: Expandable opcode %s has no definition",opcode); } }
   else {
@@ -459,26 +476,27 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
       if(nvals > 0){
         SP -= nvals;
         I32 ax = (SP - PL_stack_base) + 1; /* Hackery to read return in reverse using ST! */
+        /* Let tokens_add_to do the type checking? (or better context here?) */
         for(ip = 0; ip < nvals; ip++){
-          tokens_add_to(aTHX_ result, ST(ip), 0); } }
+          SV * t = ST(ip);
+          /*
+          if(! isa_svtype(t,Token,Tokens)){
+          typecheck_fatal(t,"Expansion",SvToken(token)->string,Token,Tokens); }*/
+          typecheck_value(t,"Expansion",SvToken(token)->string,Token,Tokens);
+          tokens_add_to(aTHX_ result, t, 0); } }
       PUTBACK; FREETMPS; LEAVE;
       if(tracing){
-        /* print STDERR "\n" . $self->tracingCSName($token) . ' ==> ' . tracetoString($result) . "\n";
-           print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
+        expandable_showtrace(aTHX_ expandable, token, result, nargs,args); }
       SvREFCNT_dec(expansion); }
-    else if(sv_isa(expansion, "LaTeXML::Core::Token")) {
+    else if(isa_Token(expansion)) {
       DEBUG_Expandable("Expansion is token %p\n", expansion);
       if(tracing){
-        /* print STDERR "\n" . $self->tracingCSName($token)
-           . ' -> ' . tracetoString($expansion) . "\n";
-           print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
+        expandable_showtrace(aTHX_ expandable, token, expansion, nargs,args); }
       result = expansion; }
-    else if(sv_isa(expansion, "LaTeXML::Core::Tokens")) {
+    else if(isa_Tokens(expansion)) {
       DEBUG_Expandable("Expansion is tokens %p\n", expansion);
       if(tracing){
-        /* print STDERR "\n" . $self->tracingCSName($token)
-           . ' -> ' . tracetoString($expansion) . "\n";
-           print STDERR $self->tracingArgs(@args) . "\n" if @args; */ }
+        expandable_showtrace(aTHX_ expandable, token, expansion, nargs,args); }
       result = tokens_substituteParameters(aTHX_ expansion, nargs, args);
       SvREFCNT_dec(expansion); }
     else {
@@ -491,6 +509,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
    /*
     # Getting exclusive requires dubious Gullet support!
     #####push(@result, T_MARKER($profiled)) if $profiled; */
+  LEAVE;
   DEBUG_Expandable("Returning expansion %p\n", result);
   return result; }
 

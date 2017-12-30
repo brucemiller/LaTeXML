@@ -18,6 +18,7 @@
 #include "XSUB.h"
 #include "ppport.h"
 
+#include "src/errors.h"
 #include "src/object.h"
 #include "src/tokens.h"
 #include "src/numbers.h"
@@ -91,6 +92,9 @@ SV *
 new_internal(stomach,model)
     SV * stomach;
     SV * model;
+  INIT:
+    typecheck_xsarg(stomach,undef,Stomach);
+    typecheck_xsarg(model,undef,Model);
   CODE:
     RETVAL = state_new(aTHX_ stomach, model);
   OUTPUT:
@@ -100,6 +104,7 @@ SV *
 getStomach(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_stomach(aTHX_ state);
     if(! RETVAL){
       croak("internal:stomach State has no stomach!"); }
@@ -110,6 +115,7 @@ SV *
 getStomach_noerror(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_stomach(aTHX_ state);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -119,6 +125,7 @@ SV *
 getModel(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_model(aTHX_ state);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -128,6 +135,7 @@ void
 getValueKeys(state)
     SV * state;
   INIT:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     HV * hash = xstate->tables[TBL_VALUE];
     HE * entry;
@@ -142,6 +150,7 @@ void
 getKnownScopes(state)
     SV * state;
   INIT:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     HV * hash = xstate->tables[TBL_STASH];
     HE * entry;
@@ -156,6 +165,7 @@ void
 getActiveScopes(state)
     SV * state;
   INIT:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     HV * hash = xstate->tables[TBL_STASH_ACTIVE];
     HE * entry;
@@ -170,6 +180,7 @@ int
 getFrameDepth(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_getFrameDepth(aTHX_ state);
   OUTPUT:
     RETVAL
@@ -178,6 +189,7 @@ int
 isFrameLocked(state);
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_isFrameLocked(aTHX_ state);
   OUTPUT:
     RETVAL
@@ -187,18 +199,21 @@ setFrameLock(state, locked);
     SV * state;
     int locked;
   PPCODE:
+    typecheck_xsarg(state,State);
     state_setFrameLock(aTHX_ state,locked);
 
 void
 pushFrame(state)
     SV * state;
   PPCODE:
+    typecheck_xsarg(state,State);
     state_pushFrame(aTHX_ state);
 
 void
 popFrame(state)
     SV * state;
   PPCODE:
+    typecheck_xsarg(state,State);
     state_popFrame(aTHX_ state);
 
 void
@@ -206,6 +221,7 @@ activateScope(state, scope)
    SV * state;
    UTF8 scope;
  CODE:
+   typecheck_xsarg(state,State);
    state_activateScope(aTHX_ state, scope);
 
 void
@@ -213,6 +229,7 @@ deactivateScope(state, scope)
    SV * state;
    UTF8 scope;
  CODE:
+   typecheck_xsarg(state,State);
    state_deactivateScope(aTHX_ state, scope);
 
 SV *
@@ -220,6 +237,7 @@ lookupCatcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_CATCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(CC_OTHER); }
   OUTPUT:
@@ -231,9 +249,9 @@ assignCatcode(state,string,catcode,...)
     UTF8 string;
     SV * catcode;
   PPCODE:
-    if(SvOK(catcode) && !SvIOKp(catcode)){
-      croak("Catcode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(catcode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_CATCODE, string, catcode, scope);
 
 SV *
@@ -241,6 +259,7 @@ lookupMathcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_MATHCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
@@ -252,9 +271,9 @@ assignMathcode(state,string,mathcode,...)
     UTF8 string;
     SV * mathcode;
   PPCODE:
-    if(SvOK(mathcode) && !SvIOKp(mathcode)){
-      croak("Mathcode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(mathcode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_MATHCODE, string, mathcode, scope);
 
 SV *
@@ -262,6 +281,7 @@ lookupSFcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_SFCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
@@ -273,9 +293,9 @@ assignSFcode(state,string,sfcode,...)
     UTF8 string;
     SV * sfcode;
   PPCODE:
-    if(SvOK(sfcode) && !SvIOKp(sfcode)){
-      croak("SFcode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(sfcode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_SFCODE, string, sfcode, scope);
 
 SV *
@@ -283,6 +303,7 @@ lookupLCcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_LCCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
@@ -294,9 +315,9 @@ assignLCcode(state,string,lccode,...)
     UTF8 string;
     SV * lccode;
   PPCODE:
-    if(SvOK(lccode) && !SvIOKp(lccode)){
-      croak("lccode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(lccode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_LCCODE, string, lccode, scope);
 
 SV *
@@ -304,6 +325,7 @@ lookupUCcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_UCCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
@@ -315,9 +337,9 @@ assignUCcode(state,string,uccode,...)
     UTF8 string;
     SV * uccode;
   PPCODE:
-    if(SvOK(uccode) && !SvIOKp(uccode)){
-      croak("uccode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(uccode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_UCCODE, string, uccode, scope);
 
 SV *
@@ -325,6 +347,7 @@ lookupDelcode(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_DELCODE, string);
     if(RETVAL == NULL){ RETVAL = newSViv(0); }
   OUTPUT:
@@ -336,9 +359,9 @@ assignDelcode(state,string,delcode,...)
     UTF8 string;
     SV * delcode;
   PPCODE:
-    if(SvOK(delcode) && !SvIOKp(delcode)){
-      croak("delcode expected a number"); }
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(delcode,int);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_DELCODE, string, delcode, scope);
 
 SV *
@@ -346,6 +369,7 @@ lookupValue(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_VALUE, string);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -357,7 +381,8 @@ assignValue(state,string,value, ...)
     UTF8 string;
     SV * value;
   CODE:
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_VALUE, string, value, scope);
 
 int
@@ -365,7 +390,8 @@ isValueBound(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
-    int frame = ((items > 2) && SvOK(ST(2)) ? SvIV(ST(2)) : -1);
+    typecheck_xsarg(state,State);
+    int frame = (typecheck_optarg(2,"frame",int) ? SvIV(ST(2)) : -1);
   CODE:
     RETVAL = state_isBound(aTHX_ state, TBL_VALUE, string, frame);
   OUTPUT:
@@ -376,7 +402,8 @@ valueInFrame(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
-    int frame = ((items > 2) && SvOK(ST(2)) ? SvIV(ST(2)) : 0);
+    typecheck_xsarg(state,State);
+    int frame = (typecheck_optarg(2,"frame",int) ? SvIV(ST(2)) : 0);
   CODE:
     RETVAL = state_lookupInFrame(aTHX_ state, TBL_VALUE, string, frame);
   OUTPUT:
@@ -387,6 +414,7 @@ lookupStackedValues(state,string)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     AV * av = state_bindings_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
@@ -402,11 +430,12 @@ pushValue(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
     for(i = 2; i < items; i++){
-      SV * sv = ST(i);
+      SV * sv = ST(i);          /* No typecheck; can be anything */
       SvREFCNT_inc(sv);
       av_push(av, sv); }
 
@@ -415,6 +444,7 @@ popValue(state,string)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
   CODE:
     RETVAL = av_pop(av);
@@ -427,12 +457,13 @@ unshiftValue(state,string,...)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
     int i;
   PPCODE:
     av_unshift(av,items-2);
     for(i = 2; i < items; i++){
-      SV * sv = ST(i);
+      SV * sv = ST(i);          /* No typecheck; can be anything */
       SvREFCNT_inc(sv);
       av_store(av, i-2, sv); }
 
@@ -441,6 +472,7 @@ shiftValue(state,string)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     AV * av = state_lookupAV_noinc(aTHX_ state, TBL_VALUE, string);
   CODE:
     RETVAL = av_shift(av);
@@ -454,6 +486,7 @@ lookupMapping(state,string,key)
     UTF8 string;
     UTF8 key;
   INIT:
+    typecheck_xsarg(state,State);
     HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
     SV ** ptr = hv_fetch(hash,key,-strlen(key),0);
   CODE:
@@ -469,6 +502,7 @@ lookupMappingKeys(state,string)
     SV * state;
     UTF8 string;
   INIT:
+    typecheck_xsarg(state,State);
     HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
     HE * entry;
   PPCODE:
@@ -485,6 +519,7 @@ assignMapping(state,string,key,value)
     UTF8 key;
     SV * value;
   INIT:
+    typecheck_xsarg(state,State);
     HV * hash = state_lookupHV_noinc(aTHX_ state, TBL_VALUE, string);
   PPCODE:
     hv_store(hash,key,-strlen(key),value,0);
@@ -495,6 +530,7 @@ lookupStash(state,string)
     SV * state;
     UTF8 string;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_lookup(aTHX_ state, TBL_STASH, string);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -506,7 +542,8 @@ assignStash(state,string,value, ...)
     UTF8 string;
     SV * value;
   CODE:
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
+    typecheck_xsarg(state,State);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     state_assign(aTHX_ state, TBL_STASH, string, value, scope);
 
 SV *
@@ -514,6 +551,8 @@ lookupMeaning(state,token)
     SV * state;
     SV * token;
   CODE:
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token,Token);
     RETVAL = state_meaning(aTHX_ state, token);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -525,6 +564,9 @@ XEquals(state, token1,token2)
     SV * token1;
     SV * token2;
   CODE:
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token1,undef,Token);
+    typecheck_xsarg(token2,undef,Token);
     RETVAL = state_XEquals(aTHX_ state, token1, token2);
   OUTPUT:
     RETVAL
@@ -534,6 +576,8 @@ Equals(token1,token2)
     SV * token1;
     SV * token2;
   CODE:
+    typecheck_xsarg(token1,undef,Token);
+    typecheck_xsarg(token2,undef,Token);
     RETVAL = state_Equals(aTHX_ token1, token2);
   OUTPUT:
     RETVAL
@@ -542,6 +586,7 @@ int
 globalFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     RETVAL = xstate->flags & FLAG_GLOBAL;
   OUTPUT:
@@ -551,6 +596,7 @@ void
 setGlobalFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_GLOBAL;
 
@@ -558,6 +604,7 @@ int
 longFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     RETVAL = xstate->flags & FLAG_LONG;
   OUTPUT:
@@ -567,6 +614,7 @@ void
 setLongFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_LONG;
 
@@ -574,6 +622,7 @@ int
 outerFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     RETVAL = xstate->flags & FLAG_OUTER;
   OUTPUT:
@@ -583,6 +632,7 @@ void
 setOuterFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_OUTER;
 
@@ -590,6 +640,7 @@ int
 protectedFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     RETVAL = xstate->flags & FLAG_PROTECTED;
   OUTPUT:
@@ -599,6 +650,7 @@ void
 setProtectedFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_PROTECTED;
 
@@ -606,6 +658,7 @@ void
 setUnlessFlag(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags |= FLAG_UNLESS;
 
@@ -613,6 +666,7 @@ void
 clearFlags(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     xstate->flags = 0;
 
@@ -620,12 +674,14 @@ void
 beginSemiverbatim(state,...)
     SV * state;      
   INIT:
+    typecheck_xsarg(state,State);
     int nchars = items-1;
     UTF8 chars[items-1];
     int i;
   PPCODE:
     for(i=0; i < nchars; i++){
       SV * sv = ST(i+1);
+      typecheck_xsarg(sv,string);
       chars[i] = SvPV_nolen(sv); }
     state_beginSemiverbatim(aTHX_ state, nchars, chars); 
 
@@ -633,6 +689,7 @@ void
 endSemiverbatim(state)
     SV * state;      
   PPCODE:
+    typecheck_xsarg(state,State);
     state_endSemiverbatim(aTHX_ state); 
 
 void
@@ -641,11 +698,11 @@ assignMeaning(state, token, meaning,...)
     SV * token;
     SV * meaning;
   CODE:
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    if (! (SvOK(token) && sv_isa(token, "LaTeXML::Core::Token")) ) {
-      croak("assignMeaning token is not a Token"); }
-    if(SvOK(meaning) && sv_isa(meaning, "LaTeXML::Core::Token")
-       && token_equals(aTHX_ token,meaning)){
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token,Token);
+    typecheck_xsarg(meaning,undef,Definition);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
+    if(meaning && isa_Token(meaning) && token_equals(aTHX_ token,meaning)){
       } /* Hack; ignore assigment to itself */
     else {
       LaTeXML_Token t = SvToken(token);
@@ -659,14 +716,12 @@ let(state, token1, token2,...)
     SV * token1;
     SV * token2;
   CODE:
-    UTF8 scope = ((items > 3) && SvTRUE(ST(3)) ? SvPV_nolen(ST(3)) : NULL);
-    if (! (SvOK(token1) && sv_isa(token1, "LaTeXML::Core::Token")) ) {
-      croak("assignMeaning token1 is not a Token"); }
-    if (! (SvOK(token2) && sv_isa(token2, "LaTeXML::Core::Token")) ) {
-      croak("assignMeaning token2 is not a Token"); }
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token1,Token);
+    typecheck_xsarg(token2,Token);
+    UTF8 scope = (typecheck_optarg(3,"scope",string) ? SvPV_nolen(ST(3)) : NULL);
     SV * meaning = state_meaning(aTHX_ state, token2);
-    if(meaning && sv_isa(meaning, "LaTeXML::Core::Token")
-       && token_equals(aTHX_ token1,meaning)){
+    if(meaning && isa_Token(meaning) && token_equals(aTHX_ token1,meaning)){
     }
     else {
       LaTeXML_Token t1 = SvToken(token1);
@@ -680,6 +735,8 @@ lookupExpandable(state,token)
     SV * state;
     SV * token;
   CODE:
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token,Token);
     RETVAL = state_expandable(aTHX_ state, token);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -690,6 +747,8 @@ lookupDefinition(state,token)
     SV * state;
     SV * token;
   CODE:
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(token,Token);
     RETVAL = state_definition(aTHX_ state, token);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -700,19 +759,23 @@ installDefinition(state, definition, ...)
     SV * state;
     SV * definition;
   CODE:
-    UTF8 scope = ((items > 2) && SvTRUE(ST(2)) ? SvPV_nolen(ST(2)) : NULL);
+    typecheck_xsarg(state,State);
+    typecheck_xsarg(definition,Definition);
+    UTF8 scope = (typecheck_optarg(2,"scope",string) ? SvPV_nolen(ST(2)) : NULL);
     state_installDefinition(aTHX_ state, definition, scope);
 
 void
 afterAssignment(state)
     SV * state;
   PPCODE:
+    typecheck_xsarg(state,State);
     primitive_afterAssignment(aTHX_ state);
 
 SV *
 getLocator(state)
     SV * state;
   CODE:  
+    typecheck_xsarg(state,State);
     SV * stomach = state_stomach(aTHX_ state);
     SV * gullet =  stomach_gullet(aTHX_ stomach);
     RETVAL = gullet_getLocator(aTHX_ gullet);
@@ -724,6 +787,7 @@ SV *
 getIfContext(state)
     SV * state;
   CODE:  
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     LaTeXML_IfFrame ifframe = (xstate->ifstack_top > 0 ? xstate->ifstack[xstate->ifstack_top] : NULL);
     if(ifframe){
@@ -739,14 +803,16 @@ convertUnit(state,unit)
     SV * state;
     UTF8 unit;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_convertUnit(aTHX_ state, unit);
   OUTPUT:
     RETVAL
 
 void
-clearStatus(state,...)
+clearStatus(state)
     SV * state;
   CODE:
+    typecheck_xsarg(state,State);
     state_clearStatus(aTHX_ state);
 
 void
@@ -754,9 +820,11 @@ noteStatus(state,type,...)
     SV * state;
     UTF8 type;
   CODE:
+    typecheck_xsarg(state,State);
     if(items > 2){
       int i;
       for(i = 2; i < items; i++){
+        typecheck_optarg(i,"text",string);
         state_noteSymbolStatus(aTHX_ state, type, SvPV_nolen(ST(i))); } }
     else {
       state_noteStatus(aTHX_ state, type); }
@@ -766,6 +834,7 @@ getStatus(state,type)
     SV * state;
     UTF8 type;
   CODE:
+    typecheck_xsarg(state,State);
     RETVAL = state_getStatus(aTHX_ state, type);
   OUTPUT:
     RETVAL
@@ -860,8 +929,8 @@ equals(a, b)
     SV * a
     SV * b
   CODE:
-   if (SvOK(a) && sv_isa(a, "LaTeXML::Core::Token")
-       && SvOK(b) && sv_isa(b, "LaTeXML::Core::Token")) {
+   if (SvOK(a) && isa_Token(a)
+       && SvOK(b) && isa_Token(b)) {
      RETVAL = token_equals(aTHX_ a,b); }
    else {
      RETVAL = 0; }
@@ -916,12 +985,13 @@ Tokens(...)
     int i;
     SV * tokens;
   CODE:
-    if((items == 1) && sv_isa(ST(0), "LaTeXML::Core::Tokens")) {
+    if((items == 1) && isa_Tokens(ST(0))) {
       RETVAL = ST(0);
       SvREFCNT_inc(RETVAL); }   /* or mortal? */
     else {
       tokens = tokens_new(aTHX_ items);
       for (i = 0 ; i < items ; i++) {
+        typecheck_optarg(i,"tokens",Token,Tokens);
         SV * sv = newSVsv(ST(i));
         tokens_add_to(aTHX_ tokens,sv,0);
         SvREFCNT_dec(sv); }
@@ -935,8 +1005,8 @@ equals(a, b)
     SV * a
     SV * b
   CODE:
-   if (SvOK(a) && sv_isa(a, "LaTeXML::Core::Tokens")
-       && SvOK(b) && sv_isa(b, "LaTeXML::Core::Tokens")) {
+    typecheck_xsarg(a,Tokens);
+    if (SvOK(b) && isa_Tokens(b)) {
      RETVAL = tokens_equals(aTHX_ a, b); }
    else {
      RETVAL = 0; }
@@ -947,6 +1017,7 @@ UTF8
 toString(tokens)
     SV * tokens;
   CODE:
+    typecheck_xsarg(tokens,Tokens);
     RETVAL = tokens_toString(aTHX_ tokens);
   OUTPUT: 
     RETVAL
@@ -955,6 +1026,7 @@ void
 unlist(tokens)
     SV * tokens
   INIT:
+    typecheck_xsarg(tokens,Tokens);
     int i;
     LaTeXML_Tokens xtokens = SvTokens(tokens);
   PPCODE:
@@ -966,6 +1038,7 @@ void
 revert(tokens)
     SV * tokens
   INIT:                    /* same as unlist */
+    typecheck_xsarg(tokens,Tokens);
     int i;
     LaTeXML_Tokens xtokens = SvTokens(tokens);
   PPCODE:
@@ -977,6 +1050,7 @@ int
 isBalanced(tokens)
     SV * tokens
   INIT:
+    typecheck_xsarg(tokens,Tokens);
     int i, level;
     LaTeXML_Tokens xtokens = SvTokens(tokens);
   CODE:
@@ -1001,6 +1075,7 @@ SV *
 substituteParameters(tokens,...)
     SV * tokens
   INIT:
+    typecheck_xsarg(tokens,Tokens);
     int i;
     int nargs = items-1;
     SV * args[nargs];
@@ -1010,6 +1085,7 @@ substituteParameters(tokens,...)
       if(! SvOK(arg)){
         arg = NULL; }
       args[i] = arg; }
+    /* substitute parameters should check on appropriate args */
     RETVAL = tokens_substituteParameters(aTHX_ tokens, nargs, args);
     if(RETVAL == NULL){ croak("NULL from substituteParameters"); }
   OUTPUT:
@@ -1019,6 +1095,7 @@ SV *
 trim(tokens)
     SV * tokens
   CODE:
+    typecheck_xsarg(tokens,Tokens);
     RETVAL = tokens_trim(aTHX_ tokens); 
   OUTPUT:
     RETVAL
@@ -1047,18 +1124,22 @@ new()
 
 void
 push(stack,token)
-    LaTeXML_Tokenstack stack;
+    SV * stack;
     SV * token;
   CODE:
-    SV * sv = newSVsv(token); /* Create a "safe" copy(?) */
-    tokenstack_push(aTHX_ stack,sv); 
-    SvREFCNT_dec(sv);
+    typecheck_xsarg(stack,Tokenstack);
+    typecheck_xsarg(token,undef,Token);
+    if(token != NULL){
+      SV * sv = newSVsv(token); /* Create a "safe" copy(?) */
+      tokenstack_push(aTHX_ SvTokenstack(stack),sv); 
+      SvREFCNT_dec(sv); }
 
 SV *
 pop(stack)
-    LaTeXML_Tokenstack stack;
+    SV * stack;
   CODE:
-    RETVAL = tokenstack_pop(aTHX_ stack);
+    typecheck_xsarg(stack,Tokenstack);
+    RETVAL = tokenstack_pop(aTHX_ SvTokenstack(stack));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
     RETVAL
@@ -1093,12 +1174,14 @@ void
 finish(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     mouth_finish(aTHX_ mouth);
 
 int
 hasMoreInput(mouth)
     SV * mouth
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     RETVAL = mouth_hasMoreInput(aTHX_ mouth);
   OUTPUT:
     RETVAL
@@ -1107,6 +1190,7 @@ void
 getPosition(mouth)
     SV * mouth;
   PPCODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     EXTEND(SP, 2);
     mPUSHi((IV) xmouth->lineno);
@@ -1117,6 +1201,7 @@ setAutoclose(mouth, autoclose)
     SV * mouth;
     int autoclose;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     if(autoclose){
       xmouth->flags |= MOUTH_AUTOCLOSE; }
@@ -1127,6 +1212,7 @@ int
 getAutoclose(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->flags & MOUTH_AUTOCLOSE;
   OUTPUT:
@@ -1136,6 +1222,7 @@ SV *
 getPreviousMouth(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     if(xmouth->previous_mouth){
       RETVAL = xmouth->previous_mouth;
@@ -1149,6 +1236,7 @@ int
 isInteresting(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->flags & MOUTH_INTERESTING;
   OUTPUT:
@@ -1158,6 +1246,7 @@ SV *
 getLocator(mouth)
     SV * mouth;
   CODE:  
+    typecheck_xsarg(mouth,Mouth);
     RETVAL = mouth_getLocator(aTHX_ mouth);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1167,6 +1256,7 @@ UTF8
 getSource(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->source;
     if(RETVAL == NULL){ croak("NULL from getSource"); }
@@ -1177,6 +1267,7 @@ UTF8
 getShortSource(mouth)
     SV * mouth;    
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->short_source;
     if(RETVAL == NULL){ croak("NULL from getShortSource"); }
@@ -1187,6 +1278,7 @@ UTF8
 getNoteMessage(mouth)
     SV * mouth;    
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->note_message;
     if(RETVAL == NULL){ croak("NULL from getNoteMessage"); }
@@ -1198,12 +1290,14 @@ setInput(mouth,input)
     SV * mouth;
     UTF8 input;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     mouth_setInput(aTHX_ mouth,input);
 
 SV *
 readToken(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     RETVAL = mouth_readToken(aTHX_ mouth, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1214,10 +1308,9 @@ SV *
 readTokens(mouth,...)
     SV * mouth;
   INIT:
-    SV * until = NULL;
+    typecheck_xsarg(mouth,Mouth);
+    SV * until = (typecheck_optarg(1,"until",Token) ? ST(1) : NULL);
   CODE:
-    if(items > 1){
-      until = ST(1); }
     RETVAL = mouth_readTokens(aTHX_ mouth, state_global(aTHX), until);
     if(RETVAL == NULL){ croak("NULL from readTokens"); }
   OUTPUT:
@@ -1227,9 +1320,11 @@ void
 unread(mouth,...)
     SV * mouth;
   INIT:
+    typecheck_xsarg(mouth,Mouth);
     int i;
   CODE:
     for(i = items-1; i >= 1; i--){
+      typecheck_optarg(i,"token",Token,Tokens);
       SV * sv = newSVsv(ST(i)); /* Create a "safe" copy(?) */
       mouth_unread(aTHX_ mouth, sv);
       SvREFCNT_dec(sv); }
@@ -1238,6 +1333,7 @@ void
 getPushback(mouth)
     SV * mouth;
   INIT:
+    typecheck_xsarg(mouth,Mouth);
     int i,n;
     LaTeXML_Tokenstack pb;
     LaTeXML_Mouth xmouth = SvMouth(mouth);
@@ -1252,6 +1348,7 @@ int
 atEOF(mouth)
     SV * mouth;
   CODE:
+    typecheck_xsarg(mouth,Mouth);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
     RETVAL = xmouth->flags & MOUTH_AT_EOF;
   OUTPUT:
@@ -1261,25 +1358,16 @@ SV *
 readRawLine(mouth,...)
     SV * mouth;
   INIT:
-    int noread = 0;
+    typecheck_xsarg(mouth,Mouth);
+    int noread = (items > 1 ? SvTRUE(ST(1)) : 0);
     LaTeXML_Mouth xmouth = SvMouth(mouth);
   CODE:
-    if(items > 1){
-      noread = SvIV(ST(1)); }
     /* Peculiar logic: 'noread' really means return the rest of current line,
        if we've alread read something from it */
     if(noread){
       if(xmouth->colno > 0){
         STRLEN pstart = xmouth->ptr;
         STRLEN n = mouth_readLine(aTHX_ mouth);
-        /*
-        if(n==0){ fprintf(stderr,"KEEP RAW: Empty line\n"); }
-        else {
-          char buffer[n+1];
-          Copy(xmouth->chars+pstart,buffer,n,char);
-          buffer[n] = 0;
-          fprintf(stderr,"KEEP RAW: '%s'\n",buffer); }
-              */
         RETVAL = newSVpvn_flags(xmouth->chars+pstart,n, SVf_UTF8); }
       else {
         RETVAL = &PL_sv_undef; } }
@@ -1290,14 +1378,6 @@ readRawLine(mouth,...)
       if(xmouth->ptr < xmouth->nbytes) { /* If we have input now */
         STRLEN pstart = xmouth->ptr;
         STRLEN n = mouth_readLine(aTHX_ mouth);
-        /*
-        if(n==0){ fprintf(stderr,"READ RAW: Empty line\n"); }
-        else {
-          char buffer[n+1];
-          Copy(xmouth->chars+pstart,buffer,n,char);
-          buffer[n] = 0;
-          fprintf(stderr,"READ RAW: '%s'\n",buffer); }
-               */
         RETVAL = newSVpvn_flags(xmouth->chars+pstart,n, SVf_UTF8); }
       else {
         DEBUG_Mouth("NO MORE RAW\n");
@@ -1331,6 +1411,7 @@ readToken(gullet)
   INIT:
     SV * state = state_global(aTHX);
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readToken(aTHX_ gullet, state);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1340,6 +1421,7 @@ SV *
 getMouth(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_getMouth(aTHX_ gullet);
     if(!RETVAL) { RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1350,7 +1432,8 @@ openMouth(gullet,mouth,...)
     SV * gullet;
     SV * mouth;
   INIT:
-    int noautoclose = (items > 2 ? SvIV(ST(2)) : 0);
+    typecheck_xsarg(gullet,Gullet);
+    int noautoclose = (items > 2 ? SvTRUE(ST(2)) : 0);
   CODE:
     RETVAL = gullet_openMouth(aTHX_ gullet, mouth, noautoclose);
     if(RETVAL){ SvREFCNT_inc(RETVAL); }
@@ -1362,7 +1445,8 @@ void
 closeMouth(gullet, ...)
     SV * gullet;
   INIT:
-    int forced = (items > 1 ? SvIV(ST(1)) : 0);
+    typecheck_xsarg(gullet,Gullet);
+    int forced = (items > 1 ? SvTRUE(ST(1)) : 0);
   CODE:
     gullet_closeMouth(aTHX_ gullet, forced);
 
@@ -1371,23 +1455,28 @@ closeThisMouth(gullet, tomouth)
     SV * gullet;
     SV * tomouth;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
+    typecheck_xsarg(tomouth,Mouth);
     gullet_closeThisMouth(aTHX_ gullet, tomouth);
 
 void
 flush(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     gullet_flush(aTHX_ gullet);
 
 void
 unread(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * mouth = gullet_getMouth(aTHX_ gullet);
     int i;
   CODE:
     for(i = items-1; i >= 1; i--){
       SV * sv = newSVsv(ST(i)); /* Create a "safe" copy(?) */
+      typecheck_xsarg(sv,Token,Tokens);
       mouth_unread(aTHX_ mouth, sv);
       SvREFCNT_dec(sv); }
 
@@ -1396,6 +1485,8 @@ ifNext(gullet,token)
     SV * gullet;
     SV * token;
   CODE:  
+    typecheck_xsarg(gullet,Gullet);
+    typecheck_xsarg(token,Token);
     RETVAL = gullet_ifNext(aTHX_ gullet, state_global(aTHX), token);
   OUTPUT:
     RETVAL
@@ -1404,6 +1495,7 @@ SV *
 getLocator(gullet)
     SV * gullet;
   CODE:  
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_getLocator(aTHX_ gullet);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1413,13 +1505,11 @@ SV *
 readXToken(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
-    int toplevel=0,commentsok=0;
+    int toplevel  =(items > 1 ? SvTRUE(ST(1)) : 0);
+    int commentsok=(items > 2 ? SvTRUE(ST(2)) : 0);
   CODE:
-    if(items > 1){
-      toplevel = SvIV(ST(1));
-      if(items > 2){
-        commentsok = SvIV(ST(2)); } }
     PUTBACK;
     RETVAL = gullet_readXToken(aTHX_ gullet, state, toplevel, commentsok);
     SPAGAIN;
@@ -1432,6 +1522,8 @@ neutralizeTokens(gullet,tokens)
     SV * gullet;
     SV * tokens;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
+    typecheck_xsarg(tokens,Tokens);
     RETVAL = gullet_neutralizeTokens(aTHX_ gullet, state_global(aTHX), tokens);
   OUTPUT:
     RETVAL
@@ -1440,6 +1532,7 @@ void
 expandafter(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     gullet_expandafter(aTHX_ gullet, state);
@@ -1448,6 +1541,7 @@ SV *
 readXUntilEnd(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readXUntilEnd(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ croak("NULL from readXUntilEnd"); }
   OUTPUT:
@@ -1459,6 +1553,7 @@ readNonSpace(gullet)
   INIT:
     SV * state = state_global(aTHX);
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readNonSpace(aTHX_ gullet, state);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1468,6 +1563,7 @@ void
 skipSpaces(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     gullet_skipSpaces(aTHX_ gullet, state);
@@ -1476,6 +1572,7 @@ void
 skip1Space(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     gullet_skip1Space(aTHX_ gullet, state);
@@ -1484,6 +1581,7 @@ SV *
 readBalanced(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     SV * tokens = tokens_new(aTHX_ 1);
   CODE:
@@ -1496,6 +1594,7 @@ SV *
 readXBalanced(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     SV * tokens = tokens_new(aTHX_ 1);
   CODE:
@@ -1508,6 +1607,7 @@ SV *
 readArg(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     RETVAL = gullet_readArg(aTHX_ gullet, state);
@@ -1519,6 +1619,7 @@ SV *
 readXArg(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     RETVAL = gullet_readXArg(aTHX_ gullet, state);
@@ -1530,6 +1631,7 @@ SV *
 readUntilBrace(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     RETVAL = gullet_readUntilBrace(aTHX_ gullet, state);
@@ -1541,16 +1643,13 @@ SV *
 readOptional(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
-    SV * defaultx = (items > 1 ? ST(2) : NULL);
+    SV * defaultx = (typecheck_optarg(1,"default",Token,Tokens) ? ST(1) : NULL);
   CODE:
     RETVAL = gullet_readOptional(aTHX_ gullet, state);
     if(! RETVAL){
-      if(defaultx && SvOK(defaultx)){
-        SvREFCNT_inc(defaultx);
-        RETVAL = defaultx; }
-      else {
-        RETVAL = &PL_sv_undef; } }
+      RETVAL = (defaultx ? SvREFCNT_inc(defaultx) : &PL_sv_undef); }
   OUTPUT:
     RETVAL
 
@@ -1558,6 +1657,7 @@ SV *
 readCSName(gullet)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
   CODE:
     RETVAL = gullet_readCSName(aTHX_ gullet, state);
@@ -1569,6 +1669,7 @@ SV *
 readMatch(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     int nchoices = items-1;
     int type[nchoices];           /* 0 for notmatched, 1 for Token, 2 for Tokens */
@@ -1597,6 +1698,7 @@ void
 readUntil(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     int nchoices = items-1;
     int type[nchoices];           /* 0 for notmatched, 1 for Token, 2 for Tokens */
@@ -1630,6 +1732,7 @@ void
 readXUntil(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     int nchoices = items-1;
     int type[nchoices];           /* 0 for notmatched, 1 for Token, 2 for Tokens */
@@ -1663,6 +1766,7 @@ SV *
 readKeyword(gullet,...)
     SV * gullet;
   INIT:
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     int nchoices = items-1;
     char * choices[nchoices];
@@ -1696,6 +1800,7 @@ int
 readOptionalSigns(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readOptionalSigns(aTHX_ gullet, state_global(aTHX));
   OUTPUT:
     RETVAL
@@ -1704,6 +1809,7 @@ SV *
 readNumber(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readNumber(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1713,15 +1819,10 @@ SV *
 readDimension(gullet,...)
     SV * gullet;
   INIT:
-    int nocomma = 0;
-    double defaultunit = 0.0;
+    typecheck_xsarg(gullet,Gullet);
+    int nocomma = (items > 1 ? SvTRUE(ST(1)) : 0);
+    double defaultunit = (typecheck_optarg(2,"defaultunit",double) ? SvNV(ST(2)) : 0.0);
   CODE:
-    if(items > 1){
-      SV * arg = ST(1);
-      nocomma = SvOK(arg); }
-    if(items > 2){
-      SV * arg = ST(1);      
-      defaultunit = SvNV(arg); }
     RETVAL = gullet_readDimension(aTHX_ gullet, state_global(aTHX), nocomma, defaultunit);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1731,6 +1832,7 @@ SV *
 readGlue(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readGlue(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1740,6 +1842,7 @@ SV *
 readMuGlue(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readMuGlue(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1749,6 +1852,7 @@ SV *
 readFloat(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readFloat(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1758,6 +1862,7 @@ SV *
 readTokensValue(gullet)
     SV * gullet;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readTokensValue(aTHX_ gullet, state_global(aTHX));
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1768,6 +1873,7 @@ readValue(gullet,type)
     SV * gullet;
     UTF8 type;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
     RETVAL = gullet_readValue(aTHX_ gullet,state_global(aTHX),type);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1779,6 +1885,10 @@ readArgument(gullet, parameter, fordefn)
     SV * parameter;
     SV * fordefn;
   CODE:
+    typecheck_xsarg(gullet,Gullet);
+    typecheck_xsarg(parameter,Parameter);
+    typecheck_xsarg(fordefn,Token,undef);
+    if(! SvOK(fordefn)){ fordefn = NULL; }
     RETVAL = parameter_read(aTHX_ parameter, gullet, state_global(aTHX), fordefn);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -1790,6 +1900,8 @@ readArguments(gullet, parameters, fordefn)
     SV * parameters;
     SV * fordefn;
   PPCODE:
+    typecheck_xsarg(gullet,Gullet);
+    typecheck_xsarg(fordefn,Token);
     if(SvOK(parameters)){       /* If no parameters, nothing to read! */
       AV * params = SvArray(parameters);
       SSize_t npara = av_len(params) + 1;
@@ -1824,19 +1936,21 @@ new_internal(spec,...)
       croak("Odd number of values in Parameter_new keyword values"); }
     int i;
     for(i = 1; i < items; i+=2){
+      typecheck_optarg(i,"key",string);
       UTF8 key = SvPV_nolen(ST(i));
       SV * value = ST(i+1);
       if(strcmp(key,"reader") == 0){
-        if(value && sv_isa(value,"LaTeXML::Core::Opcode")){
+        if(!value){}
+        else if(isa_Opcode(value)){
           UTF8 opcode = SvPV_nolen(SvRV(value));
           parameter->opreader = parameter_lookup(aTHX_ opcode);
           if(! parameter->opreader){
             croak("Parameter %s has an undefined opcode %s",spec,opcode); }}
-        else if(value && SvTYPE(SvRV(value)) == SVt_PVCV){
+        else if(isa_CODE(value)){
           SvREFCNT_inc(value);
           parameter->reader = value; }
         else {
-          croak("Parameter %s has reader which is not an opcode or CODE",spec); } }
+          typecheck_xsfatal(value,"reader",Opcode,CODE); } }
       else if(strcmp(key,"semiverbatim") == 0){
         SvREFCNT_inc(value);
         parameter->semiverbatimsv = value;
@@ -1847,7 +1961,9 @@ new_internal(spec,...)
         Newx(parameter->semiverbatim,nc,UTF8);
         for(i = 0; i < nc; i++){
           if( (ptr = av_fetch(semiverb,i,0)) ){
-            parameter->semiverbatim[nchars++] = string_copy(SvPV_nolen(*ptr)); } }
+            SV * ch = *ptr;
+            typecheck_xsarg(ch,string);
+            parameter->semiverbatim[nchars++] = string_copy(SvPV_nolen(ch)); } }
         parameter->nsemiverbatim = nchars; }
       else if(strcmp(key,"extra") == 0){
         SvREFCNT_inc(value);
@@ -1903,6 +2019,7 @@ UTF8
 getSpecification(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->spec;
@@ -1913,6 +2030,7 @@ UTF8
 stringify(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->spec;
@@ -1923,6 +2041,7 @@ SV *
 getSemiverbatim(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->semiverbatimsv;
@@ -1935,6 +2054,7 @@ int
 setupCatcodes(parameter)    
     SV * parameter;
   CODE:
+    typecheck_xsarg(parameter,Parameter);
     RETVAL = parameter_setupCatcodes(aTHX_ parameter, state_global(aTHX));
   OUTPUT:
     RETVAL
@@ -1943,6 +2063,7 @@ void
 revertCatcodes(parameter)    
     SV * parameter;
   CODE:
+    typecheck_xsarg(parameter,Parameter);
     parameter_revertCatcodes(aTHX_ parameter, state_global(aTHX));
     
 SV *
@@ -1951,6 +2072,7 @@ getExtra(parameter)
   INIT:
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
+    typecheck_xsarg(parameter,Parameter);
     RETVAL = param->extrasv;
     if(RETVAL){ SvREFCNT_inc(RETVAL); }
     else { RETVAL = &PL_sv_undef; }
@@ -1961,6 +2083,7 @@ SV *
 getBeforeDigest(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->beforeDigest;
@@ -1973,6 +2096,7 @@ SV *
 getAfterDigest(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->afterDigest;
@@ -1985,6 +2109,7 @@ SV *
 getReversion(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->reversion;
@@ -2007,6 +2132,7 @@ int
 getUndigested(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->flags & PARAMETER_UNDIGESTED;
@@ -2017,6 +2143,7 @@ int
 getNovalue(parameter)
     SV * parameter;
   INIT:
+    typecheck_xsarg(parameter,Parameter);
     LaTeXML_Parameter param = SvParameter(parameter);
   CODE:
     RETVAL = param->flags & PARAMETER_NOVALUE;
@@ -2028,10 +2155,11 @@ read(parameter, gullet, ...)
     SV * gullet;
     SV * parameter;
   INIT:
-    SV * fordefn = NULL;
+    typecheck_xsarg(parameter,Parameter);
+    typecheck_xsarg(gullet,Gullet);
+    /* NOTE: Get straight exactly what fordefn should be (a Token?) and get it CORRECT! */
+    SV * fordefn = (typecheck_optarg(2,"fordefn",Token) ? ST(2) : NULL);
   CODE:
-    if(items > 2){
-      fordefn = ST(2); }
     RETVAL = parameter_read(aTHX_ parameter, gullet, state_global(aTHX), fordefn);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -2042,10 +2170,11 @@ readAndDigest(parameter, stomach, ...)
     SV * stomach;
     SV * parameter;
   INIT:
-    SV * fordefn = NULL;
+    typecheck_xsarg(parameter,Parameter);
+    typecheck_xsarg(stomach,Stomach);
+    SV * fordefn = (typecheck_optarg(2,"fordefn",Token) ? ST(2) : NULL);
+    /* NOTE: Get straight exactly what fordefn should be (a Token? Definition?) and get it CORRECT! */
   CODE:
-    if(items > 2){
-      fordefn = ST(2); }
     RETVAL = parameter_readAndDigest(aTHX_ parameter, stomach, state_global(aTHX), fordefn);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -2064,6 +2193,7 @@ new(class,cs,parameters,expansion,...)
     SV * parameters;
     SV * expansion;
   INIT:  
+    typecheck_xsarg(expansion,undef,Tokens,Opcode,CODE);
     SV * state = state_global(aTHX);
     LaTeXML_State xstate = SvState(state);
     LaTeXML_Stomach xstomach = SvStomach(xstate->stomach);
@@ -2080,6 +2210,7 @@ new(class,cs,parameters,expansion,...)
     /* Add other properties */
     HV * hash = SvHash(expandable);
     for(i = 4; i < items; i+=2){
+      typecheck_optarg(i,"key",string);
       SV * keysv = ST(i);
       SV * value = ST(i+1);
       if(SvOK(keysv) && SvOK(value)){
@@ -2099,13 +2230,15 @@ newInstalled(class,state, scope, cs,parameters,expansion,...)
     SV * parameters;
     SV * expansion;
   INIT:  
+    typecheck_xsarg(expansion,undef,Token,Tokens,Opcode,CODE);
+    typecheck_xsarg(state,State);
     LaTeXML_State xstate = SvState(state);
     LaTeXML_Stomach xstomach = SvStomach(xstate->stomach);
     SV * gullet =  xstomach->gullet;
     int i;
   CODE:
     PERL_UNUSED_VAR(class);
-    if((items-4) % 2){
+    if((items-6) % 2){
       croak("Odd number of hash elements in Expandable->new"); }
     /* tokenize expansion ? */
     /* expansion = Tokens(expansion) if ref expansion Token ? */
@@ -2113,7 +2246,8 @@ newInstalled(class,state, scope, cs,parameters,expansion,...)
     SV * expandable = expandable_new(aTHX_ state, cs, parameters, expansion,locator);
     /* Add other properties */
     HV * hash = SvHash(expandable);
-    for(i = 4; i < items; i+=2){
+    for(i = 6; i < items; i+=2){
+      typecheck_optarg(i,"key",string);
       SV * keysv = ST(i);
       SV * value = ST(i+1);
       if(SvOK(keysv) && SvOK(value)){
@@ -2128,10 +2262,15 @@ invoke(expandable, token, gullet)
     SV * token;
     SV * gullet;
   INIT:
+    typecheck_xsarg(expandable,Expandable);
+    typecheck_xsarg(token,undef,Token);
+    typecheck_xsarg(gullet,Gullet);
     SV * state = state_global(aTHX);
     SV * result;
   PPCODE:
     PUTBACK;
+    if(! token){
+      token = hash_get(aTHX_ SvHash(expandable),"cs"); }
     result = expandable_invoke(aTHX_ expandable, token, gullet, state);
     SPAGAIN;
     if(result){ 
@@ -2149,6 +2288,9 @@ invoke(primitive, token, stomach)
     SV * token;
     SV * stomach;
   INIT:
+    typecheck_xsarg(primitive,Primitive);
+    typecheck_xsarg(stomach,Stomach);
+    typecheck_xsarg(token,undef,Token);
     SV * state = state_global(aTHX);
     LaTeXML_Boxstack stack = boxstack_new(aTHX);
     int i;
@@ -2171,12 +2313,13 @@ SV *
 valueOf(reg,...)
     SV * reg;
   INIT:
+    typecheck_xsarg(reg,Primitive);
     int nargs = items-1;
     SV * args[nargs];
     int i;
   CODE:
     for(i = 0; i < nargs; i++){
-      SV * arg = ST(i+1);
+      SV * arg = ST(i+1);       /* otherwise, anything */
       args[i] = (SvOK(arg) ? arg : NULL); }
     RETVAL = register_valueOf(aTHX_ reg, state_global(aTHX), nargs, args);
     if(!RETVAL){ RETVAL = &PL_sv_undef; }
@@ -2188,12 +2331,13 @@ setValue(reg, value...)
     SV * reg;
     SV * value;
   INIT:
+    typecheck_xsarg(reg,Primitive);
     int nargs = items-2;
     SV * args[nargs];
     int i;
   PPCODE:
     for(i = 0; i < nargs; i++){
-      SV * arg = ST(i+2);
+      SV * arg = ST(i+2);       /* otherwise, anything */
       args[i] = (SvOK(arg) ? arg : NULL); }
     register_setValue(aTHX_ reg, state_global(aTHX), nargs, args, value);
     
@@ -2215,12 +2359,14 @@ void
 initialize(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_initialize(aTHX_ stomach, state_global(aTHX));
 
 SV *
 getGullet(stomach)
     SV * stomach;
   INIT: 
+    typecheck_xsarg(stomach,Stomach);
     LaTeXML_Stomach xstomach = SvStomach(stomach);
   CODE:  
     RETVAL = xstomach->gullet;
@@ -2233,6 +2379,7 @@ SV *
 getLocator(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     RETVAL = stomach_getLocator(aTHX_ stomach);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -2242,6 +2389,7 @@ int
 getBoxingLevel(stomach)
     SV * stomach;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
     LaTeXML_Stomach xstomach = SvStomach(stomach);
     AV * boxing = xstomach->boxing;
   CODE:  
@@ -2253,6 +2401,7 @@ void
 pushStackFrame(stomach, ...)
     SV * stomach;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
     int nobox = ((items > 1) && SvTRUE(ST(1)) ? 1 : 0);
   CODE:  
     stomach_pushStackFrame(aTHX_ stomach, state_global(aTHX), nobox);
@@ -2261,6 +2410,7 @@ void
 popStackFrame(stomach, ...)
     SV * stomach;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
     int nobox = ((items > 1) && SvTRUE(ST(1)) ? 1 : 0);
   CODE:  
     stomach_popStackFrame(aTHX_ stomach, state_global(aTHX), nobox);
@@ -2270,24 +2420,28 @@ void
 bgroup(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_bgroup(aTHX_ stomach, state_global(aTHX));
 
 void
 egroup(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_egroup(aTHX_ stomach, state_global(aTHX));
 
 void
 begingroup(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_begingroup(aTHX_ stomach, state_global(aTHX));
 
 void
 endgroup(stomach)
     SV * stomach;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_endgroup(aTHX_ stomach, state_global(aTHX));
 
 void
@@ -2295,6 +2449,7 @@ beginMode(stomach, mode)
     SV * stomach;
     UTF8 mode;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_beginMode(aTHX_ stomach, state_global(aTHX),mode);
 
 void
@@ -2302,6 +2457,7 @@ endMode(stomach, mode)
     SV * stomach;
     UTF8 mode;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
     stomach_endMode(aTHX_ stomach, state_global(aTHX),mode);
 
 void
@@ -2309,6 +2465,8 @@ invokeToken(stomach, token)
     SV * stomach;
     SV * token;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
+    typecheck_xsarg(token,Token);
     LaTeXML_Boxstack stack = boxstack_new(aTHX);
     int i;
   PPCODE:  
@@ -2326,6 +2484,7 @@ void
 invokeInput(stomach)
     SV * stomach;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
     SV * state = state_global(aTHX);
     SV * gullet = stomach_gullet(aTHX_ stomach);
     LaTeXML_Boxstack stack = boxstack_new(aTHX);
@@ -2348,6 +2507,8 @@ digest(stomach,tokens)
     SV * stomach;
     SV * tokens;
   CODE:  
+    typecheck_xsarg(stomach,Stomach);
+    typecheck_xsarg(tokens,Token,Tokens);
     RETVAL = stomach_digest(aTHX_ stomach, state_global(aTHX), tokens);
     if(RETVAL == NULL){ RETVAL = &PL_sv_undef; }
   OUTPUT:
@@ -2357,12 +2518,11 @@ void
 digestNextBody(stomach, ...)
     SV * stomach;
   INIT:
-    SV * terminal = ((items > 1) && SvOK(ST(1)) ? ST(1) : NULL);
+    typecheck_xsarg(stomach,Stomach);
+    SV * terminal = (typecheck_optarg(1,"termninal",Token) ? ST(1) : NULL);
     int i;
   PPCODE:  
     PUTBACK;                    /* Apparently needed here, as well... (but why?) */
-    if(terminal && !(sv_isa(terminal,"LaTeXML::Core::Token"))){
-      croak("Expected a token!"); }
     LaTeXML_Boxstack stack = stomach_digestNextBody(aTHX_ stomach, state_global(aTHX), terminal);
     SPAGAIN;
     if(stack->nboxes){
@@ -2377,6 +2537,7 @@ digestThing(stomach, thing)
     SV * stomach;
     SV * thing;
   INIT:
+    typecheck_xsarg(stomach,Stomach);
     int i;
   PPCODE:  
     PUTBACK;                    /* Apparently needed here, as well... (but why?) */

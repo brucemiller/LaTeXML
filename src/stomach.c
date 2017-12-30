@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 #include "tokenstack.h"
@@ -46,8 +47,12 @@ stomach_textDefault(pTHX){
   int nvals = call_method("textDefault", G_SCALAR);
   SPAGAIN;
   SV * font = NULL;
-  if(nvals){
-    font = POPs; SvREFCNT_inc(font); }
+  /* if(nvals){
+     font = POPs; SvREFCNT_inc(font); }*/
+  if((nvals > 0) && (font = POPs) && isa_Font(font)) {
+    SvREFCNT_inc(font); }
+  else {
+    typecheck_fatal(font,"textDefault","",Font); }
   PUTBACK; FREETMPS; LEAVE;
   return font; }
 
@@ -58,8 +63,12 @@ stomach_mathDefault(pTHX){
   int nvals = call_method("mathDefault", G_SCALAR);
   SPAGAIN;
   SV * font = NULL;
-  if(nvals){
-    font = POPs; SvREFCNT_inc(font); }
+  /*  if(nvals){
+      font = POPs; SvREFCNT_inc(font); }*/
+  if((nvals > 0) && (font = POPs) && isa_Font(font)) {
+    SvREFCNT_inc(font); }
+  else {
+    typecheck_fatal(font,"mathDefault","",Font); }
   PUTBACK; FREETMPS; LEAVE;
   return font; }
   
@@ -148,14 +157,14 @@ void
 stomach_egroup(pTHX_ SV * stomach, SV * state){
   if(state_isBound(aTHX_ state, TBL_VALUE, "MODE", 0)
      || state_lookupBoole(aTHX_ state, TBL_VALUE,"groupNonBoxing")){
-    croak("unexpected:<something> attempt to close boxing group"); }
+    croak("unexpected:\\egroup attempt to close boxing group"); }
   stomach_popStackFrame(aTHX_ stomach, state, 0); }
 
 void
 stomach_endgroup(pTHX_ SV * stomach, SV * state){
   if(state_isBound(aTHX_ state, TBL_VALUE, "MODE", 0)
      || ! state_lookupBoole(aTHX_ state, TBL_VALUE,"groupNonBoxing")){
-    croak("unexpected:<something> attempt to close non-boxing group"); }
+    croak("unexpected:\\endgroup attempt to close non-boxing group"); }
   stomach_popStackFrame(aTHX_ stomach, state, 1); }
 
 SV *
@@ -165,8 +174,12 @@ stomach_getMergedMathFont(pTHX_ SV * stomach, SV * state, SV * curfont, UTF8 mod
   int nvals = call_method("getMergedMathFont",G_SCALAR);
   SPAGAIN;
   SV * font = NULL;
-  if(nvals){
-    font = POPs; SvREFCNT_inc(font); }
+  /*  if(nvals){
+      font = POPs; SvREFCNT_inc(font); } */
+  if((nvals > 0) && (font = POPs) && isa_Font(font)) {
+    SvREFCNT_inc(font); }
+  else {
+    typecheck_fatal(font,"getMergedMathFont","",Font); }
   PUTBACK; FREETMPS; LEAVE;
   return font; }
 
@@ -177,8 +190,12 @@ stomach_getMergedTextFont(pTHX_ SV * stomach, SV * state, SV * curfont){
   int nvals = call_method("getMergedTextFont",G_SCALAR);
   SPAGAIN;
   SV * font = NULL;
-  if(nvals){
-    font = POPs; SvREFCNT_inc(font); }
+  /* if(nvals){
+     font = POPs; SvREFCNT_inc(font); }*/
+  if((nvals > 0) && (font = POPs) && isa_Font(font)) {
+    SvREFCNT_inc(font); }
+  else {
+    typecheck_fatal(font,"getMergedTextFont","",Font); }
   PUTBACK; FREETMPS; LEAVE;
   return font; }
 
@@ -215,27 +232,27 @@ stomach_defineUndefined(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxs
   /* $stomach->invokeToken_undefined($token) */
   SV * args[] = {token};
   int nargs = 1;
-  boxstack_callmethod(aTHX_ stack, state, stomach, "invokeToken_undefined", nargs, args); }
+  boxstack_callmethod(aTHX_ stack, token, state, stomach, "invokeToken_undefined", nargs, args); }
 
 void
 stomach_insertComment(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* part of $stomach->invokeToken_simple($token,$meahing); */
   SV * args[] = {token};
   int nargs = 1;
-  boxstack_callmethod(aTHX_ stack, state, stomach, "invokeToken_comment", nargs, args); }
+  boxstack_callmethod(aTHX_ stack, token, state, stomach, "invokeToken_comment", nargs, args); }
 
 void
 stomach_insertBox(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack stack){
   /* part of $stomach->invokeToken_simple($token,$meahing); */
   SV * args[] = {token};
   int nargs = 1;
-  boxstack_callmethod(aTHX_ stack, state, stomach, "invokeToken_insert", nargs, args); }
+  boxstack_callmethod(aTHX_ stack, token, state, stomach, "invokeToken_insert", nargs, args); }
 
 void                            /* NOTE: Really only for constructors */
 stomach_invokeDefinition(pTHX_ SV * stomach, SV * state, SV * token, SV * defn, LaTeXML_Boxstack stack){
   SV * args[] = {token, defn};
   int nargs = 2;
-  boxstack_callmethod(aTHX_ stack, state, stomach, "invokeToken_definition", nargs, args); }
+  boxstack_callmethod(aTHX_ stack, token, state, stomach, "invokeToken_definition", nargs, args); }
 
 int absorbable_cc[] = {
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0};
@@ -271,13 +288,13 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack
   SV * insert_token = NULL;    /* Common case, default */
   if(name && (defn = state_lookup_noinc(aTHX_ state,TBL_MEANING, name)) ){
     /* If \let to an executable token (typically $, {,}, etc), lookup IT's defn! */
-    if(sv_isa(defn, "LaTeXML::Core::Token")){
+    if(isa_Token(defn)){
       LaTeXML_Token let = SvToken(defn);
       char * letname;
       SV * letdefn;
       if( (letname = EXECUTABLE_NAME[let->catcode])
           && (letdefn = state_lookup_noinc(aTHX_ state, TBL_MEANING, letname)) ){
-        if(sv_isa(letdefn, "LaTeXML::Core::Token")){ /* And if that's a token? */
+        if(isa_Token(letdefn)){ /* And if that's a token? */
           insert_token = letdefn; /*SvREFCNT_dec(defn);*/ defn = NULL; }
         else {
           defn = letdefn; } }
@@ -286,8 +303,8 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack
   else {
     insert_token = token; }
   if(insert_token){
-    /*LaTeXML_Token it = SvToken(insert_token);*/
-    DEBUG_Stomach("Invoke token self-insert %s[%s]\n",CC_SHORT_NAME[it->catcode],it->string); }
+    DEBUG_Stomach("Invoke token self-insert %s[%s]\n",
+                  CC_SHORT_NAME[SvToken(insert_token)->catcode],SvToken(insert_token)->string); }
   else {
     DEBUG_Stomach("Invoke defn %p [%s]\n", defn, sv_reftype(SvRV(defn),1));
     /*Perl_sv_dump(aTHX_ defn);*/
@@ -312,7 +329,7 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack
   /* A math-active character will (typically) be a macro,
      but it isn't expanded in the gullet, but later when digesting, in math mode (? I think) */
   /*  else if (hash_getBoole(aTHX_ defn_hash,"isExpandable")){*/
-  else if (sv_isa(defn,"LaTeXML::Core::Definition::Expandable")){
+  else if (isa_Expandable(defn)){
     SvREFCNT_inc(defn);
     SV * exp = expandable_invoke(aTHX_ defn, token, xstomach->gullet, state);
     DEBUG_Stomach("Invoking expandable\n");
@@ -322,14 +339,14 @@ stomach_invokeToken(pTHX_ SV * stomach, SV * state, SV * token, LaTeXML_Boxstack
     SvREFCNT_dec(defn);
     goto REINVOKE; }
   /*  elsif ($meaning->isaDefinition) { */   /* Otherwise, a normal primitive or constructor*/
-  else if(sv_isa(defn,"LaTeXML::Core::Definition::Primitive")) {
+  else if(isa_Primitive(defn)) {
     SvREFCNT_inc(defn);
     primitive_invoke(aTHX_ defn, token, stomach, state, stack);
     if(! hash_getBoole(aTHX_ defn_hash, "isPrefix")){
       xstate->flags = 0; }
     SvREFCNT_dec(defn);
   }
-  else if(sv_derived_from(defn,"LaTeXML::Core::Definition")) {
+  else if(isa_Definition(defn)) {
     SvREFCNT_inc(defn);
     DEBUG_Stomach("Invoking Constructor\n");
     stomach_invokeDefinition(aTHX_ stomach, state, token, defn, stack);
@@ -378,6 +395,8 @@ stomach_digest(pTHX_ SV * stomach, SV * state, SV * tokens){
     int i;
     for(i = 0; i < stack->nboxes; i++){
       SvREFCNT_inc(stack->boxes[i]); /* ? */
+      /*      typecheck_value(stack->boxes[i],TokenName(token),"digested",Box,List,Whatsit,KeyVals,Comment);*/
+      typecheck_value(stack->boxes[i],TokenName(token),"digested",BoxLike);
       av_push(list,stack->boxes[i]); }
     boxstack_DESTROY(aTHX_ stack); /* Should make this more reusable */
     if( init_depth > av_len(xstomach->boxing)){ /* if we've closed the initial mode */
@@ -395,7 +414,8 @@ stomach_digest(pTHX_ SV * stomach, SV * state, SV * tokens){
   SPAGAIN;
   SV * boxes = NULL;
   if(nvals){
-    boxes = POPs; SvREFCNT_inc(boxes); }
+    boxes = POPs;
+    SvREFCNT_inc(boxes); }
   PUTBACK; FREETMPS; LEAVE;
   LEAVE;
   return boxes; }
@@ -428,7 +448,9 @@ stomach_digestNextBody(pTHX_ SV * stomach, SV * state, SV * terminal){
     if( init_depth > av_len(xstomach->boxing)){ /* if we've closed the initial mode */
       break; } }
   if(terminal && !(token_equals(aTHX_ token, terminal))){
-    fprintf(stderr,"expected:terminal token"); }
+    /* Does this actuallly warrant a warning? */
+    /* fprintf(stderr,"expected:terminal %s",SvToken(terminal)->string); */
+  }
 
   /* push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit
    */
@@ -443,8 +465,7 @@ stomach_digestNextBody(pTHX_ SV * stomach, SV * state, SV * terminal){
 void                            /* Manually avoid method dispatch on beDigested */
 stomach_digestThing(pTHX_ SV * stomach, SV * state, SV * thing, LaTeXML_Boxstack stack){
   if(!SvOK(thing)){}
-  else if(sv_isa(thing,"LaTeXML::Core::Token")
-     || sv_isa(thing,"LaTeXML::Core::Tokens")){
+  else if(isa_Token(thing) || isa_Tokens(thing)){
     SV * box = stomach_digest(aTHX_ stomach, state, thing);
     boxstack_push(aTHX_ stack, box);
     SvREFCNT_dec(box); }
@@ -452,7 +473,8 @@ stomach_digestThing(pTHX_ SV * stomach, SV * state, SV * thing, LaTeXML_Boxstack
     boxstack_push(aTHX_ stack, SvREFCNT_inc(thing)); }
   else {
     SV * args[] = {stomach};
-    boxstack_callmethod(aTHX_ stack, state, thing, "beDigested", 1, args); }
+    /* Passing token as NULL !?!?! Need to figure out what our context is! */
+    boxstack_callmethod(aTHX_ stack, NULL, state, thing, "beDigested", 1, args); }
 }
 
     

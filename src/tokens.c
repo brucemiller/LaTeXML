@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "tokens.h"
 
@@ -211,7 +212,7 @@ tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert) {
   LaTeXML_Tokens xtokens = SvTokens(tokens);
   /* Tempting to define a _noinc variant ?? */
   DEBUG_Tokens("\nAdding to tokens:");
-  if (sv_isa(thing, "LaTeXML::Core::Token")) {
+  if (isa_Token(thing)) {
     DEBUG_Tokens( "Token.");
     if(xtokens->ntokens >= xtokens->nalloc){
       xtokens->nalloc += TOKENS_ALLOC_QUANTUM;
@@ -219,7 +220,7 @@ tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert) {
     /* NOTE: Beware Tokens coming from Perl: use newSVsv (else the SV can change behind your back */
     SvREFCNT_inc(thing);
     xtokens->tokens[xtokens->ntokens++] = thing; }
-  else if (sv_isa(thing, "LaTeXML::Core::Tokens")) {
+  else if (isa_Tokens(thing)) {
     LaTeXML_Tokens toks = SvTokens(thing);
     int n = toks->ntokens;
     int i;
@@ -249,10 +250,7 @@ tokens_add_to(pTHX_ SV * tokens, SV * thing, int revert) {
       tokens_add_to(aTHX_ tokens, ST(i), revert); }
     PUTBACK; FREETMPS; LEAVE; }
   else {
-    /* Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))*/
-    croak("Tokens add_to: Expected a Token, got a %s: %s",
-          (SvROK(thing) ? sv_reftype(SvRV(thing),1) : sv_reftype(thing,1)),
-            SvPV_nolen(thing)); }
+    typecheck_fatal(thing,"thing","tokens_add_to",Token,Tokens); }
   DEBUG_Tokens( "Done adding.");
 }
 
@@ -368,7 +366,7 @@ tokens_substituteParameters(pTHX_ SV * tokens, int nargs, SV **args){
       SvREFCNT_inc(xtokens->tokens[i]);
       rtokens->tokens[rtokens->ntokens++] = xtokens->tokens[i]; }
     else if(i >= xtokens->ntokens) { /* # at end of tokens? */
-      croak("substituteParamters: fell off end of pattern"); }
+      croak("substituteParameters: fell off end of pattern"); }
     else {
       /*t = SvToken(xtokens->tokens[++i]);*/
       i++;

@@ -37,6 +37,8 @@ typedef struct Tokenstack_struct {
 } T_Tokenstack;
 typedef T_Tokenstack * LaTeXML_Tokenstack;
 
+#define isa_Tokenstack(arg)   ((arg) && sv_isa(arg, "LaTeXML::Core::Tokenstack"))
+
 #define SvTokenstack(arg) ((LaTeXML_Tokenstack)INT2PTR(LaTeXML_Tokenstack, SvIV((SV*) SvRV(arg))))
 
 #define TOKENSTACK_ALLOC_QUANTUM 10

@@ -29,7 +29,7 @@ sub absorbedString {
 
 DefMacro('\lx@unactivate DefToken', sub {
     my ($gullet, $delim) = @_;
-    $STATE->assignMathcode(ToString($delim) => undef); });
+    $STATE->assignMathcode(ToString($delim) => 0); });
 
 DefMacro('\DC@{}{}{}', sub {
     my ($gullet, $delim, $todelim, $ndec) = @_;

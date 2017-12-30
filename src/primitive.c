@@ -18,6 +18,7 @@
 #include "perl.h"
 #include "XSUB.h"
 #include "../ppport.h"
+#include "errors.h"
 #include "object.h"
 #include "numbers.h"
 #include "tokens.h"
@@ -221,8 +222,7 @@ primitive_opcode_let(pTHX_ SV * token, SV * primitive, SV * stomach, SV * state,
   SV * token1 = args[0];
   SV * token2 = args[1];
   SV * meaning = state_meaning(aTHX_ state, token2);
-  if(meaning && sv_isa(meaning, "LaTeXML::Core::Token")
-     && token_equals(aTHX_ token1,meaning)){
+  if(meaning && isa_Token(meaning) && token_equals(aTHX_ token1,meaning)){
   }
   else {
     LaTeXML_Token t1 = SvToken(token1);
@@ -240,6 +240,9 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   int profiling= xstate->config & CONFIG_PROFILING;
   LaTeXML_Token t = SvToken(token);PERL_UNUSED_VAR(t); /* -Wall */
+  ENTER;  SV * current_token = get_sv("LaTeXML::CURRENT_TOKEN",1); save_item(current_token);
+  sv_setsv(current_token, token);
+
   DEBUG_Primitive("Invoke Primitive %p %s[%s]\n",primitive,CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
     /*my $profiled = $XSTATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
@@ -248,7 +251,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   AV * before = hash_getAV(aTHX_ primitive_hash, "beforeDigest");
   if(before){
     DEBUG_Primitive("%p calling beforeDigest %p\n", primitive, before);
-    boxstack_callAV(aTHX_ stack, primitive, before, state, stomach, token, 0, NULL);
+    boxstack_callAV(aTHX_ stack, token, state, primitive, before, stomach, 0, NULL);
     DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes);
     SvREFCNT_dec(before); }
   /* Read arguments */
@@ -266,7 +269,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   SV * replacement = hash_get(aTHX_ primitive_hash, "replacement");
   if(replacement){
     DEBUG_Primitive("%p calling replacement %p\n", primitive, replacement);
-    boxstack_call(aTHX_ stack, primitive, replacement, state, stomach, token, nargs, args);
+    boxstack_call(aTHX_ stack, token, state, primitive, replacement, stomach, nargs, args);
     DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes);
     SvREFCNT_dec(replacement); }
 
@@ -274,7 +277,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   AV * after = hash_getAV(aTHX_ primitive_hash, "afterDigest");
   if(after){
     DEBUG_Primitive("%p calling afterDigest %p\n", primitive, after);
-    boxstack_callAV(aTHX_ stack, primitive, after, state, stomach, token, nargs, args);
+    boxstack_callAV(aTHX_ stack, token, state, primitive, after, stomach, nargs, args);
     DEBUG_Primitive("%p now has %d boxes\n",primitive,stack->nboxes);
     SvREFCNT_dec(after); }
   int i;
@@ -282,6 +285,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
     SvREFCNT_dec(args[i]); }
   DEBUG_Primitive("Primitive %p %s[%s] returned %d boxes\n",
                   primitive,CC_SHORT_NAME[t->catcode],t->string,stack->nboxes);
+  LEAVE;
 }
 
 HV * primitive_opcode_table = NULL;

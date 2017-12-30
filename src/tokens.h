@@ -62,6 +62,9 @@ typedef struct Tokens_struct {
 } T_Tokens;
 typedef T_Tokens * LaTeXML_Tokens;
 
+#define isa_Token(arg)        ((arg) && sv_isa(arg, "LaTeXML::Core::Token"))
+#define isa_Tokens(arg)       ((arg) && sv_isa(arg, "LaTeXML::Core::Tokens"))
+
 #define SvTokens(arg)     ((LaTeXML_Tokens)INT2PTR(LaTeXML_Tokens, SvIV((SV*) SvRV(arg))))
 #define SvToken(arg)      ((LaTeXML_Token) INT2PTR(LaTeXML_Token,  SvIV((SV*) SvRV(arg))))
 
@@ -107,6 +110,7 @@ token_DESTROY(pTHX_ LaTeXML_Token token);
 #define T_ACTIVE(arg) (token_new(aTHX_ (arg), 13))
 #define T_CS(arg)     (token_new(aTHX_ (arg), 16))
 
+#define TokenName(arg) (arg ? SvToken(arg)->string : "Unknown")
 extern int
 token_equals(pTHX_ SV * a, SV * b);
 

@@ -82,6 +82,8 @@ typedef struct State_struct {
 } T_State;
 typedef T_State * LaTeXML_State;
 
+#define isa_State(arg)        ((arg) && sv_isa(arg, "LaTeXML::Core::State"))
+
 #define SvState(arg)      ((LaTeXML_State)INT2PTR(LaTeXML_State, SvIV((SV*) SvRV(arg))))
 
 #define FLAG_GLOBAL    0x01

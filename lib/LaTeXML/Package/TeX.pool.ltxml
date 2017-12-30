@@ -1593,7 +1593,7 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
       AssignValue('BeforeNextBox' => $token); }
     # Save global flag, since we're digesting to get the box content, which resets the flag!
     # Should afterDigest be responsible for resetting flags?
-    my $scope = $STATE->globalFlag && 'global';
+    my $scope = ($STATE->globalFlag ? 'global' : undef);
     $STATE->clearFlags;    # before invoke, below; we've saved the only relevant one (global)
     my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);

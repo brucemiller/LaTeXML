@@ -52,12 +52,25 @@ sub pgfmathargradians {
 #   <flag>Y<mantissa>e<exponent>] !!!
 # with flag for signs, nans, etc.
 # For the moment: fixed precision!
+
 sub pgfmathresult {
   my ($value) = @_;
+  # It almost seems that if \ifpgfmathfloatparseactive and/or
+  # if \pgfmathfloatparse@output is \relax
+  # we should generate FPU format?
+  # if(XEquals(T_CS('\ifpgfmathfloatparseactive'),T_CS('\iftrue'))
+  #      && ! XEquals(T_CS('\ifpgfmathfloat@scaleactive'),T_CS('\iftrue'))
+  #      && XEquals(T_CS('\pgfmathfloatparse@output'),T_CS('\relax'))){
+  #   # ROUGH start...
+  #   if($value == 0.0){ $value = "0Y0.0e0"; }
+  #   else {
+  #     my $flags = '1';
+  #     if($value < 0){ $flags = '2'; $value = -$value; }
+  #     # pretend no exponent in $value ....
+  #     $value = $flags . 'Y' . $value . 'e0]'; } }
+  # else {
   $value = sprintf("%06f", $value);
-  #print STDERR "ASSIGNING result as $value\n";
-  #  my @v = ExplodeText($value);
-  #print STDERR " that is ".join(' ',map { Stringify($_) } @v)."\n";
+  #}
   DefMacroI(T_CS('\pgfmathresult'), undef, Tokens(ExplodeText($value)));
   return; }
 
@@ -80,22 +93,28 @@ DefMacro('\@@@show@pgfmatharg@{}', sub {
 # Or else, we've somehow lost braces somewhere???
 DefParameterType('pgfNumber', sub {
     my ($gullet) = @_;
+    # if \ifpgfmathfloatparseactive, then should be handling FPU format?
+
     #    my $token    = $gullet->readXToken(0);
     my $token;
     do { $token = $gullet->readXToken(0);
     } while (defined $token && $token->getCatcode == CC_SPACE);
 
     if ($token->getCatcode == CC_BEGIN) {
-      return ToString($gullet->readXBalanced()); }
+      #      return ToString($gullet->readXBalanced());
+      my $x = ToString($gullet->readXBalanced());
+###      print STDERR "PGFNUMBER balanced '$x'\n";
+      return $x; }
     else {
       $gullet->unread($token);
       my $value = $gullet->readFloat();
-#####print STDERR "PGFNUMBER ".Stringify($value)."\n";
       $token = $gullet->readToken();
-      if($token && ($token->equals(T_OTHER('Y')))){
-        Error('misdefined','internal',$gullet,
-              "Whoops, probably should be handling 'Y' format here?"); }
-    return $value->valueOf; 
+###      print STDERR "PGFNUMBER " . Stringify($value) . " followed by " . Stringify($token) . "\n";
+      $gullet->unread($token);
+      if ($token && ($token->equals(T_OTHER('Y')))) {
+        Error('misdefined', 'internal', $gullet,
+          "Whoops, probably should be handling 'Y' format here?"); }
+      return $value->valueOf;
 } });
 # Actually need to deal with the "Y" format too!?!?!
 DefParameterType('XXpgfNumber', sub {
@@ -109,12 +128,12 @@ DefParameterType('XXpgfNumber', sub {
     if ($token->getCatcode == CC_BEGIN) {
       $value = $gullet->readFloat();
       my $end = $gullet->readToken();
-      Error('unexpected',$end,$gullet,"Expected }") unless $end->getCatcode == CC_END;}
+      Error('unexpected', $end, $gullet, "Expected }") unless $end->getCatcode == CC_END; }
     else {
       $gullet->unread($token);
       $value = $gullet->readFloat(); }
-print STDERR "PGFNUMBER ".Stringify($value)."\n";
-    return $value->valueOf; } );
+###    print STDERR "PGFNUMBER " . Stringify($value) . "\n";
+    return $value->valueOf; });
 
 # This one expects {{number}{number}....} and returns an array of them
 DefParameterType('pgfNumbers', sub {
@@ -279,23 +298,28 @@ sub pgfmathparse {
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
-  #    print STDERR "\nPGF Math Parse: $string\n";
   $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
   my $result = $PGFMATHGrammar->expr(\$string);
   #  $result = "0.0" if $result eq "0";
   #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
   if ($string) {
-    Error('pgfparse', 'pgfparse', $gullet,
-      "Parse of '$input' failed",
-      "LTX: '$result'",
-      "Left: $string"); }
+    # Error('pgfparse', 'pgfparse', $gullet,
+    #   "Parse of '$input' failed",
+    #   "LTX: '$result'",
+    #   "Left: $string");
+    Fatal("unexpected", "stuff", $gullet,
+      "Stuff is still in string to parse: $string\n");
+    $gullet->unread(Tokenize($string));    # !!!!!!!!!
+
+  }
   #     print STDERR "  REMAINDER: $string\n" if $string;
   # There seem to be some pesky expectations for the results
-  if ($result == 0.0) {
-    $result = "0"; }
-  else {    # We don't want scientific notation output!!!
-    $result = sprintf("%f", $result); }
-####  print STDERR "PGFPARSE: '$input' => '$result'\n";
+##  if ($result == 0.0) {
+##    $result = "0"; }
+##  else {    # We don't want scientific notation output!!!
+##    $result = sprintf("%f", $result); }
+  $result = "$result";    # TEST!!!
+###  print STDERR "MATHPARSE: '$input' => '$result'\n";
   return $result; }
 
 DefMacro('\lx@pgfmath@parseX Expanded', sub {
@@ -305,8 +329,23 @@ DefMacro('\lx@pgfmath@parseX Expanded', sub {
 
 DefMacro('\lx@pgfmath@parse Expanded', sub {
     my ($gullet, $tokens) = @_;
-    DefMacroI('\pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
+    my $result = pgfmathparse($gullet, $tokens);
+#    DefMacroI('\pgfmathresult', undef, Tokens(Explode($result)));
+    pgfmathresult($result);
     return; });
+
+DefMacro('\lx@pgfmath@parse@ {}', sub {
+    my ($gullet, $tokens) = @_;
+###    print STDERR "MATHPARSE: " . Stringify($tokens);
+    $tokens = Tokens(Expand($tokens));
+###    print STDERR "==> " . Stringify($tokens);
+    my $result = pgfmathparse($gullet, $tokens);
+##    DefMacroI('\pgfmathresult', undef, Tokens(Explode($result)));
+    pgfmathresult($result);
+###    print STDERR " ==> $result\n";
+    #    return T_CS('\endgroup');
+    return;
+});
 
 DefPrimitive('\pgfmathsetlength DefToken Expanded', sub {
     my ($stomach, $register, $tokens) = @_;
@@ -322,7 +361,7 @@ DefPrimitive('\pgfmathsetlength DefToken Expanded', sub {
       $length = $gullet->readGlue; }
     else {
       $length = pgfmathparse($gullet, $tokens);
-      if (XEquals(T_CS('\ifpgfmathmathunitsdeclared'),T_CS('\iftrue'))) {
+      if (XEquals(T_CS('\ifpgfmathmathunitsdeclared'), T_CS('\iftrue'))) {
         $length = MuGlue($length * $STATE->convertUnit('mu')); }
       else {
         $length = Dimension($length * 65536); } }
@@ -346,6 +385,8 @@ DefMacro('\lx@test@pgfmath@parse{}',
 # Leave BOTH of the following commented out, to use pgfmath's own parser.
 # Use this to use our version of the pgfmath parser
 Let('\pgfmathparse', '\lx@pgfmath@parse');
+
+#Let('\pgfmathparse@', '\lx@pgfmath@parse@');
 # Use this to run both and compare the results.
 #Let('\pgfmathparse', '\lx@test@pgfmath@parse');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -414,18 +455,19 @@ BEGIN {
     '*'        => sub { $_[0] * $_[1]; },
     multiply   => sub { $_[0] * $_[1]; },
     '/'        => sub { $_[0] / $_[1]; },
-    div        => sub { int($_[0] / $_[1]); },
-    divide     => sub { $_[0] / $_[1]; },
-    '!'        => sub { factorial($_[0]); },
-    'r'        => sub { radial($_[0]); },
-    e          => sub { $E; },
-    pi         => sub { $PI; },
-    abs        => sub { abs($_[0]); },
-    acos       => sub { acos($_[0]); },
-    array      => sub { },
-    asin       => sub { asin($_[0]); },
-    atan       => sub { atan($_[0]); },
-    atan2 => sub { atan2($_[0], $_[1]); },
+    ',' => sub { join(',', @_); },
+    div => sub { int($_[0] / $_[1]); },
+    divide => sub { $_[0] / $_[1]; },
+    '!'    => sub { factorial($_[0]); },
+    'r'    => sub { radial($_[0]); },
+    e      => sub { $E; },
+    pi     => sub { $PI; },
+    abs    => sub { abs($_[0]); },
+    acos   => sub { acos($_[0]); },
+    array  => sub { },
+    asin   => sub { asin($_[0]); },
+    atan   => sub { atan($_[0]); },
+    atan2  => sub { atan2($_[0], $_[1]); },
     #    bin   => sub { },
     ceil  => sub { ceil($_[0]); },
     cos   => sub { cos(pgfmathargradians($_[0])); },
@@ -524,7 +566,7 @@ expr :
 
     # NOTE: Need to recognize octal, binary and hex!  AND scientific notation!
     NUMBER :
-      /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?/ { $item[1]+0.0; }
+      /(?:\d+\.?\d*|\d*\.?\d+)(:?[eE][+-]?\d+)?(r?)/ { ($item[2] ? ($item[1]+0.0).'r' : $item[1]+0.0) ; }
     | /0b[01]+/                  { oct($item[1]); } # !!!
     | /0x[0-9a-fA-F]+/           { hex($item[1]); }
     | /0[0-9]+/                  { oct($item[1]); }
@@ -543,7 +585,7 @@ int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|real|round|sec|sign|sin|sinh|
     CMP     : /==/ | /\>/ | /\</ | /!=/ | /\>=/ | /\<=/ | /&&/ | /||/
     PREFIX  : /\-/ | /!/ | /\+/
     POSTFIX : /!/ | /r/
-    ADDOP   : /\+/ | /=/ | /\-/
+    ADDOP   : /\+/ | /=/ | /\-/ | /,/
     MULOP   : /\*/ | /\//
 
 EoGrammar
