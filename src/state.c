@@ -21,6 +21,7 @@
 #include "errors.h"
 #include "object.h"
 #include "tokens.h"
+#include "tokenstack.h"
 #include "state.h"
 #include "boxstack.h"
 #include "parameters.h"
@@ -76,6 +77,7 @@ state_new(pTHX_ SV * stomach, SV * model){
   Newxz(xstate->ifstack,xstate->n_ifstack_alloc,LaTeXML_IfFrame);
   Newxz(xstate->ifstack[0],1,T_IfFrame);
   xstate->ifstack_top = -1;
+  xstate->processing = tokenstack_new(aTHX);
   /* Add base frame to stack !!! */
   xstate->stomach = (stomach ? SvREFCNT_inc(stomach) : NULL);
   xstate->model   = (model ? SvREFCNT_inc(model) : NULL);;
@@ -555,6 +557,19 @@ state_bindings_noinc(pTHX_ SV * state, int tableid, UTF8 string){
   if( ! ptr){
     return NULL; }
   return SvArray(*ptr); }
+
+void
+state_startProcessing(pTHX_ SV * state, SV * token){
+  /* Potential hook for tracing, profiling, ... ? */
+  LaTeXML_State xstate = SvState(state);
+  tokenstack_pushToken(aTHX_ xstate->processing, token); }
+
+void
+state_stopProcessing(pTHX_ SV * state, SV * token){
+  /* Potential hook for tracing, profiling, ... ? */
+  LaTeXML_State xstate = SvState(state);
+  /* Probably should compare token? */
+  tokenstack_pop(aTHX_ xstate->processing); }
 
 void
 state_beginSemiverbatim(pTHX_ SV * state, int nchars, char ** chars){

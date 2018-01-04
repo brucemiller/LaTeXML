@@ -76,6 +76,7 @@ typedef struct State_struct {
   HV * status;
   SV * stomach;
   SV * model;
+  LaTeXML_Tokenstack processing;
   int flags;
   int config;
   HV * units;
@@ -166,6 +167,12 @@ state_lookupInFrame(pTHX_ SV * state, int tableid, UTF8 string, int frame);
 
 extern AV * 
 state_bindings_noinc(pTHX_ SV * state, int tableid, UTF8 string);
+
+extern void
+state_startProcessing(pTHX_ SV * state, SV * token);
+
+extern void
+state_stopProcessing(pTHX_ SV * state, SV * token);
 
 extern int
 state_catcode(pTHX_ SV * state, UTF8 string);

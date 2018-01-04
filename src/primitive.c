@@ -240,8 +240,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
   int tracing = state_lookupBoole(aTHX_ state, TBL_VALUE,"TRACINGMACROS"); PERL_UNUSED_VAR(tracing); /* -Wall */
   int profiling= xstate->config & CONFIG_PROFILING;
   LaTeXML_Token t = SvToken(token);PERL_UNUSED_VAR(t); /* -Wall */
-  ENTER;  SV * current_token = get_sv("LaTeXML::CURRENT_TOKEN",1); save_item(current_token);
-  sv_setsv(current_token, token);
+  state_startProcessing(aTHX_ state, token);
 
   DEBUG_Primitive("Invoke Primitive %p %s[%s]\n",primitive,CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
@@ -285,7 +284,7 @@ primitive_invoke(pTHX_ SV * primitive, SV * token, SV * stomach, SV * state,
     SvREFCNT_dec(args[i]); }
   DEBUG_Primitive("Primitive %p %s[%s] returned %d boxes\n",
                   primitive,CC_SHORT_NAME[t->catcode],t->string,stack->nboxes);
-  LEAVE;
+  state_stopProcessing(aTHX_ state, token);
 }
 
 HV * primitive_opcode_table = NULL;

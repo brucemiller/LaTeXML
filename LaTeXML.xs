@@ -22,8 +22,8 @@
 #include "src/object.h"
 #include "src/tokens.h"
 #include "src/numbers.h"
-#include "src/state.h"
 #include "src/tokenstack.h"
+#include "src/state.h"
 #include "src/boxstack.h"
 #include "src/parameters.h"
 #include "src/mouth.h"
@@ -424,6 +424,20 @@ lookupStackedValues(state,string)
         SV ** ptr = av_fetch(av,i,0);
         SV * value = (ptr && *ptr ? sv_2mortal(SvREFCNT_inc(*ptr)) : &PL_sv_undef);
         XPUSHs(value); } }
+
+void
+getProcessing(state)
+    SV * state;
+  INIT:
+    LaTeXML_State xstate = SvState(state);
+    LaTeXML_Tokenstack tokens = xstate->processing;
+    int i;
+    int n = tokens->ntokens;
+    int max = n;
+  PPCODE:
+    if(max > 10) { max = 10; }
+    for(i = 0; i < max; i++){
+      XPUSHs(tokens->tokens[n-i-1]); }
 
 void
 pushValue(state,string,...)

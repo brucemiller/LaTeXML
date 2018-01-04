@@ -413,10 +413,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
   int profiling= xstate->config & CONFIG_PROFILING;
   HV * expandable_hash = SvHash(expandable);
   SV * result = NULL;
-  /* Boiler plate for local $LaTeXML::CURRENT_TOKEN = token */
-  ENTER;  SV * current_token = get_sv("LaTeXML::CURRENT_TOKEN",1); save_item(current_token);
-  sv_setsv(current_token, token);
-  
+  state_startProcessing(aTHX_ state, token);
   LaTeXML_Token t = SvToken(token); PERL_UNUSED_VAR(t); /* -Wall */
   DEBUG_Expandable("Invoke Expandable %s[%s]\n",CC_SHORT_NAME[t->catcode],t->string);
   if(profiling){
@@ -509,7 +506,7 @@ expandable_invoke(pTHX_ SV * expandable, SV * token, SV * gullet, SV * state){
    /*
     # Getting exclusive requires dubious Gullet support!
     #####push(@result, T_MARKER($profiled)) if $profiled; */
-  LEAVE;
+  state_stopProcessing(aTHX_ state, token);
   DEBUG_Expandable("Returning expansion %p\n", result);
   return result; }
 
