@@ -39,7 +39,7 @@ sub process {
   # Note that this will NOT RE-format a document read in from xml,
   # (providing no_blanks is false; which it should be, since it is dangerous.
   #  it can also remove significant spaces between elements!)
-  my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  my $serialized = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
 
   if (my $destination = $doc->getDestination) {
     my $destdir = $doc->getDestinationDirectory;
@@ -49,10 +49,11 @@ sub process {
     my $OUT;
     open($OUT, '>', $destination)
       or return Fatal('I/O', $destdir, undef, "Couldn't write '$destination'", "Response was: $!");
-    print $OUT $string;
+    print $OUT $serialized;
     close($OUT); }
   else {
-    print $string; }
+    binmode(STDOUT, ":encoding(UTF-8)");
+    print $serialized; }
   return $doc; }
 
 # ================================================================================
