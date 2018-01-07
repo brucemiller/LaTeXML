@@ -72,6 +72,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'Time::HiRes'       => 0,
     'URI'               => 0,
     'version'           => 0,
+    'Encode::Detect::Detector' => 0,
     # If we have an "old" version of XML::LibXML,
     # we also need XPathContext.
     # But we can't determine that additional dependence
