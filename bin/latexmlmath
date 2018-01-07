@@ -65,7 +65,7 @@ GetOptions(
   "debug=s"       => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
   "documentid=s"  => \$documentid,
   "help"          => \$help,
-  ) or pod2usage(-message => $LaTeXML::IDENTITY,
+) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
@@ -254,6 +254,7 @@ sub outputXML {
     $xml->setNamespaceDeclPrefix($oldprefix, undef); }
   my $serialized = $newdoc->toString(1);
   if ($xmldestination eq '-') {
+    binmode(STDOUT, ":encoding(UTF-8)");
     print $serialized; }
   else {
     $xmldestination = pathname_canonical($xmldestination);
