@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml searchpaths="/home/deyan/git/my-LaTeXML/t/moderncv"?>
+<?latexml class="moderncv" options="11pt,a4paper,final"?>
+<?latexml package="latexml"?>
+<?latexml package="url"?>
+<?latexml package="inputenc" options="utf8"?>
+<?latexml package="geometry" options="scale=0.83"?>
+<!--  %for classic style --><!--  %also optional, and the optional argument is the height the picture must be resized to --><!--  %to show numerical labels in the bibliography; only useful if you make citations in your resume --><!--  %“nopagenumbers–˝                             % uncomment to suppress automatic page numbering for CVs longer than one page --><!--  %command and color used in this document, independently from moderncv --><!--  %for web links --><!--  %**** cs˙cv.tex Line 25 **** --><!--  %for text subscripts --><!--  %__ --><!--  %content --><!--  %__  __ --><?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-cv.css" type="text/css"/>
+  <title><inline-block vattach="bottom">
+      <p>Computer Science,<break/> Ph.D. Candidate</p>
+    </inline-block></title>
+  <creator>
+    <contact role="firstname">Jane</contact>
+    <contact role="familyname">Doe</contact>
+    <contact role="address">777 Slevin Street<break/>New York, NY, 10010, USA</contact>
+    <contact role="mobile">+1 555 555 5555</contact>
+    <contact role="email">email@example.com</contact>
+    <contact role="homepage"><ref class="ltx_url" font="typewriter" href="https://www.example.com">https://www.example.com</ref></contact>
+  </creator>
+  <section xml:id="S1">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Education</text></title>
+    <para class="ltx_cventry row" xml:id="S1.p1">
+      <block class="col-md-2 col-xs-12 ltx_cventry_date">
+        <p>09/2017 – to date</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <inline-block class="bold">
+          <p>Pursuing a Ph.D. in Computer Science,</p>
+        </inline-block>
+        <inline-block>
+          <p>University of Science, Somewhere</p>
+        </inline-block>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>thesis</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p><emph font="italic">Lorem ipsum dolor - sit, amet, consectetur, adipiscing</emph></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p3">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>supervisors</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Prof. Dr. Main Supervisor, Prof. Dr. Internal Colleague, Prof. Dr. External Colleague</p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p4">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>description</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore. et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation.
+Ullamco laboris-nisi ut aliquip ex ea commodo-consequat Duis aute irure dolor, in reprehenderit in voluptate velit esse-cillum dolore eu fugiat nulla pariatur Excepteur sint occaecat cupidatat.</p>
+      </block>
+    </para>
+    <para class="ltx_cventry row" xml:id="S1.p5">
+      <block class="col-md-2 col-xs-12 ltx_cventry_date">
+        <p>09/2015 – 08/2017</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <inline-block class="bold">
+          <p>M.Sc. in Computer Science,</p>
+        </inline-block>
+        <inline-block>
+          <p>Masterful University, Somewhere</p>
+        </inline-block>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p6">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>thesis</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p><emph font="italic">Lorem Ipsum Dolor</emph></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p7">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>supervisors</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Prof. Dr. One, Dr. Two</p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S1.p8">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>description</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Lorem ipsum dolor sit amet consectetur
+adipiscing elit sed do, eiusmod tempor incididunt ut
+labore et (dolore) magna. aliqua Ut enim ad minim veniam quis
+nostrud exercitation ullamco laboris (nisi ut aliquip).</p>
+      </block>
+    </para>
+    <para class="ltx_cventry row" xml:id="S1.p9">
+      <block class="col-md-2 col-xs-12 ltx_cventry_date">
+        <p>09/2012 – 06/2015</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <inline-block class="bold">
+          <p>B.Sc. in Computer Science,</p>
+        </inline-block>
+        <inline-block>
+          <p>College of Science, Somewhere Else</p>
+        </inline-block>
+      </block>
+    </para>
+<!--  %**** cs˙cv.tex Line 50 **** -->  </section>
+  <section xml:id="S2">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Employment</text></title>
+    <para class="ltx_cvitem row" xml:id="S2.p1">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>10/2014 – 11/2017</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Maker and Doer at Company Inc, Place <break/>Homepage: <ref class="ltx_url" font="typewriter" href="https://www.example.com/">https://www.example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S2.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>06/2007 – 09/2014</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Research assistant at the Assisted research group, Some University. Projects included A, B, C, D and E. <break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://www.example.com/">http://www.example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S2.p3">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>01/2013 – 12/2013<break/>01/2012 – 05/2012</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Guest Researcher at the Research Group, <text font="italic">Institute of Research</text>, Place.<break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://www.example.com">http://www.example.com</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S2.p4">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>07/2009 – 09/2009</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Researcher at the Dept. of Foo Bar, Baz University. <break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://www.example.com/">http://www.example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S2.p5">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>06/2008 – 08/2008</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Summer intern at the Great group, ABRV City. <break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://www.example.com">http://www.example.com</ref></p>
+      </block>
+    </para>
+    <pagination role="newpage"/>
+  </section>
+  <section xml:id="S3">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Professional Appointments</text></title>
+    <para class="ltx_cvitem row" xml:id="S3.p1">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>02/2015 – to date</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Co-Founder of Something Good, promoting lorem ipsum on the dolor sit amet. Homepage:  <ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S3.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>07/2013, 07/2014</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Programme Committee member for the “Lorem and Ipsum” track of the Conferences on Dolor Sit Amet.<break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S3.p3">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>02/2014 – 05/2014</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Lecturer – Course Names, Course Type, University Name</p>
+      </block>
+    </para>
+  </section>
+  <section xml:id="S4">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Selected Projects</text></title>
+    <para class="ltx_cvitem row" xml:id="S4.p1">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Name A</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Co-developer and maintainer of lorem ipsum dolor sit amet censctetur.<break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S4.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Another Name</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Main developer. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do
+<break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S4.p3">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Name C</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Main developer and maintainer. Lorem ipsum dolor sit amet consectetur adipiscing, elit.sed, do eiusmod tempor incididunt.<break/>Homepage: <ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S4.p4">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Name Name</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Team captain and developer. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore.
+magna aliqua Ut enim ad minim veniam quis nostrud, exercitation, ullamco laboris nisi ut aliquip ex <text font="italic">ea commodo</text>. consequat Duis</p>
+      </block>
+    </para>
+  </section>
+  <section xml:id="S5">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Selected Extracurricular Activities</text></title>
+    <para class="ltx_cvitem row" xml:id="S5.p1">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>01/2014</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Participant in the second Lorem Ipsum hackathon – Lorem ipsum. dolor: sit amet consectetur adipiscing (elit sed, do eiusmod tempor, incididunt ut labore).<break/><!--  %**** cs˙cv.tex Line 75 **** --><ref class="ltx_url" font="typewriter" href="http://example.com/">http://example.com/</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S5.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>10/2010 – 06/2011</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Graduate student representative – Lorem ipsum, dolor sit amet consectetur adipiscing elit sed</p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S5.p3">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>07/2007</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>Competed in the Lorem ipsum dolor sit (amet), consectetur adipiscing, elit</p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S5.p4">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p><text font="bold">Interests</text></p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p>chicken, chicken, chicken, chicken</p>
+      </block>
+    </para>
+  </section>
+  <section xml:id="S6">
+    <title class="row"><text class="ltx_section_mark col-md-2 col-xs-1"></text><text class="col-md-10 col-xs-11" font="smallcaps">Publications</text></title>
+    <para class="ltx_cvitem row" xml:id="S6.p1">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Publications page</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p><ref class="ltx_url" font="typewriter" href="http://example.com">http://example.com</ref></p>
+      </block>
+    </para>
+    <para class="ltx_cvitem row" xml:id="S6.p2">
+      <block class="ltx_cvitem_label col-md-2 col-xs-12">
+        <p>Google Scholar</p>
+      </block>
+      <block class="col-md-10 col-xs-12">
+        <p><ref class="ltx_url" font="typewriter" href="https://scholar.google.com/citations?user=example">https://scholar.google.com/citations?user=example</ref></p>
+      </block>
+    </para>
+  </section>
+</document>

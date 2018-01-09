@@ -1,0 +1,94 @@
+#  /====================================================================\
+# | moderncv.cls for LaTeXML                                             |
+# |                                                                      |
+#  >====================================================================<
+# | Released to public domain.                                           |
+# | Deyan Ginev <d.ginev@jacobs-university.de>                           |
+# | http://dlmf.nist.gov/LaTeXML/                                        |
+#  \====================================================================/
+package LaTeXML::Package::Pool;
+
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Example use with Bootstrap headers included:
+#
+# latexmlc t/moderncv/cs_cv.tex --dest=t/moderncv/cs_cv.html \
+#   --stylesheet=LaTeXML-CV.xsl \
+#   --css="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" \
+#   --css="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css" \
+#   --javascript="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"
+#   --timestamp=0
+
+LoadClass('article');
+
+RequirePackage('calc');
+RequirePackage('ifthen');
+RequirePackage('url');
+RequirePackage('xcolor');
+RequirePackage('fancyhdr');
+RequirePackage('hyperref');
+
+RequireResource('ltx-cv.css');
+
+DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1\newline #2}}');
+
+DefMacro('\addressfont',   Tokens());
+DefMacro('\addressstyle',  Tokens());
+DefMacro('\addresssymbol', Tokens());
+
+DefMacro('\cvcolumn',     Tokens());
+DefMacro('\cvcolumncell', Tokens());
+DefMacro('\cvdoubleitem', Tokens());
+DefConstructor('\cventry{}{}{}{}{}{}',
+  "<ltx:para class='ltx_cventry row'>" .
+    "<ltx:block class='col-md-2 col-xs-12 ltx_cventry_date'>#1</ltx:block>" .
+"<ltx:block class='col-md-10 col-xs-12'><ltx:inline-block class='bold'>#2,</ltx:inline-block><ltx:inline-block> #4, #5</ltx:inline-block></ltx:block>" .
+    "</ltx:para>");
+DefConstructor('\cvitem{}{}',
+  "<ltx:para class='ltx_cvitem row'>" .
+    "<ltx:block class='ltx_cvitem_label col-md-2 col-xs-12'>#1</ltx:block>" .
+    "<ltx:block class='col-md-10 col-xs-12'>#2</ltx:block>" .
+    "</ltx:para>");
+
+DefConstructor('\@@@homepage{}', "^ <ltx:contact role='homepage'>#1</ltx:contact>");
+DefMacro('\homepage{}',     '\@add@to@frontmatter{ltx:creator}{\@@@homepage{\url{#1}}}');
+DefMacro('\homepagesymbol', Tokens());
+
+Let(T_CS('\maketitle'), T_CS('\relax'));
+
+DefConstructor('\@@@mobile{}', "^ <ltx:contact role='mobile'>#1</ltx:contact>");
+DefMacro('\mobile{}',          '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
+DefMacro('\mobilephonesymbol', Tokens());
+DefMacro('\moderncvtheme[]{}', Tokens());
+DefMacro('\moderncvcolor',     Tokens());
+DefMacro('\moderncvicons',     Tokens());
+DefMacro('\moderncvstyle',     Tokens());
+
+Let(T_CS('\\@@numbered@section'), T_CS('\\@@unnumbered@section'));
+DefConstructor('\\@@section{}{}{}{}{}{}', sub {
+    my ($document, $type, $id, $refnum, $frefnum, $toctitle, $title, %props) = @_;
+    $frefnum = undef if $frefnum && $refnum && (ToString($frefnum) eq ToString($refnum));
+    $document->openElement("ltx:" . ToString($type), 'xml:id' => CleanID($id), refnum => $refnum, frefnum => $frefnum);
+    $document->openElement('ltx:title', class => "row");
+    $document->insertElement('ltx:text', '',     class => 'ltx_section_mark col-md-2 col-xs-1');
+    $document->insertElement('ltx:text', $title, class => 'col-md-10 col-xs-11');
+    $document->closeElement('ltx:title');
+
+    $document->insertElement('ltx:toctitle', $toctitle)
+      if $toctitle && $toctitle->unlist && (ToString($toctitle) ne ToString($title)); },
+  bounded => 1, locked => 1);
+DefMacro('\closesection{}', Tokens(), locked => 1);
+
+DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
+DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
+DefMacro('\photo[]{}',               Tokens());
+
+DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefConstructor('\@@@firstname{}',  "^ <ltx:contact role='firstname'>#1</ltx:contact>");
+DefConstructor('\@@@familyname{}', "^ <ltx:contact role='familyname'>#1</ltx:contact>");
+
+1;
