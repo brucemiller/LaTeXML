@@ -327,7 +327,7 @@ sub image_graphicx_complex {
       $notes .= " scale-to $w x $h";
       image_internalop($image, 'Scale', width => $w, height => $h) or return; }
     elsif ($op eq 'rotate') {
-      image_internalop($image, 'Rotate', degrees => -$a1, color => $background) or return;
+      image_internalop($image, 'Rotate', degrees => -$a1, background => $background) or return;
       ($w, $h) = image_getvalue($image, 'width', 'height');
       return unless $w && $h;
       $notes .= " rotate $a1 to $w x $h"; }
