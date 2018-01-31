@@ -20,11 +20,16 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#DefMacro('\@fs@cfont' \rmfamily or \bfseries
+DefMacro('\format@title@@plain{}{}',    '\@tag[][: ]{\rmfamily #1} #2');
+DefMacro('\format@title@@plaintop{}{}', '\@tag[][: ]{\rmfamily #1} #2');
+DefMacro('\format@title@@ruled{}{}',    '\@tag[][ ]{\bfseries #1} #2');
+DefMacro('\format@title@@boxed{}{}',    '\@tag[][ ]{\bfseries #1} #2');
 
-# Choose the current float style (plain, plaintop, boxed, ruled) Ignorable
-DefMacro('\float@style',  '');
+# Choose the current float style (plain, plaintop, boxed, ruled)
+DefMacro('\float@style',  'plain');
 DefMacro('\floatstyle{}', '\def\float@style{#1}');
-# \restylefloat{style}  Ignorable
+# \restylefloat{style}  Ignore for now...
 DefMacro('\restylefloat OptionalMatch:* {}', undef);
 # \floatplacement{style}{placement}  Ignorable
 DefMacro('\floatplacement{}{}', undef);
@@ -32,7 +37,7 @@ DefMacro('\floatplacement{}{}', undef);
 # \listof{type}{title}   Ignorable
 DefMacro('\listof{}{}', undef);
 
-# \floatname{type}{name}  Ignorable, but tempting
+# \floatname{type}{name}
 DefMacro('\floatname{}{}', '\@namedef{fname@#1}{#2}');
 
 our %float_outerframe = (ruled => 'top');
@@ -47,6 +52,9 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
     DefMacroI('\fnum@' . $type, undef, '\fname@' . $type . '\nobreakspace\the' . $type);
     if (!LookupDefinition(T_CS('\fname@' . ToString($type)))) {
       DefMacroI('\fname@' . $type, undef, $type); }
+
+    DefMacro('\format@title@' . $type . '{}',
+      '\format@title@@' . $style . '{\fnum@' . $type . '}{#1}');
     DefEnvironment("{$type}[]",
 "<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
         . "#body"
