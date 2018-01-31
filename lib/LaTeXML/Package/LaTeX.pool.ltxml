@@ -483,7 +483,7 @@ DefMacro('\format@toctitle@{}{}',
 '{\@ifundefined{format@toctitle@#1}{\@@compose@title{\lx@fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
 
 DefMacro('\@@compose@title{}{}', '\@tag[][ ]{#1}#2');
-DefConstructor('\@tag[][]{}', "?#3(<ltx:tag open='#1' close='#2'>#3</ltx:tag>)()");
+DefConstructor('\@tag[][]{}', "?#3(<ltx:tag open='#1' close='#2'>#3</ltx:tag>)()", bounded => 1);
 
 ## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
 ## This would be useful for the titles in links; thus can be plain (unicode) text.
