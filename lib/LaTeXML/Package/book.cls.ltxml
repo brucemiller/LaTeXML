@@ -76,9 +76,9 @@ NewCounter('equation',       'chapter',  idprefix => 'E');
 NewCounter('@equationgroup', 'document', idprefix => 'EG', idwithin => 'section');
 NewCounter('figure',         'chapter',  idprefix => 'F');
 NewCounter('table',          'chapter',  idprefix => 'T');
-DefMacro('\theequation', '\thechapter.\arabic{equation}');
-DefMacro('\thefigure',   '\thechapter.\arabic{figure}');
-DefMacro('\thetable',    '\thechapter.\arabic{table}');
+DefMacro('\theequation', '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{equation}');
+DefMacro('\thefigure',   '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{figure}');
+DefMacro('\thetable',    '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{table}');
 SetCounter(tocdepth => Number(2));
 
 NewCounter('@itemizei',   'chapter',     idprefix => 'I');
