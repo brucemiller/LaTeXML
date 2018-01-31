@@ -159,21 +159,6 @@ sub maketest_daemon {
 # The normalized form is most sensible for comparison,
 # but the literal form is most expected(?) for test!!
 # (else, we're ignoring whitespace changes in test)
-sub XXXcompare_xml {
-  my ($dir, $name) = @_;
-  #========================================
-  # Generate the XML from the current latexml
-  local ($^W) = 0;    # NASTY way to turn off redefinitions!
-  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [], includecomments => 0, verbosity => $verbosity);
-  my $file = pathname_concat($dir, $name);
-  my $newdom = $latexml->convertFile(pathname_concat($dir, $name))
-    or die "Failed to convert $file.tex: $!";
-
-  #========================================
-  # Do the comparison
-  print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
-  return compareLines(readXML("$file.xml"), stringifyDom($newdom)); }
-
 sub compare_xml {
   my ($dir, $name) = @_;
   my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
@@ -242,14 +227,16 @@ sub stringifyDom {
 
 sub gen_xml {
   my ($dir, $name) = @_;
-  local ($^W) = 0;    # NASTY way to turn off redefinitions!
-  my $file = pathname_concat($dir, $name);
-  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [],
-    includecomments => 0, verbosity => $verbosity);
-  if (-f "$file.xml") {
-    rename("$file.xml", "$file.xml.bak"); }
-  $latexml->convertAndWriteFile($file)
-    or die "Failed to create $file.xml: $!";
+  my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
+  my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
+  if (-f "$xml") {
+    rename("$xml", "$xml.bak"); }
+  #========================================
+  # Generate the XML from the current latexml
+  system("$FindBin::RealBin/../blib/script/latexml", $source,
+    "--destination=" . $xml,
+    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
+    or die "Failed to convert $source: $!";
   return; }
 
 sub gen_pdf {
