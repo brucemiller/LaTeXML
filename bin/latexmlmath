@@ -65,7 +65,7 @@ GetOptions(
   "debug=s"       => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
   "documentid=s"  => \$documentid,
   "help"          => \$help,
-) or pod2usage(-message => $LaTeXML::IDENTITY,
+  ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
@@ -253,8 +253,9 @@ sub outputXML {
   if (my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)) {
     $xml->setNamespaceDeclPrefix($oldprefix, undef); }
   my $serialized = $newdoc->toString(1);
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($xmldestination eq '-') {
-    binmode(STDOUT, ":encoding(UTF-8)");
     print $serialized; }
   else {
     $xmldestination = pathname_canonical($xmldestination);

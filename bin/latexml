@@ -19,6 +19,7 @@ use Pod::Usage;
 use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
+use Encode;
 
 #**********************************************************************
 # Parse command line
@@ -103,7 +104,7 @@ eval {
     preamble => $preamble, postamble => $postamble);
 
   # ========================================
-  # Now, convert to DOM and output, if desired.
+  # Now, convert to DOM, encode and output, if desired.
 
   if ($digested) {
     $latexml->withState(sub {
@@ -114,7 +115,9 @@ eval {
         else {
           my $dom = $latexml->convertDocument($digested);
           $serialized = $dom->toString(1);
-        } }); }
+        }
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+        }); }
 };
 if ($@) {    # Fatal error?
   print STDERR $@; }
@@ -127,11 +130,9 @@ if (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
   open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
-  binmode($OUTPUT, ":encoding(UTF-8)");
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
-  binmode(STDOUT, ":encoding(UTF-8)");
   print $serialized; }
 
 # ========================================

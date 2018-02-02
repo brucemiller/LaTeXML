@@ -40,7 +40,8 @@ sub process {
   # (providing no_blanks is false; which it should be, since it is dangerous.
   #  it can also remove significant spaces between elements!)
   my $serialized = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
-
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if (my $destination = $doc->getDestination) {
     my $destdir = $doc->getDestinationDirectory;
     pathname_mkdir($destdir)
@@ -52,7 +53,6 @@ sub process {
     print $OUT $serialized;
     close($OUT); }
   else {
-    binmode(STDOUT, ":encoding(UTF-8)");
     print $serialized; }
   return $doc; }
 
