@@ -477,14 +477,10 @@ The secondary format is incorporated using whatever means
 the primary format uses; eg. \MathML\ combines formats using
 \texttt{m:semantics} and \texttt{m:annotation-xml}.
 
-Given the state of current browsers, when generating MathML it may be
-useful to conditionally include the `polyfill' library \URL[MathJax]{http://mathjax.org/},
-for rendering MathML in browsers that don't support it natively.
-The following option includes a short Javascript that will load MathJax into such browsers:
-\begin{lstlisting}[style=shell]
---javascript=LaTeXML-maybeMathJax.js
-\end{lstlisting}
-(See \ref{usage.post.xslt} for more information about including Javascript.)
+Given the state of current browsers, you may wish
+to use a polyfill such as \URL[MathJax]{http://mathjax.org/} 
+to support MathML on more platforms.
+See the example in \ref{usage.post.xslt} for one way to do it.
 
 \paragraph[Graphics]{Graphics processing}\label{usage.post.graphics}
 Conversion of graphics (eg.~from the \code{graphic(s|x)} packages' 
@@ -538,10 +534,14 @@ Javascript files are included in the generated \HTML\ by using the \shellcode{--
 The distribution includes a sample \code{LaTeXML-maybeMathjax.js} which is useful
 for supporting MathML: it invokes MathJax\footnote{http://mathjax.org}
 to render the mathematics in browsers without native support for MathML.
-Alternatively, you can invoke MathJax unconditionally, from the `cloud' by using:
+\begin{lstlisting}[style=shell]
+--javascript=LaTeXML-maybeMathJax.js
+\end{lstlisting}
+The option can also reference a remote script; for example to invoke MathJax unconditionally
+from the `cloud':
 \begin{lstlisting}[style=shell]
 latexmlpost --format=html5 \
-   --javascript='http://cdn.mathjax.org/mathjax/latest/MathJax.js' \
+   --javascript='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=MML_CHTML' \
    --destination=%somewhere/doc%.html %doc%
 \end{lstlisting}
 
