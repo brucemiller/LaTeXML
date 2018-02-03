@@ -155,6 +155,8 @@ if ($log) {
 }
 
 if ($result) {
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($opts->get('destination')) {
     my $output_handle;
     if (!open($output_handle, ">", $opts->get('destination'))) {

@@ -116,6 +116,8 @@ eval {
           my $dom = $latexml->convertDocument($digested);
           $serialized = $dom->toString(1);
         }
+        # NOTE that we are serializing via LaTeXML's Document::serialize_aux
+        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
         }); }
 };
