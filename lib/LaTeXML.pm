@@ -315,7 +315,8 @@ sub convert {
   undef $serialized;
   if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
     if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
-      $serialized = $result->toString(1); }
+      $serialized = $result->toString(1); 
+      $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
     elsif ($$opts{format} =~ /^html/) {
       if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
         $serialized = $result->getDocument->toStringHTML; }
@@ -323,6 +324,7 @@ sub convert {
         do {
           local $XML::LibXML::setTagCompression = 1;
           $serialized = $result->toString(1);
+          $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
           } } }
     elsif ($$opts{format} eq 'dom') {
       $serialized = $result; } }
