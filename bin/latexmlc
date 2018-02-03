@@ -160,13 +160,9 @@ if ($result) {
     if (!open($output_handle, ">", $opts->get('destination'))) {
       print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1; }
-    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
-      binmode($output_handle, ":encoding(UTF-8)"); }
     print $output_handle $result;
     close $output_handle;
   } else {
-    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
-      binmode(STDOUT, ":encoding(UTF-8)"); }
     print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 
