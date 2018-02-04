@@ -275,6 +275,11 @@ sub image_graphicx_complex {
   my $dppt       = $properties{dppt}       || $DOTS_PER_POINT;
   my $background = $properties{background} || $BACKGROUND;
   my $image = image_read($source, antialias => 1) or return;
+  # Get some defaults from the read-in image.
+  my ($imagedpi) = image_getvalue($image, 'x-resolution');
+  my ($bg)       = image_getvalue($image, 'transparent-color');
+  if ($bg) {
+    $background = "rgba($bg)"; }
   image_internalop($image, 'Trim') or return if $properties{autocrop};
   my $orig_ncolors = image_getvalue($image, 'colors');
   return unless $orig_ncolors;
@@ -338,13 +343,15 @@ sub image_graphicx_complex {
     # but ImageMagick's coordinates are relative to upper left.
     elsif (($op eq 'trim') || ($op eq 'clip')) {
       my ($x0, $y0, $ww, $hh);
+      # Use the image's dpi for trim & clip!
+      my $idppt = (defined $imagedpi ? ($imagedpi / 72.0) : $dppt);
       if ($op eq 'trim') {    # Amount to trim: a1=left, a2=bottom, a3=right, a4=top
-        ($x0, $y0, $ww, $hh) = (floor($a1 * $dppt), floor($a4 * $dppt),
-          ceil($w - ($a1 + $a3) * $dppt), ceil($h - ($a4 + $a2) * $dppt));
+        ($x0, $y0, $ww, $hh) = (floor($a1 * $idppt), floor($a4 * $idppt),
+          ceil($w - ($a1 + $a3) * $idppt), ceil($h - ($a4 + $a2) * $idppt));
         $notes .= " trim to $ww x $hh @ $x0,$y0"; }
       else {                  # BBox: a1=left, a2=bottom, a3=right, a4=top
-        ($x0, $y0, $ww, $hh) = (floor($a1 * $dppt), floor($h - $a4 * $dppt),
-          ceil(($a3 - $a1) * $dppt), ceil(($a4 - $a2) * $dppt));
+        ($x0, $y0, $ww, $hh) = (floor($a1 * $idppt), floor($h - $a4 * $idppt),
+          ceil(($a3 - $a1) * $idppt), ceil(($a4 - $a2) * $idppt));
         $notes .= " clip to $ww x $hh @ $x0,$y0"; }
 
       if (($x0 > 0) || ($y0 > 0) || ($x0 + $ww < $w) || ($y0 + $hh < $h)) {
@@ -361,6 +368,7 @@ sub image_graphicx_complex {
       $image = $nimage;
       ($w, $h) = ($ww, $hh);
     } }
+
   if (my $trans = $properties{transparent}) {
     $notes .= " transparent=$background";
     image_internalop($image, 'Transparent', $background) or return; }
