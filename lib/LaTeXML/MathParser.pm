@@ -249,11 +249,14 @@ sub parse {
   local $LaTeXML::MathParser::PUNCTUATION = {};
   local $LaTeXML::MathParser::LOSTNODES   = {};
   local %LaTeXML::MathParser::IDREFS      = ();
-  local $LaTeXML::MathParser::LEXEME_STORE = [];
   # This bit for debugging....
   foreach my $n ($document->findnodes("descendant-or-self::*[\@xml:id]", $xnode)) {
     my $id = $n->getAttribute('xml:id');
     $LaTeXML::MathParser::IDREFS{$id} = $n; }
+  if ($$self{lexematize}) {
+    $xnode->parentNode->setAttribute('lexemes', 
+        $self->node_to_lexeme_full($xnode));
+  }
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
     my $p = $xnode->parentNode;
@@ -284,12 +287,6 @@ sub parse {
         foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
           $document->setAttribute($n, idref => $repid); } } }
     $p->setAttribute('text', text_form($result));
-    if ($$self{lexematize}) {
-      my $lexeme_store = $$LaTeXML::MathParser::LEXEME_STORE[0];
-      my $lexeme_string = join(" ", @$lexeme_store);
-      $lexeme_string =~ s/^\s+//;
-      $p->setAttribute('lexemes', $lexeme_string);
-    }
   }
   return; }
 
@@ -298,9 +295,7 @@ my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
 # by first parsing any structured children, then it's content.
 sub parse_rec {
   my ($self, $node, $rule, $document) = @_;
-  push @$LaTeXML::MathParser::LEXEME_STORE, [];
   $self->parse_children($node, $document);
-  my $child_lexemes = shift @$LaTeXML::MathParser::LEXEME_STORE; # discard these for now
   
   # This will only handle 1 layer nesting (successfully?)
   # Note that this would have been found by the top level xpath,
@@ -673,10 +668,8 @@ sub parse_single {
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
     if ($nodes[0]) {
       $result = $nodes[0];
-      push @$LaTeXML::MathParser::LEXEME_STORE, [$self->node_to_lexeme($result)];
     } else {
       $result = Absent(); 
-      push @$LaTeXML::MathParser::LEXEME_STORE, ["absent:absent"];
     }
   }
   else {
@@ -709,6 +702,23 @@ sub node_to_lexeme {
   return $lexeme;
 }
 
+sub node_to_lexeme_full {
+  my ($self, $unrealized_node) = @_;
+  my $node = realizeXMNode($unrealized_node);
+  my $tag = getQName($node);
+  my $role = p_getAttribute($node, 'role');
+  if (($role && ($role ne 'ATOM')) && ($tag !~ 'ltx:XM(Arg|Wrap|ath)')) {
+    return $self->node_to_lexeme($node); # lowercase roles for readability
+  } else {
+    my $lexemes = ($tag eq 'ltx:XMath') ? '' : 'ARG:start ';
+    foreach my $child (element_nodes($node)) {
+      $lexemes .= $self->node_to_lexeme_full($child) . ' ';
+    }
+    $lexemes .= ($tag eq 'ltx:XMath') ? '' : 'ARG:end';
+    return $lexemes;
+  }
+}
+
 sub parse_internal {
   my ($self, $rule, @nodes) = @_;
   #------------
@@ -716,11 +726,9 @@ sub parse_internal {
   local $LaTeXML::MathParser::LEXEMES = {};
   my $i       = 0;
   my $lexemes = '';
-  my $lexeme_store = $$LaTeXML::MathParser::LEXEME_STORE[0];
+
   foreach my $node (@nodes) {
-    my $lexeme_token = $self->node_to_lexeme($node);
-    push @$lexeme_store, $lexeme_token;
-    my $lexeme = $lexeme_token . ":" . ++$i;
+    my $lexeme = $self->node_to_lexeme($node) . ":" . ++$i;
     $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
     $lexemes .= ' ' . $lexeme; }
 
