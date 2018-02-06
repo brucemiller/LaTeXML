@@ -444,7 +444,8 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
-    if ($flag || (($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))) {
+    if ($flag || (($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
+      || LookupValue('no_number_sections')) {
       RefStepID($ctr);
       (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'), T_BEGIN, $type->unlist, T_END); }
     else {

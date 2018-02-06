@@ -123,12 +123,12 @@ DefPrimitive('\@appendix', sub {
 # preamble
 # \begin{document}
 # \frontmatter
-DefPrimitive('\frontmatter', undef);    # Do we need this?
+DefPrimitive('\frontmatter', sub { AssignValue(no_number_sections => 1); });
 # frontmatter stuff
 # \maketitle
 # \include various preface, introduction, etc
 # \mainmatter
-DefPrimitive('\mainmatter', undef);
+DefPrimitive('\mainmatter', sub { AssignValue(no_number_sections => 0); });
 # \include various chapters, appendices
 # \backmatter
 DefPrimitive('\backmatter', undef);
