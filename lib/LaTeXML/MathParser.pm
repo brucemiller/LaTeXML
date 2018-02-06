@@ -52,8 +52,7 @@ sub new {
   my $internalparser = LaTeXML::MathGrammar->new();
   Fatal("expected", "MathGrammar", undef,
     "Compilation of Math Parser grammar failed") unless $internalparser;
-
-  my $self = bless { internalparser => $internalparser }, $class;
+  my $self = bless { internalparser => $internalparser, lexematize => $options{lexematize} }, $class;
   return $self; }
 
 sub parseMath {
@@ -249,6 +248,7 @@ sub parse {
   local $LaTeXML::MathParser::PUNCTUATION = {};
   local $LaTeXML::MathParser::LOSTNODES   = {};
   local %LaTeXML::MathParser::IDREFS      = ();
+  local $LaTeXML::MathParser::LEXEME_STRING = '';
   # This bit for debugging....
   foreach my $n ($document->findnodes("descendant-or-self::*[\@xml:id]", $xnode)) {
     my $id = $n->getAttribute('xml:id');
@@ -282,7 +282,12 @@ sub parse {
       else {
         foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
           $document->setAttribute($n, idref => $repid); } } }
-    $p->setAttribute('text', text_form($result)); }
+    $p->setAttribute('text', text_form($result));
+    if ($$self{lexematize}) {
+      $LaTeXML::MathParser::LEXEME_STRING =~ s/^\s+//;
+      $p->setAttribute('lexemes', $LaTeXML::MathParser::LEXEME_STRING);
+    }
+  }
   return; }
 
 my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
@@ -631,7 +636,7 @@ sub parse_single {
   my ($self, $mathnode, $document, $rule) = @_;
   my @nodes = $self->filter_hints($document, $mathnode->childNodes);
 
-  my ($punct, $result, $unparsed);
+  my ($punct, $result, $unparsed, $lexemes);
   my @punct = ();
   # Extract trailing punctuation, if rule allows it.
   if ($rule =~ s/,$//) {
@@ -660,11 +665,14 @@ sub parse_single {
       . "\n"; }
 
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
-    $result = $nodes[0] || Absent(); }
+    $result = $nodes[0] || Absent(); 
+    $lexemes = ''; }
   else {
     # Now do the actual parse.
-    ($result, $unparsed) = $self->parse_internal($rule, @nodes); }
-
+    ($result, $unparsed, $lexemes) = $self->parse_internal($rule, @nodes); 
+    # Record the lexemes for bookkeeping 
+    }
+  
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
   if ((!defined $result) || $unparsed) {
@@ -680,6 +688,16 @@ sub parse_single {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
 
+sub node_to_lexeme {
+  my ($self, $node) = @_;
+  my $role = $self->getGrammaticalRole($node);
+  my $text = getTokenMeaning($node);
+  $text = 'Unknown' unless defined $text;
+  my $lexeme = $role . ":" . $text;
+  $lexeme =~ s/\s//g;
+  return $lexeme;
+}
+
 sub parse_internal {
   my ($self, $rule, @nodes) = @_;
   #------------
@@ -688,12 +706,10 @@ sub parse_internal {
   my $i       = 0;
   my $lexemes = '';
   foreach my $node (@nodes) {
-    my $role = $self->getGrammaticalRole($node);
-    my $text = getTokenMeaning($node);
-    $text = 'Unknown' unless defined $text;
-    my $lexeme = $role . ":" . $text . ":" . ++$i;
-    $lexeme =~ s/\s//g;
+    my $lexeme_token = $self->node_to_lexeme($node);
+    my $lexeme = $lexeme_token . ":" . ++$i;
     $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
+    $LaTeXML::MathParser::LEXEME_STRING .= ' ' . $lexeme_token; 
     $lexemes .= ' ' . $lexeme; }
 
   #------------
@@ -728,7 +744,7 @@ sub parse_internal {
 
   # If still failed, try other strategies?
 
-  return ($result, $unparsed); }
+  return ($result, $unparsed, $lexemes); }
 
 sub getGrammaticalRole {
   my ($self, $node) = @_;

@@ -137,6 +137,8 @@ GetOptions("quiet" => sub { $verbosity--; },
   "nokeepXMath"                 => sub { removeMathFormat('XMath'); },
   "mathtex"                     => sub { addMathFormat('mathtex'); },
   "nomathtex"                   => sub { removeMathFormat('mathtex'); },
+  "mathlex"                     => sub { addMathFormat('mathlex'); },
+  "nomathlex"                   => sub { removeMathFormat('mathlex'); },
   # For graphics: vaguely similar issues, but more limited.
   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
   # picture/pstricks images can be converted to png or possibly svg.
@@ -395,6 +397,9 @@ if (!$prescan) {
       elsif ($fmt eq 'mathtex') {
         require LaTeXML::Post::TeXMath;
         push(@mprocs, LaTeXML::Post::TeXMath->new(%OPTIONS)); }
+      elsif ($fmt eq 'mathlex') {
+        require LaTeXML::Post::LexMath;
+        push(@mprocs, LaTeXML::Post::LexMath->new(%OPTIONS)); }
     }
     my $main = shift(@mprocs);
     $main->setParallel(@mprocs);
@@ -576,6 +581,8 @@ latexmlpost [options] I<xmlfile>
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
+ --mathlex               adds linguistic lexeme annotation to parallel markup
+ --nomathlex             disables the above (default)
  --plane1                use plane-1 unicode for symbols
                          (default, if needed)
  --noplane1              do not use plane-1 unicode
