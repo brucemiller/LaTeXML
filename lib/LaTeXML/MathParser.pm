@@ -225,6 +225,7 @@ sub node_location {
   else {
     return 'Unknown'; } }
 
+use Data::Dumper;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Parser
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -248,7 +249,7 @@ sub parse {
   local $LaTeXML::MathParser::PUNCTUATION = {};
   local $LaTeXML::MathParser::LOSTNODES   = {};
   local %LaTeXML::MathParser::IDREFS      = ();
-  local $LaTeXML::MathParser::LEXEME_STRING = '';
+  local $LaTeXML::MathParser::LEXEME_STORE = [];
   # This bit for debugging....
   foreach my $n ($document->findnodes("descendant-or-self::*[\@xml:id]", $xnode)) {
     my $id = $n->getAttribute('xml:id');
@@ -284,8 +285,10 @@ sub parse {
           $document->setAttribute($n, idref => $repid); } } }
     $p->setAttribute('text', text_form($result));
     if ($$self{lexematize}) {
-      $LaTeXML::MathParser::LEXEME_STRING =~ s/^\s+//;
-      $p->setAttribute('lexemes', $LaTeXML::MathParser::LEXEME_STRING);
+      my $lexeme_store = $$LaTeXML::MathParser::LEXEME_STORE[0];
+      my $lexeme_string = join(" ", @$lexeme_store);
+      $lexeme_string =~ s/^\s+//;
+      $p->setAttribute('lexemes', $lexeme_string);
     }
   }
   return; }
@@ -295,7 +298,10 @@ my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
 # by first parsing any structured children, then it's content.
 sub parse_rec {
   my ($self, $node, $rule, $document) = @_;
+  push @$LaTeXML::MathParser::LEXEME_STORE, [];
   $self->parse_children($node, $document);
+  my $child_lexemes = shift @$LaTeXML::MathParser::LEXEME_STORE; # discard these for now
+  
   # This will only handle 1 layer nesting (successfully?)
   # Note that this would have been found by the top level xpath,
   # but we've got to worry about node identity: the parent is being rebuilt
@@ -636,7 +642,7 @@ sub parse_single {
   my ($self, $mathnode, $document, $rule) = @_;
   my @nodes = $self->filter_hints($document, $mathnode->childNodes);
 
-  my ($punct, $result, $unparsed, $lexemes);
+  my ($punct, $result, $unparsed);
   my @punct = ();
   # Extract trailing punctuation, if rule allows it.
   if ($rule =~ s/,$//) {
@@ -665,13 +671,18 @@ sub parse_single {
       . "\n"; }
 
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
-    $result = $nodes[0] || Absent(); 
-    $lexemes = ''; }
+    if ($nodes[0]) {
+      $result = $nodes[0];
+      push @$LaTeXML::MathParser::LEXEME_STORE, [$self->node_to_lexeme($result)];
+    } else {
+      $result = Absent(); 
+      push @$LaTeXML::MathParser::LEXEME_STORE, ["absent:absent"];
+    }
+  }
   else {
     # Now do the actual parse.
-    ($result, $unparsed, $lexemes) = $self->parse_internal($rule, @nodes); 
-    # Record the lexemes for bookkeeping 
-    }
+    ($result, $unparsed) = $self->parse_internal($rule, @nodes); 
+  }
   
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
@@ -705,11 +716,12 @@ sub parse_internal {
   local $LaTeXML::MathParser::LEXEMES = {};
   my $i       = 0;
   my $lexemes = '';
+  my $lexeme_store = $$LaTeXML::MathParser::LEXEME_STORE[0];
   foreach my $node (@nodes) {
     my $lexeme_token = $self->node_to_lexeme($node);
+    push @$lexeme_store, $lexeme_token;
     my $lexeme = $lexeme_token . ":" . ++$i;
     $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
-    $LaTeXML::MathParser::LEXEME_STRING .= ' ' . $lexeme_token; 
     $lexemes .= ' ' . $lexeme; }
 
   #------------
@@ -744,7 +756,7 @@ sub parse_internal {
 
   # If still failed, try other strategies?
 
-  return ($result, $unparsed, $lexemes); }
+  return ($result, $unparsed); }
 
 sub getGrammaticalRole {
   my ($self, $node) = @_;
