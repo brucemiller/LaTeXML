@@ -254,8 +254,10 @@ sub parse {
     my $id = $n->getAttribute('xml:id');
     $LaTeXML::MathParser::IDREFS{$id} = $n; }
   if ($$self{lexematize}) {
-    $xnode->parentNode->setAttribute('lexemes', 
-        $self->node_to_lexeme_full($xnode));
+    my $lexeme_form = $self->node_to_lexeme_full($xnode);
+    $lexeme_form =~ s/^\s+//;
+    $lexeme_form =~ s/\s+$//;
+    $xnode->parentNode->setAttribute('lexemes', $lexeme_form);
   }
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
@@ -707,14 +709,35 @@ sub node_to_lexeme_full {
   my $node = realizeXMNode($unrealized_node);
   my $tag = getQName($node);
   my $role = p_getAttribute($node, 'role');
-  if (($role && ($role ne 'ATOM')) && ($tag !~ 'ltx:XM(Arg|Wrap|ath)')) {
+  if (($role && ($role ne 'ATOM')) && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)')) {
     return $self->node_to_lexeme($node); # lowercase roles for readability
   } else {
-    my $lexemes = ($tag eq 'ltx:XMath') ? '' : 'ARG:start ';
-    foreach my $child (element_nodes($node)) {
-      $lexemes .= $self->node_to_lexeme_full($child) . ' ';
+    my ($mark_start, $mark_end) = ('','');
+    if ($tag ne 'ltx:XMath') {
+      if ($role) {
+        $mark_start = "$role:start ";
+        $mark_end = "$role:end";
+      } else {
+        if ($tag eq 'ltx:XMArg') {
+          $mark_start = "ARG:start ";
+          $mark_end = "ARG:end";          
+        }
+      }
     }
-    $lexemes .= ($tag eq 'ltx:XMath') ? '' : 'ARG:end';
+    my $lexemes = $mark_start;
+    if ($tag eq 'ltx:XMDual') {
+      $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node));
+    } else {
+      my @child_nodes = element_nodes($node);
+      # skip through single child wrappers (don't serialize)
+      while (scalar(@child_nodes) == 1 && getQName($child_nodes[0]) =~ /^ltx:XM(Arg|Wrap)$/) {
+        @child_nodes = element_nodes($child_nodes[0])
+      }
+      foreach my $child (@child_nodes) {
+        $lexemes .= $self->node_to_lexeme_full($child) . ' ';
+      }
+    }
+    $lexemes .= $mark_end;
     return $lexemes;
   }
 }

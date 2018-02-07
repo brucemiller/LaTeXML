@@ -117,6 +117,15 @@ sub getFirstChildElement {
     return $n; }
   return; }
 
+# get the second element node (if any) in $node
+sub getSecondChildElement {
+  my ($self, $node) = @_;
+  my $first_child = $self->getFirstChildElement($node);
+  my $second_child = $first_child && $first_child->nextSibling;
+  while ($second_child && $second_child->nodeType != XML_ELEMENT_NODE) {
+      $second_child = $second_child->nextSibling; }
+  return $second_child; }
+
 # Find the nodes according to the given $xpath expression,
 # the xpath is relative to $node (if given), otherwise to the document node.
 sub findnodes {
