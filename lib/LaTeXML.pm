@@ -277,6 +277,8 @@ sub convert {
     my $log = $self->flush_log;
     $serialized = $dom if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
+    # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
+    $serialized = Encode::encode('UTF-8', $serialized) if $serialized; 
 
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
@@ -315,10 +317,12 @@ sub convert {
   undef $serialized;
   if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
     if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
-      $serialized = $result->toString(1); 
-      # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
-      # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
-      $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
+      $serialized = $result->toString(1);
+      if (ref($result) eq 'LaTeXML::Core::Document') {
+        # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
+        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized; 
+      } }
     elsif ($$opts{format} =~ /^html/) {
       if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
         $serialized = $result->getDocument->toStringHTML; }
