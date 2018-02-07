@@ -708,10 +708,15 @@ sub node_to_lexeme_full {
   my ($self, $unrealized_node) = @_;
   my $node = realizeXMNode($unrealized_node);
   my $tag = getQName($node);
+  if ($tag eq 'ltx:XMHint') {return "";} # just skip XMHints, they don't contain lexemes
   my $role = p_getAttribute($node, 'role');
-  if (($tag eq 'ltx:XMTok') || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)'))) {
-    return $self->node_to_lexeme($node); # lowercase roles for readability
+  if (($tag =~ /^ltx:XM(Tok|Text)$/) || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)'))) {
+    # Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
+    # can proceed to building the lexeme from the leaf node.
+    return $self->node_to_lexeme($node);
   } else {
+    # Elements that do not have a role and are intermediate "may" need an argument wrapper, so that arguments
+    # remain unambiguous. For instance a `\frac{a}{b}` has clear argument structure to be preserved.
     my ($mark_start, $mark_end) = ('','');
     if ($tag ne 'ltx:XMath') {
       if ($role) {
@@ -734,11 +739,11 @@ sub node_to_lexeme_full {
         @child_nodes = element_nodes($child_nodes[0])
       }
       foreach my $child (@child_nodes) {
-        $lexemes .= $self->node_to_lexeme_full($child) . ' ';
+        my $child_lexeme = $self->node_to_lexeme_full($child);
+        $lexemes .=  $child_lexeme. ' ' if $child_lexeme;
       }
     }
     $lexemes .= $mark_end;
-    $lexemes =~ s/\s+$//;
     return $lexemes;
   }
 }
