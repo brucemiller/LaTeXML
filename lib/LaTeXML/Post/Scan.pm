@@ -158,11 +158,12 @@ sub cleanNode {
   return $cleaned; }
 
 # Assumes $node has been cloned, if needed.
-our $TOCTEXT_MAX_LENGTH = 6;
+# Set to something smallish (eg. 6) to forcibly truncate toctitle/toccaption
+our $TOCTEXT_MAX_LENGTH = undef;
 
 sub truncateNode {
   my ($self, $doc, $node) = @_;
-  return $node unless $node;
+  return $node if !$node || !defined $TOCTEXT_MAX_LENGTH;
   my @children = $node->childNodes;
   my $n        = $TOCTEXT_MAX_LENGTH;
   my $trunc    = 0;
