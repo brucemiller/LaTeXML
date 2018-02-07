@@ -277,9 +277,11 @@ sub image_graphicx_complex {
   my $image = image_read($source, antialias => 1) or return;
   # Get some defaults from the read-in image.
   my ($imagedpi) = image_getvalue($image, 'x-resolution');
-  my ($bg)       = image_getvalue($image, 'transparent-color');
-  if ($bg) {
-    $background = "rgba($bg)"; }
+  # image_setvalue($image,debug=>'exception');
+  my ($bg) = image_getvalue($image, 'transparent-color');
+  $background = "rgba($bg)" if $bg;    # Use background from image, if any.
+  my ($hasalpha) = image_getvalue($image, 'matte');
+
   image_internalop($image, 'Trim') or return if $properties{autocrop};
   my $orig_ncolors = image_getvalue($image, 'colors');
   return unless $orig_ncolors;
@@ -311,7 +313,7 @@ sub image_graphicx_complex {
     NoteProgressDetailed(" [reloading to desired size $w x $h (density = $dx x $dy)]");
     $image = image_read($source, antialias => 1, density => $dx . 'x' . $dy) or return;
     image_internalop($image, 'Trim') or return if $properties{autocrop};
-    image_setvalue($image, colorspace => 'RGB') or return;
+    #    image_setvalue($image, colorspace => 'RGB') or return;
     image_internalop($image, 'Scale', geometry => int(100 / $X) . "%") or return;    # Now downscale.
     ($w, $h) = image_getvalue($image, 'width', 'height');
     return unless $w && $h; }
@@ -363,13 +365,17 @@ sub image_graphicx_complex {
         $h = min($hh + $y0, $h - $y0p);
         $notes .= " crop $w x $h @ $x0p,$y0p"; }
       # No direct `padding' operation in ImageMagick
-      my $nimage = image_read("xc:$background", size => "$ww x $hh") or return;
-      image_internalop($nimage, 'Composite', image => $image, compose => 'over', x => -$x0, y => -$y0) or return;
-      $image = $nimage;
-      ($w, $h) = ($ww, $hh);
+      # BUT, trim & clip really shouldn't need to pad???
+      # And besides, this composition seems to mangle the colormap (depending on background)
+      # my $nimage = image_read("xc:$background", size => "$ww x $hh") or return;
+      # image_internalop($nimage, 'Composite', image => $image, compose => 'over',
+      #                  x => -$x0, y => -$y0) or return;
+      # $notes .= " compose to $ww x $hh at $x0,$y0";
+      # $image = $nimage;
+      # ($w, $h) = ($ww, $hh);
     } }
 
-  if (my $trans = $properties{transparent}) {
+  if ($properties{transparent} && !$hasalpha) {
     $notes .= " transparent=$background";
     image_internalop($image, 'Transparent', $background) or return; }
 
