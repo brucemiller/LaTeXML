@@ -709,7 +709,7 @@ sub node_to_lexeme_full {
   my $node = realizeXMNode($unrealized_node);
   my $tag = getQName($node);
   my $role = p_getAttribute($node, 'role');
-  if (($role && ($role ne 'ATOM')) && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)')) {
+  if (($tag eq 'ltx:XMTok') || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)'))) {
     return $self->node_to_lexeme($node); # lowercase roles for readability
   } else {
     my ($mark_start, $mark_end) = ('','');
@@ -738,6 +738,7 @@ sub node_to_lexeme_full {
       }
     }
     $lexemes .= $mark_end;
+    $lexemes =~ s/\s+$//;
     return $lexemes;
   }
 }
