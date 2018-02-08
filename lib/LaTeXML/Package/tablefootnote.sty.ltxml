@@ -1,0 +1,23 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  tablefootnote                                                      | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Although footnotes in tables are tricky (and the TeX code is complex)
+# we have no problems with that!
+Let('\tablefootnote', '\footnote');
+
+1;
+
