@@ -16,12 +16,14 @@ use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 use Encode;
+use Encode::Detect::Detector;
+
 use base qw(LaTeXML::Core::Mouth);
 
 sub new {
   my ($class, $pathname, %options) = @_;
   my ($dir,   $name,     $ext)     = pathname_split($pathname);
-  my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
+  my $self = bless { source => $pathname, shortsource => "$name.$ext", encoding => $STATE->lookupValue('PERL_INPUT_ENCODING') }, $class;
   $$self{fordefinitions} = 1 if $options{fordefinitions};
   $$self{notes}          = 1 if $options{notes};
   $self->openFile($pathname);
@@ -63,11 +65,17 @@ sub getNextLine {
       close($fh); $$self{IN} = undef;
       return; }
     else {
+      if (!$$self{encoding}) {
+        my $detected = detect($line);
+        if ($detected && $detected eq 'UTF-8') {
+          $$self{encoding} = 'UTF-8';
+        }
+      }
       push(@{ $$self{buffer} }, LaTeXML::Core::Mouth::splitLines($line)); } }
 
   my $line = shift(@{ $$self{buffer} });
   if (defined $line) {
-    if (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
+    if (my $encoding = $$self{encoding}) {
      # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
      # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
       $line = decode($encoding, $line, Encode::FB_DEFAULT);
