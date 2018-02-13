@@ -3580,49 +3580,41 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S7.p4">
       <equation xml:id="S7.Ex56">
-        <Math mode="display" tex="\left\{x\in X\middle|\allowbreak\frac{\sqrt{x}}{x^{2}+1}&gt;1\right\}" text="set@(x element-of X * ket@(square-root@(x) / (x ^ 2 + 1)) * 1)" xml:id="S7.Ex56.m1">
+        <Math mode="display" tex="\left\{x\in X\middle|\allowbreak\frac{\sqrt{x}}{x^{2}+1}&gt;1\right\}" text="conditional-set@(x element-of X, square-root@(x) / (x ^ 2 + 1) &gt; 1)" xml:id="S7.Ex56.m1">
           <XMath>
             <XMDual>
               <XMApp>
-                <XMTok meaning="set"/>
+                <XMTok meaning="conditional-set"/>
+                <XMRef idref="S7.Ex56.m1.1"/>
                 <XMRef idref="S7.Ex56.m1.2"/>
               </XMApp>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">{</XMTok>
-                <XMApp xml:id="S7.Ex56.m1.2">
+                <XMApp xml:id="S7.Ex56.m1.1">
                   <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                </XMApp>
+                <XMTok role="MIDDLE" stretchy="true">|</XMTok>
+                <XMApp xml:id="S7.Ex56.m1.2">
+                  <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
                   <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">X</XMTok>
-                    <XMDual>
+                    <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                    <XMApp>
+                      <XMTok meaning="square-root"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMApp>
-                        <XMTok meaning="ket"/>
-                        <XMRef idref="S7.Ex56.m1.1"/>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
-                      <XMWrap>
-                        <XMTok role="OPEN" stretchy="true">|</XMTok>
-                        <XMApp xml:id="S7.Ex56.m1.1">
-                          <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
-                          <XMApp>
-                            <XMTok meaning="square-root"/>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                          </XMApp>
-                          <XMApp>
-                            <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                            <XMApp>
-                              <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
-                              <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
-                            </XMApp>
-                            <XMTok meaning="1" role="NUMBER">1</XMTok>
-                          </XMApp>
-                        </XMApp>
-                        <XMTok meaning="greater-than" role="CLOSE">&gt;</XMTok>
-                      </XMWrap>
-                    </XMDual>
-                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    </XMApp>
                   </XMApp>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
                 </XMApp>
                 <XMTok role="CLOSE" stretchy="true">}</XMTok>
               </XMWrap>
