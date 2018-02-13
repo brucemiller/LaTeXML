@@ -58,9 +58,6 @@ foreach my $option (    # 3.1 General Options
   DeclareOption($option, undef); }
 
 # \hypersetup{keyvals} configures various parameters,
-# I think none matter much to latexml, but we do need to at least ignore it.
-DefMacro('\hypersetup{}', '');
-
 # for each pdf keyword, provide [property,(content|resource),datatype]
 our %pdfkey_property = (
   baseurl     => '',                                # xmp:BaseURL ??
@@ -81,19 +78,25 @@ our %pdfkey_property = (
 # document identifier => xmlMM:DocumentID
 # file format => dcterms:format
 # LaTeX file name => dcterms:source
+DefKeyVal('Hyp', 'baseurl', 'Semiverbatim');
 
-# Digest & store the properties for generating RDFa
+sub hyperref_setoption {
+  my ($key, $value) = @_;
+  AssignMapping('Hyperref_options', $key, $value);
+  if ($key eq 'baseurl') {
+    AssignValue(BASE_URL => $value); }
+  return; }
+
+# Digest & store the options;
+# Some are useful properties for generating RDFa
 # This can appear anywhere in the doc, including preamble.
 # Note also that the last value for any given key replaces previous ones! (eg.ONE author entry)
-DefPrimitive('\hypersetup RequiredKeyVals', sub {
+DefPrimitive('\hypersetup RequiredKeyVals:Hyp', sub {
     my ($stomach, $kv) = @_;
-    my $inpreamble = LookupValue('inPreamble');
-    AssignValue(inPreamble => 0);
     my @pairs = $kv->getPairs;
     while (@pairs) {
       my ($key, $value) = (shift(@pairs), shift(@pairs));
-      AssignMapping('PDF.RDFa_properties', $key, Digest($value)); }
-    AssignValue(inPreamble => $inpreamble);
+      hyperref_setoption($key, Digest($value)); }
     return; });
 
 PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
@@ -101,10 +104,10 @@ PushValue('@at@end@document', T_CS('\@add@PDF@RDFa@triples'));
 DefConstructor('\@add@PDF@RDFa@triples', sub {
     my ($document, $xproperty, $content) = @_;
     if (my $root = $document->getDocument->documentElement) {
-      foreach my $key (LookupMappingKeys('PDF.RDFa_properties')) {
+      foreach my $key (LookupMappingKeys('Hyperref_options')) {
         if (my $entry = ($pdfkey_property{$key})) {
           my ($property, $object, $datatype) = @$entry;
-          my $value = LookupMapping('PDF.RDFa_properties', $key);
+          my $value = LookupMapping('Hyperref_options', $key);
           my $node = $document->openElementAt($root, 'ltx:rdf',
             property => $property, $object => $value,
             ($datatype ? (datatype => $datatype) : ()));
@@ -267,11 +270,11 @@ DefMacro('\Acrobatmenu{}{}', '[#1 Button: #2]');
 # until we come up with a nice, clean formal scheme, just hack through...
 
 #### ProcessOptions();
-# This doesn't really quite work, since when \usepackage digests the options, spaces go away!
+# Note that hyperref uses keyval + kvoptions
 if (my $options = LookupValue('opt@hyperref.sty')) {
   foreach my $option (@$options) {
     if (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
-      AssignMapping('PDF.RDFa_properties', $key, $value); } } }
+      hyperref_setoption($key, $value); } } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
