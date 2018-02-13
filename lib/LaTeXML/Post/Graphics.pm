@@ -188,14 +188,14 @@ sub transformGraphic {
   ($sourcedir) = $doc->getSearchPaths unless $sourcedir;    # Fishing...
   my ($reldir, $name, $srctype)
     = pathname_split(pathname_relative($source, $sourcedir));
-  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype",
-    map { join(' ', @$_) } @$transform);
-  NoteProgressDetailed("\n[Processing $source as key=$key]");
-
   my %properties = $self->getTypeProperties($source, $transform);
   return Warn('unexpected', 'graphics_format', undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
+  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
+    map { join(' ', @$_) } @$transform);
+  NoteProgressDetailed("\n[Processing $source as key=$key]");
+
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
     if ($prev =~ /^(.*?)\|(\d*)\|(\d*)$/) {
