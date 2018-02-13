@@ -798,7 +798,7 @@ sub RawTeX {
   my $savedcc = $STATE->lookupCatcode('@');
   $STATE->assignCatcode('@' => CC_LETTER);
 
-  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new($text), sub {
+  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new($text, fordefinitions => 1), sub {
       my ($gullet) = @_;
       my $token;
       while ($token = $gullet->readXToken(0)) {
@@ -1893,7 +1893,7 @@ sub loadTeXDefinitions {
     AssignValue($request . '_loaded' => 1, 'global'); }
 
   my $stomach = $STATE->getStomach;
-  # Note that we are reading definitions (and recursive input is assumed also defintions)
+  # Note that we are reading definitions (and recursive input is assumed also definitions)
   my $was_interpreting = LookupValue('INTERPRETING_DEFINITIONS');
   # And that if we're interpreting this TeX file of definitions,
   # we probably should interpret any TeX files IT loads.
