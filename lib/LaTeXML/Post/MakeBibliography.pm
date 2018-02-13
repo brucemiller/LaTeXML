@@ -154,6 +154,13 @@ sub convertBibliography {
   my ($self, $doc, $bib) = @_;
   require LaTeXML;
   require LaTeXML::Common::Config;
+  my @packages =
+    my @preload = ();
+  # Might want/need to preload more (all?) packages, but at least do inputenc!
+  foreach my $po ($self->find_documentclass_and_packages($doc)) {
+    my ($pkg, $options) = @$po;
+    if ($pkg eq 'inputenc') {
+      push(@preload, "[$options]$pkg"); } }
   NoteProgress(" [Converting bibliography $bib ...");
   my $bib_config = LaTeXML::Common::Config->new(
     cache_key      => 'BibTeX',
@@ -163,7 +170,8 @@ sub convertBibliography {
     whatsin        => 'document',
     whatsout       => 'document',
     verbosity      => -5,
-    bibliographies => []);
+    bibliographies => [],
+    (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);
   $bib_converter->prepare_session($bib_config);
   my $response = $bib_converter->convert($bib);
