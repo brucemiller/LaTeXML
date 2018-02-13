@@ -92,7 +92,7 @@ sub new {
     # it now can take a number of digits (%3p) for pages, BUT old version produces imgx-%3p.svg!!
     # So, simply use %p, let new version do 1,..,9,10,...
     # Recovery code below!
-    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}p";
+    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}p";
     $$self{dvicmd_output_name} = 'imgx-%02d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
@@ -182,9 +182,9 @@ sub cleanTeX {
     $style = $1; }
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
-  # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
+      # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
   $tex =~ s/(?<!\\)((?:\\\\)*)\%[^\n]*\n/$1/gs;
-  $tex = $style . ' ' . $tex if $style;                                # Put back the style, if any
+  $tex = $style . ' ' . $tex if $style;    # Put back the style, if any
   return $tex; }
 
 #**********************************************************************
@@ -362,28 +362,6 @@ sub generateImages {
 
   $doc->closeCache;    # If opened.
   return $doc; }
-
-# Get a list blah, blah...
-sub find_documentclass_and_packages {
-  my ($self, $doc) = @_;
-  my ($class, $classoptions, $oldstyle, @packages);
-  foreach my $pi ($doc->findnodes(".//processing-instruction('latexml')")) {
-    my $data  = $pi->textContent;
-    my $entry = {};
-    while ($data =~ s/\s*([\w\-\_]*)=([\"\'])(.*?)\2//) {
-      $$entry{$1} = $3; }
-    if ($$entry{class}) {
-      $class        = $$entry{class};
-      $classoptions = $$entry{options} || 'onecolumn';
-      $oldstyle     = $$entry{oldstyle}; }
-    elsif ($$entry{package}) {
-      push(@packages, [$$entry{package}, $$entry{options} || '']); }
-  }
-  if (!$class) {
-    Warn('expected', 'class', undef, "No document class found; using article");
-    $class = 'article'; }
-
-  return ([$class, $classoptions, $oldstyle], @packages); }
 
 #======================================================================
 # Generating & Processing the LaTeX source.
