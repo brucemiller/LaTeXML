@@ -2899,9 +2899,11 @@ DefMacro('\restoring@bibitem',
 
 NewCounter('@bibitem', 'bibliography', idprefix => 'bib');
 DefMacroI('\the@bibitem', undef, '\arabic{@bibitem}');
+DefMacro('\@biblabel{}', '[#1]');
+DefMacroI('\fnum@@bibitem', undef, '{\@biblabel{\the@bibitem}}');
 DefConstructor('\bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
-    . "<ltx:bibtag role='refnum'>#refnum</ltx:bibtag>"
+    . "<ltx:bibtag role='refnum'>#frefnum</ltx:bibtag>"
     . "<ltx:bibblock>",
   afterDigest => sub {
     my $tag = $_[1]->getArg(1);
