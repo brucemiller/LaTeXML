@@ -768,7 +768,7 @@ DefRegister('\baselinestretch' => Dimension(0));
 #======================================================================
 
 # See frontmatter support in TeX.ltxml
-DefMacro('\title{}', '\@add@frontmatter{ltx:title}{#1}');
+DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}');
 
 DefMacro('\date{}',
   '\@add@frontmatter{ltx:date}[role=creation,'
