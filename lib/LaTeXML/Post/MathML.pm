@@ -1162,11 +1162,9 @@ sub cmml_internal {
   elsif ($tag eq 'ltx:XMArray') {
     return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMText') {
-    return ['m:mtext', {},
-      $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 1,
-        $node->childNodes)]; }
+    return cmml_decoratedSymbol($node); }
   else {
-    return ['m:mtext', {}, $node->textContent]; } }
+    return cmml_decoratedSymbol($node); } }
 
 # Convert the contents of a node, which normally should contain a single child.
 # It may be empty (assumed to be an error),
@@ -1215,7 +1213,12 @@ sub cmml_ci {
 # but we format its contents as pmml
 sub cmml_decoratedSymbol {
   my ($item) = @_;
-  return ['m:ci', {}, pmml($item)]; }
+  # Presumably, if we're claiming this blob has "meaning", we should just get a csymbol
+  if (my $meaning = (ref $item) && $item->getAttribute('meaning')) {
+    my $cd = $item->getAttribute('omcd') || 'latexml';
+    return ['m:csymbol', { cd => $cd }, $meaning]; }
+  else {    # Otherwise, wrap as needed
+    return ['m:ci', {}, pmml($item)]; } }
 
 # Return the NOT of the argument.
 sub cmml_not {
