@@ -883,7 +883,7 @@ sub getInsertionContext {
 # This will move up the tree (closing auto-closable elements),
 # or down (inserting auto-openable elements), as needed.
 sub find_insertion_point {
-  my ($self, $qname) = @_;
+  my ($self, $qname, $closedto) = @_;
   $self->closeText_internal;    # Close any current text node.
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
   my $inter;
@@ -893,8 +893,14 @@ sub find_insertion_point {
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
   elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
+    if ($closedto && ($closedto eq $inter)) {
+      Error('malformed', $qname, $self,
+        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " loops infinitely when opening an intermediate <$inter>",
+        "Currently in " . $self->getInsertionContext());
+      return $$self{node};      
+    }
     $self->openElement($inter, font => $self->getNodeFont($$self{node}));
-    return $self->find_insertion_point($qname); }    # And retry insertion (should work now).
+    return $self->find_insertion_point($qname, $closedto); }    # And retry insertion (should work now).
   else {                                             # Now we're getting more desparate...
         # Check if we can auto close some nodes, and _then_ insert the $qname.
     my ($node, $closeto) = ($$self{node});
@@ -904,8 +910,9 @@ sub find_insertion_point {
         $closeto = $node; last; }
       $node = $parent; }
     if ($closeto) {
+      my $closeto_qname = $$self{model}->getNodeQName($closeto);
       $self->closeNode_internal($closeto);             # Close the auto closeable nodes.
-      return $self->find_insertion_point($qname); }    # Then retry, possibly w/auto open's
+      return $self->find_insertion_point($qname, $closeto_qname); }    # Then retry, possibly w/auto open's
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
         ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed in <$cur_qname>",
