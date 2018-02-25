@@ -883,7 +883,7 @@ sub getInsertionContext {
 # This will move up the tree (closing auto-closable elements),
 # or down (inserting auto-openable elements), as needed.
 sub find_insertion_point {
-  my ($self, $qname) = @_;
+  my ($self, $qname, $has_opened) = @_;
   $self->closeText_internal;    # Close any current text node.
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
   my $inter;
@@ -894,9 +894,14 @@ sub find_insertion_point {
   elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
     $self->openElement($inter, font => $self->getNodeFont($$self{node}));
-    return $self->find_insertion_point($qname); }    # And retry insertion (should work now).
-  else {                                             # Now we're getting more desparate...
-        # Check if we can auto close some nodes, and _then_ insert the $qname.
+    return $self->find_insertion_point($qname, $inter); } # And retry insertion (should work now).
+  elsif ($has_opened) { # out of options if already inside an auto-open chain
+    Error('malformed', $qname, $self,
+        ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " failed auto-open through <$has_opened> at inadmissible <$cur_qname>",
+        "Currently in " . $self->getInsertionContext());
+    return $$self{node}; } # But we'll do it anyway, unless Error => Fatal.  
+  else { # Now we're getting more desparate...
+    # Check if we can auto close some nodes, and _then_ insert the $qname.
     my ($node, $closeto) = ($$self{node});
     while (($node->nodeType != XML_DOCUMENT_NODE) && $self->canAutoClose($node)) {
       my $parent = $node->parentNode;
@@ -904,13 +909,14 @@ sub find_insertion_point {
         $closeto = $node; last; }
       $node = $parent; }
     if ($closeto) {
+      my $closeto_qname = $$self{model}->getNodeQName($closeto);
       $self->closeNode_internal($closeto);             # Close the auto closeable nodes.
-      return $self->find_insertion_point($qname); }    # Then retry, possibly w/auto open's
+      return $self->find_insertion_point($qname, $has_opened); } # Then retry, possibly w/auto open's
     else {                                             # Didn't find a legit place.
       Error('malformed', $qname, $self,
         ($qname eq '#PCDATA' ? $qname : '<' . $qname . '>') . " isn't allowed in <$cur_qname>",
         "Currently in " . $self->getInsertionContext());
-      return $$self{node}; } } }                       # But we'll do it anyway, unless Error => Fatal.
+      return $$self{node}; } } } # But we'll do it anyway, unless Error => Fatal.
 
 sub getInsertionCandidates {
   my ($node) = @_;
