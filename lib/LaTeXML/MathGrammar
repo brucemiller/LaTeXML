@@ -258,7 +258,7 @@ moreFactors :
           evalAtOp maybeEvalAt[$arg[0],$item[2]]
         | { ($forbidEvalAt || $forbidVertBar ? undef : 1); } ## conditional probability?
           evalAtOp ExpressionsNoBars
-          { ApplyNary(Annotate($item[2],meaning=>'conditional'),$arg[0],$item[3]); }
+          { ApplyNary(Annotate($item[2],role=>'MODIFIEROP', meaning=>'conditional'),$arg[0],$item[3]); }
         | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
         | { $arg[0]; }
 
