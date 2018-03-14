@@ -1485,7 +1485,7 @@ DefMacro('\@ensuremath{}', sub {
     else { (T_MATH, $stuff->unlist, T_MATH); } });
 
 # Magic check that math-mode trigger follows
-our $MATHENVS = 'math|displaymath|equation*?|eqnarray*?'
+our $MATHENVS = 'displaymath|equation*?|eqnarray*?'
   . '|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
 DefMacro('\ensuremathfollows', sub {
     my ($gullet) = @_;
