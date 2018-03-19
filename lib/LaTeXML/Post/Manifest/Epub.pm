@@ -75,7 +75,7 @@ sub initialize {
   # Metadata
   my $document_metadata = $$self{db}->lookup("ID:" . $$self{db}{document_id});
   my $document_title    = $document_metadata->getValue('title');
-  $document_title = $document_title->textContent if $document_title;
+  $document_title = $document_title ? $document_title->textContent : 'No Title';
   my $document_authors = $document_metadata->getValue('authors') || [];
   $document_authors = [map { $_->textContent } @$document_authors];
   my $document_language = $document_metadata->getValue('language') || 'en';
@@ -188,8 +188,12 @@ sub finalize {
     my $OPS_abspath = $_;
     if (-f $OPS_abspath) {
       my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-      push(@styles, $OPS_pathname) if ($OPS_pathname =~ /\.css$/);
-      push(@images, $OPS_pathname) if ($OPS_pathname =~ /\.png$/); }
+      if ($OPS_pathname =~ /\.css$/) {
+        push(@styles, $OPS_pathname); }
+      elsif ($OPS_pathname =~ /\.png$/) {
+        push(@images, $OPS_pathname); }
+      else {} # skip any other resources
+    }
   }}, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
@@ -208,6 +212,14 @@ sub finalize {
     $image_item->setAttribute('id',         "$image_id");
     $image_item->setAttribute('href',       "$image");
     $image_item->setAttribute('media-type', 'image/png'); }
+  
+  if ($$self{log}) {
+    my $log_id = $$self{log};
+    $log_id =~ s|/|-|g; # NCName required for id; no slashes
+    my $log_item = $manifest->addNewChild(undef, 'item');
+    $log_item->setAttribute('id',         "$log_id");
+    $log_item->setAttribute('href',       $$self{log});
+    $log_item->setAttribute('media-type', 'text/plain'); }
 
   # Write the content.opf file to disk
   my $directory = $$self{siteDirectory};
