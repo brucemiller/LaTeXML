@@ -225,7 +225,10 @@ sub getBibEntries {
           my ($rid, $e, $t) = ($refr, undef, undef);
           while ($rid && ($e = $$self{db}->lookup("ID:$rid")) && (($t = ($e->getValue('type') || '')) ne 'ltx:bibitem')) {
             $rid = $e->getValue('parent'); }
-          if ($t ne 'ltx:bibitem') {
+          if(! $e){
+            Warn('expected','entry',undef,
+                 "Didn't find an entry for reference id=$rid"); }
+          elsif ($t ne 'ltx:bibitem') {
             $entries{$bibkey}{referrers}{$refr} = 1; } }
         push(@queue, $bibkey) if keys %{ $entries{$bibkey}{referrers} }; }
       elsif ($citestar) {    # If \cite{*} include all of them.
