@@ -79,7 +79,6 @@ sub new {
     tuples => [], cachedPairs => [()], cachedHash => \%hash,
 
     # all the character tokens we used
-    open  => $options{open},  close  => $options{close},
     punct => $options{punct}, assign => $options{assign} },
 
     $class;
@@ -135,22 +134,6 @@ sub getSkipMissing {
 sub getHookMissing {
   my ($self) = @_;
   return $$self{hookMissing}; }
-
-sub getOpen {
-  my ($self) = @_;
-  return $$self{open}; }
-
-sub getClose {
-  my ($self) = @_;
-  return $$self{close}; }
-
-sub getPunct {
-  my ($self) = @_;
-  return $$self{punct}; }
-
-sub getAssign {
-  my ($self) = @_;
-  return $$self{assign}; }
 
 #======================================================================
 # Resolution to KeySets
@@ -307,12 +290,10 @@ sub readFrom {
   my $startloc = $gullet->getLocator();
 
   # set and read tokens
-  $$self{open}   = $gullet->readToken;
-  $$self{close}  = $until;
+  my $open   = $gullet->readToken;
   $$self{assign} = T_OTHER('=');
   $$self{punct}  = T_OTHER(',');
-  my ($open, $close, $punct, $assign) =
-    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
+  my ($punct, $assign) = ($$self{punct}, $$self{assign});
 
   # create arrays for key-value pairs and explicit values
   my @kv        = ();
@@ -325,11 +306,11 @@ sub readFrom {
     $gullet->skipSpaces;
 
     # Read a single keyword, get a delimiter and a set of keyword tokens
-    my ($ktoks, $delim) = $self->readKeyWordFrom($gullet, $close);
+    my ($ktoks, $delim) = $self->readKeyWordFrom($gullet, $until);
 
     # if there was no delimiter at the end, we throw an error
-    Error('expected', $close, $gullet,
-      "Fell off end expecting " . Stringify($close) . " while reading KeyVal key",
+    Error('expected', $until, $gullet,
+      "Fell off end expecting " . Stringify($until) . " while reading KeyVal key",
       "key started at $startloc")
       unless $delim;
 
@@ -353,7 +334,7 @@ sub readFrom {
 
         # read until $punct
         my ($tok, @toks) = ();
-        while ((!defined($delim = $gullet->readMatch($punct, $close)))
+        while ((!defined($delim = $gullet->readMatch($punct, $until)))
           && (defined($tok = $gullet->readToken()))) {    # Copy next token to args
           push(@toks, $tok,
             ($tok->getCatcode == CC_BEGIN ? ($gullet->readBalanced->unlist, T_END) : ())); }
@@ -372,7 +353,7 @@ sub readFrom {
       $self->addValue($key, $value, $isDefault, 0) if (!$silenceMissing || $self->canResolveKeyValFor($key)); }
 
     # we finish if we have the last element
-    last if $delim->equals($close); }
+    last if $delim->equals($until); }
 
   # rebuild and return nothing
   $self->rebuild;
@@ -385,14 +366,13 @@ sub readFrom {
   return; }
 
 sub readKeyWordFrom {
-  my ($self, $gullet) = @_;
+  my ($self, $gullet, $close) = @_;
 
   # set of tokens we will expand
   my @tokens = ();
 
   # set of delimiters we want to ignore
-  my @delim =
-    ($self->getClose, $self->getPunct, $self->getAssign);
+  my @delim = ($close, $$self{punct}, $$self{assign});
 
   # we do not want any spaces
   $gullet->skipSpaces;
@@ -466,7 +446,7 @@ sub setKeysExpansion {
   my @skip         = $self->getSkip;
   my $setInternals = $self->getSetInternals;
 
-  my ($punct, $assign) = ($self->getPunct, $self->getAssign);
+  my ($punct, $assign) = ($$self{punct}, $$self{assign});
 
   # we might have to store values in a seperate token
   my $rmmacro     = $self->getSkipMissing;
@@ -548,8 +528,7 @@ sub beDigested {
   my $setInternals = $self->getSetInternals;
   my $skipMissing  = $self->getSkipMissing;
   my $hookMissing  = $self->getHookMissing;
-  my ($open, $close, $punct, $assign) =
-    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
+  my ($punct, $assign) = ($$self{punct}, $$self{assign});
 
   # then re-create the current object
   my $new = LaTeXML::Core::KeyVals->new(
@@ -557,7 +536,6 @@ sub beDigested {
     setAll => $setAll, setInternals => $setInternals,
     skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
     was_digested => 1,
-    open         => $open, close => $close,
     punct        => $punct, assign => $assign);
   $new->setTuples(@newtuples);
   return $new; }
@@ -566,8 +544,7 @@ sub revert {
   my ($self) = @_;
 
   # read values from class
-  my ($open, $close, $punct, $assign) =
-    ($self->getOpen, $self->getClose, $self->getPunct, $self->getAssign);
+  my ($punct, $assign) = ($$self{punct}, $$self{assign});
 
   my @tokens = ();
 
@@ -578,10 +555,6 @@ sub revert {
     if ($keyval) {    # when is this undef?
       push(@tokens, $self->revertKeyVal($keyval, $value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); } }
 
-  # add open and close values if they were given
-  unshift(@tokens, $open) if $open;
-  push(@tokens, $close) if $close;
-
   # and return the list of tokens
   return Tokens(@tokens); }
 
@@ -590,7 +563,7 @@ sub toString {
   my ($self) = @_;
 
   my @kv = $self->getPairs;
-  my ($punct, $assign) = ($self->getPunct || '', $self->getAssign || ' ');
+  my ($punct, $assign) = ($$self{punct} || '', $$self{assign} || ' ');
 
   my $string = '';
 
@@ -760,22 +733,6 @@ Returns the I<CachedPairs> property.
 
 Returns the I<CachedHash> property. 
 
-=item C<< my $open = $keyvals->getOpen() >>
-
-Returns the I<Open> property. 
-
-=item C<< my $close = $keyvals->getClose() >>
-
-Returns the I<Close> property. 
-
-=item C<< my $punct = $keyvals->getPunct() >>
-
-Returns the I<Punct> property. 
-
-=item C<< my $assign = $keyvals->getAssign() >>
-
-Returns the I<Assign> property. 
-
 =back
 
 =head2 Resolution to KeySets
@@ -846,7 +803,7 @@ When the I<silenceMissing> option is set, missing keys will be completely
 ignored when reading keys, that is they do not get recorded into the KeyVals
 object and no warnings or errors will be thrown. 
 
-=item C<< $keyvals->readKeyWordFrom($gullet) >>
+=item C<< $keyvals->readKeyWordFrom($gullet, $until) >>
 
 Reads a single keyword from I<gullet>. Intended for internal use only. 
 
