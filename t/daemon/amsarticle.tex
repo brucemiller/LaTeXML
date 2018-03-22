@@ -1,0 +1,182 @@
+\documentclass{amsart}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{xca}[theorem]{Exercise}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{corollary}{Corollary}
+\newtheorem*{corollary*}{Corollary}
+
+\numberwithin{equation}{section}
+
+\begin{document}
+\title{Sample amsart}
+\author{Joe Blow}
+\address{Somewhere, USA}
+\curraddr{same as above}
+\email{joe@blow}
+\thanks{My Mommy.}
+
+\author{Frank Zappa}
+\address{Baltimore}
+
+\author{Someone Else}
+\address{Somewhere Else}
+
+\subjclass[2000]{Primary }
+\subjclass{Other stuff }
+
+\keywords{ams,article,markup}
+
+%\date{\today}
+\date{February 14, 2013}
+
+\dedicatory{To all those who went before}
+
+\maketitle
+
+\begin{abstract}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+\end{abstract}
+
+\section{Introduction}
+As discussed in \cite{abramowitz+stegun},
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\begin{equation}
+ a + b,
+\end{equation}
+
+\begin{equation}
+ c + d,
+\end{equation}
+
+\begin{figure}
+\begin{centering}
+A Figure\\
+\end{centering}
+\caption{A Figure}
+\end{figure}
+
+\begin{table}
+\begin{centering}
+\caption{A Table}
+\begin{tabular}{r|cc}
+Heading & Foo & Bar\\\hline
+a & $x$ & $x^2$\\
+b & $y^2$ & $y$\\
+\end{tabular}\\
+\end{centering}
+\end{table}
+
+\begin{itemize}
+ \item one
+ \item two
+   \begin{itemize}
+    \item one
+    \item two
+   \end{itemize}
+\end{itemize}
+
+\begin{enumerate}
+ \item one
+ \item two
+   \begin{enumerate}
+    \item one
+    \item two
+   \end{enumerate}
+\end{enumerate}
+
+\begin{description}
+\item[A thing] with some descriptive text.
+\item[Another] Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+\item[And yet] blah, blah. Moreover
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+\end{description}
+
+\section{A Math Section}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\begin{equation*}
+ a=b
+\end{equation*}
+
+\begin{equation}
+ a=b
+\end{equation}
+
+\begin{equation}
+\begin{split}
+a &= b + c - d\\
+  & \quad + e - f\\
+  & = g + h\\
+  & = i
+\end{split}
+\end{equation}
+
+\begin{multline}
+a+b+c+d+e+f\\
++i+j+k+l+m+n
+\end{multline}
+
+\begin{gather}
+a_1=b_1+c_1\\
+a_2=b_2+c_2-d_2+e_2
+\end{gather}
+
+\begin{align}
+a_1&=b_1+c_1\\
+a_2&=b_2+c_2-d_2+e_2
+\end{align}
+
+\begin{align}
+a_{11} &= b_{11} &
+  a_{12} &= b_{12} \\
+a_{21} &= b_{21} &
+  a_{22} &= b_{22}+c_{22}
+\end{align}
+
+Some \text{text}
+\begin{equation}
+a = \text{something}
+\end{equation}
+
+\begin{corollary}
+ Whatever!
+\end{corollary}
+\begin{corollary*}
+And whatever.
+\end{corollary*}
+
+\begin{flalign*}
+a_{11} &= b_{11} &
+  a_{12} &= b_{12} \\
+a_{21} &= b_{21} &
+  a_{22} &= b_{22}+c_{22}
+\end{flalign*}
+
+
+\subsection{A subsection}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+\subsubsection{A subsubsection}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+
+\paragraph{A Paragraph}
+ Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\section{\itshape Section with explicit font}
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+
+\bibliographystyle{alpha}
+\bibliography{tiny}
+\end{document}
+
