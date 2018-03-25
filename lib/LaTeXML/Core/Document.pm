@@ -926,10 +926,8 @@ sub getInsertionCandidates {
   $first = $first->parentNode if $first && $first->getType == XML_TEXT_NODE;
   my $isCapture = $first && ($first->localname || '') eq '_Capture_';
   push(@nodes, $first) if $first && $first->getType != XML_DOCUMENT_NODE && !$isCapture;
-  # This includes the CHILDREN of the current node.
-  # Is this correct? perhaps for attribute, less obviously correct for an element
-###  $node = $node->lastChild if $node && $node->hasChildNodes;
-  while ($node && ($node->nodeType != XML_DOCUMENT_NODE)) {
+  # Collect previous siblings, if node is a text node.
+  if ($node->getType == XML_TEXT_NODE) {
     my $n = $node;
     while ($n) {
       if (($n->localname || '') eq '_Capture_') {
@@ -937,6 +935,14 @@ sub getInsertionCandidates {
       else {
         push(@nodes, $n); }
       $n = $n->previousSibling; }
+    $node = $node->parentNode; }
+  # Now collect (element) node & ancestors
+  while ($node && ($node->nodeType != XML_DOCUMENT_NODE)) {
+    my $n = $node;
+    if (($node->localname || '') eq '_Capture_') {
+      push(@nodes, element_nodes($node)); }
+    else {
+      push(@nodes, $node); }
     $node = $node->parentNode; }
   push(@nodes, $first) if $isCapture;
   return @nodes; }
