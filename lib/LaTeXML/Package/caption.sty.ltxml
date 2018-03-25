@@ -62,19 +62,18 @@ DefMacro('\caption',
 DefMacro('\@scaption {}', '\@@caption{#1}');
 
 # This is a horrible thing that fakes a caption anywhere.
-# It isn't necessarily in a figure or any float, so it can't really match our schema
+# It isn't necessarily IN a figure or any float, so we'll wrap it in an otherwise empty one!
 DefMacro('\captionof', '\@ifstar{\@scaptionof}{\@captionof}');
-DefMacro('\@captionof {}[]{}',
-  '\GenericInfo{\string\captionof}{\space will not generate proper caption or list of #1s}'
-    . '{\let\@@toccaption\@gobble\let\@@caption\@fake@@caption\let\@tag\@fake@tag'
-    . '\def\@captype{#1}\@caption{#1}[#2]{#3}}');
+DefMacro('\@captionof{}[]{}',
+  '\@ifnext\label{\@captionof@postlabel{#1}{#2}{#3}}{\@captionof@{#1}{#2}{#3}}');
+# Check for trailing \label!
+DefMacro('\@captionof@postlabel{}{}{} SkipMatch:\label Semiverbatim',
+  '\@captionof@{#1}{#2}{#3\label{#4}}');
+DefMacro('\@captionof@ {}{}{}',
+  '\begin{#1}\@caption@{#1}{#2}{#3}\end{#1}');
+
 DefMacro('\@scaptionof {}{}',
-  '\GenericInfo{\string\captionof}{\space will not generate proper caption or list of #1s}'
-    . '{\let\@@caption\@fake@@caption'
-    . '\def\@captype{#1}\@scaption{#2}}');
-DefConstructor('\@fake@tag[][]{}',
-  "?#3(<ltx:text class='ltx_tag'>#1#3#2</ltx:text>)()");
-DefConstructor('\@fake@@caption{}', "<ltx:block class='ltx_caption'>#1</ltx:block>");
+  '\begin{#1*}\@scaption{#2}\end{#1*}');
 
 DefMacro('\clearcaptionsetup',    Tokens());
 DefMacro('\rotcaption',           Tokens());
