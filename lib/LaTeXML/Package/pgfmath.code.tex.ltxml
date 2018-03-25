@@ -268,7 +268,7 @@ sub pgfmathparse {
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
   #    print STDERR "\nPGF Math Parse: $string\n";
   $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-  my $result = $PGFMATHGrammar->expr(\$string);
+  my $result = $PGFMATHGrammar->expr(\$string) || 0.0;
   #  $result = "0.0" if $result eq "0";
   #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
   if ($string) {
@@ -370,6 +370,8 @@ sub pgfmath_register {
   my ($cs) = @_;
   my $reg = LookupRegister($cs);
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
+  if (!$reg) {
+    return 0.0; }
   return (ref $reg eq 'LaTeXML::Common::Number' ? $reg->valueOf : $reg->valueOf / 65536); }
 
 sub pgfmath_setunitsdeclared {
