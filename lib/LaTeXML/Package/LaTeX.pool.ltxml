@@ -1315,7 +1315,7 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
       DefMacroI('\@currenv', undef, 'verbatim');
       MergeFont(family => 'typewriter');
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
-      }],
+  }],
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
       $stomach->egroup;
@@ -2186,7 +2186,7 @@ sub defineNewTheorem {
         title     => $title,
         titlefont => $title->getFont,
         class     => 'ltx_theorem_' . CleanClassName($thmset),
-        ); },
+      ); },
     scope => 'global');
   return; }
 
@@ -2824,7 +2824,7 @@ DefConstructor('\bibstyle{}', sub {
       if (my $parms = $$BIBSTYLES{$style}) {
         $document->setAttribute($bib, citestyle => $$parms{citestyle});
         $document->setAttribute($bib, sort      => $$parms{sort});
-      } } },
+  } } },
   afterDigest => sub {
     my $style = ToString($_[1]->getArg(1));
     AssignValue(BIBSTYLE => $style, 'global');
@@ -3435,8 +3435,16 @@ DefPrimitive('\newsavebox DefToken', sub {
     AssignValue('box' . $n, List()); });
 
 DefPrimitive('\sbox {Register} {}', sub {
-    my ($defn)   = @{ $_[1] };
-    my $value    = $defn->valueOf()->valueOf;
+    my ($defn) = @{ $_[1] };
+    my $value;
+    if ($defn && ref $defn) {
+      $value = $defn->valueOf();
+      if (ref $value) {
+        $value = $value->valueOf;
+      }
+    } else {
+      Error('expected', '<definition>', undef, "\\sbox expected a definition, was missing");
+    }
     my $contents = Digest($_[2]);
     AssignValue('box' . $value, $contents); return; });
 
