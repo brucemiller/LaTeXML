@@ -22,6 +22,7 @@ use File::Copy;
 use File::Which;
 use File::Spec::Functions;
 use Algorithm::Diff;
+use Term::ANSIColor;
 
 #======================================================================
 # NOTE: Don't forget you can use
@@ -134,6 +135,7 @@ sub maketest_daemon {
     $ndiffs += compareLines(readText("$name.status"), readText("$name.test.status"));
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
+    print "" . ("=" x 40) . "\n\n";
     ($ndiffs ? push(@FAIL, $name) : push(@PASS, $name)); }
   elsif ($doxml) {
     print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
@@ -175,6 +177,7 @@ sub compare_xml {
   # Do the comparison
   print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
   my $result = compareLines(readXML($xml), readXML($test));
+  print "" . ("=" x 40) . "\n\n";
   unlink $test if -e $test;
   return $result; }
 
@@ -197,7 +200,10 @@ sub compareLines {
     print $sep;
     print "> $_\n" for $diff->Items(2);
   }
-  print "OK!\n" unless $ndiffs;
+  if ($ndiffs) {
+    print color('red') . "Failed!" . color('reset') . "\n"; }
+  else {
+    print color('green') . "OK!" . color('reset') . "\n"; }
   return $ndiffs; }
 
 sub readXML {
