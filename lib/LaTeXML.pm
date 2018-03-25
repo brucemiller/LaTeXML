@@ -237,7 +237,7 @@ sub convert {
           } else {    # Default is XML
             $dom = $latexml->convertDocument($digested);
           }
-          }); }
+      }); }
     alarm(0);
     1;
   };
@@ -278,7 +278,7 @@ sub convert {
     $serialized = $dom if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
-    $serialized = Encode::encode('UTF-8', $serialized) if $serialized; 
+    $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
 
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
@@ -298,7 +298,12 @@ sub convert {
 
   # 3 If desired, post-process
   my $result = $dom;
-  if ($$opts{post} && $dom && $dom->documentElement) {
+  if ($$opts{post} && $dom) {
+    if (!$dom->documentElement) {
+      # Make a completely empty document have at least one element for post-processing
+      # important for utility features such as packing .zip archives for output
+      $$dom{document}->setDocumentElement($$dom{document}->createElement("document"));
+    }
     $result = $self->convert_post($dom);
   }
   # 4 Clean-up: undo everything we sandboxed
@@ -321,8 +326,8 @@ sub convert {
       if (ref($result) eq 'LaTeXML::Core::Document') {
         # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
         # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
-        $serialized = Encode::encode('UTF-8', $serialized) if $serialized; 
-      } }
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+    } }
     elsif ($$opts{format} =~ /^html/) {
       if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
         $serialized = $result->getDocument->toStringHTML; }
@@ -330,7 +335,7 @@ sub convert {
         do {
           local $XML::LibXML::setTagCompression = 1;
           $serialized = $result->toString(1);
-          } } }
+        } } }
     elsif ($$opts{format} eq 'dom') {
       $serialized = $result; } }
   else { $serialized = $result; }                              # Compressed case
