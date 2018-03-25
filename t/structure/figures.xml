@@ -44,11 +44,11 @@
     <para xml:id="S0.SS0.SSS0.Px3.p1">
       <p>Two figures, <ref labelref="LABEL:fig:C"/></p>
     </para>
-    <figure frefnum="Figure 3" placement="ht" refnum="3" xml:id="S0.F3">
+    <figure frefnum="Figure 3" labels="LABEL:fig:C" placement="ht" refnum="3" xml:id="S0.F3">
       <figure align="center" xml:id="S0.F3.fig1">
         <p>[Graphic One]</p>
       </figure>
-      <figure align="center" labels="LABEL:fig:C" xml:id="S0.F3.fig2">
+      <figure align="center" xml:id="S0.F3.fig2">
         <p>[Graphic Two]</p>
       </figure>
       <toccaption><tag close=" ">3</tag>Collectively two figures</toccaption>
@@ -61,13 +61,13 @@
       <p>Two figures, <ref labelref="LABEL:fig:D-one"/> and <ref labelref="LABEL:fig:D-two"/>,
 and collectively as <ref labelref="LABEL:fig:D"/>.</p>
     </para>
-    <figure frefnum="Figure 4" placement="ht" refnum="4" xml:id="S0.F4">
+    <figure frefnum="Figure 4" labels="LABEL:fig:D" placement="ht" refnum="4" xml:id="S0.F4">
       <figure align="center" frefnum="(a)" labels="LABEL:fig:D-one" refnum="a" xml:id="S0.F3.sf1">
         <p>[Graphic One]</p>
         <toccaption><tag close=" ">a</tag>This is a figure</toccaption>
         <caption><tag close=" ">(a)</tag>This is a figure</caption>
       </figure>
-      <figure align="center" frefnum="(b)" labels="LABEL:fig:D LABEL:fig:D-two" refnum="b" xml:id="S0.F3.sf2">
+      <figure align="center" frefnum="(b)" labels="LABEL:fig:D-two" refnum="b" xml:id="S0.F3.sf2">
         <p>[Graphic Two]</p>
         <toccaption><tag close=" ">b</tag>This is another figure</toccaption>
         <caption><tag close=" ">(b)</tag>This is another figure</caption>
