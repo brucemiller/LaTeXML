@@ -663,13 +663,17 @@ our %stepmathstyle = (
 
 sub purestyleChanges {
   my ($self, $other) = @_;
-  my $mathstyle = $other->getMathstyle;
+  my $mathstyle      = $self->getMathstyle;
+  my $othermathstyle = $other->getMathstyle;
   return (
     scale      => $other->getSize / $self->getSize,
     color      => $other->getColor,
     background => $other->getBackground,
     opacity    => $other->getOpacity,                 # should multiply or replace?
-    mathstylestep => $mathstylestep{ $self->getMathstyle }{ $other->getMathstyle }); }
+    ($mathstyle && $othermathstyle
+      ? (mathstylestep => $mathstylestep{$mathstyle}{$othermathstyle})
+      : ()),
+    ); }
 
 sub mergePurestyle {
   my ($self, %stylechanges) = @_;
