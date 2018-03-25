@@ -33,9 +33,13 @@ DeclareOption(undef, sub {
 ProcessOptions();
 LoadClass('book', withoptions => 1);
 RequirePackage('sv_support');
+RequirePackage('url');    # included in later versions?
 
 # Oddly, they allow * on \title to affect numbering (* => numart, none => book)
-DefMacro('\title OptionalMatch:* {}', '\@add@frontmatter{ltx:title}{#1}');
+# Hopefully we can get away with just reseting the display of section numbers?
+DefMacro('\title OptionalMatch:* {}',
+  '\if.#1.\else\def\thesection{\arabic{section}}\fi'
+    . '\@add@frontmatter{ltx:title}{#2}');
 
 #======================================================================
 # And some additional stuff
