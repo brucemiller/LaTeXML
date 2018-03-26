@@ -11,7 +11,7 @@ use FindBin;
 use File::Temp qw(tempfile);
 use File::Spec::Functions qw(catfile);
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
-
+use IPC::Open3;
 
 my ($tmp_fh, $epub_filename) = tempfile('931_testXXXX', SUFFIX => '.epub');
 close $tmp_fh;
@@ -21,7 +21,9 @@ my $log_filename = "931_test.log";
 my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
 my $invocation = "$latexmlc --dest=$epub_filename --log=$log_filename literal:test";
 
-is(system($invocation), 0, "latexmlc invocation for test 931_epub.t");
+my ($writer_discard, $reader_discard, $error_discard);
+my $pid = open3($writer_discard, $reader_discard, $error_discard, $invocation);
+ok(waitpid( $pid, 0 ), "latexmlc invocation for test 931_epub.t : $!");
 
 ok(-f $epub_filename, 'epub file generated');
 ok(!-z $epub_filename, 'epub file has content');
