@@ -55,7 +55,7 @@ DeclareOption('thref', sub {
     # \thref{}  should also output the type from the above.
     # We'll use latexml's show attribute to mimic the effect
     DefConstructor('\thref OptionalMatch:* Semiverbatim',
-      "<ltx:ref labelref='#label' show='type refnum' _force_font='true'/>",
+      "<ltx:ref labelref='#label' show='typerefnum' _force_font='true'/>",
       properties => sub { (label => CleanLabel($_[2])); });
 });
 

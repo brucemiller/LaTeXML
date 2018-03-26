@@ -32,7 +32,7 @@
        so we pretty much ignore the $context switches.
        See the CONTEXT discussion in LaTeXML-common -->
 
-  <xsl:preserve-space elements="ltx:bibtag ltx:surname ltx_givenname ltx:lineage
+  <xsl:preserve-space elements="ltx:surname ltx_givenname ltx:lineage
 				ltx:bib-title ltx:bib-subtitle ltx:bib-key
 				ltx:bib-type ltx:bib-date ltx:bib-publisher
 				ltx:bib-organization ltx:bib-place ltx:bib-part
@@ -102,7 +102,7 @@
 
   <!-- potential future parameterization?
        choose which bibtag is used to display? -->
-  <xsl:template match="ltx:bibitem/ltx:bibtag[@role='refnum']">
+  <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='refnum']">
     <xsl:param name="context"/>
     <xsl:element name="span" namespace="{$html_ns}">
         <xsl:call-template name="add_id"/>
@@ -120,8 +120,6 @@
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
-
-  <xsl:template match="ltx:bibtag"/>
 
   <!-- By default, I suppose, this should generate a span,
        but if you want openbib, use css: .ltx_bibblock{display:block;} -->

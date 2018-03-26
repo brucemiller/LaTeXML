@@ -12,8 +12,13 @@
     <personname>Someone Else</personname>
   </creator>
   <date role="creation">December 31, 1999</date>
-  <chapter frefnum="Chapter 1" refnum="1" xml:id="Ch1">
-    <title><tag close=" ">Chapter 1</tag>First Chapter</title>
+  <chapter xml:id="Ch1">
+    <tags>
+      <tag>Chapter 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Chapter 1</tag>
+    </tags>
+    <title><tag close=" ">Chapter 1</tag>First Chapter</title>
     <toctitle><tag close=" ">1</tag>First Chapter</toctitle>
     <para xml:id="Ch1.p1">
       <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -21,11 +26,20 @@
     <para xml:id="Ch1.p2">
       <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </para>
-    <section refnum="1.1" xml:id="Ch1.S1">
+    <section xml:id="Ch1.S1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
       <title><tag close=" ">1.1</tag>First Section</title>
       <para xml:id="Ch1.S1.p1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <equation frefnum="(1.1)" refnum="1.1" xml:id="Ch1.E1">
+        <equation xml:id="Ch1.E1">
+          <tags>
+            <tag>(1.1)</tag>
+            <tag role="refnum">1.1</tag>
+          </tags>
           <Math mode="display" tex="a+b," text="a + b" xml:id="Ch1.E1.m1">
             <XMath>
               <XMDual>
@@ -44,7 +58,11 @@
         </equation>
       </para>
       <para xml:id="Ch1.S1.p2">
-        <equation frefnum="(1.2)" refnum="1.2" xml:id="Ch1.E2">
+        <equation xml:id="Ch1.E2">
+          <tags>
+            <tag>(1.2)</tag>
+            <tag role="refnum">1.2</tag>
+          </tags>
           <Math mode="display" tex="c+d," text="c + d" xml:id="Ch1.E2.m1">
             <XMath>
               <XMDual>
@@ -62,12 +80,24 @@
           </Math>
         </equation>
       </para>
-      <figure frefnum="Figure 1.1" refnum="1.1" xml:id="Ch1.F1">
+      <figure xml:id="Ch1.F1">
+        <tags>
+          <tag>Figure 1.1</tag>
+          <tag role="refnum">1.1</tag>
+          <tag role="typerefnum">Figure 1.1</tag>
+        </tags>
         <p align="center">A Figure<break/></p>
         <toccaption><tag close=" ">1.1</tag>A Figure</toccaption>
         <caption><tag close=": ">Figure 1.1</tag>A Figure</caption>
       </figure>
-      <table frefnum="Table 1.1" refnum="1.1" xml:id="Ch1.T1">
+      <table xml:id="Ch1.T1">
+        <tags>
+          <tag>Table 1.1</tag>
+          <tag role="refnum">1.1</tag>
+          <tag role="typerefnum">Table 1.1</tag>
+        </tags>
+        <toccaption class="ltx_centering"><tag close=" ">1.1</tag>A Table</toccaption>
+        <caption class="ltx_centering"><tag close=": ">Table 1.1</tag>A Table</caption>
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <thead>
             <tr>
@@ -114,31 +144,41 @@
           </tbody>
         </tabular>
         <break class="ltx_centering"/>
-        <toccaption><tag close=" ">1.1</tag>A Table</toccaption>
-        <caption><tag close=": ">Table 1.1</tag>A Table</caption>
       </table>
       <para xml:id="Ch1.S1.p3">
-        <itemize xml:id="Ch1.I1">
-          <item xml:id="Ch1.I1.i1">
-            <tag>•</tag>
-            <para xml:id="Ch1.I1.i1.p1">
+        <itemize xml:id="Ch1.S1.I1">
+          <item xml:id="Ch1.S1.I1.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I1.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item xml:id="Ch1.I1.i2">
-            <tag>•</tag>
-            <para xml:id="Ch1.I1.i2.p1">
+          <item xml:id="Ch1.S1.I1.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I1.i2.p1">
               <p>two</p>
-              <itemize xml:id="Ch1.I1.I1">
-                <item xml:id="Ch1.I1.I1.i1">
-                  <tag><text font="bold">–</text></tag>
-                  <para xml:id="Ch1.I1.I1.i1.p1">
+              <itemize xml:id="Ch1.S1.I1.I1">
+                <item xml:id="Ch1.S1.I1.i2.i1">
+                  <tags>
+                    <tag><text font="bold">–</text></tag>
+                    <tag role="typerefnum">1st item</tag>
+                  </tags>
+                  <para xml:id="Ch1.S1.I1.i2.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item xml:id="Ch1.I1.I1.i2">
-                  <tag><text font="bold">–</text></tag>
-                  <para xml:id="Ch1.I1.I1.i2.p1">
+                <item xml:id="Ch1.S1.I1.i2.i2">
+                  <tags>
+                    <tag><text font="bold">–</text></tag>
+                    <tag role="typerefnum">2nd item</tag>
+                  </tags>
+                  <para xml:id="Ch1.S1.I1.i2.i2.p1">
                     <p>two</p>
                   </para>
                 </item>
@@ -148,27 +188,43 @@
         </itemize>
       </para>
       <para xml:id="Ch1.S1.p4">
-        <enumerate xml:id="Ch1.I2">
-          <item frefnum="1." refnum="1" xml:id="Ch1.I2.i1">
-            <tag>1.</tag>
-            <para xml:id="Ch1.I2.i1.p1">
+        <enumerate xml:id="Ch1.S1.I2">
+          <item xml:id="Ch1.S1.I2.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I2.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch1.I2.i2">
-            <tag>2.</tag>
-            <para xml:id="Ch1.I2.i2.p1">
+          <item xml:id="Ch1.S1.I2.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I2.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch1.I2.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch1.I2.I1.i1">
-                  <tag>(a)</tag>
-                  <para xml:id="Ch1.I2.I1.i1.p1">
+              <enumerate xml:id="Ch1.S1.I2.I1">
+                <item xml:id="Ch1.S1.I2.i2.i1">
+                  <tags>
+                    <tag>(a)</tag>
+                    <tag role="refnum">2a</tag>
+                    <tag role="typerefnum">item 2a</tag>
+                  </tags>
+                  <para xml:id="Ch1.S1.I2.i2.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch1.I2.I1.i2">
-                  <tag>(b)</tag>
-                  <para xml:id="Ch1.I2.I1.i2.p1">
+                <item xml:id="Ch1.S1.I2.i2.i2">
+                  <tags>
+                    <tag>(b)</tag>
+                    <tag role="refnum">2b</tag>
+                    <tag role="typerefnum">item 2b</tag>
+                  </tags>
+                  <para xml:id="Ch1.S1.I2.i2.i2.p1">
                     <p>two</p>
                   </para>
                 </item>
@@ -178,29 +234,43 @@
         </enumerate>
       </para>
       <para xml:id="Ch1.S1.p5">
-        <description xml:id="Ch1.I3">
-          <item refnum="A thing" xml:id="Ch1.I3.ix1">
-            <tag>A thing</tag>
-            <para xml:id="Ch1.I3.ix1.p1">
+        <description xml:id="Ch1.S1.I3">
+          <item xml:id="Ch1.S1.I3.ix1">
+            <tags>
+              <tag><text font="bold">A thing</text></tag>
+              <tag role="typerefnum">item A thing</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I3.ix1.p1">
               <p>with some descriptive text.</p>
             </para>
           </item>
-          <item refnum="Another" xml:id="Ch1.I3.ix2">
-            <tag>Another</tag>
-            <para xml:id="Ch1.I3.ix2.p1">
+          <item xml:id="Ch1.S1.I3.ix2">
+            <tags>
+              <tag><text font="bold">Another</text></tag>
+              <tag role="typerefnum">item Another</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I3.ix2.p1">
               <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             </para>
           </item>
-          <item refnum="And yet" xml:id="Ch1.I3.ix3">
-            <tag>And yet</tag>
-            <para xml:id="Ch1.I3.ix3.p1">
+          <item xml:id="Ch1.S1.I3.ix3">
+            <tags>
+              <tag><text font="bold">And yet</text></tag>
+              <tag role="typerefnum">item And yet</tag>
+            </tags>
+            <para xml:id="Ch1.S1.I3.ix3.p1">
               <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             </para>
           </item>
         </description>
       </para>
-      <subsection refnum="1.1.1" xml:id="Ch1.S1.SS1">
+      <subsection xml:id="Ch1.S1.SS1">
+        <tags>
+          <tag>1.1.1</tag>
+          <tag role="refnum">1.1.1</tag>
+          <tag role="typerefnum">§1.1.1</tag>
+        </tags>
         <title><tag close=" ">1.1.1</tag>A Subsection</title>
         <para xml:id="Ch1.S1.SS1.p1">
           <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -237,14 +307,23 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </subsubsection>
       </subsection>
     </section>
-    <section refnum="1.2" xml:id="Ch1.S2">
+    <section xml:id="Ch1.S2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
       <title><tag close=" ">1.2</tag>Second Section</title>
       <para xml:id="Ch1.S2.p1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       </para>
       <para xml:id="Ch1.S2.p2">
         <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <equation frefnum="(1.3)" refnum="1.3" xml:id="Ch1.E3">
+        <equation xml:id="Ch1.E3">
+          <tags>
+            <tag>(1.3)</tag>
+            <tag role="refnum">1.3</tag>
+          </tags>
           <Math mode="display" tex="a+b," text="a + b" xml:id="Ch1.E3.m1">
             <XMath>
               <XMDual>
@@ -263,7 +342,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </equation>
       </para>
       <para xml:id="Ch1.S2.p3">
-        <equation frefnum="(1.4)" refnum="1.4" xml:id="Ch1.E4">
+        <equation xml:id="Ch1.E4">
+          <tags>
+            <tag>(1.4)</tag>
+            <tag role="refnum">1.4</tag>
+          </tags>
           <Math mode="display" tex="c+d," text="c + d" xml:id="Ch1.E4.m1">
             <XMath>
               <XMDual>
@@ -281,12 +364,24 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </Math>
         </equation>
       </para>
-      <figure frefnum="Figure 1.2" refnum="1.2" xml:id="Ch1.F2">
+      <figure xml:id="Ch1.F2">
+        <tags>
+          <tag>Figure 1.2</tag>
+          <tag role="refnum">1.2</tag>
+          <tag role="typerefnum">Figure 1.2</tag>
+        </tags>
         <p align="center">A Figure<break/></p>
         <toccaption><tag close=" ">1.2</tag>Another Figure</toccaption>
         <caption><tag close=": ">Figure 1.2</tag>Another Figure</caption>
       </figure>
-      <table frefnum="Table 1.2" refnum="1.2" xml:id="Ch1.T2">
+      <table xml:id="Ch1.T2">
+        <tags>
+          <tag>Table 1.2</tag>
+          <tag role="refnum">1.2</tag>
+          <tag role="typerefnum">Table 1.2</tag>
+        </tags>
+        <toccaption class="ltx_centering"><tag close=" ">1.2</tag>Another Table</toccaption>
+        <caption class="ltx_centering"><tag close=": ">Table 1.2</tag>Another Table</caption>
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <thead>
             <tr>
@@ -333,31 +428,45 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </tbody>
         </tabular>
         <break class="ltx_centering"/>
-        <toccaption><tag close=" ">1.2</tag>Another Table</toccaption>
-        <caption><tag close=": ">Table 1.2</tag>Another Table</caption>
       </table>
       <para xml:id="Ch1.S2.p4">
-        <enumerate xml:id="Ch1.I4">
-          <item frefnum="1." refnum="1" xml:id="Ch1.I4.i1">
-            <tag>1.</tag>
-            <para xml:id="Ch1.I4.i1.p1">
+        <enumerate xml:id="Ch1.S2.I1">
+          <item xml:id="Ch1.S2.I1.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="Ch1.S2.I1.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch1.I4.i2">
-            <tag>2.</tag>
-            <para xml:id="Ch1.I4.i2.p1">
+          <item xml:id="Ch1.S2.I1.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="Ch1.S2.I1.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch1.I4.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch1.I4.I1.i1">
-                  <tag>(a)</tag>
-                  <para xml:id="Ch1.I4.I1.i1.p1">
+              <enumerate xml:id="Ch1.S2.I1.I1">
+                <item xml:id="Ch1.S2.I1.i2.i1">
+                  <tags>
+                    <tag>(a)</tag>
+                    <tag role="refnum">2a</tag>
+                    <tag role="typerefnum">item 2a</tag>
+                  </tags>
+                  <para xml:id="Ch1.S2.I1.i2.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch1.I4.I1.i2">
-                  <tag>(b)</tag>
-                  <para xml:id="Ch1.I4.I1.i2.p1">
+                <item xml:id="Ch1.S2.I1.i2.i2">
+                  <tags>
+                    <tag>(b)</tag>
+                    <tag role="refnum">2b</tag>
+                    <tag role="typerefnum">item 2b</tag>
+                  </tags>
+                  <para xml:id="Ch1.S2.I1.i2.i2.p1">
                     <p>two</p>
                   </para>
                 </item>
@@ -368,17 +477,31 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </para>
     </section>
   </chapter>
-  <chapter frefnum="Chapter 2" refnum="2" xml:id="Ch2">
-    <title><tag close=" ">Chapter 2</tag>Second Chapter</title>
+  <chapter xml:id="Ch2">
+    <tags>
+      <tag>Chapter 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Chapter 2</tag>
+    </tags>
+    <title><tag close=" ">Chapter 2</tag>Second Chapter</title>
     <toctitle><tag close=" ">2</tag>Second Chapter</toctitle>
-    <section refnum="2.1" xml:id="Ch2.S1">
+    <section xml:id="Ch2.S1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
       <title><tag close=" ">2.1</tag>First Section</title>
       <para xml:id="Ch2.S1.p1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       </para>
       <para xml:id="Ch2.S1.p2">
         <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <equation frefnum="(2.1)" refnum="2.1" xml:id="Ch2.E1">
+        <equation xml:id="Ch2.E1">
+          <tags>
+            <tag>(2.1)</tag>
+            <tag role="refnum">2.1</tag>
+          </tags>
           <Math mode="display" tex="a+b," text="a + b" xml:id="Ch2.E1.m1">
             <XMath>
               <XMDual>
@@ -397,7 +520,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </equation>
       </para>
       <para xml:id="Ch2.S1.p3">
-        <equation frefnum="(2.2)" refnum="2.2" xml:id="Ch2.E2">
+        <equation xml:id="Ch2.E2">
+          <tags>
+            <tag>(2.2)</tag>
+            <tag role="refnum">2.2</tag>
+          </tags>
           <Math mode="display" tex="c+d," text="c + d" xml:id="Ch2.E2.m1">
             <XMath>
               <XMDual>
@@ -415,12 +542,24 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </Math>
         </equation>
       </para>
-      <figure frefnum="Figure 2.1" refnum="2.1" xml:id="Ch2.F1">
+      <figure xml:id="Ch2.F1">
+        <tags>
+          <tag>Figure 2.1</tag>
+          <tag role="refnum">2.1</tag>
+          <tag role="typerefnum">Figure 2.1</tag>
+        </tags>
         <p align="center">A Figure<break/></p>
         <toccaption><tag close=" ">2.1</tag>Yet another Figure</toccaption>
         <caption><tag close=": ">Figure 2.1</tag>Yet another Figure</caption>
       </figure>
-      <table frefnum="Table 2.1" refnum="2.1" xml:id="Ch2.T1">
+      <table xml:id="Ch2.T1">
+        <tags>
+          <tag>Table 2.1</tag>
+          <tag role="refnum">2.1</tag>
+          <tag role="typerefnum">Table 2.1</tag>
+        </tags>
+        <toccaption class="ltx_centering"><tag close=" ">2.1</tag>And another Table</toccaption>
+        <caption class="ltx_centering"><tag close=": ">Table 2.1</tag>And another Table</caption>
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <thead>
             <tr>
@@ -467,31 +606,45 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </tbody>
         </tabular>
         <break class="ltx_centering"/>
-        <toccaption><tag close=" ">2.1</tag>And another Table</toccaption>
-        <caption><tag close=": ">Table 2.1</tag>And another Table</caption>
       </table>
       <para xml:id="Ch2.S1.p4">
-        <enumerate xml:id="Ch2.I1">
-          <item frefnum="1." refnum="1" xml:id="Ch2.I1.i1">
-            <tag>1.</tag>
-            <para xml:id="Ch2.I1.i1.p1">
+        <enumerate xml:id="Ch2.S1.I1">
+          <item xml:id="Ch2.S1.I1.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="Ch2.S1.I1.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch2.I1.i2">
-            <tag>2.</tag>
-            <para xml:id="Ch2.I1.i2.p1">
+          <item xml:id="Ch2.S1.I1.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="Ch2.S1.I1.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch2.I1.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch2.I1.I1.i1">
-                  <tag>(a)</tag>
-                  <para xml:id="Ch2.I1.I1.i1.p1">
+              <enumerate xml:id="Ch2.S1.I1.I1">
+                <item xml:id="Ch2.S1.I1.i2.i1">
+                  <tags>
+                    <tag>(a)</tag>
+                    <tag role="refnum">2a</tag>
+                    <tag role="typerefnum">item 2a</tag>
+                  </tags>
+                  <para xml:id="Ch2.S1.I1.i2.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch2.I1.I1.i2">
-                  <tag>(b)</tag>
-                  <para xml:id="Ch2.I1.I1.i2.p1">
+                <item xml:id="Ch2.S1.I1.i2.i2">
+                  <tags>
+                    <tag>(b)</tag>
+                    <tag role="refnum">2b</tag>
+                    <tag role="typerefnum">item 2b</tag>
+                  </tags>
+                  <para xml:id="Ch2.S1.I1.i2.i2.p1">
                     <p>two</p>
                   </para>
                 </item>
@@ -501,14 +654,23 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </enumerate>
       </para>
     </section>
-    <section refnum="2.2" xml:id="Ch2.S2">
+    <section xml:id="Ch2.S2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
       <title><tag close=" ">2.2</tag>Second Section</title>
       <para xml:id="Ch2.S2.p1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       </para>
       <para xml:id="Ch2.S2.p2">
         <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
-        <equation frefnum="(2.3)" refnum="2.3" xml:id="Ch2.E3">
+        <equation xml:id="Ch2.E3">
+          <tags>
+            <tag>(2.3)</tag>
+            <tag role="refnum">2.3</tag>
+          </tags>
           <Math mode="display" tex="a+b," text="a + b" xml:id="Ch2.E3.m1">
             <XMath>
               <XMDual>
@@ -527,7 +689,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </equation>
       </para>
       <para xml:id="Ch2.S2.p3">
-        <equation frefnum="(2.4)" refnum="2.4" xml:id="Ch2.E4">
+        <equation xml:id="Ch2.E4">
+          <tags>
+            <tag>(2.4)</tag>
+            <tag role="refnum">2.4</tag>
+          </tags>
           <Math mode="display" tex="c+d," text="c + d" xml:id="Ch2.E4.m1">
             <XMath>
               <XMDual>
@@ -545,12 +711,24 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </Math>
         </equation>
       </para>
-      <figure frefnum="Figure 2.2" refnum="2.2" xml:id="Ch2.F2">
+      <figure xml:id="Ch2.F2">
+        <tags>
+          <tag>Figure 2.2</tag>
+          <tag role="refnum">2.2</tag>
+          <tag role="typerefnum">Figure 2.2</tag>
+        </tags>
         <p>A Figure</p>
         <toccaption><tag close=" ">2.2</tag>A Figure</toccaption>
         <caption><tag close=": ">Figure 2.2</tag>A Figure</caption>
       </figure>
-      <table frefnum="Table 2.2" refnum="2.2" xml:id="Ch2.T2">
+      <table xml:id="Ch2.T2">
+        <tags>
+          <tag>Table 2.2</tag>
+          <tag role="refnum">2.2</tag>
+          <tag role="typerefnum">Table 2.2</tag>
+        </tags>
+        <toccaption class="ltx_centering"><tag close=" ">2.2</tag>Yet another Table</toccaption>
+        <caption class="ltx_centering"><tag close=": ">Table 2.2</tag>Yet another Table</caption>
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <thead>
             <tr>
@@ -597,31 +775,45 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </tbody>
         </tabular>
         <break class="ltx_centering"/>
-        <toccaption><tag close=" ">2.2</tag>Yet another Table</toccaption>
-        <caption><tag close=": ">Table 2.2</tag>Yet another Table</caption>
       </table>
       <para xml:id="Ch2.S2.p4">
-        <enumerate xml:id="Ch2.I2">
-          <item frefnum="1." refnum="1" xml:id="Ch2.I2.i1">
-            <tag>1.</tag>
-            <para xml:id="Ch2.I2.i1.p1">
+        <enumerate xml:id="Ch2.S2.I1">
+          <item xml:id="Ch2.S2.I1.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="Ch2.S2.I1.i1.p1">
               <p>one</p>
             </para>
           </item>
-          <item frefnum="2." refnum="2" xml:id="Ch2.I2.i2">
-            <tag>2.</tag>
-            <para xml:id="Ch2.I2.i2.p1">
+          <item xml:id="Ch2.S2.I1.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="Ch2.S2.I1.i2.p1">
               <p>two</p>
-              <enumerate xml:id="Ch2.I2.I1">
-                <item frefnum="(a)" refnum="a" xml:id="Ch2.I2.I1.i1">
-                  <tag>(a)</tag>
-                  <para xml:id="Ch2.I2.I1.i1.p1">
+              <enumerate xml:id="Ch2.S2.I1.I1">
+                <item xml:id="Ch2.S2.I1.i2.i1">
+                  <tags>
+                    <tag>(a)</tag>
+                    <tag role="refnum">2a</tag>
+                    <tag role="typerefnum">item 2a</tag>
+                  </tags>
+                  <para xml:id="Ch2.S2.I1.i2.i1.p1">
                     <p>one</p>
                   </para>
                 </item>
-                <item frefnum="(b)" refnum="b" xml:id="Ch2.I2.I1.i2">
-                  <tag>(b)</tag>
-                  <para xml:id="Ch2.I2.I1.i2.p1">
+                <item xml:id="Ch2.S2.I1.i2.i2">
+                  <tags>
+                    <tag>(b)</tag>
+                    <tag role="refnum">2b</tag>
+                    <tag role="typerefnum">item 2b</tag>
+                  </tags>
+                  <para xml:id="Ch2.S2.I1.i2.i2.p1">
                     <p>two</p>
                   </para>
                 </item>

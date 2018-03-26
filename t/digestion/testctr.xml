@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Testing LaTeX Counters</title>
     <para xml:id="S1.p1">
       <p>Counter Foo [0] = 0.</p>
@@ -21,7 +26,12 @@
     <para xml:id="S1.p5">
       <p>Double Foo [24] = 24.</p>
     </para>
-    <subsection refnum="1.1" xml:id="S1.SS1">
+    <subsection xml:id="S1.SS1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
       <title><tag close=" ">1.1</tag>Testing RefStep</title>
       <para xml:id="S1.SS1.p1">
         <p>Define bar to be reset within foo.
@@ -37,7 +47,12 @@ Now (Foo,Bar)[24,1] is (24,1)</p>
 Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
-    <subsection refnum="1.2" xml:id="S1.SS2">
+    <subsection xml:id="S1.SS2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
       <title><tag close=" ">1.2</tag>Number formatting</title>
       <para xml:id="S1.SS2.p1">
         <p>arabic[6] = 6</p>
@@ -69,7 +84,12 @@ Fubar is mmmmmmmmmcmxcix</p>
       </para>
     </subsection>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Expanding LaTeX Counter Names</title>
     <para xml:id="S2.p1">
       <p>Counter Foo [0] = 0.</p>
@@ -86,7 +106,12 @@ Fubar is mmmmmmmmmcmxcix</p>
     <para xml:id="S2.p5">
       <p>Double Foo [24] = 24.</p>
     </para>
-    <subsection refnum="2.1" xml:id="S2.SS1">
+    <subsection xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
       <title><tag close=" ">2.1</tag>Testing RefStep</title>
       <para xml:id="S2.SS1.p1">
         <p>Define bar to be reset within Foo.
@@ -102,7 +127,12 @@ Now (Foo,Bar)[24,1] is (24,1)</p>
 Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
-    <subsection refnum="2.2" xml:id="S2.SS2">
+    <subsection xml:id="S2.SS2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
       <title><tag close=" ">2.2</tag>Number formatting</title>
       <para xml:id="S2.SS2.p1">
         <p>arabic[6] = 6</p>
@@ -128,9 +158,19 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>TeX Counters</title>
-    <subsection refnum="3.1" xml:id="S3.SS1">
+    <subsection xml:id="S3.SS1">
+      <tags>
+        <tag>3.1</tag>
+        <tag role="refnum">3.1</tag>
+        <tag role="typerefnum">§3.1</tag>
+      </tags>
       <title><tag close=" ">3.1</tag>Integers</title>
       <para xml:id="S3.SS1.p1">
         <p>7 = 7.</p>
@@ -139,7 +179,12 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
         <p>7 = 7.</p>
       </para>
     </subsection>
-    <subsection refnum="3.2" xml:id="S3.SS2">
+    <subsection xml:id="S3.SS2">
+      <tags>
+        <tag>3.2</tag>
+        <tag role="refnum">3.2</tag>
+        <tag role="typerefnum">§3.2</tag>
+      </tags>
       <title><tag close=" ">3.2</tag>Dimensions</title>
       <para xml:id="S3.SS2.p1">
         <p>HFuzz is 0.1pt.
@@ -191,7 +236,12 @@ Now HFuzz is 2.0pt.</p>
 15.0 POINTS = 15.0 POINTS</p>
       </para>
     </subsection>
-    <subsection refnum="3.3" xml:id="S3.SS3">
+    <subsection xml:id="S3.SS3">
+      <tags>
+        <tag>3.3</tag>
+        <tag role="refnum">3.3</tag>
+        <tag role="typerefnum">§3.3</tag>
+      </tags>
       <title><tag close=" ">3.3</tag>Glue</title>
       <para xml:id="S3.SS3.p1">
         <p>1pt plus 3pt = 1.0pt plus 3.0pt</p>
@@ -214,7 +264,12 @@ Now HFuzz is 2.0pt.</p>
 1.0 POINTS PLUS 3.0 POINTS = 1.0 POINTS   PLUS  3.0 POINTS</p>
       </para>
     </subsection>
-    <subsection refnum="3.4" xml:id="S3.SS4">
+    <subsection xml:id="S3.SS4">
+      <tags>
+        <tag>3.4</tag>
+        <tag role="refnum">3.4</tag>
+        <tag role="typerefnum">§3.4</tag>
+      </tags>
       <title><tag close=" ">3.4</tag>Undefined?</title>
       <para xml:id="S3.SS4.p1">
         <p>Unknown count: 0 = 0</p>
@@ -226,7 +281,12 @@ Now HFuzz is 2.0pt.</p>
         <p>Unknown skip: 0pt = 0.0pt</p>
       </para>
     </subsection>
-    <subsection refnum="3.5" xml:id="S3.SS5">
+    <subsection xml:id="S3.SS5">
+      <tags>
+        <tag>3.5</tag>
+        <tag role="refnum">3.5</tag>
+        <tag role="typerefnum">§3.5</tag>
+      </tags>
       <title><tag close=" ">3.5</tag>The</title>
       <para xml:id="S3.SS5.p1">
         <p>the count 127 [99] : 99</p>
@@ -244,20 +304,35 @@ Now HFuzz is 2.0pt.</p>
         <p>Catcode: 12 = 12</p>
       </para>
     </subsection>
-    <subsection refnum="3.6" xml:id="S3.SS6">
+    <subsection xml:id="S3.SS6">
+      <tags>
+        <tag>3.6</tag>
+        <tag role="refnum">3.6</tag>
+        <tag role="typerefnum">§3.6</tag>
+      </tags>
       <title><tag close=" ">3.6</tag>New Count, etc</title>
       <para xml:id="S3.SS6.p1">
         <p>3 = 3</p>
       </para>
     </subsection>
-    <subsection refnum="3.7" xml:id="S3.SS7">
+    <subsection xml:id="S3.SS7">
+      <tags>
+        <tag>3.7</tag>
+        <tag role="refnum">3.7</tag>
+        <tag role="typerefnum">§3.7</tag>
+      </tags>
       <title><tag close=" ">3.7</tag>LaTeX style</title>
       <para xml:id="S3.SS7.p1">
         <p>1em = 10.0pt
 3em = 30.0pt</p>
       </para>
     </subsection>
-    <subsection refnum="3.8" xml:id="S3.SS8">
+    <subsection xml:id="S3.SS8">
+      <tags>
+        <tag>3.8</tag>
+        <tag role="refnum">3.8</tag>
+        <tag role="typerefnum">§3.8</tag>
+      </tags>
       <title><tag close=" ">3.8</tag>Macrology</title>
       <para xml:id="S3.SS8.p1">
         <p>1=1</p>

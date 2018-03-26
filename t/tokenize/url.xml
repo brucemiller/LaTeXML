@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Basic URLS</title>
     <para xml:id="S1.p1">
       <p>Basic url: <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref> or <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref>.</p>
@@ -14,7 +19,12 @@
       <p>Path url: <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref> or <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref></p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Verbatimness</title>
     <para xml:id="S2.p1">
       <p>Special characters neutralized:
@@ -30,19 +40,34 @@
       <p>OTOH, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/\~{}user</ref></p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Styles</title>
     <para xml:id="S3.p1">
       <p>Email: <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Defined urls</title>
     <para xml:id="S4.p1">
       <p>Myself: <ref class="ltx_url" font="typewriter" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Bracketting</title>
     <para xml:id="S5.p1">
       <p>Fancy url: <ref class="ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref> or <ref class="ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref>.</p>

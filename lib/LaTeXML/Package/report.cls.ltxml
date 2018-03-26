@@ -81,21 +81,10 @@ DefMacro('\thefigure',   '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{figure}');
 DefMacro('\thetable',    '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{table}');
 SetCounter(tocdepth => Number(2));
 
-NewCounter('@itemizei',   'chapter',     idprefix => 'I');
-NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
-NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
-NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
-NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
-NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
-
-NewCounter('enumi',   '@itemizei',   idprefix => 'i');
-NewCounter('enumii',  '@itemizeii',  idprefix => 'i');
-NewCounter('enumiii', '@itemizeiii', idprefix => 'i');
-NewCounter('enumiv',  '@itemizeiv',  idprefix => 'i');
-# A couple of more levels, since we use these for ID's!
-NewCounter('enumv',  '@itemizev',  idprefix => 'i');
-NewCounter('enumvi', '@itemizevi', idprefix => 'i');
-
+NewCounter('enumi',   undef, idwithin => '@itemizei', idprefix => 'i');
+NewCounter('enumii',  undef, idwithin => 'enumi',     idprefix => 'i');
+NewCounter('enumiii', undef, idwithin => 'enumii',    idprefix => 'i');
+NewCounter('enumiv',  undef, idwithin => 'enumiii',   idprefix => 'i');
 DefMacro('\theenumi',   '\arabic{enumi}');
 DefMacro('\theenumii',  '\alph{enumii}');
 DefMacro('\theenumiii', '\roman{enumiii}');
@@ -104,18 +93,8 @@ DefMacro('\theenumiv',  '\Alph{enumiv}');
 DefMacro('\bibname', 'Bibliography');
 
 Tag('ltx:appendix', autoClose => 1);
-AssignValue(counter_for_appendix => 'chapter');
-DefMacro('\appendix@chapter', '\@startsection{appendix}{0}{}{}{}{}');
-DefMacro('\appendix',         '\@appendix');
-DefPrimitive('\@appendix', sub {
-    NewCounter('chapter', 'document', idprefix => 'A', nested => ['section']);
-    DefMacro('\thechapter', '\Alph{chapter}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thechapter', scope => 'global');
-    Let('\chapter',   '\appendix@chapter', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (IsDefined('\appendixname')) {
-      Let('\chaptername', '\appendixname', 'global'); }
-    return; });
+DefMacro('\appendix', '\@appendix');
+DefPrimitive('\@appendix', sub { startAppendices('chapter'); });
 
 #**********************************************************************
 1;

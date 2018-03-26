@@ -182,16 +182,9 @@ DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>"
 # almost normal LaTeX
 DefMacro('\appendix', '\@appendix');
 DefPrimitive('\@appendix', sub {
-    NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
+    startAppendices('section');
     NewCounter('equation', 'section', idprefix => 'E');
-    DefMacro('\thesection', '\Alph{section}', scope => 'global');
-    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
-    Let('\section',   '\appendix@section', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (IsDefined('\appendixname')) {
-      Let('\sectionname', '\appendixname', 'global'); }
-});
+    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global'); });
 
 #======================================================================
 # 2.12 Equations

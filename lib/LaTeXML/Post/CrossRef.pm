@@ -254,9 +254,9 @@ sub gentoc {
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
     if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
-      if ($strict && ! defined $entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
+      if ($strict && !defined $entry->getValue('refnum')) { # Traditional TOC/LOT/LOF shows only numbered!
         return (); }
-      elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
+      elsif (($code eq 'optional') && !@kids) {             # Optionally prune nodes w/ NO children
         return (); }
       else {
         return $self->gentocentry($doc, $entry, $selfid, $show, @kids); } }
@@ -623,18 +623,20 @@ sub generateRef_aux {
   my @stuff = ();
   my $OK    = 0;
   while ($show) {
-    if ($show =~ s/^type(\.?\s*)refnum(\.?\s*)//) {
-      if (my $frefnum = $entry->getValue('refnum')) {
-        $frefnum = $entry->getValue('frefnum') || $frefnum;
+    if ($show =~ s/^typerefnum(\.?\s*)//) {
+      if (my $frefnum = $entry->getValue('typerefnum')
+        || $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
             $self->prepRefText($doc, $frefnum)]); } }
-    elsif ($show =~ s/^rrefnum(\.?\s*)//) {
-      if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('refnum')) {
+    elsif ($show =~ s/^rrefnum(\.?\s*)//) {    # to be obsolete?
+###      if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('frefnum')  || $entry->getValue('refnum')) {
+      if (my $refnum = $entry->getValue('typerefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
             $self->prepRefText($doc, $refnum)]); } }
     elsif ($show =~ s/^refnum(\.?\s*)//) {
+###      if (my $refnum = $entry->getValue('refnum') || $entry->getValue('frefnum')) {
       if (my $refnum = $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
@@ -661,6 +663,15 @@ sub generateRef_aux {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
             $self->prepRawRefText($doc, $title)]); } }
+    # The beginnings of extensibility!
+    elsif ($show =~ s/^(\w+)//) {
+      my $role = $1;
+      if (my $tag = $entry->getValue('tag:' . $role)) {
+        $OK = 1;
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
+            $self->prepRefText($doc, $tag)]); }
+      else {
+        push(@stuff, $role); } }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
   return ($OK ? @stuff : ()); }
@@ -686,7 +697,8 @@ sub generateTitle {
   my $altstring = "";
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
     my $title = $self->fillInTitle($doc,
-      $entry->getValue('title') || $entry->getValue('rrefnum')
+###      $entry->getValue('title') || $entry->getValue('rrefnum')
+      $entry->getValue('title') || $entry->getValue('typerefnum')
         || $entry->getValue('frefnum') || $entry->getValue('refnum'));
     #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc, $title) if $title && ref $title;

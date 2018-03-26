@@ -133,7 +133,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       properties => sub {
         my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
         my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
-            T_CS('\@tag'), T_BEGIN,
+            T_CS('\lx@tag'), T_BEGIN,
             ($swap
               ? (($flag ? () : (T_CS('\the' . $counter))),
                 (!$flag && $type ? (T_SPACE) : ()),

@@ -228,7 +228,7 @@ DefConstructor('\roster DigestUntil:\endroster',
   properties   => sub { RefStepID('roster') },
   beforeDigest => sub { Let('\item', '\roster@item'); });
 DefConstructor('\roster@item',
-  "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tag>#1</ltx:tag>)",
+  "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)",
   properties => sub { RefStepID('rosteritem') });
 Let('\endroster', '\relax');
 
@@ -401,7 +401,7 @@ sub commaunbox {
 DefConstructor('\@bibitem@field{}{}', "<ltx:text class='#class' _noautoclose='1'>#2</ltx:text>",
   properties => { class => sub { 'ltx_bib_' . ToString($_[1]); } });
 # Both a tag, and a key!
-DefConstructor('\@bibitem@tag{}', "^key='#1'<ltx:bibtag role='refnum'>#1</ltx:bibtag>");
+DefConstructor('\@bibitem@tag{}', "^key='#1'<ltx:tags><ltx:tag role='refnum'>#1</ltx:tag></ltx:tags>");
 DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {
     my ($gullet, $field, $text) = @_;
     my @tokens = $text->unlist;

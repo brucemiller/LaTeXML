@@ -74,6 +74,7 @@
     <xsl:element name="sup" namespace="{$html_ns}">
       <xsl:attribute name="class">ltx_note_mark</xsl:attribute>
       <xsl:choose>
+        <xsl:when test="ltx:tags/ltx:tag[not(@role)]"><xsl:value-of select="ltx:tags/ltx:tag[not(@role)]"/></xsl:when>
         <xsl:when test="@mark"><xsl:value-of select="@mark"/></xsl:when>
         <xsl:otherwise>&#x2020;</xsl:otherwise>
       </xsl:choose>

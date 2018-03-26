@@ -7,15 +7,23 @@
   <para xml:id="p1">
     <p>Some structure:</p>
   </para>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>One</title>
     <para xml:id="S1.p1">
       <p>Hm,</p>
-      <itemize xml:id="I1">
-        <item xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
-            <p><Math mode="inline" tex="a&gt;b" text="a &gt; b" xml:id="I1.i1.p1.m1">
+      <itemize xml:id="S1.I1">
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
+            <p><Math mode="inline" tex="a&gt;b" text="a &gt; b" xml:id="S1.I1.i1.p1.m1">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
@@ -26,9 +34,12 @@
               </Math></p>
           </para>
         </item>
-        <item xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
             <p>second item</p>
           </para>
         </item>

@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="book"?>
+<?latexml package="hyperref"?>
+<?latexml package="caption"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-book.css" type="text/css"/>
+  <chapter labels="LABEL:chapterlabel" xml:id="Ch1">
+    <tags>
+      <tag>Chapter 1</tag>
+      <tag role="autoref">chapter 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Chapter 1</tag>
+    </tags>
+    <title><tag close=" ">Chapter 1</tag>Chapter Name</title>
+    <toctitle><tag close=" ">1</tag>Chapter Name</toctitle>
+    <section labels="LABEL:sectionlabel" xml:id="Ch1.S1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="autoref">section 1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>Section Name</title>
+      <subsection labels="LABEL:subsectionlabel" xml:id="Ch1.S1.SS1">
+        <tags>
+          <tag>1.1.1</tag>
+          <tag role="autoref">subsection 1.1.1</tag>
+          <tag role="refnum">1.1.1</tag>
+          <tag role="typerefnum">§1.1.1</tag>
+        </tags>
+        <title><tag close=" ">1.1.1</tag>Subsection Name</title>
+        <subsubsection labels="LABEL:subsubsectionlabel" xml:id="Ch1.S1.SS1.SSSx1">
+          <title>Subsubsection Name</title>
+        </subsubsection>
+      </subsection>
+    </section>
+    <section labels="LABEL:otherlabel" xml:id="Ch1.Sx1">
+      <title>Other Section Name</title>
+      <figure labels="LABEL:figurelabel" placement="h" xml:id="Ch1.F1">
+        <tags>
+          <tag>Figure 1.1</tag>
+          <tag role="autoref">Figure 1.1</tag>
+          <tag role="refnum">1.1</tag>
+          <tag role="typerefnum">Figure 1.1</tag>
+        </tags>
+        <toccaption><tag close=" ">1.1</tag>Figure caption</toccaption>
+        <caption><tag close=": ">Figure 1.1</tag>Figure caption</caption>
+        <p>The Figure</p>
+      </figure>
+      <table labels="LABEL:tablelabel" placement="h" xml:id="Ch1.T1">
+        <tags>
+          <tag>Table 1.1</tag>
+          <tag role="autoref">Table 1.1</tag>
+          <tag role="refnum">1.1</tag>
+          <tag role="typerefnum">Table 1.1</tag>
+        </tags>
+        <toccaption><tag close=" ">1.1</tag>Table caption</toccaption>
+        <caption><tag close=": ">Table 1.1</tag>Table caption</caption>
+        <p>The Table</p>
+      </table>
+      <para xml:id="Ch1.Sx1.p1"/>
+      <figure labels="LABEL:captionoffigurelabel" xml:id="Ch1.F2">
+        <tags>
+          <tag>Figure 1.2</tag>
+          <tag role="autoref">Figure 1.2</tag>
+          <tag role="refnum">1.2</tag>
+          <tag role="typerefnum">Figure 1.2</tag>
+        </tags>
+        <toccaption><tag close=" ">1.2</tag>Captionoffigure caption</toccaption>
+        <caption><tag close=": ">Figure 1.2</tag>Captionoffigure caption</caption>
+      </figure>
+      <para xml:id="Ch1.Sx1.p2">
+        <equation labels="LABEL:equationlabel" xml:id="Ch1.E1">
+          <tags>
+            <tag>(1.1)</tag>
+            <tag role="autoref">Equation 1.1</tag>
+            <tag role="refnum">1.1</tag>
+          </tags>
+          <Math mode="display" tex="a+b" text="a + b" xml:id="Ch1.E1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+      <para xml:id="Ch1.Sx1.p3">
+        <enumerate xml:id="Ch1.Sx1.I1">
+          <item labels="LABEL:itemlabel" xml:id="Ch1.Sx1.I1.i1">
+            <tags>
+              <tag>1.</tag>
+              <tag role="autoref">item 1</tag>
+              <tag role="refnum">1</tag>
+              <tag role="typerefnum">item 1</tag>
+            </tags>
+            <para xml:id="Ch1.Sx1.I1.i1.p1">
+              <p>First</p>
+            </para>
+          </item>
+          <item xml:id="Ch1.Sx1.I1.i2">
+            <tags>
+              <tag>2.</tag>
+              <tag role="autoref">item 2</tag>
+              <tag role="refnum">2</tag>
+              <tag role="typerefnum">item 2</tag>
+            </tags>
+            <para xml:id="Ch1.Sx1.I1.i2.p1">
+              <p>Second<note labels="LABEL:footnotelabel" mark="1" role="footnote" xml:id="footnote1"><tags>
+                    <tag>1</tag>
+                    <tag role="autoref">footnote 1</tag>
+                    <tag role="refnum">1</tag>
+                    <tag role="typerefnum">footnote 1</tag>
+                  </tags>footnote text</note></p>
+            </para>
+          </item>
+        </enumerate>
+      </para>
+      <theorem class="ltx_theorem_theorem" labels="LABEL:theoremlabel" xml:id="Thmtheorem1">
+        <tags>
+          <tag>Theorem 1</tag>
+          <tag role="autoref">Theorem 1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">Theorem 1</tag>
+        </tags>
+        <title class="ltx_runin" font="bold"><tag>Theorem 1</tag></title>
+        <para xml:id="Thmtheorem1.p1">
+          <p><text font="italic">Another Theorem</text></p>
+        </para>
+      </theorem>
+      <theorem class="ltx_theorem_thm" labels="LABEL:thmlabel" xml:id="Ch1.Sx1.Thmthm1">
+        <tags>
+          <tag>Theorem 1.1.1</tag>
+          <tag role="autoref">1.1.1</tag>
+          <tag role="refnum">1.1.1</tag>
+          <tag role="typerefnum">Theorem 1.1.1</tag>
+        </tags>
+        <title class="ltx_runin" font="bold"><tag>Theorem 1.1.1</tag></title>
+        <para xml:id="Ch1.Sx1.Thmthm1.p1">
+          <p><text font="italic">Short Theorem</text></p>
+        </para>
+      </theorem>
+      <theorem class="ltx_theorem_cor" labels="LABEL:corlabel" xml:id="Ch1.Sx1.Thmthm2">
+        <tags>
+          <tag>Corollary 1.1.2</tag>
+          <tag role="autoref">1.1.2</tag>
+          <tag role="refnum">1.1.2</tag>
+          <tag role="typerefnum">Corollary 1.1.2</tag>
+        </tags>
+        <title class="ltx_runin" font="bold"><tag>Corollary 1.1.2</tag></title>
+        <para xml:id="Ch1.Sx1.Thmthm2.p1">
+          <p><text font="italic">Short Corollary</text></p>
+        </para>
+      </theorem>
+      <theorem class="ltx_theorem_lem" labels="LABEL:lemlabel" xml:id="Ch1.Sx1.Thmthm3">
+        <tags>
+          <tag>Lemma 1.1.3</tag>
+          <tag role="autoref">1.1.3</tag>
+          <tag role="refnum">1.1.3</tag>
+          <tag role="typerefnum">Lemma 1.1.3</tag>
+        </tags>
+        <title class="ltx_runin" font="bold"><tag>Lemma 1.1.3</tag></title>
+        <para xml:id="Ch1.Sx1.Thmthm3.p1">
+          <p><text font="italic">Short Lemma</text></p>
+        </para>
+      </theorem>
+      <theorem class="ltx_theorem_thm" labels="LABEL:thm2label" xml:id="Ch1.Sx1.Thmthm4">
+        <tags>
+          <tag>Theorem 1.1.4</tag>
+          <tag role="autoref">1.1.4</tag>
+          <tag role="refnum">1.1.4</tag>
+          <tag role="typerefnum">Theorem 1.1.4</tag>
+        </tags>
+        <title class="ltx_runin" font="bold"><tag>Theorem 1.1.4</tag></title>
+        <para xml:id="Ch1.Sx1.Thmthm4.p1">
+          <p><text font="italic">Another Short Theorem</text></p>
+        </para>
+      </theorem>
+    </section>
+    <section xml:id="Ch1.S2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="autoref">section 1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>And thus</title>
+      <para xml:id="Ch1.S2.p1">
+        <tabular class="ltx_guessed_headers" vattach="middle">
+          <thead>
+            <tr>
+              <td align="left" thead="column">Thing</td>
+              <td align="left" thead="column">Autoref(Thing)</td>
+              <td align="left" thead="column">Ref(Thing)</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td align="left">chapter</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:chapterlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:chapterlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">section</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:sectionlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:sectionlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">subsection</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:subsectionlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:subsectionlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">subsubsection</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:subsubsectionlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:subsubsectionlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">figure</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:figurelabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:figurelabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">table</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:tablelabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:tablelabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">captionoffigure</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:captionoffigurelabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:captionoffigurelabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">equation</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:equationlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:equationlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">item</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:itemlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:itemlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">footnote</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:footnotelabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:footnotelabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">theorem</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:theoremlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:theoremlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">thm</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:thmlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:thmlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">cor</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:corlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:corlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">lem</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:lemlabel" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:lemlabel"/></td>
+            </tr>
+            <tr>
+              <td align="left">thm2</td>
+              <td align="left"><ref class="ltx_refmacro_autoref" labelref="LABEL:thm2label" show="autoref"/></td>
+              <td align="left"><ref labelref="LABEL:thm2label"/></td>
+            </tr>
+          </tbody>
+        </tabular>
+      </para>
+    </section>
+  </chapter>
+</document>

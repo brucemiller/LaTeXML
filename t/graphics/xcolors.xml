@@ -5,48 +5,68 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Introduction</title>
     <para xml:id="S1.p1">
-      <itemize xml:id="I1">
-        <item xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
+      <itemize xml:id="S1.I1">
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
             <p><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text>; A 75% tint <text width="20.0pt"><rule color="#4040FF" height="6.5pt" width="20.0pt"/></text>.</p>
           </para>
         </item>
-        <item xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
             <p>“use hsb definitions”</p>
           </para>
         </item>
-        <item xml:id="I1.i3">
-          <tag>•</tag>
-          <para xml:id="I1.i3.p1">
+        <item xml:id="S1.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
             <p>40% <text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text> + 60% <text width="20.0pt"><rule color="#FFFF00" height="6.5pt" width="20.0pt"/></text> = <text width="20.0pt"><rule color="#99FF00" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
-        <item xml:id="I1.i4">
-          <tag>•</tag>
-          <para xml:id="I1.i4.p1">
+        <item xml:id="S1.I1.i4">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">4th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i4.p1">
             <p>Complement: <text width="20.0pt"><rule color="#6600FF" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
-        <item xml:id="I1.i5">
-          <tag>•</tag>
-          <para xml:id="I1.i5.p1">
-            <p>3<Math mode="inline" tex="\times" text="*" xml:id="I1.i5.p1.m1">
+        <item xml:id="S1.I1.i5">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">5th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i5.p1">
+            <p>3<Math mode="inline" tex="\times" text="*" xml:id="S1.I1.i5.p1.m1">
                 <XMath>
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                 </XMath>
               </Math><text width="20.0pt"><rule color="#6600FF" height="6.5pt" width="20.0pt"/></text>
-+ 2<Math mode="inline" tex="\times" text="*" xml:id="I1.i5.p1.m2">
++ 2<Math mode="inline" tex="\times" text="*" xml:id="S1.I1.i5.p1.m2">
                 <XMath>
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                 </XMath>
               </Math><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text>
-+ 1<Math mode="inline" tex="\times" text="*" xml:id="I1.i5.p1.m3">
++ 1<Math mode="inline" tex="\times" text="*" xml:id="S1.I1.i5.p1.m3">
                 <XMath>
                   <XMTok meaning="times" role="MULOP">×</XMTok>
                 </XMath>
@@ -54,34 +74,51 @@
 = <text width="20.0pt"><rule color="#915580" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
-        <item xml:id="I1.i6">
-          <tag>•</tag>
-          <para xml:id="I1.i6.p1">
+        <item xml:id="S1.I1.i6">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">6th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i6.p1">
             <p><text width="20.0pt"><rule color="#00E6FF" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
-        <item xml:id="I1.i7">
-          <tag>•</tag>
-          <para xml:id="I1.i7.p1">
+        <item xml:id="S1.I1.i7">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">7th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i7.p1">
             <p><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FFFF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FFFF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF00FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text>.</p>
           </para>
         </item>
-        <item xml:id="I1.i8">
-          <tag>•</tag>
-          <para xml:id="I1.i8.p1">
+        <item xml:id="S1.I1.i8">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">8th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i8.p1">
             <p><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FFFF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FFFF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF00FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
-        <item xml:id="I1.i9">
-          <tag>•</tag>
-          <para xml:id="I1.i9.p1">
+        <item xml:id="S1.I1.i9">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">9th item</tag>
+          </tags>
+          <para xml:id="S1.I1.i9.p1">
             <p><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF8000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FFFF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF00FF" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text></p>
           </para>
         </item>
       </itemize>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Global</title>
     <para xml:id="S2.p1">
       <p><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text> <text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text> <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text></p>
@@ -90,7 +127,12 @@
       <p><text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text> <text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text> <text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text></p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>XGlobal</title>
     <para xml:id="S3.p1">
       <p>fuu is red: <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text>
@@ -109,7 +151,12 @@ Now, baz is green again: <text width="20.0pt"><rule color="#00FF00" height="6.5p
 and, fuu is <emph font="italic">still</emph> pink: <text width="20.0pt"><rule color="#FFBFBF" height="6.5pt" width="20.0pt"/></text></p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Color Sets</title>
     <para xml:id="S4.p1">
       <p><text width="20.0pt"><rule color="#FFE6E6" height="6.5pt" width="20.0pt"/></text>
@@ -117,7 +164,12 @@ and, fuu is <emph font="italic">still</emph> pink: <text width="20.0pt"><rule co
 <text width="20.0pt"><rule color="#E6FFE6" height="6.5pt" width="20.0pt"/></text></p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Color Series</title>
     <para xml:id="S5.p1">
       <p><text color="#0000FF">Test<text width="10.0pt"><rule color="#0000FF" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#3333CC" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#999966" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#CCCC33" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#FFFF00" height="6.5pt" width="10.0pt"/></text>Test</text></p>
@@ -129,7 +181,12 @@ and, fuu is <emph font="italic">still</emph> pink: <text width="20.0pt"><rule co
       <p><text color="#0000FF">Test<text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text><text width="10.0pt"><rule color="#666699" height="6.5pt" width="10.0pt"/></text>Test</text></p>
     </para>
   </section>
-  <section refnum="6" xml:id="S6">
+  <section xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
     <title><tag close=" ">6</tag>Blending</title>
     <para xml:id="S6.p1">
       <p>No blend: <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text></p>
@@ -150,7 +207,12 @@ With blend: <text width="20.0pt"><rule color="#FFBF00" height="6.5pt" width="20.
 No blend: <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#00FF00" height="6.5pt" width="20.0pt"/></text><text width="20.0pt"><rule color="#0000FF" height="6.5pt" width="20.0pt"/></text></p>
     </para>
   </section>
-  <section refnum="7" xml:id="S7">
+  <section xml:id="S7">
+    <tags>
+      <tag>7</tag>
+      <tag role="refnum">7</tag>
+      <tag role="typerefnum">§7</tag>
+    </tags>
     <title><tag close=" ">7</tag>Boxes</title>
     <para xml:id="S7.p1">
       <p><text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
@@ -168,7 +230,12 @@ No blend: <text width="20.0pt"><rule color="#FF0000" height="6.5pt" width="20.0p
       <p><rule color="white" depth="4.3pt" framecolor="#FF8000" framed="rectangle" height="8.6pt" width="100.0pt"/></p>
     </para>
   </section>
-  <section refnum="8" xml:id="S8">
+  <section xml:id="S8">
+    <tags>
+      <tag>8</tag>
+      <tag role="refnum">8</tag>
+      <tag role="typerefnum">§8</tag>
+    </tags>
     <title><tag close=" ">8</tag>Arithmetic</title>
     <para xml:id="S8.p1">
       <p>A=5.0pt;B=10;
@@ -193,7 +260,12 @@ A=A/100=5.0pt.</p>
 A=100*13 = 1300pt;</p>
     </para>
   </section>
-  <section refnum="9" xml:id="S9">
+  <section xml:id="S9">
+    <tags>
+      <tag>9</tag>
+      <tag role="refnum">9</tag>
+      <tag role="typerefnum">§9</tag>
+    </tags>
     <title><tag close=" ">9</tag>Colored Tables</title>
     <para xml:id="S9.p1">
       <tabular class="ltx_guessed_headers" vattach="middle">
@@ -241,7 +313,12 @@ test</text></td>
       </tabular>
     </para>
   </section>
-  <section refnum="10" xml:id="S10">
+  <section xml:id="S10">
+    <tags>
+      <tag>10</tag>
+      <tag role="refnum">10</tag>
+      <tag role="typerefnum">§10</tag>
+    </tags>
     <title><tag close=" ">10</tag>Color Compararisons</title>
     <para xml:id="S10.p1">
       <tabular class="ltx_guessed_headers" vattach="middle">

@@ -4,13 +4,23 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Version</title>
     <para xml:id="S1.p1">
       <p>Running eTeX version 2.2.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Old style</title>
     <para xml:id="S2.p1">
       <p>baz is NOT relax;
@@ -23,7 +33,12 @@ foo is NOT equal undefined;
 foo IS defined.</p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>New style</title>
     <para xml:id="S3.p1">
       <p>ebaz IS bound;
@@ -36,7 +51,12 @@ efoo IS equal undefined;
 efoo is NOT defined.</p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Expansion</title>
     <para xml:id="S4.p1">
       <p>Regular form:
@@ -51,7 +71,12 @@ Got Was expanded Later.</p>
 Got Was expanded Later.</p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Tokens</title>
     <para xml:id="S5.p1">
       <p>This˙and^that.</p>
@@ -64,7 +89,12 @@ Got Was expanded Later.</p>
 A Falling from grace.</p>
     </para>
   </section>
-  <section refnum="6" xml:id="S6">
+  <section xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
     <title><tag close=" ">6</tag>Unless</title>
     <para xml:id="S6.p1">
       <p>not 1 greater than 2.

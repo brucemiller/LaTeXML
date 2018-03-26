@@ -48,7 +48,8 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . '\iflx@donecaption\else\addtocounter{\@captype}{\m@ne}\fi');
     # \ext@sub<name>, \l@sub<name>, \c@lofdepth,
     DefEnvironment('{lx@subfloat@@' . $name . '}',
-      "<$type refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+      "<$type xml:id='#id'>"
+        . "#tags"
         . "#body"
         . "</$type>",
       beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },

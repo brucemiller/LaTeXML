@@ -41,6 +41,15 @@
                              ltx:bibliography ltx:appendix ltx:index ltx:glossary
                              ltx:slide ltx:sidebar"/>
 
+  <xsl:template match="ltx:tag[@role]"/>
+
+  <!-- Don't display tags; they're in the title -->
+  <xsl:template match="ltx:document/ltx:tags  | ltx:part/ltx:tags | ltx:chapter/ltx:tags
+                       | ltx:section/ltx:tags | ltx:subsection/ltx:tags | ltx:subsubsection/ltx:tags
+                       | ltx:paragraph/ltx:tags | ltx:subparagraph/ltx:tags
+                       | ltx:bibliography/ltx:tags | ltx:appendix/ltx:tags | ltx:index/ltx:tags | ltx:glossary/ltx:tags
+                       | ltx:sidebar/ltx:tags | ltx:slide/ltx:tags"/>
+
   <xsl:template match="ltx:document  | ltx:part | ltx:chapter
                        | ltx:section | ltx:subsection | ltx:subsubsection
                        | ltx:paragraph | ltx:subparagraph

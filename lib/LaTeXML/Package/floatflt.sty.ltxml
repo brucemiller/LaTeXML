@@ -31,7 +31,8 @@ DeclareOption('pflt', sub { AssignValue(floatfltpos => 'p'); });
 DeclareOption('vflt', sub { AssignValue(floatfltpos => 'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#pctwidth'>"
+  "<ltx:figure xml:id='#id' float='#float' width='#pctwidth'>"
+    . "#tags"
     . "#body"
     . "</ltx:figure>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
@@ -41,7 +42,8 @@ DefEnvironment('{floatingfigure}[]{Dimension}',
       pctwidth => toPercent($_[2])); });
 
 DefEnvironment('{floatingtable}[]{Dimension}',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#pctwidth'>"
+  "<ltx:table xml:id='#id' float='#float' width='#pctwidth'>"
+    . "#tags"
     . "#body"
     . "</ltx:table>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },

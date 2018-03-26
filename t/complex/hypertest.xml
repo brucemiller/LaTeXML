@@ -10,13 +10,25 @@
   <creator role="author">
     <personname>A.. Author</personname>
   </creator>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Intentionally Left Blank</title>
     <para xml:id="S1.p1">
       <p>Nothing left to say, really.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>URL’s</title>
     <para xml:id="S2.p1">
       <p>Hyperref loads url, but redefines it</p>

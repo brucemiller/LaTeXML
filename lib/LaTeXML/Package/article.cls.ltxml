@@ -80,21 +80,10 @@ DefMacro('\theequation', '\arabic{equation}');
 DefMacro('\thefigure',   '\arabic{figure}');
 DefMacro('\thetable',    '\arabic{table}');
 
-NewCounter('@itemizei',   'document',    idprefix => 'I');
-NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
-NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
-NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
-NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
-NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
-
-NewCounter('enumi',   '@itemizei',   idprefix => 'i');
-NewCounter('enumii',  '@itemizeii',  idprefix => 'i');
-NewCounter('enumiii', '@itemizeiii', idprefix => 'i');
-NewCounter('enumiv',  '@itemizeiv',  idprefix => 'i');
-# A couple of more levels, since we use these for ID's!
-NewCounter('enumv',  '@itemizev',  idprefix => 'i');
-NewCounter('enumvi', '@itemizevi', idprefix => 'i');
-
+NewCounter('enumi',   undef, idwithin => '@itemizei', idprefix => 'i');
+NewCounter('enumii',  undef, idwithin => 'enumi',     idprefix => 'i');
+NewCounter('enumiii', undef, idwithin => 'enumii',    idprefix => 'i');
+NewCounter('enumiv',  undef, idwithin => 'enumiii',   idprefix => 'i');
 DefMacro('\theenumi',   '\arabic{enumi}');
 DefMacro('\theenumii',  '\alph{enumii}');
 DefMacro('\theenumiii', '\roman{enumiii}');
@@ -103,19 +92,9 @@ DefMacro('\theenumiv',  '\Alph{enumiv}');
 DefMacro('\refname', 'References');
 
 Tag('ltx:appendix', autoClose => 1);
+DefMacro('\appendix', '\@appendix');
 # Actually we should be using section counter
-AssignValue(counter_for_appendix => 'section');
-DefMacro('\appendix@section', '\@startsection{appendix}{1}{}{}{}{}');
-DefMacro('\appendix',         '\@appendix');
-DefPrimitive('\@appendix', sub {
-    NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
-    DefMacro('\thesection', '\Alph{section}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
-    Let('\section',   '\appendix@section', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (IsDefined('\appendixname')) {
-      Let('\sectionname', '\appendixname', 'global'); }
-    return; });
+DefPrimitive('\@appendix', sub { startAppendices('section'); });
 
 #**********************************************************************
 1;

@@ -65,11 +65,14 @@ Let('\journalopt', '\@empty');
 # for when people need and actually use \begin[abstract}...)
 
 Let('\@orig@abstract', '\abstract');
-DefMacro('\abstract', sub {
-    if ($_[0]->ifNext(T_BEGIN)) { T_CS('\@abstract@with@arg'); }
+DefMacro('\abstract OptionalMatch:*', sub {
+    if ($_[1]) { T_CS('\lx@ignore@sv@abstract'); }
+    elsif ($_[0]->ifNext(T_BEGIN)) { T_CS('\@abstract@with@arg'); }
     else { T_CS('\@orig@abstract'); } });
 
-DefMacro('\@abstract@with@arg{}', '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
+# Just ignore \abstract* (what's it for?)
+DefMacro('\lx@ignore@sv@abstract{}', '');
+DefMacro('\@abstract@with@arg{}',    '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
 
 DefMacro('\makereferee', Tokens());
 
@@ -158,7 +161,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       properties => sub {
         my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
         my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
-            T_CS('\@tag'), T_BEGIN,
+            T_CS('\lx@tag'), T_BEGIN,
             ($swap
               ? (($flag ? () : (T_CS('\the' . $counter))),
                 (!$flag && $type ? (T_SPACE) : ()),

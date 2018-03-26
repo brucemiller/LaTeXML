@@ -133,7 +133,7 @@ td.ltx_subfloat { width:50%; }
 table.ltx_eqn_align tr.ltx_equation td.ltx_align_left + td.ltx_align_right { padding-left:3em; }
 table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2em; }
 
-.ltx_eqn_eqno { max-width:0em; overflow:visible; }
+.ltx_eqn_eqno { max-width:0em; overflow:visible; white-space: nowrap; }
 .ltx_eqn_eqno.ltx_align_right .ltx_tag { float:right; }
 
 .ltx_eqn_center_padleft,
@@ -174,7 +174,7 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 .ltx_bibliography dd { margin-left:3em; }
 /*.ltx_biblist { list-style-type:none; }*/
 .ltx_bibitem { list-style-type:none; }
-.ltx_bibtag { font-weight:bold; margin-left:-2em; width:3em; }
+.ltx_bibitem .ltx_tag { font-weight:bold; margin-left:-2em; width:3em; }
 /*.bibitem-tag + div { display:inline; }*/
 .ltx_bib_title { font-style:italic; }
 .ltx_bib_article .bib-title { font-style:normal !important; }

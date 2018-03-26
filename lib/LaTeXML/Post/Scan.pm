@@ -184,18 +184,38 @@ sub truncateNode {
     $node->appendText("\x{2026}"); }
   return $node; }
 
+sub addCommon {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $id    = $node->getAttribute('xml:id');
+  my %props = (
+    id       => orNull($id),
+    type     => orNull($tag),
+    parent   => orNull($parent_id),
+    labels   => orNull($self->noteLabels($node)),
+    location => orNull($doc->siteRelativeDestination),
+    pageid   => orNull($self->pageID($doc)),
+    fragid   => orNull($self->inPageID($doc, $id)),
+  );
+  # Figure out sane, safe naming?
+  foreach my $tagnode ($doc->findnodes('ltx:tags/ltx:tag', $node)) {
+    my $key;
+    if (my $role = $tagnode->getAttribute('role')) {
+      if ($role =~ /.*refnum$/) {
+        $key = $role; }
+      else {
+        $key = 'tag:' . $role; } }
+    else {
+      $key = 'frefnum'; }
+    ###      $key = 'refnum'; }        # ???
+    $props{$key} = $self->cleanNode($doc, $tagnode); }
+  return %props; }
+
 sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      labels   => orNull($self->noteLabels($node)),
-      refnum   => orNull($node->getAttribute('refnum')),
-      frefnum  => orNull($node->getAttribute('frefnum')),
-      rrefnum  => orNull($node->getAttribute('rrefnum')),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)));
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -204,15 +224,9 @@ sub section_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
       primary  => 1,
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)),
-      refnum   => orNull($node->getAttribute('refnum')),
-      frefnum  => orNull($node->getAttribute('frefnum')),
-      rrefnum  => orNull($node->getAttribute('rrefnum')),
       title    => orNull($self->cleanNode($doc, $doc->findnode('ltx:title', $node))),
       toctitle => orNull($self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node))),
       children => [],
@@ -225,16 +239,10 @@ sub captioned_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      role     => orNull($node->getAttribute('role')),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)),
-      refnum   => orNull($node->getAttribute('refnum')),
-      frefnum  => orNull($node->getAttribute('frefnum')),
-      rrefnum  => orNull($node->getAttribute('rrefnum')),
-      caption  => orNull($self->cleanNode($doc,
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      role    => orNull($node->getAttribute('role')),
+      caption => orNull($self->cleanNode($doc,
           $doc->findnode('descendant::ltx:caption', $node))),
 ###      toccaption => orNull($self->cleanNode($doc,
 ###          $doc->findnode('descendant::ltx:toccaption', $node))));
@@ -248,24 +256,10 @@ sub labelled_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    my $refnum  = $node->getAttribute('refnum');
-    my $frefnum = $node->getAttribute('frefnum');
-    my $rrefnum = $node->getAttribute('rrefnum');
-    my $reftag  = $self->cleanNode($doc, $doc->findnode('ltx:tag', $node));
-    # Rather annoying interpretation:
-    # an <ltx:tag> might just be something like an itemization bullet that
-    # doesn't make sense to use when referring to the object.
-    # OTOH, it might be a more nicely formatted version of the frefnum
-    # So, IF there is a refnum, use tag in place of the frefnum!
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      role     => orNull($node->getAttribute('role')),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)),
-      refnum   => orNull($refnum),
-      frefnum  => orNull(($refnum && $reftag ? $reftag : $frefnum)),
-      rrefnum  => orNull(($refnum && $reftag ? $reftag : $rrefnum)));
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      role => orNull($node->getAttribute('role')),
+    );
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -275,22 +269,10 @@ sub note_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    my $refnum = $node->getAttribute('mark');
-    my $reftag = $self->cleanNode($doc, $doc->findnode('ltx:tag', $node));
-    # Rather annoying interpretation:
-    # an <ltx:tag> might just be something like an itemization bullet that
-    # doesn't make sense to use when referring to the object.
-    # OTOH, it might be a more nicely formatted version of the frefnum
-    # So, IF there is a refnum, use tag in place of the frefnum!
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      role     => orNull($node->getAttribute('role')),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)),
-      refnum   => orNull($refnum),
-      frefnum  => orNull($refnum),
-      rrefnum  => orNull($refnum));
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      role => orNull($node->getAttribute('role')),
+    );
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -299,15 +281,10 @@ sub anchor_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id)),
-      title    => orNull($self->cleanNode($doc, $node)),
-      refnum   => orNull($node->getAttribute('refnum')),
-      frefnum  => orNull($node->getAttribute('frefnum')),
-      rrefnum  => orNull($node->getAttribute('rrefnum')));
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      title => orNull($self->cleanNode($doc, $node)),
+    );
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -422,14 +399,14 @@ sub bibitem_handler {
       location    => orNull($doc->siteRelativeDestination),
       pageid      => orNull($self->pageID($doc)),
       fragid      => orNull($self->inPageID($doc, $id)),
-      authors     => orNull($doc->findnode('ltx:bibtag[@role="authors"]', $node)),
-      fullauthors => orNull($doc->findnode('ltx:bibtag[@role="fullauthors"]', $node)),
-      year        => orNull($doc->findnode('ltx:bibtag[@role="year"]', $node)),
-      number      => orNull($doc->findnode('ltx:bibtag[@role="number"]', $node)),
-      refnum      => orNull($doc->findnode('ltx:bibtag[@role="refnum"]', $node)),
-      title       => orNull($doc->findnode('ltx:bibtag[@role="title"]', $node)),
-      keytag      => orNull($doc->findnode('ltx:bibtag[@role="key"]', $node)),
-      typetag     => orNull($doc->findnode('ltx:bibtag[@role="bibtype"]', $node))); }
+      authors     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="authors"]', $node)),
+      fullauthors => orNull($doc->findnode('ltx:tags/ltx:tag[@role="fullauthors"]', $node)),
+      year        => orNull($doc->findnode('ltx:tags/ltx:tag[@role="year"]', $node)),
+      number      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="number"]', $node)),
+      refnum      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="refnum"]', $node)),
+      title       => orNull($doc->findnode('ltx:tags/ltx:tag[@role="title"]', $node)),
+      keytag      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="key"]', $node)),
+      typetag     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="bibtype"]', $node))); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
 

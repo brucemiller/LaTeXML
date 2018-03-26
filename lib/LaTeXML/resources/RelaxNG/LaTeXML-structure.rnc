@@ -361,7 +361,7 @@ element toctitle { toctitle_attributes, toctitle_model }
 toctitle_attributes = Common.attributes
 
 ## Content model for \elementref{toctitle}.
-toctitle_model = (text | Inline.class | Misc.class | Meta.class | tag)*
+toctitle_model = (tag | text | Inline.class | Misc.class | Meta.class)*
 
 #----------------------------------------------------------------------
 
@@ -602,7 +602,7 @@ FrontMatter.attributes =
 
 ## The content allowed for the front matter of each sectional unit,
 ## and the document.
-SectionalFrontMatter.class = title | toctitle | creator
+SectionalFrontMatter.class = tags? | title | toctitle | creator
 
 ## The content allowed (in addition to \patternref{SectionalFrontMatter.class})
 ## for the front matter of a document.

@@ -65,8 +65,10 @@ Let('\notag', '\nonumber');
 
 ## Seemingly wants digested arg? (ie. expanded before seeing arg)
 DefMacro('\tag OptionalMatch:* {}',
-  '\ifx#1*\lx@tag{#2}\else{\def\theequation{#2}\lx@tag{\fnum@equation}}\fi');
-DefConstructor('\lx@tag Digested', '',
+  '\@hidden@bgroup\def\theequation{#2}'
+    . '\ifx#1*\let\fnum@equation\relax\fi'
+    . '\lx@save@equation@tag{\lx@make@tags{equation}}\@hidden@egroup');
+DefConstructor('\lx@save@equation@tag Digested', '',
   afterDigest => sub {
     AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(1), 'global'); },
   reversion => '',        # normally should disappear?
@@ -107,10 +109,15 @@ sub amsalignBindings {
         $attr{'xml:id'} = $attr{id}; delete $attr{id};
         $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-      openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
-      closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
-      openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
-      closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      openRow => sub {
+        my ($doc, %props) = @_;    # props are attributes, except for tag!
+        my $tags = $props{tags}; delete($props{tags});
+        $props{_tags} = $tags;     # HACK!!! for dlmf
+        $doc->openElement('ltx:equation', %props);
+        $doc->absorb($tags) if $tags; },
+      closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
+      openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
+      closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
       properties => {%properties}));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
@@ -131,8 +138,8 @@ sub amsalignBindings {
 # Note that amsmath respects \nonumber !!!!
 # So, we've got to delay the properties
 DefEnvironment('{equation}',
-  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
@@ -154,15 +161,15 @@ DefEnvironment('{equation}',
     elsif ($num eq '_AUTO_') { %props = RefStepCounter('equation'); }
     else {
       %props = RefStepID('equation');
-      $props{refnum} = $num; }
+      $props{tags} = $num; }
     $whatsit->setProperties(%props);
     return; },
   locked => 1);
 
 # Note: This DOES get a number if \tag is used!
 DefEnvironment('{equation*}',
-  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
@@ -179,8 +186,7 @@ DefEnvironment('{equation*}',
     my %props = ();
     %props = RefStepID('equation');
     if ($num) {
-      $props{refnum}  = $num;
-      $props{frefnum} = $num; }
+      $props{tags} = $num; }
     $whatsit->setProperties(%props);
     return; },
   locked => 1);
@@ -253,7 +259,8 @@ DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline\@hi
 DefPrimitive('\@end@multline', sub { $_[0]->egroup; });
 
 DefConstructor('\@@multline DigestedBody',
-  "<ltx:equation refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>#body</ltx:XMath>"
     . "</ltx:Math>"
@@ -712,7 +719,8 @@ DefMacro('\thetag{}', '{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
 DefEnvironment('{subequations}',
-  "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:equationgroup xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:equationgroup>",
   afterDigestBegin => sub {

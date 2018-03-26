@@ -5,15 +5,39 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section labels="LABEL:sec:intro" refnum="1" xml:id="S1">
+  <section labels="LABEL:sec:intro" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Introduction</title>
   </section>
-  <section labels="LABEL:sec:motivation" refnum="2" xml:id="S2">
+  <section labels="LABEL:sec:motivation" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Motivation</title>
   </section>
-  <section labels="LABEL:sec:conclusion" refnum="3" xml:id="S3">
+  <section labels="LABEL:sec:conclusion" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="autoref">section 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Conclusion</title>
-    <subsection labels="LABEL:subsec:nameref" refnum="3.1" xml:id="S3.SS1">
+    <subsection labels="LABEL:subsec:nameref" xml:id="S3.SS1">
+      <tags>
+        <tag>3.1</tag>
+        <tag role="autoref">subsection 3.1</tag>
+        <tag role="refnum">3.1</tag>
+        <tag role="typerefnum">§3.1</tag>
+      </tags>
       <title><tag close=" ">3.1</tag>nameref</title>
       <para xml:id="S3.SS1.p1">
         <p>Nameref for sections <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:intro" show="title"/> and <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:motivation" show="title"/>.</p>
@@ -22,16 +46,22 @@
         <p>And subsections <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:nameref" show="title"/> and <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:autoref" show="title"/>.</p>
       </para>
     </subsection>
-    <subsection labels="LABEL:subsec:autoref" refnum="3.2" xml:id="S3.SS2">
+    <subsection labels="LABEL:subsec:autoref" xml:id="S3.SS2">
+      <tags>
+        <tag>3.2</tag>
+        <tag role="autoref">subsection 3.2</tag>
+        <tag role="refnum">3.2</tag>
+        <tag role="typerefnum">§3.2</tag>
+      </tags>
       <title><tag close=" ">3.2</tag>autoref</title>
       <para xml:id="S3.SS2.p1">
-        <p>Autoref for <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:intro" show="type refnum"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:motivation" show="type refnum"/>.</p>
+        <p>Autoref for <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:intro" show="autoref"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:motivation" show="autoref"/>.</p>
       </para>
       <para xml:id="S3.SS2.p2">
-        <p>And also <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:nameref" show="type refnum"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:autoref" show="type refnum"/>.</p>
+        <p>And also <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:nameref" show="autoref"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:subsec:autoref" show="autoref"/>.</p>
       </para>
       <para xml:id="S3.SS2.p3">
-        <p>These two should fail gracefully: <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:fail" show="title"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:fail" show="type refnum"/>.</p>
+        <p>These two should fail gracefully: <ref class="ltx_refmacro_nameref" labelref="LABEL:sec:fail" show="title"/> and <ref class="ltx_refmacro_autoref" labelref="LABEL:sec:fail" show="autoref"/>.</p>
       </para>
     </subsection>
   </section>

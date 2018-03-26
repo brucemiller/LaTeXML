@@ -5,10 +5,15 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section labels="LABEL:foobar" refnum="1" xml:id="S1">
+  <section labels="LABEL:foobar" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>FooBar</title>
     <para xml:id="S1.p1">
-      <p>Methods <cite class="ltx_citemacro_cite">[<bibref bibrefs="b1,b2" separator="," show="Refnum" yyseparator=","/>]</cite>, by the <text font="italic">ab initio</text> crystal-orbital Hartree-Fock (HF)
+      <p>Methods <cite class="ltx_citemacro_cite">[<bibref bibrefs="b1,b2" separator="," yyseparator=","/>]</cite>, by the <text font="italic">ab initio</text> crystal-orbital Hartree-Fock (HF)
 In section <ref labelref="LABEL:foobar"/></p>
     </para>
     <para xml:id="S1.p2">
@@ -33,12 +38,18 @@ However
     <title>References</title>
     <biblist>
       <bibitem key="b1" xml:id="bib.bib1">
-        <bibtag role="refnum">[1]</bibtag>
+        <tags>
+          <tag>[1]</tag>
+          <tag role="refnum">1</tag>
+        </tags>
         <bibblock>C. W. Bunn, Trans. Faraday Society 35 (1939)482.
 </bibblock>
       </bibitem>
       <bibitem key="b2" xml:id="bib.bib2">
-        <bibtag role="refnum">[2]</bibtag>
+        <tags>
+          <tag>[2]</tag>
+          <tag role="refnum">2</tag>
+        </tags>
         <bibblock>H. M. M. Shearer and V. Vand,
 Acta Crystallogr. 9 (1956) 379; H. M. M. Shearer and P. W. Teare, ibid.
 12 (1959) 294. 

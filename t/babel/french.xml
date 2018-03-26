@@ -12,8 +12,13 @@
   <creator role="author">
     <personname>François Reno</personname>
   </creator>
-  <chapter frefnum="Chapitre 1" refnum="1" xml:id="Ch1">
-    <title><tag close=" ">Chapitre 1</tag>Oui!</title>
+  <chapter xml:id="Ch1">
+    <tags>
+      <tag>Chapitre 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Chapitre 1</tag>
+    </tags>
+    <title><tag close=" ">Chapitre 1</tag>Oui!</title>
     <toctitle><tag close=" ">1</tag>Oui!</toctitle>
     <para xml:id="Ch1.p1">
       <p>Different Spacing :;!?</p>
@@ -36,7 +41,12 @@
     <para xml:id="Ch1.p7">
       <p>ÆæŒœ@^~\°</p>
     </para>
-    <section refnum="1.1" xml:id="Ch1.S1">
+    <section xml:id="Ch1.S1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
       <title><tag close=" ">1.1</tag>Markup</title>
       <para xml:id="Ch1.S1.p1">
         <p>«  guillemets   »</p>

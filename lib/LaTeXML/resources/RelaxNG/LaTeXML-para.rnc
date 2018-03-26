@@ -69,7 +69,7 @@ theorem_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{theorem}.
-theorem_model = title?, Para.model
+theorem_model = tags?, title?, Para.model
 
 #======================================================================
 
@@ -86,7 +86,7 @@ proof_attributes =
   Data.attributes
 
 ## Content model for \elementref{proof}.
-proof_model = title?, Para.model
+proof_model = tags?, title?, Para.model
 
 #======================================================================
 
@@ -115,7 +115,7 @@ figure_attributes =
   attribute placement { text }?
 
 ## Content model for \elementref{figure}; allow nested figures, etc for "sub" floats.
-figure_model = (figure | table | float | Block.model | Caption.class)*
+figure_model = (tags? | figure | table | float | Block.model | Caption.class)*
 
 #======================================================================
 
@@ -136,7 +136,7 @@ table_attributes =
   attribute placement { text }?
 
 ## Content model for \elementref{table}.
-table_model = (table | figure | float | Block.model | Caption.class)*
+table_model = (tags? | table | figure | float | Block.model | Caption.class)*
 
 #======================================================================
 
@@ -159,7 +159,7 @@ float_attributes =
   attribute placement { text }?
 
 ## Content model for \elementref{float}.
-float_model = (float | figure | table | Block.model | Caption.class)*
+float_model = (tags? | float | figure | table | Block.model | Caption.class)*
 
 #======================================================================
 
@@ -189,5 +189,5 @@ element toccaption { toccaption_attributes, toccaption_model }
 toccaption_attributes = Common.attributes
 
 ## Content model for \elementref{toccaption}.
-toccaption_model = (text | Inline.class | Misc.class | Meta.class | tag)*
+toccaption_model = (tag | text | Inline.class | Misc.class | Meta.class)*
 #======================================================================

@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Testing various objects with ifx</title>
     <para xml:id="S1.p1">
       <p>Test Letters A and A (True) :  True .</p>
@@ -39,7 +44,12 @@ True False.</p>
       <p>else is NOT expandable while expanding the test clause</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Testing numerics</title>
     <para xml:id="S2.p1">
       <p>OK OK :
@@ -50,7 +60,12 @@ OK OK.</p>
 OK</p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Testing if</title>
     <para xml:id="S3.p1">
       <p>Test plain if, as well;</p>
@@ -80,7 +95,12 @@ OK</p>
       <p>Test 1 and oneorten [c=2] 0True</p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Testing if in test clause</title>
     <para xml:id="S4.p1">
       <p>Test ifx testA testB TT</p>

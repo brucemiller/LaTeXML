@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>AfterAssignment</title>
     <para xml:id="S1.p1">
       <p>FOO 12</p>
@@ -25,7 +30,12 @@
       <p>Before inside After BAR</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>AfterGroup</title>
     <para xml:id="S2.p1">
       <p>before  middle  after</p>
@@ -36,7 +46,12 @@
     <para xml:id="S2.p3">
       <p>not <text font="italic">emphasized</text> not</p>
     </para>
-    <subsection refnum="2.1" xml:id="S2.SS1">
+    <subsection xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
       <title><tag close=" ">2.1</tag>AfterGroup in Environments</title>
       <para xml:id="S2.SS1.p1">
         <quote>
@@ -51,7 +66,12 @@
       </para>
     </subsection>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Every Box</title>
     <para xml:id="S3.p1">
       <inline-block vattach="bottom">

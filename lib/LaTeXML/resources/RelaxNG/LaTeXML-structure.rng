@@ -651,11 +651,11 @@ basically Inline.model with tag included (normally, but not necessarily, tag wou
     <a:documentation>Content model for \elementref{toctitle}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="tag"/>
         <text/>
         <ref name="Inline.class"/>
         <ref name="Misc.class"/>
         <ref name="Meta.class"/>
-        <ref name="tag"/>
       </choice>
     </zeroOrMore>
   </define>
@@ -1049,6 +1049,9 @@ presentation.  The value of this attribute is often set by language localization
     <a:documentation>The content allowed for the front matter of each sectional unit,
 and the document.</a:documentation>
     <choice>
+      <optional>
+        <ref name="tags"/>
+      </optional>
       <ref name="title"/>
       <ref name="toctitle"/>
       <ref name="creator"/>

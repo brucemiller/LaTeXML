@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
-<?latexml package="subfigure"?>
+<?latexml package="subfigure" options="IT,bf,TABTOPCAP"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -10,12 +10,22 @@
     <para xml:id="S0.SS0.SSS0.Px1.p1">
       <p>Two figures, <ref labelref="LABEL:fig:A-one"/> and <ref labelref="LABEL:fig:A-two"/>.</p>
     </para>
-    <figure frefnum="Figure 1" labels="LABEL:fig:A-one" placement="ht" refnum="1" xml:id="S0.F1">
+    <figure labels="LABEL:fig:A-one" placement="ht" xml:id="S0.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
       <p align="center">[Graphic One]</p>
       <toccaption class="ltx_centering"><tag close=" ">1</tag>This is a figure</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is a figure</caption>
     </figure>
-    <figure frefnum="Figure 2" labels="LABEL:fig:A-two" placement="ht" refnum="2" xml:id="S0.F2">
+    <figure labels="LABEL:fig:A-two" placement="ht" xml:id="S0.F2">
+      <tags>
+        <tag>Figure 2</tag>
+        <tag role="refnum">2</tag>
+        <tag role="typerefnum">Figure 2</tag>
+      </tags>
       <p align="center">[Graphic Two]</p>
       <toccaption class="ltx_centering"><tag close=" ">2</tag>This is another figure</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 2</tag>This is another figure</caption>
@@ -27,15 +37,23 @@
       <p>Two figures, <ref labelref="LABEL:fig:B-one"/> and <ref labelref="LABEL:fig:B-two"/>.</p>
     </para>
     <figure placement="ht" xml:id="S0.SS0.SSS0.Px2.fig1">
-      <figure align="center" frefnum="(a)" labels="LABEL:fig:B-one" refnum="a" xml:id="S0.F2.sf1">
+      <figure align="center" labels="LABEL:fig:B-one" xml:id="S0.F3.sf1">
+        <tags>
+          <tag>(a)</tag>
+          <tag role="refnum">3(a)</tag>
+        </tags>
         <p>[Graphic One]</p>
-        <toccaption><tag close=" ">a</tag>This is a figure</toccaption>
-        <caption><tag close=" ">(a)</tag>This is a figure</caption>
+        <toccaption><tag close=" ">(a)</tag>This is a figure</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a figure</text></caption>
       </figure>
-      <figure align="center" frefnum="(b)" labels="LABEL:fig:B-two" refnum="b" xml:id="S0.F2.sf2">
+      <figure align="center" labels="LABEL:fig:B-two" xml:id="S0.F3.sf2">
+        <tags>
+          <tag>(b)</tag>
+          <tag role="refnum">3(b)</tag>
+        </tags>
         <p>[Graphic Two]</p>
-        <toccaption><tag close=" ">b</tag>This is another figure</toccaption>
-        <caption><tag close=" ">(b)</tag>This is another figure</caption>
+        <toccaption><tag close=" ">(b)</tag>This is another figure</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(b)</text></tag><text font="italic" fontsize="80%">This is another figure</text></caption>
       </figure>
     </figure>
   </paragraph>
@@ -44,7 +62,12 @@
     <para xml:id="S0.SS0.SSS0.Px3.p1">
       <p>Two figures, <ref labelref="LABEL:fig:C"/></p>
     </para>
-    <figure frefnum="Figure 3" labels="LABEL:fig:C" placement="ht" refnum="3" xml:id="S0.F3">
+    <figure labels="LABEL:fig:C" placement="ht" xml:id="S0.F3">
+      <tags>
+        <tag>Figure 3</tag>
+        <tag role="refnum">3</tag>
+        <tag role="typerefnum">Figure 3</tag>
+      </tags>
       <figure align="center" xml:id="S0.F3.fig1">
         <p>[Graphic One]</p>
       </figure>
@@ -61,19 +84,113 @@
       <p>Two figures, <ref labelref="LABEL:fig:D-one"/> and <ref labelref="LABEL:fig:D-two"/>,
 and collectively as <ref labelref="LABEL:fig:D"/>.</p>
     </para>
-    <figure frefnum="Figure 4" labels="LABEL:fig:D" placement="ht" refnum="4" xml:id="S0.F4">
-      <figure align="center" frefnum="(a)" labels="LABEL:fig:D-one" refnum="a" xml:id="S0.F3.sf1">
+    <figure labels="LABEL:fig:D" placement="ht" xml:id="S0.F4">
+      <tags>
+        <tag>Figure 4</tag>
+        <tag role="refnum">4</tag>
+        <tag role="typerefnum">Figure 4</tag>
+      </tags>
+      <figure align="center" labels="LABEL:fig:D-one" xml:id="S0.F4.sf1">
+        <tags>
+          <tag>(a)</tag>
+          <tag role="refnum">4(a)</tag>
+        </tags>
         <p>[Graphic One]</p>
-        <toccaption><tag close=" ">a</tag>This is a figure</toccaption>
-        <caption><tag close=" ">(a)</tag>This is a figure</caption>
+        <toccaption><tag close=" ">(a)</tag>This is a figure</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a figure</text></caption>
       </figure>
-      <figure align="center" frefnum="(b)" labels="LABEL:fig:D-two" refnum="b" xml:id="S0.F3.sf2">
+      <figure align="center" labels="LABEL:fig:D-two" xml:id="S0.F4.sf2">
+        <tags>
+          <tag>(b)</tag>
+          <tag role="refnum">4(b)</tag>
+        </tags>
         <p>[Graphic Two]</p>
-        <toccaption><tag close=" ">b</tag>This is another figure</toccaption>
-        <caption><tag close=" ">(b)</tag>This is another figure</caption>
+        <toccaption><tag close=" ">(b)</tag>This is another figure</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(b)</text></tag><text font="italic" fontsize="80%">This is another figure</text></caption>
       </figure>
       <toccaption class="ltx_centering"><tag close=" ">4</tag>Collectively two figures</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 4</tag>Collectively two figures</caption>
     </figure>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px5">
+    <title>Sub-Tables with captions</title>
+    <para xml:id="S0.SS0.SSS0.Px5.p1">
+      <p>Two tables, <ref labelref="LABEL:tab:B-one"/> and <ref labelref="LABEL:tab:B-two"/>.</p>
+    </para>
+    <table placement="ht" xml:id="S0.SS0.SSS0.Px5.tab1">
+      <table align="center" labels="LABEL:tab:B-one" xml:id="S0.T0.st1">
+        <tags>
+          <tag>(a)</tag>
+          <tag role="refnum">0(a)</tag>
+        </tags>
+        <toccaption><tag close=" ">(a)</tag>This is a table</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a table</text></caption>
+        <p>[Tabular One]</p>
+      </table>
+      <table align="center" labels="LABEL:tab:B-two" xml:id="S0.T0.st2">
+        <tags>
+          <tag>(b)</tag>
+          <tag role="refnum">0(b)</tag>
+        </tags>
+        <toccaption><tag close=" ">(b)</tag>This is another table</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(b)</text></tag><text font="italic" fontsize="80%">This is another table</text></caption>
+        <p>[Tabular Two]</p>
+      </table>
+    </table>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px6">
+    <title>Sub-Tables, collective caption</title>
+    <para xml:id="S0.SS0.SSS0.Px6.p1">
+      <p>Two tables, <ref labelref="LABEL:tab:C"/></p>
+    </para>
+    <table labels="LABEL:tab:C" placement="ht" xml:id="S0.T1">
+      <tags>
+        <tag>Table 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Table 1</tag>
+      </tags>
+      <toccaption><tag close=" ">1</tag>Collectively two tables</toccaption>
+      <caption><tag close=": ">Table 1</tag>Collectively two tables</caption>
+      <table align="center" xml:id="S0.T1.tab1">
+        <p>[Tabular One]</p>
+      </table>
+      <table align="center" xml:id="S0.T1.tab2">
+        <p>[Tabular Two]</p>
+      </table>
+    </table>
+  </paragraph>
+  <paragraph xml:id="S0.SS0.SSS0.Px7">
+    <title>Sub-Tables with all captions</title>
+    <para xml:id="S0.SS0.SSS0.Px7.p1">
+      <p>Two tables, <ref labelref="LABEL:tab:D-one"/> and <ref labelref="LABEL:tab:D-two"/>,
+and collectively as <ref labelref="LABEL:tab:D"/>.</p>
+    </para>
+    <table labels="LABEL:tab:D" placement="ht" xml:id="S0.T2">
+      <tags>
+        <tag>Table 2</tag>
+        <tag role="refnum">2</tag>
+        <tag role="typerefnum">Table 2</tag>
+      </tags>
+      <toccaption><tag close=" ">2</tag>Collectively two tables</toccaption>
+      <caption><tag close=": ">Table 2</tag>Collectively two tables</caption>
+      <table align="center" labels="LABEL:tab:D-one" xml:id="S0.T2.st1">
+        <tags>
+          <tag>(a)</tag>
+          <tag role="refnum">2(a)</tag>
+        </tags>
+        <toccaption><tag close=" ">(a)</tag>This is a table</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(a)</text></tag><text font="italic" fontsize="80%">This is a table</text></caption>
+        <p>[Tabular One]</p>
+      </table>
+      <table align="center" labels="LABEL:tab:D-two" xml:id="S0.T2.st2">
+        <tags>
+          <tag>(b)</tag>
+          <tag role="refnum">2(b)</tag>
+        </tags>
+        <toccaption><tag close=" ">(b)</tag>This is another table</toccaption>
+        <caption><tag close=" "><text font="bold" fontsize="80%">(b)</text></tag><text font="italic" fontsize="80%">This is another table</text></caption>
+        <p>[Tabular Two]</p>
+      </table>
+    </table>
   </paragraph>
 </document>
